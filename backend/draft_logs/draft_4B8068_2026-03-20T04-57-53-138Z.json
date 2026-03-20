@@ -1,0 +1,71 @@
+{
+  "roomId": "4B8068",
+  "timestamp": "2026-03-20T04:57:53.138Z",
+  "cubeName": "Il mio Cubo Personalizzatoee",
+  "playerCount": 2,
+  "rules": {
+    "playerCount": 2,
+    "packsPerPlayer": 1,
+    "cardsPerPack": 3,
+    "timer": 60,
+    "rarityBalance": false,
+    "anonymousMode": false,
+    "cubeName": "Il mio Cubo Personalizzatoee"
+  },
+  "players": [
+    {
+      "playerId": "jcbnlqge5jmmxxnuw9",
+      "name": "Brando212",
+      "poolCount": 3,
+      "pool": [
+        {
+          "name": "Eldrazi Aggressor",
+          "scryfall_id": "62f3ec85-552d-4e28-939e-ab2c39e3e9c5",
+          "cmc": 3,
+          "color": []
+        },
+        {
+          "name": "Ballad of the Black Flag",
+          "scryfall_id": "2d6b1b2f-903c-438c-baba-a3b3e60b1d4f",
+          "cmc": 3,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Eldrazi Devastator",
+          "scryfall_id": "04b13e32-01b9-4a86-a3df-ca8b784c6a6c",
+          "cmc": 8,
+          "color": []
+        }
+      ]
+    },
+    {
+      "playerId": "xqjc2n1t7iimmy1dii7",
+      "name": "333",
+      "poolCount": 3,
+      "pool": [
+        {
+          "name": "Eldrazi",
+          "scryfall_id": "1f6b932a-3ca3-453f-85bb-c66025ee8b76",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Eldrazi Aggressor",
+          "scryfall_id": "62f3ec85-552d-4e28-939e-ab2c39e3e9c5",
+          "cmc": 3,
+          "color": []
+        },
+        {
+          "name": "Argivian Blacksmith",
+          "scryfall_id": "f1fb4d0b-fa3f-4794-9285-89ddb9ac21c3",
+          "cmc": 3,
+          "color": [
+            "W"
+          ]
+        }
+      ]
+    }
+  ]
+}

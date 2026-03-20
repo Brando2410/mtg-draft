@@ -1,0 +1,252 @@
+{
+  "name": "Il mio Cubo Personalizzatoee",
+  "cards": [
+    {
+      "scryfall_id": "c3909816-5cc2-4712-bc7d-534ae0b9229c",
+      "name": "Eldrazi Conscription",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/c/3/c3909816-5cc2-4712-bc7d-534ae0b9229c.jpg?1547515250",
+      "cmc": 8,
+      "type_line": "Kindred Enchantment — Eldrazi Aura",
+      "mana_cost": "{8}"
+    },
+    {
+      "scryfall_id": "c3909816-5cc2-4712-bc7d-534ae0b9229c",
+      "name": "Eldrazi Conscription",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/c/3/c3909816-5cc2-4712-bc7d-534ae0b9229c.jpg?1547515250",
+      "cmc": 8,
+      "type_line": "Kindred Enchantment — Eldrazi Aura",
+      "mana_cost": "{8}"
+    },
+    {
+      "scryfall_id": "c3909816-5cc2-4712-bc7d-534ae0b9229c",
+      "name": "Eldrazi Conscription",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/c/3/c3909816-5cc2-4712-bc7d-534ae0b9229c.jpg?1547515250",
+      "cmc": 8,
+      "type_line": "Kindred Enchantment — Eldrazi Aura",
+      "mana_cost": "{8}"
+    },
+    {
+      "scryfall_id": "c3909816-5cc2-4712-bc7d-534ae0b9229c",
+      "name": "Eldrazi Conscription",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/c/3/c3909816-5cc2-4712-bc7d-534ae0b9229c.jpg?1547515250",
+      "cmc": 8,
+      "type_line": "Kindred Enchantment — Eldrazi Aura",
+      "mana_cost": "{8}"
+    },
+    {
+      "scryfall_id": "c3909816-5cc2-4712-bc7d-534ae0b9229c",
+      "name": "Eldrazi Conscription",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/c/3/c3909816-5cc2-4712-bc7d-534ae0b9229c.jpg?1547515250",
+      "cmc": 8,
+      "type_line": "Kindred Enchantment — Eldrazi Aura",
+      "mana_cost": "{8}"
+    },
+    {
+      "scryfall_id": "78ee2013-29dc-4879-9d59-1b492996d297",
+      "name": "Eldrazi Confluence",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/7/8/78ee2013-29dc-4879-9d59-1b492996d297.jpg?1717189787",
+      "cmc": 4,
+      "type_line": "Instant",
+      "mana_cost": "{2}{C}{C}"
+    },
+    {
+      "scryfall_id": "62f3ec85-552d-4e28-939e-ab2c39e3e9c5",
+      "name": "Eldrazi Aggressor",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/62f3ec85-552d-4e28-939e-ab2c39e3e9c5.jpg?1562915027",
+      "cmc": 3,
+      "type_line": "Creature — Eldrazi Drone",
+      "mana_cost": "{2}{R}"
+    },
+    {
+      "scryfall_id": "62f3ec85-552d-4e28-939e-ab2c39e3e9c5",
+      "name": "Eldrazi Aggressor",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/62f3ec85-552d-4e28-939e-ab2c39e3e9c5.jpg?1562915027",
+      "cmc": 3,
+      "type_line": "Creature — Eldrazi Drone",
+      "mana_cost": "{2}{R}"
+    },
+    {
+      "scryfall_id": "62f3ec85-552d-4e28-939e-ab2c39e3e9c5",
+      "name": "Eldrazi Aggressor",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/62f3ec85-552d-4e28-939e-ab2c39e3e9c5.jpg?1562915027",
+      "cmc": 3,
+      "type_line": "Creature — Eldrazi Drone",
+      "mana_cost": "{2}{R}"
+    },
+    {
+      "scryfall_id": "62f3ec85-552d-4e28-939e-ab2c39e3e9c5",
+      "name": "Eldrazi Aggressor",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/62f3ec85-552d-4e28-939e-ab2c39e3e9c5.jpg?1562915027",
+      "cmc": 3,
+      "type_line": "Creature — Eldrazi Drone",
+      "mana_cost": "{2}{R}"
+    },
+    {
+      "scryfall_id": "62f3ec85-552d-4e28-939e-ab2c39e3e9c5",
+      "name": "Eldrazi Aggressor",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/62f3ec85-552d-4e28-939e-ab2c39e3e9c5.jpg?1562915027",
+      "cmc": 3,
+      "type_line": "Creature — Eldrazi Drone",
+      "mana_cost": "{2}{R}"
+    },
+    {
+      "scryfall_id": "62f3ec85-552d-4e28-939e-ab2c39e3e9c5",
+      "name": "Eldrazi Aggressor",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/62f3ec85-552d-4e28-939e-ab2c39e3e9c5.jpg?1562915027",
+      "cmc": 3,
+      "type_line": "Creature — Eldrazi Drone",
+      "mana_cost": "{2}{R}"
+    },
+    {
+      "scryfall_id": "62f3ec85-552d-4e28-939e-ab2c39e3e9c5",
+      "name": "Eldrazi Aggressor",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/62f3ec85-552d-4e28-939e-ab2c39e3e9c5.jpg?1562915027",
+      "cmc": 3,
+      "type_line": "Creature — Eldrazi Drone",
+      "mana_cost": "{2}{R}"
+    },
+    {
+      "scryfall_id": "62f3ec85-552d-4e28-939e-ab2c39e3e9c5",
+      "name": "Eldrazi Aggressor",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/62f3ec85-552d-4e28-939e-ab2c39e3e9c5.jpg?1562915027",
+      "cmc": 3,
+      "type_line": "Creature — Eldrazi Drone",
+      "mana_cost": "{2}{R}"
+    },
+    {
+      "scryfall_id": "62f3ec85-552d-4e28-939e-ab2c39e3e9c5",
+      "name": "Eldrazi Aggressor",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/62f3ec85-552d-4e28-939e-ab2c39e3e9c5.jpg?1562915027",
+      "cmc": 3,
+      "type_line": "Creature — Eldrazi Drone",
+      "mana_cost": "{2}{R}"
+    },
+    {
+      "scryfall_id": "1f6b932a-3ca3-453f-85bb-c66025ee8b76",
+      "name": "Eldrazi",
+      "rarity": "mythic",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/1/f/1f6b932a-3ca3-453f-85bb-c66025ee8b76.jpg?1706380209",
+      "cmc": 0,
+      "type_line": "Card",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "04b13e32-01b9-4a86-a3df-ca8b784c6a6c",
+      "name": "Eldrazi Devastator",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/0/4/04b13e32-01b9-4a86-a3df-ca8b784c6a6c.jpg?1562896153",
+      "cmc": 8,
+      "type_line": "Creature — Eldrazi",
+      "mana_cost": "{8}"
+    },
+    {
+      "scryfall_id": "c3909816-5cc2-4712-bc7d-534ae0b9229c",
+      "name": "Eldrazi Conscription",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/c/3/c3909816-5cc2-4712-bc7d-534ae0b9229c.jpg?1547515250",
+      "cmc": 8,
+      "type_line": "Kindred Enchantment — Eldrazi Aura",
+      "mana_cost": "{8}"
+    },
+    {
+      "scryfall_id": "78ee2013-29dc-4879-9d59-1b492996d297",
+      "name": "Eldrazi Confluence",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/7/8/78ee2013-29dc-4879-9d59-1b492996d297.jpg?1717189787",
+      "cmc": 4,
+      "type_line": "Instant",
+      "mana_cost": "{2}{C}{C}"
+    },
+    {
+      "scryfall_id": "c1ce831f-3e80-4205-884f-a912b5d53742",
+      "name": "Eldrazi Angel",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/c/1/c1ce831f-3e80-4205-884f-a912b5d53742.jpg?1717193506",
+      "cmc": 0,
+      "type_line": "Token Creature — Eldrazi Angel",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "62f3ec85-552d-4e28-939e-ab2c39e3e9c5",
+      "name": "Eldrazi Aggressor",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/62f3ec85-552d-4e28-939e-ab2c39e3e9c5.jpg?1562915027",
+      "cmc": 3,
+      "type_line": "Creature — Eldrazi Drone",
+      "mana_cost": "{2}{R}"
+    },
+    {
+      "scryfall_id": "15fcad03-4567-4f96-976e-01a07d8ab050",
+      "name": "Bane Alley Blackguard",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/5/15fcad03-4567-4f96-976e-01a07d8ab050.jpg?1562899196",
+      "cmc": 2,
+      "type_line": "Creature — Human Rogue",
+      "mana_cost": "{1}{B}"
+    },
+    {
+      "scryfall_id": "2d6b1b2f-903c-438c-baba-a3b3e60b1d4f",
+      "name": "Ballad of the Black Flag",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/d/2d6b1b2f-903c-438c-baba-a3b3e60b1d4f.jpg?1721423658",
+      "cmc": 3,
+      "type_line": "Enchantment — Saga",
+      "mana_cost": "{1}{U}{U}"
+    },
+    {
+      "scryfall_id": "f1fb4d0b-fa3f-4794-9285-89ddb9ac21c3",
+      "name": "Argivian Blacksmith",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/1/f1fb4d0b-fa3f-4794-9285-89ddb9ac21c3.jpg?1562952460",
+      "cmc": 3,
+      "type_line": "Creature — Human Artificer",
+      "mana_cost": "{1}{W}{W}"
+    }
+  ],
+  "lastUpdated": "2026-03-19T20:13:18.600Z"
+}

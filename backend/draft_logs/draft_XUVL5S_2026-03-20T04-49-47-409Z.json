@@ -1,0 +1,43 @@
+{
+  "roomId": "XUVL5S",
+  "timestamp": "2026-03-20T04:49:47.409Z",
+  "cubeName": "Il mio Cubo Personalizzatoee",
+  "playerCount": 2,
+  "rules": {
+    "playerCount": 2,
+    "packsPerPlayer": 1,
+    "cardsPerPack": 1,
+    "timer": 60,
+    "rarityBalance": false,
+    "anonymousMode": false,
+    "cubeName": "Il mio Cubo Personalizzatoee"
+  },
+  "players": [
+    {
+      "playerId": "jcbnlqge5jmmxxnuw9",
+      "name": "Brando212",
+      "poolCount": 1,
+      "pool": [
+        {
+          "name": "Eldrazi Aggressor",
+          "scryfall_id": "62f3ec85-552d-4e28-939e-ab2c39e3e9c5",
+          "cmc": 3,
+          "color": []
+        }
+      ]
+    },
+    {
+      "playerId": "xqjc2n1t7iimmy1dii7",
+      "name": "333",
+      "poolCount": 1,
+      "pool": [
+        {
+          "name": "Eldrazi Angel",
+          "scryfall_id": "c1ce831f-3e80-4205-884f-a912b5d53742",
+          "cmc": 0,
+          "color": []
+        }
+      ]
+    }
+  ]
+}

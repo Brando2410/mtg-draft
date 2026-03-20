@@ -1,0 +1,10 @@
+node_modules/
+.env
+dist/
+build/
+.active_rooms.json
+.DS_Store
+backend/.active_rooms.json
+frontend/dist/
+backend/node_modules/
+frontend/node_modules/
