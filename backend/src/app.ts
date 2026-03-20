@@ -53,8 +53,18 @@ app.delete('/api/cubes/:id', async (req, res) => {
 });
 
 // --- Servizio File Statici per il Frontend (Produzione) ---
-const frontendPath = path.join(__dirname, '../../frontend/dist');
-if (fs.existsSync(frontendPath)) {
+// Cerchiamo la cartella dist in più punti per supportare sia local che monorepo build
+const possibleFrontendPaths = [
+  path.join(__dirname, '../../frontend/dist'),
+  path.join(__dirname, '../../../../frontend/dist'),
+  path.resolve(process.cwd(), 'frontend/dist'),
+  path.resolve(process.cwd(), '../frontend/dist')
+];
+
+const frontendPath = possibleFrontendPaths.find(p => fs.existsSync(p)) || '';
+
+if (frontendPath) {
+  console.log('Serving frontend from:', frontendPath);
   app.use(express.static(frontendPath));
   
   // Rotta catch-all per gestire il routing lato client (Single Page App)
@@ -63,6 +73,8 @@ if (fs.existsSync(frontendPath)) {
     if (req.path.startsWith('/api/')) return next();
     res.sendFile(path.join(frontendPath, 'index.html'));
   });
+} else {
+  console.warn('Frontend distribution not found. API mode only.');
 }
 
 export default app;
