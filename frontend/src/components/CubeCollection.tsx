@@ -44,6 +44,16 @@ export const CubeCollection = ({ onBack, onSelectCube }: CubeCollectionProps) =>
     }
   };
 
+  const handleDeleteCube = async (id: string, name: string) => {
+    if (!window.confirm(`Sei sicuro di voler eliminare il cubo "${name}"? L'azione è irreversibile.`)) return;
+    try {
+      const res = await fetch(`http://localhost:4000/api/cubes/${id}`, { method: 'DELETE' });
+      if (res.ok) fetchCubes();
+    } catch (e) {
+      console.error('Error deleting cube:', e);
+    }
+  };
+
   const filteredCubes = cubes.filter(c => 
     c.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -135,7 +145,10 @@ export const CubeCollection = ({ onBack, onSelectCube }: CubeCollectionProps) =>
                     <ExternalLink className="w-4 h-4" />
                     Carica Cubo
                   </button>
-                  <button className="p-4 bg-slate-800/50 hover:bg-red-500/10 text-slate-600 hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-500/20">
+                  <button 
+                    onClick={() => handleDeleteCube(cube.id, cube.name)}
+                    className="p-4 bg-slate-800/50 hover:bg-red-500/10 text-slate-600 hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-500/20"
+                  >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

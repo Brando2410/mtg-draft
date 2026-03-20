@@ -26,6 +26,7 @@ export interface SimplifiedCard {
   rarity: string;
   color: string[];
   image_url: string;
+  back_image_url?: string; // Nuova proprietà per le carte bifronte
   cmc: number;
   type_line: string;
   mana_cost: string;
@@ -60,7 +61,12 @@ export const fetchExactCard = async (exactName: string, lang: 'en' | 'it' = 'en'
     if (!res.ok) return null;
     let card: any = await res.json();
     
+    // Logica per le immagini: Scryfall mette 'image_uris' a root per carte monofaccia, 
+    // ma dentro 'card_faces' per le bifronte (transform, MDFC)
     const imageUrl = card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal || '';
+    const backImageUrl = (card.card_faces && card.card_faces[1]?.image_uris?.normal) || undefined;
+    
+    // Per le bifronte, sommiamo i colori o prendiamo quelli della prima faccia
     const colors = card.colors || card.card_faces?.[0]?.colors || [];
     const typeLine = card.type_line || card.card_faces?.[0]?.type_line || '';
     const manaCost = card.mana_cost || card.card_faces?.[0]?.mana_cost || '';
@@ -71,6 +77,7 @@ export const fetchExactCard = async (exactName: string, lang: 'en' | 'it' = 'en'
       rarity: card.rarity,
       color: colors,
       image_url: imageUrl,
+      back_image_url: backImageUrl,
       cmc: card.cmc,
       type_line: typeLine,
       mana_cost: manaCost
@@ -78,5 +85,74 @@ export const fetchExactCard = async (exactName: string, lang: 'en' | 'it' = 'en'
   } catch (err) {
     console.error('Fetch card error:', err);
     return null;
+  }
+};
+// 3. Fetch bulk di carte tramite l'endpoint collection di Scryfall (più efficiente per import massivi)
+export const fetchCardsBatch = async (names: string[]): Promise<{ found: SimplifiedCard[], notFound: string[] }> => {
+  const found: SimplifiedCard[] = [];
+  const notFound: string[] = [];
+  
+  try {
+    const batchSize = 75;
+    for (let i = 0; i < names.length; i += batchSize) {
+      const currentBatch = names.slice(i, i + batchSize);
+      const res = await fetch('https://api.scryfall.com/cards/collection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifiers: currentBatch.map(name => ({ name }))
+        })
+      });
+
+      if (!res.ok) {
+        // Se il batch intero fallisce, aggiungiamo tutti questi nomi ai non trovati
+        notFound.push(...currentBatch);
+        continue;
+      }
+
+      const data = await res.json();
+      
+      // Mappiamo i risultati trovati
+      if (data.data) {
+        data.data.forEach((card: any) => {
+          if (card && card.id) {
+            const imageUrl = card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal || '';
+            const backImageUrl = (card.card_faces && card.card_faces[1]?.image_uris?.normal) || undefined;
+            
+            const colors = card.colors || card.card_faces?.[0]?.colors || [];
+            const typeLine = card.type_line || card.card_faces?.[0]?.type_line || '';
+            const manaCost = card.mana_cost || card.card_faces?.[0]?.mana_cost || '';
+
+            found.push({
+              scryfall_id: card.id,
+              name: card.name,
+              rarity: card.rarity,
+              color: colors,
+              image_url: imageUrl,
+              back_image_url: backImageUrl,
+              cmc: card.cmc,
+              type_line: typeLine,
+              mana_cost: manaCost
+            });
+          }
+        });
+      }
+
+      // I nomi non trovati sono indicati esplicitamente da Scryfall
+      if (data.not_found && Array.isArray(data.not_found)) {
+        data.not_found.forEach((item: any) => {
+          if (item.name) notFound.push(item.name);
+        });
+      }
+      
+      if (i + batchSize < names.length) {
+        await new Promise(r => setTimeout(r, 100));
+      }
+    }
+
+    return { found, notFound };
+  } catch (err) {
+    console.error('Batch fetch error:', err);
+    return { found, notFound: names };
   }
 };

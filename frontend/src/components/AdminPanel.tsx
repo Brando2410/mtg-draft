@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
+import { socket } from '../services/socket';
 import { X, Trash2, Users, Radio, Terminal, RefreshCw } from 'lucide-react';
 
 interface AdminPanelProps {
-  socket: any;
   onClose: () => void;
 }
 
-export const AdminPanel = ({ socket, onClose }: AdminPanelProps) => {
+export const AdminPanel = ({ onClose }: AdminPanelProps) => {
   const [rooms, setRooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 

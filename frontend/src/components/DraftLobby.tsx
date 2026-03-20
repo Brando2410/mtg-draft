@@ -1,6 +1,6 @@
 import { Users, Info, Play, X, Copy, CheckCircle2, Loader2, UserX, Pencil } from 'lucide-react';
 import { useState } from 'react';
-import { PLAYER_ID } from '../App';
+import { PLAYER_ID } from '../store/useDraftStore';
 
 interface Player {
   id: string;
@@ -141,7 +141,7 @@ export const DraftLobby = ({
                     
                     <div className="ml-7 flex-1 min-w-0">
                        <div className="flex flex-col gap-2">
-                          <span className={`text-xl font-black uppercase tracking-tight truncate ${player.playerId === PLAYER_ID ? 'text-white' : 'text-slate-200'}`}>{player.name}</span>
+                          <span className={`text-xl font-black uppercase tracking-tight whitespace-normal break-words ${player.playerId === PLAYER_ID ? 'text-white' : 'text-slate-200'}`}>{player.name}</span>
                           <div className="flex items-center gap-2">
                              {player.playerId === PLAYER_ID && <span className="bg-indigo-600 text-white text-[8px] px-2.5 py-1 rounded-full font-black tracking-widest uppercase border border-indigo-400/30">TU</span>}
                              {player.playerId === players[0].playerId && <span className="bg-amber-600 text-white text-[8px] px-2.5 py-1 rounded-full font-black tracking-widest uppercase border border-amber-500/30 shadow-lg">HOST</span>}
