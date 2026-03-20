@@ -7,26 +7,26 @@ interface SelectionSidebarProps {
   selectedCard: Card;
   preSelectedId: string | null;
   isPaused: boolean;
+  currentIndex: number;
+  totalCards: number;
   onClose: () => void;
   onPickCard: () => void;
   onPreSelect: (id: string) => void;
   onNext: () => void;
   onPrev: () => void;
-  currentIndex?: number;
-  totalCards?: number;
 }
 
 export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
   selectedCard,
   preSelectedId,
   isPaused,
+  currentIndex,
+  totalCards,
   onClose,
   onPickCard,
   onPreSelect,
   onNext,
-  onPrev,
-  currentIndex,
-  totalCards
+  onPrev
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const isPreselected = preSelectedId === selectedCard.id;
@@ -42,37 +42,17 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: "100%", opacity: 0 }}
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="w-full lg:w-96 bg-slate-900/80 backdrop-blur-xl border-t lg:border-t-0 lg:border-l border-white/10 p-4 sm:p-8 flex flex-col z-40 fixed lg:relative bottom-0 lg:bottom-auto h-[90vh] lg:h-auto rounded-t-[2.5rem] lg:rounded-none shadow-[-20px_0_50px_rgba(0,0,0,0.5)]"
+      className="w-full landscape:w-[45vw] lg:w-96 bg-slate-100/10 backdrop-blur-xl border-t landscape:border-t-0 lg:border-t-0 landscape:border-l lg:border-l border-white/10 p-4 sm:p-8 flex flex-col z-40 fixed inset-y-0 right-0 h-full landscape:h-screen lg:h-screen rounded-t-[2.5rem] landscape:rounded-none lg:rounded-none shadow-[-20px_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
     >
-      <div className="flex-1 overflow-y-auto custom-scrollbar pt-4 lg:pt-0">
-        <div className="flex items-center justify-between mb-8">
-          <motion.div 
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex flex-col"
-          >
-            <div className="flex items-center gap-3 mb-1">
-              <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] leading-none">Dettagli</span>
-              {currentIndex && totalCards && (
-                <span className="lg:hidden text-[10px] font-black text-slate-500 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
-                  {currentIndex} / {totalCards}
-                </span>
-              )}
-            </div>
-            <span className="text-lg font-black text-white uppercase tracking-tighter italic whitespace-normal">{selectedCard.name}</span>
-          </motion.div>
-          <button 
-            onClick={onClose} 
-            className="p-3 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-2xl transition-all active:scale-90"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        
-        <div className="space-y-4 lg:space-y-8">
+      {/* Removed lateral dismiss tab as requested */}
+
+      {/* PORTRAIT X BUTTON (Removed from top, will be in bottom footer) */}
+
+      <div className="flex-1 overflow-y-auto custom-scrollbar pt-4 lg:pt-0 pr-1 flex flex-col justify-center">
+        <div className="flex-1 flex flex-col justify-end min-h-0">
           <motion.div 
             layoutId={`card-img-${selectedCard.id}`}
-            className="group relative aspect-[7/10] w-[90%] mx-auto rounded-[2rem] overflow-hidden border border-indigo-500/30 shadow-2xl shadow-indigo-600/20 duration-500"
+            className="group relative h-auto max-h-[58vh] sm:max-h-[65vh] landscape:max-h-[75vh] lg:max-h-[75vh] aspect-[7/10] mx-auto rounded-[2rem] overflow-hidden border border-indigo-500/30 shadow-2xl shadow-indigo-600/20 duration-500 mb-0 mt-0"
           >
             <motion.img 
               key={isFlipped ? 'back' : 'front'}
@@ -83,7 +63,6 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
               animate={{ opacity: 1, rotateY: 0 }}
               transition={{ duration: 0.4 }}
             />
-
 
             {/* FLIP BUTTON */}
             {selectedCard.back_image_url && (
@@ -96,12 +75,11 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
               </button>
             )}
           </motion.div>
-
         </div>
       </div>
 
-      {/* Mobile Floating Overlay Controls */}
-      <div className="lg:hidden">
+      {/* LANDSCAPE/DESKTOP FLOATING NAV (Hidden in Portrait) */}
+      <div className="hidden lg:block landscape:block">
         <div className="absolute top-1/2 -translate-y-1/2 inset-x-0 flex items-center justify-between px-2 pointer-events-none z-[100]">
           <button 
             onClick={onPrev}
@@ -109,6 +87,9 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
+          <div className="bg-slate-900/60 backdrop-blur-xl px-4 py-2 rounded-full border border-white/10 text-white/60 font-mono text-sm font-bold shadow-2xl">
+            {currentIndex + 1} / {totalCards}
+          </div>
           <button 
             onClick={onNext}
             className="p-4 bg-slate-900/40 backdrop-blur-md rounded-full border border-white/5 text-white pointer-events-auto active:scale-95 transition-all shadow-2xl"
@@ -118,12 +99,94 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
         </div>
       </div>
 
+      {/* PORTRAIT CONTROLS (Only visible in mobile portrait) */}
       <motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="pt-8 border-t border-white/5 mt-auto"
+        className="mt-auto flex flex-col gap-6 landscape:hidden lg:hidden pt-4 pb-2"
       >
+        {/* Navigation Arrows Row */}
+        <div className="flex items-center justify-center gap-6">
+          <button 
+            onClick={onPrev}
+            className="p-5 bg-white/5 hover:bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-white active:scale-90 transition-all shadow-xl"
+            title="Precedente"
+          >
+            <ChevronLeft className="w-8 h-8" />
+          </button>
+          
+          <div className="bg-white/5 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10 text-white font-mono text-xl font-black shadow-xl min-w-[5rem] text-center">
+            <span className="text-indigo-400">{currentIndex + 1}</span>
+            <span className="text-white/20 mx-2">/</span>
+            <span className="text-white/60">{totalCards}</span>
+          </div>
+
+          <button 
+            onClick={onNext}
+            className="p-5 bg-white/5 hover:bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-white active:scale-90 transition-all shadow-xl"
+            title="Successiva"
+          >
+            <ChevronRight className="w-8 h-8" />
+          </button>
+        </div>
+
+        {/* Action Buttons Row */}
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={onClose}
+            className="p-5 bg-white/5 hover:bg-white/10 backdrop-blur-md rounded-[1.5rem] border border-white/10 text-white active:scale-95 transition-all shadow-xl"
+            title="Chiudi"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          <button 
+            disabled={isPaused}
+            onClick={() => {
+              if (isPreselected) {
+                onPickCard();
+              } else {
+                onPreSelect(selectedCard.id);
+              }
+            }}
+            className={`flex-1 py-5 text-white rounded-[1.5rem] font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-4 transition-all active:scale-95 group relative overflow-hidden ${
+              isPreselected 
+                ? 'bg-amber-600 shadow-amber-600/30' 
+                : 'bg-indigo-600 shadow-indigo-600/30'
+            } disabled:bg-slate-800 disabled:text-slate-600 shadow-xl`}
+          >
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={isPreselected ? 'confirm' : 'preselect'}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex items-center gap-4"
+              >
+                {isPreselected ? 'CONFERMA PICK' : 'PRESELEZIONA'}
+                <Zap className={`w-4 h-4 fill-current ${isPreselected ? 'text-white' : 'text-white/80'} group-hover:scale-125 transition-transform`} />
+              </motion.span>
+            </AnimatePresence>
+          </button>
+        </div>
+      </motion.div>
+
+      {/* LANDSCAPE/DESKTOP PICK BUTTON (Unified Layout) */}
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="pt-4 border-t border-white/5 mt-auto hidden landscape:flex lg:flex items-center gap-4"
+      >
+        <button 
+          onClick={onClose}
+          className="p-5 bg-white/5 hover:bg-white/10 backdrop-blur-md rounded-[1.5rem] border border-white/10 text-white active:scale-95 transition-all shadow-xl"
+          title="Chiudi"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
         <button 
           disabled={isPaused}
           onClick={() => {
@@ -133,11 +196,11 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
               onPreSelect(selectedCard.id);
             }
           }}
-          className={`w-full py-5 text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-4 transition-all active:scale-95 group relative overflow-hidden ${
+          className={`flex-1 py-5 text-white rounded-[1.5rem] font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-4 transition-all active:scale-95 group relative overflow-hidden ${
             isPreselected 
               ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/30' 
               : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30'
-          } disabled:bg-slate-800 disabled:text-slate-600 disabled:shadow-none`}
+          } disabled:bg-slate-800 disabled:text-slate-600 shadow-xl`}
         >
           <AnimatePresence mode="wait">
             <motion.span

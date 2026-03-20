@@ -3,7 +3,7 @@ import { X, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { socket } from '../services/socket';
 import { DeckReviewView } from './DeckReviewView';
-import { DraftHeader } from './draft/DraftHeader';
+import { DraftHeader } from './draft/DraftHeader.tsx';
 import { PackGrid } from './draft/PackGrid';
 import { SelectionSidebar } from './draft/SelectionSidebar';
 import { TableViewModal } from './draft/TableViewModal';
@@ -168,7 +168,7 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
   const selectedCard = currentPack.find((c: Card) => c.id === selectedCardId);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col overflow-y-auto sm:overflow-hidden">
+    <div className="portrait:min-h-screen landscape:h-screen lg:h-screen bg-slate-950 text-slate-200 flex flex-col portrait:overflow-y-auto landscape:overflow-hidden lg:overflow-hidden">
       <AnimatePresence mode="wait">
         {isPreloading ? (
           <motion.div 
@@ -233,41 +233,52 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
             key="main-view"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex-1 flex flex-col h-full overflow-hidden"
+            className="flex-1 flex flex-col h-full portrait:overflow-visible landscape:overflow-hidden lg:overflow-hidden"
           >
-            <DraftHeader 
-              room={room}
-              playerId={playerId!}
-              timeLeft={timeLeft}
-              isPaused={isPaused}
-              poolCount={pool.length}
-              onTogglePause={() => socket.emit('toggle_pause', { roomId: room.id, playerId })}
-              onOpenTable={() => setIsTableOpen(true)}
-              onOpenReview={() => setIsReviewOpen(true)}
-              currentPlayer={currentPlayer}
-            />
-
-            <div className="flex-1 flex flex-col lg:flex-row overflow-visible md:overflow-hidden relative">
-              <PackGrid 
-                currentPack={currentPack}
-                selectedCardId={selectedCardId}
-                preSelectedId={preSelectedId}
+               <DraftHeader 
+                room={room}
+                playerId={playerId!}
+                timeLeft={timeLeft}
                 isPaused={isPaused}
-                round={round}
-                poolCount={pool.length}
-                onSelectCard={setSelectedCardId}
-                onPickCard={handlePick}
-                setPreSelectedId={setPreSelectedId}
+                onTogglePause={() => socket.emit('toggle_pause', { roomId: room.id, playerId })}
+                onOpenTable={() => setIsTableOpen(true)}
+                onOpenReview={() => setIsReviewOpen(true)}
+                currentPlayer={currentPlayer}
                 queuedCount={room.draftState?.queues[playerIndex]?.length || 0}
-                isCompleted={isCompleted}
               />
+
+              <div className="flex-1 flex flex-col landscape:flex-row lg:flex-row overflow-visible md:overflow-hidden relative portrait:pt-[100px]">
+                <PackGrid 
+                  currentPack={currentPack}
+                  selectedCardId={selectedCardId}
+                  preSelectedId={preSelectedId}
+                  isPaused={isPaused}
+                  onSelectCard={(id) => {
+                    const isMobileLandscape = window.matchMedia("(orientation: landscape) and (max-width: 1023px)").matches;
+                    if (!isMobileLandscape) {
+                      setSelectedCardId(id);
+                    }
+                  }}
+                  onPreSelect={setPreSelectedId}
+                  onPickCard={handlePick}
+                />
 
               <AnimatePresence>
                 {selectedCard && (
-                  <SelectionSidebar 
+                  <>
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => setSelectedCardId(null)}
+                      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 landscape:hidden lg:hidden"
+                    />
+                    <SelectionSidebar 
                     selectedCard={selectedCard}
                     preSelectedId={preSelectedId}
                     isPaused={isPaused}
+                    currentIndex={currentPack.findIndex((c: Card) => c.id === selectedCardId)}
+                    totalCards={currentPack.length}
                     onClose={() => setSelectedCardId(null)}
                     onPickCard={handlePick}
                     onPreSelect={(id) => {
@@ -284,11 +295,10 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
                       const prevIdx = (idx - 1 + currentPack.length) % currentPack.length;
                       setSelectedCardId(currentPack[prevIdx].id);
                     }}
-                    currentIndex={(currentPack.findIndex((c: Card) => c.id === selectedCardId) + 1)}
-                    totalCards={currentPack.length}
                   />
-                )}
-              </AnimatePresence>
+                </>
+              )}
+            </AnimatePresence>
             </div>
 
             <AnimatePresence>
