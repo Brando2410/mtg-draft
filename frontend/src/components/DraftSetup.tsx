@@ -78,26 +78,35 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
     nameInputRef.current?.select();
   };
 
-  const Stepper = ({ label, value, onSub, onAdd, icon: Icon, suffix = "", min = 1, desc }: any) => (
-    <div className="flex flex-col gap-1 p-2 bg-slate-900/60 rounded-xl border border-white/5 transition-all
-                    portrait:gap-2 portrait:p-4 portrait:rounded-2xl
-                    lg:gap-3 lg:p-6 lg:rounded-[2rem] lg:bg-slate-900/40 lg:border-white/10 lg:justify-center
-                    max-lg:landscape:max-h-[75px] max-lg:landscape:p-1.5 max-lg:landscape:gap-0.5">
-      <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap
-                      portrait:text-[10px] lg:text-[11px]">
-        <Icon className="w-2.5 h-2.5 portrait:w-3.5 portrait:h-3.5 lg:w-4 lg:h-4 text-indigo-500/50" /> {label}
-      </div>
-      <div className="flex items-center justify-between lg:px-2">
-        <button onClick={onSub} className="p-0.5 hover:text-white text-slate-500 transition-colors active:scale-90 portrait:p-1.5"><Minus className="w-3.5 h-3.5 portrait:w-5 portrait:h-5 lg:w-6 lg:h-6" /></button>
-        <div className="text-center">
-           <span className="text-sm font-black text-white italic tabular-nums leading-none 
-                            portrait:text-xl lg:text-3xl max-lg:landscape:text-base">{value}{suffix}</span>
-           {desc && <p className="text-[6px] font-bold text-slate-600 uppercase mt-1 hidden portrait:block lg:block lg:text-[8px] lg:mt-1">{desc}</p>}
+  const Stepper = ({ label, value, onSub, onAdd, icon: Icon, suffix = "", min = 1, desc }: any) => {
+    const isMin = value <= min;
+    return (
+      <div className="flex flex-col gap-1 p-2 bg-slate-900/60 rounded-xl border border-white/5 transition-all
+                      portrait:gap-2 portrait:p-4 portrait:rounded-2xl
+                      lg:gap-3 lg:p-6 lg:rounded-[2rem] lg:bg-slate-900/40 lg:border-white/10 lg:justify-center
+                      max-lg:landscape:max-h-[75px] max-lg:landscape:p-1.5 max-lg:landscape:gap-0.5">
+        <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap
+                        portrait:text-[10px] lg:text-[11px]">
+          <Icon className="w-2.5 h-2.5 portrait:w-3.5 portrait:h-3.5 lg:w-4 lg:h-4 text-indigo-500/50" /> {label}
         </div>
-        <button onClick={onAdd} className="p-0.5 hover:text-white text-slate-500 transition-colors active:scale-90 portrait:p-1.5"><Plus className="w-3.5 h-3.5 portrait:w-5 portrait:h-5 lg:w-6 lg:h-6" /></button>
+        <div className="flex items-center justify-between lg:px-2">
+          <button 
+            onClick={onSub} 
+            disabled={isMin}
+            className={`p-0.5 transition-colors active:scale-90 portrait:p-1.5 ${isMin ? 'text-slate-800 cursor-not-allowed opacity-30 shadow-none' : 'hover:text-white text-slate-500'}`}
+          >
+            <Minus className="w-3.5 h-3.5 portrait:w-5 portrait:h-5 lg:w-6 lg:h-6" />
+          </button>
+          <div className="text-center">
+             <span className="text-sm font-black text-white italic tabular-nums leading-none 
+                              portrait:text-xl lg:text-3xl max-lg:landscape:text-base">{value}{suffix}</span>
+             {desc && <p className="text-[6px] font-bold text-slate-600 uppercase mt-1 hidden portrait:block lg:block lg:text-[8px] lg:mt-1">{desc}</p>}
+          </div>
+          <button onClick={onAdd} className="p-0.5 hover:text-white text-slate-500 transition-colors active:scale-90 portrait:p-1.5"><Plus className="w-3.5 h-3.5 portrait:w-5 portrait:h-5 lg:w-6 lg:h-6" /></button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const Toggle = ({ active, onClick, icon: Icon, label, desc }: any) => (
     <button onClick={onClick} className={`flex flex-col gap-1.5 p-2 bg-slate-900/60 rounded-xl border border-white/5 transition-all

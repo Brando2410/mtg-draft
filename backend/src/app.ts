@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import fs from 'fs';
 import { PersistenceService } from './services/PersistenceService';
 
 const app = express();
@@ -49,5 +51,18 @@ app.delete('/api/cubes/:id', async (req, res) => {
     res.status(500).json({ error: 'Errore durante l\'eliminazione' });
   }
 });
+
+// --- Servizio File Statici per il Frontend (Produzione) ---
+const frontendPath = path.join(__dirname, '../../frontend/dist');
+if (fs.existsSync(frontendPath)) {
+  app.use(express.static(frontendPath));
+  
+  // Rotta catch-all per gestire il routing lato client (Single Page App)
+  app.get('*', (req, res, next) => {
+    // Escludiamo le API
+    if (req.path.startsWith('/api/')) return next();
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  });
+}
 
 export default app;
