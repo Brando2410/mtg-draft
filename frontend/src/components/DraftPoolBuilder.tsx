@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Search, Loader2, Plus, X, Trash2, Maximize2, Database, Save, Download, Home, FileText, AlertTriangle, RefreshCw, ChevronUp, Clipboard as ClipboardIcon } from 'lucide-react';
 import { fetchSearchCards, fetchExactCard, fetchCardsBatch } from '../services/scryfall';
 import type { SimplifiedCard, ScryfallCard } from '../services/scryfall';
+import { toast } from 'react-hot-toast';
 
 interface DraftPoolBuilderProps {
   onBack?: () => void;
@@ -193,21 +194,25 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
       localStorage.setItem('mtg_draft_cube', JSON.stringify(cubeData));
 
       // 2. Sincronizzazione Server
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://vibrant-warmth-production-7fe3.up.railway.app';
       const res = await fetch(`${API_URL}/api/cubes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(cubeData)
       });
 
-      if (!res.ok) throw new Error('Sync fallito');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Errore durante la sincronizzazione');
+      }
 
       setSaveStatus('saved');
+      toast.success('Cubo salvato correttamente sul server!');
       setTimeout(() => setSaveStatus('idle'), 3000);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Errore Sync Server:', e);
-      // Feedback visivo dell'errore (opzionale, per ora torniamo a idle o mostriamo errore)
-      alert("Cubo salvato in locale, ma sincronizzazione server fallita. Controlla la connessione backend.");
+      // Feedback visivo dell'errore
+      toast.error(`Errore: ${e.message || 'Connessione fallita'}`);
       setSaveStatus('idle');
     }
   };

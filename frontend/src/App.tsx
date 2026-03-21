@@ -10,6 +10,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { DraftHistory } from './components/DraftHistory';
 import { X } from 'lucide-react';
 import { useDraftStore } from './store/useDraftStore';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const { 
@@ -46,6 +47,28 @@ function App() {
 
   return (
     <div className="relative min-h-screen bg-slate-950 font-sans selection:bg-indigo-500/30 overflow-x-hidden text-slate-100">
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: '#0f172a',
+            color: '#f8fafc',
+            border: '1px solid rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '24px',
+            fontSize: '12px',
+            fontWeight: '900',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em'
+          },
+          success: {
+            iconTheme: {
+              primary: '#6366f1',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       
       {/* NOTIFICA ERRORE GLOBALE */}
       {joinError && activeView === 'menu' && (
