@@ -193,7 +193,8 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
       localStorage.setItem('mtg_draft_cube', JSON.stringify(cubeData));
 
       // 2. Sincronizzazione Server
-      const res = await fetch('http://localhost:4000/api/cubes', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const res = await fetch(`${API_URL}/api/cubes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(cubeData)

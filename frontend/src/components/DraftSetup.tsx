@@ -39,7 +39,8 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
 
     const fetchCubes = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/cubes');
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+        const res = await fetch(`${API_URL}/api/cubes`);
         const data = await res.json();
         setCubes(data || []);
         if (data && data.length > 0) setSelectedCubeId(data[0].id);
