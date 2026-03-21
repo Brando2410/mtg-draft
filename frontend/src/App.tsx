@@ -8,7 +8,7 @@ import { JoinRoom } from './components/JoinRoom';
 import { DraftLobby } from './components/DraftLobby';
 import { AdminPanel } from './components/AdminPanel';
 import { DraftHistory } from './components/DraftHistory';
-import { X } from 'lucide-react';
+import { X, RotateCw } from 'lucide-react';
 import { useDraftStore } from './store/useDraftStore';
 
 function App() {
@@ -44,8 +44,44 @@ function App() {
     setActiveView('builder');
   };
 
+  // Funzione per richiedere il lock dell'orientamento al primo click (limitazione browser)
+  const handleFirstClick = () => {
+    const orientation = screen.orientation as any;
+    if (window.innerWidth < 1024 && orientation && orientation.lock) {
+      orientation.lock('landscape').catch(() => {});
+    }
+  };
+
   return (
-    <div className="relative min-h-screen bg-slate-950 font-sans selection:bg-indigo-500/30 overflow-x-hidden text-slate-100">
+    <div 
+      onClick={handleFirstClick}
+      className="relative min-h-screen bg-slate-950 font-sans selection:bg-indigo-500/30 overflow-x-hidden text-slate-100"
+    >
+      
+      {/* OVERLAY ROTAZIONE DISPOSITIVO (Solo Mobile Portrait) */}
+      <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col items-center justify-center p-10 text-center lg:hidden portrait:flex landscape:hidden">
+        <div className="relative mb-10">
+          <div className="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-full animate-pulse" />
+          <div className="relative w-32 h-32 bg-slate-900 rounded-[2rem] border border-white/10 flex items-center justify-center shadow-2xl">
+            <RotateCw className="w-16 h-16 text-indigo-500 animate-spin-slow" />
+          </div>
+        </div>
+        <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic mb-4">Ruota il Dispositivo</h2>
+        <p className="text-slate-400 font-bold uppercase tracking-widest text-xs leading-relaxed max-w-[250px]">
+          L'arena di Draft richiede la modalità <span className="text-indigo-400">Orizzontale</span> per una visualizzazione ottimale.
+        </p>
+        
+        {/* Rappresentazione visiva telefono che ruota */}
+        <div className="mt-12 flex items-center gap-4 opacity-30">
+          <div className="w-8 h-14 border-2 border-white/20 rounded-lg relative">
+            <div className="absolute top-1 left-1.2 -translate-x-1/2 w-4 h-0.5 bg-white/20 rounded-full" />
+          </div>
+          <div className="text-white">→</div>
+          <div className="h-8 w-14 border-2 border-indigo-500/50 rounded-lg relative">
+             <div className="absolute left-1 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-indigo-500/50 rounded-full" />
+          </div>
+        </div>
+      </div>
       
       {/* NOTIFICA ERRORE GLOBALE */}
       {joinError && activeView === 'menu' && (
@@ -153,6 +189,15 @@ function App() {
       {isAdminOpen && (
         <AdminPanel onClose={() => setIsAdminOpen(false)} />
       )}
+      <style>{`
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 8s linear infinite;
+        }
+      `}</style>
     </div>
   );
 }
