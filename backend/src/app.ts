@@ -68,7 +68,7 @@ if (frontendPath) {
   app.use(express.static(frontendPath));
   
   // Rotta catch-all per gestire il routing lato client (Single Page App)
-  app.get('*', (req, res, next) => {
+  app.get(/.*/, (req, res, next) => {
     // Escludiamo le API
     if (req.path.startsWith('/api/')) return next();
     res.sendFile(path.join(frontendPath, 'index.html'));
