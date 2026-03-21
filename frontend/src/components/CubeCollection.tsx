@@ -20,7 +20,7 @@ export const CubeCollection = ({ onBack, onSelectCube }: CubeCollectionProps) =>
 
   const fetchCubes = async () => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'https://vibrant-warmth-production-7fe3.up.railway.app:8080';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://vibrant-warmth-production-7fe3.up.railway.app';
       const res = await fetch(`${API_URL}/api/cubes`);
       const data = await res.json();
       setCubes(data);
@@ -37,7 +37,7 @@ export const CubeCollection = ({ onBack, onSelectCube }: CubeCollectionProps) =>
 
   const handleLoadCube = async (id: string) => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'https://vibrant-warmth-production-7fe3.up.railway.app:8080';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://vibrant-warmth-production-7fe3.up.railway.app';
       const res = await fetch(`${API_URL}/api/cubes/${id}`);
       const data = await res.json();
       onSelectCube(data);
@@ -49,7 +49,7 @@ export const CubeCollection = ({ onBack, onSelectCube }: CubeCollectionProps) =>
   const handleDeleteCube = async (id: string, name: string) => {
     if (!window.confirm(`Sei sicuro di voler eliminare il cubo "${name}"? L'azione è irreversibile.`)) return;
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'https://vibrant-warmth-production-7fe3.up.railway.app:8080';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://vibrant-warmth-production-7fe3.up.railway.app';
       const res = await fetch(`${API_URL}/api/cubes/${id}`, { method: 'DELETE' });
       if (res.ok) fetchCubes();
     } catch (e) {

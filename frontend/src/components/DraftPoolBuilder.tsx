@@ -193,7 +193,7 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
       localStorage.setItem('mtg_draft_cube', JSON.stringify(cubeData));
 
       // 2. Sincronizzazione Server
-      const API_URL = import.meta.env.VITE_API_URL || 'https://vibrant-warmth-production-7fe3.up.railway.app:8080';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://vibrant-warmth-production-7fe3.up.railway.app';
       const res = await fetch(`${API_URL}/api/cubes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

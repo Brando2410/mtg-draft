@@ -39,7 +39,7 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
 
     const fetchCubes = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || 'https://vibrant-warmth-production-7fe3.up.railway.app:8080';
+        const API_URL = import.meta.env.VITE_API_URL || 'https://vibrant-warmth-production-7fe3.up.railway.app';
         const res = await fetch(`${API_URL}/api/cubes`);
         const data = await res.json();
         setCubes(data || []);
