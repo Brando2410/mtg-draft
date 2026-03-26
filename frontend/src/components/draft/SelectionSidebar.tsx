@@ -1,35 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Zap, RefreshCw } from 'lucide-react';
 import type { Card } from '@shared/types';
 
 interface SelectionSidebarProps {
   selectedCard: Card;
-  preSelectedId: string | null;
   isPaused: boolean;
   currentIndex: number;
   totalCards: number;
   onClose: () => void;
   onPickCard: () => void;
-  onPreSelect: (id: string) => void;
   onNext: () => void;
   onPrev: () => void;
 }
 
 export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
   selectedCard,
-  preSelectedId,
   isPaused,
   currentIndex,
   totalCards,
   onClose,
   onPickCard,
-  onPreSelect,
   onNext,
   onPrev
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
-  const isPreselected = preSelectedId === selectedCard.id;
 
   // Reset flip when changing card
   useEffect(() => {
@@ -42,7 +37,7 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: "100%", opacity: 0 }}
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="w-full landscape:w-[45vw] lg:w-96 bg-slate-100/10 backdrop-blur-xl border-t landscape:border-t-0 lg:border-t-0 landscape:border-l lg:border-l border-white/10 p-4 sm:p-8 flex flex-col z-40 fixed inset-y-0 right-0 h-full landscape:h-screen lg:h-screen rounded-t-[2.5rem] landscape:rounded-none lg:rounded-none shadow-[-20px_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
+      className="w-full landscape:w-[45vw] lg:w-96 bg-slate-100/10 backdrop-blur-xl border-t landscape:border-t-0 lg:border-t-0 landscape:border-l lg:border-l border-white/10 p-4 sm:p-8 flex flex-col z-40 fixed inset-y-0 right-0 h-full landscape:h-[100dvh] lg:h-[100dvh] rounded-t-[2.5rem] landscape:rounded-none lg:rounded-none shadow-[-20px_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
     >
       {/* Removed lateral dismiss tab as requested */}
 
@@ -52,7 +47,7 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
         <div className="flex-1 flex flex-col justify-end min-h-0">
           <motion.div 
             layoutId={`card-img-${selectedCard.id}`}
-            className="group relative h-auto max-h-[58vh] sm:max-h-[65vh] landscape:max-h-[75vh] lg:max-h-[75vh] aspect-[7/10] mx-auto rounded-[2rem] overflow-hidden border border-indigo-500/30 shadow-2xl shadow-indigo-600/20 duration-500 mb-0 mt-0"
+            className="group relative h-auto max-h-[58dvh] sm:max-h-[65dvh] landscape:max-h-[75dvh] lg:max-h-[75dvh] aspect-[7/10] mx-auto rounded-[2rem] overflow-hidden border border-indigo-500/30 shadow-2xl shadow-indigo-600/20 duration-500 mb-0 mt-0"
           >
             <motion.img 
               key={isFlipped ? 'back' : 'front'}
@@ -143,31 +138,13 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
 
           <button 
             disabled={isPaused}
-            onClick={() => {
-              if (isPreselected) {
-                onPickCard();
-              } else {
-                onPreSelect(selectedCard.id);
-              }
-            }}
-            className={`flex-1 py-5 text-white rounded-[1.5rem] font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-4 transition-all active:scale-95 group relative overflow-hidden ${
-              isPreselected 
-                ? 'bg-amber-600 shadow-amber-600/30' 
-                : 'bg-indigo-600 shadow-indigo-600/30'
-            } disabled:bg-slate-800 disabled:text-slate-600 shadow-xl`}
+            onClick={onPickCard}
+            className="flex-1 py-5 bg-amber-600 hover:bg-amber-500 text-white rounded-[1.5rem] font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-4 transition-all active:scale-95 group relative overflow-hidden shadow-amber-600/30 disabled:bg-slate-800 disabled:text-slate-600 shadow-xl"
           >
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={isPreselected ? 'confirm' : 'preselect'}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex items-center gap-4"
-              >
-                {isPreselected ? 'CONFERMA PICK' : 'PRESELEZIONA'}
-                <Zap className={`w-4 h-4 fill-current ${isPreselected ? 'text-white' : 'text-white/80'} group-hover:scale-125 transition-transform`} />
-              </motion.span>
-            </AnimatePresence>
+            <span className="flex items-center gap-4">
+              CONFERMA PICK
+              <Zap className="w-4 h-4 fill-current text-white group-hover:scale-125 transition-transform" />
+            </span>
           </button>
         </div>
       </motion.div>
@@ -189,31 +166,13 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
 
         <button 
           disabled={isPaused}
-          onClick={() => {
-            if (isPreselected) {
-              onPickCard();
-            } else {
-              onPreSelect(selectedCard.id);
-            }
-          }}
-          className={`flex-1 py-5 text-white rounded-[1.5rem] font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-4 transition-all active:scale-95 group relative overflow-hidden ${
-            isPreselected 
-              ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/30' 
-              : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30'
-          } disabled:bg-slate-800 disabled:text-slate-600 shadow-xl`}
+          onClick={onPickCard}
+          className="flex-1 py-5 bg-amber-600 hover:bg-amber-500 text-white rounded-[1.5rem] font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-4 transition-all active:scale-95 group relative overflow-hidden shadow-amber-600/30 disabled:bg-slate-800 disabled:text-slate-600 shadow-xl"
         >
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={isPreselected ? 'confirm' : 'preselect'}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="flex items-center gap-4"
-            >
-              {isPreselected ? 'CONFERMA PICK' : 'PRESELEZIONA'}
-              <Zap className={`w-4 h-4 fill-current ${isPreselected ? 'text-white' : 'text-white/80'} group-hover:scale-125 transition-transform`} />
-            </motion.span>
-          </AnimatePresence>
+          <span className="flex items-center gap-4">
+            CONFERMA PICK
+            <Zap className="w-4 h-4 fill-current text-white group-hover:scale-125 transition-transform" />
+          </span>
         </button>
       </motion.div>
     </motion.div>

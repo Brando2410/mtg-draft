@@ -28,9 +28,9 @@ export const DraftHeader = ({
   const packNumber = room.draftState?.round || 1;
   const currentPick = (currentPlayer?.pool?.length || 0) + 1;
 
-  // Header per Mobile Landscape (Altamente Compresso)
-  // Header per Desktop (Spazioso e Iconico)
-  // Header per Mobile Portrait (Stack Verticale)
+  const isUrgent = timeLeft !== null && timeLeft <= 10 && !isPaused;
+  const redBgOpacity = isUrgent ? 0.2 + (0.8 * (1 - (timeLeft / 10))) : 0;
+  const isTickingRed = isUrgent && timeLeft % 2 !== 0;
 
   return (
     <header className="relative portrait:fixed portrait:top-0 portrait:left-0 portrait:right-0 z-[100] bg-slate-900/80 backdrop-blur-xl border-b border-white/5 
@@ -41,11 +41,11 @@ export const DraftHeader = ({
         
         {/* Sinistra: Info Sessione */}
         <div className="flex items-center gap-2 portrait:gap-4 lg:gap-8 shrink-0">
-          <div className="flex flex-col max-lg:landscape:hidden">
+          <div className="flex flex-col lg:flex-row lg:items-baseline lg:gap-3 max-lg:landscape:hidden">
             <h1 className="text-[10px] portrait:text-sm lg:text-3xl font-black text-white italic uppercase tracking-tighter leading-none">
               Pack <span className="text-indigo-500">{packNumber}</span>
             </h1>
-            <p className="text-[6px] portrait:text-[9px] lg:text-xs font-bold text-slate-500 uppercase tracking-widest mt-0.5">
+            <p className="text-[6px] portrait:text-[9px] lg:text-sm font-bold text-slate-500 uppercase tracking-widest mt-0.5 lg:mt-0">
               Pick #{currentPick}
             </p>
           </div>
@@ -62,42 +62,54 @@ export const DraftHeader = ({
           </div>
         </div>
 
-        {/* Centro: Timer e Code di Pick - Ora con Pulsante Pausa Host a sinistra */}
         <div className="flex-1 flex justify-center items-center gap-2 portrait:gap-4 lg:gap-8">
-          {isHost && (
-            <button 
-              onClick={onTogglePause}
-              className={`p-2 portrait:p-3 lg:p-5 border rounded-xl portrait:rounded-2xl lg:rounded-[1.5rem] transition-all active:scale-95 shadow-2xl shrink-0
-                ${isPaused 
-                  ? 'bg-emerald-600 border-emerald-400 text-white shadow-emerald-500/20' 
-                  : 'bg-amber-600/20 border-amber-500/30 text-amber-500 hover:bg-amber-600 hover:text-white shadow-amber-500/10'
-                }
-                max-lg:landscape:p-2.5`}
-              title={isPaused ? "Riprendi" : "Metti in Pausa"}
-            >
-              {isPaused ? <Play className="w-3.5 h-3.5 max-lg:landscape:w-5 max-lg:landscape:h-5 portrait:w-5 portrait:h-5 lg:w-7 lg:h-7 fill-current" /> : <Pause className="w-3.5 h-3.5 max-lg:landscape:w-5 max-lg:landscape:h-5 portrait:w-5 portrait:h-5 lg:w-7 lg:h-7 fill-current" />}
-            </button>
-          )}
-
-          <div className={`relative flex items-center gap-1.5 portrait:gap-3 lg:gap-6 px-3 portrait:px-6 lg:px-10 py-1.5 portrait:py-3 lg:py-4 rounded-xl portrait:rounded-2xl lg:rounded-[2rem] border transition-all duration-500
-            ${timeLeft !== null && timeLeft <= 5 && !isPaused ? 'bg-red-500/10 border-red-500/50 shadow-2xl shadow-red-500/20 animate-pulse' : 'bg-slate-950/40 border-white/5'}
-            max-lg:landscape:px-4 max-lg:landscape:py-2.5 max-lg:landscape:rounded-xl`}>
-            
-            <Clock className={`w-3 h-3 portrait:w-5 portrait:h-5 lg:w-7 lg:h-7 transition-colors max-lg:landscape:w-5 max-lg:landscape:h-5 ${timeLeft !== null && timeLeft <= 5 ? 'text-red-500' : 'text-slate-500'}`} />
+          <button 
+            onClick={isHost ? onTogglePause : undefined}
+            disabled={!isHost}
+            className={`group relative flex items-center gap-1.5 portrait:gap-3 lg:gap-6 px-3 portrait:px-6 lg:px-10 py-1.5 portrait:py-3 lg:py-4 rounded-xl portrait:rounded-2xl lg:rounded-[2rem] border transition-all duration-300
+              ${isUrgent && timeLeft <= 5 ? 'shadow-2xl shadow-red-500/20 animate-pulse' : 'bg-slate-950/40 border-white/5'}
+              ${isHost ? 'hover:bg-indigo-600/20 hover:border-indigo-500/50 cursor-pointer active:scale-95' : 'cursor-default'}
+              max-lg:landscape:px-4 max-lg:landscape:py-2.5 max-lg:landscape:rounded-xl`}
+            style={{
+              backgroundColor: isUrgent ? `rgba(220, 38, 38, ${redBgOpacity})` : undefined,
+              borderColor: isUrgent ? `rgba(248, 113, 113, ${redBgOpacity})` : undefined,
+              transform: isTickingRed ? 'scale(1.05)' : 'scale(1)'
+            }}
+            title={isHost ? (isPaused ? "Riprendi Draft" : "Pausa Draft") : undefined}
+          >
+            <div className="relative w-3 h-3 portrait:w-5 portrait:h-5 lg:w-7 lg:h-7 flex items-center justify-center">
+              {isHost ? (
+                <>
+                  {isPaused ? (
+                    <Play className="w-full h-full text-emerald-400 fill-current animate-pulse" />
+                  ) : (
+                    <>
+                      <Clock className="w-full h-full text-slate-500 transition-all duration-300 group-hover:opacity-0 group-hover:scale-0" />
+                      <Pause className="w-full h-full text-white absolute opacity-0 scale-50 transition-all duration-300 group-hover:opacity-100 group-hover:scale-100 fill-current" />
+                    </>
+                  )}
+                </>
+              ) : (
+                <Clock className="w-full h-full text-slate-500" />
+              )}
+            </div>
             
             <div className="flex flex-col portrait:items-center">
-              <span className={`text-xs portrait:text-xl lg:text-4xl font-black italic tabular-nums leading-none transition-colors max-lg:landscape:text-lg
-                ${timeLeft !== null && timeLeft <= 5 ? 'text-red-500' : 'text-white'}`}>
+              <span 
+                className={`text-xs portrait:text-xl lg:text-4xl font-black italic tabular-nums leading-none transition-all duration-300 max-lg:landscape:text-lg inline-block
+                ${isTickingRed ? 'text-red-400' : (isPaused ? 'text-emerald-400' : 'text-white')}`}
+                style={{ transform: isTickingRed ? 'scale(1.1)' : 'scale(1)' }}
+              >
                 {timeLeft !== null ? `${timeLeft}s` : '--'}
               </span>
             </div>
 
             {isPaused && (
-              <div className="absolute -top-1 portrait:-top-2 lg:-top-3 -right-1 portrait:-right-2 lg:-right-3 px-1.5 portrait:px-2 lg:px-4 py-0.5 portrait:py-1 lg:py-1.5 bg-amber-500 rounded-lg lg:rounded-xl text-[6px] portrait:text-[10px] lg:text-xs font-black uppercase text-slate-900 tracking-tighter">
+              <div className="absolute -top-1 portrait:-top-2 lg:-top-3 -right-1 portrait:-right-2 lg:-right-3 px-1.5 portrait:px-2 lg:px-4 py-0.5 portrait:py-1 lg:py-1.5 bg-amber-500 rounded-lg lg:rounded-xl text-[6px] portrait:text-[10px] lg:text-xs font-black uppercase text-slate-900 tracking-tighter shadow-lg shadow-amber-500/20">
                 Pausa
               </div>
             )}
-          </div>
+          </button>
 
           {/* Badge Coda di Pick (Queue) - Spinto a destra del timer */}
           {queuedCount > 1 && (

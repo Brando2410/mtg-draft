@@ -60,16 +60,16 @@ export const DraftCompletedOverlay: React.FC<DraftCompletedOverlayProps> = ({
           className="flex flex-col sm:flex-row items-center justify-center gap-6 landscape:gap-3 lg:landscape:gap-6 w-full max-w-sm sm:max-w-none px-4 shrink-0"
         >
           <button 
-            onClick={onOpenReview}
-            className="w-full sm:w-auto px-12 py-6 landscape:py-3 lg:landscape:py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-[2.5rem] landscape:rounded-xl lg:landscape:rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-[11px] landscape:text-[10px] lg:landscape:text-[11px] flex items-center justify-center gap-4 landscape:gap-3 lg:landscape:gap-4 transition-all shadow-2xl shadow-indigo-600/40 active:scale-95 group"
-          >
-            REVISIONA DRAFT <LayoutPanelLeft className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-          </button>
-          <button 
             onClick={onBack}
             className="w-full sm:w-auto px-12 py-6 landscape:py-3 lg:landscape:py-6 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-[2.5rem] landscape:rounded-xl lg:landscape:rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-[11px] landscape:text-[10px] lg:landscape:text-[11px] flex items-center justify-center gap-4 landscape:gap-3 lg:landscape:gap-4 transition-all border border-white/5 active:scale-95"
           >
             TORNA ALLA HOME <Home className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={onOpenReview}
+            className="w-full sm:w-auto px-12 py-6 landscape:py-3 lg:landscape:py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-[2.5rem] landscape:rounded-xl lg:landscape:rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-[11px] landscape:text-[10px] lg:landscape:text-[11px] flex items-center justify-center gap-4 landscape:gap-3 lg:landscape:gap-4 transition-all shadow-2xl shadow-indigo-600/40 active:scale-95 group"
+          >
+            REVISIONA DRAFT <LayoutPanelLeft className="w-5 h-5 group-hover:rotate-12 transition-transform" />
           </button>
         </motion.div>
       </motion.div>

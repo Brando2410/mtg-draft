@@ -11,6 +11,7 @@ interface PackGridProps {
   preSelectedId: string | null;
   onPickCard: () => void;
   isPaused: boolean;
+  queuedCount: number;
 }
 
 export const PackGrid: React.FC<PackGridProps> = ({
@@ -20,7 +21,8 @@ export const PackGrid: React.FC<PackGridProps> = ({
   selectedCardId,
   preSelectedId,
   onPickCard,
-  isPaused
+  isPaused,
+  queuedCount
 }) => {
   const [flippedIds, setFlippedIds] = useState<Set<string>>(new Set());
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null);
@@ -136,15 +138,15 @@ export const PackGrid: React.FC<PackGridProps> = ({
                 >
                   {/* Internal selection/hover wrapper for instant return */}
                   <div 
-                    onClick={() => !isPaused && onSelectCard(card.id)}
+                    onClick={() => {
+                      if (!isPaused) {
+                        onSelectCard(card.id);
+                        onPreSelect(card.id);
+                      }
+                    }}
                     onDoubleClick={() => {
                       if (!isPaused) {
-                        if (preSelectedId === card.id) {
-                          onPickCard();
-                        } else {
-                          onPreSelect(card.id);
-                          onSelectCard(card.id);
-                        }
+                        onPickCard();
                       }
                     }}
                     className={`w-full h-full relative rounded-xl portrait:rounded-2xl cursor-pointer transition-shadow duration-300 
@@ -157,7 +159,7 @@ export const PackGrid: React.FC<PackGridProps> = ({
                     <div className="relative w-full h-full z-0 pointer-events-none transition-colors duration-300 rounded-xl lg:border lg:border-white/5 group-hover:bg-white/5" />
                     
                     {/* Action Overlay */}
-                    <div className="absolute inset-0 z-10 p-3 flex flex-col items-center justify-center opacity-0 group:hover:opacity-100 hover:opacity-100 transition-opacity bg-gradient-to-b from-black/20 via-black/40 to-black/60 rounded-xl lg:rounded-2xl pointer-events-none group">
+                    <div className="absolute inset-0 z-10 p-3 flex flex-col items-center justify-center opacity-0 portrait:opacity-100 max-lg:landscape:opacity-100 group:hover:opacity-100 hover:opacity-100 transition-opacity bg-gradient-to-b from-black/20 via-black/40 to-black/60 rounded-xl lg:rounded-2xl pointer-events-none portrait:pointer-events-auto max-lg:landscape:pointer-events-auto group">
                       {/* Flip Button (Top Right) */}
                       {card.back_image_url && (
                         <div className="absolute top-3 right-3 pointer-events-auto">
@@ -172,17 +174,7 @@ export const PackGrid: React.FC<PackGridProps> = ({
 
                       {/* Contextual Action Buttons */}
                       <div className="flex flex-col gap-3 w-full px-4 mt-auto mb-4">
-                        {preSelectedId !== card.id ? (
-                          <button 
-                            className="w-full py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl border border-white/20 text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-xl pointer-events-auto transition-all active:scale-95" 
-                            onClick={(e) => { 
-                              e.stopPropagation(); 
-                              onPreSelect(card.id); 
-                            }}
-                          >
-                            Preseleziona
-                          </button>
-                        ) : (
+                        {preSelectedId === card.id && (
                           <button 
                             className="w-full py-3 bg-amber-500 hover:bg-amber-400 backdrop-blur-md rounded-xl border border-amber-400/50 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(245,158,11,0.4)] pointer-events-auto transition-all active:scale-95" 
                             onClick={(e) => { 
@@ -214,6 +206,73 @@ export const PackGrid: React.FC<PackGridProps> = ({
           </AnimatePresence>
         </div>
       </div>
+
+      <AnimatePresence>
+        {currentPack.length === 0 && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            className="absolute inset-0 z-50 flex items-center justify-center p-6 sm:p-10 pointer-events-none"
+          >
+            <div className="max-w-md w-full p-8 sm:p-12 bg-slate-900/40 backdrop-blur-3xl rounded-[3rem] border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.5)] flex flex-col items-center text-center gap-8 relative overflow-hidden">
+              {/* Decorative Background Glow */}
+              <div className="absolute -top-24 -left-24 w-48 h-48 bg-indigo-600/20 blur-[100px] rounded-full" />
+              <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-amber-600/10 blur-[100px] rounded-full" />
+
+              {/* Animated Card Stack Icon */}
+              <div className="relative w-24 h-32 mb-4">
+                <motion.div 
+                  animate={{ 
+                    rotate: [-5, 5, -5],
+                    y: [0, -10, 0]
+                  }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute inset-0 bg-indigo-500/20 border border-indigo-500/40 rounded-xl"
+                />
+                <motion.div 
+                  animate={{ 
+                    rotate: [5, -5, 5],
+                    y: [0, -15, 0]
+                  }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                  className="absolute inset-x-2 inset-y-2 bg-indigo-600/40 border border-indigo-400/50 rounded-xl shadow-2xl flex items-center justify-center"
+                >
+                  <RefreshCw className="w-8 h-8 text-white/50 animate-spin-slow" />
+                </motion.div>
+              </div>
+
+              <div className="space-y-3 relative z-10">
+                <h3 className="text-2xl sm:text-3xl font-black text-white italic uppercase tracking-tighter leading-none">
+                  {queuedCount > 0 ? 'Caricamento' : 'In attesa'} <span className="text-indigo-400">{queuedCount > 0 ? 'prossimo pack' : 'del pack'}</span>
+                </h3>
+                <p className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] leading-relaxed">
+                  {queuedCount > 0 
+                    ? `Hai ancora ${queuedCount} ${queuedCount === 1 ? 'pacchetto' : 'pacchetti'} in coda.`
+                    : 'Gli altri giocatori stanno finendo la loro scelta.'}
+                  <br/>
+                  Il prossimo pacchetto arriverà tra pochi istanti!
+                </p>
+              </div>
+
+              {/* Status Indicator */}
+              <div className="flex items-center gap-3 px-6 py-3 bg-white/5 rounded-2xl border border-white/5">
+                <div className="flex gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <motion.div
+                      key={i}
+                      animate={{ opacity: [0.3, 1, 0.3] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+                      className="w-1.5 h-1.5 rounded-full bg-indigo-500"
+                    />
+                  ))}
+                </div>
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Sincronizzazione...</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="fixed bottom-6 right-6 z-50 pointer-events-none flex flex-col gap-4">
         <AnimatePresence>

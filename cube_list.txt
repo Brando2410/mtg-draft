@@ -1,0 +1,362 @@
+Kitesail Apprentice
+Kor Duelist
+Market Gnome
+Momo, Playful Pet
+Novice Inspector
+Progenitor Exarch
+Veteran Survivor
+Loyal Warhound
+Myrsmith
+Outlaw Medic
+Tenth District Hero
+Thalia, Guardian of Thraben
+Vanguard of the Rose
+Enduring Innocence
+Envoy of the Ancestors
+Icatian Crier
+Inspired Inventor
+Kor Hookmaster
+Mischievous Pup
+Sanguine Evangelist
+Seller of Songbirds
+Silverblade Paladin
+Commander Eesha
+Glimmerpoint Stag
+Kor Cartographer
+Paladin of the Bloodstained
+Salvation Swan
+Sublime Archangel
+Taj-Nar Swordsmith
+Boon-Bringer Valkyrie
+Driftgloom Coyote
+Knight-Captain of Eos
+Knight-Errant of Eos
+Captain of the Watch
+Ajani, Caller of the Pride
+Elspeth, Knight-Errant
+Getaway Glamer
+Swords to Plowshares
+Family Reunion
+Razor Rings
+Thraben Charm
+Requisition Raid
+One Last Job
+Mandibular Kite
+Carrot Cake
+Journey to Nowhere
+Path to Redemption
+Mystical Tether
+Oblivion Ring
+Lassoed by the Law
+Benthic Biomancer
+Emrakul's Messenger
+Erdwal Illuminator
+Forecasting Fortune Teller
+Glint-Nest Crane
+Knowledge Seeker
+Merfolk Mesmerist
+Oaken Siren
+Unwelcome Sprite
+Volatile Stormdrake
+Daring Apprentice
+Long River Lurker
+Merchant of Secrets
+Sea Gate Oracle
+Slickshot Lockpicker
+The Mechanist, Aerial Artisan
+Padeem, Consul of Innovation
+Quicksmith Spy
+Stoic Sphinx
+Wing Splicer
+Disruptor of Currents
+Riftwing Cloudskate
+Sphinx of Lost Truths
+Stratosoarer
+Curator of Destinies
+Nulldrifter
+Phyrexian Ingester
+Occult Epiphany
+Phantom Interference
+Brackish Blunder
+Essence Capture
+Force Away
+Mana Leak
+Unauthorized Exit
+Cancel
+Sink into Stupor
+Thirst for Discovery
+Memory Deluge
+Hurl into History
+Unfathomable Truths
+Silent Departure
+Ancestral Reminiscence
+Aether Spellbomb
+Inverted Iceberg
+Case of the Filched Falcon
+Tamiyo Meets the Story Circle
+Utter Insignificance
+Deep Freeze
+Drake Haven
+Forsaken Miner
+Greedy Freebooter
+Persistent Specimen
+Plagued Rusalka
+Bloodthrone Vampire
+Deathcap Marionette
+Deep-Cavern Bat
+June, Bounty Hunter
+Leering Onlooker
+Nezumi Graverobber
+Scarblade Scout
+Vadmir, New Blood
+Fire Navy Trebuchet
+Gnarlbark Elm
+Heirloom Auntie
+Kaervek, the Punisher
+Pawn of Ulamog
+Skullport Merchant
+Twilight Diviner
+Unshakable Tail
+Gothmog, Morgul Lieutenant
+Mirkwood Bats
+Nekrataal
+Pitiless Plunderer
+Canyon Crawler
+Grave Titan
+Fatal Push
+Vendetta
+Deadly Dispute
+Echoing Decay
+Fanatical Offering
+Sheoldred's Edict
+Sold Out
+Rescue from the Underworld
+Duress
+Spark Harvest
+Bogslither's Embrace
+Lively Dirge
+Mordor Muster
+Profane Command
+Diresight
+Flaying Tendrils
+Terror Tide
+Bond of Revival
+Ray of Ruin
+Executioner's Capsule
+The Fire Nation Drill
+Corpses of the Lost
+Goblin Guide
+Grim Initiate
+Monastery Swiftspear
+Belligerent Yearling
+Blood Petal Celebrant
+Coruscation Mage
+Gilded Ghoda
+Gristle Glutton
+Magda, the Hoardmaster
+Reckless Pyrosurfer
+Slickshot Show-Off
+Volatile Wanderglyph
+Gearbane Orangutan
+Plundering Pirate
+Prickly Pair
+Pyrewild Shaman
+Quicksmith Genius
+Toggo, Goblin Weaponsmith
+Hellspur Posse Boss
+Infernal Captor
+Surly Badgersaur
+Ingot Chewer
+Panicked Altisaur
+Swarming Goblins
+Bedhead Beastie
+Inferno of the Star Mounts
+Chandra, Acolyte of Flame
+Explosive Derailment
+Lightning Bolt
+Redirect Lightning
+Fiery Conclusion
+Fling
+Galvanize
+Thrill of Possibility
+Fireball
+Firebolt
+Jet's Brainwashing
+Boulder Dash
+Fanged Flames
+Rally at the Hornburg
+Improvised Weaponry
+Skewer the Critics
+Swarming of Moria
+Take for a Ride
+Chain Reaction
+Goblin War Party
+Sunfire Torch
+Brimstone Roundup
+Goblin Bombardment
+Book of Mazarbul
+Echoing Assault
+Blisterpod
+Ochre Jelly
+Rubblebelt Maverick
+Basking Broodscale
+Bloodline Shaman
+Devoted Druid
+Fauna Shaman
+Ilysian Caryatid
+Keen-Eyed Curator
+Lys Alana Informant
+Quirion Elves
+Raucous Audience
+Satyr Wayfinder
+Sparring Dummy
+Voracious Varmint
+Armored Kincaller
+Coati Scavenger
+Fierce Empath
+Loaming Shaman
+Patient Naturalist
+Pugnacious Hammerskull
+Tilling Treefolk
+Tyvar, the Pummeler
+Eyeless Watcher
+Forgotten Ancient
+Howlpack Piper
+Krosan Drover
+Moon-Vigil Adherents
+Temperamental Oozewagg
+Topiary Panther
+Bramble Wurm
+Nurturing Bristleback
+Pelakka Wurm
+Ghalta, Primal Hunger
+Snakeskin Veil
+Midnight Tilling
+Clear Shot
+Entish Restoration
+Coordinated Clobbering
+Farseek
+Over the Edge
+Relentless Pursuit
+Bite Down on Crime
+Glowcap Lantern
+Malamet Scythe
+Colossal Dreadmask
+Fertile Ground
+Ranger Class
+The First Iroan Games
+Hedron Crawler
+Pilgrim's Eye
+Skittering Surveyor
+Kozilek's Channeler
+Razormane Masticore
+Eldrazi Devastator
+Ulamog's Crusher
+The Aetherspark
+Everflowing Chalice
+Barrels of Blasting Jelly
+Flayer Husk
+Wayfarer's Bauble
+Buried Treasure
+Golden Egg
+Mortarpod
+Spawning Pit
+Andúril, Flame of the West
+Mirage Mirror
+Monument to Endurance
+Quietus Spike
+Sword of Vengeance
+Worn Powerstone
+Meteor Sword
+Deputy of Acquittals
+Momentary Blink
+Sygg, Wanderwine Wisdom
+Abuelo, Ancestral Echo
+Master's Guide-Mural
+Suppression Ray
+The Ancient One
+Messenger Hawk
+Waterlogged Teachings
+Eloise, Nephalia Sleuth
+Lochmere Serpent
+Vial Smasher, Gleeful Grenadier
+At Knifepoint
+Laughing Jasper Flint
+Theater of Horrors
+Bloodsoaked Insight
+Wild Cantor
+Stump Stomp
+Noggle Robber
+Arlinn Kord
+Golden-Tail Trainer
+Kutzil, Malamet Exemplar
+Strength of the Harvest
+Sovereign Okinec Ahau
+Bartolomé del Presidio
+Pretending Poxbearers
+Tolls of War
+Baron Bertram Graywater
+Edgar, Charmed Groom
+Glasswing Grace
+Emptiness
+Abandon Attachments
+Professor Zei, Anthropologist
+Flaring Cinder
+Rielle, the Everwise
+Rush of Inspiration
+Spellbound Dragon
+Deathrite Shaman
+Grist, Voracious Larva
+Revitalizing Repast
+Necrogenesis
+Badlands Revival
+Aurelia's Fury
+Form a Posse
+Legion Leadership
+Lightning Helix
+Neyali, Suns' Vanguard
+Tamiyo, Inquisitive Student
+Snapping Voidcraw
+Gandalf, Westward Voyager
+Kruphix, God of Horizons
+Make Your Own Luck
+Drowner of Truth
+Huatli, Poet of Unity
+Maelstrom Wanderer
+Villainous Wealth
+Tasigur, the Golden Fang
+North Pole Gates
+Tranquil Cove
+Dimir Aqueduct
+Dismal Backwater
+Blood Crypt
+Restless Vents
+Fungal Reaches
+Omashu City
+Forlorn Flats
+Eroded Canyon
+Restless Spire
+Blooming Marsh
+Overgrown Tomb
+Clifftop Retreat
+Wind-Scarred Crag
+Hedge Maze
+Meditation Pools
+Tranquil Landscape
+Contaminated Landscape
+Seething Landscape
+Twisted Landscape
+Sheltering Landscape
+Shattered Landscape
+Bountiful Landscape
+Deceptive Landscape
+Perilous Landscape
+Foreboding Landscape
+Bloodstained Mire
+Evolving Wilds
+Temple of the False God
+Terramorphic Expanse
+Uncharted Haven
+Windswept Heath
+Pact of Negation
+Sudden Substitution

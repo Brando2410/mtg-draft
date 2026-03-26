@@ -34,7 +34,7 @@ export const JoinRoom = ({ onBack, onJoin, error, loading }: JoinRoomProps) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[110] bg-slate-950 flex items-center justify-center p-6 overflow-hidden">
+    <div className="fixed inset-0 min-h-[100dvh] z-[110] bg-slate-950 flex items-center justify-center p-6 overflow-hidden">
       
       {/* Sfondo Custom Sincronizzato con Menu */}
       <div className="absolute inset-0 z-0">

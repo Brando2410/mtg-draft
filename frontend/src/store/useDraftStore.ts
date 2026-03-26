@@ -116,6 +116,12 @@ export const useDraftStore = create<DraftState>((set, get) => ({
       }
     });
 
+    socket.on('room_destroyed', () => {
+      logger.info('Room has been destroyed by the host');
+      get().leaveRoom();
+      set({ joinError: 'La stanza è stata chiusa dall\'host.' });
+    });
+
     socket.on('error_join', (message: string) => {
       logger.warn('Join error', { message });
       set({ joinError: message, isJoining: false });
@@ -146,6 +152,7 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     socket.off('draft_started');
     socket.off('draft_update');
     socket.off('kick_player');
+    socket.off('room_destroyed');
     socket.off('error_join');
   },
 

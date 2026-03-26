@@ -3,8 +3,64 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --card-gap: 0.5rem;
+    --card-padding: 0.75rem;
+    --font-scale: 1;
+    --toggle-x: 20px;
+  }
+
+  @media (orientation: portrait) {
+    :root {
+      --card-gap: 0.6rem;
+      --card-padding: 0.85rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    :root {
+      --card-gap: 1.5rem;
+      --card-padding: 1.5rem;
+      --font-scale: 1.5;
+      --toggle-x: 28px;
+    }
+  }
+
+  @media (max-height: 500px) {
+    :root {
+      --card-gap: 0.25rem;
+      --card-padding: 0.5rem;
+      --font-scale: 0.85;
+    }
+  }
+
   body {
-    @apply bg-slate-950 text-slate-100 min-h-screen font-sans antialiased overflow-y-scroll;
+    @apply bg-slate-950 text-slate-100 min-h-[100dvh] font-sans antialiased overflow-y-scroll;
+  }
+}
+
+@layer components {
+  .full-h {
+    height: 100vh;
+    height: 100dvh;
+  }
+  /* Centralized Setup Card Component */
+  .setup-item {
+    @apply flex flex-col bg-slate-900/60 rounded-xl border border-white/5 transition-all;
+    gap: var(--card-gap);
+    padding: var(--card-padding);
+  }
+
+  .setup-item-portrait {
+    @apply portrait:rounded-2xl;
+  }
+
+  .setup-item-lg {
+    @apply lg:rounded-[2rem] lg:bg-slate-900/40 lg:border-white/10;
+  }
+
+  .setup-item-active {
+    @apply bg-indigo-600/10 border-indigo-500/30;
   }
 }
 

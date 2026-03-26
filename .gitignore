@@ -8,3 +8,21 @@ backend/.active_rooms.json
 frontend/dist/
 backend/node_modules/
 frontend/node_modules/
+
+# IDEs
+.vscode/*
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*

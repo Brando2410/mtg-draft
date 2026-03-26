@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Loader2, Plus, X, Trash2, Maximize2, Database, Save, Download, Home, FileText, AlertTriangle, RefreshCw, ChevronUp, Clipboard as ClipboardIcon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Loader2, Plus, X, Trash2, Maximize2, Database, Save, Download, Home, FileText, AlertTriangle, RefreshCw, ChevronUp, Check, Clipboard as ClipboardIcon } from 'lucide-react';
 import { fetchSearchCards, fetchExactCard, fetchCardsBatch } from '../services/scryfall';
 import type { SimplifiedCard, ScryfallCard } from '../services/scryfall';
 
@@ -28,6 +29,7 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
   const [zoomCard, setZoomCard] = useState<SimplifiedCard | null>(null);
   const [isZoomFlipped, setIsZoomFlipped] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => setShowScrollTop(window.scrollY > 400); // Mostra dopo 400px
@@ -50,7 +52,7 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
     });
   };
 
-  // --- STATO PER FILTRO POOL ATTUALE (Locale) ---
+  const [selectedPoolIndex, setSelectedPoolIndex] = useState<number | null>(null);
   const [filterQuery, setFilterQuery] = useState('');
   const [filterRarity, setFilterRarity] = useState<string>('all');
   const [filterColor, setFilterColor] = useState<string[]>([]);
@@ -163,6 +165,9 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
   }, [addQuery, searchLang]);
 
   const handleAddCard = async (card: ScryfallCard) => {
+    setRecentlyAddedId(card.id);
+    setTimeout(() => setRecentlyAddedId(null), 600);
+    
     setIsApiLoading(true);
     // Usiamo fetchExactCard per essere sicuri dei dati
     const result = await fetchExactCard(card.name);
@@ -263,7 +268,7 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
 
   return (
     <>
-      <div className="w-full max-w-[1700px] mx-auto p-2 sm:p-6 space-y-6 sm:space-y-12 animate-in fade-in duration-500 min-h-screen pb-40">
+      <div className="w-full max-w-[1700px] mx-auto p-2 sm:p-6 space-y-6 sm:space-y-12 animate-in fade-in duration-500 min-h-[100dvh] pb-40">
         
         {/* 1. SEZIONE AGGIUNGI (VISUAL SEARCH) */}
         <section className="space-y-4 sm:space-y-8">
@@ -351,18 +356,46 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
                   {apiSuggestions.map((card) => {
                     const img = card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal || '';
                     return (
-                      <div key={card.id} className="group relative w-32 sm:w-auto shrink-0 aspect-[2.5/3.5] bg-slate-800 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-700/50 hover:border-indigo-500 transition-all shadow-xl">
-                         <img src={img} alt={card.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 pointer-events-none" />
-                         <div className="absolute inset-0 bg-slate-950/70 sm:opacity-0 sm:group-hover:opacity-100 transition-all flex flex-col items-center justify-center p-2 sm:p-3 gap-2 sm:gap-4 z-10 backdrop-blur-[1px]">
+                      <motion.div 
+                        key={card.id} 
+                        layout
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        whileTap={{ scale: 0.92 }}
+                        onClick={() => handleAddCard(card)} 
+                        className="group relative w-32 sm:w-auto shrink-0 aspect-[2.5/3.5] bg-slate-800 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-700/50 select-none shadow-xl cursor-pointer"
+                      >
+                         <img src={img} alt={card.name} className="w-full h-full object-cover pointer-events-none" />
+                         
+                         {/* SUCCESS OVERLAY */}
+                         <AnimatePresence>
+                            {recentlyAddedId === card.id && (
+                              <motion.div 
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                className="absolute inset-0 z-30 bg-emerald-500/60 backdrop-blur-sm flex items-center justify-center p-4"
+                              >
+                                 <motion.div
+                                   initial={{ y: 20 }}
+                                   animate={{ y: 0 }}
+                                   className="bg-white rounded-full p-2 shadow-2xl"
+                                 >
+                                    <Check className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600" />
+                                 </motion.div>
+                              </motion.div>
+                            )}
+                         </AnimatePresence>
+
+                         <div className="absolute inset-0 z-10 pointer-events-none">
                             <button 
-                              onClick={() => handleAddCard(card)}
-                              className="w-full py-2 sm:py-3 bg-indigo-500 text-white rounded-lg sm:rounded-xl font-bold flex items-center justify-center gap-1 sm:gap-2 hover:bg-indigo-400 hover:scale-105 active:scale-95 transition-all shadow-lg"
+                              onClick={(e) => { e.stopPropagation(); handleAddCard(card); }}
+                              className="absolute bottom-2 left-2 w-7 h-7 sm:w-8 sm:h-8 bg-indigo-500 text-white rounded-full flex items-center justify-center transition-all shadow-xl pointer-events-auto"
                             >
-                               <Plus className="w-3 h-3 sm:w-5 sm:h-5" />
-                               <span className="text-[8px] sm:text-xs uppercase font-black italic">Agg.</span>
+                               <Plus className="w-4 h-4" />
                             </button>
                          </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
                </div>
@@ -482,8 +515,12 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
                   const isFlipped = flippedIndices.has(i);
                   const displayImage = (isFlipped && card.back_image_url) ? card.back_image_url : card.image_url;
                   
-                  return (
-                    <div key={`${card.scryfall_id}-${i}`} className="group relative rounded-2xl overflow-hidden bg-slate-900 shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:shadow-indigo-500/20 ring-1 ring-inset ring-white/5">
+                   return (
+                    <div 
+                      key={`${card.scryfall_id}-${i}`} 
+                      onClick={() => setSelectedPoolIndex(selectedPoolIndex === i ? null : i)}
+                      className={`group relative rounded-2xl overflow-hidden bg-slate-900 shadow-2xl transition-all duration-300 hover:-translate-y-2 ring-1 ring-inset ${selectedPoolIndex === i ? 'ring-indigo-500 ring-2 translate-y-[-8px]' : 'ring-white/5 hover:shadow-indigo-500/20'}`}
+                    >
                       <div className="relative aspect-[2.5/3.5] bg-slate-950 overflow-hidden">
                         <img src={displayImage} alt={card.name} className="w-full h-full object-cover group-hover:scale-105 duration-700 pointer-events-none ring-1 ring-white/10" />
                         
@@ -497,7 +534,10 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
                            </button>
                         )}
 
-                        <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3 z-20">
+                        <div 
+                          className={`absolute inset-0 bg-slate-950/40 transition-all flex items-center justify-center gap-3 z-20 ${selectedPoolIndex === i ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <button 
                             onClick={() => { setZoomCard(card); setIsZoomFlipped(isFlipped); }} 
                             className="w-10 h-10 rounded-xl bg-white/40 hover:bg-white/60 text-white flex items-center justify-center border border-white/20 shadow-2xl transition-all"
@@ -524,7 +564,7 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
       {/* MODAL IMPORT */}
       {isImportModalOpen && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-slate-950/80 backdrop-blur-xl p-4 animate-in fade-in duration-300">
-           <div className="bg-slate-900 w-full max-w-2xl rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+           <div className="bg-slate-900 w-full max-w-2xl rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]">
               <div className="p-8 border-b border-white/5 flex items-center justify-between">
                  <div className="flex items-center gap-4">
                     <div className="p-3 bg-indigo-500/20 rounded-2xl text-indigo-400">
@@ -615,7 +655,7 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
             <img 
               src={isZoomFlipped && zoomCard.back_image_url ? zoomCard.back_image_url : zoomCard.image_url} 
               alt={zoomCard.name} 
-              className="max-h-[75vh] sm:max-h-[85vh] w-auto object-contain rounded-[2rem] sm:rounded-[3rem] shadow-[0_40px_150px_rgba(99,102,241,0.3)] border-[4px] sm:border-[6px] border-white/10 animate-in zoom-in-95 duration-500 relative z-10" 
+              className="max-h-[75dvh] sm:max-h-[85dvh] w-auto object-contain rounded-[2rem] sm:rounded-[3rem] shadow-[0_40px_150px_rgba(99,102,241,0.3)] border-[4px] sm:border-[6px] border-white/10 animate-in zoom-in-95 duration-500 relative z-10" 
               onClick={(e) => e.stopPropagation()} 
             />
             

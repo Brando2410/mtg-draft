@@ -45,7 +45,7 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
       setIsPreloading(false);
       return;
     }
-    
+
     const urls = new Set<string>();
     room.draftState.queues?.forEach((q: Card[][]) => {
       q.forEach((pack: Card[]) => pack.forEach((c: Card) => {
@@ -62,11 +62,11 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
       }));
     });
     room.players?.forEach((p: Player) => {
-       p.pool?.forEach((c: Card) => {
-         const url = c.image_uris?.normal || (c as any).image_url;
-         if (url) urls.add(url);
-         if (c.back_image_url) urls.add(c.back_image_url);
-       });
+      p.pool?.forEach((c: Card) => {
+        const url = c.image_uris?.normal || (c as any).image_url;
+        if (url) urls.add(url);
+        if (c.back_image_url) urls.add(c.back_image_url);
+      });
     });
 
     const urlArray = Array.from(urls);
@@ -135,13 +135,20 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
   }, [currentPack, selectedCardId, preSelectedId]);
 
   const prevPackCountRef = useRef(0);
-  
-  // Auto-exit review at 10 seconds
+
+  const hasAutoClosedRef = useRef(false);
+
+  // Auto-exit review at 10 seconds - Only once per pack
   useEffect(() => {
-    if (timeLeft !== null && timeLeft <= 10 && !isPaused && isReviewOpen) {
-      setIsReviewOpen(false);
+    if (currentPack.length === 0) {
+      hasAutoClosedRef.current = false;
     }
-  }, [timeLeft, isPaused, isReviewOpen]);
+
+    if (timeLeft !== null && timeLeft <= 10 && !isPaused && isReviewOpen && !hasAutoClosedRef.current) {
+      setIsReviewOpen(false);
+      hasAutoClosedRef.current = true;
+    }
+  }, [timeLeft, isPaused, isReviewOpen, currentPack.length]);
 
   // Auto-exit review when new pack arrives
   useEffect(() => {
@@ -160,7 +167,7 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
       playerId,
       cardId: cardToPick
     });
-    
+
     setSelectedCardId(null);
     setPreSelectedId(null);
   };
@@ -168,10 +175,10 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
   const selectedCard = currentPack.find((c: Card) => c.id === selectedCardId);
 
   return (
-    <div className="portrait:min-h-screen landscape:h-screen lg:h-screen bg-slate-950 text-slate-200 flex flex-col portrait:overflow-y-auto landscape:overflow-hidden lg:overflow-hidden">
+    <div className="portrait:min-h-[100dvh] landscape:h-[100dvh] lg:h-[100dvh] bg-slate-950 text-slate-200 flex flex-col portrait:overflow-y-auto landscape:overflow-hidden lg:overflow-hidden">
       <AnimatePresence mode="wait">
         {isPreloading ? (
-          <motion.div 
+          <motion.div
             key="preloader"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -179,7 +186,7 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
             className="fixed inset-0 z-[1000] bg-slate-950 flex flex-col items-center justify-center p-8"
           >
             <div className="relative w-32 h-32 mb-8">
-              <motion.div 
+              <motion.div
                 className="absolute inset-0 border-4 border-indigo-500/20 rounded-full"
                 animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.4, 0.2] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -211,7 +218,7 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
                 <span className="text-2xl font-black text-white">{preloadProgress}%</span>
               </div>
             </div>
-            <motion.h2 
+            <motion.h2
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
@@ -219,7 +226,7 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
             >
               Caricamento Deck...
             </motion.h2>
-            <motion.p 
+            <motion.p
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
@@ -229,81 +236,84 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
             </motion.p>
           </motion.div>
         ) : (
-          <motion.div 
+          <motion.div
             key="main-view"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="flex-1 flex flex-col h-full portrait:overflow-visible landscape:overflow-hidden lg:overflow-hidden"
           >
-               <DraftHeader 
-                room={room}
-                playerId={playerId!}
-                timeLeft={timeLeft}
-                isPaused={isPaused}
-                onTogglePause={() => socket.emit('toggle_pause', { roomId: room.id, playerId })}
-                onOpenTable={() => setIsTableOpen(true)}
-                onOpenReview={() => setIsReviewOpen(true)}
-                currentPlayer={currentPlayer}
-                queuedCount={room.draftState?.queues[playerIndex]?.length || 0}
-              />
+            <DraftHeader
+              room={room}
+              playerId={playerId!}
+              timeLeft={timeLeft}
+              isPaused={isPaused}
+              onTogglePause={() => socket.emit('toggle_pause', { roomId: room.id, playerId })}
+              onOpenTable={() => setIsTableOpen(true)}
+              onOpenReview={() => setIsReviewOpen(true)}
+              currentPlayer={currentPlayer}
+              queuedCount={room.draftState?.queues?.[playerIndex!]?.length || 0}
+            />
 
-              <div className="flex-1 flex flex-col landscape:flex-row lg:flex-row overflow-visible md:overflow-hidden relative portrait:pt-[100px]">
-                <PackGrid 
-                  currentPack={currentPack}
-                  selectedCardId={selectedCardId}
-                  preSelectedId={preSelectedId}
-                  isPaused={isPaused}
-                  onSelectCard={(id) => {
-                    const isMobileLandscape = window.matchMedia("(orientation: landscape) and (max-width: 1023px)").matches;
-                    if (!isMobileLandscape) {
-                      setSelectedCardId(id);
-                    }
-                  }}
-                  onPreSelect={setPreSelectedId}
-                  onPickCard={handlePick}
-                />
+            <div className="flex-1 flex flex-col landscape:flex-row lg:flex-row overflow-visible md:overflow-hidden relative portrait:pt-[100px]">
+              <PackGrid
+                currentPack={currentPack}
+                selectedCardId={selectedCardId}
+                preSelectedId={preSelectedId}
+                isPaused={isPaused}
+                queuedCount={room.draftState?.queues?.[playerIndex!]?.length || 0}
+                onSelectCard={(id) => {
+                  const isMobileLandscape = window.matchMedia("(orientation: landscape) and (max-width: 1023px)").matches;
+                  const isMobilePortrait = window.matchMedia("(orientation: portrait) and (max-width: 1023px)").matches;
+                  if (!isMobileLandscape && !isMobilePortrait) {
+                    setSelectedCardId(id);
+                  }
+                }}
+                onPreSelect={setPreSelectedId}
+                onPickCard={handlePick}
+              />
 
               <AnimatePresence>
                 {selectedCard && (
                   <>
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       onClick={() => setSelectedCardId(null)}
                       className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 landscape:hidden lg:hidden"
                     />
-                    <SelectionSidebar 
-                    selectedCard={selectedCard}
-                    preSelectedId={preSelectedId}
-                    isPaused={isPaused}
-                    currentIndex={currentPack.findIndex((c: Card) => c.id === selectedCardId)}
-                    totalCards={currentPack.length}
-                    onClose={() => setSelectedCardId(null)}
-                    onPickCard={handlePick}
-                    onPreSelect={(id) => {
-                      setPreSelectedId(id);
-                      socket.emit('select_card', { roomId: room.id, playerId, cardId: id });
-                    }}
-                    onNext={() => {
-                      const idx = currentPack.findIndex((c: Card) => c.id === selectedCardId);
-                      const nextIdx = (idx + 1) % currentPack.length;
-                      setSelectedCardId(currentPack[nextIdx].id);
-                    }}
-                    onPrev={() => {
-                      const idx = currentPack.findIndex((c: Card) => c.id === selectedCardId);
-                      const prevIdx = (idx - 1 + currentPack.length) % currentPack.length;
-                      setSelectedCardId(currentPack[prevIdx].id);
-                    }}
-                  />
-                </>
-              )}
-            </AnimatePresence>
+                    <SelectionSidebar
+                      selectedCard={selectedCard}
+                      isPaused={isPaused}
+                      currentIndex={currentPack.findIndex((c: Card) => c.id === selectedCardId)}
+                      totalCards={currentPack.length}
+                      onClose={() => setSelectedCardId(null)}
+                      onPickCard={handlePick}
+                      onNext={() => {
+                        const idx = currentPack.findIndex((c: Card) => c.id === selectedCardId);
+                        const nextIdx = (idx + 1) % currentPack.length;
+                        const nextId = currentPack[nextIdx].id;
+                        setSelectedCardId(nextId);
+                        setPreSelectedId(nextId);
+                        socket.emit('select_card', { roomId: room.id, playerId, cardId: nextId });
+                      }}
+                      onPrev={() => {
+                        const idx = currentPack.findIndex((c: Card) => c.id === selectedCardId);
+                        const prevIdx = (idx - 1 + currentPack.length) % currentPack.length;
+                        const prevId = currentPack[prevIdx].id;
+                        setSelectedCardId(prevId);
+                        setPreSelectedId(prevId);
+                        socket.emit('select_card', { roomId: room.id, playerId, cardId: prevId });
+                      }}
+                    />
+                  </>
+                )}
+              </AnimatePresence>
             </div>
 
             <AnimatePresence>
               {isTableOpen && (
-                <TableViewModal 
+                <TableViewModal
                   room={room}
                   playerId={playerId}
                   round={round}
@@ -313,14 +323,14 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
               )}
 
               {isReviewOpen && (
-                <DeckReviewView 
+                <DeckReviewView
                   pool={pool.map((c: any) => ({
                     ...c,
                     image_url: c.image_url || c.image_uris?.normal || '',
                     scryfall_id: c.scryfall_id || c.id || ''
-                  }))} 
+                  }))}
                   onClose={() => setIsReviewOpen(false)}
-                  onUpdatePool={() => {}}
+                  onUpdatePool={() => { }}
                   timeLeft={timeLeft}
                   isPaused={isPaused}
                   isHost={room?.hostPlayerId === playerId}
@@ -329,7 +339,7 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
               )}
 
               {isPaused && !isReviewOpen && (
-                <DraftPausedOverlay 
+                <DraftPausedOverlay
                   room={room}
                   playerId={playerId}
                   onOpenReview={() => setIsReviewOpen(true)}
@@ -338,7 +348,7 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
               )}
 
               {isCompleted && !isReviewOpen && (
-                <DraftCompletedOverlay 
+                <DraftCompletedOverlay
                   onOpenReview={() => setIsReviewOpen(true)}
                   onBack={onBack!}
                 />
@@ -351,17 +361,17 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
                   <button className="fixed top-4 right-4 sm:top-8 sm:right-8 text-white/40 hover:text-white transition-all p-3 bg-white/5 rounded-full backdrop-blur-md border border-white/5 z-[2100]">
                     <X className="w-8 h-8 sm:w-10 sm:h-10" />
                   </button>
-                  
+
                   <div className="relative flex flex-col items-center gap-6">
-                    <img 
-                      src={isZoomFlipped && zoomCard.back_image_url ? zoomCard.back_image_url : (zoomCard.image_uris?.normal || (zoomCard as any).image_url)} 
-                      alt={zoomCard.name} 
-                      className="max-h-[75vh] sm:max-h-[85vh] w-auto object-contain rounded-[2rem] sm:rounded-[3rem] shadow-[0_40px_150px_rgba(99,102,241,0.3)] border-[4px] sm:border-[6px] border-white/10 animate-in zoom-in-95 duration-500 relative z-10" 
-                      onClick={(e) => e.stopPropagation()} 
+                    <img
+                      src={isZoomFlipped && zoomCard.back_image_url ? zoomCard.back_image_url : (zoomCard.image_uris?.normal || (zoomCard as any).image_url)}
+                      alt={zoomCard.name}
+                      className="max-h-[75vh] sm:max-h-[85vh] w-auto object-contain rounded-[2rem] sm:rounded-[3rem] shadow-[0_40px_150px_rgba(99,102,241,0.3)] border-[4px] sm:border-[6px] border-white/10 animate-in zoom-in-95 duration-500 relative z-10"
+                      onClick={(e) => e.stopPropagation()}
                     />
-                    
+
                     {zoomCard.back_image_url && (
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); setIsZoomFlipped(!isZoomFlipped); }}
                         className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-xl shadow-indigo-600/30 flex items-center gap-3 active:scale-95 group z-20"
                       >
