@@ -50,7 +50,7 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
                <Terminal className="w-5 h-5 text-indigo-400" />
             </div>
             <div>
-               <h2 className="text-xl font-black text-white uppercase tracking-tighter leading-none">Debug Console</h2>
+               <h2 className="text-xl font-black text-white uppercase tracking-tighter leading-none">Lobby Manager</h2>
                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Stanze Attive: {rooms.length}</p>
             </div>
           </div>
@@ -76,7 +76,7 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
           {rooms.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-slate-600 space-y-4">
                <Radio className="w-12 h-12 opacity-20" />
-               <p className="text-xs uppercase tracking-[0.3em] font-bold">Nessuna sessione attiva trovata</p>
+               <p className="text-xs uppercase tracking-[0.3em] font-bold">Nessuna lobby trovata</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -130,11 +130,6 @@ export const AdminPanel = ({ onClose }: AdminPanelProps) => {
               ))}
             </div>
           )}
-        </div>
-
-        {/* FOOTER */}
-        <div className="p-4 bg-slate-950 border-t border-white/5 flex items-center justify-center">
-           <p className="text-[8px] text-slate-600 font-bold uppercase tracking-[0.5em]">Antigravity Realtime Dashboard v1.0 • Use with caution</p>
         </div>
       </div>
     </div>

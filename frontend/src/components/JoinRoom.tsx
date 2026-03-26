@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Home, Key, ArrowRight, Loader2, AlertCircle, ClipboardPaste } from 'lucide-react';
-import { INITIAL_WALLPAPER } from './MainMenu';
+import { useDraftStore } from '../store/useDraftStore';
 
 interface JoinRoomProps {
   onBack: () => void;
@@ -10,8 +10,32 @@ interface JoinRoomProps {
 }
 
 export const JoinRoom = ({ onBack, onJoin, error, loading }: JoinRoomProps) => {
+  const { wallpaperList, fetchAssets } = useDraftStore();
   const [code, setCode] = useState('');
   const [name, setName] = useState(localStorage.getItem('mtg_player_name') || '');
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [wallpaper, setWallpaper] = useState<string>('');
+
+  useEffect(() => {
+    const init = async () => {
+      if (wallpaperList.length === 0) {
+        await fetchAssets();
+      }
+    };
+    init();
+  }, []);
+
+  useEffect(() => {
+    if (wallpaperList.length > 0 && !wallpaper) {
+      const randomWallpaper = wallpaperList[Math.floor(Math.random() * wallpaperList.length)];
+      const wpUrl = `/wallpapers/${randomWallpaper}`;
+      setWallpaper(wpUrl);
+      
+      const img = new Image();
+      img.src = wpUrl;
+      img.onload = () => setIsLoaded(true);
+    }
+  }, [wallpaperList, wallpaper]);
 
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,10 +62,13 @@ export const JoinRoom = ({ onBack, onJoin, error, loading }: JoinRoomProps) => {
       
       {/* Sfondo Custom Sincronizzato con Menu */}
       <div className="absolute inset-0 z-0">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000 scale-105 animate-slow-zoom"
-          style={{ backgroundImage: `url(${INITIAL_WALLPAPER})` }}
-        />
+        <div className={`absolute inset-0 transition-opacity duration-500 ${isLoaded ? 'opacity-0' : 'opacity-100'} bg-slate-950 z-[4]`} />
+        {wallpaper && (
+          <div 
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 scale-105 animate-slow-zoom ${isLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-lg'}`}
+            style={{ backgroundImage: `url(${wallpaper})` }}
+          />
+        )}
         {/* Overlay Dark per contrasto */}
         <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-[1]" />
         

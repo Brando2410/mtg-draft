@@ -1,10 +1,7 @@
 import { Users, Info, Play, X, Copy, CheckCircle2, Loader2, UserX, Pencil } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { PLAYER_ID } from '../store/useDraftStore';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const randomIdx = Math.floor(Math.random() * 10) + 1;
-const INITIAL_WALLPAPER = `/wallpapers/${randomIdx}.jpg`;
+import { useDraftStore } from '../store/useDraftStore';
 
 interface Player {
   id: string;
@@ -14,13 +11,6 @@ interface Player {
   online?: boolean;
   isBot?: boolean;
 }
-
-const AVATARS = [
-  'ajani.png', 'alena_halana.png', 'angrath.png', 'aragorn.png', 'ashiok.png',
-  'astarion.png', 'atraxa.png', 'aurelia.png', 'basri.png', 'baylen.png',
-  'beckett.png', 'borborygmos.png', 'braids.png', 'chandra.png', 'cruelclaw.png',
-  'davriel.png', 'dina.png', 'domri.png', 'dovin.png', 'elesh_norn.png'
-];
 
 interface DraftLobbyProps {
   roomCode: string;
@@ -45,16 +35,34 @@ export const DraftLobby = ({
   onChangeAvatar,
   onAddBot
 }: DraftLobbyProps) => {
+  const { avatarList, wallpaperList, fetchAssets, playerId: PLAYER_ID_STORE } = useDraftStore();
+  const PLAYER_ID = PLAYER_ID_STORE;
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [wallpaper, setWallpaper] = useState<string>('');
 
   useEffect(() => {
-    const img = new Image();
-    img.src = INITIAL_WALLPAPER;
-    img.onload = () => setIsLoaded(true);
+    const init = async () => {
+      if (wallpaperList.length === 0 || avatarList.length === 0) {
+        await fetchAssets();
+      }
+    };
+    init();
   }, []);
+
+  useEffect(() => {
+    if (wallpaperList.length > 0 && !wallpaper) {
+      const randomWallpaper = wallpaperList[Math.floor(Math.random() * wallpaperList.length)];
+      const wpUrl = `/wallpapers/${randomWallpaper}`;
+      setWallpaper(wpUrl);
+      
+      const img = new Image();
+      img.src = wpUrl;
+      img.onload = () => setIsLoaded(true);
+    }
+  }, [wallpaperList, wallpaper]);
   
   const me = players.find(p => p.playerId === PLAYER_ID);
   const targetPlayers = rules.playerCount || 8;
@@ -75,10 +83,12 @@ export const DraftLobby = ({
       <div className="absolute inset-0 z-0">
         <div className={`absolute inset-0 transition-opacity duration-500 ${isLoaded ? 'opacity-0' : 'opacity-100'} bg-slate-950 z-[4]`} />
         
-        <div 
-          className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'} z-[2]`}
-          style={{ backgroundImage: `url(${INITIAL_WALLPAPER})` }}
-        />
+        {wallpaper && (
+          <div 
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'} z-[2]`}
+            style={{ backgroundImage: `url(${wallpaper})` }}
+          />
+        )}
         {/* Overlay per Leggibilità */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/80 to-slate-950 z-[1]" />
         
@@ -302,9 +312,8 @@ export const DraftLobby = ({
                       <X className="w-5 h-5 portrait:w-6 portrait:h-6" />
                    </button>
                 </div>
-
                 <div className="grid grid-cols-4 sm:grid-cols-6 landscape:grid-cols-8 portrait:grid-cols-4 gap-3 portrait:gap-6 overflow-y-auto p-1 custom-scrollbar">
-                   {AVATARS.map(avatar => {
+                   {avatarList.map((avatar: string) => {
                      const isTaken = takenAvatars.includes(avatar);
                      const isCurrent = me?.avatar === avatar;
                      

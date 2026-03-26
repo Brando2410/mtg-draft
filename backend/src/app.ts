@@ -2,7 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
+import multer from 'multer';
 import { PersistenceService } from './services/PersistenceService';
+import { AssetService } from './services/AssetService';
 
 const app = express();
 
@@ -49,6 +51,47 @@ app.delete('/api/cubes/:id', async (req, res) => {
     else res.status(404).json({ error: 'Cubo non trovato' });
   } catch (err) {
     res.status(500).json({ error: 'Errore durante l\'eliminazione' });
+  }
+});
+
+// --- Asset Management ---
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const type = req.params.type; // 'avatars' or 'wallpapers'
+    const targetPath = type === 'avatars' ? AssetService.getAvatarsDir() : AssetService.getWallpapersDir();
+    if (!fs.existsSync(targetPath)) fs.mkdirSync(targetPath, { recursive: true });
+    cb(null, targetPath);
+  },
+  filename: (req, file, cb) => {
+    // Mantieni il nome originale o puliscilo
+    cb(null, file.originalname);
+  }
+});
+const upload = multer({ storage });
+
+app.get('/api/assets/:type', async (req, res) => {
+  const { type } = req.params;
+  try {
+    const files = type === 'avatars' ? await AssetService.listAvatars() : await AssetService.listWallpapers();
+    res.json(files);
+  } catch (err) {
+    res.status(500).json({ error: 'Errore nel recupero degli asset' });
+  }
+});
+
+app.post('/api/assets/:type', upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Nessun file caricato' });
+  res.json({ message: 'File caricato con successo', filename: req.file.filename });
+});
+
+app.delete('/api/assets/:type/:filename', async (req, res) => {
+  const { type, filename } = req.params;
+  try {
+    const success = type === 'avatars' ? await AssetService.deleteAvatar(filename) : await AssetService.deleteWallpaper(filename);
+    if (success) res.json({ message: 'File eliminato con successo' });
+    else res.status(404).json({ error: 'File non trovato' });
+  } catch (err) {
+    res.status(500).json({ error: 'Errore nell\'eliminazione' });
   }
 });
 

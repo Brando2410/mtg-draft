@@ -28,7 +28,14 @@ interface DraftState {
   changeAvatar: (avatar: string) => void;
   closeRoom: () => void;
   addBot: () => void;
+
+  // Asset Management
+  avatarList: string[];
+  wallpaperList: string[];
+  fetchAssets: () => Promise<void>;
 }
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 // Get or generate persistent player ID
 let currentId = localStorage.getItem('mtg_persistent_id');
@@ -204,5 +211,22 @@ export const useDraftStore = create<DraftState>((set, get) => ({
   addBot: () => {
     const { room } = get();
     if (room) socket.emit('add_bot', { roomId: room.id });
+  },
+
+  avatarList: [],
+  wallpaperList: [],
+  fetchAssets: async () => {
+    try {
+      const [avatars, wallpapers] = await Promise.all([
+        fetch(`${API_BASE}/api/assets/avatars`).then(res => res.json()),
+        fetch(`${API_BASE}/api/assets/wallpapers`).then(res => res.json())
+      ]);
+      set({ 
+        avatarList: Array.isArray(avatars) ? avatars : [], 
+        wallpaperList: Array.isArray(wallpapers) ? wallpapers : [] 
+      });
+    } catch (err) {
+      console.error('Errore durante il caricamento degli asset:', err);
+    }
   }
 }));

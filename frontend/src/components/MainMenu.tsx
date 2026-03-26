@@ -1,37 +1,52 @@
 import { useState, useEffect } from 'react';
-import { Play, PlusSquare, Library, Users, Bug, History as HistoryIcon } from 'lucide-react';
+import { Play, PlusSquare, Library, Users, Bug, History as HistoryIcon, Settings } from 'lucide-react';
+import { useDraftStore } from '../store/useDraftStore';
 
 interface MainMenuProps {
   onSelect: (view: 'builder' | 'draft_setup' | 'draft_join' | 'collection' | 'history') => void;
   onShowAdmin?: () => void;
+  onShowAssets?: () => void;
 }
 
-// Selezioniamo il wallpaper una sola volta all'esterno del componente 
-// per evitare ricalcoli durante i re-render o StrictMode.
-const randomIdx = Math.floor(Math.random() * 10) + 1;
-export const INITIAL_WALLPAPER = `/wallpapers/${randomIdx}.jpg`;
-
-export const MainMenu = ({ onSelect, onShowAdmin }: MainMenuProps) => {
+export const MainMenu = ({ onSelect, onShowAdmin, onShowAssets }: MainMenuProps) => {
+  const { wallpaperList, fetchAssets } = useDraftStore();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [wallpaper, setWallpaper] = useState<string>('');
 
   useEffect(() => {
-    // Preload dell'unica immagine scelta all'avvio
-    const img = new Image();
-    img.src = INITIAL_WALLPAPER;
-    img.onload = () => setIsLoaded(true);
+    const init = async () => {
+      if (wallpaperList.length === 0) {
+        await fetchAssets();
+      }
+    };
+    init();
   }, []);
 
+  useEffect(() => {
+    if (wallpaperList.length > 0 && !wallpaper) {
+      const randomWallpaper = wallpaperList[Math.floor(Math.random() * wallpaperList.length)];
+      setWallpaper(`/wallpapers/${randomWallpaper}`);
+      
+      const img = new Image();
+      img.src = `/wallpapers/${randomWallpaper}`;
+      img.onload = () => setIsLoaded(true);
+    }
+  }, [wallpaperList, wallpaper]);
+
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center compact:overflow-hidden overflow-y-auto overflow-x-hidden font-sans text-slate-100 custom-scrollbar">
+    <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center overflow-hidden font-sans text-slate-100 selection:bg-indigo-500/30">
 
       {/* Sfondo: Nero solido finché non carica, poi l'immagine scelta */}
       <div className="absolute inset-0 z-0">
         <div className={`absolute inset-0 transition-opacity duration-500 ${isLoaded ? 'opacity-0' : 'opacity-100'} bg-slate-950 z-[4]`} />
 
-        <div
-          className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'} z-[2]`}
-          style={{ backgroundImage: `url(${INITIAL_WALLPAPER})` }}
-        />
+        {wallpaper && (
+          <div
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'} z-[2]`}
+            style={{ backgroundImage: `url(${wallpaper})` }}
+          />
+        )}
+...
         {/* Overlay per Leggibilità */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/80 to-slate-950 z-[1]" />
 
@@ -51,7 +66,7 @@ export const MainMenu = ({ onSelect, onShowAdmin }: MainMenuProps) => {
         </div>
 
         {/* Menu Options */}
-        <div className="flex flex-col gap-3 sm:gap-4 w-full max-w-sm px-6 compact:grid compact:grid-cols-2 compact:max-w-xl compact:gap-2 lg:flex lg:flex-col lg:max-w-sm animate-in fade-in slide-in-from-bottom-20 duration-1000 delay-300 overflow-y-auto lg:overflow-visible pr-1 custom-scrollbar">
+        <div className="flex flex-col gap-3 sm:gap-4 w-full max-w-sm px-6 compact:grid compact:grid-cols-2 compact:max-w-xl compact:gap-2 lg:flex lg:flex-col lg:max-w-sm animate-in fade-in slide-in-from-bottom-20 duration-1000 delay-300 lg:overflow-visible">
 
           <button
             onClick={() => onSelect('draft_setup')}
@@ -119,27 +134,38 @@ export const MainMenu = ({ onSelect, onShowAdmin }: MainMenuProps) => {
         </div>
       </div>
 
-      {/* Footer Branding */}
-      <div className="absolute bottom-10 left-10 right-10 flex justify-between items-center opacity-30 text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 max-lg:landscape:hidden">
-        <div className="flex items-center gap-4">
-          <span>© 2026 Pixel Heart Studios</span>
-        </div>
+      {/* Footer Branding - Spostato a sinistra per lasciare spazio ai bottoni a destra */}
+      <div className="absolute bottom-10 left-10 right-10 flex justify-start items-center opacity-30 text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 max-lg:landscape:hidden">
         <div className="flex gap-6">
           <span className="hover:text-white cursor-pointer transition-colors">Privacy</span>
           <span className="hover:text-white cursor-pointer transition-colors">Terms</span>
         </div>
       </div>
 
-      {onShowAdmin && (
-        <button
-          onClick={onShowAdmin}
-          className="fixed top-6 right-6 z-[150] group flex items-center gap-3 px-4 py-3 bg-slate-900/80 hover:bg-indigo-600 border border-white/10 hover:border-indigo-400 rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-indigo-600/40 hover:scale-110 active:scale-95"
-          title="Console di Debug"
-        >
-          <Bug className="w-5 h-5 text-indigo-400 group-hover:text-white group-hover:animate-bounce" />
-          <span className="text-xs font-black text-white uppercase tracking-widest">Debug</span>
-        </button>
-      )}
+      {/* Gestione Bottoni Debug e Asset - Posizionati in basso a destra */}
+      <div className="fixed bottom-6 right-6 z-[150] flex items-center gap-3">
+        {onShowAssets && (
+          <button
+            onClick={onShowAssets}
+            className="group flex items-center gap-3 px-4 py-3 bg-slate-900/80 hover:bg-emerald-600 border border-white/10 hover:border-emerald-400 rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-emerald-600/40 hover:scale-110 active:scale-95"
+            title="Gestione Asset"
+          >
+            <Settings className="w-5 h-5 text-emerald-400 group-hover:text-white group-hover:rotate-90 transition-transform duration-500" />
+            <span className="text-xs font-black text-white uppercase tracking-widest hidden lg:inline-block">Asset</span>
+          </button>
+        )}
+
+        {onShowAdmin && (
+          <button
+            onClick={onShowAdmin}
+            className="group flex items-center gap-3 px-4 py-3 bg-slate-900/80 hover:bg-indigo-600 border border-white/10 hover:border-indigo-400 rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-indigo-600/40 hover:scale-110 active:scale-95"
+            title="Console di Debug"
+          >
+            <Bug className="w-5 h-5 text-indigo-400 group-hover:text-white group-hover:animate-bounce" />
+            <span className="text-xs font-black text-white uppercase tracking-widest hidden lg:inline-block">Debug</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 };

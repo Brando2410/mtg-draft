@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { DraftPoolBuilder } from './components/DraftPoolBuilder';
 import { DraftPackView } from './components/DraftPackView';
 import { CubeCollection } from './components/CubeCollection';
@@ -7,6 +8,7 @@ import { DraftSetup } from './components/DraftSetup';
 import { JoinRoom } from './components/JoinRoom';
 import { DraftLobby } from './components/DraftLobby';
 import { AdminPanel } from './components/AdminPanel';
+import { AssetManager } from './components/AssetManager';
 import { DraftHistory } from './components/DraftHistory';
 import { X } from 'lucide-react';
 import { useDraftStore } from './store/useDraftStore';
@@ -32,6 +34,7 @@ function App() {
   } = useDraftStore();
 
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isAssetOpen, setIsAssetOpen] = useState(false);
   const [skipRestore, setSkipRestore] = useState(false);
 
   useEffect(() => {
@@ -78,6 +81,7 @@ function App() {
         {activeView === 'menu' && (
           <MainMenu 
             onShowAdmin={() => setIsAdminOpen(true)}
+            onShowAssets={() => setIsAssetOpen(true)}
             onSelect={(view) => {
               setSkipRestore(false);
               if (view === 'draft_join') {
@@ -161,6 +165,12 @@ function App() {
       {isAdminOpen && (
         <AdminPanel onClose={() => setIsAdminOpen(false)} />
       )}
+
+      <AnimatePresence>
+        {isAssetOpen && (
+          <AssetManager onClose={() => setIsAssetOpen(false)} />
+        )}
+      </AnimatePresence>
 
     </div>
   );

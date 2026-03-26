@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Home, Layers, Users, Clock, Package, Loader2, ShieldAlert, ArrowRight, Minus, Plus, Database, Shuffle, Edit3, ChevronDown } from 'lucide-react';
-import { INITIAL_WALLPAPER } from './MainMenu';
+import { useDraftStore } from '../store/useDraftStore';
 import { motion } from 'framer-motion';
 
 interface SavedCube {
@@ -15,10 +15,12 @@ interface DraftSetupProps {
 }
 
 export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
+  const { wallpaperList, fetchAssets } = useDraftStore();
   const [cubes, setCubes] = useState<SavedCube[]>([]);
   const [loadingCubes, setLoadingCubes] = useState(true);
   const [loading, setLoading] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [wallpaper, setWallpaper] = useState<string>('');
   
   const [selectedCubeId, setSelectedCubeId] = useState<string>('');
   const [playerCount, setPlayerCount] = useState(8);
@@ -33,10 +35,12 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Preload background image
-    const img = new Image();
-    img.src = INITIAL_WALLPAPER;
-    img.onload = () => setIsLoaded(true);
+    const init = async () => {
+      if (wallpaperList.length === 0) {
+        await fetchAssets();
+      }
+    };
+    init();
 
     const fetchCubes = async () => {
       try {
@@ -54,6 +58,18 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
     };
     fetchCubes();
   }, []);
+
+  useEffect(() => {
+    if (wallpaperList.length > 0 && !wallpaper) {
+      const randomWallpaper = wallpaperList[Math.floor(Math.random() * wallpaperList.length)];
+      const wpUrl = `/wallpapers/${randomWallpaper}`;
+      setWallpaper(wpUrl);
+      
+      const img = new Image();
+      img.src = wpUrl;
+      img.onload = () => setIsLoaded(true);
+    }
+  }, [wallpaperList, wallpaper]);
 
   const selectedCube = cubes.find(c => c.id === selectedCubeId);
   const totalNeeded = playerCount * packsPerPlayer * cardsPerPack;
@@ -85,9 +101,9 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
     const isMin = value <= min;
     return (
       <div className="setup-item setup-item-portrait setup-item-lg compact:p-2 compact:gap-1">
-        <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap
+        <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-300 uppercase tracking-widest whitespace-nowrap
                         portrait:text-[10px] lg:text-[11px]">
-          <Icon className="w-2.5 h-2.5 portrait:w-3.5 portrait:h-3.5 lg:w-4 lg:h-4 text-indigo-500/50" /> {label}
+          <Icon className="w-2.5 h-2.5 portrait:w-3.5 portrait:h-3.5 lg:w-4 lg:h-4 text-indigo-400" /> {label}
         </div>
         <div className="flex items-center justify-between lg:px-2">
           <button 
@@ -112,9 +128,9 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
     <button onClick={onClick} className={`setup-item setup-item-portrait setup-item-lg compact:py-1.5 compact:px-2.5 compact:gap-1.5
       ${active ? 'setup-item-active' : ''}
     `}>
-       <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap
+       <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-300 uppercase tracking-widest whitespace-nowrap
                       portrait:text-[10px] lg:text-[11px]">
-          <Icon className={`w-2.5 h-2.5 portrait:w-3.5 portrait:h-3.5 lg:w-4 lg:h-4 ${active ? 'text-indigo-400' : 'text-slate-500/50'}`} /> {label}
+          <Icon className={`w-2.5 h-2.5 portrait:w-3.5 portrait:h-3.5 lg:w-4 lg:h-4 ${active ? 'text-indigo-400' : 'text-slate-400'}`} /> {label}
        </div>
        <div className="flex items-center justify-between w-full">
           <div className="text-left">
@@ -125,7 +141,7 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
           </div>
           <div className={`w-10 h-5 lg:w-14 lg:h-7 rounded-full p-1 transition-colors flex items-center ${active ? 'bg-indigo-600' : 'bg-slate-800'}`}>
              <motion.div 
-               animate={{ x: active ? 'var(--toggle-x)' : 0 }} 
+               animate={{ x: active ? 22 : 0 }} 
                transition={{ type: "spring", stiffness: 500, damping: 30 }}
                className="w-3 h-3 portrait:w-3.5 portrait:h-3.5 lg:w-5 lg:h-5 rounded-full bg-white shadow-lg" 
              />
@@ -143,10 +159,12 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
         <div className={`absolute inset-0 transition-opacity duration-1000 ${isLoaded ? 'opacity-0' : 'opacity-100'} bg-slate-950 z-[4]`} />
         
         {/* Main Image */}
-        <div 
-          className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000 ${isLoaded ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-105 blur-lg'} z-[2]`}
-          style={{ backgroundImage: `url(${INITIAL_WALLPAPER})` }}
-        />
+        {wallpaper && (
+          <div 
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 ${isLoaded ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-105 blur-lg'} z-[2]`}
+            style={{ backgroundImage: `url(${wallpaper})` }}
+          />
+        )}
         
         {/* Pro Overlay Stack */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/80 to-slate-950 z-[3]" />
@@ -171,9 +189,9 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
           {/* CUBE DROPDOWN (MOBILE LANDSCAPE / PORTRAIT / COMPACT) */}
           <div className="hidden portrait:flex compact:flex flex-col items-start gap-1 flex-1 max-w-[200px] portrait:max-w-none mx-4 portrait:mx-0 portrait:w-full">
              <div className="flex items-center gap-1.5 px-1">
-               <Database className="w-3 h-3 text-indigo-500/50" />
-               <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest leading-none">Seleziona Cubo</span>
-               <span className={`text-[8px] font-black italic ml-auto ${hasEnoughCards ? 'text-emerald-500/70' : 'text-red-500'}`}>{selectedCube?.cardCount}/{totalNeeded}</span>
+               <Database className="w-3 h-3 text-indigo-400" />
+               <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest leading-none">Seleziona Cubo</span>
+               <span className={`text-[8px] font-black italic ml-auto ${hasEnoughCards ? 'text-emerald-400' : 'text-red-400'}`}>{selectedCube?.cardCount}/{totalNeeded}</span>
              </div>
              <div className="relative w-full">
                <select 
@@ -188,7 +206,7 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
           </div>
 
           <div className="flex flex-col items-start portrait:w-full lg:w-auto">
-             <span className="text-[7px] portrait:text-[10px] lg:text-[11px] font-black text-slate-600 uppercase tracking-[0.2em] mb-1.5 mr-2 compact:mb-0.5 portrait:mb-1">Host Identity</span>
+             <span className="text-[7px] portrait:text-[10px] lg:text-[11px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1.5 mr-2 compact:mb-0.5 portrait:mb-1">Host Identity</span>
              <div 
                onClick={focusNameInput}
                className="group relative flex items-center justify-between gap-2 bg-slate-900/40 hover:bg-slate-900/60 lg:hover:bg-indigo-500/5 px-2 portrait:px-4 py-1.5 portrait:py-2.5 rounded-xl border border-white/5 hover:border-indigo-500/30 transition-all cursor-text focus-within:border-indigo-500 focus-within:bg-indigo-500/5 shadow-2xl compact:py-1 portrait:w-full max-w-[400px]"
@@ -205,7 +223,7 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
                   onClick={(e) => { e.stopPropagation(); focusNameInput(); }}
                   className="p-1 hover:bg-white/10 rounded-lg transition-colors group/icon"
                 >
-                   <Edit3 className="w-2.5 h-2.5 portrait:w-4 portrait:h-4 lg:w-5 lg:h-5 text-indigo-500/30 group-hover:text-indigo-400 group-hover/icon:scale-110 transition-all shrink-0" />
+                   <Edit3 className="w-2.5 h-2.5 portrait:w-4 portrait:h-4 lg:w-5 lg:h-5 text-indigo-400 group-hover/icon:scale-110 transition-all shrink-0" />
                 </button>
              </div>
           </div>
@@ -218,8 +236,8 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
            <div className="flex flex-col gap-1.5 portrait:hidden lg:w-1/4 shrink-0 lg:gap-8 compact:hidden">
               <div className="flex items-center justify-between px-1">
                  <div className="flex items-center gap-2 lg:gap-4">
-                    <Database className="w-3 h-3 portrait:w-4 portrait:h-4 lg:w-6 lg:h-6 text-indigo-500" />
-                    <span className="text-[8px] portrait:text-[11px] lg:text-lg font-black text-slate-500 uppercase tracking-[0.4em]">Seleziona Cubo</span>
+                    <Database className="w-3 h-3 portrait:w-4 portrait:h-4 lg:w-6 lg:h-6 text-indigo-400" />
+                    <span className="text-[8px] portrait:text-[11px] lg:text-lg font-black text-slate-300 uppercase tracking-[0.4em]">Seleziona Cubo</span>
                  </div>
                  <span className={`text-[7px] portrait:text-[11px] lg:text-sm font-black uppercase ${hasEnoughCards ? 'text-emerald-500/50' : 'text-red-500'}`}>{selectedCube?.cardCount || 0}/{totalNeeded}</span>
               </div>
@@ -245,13 +263,13 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
            {/* PARAMETERS GRID */}
            <div className="flex-1 flex flex-col gap-2 portrait:gap-2 lg:gap-8 justify-center lg:justify-start lg:overflow-visible overflow-y-auto custom-scrollbar compact:px-2 compact:w-full">
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 portrait:gap-4 lg:gap-6 min-h-0 compact:gap-3 compact:max-w-[700px] compact:mx-auto compact:w-full">
-                 <Stepper label="Giocatori" value={playerCount} min={2} onSub={() => setPlayerCount(p => Math.max(2, p-1))} onAdd={() => setPlayerCount(p => Math.min(16, p+1))} icon={Users} desc="Draft Attendees" />
+                 <Stepper label="Giocatori" value={playerCount} min={2} onSub={() => setPlayerCount(p => Math.max(2, p-1))} onAdd={() => setPlayerCount(p => Math.min(16, p+1))} icon={Users} />
                  
                  {/* COMBINED TIMER CONTROL */}
                  <div className={`setup-item setup-item-portrait setup-item-lg compact:p-2 compact:gap-1 shadow-2xl transition-all duration-300 ${timerEnabled ? 'setup-item-active' : 'opacity-60 grayscale-[0.5]'}`}>
                     <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap portrait:text-[10px] lg:text-[11px]">
-                        <Clock className={`w-2.5 h-2.5 portrait:w-3.5 portrait:h-3.5 lg:w-4 lg:h-4 ${timerEnabled ? 'text-indigo-400' : 'text-slate-500/50'}`} /> Timer
+                      <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-300 uppercase tracking-widest whitespace-nowrap portrait:text-[10px] lg:text-[11px]">
+                        <Clock className={`w-2.5 h-2.5 portrait:w-3.5 portrait:h-3.5 lg:w-4 lg:h-4 ${timerEnabled ? 'text-indigo-400' : 'text-slate-400'}`} /> Timer
                       </div>
                       
                       <div 
@@ -259,7 +277,7 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
                         className={`w-8 h-4 lg:w-14 lg:h-7 rounded-full p-1 transition-colors flex items-center cursor-pointer ${timerEnabled ? 'bg-indigo-600' : 'bg-slate-800'}`}
                       >
                          <motion.div 
-                           animate={{ x: timerEnabled ? 'var(--toggle-x)' : 0 }} 
+                           animate={{ x: timerEnabled ? 22 : 0 }} 
                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
                            className="w-3 h-3 portrait:w-3.5 portrait:h-3.5 lg:w-5 lg:h-5 rounded-full bg-white shadow-lg" 
                          />
@@ -277,7 +295,6 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
                           </button>
                           <div className="text-center">
                              <span className="text-sm font-black text-white italic tabular-nums leading-none portrait:text-xl lg:text-3xl compact:text-base">{timer}s</span>
-                             <p className="text-[6px] font-bold text-slate-600 uppercase mt-1 hidden portrait:block lg:block lg:text-[8px] lg:mt-1 compact:hidden">Tempo per scelta</p>
                           </div>
                           <button 
                             onClick={() => setTimer(t => Math.min(180, t + 5))} 
@@ -294,8 +311,8 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
                     </div>
                  </div>
 
-                 <Stepper label="Buste" value={packsPerPlayer} min={1} onSub={() => setPacksPerPlayer(p => Math.max(1, p-1))} onAdd={() => setPacksPerPlayer(p => Math.min(10, p+1))} icon={Package} desc="Booster Packs" />
-                 <Stepper label="Carte per busta" value={cardsPerPack} min={5} onSub={() => setCardsPerPack(p => Math.max(5, p-1))} onAdd={() => setCardsPerPack(p => Math.min(25, p+1))} icon={Layers} desc="Cards per Pack" />
+                 <Stepper label="Buste" value={packsPerPlayer} min={1} onSub={() => setPacksPerPlayer(p => Math.max(1, p-1))} onAdd={() => setPacksPerPlayer(p => Math.min(10, p+1))} icon={Package}  />
+                 <Stepper label="Carte per busta" value={cardsPerPack} min={5} onSub={() => setCardsPerPack(p => Math.max(5, p-1))} onAdd={() => setCardsPerPack(p => Math.min(25, p+1))} icon={Layers}  />
                  <Toggle active={anonymousMode} onClick={() => setAnonymousMode(!anonymousMode)} icon={ShieldAlert} label="Anonimo" desc="Opponents Hidden" />
                  <Toggle active={randomPacks} onClick={() => setRandomPacks(!randomPacks)} icon={Shuffle} label="Casuali" desc="Random Contents" />
               </div>
