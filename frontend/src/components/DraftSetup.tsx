@@ -27,6 +27,7 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
   const [cardsPerPack, setCardsPerPack] = useState(15);
   const [anonymousMode, setAnonymousMode] = useState(false);
   const [randomPacks, setRandomPacks] = useState(false);
+  const [fillBots, setFillBots] = useState(false);
   const [hostName, setHostName] = useState(localStorage.getItem('mtg_player_name') || 'Giocatore');
 
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -70,6 +71,7 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
       cardsPerPack,
       anonymousMode,
       randomPacks,
+      fillBots,
       hostName: hostName.trim()
     });
   };
@@ -254,8 +256,9 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
                  <Stepper label="Buste" value={packsPerPlayer} min={1} onSub={() => setPacksPerPlayer(p => Math.max(1, p-1))} onAdd={() => setPacksPerPlayer(p => Math.min(10, p+1))} icon={Package} desc="Booster Packs" />
                  <Stepper label="Carte per busta" value={cardsPerPack} min={5} onSub={() => setCardsPerPack(p => Math.max(5, p-1))} onAdd={() => setCardsPerPack(p => Math.min(25, p+1))} icon={Layers} desc="Cards per Pack" />
                  <Toggle active={anonymousMode} onClick={() => setAnonymousMode(!anonymousMode)} icon={ShieldAlert} label="Anonimo" desc="Opponents Hidden" />
-                 <Toggle active={randomPacks} onClick={() => setRandomPacks(!randomPacks)} icon={Shuffle} label="Casuali" desc="Random Contents" />
-              </div>
+                  <Toggle active={randomPacks} onClick={() => setRandomPacks(!randomPacks)} icon={Shuffle} label="Casuali" desc="Random Contents" />
+                  <Toggle active={fillBots} onClick={() => setFillBots(!fillBots)} icon={Users} label="Riempi Bot" desc="Auto-fill missing" />
+               </div>
            </div>
         </div>
 

@@ -71,6 +71,7 @@ async function start() {
 
                   const success = DraftService.performPick(rooms, roomId, player.playerId, bestCard.id);
                   if (success) {
+                     DraftService.triggerBotPicks(rooms, roomId);
                      changed = true;
                      io.to(roomId).emit('draft_update', room);
                   }

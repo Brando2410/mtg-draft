@@ -146,4 +146,53 @@ export class DraftService {
 
     room.status = 'drafting';
   }
+
+  static triggerBotPicks(rooms: Map<string, Room>, roomId: string): boolean {
+    const room = rooms.get(roomId);
+    if (!room || room.status !== 'drafting' || room.isPaused || !room.draftState) return false;
+
+    let anyPickMade = false;
+    // Iterate over players to find bots with packs in queue
+    for (let i = 0; i < room.players.length; i++) {
+      const player = room.players[i];
+      if (player.isBot) {
+        const queue = room.draftState.queues[i];
+        if (queue && queue.length > 0) {
+          const pack = queue[0];
+          if (pack && pack.length > 0) {
+            const bestCard = this.getBestCard(pack);
+            if (this.performPick(rooms, roomId, player.playerId, bestCard.id)) {
+              anyPickMade = true;
+              // After a bot picks, it might have more packs in queue or have triggered 
+              // something else. We should continue checking.
+            }
+          }
+        }
+      }
+    }
+
+    if (anyPickMade) {
+      // Re-check in case a bot pick gave a pack to another bot
+      this.triggerBotPicks(rooms, roomId);
+      return true;
+    }
+    return false;
+  }
+
+  private static getBestCard(pack: Card[]): Card {
+    const rarityOrder: Record<string, number> = {
+      'mythic': 4,
+      'rare': 3,
+      'uncommon': 2,
+      'common': 1,
+      'basic': 0
+    };
+
+    // Sort by rarity, then just return the first one
+    return [...pack].sort((a, b) => {
+      const rarityA = rarityOrder[a.rarity?.toLowerCase() || 'common'] || 1;
+      const rarityB = rarityOrder[b.rarity?.toLowerCase() || 'common'] || 1;
+      return rarityB - rarityA;
+    })[0];
+  }
 }

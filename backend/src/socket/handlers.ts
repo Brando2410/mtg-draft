@@ -26,6 +26,7 @@ export class SocketHandlers {
         timer: data.timer === null ? null : Number(data.timer),
         rarityBalance: data.rarityBalance === true || data.rules?.rarityBalance === true,
         anonymousMode: data.anonymousMode === true || data.rules?.anonymousMode === true,
+        fillBots: data.fillBots === true || data.rules?.fillBots === true,
         cubeName: 'MTG Cube'
       };
 
@@ -108,8 +109,31 @@ export class SocketHandlers {
     socket.on('start_draft', async ({ roomId }) => {
       const room = rooms.get(roomId);
       if (!room || room.host !== socket.id) return;
+
+      // Fill missing slots with bots if setting is enabled
+      const currentCount = room.players.length;
+      const targetCount = room.rules.playerCount;
+      if (room.rules.fillBots && currentCount < targetCount) {
+        const botsNeeded = targetCount - currentCount;
+        for (let i = 0; i < botsNeeded; i++) {
+          const botId = `bot-${Math.random().toString(36).substring(2, 7)}`;
+          room.players.push({
+            id: 'bot-socket',
+            playerId: botId,
+            name: `Bot ${i + 1}`,
+            avatar: AVATARS[Math.floor(Math.random() * AVATARS.length)],
+            online: true,
+            isBot: true,
+            lastSeen: Date.now(),
+            pool: []
+          });
+          LoggerService.info('DRAFT', `Added bot: Bot ${i+1}`, { roomId, botId });
+        }
+      }
       
       DraftService.startDraft(room);
+      DraftService.triggerBotPicks(rooms, roomId);
+      
       LoggerService.info('DRAFT', `Draft started in room: ${roomId}`, { roomId });
       io.to(roomId).emit('draft_started', room);
       await PersistenceService.saveRooms(rooms);
@@ -118,6 +142,7 @@ export class SocketHandlers {
     socket.on('pick_card', async ({ roomId, playerId, cardId }) => {
       LoggerService.debug('DRAFT', `Pick attempt: player ${playerId} picking card ${cardId}`, { roomId, playerId, cardId });
       if (DraftService.performPick(rooms, roomId, playerId, cardId)) {
+         DraftService.triggerBotPicks(rooms, roomId);
          const room = rooms.get(roomId);
          io.to(roomId).emit('draft_update', room);
          await PersistenceService.saveRooms(rooms);

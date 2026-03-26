@@ -22,6 +22,7 @@ export interface Player {
   name: string;
   avatar: string;
   online: boolean;
+  isBot?: boolean; // New property to identify bots
   lastSeen: number;
   pool: Card[];
 }
@@ -33,6 +34,7 @@ export interface Rules {
   timer: number | null;
   rarityBalance: boolean;
   anonymousMode: boolean;
+  fillBots: boolean; // New setting to fill missing players with bots
   cubeName: string;
 }
 
