@@ -62,10 +62,11 @@ export const JoinRoom = ({ onBack, onJoin, error, loading }: JoinRoomProps) => {
       
       {/* Sfondo Custom Sincronizzato con Menu */}
       <div className="absolute inset-0 z-0">
-        <div className={`absolute inset-0 transition-opacity duration-500 ${isLoaded ? 'opacity-0' : 'opacity-100'} bg-slate-950 z-[4]`} />
+        <div className={`absolute inset-0 transition-opacity duration-[250ms] ${isLoaded ? 'opacity-0' : 'opacity-100'} bg-slate-950 z-[4]`} />
+        {/* Main Image */}
         {wallpaper && (
           <div 
-            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 scale-105 animate-slow-zoom ${isLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-lg'}`}
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-[250ms] scale-105 animate-slow-zoom ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
             style={{ backgroundImage: `url(${wallpaper})` }}
           />
         )}

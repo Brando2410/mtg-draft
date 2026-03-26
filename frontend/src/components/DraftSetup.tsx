@@ -156,12 +156,12 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
       {/* Background Essential - SYNCED WITH MAIN MENU */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         {/* Loader Overlay */}
-        <div className={`absolute inset-0 transition-opacity duration-1000 ${isLoaded ? 'opacity-0' : 'opacity-100'} bg-slate-950 z-[4]`} />
+        <div className={`absolute inset-0 transition-opacity duration-[250ms] ${isLoaded ? 'opacity-0' : 'opacity-100'} bg-slate-950 z-[4]`} />
         
         {/* Main Image */}
         {wallpaper && (
           <div 
-            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 ${isLoaded ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-105 blur-lg'} z-[2]`}
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-[250ms] ${isLoaded ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-105 blur-lg'} z-[2]`}
             style={{ backgroundImage: `url(${wallpaper})` }}
           />
         )}

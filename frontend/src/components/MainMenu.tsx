@@ -38,11 +38,11 @@ export const MainMenu = ({ onSelect, onShowAdmin, onShowAssets }: MainMenuProps)
 
       {/* Sfondo: Nero solido finché non carica, poi l'immagine scelta */}
       <div className="absolute inset-0 z-0">
-        <div className={`absolute inset-0 transition-opacity duration-500 ${isLoaded ? 'opacity-0' : 'opacity-100'} bg-slate-950 z-[4]`} />
+        <div className={`absolute inset-0 transition-opacity duration-[250ms] ${isLoaded ? 'opacity-0' : 'opacity-100'} bg-slate-950 z-[4]`} />
 
         {wallpaper && (
           <div
-            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'} z-[2]`}
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-[250ms] ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'} z-[2]`}
             style={{ backgroundImage: `url(${wallpaper})` }}
           />
         )}
