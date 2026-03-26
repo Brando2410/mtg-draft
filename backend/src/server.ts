@@ -4,6 +4,7 @@ import app from './app';
 import { SocketHandlers } from './socket/handlers';
 import { PersistenceService } from './services/PersistenceService';
 import { DraftService } from './services/DraftService';
+import { BotLogic } from './bots/BotLogic';
 import { LoggerService } from './services/LoggerService';
 import { Room, Player, Card } from '@shared/types';
 
@@ -64,15 +65,13 @@ async function start() {
                      }
 
                      if (!bestCard) {
-                        const rarityWeights: Record<string, number> = { mythic: 4, rare: 3, uncommon: 2, common: 1 };
-                        const sorted = [...currentPack].sort((a, b) => (rarityWeights[b.rarity || 'common'] || 0) - (rarityWeights[a.rarity || 'common'] || 0));
-                        bestCard = sorted[0];
-                        LoggerService.info('DRAFT', `Timer expired for ${player.name}: fallback to rarity pick`, { roomId, playerId: player.playerId, cardName: bestCard.name });
+                        bestCard = BotLogic.evaluatePack(currentPack, player);
+                        LoggerService.info('DRAFT', `Timer expired for ${player.name}: fallback to automated pick`, { roomId, playerId: player.playerId, cardName: bestCard.name });
                      }
 
                      const success = DraftService.performPick(rooms, roomId, player.playerId, bestCard.id);
                      if (success) {
-                        DraftService.triggerBotPicks(rooms, roomId);
+                        BotLogic.triggerBotPicks(rooms, roomId);
                         changed = true;
                         io.to(roomId).emit('draft_update', room);
                      }

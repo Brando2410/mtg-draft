@@ -27,7 +27,8 @@ function App() {
     startDraft,
     kickPlayer,
     changeAvatar,
-    closeRoom
+    closeRoom,
+    addBot
   } = useDraftStore();
 
   const [isAdminOpen, setIsAdminOpen] = useState(false);
@@ -124,6 +125,7 @@ function App() {
             onClose={closeRoom}
             onKick={kickPlayer}
             onChangeAvatar={changeAvatar}
+            onAddBot={addBot}
           />
         )}
 

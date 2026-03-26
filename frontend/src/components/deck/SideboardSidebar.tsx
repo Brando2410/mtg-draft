@@ -28,13 +28,13 @@ export const SideboardSidebar: React.FC<SideboardSidebarProps> = ({
 }) => {
   return (
     <div 
-      className={`relative bg-slate-900 border-l border-white/5 transition-all duration-700 ease-in-out flex flex-col shadow-2xl z-10 ${isSideboardCollapsed ? 'w-1 sm:w-14' : 'w-80'}`}
+      className={`relative bg-slate-900 border-l border-white/5 transition-all duration-200 ease-in-out flex flex-col shadow-2xl z-10 ${isSideboardCollapsed ? 'w-1 sm:w-14' : 'w-80'}`}
       onDragOver={e => e.preventDefault()}
       onDrop={(e) => onDrop(e, 'side')}
     >
       <button 
         onClick={onToggleCollapse}
-        className={`absolute top-1/2 -translate-y-1/2 flex items-center justify-center transition-all shadow-2xl z-20 ${
+        className={`absolute top-1/2 -translate-y-1/2 flex items-center justify-center transition-all duration-200 shadow-2xl z-20 ${
           isSideboardCollapsed 
             ? '-left-5' 
             : '-left-6'
@@ -50,7 +50,7 @@ export const SideboardSidebar: React.FC<SideboardSidebarProps> = ({
         </div>
       )}
 
-      <div className={`flex-1 overflow-y-auto custom-scrollbar p-5 space-y-3 transition-opacity duration-300 ${isSideboardCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+      <div className={`flex-1 overflow-y-auto custom-scrollbar p-5 space-y-3 transition-opacity duration-200 ${isSideboardCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         {sideboard.map((card, i) => {
           const cardId = (card as any).id || card.scryfall_id;
           const isFlipped = flippedIds.has(cardId);

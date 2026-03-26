@@ -12,6 +12,7 @@ interface Player {
   name: string;
   avatar?: string;
   online?: boolean;
+  isBot?: boolean;
 }
 
 const AVATARS = [
@@ -30,6 +31,7 @@ interface DraftLobbyProps {
   onClose?: () => void;
   onKick: (playerId: string) => void;
   onChangeAvatar: (avatar: string) => void;
+  onAddBot?: () => void;
 }
 
 export const DraftLobby = ({ 
@@ -40,7 +42,8 @@ export const DraftLobby = ({
   onStart, 
   onClose,
   onKick,
-  onChangeAvatar
+  onChangeAvatar,
+  onAddBot
 }: DraftLobbyProps) => {
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
@@ -167,7 +170,7 @@ export const DraftLobby = ({
                  <div 
                    key={player.id} 
                    onClick={player.playerId === PLAYER_ID ? () => setSelectorOpen(true) : undefined}
-                   className={`group relative flex items-center bg-slate-900/60 backdrop-blur-md p-3.5 portrait:p-6 [@media(max-width:1023px)_and_(orientation:landscape)]:p-2.5 lg:p-4 rounded-2xl portrait:rounded-[2.5rem] border transition-all ${player.playerId === PLAYER_ID ? 'border-indigo-500/50 bg-indigo-500/10 shadow-xl shadow-indigo-600/10 cursor-pointer hover:border-indigo-500 active:scale-95' : 'border-white/5 hover:border-white/10'}`}
+                   className={`group relative flex items-center bg-slate-900/60 backdrop-blur-md p-3.5 portrait:p-6 [@media(max-width:1023px)_and_(orientation:landscape)]:p-2.5 lg:p-4 rounded-2xl portrait:rounded-[2.5rem] border transition-all m-1 ${player.playerId === PLAYER_ID ? 'border-indigo-500/50 bg-indigo-500/10 shadow-xl shadow-indigo-600/10 cursor-pointer hover:border-indigo-500 active:scale-95' : 'border-white/5 hover:border-white/10'}`}
                  >
                     <div className="relative w-12 h-12 portrait:w-20 portrait:h-20 [@media(max-width:1023px)_and_(orientation:landscape)]:w-10 [@media(max-width:1023px)_and_(orientation:landscape)]:h-10 lg:w-20 lg:h-20 bg-slate-950 rounded-xl portrait:rounded-2xl border border-white/5 overflow-hidden shadow-inner group-hover:scale-105 transition-all duration-500 shrink-0">
                        <img src={`/avatars/${player.avatar || 'ajani.png'}`} alt="Avatar" className="w-full h-full object-cover transition-all group-hover:opacity-60" />
@@ -192,23 +195,36 @@ export const DraftLobby = ({
                     {isHost && player.playerId !== PLAYER_ID && (
                       <button 
                         onClick={(e) => { e.stopPropagation(); onKick(player.playerId); }}
-                        className="opacity-0 group-hover:opacity-100 p-2 portrait:p-3.5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl portrait:rounded-2xl transition-all border border-red-500/20 active:scale-90 absolute -top-1 portrait:-top-2 -right-1 portrait:-right-2 shadow-xl"
+                        title={player.isBot ? "Rimuovi Bot" : "Rimuovi Giocatore"}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 bg-slate-950 border border-red-500/50 hover:bg-red-600 text-red-500 hover:text-white rounded-full transition-all active:scale-90 absolute top-2 right-2 z-30 shadow-2xl flex items-center justify-center group/kick"
                       >
-                         <UserX className="w-4 h-4 portrait:w-5 portrait:h-5" />
+                         <UserX className="w-3.5 h-3.5" />
                       </button>
                     )}
                  </div>
                ))}
 
-               {/* Empty Slots */}
-               {Array.from({ length: Math.max(0, targetPlayers - currentPlayers) }).map((_, i) => (
-                 <div key={`empty-${i}`} className="flex items-center p-3.5 portrait:p-6 [@media(max-width:1023px)_and_(orientation:landscape)]:p-2.5 lg:p-4 rounded-2xl portrait:rounded-[2.5rem] border border-white/20 bg-slate-900/40 opacity-60 border-dashed animate-pulse">
-                    <div className="relative w-12 h-12 portrait:w-20 portrait:h-20 [@media(max-width:1023px)_and_(orientation:landscape)]:w-10 [@media(max-width:1023px)_and_(orientation:landscape)]:h-10 lg:w-20 lg:h-20 bg-slate-950/30 rounded-xl portrait:rounded-2xl border border-white/5 flex items-center justify-center shrink-0">
-                       <Loader2 className="w-4 h-4 portrait:w-6 portrait:h-6 lg:w-10 lg:h-10 text-amber-500/80 animate-spin" />
-                    </div>
-                    <span className="ml-3 portrait:ml-6 lg:ml-5 text-[9px] portrait:text-sm lg:text-lg font-black text-slate-400 uppercase tracking-[0.2em] portrait:tracking-[0.3em] lg:tracking-[0.4em] italic">...</span>
-                 </div>
-               ))}
+                {/* Empty Slots */}
+                {Array.from({ length: Math.max(0, targetPlayers - currentPlayers) }).map((_, i) => (
+                  <div 
+                    key={`empty-${i}`} 
+                    onClick={isHost ? onAddBot : undefined}
+                    className={`flex items-center p-3.5 portrait:p-6 [@media(max-width:1023px)_and_(orientation:landscape)]:p-2.5 lg:p-4 rounded-2xl portrait:rounded-[2.5rem] border border-white/20 bg-slate-900/40 border-dashed group transition-all relative m-1 ${isHost ? 'cursor-pointer hover:bg-slate-950/80 hover:border-indigo-500/30 active:scale-[0.98]' : ''}`}
+                  >
+                     <div className="relative w-12 h-12 portrait:w-20 portrait:h-20 [@media(max-width:1023px)_and_(orientation:landscape)]:w-10 [@media(max-width:1023px)_and_(orientation:landscape)]:h-10 lg:w-20 lg:h-20 bg-slate-950/30 rounded-xl portrait:rounded-2xl border border-white/5 flex items-center justify-center shrink-0 overflow-hidden">
+                        <Loader2 className="w-4 h-4 portrait:w-6 portrait:h-6 lg:w-10 lg:h-10 text-indigo-500 animate-spin absolute" />
+                     </div>
+                     <div className="ml-3 portrait:ml-6 lg:ml-5 flex flex-col items-start gap-1">
+                        {isHost && onAddBot && (
+                           <button 
+                              className="text-[8px] portrait:text-[11px] lg:text-xs font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-widest transition-colors"
+                           >
+                              + AGGIUNGI BOT
+                           </button>
+                        )}
+                     </div>
+                  </div>
+                ))}
             </div>
           </div>
         </div>

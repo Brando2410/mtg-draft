@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { Room, Player, Rules } from '@shared/types';
 import { DraftService } from '../services/DraftService';
+import { BotLogic } from '../bots/BotLogic';
 import { PersistenceService } from '../services/PersistenceService';
 import { LoggerService } from '../services/LoggerService';
 
@@ -125,28 +126,8 @@ export class SocketHandlers {
       const room = rooms.get(roomId);
       if (!room || room.host !== socket.id) return;
 
-      const currentCount = room.players.length;
-      const targetCount = room.rules.playerCount;
-      if (room.rules.fillBots && currentCount < targetCount) {
-        const botsNeeded = targetCount - currentCount;
-        for (let i = 0; i < botsNeeded; i++) {
-          const botId = `bot-${Math.random().toString(36).substring(2, 7)}`;
-          room.players.push({
-            id: 'bot-socket',
-            playerId: botId,
-            name: `Bot ${i + 1}`,
-            avatar: AVATARS[Math.floor(Math.random() * AVATARS.length)],
-            online: true,
-            isBot: true,
-            lastSeen: Date.now(),
-            pool: []
-          });
-          LoggerService.info('DRAFT', `Added bot: Bot ${i+1}`, { roomId, botId });
-        }
-      }
-
       DraftService.startDraft(room);
-      DraftService.triggerBotPicks(rooms, roomId);
+      BotLogic.triggerBotPicks(rooms, roomId);
       LoggerService.info('DRAFT', `Draft started in room: ${roomId}`, { roomId });
       io.to(roomId).emit('draft_started', room);
       await PersistenceService.saveRooms(rooms);
@@ -155,9 +136,53 @@ export class SocketHandlers {
     socket.on('pick_card', async ({ roomId, playerId, cardId }) => {
       LoggerService.debug('DRAFT', `Pick attempt: player ${playerId} picking card ${cardId}`, { roomId, playerId, cardId });
       if (DraftService.performPick(rooms, roomId, playerId, cardId)) {
-        DraftService.triggerBotPicks(rooms, roomId);
+        BotLogic.triggerBotPicks(rooms, roomId);
         const room = rooms.get(roomId);
         io.to(roomId).emit('draft_update', room);
+        await PersistenceService.saveRooms(rooms);
+      }
+    });
+
+    socket.on('add_bot', async ({ roomId }) => {
+      const room = rooms.get(roomId);
+      if (!room || room.host !== socket.id) return;
+      if (room.players.length >= room.rules.playerCount) return;
+
+      const botIndex = room.players.filter(p => p.isBot).length + 1;
+      const botId = `bot-${Math.random().toString(36).substring(2, 7)}`;
+      
+      room.players.push({
+        id: botId,
+        playerId: botId,
+        name: `Bot_${botIndex}`,
+        avatar: AVATARS[Math.floor(Math.random() * AVATARS.length)],
+        online: true,
+        isBot: true,
+        lastSeen: Date.now(),
+        pool: []
+      });
+
+      LoggerService.info('DRAFT', `Bot added to lobby: Bot_${botIndex}`, { roomId, botId });
+      io.to(roomId).emit('room_update', room);
+      await PersistenceService.saveRooms(rooms);
+    });
+
+    socket.on('kick_player', async ({ roomId, playerId }) => {
+      const room = rooms.get(roomId);
+      if (!room || room.host !== socket.id) return;
+
+      const playerIndex = room.players.findIndex(p => p.playerId === playerId);
+      if (playerIndex !== -1) {
+        const player = room.players[playerIndex];
+        LoggerService.info('SOCKET', `Kicking player/bot: ${player.name}`, { roomId, playerId });
+        
+        room.players.splice(playerIndex, 1);
+        
+        if (!player.isBot) {
+          io.to(player.id).emit('kick_player', { playerId });
+        }
+        
+        io.to(roomId).emit('room_update', room);
         await PersistenceService.saveRooms(rooms);
       }
     });

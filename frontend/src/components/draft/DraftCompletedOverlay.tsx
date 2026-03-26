@@ -5,11 +5,13 @@ import { CheckCircle2, LayoutPanelLeft, Home } from 'lucide-react';
 interface DraftCompletedOverlayProps {
   onOpenReview: () => void;
   onBack: () => void;
+  onViewBots?: () => void;
 }
 
 export const DraftCompletedOverlay: React.FC<DraftCompletedOverlayProps> = ({
   onOpenReview,
-  onBack
+  onBack,
+  onViewBots
 }) => {
   return (
     <motion.div 
@@ -65,6 +67,14 @@ export const DraftCompletedOverlay: React.FC<DraftCompletedOverlayProps> = ({
           >
             TORNA ALLA HOME <Home className="w-5 h-5" />
           </button>
+          {onViewBots && (
+            <button 
+              onClick={onViewBots}
+              className="w-full sm:w-auto px-8 py-6 landscape:py-3 lg:landscape:py-6 bg-slate-800 hover:bg-slate-700 text-white rounded-[2.5rem] landscape:rounded-xl lg:landscape:rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-[11px] landscape:text-[10px] lg:landscape:text-[11px] flex items-center justify-center gap-4 landscape:gap-3 lg:landscape:gap-4 transition-all border border-white/5 active:scale-95 group"
+            >
+              MAZZI BOT (DEBUG)
+            </button>
+          )}
           <button 
             onClick={onOpenReview}
             className="w-full sm:w-auto px-12 py-6 landscape:py-3 lg:landscape:py-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-[2.5rem] landscape:rounded-xl lg:landscape:rounded-[2.5rem] font-black uppercase tracking-[0.2em] text-[11px] landscape:text-[10px] lg:landscape:text-[11px] flex items-center justify-center gap-4 landscape:gap-3 lg:landscape:gap-4 transition-all shadow-2xl shadow-indigo-600/40 active:scale-95 group"

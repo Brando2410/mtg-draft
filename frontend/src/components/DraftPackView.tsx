@@ -9,6 +9,7 @@ import { SelectionSidebar } from './draft/SelectionSidebar';
 import { TableViewModal } from './draft/TableViewModal';
 import { DraftPausedOverlay } from './draft/DraftPausedOverlay';
 import { DraftCompletedOverlay } from './draft/DraftCompletedOverlay';
+import { BotPoolsModal } from './draft/BotPoolsModal';
 import type { Room, Card, Player } from '@shared/types';
 
 interface DraftPackViewProps {
@@ -25,6 +26,7 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
   const [isTableOpen, setIsTableOpen] = useState(false);
   const [zoomCard, setZoomCard] = useState<Card | null>(null);
   const [isZoomFlipped, setIsZoomFlipped] = useState(false);
+  const [isBotReviewOpen, setIsBotReviewOpen] = useState(false);
 
   const isCompleted = room?.status === 'completed';
   const [isPreloading, setIsPreloading] = useState(!isCompleted);
@@ -137,6 +139,42 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
   const prevPackCountRef = useRef(0);
 
   const hasAutoClosedRef = useRef(false);
+  const hasSavedRef = useRef(false);
+
+  // Salvataggio nello storico locale a fine draft
+  useEffect(() => {
+    if (isCompleted && !hasSavedRef.current && currentPlayer?.pool && currentPlayer.pool.length > 0) {
+      const draftRecord = {
+        id: `draft-${room.id}-${Date.now()}`,
+        roomId: room.id,
+        date: new Date().toISOString(),
+        cubeName: room.rules.cubeName || 'Cubo Senza Nome',
+        playerPool: currentPlayer.pool.map((c: any) => ({
+          ...c,
+          image_url: c.image_url || c.image_uris?.normal || '',
+          scryfall_id: c.scryfall_id || c.id || ''
+        })),
+        playerCount: room.players.length,
+        stats: {}
+      };
+
+      const saved = localStorage.getItem('mtg_draft_history');
+      let history = [];
+      if (saved) {
+        try {
+          history = JSON.parse(saved);
+        } catch (e) {}
+      }
+      
+      // Evitiamo duplicati per la stessa stanza nello storico recente
+      if (!history.some((r: any) => r.roomId === room.id && Math.abs(new Date(r.date).getTime() - Date.now()) < 10000)) {
+        history.unshift(draftRecord);
+        if (history.length > 50) history = history.slice(0, 50);
+        localStorage.setItem('mtg_draft_history', JSON.stringify(history));
+        hasSavedRef.current = true;
+      }
+    }
+  }, [isCompleted, room, currentPlayer]);
 
   // Auto-exit review at 10 seconds - Only once per pack
   useEffect(() => {
@@ -351,6 +389,14 @@ export const DraftPackView = ({ room, playerId, onBack }: DraftPackViewProps) =>
                 <DraftCompletedOverlay
                   onOpenReview={() => setIsReviewOpen(true)}
                   onBack={onBack!}
+                  onViewBots={room?.hostPlayerId === playerId ? () => setIsBotReviewOpen(true) : undefined}
+                />
+              )}
+
+              {isBotReviewOpen && (
+                <BotPoolsModal
+                  room={room}
+                  onClose={() => setIsBotReviewOpen(false)}
                 />
               )}
 

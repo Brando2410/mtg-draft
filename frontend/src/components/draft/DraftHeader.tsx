@@ -1,4 +1,4 @@
-import { Layout, Pause, Play, Users, Clock, Package } from 'lucide-react';
+import { Pause, Play, Orbit, Clock, Library, Layers } from 'lucide-react';
 import type { Room, Player } from '@shared/types';
 
 interface DraftHeaderProps {
@@ -26,7 +26,8 @@ export const DraftHeader = ({
 }: DraftHeaderProps) => {
   const isHost = room.hostPlayerId === playerId;
   const packNumber = room.draftState?.round || 1;
-  const currentPick = (currentPlayer?.pool?.length || 0) + 1;
+  const cardsPerPack = room.rules.cardsPerPack || 15;
+  const currentPick = ((currentPlayer?.pool?.length || 0) % cardsPerPack) + 1;
 
   const isUrgent = timeLeft !== null && timeLeft <= 10 && !isPaused;
   const redBgOpacity = isUrgent ? 0.2 + (0.8 * (1 - (timeLeft / 10))) : 0;
@@ -50,16 +51,17 @@ export const DraftHeader = ({
             </p>
           </div>
           
-          {/* Versione Landscape Mobile: Pack info estesa e leggibile */}
-          <div className="hidden max-lg:landscape:flex items-center gap-3">
-            <span className="text-[14px] font-black text-white italic uppercase leading-none">
-              Pack <span className="text-indigo-400">{packNumber}</span>
-            </span>
-            <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-            <span className="text-[14px] font-black text-white italic uppercase leading-none">
-              Pick <span className="text-indigo-400">{currentPick}</span>
-            </span>
-          </div>
+          {/* Badge Coda di Pick (Queue) - Spostato qui per visibilità immediata vicino a Pack/Pick */}
+          {queuedCount > 1 && (
+            <div className="relative group shrink-0" title={`${queuedCount - 1} pacchetti in attesa`}>
+              <div className="p-1 px-1.5 portrait:p-2 portrait:px-3 lg:p-3 lg:px-4 bg-amber-500/10 rounded-lg lg:rounded-2xl border border-amber-500/20 shadow-lg animate-bounce-subtle">
+                <Layers className="w-3.5 h-3.5 portrait:w-5 portrait:h-5 lg:w-7 lg:h-7 text-amber-500" />
+                <div className="absolute -top-1 -right-1 bg-red-600 text-white text-[6px] portrait:text-[8px] lg:text-[10px] font-black rounded-full w-3 h-3 portrait:w-4 portrait:h-4 lg:w-6 lg:h-6 flex items-center justify-center shadow-md border border-slate-950">
+                  {queuedCount - 1}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex-1 flex justify-center items-center gap-2 portrait:gap-4 lg:gap-8">
@@ -110,18 +112,6 @@ export const DraftHeader = ({
               </div>
             )}
           </button>
-
-          {/* Badge Coda di Pick (Queue) - Spinto a destra del timer */}
-          {queuedCount > 1 && (
-            <div className="relative group shrink-0" title={`${queuedCount - 1} pacchetti in attesa`}>
-              <div className="p-2 portrait:p-3 lg:p-4 bg-amber-500/10 rounded-xl lg:rounded-2xl border border-amber-500/20 shadow-lg animate-bounce-subtle">
-                <Layout className="w-4 h-4 portrait:w-5 portrait:h-5 lg:w-8 lg:h-8 text-amber-500" />
-                <div className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[8px] portrait:text-[10px] lg:text-xs font-black rounded-full w-4 h-4 portrait:w-6 portrait:h-6 lg:w-8 lg:h-8 flex items-center justify-center shadow-xl border-2 border-slate-950">
-                  {queuedCount - 1}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Destra: Azioni e Pool - Spaziati */}
@@ -133,7 +123,7 @@ export const DraftHeader = ({
               className="p-1 max-lg:landscape:p-2.5 portrait:p-3 lg:p-5 bg-slate-800/50 hover:bg-slate-700 border border-white/5 rounded-lg portrait:rounded-2xl lg:rounded-3xl text-slate-400 hover:text-white transition-all active:scale-95"
               title="Tavolo Draft"
             >
-              <Users className="w-3.5 h-3.5 portrait:w-5 portrait:h-5 lg:w-7 lg:h-7 max-lg:landscape:w-5 max-lg:landscape:h-5" />
+              <Orbit className="w-3.5 h-3.5 portrait:w-5 portrait:h-5 lg:w-7 lg:h-7 max-lg:landscape:w-5 max-lg:landscape:h-5" />
             </button>
 
             <button 
@@ -141,7 +131,7 @@ export const DraftHeader = ({
               className="relative p-1 max-lg:landscape:p-2.5 portrait:p-3 lg:p-5 bg-indigo-600/20 hover:bg-indigo-600 border border-indigo-500/30 rounded-lg portrait:rounded-2xl lg:rounded-3xl text-indigo-400 hover:text-white transition-all active:scale-95 shadow-2xl shadow-indigo-600/10"
               title="Revisione Deck"
             >
-              <Package className="w-3.5 h-3.5 portrait:w-5 portrait:h-5 lg:w-7 lg:h-7 max-lg:landscape:w-5 max-lg:landscape:h-5" />
+              <Library className="w-3.5 h-3.5 portrait:w-5 portrait:h-5 lg:w-7 lg:h-7 max-lg:landscape:w-5 max-lg:landscape:h-5" />
             </button>
           </div>
         </div>

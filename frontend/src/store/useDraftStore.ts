@@ -27,6 +27,7 @@ interface DraftState {
   kickPlayer: (playerIdToKick: string) => void;
   changeAvatar: (avatar: string) => void;
   closeRoom: () => void;
+  addBot: () => void;
 }
 
 // Get or generate persistent player ID
@@ -198,5 +199,10 @@ export const useDraftStore = create<DraftState>((set, get) => ({
       socket.emit('destroy_room', { roomId: room.id });
       get().leaveRoom();
     }
+  },
+
+  addBot: () => {
+    const { room } = get();
+    if (room) socket.emit('add_bot', { roomId: room.id });
   }
 }));

@@ -32,11 +32,7 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
   }, [selectedCard.id]);
 
   return (
-    <motion.div 
-      initial={{ x: "100%", opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: "100%", opacity: 0 }}
-      transition={{ type: "spring", damping: 25, stiffness: 200 }}
+    <div 
       className="w-full landscape:w-[45vw] lg:w-96 bg-slate-100/10 backdrop-blur-xl border-t landscape:border-t-0 lg:border-t-0 landscape:border-l lg:border-l border-white/10 p-4 sm:p-8 flex flex-col z-40 fixed inset-y-0 right-0 h-full landscape:h-[100dvh] lg:h-[100dvh] rounded-t-[2.5rem] landscape:rounded-none lg:rounded-none shadow-[-20px_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
     >
       {/* Removed lateral dismiss tab as requested */}
@@ -95,12 +91,7 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
       </div>
 
       {/* PORTRAIT CONTROLS (Only visible in mobile portrait) */}
-      <motion.div 
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="mt-auto flex flex-col gap-6 landscape:hidden lg:hidden pt-4 pb-2"
-      >
+      <div className="mt-auto flex flex-col gap-6 landscape:hidden lg:hidden pt-4 pb-2">
         {/* Navigation Arrows Row */}
         <div className="flex items-center justify-center gap-6">
           <button 
@@ -147,15 +138,10 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
             </span>
           </button>
         </div>
-      </motion.div>
+      </div>
 
       {/* LANDSCAPE/DESKTOP PICK BUTTON (Unified Layout) */}
-      <motion.div 
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="pt-4 border-t border-white/5 mt-auto hidden landscape:flex lg:flex items-center gap-4"
-      >
+      <div className="pt-4 border-t border-white/5 mt-auto hidden landscape:flex lg:flex items-center gap-4">
         <button 
           onClick={onClose}
           className="p-5 bg-white/5 hover:bg-white/10 backdrop-blur-md rounded-[1.5rem] border border-white/10 text-white active:scale-95 transition-all shadow-xl"
@@ -174,7 +160,7 @@ export const SelectionSidebar: React.FC<SelectionSidebarProps> = ({
             <Zap className="w-4 h-4 fill-current text-white group-hover:scale-125 transition-transform" />
           </span>
         </button>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };

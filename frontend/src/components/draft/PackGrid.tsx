@@ -250,25 +250,20 @@ export const PackGrid: React.FC<PackGridProps> = ({
                   {queuedCount > 0 
                     ? `Hai ancora ${queuedCount} ${queuedCount === 1 ? 'pacchetto' : 'pacchetti'} in coda.`
                     : 'Gli altri giocatori stanno finendo la loro scelta.'}
-                  <br/>
-                  Il prossimo pacchetto arriverà tra pochi istanti!
                 </p>
               </div>
-
-              {/* Status Indicator */}
-              <div className="flex items-center gap-3 px-6 py-3 bg-white/5 rounded-2xl border border-white/5">
-                <div className="flex gap-1">
-                  {[0, 1, 2].map((i) => (
-                    <motion.div
-                      key={i}
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
-                      className="w-1.5 h-1.5 rounded-full bg-indigo-500"
-                    />
-                  ))}
-                </div>
-                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Sincronizzazione...</span>
+              
+              <div className="flex gap-2 relative z-10">
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    animate={{ opacity: [0.3, 1, 0.3], scale: [1, 1.1, 1] }}
+                    transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                    className="w-1.5 h-1.5 rounded-full bg-indigo-500"
+                  />
+                ))}
               </div>
+
             </div>
           </motion.div>
         )}
