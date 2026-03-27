@@ -55,6 +55,8 @@ export interface CardDefinition {
   toughness?: string;
   loyalty?: string;
   oracleText: string;
+  image_url?: string;
+  scryfall_id?: string;
 }
 
 // A physical/virtual object existing in a Zone.

@@ -7,9 +7,11 @@ export class GameEngine {
   // Players ordered by turn order
   private playerOrder: PlayerId[];
   private resolver: StackResolver;
+  private decks: Record<string, any[]>;
 
-  constructor(players: PlayerId[]) {
+  constructor(players: PlayerId[], decks: Record<string, any[]> = {}) {
     this.playerOrder = players;
+    this.decks = decks;
     
     // Initialize the fundamental GameState according to the theoretical rules
     this.state = {
@@ -42,7 +44,29 @@ export class GameEngine {
         life: 20, // Base life
         poisonCounters: 0,
         
-        library: [], // Left empty for now.
+        library: (this.decks[id] || []).map((cardRef, index) => {
+          const typeLine = cardRef.type_line || '';
+          return {
+            id: `${id}-lib-${index}`,
+            definition: {
+              ...cardRef,
+              name: cardRef.name,
+              manaCost: cardRef.mana_cost || cardRef.manaCost || '',
+              colors: cardRef.colors || cardRef.card_colors || [],
+              types: typeLine.split(/[-—]/)[0].trim().split(/\s+/).filter(Boolean),
+              oracleText: cardRef.oracle_text || cardRef.oracleText || '',
+              image_url: cardRef.image_url || cardRef.image_uris?.normal
+            },
+            ownerId: id,
+            controllerId: id,
+            zone: Zone.Library,
+            isTapped: false,
+            damageMarked: 0,
+            summoningSickness: false, // Rules 302.6
+            faceDown: false,
+            counters: {}
+          };
+        }),
         hand: [],
         graveyard: [],
         
@@ -54,8 +78,50 @@ export class GameEngine {
     }
   }
 
+  public shuffleLibrary(playerId: PlayerId) {
+    const player = this.state.players[playerId];
+    if (!player) return;
+    
+    console.log(`[GameEngine] Shuffling library for player: ${playerId} (${player.library.length} cards)`);
+    for (let i = player.library.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [player.library[i], player.library[j]] = [player.library[j], player.library[i]];
+    }
+  }
+
   public getState(): GameState {
     return this.state;
+  }
+
+  /**
+   * Called once when the match officially starts.
+   */
+  public startGame() {
+    // Rule 103: Starting the Game
+    for (const playerId of this.playerOrder) {
+      this.shuffleLibrary(playerId); 
+      // 103.4: Each player draws seven cards
+      for (let i = 0; i < 7; i++) {
+        this.drawCard(playerId);
+      }
+    }
+    
+    // reset priority to active player (103.5)
+    this.resetPriorityToActivePlayer();
+  }
+
+  public drawCard(playerId: PlayerId): boolean {
+    const player = this.state.players[playerId];
+    if (!player || player.library.length === 0) return false;
+    
+    // Draw from top (Rule 121)
+    const card = player.library.pop();
+    if (card) {
+      card.zone = Zone.Hand;
+      player.hand.push(card);
+      return true;
+    }
+    return false;
   }
 
   // --- Player Actions ---
@@ -64,6 +130,7 @@ export class GameEngine {
    * Main entry point for a player attempting to play a card from their hand.
    */
   public playCard(playerId: PlayerId, cardInstanceId: string, declaredTargets: string[] = []): boolean {
+    console.log(`[GameEngine] playCard intent: player=${playerId}, active=${this.state.activePlayerId}, priority=${this.state.priorityPlayerId}`);
     // 1. You must have priority to play a card/spell (Rule 117.1)
     if (this.state.priorityPlayerId !== playerId) {
       console.warn(`[GameEngine] Player ${playerId} tried to play a card without Priority.`);
@@ -80,8 +147,8 @@ export class GameEngine {
     const cardToPlay = player.hand[cardIndex];
 
     // 2. Determine Time/Type Restrictions
-    const isInstantOrFlash = cardToPlay.definition.types.includes('Instant') || cardToPlay.definition.oracleText.includes('Flash'); // Simplified check
-    const isLand = cardToPlay.definition.types.includes('Land');
+    const isInstantOrFlash = (cardToPlay.definition.types || []).includes('Instant') || (cardToPlay.definition.oracleText || '').includes('Flash'); 
+    const isLand = (cardToPlay.definition.types || []).includes('Land');
     const isSorcerySpeed = !isInstantOrFlash && !isLand;
 
     // Sorcery-speed requirements: Must be Active Player, during Main Phase, and Stack must be empty
@@ -177,7 +244,7 @@ export class GameEngine {
   private resolveTopOrAdvanceStep() {
     // When all players pass in succession, either:
     // A) The top object on the Stack resolves.
-    // B) If the Stack is empty, the Step or Phase ends and the game advances.
+    // B) If the Stack is empty, the Step or Phase ends and the game advances (Rule 117.4)
     
     if (this.state.stack.length > 0) {
       // Resolve the top spell/ability
@@ -193,51 +260,65 @@ export class GameEngine {
     const objectToResolve = this.state.stack.pop();
     if (!objectToResolve) return;
 
-    console.log(`Resolving: ${objectToResolve.id}`);
+    console.log(`[GameEngine] Resolving: ${objectToResolve.id}`);
     
     // In a fully integrated version, we fetch the card parser definition here.
-    // We pass the parsed "effects" array to the resolver.
-    // Temporarily using an empty array until the Card Loader is built.
     const effectsToApply: any[] = []; 
     
     this.resolver.resolveTarget(objectToResolve, effectsToApply);
     
-    // After resolution, priority goes back to the Active Player
+    // After resolution, priority goes back to the Active Player (Rule 117.3b)
     this.resetPriorityToActivePlayer();
   }
 
   private advanceStep() {
     // Move to the next chronological step in the Turn Structure (500)
-    const nextStep = this.calculateNextStep(this.state.currentPhase, this.state.currentStep);
+    const nextStepInfo = this.calculateNextStep(this.state.currentPhase, this.state.currentStep);
     
-    this.state.currentPhase = nextStep.phase;
-    this.state.currentStep = nextStep.step;
+    // If the turn ended, rotate the active player
+    if (nextStepInfo.turnEnded) {
+      this.rotateActivePlayer();
+      this.state.turnNumber++;
+      console.log(`[GameEngine] Turn ${this.state.turnNumber} started. Active player: ${this.state.activePlayerId}`);
+    }
+
+    this.state.currentPhase = nextStepInfo.phase;
+    this.state.currentStep = nextStepInfo.step;
     
-    // Empty mana pool of ALL players when a step ends
+    console.log(`[GameEngine] Entering ${this.state.currentPhase} - ${this.state.currentStep}`);
+
+    // Empty mana pool of ALL players when a step ends (Rule 500.4)
     this.emptyAllManaPools();
     
-    // Specific Step Rules (e.g. untap everyone during Untap step)
+    // Specific Step Rules (e.g. untap, draw)
     this.handleStepEntryRules();
     
-    // Finally, handle priority for the new step. 
-    // Untap and Cleanup typically don't give priority naturally.
+    // If the current step is a non-priority step (Untap or Cleanup), 
+    // we automatically cascade to the next step.
     if (this.state.currentStep === Step.Untap || this.state.currentStep === Step.Cleanup) {
-      this.state.priorityPlayerId = null;
-      // In a real engine, SBA and triggers could change this, but normally we immediately advance:
-      // this.advanceStep(); // (skipping to Upkeep/End for this PoC skeleton)
+      this.state.priorityPlayerId = null; 
+      this.advanceStep(); 
     } else {
+      // For other steps, Reset priority to active player (Rule 117.3a)
       this.resetPriorityToActivePlayer();
     }
+  }
+
+  private rotateActivePlayer() {
+    const currentIndex = this.playerOrder.indexOf(this.state.activePlayerId);
+    const nextIndex = (currentIndex + 1) % this.playerOrder.length;
+    this.state.activePlayerId = this.playerOrder[nextIndex];
+    
+    // Reset "hasPlayedLand" for the new active player
+    const player = this.state.players[this.state.activePlayerId];
+    if (player) player.hasPlayedLandThisTurn = false;
   }
 
   private givePriorityToNextPlayer() {
     if (!this.state.priorityPlayerId) return;
     
     const currentIndex = this.playerOrder.indexOf(this.state.priorityPlayerId);
-    let nextIndex = currentIndex + 1;
-    if (nextIndex >= this.playerOrder.length) {
-      nextIndex = 0;
-    }
+    const nextIndex = (currentIndex + 1) % this.playerOrder.length;
     
     // Ensure State-Based Actions are checked RIGHT BEFORE a player gets priority (704.3)
     this.checkStateBasedActions();
@@ -268,21 +349,16 @@ export class GameEngine {
     
     // Check Lethal Damage & 0 Toughness (704.5f / 704.5g)
     for (let i = this.state.battlefield.length - 1; i >= 0; i--) {
-      const obj = this.state.battlefield[i];
-      // Assume getToughness() wraps the base toughness + +1/-1 modifiers Layer
-      // if (getToughness(obj) <= 0 || obj.damageMarked >= getToughness(obj)) {
-      //   this.moveToGraveyard(obj);
-      //   sbaPerformed = true;
-      // }
+      // Stub for real toughness logic
+      // if (getToughness(obj) <= 0) { sbaPerformed = true; ... }
     }
     
     // Check Game Over (0 Life or 10 poison) (704.5a / 704.5c)
-    // for (const player of Object.values(this.state.players)) {
-    //   if (player.life <= 0 || player.poisonCounters >= 10) {
-    //     this.eliminatePlayer(player.id);
-    //     sbaPerformed = true;
-    //   }
-    // }
+    for (const player of Object.values(this.state.players) as PlayerState[]) {
+      if (player.life <= 0 || player.poisonCounters >= 10) {
+        console.log(`[GameEngine] Player ${player.id} has lost the game (SBA 704.5)`);
+      }
+    }
     
     // Loop if an action was actually taken
     if (sbaPerformed) {
@@ -291,23 +367,55 @@ export class GameEngine {
   }
 
   private handleStepEntryRules() {
-    // 502 Untap: Phasing, Untap everything that belongs to Active Player
+    // 502 Untap: Untap everything that belongs to Active Player
     if (this.state.currentStep === Step.Untap) {
-      // Untap all controlled permanents
+      const activeId = this.state.activePlayerId;
+      
+      // Rule 502.3: Active player untaps all permanents they control
+      this.state.battlefield.forEach((obj: GameObject) => {
+        if (obj.controllerId === activeId) {
+          obj.isTapped = false;
+          // Rule 302.6: Summoning sickness wears off at start of turn
+          obj.summoningSickness = false; 
+        }
+      });
+      console.log(`[GameEngine] Untap Step: Resources refreshed for ${activeId}`);
     }
     // 504 Draw: Active Player is forced to draw 1 card
     else if (this.state.currentStep === Step.Draw) {
-      // this.drawCard(this.state.activePlayerId);
+      const activeId = this.state.activePlayerId;
+      
+      // Rule 103.7: In a two-player game, the starting player skips their first draw
+      const isFirstTurnFirstPlayer = this.state.turnNumber === 1 && this.playerOrder[0] === activeId;
+      
+      if (!isFirstTurnFirstPlayer) {
+        const success = this.drawCard(activeId);
+        if (!success) {
+          // Rule 104.3.2: Drawn from empty library loss
+          console.log(`[GameEngine] Player ${activeId} lost by deck-out.`);
+        }
+      }
     }
-    // 514 Cleanup: Active Player discards down to max hand size, damage wears off
+    // 514 Cleanup: Discard to max hand size, damage wears off
     else if (this.state.currentStep === Step.Cleanup) {
-      // Remove all marked damage
+      const activeId = this.state.activePlayerId;
+      const player = this.state.players[activeId];
+      
+      // Rule 514.1: Discard down to max hand size
+      if (player.hand.length > player.maxHandSize) {
+        const count = player.hand.length - player.maxHandSize;
+        for(let i=0; i<count; i++) {
+          const card = player.hand.pop();
+          if (card) player.graveyard.push(card);
+        }
+      }
+
+      // Rule 514.2: Damage wears off (Rule 120.3)
       this.state.battlefield.forEach((obj: GameObject) => obj.damageMarked = 0);
     }
   }
 
-  // Naive Next Step Calculator
-  private calculateNextStep(phase: Phase, step: Step): { phase: Phase, step: Step } {
+  private calculateNextStep(phase: Phase, step: Step): { phase: Phase, step: Step, turnEnded: boolean } {
     const sequence = [
       { phase: Phase.Beginning, step: Step.Untap },
       { phase: Phase.Beginning, step: Step.Upkeep },
@@ -325,9 +433,8 @@ export class GameEngine {
     
     const currentIndex = sequence.findIndex(s => s.phase === phase && s.step === step);
     if (currentIndex === sequence.length - 1) {
-      // Turn over. AdvanceTurn logic here.
-      return { phase: Phase.Beginning, step: Step.Untap }; // Assuming next turn
+      return { ...sequence[0], turnEnded: true };
     }
-    return sequence[currentIndex + 1];
+    return { ...sequence[currentIndex + 1], turnEnded: false };
   }
 }

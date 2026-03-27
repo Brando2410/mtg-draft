@@ -10,6 +10,7 @@ interface DraftState {
   activeView: 'menu' | 'builder' | 'draft_setup' | 'draft_join' | 'draft_lobby' | 'drafting' | 'collection' | 'history' | 'deck_builder';
   joinError: string | null;
   isJoining: boolean;
+  selectedDeck: any | null;
 
   // Actions
   setRoom: (room: Room | null) => void;
@@ -28,6 +29,8 @@ interface DraftState {
   changeAvatar: (avatar: string) => void;
   closeRoom: () => void;
   addBot: () => void;
+  selectDeck: (deck: any) => void;
+  setSelectedDeck: (deck: any | null) => void;
 
   // Asset Management
   avatarList: string[];
@@ -55,6 +58,8 @@ export const useDraftStore = create<DraftState>((set, get) => ({
   setRoom: (room) => set({ room }),
   setActiveView: (activeView) => set({ activeView }),
   setJoinError: (joinError) => set({ joinError }),
+  selectedDeck: null,
+  setSelectedDeck: (selectedDeck) => set({ selectedDeck }),
   setIsJoining: (isJoining) => set({ isJoining }),
 
   initSocketListeners: () => {
@@ -178,10 +183,18 @@ export const useDraftStore = create<DraftState>((set, get) => ({
   },
 
   startDraft: () => {
-    const { room } = get();
+    const { room, selectedDeck } = get();
     if (room) {
       logger.info('Requesting draft start', { roomId: room.id });
-      socket.emit('start_draft', { roomId: room.id });
+      socket.emit('start_draft', { roomId: room.id, deck: selectedDeck });
+    }
+  },
+
+  selectDeck: (deck) => {
+    const { room } = get();
+    if (room) {
+      socket.emit('ready_with_deck', { roomId: room.id, playerId: PLAYER_ID, deck });
+      set({ selectedDeck: deck });
     }
   },
 

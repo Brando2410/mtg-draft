@@ -8,6 +8,7 @@ import { GameModeSelection } from './components/play/GameModeSelection';
 import { DraftSetup } from './components/lobby/DraftSetup';
 import { JoinRoom } from './components/lobby/JoinRoom';
 import { DraftLobby } from './components/lobby/DraftLobby';
+import { MatchLobby } from './components/lobby/MatchLobby';
 import { AdminPanel } from './components/admin/AdminPanel';
 import { AssetManager } from './components/admin/AssetManager';
 import { DraftHistory } from './components/history/DraftHistory';
@@ -147,22 +148,37 @@ function App() {
         )}
 
         {activeView === 'draft_lobby' && room && (
-          <DraftLobby 
-            roomCode={room.id}
-            players={room.players}
-            rules={room.rules}
-            isHost={room.hostPlayerId === playerId}
-            onStart={startDraft}
-            onClose={closeRoom}
-            onKick={kickPlayer}
-            onChangeAvatar={changeAvatar}
-            onAddBot={addBot}
-          />
+          <>
+            {room.isNormalMatch ? (
+               <MatchLobby 
+                  roomCode={room.id}
+                  players={room.players}
+                  rules={room.rules}
+                  isHost={room.hostPlayerId === playerId}
+                  onStart={startDraft}
+                  onClose={closeRoom}
+                  onKick={kickPlayer}
+                  onChangeAvatar={changeAvatar}
+               />
+            ) : (
+               <DraftLobby 
+                  roomCode={room.id}
+                  players={room.players}
+                  rules={room.rules}
+                  isHost={room.hostPlayerId === playerId}
+                  onStart={startDraft}
+                  onClose={closeRoom}
+                  onKick={kickPlayer}
+                  onChangeAvatar={changeAvatar}
+                  onAddBot={addBot}
+               />
+            )}
+          </>
         )}
 
         {activeView === 'drafting' && room && (
           <div className="animate-in fade-in slide-in-from-top-4 duration-700">
-            {room.rules.isNormalMatch ? (
+            {room.isNormalMatch ? (
                <GameView 
                  room={room} 
                  playerId={playerId} 

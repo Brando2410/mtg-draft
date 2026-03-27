@@ -51,10 +51,8 @@ export interface DraftState {
   playerTimersRemaining?: Record<string, number>; // playerId -> remainingMs
 }
 
-export type PlayerId = string;
-export type GameObjectId = string;
-
-import { GameState } from './engine_types';
+export * from './engine_types';
+import { type GameState } from './engine_types';
 
 export interface Room {
   id: string;
