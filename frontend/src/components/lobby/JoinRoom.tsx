@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Home, Key, ArrowRight, Loader2, AlertCircle, ClipboardPaste } from 'lucide-react';
-import { useDraftStore } from '../store/useDraftStore';
+import { useDraftStore } from '../../store/useDraftStore';
 
 interface JoinRoomProps {
   onBack: () => void;

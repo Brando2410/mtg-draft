@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { DraftPoolBuilder } from './components/DraftPoolBuilder';
-import { DraftPackView } from './components/DraftPackView';
-import { CubeCollection } from './components/CubeCollection';
-import { MainMenu } from './components/MainMenu';
-import { DraftSetup } from './components/DraftSetup';
-import { JoinRoom } from './components/JoinRoom';
-import { DraftLobby } from './components/DraftLobby';
-import { AdminPanel } from './components/AdminPanel';
-import { AssetManager } from './components/AssetManager';
-import { DraftHistory } from './components/DraftHistory';
+import { DraftPoolBuilder } from './components/draft/DraftPoolBuilder';
+import { DraftPackView } from './components/draft/DraftPackView';
+import { Collection } from './components/collection/Collection';
+import { MainMenu } from './components/menu/MainMenu';
+import { GameModeSelection } from './components/play/GameModeSelection';
+import { DraftSetup } from './components/lobby/DraftSetup';
+import { JoinRoom } from './components/lobby/JoinRoom';
+import { DraftLobby } from './components/lobby/DraftLobby';
+import { AdminPanel } from './components/admin/AdminPanel';
+import { AssetManager } from './components/admin/AssetManager';
+import { DraftHistory } from './components/history/DraftHistory';
+import { DeckBuilder } from './components/deck/DeckBuilder';
+import { GameView } from './components/game/GameView';
 import { X } from 'lucide-react';
 import { useDraftStore } from './store/useDraftStore';
 
@@ -36,6 +39,7 @@ function App() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAssetOpen, setIsAssetOpen] = useState(false);
   const [skipRestore, setSkipRestore] = useState(false);
+  const [selectedDeck, setSelectedDeck] = useState<any>(null);
 
   useEffect(() => {
     initSocketListeners();
@@ -46,6 +50,11 @@ function App() {
     localStorage.setItem('mtg_draft_cube', JSON.stringify(cubeData));
     setSkipRestore(true);
     setActiveView('builder');
+  };
+
+  const handleSelectDeckFromCollection = (deckData: any) => {
+    setSelectedDeck(deckData);
+    setActiveView('deck_builder');
   };
 
 
@@ -104,8 +113,26 @@ function App() {
         )}
 
         {activeView === 'draft_setup' && (
+          <GameModeSelection
+            onBack={() => setActiveView('menu')}
+            onSelectMode={(mode) => {
+              if (mode === 'draft') {
+                setActiveView('draft_config' as any);
+              } else {
+                // Normal Match: 2 players, no cube needed
+                createRoom({
+                  playerCount: 2,
+                  isNormalMatch: true,
+                  hostName: localStorage.getItem('mtg_player_name') || 'Giocatore'
+                });
+              }
+            }}
+          />
+        )}
+
+        {activeView === 'draft_config' as any && (
           <DraftSetup 
-            onBack={() => setActiveView('menu')} 
+            onBack={() => setActiveView('draft_setup')} 
             onCreateRoom={createRoom}
           />
         )}
@@ -135,21 +162,45 @@ function App() {
 
         {activeView === 'drafting' && room && (
           <div className="animate-in fade-in slide-in-from-top-4 duration-700">
-            <DraftPackView
-               room={room}
-               playerId={playerId}
-               onBack={() => setActiveView('menu')}
-            />
+            {room.rules.isNormalMatch ? (
+               <GameView 
+                 room={room} 
+                 playerId={playerId} 
+                 onBack={() => setActiveView('menu')} 
+               />
+            ) : (
+               <DraftPackView
+                  room={room}
+                  playerId={playerId}
+                  onBack={() => setActiveView('menu')}
+               />
+            )}
           </div>
         )}
 
         {activeView === 'collection' && (
           <div className="animate-in fade-in zoom-in-95 duration-700">
-             <CubeCollection
+             <Collection
                 onBack={() => setActiveView('menu')}
                 onSelectCube={handleSelectCubeFromCollection}
+                onSelectDeck={handleSelectDeckFromCollection}
+                onCreateNewCube={() => {
+                  setSkipRestore(true);
+                  setActiveView('builder');
+                }}
+                onCreateNewDeck={() => {
+                  setSelectedDeck(null);
+                  setActiveView('deck_builder');
+                }}
              />
           </div>
+        )}
+
+        {activeView === 'deck_builder' && (
+          <DeckBuilder 
+            onBack={() => setActiveView('collection')}
+            initialDeck={selectedDeck}
+          />
         )}
 
         {activeView === 'history' && (

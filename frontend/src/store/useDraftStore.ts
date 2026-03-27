@@ -7,7 +7,7 @@ interface DraftState {
   // State
   room: Room | null;
   playerId: string;
-  activeView: 'menu' | 'builder' | 'draft_setup' | 'draft_join' | 'draft_lobby' | 'drafting' | 'collection' | 'history';
+  activeView: 'menu' | 'builder' | 'draft_setup' | 'draft_join' | 'draft_lobby' | 'drafting' | 'collection' | 'history' | 'deck_builder';
   joinError: string | null;
   isJoining: boolean;
 

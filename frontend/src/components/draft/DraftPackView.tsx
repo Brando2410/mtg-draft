@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { socket } from '../services/socket';
-import { DeckReviewView } from './DeckReviewView';
-import { DraftHeader } from './draft/DraftHeader.tsx';
-import { PackGrid } from './draft/PackGrid';
-import { SelectionSidebar } from './draft/SelectionSidebar';
-import { TableViewModal } from './draft/TableViewModal';
-import { DraftPausedOverlay } from './draft/DraftPausedOverlay';
-import { DraftCompletedOverlay } from './draft/DraftCompletedOverlay';
-import { BotPoolsModal } from './draft/BotPoolsModal';
+import { socket } from '../../services/socket';
+import { DeckReviewView } from '../deck/DeckReviewView';
+import { DraftHeader } from './DraftHeader.tsx';
+import { PackGrid } from './PackGrid';
+import { SelectionSidebar } from './SelectionSidebar';
+import { TableViewModal } from './TableViewModal';
+import { DraftPausedOverlay } from './DraftPausedOverlay';
+import { DraftCompletedOverlay } from './DraftCompletedOverlay';
+import { BotPoolsModal } from './BotPoolsModal';
 import type { Room, Card, Player } from '@shared/types';
 
 interface DraftPackViewProps {

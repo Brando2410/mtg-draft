@@ -36,6 +36,7 @@ export interface Rules {
   anonymousMode: boolean;
   fillBots: boolean; // New setting to fill missing players with bots
   cubeName: string;
+  isNormalMatch?: boolean;
 }
 
 export interface DraftState {
@@ -50,6 +51,11 @@ export interface DraftState {
   playerTimersRemaining?: Record<string, number>; // playerId -> remainingMs
 }
 
+export type PlayerId = string;
+export type GameObjectId = string;
+
+import { GameState } from './engine_types';
+
 export interface Room {
   id: string;
   host: string; // Socket ID
@@ -62,6 +68,8 @@ export interface Room {
     cards: Card[];
   };
   rules: Rules;
+  isNormalMatch?: boolean;
   draftState?: DraftState;
+  gameState?: GameState;
   serverTime?: number;
 }

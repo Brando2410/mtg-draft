@@ -88,42 +88,67 @@ export const fetchExactCard = async (exactName: string, lang: 'en' | 'it' = 'en'
   }
 };
 // 3. Fetch bulk di carte tramite l'endpoint collection di Scryfall (più efficiente per import massivi)
-export const fetchCardsBatch = async (names: string[]): Promise<{ found: SimplifiedCard[], notFound: string[] }> => {
+// Supporta formati Arena/MTGO: "4 Lightning Bolt (CLB) 123" o semplicemente "4 Plains" o "Plains"
+export const fetchCardsBatch = async (lines: string[]): Promise<{ found: SimplifiedCard[], notFound: string[] }> => {
   const found: SimplifiedCard[] = [];
   const notFound: string[] = [];
   
+  // Regex per catturare [Quantità] [Nome Carta] [(SetCode)] [CollectorNumber]
+  // Esempi: 
+  // "4 Lightning Bolt (CLB) 123" -> qty: 4, name: Lightning Bolt
+  // "20 Plains" -> qty: 20, name: Plains
+  // "Shock" -> qty: 1, name: Shock
+  const cardRegex = /^\s*(?:(\d+)x?\s+)?([^(\r\n]+)(?:\s+\(([^)]+)\)(?:\s+(\d+))?)?.*$/i;
+
+  const identifiers: { name: string, qty: number }[] = [];
+  
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.toLowerCase() === 'deck' || trimmed.toLowerCase() === 'sideboard' || trimmed.toLowerCase() === 'about' || trimmed.startsWith('Name ')) return;
+    
+    const match = trimmed.match(cardRegex);
+    if (match) {
+      const qty = parseInt(match[1] || '1', 10);
+      const name = match[2].trim();
+      if (name) identifiers.push({ name, qty });
+    }
+  });
+
+  if (identifiers.length === 0) return { found, notFound };
+
   try {
     const batchSize = 75;
-    for (let i = 0; i < names.length; i += batchSize) {
-      const currentBatch = names.slice(i, i + batchSize);
+    // Scryfall collection API accetta max 75 identificatori
+    for (let i = 0; i < identifiers.length; i += batchSize) {
+      const currentBatch = identifiers.slice(i, i + batchSize);
       const res = await fetch('https://api.scryfall.com/cards/collection', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          identifiers: currentBatch.map(name => ({ name }))
+          identifiers: currentBatch.map(id => ({ name: id.name }))
         })
       });
 
       if (!res.ok) {
-        // Se il batch intero fallisce, aggiungiamo tutti questi nomi ai non trovati
-        notFound.push(...currentBatch);
+        notFound.push(...currentBatch.map(id => id.name));
         continue;
       }
 
       const data = await res.json();
       
-      // Mappiamo i risultati trovati
       if (data.data) {
         data.data.forEach((card: any) => {
           if (card && card.id) {
+            const idMapObj = currentBatch.find(id => id.name.toLowerCase() === card.name.toLowerCase() || (card.name.includes(' // ') && id.name.toLowerCase() === card.name.split(' // ')[0].toLowerCase()));
+            const qty = idMapObj ? idMapObj.qty : 1;
+
             const imageUrl = card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal || '';
             const backImageUrl = (card.card_faces && card.card_faces[1]?.image_uris?.normal) || undefined;
-            
             const colors = card.colors || card.card_faces?.[0]?.colors || [];
             const typeLine = card.type_line || card.card_faces?.[0]?.type_line || '';
             const manaCost = card.mana_cost || card.card_faces?.[0]?.mana_cost || '';
 
-            found.push({
+            const simplified = {
               scryfall_id: card.id,
               name: card.name,
               rarity: card.rarity,
@@ -133,19 +158,23 @@ export const fetchCardsBatch = async (names: string[]): Promise<{ found: Simplif
               cmc: card.cmc,
               type_line: typeLine,
               mana_cost: manaCost
-            });
+            };
+
+            // Aggiungi tante istanze quante specificate dalla qty
+            for (let k = 0; k < qty; k++) {
+              found.push({ ...simplified });
+            }
           }
         });
       }
 
-      // I nomi non trovati sono indicati esplicitamente da Scryfall
       if (data.not_found && Array.isArray(data.not_found)) {
         data.not_found.forEach((item: any) => {
           if (item.name) notFound.push(item.name);
         });
       }
       
-      if (i + batchSize < names.length) {
+      if (i + batchSize < identifiers.length) {
         await new Promise(r => setTimeout(r, 100));
       }
     }
@@ -153,6 +182,6 @@ export const fetchCardsBatch = async (names: string[]): Promise<{ found: Simplif
     return { found, notFound };
   } catch (err) {
     console.error('Batch fetch error:', err);
-    return { found, notFound: names };
+    return { found, notFound: identifiers.map(id => id.name) };
   }
 };

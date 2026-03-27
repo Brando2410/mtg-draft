@@ -6,11 +6,13 @@ import { LoggerService } from './LoggerService';
 
 export class PersistenceService {
   private static CUBES_DIR = path.join(__dirname, '../../cubes');
+  private static DECKS_DIR = path.join(__dirname, '../../decks');
   private static LOGS_DIR = path.join(__dirname, '../../draft_logs');
   private static ROOMS_FILE = path.join(__dirname, '../../.active_rooms.json');
 
   static init() {
     if (!existsSync(this.CUBES_DIR)) mkdirSync(this.CUBES_DIR, { recursive: true });
+    if (!existsSync(this.DECKS_DIR)) mkdirSync(this.DECKS_DIR, { recursive: true });
     if (!existsSync(this.LOGS_DIR)) mkdirSync(this.LOGS_DIR, { recursive: true });
   }
 
@@ -73,6 +75,48 @@ export class PersistenceService {
 
   static async deleteCube(id: string) {
     const filePath = path.join(this.CUBES_DIR, id);
+    if (existsSync(filePath)) {
+      await fs.unlink(filePath);
+      return true;
+    }
+    return false;
+  }
+
+  // --- Deck Persistence ---
+
+  static async saveDeck(deck: { name: string, cards: Card[] }) {
+    const fileName = deck.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.json';
+    const filePath = path.join(this.DECKS_DIR, fileName);
+    await fs.writeFile(filePath, JSON.stringify({ ...deck, lastUpdated: new Date().toISOString() }, null, 2));
+    return fileName;
+  }
+
+  static async listDecks() {
+    if (!existsSync(this.DECKS_DIR)) return [];
+    const files = await fs.readdir(this.DECKS_DIR);
+    const decks = await Promise.all(
+      files
+        .filter(f => f.endsWith('.json'))
+        .map(async (f: string) => {
+          try {
+            const content = await fs.readFile(path.join(this.DECKS_DIR, f), 'utf8');
+            const data = JSON.parse(content);
+            return { id: f, name: data.name, cardCount: data.cards?.length || 0, lastUpdated: data.lastUpdated };
+          } catch (e: any) { return null; }
+        })
+    );
+    return decks.filter(d => d !== null);
+  }
+
+  static async getDeck(id: string) {
+    const filePath = path.join(this.DECKS_DIR, id);
+    if (!existsSync(filePath)) return null;
+    const content = await fs.readFile(filePath, 'utf8');
+    return JSON.parse(content);
+  }
+
+  static async deleteDeck(id: string) {
+    const filePath = path.join(this.DECKS_DIR, id);
     if (existsSync(filePath)) {
       await fs.unlink(filePath);
       return true;

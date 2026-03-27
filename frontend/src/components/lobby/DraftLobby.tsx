@@ -1,7 +1,7 @@
 import { Users, Info, Play, X, Copy, CheckCircle2, Loader2, UserX, Pencil } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useDraftStore } from '../store/useDraftStore';
+import { useDraftStore } from '../../store/useDraftStore';
 
 interface Player {
   id: string;
@@ -148,12 +148,12 @@ export const DraftLobby = ({
 
               {isHost ? (
                 <div className="flex items-center gap-2 portrait:gap-3 shrink-0">
-                  <button 
+                   <button 
                     disabled={currentPlayers < 2}
                     onClick={onStart}
                     className="min-w-[60px] sm:min-w-[80px] portrait:min-w-[100px] px-2 portrait:px-6 portrait:py-3 lg:px-10 lg:h-[50px] bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-lg portrait:rounded-xl lg:rounded-2xl font-black uppercase tracking-widest text-[8px] portrait:text-[11px] lg:text-xs flex items-center justify-center gap-1 portrait:gap-2 transition-all shadow-xl active:scale-95"
                   >
-                    AVVIA <Play className="w-2 h-2 portrait:w-3.5 h-3.5 lg:w-4 h-4 fill-current" />
+                    {rules.isNormalMatch ? 'INIZIA MATCH' : 'AVVIA'} <Play className="w-2 h-2 portrait:w-3.5 h-3.5 lg:w-4 h-4 fill-current" />
                   </button>
 
                   <button 

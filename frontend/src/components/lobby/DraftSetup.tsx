@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Home, Layers, Users, Clock, Package, Loader2, ShieldAlert, ArrowRight, Minus, Plus, Database, Shuffle, Edit3, ChevronDown } from 'lucide-react';
-import { useDraftStore } from '../store/useDraftStore';
+import { useDraftStore } from '../../store/useDraftStore';
 import { motion } from 'framer-motion';
 
 interface SavedCube {

@@ -54,6 +54,48 @@ app.delete('/api/cubes/:id', async (req, res) => {
   }
 });
 
+// --- API REST per Mazzi (Decks) ---
+app.post('/api/decks', async (req, res) => {
+  const deck = req.body;
+  if (!deck || !deck.name) return res.status(400).json({ error: 'Dati mazzo non validi' });
+
+  try {
+    const fileName = await PersistenceService.saveDeck(deck);
+    res.json({ message: 'Mazzo salvato con successo', id: fileName });
+  } catch (err) {
+    res.status(500).json({ error: 'Errore durante il salvataggio' });
+  }
+});
+
+app.get('/api/decks', async (req, res) => {
+  try {
+    const decks = await PersistenceService.listDecks();
+    res.json(decks);
+  } catch (err) {
+    res.status(500).json({ error: 'Errore durante la lettura dei mazzi' });
+  }
+});
+
+app.get('/api/decks/:id', async (req, res) => {
+  try {
+    const deck = await PersistenceService.getDeck(req.params.id);
+    if (!deck) return res.status(404).json({ error: 'Mazzo non trovato' });
+    res.json(deck);
+  } catch (err) {
+    res.status(500).json({ error: 'Errore nel caricamento del mazzo' });
+  }
+});
+
+app.delete('/api/decks/:id', async (req, res) => {
+  try {
+    const success = await PersistenceService.deleteDeck(req.params.id);
+    if (success) res.json({ message: 'Mazzo eliminato con successo' });
+    else res.status(404).json({ error: 'Mazzo non trovato' });
+  } catch (err) {
+    res.status(500).json({ error: 'Errore durante l\'eliminazione' });
+  }
+});
+
 // --- Asset Management ---
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

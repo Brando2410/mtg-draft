@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Play, PlusSquare, Library, Users, Bug, History as HistoryIcon, Settings } from 'lucide-react';
-import { useDraftStore } from '../store/useDraftStore';
+import { Play, Library, Users, Bug, History as HistoryIcon, Settings } from 'lucide-react';
+import { useDraftStore } from '../../store/useDraftStore';
 
 interface MainMenuProps {
   onSelect: (view: 'builder' | 'draft_setup' | 'draft_join' | 'collection' | 'history') => void;
@@ -77,8 +77,8 @@ export const MainMenu = ({ onSelect, onShowAdmin, onShowAssets }: MainMenuProps)
                 <Play className="w-5 h-5 sm:w-6 sm:h-6 compact:w-4 compact:h-4 text-indigo-400 group-hover:text-white fill-current" />
               </div>
               <div className="flex flex-col items-start text-left">
-                <span className="text-lg sm:text-xl compact:text-sm font-black text-white uppercase tracking-tighter leading-tight">Nuova Draft</span>
-                <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 group-hover:text-indigo-200 uppercase tracking-widest hidden sm:block compact:hidden">Crea una stanza</span>
+                <span className="text-lg sm:text-xl compact:text-sm font-black text-white uppercase tracking-tighter leading-tight">Gioca</span>
+                <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 group-hover:text-indigo-200 uppercase tracking-widest hidden sm:block compact:hidden">Inizia una partita</span>
               </div>
             </div>
           </button>
@@ -99,21 +99,20 @@ export const MainMenu = ({ onSelect, onShowAdmin, onShowAssets }: MainMenuProps)
           </button>
 
           <div className="grid grid-cols-2 gap-3 sm:gap-4 compact:gap-2 mt-0 landscape:mt-0 lg:mt-0 landscape:col-span-2 lg:col-span-1 compact:col-span-2">
-            <button
-              onClick={() => onSelect('builder')}
-              className="group flex flex-col items-center justify-center p-4 sm:p-6 compact:p-2 bg-slate-900/80 hover:bg-purple-600 border border-white/5 hover:border-purple-400 rounded-2xl transition-all duration-300 shadow-xl gap-2 compact:gap-1"
-            >
-              <PlusSquare className="w-6 h-6 sm:w-8 sm:h-8 compact:w-4 compact:h-4 text-purple-400 group-hover:text-white" />
-              <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none">Nuovo Cube</span>
-            </button>
-
-            <button
-              onClick={() => onSelect('collection')}
-              className="group flex flex-col items-center justify-center p-4 sm:p-6 compact:p-2 bg-slate-900/80 hover:bg-slate-800 border border-white/5 hover:border-slate-600 rounded-2xl transition-all duration-300 shadow-xl gap-2 compact:gap-1"
-            >
-              <Library className="w-6 h-6 sm:w-8 sm:h-8 compact:w-4 compact:h-4 text-slate-400 group-hover:text-white" />
-              <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none">Collezione</span>
-            </button>
+          <button
+            onClick={() => onSelect('collection')}
+            className="group relative flex items-center justify-between p-4 sm:p-6 compact:p-2 bg-slate-900/80 hover:bg-indigo-600 border border-white/5 hover:border-indigo-400 rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-indigo-600/40 hover:-translate-y-1 col-span-2"
+          >
+            <div className="flex items-center gap-3 sm:gap-4 compact:gap-2">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 compact:w-8 compact:h-8 rounded-xl bg-indigo-500/20 group-hover:bg-white/20 flex items-center justify-center transition-colors">
+                <Library className="w-5 h-5 sm:w-6 sm:h-6 compact:w-4 compact:h-4 text-indigo-400 group-hover:text-white" />
+              </div>
+              <div className="flex flex-col items-start text-left">
+                <span className="text-lg sm:text-xl compact:text-sm font-black text-white uppercase tracking-tighter leading-tight">Collezione</span>
+                <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 group-hover:text-indigo-200 uppercase tracking-widest hidden sm:block compact:hidden">I tuoi arsenali</span>
+              </div>
+            </div>
+          </button>
           </div>
 
           <button

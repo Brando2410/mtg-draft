@@ -1,9 +1,9 @@
 import { useState, useMemo, useCallback } from 'react';
-import type { SimplifiedCard } from '../services/scryfall';
-import { DeckHeader } from './deck/DeckHeader';
-import { MainboardGrid } from './deck/MainboardGrid';
-import { SideboardSidebar } from './deck/SideboardSidebar';
-import { StatsModal } from './deck/StatsModal';
+import type { SimplifiedCard } from '../../services/scryfall';
+import { DeckHeader } from './DeckHeader';
+import { MainboardGrid } from './MainboardGrid';
+import { SideboardSidebar } from './SideboardSidebar';
+import { StatsModal } from './StatsModal';
 import { X, RefreshCw } from 'lucide-react';
 
 interface DeckReviewProps {

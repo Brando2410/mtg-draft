@@ -1,9 +1,10 @@
 import { Server, Socket } from 'socket.io';
-import { Room, Player, Rules } from '@shared/types';
+import { Room, Player, Rules, PlayerId, Card } from '@shared/types';
 import { DraftService } from '../services/DraftService';
 import { BotLogic } from '../bots/BotLogic';
 import { PersistenceService } from '../services/PersistenceService';
 import { LoggerService } from '../services/LoggerService';
+import { GameEngine } from '../engine/GameEngine';
 
 const AVATARS = [
   'ajani.png', 'alena_halana.png', 'angrath.png', 'aragorn.png', 'ashiok.png',
@@ -37,7 +38,7 @@ export class SocketHandlers {
         cubeName: 'MTG Cube'
       };
 
-      const cubeData = await PersistenceService.getCube(cubeId);
+      const cubeData = cubeId ? await PersistenceService.getCube(cubeId) : null;
       const newRoom: Room = {
         id: roomId,
         host: socket.id,
@@ -53,8 +54,10 @@ export class SocketHandlers {
         }],
         status: 'waiting',
         isPaused: false,
-        cube: cubeData || { name: "Cubo Sconosciuto", cards: [] },
-        rules: { ...rules, cubeName: cubeData?.name || "MTG Cube" }
+        isNormalMatch: data.isNormalMatch === true,
+        cube: cubeData || { name: data.isNormalMatch ? "Partita Normale" : "Cubo Sconosciuto", cards: [] },
+        rules: { ...rules, cubeName: cubeData?.name || (data.isNormalMatch ? "Partita Normale" : "MTG Cube") },
+        gameState: data.isNormalMatch ? new GameEngine([playerId as PlayerId]).getState() : undefined
       };
 
       rooms.set(roomId, newRoom);
@@ -126,9 +129,16 @@ export class SocketHandlers {
       const room = rooms.get(roomId);
       if (!room || room.host !== socket.id) return;
 
-      DraftService.startDraft(room);
-      BotLogic.triggerBotPicks(rooms, roomId);
-      LoggerService.info('DRAFT', `Draft started in room: ${roomId}`, { roomId });
+      if (room.rules.isNormalMatch) {
+         const playerIds = room.players.map(p => p.playerId as PlayerId);
+         const engine = new GameEngine(playerIds);
+         room.status = 'drafting';
+         room.gameState = engine.getState();
+      } else {
+         DraftService.startDraft(room);
+         BotLogic.triggerBotPicks(rooms, roomId);
+      }
+      LoggerService.info('DRAFT', `${room.rules.isNormalMatch ? 'Normal Match' : 'Draft'} started in room: ${roomId}`, { roomId });
       io.to(roomId).emit('draft_started', room);
       await PersistenceService.saveRooms(rooms);
     });

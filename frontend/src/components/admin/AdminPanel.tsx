@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { socket } from '../services/socket';
+import { socket } from '../../services/socket';
 import { X, Trash2, Users, Radio, Terminal, RefreshCw } from 'lucide-react';
 
 interface AdminPanelProps {

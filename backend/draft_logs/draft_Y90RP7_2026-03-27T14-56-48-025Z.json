@@ -1,0 +1,460 @@
+{
+  "roomId": "Y90RP7",
+  "timestamp": "2026-03-27T14:56:48.025Z",
+  "cubeName": "Kay_Tee_(Kitchen_Table)",
+  "playerCount": 8,
+  "rules": {
+    "playerCount": 8,
+    "packsPerPlayer": 1,
+    "cardsPerPack": 6,
+    "timer": 60,
+    "rarityBalance": false,
+    "anonymousMode": false,
+    "fillBots": false,
+    "cubeName": "Kay_Tee_(Kitchen_Table)"
+  },
+  "players": [
+    {
+      "playerId": "a2eounxso1jmn7laf0u",
+      "name": "Giocatore",
+      "poolCount": 6,
+      "pool": [
+        {
+          "name": "Patient Naturalist",
+          "scryfall_id": "1dd17cea-9e8c-4dba-b6ab-a6b9de87a306",
+          "cmc": 3,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Veteran Survivor",
+          "scryfall_id": "39368ea2-f665-40b1-b042-c0182f7c6df0",
+          "cmc": 1,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Tilling Treefolk",
+          "scryfall_id": "8e4a10d0-214d-4e7b-9683-c84034f8f6b7",
+          "cmc": 3,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Ingot Chewer",
+          "scryfall_id": "c2086d4e-c202-4677-8dee-ecabd61cf921",
+          "cmc": 5,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Scarblade Scout",
+          "scryfall_id": "c2412fea-4591-4345-913f-edc2da9ad975",
+          "cmc": 2,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Nurturing Bristleback",
+          "scryfall_id": "081d5c9e-71da-4454-ae4e-c76cb7790d20",
+          "cmc": 7,
+          "color": [
+            "G"
+          ]
+        }
+      ]
+    },
+    {
+      "playerId": "bot-jv05n",
+      "name": "Bot_1",
+      "poolCount": 6,
+      "pool": [
+        {
+          "name": "The Mechanist, Aerial Artisan",
+          "scryfall_id": "b910851e-9332-4c83-a790-d379667cabfc",
+          "cmc": 3,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Waterlogged Teachings // Inundated Archive",
+          "scryfall_id": "060f9675-4921-4cbb-bae2-54c85c679fd4",
+          "cmc": 4,
+          "color": [
+            "B",
+            "U"
+          ]
+        },
+        {
+          "name": "Nekrataal",
+          "scryfall_id": "5b3a4f2a-57ea-4fa0-a76f-3e215a36d1f4",
+          "cmc": 4,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Bloodline Shaman",
+          "scryfall_id": "5fdfc473-8477-4c04-a4e7-ecac1b0a5716",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Mana Leak",
+          "scryfall_id": "179236d9-6fe2-4db6-bdfb-f851e8d531a2",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Ilysian Caryatid",
+          "scryfall_id": "3db65137-c9d6-4352-b7a0-f3968b167233",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        }
+      ]
+    },
+    {
+      "playerId": "bot-z4g16",
+      "name": "Bot_2",
+      "poolCount": 6,
+      "pool": [
+        {
+          "name": "Blooming Marsh",
+          "scryfall_id": "861caabb-0573-4e94-8b03-342f90465064",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Fauna Shaman",
+          "scryfall_id": "b8b906eb-3223-474c-9b74-eda2c280f9c5",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Lightning Helix",
+          "scryfall_id": "4101e3fe-b0e7-4f0f-b9ac-9b61a4d628b3",
+          "cmc": 2,
+          "color": [
+            "R",
+            "W"
+          ]
+        },
+        {
+          "name": "Thraben Charm",
+          "scryfall_id": "dd28a646-f38f-4cdf-948c-969cd979e5e6",
+          "cmc": 2,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Path to Redemption",
+          "scryfall_id": "f936d64a-0db4-49c1-8a57-6d99e012a555",
+          "cmc": 2,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Satyr Wayfinder",
+          "scryfall_id": "8bbbe65d-7162-42fb-94ee-d835d6c3f02a",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        }
+      ]
+    },
+    {
+      "playerId": "bot-h0osb",
+      "name": "Bot_3",
+      "poolCount": 6,
+      "pool": [
+        {
+          "name": "Loyal Warhound",
+          "scryfall_id": "f408c5e4-e18d-4e4d-959a-f41df4c3019c",
+          "cmc": 2,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Spellbound Dragon",
+          "scryfall_id": "88eba680-a0d7-4356-bf74-7986a51e545f",
+          "cmc": 5,
+          "color": [
+            "R",
+            "U"
+          ]
+        },
+        {
+          "name": "Suppression Ray // Orderly Plaza",
+          "scryfall_id": "0cccd328-457a-48ab-97fb-4bc319db2e60",
+          "cmc": 5,
+          "color": [
+            "U",
+            "W"
+          ]
+        },
+        {
+          "name": "Brimstone Roundup",
+          "scryfall_id": "bd13011e-a4fc-4107-988f-60cfc851ecd3",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Voracious Varmint",
+          "scryfall_id": "99b74fa3-c1d7-4780-977d-f2d6663a529a",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Pretending Poxbearers",
+          "scryfall_id": "d1af91a5-8681-4a05-910d-96f7a819bfaa",
+          "cmc": 2,
+          "color": [
+            "B",
+            "W"
+          ]
+        }
+      ]
+    },
+    {
+      "playerId": "bot-ctbv1",
+      "name": "Bot_4",
+      "poolCount": 6,
+      "pool": [
+        {
+          "name": "Goblin Bombardment",
+          "scryfall_id": "e262f55e-9239-4a97-a19e-9b08fb34502e",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Mischievous Pup",
+          "scryfall_id": "7214d984-6400-44d7-bde6-57d96b606e78",
+          "cmc": 3,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Case of the Filched Falcon",
+          "scryfall_id": "266be5bd-71ba-4511-8b71-d0b03885a28d",
+          "cmc": 1,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Slickshot Lockpicker",
+          "scryfall_id": "109a9464-ce30-4747-874e-3bbf75913081",
+          "cmc": 3,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Rescue from the Underworld",
+          "scryfall_id": "2e46aa9c-7a29-4eb4-bc44-a201c22824d2",
+          "cmc": 5,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Unauthorized Exit",
+          "scryfall_id": "8a458474-d721-46d7-b487-6a47dc063cfd",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        }
+      ]
+    },
+    {
+      "playerId": "bot-m6m9l",
+      "name": "Bot_5",
+      "poolCount": 6,
+      "pool": [
+        {
+          "name": "Skullport Merchant",
+          "scryfall_id": "3362080e-57e9-4da1-9065-d28932869fe5",
+          "cmc": 3,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Forgotten Ancient",
+          "scryfall_id": "90fc94d9-b8af-4de8-a42d-ae508f8f1cd5",
+          "cmc": 4,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Sink into Stupor // Soporific Springs",
+          "scryfall_id": "5358b87a-1a29-426d-b165-40c97da2c14d",
+          "cmc": 3,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Pitiless Plunderer",
+          "scryfall_id": "5b5cd187-857a-44dd-8595-a52857a0b753",
+          "cmc": 4,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Plagued Rusalka",
+          "scryfall_id": "72bcfb24-1649-4c8f-ba76-346914d11572",
+          "cmc": 1,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Mandibular Kite",
+          "scryfall_id": "6b922f71-18e6-4a74-b792-d477d4a1deca",
+          "cmc": 1,
+          "color": [
+            "W"
+          ]
+        }
+      ]
+    },
+    {
+      "playerId": "bot-1g49b",
+      "name": "Bot_6",
+      "poolCount": 6,
+      "pool": [
+        {
+          "name": "Captain of the Watch",
+          "scryfall_id": "6e201980-e220-44dc-beab-ad13c20332bd",
+          "cmc": 6,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Unshakable Tail",
+          "scryfall_id": "053183e7-b505-49d2-b614-b704e984cb1a",
+          "cmc": 3,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Restless Vents",
+          "scryfall_id": "e628e89b-bee9-408d-bb05-1784fda6b8a1",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Midnight Tilling",
+          "scryfall_id": "c5112bbf-752c-41e7-9c61-4c81e6a77463",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Farseek",
+          "scryfall_id": "95e0760a-d285-493b-88cd-7556d9b10007",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Thrill of Possibility",
+          "scryfall_id": "882b348c-076b-41d8-b505-063480636669",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        }
+      ]
+    },
+    {
+      "playerId": "bot-z1q8t",
+      "name": "Bot_7",
+      "poolCount": 6,
+      "pool": [
+        {
+          "name": "Boon-Bringer Valkyrie",
+          "scryfall_id": "84e1cc7d-e645-4b0e-b117-63f93528ed12",
+          "cmc": 5,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Deathrite Shaman",
+          "scryfall_id": "cfdb1c47-14be-491f-88b3-bed03489dbc5",
+          "cmc": 1,
+          "color": [
+            "B",
+            "G"
+          ]
+        },
+        {
+          "name": "Utter Insignificance",
+          "scryfall_id": "3050ac06-4c16-4155-a97f-f6bc92709ee4",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Unwelcome Sprite",
+          "scryfall_id": "902f8d86-fde2-4cdf-88f0-bf63d616f3af",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Vendetta",
+          "scryfall_id": "039fc76d-3b7e-4329-a997-07c25509e421",
+          "cmc": 1,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Getaway Glamer",
+          "scryfall_id": "69689049-a704-4f16-84ee-4d5d915028ec",
+          "cmc": 1,
+          "color": [
+            "W"
+          ]
+        }
+      ]
+    }
+  ]
+}

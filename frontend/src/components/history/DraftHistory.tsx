@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Clock, Users, ChevronRight, X, LayoutPanelLeft, Trash2 } from 'lucide-react';
-import { DeckReviewView } from './DeckReviewView';
+import { DeckReviewView } from '../deck/DeckReviewView';
 
 interface DraftRecord {
   id: string;
