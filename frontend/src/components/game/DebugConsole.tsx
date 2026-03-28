@@ -1,6 +1,7 @@
 import { Terminal, RefreshCw, Zap, Play, ChevronRight, Layers, Users } from 'lucide-react';
 import { type GameState } from '@shared/types';
 import { socket } from '../../services/socket';
+import { useEffect, useRef } from 'react';
 
 interface DebugConsoleProps {
   gameState: GameState;
@@ -21,6 +22,13 @@ export const DebugConsole = ({
   onClose,
   onSwapControl 
 }: DebugConsoleProps) => {
+  const terminalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [gameState.logs]);
   return (
     <div className="w-[400px] border-l border-white/5 bg-[#0a0f1e]/95 backdrop-blur-xl flex flex-col p-6 z-30 shadow-[-20px_0_50px_rgba(0,0,0,0.5)]">
        <div className="flex justify-between items-center mb-8">
@@ -54,6 +62,13 @@ export const DebugConsole = ({
              <div className="flex justify-between">
                 <span className="text-[10px] font-bold uppercase text-slate-500">Stack Size</span>
                 <span className="text-[10px] font-black uppercase text-indigo-400 italic">{gameState.stack.length} oggetti</span>
+             </div>
+             <div className="flex justify-between pt-2 border-t border-white/10">
+                <span className="text-[10px] font-bold uppercase text-slate-500">PROPRIETARIO TURNO</span>
+                <span className={`text-[10px] font-black uppercase italic ${gameState.activePlayerId === effectivePlayerId ? 'text-emerald-400' : 'text-orange-400'}`}>
+                   {gameState.activePlayerId === effectivePlayerId ? 'TU' : 'AVVERSARIO'} 
+                   <span className="opacity-40 ml-1 text-[8px]">({gameState.activePlayerId.substring(0, 6)})</span>
+                </span>
              </div>
           </div>
 
@@ -105,10 +120,16 @@ export const DebugConsole = ({
                 <Terminal className="w-3 h-3 text-emerald-500" />
                 <span className="text-[9px] font-black uppercase text-emerald-500/70">Terminal Log</span>
              </div>
-             <div className="text-[10px] font-mono text-slate-500 leading-tight">
-                {`> [GameEngine] Init successful`}<br/>
-                {`> [Socket] Subscribed to match events`}<br/>
-                {`> Ready for user input...`}
+             <div 
+                ref={terminalRef}
+                className="text-[10px] font-mono text-slate-300 leading-tight space-y-1.5 overflow-y-auto max-h-[150px] custom-scrollbar pt-1 pr-2"
+             >
+                {(gameState.logs || []).length === 0 && <span className="text-slate-600 italic">{`> Awaiting logs...`}</span>}
+                {(gameState.logs || []).map((logLine, index) => (
+                   <div key={index} className="break-words leading-relaxed border-l border-emerald-500/20 pl-2 opacity-80 hover:opacity-100 transition-opacity">
+                      {logLine}
+                   </div>
+                ))}
              </div>
           </div>
 

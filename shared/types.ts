@@ -6,14 +6,18 @@ export interface Card {
   cmc?: number;
   card_colors?: string[];
   color?: string;
+  image_url?: string;
   image_uris?: {
     normal: string;
     small: string;
+    large?: string;
   };
-  back_image_url?: string; // Nuova proprietà per le carte bifronte
+  back_image_url?: string;
   type_line?: string;
   oracle_text?: string;
   mana_cost?: string;
+  power?: string;
+  toughness?: string;
 }
 
 export interface Player {

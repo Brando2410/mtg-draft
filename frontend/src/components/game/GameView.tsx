@@ -1,6 +1,6 @@
 import { type Room } from '@shared/types';
-import { Terminal, Layers } from 'lucide-react';
-import { useState } from 'react';
+import { Terminal, Layers, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { PhaseBar } from './PhaseBar';
 import { Battlefield } from './Battlefield';
 import { PlayerHand } from './PlayerHand';
@@ -22,11 +22,41 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
   const opponentId = Object.keys(gameState?.players || {}).find(id => id !== effectivePlayerId);
   const opponent = opponentId ? gameState?.players[opponentId] : null;
 
+  // ARENA-STYLE: Toggle Full Control with Ctrl Key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // MTG Arena uses Ctrl to toggle/hold full control
+      if (e.key === 'Control') {
+        socket.emit('toggle_full_control', { roomId: room.id, playerId: effectivePlayerId });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [room.id, effectivePlayerId]);
+
   const handlePlayCard = (cardInstanceId: string) => {
+    if (me && me.pendingDiscardCount > 0) {
+      socket.emit('discard_card', { 
+        roomId: room.id, 
+        playerId: effectivePlayerId, 
+        cardId: cardInstanceId 
+      });
+      return;
+    }
+
     socket.emit('play_card', { 
        roomId: room.id, 
        playerId: effectivePlayerId, 
        cardInstanceId 
+    });
+  };
+
+  const handleTapCard = (cardId: string) => {
+    socket.emit('tap_permanent', { 
+       roomId: room.id, 
+       playerId: effectivePlayerId, 
+       cardId 
     });
   };
 
@@ -49,7 +79,8 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           currentPhase={gameState.currentPhase}
           currentStep={gameState.currentStep}
           turnNumber={gameState.turnNumber}
-          hasPriority={gameState.priorityPlayerId === effectivePlayerId}
+          hasPriority={gameState.priorityPlayerId === effectivePlayerId || gameState.pendingAction?.playerId === effectivePlayerId}
+          pendingAction={gameState.pendingAction}
           onPassPriority={() => socket.emit('pass_priority', { roomId: room.id, playerId: effectivePlayerId })}
           onBack={onBack}
         />
@@ -58,11 +89,28 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           me={me} 
           opponent={opponent} 
           battlefield={gameState.battlefield}
+          stack={gameState.stack || []}
+          combat={gameState.combat}
+          onTapCard={handleTapCard}
         />
 
         <PlayerHand hand={me?.hand || []} onPlayCard={handlePlayCard} />
 
       </div>
+
+      {/* FULL CONTROL INDICATOR (Arena Style) */}
+      {me?.fullControl && (
+        <div className="fixed bottom-32 left-10 flex items-center gap-3 z-50 pointer-events-none group">
+           <div className="flex flex-col items-center">
+              <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.6)] animate-pulse">
+                <Zap className="w-6 h-6 text-black fill-black" />
+              </div>
+              <div className="mt-2 bg-black/80 backdrop-blur-md border border-amber-500/50 px-3 py-1 rounded text-[10px] font-black uppercase italic tracking-widest text-amber-500 shadow-2xl">
+                Full Control
+              </div>
+           </div>
+        </div>
+      )}
 
       {/* DEBUG CONSOLE SIDEBAR */}
       {showDebug && (

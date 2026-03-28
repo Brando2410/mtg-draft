@@ -55,6 +55,7 @@ export interface CardDefinition {
   toughness?: string;
   loyalty?: string;
   oracleText: string;
+  type_line?: string;
   image_url?: string;
   scryfall_id?: string;
 }
@@ -87,11 +88,13 @@ export interface StackObject {
   sourceId: GameObjectId; 
   type: 'Spell' | 'ActivatedAbility' | 'TriggeredAbility' | 'SpecialAction';
   targets: GameObjectId[] | PlayerId[];
+  card?: GameObject; // Standard Rule 601: A card becomes a spell on the stack
 }
 
 // Player's isolated state within a game
 export interface PlayerState {
   id: PlayerId;
+  name: string;
   life: number;
   poisonCounters: number;
   
@@ -111,7 +114,21 @@ export interface PlayerState {
   };
   
   hasPlayedLandThisTurn: boolean;
+  fullControl: boolean;
   maxHandSize: number;
+  pendingDiscardCount: number;
+}
+
+export interface CombatState {
+  attackers: { attackerId: GameObjectId; targetId: PlayerId | GameObjectId }[];
+  blockers: { blockerId: GameObjectId; attackerId: GameObjectId }[];
+}
+
+export interface PendingAction {
+  type: 'DECLARE_ATTACKERS' | 'DECLARE_BLOCKERS' | 'DISCARD' | 'TARGETING';
+  playerId: PlayerId;
+  count?: number; 
+  sourceId?: string; // For targeting or specific effects
 }
 
 // The monolithic Game State representing the "Source of Truth"
@@ -133,6 +150,11 @@ export interface GameState {
   // The Stack
   stack: StackObject[];
   
+  // Combat data
+  combat?: CombatState;
+  pendingAction?: PendingAction;
+
   // Mechanic logic
   consecutivePasses: number; // To track when all players pass priority
+  logs: string[];            // Real-time game events/engine logs
 }

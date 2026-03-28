@@ -30,6 +30,8 @@ export interface SimplifiedCard {
   cmc: number;
   type_line: string;
   mana_cost: string;
+  power?: string;
+  toughness?: string;
 }
 
 // 1. Usa la search di Scryfall per ottenere metadati (rarità, costo) già nel dropdown
@@ -80,7 +82,9 @@ export const fetchExactCard = async (exactName: string, lang: 'en' | 'it' = 'en'
       back_image_url: backImageUrl,
       cmc: card.cmc,
       type_line: typeLine,
-      mana_cost: manaCost
+      mana_cost: manaCost,
+      power: card.power || card.card_faces?.[0]?.power,
+      toughness: card.toughness || card.card_faces?.[0]?.toughness
     };
   } catch (err) {
     console.error('Fetch card error:', err);
@@ -157,7 +161,9 @@ export const fetchCardsBatch = async (lines: string[]): Promise<{ found: Simplif
               back_image_url: backImageUrl,
               cmc: card.cmc,
               type_line: typeLine,
-              mana_cost: manaCost
+              mana_cost: manaCost,
+              power: card.power || card.card_faces?.[0]?.power,
+              toughness: card.toughness || card.card_faces?.[0]?.toughness
             };
 
             // Aggiungi tante istanze quante specificate dalla qty

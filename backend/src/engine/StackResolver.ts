@@ -7,18 +7,24 @@ export class StackResolver {
   constructor(state: GameState) {
     this.state = state;
   }
+  private log(message: string) {
+    const formattedMessage = `> [Stack] ${message}`;
+    const newLogs = [...(this.state.logs || []), formattedMessage];
+    this.state.logs = newLogs.slice(-40);
+    console.log(`[StackResolver] ${message}`);
+  }
 
   /**
    * Called by the GameEngine when all players pass priority sequentially.
    * Resolves the top-most object on the stack.
    */
   public resolveTarget(stackObj: StackObject, effects: EffectDefinition[]) {
-    console.log(`[StackResolver] Resolving object: ${stackObj.id} (Source: ${stackObj.sourceId})`);
+    this.log(`Resolving stack object: ${stackObj.id}`);
     
     // 1. Re-evaluate Targets (Rule 608.2b)
     // If all targets are illegal, fizzle.
     if (this.areAllTargetsIllegal(stackObj)) {
-      console.log(`[StackResolver] Spell/Ability ${stackObj.id} fizzled due to illegal targets.`);
+      this.log(`Spell/Ability fizzled due to illegal targets.`);
       this.fizzle(stackObj);
       return;
     }
@@ -192,13 +198,43 @@ export class StackResolver {
   }
 
   private postResolutionCleanup(stackObj: StackObject, fizzled: boolean = false) {
-    if (stackObj.type === 'Spell') {
-        const sourceObject = this.findObjectInZone(stackObj.sourceId, Zone.Stack);
-        if (sourceObject) {
-            // Usually put Instant/Sorcery into graveyard. Or if it's a Permanent Spell, it goes to Battlefield.
-            // For now, this is a placeholder.
-            console.log(`[StackResolver] Cleanup source object ${stackObj.sourceId}.`);
+    if (stackObj.type === 'Spell' && stackObj.card) {
+      const card = stackObj.card;
+      const player = this.state.players[card.ownerId];
+      if (!player) return;
+
+      if (fizzled) {
+        // Rule 601: Fizzled spells go to graveyard
+        card.zone = Zone.Graveyard;
+        player.graveyard.push(card);
+        console.log(`[StackResolver] Fizzled spell ${card.definition.name} moved to GY.`);
+        return;
+      }
+
+      // Rule 400.1 / Chapter 6: Non-permanents go to GY, Permanents go to Battlefield
+      const typeLine = (card.definition.type_line || '').toLowerCase();
+      const isPermanent = typeLine.includes('creature') || 
+                          typeLine.includes('artifact') || 
+                          typeLine.includes('enchantment') || 
+                          typeLine.includes('planeswalker') || 
+                          typeLine.includes('battle');
+
+      if (isPermanent) {
+        card.zone = Zone.Battlefield;
+        this.state.battlefield = [...this.state.battlefield, card]; // Immutable
+        
+        // Rule 302.6: Creature enters with summoning sickness
+        if (typeLine.includes('creature')) {
+           card.summoningSickness = true;
         }
+
+        this.log(`PERMANENT RESOLVED: ${card.definition.name} entered the battlefield!`);
+      } else {
+        // Instant/Sorcery (Rule 608.2m)
+        card.zone = Zone.Graveyard;
+        player.graveyard = [...player.graveyard, card]; // Immutable
+        this.log(`${card.definition.name} resolved and moved to GY.`);
+      }
     }
   }
 

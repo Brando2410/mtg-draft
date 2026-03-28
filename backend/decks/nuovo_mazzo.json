@@ -152,56 +152,6 @@
       "mana_cost": ""
     },
     {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": ""
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": ""
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": ""
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": ""
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": ""
-    },
-    {
       "scryfall_id": "fd0e8a82-0201-483e-a976-5f29764b35a4",
       "name": "Ethereal Armor",
       "rarity": "uncommon",
@@ -259,7 +209,9 @@
       "image_url": "https://cards.scryfall.io/normal/front/4/c/4ceac5b5-05eb-4f00-9477-3db490be24dd.jpg?1692936729",
       "cmc": 2,
       "type_line": "Creature — Human Peasant",
-      "mana_cost": "{1}{W}"
+      "mana_cost": "{1}{W}",
+      "power": "2",
+      "toughness": "2"
     },
     {
       "scryfall_id": "4ceac5b5-05eb-4f00-9477-3db490be24dd",
@@ -271,7 +223,9 @@
       "image_url": "https://cards.scryfall.io/normal/front/4/c/4ceac5b5-05eb-4f00-9477-3db490be24dd.jpg?1692936729",
       "cmc": 2,
       "type_line": "Creature — Human Peasant",
-      "mana_cost": "{1}{W}"
+      "mana_cost": "{1}{W}",
+      "power": "2",
+      "toughness": "2"
     },
     {
       "scryfall_id": "4ceac5b5-05eb-4f00-9477-3db490be24dd",
@@ -283,7 +237,9 @@
       "image_url": "https://cards.scryfall.io/normal/front/4/c/4ceac5b5-05eb-4f00-9477-3db490be24dd.jpg?1692936729",
       "cmc": 2,
       "type_line": "Creature — Human Peasant",
-      "mana_cost": "{1}{W}"
+      "mana_cost": "{1}{W}",
+      "power": "2",
+      "toughness": "2"
     },
     {
       "scryfall_id": "4ceac5b5-05eb-4f00-9477-3db490be24dd",
@@ -295,7 +251,9 @@
       "image_url": "https://cards.scryfall.io/normal/front/4/c/4ceac5b5-05eb-4f00-9477-3db490be24dd.jpg?1692936729",
       "cmc": 2,
       "type_line": "Creature — Human Peasant",
-      "mana_cost": "{1}{W}"
+      "mana_cost": "{1}{W}",
+      "power": "2",
+      "toughness": "2"
     },
     {
       "scryfall_id": "9fb41503-8632-4bf1-9bfe-6d9b9993c337",
@@ -355,7 +313,9 @@
       "image_url": "https://cards.scryfall.io/normal/front/9/c/9c72fc6f-6a96-420d-812d-b5cf0f57cc7f.jpg?1726285934",
       "cmc": 1,
       "type_line": "Creature — Human Scout",
-      "mana_cost": "{W}"
+      "mana_cost": "{W}",
+      "power": "1",
+      "toughness": "1"
     },
     {
       "scryfall_id": "9c72fc6f-6a96-420d-812d-b5cf0f57cc7f",
@@ -367,7 +327,9 @@
       "image_url": "https://cards.scryfall.io/normal/front/9/c/9c72fc6f-6a96-420d-812d-b5cf0f57cc7f.jpg?1726285934",
       "cmc": 1,
       "type_line": "Creature — Human Scout",
-      "mana_cost": "{W}"
+      "mana_cost": "{W}",
+      "power": "1",
+      "toughness": "1"
     },
     {
       "scryfall_id": "9c72fc6f-6a96-420d-812d-b5cf0f57cc7f",
@@ -379,7 +341,9 @@
       "image_url": "https://cards.scryfall.io/normal/front/9/c/9c72fc6f-6a96-420d-812d-b5cf0f57cc7f.jpg?1726285934",
       "cmc": 1,
       "type_line": "Creature — Human Scout",
-      "mana_cost": "{W}"
+      "mana_cost": "{W}",
+      "power": "1",
+      "toughness": "1"
     },
     {
       "scryfall_id": "9c72fc6f-6a96-420d-812d-b5cf0f57cc7f",
@@ -391,7 +355,9 @@
       "image_url": "https://cards.scryfall.io/normal/front/9/c/9c72fc6f-6a96-420d-812d-b5cf0f57cc7f.jpg?1726285934",
       "cmc": 1,
       "type_line": "Creature — Human Scout",
-      "mana_cost": "{W}"
+      "mana_cost": "{W}",
+      "power": "1",
+      "toughness": "1"
     },
     {
       "scryfall_id": "aed0cafa-d701-4e1f-9773-abcf817c244c",
@@ -499,7 +465,9 @@
       "image_url": "https://cards.scryfall.io/normal/front/3/9/39368ea2-f665-40b1-b042-c0182f7c6df0.jpg?1726286008",
       "cmc": 1,
       "type_line": "Creature — Human Survivor",
-      "mana_cost": "{W}"
+      "mana_cost": "{W}",
+      "power": "2",
+      "toughness": "1"
     },
     {
       "scryfall_id": "39368ea2-f665-40b1-b042-c0182f7c6df0",
@@ -511,7 +479,9 @@
       "image_url": "https://cards.scryfall.io/normal/front/3/9/39368ea2-f665-40b1-b042-c0182f7c6df0.jpg?1726286008",
       "cmc": 1,
       "type_line": "Creature — Human Survivor",
-      "mana_cost": "{W}"
+      "mana_cost": "{W}",
+      "power": "2",
+      "toughness": "1"
     },
     {
       "scryfall_id": "39368ea2-f665-40b1-b042-c0182f7c6df0",
@@ -523,7 +493,9 @@
       "image_url": "https://cards.scryfall.io/normal/front/3/9/39368ea2-f665-40b1-b042-c0182f7c6df0.jpg?1726286008",
       "cmc": 1,
       "type_line": "Creature — Human Survivor",
-      "mana_cost": "{W}"
+      "mana_cost": "{W}",
+      "power": "2",
+      "toughness": "1"
     },
     {
       "scryfall_id": "39368ea2-f665-40b1-b042-c0182f7c6df0",
@@ -535,7 +507,9 @@
       "image_url": "https://cards.scryfall.io/normal/front/3/9/39368ea2-f665-40b1-b042-c0182f7c6df0.jpg?1726286008",
       "cmc": 1,
       "type_line": "Creature — Human Survivor",
-      "mana_cost": "{W}"
+      "mana_cost": "{W}",
+      "power": "2",
+      "toughness": "1"
     },
     {
       "scryfall_id": "9d298847-2d02-4593-b4d3-c5b722edac1e",
@@ -584,8 +558,176 @@
       "cmc": 1,
       "type_line": "Enchantment",
       "mana_cost": "{W}"
+    },
+    {
+      "scryfall_id": "dc14e61f-481a-4bfa-aca0-fb63dc952be6",
+      "name": "Flash Counter",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/c/dc14e61f-481a-4bfa-aca0-fb63dc952be6.jpg?1562939250",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{U}"
+    },
+    {
+      "scryfall_id": "dc14e61f-481a-4bfa-aca0-fb63dc952be6",
+      "name": "Flash Counter",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/c/dc14e61f-481a-4bfa-aca0-fb63dc952be6.jpg?1562939250",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{U}"
+    },
+    {
+      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
+      "cmc": 0,
+      "type_line": "Basic Land — Island",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
+      "cmc": 0,
+      "type_line": "Basic Land — Island",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
+      "cmc": 0,
+      "type_line": "Basic Land — Island",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
+      "cmc": 0,
+      "type_line": "Basic Land — Island",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
+      "cmc": 0,
+      "type_line": "Basic Land — Island",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
+      "cmc": 0,
+      "type_line": "Basic Land — Island",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
+      "cmc": 0,
+      "type_line": "Basic Land — Island",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
+      "cmc": 0,
+      "type_line": "Basic Land — Island",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
+      "cmc": 0,
+      "type_line": "Basic Land — Island",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
+      "cmc": 0,
+      "type_line": "Basic Land — Island",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
+      "cmc": 0,
+      "type_line": "Basic Land — Island",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
+      "cmc": 0,
+      "type_line": "Basic Land — Island",
+      "mana_cost": ""
+    },
+    {
+      "scryfall_id": "dc14e61f-481a-4bfa-aca0-fb63dc952be6",
+      "name": "Flash Counter",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/c/dc14e61f-481a-4bfa-aca0-fb63dc952be6.jpg?1562939250",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{U}"
+    },
+    {
+      "scryfall_id": "dc14e61f-481a-4bfa-aca0-fb63dc952be6",
+      "name": "Flash Counter",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/c/dc14e61f-481a-4bfa-aca0-fb63dc952be6.jpg?1562939250",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{U}"
     }
   ],
-  "cardCount": 52,
-  "lastUpdated": "2026-03-27T15:08:02.635Z"
+  "cardCount": 63,
+  "lastUpdated": "2026-03-27T23:50:14.658Z"
 }

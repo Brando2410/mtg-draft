@@ -1,305 +1,511 @@
 import { GameState, Phase, Step, PlayerId, Zone, GameObject, PlayerState } from '@shared/engine_types';
+import { Card } from '@shared/types';
 import { StackResolver } from './StackResolver';
+import { ManaProcessor } from './modules/ManaProcessor';
+import { TurnProcessor } from './modules/TurnProcessor';
+import { PriorityProcessor } from './modules/PriorityProcessor';
+import { ActionProcessor } from './modules/ActionProcessor';
+import { StateBasedActionsProcessor } from './modules/StateBasedActionsProcessor';
+import { CombatProcessor } from './modules/CombatProcessor';
 
+/**
+ * Centrailized Engine Coordinator (Chapters 1 & 11)
+ * Rules references are kept for each functional block to ensure manual compliance.
+ */
 export class GameEngine {
   private state: GameState;
-  
-  // Players ordered by turn order
   private playerOrder: PlayerId[];
   private resolver: StackResolver;
-  private decks: Record<string, any[]>;
+  private decks: Record<string, Card[]>;
+  private names: Record<string, string>;
 
-  constructor(players: PlayerId[], decks: Record<string, any[]> = {}) {
+  constructor(players: PlayerId[], decks: Record<string, Card[]> = {}, names: Record<string, string> = {}) {
     this.playerOrder = players;
     this.decks = decks;
+    this.names = names;
     
-    // Initialize the fundamental GameState according to the theoretical rules
+    // Initialize the fundamental GameState (Rule 100)
     this.state = {
-      players: {}, // We'll initialize these later
-      
-      activePlayerId: players[0],     // The first player starts
-      priorityPlayerId: players[0],   // Active player gets priority first
-      
+      players: {}, 
+      activePlayerId: players[0],    
+      priorityPlayerId: players[0],  
       currentPhase: Phase.Beginning,
       currentStep: Step.Untap,
       turnNumber: 1,
-      
       battlefield: [],
       exile: [],
-      
       stack: [],
-      
       consecutivePasses: 0,
+      logs: ['Match Start Initialization...'],
     };
     
     this.initializePlayers(players);
     this.resolver = new StackResolver(this.state);
   }
 
-  // Set up the isolated player zones and resources
+  private log(message: string) {
+    const formattedMessage = `> ${message}`;
+    const newLogs = [...(this.state.logs || []), formattedMessage];
+    this.state.logs = newLogs.slice(-40); 
+    console.log(`[GameEngine] ${message}`);
+  }
+
+  private getPlayerName(id: PlayerId): string {
+    return this.state.players[id]?.name || this.names?.[id] || id;
+  }
+
+  // --- Initialization (Rule 103) ---
+
   private initializePlayers(playerIds: PlayerId[]) {
     for (const id of playerIds) {
       this.state.players[id] = {
         id,
-        life: 20, // Base life
+        name: this.names[id] || `Player ${id.slice(0, 4)}`,
+        life: 20, 
         poisonCounters: 0,
-        
-        library: (this.decks[id] || []).map((cardRef, index) => {
-          const typeLine = cardRef.type_line || '';
-          return {
-            id: `${id}-lib-${index}`,
-            definition: {
-              ...cardRef,
-              name: cardRef.name,
-              manaCost: cardRef.mana_cost || cardRef.manaCost || '',
-              colors: cardRef.colors || cardRef.card_colors || [],
-              types: typeLine.split(/[-—]/)[0].trim().split(/\s+/).filter(Boolean),
-              oracleText: cardRef.oracle_text || cardRef.oracleText || '',
-              image_url: cardRef.image_url || cardRef.image_uris?.normal
-            },
-            ownerId: id,
-            controllerId: id,
-            zone: Zone.Library,
-            isTapped: false,
-            damageMarked: 0,
-            summoningSickness: false, // Rules 302.6
-            faceDown: false,
-            counters: {}
-          };
-        }),
+        library: (this.decks[id] || []).map((cardRef, index) => this.createGameObject(id, cardRef, index)),
         hand: [],
         graveyard: [],
-        
         manaPool: { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 },
-        
         hasPlayedLandThisTurn: false,
-        maxHandSize: 7 // Based on Hidden Zones (402)
+        fullControl: false,
+        maxHandSize: 7,
+        pendingDiscardCount: 0
       };
     }
+  }
+
+  private createGameObject(ownerId: PlayerId, cardRef: Card, index: number): GameObject {
+    const typeLine = cardRef.type_line || '';
+    return {
+      id: `${ownerId}-lib-${index}`,
+      ownerId,
+      controllerId: ownerId,
+      zone: Zone.Library,
+      definition: {
+        name: cardRef.name || 'Unknown Card',
+        manaCost: cardRef.mana_cost || '',
+        colors: cardRef.card_colors || [],
+        supertypes: [], 
+        types: typeLine.split(/[-—]/)[0].trim().split(/\s+/).filter(Boolean),
+        subtypes: typeLine.includes('—') ? typeLine.split(/[-—]/)[1].trim().split(/\s+/).filter(Boolean) : [],
+        oracleText: cardRef.oracle_text || '',
+        type_line: typeLine,
+        image_url: cardRef.image_url || cardRef.image_uris?.normal || cardRef.image_uris?.large,
+        scryfall_id: (cardRef as any).scryfall_id,
+        power: (cardRef as any).power,
+        toughness: (cardRef as any).toughness
+      },
+      isTapped: false,
+      damageMarked: 0,
+      summoningSickness: false,
+      faceDown: false,
+      counters: {}
+    };
+  }
+
+  public startGame() {
+    for (const playerId of this.playerOrder) {
+      this.shuffleLibrary(playerId); 
+      for (let i = 0; i < 7; i++) {
+        this.drawCard(playerId);
+      }
+    }
+    this.resetPriorityToActivePlayer();
   }
 
   public shuffleLibrary(playerId: PlayerId) {
     const player = this.state.players[playerId];
     if (!player) return;
-    
-    console.log(`[GameEngine] Shuffling library for player: ${playerId} (${player.library.length} cards)`);
+    this.log(`Shuffling library for: ${player.name}`);
     for (let i = player.library.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [player.library[i], player.library[j]] = [player.library[j], player.library[i]];
     }
   }
 
-  public getState(): GameState {
-    return this.state;
-  }
-
-  /**
-   * Called once when the match officially starts.
-   */
-  public startGame() {
-    // Rule 103: Starting the Game
-    for (const playerId of this.playerOrder) {
-      this.shuffleLibrary(playerId); 
-      // 103.4: Each player draws seven cards
-      for (let i = 0; i < 7; i++) {
-        this.drawCard(playerId);
-      }
-    }
-    
-    // reset priority to active player (103.5)
-    this.resetPriorityToActivePlayer();
-  }
-
   public drawCard(playerId: PlayerId): boolean {
     const player = this.state.players[playerId];
     if (!player || player.library.length === 0) return false;
-    
-    // Draw from top (Rule 121)
     const card = player.library.pop();
     if (card) {
       card.zone = Zone.Hand;
       player.hand.push(card);
+      // Log for transparency
+      this.log(`${player.name} draws a card.`);
       return true;
     }
     return false;
   }
 
-  // --- Player Actions ---
+  // --- Player Actions (Rule 117) ---
 
-  /**
-   * Main entry point for a player attempting to play a card from their hand.
-   */
-  public playCard(playerId: PlayerId, cardInstanceId: string, declaredTargets: string[] = []): boolean {
-    console.log(`[GameEngine] playCard intent: player=${playerId}, active=${this.state.activePlayerId}, priority=${this.state.priorityPlayerId}`);
-    // 1. You must have priority to play a card/spell (Rule 117.1)
-    if (this.state.priorityPlayerId !== playerId) {
-      console.warn(`[GameEngine] Player ${playerId} tried to play a card without Priority.`);
+  public tapForMana(playerId: PlayerId, cardId: string): boolean {
+    // 1. Context Switch: Attacking or Blocking
+    if (this.state.pendingAction?.playerId === playerId) {
+      if (this.state.pendingAction.type === 'DECLARE_ATTACKERS') {
+        return this.declareAttacker(playerId, cardId);
+      }
+      if (this.state.pendingAction.type === 'DECLARE_BLOCKERS') {
+        return this.handleBlockSelection(playerId, cardId);
+      }
+    }
+
+    // 2. Default: Priority Check for Mana
+    if (!this.canPlayerTakeAnyAction(playerId)) {
+      this.log(`Action error: ${this.getPlayerName(playerId)} tried to tap for mana without priority.`);
       return false;
     }
+
+    const card = this.state.battlefield.find(c => c.id === cardId);
+    if (!card || card.controllerId !== playerId) return false;
+
+    const typeLine = (card.definition.type_line || '').toLowerCase();
+    if (!typeLine.includes('land')) return false;
 
     const player = this.state.players[playerId];
-    const cardIndex = player.hand.findIndex((c: any) => c.id === cardInstanceId);
-    if (cardIndex === -1) {
-      console.warn(`[GameEngine] Card ${cardInstanceId} not found in player ${playerId}'s hand.`);
+    const name = card.definition.name.toLowerCase();
+    
+    // Determine produced color
+    let color: keyof typeof player.manaPool = 'C';
+    if (name.includes('plains')) color = 'W';
+    else if (name.includes('island')) color = 'U';
+    else if (name.includes('swamp')) color = 'B';
+    else if (name.includes('mountain')) color = 'R';
+    else if (name.includes('forest')) color = 'G';
+
+    if (card.isTapped) {
+      // UNDO Action: Only if mana is still in pool
+      if (player.manaPool[color] > 0) {
+        card.isTapped = false;
+        player.manaPool[color]--;
+        this.log(`${player.name} untapping ${card.definition.name} (Undo Mana {${color}})`);
+        return true;
+      } else {
+        this.log(`Cannot undo: Mana {${color}} already spent.`);
+        return false;
+      }
+    } else {
+      // TAP Action
+      card.isTapped = true;
+      player.manaPool[color]++;
+      this.log(`${player.name} tapped ${card.definition.name} for {${color}}`);
+      return true;
+    }
+  }
+
+  private declareAttacker(playerId: string, cardId: string): boolean {
+    const card = this.state.battlefield.find(c => c.id === cardId);
+    if (!card || card.controllerId !== playerId || card.zone !== Zone.Battlefield) return false;
+    
+    // 508.1a: Check if it's a creature
+    const typeLine = (card.definition.type_line || '').toLowerCase();
+    if (!typeLine.includes('creature')) return false;
+
+    // 508.1a: Summoning Sickness
+    if (card.summoningSickness && !(card.definition.oracleText || '').toLowerCase().includes('haste')) {
+       this.log(`${card.definition.name} has summoning sickness.`);
+       return false;
+    }
+
+    if (!this.state.combat) this.state.combat = { attackers: [], blockers: [] };
+
+    const existingIndex = this.state.combat.attackers.findIndex(a => a.attackerId === cardId);
+    if (existingIndex >= 0) {
+       this.state.combat.attackers.splice(existingIndex, 1);
+       card.isTapped = false;
+       this.log(`${card.definition.name} removed from attackers.`);
+    } else {
+       if (card.isTapped) return false;
+       const opponentId = Object.keys(this.state.players).find(id => id !== playerId);
+       this.state.combat.attackers.push({ attackerId: cardId, targetId: opponentId! });
+       card.isTapped = true;
+       this.log(`${card.definition.name} assigned as attacker.`);
+    }
+    return true;
+  }
+
+  public confirmAttackers(playerId: string) {
+    if (this.state.pendingAction?.type !== 'DECLARE_ATTACKERS' || this.state.pendingAction.playerId !== playerId) return;
+    
+    this.log(`${this.getPlayerName(playerId)} confirmed attackers.`);
+    this.state.pendingAction = undefined;
+    this.advanceStep(); // Moves to 508.2 priority window
+  }
+
+  private handleBlockSelection(playerId: string, cardId: string): boolean {
+    const card = this.state.battlefield.find(c => c.id === cardId);
+    if (!card) {
+      this.log(`[BLOCK] ERR: Card ${cardId} not found on battlefield.`);
       return false;
     }
-    
-    const cardToPlay = player.hand[cardIndex];
 
-    // 2. Determine Time/Type Restrictions
-    const isInstantOrFlash = (cardToPlay.definition.types || []).includes('Instant') || (cardToPlay.definition.oracleText || '').includes('Flash'); 
-    const isLand = (cardToPlay.definition.types || []).includes('Land');
-    const isSorcerySpeed = !isInstantOrFlash && !isLand;
+    this.log(`[BLOCK] Interaction: ${card.definition.name} (${cardId}). Blocker in hand? ${this.state.pendingAction?.sourceId}`);
 
-    // Sorcery-speed requirements: Must be Active Player, during Main Phase, and Stack must be empty
-    if (isSorcerySpeed || isLand) {
-      if (this.state.activePlayerId !== playerId) {
-         console.warn(`[GameEngine] Sorcery/Land must be played on your own turn.`);
-         return false;
+    // A. SELECTION: My creature (the blocker)
+    if (card.controllerId === playerId) {
+      if (card.isTapped) {
+        this.log(`[BLOCK] ERR: ${card.definition.name} is tapped and cannot block.`);
+        return false;
       }
-      if (this.state.currentPhase !== Phase.PreCombatMain && this.state.currentPhase !== Phase.PostCombatMain) {
-         console.warn(`[GameEngine] Sorcery/Land must be played during a Main phase.`);
-         return false;
-      }
-      if (this.state.stack.length > 0) {
-         console.warn(`[GameEngine] Sorcery/Land cannot be played if the stack is not empty.`);
-         return false;
-      }
-    }
-
-    // 3. Special Land Handling (Lands don't use the stack! Rule 305.1)
-    if (isLand) {
-      if (player.hasPlayedLandThisTurn) {
-         console.warn(`[GameEngine] Player ${playerId} has already played a land this turn.`);
-         return false;
-      }
-      
-      // Play the land
-      player.hand.splice(cardIndex, 1);
-      cardToPlay.zone = Zone.Battlefield;
-      this.state.battlefield.push(cardToPlay);
-      player.hasPlayedLandThisTurn = true;
-      
-      console.log(`[GameEngine] Player ${playerId} played land: ${cardToPlay.definition.name}`);
-      
-      // Playing a land doesn't consume priority or yield it implicitly, 
-      // but SBA happens before any player would receive priority.
-      this.checkStateBasedActions();
+      this.state.pendingAction!.sourceId = cardId;
+      this.log(`Selected ${card.definition.name} to block. Now select an attacking creature.`);
       return true;
     }
 
-    // 4. Casting a Spell (Chapter 6)
-    
-    // (A) Check target legality/requirements before moving to stack
-    // (stubbed target checking for now)
+    // B. TARGETING: Opponent attacker
+    const blockerId = this.state.pendingAction!.sourceId;
+    if (!blockerId) {
+      this.log("[BLOCK] Choose one of your potential blockers first.");
+      return false;
+    }
 
-    // (B) Pay Costs (stubbed for now: assume player has mana or we automatically deduct)
-    // this.deductMana(player, cardToPlay.definition.manaCost);
+    const attackers = this.state.combat?.attackers || [];
+    const isAttacking = attackers.some(a => a.attackerId === cardId);
     
-    // (C) Move from Hand to Stack
-    player.hand.splice(cardIndex, 1);
-    cardToPlay.zone = Zone.Stack;
-    
-    // Create the Stack Object representation
-    this.state.stack.push({
-      id: `spell_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      controllerId: playerId,
-      sourceId: cardToPlay.id,
-      type: 'Spell',
-      targets: declaredTargets
-    });
+    this.log(`[BLOCK] Checking if ${card.definition.name} is attacking. List: ${attackers.map(a => a.attackerId).join(',')} | Result: ${isAttacking}`);
 
-    console.log(`[GameEngine] Player ${playerId} cast: ${cardToPlay.definition.name}. Placed on Stack.`);
+    if (!isAttacking) {
+      this.log(`[BLOCK] ERR: ${card.definition.name} is not an attacking creature.`);
+      return false;
+    }
+
+    if (!this.state.combat) this.state.combat = { attackers: [], blockers: [] };
+
+    // Update blocker link (Rule: only 1 attacker blocked per creature normally)
+    const oldIdx = this.state.combat.blockers.findIndex(b => b.blockerId === blockerId);
+    if (oldIdx >= 0) this.state.combat.blockers.splice(oldIdx, 1);
+
+    this.state.combat.blockers.push({ blockerId, attackerId: cardId });
+    this.log(`${this.state.battlefield.find(c => c.id === blockerId)?.definition.name} blocking ${card.definition.name}`);
     
-    // Any time a spell is cast, priority passes are reset because the game state advanced
-    this.state.consecutivePasses = 0;
+    // Clear selection for next block
+    this.state.pendingAction!.sourceId = undefined;
+    return true;
+  }
+
+  public confirmBlockers(playerId: string) {
+    if (this.state.pendingAction?.type !== 'DECLARE_BLOCKERS' || this.state.pendingAction.playerId !== playerId) return;
     
-    // Rule: The player who cast the spell implicitly retains priority, 
-    // but in digital implementations they typically Auto-Pass unless they enter "Hold Priority" mode.
-    // For this engine snippet, we'll auto-pass for flow:
-    this.passPriority(playerId);
+    this.log(`${this.getPlayerName(playerId)} confirmed blockers.`);
+    this.state.pendingAction = undefined;
+    this.advanceStep();
+  }
+
+  /**
+   * MANUAL DISCARD ACTION (e.g. for Cleanup phase or spells)
+   */
+  public discardCard(playerId: PlayerId, cardInstanceId: string): boolean {
+    const player = this.state.players[playerId];
+    if (!player) return false;
+
+    const cardIndex = player.hand.findIndex(c => c.id === cardInstanceId);
+    if (cardIndex === -1) return false;
+
+    const card = player.hand.splice(cardIndex, 1)[0];
+    card.zone = Zone.Graveyard;
+    player.graveyard.push(card);
+    
+    if (player.pendingDiscardCount > 0) {
+      player.pendingDiscardCount--;
+      this.log(`${player.name} discarded ${card.definition.name} (${player.pendingDiscardCount} more to go).`);
+      
+      // If we finished discarding, resume logic
+      if (player.pendingDiscardCount === 0) {
+        this.log(`${player.name} finished discarding.`);
+        this.state.pendingAction = undefined; 
+
+        if (this.state.currentStep === Step.Cleanup) {
+          this.advanceStep(); 
+        } else {
+          this.checkAutoPass(playerId);
+        }
+      }
+    } else {
+      this.log(`${player.name} discarded ${card.definition.name}.`);
+    }
 
     return true;
   }
 
-  // --- Core Loop Mechanics ---
+  public playCard(playerId: PlayerId, cardInstanceId: string, declaredTargets: string[] = []): boolean {
+    const activeId = String(this.state.activePlayerId).trim();
+    const callerId = String(playerId).trim();
+    const playerName = this.getPlayerName(playerId);
 
-  public passPriority(playerId: PlayerId) {
-    // 1. Verify it's actually this player's turn to act
+    // 1. Priority Error (Rule 117.1)
     if (this.state.priorityPlayerId !== playerId) {
-      throw new Error(`Player ${playerId} does not have priority.`);
+      this.log(`${playerName} tried to act without priority.`);
+      return false;
+    }
+
+    const player = this.state.players[playerId];
+    if (player && player.pendingDiscardCount > 0) {
+      this.log(`${playerName} must finish discarding before playing cards.`);
+      return false;
+    }
+
+    const cardIndex = player.hand.findIndex((c: any) => c.id === cardInstanceId);
+    if (cardIndex === -1) return false;
+    
+    const cardToPlay = player.hand[cardIndex];
+    const typeLine = (cardToPlay.definition.type_line || '').toLowerCase();
+    const isLand = typeLine.includes('land');
+    const isInstantOrFlash = typeLine.includes('instant') || (cardToPlay.definition.oracleText || '').includes('Flash'); 
+    
+    // 2. Timing/Speed (Rule 305/307)
+    if (!isInstantOrFlash) {
+      if (activeId !== callerId || (this.state.currentPhase !== Phase.PreCombatMain && this.state.currentPhase !== Phase.PostCombatMain) || this.state.stack.length > 0) {
+         this.log(`Illegal Play: Cannot cast sorcery speed spell/land right now.`);
+         return false;
+      }
+    }
+
+    // 3. Land Handling (Rule 305)
+    if (isLand) {
+      if (player.hasPlayedLandThisTurn) {
+         this.log(`Illegal Play: Already played a land this turn.`);
+         return false;
+      }
+      player.hand = player.hand.filter((c: any) => c.id !== cardInstanceId);
+      cardToPlay.zone = Zone.Battlefield;
+      this.state.battlefield = [...this.state.battlefield, cardToPlay];
+      player.hasPlayedLandThisTurn = true;
+      this.log(`${playerName} played Land: ${cardToPlay.definition.name}`);
+      this.checkStateBasedActions();
+      return true; // Return immediately: Playing a land is a special action (Rule 305.1)
+    }
+
+    // 4. Mana Payment (Rule 601.2f)
+    const cost = cardToPlay.definition.manaCost;
+    if (!ManaProcessor.canPayManaCost(player, cost)) {
+      this.log(`Illegal Play: Not enough mana for ${cardToPlay.definition.name} (Cost: ${cost})`);
+      return false;
+    }
+    this.log(`${playerName} paying ${cost}...`);
+    ManaProcessor.deductManaCost(player, cost);
+
+    // 5. Stack Placement (Rule 601.2i)
+    player.hand = player.hand.filter((c: any) => c.id !== cardInstanceId);
+    cardToPlay.zone = Zone.Stack;
+    this.state.stack = [...this.state.stack, {
+      id: `spell_${Date.now()}`,
+      controllerId: playerId,
+      sourceId: cardToPlay.id,
+      type: 'Spell',
+      targets: declaredTargets,
+      card: cardToPlay 
+    }];
+
+    this.log(`${playerName} cast: ${cardToPlay.definition.name}`);
+    this.state.consecutivePasses = 0;
+    this.passPriority(playerId);
+    return true;
+  }
+
+  // --- Core Mechanics (Rule 117.4) ---
+
+  public passPriority(playerId: PlayerId, isAuto = false) {
+    // 1. Intercept for special actions
+    if (this.state.pendingAction?.playerId === playerId) {
+      if (this.state.pendingAction.type === 'DECLARE_ATTACKERS') {
+        this.confirmAttackers(playerId);
+        return;
+      }
+      if (this.state.pendingAction.type === 'DECLARE_BLOCKERS') {
+        this.confirmBlockers(playerId);
+        return;
+      }
+    }
+
+    if (this.state.priorityPlayerId !== playerId) return;
+
+    const player = this.state.players[playerId];
+    if (player && player.pendingDiscardCount > 0) {
+      if (!isAuto) this.log(`${this.getPlayerName(playerId)} must finish discarding first.`);
+      return;
     }
 
     this.state.consecutivePasses++;
+    
+    // Rule 117.4: User experience for auto-pass
+    const prefix = isAuto ? '[Auto] ' : '';
+    this.log(`${prefix}${this.getPlayerName(playerId)} passed priority.`);
 
-    // Check if everyone passed priority in succession without action
     if (this.state.consecutivePasses >= this.playerOrder.length) {
       this.resolveTopOrAdvanceStep();
     } else {
-      // Pass to the next player in order
       this.givePriorityToNextPlayer();
     }
   }
 
   private resolveTopOrAdvanceStep() {
-    // When all players pass in succession, either:
-    // A) The top object on the Stack resolves.
-    // B) If the Stack is empty, the Step or Phase ends and the game advances (Rule 117.4)
-    
     if (this.state.stack.length > 0) {
-      // Resolve the top spell/ability
-      this.resolveTopStackObject();
+      const objectToResolve = this.state.stack.pop();
+      if (objectToResolve) {
+        this.resolver.resolveTarget(objectToResolve, []);
+        this.resetPriorityToActivePlayer();
+      }
     } else {
-      // Advance to the next turn structural step
       this.advanceStep();
     }
   }
 
-  private resolveTopStackObject() {
-    // Basic LIFO Pop (Rule 608)
-    const objectToResolve = this.state.stack.pop();
-    if (!objectToResolve) return;
-
-    console.log(`[GameEngine] Resolving: ${objectToResolve.id}`);
-    
-    // In a fully integrated version, we fetch the card parser definition here.
-    const effectsToApply: any[] = []; 
-    
-    this.resolver.resolveTarget(objectToResolve, effectsToApply);
-    
-    // After resolution, priority goes back to the Active Player (Rule 117.3b)
-    this.resetPriorityToActivePlayer();
-  }
-
   private advanceStep() {
-    // Move to the next chronological step in the Turn Structure (500)
-    const nextStepInfo = this.calculateNextStep(this.state.currentPhase, this.state.currentStep);
+    const prevPhase = this.state.currentPhase;
+    const prevStep = this.state.currentStep;
+
+    let next = TurnProcessor.calculateNextStep(this.state.currentPhase, this.state.currentStep);
+    this.log(`[FLOW] Calculating move from ${prevPhase}/${prevStep} to ${next.phase}/${next.step} (turnEnded: ${next.turnEnded})`);
     
-    // If the turn ended, rotate the active player
-    if (nextStepInfo.turnEnded) {
-      this.rotateActivePlayer();
-      this.state.turnNumber++;
-      console.log(`[GameEngine] Turn ${this.state.turnNumber} started. Active player: ${this.state.activePlayerId}`);
+    // 1. Skip Combat Phase if no potential attackers
+    if (next.phase === Phase.Combat && next.step === Step.BeginningOfCombat && !TurnProcessor.hasPotentialAttackers(this.state, this.state.activePlayerId)) {
+      this.log(`[BYPASS] skipping Combat - No attackers found for active player.`);
+      next = { phase: Phase.PostCombatMain, step: Step.Main, turnEnded: false };
     }
 
-    this.state.currentPhase = nextStepInfo.phase;
-    this.state.currentStep = nextStepInfo.step;
-    
-    console.log(`[GameEngine] Entering ${this.state.currentPhase} - ${this.state.currentStep}`);
+    // 2. Skip Declare Blockers if no potential blockers
+    if (next.step === Step.DeclareBlockers) {
+      const defenderId = Object.keys(this.state.players).find(id => id !== this.state.activePlayerId);
+      const attackerCount = (this.state.combat?.attackers || []).length;
+      
+      this.log(`[CHECK] Entering Blockers. Attackers: ${attackerCount}. Defender: ${defenderId}`);
+      
+      if (attackerCount === 0) {
+        this.log(`[BYPASS] No attackers declared. Skipping Blockers and Damage.`);
+        next = { phase: Phase.Combat, step: Step.EndOfCombat, turnEnded: false };
+      }
+      else if (defenderId && !TurnProcessor.hasPotentialBlockers(this.state, defenderId)) {
+        this.log(`[BYPASS] Defender has no creatures to block with. Skipping to Damage.`);
+        next = { phase: Phase.Combat, step: Step.CombatDamage, turnEnded: false };
+      }
+    }
 
-    // Empty mana pool of ALL players when a step ends (Rule 500.4)
+    if (next.turnEnded) {
+      this.log(`[FLOW] Turn is ending on request: ${next.phase}/${next.step}`);
+      this.rotateActivePlayer();
+      this.state.turnNumber++;
+      this.log(`Turn ${this.state.turnNumber} - Active: ${this.getPlayerName(this.state.activePlayerId)}`);
+    }
+
+    this.state.currentPhase = next.phase;
+    this.state.currentStep = next.step;
+    this.log(`[FLOW] Phase Transition: ${prevStep} -> ${this.state.currentStep}`);
+
     this.emptyAllManaPools();
-    
-    // Specific Step Rules (e.g. untap, draw)
     this.handleStepEntryRules();
     
-    // If the current step is a non-priority step (Untap or Cleanup), 
-    // we automatically cascade to the next step.
+    // Rule: If an action is required (Combat/Cleanup), STOP and wait.
+    if (this.state.pendingAction) {
+       this.log(`[FLOW] Pausing for Pending Action: ${this.state.pendingAction.type} for player ${this.state.pendingAction.playerId}`);
+       return;
+    }
+
     if (this.state.currentStep === Step.Untap || this.state.currentStep === Step.Cleanup) {
+      this.log(`[FLOW] Auto-advancing from administrative step ${this.state.currentStep}`);
       this.state.priorityPlayerId = null; 
       this.advanceStep(); 
     } else {
-      // For other steps, Reset priority to active player (Rule 117.3a)
       this.resetPriorityToActivePlayer();
     }
   }
@@ -308,31 +514,39 @@ export class GameEngine {
     const currentIndex = this.playerOrder.indexOf(this.state.activePlayerId);
     const nextIndex = (currentIndex + 1) % this.playerOrder.length;
     this.state.activePlayerId = this.playerOrder[nextIndex];
-    
-    // Reset "hasPlayedLand" for the new active player
-    const player = this.state.players[this.state.activePlayerId];
-    if (player) player.hasPlayedLandThisTurn = false;
+    if (this.state.players[this.state.activePlayerId]) {
+      this.state.players[this.state.activePlayerId].hasPlayedLandThisTurn = false;
+    }
   }
 
   private givePriorityToNextPlayer() {
     if (!this.state.priorityPlayerId) return;
-    
     const currentIndex = this.playerOrder.indexOf(this.state.priorityPlayerId);
     const nextIndex = (currentIndex + 1) % this.playerOrder.length;
-    
-    // Ensure State-Based Actions are checked RIGHT BEFORE a player gets priority (704.3)
     this.checkStateBasedActions();
-    
     this.state.priorityPlayerId = this.playerOrder[nextIndex];
+    
+    this.checkAutoPass(this.state.priorityPlayerId);
   }
 
   private resetPriorityToActivePlayer() {
     this.state.consecutivePasses = 0;
-    
-    // SBA Check before handling active player priority
     this.checkStateBasedActions();
-    
     this.state.priorityPlayerId = this.state.activePlayerId;
+    
+    this.checkAutoPass(this.state.priorityPlayerId);
+  }
+
+  private checkAutoPass(playerId: PlayerId) {
+    const player = this.state.players[playerId];
+    // Rule 117.1: If player has no actions and NO full control, auto-pass
+    if (player && !player.fullControl && !this.canPlayerTakeAnyAction(playerId)) {
+      this.passPriority(playerId, true);
+    }
+  }
+
+  private canPlayerTakeAnyAction(playerId: PlayerId): boolean {
+    return PriorityProcessor.canPlayerTakeAnyAction(this.state, playerId);
   }
 
   private emptyAllManaPools() {
@@ -341,100 +555,49 @@ export class GameEngine {
     }
   }
 
-  // --- State-Based Actions Engine ---
-  
   private checkStateBasedActions() {
-    // 704: Sweeping mechanism that governs death, state anomalies, etc.
-    let sbaPerformed = false;
-    
-    // Check Lethal Damage & 0 Toughness (704.5f / 704.5g)
-    for (let i = this.state.battlefield.length - 1; i >= 0; i--) {
-      // Stub for real toughness logic
-      // if (getToughness(obj) <= 0) { sbaPerformed = true; ... }
-    }
-    
-    // Check Game Over (0 Life or 10 poison) (704.5a / 704.5c)
-    for (const player of Object.values(this.state.players) as PlayerState[]) {
-      if (player.life <= 0 || player.poisonCounters >= 10) {
-        console.log(`[GameEngine] Player ${player.id} has lost the game (SBA 704.5)`);
-      }
-    }
-    
-    // Loop if an action was actually taken
-    if (sbaPerformed) {
-      this.checkStateBasedActions();
-    }
+    StateBasedActionsProcessor.checkAndApply(this.state, (msg) => this.log(msg));
   }
 
   private handleStepEntryRules() {
-    // 502 Untap: Untap everything that belongs to Active Player
-    if (this.state.currentStep === Step.Untap) {
-      const activeId = this.state.activePlayerId;
-      
-      // Rule 502.3: Active player untaps all permanents they control
-      this.state.battlefield.forEach((obj: GameObject) => {
-        if (obj.controllerId === activeId) {
-          obj.isTapped = false;
-          // Rule 302.6: Summoning sickness wears off at start of turn
-          obj.summoningSickness = false; 
-        }
-      });
-      console.log(`[GameEngine] Untap Step: Resources refreshed for ${activeId}`);
-    }
-    // 504 Draw: Active Player is forced to draw 1 card
-    else if (this.state.currentStep === Step.Draw) {
-      const activeId = this.state.activePlayerId;
-      
-      // Rule 103.7: In a two-player game, the starting player skips their first draw
-      const isFirstTurnFirstPlayer = this.state.turnNumber === 1 && this.playerOrder[0] === activeId;
-      
-      if (!isFirstTurnFirstPlayer) {
-        const success = this.drawCard(activeId);
-        if (!success) {
-          // Rule 104.3.2: Drawn from empty library loss
-          console.log(`[GameEngine] Player ${activeId} lost by deck-out.`);
-        }
-      }
-    }
-    // 514 Cleanup: Discard to max hand size, damage wears off
-    else if (this.state.currentStep === Step.Cleanup) {
-      const activeId = this.state.activePlayerId;
-      const player = this.state.players[activeId];
-      
-      // Rule 514.1: Discard down to max hand size
-      if (player.hand.length > player.maxHandSize) {
-        const count = player.hand.length - player.maxHandSize;
-        for(let i=0; i<count; i++) {
-          const card = player.hand.pop();
-          if (card) player.graveyard.push(card);
-        }
-      }
+    const activeId = this.state.activePlayerId;
 
-      // Rule 514.2: Damage wears off (Rule 120.3)
-      this.state.battlefield.forEach((obj: GameObject) => obj.damageMarked = 0);
+    if (this.state.currentStep === Step.Untap) {
+      ActionProcessor.untapAll(this.state, activeId, (m) => this.log(m));
+    } 
+    else if (this.state.currentPhase === Phase.Combat) {
+      CombatProcessor.handleStepEntry(this.state, (m) => this.log(m));
+    }
+    else if (this.state.currentStep === Step.Draw) {
+      const skipDraw = this.state.turnNumber === 1 && this.playerOrder[0] === activeId;
+      if (!skipDraw && !this.drawCard(activeId)) {
+        this.log(`${this.getPlayerName(activeId)} deck-out loss.`);
+      }
+    } 
+    else if (this.state.currentStep === Step.Cleanup) {
+      const player = this.state.players[activeId];
+      if (player && player.hand.length > 7) {
+        player.pendingDiscardCount = player.hand.length - 7;
+        this.state.pendingAction = { 
+          type: 'DISCARD', 
+          playerId: activeId, 
+          count: player.pendingDiscardCount 
+        };
+        this.log(`${player.name} must discard ${player.pendingDiscardCount} card(s) to reach hand size.`);
+      }
+      
+      // Rule 514.2: Remove all damage and cleanup continuous effects
+      this.state.battlefield.forEach(obj => obj.damageMarked = 0);
     }
   }
 
-  private calculateNextStep(phase: Phase, step: Step): { phase: Phase, step: Step, turnEnded: boolean } {
-    const sequence = [
-      { phase: Phase.Beginning, step: Step.Untap },
-      { phase: Phase.Beginning, step: Step.Upkeep },
-      { phase: Phase.Beginning, step: Step.Draw },
-      { phase: Phase.PreCombatMain, step: Step.Main },
-      { phase: Phase.Combat, step: Step.BeginningOfCombat },
-      { phase: Phase.Combat, step: Step.DeclareAttackers },
-      { phase: Phase.Combat, step: Step.DeclareBlockers },
-      { phase: Phase.Combat, step: Step.CombatDamage },
-      { phase: Phase.Combat, step: Step.EndOfCombat },
-      { phase: Phase.PostCombatMain, step: Step.Main },
-      { phase: Phase.Ending, step: Step.End },
-      { phase: Phase.Ending, step: Step.Cleanup }
-    ];
-    
-    const currentIndex = sequence.findIndex(s => s.phase === phase && s.step === step);
-    if (currentIndex === sequence.length - 1) {
-      return { ...sequence[0], turnEnded: true };
-    }
-    return { ...sequence[currentIndex + 1], turnEnded: false };
+  public getState(): GameState {
+    return this.state;
+  }
+
+  public setState(newState: GameState) {
+    this.state = newState;
+    // VERY IMPORTANT: Re-link resolver to the newest state reference
+    this.resolver = new StackResolver(this.state);
   }
 }
