@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Maximize2, Trash2, Plus, RefreshCw } from 'lucide-react';
 import type { SimplifiedCard } from '../../services/scryfall';
@@ -41,7 +40,7 @@ export const CardGridItem = ({
         <img src={displayImage} alt={card.name} className="w-full h-full object-cover group-hover:scale-105 duration-700 pointer-events-none ring-1 ring-white/10" />
         
         {/* COUNT BADGE */}
-        <div className="absolute top-2 right-2 flex items-center justify-center min-w-[32px] h-8 bg-indigo-600 text-white rounded-lg shadow-xl border border-indigo-400 z-10 px-2 pointer-events-none">
+        <div className="absolute bottom-2 left-2 flex items-center justify-center min-w-[32px] h-8 bg-indigo-600 text-white rounded-lg shadow-xl border border-indigo-400 z-10 px-2 pointer-events-none">
           <span className="text-sm font-black italic">x{count}</span>
         </div>
 
@@ -81,10 +80,6 @@ export const CardGridItem = ({
                <Trash2 className="w-4 h-4" />
              </button>
           </div>
-        </div>
-        
-        <div className="absolute top-2 left-2 bg-slate-950/80 px-2 py-0.5 rounded-lg border border-white/10 pointer-events-none">
-          <span className="text-[10px] font-black text-white italic">CMC {card.cmc}</span>
         </div>
       </div>
     </motion.div>
