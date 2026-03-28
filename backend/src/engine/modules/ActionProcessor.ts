@@ -6,10 +6,11 @@ import { GameState, PlayerId, GameObject, Zone } from '@shared/engine_types';
 export class ActionProcessor {
 
   /**
-   * Rule 400.7: Move card to a new zone
+   * CR 400.1 / 400.7: An object that moves from one zone to another 
+   * becomes a new object with no memory of or relation to its previous existence.
    */
   public static moveCard(state: GameState, card: GameObject, to: Zone, ownerId: PlayerId) {
-    // 1. Remove from current zone
+    // 1. CR 400.7: Remove from the current zone
     if (card.zone === Zone.Battlefield) {
       state.battlefield = state.battlefield.filter(c => c.id !== card.id);
     } else if (card.zone === Zone.Stack) {
@@ -23,7 +24,7 @@ export class ActionProcessor {
       }
     }
 
-    // 2. Add to new zone
+    // 2. CR 400.7: Add to the new zone
     card.zone = to;
     if (to === Zone.Battlefield) {
       state.battlefield.push(card);
@@ -38,14 +39,19 @@ export class ActionProcessor {
       }
     }
     
-    // Rule 400.7: Object refresh on zone change
+    // Rule 400.7: Reset characteristics on zone change (except for cards staying on the battlefield)
     if (to !== Zone.Battlefield) {
        card.isTapped = false;
        card.damageMarked = 0;
+       // 302.6: Summoning sickness is refreshed only when entering the battlefield or changing controllers
        card.summoningSickness = true;
     }
   }
 
+  /**
+   * CR 502.2: The Untap Step
+   * The active player untaps all permanents they control.
+   */
   public static untapAll(state: GameState, playerId: PlayerId, log?: (m: string) => void) {
     let count = 0;
     state.battlefield.forEach(obj => {
@@ -54,7 +60,7 @@ export class ActionProcessor {
             obj.isTapped = false;
             count++;
         }
-        // Summoning sickness wears off at the start of your turn (Rule 302.6)
+        // CR 302.6: Summoning sickness wears off at the beginning of the controller's turn
         obj.summoningSickness = false;
       }
     });

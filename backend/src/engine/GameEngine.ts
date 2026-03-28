@@ -9,8 +9,13 @@ import { StateBasedActionsProcessor } from './modules/StateBasedActionsProcessor
 import { CombatProcessor } from './modules/CombatProcessor';
 
 /**
- * Centrailized Engine Coordinator (Chapters 1 & 11)
- * Rules references are kept for each functional block to ensure manual compliance.
+ * CENTRALIZED MTG RULE ENGINE (Orchestrator)
+ * -----------------------------------------
+ * This class coordinates the interaction between different rule modules 
+ * (Combat, Mana, SBA, Priority) to maintain a consistent game state.
+ * 
+ * DESIGN PATTERN: Modular Processor Strategy.
+ * Each module handles a specific Chapter of the Comprehensive Rules (CR).
  */
 export class GameEngine {
   private state: GameState;
@@ -19,12 +24,15 @@ export class GameEngine {
   private decks: Record<string, Card[]>;
   private names: Record<string, string>;
 
+  /**
+   * CR 103: Starting the Game
+   */
   constructor(players: PlayerId[], decks: Record<string, Card[]> = {}, names: Record<string, string> = {}) {
     this.playerOrder = players;
     this.decks = decks;
     this.names = names;
     
-    // Initialize the fundamental GameState (Rule 100)
+    // CR 100: Create the initial monolithic GameState
     this.state = {
       players: {}, 
       activePlayerId: players[0],    
@@ -43,6 +51,9 @@ export class GameEngine {
     this.resolver = new StackResolver(this.state);
   }
 
+  /**
+   * Internal Event Logger for the game history.
+   */
   private log(message: string) {
     const formattedMessage = `> ${message}`;
     const newLogs = [...(this.state.logs || []), formattedMessage];
@@ -50,12 +61,16 @@ export class GameEngine {
     console.log(`[GameEngine] ${message}`);
   }
 
+  /**
+   * Helper to resolve player IDs to human-readable names.
+   */
   private getPlayerName(id: PlayerId): string {
     return this.state.players[id]?.name || this.names?.[id] || id;
   }
 
-  // --- Initialization (Rule 103) ---
-
+  /**
+   * CR 103.1: Initialize player-specific state (Life, Library, Hand)
+   */
   private initializePlayers(playerIds: PlayerId[]) {
     for (const id of playerIds) {
       this.state.players[id] = {
@@ -94,16 +109,21 @@ export class GameEngine {
         image_url: cardRef.image_url || cardRef.image_uris?.normal || cardRef.image_uris?.large,
         scryfall_id: (cardRef as any).scryfall_id,
         power: (cardRef as any).power,
-        toughness: (cardRef as any).toughness
+        toughness: (cardRef as any).toughness,
+        keywords: cardRef.keywords || []
       },
       isTapped: false,
       damageMarked: 0,
       summoningSickness: false,
       faceDown: false,
+      keywords: [...(cardRef.keywords || [])], // Instances start with their definition's keywords
       counters: {}
     };
   }
 
+  /**
+   * CR 103.2: Shuffle and Draw Starting Hands
+   */
   public startGame() {
     for (const playerId of this.playerOrder) {
       this.shuffleLibrary(playerId); 
@@ -114,6 +134,10 @@ export class GameEngine {
     this.resetPriorityToActivePlayer();
   }
 
+  /**
+   * CR 701.19: Shuffling
+   * Randomizes the order of a player's library using Fisher-Yates.
+   */
   public shuffleLibrary(playerId: PlayerId) {
     const player = this.state.players[playerId];
     if (!player) return;
@@ -124,6 +148,10 @@ export class GameEngine {
     }
   }
 
+  /**
+   * CR 121: Drawing a Card
+   * @returns false if the player loses due to deck-out (CR 704.5b)
+   */
   public drawCard(playerId: PlayerId): boolean {
     const player = this.state.players[playerId];
     if (!player || player.library.length === 0) return false;
@@ -131,7 +159,6 @@ export class GameEngine {
     if (card) {
       card.zone = Zone.Hand;
       player.hand.push(card);
-      // Log for transparency
       this.log(`${player.name} draws a card.`);
       return true;
     }
@@ -140,8 +167,13 @@ export class GameEngine {
 
   // --- Player Actions (Rule 117) ---
 
+  /**
+   * CR 106: Tapping for Mana & Special Actions (Attacking/Blocking)
+   * This is a "Click Interaction" wrapper that delegates to the correct sub-routine
+   * based on the current game context (Rule 117).
+   */
   public tapForMana(playerId: PlayerId, cardId: string): boolean {
-    // 1. Context Switch: Attacking or Blocking
+    // 1. Context Recognition: 508/509 Attacks and Blocks
     if (this.state.pendingAction?.playerId === playerId) {
       if (this.state.pendingAction.type === 'DECLARE_ATTACKERS') {
         return this.declareAttacker(playerId, cardId);
@@ -151,7 +183,7 @@ export class GameEngine {
       }
     }
 
-    // 2. Default: Priority Check for Mana
+    // 2. Default: Priority Check for Mana Activation (CR 605)
     if (!this.canPlayerTakeAnyAction(playerId)) {
       this.log(`Action error: ${this.getPlayerName(playerId)} tried to tap for mana without priority.`);
       return false;
@@ -166,7 +198,7 @@ export class GameEngine {
     const player = this.state.players[playerId];
     const name = card.definition.name.toLowerCase();
     
-    // Determine produced color
+    // Determine produced color (Heuristic-based mana production)
     let color: keyof typeof player.manaPool = 'C';
     if (name.includes('plains')) color = 'W';
     else if (name.includes('island')) color = 'U';
@@ -175,7 +207,7 @@ export class GameEngine {
     else if (name.includes('forest')) color = 'G';
 
     if (card.isTapped) {
-      // UNDO Action: Only if mana is still in pool
+      // 701.21b: Untapping as an Undo Action
       if (player.manaPool[color] > 0) {
         card.isTapped = false;
         player.manaPool[color]--;
@@ -186,7 +218,7 @@ export class GameEngine {
         return false;
       }
     } else {
-      // TAP Action
+      // 701.21a: Tapping for mana
       card.isTapped = true;
       player.manaPool[color]++;
       this.log(`${player.name} tapped ${card.definition.name} for {${color}}`);
@@ -194,6 +226,9 @@ export class GameEngine {
     }
   }
 
+  /**
+   * CR 508: Declare Attackers Step
+   */
   private declareAttacker(playerId: string, cardId: string): boolean {
     const card = this.state.battlefield.find(c => c.id === cardId);
     if (!card || card.controllerId !== playerId || card.zone !== Zone.Battlefield) return false;
@@ -225,6 +260,9 @@ export class GameEngine {
     return true;
   }
 
+  /**
+   * CR 508.2: Confirming the Attacker Declaration Action
+   */
   public confirmAttackers(playerId: string) {
     if (this.state.pendingAction?.type !== 'DECLARE_ATTACKERS' || this.state.pendingAction.playerId !== playerId) return;
     
@@ -233,6 +271,9 @@ export class GameEngine {
     this.advanceStep(); // Moves to 508.2 priority window
   }
 
+  /**
+   * CR 509: Declare Blockers Step
+   */
   private handleBlockSelection(playerId: string, cardId: string): boolean {
     const card = this.state.battlefield.find(c => c.id === cardId);
     if (!card) {
@@ -284,6 +325,9 @@ export class GameEngine {
     return true;
   }
 
+  /**
+   * CR 509.2: Confirming the Blocker Declaration Action
+   */
   public confirmBlockers(playerId: string) {
     if (this.state.pendingAction?.type !== 'DECLARE_BLOCKERS' || this.state.pendingAction.playerId !== playerId) return;
     
@@ -328,6 +372,10 @@ export class GameEngine {
     return true;
   }
 
+  /**
+   * CR 601: Casting Spells & CR 305: Playing Lands
+   * @param declaredTargets Array of GameObject IDs for targeted spells
+   */
   public playCard(playerId: PlayerId, cardInstanceId: string, declaredTargets: string[] = []): boolean {
     const activeId = String(this.state.activePlayerId).trim();
     const callerId = String(playerId).trim();
@@ -405,6 +453,10 @@ export class GameEngine {
 
   // --- Core Mechanics (Rule 117.4) ---
 
+  /**
+   * CR 117.4: Timing and Priority
+   * Handles the passing of priority and automatic resolution of the stack.
+   */
   public passPriority(playerId: PlayerId, isAuto = false) {
     // 1. Intercept for special actions
     if (this.state.pendingAction?.playerId === playerId) {

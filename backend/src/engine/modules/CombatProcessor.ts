@@ -1,4 +1,5 @@
-import { GameState, Step, Phase, PlayerId, GameObjectId } from '@shared/engine_types';
+import { GameState, Step, Phase, PlayerId, GameObjectId, GameObject } from '@shared/engine_types';
+import { LayerProcessor } from './LayerProcessor';
 
 /**
  * Combat Mechanism (Chapter 506-511)
@@ -89,12 +90,8 @@ export class CombatProcessor {
     state.combat = undefined;
   }
 
-  private static getEffectivePower(card: any): number {
-    // Priority: dynamic buffs > counters > base power
-    // For now: base power from definition, handling potential non-numeric values
-    const powerStr = card.definition.power || '0';
-    if (powerStr === '*') return 0; // Handle Tarmogoyf style cards later
-    return parseInt(powerStr) || 0;
+  private static getEffectivePower(card: GameObject): number {
+    return LayerProcessor.getEffectivePower(card);
   }
 
   private static logDamageFlow(log: (m: string) => void, attacker: any, power: number, attack: any) {

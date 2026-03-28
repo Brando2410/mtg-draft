@@ -1,0 +1,1940 @@
+{
+  "roomId": "5FKJOZ",
+  "timestamp": "2026-03-28T00:17:51.979Z",
+  "cubeName": "Kay_Tee_(Kitchen_Table)",
+  "playerCount": 8,
+  "rules": {
+    "playerCount": 8,
+    "packsPerPlayer": 3,
+    "cardsPerPack": 10,
+    "timer": 60,
+    "rarityBalance": false,
+    "anonymousMode": false,
+    "fillBots": false,
+    "cubeName": "Kay_Tee_(Kitchen_Table)"
+  },
+  "players": [
+    {
+      "playerId": "ongpdfy5vpomn9b838e",
+      "name": "Giocatore",
+      "poolCount": 30,
+      "pool": [
+        {
+          "name": "Pyrewild Shaman",
+          "scryfall_id": "6037ba46-74ef-4928-9145-180b400d075c",
+          "cmc": 3,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Bloodsoaked Insight // Sanguine Morass",
+          "scryfall_id": "0a08e0d2-1e60-47f5-9228-4c11a127089d",
+          "cmc": 7,
+          "color": [
+            "B",
+            "R"
+          ]
+        },
+        {
+          "name": "Sink into Stupor // Soporific Springs",
+          "scryfall_id": "5358b87a-1a29-426d-b165-40c97da2c14d",
+          "cmc": 3,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Veteran Survivor",
+          "scryfall_id": "39368ea2-f665-40b1-b042-c0182f7c6df0",
+          "cmc": 1,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Enduring Innocence",
+          "scryfall_id": "08f79439-b8f8-418f-9772-26d81844749e",
+          "cmc": 3,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Shattered Landscape",
+          "scryfall_id": "f8373e5a-94bb-4aa0-bd09-13a01e0cb02a",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Wild Cantor",
+          "scryfall_id": "e6b56946-a368-4cd7-9d35-be14afca935b",
+          "cmc": 1,
+          "color": [
+            "G",
+            "R"
+          ]
+        },
+        {
+          "name": "Fanatical Offering",
+          "scryfall_id": "d896dd52-b134-4b55-ab91-ccb05ecc50f4",
+          "cmc": 2,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Novice Inspector",
+          "scryfall_id": "0ad38866-fc5f-4f62-89c1-afc0f50765aa",
+          "cmc": 1,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Omashu City",
+          "scryfall_id": "c21e413b-96ed-4ded-b567-f1647074ce5f",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Mischievous Pup",
+          "scryfall_id": "7214d984-6400-44d7-bde6-57d96b606e78",
+          "cmc": 3,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Bond of Revival",
+          "scryfall_id": "c6482fb9-f874-4e33-aa74-7a0da4c9760c",
+          "cmc": 5,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Forsaken Miner",
+          "scryfall_id": "1679f74d-00f8-436c-9f8c-aa3f843a546c",
+          "cmc": 1,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Oaken Siren",
+          "scryfall_id": "d7731ef5-da74-4436-8ee7-01c065cbefae",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Fling",
+          "scryfall_id": "8f42d773-c742-4465-b6d5-31feaba49146",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Patient Naturalist",
+          "scryfall_id": "1dd17cea-9e8c-4dba-b6ab-a6b9de87a306",
+          "cmc": 3,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Mirkwood Bats",
+          "scryfall_id": "15f035df-784a-4dc8-b7f5-77139a4e6e99",
+          "cmc": 4,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Thraben Charm",
+          "scryfall_id": "dd28a646-f38f-4cdf-948c-969cd979e5e6",
+          "cmc": 2,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Ulamog's Crusher",
+          "scryfall_id": "699c0f6f-b26b-4741-8140-8a6030cad127",
+          "cmc": 8,
+          "color": []
+        },
+        {
+          "name": "Gearbane Orangutan",
+          "scryfall_id": "6900a344-a155-4ee1-a3ac-d6c28e024270",
+          "cmc": 3,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Toggo, Goblin Weaponsmith",
+          "scryfall_id": "1a05b3e2-259e-4fce-92ee-c00660e22ae7",
+          "cmc": 3,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Clear Shot",
+          "scryfall_id": "88b8905b-68d3-491b-b7fe-eed74841e9a0",
+          "cmc": 3,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Eldrazi Devastator",
+          "scryfall_id": "04b13e32-01b9-4a86-a3df-ca8b784c6a6c",
+          "cmc": 8,
+          "color": []
+        },
+        {
+          "name": "Inverted Iceberg // Iceberg Titan",
+          "scryfall_id": "ac5e9a53-cc4f-4ced-8088-5a73d619eae3",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Laughing Jasper Flint",
+          "scryfall_id": "af0b3a41-ba99-41e8-bcfb-5796500c17c7",
+          "cmc": 3,
+          "color": [
+            "B",
+            "R"
+          ]
+        },
+        {
+          "name": "Baron Bertram Graywater",
+          "scryfall_id": "e9da18b4-1efc-44b7-8001-a2cfd44c69bf",
+          "cmc": 4,
+          "color": [
+            "B",
+            "W"
+          ]
+        },
+        {
+          "name": "Golden Egg",
+          "scryfall_id": "525142c3-f17c-4e02-a02d-fa385215aa12",
+          "cmc": 2,
+          "color": []
+        },
+        {
+          "name": "Merchant of Secrets",
+          "scryfall_id": "10227a24-d4f7-4dfa-a54d-eaf183fd7e79",
+          "cmc": 3,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Bramble Wurm",
+          "scryfall_id": "7ed00113-a0d7-4825-b066-f911a1ffb900",
+          "cmc": 7,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Satyr Wayfinder",
+          "scryfall_id": "8bbbe65d-7162-42fb-94ee-d835d6c3f02a",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        }
+      ]
+    },
+    {
+      "playerId": "bot-w06yh",
+      "name": "Bot_1",
+      "poolCount": 30,
+      "pool": [
+        {
+          "name": "Sovereign Okinec Ahau",
+          "scryfall_id": "70c75aa7-e2f9-4a69-8086-c982019ca714",
+          "cmc": 4,
+          "color": [
+            "G",
+            "W"
+          ]
+        },
+        {
+          "name": "Slickshot Show-Off",
+          "scryfall_id": "7054012b-4f9d-44a0-aaf9-7fd3bddc7b2d",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Vadmir, New Blood",
+          "scryfall_id": "828b5855-af5a-46a6-8fd4-0a2e28f3bb01",
+          "cmc": 2,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Daring Apprentice",
+          "scryfall_id": "6c5becbf-77ac-4bd2-912d-7f7c944c2a0b",
+          "cmc": 3,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Goblin War Party",
+          "scryfall_id": "2b4155d1-0a87-4d2c-a1a0-06b2553eaae4",
+          "cmc": 4,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Phantom Interference",
+          "scryfall_id": "00bf4dd1-5468-4594-9c7b-0737610f19d4",
+          "cmc": 1,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Aether Spellbomb",
+          "scryfall_id": "a54e8ce9-edd7-4ae7-9521-6fb6727cf63b",
+          "cmc": 1,
+          "color": []
+        },
+        {
+          "name": "Mystical Tether",
+          "scryfall_id": "18344498-952e-489c-8b03-bd1bef4c26ca",
+          "cmc": 3,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Armored Kincaller",
+          "scryfall_id": "b76a46a1-a63e-460a-98c5-699dd1c827aa",
+          "cmc": 3,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Bloodthrone Vampire",
+          "scryfall_id": "ee7354fe-fb76-4196-a69b-0916af73bf45",
+          "cmc": 2,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Blood Crypt",
+          "scryfall_id": "6da63cc5-4624-4491-abd9-9b600c3fefe2",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Abuelo, Ancestral Echo",
+          "scryfall_id": "40eee689-2514-421a-8056-eb7668be66ff",
+          "cmc": 3,
+          "color": [
+            "U",
+            "W"
+          ]
+        },
+        {
+          "name": "Ghalta, Primal Hunger",
+          "scryfall_id": "6a9c39e4-a8cf-42dd-8d0e-45634b335546",
+          "cmc": 12,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Sword of Vengeance",
+          "scryfall_id": "f21b5fc1-7611-44ac-ad8d-1f0c6d4fc9a3",
+          "cmc": 3,
+          "color": []
+        },
+        {
+          "name": "Deep-Cavern Bat",
+          "scryfall_id": "69c68c95-b788-43b1-9f22-1b22c5a00b25",
+          "cmc": 2,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Glimmerpoint Stag",
+          "scryfall_id": "63205c2a-e9d4-4354-b519-9e84be8f9eb7",
+          "cmc": 4,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Scarblade Scout",
+          "scryfall_id": "c2412fea-4591-4345-913f-edc2da9ad975",
+          "cmc": 2,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Reckless Pyrosurfer",
+          "scryfall_id": "2d1bb8ac-7125-4537-b2da-e23a8c28df79",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Bite Down on Crime",
+          "scryfall_id": "29bbfe93-8225-444c-835b-33ffa006ef66",
+          "cmc": 4,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Messenger Hawk",
+          "scryfall_id": "6a2946c0-0a40-4cdb-92c8-af2bafecca09",
+          "cmc": 3,
+          "color": [
+            "B",
+            "U"
+          ]
+        },
+        {
+          "name": "Lochmere Serpent",
+          "scryfall_id": "3287beea-747c-4cb6-aea5-051e85c5de8d",
+          "cmc": 6,
+          "color": [
+            "B",
+            "U"
+          ]
+        },
+        {
+          "name": "Neyali, Suns' Vanguard",
+          "scryfall_id": "2b5df03d-2463-468b-b444-d946eeb1c96d",
+          "cmc": 4,
+          "color": [
+            "R",
+            "W"
+          ]
+        },
+        {
+          "name": "Volatile Stormdrake",
+          "scryfall_id": "2e6e3232-8bb8-4504-9597-dfdfc6d634bd",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Sygg, Wanderwine Wisdom // Sygg, Wanderbrine Shield",
+          "scryfall_id": "70adc870-f0db-4d4b-863b-673c2c258751",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Book of Mazarbul",
+          "scryfall_id": "04dcef75-6f98-4233-ae32-6fe41724c8e0",
+          "cmc": 3,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Fierce Empath",
+          "scryfall_id": "28a1dd7f-2e42-4062-a941-b489b98a49fc",
+          "cmc": 3,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Dismal Backwater",
+          "scryfall_id": "082b52c9-c46e-44d3-b723-546ba528e07b",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Journey to Nowhere",
+          "scryfall_id": "4686b51c-e02b-48c1-bafe-e8d08a5407b9",
+          "cmc": 2,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Market Gnome",
+          "scryfall_id": "36dafcd6-ce4e-4a27-bd8c-fa1a3bffc99e",
+          "cmc": 1,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Tranquil Landscape",
+          "scryfall_id": "113f48b9-a972-4e2c-af95-05ab078e01f2",
+          "cmc": 0,
+          "color": []
+        }
+      ]
+    },
+    {
+      "playerId": "bot-8v658",
+      "name": "Bot_2",
+      "poolCount": 30,
+      "pool": [
+        {
+          "name": "Kruphix, God of Horizons",
+          "scryfall_id": "27427233-da58-45af-ade8-e0727929efaa",
+          "cmc": 5,
+          "color": [
+            "G",
+            "U"
+          ]
+        },
+        {
+          "name": "Tyvar, the Pummeler",
+          "scryfall_id": "5f7687b1-630a-4e95-89c7-eaf456d8cb68",
+          "cmc": 3,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Knight-Captain of Eos",
+          "scryfall_id": "02ef25ce-4d6a-45ff-8b6b-fd5c29307099",
+          "cmc": 5,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Canyon Crawler",
+          "scryfall_id": "30a30bfb-f0f3-425b-b37d-20079ee27046",
+          "cmc": 6,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Essence Capture",
+          "scryfall_id": "f39bf1fa-b530-4353-a683-843466227109",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Sparring Dummy",
+          "scryfall_id": "520f5a03-ff5a-43ed-8f15-cf24596d60cd",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Plagued Rusalka",
+          "scryfall_id": "72bcfb24-1649-4c8f-ba76-346914d11572",
+          "cmc": 1,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Sheltering Landscape",
+          "scryfall_id": "0fe070f4-8877-4280-b8fd-869f3ac34ab6",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Forecasting Fortune Teller",
+          "scryfall_id": "023e7ad4-6af0-4f29-a716-27a313974227",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Prickly Pair",
+          "scryfall_id": "e70f2278-8857-46e4-aa2b-fff5589b750f",
+          "cmc": 3,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Maelstrom Wanderer",
+          "scryfall_id": "5685b28a-b943-4143-b9ed-4796c1ffbf9c",
+          "cmc": 8,
+          "color": [
+            "G",
+            "R",
+            "U"
+          ]
+        },
+        {
+          "name": "Benthic Biomancer",
+          "scryfall_id": "b83dd3a5-d9cc-470d-a9d0-bf9d270e9eb6",
+          "cmc": 1,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Profane Command",
+          "scryfall_id": "7005bb21-0cec-4c19-a95b-99a1bac25aa4",
+          "cmc": 2,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Tolls of War",
+          "scryfall_id": "d822b9ad-a787-4355-88c2-07ae2bd3a78e",
+          "cmc": 2,
+          "color": [
+            "B",
+            "W"
+          ]
+        },
+        {
+          "name": "Fauna Shaman",
+          "scryfall_id": "b8b906eb-3223-474c-9b74-eda2c280f9c5",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Bedhead Beastie",
+          "scryfall_id": "77c72b5b-dd81-4eb4-80d9-a0124e27e1dc",
+          "cmc": 6,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Twisted Landscape",
+          "scryfall_id": "d0e3e7b3-7ba9-47a2-b46c-a40bffb445e2",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Stratosoarer",
+          "scryfall_id": "4f607889-6f3f-4511-8920-88a39f3b28ca",
+          "cmc": 5,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Brimstone Roundup",
+          "scryfall_id": "bd13011e-a4fc-4107-988f-60cfc851ecd3",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Basking Broodscale",
+          "scryfall_id": "5feba5d6-99a6-4e9b-8a7d-90d955868fc3",
+          "cmc": 2,
+          "color": []
+        },
+        {
+          "name": "Gandalf, Westward Voyager",
+          "scryfall_id": "56910251-6339-4f8b-b863-29caab4965d8",
+          "cmc": 5,
+          "color": [
+            "G",
+            "U"
+          ]
+        },
+        {
+          "name": "Ranger Class",
+          "scryfall_id": "7ca392ca-3219-4694-9a74-aa079c76b91e",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "The Aetherspark",
+          "scryfall_id": "05690d52-06c4-40b1-8360-380418a83250",
+          "cmc": 4,
+          "color": []
+        },
+        {
+          "name": "Master's Guide-Mural // Master's Manufactory",
+          "scryfall_id": "f7a41343-7cdb-49aa-a9d1-7460195355d8",
+          "cmc": 5,
+          "color": [
+            "U",
+            "W"
+          ]
+        },
+        {
+          "name": "Panicked Altisaur",
+          "scryfall_id": "ad371c97-a266-4a88-9d28-2e889a37ba00",
+          "cmc": 5,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Silent Departure",
+          "scryfall_id": "4d1552e7-20b2-42b0-af47-6618ab163115",
+          "cmc": 1,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Gilded Ghoda",
+          "scryfall_id": "55685602-a18c-43a4-ac60-13b039672fa4",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Meteor Sword",
+          "scryfall_id": "68b1c746-a4b8-4a45-9f0e-3962f0ae40e3",
+          "cmc": 7,
+          "color": []
+        },
+        {
+          "name": "Midnight Tilling",
+          "scryfall_id": "c5112bbf-752c-41e7-9c61-4c81e6a77463",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Deceptive Landscape",
+          "scryfall_id": "ba863744-929b-43f3-a773-342ba3437b18",
+          "cmc": 0,
+          "color": []
+        }
+      ]
+    },
+    {
+      "playerId": "bot-8gt2o",
+      "name": "Bot_3",
+      "poolCount": 30,
+      "pool": [
+        {
+          "name": "Tamiyo, Inquisitive Student // Tamiyo, Seasoned Scholar",
+          "scryfall_id": "2a717b98-cdac-416d-bf6c-f6b6638e65d1",
+          "cmc": 1,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Emptiness",
+          "scryfall_id": "c6409eca-bef6-4f3a-8bbb-d69ec5dbfc13",
+          "cmc": 6,
+          "color": [
+            "B",
+            "W"
+          ]
+        },
+        {
+          "name": "Coruscation Mage",
+          "scryfall_id": "dc2c1de0-6233-469a-be72-a050b97d2c8f",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Fireball",
+          "scryfall_id": "df45a43e-a5b7-4fd4-873b-7b3c021be198",
+          "cmc": 1,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Swords to Plowshares",
+          "scryfall_id": "0e7ff4dc-af63-4342-9a44-d059e62bd14c",
+          "cmc": 1,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Revitalizing Repast // Old-Growth Grove",
+          "scryfall_id": "03522b6b-31ec-4126-8885-5dbb2248688b",
+          "cmc": 1,
+          "color": [
+            "B",
+            "G"
+          ]
+        },
+        {
+          "name": "Wind-Scarred Crag",
+          "scryfall_id": "4912e4d0-b16a-4aa6-a583-3430d26bd591",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Relentless Pursuit",
+          "scryfall_id": "752b9560-b1d6-441c-8bc8-bf6988112d25",
+          "cmc": 3,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Topiary Panther",
+          "scryfall_id": "03d0365e-6dee-4236-a997-6761e3cde90d",
+          "cmc": 6,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Path to Redemption",
+          "scryfall_id": "f936d64a-0db4-49c1-8a57-6d99e012a555",
+          "cmc": 2,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Nulldrifter",
+          "scryfall_id": "4d9f1bb8-c91b-40cd-a416-abbff0d65306",
+          "cmc": 7,
+          "color": []
+        },
+        {
+          "name": "Bloodstained Mire",
+          "scryfall_id": "579743fe-f71e-4cb2-8629-d6b02ed1591d",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Surly Badgersaur",
+          "scryfall_id": "7ba507e2-fe5e-4947-aada-20184aa09700",
+          "cmc": 4,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Monastery Swiftspear",
+          "scryfall_id": "d6bfa227-4309-40ed-952c-279595eab17e",
+          "cmc": 1,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Envoy of the Ancestors",
+          "scryfall_id": "fc1dfbfc-90e0-48fa-98f1-39929f823619",
+          "cmc": 3,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Restless Vents",
+          "scryfall_id": "e628e89b-bee9-408d-bb05-1784fda6b8a1",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Razor Rings",
+          "scryfall_id": "b05cfee5-ee59-4df6-a5f6-d9ef0fa7f98a",
+          "cmc": 2,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Icatian Crier",
+          "scryfall_id": "c5ba6543-ede7-45a5-8e8d-e17d3f545d3f",
+          "cmc": 3,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "North Pole Gates",
+          "scryfall_id": "bcf7b9da-d35d-4338-b4d9-83e47dc058ee",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Barrels of Blasting Jelly",
+          "scryfall_id": "4fd83083-3779-41f0-90a0-a00e3270e4e6",
+          "cmc": 1,
+          "color": []
+        },
+        {
+          "name": "The Fire Nation Drill",
+          "scryfall_id": "54d762f6-e131-480f-b294-10f5a63d9c98",
+          "cmc": 4,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Rielle, the Everwise",
+          "scryfall_id": "5f03c944-1929-4cb2-a373-d57eefa29ed1",
+          "cmc": 3,
+          "color": [
+            "R",
+            "U"
+          ]
+        },
+        {
+          "name": "Theater of Horrors",
+          "scryfall_id": "f0b88e4f-070f-48d1-a5f9-c22dfc7ab31b",
+          "cmc": 3,
+          "color": [
+            "B",
+            "R"
+          ]
+        },
+        {
+          "name": "Badlands Revival",
+          "scryfall_id": "8d3ef971-cdd4-410c-97c3-df98e4f02ab2",
+          "cmc": 5,
+          "color": [
+            "B",
+            "G"
+          ]
+        },
+        {
+          "name": "Eyeless Watcher",
+          "scryfall_id": "4d949d0e-baf7-4573-bb15-7e30e3e9b202",
+          "cmc": 4,
+          "color": []
+        },
+        {
+          "name": "Buried Treasure",
+          "scryfall_id": "4c9c45b6-dedd-4481-a06a-c83ace2f18fa",
+          "cmc": 2,
+          "color": []
+        },
+        {
+          "name": "Pawn of Ulamog",
+          "scryfall_id": "d9b9e2c6-7af7-42ae-91b2-0d17312b3624",
+          "cmc": 3,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Tranquil Cove",
+          "scryfall_id": "1c4efa6c-4f29-41cd-a728-bf0e479ace05",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Echoing Decay",
+          "scryfall_id": "f8e688e7-8350-4b78-bd49-a6ffdedad556",
+          "cmc": 2,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Galvanize",
+          "scryfall_id": "64ed3bfa-3294-45dd-825e-3afc2580f0d4",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        }
+      ]
+    },
+    {
+      "playerId": "bot-djn2r",
+      "name": "Bot_4",
+      "poolCount": 30,
+      "pool": [
+        {
+          "name": "The Ancient One",
+          "scryfall_id": "66dd43d7-76a7-46ea-b431-097fcea417af",
+          "cmc": 2,
+          "color": [
+            "B",
+            "U"
+          ]
+        },
+        {
+          "name": "Strength of the Harvest // Haven of the Harvest",
+          "scryfall_id": "a7143aa7-b16d-4e63-910c-6ceec55483f3",
+          "cmc": 3,
+          "color": [
+            "G",
+            "W"
+          ]
+        },
+        {
+          "name": "Requisition Raid",
+          "scryfall_id": "154e9ba9-0d0e-4b0e-acf2-f66a993cf3a2",
+          "cmc": 1,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Firebolt",
+          "scryfall_id": "882b8f98-ee51-4c94-a3eb-c79eb2b50d78",
+          "cmc": 1,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Occult Epiphany",
+          "scryfall_id": "6920c895-bc98-4871-a53f-219fa27a74e5",
+          "cmc": 1,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Flaying Tendrils",
+          "scryfall_id": "77899cb2-4d87-4c2d-99ae-1ae75bc5dc86",
+          "cmc": 3,
+          "color": []
+        },
+        {
+          "name": "Skewer the Critics",
+          "scryfall_id": "43ca8f80-e9ed-483f-a8a7-ad6149811df9",
+          "cmc": 3,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Belligerent Yearling",
+          "scryfall_id": "0b2debca-8535-4cf6-a461-c268faaacaae",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Rubblebelt Maverick",
+          "scryfall_id": "81c7ff67-b9e1-4d2e-b1ae-da9b946da00b",
+          "cmc": 1,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Deadly Dispute",
+          "scryfall_id": "b22ef77b-67a3-45d3-9d18-12b7b124cbf4",
+          "cmc": 2,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Echoing Assault",
+          "scryfall_id": "3213bfee-c0a0-49a2-9080-cdaa09b414c5",
+          "cmc": 5,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Fungal Reaches",
+          "scryfall_id": "1a3580d6-345a-46ba-a327-0e924989d6b1",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Goblin Bombardment",
+          "scryfall_id": "e262f55e-9239-4a97-a19e-9b08fb34502e",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Take for a Ride",
+          "scryfall_id": "c8e2ff9c-0e98-46f9-a33c-739388c5f3d0",
+          "cmc": 3,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Make Your Own Luck",
+          "scryfall_id": "0557b0a3-2b48-408f-a508-9f4da2ab1cd1",
+          "cmc": 5,
+          "color": [
+            "G",
+            "U"
+          ]
+        },
+        {
+          "name": "Coati Scavenger",
+          "scryfall_id": "d2c70d86-1764-487d-a415-15ae79ba570c",
+          "cmc": 3,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Thalia, Guardian of Thraben",
+          "scryfall_id": "c9f8b8fb-1cd8-450e-a1fe-892e7a323479",
+          "cmc": 2,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Persistent Specimen",
+          "scryfall_id": "f7baf973-3202-4fea-8861-a4a5ec228640",
+          "cmc": 1,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Seething Landscape",
+          "scryfall_id": "661fc907-7003-45c6-820c-9616e9a71c30",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Uncharted Haven",
+          "scryfall_id": "68b90f54-d629-4126-82cc-13b51d6c1c3e",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Huatli, Poet of Unity // Roar of the Fifth People",
+          "scryfall_id": "57df2563-18d4-4526-a8bc-0c114e6fd4d9",
+          "cmc": 3,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Tasigur, the Golden Fang",
+          "scryfall_id": "175ad810-3cdd-43c7-99a9-8a2e8ad6dbae",
+          "cmc": 6,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Case of the Filched Falcon",
+          "scryfall_id": "266be5bd-71ba-4511-8b71-d0b03885a28d",
+          "cmc": 1,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Momo, Playful Pet",
+          "scryfall_id": "9350bf4a-fa12-4867-b31f-1f1394d99571",
+          "cmc": 1,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Volatile Wanderglyph",
+          "scryfall_id": "2101921a-d26f-4a00-a0db-1b418f2e6b01",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Noggle Robber",
+          "scryfall_id": "0082ca96-10f3-4823-be16-117556b2afc3",
+          "cmc": 3,
+          "color": [
+            "G",
+            "R"
+          ]
+        },
+        {
+          "name": "Ancestral Reminiscence",
+          "scryfall_id": "625690d3-7131-45de-adea-9c927241e661",
+          "cmc": 4,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Mandibular Kite",
+          "scryfall_id": "6b922f71-18e6-4a74-b792-d477d4a1deca",
+          "cmc": 1,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Farseek",
+          "scryfall_id": "95e0760a-d285-493b-88cd-7556d9b10007",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Tilling Treefolk",
+          "scryfall_id": "8e4a10d0-214d-4e7b-9683-c84034f8f6b7",
+          "cmc": 3,
+          "color": [
+            "G"
+          ]
+        }
+      ]
+    },
+    {
+      "playerId": "bot-kjrae",
+      "name": "Bot_5",
+      "poolCount": 30,
+      "pool": [
+        {
+          "name": "Eloise, Nephalia Sleuth",
+          "scryfall_id": "bf81da34-4c2b-4e54-a60b-46ab41f72431",
+          "cmc": 5,
+          "color": [
+            "B",
+            "U"
+          ]
+        },
+        {
+          "name": "One Last Job",
+          "scryfall_id": "71bfbfae-e7eb-4f80-81c6-9ab6a1bbd39d",
+          "cmc": 3,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Razormane Masticore",
+          "scryfall_id": "5e40c79e-3177-416f-b10e-036553d611d7",
+          "cmc": 5,
+          "color": []
+        },
+        {
+          "name": "Captain of the Watch",
+          "scryfall_id": "6e201980-e220-44dc-beab-ad13c20332bd",
+          "cmc": 6,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Mortarpod",
+          "scryfall_id": "f1e6b292-41e7-40f9-b9fe-34f27d4526af",
+          "cmc": 2,
+          "color": []
+        },
+        {
+          "name": "Quietus Spike",
+          "scryfall_id": "7dc8e9cc-1aac-4709-9629-9f4318c86cb0",
+          "cmc": 3,
+          "color": []
+        },
+        {
+          "name": "Worn Powerstone",
+          "scryfall_id": "ace686ad-9e3f-41b3-b8eb-d1b6d45eb4e1",
+          "cmc": 3,
+          "color": []
+        },
+        {
+          "name": "Carrot Cake",
+          "scryfall_id": "eb03bb4f-8b4b-417e-bfc6-294cd2186b2e",
+          "cmc": 2,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Utter Insignificance",
+          "scryfall_id": "3050ac06-4c16-4155-a97f-f6bc92709ee4",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Flaring Cinder",
+          "scryfall_id": "0691a1a9-18e7-44b7-9a34-764b1ab45a76",
+          "cmc": 3,
+          "color": [
+            "R",
+            "U"
+          ]
+        },
+        {
+          "name": "Legion Leadership // Legion Stronghold",
+          "scryfall_id": "7676abd9-0a3d-4721-b17b-778d2e3c2e25",
+          "cmc": 2,
+          "color": [
+            "R",
+            "W"
+          ]
+        },
+        {
+          "name": "Ochre Jelly",
+          "scryfall_id": "9f23cfb7-c6b6-4f04-abba-5b2a6117ea12",
+          "cmc": 1,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Taj-Nar Swordsmith",
+          "scryfall_id": "4bcbd8bb-997a-4be0-966d-b472c31b4c73",
+          "cmc": 4,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Chandra, Acolyte of Flame",
+          "scryfall_id": "2cabfcfe-012e-4cab-bba2-24052eac0946",
+          "cmc": 3,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Getaway Glamer",
+          "scryfall_id": "69689049-a704-4f16-84ee-4d5d915028ec",
+          "cmc": 1,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Nurturing Bristleback",
+          "scryfall_id": "081d5c9e-71da-4454-ae4e-c76cb7790d20",
+          "cmc": 7,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Riftwing Cloudskate",
+          "scryfall_id": "1a2b228d-db4d-44a3-b208-6cf7a9f57da6",
+          "cmc": 5,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Overgrown Tomb",
+          "scryfall_id": "45b92924-baa1-4c9b-9932-9a5eda8f3446",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Lys Alana Informant",
+          "scryfall_id": "a79649c4-559e-4306-a102-5fd8750629c7",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Forlorn Flats",
+          "scryfall_id": "963c100e-4e12-438f-b5ae-14391406dff6",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Memory Deluge",
+          "scryfall_id": "edcd3802-ddb3-4eb6-9b6e-a26d76557662",
+          "cmc": 4,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "The Mechanist, Aerial Artisan",
+          "scryfall_id": "b910851e-9332-4c83-a790-d379667cabfc",
+          "cmc": 3,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Glowcap Lantern",
+          "scryfall_id": "bafde87c-743d-4307-93e0-fbd30f5d92f6",
+          "cmc": 1,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Blisterpod",
+          "scryfall_id": "e16f1803-634a-41b0-ae21-484d6f914a0d",
+          "cmc": 1,
+          "color": []
+        },
+        {
+          "name": "Lassoed by the Law",
+          "scryfall_id": "ea96eeac-c316-4247-a81f-0ddf52675ebf",
+          "cmc": 4,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Knowledge Seeker",
+          "scryfall_id": "8554e862-f78a-42f5-b876-076aac6c9504",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Quicksmith Genius",
+          "scryfall_id": "7fed8df9-600c-4502-83a3-883724f2f7c6",
+          "cmc": 3,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Abandon Attachments",
+          "scryfall_id": "74ca45a4-97ab-4255-9129-884e8b42b984",
+          "cmc": 2,
+          "color": [
+            "R",
+            "U"
+          ]
+        },
+        {
+          "name": "Voracious Varmint",
+          "scryfall_id": "99b74fa3-c1d7-4780-977d-f2d6663a529a",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Spark Harvest",
+          "scryfall_id": "e4d42177-dd1b-482c-a549-6f563b3f3249",
+          "cmc": 1,
+          "color": [
+            "B"
+          ]
+        }
+      ]
+    },
+    {
+      "playerId": "bot-z15fz",
+      "name": "Bot_6",
+      "poolCount": 30,
+      "pool": [
+        {
+          "name": "Grave Titan",
+          "scryfall_id": "3b4faa6e-5013-4c59-80f5-662a386672eb",
+          "cmc": 6,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Spellbound Dragon",
+          "scryfall_id": "88eba680-a0d7-4356-bf74-7986a51e545f",
+          "cmc": 5,
+          "color": [
+            "R",
+            "U"
+          ]
+        },
+        {
+          "name": "Restless Spire",
+          "scryfall_id": "66386fe8-9d3c-47f7-9cd3-4cd30051535f",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Howlpack Piper // Wildsong Howler",
+          "scryfall_id": "c7ceaf83-09c0-4492-a75d-4c47bd421858",
+          "cmc": 4,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Forgotten Ancient",
+          "scryfall_id": "90fc94d9-b8af-4de8-a42d-ae508f8f1cd5",
+          "cmc": 4,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Bartolomé del Presidio",
+          "scryfall_id": "690ccdc7-6c43-4902-9d11-2f07b7a36b11",
+          "cmc": 2,
+          "color": [
+            "B",
+            "W"
+          ]
+        },
+        {
+          "name": "Vanguard of the Rose",
+          "scryfall_id": "0200c504-9137-4bc2-9cd4-eaf0643a2855",
+          "cmc": 2,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Deathcap Marionette",
+          "scryfall_id": "ccc9d22c-dfce-4136-aed8-a5fe9bb852f2",
+          "cmc": 2,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Brackish Blunder",
+          "scryfall_id": "dea3d0f4-76f5-416f-93ba-8b003b967816",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Thrill of Possibility",
+          "scryfall_id": "882b348c-076b-41d8-b505-063480636669",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Ajani, Caller of the Pride",
+          "scryfall_id": "59793f1c-8c7e-433e-9c09-40aa3ce931a1",
+          "cmc": 3,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Form a Posse",
+          "scryfall_id": "39ee1387-c24e-4a66-8ad6-9afa9c0abcbb",
+          "cmc": 2,
+          "color": [
+            "R",
+            "W"
+          ]
+        },
+        {
+          "name": "Magda, the Hoardmaster",
+          "scryfall_id": "4443d112-209b-49ec-bc40-3a11dcdb092e",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Padeem, Consul of Innovation",
+          "scryfall_id": "00a4aef8-64fc-4e9d-adac-ef4c85d40b4a",
+          "cmc": 4,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Boon-Bringer Valkyrie",
+          "scryfall_id": "84e1cc7d-e645-4b0e-b117-63f93528ed12",
+          "cmc": 5,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Boulder Dash",
+          "scryfall_id": "657a2a24-22d1-4bc2-9f22-ed361ae487e3",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Malamet Scythe",
+          "scryfall_id": "df6776a4-cc01-46a3-90df-04e1e3ba513c",
+          "cmc": 3,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Colossal Dreadmask",
+          "scryfall_id": "98164430-64c1-465f-b786-45753c965f44",
+          "cmc": 6,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Perilous Landscape",
+          "scryfall_id": "61fc78e0-d0db-4ecb-a29a-f1a437d7987c",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Raucous Audience",
+          "scryfall_id": "ccd03ec3-0fae-48b2-9f04-9c57d2f94267",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Mirage Mirror",
+          "scryfall_id": "cb1252c2-b951-4125-93a2-9282b607b6a4",
+          "cmc": 3,
+          "color": []
+        },
+        {
+          "name": "Twilight Diviner",
+          "scryfall_id": "443b6f30-1493-4d48-93d9-a91e22a7ebb3",
+          "cmc": 3,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Fatal Push",
+          "scryfall_id": "6e9d8fe4-fd9b-4923-92bf-7dd6b8fa02e7",
+          "cmc": 1,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Chain Reaction",
+          "scryfall_id": "b6c0d5df-1195-49c1-9b8f-befed9faa401",
+          "cmc": 4,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Kutzil, Malamet Exemplar",
+          "scryfall_id": "c9f88a40-a6ed-4c1f-a309-011aca1acddd",
+          "cmc": 3,
+          "color": [
+            "G",
+            "W"
+          ]
+        },
+        {
+          "name": "Bloodline Shaman",
+          "scryfall_id": "5fdfc473-8477-4c04-a4e7-ecac1b0a5716",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Sublime Archangel",
+          "scryfall_id": "95e53129-c49b-4bb8-a816-629fc87e58bb",
+          "cmc": 4,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Bogslither's Embrace",
+          "scryfall_id": "4beca2e7-9c6d-493b-b15f-69e483a8dfff",
+          "cmc": 2,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Family Reunion",
+          "scryfall_id": "5c2cfbdc-8d40-4abb-afca-6c6d8e36185b",
+          "cmc": 2,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Seller of Songbirds",
+          "scryfall_id": "df84d9ce-9ff0-438a-96e1-2aadd60dcaba",
+          "cmc": 3,
+          "color": [
+            "W"
+          ]
+        }
+      ]
+    },
+    {
+      "playerId": "bot-56le0",
+      "name": "Bot_7",
+      "poolCount": 30,
+      "pool": [
+        {
+          "name": "Arlinn Kord // Arlinn, Embraced by the Moon",
+          "scryfall_id": "e72d7c11-2165-4c72-80f3-3c1a7b4b5572",
+          "cmc": 4,
+          "color": [
+            "G",
+            "R"
+          ]
+        },
+        {
+          "name": "Andúril, Flame of the West",
+          "scryfall_id": "7e7b9eea-a224-4db1-a089-cb385f7af20c",
+          "cmc": 3,
+          "color": []
+        },
+        {
+          "name": "Aurelia's Fury",
+          "scryfall_id": "1a3465b6-ee7f-4553-bbf1-85fae9734b67",
+          "cmc": 2,
+          "color": [
+            "R",
+            "W"
+          ]
+        },
+        {
+          "name": "The First Iroan Games",
+          "scryfall_id": "4b05ada5-8e5f-4158-bd28-e6c24e4a2299",
+          "cmc": 3,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Pitiless Plunderer",
+          "scryfall_id": "5b5cd187-857a-44dd-8595-a52857a0b753",
+          "cmc": 4,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Lightning Helix",
+          "scryfall_id": "4101e3fe-b0e7-4f0f-b9ac-9b61a4d628b3",
+          "cmc": 2,
+          "color": [
+            "R",
+            "W"
+          ]
+        },
+        {
+          "name": "Kitesail Apprentice",
+          "scryfall_id": "88e2315e-41d9-4e46-bee4-c8f92e91e2a9",
+          "cmc": 1,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Explosive Derailment",
+          "scryfall_id": "f0e3df9c-0a86-4e6f-a3c7-84a883328a3d",
+          "cmc": 1,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Greedy Freebooter",
+          "scryfall_id": "692fe4e8-13b4-4bec-938e-a8073a7fbd71",
+          "cmc": 1,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Blood Petal Celebrant",
+          "scryfall_id": "96db3d95-c0b8-42ff-956c-837f5f9cd40d",
+          "cmc": 2,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Redirect Lightning",
+          "scryfall_id": "2b5b14a7-1fdd-4efc-b197-cadfa7f7c860",
+          "cmc": 1,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Grist, Voracious Larva // Grist, the Plague Swarm",
+          "scryfall_id": "68239b41-b7db-4044-b672-6808c2c342ec",
+          "cmc": 1,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "At Knifepoint",
+          "scryfall_id": "897d594d-b5b0-43dc-b877-b483942416ce",
+          "cmc": 3,
+          "color": [
+            "B",
+            "R"
+          ]
+        },
+        {
+          "name": "Unwelcome Sprite",
+          "scryfall_id": "902f8d86-fde2-4cdf-88f0-bf63d616f3af",
+          "cmc": 2,
+          "color": [
+            "U"
+          ]
+        },
+        {
+          "name": "Outlaw Medic",
+          "scryfall_id": "2feaa51e-47fb-4849-b420-ee7278f3489a",
+          "cmc": 2,
+          "color": [
+            "W"
+          ]
+        },
+        {
+          "name": "Lively Dirge",
+          "scryfall_id": "0c35a0d3-12f7-46f3-a6b3-02a490d45ca0",
+          "cmc": 2,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Moon-Vigil Adherents",
+          "scryfall_id": "60621c37-62e1-4261-ae76-3946b4a0cfa3",
+          "cmc": 4,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Bountiful Landscape",
+          "scryfall_id": "f1c99617-6e38-4af7-a064-6db9a5e2cc6a",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Skittering Surveyor",
+          "scryfall_id": "8bae9f1d-e96d-444c-a0fd-5608243ee6c8",
+          "cmc": 3,
+          "color": []
+        },
+        {
+          "name": "Swarming Goblins",
+          "scryfall_id": "623c1d1b-69a4-4bc4-b388-17a7600fd960",
+          "cmc": 5,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Goblin Guide",
+          "scryfall_id": "3c0f5411-1940-410f-96ce-6f92513f753a",
+          "cmc": 1,
+          "color": [
+            "R"
+          ]
+        },
+        {
+          "name": "Pelakka Wurm",
+          "scryfall_id": "fa150070-80b6-453d-b00f-4462175cac79",
+          "cmc": 7,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Windswept Heath",
+          "scryfall_id": "bd1d13f7-fd38-4f0b-a8e0-1eac78668117",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Necrogenesis",
+          "scryfall_id": "32a50be8-3937-458b-a2f9-e75569016665",
+          "cmc": 2,
+          "color": [
+            "B",
+            "G"
+          ]
+        },
+        {
+          "name": "Vial Smasher, Gleeful Grenadier",
+          "scryfall_id": "3afce4e6-ac59-4fba-b63a-8fed96bbdc4a",
+          "cmc": 2,
+          "color": [
+            "B",
+            "R"
+          ]
+        },
+        {
+          "name": "Blooming Marsh",
+          "scryfall_id": "861caabb-0573-4e94-8b03-342f90465064",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Ilysian Caryatid",
+          "scryfall_id": "3db65137-c9d6-4352-b7a0-f3968b167233",
+          "cmc": 2,
+          "color": [
+            "G"
+          ]
+        },
+        {
+          "name": "Duress",
+          "scryfall_id": "34c3a894-ee75-4db9-a69f-711bb3cc150a",
+          "cmc": 1,
+          "color": [
+            "B"
+          ]
+        },
+        {
+          "name": "Eroded Canyon",
+          "scryfall_id": "5c9d080f-28d7-41d6-a4e0-5b3e3a5ed770",
+          "cmc": 0,
+          "color": []
+        },
+        {
+          "name": "Flayer Husk",
+          "scryfall_id": "20b394f9-644d-426e-801b-110774092018",
+          "cmc": 1,
+          "color": []
+        }
+      ]
+    }
+  ]
+}

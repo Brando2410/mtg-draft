@@ -1,5 +1,6 @@
 import { GameState, PlayerState, GameObject, Zone } from '@shared/engine_types';
 import { ActionProcessor } from './ActionProcessor';
+import { LayerProcessor } from './LayerProcessor';
 
 /**
  * Sweeping Mechanism that governs game-breaking states (Rule 704)
@@ -15,10 +16,11 @@ export class StateBasedActionsProcessor {
       const typeLine = (obj.definition.type_line || '').toLowerCase();
       if (!typeLine.includes('creature')) continue;
 
-      // Extract current stats (Handling 'X' or dynamic values)
-      const toughness = parseInt(obj.definition.toughness || '0') || 0;
+      // 704.5f/g: Extract state-effective stats through Layer System
+      const power = LayerProcessor.getEffectivePower(obj);
+      const toughness = LayerProcessor.getEffectiveToughness(obj);
       
-      // Check death conditions
+      // Check death conditions (0 toughness or lethal damage marked)
       if (toughness <= 0 || obj.damageMarked >= toughness) {
         log(`[DEATH] ${obj.definition.name} died (Dmg: ${obj.damageMarked}/${toughness})`);
         ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.ownerId);

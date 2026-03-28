@@ -53,6 +53,7 @@ export interface CardDefinition {
   subtypes: string[];   // e.g. "Goblin", "Warrior", "Aura"
   power?: string;       // string to allow "*" or "1+*"
   toughness?: string;
+  keywords: string[];   // Static keywords: ["Flying", "Trample", "Haste"]
   loyalty?: string;
   oracleText: string;
   type_line?: string;
@@ -76,6 +77,7 @@ export interface GameObject {
   damageMarked: number;
   summoningSickness: boolean;
   faceDown: boolean;
+  keywords: string[]; // Dynamic keywords gained (e.g. from an Aura or equipment)
   
   // Modifiers (Layer system targets)
   counters: Record<string, number>;

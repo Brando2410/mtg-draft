@@ -18,6 +18,7 @@ export interface Card {
   mana_cost?: string;
   power?: string;
   toughness?: string;
+  keywords?: string[];
 }
 
 export interface Player {
