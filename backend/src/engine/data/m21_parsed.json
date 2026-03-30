@@ -1,0 +1,2590 @@
+[
+  {
+    "id": "ce2bc7ad-458d-445e-a0a9-7897b596fdd0",
+    "name": "Adherent of Hope",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "power": "2",
+    "toughness": "1",
+    "oracleText": "At the beginning of combat on your turn, if you control a Basri planeswalker, put a +1/+1 counter on this creature.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "6e4c9574-1ee3-461e-848f-8f02c6a8b7ee",
+    "name": "Alchemist's Gift",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +1/+1 and gains your choice of deathtouch or lifelink until end of turn. (Any amount of damage a creature with deathtouch deals to a creature is enough to destroy it. Damage dealt by a creature with lifelink also causes its controller to gain that much life.)",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "43224e74-2c51-40bd-bc34-f66e990a3e33",
+    "name": "Alpine Houndmaster",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "When this creature enters, you may search your library for a card named Alpine Watchdog and/or a card named Igneous Cur, reveal them, put them into your hand, then shuffle.\nWhenever this creature attacks, it gets +X/+0 until end of turn, where X is the number of other attacking creatures.",
+    "colors": [
+      "R",
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "c392a7e5-6ff5-4c2f-9590-f8811a724f44",
+    "name": "Alpine Watchdog",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dog",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)",
+    "colors": [
+      "W"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_vigilance",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Vigilance"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "e8cca776-b0e4-4cd2-815f-36c1f86cf497",
+    "name": "Angelic Ascension",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature or planeswalker. Its controller creates a 4/4 white Angel creature token with flying.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "f8d7a2c7-666d-4fc6-bac8-ef8eb66e355d",
+    "name": "Animal Sanctuary",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{2}, {T}: Put a +1/+1 counter on target Bird, Cat, Dog, Goat, Ox, or Snake.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "9c977c67-b0c0-40b0-b129-28de094aaf40",
+    "name": "Anointed Chorister",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Cleric",
+    "power": "1",
+    "toughness": "1",
+    "oracleText": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)\n{4}{W}: This creature gets +3/+3 until end of turn.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_lifelink",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Lifelink"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "83437022-ba00-4370-83c2-ce1260336fcc",
+    "name": "Archfiend's Vessel",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human Cleric",
+    "power": "1",
+    "toughness": "1",
+    "oracleText": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)\nWhen this creature enters, if it entered from your graveyard or you cast it from your graveyard, exile it. If you do, create a 5/5 black Demon creature token with flying.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_lifelink",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Lifelink"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "c5b57247-81cc-44ec-b5a9-0702111a98a8",
+    "name": "Aven Gagglemaster",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Bird Warrior",
+    "power": "4",
+    "toughness": "3",
+    "oracleText": "Flying\nWhen this creature enters, you gain 2 life for each creature you control with flying.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_flying",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Flying"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "0b8aff2c-1f7b-4507-b914-53f8c4706b3d",
+    "name": "Azusa, Lost but Seeking",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Human Monk",
+    "power": "1",
+    "toughness": "2",
+    "oracleText": "You may play two additional lands on each of your turns.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "7a3f8bc2-ef66-474f-92a3-9c4df1670cec",
+    "name": "Bad Deal",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "You draw two cards and each opponent discards two cards. Each player loses 2 life.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "4bd3014b-94bb-4a9f-92cf-239a2dcc7e97",
+    "name": "Baneslayer Angel",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "power": "5",
+    "toughness": "5",
+    "oracleText": "Flying, first strike, lifelink, protection from Demons and from Dragons",
+    "colors": [
+      "W"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_flying",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Flying"
+        ]
+      },
+      {
+        "id": "keyword_lifelink",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Lifelink"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "cb078fbb-beb9-4c0b-be93-ed1e73e6f8d8",
+    "name": "Barrin, Tolarian Archmage",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "When Barrin enters, return up to one other target creature or planeswalker to its owner's hand.\nAt the beginning of your end step, if a permanent was put into your hand from the battlefield this turn, draw a card.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "2688b45d-9d74-4d9f-9a63-29c82b48d64f",
+    "name": "Basri, Devoted Paladin",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Basri",
+    "oracleText": "+1: Put a +1/+1 counter on up to one target creature. It gains vigilance until end of turn.\n−1: Whenever a creature attacks this turn, put a +1/+1 counter on it.\n−6: Creatures you control get +2/+2 and gain flying until end of turn.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "98c85699-2daf-4e87-a3be-465d02bd64bb",
+    "name": "Basri Ket",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Basri",
+    "oracleText": "+1: Put a +1/+1 counter on up to one target creature. It gains indestructible until end of turn.\n−2: Whenever one or more nontoken creatures attack this turn, create that many 1/1 white Soldier creature tokens that are tapped and attacking.\n−6: You get an emblem with \"At the beginning of combat on your turn, create a 1/1 white Soldier creature token, then put a +1/+1 counter on each creature you control.\"",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
+    "name": "Basri's Acolyte",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Cat Cleric",
+    "power": "2",
+    "toughness": "3",
+    "oracleText": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)\nWhen this creature enters, put a +1/+1 counter on each of up to two other target creatures you control.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_lifelink",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Lifelink"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "577657ed-162f-4104-b0af-ee9733e90f20",
+    "name": "Basri's Aegis",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on each of up to two target creatures. You may search your library and/or graveyard for a card named Basri, Devoted Paladin, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "74b1eae0-1bf8-4922-a9e3-45c01ece9005",
+    "name": "Basri's Lieutenant",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Knight",
+    "power": "3",
+    "toughness": "4",
+    "oracleText": "Vigilance, protection from multicolored\nWhen this creature enters, put a +1/+1 counter on target creature you control.\nWhenever this creature or another creature you control dies, if it had a +1/+1 counter on it, create a 2/2 white Knight creature token with vigilance.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_vigilance",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Vigilance"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "c2e6fdc0-bdd4-4bba-b8f1-bbc8dfad038e",
+    "name": "Basri's Solidarity",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on each creature you control.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "faca827d-0b35-48d7-acd6-13ecacc32b82",
+    "name": "Battle-Rattle Shaman",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Goblin Shaman",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "At the beginning of combat on your turn, you may have target creature get +2/+0 until end of turn.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "5d89a0e2-1163-4a11-b0df-deef2e6c8108",
+    "name": "Bloodfell Caves",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {B} or {R}.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "28ff52a2-4223-4551-b388-b4dd21cc1437",
+    "name": "Blood Glutton",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Vampire",
+    "power": "4",
+    "toughness": "3",
+    "oracleText": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)",
+    "colors": [
+      "B"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_lifelink",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Lifelink"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "c8483586-9a07-4f54-a390-7dd97fcea5cb",
+    "name": "Blossoming Sands",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {G} or {W}.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "9f8cf3f9-4e3b-4af2-b5ef-a97eb1d2b674",
+    "name": "Bolt Hound",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Elemental Dog",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)\nWhenever this creature attacks, other creatures you control get +1/+0 until end of turn.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_haste",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Haste"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "6075e0a3-a0ab-4a11-8ad2-7dabb071d309",
+    "name": "Bone Pit Brute",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Cyclops",
+    "power": "4",
+    "toughness": "5",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhen this creature enters, target creature gets +4/+0 until end of turn.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "ebb5e613-a803-42f3-840a-7089ac6b7e3d",
+    "name": "Brash Taunter",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Goblin",
+    "power": "1",
+    "toughness": "1",
+    "oracleText": "Indestructible\nWhenever this creature is dealt damage, it deals that much damage to target opponent.\n{2}{R}, {T}: This creature fights another target creature.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "3d0ec3bd-d894-4861-abcb-7b2e4f4de05c",
+    "name": "Burlfist Oak",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Treefolk",
+    "power": "2",
+    "toughness": "3",
+    "oracleText": "Whenever you draw a card, this creature gets +2/+2 until end of turn.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "f19b4a80-41e1-4c5f-869a-682f08543f12",
+    "name": "Burn Bright",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control get +2/+0 until end of turn.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "f8067745-35b6-4abd-9ae9-712159a26c89",
+    "name": "Caged Zombie",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie",
+    "power": "2",
+    "toughness": "3",
+    "oracleText": "{1}{B}, {T}: Each opponent loses 2 life. Activate only if a creature died this turn.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "59e14910-ee2e-49ae-855e-46a8ab6cad82",
+    "name": "Cancel",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "a3f6a13a-ab38-49d1-8712-f9c9135a23c8",
+    "name": "Canopy Stalker",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Cat",
+    "power": "4",
+    "toughness": "2",
+    "oracleText": "This creature must be blocked if able.\nWhen this creature dies, you gain 1 life for each creature that died this turn.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "f5ed9f08-56e8-4e24-aae2-05270d7c1ba8",
+    "name": "Capture Sphere",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nEnchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "31df3d95-bbdb-449d-9601-4fa844c3c640",
+    "name": "Carrion Grub",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Insect",
+    "power": "0",
+    "toughness": "5",
+    "oracleText": "This creature gets +X/+0, where X is the greatest power among creature cards in your graveyard.\nWhen this creature enters, mill four cards. (Put the top four cards of your library into your graveyard.)",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "46666fba-d4a7-4687-8747-a42e4c6d853e",
+    "name": "Celestial Enforcer",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "power": "2",
+    "toughness": "3",
+    "oracleText": "{1}{W}, {T}: Tap target creature. Activate only if you control a creature with flying.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "1e49ce44-5286-4310-88c2-f8a1402b113b",
+    "name": "Chandra, Flame's Catalyst",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Chandra",
+    "oracleText": "+1: Chandra deals 3 damage to each opponent.\n−2: You may cast target red instant or sorcery card from your graveyard. If that spell would be put into your graveyard, exile it instead.\n−8: Discard your hand, then draw seven cards. Until end of turn, you may cast spells from your hand without paying their mana costs.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "a4c3ca8c-c77c-43b8-84ad-796313ecc813",
+    "name": "Chandra, Heart of Fire",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Chandra",
+    "oracleText": "+1: Discard your hand, then exile the top three cards of your library. Until end of turn, you may play cards exiled this way.\n+1: Chandra deals 2 damage to any target.\n−9: Search your graveyard and library for any number of red instant and/or sorcery cards, exile them, then shuffle. You may cast them this turn. Add six {R}.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "76cf0b50-155f-4e65-9e48-88b378ad93a1",
+    "name": "Chandra's Firemaw",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Hellion",
+    "power": "4",
+    "toughness": "2",
+    "oracleText": "Haste\nWhen this creature enters, you may search your library and/or graveyard for a card named Chandra, Flame's Catalyst, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_haste",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Haste"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "ed875705-b7b6-4464-b16f-61629ffed04f",
+    "name": "Chandra's Incinerator",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Elemental",
+    "power": "6",
+    "toughness": "6",
+    "oracleText": "This spell costs {X} less to cast, where X is the total amount of noncombat damage dealt to your opponents this turn.\nTrample\nWhenever a source you control deals noncombat damage to an opponent, this creature deals that much damage to target creature or planeswalker that player controls.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_trample",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Trample"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "91d3e366-4da5-42c8-bbd5-a0c178c0da28",
+    "name": "Chandra's Magmutt",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Elemental Dog",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "{T}: This creature deals 1 damage to target player or planeswalker.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "e7744fcf-2336-489d-bc05-f3fce78713a9",
+    "name": "Chandra's Pyreling",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Elemental Lizard",
+    "power": "1",
+    "toughness": "3",
+    "oracleText": "Whenever a source you control deals noncombat damage to an opponent, this creature gets +1/+0 and gains double strike until end of turn. (It deals both first-strike and regular combat damage.)",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "3af78d76-ad5c-44ba-880d-b834bcde5398",
+    "name": "Chromatic Orrery",
+    "manaCost": "{7}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "You may spend mana as though it were mana of any color.\n{T}: Add {C}{C}{C}{C}{C}.\n{5}, {T}: Draw a card for each color among permanents you control.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "1e01bcb4-e823-4da5-b433-e75be3356367",
+    "name": "Chrome Replicator",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Construct",
+    "power": "4",
+    "toughness": "4",
+    "oracleText": "When this creature enters, if you control two or more nonland, nontoken permanents with the same name as one another, create a 4/4 colorless Construct artifact creature token.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "8059c52b-5d25-4052-b48a-e9e219a7a546",
+    "name": "Colossal Dreadmaw",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "power": "6",
+    "toughness": "6",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "colors": [
+      "G"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_trample",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Trample"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "a328a93a-e720-46d5-a190-cc65d1c90cea",
+    "name": "Conclave Mentor",
+    "manaCost": "{G}{W}",
+    "typeLine": "Creature — Centaur Cleric",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "If one or more +1/+1 counters would be put on a creature you control, that many plus one +1/+1 counters are put on that creature instead.\nWhen this creature dies, you gain life equal to its power.",
+    "colors": [
+      "G",
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "600d3517-e370-47ae-ac4f-c7ef8995a89c",
+    "name": "Concordia Pegasus",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Pegasus",
+    "power": "1",
+    "toughness": "3",
+    "oracleText": "Flying",
+    "colors": [
+      "W"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_flying",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Flying"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "5d878dab-5ed2-4ef3-b2c7-472290892854",
+    "name": "Conspicuous Snoop",
+    "manaCost": "{R}{R}",
+    "typeLine": "Creature — Goblin Rogue",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "Play with the top card of your library revealed.\nYou may cast Goblin spells from the top of your library.\nAs long as the top card of your library is a Goblin card, this creature has all activated abilities of that card.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "a24e8dba-5c86-4e32-8a52-61402f7fe9f0",
+    "name": "Containment Priest",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "Flash\nIf a nontoken creature would enter and it wasn't cast, exile it instead.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "8257c205-00cd-4d41-bd58-098575ea2343",
+    "name": "Crash Through",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Creatures you control gain trample until end of turn. (Each of those creatures can deal excess combat damage to the player or planeswalker it's attacking.)\nDraw a card.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "c0bba170-5176-4fab-a10d-e23d70128875",
+    "name": "Crypt Lurker",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Horror",
+    "power": "3",
+    "toughness": "4",
+    "oracleText": "When this creature enters, you may sacrifice a creature or discard a creature card. If you do, draw a card.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "4a433310-3fe2-4156-864d-7a6b2638340b",
+    "name": "Cultivate",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to two basic land cards, reveal those cards, put one onto the battlefield tapped and the other into your hand, then shuffle.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "ff87a671-054f-4357-8a62-450d36559a1b",
+    "name": "Daybreak Charger",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Unicorn",
+    "power": "3",
+    "toughness": "1",
+    "oracleText": "When this creature enters, target creature gets +2/+0 until end of turn.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "dc4513e1-9978-44ce-b7a5-4e2b5b63ad9e",
+    "name": "Deathbloom Thallid",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Fungus",
+    "power": "3",
+    "toughness": "2",
+    "oracleText": "When this creature dies, create a 1/1 green Saproling creature token.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "5c23869b-c99a-49dd-9e29-fcc0eb63fad1",
+    "name": "Defiant Strike",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +1/+0 until end of turn.\nDraw a card.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "56149192-ddc1-45a4-b7aa-be311da5fe8e",
+    "name": "Demonic Embrace",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +3/+1, has flying, and is a Demon in addition to its other types.\nYou may cast this card from your graveyard by paying 3 life and discarding a card in addition to paying its other costs.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "bfe6a3a9-8d62-47c4-a78b-9baa9133a540",
+    "name": "Destructive Tampering",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Destroy target artifact.\n• Creatures without flying can't block this turn.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "1fa781df-859f-4346-9424-b3713b17e1f6",
+    "name": "Dire Fleet Warmonger",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Orc Pirate",
+    "power": "3",
+    "toughness": "3",
+    "oracleText": "At the beginning of combat on your turn, you may sacrifice another creature. If you do, this creature gets +2/+2 and gains trample until end of turn. (It can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "colors": [
+      "B",
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "b33ba0a8-04e9-4df6-af20-a3ca4470cdcc",
+    "name": "Discontinuity",
+    "manaCost": "{3}{U}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "During your turn, this spell costs {2}{U}{U} less to cast.\nEnd the turn. (Exile all spells and abilities from the stack, including this card. The player whose turn it is discards down to their maximum hand size. Damage wears off, and \"this turn\" and \"until end of turn\" effects end.)",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "b3b1afa0-9bb5-4566-a85e-86a5c03e0187",
+    "name": "Dismal Backwater",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {U} or {B}.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "754b77b4-4cc4-4e49-a7a4-667401e7e063",
+    "name": "Double Vision",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast your first instant or sorcery spell each turn, copy that spell. You may choose new targets for the copy.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "288b056a-ea80-4fdc-990d-0ee1e9a7bf64",
+    "name": "Drowsing Tyrannodon",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "power": "3",
+    "toughness": "3",
+    "oracleText": "Defender (This creature can't attack.)\nAs long as you control a creature with power 4 or greater, this creature can attack as though it didn't have defender.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "c3de35fd-425d-46b8-bc7d-c2f05d86858d",
+    "name": "Dub",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2, has first strike, and is a Knight in addition to its other types. (It deals combat damage before creatures without first strike.)",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "49c07ea0-27ff-46fb-a41f-3e378c977b5d",
+    "name": "Duress",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a noncreature, nonland card from it. That player discards that card.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "d51269cf-a333-4a64-94cd-245798d840d2",
+    "name": "Elder Gargaroth",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "power": "6",
+    "toughness": "6",
+    "oracleText": "Vigilance, reach, trample\nWhenever this creature attacks or blocks, choose one —\n• Create a 3/3 green Beast creature token.\n• You gain 3 life.\n• Draw a card.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_reach",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Reach"
+        ]
+      },
+      {
+        "id": "keyword_vigilance",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Vigilance"
+        ]
+      },
+      {
+        "id": "keyword_trample",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Trample"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "f8eb4087-3a4c-4de8-8e29-f4cd71acb180",
+    "name": "Eliminate",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature or planeswalker with mana value 3 or less.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "d3bc7176-abe0-47cf-a242-cf22a1f590be",
+    "name": "Enthralling Hold",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nYou can't choose an untapped creature as this spell's target as you cast it.\nYou control enchanted creature.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "7988fd09-32a4-406b-8e7f-e77393d680a7",
+    "name": "Epitaph Golem",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Golem",
+    "power": "3",
+    "toughness": "5",
+    "oracleText": "{2}: Put target card from your graveyard on the bottom of your library.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "6f1bace4-a327-4eb6-a6ef-8394e76c06b7",
+    "name": "Experimental Overload",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create an X/X blue and red Weird creature token, where X is the number of instant and sorcery cards in your graveyard. Then you may return an instant or sorcery card from your graveyard to your hand. Exile Experimental Overload.",
+    "colors": [
+      "R",
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "d313d051-7295-4884-8cbf-f2f835fd45f4",
+    "name": "Fabled Passage",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}, Sacrifice this land: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. Then if you control four or more lands, untap that land.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "8e742d49-e6f0-4016-ba4c-11878fad89cb",
+    "name": "Faith's Fetters",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant permanent\nWhen this Aura enters, you gain 4 life.\nEnchanted permanent can't attack or block, and its activated abilities can't be activated unless they're mana abilities.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "fb4733e6-6fe2-4460-ac9f-82feb583d790",
+    "name": "Falconer Adept",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "power": "2",
+    "toughness": "3",
+    "oracleText": "Whenever this creature attacks, create a 1/1 white Bird creature token with flying that's tapped and attacking.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "73148b3b-73d3-4f57-8b67-1e91fbe112b9",
+    "name": "Feat of Resistance",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter on target creature you control. It gains protection from the color of your choice until end of turn. (It can't be blocked, targeted, dealt damage, enchanted, or equipped by anything of that color.)",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "84a9485a-d356-4cbe-b257-b62008a21328",
+    "name": "Feline Sovereign",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Cat",
+    "power": "2",
+    "toughness": "3",
+    "oracleText": "Other Cats you control get +1/+1 and have protection from Dogs.\nWhenever one or more Cats you control deal combat damage to a player, destroy up to one target artifact or enchantment that player controls.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "56a95546-c45a-4da5-b1e8-d5658b5b7d53",
+    "name": "Fetid Imp",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Imp",
+    "power": "1",
+    "toughness": "2",
+    "oracleText": "Flying\n{B}: This creature gains deathtouch until end of turn. (Any amount of damage it deals to a creature is enough to destroy it.)",
+    "colors": [
+      "B"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_flying",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Flying"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "17bc2af0-5a1d-4319-a285-6a15cf86be83",
+    "name": "Fierce Empath",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf",
+    "power": "1",
+    "toughness": "1",
+    "oracleText": "When this creature enters, you may search your library for a creature card with mana value 6 or greater, reveal it, put it into your hand, then shuffle.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "0b12e4b7-2c45-4795-94d3-901f89b8f290",
+    "name": "Fiery Emancipation",
+    "manaCost": "{3}{R}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "If a source you control would deal damage to a permanent or player, it deals triple that damage to that permanent or player instead.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "2b85a552-2119-4d9c-b7c1-c09c2d9f2f38",
+    "name": "Finishing Blow",
+    "manaCost": "{4}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature or planeswalker.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "3279314f-d639-4489-b2ab-3621bb3ca64b",
+    "name": "Forest",
+    "manaCost": "",
+    "typeLine": "Basic Land — Forest",
+    "oracleText": "({T}: Add {G}.)",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "3bd39a06-c53a-42c2-b2df-028358f03406",
+    "name": "Forgotten Sentinel",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Golem",
+    "power": "4",
+    "toughness": "3",
+    "oracleText": "This creature enters tapped.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "8f14abb0-0e9f-448e-85d7-6cb71f756c56",
+    "name": "Frantic Inventory",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw a card, then draw cards equal to the number of cards named Frantic Inventory in your graveyard.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "393fc485-d3c1-4826-933d-89f66df769d4",
+    "name": "Frost Breath",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap up to two target creatures. Those creatures don't untap during their controller's next untap step.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "4037e3b2-cb62-4f88-943d-3edcd6827c23",
+    "name": "Fungal Rebirth",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Return target permanent card from your graveyard to your hand. If a creature died this turn, create two 1/1 green Saproling creature tokens.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "2ae12125-73a3-488b-98b8-9f982addac56",
+    "name": "Furious Rise",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your end step, if you control a creature with power 4 or greater, exile the top card of your library. You may play that card until you exile another card with this enchantment.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "cb0e6279-8a66-4124-9def-fa0c83c26db9",
+    "name": "Furor of the Bitten",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2 and attacks each combat if able.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "44b83bb7-00c8-4078-b27f-42a830a544b5",
+    "name": "Gadrak, the Crown-Scourge",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Dragon",
+    "power": "5",
+    "toughness": "4",
+    "oracleText": "Flying\nGadrak can't attack unless you control four or more artifacts.\nAt the beginning of your end step, create a Treasure token for each nontoken creature that died this turn. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "colors": [
+      "R"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_flying",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Flying"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "d2e3b99c-e48e-4f4d-ba7a-e9218137b432",
+    "name": "Gale Swooper",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Griffin",
+    "power": "3",
+    "toughness": "2",
+    "oracleText": "Flying\nWhen this creature enters, target creature gains flying until end of turn.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_flying",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Flying"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "48133629-4a5b-4c91-b496-2ee94f6cbc4c",
+    "name": "Garruk, Savage Herald",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Garruk",
+    "oracleText": "+1: Reveal the top card of your library. If it's a creature card, put it into your hand. Otherwise, put it on the bottom of your library.\n−2: Target creature you control deals damage equal to its power to another target creature.\n−7: Until end of turn, creatures you control gain \"You may have this creature assign its combat damage as though it weren't blocked.\"",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "3928bbce-87b7-4b28-9af4-20362935c909",
+    "name": "Garruk's Gorehorn",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Beast",
+    "power": "7",
+    "toughness": "3",
+    "oracleText": "",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "9e0fa0b6-5f3f-4669-84e8-2c38c9593d88",
+    "name": "Garruk's Harbinger",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "power": "4",
+    "toughness": "3",
+    "oracleText": "Hexproof from black\nWhenever this creature deals combat damage to a player or planeswalker, look at that many cards from the top of your library. You may reveal a creature card or Garruk planeswalker card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "71a4860a-8bb6-45c0-b00a-b4a42da33ab9",
+    "name": "Garruk's Uprising",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, if you control a creature with power 4 or greater, draw a card.\nCreatures you control have trample. (Each of those creatures can deal excess combat damage to the player or planeswalker it's attacking.)\nWhenever a creature you control with power 4 or greater enters, draw a card.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "d6099863-8d3d-44bf-8d3b-dc3602119617",
+    "name": "Garruk's Warsteed",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Rhino",
+    "power": "3",
+    "toughness": "5",
+    "oracleText": "Vigilance\nWhen this creature enters, you may search your library and/or graveyard for a card named Garruk, Savage Herald, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_vigilance",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Vigilance"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "af2fdbec-bca2-4af5-9c2a-28b0b35b18a3",
+    "name": "Garruk, Unleashed",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Garruk",
+    "oracleText": "+1: Up to one target creature gets +3/+3 and gains trample until end of turn.\n−2: Create a 3/3 green Beast creature token. Then if an opponent controls more creatures than you, put a loyalty counter on Garruk.\n−7: You get an emblem with \"At the beginning of your end step, you may search your library for a creature card, put it onto the battlefield, then shuffle.\"",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "2810631f-c55c-4947-a26f-4d3ce76024b3",
+    "name": "Ghostly Pilferer",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Spirit Rogue",
+    "power": "2",
+    "toughness": "1",
+    "oracleText": "Whenever this creature becomes untapped, you may pay {2}. If you do, draw a card.\nWhenever an opponent casts a spell from anywhere other than their hand, draw a card.\nDiscard a card: This creature can't be blocked this turn.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "a1b4f7ec-ea2e-4d90-98cd-0c92bd9f64c1",
+    "name": "Gloom Sower",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Creature — Horror",
+    "power": "8",
+    "toughness": "6",
+    "oracleText": "Whenever this creature becomes blocked by a creature, that creature's controller loses 2 life and you gain 2 life.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "17d154d3-7ae5-43ff-9978-d974285e2c89",
+    "name": "Glorious Anthem",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures you control get +1/+1.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "5f22116a-8b6a-4bbe-999f-7329e1e2b2d9",
+    "name": "Gnarled Sage",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Treefolk Druid",
+    "power": "4",
+    "toughness": "4",
+    "oracleText": "Reach (This creature can block creatures with flying.)\nAs long as you've drawn two or more cards this turn, this creature gets +0/+2 and has vigilance. (Attacking doesn't cause it to tap.)",
+    "colors": [
+      "G"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_reach",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Reach"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "fa4bf664-3b92-4598-b905-2bc090958c8b",
+    "name": "Goblin Arsonist",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin Shaman",
+    "power": "1",
+    "toughness": "1",
+    "oracleText": "When this creature dies, you may have it deal 1 damage to any target.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "d7ac8bdd-851f-449d-a108-70578eabf254",
+    "name": "Goblin Wizardry",
+    "manaCost": "{3}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Create two 1/1 red Goblin Wizard creature tokens with prowess. (Whenever you cast a noncreature spell, they get +1/+1 until end of turn.)",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "c9cd537c-e40e-438f-a751-e0ad8f6e6283",
+    "name": "Goremand",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "power": "5",
+    "toughness": "5",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nFlying\nTrample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nWhen this creature enters, each opponent sacrifices a creature.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_flying",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Flying"
+        ]
+      },
+      {
+        "id": "keyword_trample",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Trample"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "7737b578-8ae3-4846-b508-93ef40f25244",
+    "name": "Grasp of Darkness",
+    "manaCost": "{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -4/-4 until end of turn.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "6ea1ee60-5644-4f78-913d-32c36065957f",
+    "name": "Griffin Aerie",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your end step, if you gained 3 or more life this turn, create a 2/2 white Griffin creature token with flying.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "928558ab-e29a-44cb-ac2f-88443571f41a",
+    "name": "Grim Tutor",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a card, put that card into your hand, then shuffle. You lose 3 life.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "386e5cb2-39c8-453d-a642-c5d9f8495601",
+    "name": "Havoc Jester",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Devil",
+    "power": "5",
+    "toughness": "5",
+    "oracleText": "Whenever you sacrifice a permanent, this creature deals 1 damage to any target.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "869fb9f1-0d59-4874-aa52-ac665c3cc0e8",
+    "name": "Heartfire Immolator",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\n{R}, Sacrifice this creature: It deals damage equal to its power to target creature or planeswalker.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "7bf663d3-850b-4a24-8e4b-08311adf4ed0",
+    "name": "Hellkite Punisher",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "power": "6",
+    "toughness": "6",
+    "oracleText": "Flying\n{R}: This creature gets +1/+0 until end of turn.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_flying",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Flying"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "43c037e3-7d1a-48ca-8ecc-276696592f62",
+    "name": "Heroic Intervention",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Permanents you control gain hexproof and indestructible until end of turn.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "ae981da0-f32c-49d5-bcb0-2b9255a4e1fe",
+    "name": "Historian of Zhalfir",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "power": "3",
+    "toughness": "3",
+    "oracleText": "Whenever this creature attacks, if you control a Teferi planeswalker, draw a card.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "4bfffc18-b36a-4dd5-909e-60ea9f8eb60b",
+    "name": "Hobblefiend",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Devil",
+    "power": "2",
+    "toughness": "1",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\n{1}, Sacrifice another creature: Put a +1/+1 counter on this creature.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_trample",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Trample"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "ac38a51f-9a3b-451c-b72d-6d4e0b296fbd",
+    "name": "Hooded Blightfang",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Snake",
+    "power": "1",
+    "toughness": "4",
+    "oracleText": "Deathtouch\nWhenever a creature you control with deathtouch attacks, each opponent loses 1 life and you gain 1 life.\nWhenever a creature you control with deathtouch deals damage to a planeswalker, destroy that planeswalker.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_deathtouch",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Deathtouch"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "7c08c80f-f27c-4e3a-b048-143aea740096",
+    "name": "Hunter's Edge",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on target creature you control. Then that creature deals damage equal to its power to target creature you don't control.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "4d60e84e-be05-49da-9720-4225abe9d003",
+    "name": "Idol of Endurance",
+    "manaCost": "{2}{W}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, exile all creature cards with mana value 3 or less from your graveyard until this artifact leaves the battlefield.\n{1}{W}, {T}: Until end of turn, you may cast a creature spell from among cards exiled with this artifact without paying its mana cost.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "d2bfec5d-3182-415a-afe8-0b5511cfd656",
+    "name": "Igneous Cur",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Elemental Dog",
+    "power": "1",
+    "toughness": "2",
+    "oracleText": "{1}{R}: This creature gets +2/+0 until end of turn.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "642e0c48-1f77-41e0-abbe-f570b757cd66",
+    "name": "Indulging Patrician",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Creature — Vampire Noble",
+    "power": "1",
+    "toughness": "4",
+    "oracleText": "Flying\nLifelink (Damage dealt by this creature also causes you to gain that much life.)\nAt the beginning of your end step, if you gained 3 or more life this turn, each opponent loses 3 life.",
+    "colors": [
+      "B",
+      "W"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_flying",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Flying"
+        ]
+      },
+      {
+        "id": "keyword_lifelink",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Lifelink"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "975e4b8e-add9-439c-9463-e2facee96c10",
+    "name": "Infernal Scarring",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+0 and has \"When this creature dies, draw a card.\"",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "531e1fc0-a3aa-4b57-87b2-79a31af5c922",
+    "name": "Invigorating Surge",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter on target creature you control, then double the number of +1/+1 counters on that creature.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+    "name": "Island",
+    "manaCost": "",
+    "typeLine": "Basic Land — Island",
+    "oracleText": "({T}: Add {U}.)",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "a188164c-01fe-4980-83a5-91d14e218cf5",
+    "name": "Jeskai Elder",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Monk",
+    "power": "1",
+    "toughness": "2",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nWhenever this creature deals combat damage to a player, you may draw a card. If you do, discard a card.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "7dcdcfce-3f32-48f9-83f8-87b9ccbf92e3",
+    "name": "Jolrael, Mwonvuli Recluse",
+    "manaCost": "{1}{G}",
+    "typeLine": "Legendary Creature — Human Druid",
+    "power": "1",
+    "toughness": "2",
+    "oracleText": "Whenever you draw your second card each turn, create a 2/2 green Cat creature token.\n{4}{G}{G}: Until end of turn, creatures you control have base power and toughness X/X, where X is the number of cards in your hand.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "69f28d7a-6480-4725-9719-2354921e6410",
+    "name": "Jungle Hollow",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {B} or {G}.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "b0fd1009-cd3d-4b53-b9f1-dbc47e8708ab",
+    "name": "Kaervek, the Spiteful",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Creature — Human Warlock",
+    "power": "3",
+    "toughness": "2",
+    "oracleText": "Other creatures get -1/-1.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "cce6289e-f665-4faa-8285-c843447f3e52",
+    "name": "Keen Glidemaster",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Soldier",
+    "power": "2",
+    "toughness": "1",
+    "oracleText": "{2}{U}: Target creature gains flying until end of turn.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "7b862e46-f5a2-4fce-98b5-2c5aa49ec648",
+    "name": "Keral Keep Disciples",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Human Monk",
+    "power": "4",
+    "toughness": "3",
+    "oracleText": "Whenever you activate a loyalty ability of a Chandra planeswalker, this creature deals 1 damage to each opponent.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "dc5e8221-fc2d-4d90-80f3-729606648c54",
+    "name": "Kinetic Augur",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "power": "*",
+    "toughness": "4",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nKinetic Augur's power is equal to the number of instant and sorcery cards in your graveyard.\nWhen this creature enters, discard up to two cards, then draw that many cards.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_trample",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Trample"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "88496096-fd9a-451a-85d9-31ccc3580623",
+    "name": "Kitesail Freebooter",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Pirate",
+    "power": "1",
+    "toughness": "2",
+    "oracleText": "Flying\nWhen this creature enters, target opponent reveals their hand. You choose a noncreature, nonland card from it. Exile that card until this creature leaves the battlefield.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_flying",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Flying"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "7bd3a903-23e0-4b5a-9c7e-390d5ced8371",
+    "name": "Leafkin Avenger",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Creature — Elemental Druid",
+    "power": "4",
+    "toughness": "3",
+    "oracleText": "{T}: Add {G} for each creature with power 4 or greater you control.\n{7}{R}: This creature deals damage equal to its power to target player or planeswalker.",
+    "colors": [
+      "G",
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "032f6c5a-8d88-4a55-a54b-28df42d801e1",
+    "name": "Legion's Judgment",
+    "manaCost": "{2}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature with power 4 or greater.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "cb33529b-80bd-4f52-94cc-d8371c53ad75",
+    "name": "Library Larcenist",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Merfolk Rogue",
+    "power": "1",
+    "toughness": "2",
+    "oracleText": "Whenever this creature attacks, draw a card.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "3888197f-5da4-4413-9cad-b37a12ba1e60",
+    "name": "Life Goes On",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "You gain 4 life. If a creature died this turn, you gain 8 life instead.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "d5f80411-0a95-4e0a-b7a8-af23ddf385cc",
+    "name": "Light of Promise",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has \"Whenever you gain life, put that many +1/+1 counters on this creature.\"",
+    "colors": [
+      "W"
+    ],
+    "abilities": [
+      {
+        "id": "auto_life_trigger",
+        "type": "Triggered",
+        "triggerEvent": "ON_LIFE_GAIN",
+        "effects": [
+          {
+            "type": "ApplyPlaceholderEffect",
+            "value": "Enchant creature\nEnchanted creature has \"Whenever you gain life, put that many +1/+1 counters on this creature.\""
+          }
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "921e3dc3-f8eb-4498-a6a8-b424952230cd",
+    "name": "Liliana, Death Mage",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Legendary Planeswalker — Liliana",
+    "oracleText": "+1: Return up to one target creature card from your graveyard to your hand.\n−3: Destroy target creature. Its controller loses 2 life.\n−7: Target opponent loses 2 life for each creature card in their graveyard.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "ae5d7f15-a86f-4eaa-8280-2e7f73c8ce3a",
+    "name": "Liliana's Devotee",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Warlock",
+    "power": "2",
+    "toughness": "3",
+    "oracleText": "Zombies you control get +1/+0.\nAt the beginning of your end step, if a creature died this turn, you may pay {1}{B}. If you do, create a 2/2 black Zombie creature token.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "b231f941-4acb-46f2-81ae-16e5a28e65af",
+    "name": "Liliana's Scorn",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature. You may search your library and/or graveyard for a card named Liliana, Death Mage, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "5a64625f-937a-449e-b1fc-cd0f25b033f6",
+    "name": "Liliana's Scrounger",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Wizard",
+    "power": "3",
+    "toughness": "2",
+    "oracleText": "At the beginning of each end step, if a creature died this turn, you may put a loyalty counter on a Liliana planeswalker you control.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "3dc48b87-62cb-48f6-8979-e6fb98717b52",
+    "name": "Liliana's Standard Bearer",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie Knight",
+    "power": "3",
+    "toughness": "1",
+    "oracleText": "Flash\nWhen this creature enters, draw X cards, where X is the number of creatures that died under your control this turn.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "1945fc78-8aa4-46fb-9571-eaa1c4729e3d",
+    "name": "Liliana's Steward",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Zombie",
+    "power": "1",
+    "toughness": "2",
+    "oracleText": "{T}, Sacrifice this creature: Target opponent discards a card. Activate only as a sorcery.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "e329a3e2-6702-4758-8aac-c3017e77b619",
+    "name": "Liliana, Waker of the Dead",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Planeswalker — Liliana",
+    "oracleText": "+1: Each player discards a card. Each opponent who can't loses 3 life.\n−3: Target creature gets -X/-X until end of turn, where X is the number of cards in your graveyard.\n−7: You get an emblem with \"At the beginning of combat on your turn, put target creature card from a graveyard onto the battlefield under your control. It gains haste.\"",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "d6e23afa-7e08-4049-baf0-d4d0134ba2c8",
+    "name": "Llanowar Visionary",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "When this creature enters, draw a card.\n{T}: Add {G}.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "64832674-beb1-446e-b2f7-8a5e271139a5",
+    "name": "Lofty Denial",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {1}. If you control a creature with flying, counter that spell unless its controller pays {4} instead.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "3be31fb0-115e-4e62-babd-16870f249f06",
+    "name": "Lorescale Coatl",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Snake",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "Whenever you draw a card, put a +1/+1 counter on this creature.",
+    "colors": [
+      "G",
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "31a500e6-01f5-4a3a-8839-68b9b515e919",
+    "name": "Makeshift Battalion",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "power": "3",
+    "toughness": "2",
+    "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, put a +1/+1 counter on this creature.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "89e2bc57-8f18-4ba1-a11b-9d69d029f56a",
+    "name": "Malefic Scythe",
+    "manaCost": "{1}{B}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "This Equipment enters with a soul counter on it.\nEquipped creature gets +1/+1 for each soul counter on this Equipment.\nWhenever equipped creature dies, put a soul counter on this Equipment.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "9b4e628f-5fc5-4c17-a07d-448d361d7e7c",
+    "name": "Mangara, the Diplomat",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Human Cleric",
+    "power": "2",
+    "toughness": "4",
+    "oracleText": "Lifelink\nWhenever an opponent attacks with creatures, if two or more of those creatures are attacking you and/or planeswalkers you control, draw a card.\nWhenever an opponent casts their second spell each turn, draw a card.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_lifelink",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Lifelink"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "d61b4b71-3cbb-4422-8ce7-657ca3bb6a82",
+    "name": "Masked Blackguard",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "power": "2",
+    "toughness": "1",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\n{2}{B}: This creature gets +1/+1 until end of turn.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "e3185b01-0d91-4927-98e9-bc9df6c20917",
+    "name": "Massacre Wurm",
+    "manaCost": "{3}{B}{B}{B}",
+    "typeLine": "Creature — Phyrexian Wurm",
+    "power": "6",
+    "toughness": "5",
+    "oracleText": "When this creature enters, creatures your opponents control get -2/-2 until end of turn.\nWhenever a creature an opponent controls dies, that player loses 2 life.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "9fd761f3-6b43-4150-8595-dc3abd85b06c",
+    "name": "Mazemind Tome",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}, Put a page counter on this artifact: Scry 1. (Look at the top card of your library. You may put that card on the bottom.)\n{2}, {T}, Put a page counter on this artifact: Draw a card.\nWhen there are four or more page counters on this artifact, exile it. If you do, you gain 4 life.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "ec3a2c95-4e7a-43c5-90bd-6f1de7c82a5c",
+    "name": "Meteorite",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, it deals 2 damage to any target.\n{T}: Add one mana of any color.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "833a8604-92d5-443b-9bc0-bd91c973ef07",
+    "name": "Mind Rot",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player discards two cards.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "033afbd5-9937-4957-98ba-48e469a490bb",
+    "name": "Miscast",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target instant or sorcery spell unless its controller pays {3}.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "d961c441-b76b-4bd8-b510-a3e073207a1b",
+    "name": "Mistral Singer",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Siren",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "Flying\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+    "colors": [
+      "U"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_flying",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Flying"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+    "name": "Mountain",
+    "manaCost": "",
+    "typeLine": "Basic Land — Mountain",
+    "oracleText": "({T}: Add {R}.)",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "0002ab72-834b-4c81-82b1-0d2760ea96b0",
+    "name": "Mystic Skyfish",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Fish",
+    "power": "3",
+    "toughness": "1",
+    "oracleText": "Whenever you draw your second card each turn, this creature gains flying until end of turn.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "32c5252e-ff15-4f86-ad63-d8286427e70f",
+    "name": "Necromentia",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose a card name other than a basic land card name. Search target opponent's graveyard, hand, and library for any number of cards with that name and exile them. That player shuffles, then creates a 2/2 black Zombie creature token for each card exiled from their hand this way.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "e21827eb-fa49-4784-a86b-aef164a5018e",
+    "name": "Niambi, Esteemed Speaker",
+    "manaCost": "{W}{U}",
+    "typeLine": "Legendary Creature — Human Cleric",
+    "power": "2",
+    "toughness": "1",
+    "oracleText": "Flash\nWhen Niambi enters, you may return another target creature you control to its owner's hand. If you do, you gain life equal to that creature's mana value.\n{1}{W}{U}, {T}, Discard a legendary card: Draw two cards.",
+    "colors": [
+      "U",
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "e70b7a73-484e-48f1-944c-3d38866cdc20",
+    "name": "Nine Lives",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Hexproof\nIf a source would deal damage to you, prevent that damage and put an incarnation counter on this enchantment.\nWhen there are nine or more incarnation counters on this enchantment, exile it.\nWhen this enchantment leaves the battlefield, you lose the game.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "e449f985-d149-49eb-87d9-7a325215f82d",
+    "name": "Obsessive Stitcher",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Creature — Human Wizard",
+    "power": "0",
+    "toughness": "3",
+    "oracleText": "{T}: Draw a card, then discard a card.\n{2}{U}{B}, {T}, Sacrifice this creature: Return target creature card from your graveyard to the battlefield.",
+    "colors": [
+      "B",
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "76e42d07-57d9-4de4-8d41-eb42dd1573ed",
+    "name": "Onakke Ogre",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Ogre Warrior",
+    "power": "4",
+    "toughness": "2",
+    "oracleText": "",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "323db259-d35e-467d-9a46-4adcb2fc107c",
+    "name": "Opt",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Scry 1. (Look at the top card of your library. You may put that card on the bottom.)\nDraw a card.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "c2c4a0e7-9ca4-4291-94de-165cc2ded822",
+    "name": "Ornery Dilophosaur",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)\nWhenever this creature attacks, if you control a creature with power 4 or greater, this creature gets +2/+2 until end of turn.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_deathtouch",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Deathtouch"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "a8b94bc1-68d1-41dc-914c-a33ecb9aeb49",
+    "name": "Pack Leader",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dog",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "Other Dogs you control get +1/+1.\nWhenever this creature attacks, prevent all combat damage that would be dealt this turn to Dogs you control.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "27305aad-f1bd-4895-8611-143bc0250bee",
+    "name": "Palladium Myr",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Myr",
+    "power": "2",
+    "toughness": "2",
+    "oracleText": "{T}: Add {C}{C}.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "aac00055-640e-4749-8d23-d242e6d0b23a",
+    "name": "Peer into the Abyss",
+    "manaCost": "{4}{B}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player draws cards equal to half the number of cards in their library and loses half their life. Round up each time.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "08b78aa8-a63a-4aa2-bb82-3fbf2595ed7c",
+    "name": "Pestilent Haze",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• All creatures get -2/-2 until end of turn.\n• Remove two loyalty counters from each planeswalker.",
+    "colors": [
+      "B"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "fbd306cf-6625-4414-b9e5-4b909bb1bb13",
+    "name": "Pitchburn Devils",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Devil",
+    "power": "3",
+    "toughness": "3",
+    "oracleText": "When this creature dies, it deals 3 damage to any target.",
+    "colors": [
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+    "name": "Plains",
+    "manaCost": "",
+    "typeLine": "Basic Land — Plains",
+    "oracleText": "({T}: Add {W}.)",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "d1abd95a-4ecc-479c-b200-5aaf7c993ef8",
+    "name": "Portcullis Vine",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Plant Wall",
+    "power": "0",
+    "toughness": "3",
+    "oracleText": "Defender (This creature can't attack.)\n{2}, {T}, Sacrifice a creature with defender: Draw a card.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "4073cbc6-11de-4d4a-bcd7-792f9b7c5219",
+    "name": "Predatory Wurm",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Wurm",
+    "power": "4",
+    "toughness": "4",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\nThis creature gets +2/+2 as long as you control a Garruk planeswalker.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [
+      {
+        "id": "keyword_vigilance",
+        "type": "Static",
+        "layer": 6,
+        "abilitiesToAdd": [
+          "Vigilance"
+        ]
+      }
+    ],
+    "status": "PARTIALLY_IMPLEMENTED"
+  },
+  {
+    "id": "df520254-0c72-496b-9222-263ca9d3c5d5",
+    "name": "Pridemalkin",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Cat",
+    "power": "2",
+    "toughness": "1",
+    "oracleText": "When this creature enters, put a +1/+1 counter on target creature you control.\nEach creature you control with a +1/+1 counter on it has trample. (It can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "1cd8cee8-7ea0-4037-8a3b-39334dc064fb",
+    "name": "Primal Might",
+    "manaCost": "{X}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control gets +X/+X until end of turn. Then it fights up to one target creature you don't control. (Each deals damage equal to its power to the other.)",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "eedce8ab-771a-4247-9504-72ae0629df83",
+    "name": "Prismite",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Golem",
+    "power": "2",
+    "toughness": "1",
+    "oracleText": "{2}: Add one mana of any color.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "b1501118-5837-49b5-9446-0bc3032035ca",
+    "name": "Pursued Whale",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Whale",
+    "power": "8",
+    "toughness": "8",
+    "oracleText": "When this creature enters, each opponent creates a 1/1 red Pirate creature token with \"This token can't block\" and \"Creatures you control attack each combat if able.\"\nSpells your opponents cast that target this creature cost {3} more to cast.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "a20d20f7-bc4d-42fa-9f5b-5bb330eb7f38",
+    "name": "Quirion Dryad",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Dryad",
+    "power": "1",
+    "toughness": "1",
+    "oracleText": "Whenever you cast a spell that's white, blue, black, or red, put a +1/+1 counter on this creature.",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "2bbd37b1-49cb-4295-9a1f-fb85368a8f12",
+    "name": "Radha, Heart of Keld",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Legendary Creature — Elf Warrior",
+    "power": "3",
+    "toughness": "3",
+    "oracleText": "During your turn, Radha has first strike.\nYou may look at the top card of your library any time, and you may play lands from the top of your library.\n{4}{R}{G}: Radha gets +X/+X until end of turn, where X is the number of lands you control.",
+    "colors": [
+      "G",
+      "R"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "0296c34b-120b-483e-8b49-6d432c04f9a4",
+    "name": "Radiant Fountain",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "When this land enters, you gain 2 life.\n{T}: Add {C}.",
+    "colors": [],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "da367981-9d6f-419f-9f58-f969b6183336",
+    "name": "Rain of Revelation",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw three cards, then discard a card.",
+    "colors": [
+      "U"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "3f602ecc-c264-4f3e-adeb-d0186668653e",
+    "name": "Rambunctious Mutt",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Dog",
+    "power": "3",
+    "toughness": "4",
+    "oracleText": "When this creature enters, destroy target artifact or enchantment an opponent controls.",
+    "colors": [
+      "W"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  },
+  {
+    "id": "02392840-f0c4-462e-84ce-9a7cdd9f5efb",
+    "name": "Ranger's Guile",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gets +1/+1 and gains hexproof until end of turn. (It can't be the target of spells or abilities your opponents control.)",
+    "colors": [
+      "G"
+    ],
+    "abilities": [],
+    "status": "DATA_ONLY"
+  }
+]

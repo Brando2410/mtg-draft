@@ -1,5 +1,6 @@
 import { GameState, GameObjectId, PlayerId, Zone, StackObject, GameObject } from '@shared/engine_types';
-import { EffectDefinition } from './CardParser';
+
+type EffectDefinition = any;
 
 export class StackResolver {
   private state: GameState;
@@ -60,72 +61,49 @@ export class StackResolver {
   }
 
   private isTargetValid(targetId: string, stackObj: StackObject): boolean {
-    // Stub implementation: Assuming target is always valid for now
-    // Future: 
-    // const target = this.findObject(targetId);
-    // return target.zone === expectedZone && !hasHexproof(target);
-    return true; 
+    const { ValidationProcessor } = require('./modules/state/ValidationProcessor');
+
+    // Rule 608.2b: Check if the target is still legal (e.g. hasn't Phased Out, been destroyed, or gained Hexproof)
+    return ValidationProcessor.isLegalTarget(
+        this.state, 
+        stackObj.sourceId, 
+        targetId, 
+        stackObj.data?.targetDefinition
+    );
   }
 
   private applyEffect(stackObj: StackObject, effect: EffectDefinition) {
-    console.log(`[StackResolver] Applying effect: ${effect.type} -> ${effect.targetMapping}`);
-
-    // Map the effect's "targetMapping" to actual real targets
-    const resolvedTargets = this.resolveTargetMapping(stackObj, effect.targetMapping);
-
-    switch (effect.type) {
-      case 'DealDamage':
-        // Deal N damage to each valid target
-        for (const target of resolvedTargets) {
-          this.dealDamage(target, effect.amount || 0);
-        }
-        break;
-
-      case 'DrawCards':
-        for (const target of resolvedTargets) {
-          if (this.isPlayer(target)) {
-            this.drawCards(target as PlayerId, effect.amount || 1);
-          }
-        }
-        break;
-
-      case 'Destroy':
-        for (const target of resolvedTargets) {
-          if (!this.isPlayer(target)) {
-            this.destroyPermanent(target as GameObjectId);
-          }
-        }
-        break;
-
-      case 'ApplyContinuousEffect':
-        // Handle adding temporary/permanent modifiers like +1/+1 until end of turn, or adding mana.
-        // E.g. Add Mana logic => Llanowar Elves
-        if (effect.value && typeof effect.value === 'object') {
-           // Basic proxy for adding mana
-           for (const target of resolvedTargets) {
-             if (this.isPlayer(target)) {
-               this.addMana(target as PlayerId, effect.value);
-             }
-           }
-        }
-        break;
-
-      default:
-        console.warn(`[StackResolver] Unknown effect type: ${effect.type}`);
-    }
+    const { EffectProcessor } = require('./modules/effects/EffectProcessor');
+    EffectProcessor.executeEffect(
+        this.state, 
+        effect, 
+        stackObj.sourceId, 
+        stackObj.targets, 
+        (m: string) => this.log(m)
+    );
   }
 
   // Maps logical targets ('Target_1', 'Controller', 'AllOpponents') to concrete IDs array
   private resolveTargetMapping(stackObj: StackObject, mapping: string): string[] {
-    if (mapping === 'Controller') {
+    const upMapping = mapping.toUpperCase();
+
+    if (upMapping === 'CONTROLLER') {
       return [stackObj.controllerId];
     }
-    if (mapping.startsWith('Target_')) {
-      // e.g., 'Target_1' -> stackObj.targets[0]
-      const index = parseInt(mapping.split('_')[1], 10) - 1;
+    if (upMapping === 'SELF') {
+      return [stackObj.sourceId];
+    }
+    if (upMapping === 'TARGET_ALL') {
+      return stackObj.targets;
+    }
+    if (upMapping.startsWith('TARGET_')) {
+      // e.g., 'TARGET_1' or 'Target_1' -> stackObj.targets[0]
+      const indexStr = upMapping.split('_')[1];
+      if (indexStr === 'ALL') return stackObj.targets;
+      const index = parseInt(indexStr, 10) - 1;
       return stackObj.targets[index] ? [stackObj.targets[index]] : [];
     }
-    if (mapping === 'AllOpponents') {
+    if (upMapping === 'ALLOPPONENTS') {
       return Object.keys(this.state.players).filter(id => id !== stackObj.controllerId);
     }
     
@@ -220,15 +198,8 @@ export class StackResolver {
                           typeLine.includes('battle');
 
       if (isPermanent) {
-        card.zone = Zone.Battlefield;
-        this.state.battlefield = [...this.state.battlefield, card]; // Immutable
-        
-        // Rule 302.6: Creature enters with summoning sickness
-        if (typeLine.includes('creature')) {
-           card.summoningSickness = true;
-        }
-
-        this.log(`PERMANENT RESOLVED: ${card.definition.name} entered the battlefield!`);
+        const { ActionProcessor } = require('./modules/actions/ActionProcessor');
+        ActionProcessor.moveCard(this.state, card, Zone.Battlefield, card.ownerId, (m: string) => this.log(m));
       } else {
         // Instant/Sorcery (Rule 608.2m)
         card.zone = Zone.Graveyard;

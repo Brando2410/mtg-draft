@@ -1,12 +1,9 @@
 import { GameState, Phase, Step, PlayerId, Zone, GameObject, PlayerState } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { StackResolver } from './StackResolver';
-import { ManaProcessor } from './modules/ManaProcessor';
-import { TurnProcessor } from './modules/TurnProcessor';
-import { PriorityProcessor } from './modules/PriorityProcessor';
-import { ActionProcessor } from './modules/ActionProcessor';
-import { StateBasedActionsProcessor } from './modules/StateBasedActionsProcessor';
-import { CombatProcessor } from './modules/CombatProcessor';
+import { M21_LOGIC } from './data/m21_logic';
+import { ManaProcessor } from './modules/magic/ManaProcessor';
+import { GameSetupProcessor, PlayerActionProcessor, TurnProcessor, PriorityProcessor, ActionProcessor, StateBasedActionsProcessor, CombatProcessor, ValidationProcessor, TriggerProcessor, LayerProcessor } from './modules';
 
 /**
  * CENTRALIZED MTG RULE ENGINE (Orchestrator)
@@ -43,11 +40,25 @@ export class GameEngine {
       battlefield: [],
       exile: [],
       stack: [],
+      ruleRegistry: { 
+        continuousEffects: [],
+        activatedAbilities: [],
+        triggeredAbilities: [],
+        restrictions: []
+      },
       consecutivePasses: 0,
       logs: ['Match Start Initialization...'],
+      turnState: {
+        permanentReturnedToHandThisTurn: false,
+        noncombatDamageDealtToOpponents: 0,
+        creaturesAttackedThisTurn: 0,
+        lastDamageAmount: 0,
+        lastLifeGainedAmount: 0,
+        lastCardsDrawnAmount: 0
+      }
     };
     
-    this.initializePlayers(players);
+    GameSetupProcessor.initializePlayers(this.state, players, names, decks);
     this.resolver = new StackResolver(this.state);
   }
 
@@ -69,59 +80,6 @@ export class GameEngine {
   }
 
   /**
-   * CR 103.1: Initialize player-specific state (Life, Library, Hand)
-   */
-  private initializePlayers(playerIds: PlayerId[]) {
-    for (const id of playerIds) {
-      this.state.players[id] = {
-        id,
-        name: this.names[id] || `Player ${id.slice(0, 4)}`,
-        life: 20, 
-        poisonCounters: 0,
-        library: (this.decks[id] || []).map((cardRef, index) => this.createGameObject(id, cardRef, index)),
-        hand: [],
-        graveyard: [],
-        manaPool: { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 },
-        hasPlayedLandThisTurn: false,
-        fullControl: false,
-        maxHandSize: 7,
-        pendingDiscardCount: 0
-      };
-    }
-  }
-
-  private createGameObject(ownerId: PlayerId, cardRef: Card, index: number): GameObject {
-    const typeLine = cardRef.type_line || '';
-    return {
-      id: `${ownerId}-lib-${index}`,
-      ownerId,
-      controllerId: ownerId,
-      zone: Zone.Library,
-      definition: {
-        name: cardRef.name || 'Unknown Card',
-        manaCost: cardRef.mana_cost || '',
-        colors: cardRef.card_colors || [],
-        supertypes: [], 
-        types: typeLine.split(/[-—]/)[0].trim().split(/\s+/).filter(Boolean),
-        subtypes: typeLine.includes('—') ? typeLine.split(/[-—]/)[1].trim().split(/\s+/).filter(Boolean) : [],
-        oracleText: cardRef.oracle_text || '',
-        type_line: typeLine,
-        image_url: cardRef.image_url || cardRef.image_uris?.normal || cardRef.image_uris?.large,
-        scryfall_id: (cardRef as any).scryfall_id,
-        power: (cardRef as any).power,
-        toughness: (cardRef as any).toughness,
-        keywords: cardRef.keywords || []
-      },
-      isTapped: false,
-      damageMarked: 0,
-      summoningSickness: false,
-      faceDown: false,
-      keywords: [...(cardRef.keywords || [])], // Instances start with their definition's keywords
-      counters: {}
-    };
-  }
-
-  /**
    * CR 103.2: Shuffle and Draw Starting Hands
    */
   public startGame() {
@@ -139,13 +97,7 @@ export class GameEngine {
    * Randomizes the order of a player's library using Fisher-Yates.
    */
   public shuffleLibrary(playerId: PlayerId) {
-    const player = this.state.players[playerId];
-    if (!player) return;
-    this.log(`Shuffling library for: ${player.name}`);
-    for (let i = player.library.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [player.library[i], player.library[j]] = [player.library[j], player.library[i]];
-    }
+    GameSetupProcessor.shuffleLibrary(this.state, playerId, (m) => this.log(m));
   }
 
   /**
@@ -153,16 +105,7 @@ export class GameEngine {
    * @returns false if the player loses due to deck-out (CR 704.5b)
    */
   public drawCard(playerId: PlayerId): boolean {
-    const player = this.state.players[playerId];
-    if (!player || player.library.length === 0) return false;
-    const card = player.library.pop();
-    if (card) {
-      card.zone = Zone.Hand;
-      player.hand.push(card);
-      this.log(`${player.name} draws a card.`);
-      return true;
-    }
-    return false;
+    return GameSetupProcessor.drawCard(this.state, playerId, (m) => this.log(m));
   }
 
   // --- Player Actions (Rule 117) ---
@@ -172,92 +115,38 @@ export class GameEngine {
    * This is a "Click Interaction" wrapper that delegates to the correct sub-routine
    * based on the current game context (Rule 117).
    */
+  public interactWithPermanent(playerId: PlayerId, cardId: string): boolean {
+    return PlayerActionProcessor.interactWithPermanent(
+      this.state,
+      playerId,
+      cardId,
+      (m: string) => this.log(m),
+      {
+        declareAttacker: (pId: string, cId: string) => this.declareAttacker(pId, cId),
+        handleBlockSelection: (pId: string, cId: string) => this.handleBlockSelection(pId, cId),
+        tapForMana: (pId: string, cId: string) => this.tapForMana(pId, cId)
+      }
+    );
+  }
+
   public tapForMana(playerId: PlayerId, cardId: string): boolean {
-    // 1. Context Recognition: 508/509 Attacks and Blocks
-    if (this.state.pendingAction?.playerId === playerId) {
-      if (this.state.pendingAction.type === 'DECLARE_ATTACKERS') {
-        return this.declareAttacker(playerId, cardId);
+    return PlayerActionProcessor.tapForMana(
+      this.state,
+      playerId,
+      cardId,
+      (m: string) => this.log(m),
+      {
+        declareAttacker: (pId: string, cId: string) => this.declareAttacker(pId, cId),
+        handleBlockSelection: (pId: string, cId: string) => this.handleBlockSelection(pId, cId)
       }
-      if (this.state.pendingAction.type === 'DECLARE_BLOCKERS') {
-        return this.handleBlockSelection(playerId, cardId);
-      }
-    }
-
-    // 2. Default: Priority Check for Mana Activation (CR 605)
-    if (!this.canPlayerTakeAnyAction(playerId)) {
-      this.log(`Action error: ${this.getPlayerName(playerId)} tried to tap for mana without priority.`);
-      return false;
-    }
-
-    const card = this.state.battlefield.find(c => c.id === cardId);
-    if (!card || card.controllerId !== playerId) return false;
-
-    const typeLine = (card.definition.type_line || '').toLowerCase();
-    if (!typeLine.includes('land')) return false;
-
-    const player = this.state.players[playerId];
-    const name = card.definition.name.toLowerCase();
-    
-    // Determine produced color (Heuristic-based mana production)
-    let color: keyof typeof player.manaPool = 'C';
-    if (name.includes('plains')) color = 'W';
-    else if (name.includes('island')) color = 'U';
-    else if (name.includes('swamp')) color = 'B';
-    else if (name.includes('mountain')) color = 'R';
-    else if (name.includes('forest')) color = 'G';
-
-    if (card.isTapped) {
-      // 701.21b: Untapping as an Undo Action
-      if (player.manaPool[color] > 0) {
-        card.isTapped = false;
-        player.manaPool[color]--;
-        this.log(`${player.name} untapping ${card.definition.name} (Undo Mana {${color}})`);
-        return true;
-      } else {
-        this.log(`Cannot undo: Mana {${color}} already spent.`);
-        return false;
-      }
-    } else {
-      // 701.21a: Tapping for mana
-      card.isTapped = true;
-      player.manaPool[color]++;
-      this.log(`${player.name} tapped ${card.definition.name} for {${color}}`);
-      return true;
-    }
+    );
   }
 
   /**
    * CR 508: Declare Attackers Step
    */
-  private declareAttacker(playerId: string, cardId: string): boolean {
-    const card = this.state.battlefield.find(c => c.id === cardId);
-    if (!card || card.controllerId !== playerId || card.zone !== Zone.Battlefield) return false;
-    
-    // 508.1a: Check if it's a creature
-    const typeLine = (card.definition.type_line || '').toLowerCase();
-    if (!typeLine.includes('creature')) return false;
-
-    // 508.1a: Summoning Sickness
-    if (card.summoningSickness && !(card.definition.oracleText || '').toLowerCase().includes('haste')) {
-       this.log(`${card.definition.name} has summoning sickness.`);
-       return false;
-    }
-
-    if (!this.state.combat) this.state.combat = { attackers: [], blockers: [] };
-
-    const existingIndex = this.state.combat.attackers.findIndex(a => a.attackerId === cardId);
-    if (existingIndex >= 0) {
-       this.state.combat.attackers.splice(existingIndex, 1);
-       card.isTapped = false;
-       this.log(`${card.definition.name} removed from attackers.`);
-    } else {
-       if (card.isTapped) return false;
-       const opponentId = Object.keys(this.state.players).find(id => id !== playerId);
-       this.state.combat.attackers.push({ attackerId: cardId, targetId: opponentId! });
-       card.isTapped = true;
-       this.log(`${card.definition.name} assigned as attacker.`);
-    }
-    return true;
+  private declareAttacker(playerId: string, cardId: string, targetId?: string): boolean {
+    return PlayerActionProcessor.declareAttacker(this.state, playerId, cardId, targetId, (m: string) => this.log(m));
   }
 
   /**
@@ -267,62 +156,19 @@ export class GameEngine {
     if (this.state.pendingAction?.type !== 'DECLARE_ATTACKERS' || this.state.pendingAction.playerId !== playerId) return;
     
     this.log(`${this.getPlayerName(playerId)} confirmed attackers.`);
+    
+    // Track count for M21 logic (e.g. Basri Ket)
+    this.state.turnState.creaturesAttackedThisTurn += (this.state.combat?.attackers || []).length;
+
     this.state.pendingAction = undefined;
-    this.advanceStep(); // Moves to 508.2 priority window
+    this.resetPriorityToActivePlayer();
   }
 
   /**
    * CR 509: Declare Blockers Step
    */
   private handleBlockSelection(playerId: string, cardId: string): boolean {
-    const card = this.state.battlefield.find(c => c.id === cardId);
-    if (!card) {
-      this.log(`[BLOCK] ERR: Card ${cardId} not found on battlefield.`);
-      return false;
-    }
-
-    this.log(`[BLOCK] Interaction: ${card.definition.name} (${cardId}). Blocker in hand? ${this.state.pendingAction?.sourceId}`);
-
-    // A. SELECTION: My creature (the blocker)
-    if (card.controllerId === playerId) {
-      if (card.isTapped) {
-        this.log(`[BLOCK] ERR: ${card.definition.name} is tapped and cannot block.`);
-        return false;
-      }
-      this.state.pendingAction!.sourceId = cardId;
-      this.log(`Selected ${card.definition.name} to block. Now select an attacking creature.`);
-      return true;
-    }
-
-    // B. TARGETING: Opponent attacker
-    const blockerId = this.state.pendingAction!.sourceId;
-    if (!blockerId) {
-      this.log("[BLOCK] Choose one of your potential blockers first.");
-      return false;
-    }
-
-    const attackers = this.state.combat?.attackers || [];
-    const isAttacking = attackers.some(a => a.attackerId === cardId);
-    
-    this.log(`[BLOCK] Checking if ${card.definition.name} is attacking. List: ${attackers.map(a => a.attackerId).join(',')} | Result: ${isAttacking}`);
-
-    if (!isAttacking) {
-      this.log(`[BLOCK] ERR: ${card.definition.name} is not an attacking creature.`);
-      return false;
-    }
-
-    if (!this.state.combat) this.state.combat = { attackers: [], blockers: [] };
-
-    // Update blocker link (Rule: only 1 attacker blocked per creature normally)
-    const oldIdx = this.state.combat.blockers.findIndex(b => b.blockerId === blockerId);
-    if (oldIdx >= 0) this.state.combat.blockers.splice(oldIdx, 1);
-
-    this.state.combat.blockers.push({ blockerId, attackerId: cardId });
-    this.log(`${this.state.battlefield.find(c => c.id === blockerId)?.definition.name} blocking ${card.definition.name}`);
-    
-    // Clear selection for next block
-    this.state.pendingAction!.sourceId = undefined;
-    return true;
+    return PlayerActionProcessor.handleBlockSelection(this.state, playerId, cardId, (m: string) => this.log(m));
   }
 
   /**
@@ -331,45 +177,39 @@ export class GameEngine {
   public confirmBlockers(playerId: string) {
     if (this.state.pendingAction?.type !== 'DECLARE_BLOCKERS' || this.state.pendingAction.playerId !== playerId) return;
     
+    // CR 509.1: Validate global block requirements (e.g. Menace)
+    const validation = ValidationProcessor.validateAllBlockers(this.state);
+    if (!validation.isValid) {
+        this.log(`[BLOCK] ERR: ${validation.error}`);
+        // Keep in block declaration mode until fixed
+        return;
+    }
+
     this.log(`${this.getPlayerName(playerId)} confirmed blockers.`);
     this.state.pendingAction = undefined;
-    this.advanceStep();
+    
+    // CR 509.2 / 509.3: If multiple blockers/attackers are involved, we need damage assignment order first.
+    if (CombatProcessor.needsOrdering(this.state)) {
+        CombatProcessor.setupNextOrderingAction(this.state, (m) => this.log(m));
+    } else {
+        // CR 509.4: Give priority window in Declare Blockers step.
+        this.resetPriorityToActivePlayer();
+    }
   }
 
   /**
    * MANUAL DISCARD ACTION (e.g. for Cleanup phase or spells)
    */
   public discardCard(playerId: PlayerId, cardInstanceId: string): boolean {
-    const player = this.state.players[playerId];
-    if (!player) return false;
-
-    const cardIndex = player.hand.findIndex(c => c.id === cardInstanceId);
-    if (cardIndex === -1) return false;
-
-    const card = player.hand.splice(cardIndex, 1)[0];
-    card.zone = Zone.Graveyard;
-    player.graveyard.push(card);
-    
-    if (player.pendingDiscardCount > 0) {
-      player.pendingDiscardCount--;
-      this.log(`${player.name} discarded ${card.definition.name} (${player.pendingDiscardCount} more to go).`);
-      
-      // If we finished discarding, resume logic
-      if (player.pendingDiscardCount === 0) {
-        this.log(`${player.name} finished discarding.`);
-        this.state.pendingAction = undefined; 
-
-        if (this.state.currentStep === Step.Cleanup) {
-          this.advanceStep(); 
-        } else {
-          this.checkAutoPass(playerId);
-        }
-      }
-    } else {
-      this.log(`${player.name} discarded ${card.definition.name}.`);
+    const res = PlayerActionProcessor.discardCard(this.state, playerId, cardInstanceId, (m: string) => this.log(m));
+    if (res.finished) {
+       if (this.state.currentStep === Step.Cleanup) {
+         this.advanceStep(); 
+       } else {
+         this.checkAutoPass(playerId);
+       }
     }
-
-    return true;
+    return res.success;
   }
 
   /**
@@ -424,8 +264,18 @@ export class GameEngine {
       return true; // Return immediately: Playing a land is a special action (Rule 305.1)
     }
 
-    // 4. Mana Payment (Rule 601.2f)
+    // 4. UX IMPROVEMENT: Auto-tap lands if needed
     const cost = cardToPlay.definition.manaCost;
+    if (!ManaProcessor.canPayManaCost(player, cost)) {
+       // If player can pay total including untapped lands, auto-tap them
+       if (ManaProcessor.canPayWithTotal(player, this.state.battlefield, cost)) {
+          this.log(`Auto-tapping lands to pay ${cost}...`);
+          // Note: In a complete engine, this would use a smart solver to pick colors optimally
+          this.autoTapLandsForCost(playerId, cost);
+       }
+    }
+
+    // 5. Mana Payment (Rule 601.2f)
     if (!ManaProcessor.canPayManaCost(player, cost)) {
       this.log(`Illegal Play: Not enough mana for ${cardToPlay.definition.name} (Cost: ${cost})`);
       return false;
@@ -436,16 +286,144 @@ export class GameEngine {
     // 5. Stack Placement (Rule 601.2i)
     player.hand = player.hand.filter((c: any) => c.id !== cardInstanceId);
     cardToPlay.zone = Zone.Stack;
-    this.state.stack = [...this.state.stack, {
-      id: `spell_${Date.now()}`,
+    const stackId = `spell_${Date.now()}`;
+    const stackObj = {
+      id: stackId,
       controllerId: playerId,
       sourceId: cardToPlay.id,
-      type: 'Spell',
-      targets: declaredTargets,
+      type: 'Spell' as const,
+      targets: declaredTargets || [],
       card: cardToPlay 
-    }];
+    };
+    this.state.stack.push(stackObj);
+
+    // Rule 601.2c: Choose targets if needed
+    const logic = M21_LOGIC[cardToPlay.definition.name];
+    const targetDefinition = (logic as any)?.targetDefinition || logic?.abilities?.find(a => a.type === 'Spell')?.targetDefinition;
+    if (targetDefinition && (!declaredTargets || declaredTargets.length === 0)) {
+       this.state.pendingAction = {
+          type: 'TARGETING',
+          playerId: playerId,
+          sourceId: cardToPlay.id,
+          data: {
+              stackId: stackId,
+              targetDefinition
+          }
+       };
+       this.log(`[TARGETING] Player ${playerId} must choose targets for ${cardToPlay.definition.name}.`);
+       return true;
+    }
 
     this.log(`${playerName} cast: ${cardToPlay.definition.name}`);
+    this.state.consecutivePasses = 0;
+    this.passPriority(playerId);
+    return true;
+  }
+
+  /**
+   * CR 602: Activating Activated Abilities
+   * @param abilityIndex The index of the ability in the card's M21_LOGIC entry
+   */
+  public activateAbility(playerId: PlayerId, cardId: string, abilityIndex: number, declaredTargets: string[] = []): boolean {
+    const playerName = this.getPlayerName(playerId);
+    if (this.state.priorityPlayerId !== playerId) {
+      this.log(`${playerName} tried to activate ability without priority.`);
+      return false;
+    }
+
+    const obj = this.state.battlefield.find(o => o.id === cardId);
+    if (!obj) return false;
+
+    // Load full logic from registry
+    const { M21_LOGIC } = require('./data/m21_logic');
+    const cardLogic = M21_LOGIC[obj.definition.name];
+    if (!cardLogic || !cardLogic.abilities[abilityIndex]) return false;
+
+    const ability = cardLogic.abilities[abilityIndex];
+    if (ability.type !== 'Activated') return false;
+
+    // 1. Timing & Frequency (Rule 606.3: Planeswalkers)
+    const isPlaneswalker = obj.definition.types.includes('Planeswalker');
+    if (isPlaneswalker) {
+      const activeId = String(this.state.activePlayerId).trim();
+      const isMainPhase = (this.state.currentPhase === Phase.PreCombatMain || this.state.currentPhase === Phase.PostCombatMain);
+      const stackEmpty = this.state.stack.length === 0;
+
+      const canActivateAnyTime = (cardLogic.abilities || []).some((a: any) => a.type === 'Static' && a.id.includes('any_turn'));
+      const isSorcerySpeed = playerId === activeId && isMainPhase && stackEmpty;
+
+      if (!canActivateAnyTime && !isSorcerySpeed) {
+        this.log(`Illegal Activation: Planeswalker abilities can only be activated at sorcery speed.`);
+        return false;
+      }
+
+      if (obj.abilitiesUsedThisTurn > 0) {
+        this.log(`Illegal Activation: This permanent's activated abilities have already been used this turn.`);
+        return false;
+      }
+    }
+
+    // 2. Cost Payment
+    const player = this.state.players[playerId];
+    for (const cost of (ability.costs || [])) {
+      if (cost.type === 'Loyalty') {
+        const val = parseInt(cost.value); // e.g. "+1" or "-2"
+        const currentLoyalty = obj.counters.loyalty || 0;
+        if (val < 0 && currentLoyalty < Math.abs(val)) {
+          this.log(`Illegal Activation: Not enough loyalty counters.`);
+          return false;
+        }
+        obj.counters.loyalty = currentLoyalty + val;
+        this.log(`${obj.definition.name} loyalty: ${currentLoyalty} -> ${obj.counters.loyalty}`);
+      }
+      else if (cost.type === 'Mana') {
+        if (!ManaProcessor.canPayManaCost(player, cost.value)) {
+          this.log(`Illegal Activation: Not enough mana.`);
+          return false;
+        }
+        ManaProcessor.deductManaCost(player, cost.value);
+      }
+      else if (cost.type === 'Tap') {
+        if (obj.isTapped) return false;
+        obj.isTapped = true;
+      }
+    }
+
+    // 3. Mark usage
+    obj.abilitiesUsedThisTurn++;
+
+    const stackId = `ability_${Date.now()}`;
+    // 4. Put on stack
+    this.state.stack.push({
+      id: stackId,
+      controllerId: playerId,
+      sourceId: obj.id,
+      type: 'ActivatedAbility',
+      targets: declaredTargets || [],
+      abilityIndex: abilityIndex,
+      data: {
+        effects: ability.effects || [],
+        targetDefinition: ability.targetDefinition
+      }
+    });
+
+    // Rule 601.2c: Choose targets if needed
+    if (ability.targetDefinition && declaredTargets === undefined) {
+       this.state.pendingAction = {
+          type: 'TARGETING',
+          playerId: playerId,
+          sourceId: obj.id,
+          data: {
+              stackId: stackId, // NEW: Include stackId
+              abilityIndex: abilityIndex,
+              targetDefinition: ability.targetDefinition
+          }
+       };
+       this.log(`[TARGETING] Player ${playerId} must choose targets for ${obj.definition.name}'s ability.`);
+       return true;
+    }
+
+    this.log(`${playerName} activated ability of ${obj.definition.name}: ${ability.id}`);
     this.state.consecutivePasses = 0;
     this.passPriority(playerId);
     return true;
@@ -471,6 +449,12 @@ export class GameEngine {
     }
 
     if (this.state.priorityPlayerId !== playerId) return;
+    
+    // CR 117.1: A player must resolve pending mandatory actions before passing
+    if (this.state.pendingAction && String(this.state.pendingAction.playerId) === String(playerId)) {
+      this.log(`Invalid Action: Player must resolve pending ${this.state.pendingAction.type} first.`);
+      return;
+    }
 
     const player = this.state.players[playerId];
     if (player && player.pendingDiscardCount > 0) {
@@ -495,7 +479,28 @@ export class GameEngine {
     if (this.state.stack.length > 0) {
       const objectToResolve = this.state.stack.pop();
       if (objectToResolve) {
-        this.resolver.resolveTarget(objectToResolve, []);
+        let effects: any[] = [];
+        
+        if (objectToResolve.type === 'Spell' && objectToResolve.card) {
+          effects = (objectToResolve.card.definition as any).effects || [];
+        } 
+        else if (objectToResolve.type === 'ActivatedAbility' || objectToResolve.type === 'TriggeredAbility') {
+          // Rule 603/606: Abilities pull effects from their data object if available
+          effects = (objectToResolve.data as any)?.effects || [];
+          
+          // Fallback for legacy activations if data.effects is missing
+          if (effects.length === 0 && objectToResolve.type === 'ActivatedAbility') {
+              const sourceObj = this.state.battlefield.find(o => o.id === objectToResolve.sourceId);
+              if (sourceObj) {
+                const cardLogic = M21_LOGIC[sourceObj.definition.name];
+                if (cardLogic && cardLogic.abilities[objectToResolve.abilityIndex ?? -1]) {
+                    effects = cardLogic.abilities[objectToResolve.abilityIndex!].effects;
+                }
+              }
+          }
+        }
+
+        this.resolver.resolveTarget(objectToResolve, effects);
         this.resetPriorityToActivePlayer();
       }
     } else {
@@ -533,8 +538,17 @@ export class GameEngine {
       }
     }
 
+    // 3. Skip First Strike Damage if no First Strike scorers
+    if (next.step === Step.FirstStrikeDamage) {
+        if (!CombatProcessor.hasFirstStrikeStep(this.state)) {
+            this.log(`[BYPASS] No First Strike / Double Strike creatures. Skipping FS Damage.`);
+            next = { phase: Phase.Combat, step: Step.CombatDamage, turnEnded: false };
+        }
+    }
+
     if (next.turnEnded) {
       this.log(`[FLOW] Turn is ending on request: ${next.phase}/${next.step}`);
+      this.cleanupEndOfTurn();
       this.rotateActivePlayer();
       this.state.turnNumber++;
       this.log(`Turn ${this.state.turnNumber} - Active: ${this.getPlayerName(this.state.activePlayerId)}`);
@@ -569,6 +583,19 @@ export class GameEngine {
     if (this.state.players[this.state.activePlayerId]) {
       this.state.players[this.state.activePlayerId].hasPlayedLandThisTurn = false;
     }
+    
+    // Rule 606.3: Reset activated ability usage for all permanents
+    this.state.battlefield.forEach(obj => obj.abilitiesUsedThisTurn = 0);
+
+    // CR 500: Reset turn-wide logic tracking
+    this.state.turnState = {
+        permanentReturnedToHandThisTurn: false,
+        noncombatDamageDealtToOpponents: 0,
+        creaturesAttackedThisTurn: 0,
+        lastDamageAmount: 0,
+        lastLifeGainedAmount: 0,
+        lastCardsDrawnAmount: 0
+    };
   }
 
   private givePriorityToNextPlayer() {
@@ -584,9 +611,15 @@ export class GameEngine {
   private resetPriorityToActivePlayer() {
     this.state.consecutivePasses = 0;
     this.checkStateBasedActions();
-    this.state.priorityPlayerId = this.state.activePlayerId;
     
-    this.checkAutoPass(this.state.priorityPlayerId);
+    // Only set priority to active player if an SBA or trigger didn't just set up a mandatory action.
+    if (!this.state.pendingAction) {
+      this.state.priorityPlayerId = this.state.activePlayerId;
+    }
+    
+    if (this.state.priorityPlayerId) {
+       this.checkAutoPass(this.state.priorityPlayerId);
+    }
   }
 
   private checkAutoPass(playerId: PlayerId) {
@@ -608,7 +641,7 @@ export class GameEngine {
   }
 
   private checkStateBasedActions() {
-    StateBasedActionsProcessor.checkAndApply(this.state, (msg) => this.log(msg));
+    StateBasedActionsProcessor.resolveSBAs(this.state, (msg) => this.log(msg));
   }
 
   private handleStepEntryRules() {
@@ -640,11 +673,268 @@ export class GameEngine {
       
       // Rule 514.2: Remove all damage and cleanup continuous effects
       this.state.battlefield.forEach(obj => obj.damageMarked = 0);
+      
+      // MTG Arena "Whiteboard Cleanup"
+      this.state.ruleRegistry.continuousEffects = this.state.ruleRegistry.continuousEffects.filter(
+        e => e.duration.type !== 'UntilEndOfTurn'
+      );
     }
   }
 
+  /**
+   * Core Action: Player Gain Life (Rule 119.3)
+   */
+  public gainLife(playerId: PlayerId, amount: number) {
+    const player = this.state.players[playerId];
+    if (!player) return;
+
+    player.life += amount;
+    this.state.turnState.lastLifeGainedAmount = amount;
+    this.log(`${player.name} gains ${amount} life (${player.life - amount} -> ${player.life})`);
+
+    // Emit event to the "Whiteboard"
+    TriggerProcessor.onEvent(this.state, {
+      type: 'ON_LIFE_GAIN',
+      playerId,
+      data: { amount }
+    }, (m: string) => this.log(m));
+  }
+
+  private isPlayer(id: string): boolean {
+    return !!this.state.players[id as PlayerId];
+  }
+
   public getState(): GameState {
+    // Before returning, refresh all effective stats and playable flags for UI
+    this.state.battlefield.forEach(obj => {
+        const stats = LayerProcessor.getEffectiveStats(obj, this.state);
+        obj.effectiveStats = {
+            ...stats,
+            isPlayable: this.state.priorityPlayerId === obj.controllerId && PriorityProcessor.canObjectBePlayed(this.state, obj.controllerId, obj.id)
+        };
+    });
+
+    Object.values(this.state.players).forEach(player => {
+        player.hand.forEach(card => {
+            card.effectiveStats = {
+                power: parseInt(card.definition.power || '0') || 0,
+                toughness: parseInt(card.definition.toughness || '0') || 0,
+                keywords: card.definition.keywords || [],
+                isPlayable: this.state.priorityPlayerId === player.id && PriorityProcessor.canObjectBePlayed(this.state, player.id, card.id)
+            };
+        });
+    });
+
     return this.state;
+  }
+
+  public resolveCombatOrdering(playerId: string, order: string[]): boolean {
+    PlayerActionProcessor.resolveCombatOrdering(this.state, playerId, order, (m) => this.log(m));
+    
+    // Once ordering is complete (and no more pending actions exist), give priority back to AP.
+    this.resetPriorityToActivePlayer();
+    return true;
+  }
+
+  public resolveChoice(playerId: string, choiceIndex: number): boolean {
+    if (this.state.pendingAction?.type !== 'CHOICE' || this.state.pendingAction.playerId !== playerId) return false;
+
+    const sourceId = this.state.pendingAction.sourceId;
+    const choice = this.state.pendingAction.data?.choices[choiceIndex];
+    
+    if (!choice || !sourceId) return false;
+
+    // Resolve based on context
+    const obj = this.state.battlefield.find(o => o.id === sourceId);
+    if (obj && obj.definition.types.includes('Planeswalker')) {
+      const abilityIndex = choice.value;
+      const ability = M21_LOGIC[obj.definition.name].abilities[abilityIndex];
+
+      if (ability.targetDefinition) {
+         // Switch to targeting mode
+         const targetDef = ability.targetDefinition;
+         const legalTargetIds = this.state.battlefield
+            .filter(o => ValidationProcessor.isLegalTarget(this.state, sourceId, o.id, targetDef))
+            .map(o => o.id);
+            
+         if (legalTargetIds.length === 0) {
+             if (targetDef.optional) {
+                 this.log(`No legal targets found, auto-skipping target selection for ${obj.definition.name}.`);
+                 this.state.pendingAction = undefined;
+                 this.resetPriorityToActivePlayer(); 
+                 return this.activateAbility(playerId, sourceId, abilityIndex, []);
+             } else {
+                 this.log(`No legal targets available. Activation invalid.`);
+                 // Note: we'd normally refund costs here. Simplification: just block it.
+                 return false;
+             }
+         }
+         
+         this.state.pendingAction = {
+            type: 'TARGETING',
+            playerId,
+            sourceId,
+            data: { abilityIndex, legalTargetIds, optional: targetDef.optional }
+         };
+         this.log(`Select target for ${obj.definition.name}'s ability.`);
+         return true;
+      }
+
+      this.state.pendingAction = undefined;
+      this.resetPriorityToActivePlayer(); 
+      return this.activateAbility(playerId, sourceId, abilityIndex);
+    }
+
+    this.state.pendingAction = undefined;
+    this.resetPriorityToActivePlayer();
+    return true;
+  }
+
+  public resolveTargeting(playerId: PlayerId, targetId: string): boolean {
+    if (this.state.pendingAction?.type !== 'TARGETING' || this.state.pendingAction.playerId !== playerId) return false;
+
+    const actionData = this.state.pendingAction.data;
+    const isOptional = actionData?.optional;
+    const isSkipping = targetId === 'skip' || targetId === 'none';
+    const targetDef = actionData?.targetDefinition;
+    const targetCount = targetDef?.count || 1;
+    
+    // Initialize or get currently selected targets
+    actionData.selectedTargets = actionData.selectedTargets || [];
+
+    if (isSkipping) {
+        if (!isOptional && actionData.selectedTargets.length === 0) {
+            this.log(`Targeting is required, cannot skip.`);
+            return false;
+        }
+        // Resolve with whatever we have
+        return this.finaliseTargeting(playerId, actionData.selectedTargets);
+    }
+
+    const legalTargetIds = actionData.legalTargetIds || [];
+    if (!legalTargetIds.includes(targetId)) {
+        this.log(`Invalid target selected.`);
+        return false;
+    }
+
+    if (actionData.selectedTargets.includes(targetId)) {
+        this.log(`Target already selected.`);
+        return false;
+    }
+
+    // Add target
+    actionData.selectedTargets.push(targetId);
+    this.log(`Target ${actionData.selectedTargets.length}/${targetCount} selected: ${targetId}`);
+
+    // If we reached the target count, finalize
+    if (actionData.selectedTargets.length >= targetCount) {
+        return this.finaliseTargeting(playerId, actionData.selectedTargets);
+    }
+
+    // Otherwise, stay in targeting mode for the next target
+    return true;
+  }
+
+  private finaliseTargeting(playerId: PlayerId, resolvedTargets: string[]): boolean {
+    const actionData = this.state.pendingAction?.data;
+    const sourceId = this.state.pendingAction?.sourceId;
+    const abilityIndex = actionData?.abilityIndex;
+    const stackId = actionData?.stackId;
+
+    if (stackId) {
+       const stackObj = this.state.stack.find(s => s.id === stackId);
+       if (stackObj) {
+          stackObj.targets = resolvedTargets;
+          this.log(`Finalized targets for ${stackObj.type}: ${resolvedTargets.length} targets chosen.`);
+       }
+       this.state.pendingAction = undefined;
+       this.resetPriorityToActivePlayer();
+       return true;
+    }
+
+    if (abilityIndex !== undefined) {
+       this.state.pendingAction = undefined;
+       this.resetPriorityToActivePlayer();
+       return this.activateAbility(playerId, sourceId!, abilityIndex, resolvedTargets);
+    } else {
+       this.state.pendingAction = undefined;
+       this.resetPriorityToActivePlayer();
+       return this.playCard(playerId, sourceId!, resolvedTargets);
+    }
+  }
+
+  private cleanupEndOfTurn() {
+    this.log(`[CLEANUP] Removing 'Until End of Turn' effects and resetting markers.`);
+    
+    // 1. Remove floating continuous effects (Rule 614)
+    this.state.ruleRegistry.continuousEffects = this.state.ruleRegistry.continuousEffects.filter(eff => {
+       return eff.duration?.type !== 'UntilEndOfTurn';
+    });
+
+    // 2. Clear damage markers and deathtouch flags (Rule 514.2)
+    this.state.battlefield.forEach(obj => {
+       obj.damageMarked = 0;
+       obj.deathtouchMarked = false;
+       obj.abilitiesUsedThisTurn = 0;
+    });
+  }
+
+  private autoTapLandsForCost(playerId: PlayerId, costStr: string) {
+    const player = this.state.players[playerId];
+    const requirements = ManaProcessor.parseManaCost(costStr);
+    
+    // Sort requirements to handle COLORED mana first, GENERIC last
+    // This prevents a Swamp being used for {1} when we still need {B}{B}
+    const requirementsArray: (keyof typeof player.manaPool)[] = [];
+    Object.entries(requirements.colored).forEach(([c, amt]) => {
+       for(let i=0; i<amt; i++) requirementsArray.push(c as any);
+    });
+    // Add generic last
+    for(let i=0; i<requirements.generic; i++) requirementsArray.push('C');
+
+    // 1. First, satisfy colored requirements
+    for (const req of requirementsArray) {
+       if (req === 'C') continue; // Skip generic for phase 1
+
+       // Do we already have this specific colored mana floating?
+       const poolVal = player.manaPool[req] || 0;
+       
+       // Note: We need a temporary 'used' tracker if we were doing this perfectly,
+       // but for simplicity, we check if we can skip tapping a land.
+       if (poolVal > 0) {
+          // Check if we need more than we have floating (simple greedy)
+          // (Deducting from temporary pool would be better here)
+       }
+
+       // Find a land that EXACTLY produces this color
+       const landToTap = this.state.battlefield.find(obj => {
+          if (obj.controllerId !== playerId || obj.isTapped || !obj.definition.types.includes('Land')) return false;
+          const name = obj.definition.name.toLowerCase();
+          if (req === 'W' && name.includes('plains')) return true;
+          if (req === 'U' && name.includes('island')) return true;
+          if (req === 'B' && name.includes('swamp')) return true;
+          if (req === 'R' && name.includes('mountain')) return true;
+          if (req === 'G' && name.includes('forest')) return true;
+          return false;
+       });
+
+       if (landToTap) {
+          this.tapForMana(playerId, landToTap.id);
+       }
+    }
+
+    // 2. Then, satisfy generic requirement using ANY remaining untapped lands
+    // (Preferring basic lands that don't match the colors we might need later is complex,
+    // so we just take any untapped land left.)
+    for (let i = 0; i < requirements.generic; i++) {
+        // Find pool mana first... (skipped for brevity)
+        const landToTap = this.state.battlefield.find(obj => {
+           return obj.controllerId === playerId && !obj.isTapped && obj.definition.types.includes('Land');
+        });
+        if (landToTap) {
+           this.tapForMana(playerId, landToTap.id);
+        }
+    }
   }
 
   public setState(newState: GameState) {

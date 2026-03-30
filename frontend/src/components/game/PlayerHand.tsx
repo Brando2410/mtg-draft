@@ -5,9 +5,11 @@ interface PlayerHandProps {
   hand: GameObject[];
   onPlayCard?: (cardId: string) => void;
   pendingDiscardCount?: number;
+  onHoverStart?: (obj: GameObject) => void;
+  onHoverEnd?: () => void;
 }
 
-export const PlayerHand = ({ hand, onPlayCard, pendingDiscardCount = 0 }: PlayerHandProps) => {
+export const PlayerHand = ({ hand, onPlayCard, pendingDiscardCount = 0, onHoverStart, onHoverEnd }: PlayerHandProps) => {
   const isDiscardMode = pendingDiscardCount > 0;
   return (
     <div className="h-56 bg-slate-900/95 border-t border-white/10 backdrop-blur-2xl flex items-center justify-center z-20 overflow-visible px-20">
@@ -39,16 +41,20 @@ export const PlayerHand = ({ hand, onPlayCard, pendingDiscardCount = 0 }: Player
                   zIndex: 100,
                   transition: { type: 'spring', stiffness: 300, damping: 20 }
                 }}
-                className="relative group shrink-0 cursor-pointer -ml-8 first:ml-0"
+                onMouseEnter={() => onHoverStart?.(card)}
+                onMouseLeave={() => onHoverEnd?.()}
+                className={`relative group shrink-0 cursor-pointer -ml-8 first:ml-0 ${card.effectiveStats?.isPlayable ? 'z-10' : ''}`}
                 onClick={() => onPlayCard?.(card.id)}
               >
                 <img 
                   src={card.definition.image_url} 
                   alt={card.definition.name}
                   className={`w-32 h-44 object-cover rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 select-none transition-all duration-300 ${
-                    isDiscardMode 
+                    card.effectiveStats?.isPlayable
+                    ? 'ring-4 ring-cyan-500/60 shadow-[0_0_40px_rgba(34,211,238,0.7)] border-cyan-400'
+                    : isDiscardMode 
                     ? 'group-hover:border-red-500/50 group-hover:shadow-[0_0_50px_rgba(239,68,68,0.4)]' 
-                    : 'group-hover:border-indigo-500/50 group-hover:shadow-[0_0_50px_rgba(99,102,241,0.4)]'
+                    : 'group-hover:border-cyan-500/50 group-hover:shadow-[0_0_50px_rgba(34,211,238,0.4)]'
                   }`}
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = 'https://cards.scryfall.io/large/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg';

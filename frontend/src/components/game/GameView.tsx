@@ -6,6 +6,8 @@ import { Battlefield } from './Battlefield';
 import { PlayerHand } from './PlayerHand';
 import { DebugConsole } from './DebugConsole';
 import { socket } from '../../services/socket';
+import { motion, AnimatePresence } from 'framer-motion';
+import { type GameObject } from '@shared/engine_types';
 
 interface GameViewProps {
   room: Room;
@@ -16,6 +18,21 @@ interface GameViewProps {
 export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
   const [showDebug, setShowDebug] = useState(true);
   const [effectivePlayerId, setEffectivePlayerId] = useState(playerId);
+  const [hoveredCard, setHoveredCard] = useState<GameObject | null>(null);
+  const [zoomTimer, setZoomTimer] = useState<any>(null);
+
+  const startZoom = (obj: GameObject) => {
+    if (zoomTimer) clearTimeout(zoomTimer);
+    const timer = setTimeout(() => {
+        setHoveredCard(obj);
+    }, 800);
+    setZoomTimer(timer);
+  };
+
+  const stopZoom = () => {
+    if (zoomTimer) clearTimeout(zoomTimer);
+    setHoveredCard(null);
+  };
   
   const gameState = room.gameState;
   const me = gameState?.players[effectivePlayerId];
@@ -82,6 +99,15 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           hasPriority={gameState.priorityPlayerId === effectivePlayerId || gameState.pendingAction?.playerId === effectivePlayerId}
           pendingAction={gameState.pendingAction}
           onPassPriority={() => socket.emit('pass_priority', { roomId: room.id, playerId: effectivePlayerId })}
+          onSkipAction={() => {
+            if (gameState.pendingAction?.type === 'TARGETING') {
+              socket.emit('resolve_target', { 
+                roomId: room.id, 
+                playerId: effectivePlayerId, 
+                targetId: 'skip'
+              });
+            }
+          }}
           onBack={onBack}
         />
 
@@ -91,10 +117,49 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           battlefield={gameState.battlefield}
           stack={gameState.stack || []}
           combat={gameState.combat}
-          onTapCard={handleTapCard}
+          pendingAction={gameState.pendingAction}
+          onTapCard={(id) => {
+            if (id.startsWith('ORDER_')) {
+              const order = id.replace('ORDER_', '').split(',');
+              socket.emit('resolve_combat_ordering', { 
+                roomId: room.id, 
+                playerId: effectivePlayerId, 
+                order 
+              });
+              return;
+            }
+
+            if (id.startsWith('CHOICE_')) {
+              const choiceIndex = parseInt(id.split('_')[1]);
+              socket.emit('resolve_choice', { 
+                roomId: room.id, 
+                playerId: effectivePlayerId, 
+                choiceIndex 
+              });
+              return;
+            }
+            
+            if (gameState.pendingAction?.type === 'TARGETING') {
+              socket.emit('resolve_target', { 
+                roomId: room.id, 
+                playerId: effectivePlayerId, 
+                targetId: id 
+              });
+              return;
+            }
+
+            handleTapCard(id);
+          }}
+          onHoverStart={startZoom}
+          onHoverEnd={stopZoom}
         />
 
-        <PlayerHand hand={me?.hand || []} onPlayCard={handlePlayCard} />
+        <PlayerHand 
+          hand={me?.hand || []} 
+          onPlayCard={handlePlayCard} 
+          onHoverStart={startZoom}
+          onHoverEnd={stopZoom}
+        />
 
       </div>
 
@@ -140,6 +205,34 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
       `}</style>
+
+      {/* GLOBAL CARD ZOOM OVERLAY */}
+      <AnimatePresence>
+          {hoveredCard && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, x: -30 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.9, x: -30 }}
+                className="fixed left-6 top-6 z-[300] pointer-events-none"
+              >
+                  <div className="w-[340px] flex flex-col shadow-[0_0_100px_rgba(0,0,0,0.95)] rounded-[2rem] overflow-hidden border-2 border-white/10 bg-slate-900 ring-1 ring-white/5">
+                      <img 
+                        src={hoveredCard.definition.image_url} 
+                        alt={hoveredCard.definition.name}
+                        className="w-full h-auto border-b border-white/5"
+                      />
+                      {/* Oracle Text BELOW image - Refined design */}
+                      {hoveredCard.definition.oracleText && (
+                        <div className="bg-black/40 p-6 backdrop-blur-md">
+                            <p className="text-indigo-100/90 text-sm font-medium leading-relaxed whitespace-pre-wrap tracking-wide italic">
+                                {hoveredCard.definition.oracleText}
+                            </p>
+                        </div>
+                      )}
+                  </div>
+              </motion.div>
+          )}
+      </AnimatePresence>
 
     </div>
   );

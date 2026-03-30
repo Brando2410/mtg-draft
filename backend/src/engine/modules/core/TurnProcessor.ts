@@ -15,6 +15,7 @@ export class TurnProcessor {
       { phase: Phase.Combat, step: Step.BeginningOfCombat },
       { phase: Phase.Combat, step: Step.DeclareAttackers },
       { phase: Phase.Combat, step: Step.DeclareBlockers },
+      { phase: Phase.Combat, step: Step.FirstStrikeDamage },
       { phase: Phase.Combat, step: Step.CombatDamage },
       { phase: Phase.Combat, step: Step.EndOfCombat },
       { phase: Phase.PostCombatMain, step: Step.Main },
@@ -32,19 +33,31 @@ export class TurnProcessor {
   }
 
   public static hasPotentialAttackers(state: GameState, playerId: PlayerId): boolean {
-    return state.battlefield.some(obj => 
-      obj.controllerId === playerId && 
-      (obj.definition.types || []).some(t => t.toLowerCase() === 'creature') &&
-      !obj.isTapped &&
-      !obj.summoningSickness // Rule 302.6
-    );
+    return state.battlefield.some(obj => {
+      if (obj.controllerId !== playerId || obj.isTapped) return false;
+      
+      const types = (obj.definition.types || []).map(t => t.toLowerCase());
+      const typeLine = (obj.definition.type_line || '').toLowerCase();
+      const isCreature = types.includes('creature') || typeLine.includes('creature');
+      if (!isCreature) return false;
+
+      // Rule 302.6: Haste bypasses summoning sickness for attacking
+      const keywords = [...(obj.definition.keywords || []), ...(obj.effectiveStats?.keywords || [])];
+      const hasHaste = keywords.some(k => k.toLowerCase() === 'haste');
+
+      return !obj.summoningSickness || hasHaste;
+    });
   }
 
   public static hasPotentialBlockers(state: GameState, playerId: PlayerId): boolean {
-    return state.battlefield.some(obj => 
-      obj.controllerId === playerId && 
-      (obj.definition.type_line || '').toLowerCase().includes('creature') &&
-      !obj.isTapped
-    );
+    return state.battlefield.some(obj => {
+      if (obj.controllerId !== playerId || obj.isTapped) return false;
+
+      const types = (obj.definition.types || []).map(t => t.toLowerCase());
+      const typeLine = (obj.definition.type_line || '').toLowerCase();
+      const isCreature = types.includes('creature') || typeLine.includes('creature');
+      
+      return isCreature;
+    });
   }
 }

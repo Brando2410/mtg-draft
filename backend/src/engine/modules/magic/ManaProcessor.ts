@@ -35,14 +35,35 @@ export class ManaProcessor {
     let totalPotentialCount = 0;
 
     battlefield.forEach(obj => {
-      if (obj.controllerId === player.id && !obj.isTapped && (obj.definition.type_line || '').toLowerCase().includes('land')) {
-        const name = obj.definition.name.toLowerCase();
-        if (name.includes('plains')) potential.W++;
-        else if (name.includes('island')) potential.U++;
-        else if (name.includes('swamp')) potential.B++;
-        else if (name.includes('mountain')) potential.R++;
-        else if (name.includes('forest')) potential.G++;
-        else potential.C++; // Waste or utility land
+      if (obj.controllerId === player.id && !obj.isTapped) {
+        const typeLine = (obj.definition.type_line || '').toLowerCase();
+        const oracleText = (obj.definition.oracleText || '').toLowerCase();
+        
+        let addsMana = false;
+        
+        if (typeLine.includes('land')) {
+          const name = obj.definition.name.toLowerCase();
+          if (name.includes('plains')) { potential.W++; addsMana = true; }
+          else if (name.includes('island')) { potential.U++; addsMana = true; }
+          else if (name.includes('swamp')) { potential.B++; addsMana = true; }
+          else if (name.includes('mountain')) { potential.R++; addsMana = true; }
+          else if (name.includes('forest')) { potential.G++; addsMana = true; }
+          else if (oracleText.includes('add {w}')) { potential.W++; addsMana = true; }
+          else if (oracleText.includes('add {u}')) { potential.U++; addsMana = true; }
+          else if (oracleText.includes('add {b}')) { potential.B++; addsMana = true; }
+          else if (oracleText.includes('add {r}')) { potential.R++; addsMana = true; }
+          else if (oracleText.includes('add {g}')) { potential.G++; addsMana = true; }
+          else if (oracleText.includes('add {c}') || oracleText.includes('add one mana')) { potential.C++; addsMana = true; }
+          else { potential.C++; addsMana = true; } // Generic land assumption
+        } else if (oracleText.includes('{t}: add') || oracleText.includes('{t}, sacrifice') && oracleText.includes('add one mana')) {
+          // Mana dork or artifact (e.g. Treasure)
+          if (oracleText.includes('{w}')) potential.W++;
+          else if (oracleText.includes('{u}')) potential.U++;
+          else if (oracleText.includes('{b}')) potential.B++;
+          else if (oracleText.includes('{r}')) potential.R++;
+          else if (oracleText.includes('{g}')) potential.G++;
+          else potential.C++;
+        }
       }
     });
 
@@ -98,4 +119,15 @@ export class ManaProcessor {
     
     return { colored, generic };
   }
+
+  /**
+   * Rule 202.3: The mana value of an object is the total amount of mana in its mana cost, regardless of color.
+   */
+  public static getManaValue(costStr: string): number {
+    if (!costStr) return 0;
+    const { colored, generic } = this.parseManaCost(costStr);
+    const coloredTotal = Object.values(colored).reduce((a, b) => a + b, 0);
+    return coloredTotal + generic;
+  }
 }
+

@@ -32,6 +32,7 @@ export enum Step {
   BeginningOfCombat = 'BeginningOfCombat',
   DeclareAttackers = 'DeclareAttackers',
   DeclareBlockers = 'DeclareBlockers',
+  FirstStrikeDamage = 'FirstStrikeDamage',
   CombatDamage = 'CombatDamage',
   EndOfCombat = 'EndOfCombat',
 
@@ -76,11 +77,22 @@ export interface GameObject {
   isTapped: boolean;
   damageMarked: number;
   summoningSickness: boolean;
+  abilitiesUsedThisTurn: number;
   faceDown: boolean;
   keywords: string[]; // Dynamic keywords gained (e.g. from an Aura or equipment)
+  deathtouchMarked: boolean; // CR 702.2: Damage from a source with deathtouch
+  isPhasedOut?: boolean; // CR 702.26: Treated as though it doesn't exist
   
   // Modifiers (Layer system targets)
   counters: Record<string, number>;
+
+  // Rules Engine output (Calculated on server, displayed on client)
+  effectiveStats?: {
+    power: number;
+    toughness: number;
+    keywords: string[];
+    isPlayable?: boolean; // For hand cards
+  };
 }
 
 // An object residing on the stack waiting to resolve
@@ -90,7 +102,10 @@ export interface StackObject {
   sourceId: GameObjectId; 
   type: 'Spell' | 'ActivatedAbility' | 'TriggeredAbility' | 'SpecialAction';
   targets: GameObjectId[] | PlayerId[];
-  card?: GameObject; // Standard Rule 601: A card becomes a spell on the stack
+  card?: GameObject;
+  abilityIndex?: number;
+  data?: any;
+  xValue?: number; // Rule 107.3: The value of X
 }
 
 // Player's isolated state within a game
@@ -122,15 +137,33 @@ export interface PlayerState {
 }
 
 export interface CombatState {
-  attackers: { attackerId: GameObjectId; targetId: PlayerId | GameObjectId }[];
-  blockers: { blockerId: GameObjectId; attackerId: GameObjectId }[];
+  attackers: { 
+    attackerId: GameObjectId; 
+    targetId: PlayerId | GameObjectId;
+    order?: GameObjectId[]; 
+  }[];
+  blockers: { 
+    blockerId: GameObjectId; 
+    attackerId: GameObjectId;
+    order?: GameObjectId[]; 
+  }[];
+}
+
+export interface TurnState {
+  permanentReturnedToHandThisTurn: boolean;
+  noncombatDamageDealtToOpponents: number;
+  creaturesAttackedThisTurn: number;
+  lastDamageAmount: number;
+  lastLifeGainedAmount: number;
+  lastCardsDrawnAmount: number;
 }
 
 export interface PendingAction {
-  type: 'DECLARE_ATTACKERS' | 'DECLARE_BLOCKERS' | 'DISCARD' | 'TARGETING';
+  type: 'DECLARE_ATTACKERS' | 'DECLARE_BLOCKERS' | 'ORDER_BLOCKERS' | 'ORDER_ATTACKERS' | 'DISCARD' | 'TARGETING' | 'CHOICE';
   playerId: PlayerId;
   count?: number; 
   sourceId?: string; // For targeting or specific effects
+  data?: any;      // Contextual data (e.g. choice options)
 }
 
 // The monolithic Game State representing the "Source of Truth"
@@ -156,7 +189,196 @@ export interface GameState {
   combat?: CombatState;
   pendingAction?: PendingAction;
 
+  // Rules Engine: The "Whiteboard"
+  ruleRegistry: RuleRegistry;
+
   // Mechanic logic
   consecutivePasses: number; // To track when all players pass priority
   logs: string[];            // Real-time game events/engine logs
+  
+  turnState: TurnState;      // Grouped turn-wide logic tracking
+}
+
+export enum DurationType {
+  Static = 'Static',                      // As long as source is in a specific zone (Layer 611.3a)
+  UntilEndOfTurn = 'UntilEndOfTurn',      // Rule 514.2
+  UntilEndOfCombat = 'UntilEndOfCombat',  // Rule 511.3
+  UntilEvent = 'UntilEvent',              // e.g., "Until your next turn"
+  Permanent = 'Permanent'                 // e.g., Counters or Emblems
+}
+
+export interface EffectDuration {
+  type: DurationType;
+  untilStep?: Step;          // For "Until next end step"
+  untilTurnOfPlayerId?: PlayerId; 
+  expiryEvent?: string;      // Hook for the Event Bus (e.g., 'ON_LEAVES_BATTLEFIELD')
+}
+
+export interface ContinuousEffect {
+  id: string;
+  sourceId: GameObjectId;
+  controllerId: PlayerId;
+  layer: number;
+  sublayer?: string;
+  timestamp: number;
+  activeZones: Zone[]; 
+  duration: EffectDuration;
+  targetIds?: GameObjectId[];
+  targetMapping?: string;
+  targetControllerId?: PlayerId;
+  powerModifier?: number;
+  toughnessModifier?: number;
+  powerSet?: number;      // Layer 7b
+  toughnessSet?: number;  // Layer 7b
+  abilitiesToAdd?: string[];
+  abilitiesToRemove?: string[];
+  removeAllAbilities?: boolean; // Layer 6
+  
+  // For Layer 1 (Copying)
+  copyFromId?: GameObjectId;
+}
+
+export interface AbilityCost {
+  type: 'Tap' | 'Mana' | 'PayLife' | 'Discard' | 'Sacrifice' | 'Loyalty';
+  value: any; // e.g. "{G}" or 3 life
+}
+
+export interface ActivatedAbility {
+  id: string;
+  sourceId: GameObjectId;
+  controllerId: PlayerId;
+  costs: AbilityCost[];
+  isManaAbility: boolean;
+  // effects or spell definitions to push to stack
+}
+
+export enum RestrictionType {
+  CannotTap = 'CannotTap',
+  CannotUntap = 'CannotUntap',
+  CannotAttack = 'CannotAttack',
+  CannotBlock = 'CannotBlock',
+  CannotCastType = 'CannotCastType'
+}
+
+export interface AbilityRestriction {
+  id: string;
+  sourceId: GameObjectId;
+  type: RestrictionType;
+  targetId?: GameObjectId;
+  targetControllerId?: PlayerId;
+  duration: EffectDuration;
+}
+
+export interface GameEvent {
+  type: string;
+  playerId?: PlayerId;
+  sourceId?: GameObjectId;
+  targetId?: GameObjectId;
+  amount?: number;
+  sourceZone?: Zone;
+  data?: any; // e.g. { amount: 2 } or { targetId: '...' }
+}
+
+export interface TriggeredAbility {
+  id: string;
+  sourceId: GameObjectId;
+  controllerId: PlayerId;
+  eventMatch: GameEvent['type'];
+  // Optional: "Intervening If" clause (Rule 603.4)
+  condition?: (event: GameEvent, state: GameState) => boolean;
+  // Specific effect to execute or push to stack
+}
+
+export interface RuleRegistry {
+  continuousEffects: ContinuousEffect[];
+  activatedAbilities: ActivatedAbility[];
+  triggeredAbilities: TriggeredAbility[];
+  restrictions: AbilityRestriction[];
+  replacementEffects?: any[];
+}
+export enum AbilityType {
+  Spell = 'Spell',
+  Activated = 'Activated',
+  Triggered = 'Triggered',
+  Static = 'Static',
+  Replacement = 'Replacement'
+}
+
+export enum ZoneRequirement {
+  Battlefield = 'Battlefield',
+  Graveyard = 'Graveyard',
+  Hand = 'Hand',
+  Stack = 'Stack',
+  Any = 'Any'
+}
+
+export interface TokenBlueprint {
+  name: string;
+  power: string;
+  toughness: string;
+  colors: string[];
+  types: string[];
+  subtypes: string[];
+  keywords: string[];
+  oracleText?: string;
+}
+
+export interface EffectDefinition {
+  type: 'DealDamage' | 'DrawCards' | 'Destroy' | 'Exile' | 'Counter' | 'CreateToken' | 'AddCounters' | 'ApplyContinuousEffect' | 'CopyObject' | 'Choice' | 'SearchLibrary' | 'PutOnBattlefield' | 'PutInHand' | 'ShuffleLibrary' | 'ReturnToHand' | 'GainLife' | 'AddMana' | 'Tapped' | 'Fight' | 'CostReduction' | 'DiscardCards' | 'PhasedOut';
+  amount?: number | string;
+  value?: any; 
+  
+  // Modular Token Support
+  tokenBlueprint?: TokenBlueprint;
+  
+  // Choice Properties
+  choices?: {
+    label: string;
+    effects: EffectDefinition[];
+  }[];
+
+  // Continuous Effect Properties
+  duration?: string;
+  powerModifier?: number;
+  toughnessModifier?: number;
+  powerSet?: number;
+  toughnessSet?: number;
+  abilitiesToAdd?: string[];
+  abilitiesToRemove?: string[];
+  removeAllAbilities?: boolean;
+  layer?: number;
+  targetControllerId?: string;
+  
+  /**
+   * targetMapping conventions:
+   * - 'SELF': The card itself
+   * - 'TARGET_1', 'TARGET_2': Specific targets from targetDefinition
+   * - 'TARGET_ALL': All targets selected via targetDefinition
+   * - 'CONTROLLER': The controller of the ability
+   * - 'ALL_CREATURES_YOU_CONTROL', 'OTHER_CREATURES_YOU_CONTROL': Group selectors
+   */
+  targetMapping: string; 
+}
+
+export interface TargetDefinition {
+  type: 'Player' | 'Permanent' | 'Spell' | 'CardInGraveyard';
+  count: number;
+  optional?: boolean;
+  restrictions?: string[];
+}
+
+export interface ParsedAbility {
+  id: string;
+  type: AbilityType;
+  activeZone: ZoneRequirement;
+  costs?: AbilityCost[];
+  isManaAbility?: boolean;
+  triggerEvent?: string; 
+  triggerCondition?: any; 
+  targetDefinition?: TargetDefinition;
+  effects: EffectDefinition[];
+}
+
+export interface ImplementableCard extends CardDefinition {
+  abilities: ParsedAbility[];
 }

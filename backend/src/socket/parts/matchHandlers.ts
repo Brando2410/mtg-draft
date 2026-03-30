@@ -24,16 +24,21 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     if (!room || room.host !== socket.id) return;
 
     if (room.isNormalMatch) {
-       const host = room.players.find(p => p.playerId === room.hostPlayerId);
-       if (host && deck) (host as any).deck = deck;
+       // Load default deck if missing
+       let finalDeck = deck;
+       if (!finalDeck) {
+         finalDeck = await PersistenceService.getDeck('m21_test_deck.json');
+       }
 
        const playerIds = room.players.map(p => p.playerId as PlayerId);
        const decksByPlayer: Record<string, any[]> = {};
        const playerNames: Record<string, string> = {};
-       room.players.forEach(p => {
-          decksByPlayer[p.playerId] = (p as any).deck?.mainEntry || (p as any).deck?.cards || [];
+
+       for (const p of room.players) {
+          const pDeck = (p as any).deck || finalDeck;
+          decksByPlayer[p.playerId] = pDeck?.mainEntry || pDeck?.cards || [];
           playerNames[p.playerId] = p.name;
-       });
+       }
 
        const engine = new GameEngine(playerIds, decksByPlayer, playerNames);
        engine.startGame();
@@ -157,12 +162,33 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
      engine.setState(room.gameState);
 
      try {
-        engine.tapForMana(playerId, cardId);
+        engine.interactWithPermanent(playerId, cardId);
         room.gameState = engine.getState();
         io.to(roomId).emit('draft_update', room);
         await PersistenceService.saveRooms(rooms);
      } catch (error) {
-        console.warn(`[SOCKET] Tap permanent error:`, error);
+        console.warn(`[SOCKET] Interaction error:`, error);
+     }
+  });
+
+  socket.on('activate_ability', async ({ roomId, playerId, cardId, abilityIndex, targets = [] }) => {
+     const room = rooms.get(roomId);
+     if (!room || !room.gameState) return;
+
+     const playerIds = room.players.map(p => p.playerId as PlayerId);
+     const playerNames: Record<string, string> = {};
+     room.players.forEach(p => playerNames[p.playerId] = p.name);
+
+     const engine = new GameEngine(playerIds, {}, playerNames);
+     engine.setState(room.gameState);
+
+     try {
+        engine.activateAbility(playerId, cardId, abilityIndex, targets);
+        room.gameState = engine.getState();
+        io.to(roomId).emit('draft_update', room);
+        await PersistenceService.saveRooms(rooms);
+     } catch (error) {
+        console.warn(`[SOCKET] Activate ability error:`, error);
      }
   });
 
@@ -194,6 +220,76 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       await PersistenceService.saveRooms(rooms);
     } catch (error) {
       console.warn(`[SOCKET] Discard error:`, error);
+    }
+  });
+
+  socket.on('resolve_choice', async ({ roomId, playerId, choiceIndex }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+
+    const playerIds = room.players.map(p => p.playerId as PlayerId);
+    const playerNames: Record<string, string> = {};
+    room.players.forEach(p => playerNames[p.playerId] = p.name);
+
+    const engine = new GameEngine(playerIds, {}, playerNames);
+    engine.setState(room.gameState);
+
+    try {
+      engine.resolveChoice(playerId, choiceIndex);
+      room.gameState = engine.getState();
+      io.to(roomId).emit('draft_update', room);
+      await PersistenceService.saveRooms(rooms);
+    } catch (error) {
+      console.warn(`[SOCKET] Resolve choice error:`, error);
+    }
+  });
+
+  socket.on('resolve_target', async ({ roomId, playerId, targetId }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+
+    const playerIds = room.players.map(p => p.playerId as PlayerId);
+    const playerNames: Record<string, string> = {};
+    room.players.forEach(p => playerNames[p.playerId] = p.name);
+
+    const engine = new GameEngine(playerIds, {}, playerNames);
+    engine.setState(room.gameState);
+
+    try {
+      // Rule 601.2c: The player announces his or her activation of an ability and chooses targets
+      if (room.gameState.pendingAction?.type === 'TARGETING') {
+          // Unified targeting resolution (Spells or Abilities)
+          engine.resolveTargeting(playerId, targetId);
+      } else if (room.gameState.pendingAction?.type === 'DECLARE_ATTACKERS') {
+          // In combat, selecting a target re-targets the attacker
+          engine.interactWithPermanent(playerId, targetId);
+      }
+      
+      room.gameState = engine.getState();
+      io.to(roomId).emit('draft_update', room);
+      await PersistenceService.saveRooms(rooms);
+    } catch (error) {
+      console.warn(`[SOCKET] Resolve target error:`, error);
+    }
+  });
+  socket.on('resolve_combat_ordering', async ({ roomId, playerId, order }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+
+    const playerIds = room.players.map(p => p.playerId as PlayerId);
+    const playerNames: Record<string, string> = {};
+    room.players.forEach(p => playerNames[p.playerId] = p.name);
+
+    const engine = new GameEngine(playerIds, {}, playerNames);
+    engine.setState(room.gameState);
+
+    try {
+      engine.resolveCombatOrdering(playerId, order);
+      room.gameState = engine.getState();
+      io.to(roomId).emit('draft_update', room);
+      await PersistenceService.saveRooms(rooms);
+    } catch (error) {
+      console.warn(`[SOCKET] Resolve ordering error:`, error);
     }
   });
 };

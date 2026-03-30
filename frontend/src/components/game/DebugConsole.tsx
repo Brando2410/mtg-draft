@@ -60,8 +60,8 @@ export const DebugConsole = ({
                 <span className="text-[10px] font-black uppercase text-indigo-400 italic">{gameState.currentStep}</span>
              </div>
              <div className="flex justify-between">
-                <span className="text-[10px] font-bold uppercase text-slate-500">Stack Size</span>
-                <span className="text-[10px] font-black uppercase text-indigo-400 italic">{gameState.stack.length} oggetti</span>
+                <span className="text-[10px] font-bold uppercase text-slate-500">Whiteboard</span>
+                <span className="text-[10px] font-black uppercase text-indigo-400 italic">{gameState.ruleRegistry.continuousEffects.length} effetti</span>
              </div>
              <div className="flex justify-between pt-2 border-t border-white/10">
                 <span className="text-[10px] font-bold uppercase text-slate-500">PROPRIETARIO TURNO</span>
@@ -106,11 +106,62 @@ export const DebugConsole = ({
              </div>
           </div>
 
-          {/* STACK LIST */}
+          {/* EFFECT WHITEBOARD */}
           <div className="space-y-4">
-             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">The Stack</h4>
-             <div className="min-h-[100px] border-2 border-dashed border-white/5 rounded-2xl flex items-center justify-center p-4">
-                <span className="text-[9px] font-bold text-slate-700 uppercase tracking-widest italic">Stack Vuoto</span>
+             <div className="flex justify-between items-center">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Effect Whiteboard</h4>
+                <span className="text-[9px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
+                   {gameState.ruleRegistry.continuousEffects.length} Active
+                </span>
+             </div>
+             
+             <div className="min-h-[100px] border border-white/5 bg-slate-900/50 rounded-2xl overflow-hidden">
+                {gameState.ruleRegistry.continuousEffects.length === 0 ? (
+                   <div className="h-[100px] flex items-center justify-center p-4">
+                      <span className="text-[9px] font-bold text-slate-700 uppercase tracking-widest italic">Nessun Effetto Attivo</span>
+                   </div>
+                ) : (
+                   <div className="divide-y divide-white/5">
+                      {gameState.ruleRegistry.continuousEffects.map((effect, idx) => {
+                         // Attempt to find the source name
+                         const allObjects = [
+                            ...gameState.battlefield,
+                            ...gameState.exile,
+                            ...Object.values(gameState.players).flatMap(p => [...p.graveyard, ...p.hand])
+                         ];
+                         const source = allObjects.find(o => o.id === effect.sourceId);
+                         const sourceName = source?.definition.name || 'Unknown Source';
+
+                         return (
+                            <div key={effect.id || idx} className="p-3 hover:bg-white/5 transition-colors group">
+                               <div className="flex justify-between items-start mb-1">
+                                  <span className="text-[10px] font-black text-indigo-300 uppercase italic truncate max-w-[180px]">
+                                     {sourceName}
+                                  </span>
+                                  <span className="text-[8px] font-bold text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded uppercase">
+                                     Layer {effect.layer}
+                                  </span>
+                               </div>
+                               <div className="flex flex-wrap gap-1.5 mt-2">
+                                  {effect.powerModifier !== undefined && (
+                                     <span className="text-[8px] font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                                        {effect.powerModifier > 0 ? '+' : ''}{effect.powerModifier}/{effect.toughnessModifier ?? 0}
+                                     </span>
+                                  )}
+                                  {effect.abilitiesToAdd?.map(ability => (
+                                     <span key={ability} className="text-[8px] font-black text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 uppercase">
+                                        +{ability}
+                                     </span>
+                                  ))}
+                                  <span className="text-[8px] font-bold text-slate-600 uppercase ml-auto self-center">
+                                     {effect.duration.type.replace('Until', '')}
+                                  </span>
+                               </div>
+                            </div>
+                         );
+                      })}
+                   </div>
+                )}
              </div>
           </div>
 

@@ -15,10 +15,14 @@ export interface Card {
   back_image_url?: string;
   type_line?: string;
   oracle_text?: string;
+  oracleText?: string;
   mana_cost?: string;
+  manaCost?: string;
   power?: string;
   toughness?: string;
   keywords?: string[];
+  typeLine?: string;
+  colors?: string[];
 }
 
 export interface Player {

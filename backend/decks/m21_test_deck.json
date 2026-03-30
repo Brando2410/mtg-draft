@@ -1,0 +1,21 @@
+{
+  "name": "M21 Planeswalker Test",
+  "cards": [
+    { "name": "Basri Ket", "count": 2, "scryfall_id": "98c85699-2daf-4e87-a3be-465d02bd64bb" },
+    { "name": "Teferi, Master of Time", "count": 2, "scryfall_id": "2d1ff397-2445-459a-ae4e-7bf1cd48f490" },
+    { "name": "Liliana, Waker of the Dead", "count": 2, "scryfall_id": "e329a3e2-6702-4758-8aac-c3017e77b619" },
+    { "name": "Baneslayer Angel", "count": 2, "scryfall_id": "4bd3014b-94bb-4a9f-92cf-239a2dcc7e97" },
+    { "name": "Basri's Lieutenant", "count": 2, "scryfall_id": "74b1eae0-1bf8-4922-a9e3-45c01ece9005" },
+    { "name": "Brash Taunter", "count": 2, "scryfall_id": "ebb5e613-a803-42f3-840a-7089ac6b7e3d" },
+    { "name": "Eliminate", "count": 4, "scryfall_id": "f8eb4087-3a4c-4de8-8e29-f4cd71acb180" },
+    { "name": "Cultivate", "count": 4, "scryfall_id": "4a433310-3fe2-4156-864d-7a6b2638340b" },
+    { "name": "Mazemind Tome", "count": 2, "scryfall_id": "9fd761f3-6b43-4150-8595-dc3abd85b06c" },
+    { "name": "Mangara, the Diplomat", "count": 1, "scryfall_id": "9b4e628f-5fc5-4c17-a07d-448d361d7e7c" },
+    { "name": "Scavenging Ooze", "count": 2, "scryfall_id": "48016573-2117-48e3-bb66-0773d8753a81" },
+    { "name": "Plains", "count": 7, "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9" },
+    { "name": "Island", "count": 7, "scryfall_id": "fc9a66a1-367c-4035-a22e-00fab55be5a0" },
+    { "name": "Swamp", "count": 7, "scryfall_id": "8708c34f-01f1-419b-a388-348123285c5b" },
+    { "name": "Mountain", "count": 7, "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab" },
+    { "name": "Forest", "count": 7, "scryfall_id": "3279314f-d639-4489-b2ab-3621bb3ca64b" }
+  ]
+}

@@ -8,10 +8,11 @@ interface PhaseBarProps {
   hasPriority: boolean;
   pendingAction?: PendingAction;
   onPassPriority: () => void;
+  onSkipAction?: () => void;
   onBack: () => void;
 }
 
-export const PhaseBar = ({ currentPhase, currentStep, turnNumber, hasPriority, pendingAction, onPassPriority, onBack }: PhaseBarProps) => {
+export const PhaseBar = ({ currentPhase, currentStep, turnNumber, hasPriority, pendingAction, onPassPriority, onSkipAction, onBack }: PhaseBarProps) => {
   
   const getActionLabel = (action: PendingAction) => {
     switch(action.type) {
@@ -60,7 +61,7 @@ export const PhaseBar = ({ currentPhase, currentStep, turnNumber, hasPriority, p
           </span>
           <ChevronRight className="w-3 h-3 text-slate-700" />
           <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${currentPhase === Phase.PreCombatMain ? 'bg-indigo-500/20 text-indigo-400' : 'text-slate-500'}`}>
-            Main 1 {currentPhase === Phase.PreCombatMain && <span className="text-[8px] opacity-60 ml-1">({currentStep})</span>}
+            Main 1 
           </span>
           <ChevronRight className="w-3 h-3 text-slate-700" />
           <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${currentPhase === Phase.Combat ? 'bg-red-500/20 text-red-400' : 'text-slate-500'}`}>
@@ -78,6 +79,14 @@ export const PhaseBar = ({ currentPhase, currentStep, turnNumber, hasPriority, p
       </div>
 
       <div className="flex items-center gap-3">
+        {pendingAction?.type === 'TARGETING' && pendingAction.data?.optional && (
+           <button 
+             onClick={onSkipAction}
+             className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter bg-amber-500/20 text-amber-400 border border-amber-500/40 hover:bg-amber-500/30 transition-colors"
+           >
+             {(pendingAction.data?.selectedTargets?.length > 0) ? 'Conferma Selezione' : 'Nessun Bersaglio (Skip)'}
+           </button>
+        )}
         <button 
           onClick={onPassPriority}
           className={`px-6 py-1.5 rounded-full text-[10px] font-black uppercase italic tracking-tighter transition-all flex items-center gap-2 ${hasPriority ? 'bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.4)] animate-pulse' : 'bg-slate-800 text-slate-500 opacity-50 cursor-not-allowed'}`}
