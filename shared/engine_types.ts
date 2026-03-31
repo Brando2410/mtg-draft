@@ -1,45 +1,48 @@
 // engine_types.ts
 // These interfaces represent the theoretical foundation of the MTG rules engine.
 
-export enum Zone {
-  Library = 'Library',
-  Hand = 'Hand',
-  Battlefield = 'Battlefield',
-  Graveyard = 'Graveyard',
-  Stack = 'Stack',
-  Exile = 'Exile',
-  Command = 'Command'
-}
+export const Zone = {
+  Library: 'Library',
+  Hand: 'Hand',
+  Battlefield: 'Battlefield',
+  Graveyard: 'Graveyard',
+  Stack: 'Stack',
+  Exile: 'Exile',
+  Command: 'Command'
+} as const;
+export type Zone = (typeof Zone)[keyof typeof Zone];
 
-export enum Phase {
-  Beginning = 'Beginning',
-  PreCombatMain = 'PreCombatMain',
-  Combat = 'Combat',
-  PostCombatMain = 'PostCombatMain',
-  Ending = 'Ending',
-}
+export const Phase = {
+  Beginning: 'Beginning',
+  PreCombatMain: 'PreCombatMain',
+  Combat: 'Combat',
+  PostCombatMain: 'PostCombatMain',
+  Ending: 'Ending',
+} as const;
+export type Phase = (typeof Phase)[keyof typeof Phase];
 
-export enum Step {
+export const Step = {
   // Beginning Phase Steps
-  Untap = 'Untap',
-  Upkeep = 'Upkeep',
-  Draw = 'Draw',
+  Untap: 'Untap',
+  Upkeep: 'Upkeep',
+  Draw: 'Draw',
   
   // Main Phases don't have distinct steps inside them usually, just the 'Main' step
-  Main = 'Main',
+  Main: 'Main',
 
   // Combat Phase Steps
-  BeginningOfCombat = 'BeginningOfCombat',
-  DeclareAttackers = 'DeclareAttackers',
-  DeclareBlockers = 'DeclareBlockers',
-  FirstStrikeDamage = 'FirstStrikeDamage',
-  CombatDamage = 'CombatDamage',
-  EndOfCombat = 'EndOfCombat',
+  BeginningOfCombat: 'BeginningOfCombat',
+  DeclareAttackers: 'DeclareAttackers',
+  DeclareBlockers: 'DeclareBlockers',
+  FirstStrikeDamage: 'FirstStrikeDamage',
+  CombatDamage: 'CombatDamage',
+  EndOfCombat: 'EndOfCombat',
 
   // Ending Phase Steps
-  End = 'End',
-  Cleanup = 'Cleanup'
-}
+  End: 'End',
+  Cleanup: 'Cleanup'
+} as const;
+export type Step = (typeof Step)[keyof typeof Step];
 
 export type GameObjectId = string;
 export type PlayerId = string;
@@ -200,13 +203,14 @@ export interface GameState {
   turnState: TurnState;      // Grouped turn-wide logic tracking
 }
 
-export enum DurationType {
-  Static = 'Static',                      // As long as source is in a specific zone (Layer 611.3a)
-  UntilEndOfTurn = 'UntilEndOfTurn',      // Rule 514.2
-  UntilEndOfCombat = 'UntilEndOfCombat',  // Rule 511.3
-  UntilEvent = 'UntilEvent',              // e.g., "Until your next turn"
-  Permanent = 'Permanent'                 // e.g., Counters or Emblems
-}
+export const DurationType = {
+  Static: 'Static',                      // As long as source is in a specific zone (Layer 611.3a)
+  UntilEndOfTurn: 'UntilEndOfTurn',      // Rule 514.2
+  UntilEndOfCombat: 'UntilEndOfCombat',  // Rule 511.3
+  UntilEvent: 'UntilEvent',              // e.g., "Until your next turn"
+  Permanent: 'Permanent'                 // e.g., Counters or Emblems
+} as const;
+export type DurationType = (typeof DurationType)[keyof typeof DurationType];
 
 export interface EffectDuration {
   type: DurationType;
@@ -254,13 +258,14 @@ export interface ActivatedAbility {
   // effects or spell definitions to push to stack
 }
 
-export enum RestrictionType {
-  CannotTap = 'CannotTap',
-  CannotUntap = 'CannotUntap',
-  CannotAttack = 'CannotAttack',
-  CannotBlock = 'CannotBlock',
-  CannotCastType = 'CannotCastType'
-}
+export const RestrictionType = {
+  CannotTap: 'CannotTap',
+  CannotUntap: 'CannotUntap',
+  CannotAttack: 'CannotAttack',
+  CannotBlock: 'CannotBlock',
+  CannotCastType: 'CannotCastType'
+} as const;
+export type RestrictionType = (typeof RestrictionType)[keyof typeof RestrictionType];
 
 export interface AbilityRestriction {
   id: string;
@@ -298,21 +303,23 @@ export interface RuleRegistry {
   restrictions: AbilityRestriction[];
   replacementEffects?: any[];
 }
-export enum AbilityType {
-  Spell = 'Spell',
-  Activated = 'Activated',
-  Triggered = 'Triggered',
-  Static = 'Static',
-  Replacement = 'Replacement'
-}
+export const AbilityType = {
+  Spell: 'Spell',
+  Activated: 'Activated',
+  Triggered: 'Triggered',
+  Static: 'Static',
+  Replacement: 'Replacement'
+} as const;
+export type AbilityType = (typeof AbilityType)[keyof typeof AbilityType];
 
-export enum ZoneRequirement {
-  Battlefield = 'Battlefield',
-  Graveyard = 'Graveyard',
-  Hand = 'Hand',
-  Stack = 'Stack',
-  Any = 'Any'
-}
+export const ZoneRequirement = {
+  Battlefield: 'Battlefield',
+  Graveyard: 'Graveyard',
+  Hand: 'Hand',
+  Stack: 'Stack',
+  Any: 'Any'
+} as const;
+export type ZoneRequirement = (typeof ZoneRequirement)[keyof typeof ZoneRequirement];
 
 export interface TokenBlueprint {
   name: string;

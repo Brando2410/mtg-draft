@@ -22,7 +22,6 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importText, setImportText] = useState('');
   const [isImporting, setIsImporting] = useState(false);
-  const [importErrors, setImportErrors] = useState<string[]>([]);
 
   // --- STATO PER AGGIUNTA CARTE (API Scryfall) ---
   const [addQuery, setAddQuery] = useState('');
@@ -55,15 +54,12 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
   };
 
   const [selectedPoolId, setSelectedPoolId] = useState<string | null>(null);
-  const [filterQuery, setFilterQuery] = useState('');
+  const [filterQuery] = useState('');
   const [filterRarity, setFilterRarity] = useState<string>('all');
-  const [filterColor, setFilterColor] = useState<string[]>([]);
+  const [filterColor] = useState<string[]>([]);
   const [filterCmc, setFilterCmc] = useState<number | null>(null);
   
   // --- STATO RESTORE ---
-  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
-  const [tempCubeData, setTempCubeData] = useState<any>(null);
-
   useEffect(() => {
     const savedCube = localStorage.getItem('mtg_draft_cube');
     if (savedCube) {
@@ -73,9 +69,6 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
           if (skipRestore) {
             setCubeName(parsed.name || 'Il mio Cubo Personalizzato');
             setDraftPool(parsed.cards || []);
-          } else {
-            setTempCubeData(parsed);
-            setIsRestoreModalOpen(true);
           }
         }
       } catch (e) {
@@ -84,30 +77,19 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
     }
   }, [skipRestore]);
 
-  const handleRestore = () => {
-    if (tempCubeData) {
-      setCubeName(tempCubeData.name || 'Il mio Cubo Personalizzato');
-      setDraftPool(tempCubeData.cards || []);
-      setIsRestoreModalOpen(false);
-    }
-  };
-
-  const handleStartFresh = () => {
-    localStorage.removeItem('mtg_draft_cube');
-    setTempCubeData(null);
-    setIsRestoreModalOpen(false);
-  };
-
   const handleImportSubmit = async () => {
     if (!importText.trim()) return;
     setIsImporting(true);
-    setImportErrors([]);
     const names = importText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
     try {
       const { found, notFound } = await fetchCardsBatch(names);
       if (found.length > 0) setDraftPool(prev => [...found, ...prev]);
-      if (notFound.length > 0) setImportErrors(notFound);
-      else { setIsImportModalOpen(false); setImportText(''); }
+      if (notFound.length > 0) {
+        console.warn('Some cards not found during import:', notFound);
+      } else { 
+        setIsImportModalOpen(false); 
+        setImportText(''); 
+      }
     } catch (err) { alert('Errore import.'); } finally { setIsImporting(false); }
   };
 

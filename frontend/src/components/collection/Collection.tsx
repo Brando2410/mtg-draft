@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Home, Database, Trash2, ExternalLink, Calendar, Search, Loader2, Sword, LayoutGrid, Plus } from 'lucide-react';
+import { Home, Trash2, ExternalLink, Calendar, Search, Loader2, Sword, LayoutGrid, Plus } from 'lucide-react';
 
 interface SavedItem {
   id: string;
