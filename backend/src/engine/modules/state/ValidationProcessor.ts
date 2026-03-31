@@ -1,4 +1,4 @@
-import { GameState, GameObject, Zone } from '@shared/engine_types';
+import { GameState, GameObject, Zone, PlayerId } from '@shared/engine_types';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
 
@@ -15,7 +15,23 @@ export class ValidationProcessor {
   public static isLegalTarget(state: GameState, sourceId: string, targetId: string, abilityTargetDef?: any): boolean {
     // 1. If target is a player (e.g., Lightning Bolt to face)
     if (state.players[targetId]) {
-        return true; 
+        const type = (abilityTargetDef?.type || '').toLowerCase();
+        const restrictions = (abilityTargetDef?.restrictions || []).map((r: string) => r.toLowerCase());
+        
+        if (type === 'player' || type === 'anytarget' || restrictions.includes('player') || restrictions.includes('anytarget')) {
+            // Check specific player restrictions (e.g., 'opponent', 'you')
+            const sourceControllerId = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId)?.controllerId || 
+                                       state.battlefield.find(o => o.id === sourceId)?.controllerId;
+            
+            if (restrictions.includes('opponent')) {
+                if (sourceControllerId && targetId === sourceControllerId) return false;
+            }
+            if (restrictions.includes('you')) {
+                if (sourceControllerId && targetId !== sourceControllerId) return false;
+            }
+            return true;
+        }
+        return false; 
     }
 
     // 2. Locate target object across all possible zones
@@ -42,10 +58,13 @@ export class ValidationProcessor {
         }
     }
 
-    // CR 702.26b: While a permanent is phased out, it's treated as though it doesn't exist.
-    if (targetObj.isPhasedOut) {
-        return false;
-    }
+    // Chapter 702.26b: Phased out check
+    if (targetObj.isPhasedOut) return false;
+
+    // Type validation: Permanent vs Player (Rule 608.2b)
+    const typeLineCheck = (abilityTargetDef?.type || '').toLowerCase();
+    const isPlayerTargetOnly = typeLineCheck === 'player';
+    if (isPlayerTargetOnly) return false; // This is a permanent, but we requested a player.
 
     // Rule 400.7 / 608.2 b: Ensure target is in the correct zone. 
     // If the card changed zones (e.g. died and went to graveyard), it becomes an illegal target
@@ -65,14 +84,24 @@ export class ValidationProcessor {
 
 
     // 1. Get the source characteristics
-    // Source can be on the stack (Spell/Ability) or battlefield (Permanent)
+    // Source can be on the stack, battlefield, or still in hand (during casting validation)
     const sourceStack = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
     const sourceBattlefield = state.battlefield.find(o => o.id === sourceId);
-    const source = sourceStack || (sourceBattlefield as any);
+    let source = sourceStack || (sourceBattlefield as any);
 
-    // If source isn't found (e.g., it left the game), we assume it's still legal to check 
-    // unless it specifically requires the source's current controller.
-    const sourceControllerId = source?.controllerId || (sourceStack as any)?.controllerId;
+    let sourceControllerId = source?.controllerId || (sourceStack as any)?.controllerId;
+
+    // If still not found, check hands (for Rule 601.2c validation)
+    if (!sourceControllerId) {
+        for (const pId in state.players) {
+            const cardInHand = state.players[pId as PlayerId].hand.find(c => c.id === sourceId);
+            if (cardInHand) {
+                sourceControllerId = pId;
+                source = cardInHand;
+                break;
+            }
+        }
+    }
 
 
     // 2. Check Protection (Rule 702.16)
@@ -84,23 +113,35 @@ export class ValidationProcessor {
       const qualityStr = prot.toLowerCase().replace('protection from ', '');
       const qualities = qualityStr.split(/[\s,]+/).filter(Boolean); // e.g. ["demons", "and", "from", "dragons"]
       
-      if (ValidationProcessor.sourceHasQualities(source, qualities)) {
+      if (source && ValidationProcessor.sourceHasQualities(source, qualities)) {
+        console.log(`[VALIDATION] Target has protection from source qualities: ${qualities}`);
         return false;
       }
     }
 
     // 3. Check Hexproof (Rule 702.11)
-    if (keywords.includes('Hexproof')) {
-        const sourceControllerId = source.controllerId || sourceStack?.controllerId;
-        if (sourceControllerId !== targetObj.controllerId) {
-            return false;
+    const hexproofKeywords = keywords.filter(k => k.toLowerCase().startsWith('hexproof'));
+    for (const hp of hexproofKeywords) {
+      if (hp.toLowerCase() === 'hexproof') {
+        if (sourceControllerId && sourceControllerId !== targetObj.controllerId) {
+          return false;
         }
+      } else if (hp.toLowerCase().startsWith('hexproof from ')) {
+        const qualityStr = hp.toLowerCase().replace('hexproof from ', '');
+        const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
+        if (sourceControllerId && sourceControllerId !== targetObj.controllerId) {
+          if (source && ValidationProcessor.sourceHasQualities(source, qualities)) {
+            return false;
+          }
+        }
+      }
     }
 
     // 4. Check Shroud (Rule 702.18)
     if (keywords.includes('Shroud')) {
         return false;
     }
+
 
     // 4. Check Type Restrictions (Rule 601.2c)
     // We check both the passed targeting data and potentially the stack ability definition
@@ -116,7 +157,6 @@ export class ValidationProcessor {
         if (typeRestrictions.length > 0) {
             const matchesType = typeRestrictions.some((r: string) => objTypes.includes(r));
             if (!matchesType) {
-                console.log(`[VALIDATION] Type mismatch: expected one of ${typeRestrictions}, got ${objTypes}`);
                 return false;
             }
         }
@@ -148,7 +188,6 @@ export class ValidationProcessor {
                 if ((op === '==' || op === '=') && !(mv === val)) isCmcValid = false;
                 
                 if (!isCmcValid) {
-                    console.log(`[VALIDATION] CMC mismatch: ${mv} ${op} ${val} is false. Cost: ${targetObj.definition.manaCost}`);
                     return false;
                 }
             }

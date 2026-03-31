@@ -35,16 +35,22 @@ async function start() {
       for (const [roomId, room] of rooms.entries()) {
          // 1. Pulizia Istanze Inattive
          const playersToRemove = room.players.filter((p: Player) => !p.online && (now - p.lastSeen > 5 * 60 * 1000));
-         if (playersToRemove.length > 0) {
+          if (playersToRemove.length > 0) {
             room.players = room.players.filter((p: Player) => p.online || (now - p.lastSeen <= 5 * 60 * 1000));
-            if (room.players.length === 0 || (room.hostPlayerId && !room.players.find((p: Player) => p.playerId === room.hostPlayerId))) {
+            if (room.players.length === 0) {
                rooms.delete(roomId);
-               LoggerService.info('SERVER', `Room cleanup: ${roomId} removed for inactivity`, { roomId });
+               LoggerService.info('SERVER', `Room cleanup: ${roomId} removed - no players left.`, { roomId });
+               changed = true;
+               continue;
+            }
+            if (room.hostPlayerId && !room.players.find((p: Player) => p.playerId === room.hostPlayerId)) {
+               rooms.delete(roomId);
+               LoggerService.info('SERVER', `Room cleanup: ${roomId} removed - host completely absent.`, { roomId });
                changed = true;
                continue;
             }
             changed = true;
-         }
+          }
 
          room.serverTime = now;
          if (room.status === 'drafting' && !room.isPaused && room.draftState) {

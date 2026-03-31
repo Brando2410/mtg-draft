@@ -28,19 +28,6 @@
       "keywords": []
     },
     {
-      "scryfall_id": "98c85699-2daf-4e87-a3be-465d02bd64bb",
-      "name": "Basri Ket",
-      "rarity": "mythic",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/9/8/98c85699-2daf-4e87-a3be-465d02bd64bb.jpg?1594734775",
-      "cmc": 3,
-      "type_line": "Legendary Planeswalker — Basri",
-      "mana_cost": "{1}{W}{W}",
-      "keywords": []
-    },
-    {
       "scryfall_id": "9c0c61e3-9f3d-4e7f-9046-0ea336dd8a2d",
       "name": "Teferi, Master of Time",
       "rarity": "mythic",
@@ -51,71 +38,6 @@
       "cmc": 4,
       "type_line": "Legendary Planeswalker — Teferi",
       "mana_cost": "{2}{U}{U}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "9c0c61e3-9f3d-4e7f-9046-0ea336dd8a2d",
-      "name": "Teferi, Master of Time",
-      "rarity": "mythic",
-      "color": [
-        "U"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/9/c/9c0c61e3-9f3d-4e7f-9046-0ea336dd8a2d.jpg?1594735806",
-      "cmc": 4,
-      "type_line": "Legendary Planeswalker — Teferi",
-      "mana_cost": "{2}{U}{U}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "9c0c61e3-9f3d-4e7f-9046-0ea336dd8a2d",
-      "name": "Teferi, Master of Time",
-      "rarity": "mythic",
-      "color": [
-        "U"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/9/c/9c0c61e3-9f3d-4e7f-9046-0ea336dd8a2d.jpg?1594735806",
-      "cmc": 4,
-      "type_line": "Legendary Planeswalker — Teferi",
-      "mana_cost": "{2}{U}{U}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "00cbe506-7332-4d29-9404-b7c6e1e791d8",
-      "name": "Liliana of the Dark Realms",
-      "rarity": "mythic",
-      "color": [
-        "B"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/0/0/00cbe506-7332-4d29-9404-b7c6e1e791d8.jpg?1723679024",
-      "cmc": 4,
-      "type_line": "Legendary Planeswalker — Liliana",
-      "mana_cost": "{2}{B}{B}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "d12c8c97-6491-452c-811d-943441a7ef9f",
-      "name": "Liliana of the Veil",
-      "rarity": "mythic",
-      "color": [
-        "B"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/d/1/d12c8c97-6491-452c-811d-943441a7ef9f.jpg?1673307126",
-      "cmc": 3,
-      "type_line": "Legendary Planeswalker — Liliana",
-      "mana_cost": "{1}{B}{B}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "6087f146-f468-472a-b248-fc7386ea3e63",
-      "name": "Liliana Vess",
-      "rarity": "mythic",
-      "color": [
-        "B"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/6/0/6087f146-f468-472a-b248-fc7386ea3e63.jpg?1562787848",
-      "cmc": 5,
-      "type_line": "Legendary Planeswalker — Liliana",
-      "mana_cost": "{3}{B}{B}",
       "keywords": []
     },
     {
@@ -169,26 +91,6 @@
       "toughness": "4",
       "keywords": [
         "Vigilance",
-        "Protection"
-      ]
-    },
-    {
-      "scryfall_id": "4bd3014b-94bb-4a9f-92cf-239a2dcc7e97",
-      "name": "Baneslayer Angel",
-      "rarity": "mythic",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/4/b/4bd3014b-94bb-4a9f-92cf-239a2dcc7e97.jpg?1594734758",
-      "cmc": 5,
-      "type_line": "Creature — Angel",
-      "mana_cost": "{3}{W}{W}",
-      "power": "5",
-      "toughness": "5",
-      "keywords": [
-        "Flying",
-        "Lifelink",
-        "First strike",
         "Protection"
       ]
     },
@@ -288,457 +190,6 @@
       "keywords": [
         "Lifelink"
       ]
-    },
-    {
-      "scryfall_id": "021fa322-f38c-4d94-8122-5b13425106d9",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/0/2/021fa322-f38c-4d94-8122-5b13425106d9.jpg?1771345172",
-      "cmc": 0,
-      "type_line": "Basic Land — Mountain",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "021fa322-f38c-4d94-8122-5b13425106d9",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/0/2/021fa322-f38c-4d94-8122-5b13425106d9.jpg?1771345172",
-      "cmc": 0,
-      "type_line": "Basic Land — Mountain",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "021fa322-f38c-4d94-8122-5b13425106d9",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/0/2/021fa322-f38c-4d94-8122-5b13425106d9.jpg?1771345172",
-      "cmc": 0,
-      "type_line": "Basic Land — Mountain",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "021fa322-f38c-4d94-8122-5b13425106d9",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/0/2/021fa322-f38c-4d94-8122-5b13425106d9.jpg?1771345172",
-      "cmc": 0,
-      "type_line": "Basic Land — Mountain",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "021fa322-f38c-4d94-8122-5b13425106d9",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/0/2/021fa322-f38c-4d94-8122-5b13425106d9.jpg?1771345172",
-      "cmc": 0,
-      "type_line": "Basic Land — Mountain",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "021fa322-f38c-4d94-8122-5b13425106d9",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/0/2/021fa322-f38c-4d94-8122-5b13425106d9.jpg?1771345172",
-      "cmc": 0,
-      "type_line": "Basic Land — Mountain",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "021fa322-f38c-4d94-8122-5b13425106d9",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/0/2/021fa322-f38c-4d94-8122-5b13425106d9.jpg?1771345172",
-      "cmc": 0,
-      "type_line": "Basic Land — Mountain",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "021fa322-f38c-4d94-8122-5b13425106d9",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/0/2/021fa322-f38c-4d94-8122-5b13425106d9.jpg?1771345172",
-      "cmc": 0,
-      "type_line": "Basic Land — Mountain",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "021fa322-f38c-4d94-8122-5b13425106d9",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/0/2/021fa322-f38c-4d94-8122-5b13425106d9.jpg?1771345172",
-      "cmc": 0,
-      "type_line": "Basic Land — Mountain",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "021fa322-f38c-4d94-8122-5b13425106d9",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/0/2/021fa322-f38c-4d94-8122-5b13425106d9.jpg?1771345172",
-      "cmc": 0,
-      "type_line": "Basic Land — Mountain",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "021fa322-f38c-4d94-8122-5b13425106d9",
-      "name": "Mountain",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/0/2/021fa322-f38c-4d94-8122-5b13425106d9.jpg?1771345172",
-      "cmc": 0,
-      "type_line": "Basic Land — Mountain",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
-      "cmc": 0,
-      "type_line": "Basic Land — Island",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
-      "cmc": 0,
-      "type_line": "Basic Land — Island",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
-      "cmc": 0,
-      "type_line": "Basic Land — Island",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
-      "cmc": 0,
-      "type_line": "Basic Land — Island",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
-      "cmc": 0,
-      "type_line": "Basic Land — Island",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
-      "cmc": 0,
-      "type_line": "Basic Land — Island",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
-      "cmc": 0,
-      "type_line": "Basic Land — Island",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
-      "cmc": 0,
-      "type_line": "Basic Land — Island",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
-      "cmc": 0,
-      "type_line": "Basic Land — Island",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "2dfe1926-c0d5-40a2-b1aa-988524aefc31",
-      "name": "Plains",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg?1771345154",
-      "cmc": 0,
-      "type_line": "Basic Land — Plains",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "e43ac31a-942e-4871-be29-426e19e52701",
-      "name": "Swamp",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/e/4/e43ac31a-942e-4871-be29-426e19e52701.jpg?1771345166",
-      "cmc": 0,
-      "type_line": "Basic Land — Swamp",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "e43ac31a-942e-4871-be29-426e19e52701",
-      "name": "Swamp",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/e/4/e43ac31a-942e-4871-be29-426e19e52701.jpg?1771345166",
-      "cmc": 0,
-      "type_line": "Basic Land — Swamp",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "e43ac31a-942e-4871-be29-426e19e52701",
-      "name": "Swamp",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/e/4/e43ac31a-942e-4871-be29-426e19e52701.jpg?1771345166",
-      "cmc": 0,
-      "type_line": "Basic Land — Swamp",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "e43ac31a-942e-4871-be29-426e19e52701",
-      "name": "Swamp",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/e/4/e43ac31a-942e-4871-be29-426e19e52701.jpg?1771345166",
-      "cmc": 0,
-      "type_line": "Basic Land — Swamp",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "e43ac31a-942e-4871-be29-426e19e52701",
-      "name": "Swamp",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/e/4/e43ac31a-942e-4871-be29-426e19e52701.jpg?1771345166",
-      "cmc": 0,
-      "type_line": "Basic Land — Swamp",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "e43ac31a-942e-4871-be29-426e19e52701",
-      "name": "Swamp",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/e/4/e43ac31a-942e-4871-be29-426e19e52701.jpg?1771345166",
-      "cmc": 0,
-      "type_line": "Basic Land — Swamp",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "e43ac31a-942e-4871-be29-426e19e52701",
-      "name": "Swamp",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/e/4/e43ac31a-942e-4871-be29-426e19e52701.jpg?1771345166",
-      "cmc": 0,
-      "type_line": "Basic Land — Swamp",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "e43ac31a-942e-4871-be29-426e19e52701",
-      "name": "Swamp",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/e/4/e43ac31a-942e-4871-be29-426e19e52701.jpg?1771345166",
-      "cmc": 0,
-      "type_line": "Basic Land — Swamp",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "e43ac31a-942e-4871-be29-426e19e52701",
-      "name": "Swamp",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/e/4/e43ac31a-942e-4871-be29-426e19e52701.jpg?1771345166",
-      "cmc": 0,
-      "type_line": "Basic Land — Swamp",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "e43ac31a-942e-4871-be29-426e19e52701",
-      "name": "Swamp",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/e/4/e43ac31a-942e-4871-be29-426e19e52701.jpg?1771345166",
-      "cmc": 0,
-      "type_line": "Basic Land — Swamp",
-      "mana_cost": "",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "836f371b-34f5-40e8-a806-e457841e5bc7",
-      "name": "Island",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/8/3/836f371b-34f5-40e8-a806-e457841e5bc7.jpg?1771345160",
-      "cmc": 0,
-      "type_line": "Basic Land — Island",
-      "mana_cost": "",
-      "keywords": []
     },
     {
       "scryfall_id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
@@ -756,8 +207,256 @@
       "keywords": [
         "Lifelink"
       ]
+    },
+    {
+      "scryfall_id": "17d154d3-7ae5-43ff-9978-d974285e2c89",
+      "name": "Glorious Anthem",
+      "rarity": "rare",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/7/17d154d3-7ae5-43ff-9978-d974285e2c89.jpg?1594734982",
+      "cmc": 3,
+      "type_line": "Enchantment",
+      "mana_cost": "{1}{W}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "e32c67d1-187f-40df-b3b3-6036f5c92834",
+      "name": "Heroic Intervention",
+      "rarity": "rare",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/3/e32c67d1-187f-40df-b3b3-6036f5c92834.jpg?1689998584",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "80b2fb65-5868-4cab-b45d-e103558ce7dc",
+      "name": "Sanctum of Calm Waters",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/8/0/80b2fb65-5868-4cab-b45d-e103558ce7dc.jpg?1594735727",
+      "cmc": 4,
+      "type_line": "Legendary Enchantment — Shrine",
+      "mana_cost": "{3}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "3ca38f4d-01f5-4a02-9000-01261a440dbf",
+      "name": "Heartfire Immolator",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/c/3ca38f4d-01f5-4a02-9000-01261a440dbf.jpg?1730489344",
+      "cmc": 2,
+      "type_line": "Creature — Human Wizard",
+      "mana_cost": "{1}{R}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Prowess"
+      ]
+    },
+    {
+      "scryfall_id": "9e0fa0b6-5f3f-4669-84e8-2c38c9593d88",
+      "name": "Garruk's Harbinger",
+      "rarity": "rare",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/e/9e0fa0b6-5f3f-4669-84e8-2c38c9593d88.jpg?1595022082",
+      "cmc": 3,
+      "type_line": "Creature — Beast",
+      "mana_cost": "{1}{G}{G}",
+      "power": "4",
+      "toughness": "3",
+      "keywords": [
+        "Hexproof from",
+        "Hexproof"
+      ]
+    },
+    {
+      "scryfall_id": "b58c4033-f764-42f6-966f-b7202a2babbf",
+      "name": "Garruk's Uprising",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/5/b58c4033-f764-42f6-966f-b7202a2babbf.jpg?1767731186",
+      "cmc": 3,
+      "type_line": "Enchantment",
+      "mana_cost": "{2}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "d6467d96-e43a-4b1e-b6ce-578d991077b5",
+      "name": "Secure the Scene",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/6/d6467d96-e43a-4b1e-b6ce-578d991077b5.jpg?1594735209",
+      "cmc": 5,
+      "type_line": "Sorcery",
+      "mana_cost": "{4}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "fb4733e6-6fe2-4460-ac9f-82feb583d790",
+      "name": "Falconer Adept",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/b/fb4733e6-6fe2-4460-ac9f-82feb583d790.jpg?1594734928",
+      "cmc": 4,
+      "type_line": "Creature — Human Soldier",
+      "mana_cost": "{3}{W}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "73148b3b-73d3-4f57-8b67-1e91fbe112b9",
+      "name": "Feat of Resistance",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/3/73148b3b-73d3-4f57-8b67-1e91fbe112b9.jpg?1595640319",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "d2e3b99c-e48e-4f4d-ba7a-e9218137b432",
+      "name": "Gale Swooper",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/2/d2e3b99c-e48e-4f4d-ba7a-e9218137b432.jpg?1594734966",
+      "cmc": 4,
+      "type_line": "Creature — Griffin",
+      "mana_cost": "{3}{W}",
+      "power": "3",
+      "toughness": "2",
+      "keywords": [
+        "Flying"
+      ]
+    },
+    {
+      "scryfall_id": "17b59819-4746-4c67-b6e5-4157d498a065",
+      "name": "Vryn Wingmare",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/7/17b59819-4746-4c67-b6e5-4157d498a065.jpg?1594735361",
+      "cmc": 3,
+      "type_line": "Creature — Pegasus",
+      "mana_cost": "{2}{W}",
+      "power": "2",
+      "toughness": "1",
+      "keywords": [
+        "Flying"
+      ]
+    },
+    {
+      "scryfall_id": "3d70dcbe-0b90-40b4-8a54-e5218b7135b1",
+      "name": "Swift Response",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/d/3d70dcbe-0b90-40b4-8a54-e5218b7135b1.jpg?1689996091",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "ddf5db14-f2aa-4088-9894-7bd3a56dfe1e",
+      "name": "Angelic Page",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/d/ddf5db14-f2aa-4088-9894-7bd3a56dfe1e.jpg?1600715409",
+      "cmc": 2,
+      "type_line": "Creature — Angel Spirit",
+      "mana_cost": "{1}{W}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Flying"
+      ]
+    },
+    {
+      "scryfall_id": "082b52c9-c46e-44d3-b723-546ba528e07b",
+      "name": "Dismal Backwater",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/082b52c9-c46e-44d3-b723-546ba528e07b.jpg?1743697562",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "6f1bace4-a327-4eb6-a6ef-8394e76c06b7",
+      "name": "Experimental Overload",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/f/6f1bace4-a327-4eb6-a6ef-8394e76c06b7.jpg?1594737377",
+      "cmc": 4,
+      "type_line": "Sorcery",
+      "mana_cost": "{2}{U}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b0ad6c2f-9c26-496d-9079-adf1fec08a59",
+      "name": "Goremand",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/0/b0ad6c2f-9c26-496d-9079-adf1fec08a59.jpg?1689997203",
+      "cmc": 6,
+      "type_line": "Creature — Demon",
+      "mana_cost": "{4}{B}{B}",
+      "power": "5",
+      "toughness": "5",
+      "keywords": [
+        "Flying",
+        "Trample"
+      ]
+    },
+    {
+      "scryfall_id": "80b2fb65-5868-4cab-b45d-e103558ce7dc",
+      "name": "Sanctum of Calm Waters",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/8/0/80b2fb65-5868-4cab-b45d-e103558ce7dc.jpg?1594735727",
+      "cmc": 4,
+      "type_line": "Legendary Enchantment — Shrine",
+      "mana_cost": "{3}{U}",
+      "keywords": []
     }
   ],
-  "cardCount": 61,
-  "lastUpdated": "2026-03-29T23:21:24.545Z"
+  "cardCount": 30,
+  "lastUpdated": "2026-03-30T21:59:43.048Z"
 }

@@ -78,5 +78,6 @@ export interface Room {
   isNormalMatch?: boolean;
   draftState?: DraftState;
   gameState?: GameState;
+  checkpoint?: GameState; // DEBUG: Saved game state
   serverTime?: number;
 }

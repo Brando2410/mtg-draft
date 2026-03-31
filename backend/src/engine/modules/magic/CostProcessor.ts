@@ -1,5 +1,6 @@
-import { GameState, GameObject, PlayerId, GameObjectId, AbilityCost, RestrictionType } from '@shared/engine_types';
+import { GameState, GameObject, PlayerId, GameObjectId, AbilityCost, RestrictionType, Zone } from '@shared/engine_types';
 import { ManaProcessor } from './ManaProcessor';
+import { ActionProcessor } from '../actions/ActionProcessor';
 
 /**
  * Rules Engine Module: Cost Processing (Rule 601.2h / 101.1)
@@ -11,12 +12,12 @@ export class CostProcessor {
    * Returns true if all costs in the list are currently payable.
    * Checks for restrictions like "Cannot Tap" (Rule 101.1).
    */
-  public static canPay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId): boolean {
+  public static canPay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId, playerId: PlayerId): boolean {
     const source = this.findObject(state, sourceId);
     if (!source) return false;
 
     for (const cost of costs) {
-      if (!this.canPaySingle(state, cost, source)) {
+      if (!this.canPaySingle(state, cost, source, playerId)) {
         return false;
       }
     }
@@ -27,96 +28,106 @@ export class CostProcessor {
    * Executes the payment for all costs.
    * Note: This assumes canPay has already been checked.
    */
-  public static pay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId) {
+  public static pay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId, playerId: PlayerId, log: (m: string) => void) {
     const source = this.findObject(state, sourceId);
     if (!source) return;
 
     for (const cost of costs) {
-      this.paySingle(state, cost, source);
+      this.paySingle(state, cost, source, playerId, log);
     }
   }
 
-  private static canPaySingle(state: GameState, cost: AbilityCost, source: GameObject): boolean {
+  private static canPaySingle(state: GameState, cost: AbilityCost, source: GameObject, playerId: PlayerId): boolean {
+    const player = state.players[playerId];
+    if (!player) return false;
+
     switch (cost.type) {
       case 'Tap':
-        // 1. Is it already tapped?
         if (source.isTapped) return false;
-
-        // 2. Summoning Sickness (Rule 302.6)
-        const typeLine = (source.definition.type_line || '').toLowerCase();
-        if (typeLine.includes('creature') && source.summoningSickness) {
-           // Note: Unless it has Haste (Layer 6 keyword check)
+        
+        // Rule 302.6: Summoning Sickness applies to tap abilities of creatures
+        if (source.definition.types.includes('Creature') && source.summoningSickness) {
+           // Haste check should be here (simplified for now as Haste is in effectiveStats)
            return false; 
         }
 
-        // 3. Global Restrictions (The "Can't Tap" aura scenario)
         const hasRestriction = state.ruleRegistry.restrictions.some(r => 
           r.type === RestrictionType.CannotTap && 
           (r.targetId === source.id || (r.targetControllerId === source.controllerId && !r.targetId))
         );
         if (hasRestriction) return false;
-
         return true;
 
       case 'Mana':
-        // Check if player has the mana in pool
-        return this.canAffordMana(state, source.controllerId, cost.value);
+        return ManaProcessor.canPayWithTotal(player, state.battlefield, cost.value);
+
+      case 'Loyalty':
+        const val = parseInt(cost.value);
+        const current = source.counters.loyalty || 0;
+        return val >= 0 || current >= Math.abs(val);
+
+      case 'Sacrifice':
+        if (cost.restrictions && cost.restrictions.includes('Creature')) {
+           return state.battlefield.some(c => c.controllerId === playerId && c.definition.types.includes('Creature'));
+        }
+        return state.battlefield.some(c => c.controllerId === playerId);
+
+      case 'Discard':
+        return player.hand.length > 0;
+
+      case 'PayLife':
+        return player.life > (parseInt(cost.value) || 0);
 
       default:
         return false;
     }
   }
 
-  private static paySingle(state: GameState, cost: AbilityCost, source: GameObject) {
+  private static paySingle(state: GameState, cost: AbilityCost, source: GameObject, playerId: PlayerId, log: (m: string) => void) {
+    const player = state.players[playerId];
+    if (!player) return;
+
     switch (cost.type) {
       case 'Tap':
         source.isTapped = true;
         break;
+
       case 'Mana':
-        this.deductMana(state, source.controllerId, cost.value);
+        // Auto-tap logic is usually handled before calling pay() or inside playCard/activateAbility
+        // If we reach here, we assume mana is in the pool or we deduct it directly
+        ManaProcessor.deductManaCost(player, cost.value);
         break;
+
+      case 'Loyalty':
+        const lVal = parseInt(cost.value);
+        const oldL = source.counters.loyalty || 0;
+        source.counters.loyalty = oldL + lVal;
+        log(`${source.definition.name} loyalty: ${oldL} -> ${source.counters.loyalty}`);
+        break;
+
+      case 'Sacrifice':
+        // Simplified: just sacrifice the first valid source if not specified
+        // In a real version, this should trigger a pending action or take a parameter
+        const toSac = state.battlefield.find(c => c.controllerId === playerId && (!cost.restrictions || cost.restrictions.includes(c.definition.types[0])));
+        if (toSac) {
+            ActionProcessor.moveCard(state, toSac, Zone.Graveyard, playerId, log);
+        }
+        break;
+
+      case 'Discard':
+        // Should trigger DISCARD action
+        break;
+
+       case 'PayLife':
+         const lifeVal = parseInt(cost.value) || 0;
+         player.life -= lifeVal;
+         log(`${player.name} pays ${lifeVal} life (${player.life + lifeVal} -> ${player.life})`);
+         break;
     }
   }
-
-  /**
-   * Scans all available activated abilities to see if the player COULD 
-   * produce enough mana to pay a cost.
-   */
-  public static calculatePotentialMana(state: GameState, playerId: PlayerId): Record<string, number> {
-    const potential: Record<string, number> = { ...state.players[playerId].manaPool };
-    
-    // Find all mana abilities controlled by this player
-    const manaAbilities = state.ruleRegistry.activatedAbilities.filter(a => 
-      a.controllerId === playerId && a.isManaAbility
-    );
-
-    for (const ability of manaAbilities) {
-      if (this.canPay(state, ability.costs, ability.sourceId)) {
-        // Simple proxy: assume fixed mana production for now
-        // In a real version, we'd parse the effect of the ability
-        potential['G'] = (potential['G'] || 0) + 1; 
-      }
-    }
-
-    return potential;
-  }
-
-  // --- Utilities ---
 
   private static findObject(state: GameState, id: GameObjectId): GameObject | undefined {
     return state.battlefield.find(o => o.id === id) || 
            state.exile.find(o => o.id === id);
-  }
-
-  private static canAffordMana(state: GameState, playerId: PlayerId, manaCostStrings: string): boolean {
-    const player = state.players[playerId];
-    if (!player) return false;
-    return ManaProcessor.canPayManaCost(player, manaCostStrings);
-  }
-
-  private static deductMana(state: GameState, playerId: PlayerId, manaCostStrings: string) {
-    const player = state.players[playerId];
-    if (!player) return;
-    ManaProcessor.deductManaCost(player, manaCostStrings);
   }
 }

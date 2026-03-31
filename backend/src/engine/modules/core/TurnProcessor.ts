@@ -5,6 +5,30 @@ import { GameState, Phase, Step, PlayerId } from '@shared/engine_types';
  */
 export class TurnProcessor {
 
+  public static getNextStep(state: GameState): { phase: Phase, step: Step, turnEnded: boolean } {
+    let next = this.calculateNextStep(state.currentPhase, state.currentStep);
+    
+    // 1. Skip Combat Phase if no potential attackers (Rule 500.4)
+    if (next.phase === Phase.Combat && next.step === Step.BeginningOfCombat && !this.hasPotentialAttackers(state, state.activePlayerId)) {
+      next = { phase: Phase.PostCombatMain, step: Step.Main, turnEnded: false };
+    }
+
+    // 2. Skip Declare Blockers if no potential blockers (Rule 509)
+    if (next.step === Step.DeclareBlockers) {
+      const defenderId = Object.keys(state.players).find(id => id !== state.activePlayerId);
+      const attackerCount = (state.combat?.attackers || []).length;
+      
+      if (attackerCount === 0) {
+        next = { phase: Phase.Combat, step: Step.EndOfCombat, turnEnded: false };
+      }
+      else if (defenderId && !this.hasPotentialBlockers(state, defenderId)) {
+        next = { phase: Phase.Combat, step: Step.CombatDamage, turnEnded: false };
+      }
+    }
+
+    return next;
+  }
+
   public static calculateNextStep(phase: Phase, step: Step): { phase: Phase, step: Step, turnEnded: boolean } {
     // Rule 500: Full sequence order
     const sequence = [

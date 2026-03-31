@@ -113,6 +113,8 @@ export class LayerProcessor {
        switch (effect.targetMapping) {
          case 'ALL_CREATURES_YOU_CONTROL':
            return obj.controllerId === effect.controllerId && obj.definition.types.some(t => t.toLowerCase() === 'creature');
+         case 'ALL_PERMANENTS_YOU_CONTROL':
+           return obj.controllerId === effect.controllerId;
          case 'OTHER_CREATURES_YOU_CONTROL':
            return obj.id !== effect.sourceId && obj.controllerId === effect.controllerId && obj.definition.types.some(t => t.toLowerCase() === 'creature');
        }
@@ -138,5 +140,31 @@ export class LayerProcessor {
    */
   public static hasKeyword(obj: GameObject, state: GameState, keyword: string): boolean {
     return this.getEffectiveKeywords(obj, state).includes(keyword);
+  }
+  /**
+   * Batch updates all derived fields (P/T, Keywords, isPlayable) for all relevant objects.
+   * This should be called after any rule-changing event or zone transition.
+   */
+  public static updateDerivedStats(state: GameState, PriorityProcessor: any) {
+    // 1. Update Battlefield objects
+    state.battlefield.forEach(obj => {
+        const stats = this.getEffectiveStats(obj, state);
+        obj.effectiveStats = {
+            ...stats,
+            isPlayable: state.priorityPlayerId === obj.controllerId && PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id)
+        };
+    });
+
+    // 2. Update Hand cards
+    Object.values(state.players).forEach(player => {
+        player.hand.forEach(card => {
+            card.effectiveStats = {
+                power: parseInt(card.definition.power || '0') || 0,
+                toughness: parseInt(card.definition.toughness || '0') || 0,
+                keywords: card.definition.keywords || [],
+                isPlayable: state.priorityPlayerId === player.id && PriorityProcessor.canObjectBePlayed(state, player.id, card.id)
+            };
+        });
+    });
   }
 }

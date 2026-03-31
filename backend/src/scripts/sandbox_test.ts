@@ -19,7 +19,8 @@ async function runSandbox() {
         hasPlayedLandThisTurn: false,
         fullControl: false,
         maxHandSize: 7,
-        pendingDiscardCount: 0
+        pendingDiscardCount: 0,
+        manaCheat: false
     });
 
     const state: GameState = {
@@ -79,6 +80,8 @@ async function runSandbox() {
             keywords: [],
             isTapped: false,
             damageMarked: 0,
+            deathtouchMarked: false,
+            isPhasedOut: false,
             summoningSickness: true,
             abilitiesUsedThisTurn: 0,
             faceDown: false

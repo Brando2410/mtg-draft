@@ -110,7 +110,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 targetDefinition: { type: 'Permanent', count: 1, optional: true, restrictions: ['Creature'] },
                 effects: [
                     { type: 'AddCounters', amount: 1, value: '+1/+1', targetMapping: 'TARGET_1' },
-                    { type: 'ApplyContinuousEffect', duration: 'UntilEndOfTurn', abilitiesToAdd: ['Indestructible'], layer: 6, targetMapping: 'TARGET_1' }
+                    { type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Indestructible'], layer: 6, targetMapping: 'TARGET_1' }
                 ]
             },
             {

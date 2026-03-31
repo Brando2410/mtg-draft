@@ -11,110 +11,138 @@ export class TriggerProcessor {
    * Main entry point for any game event (LifeGain, ETB, Death, etc.)
    * Rule 603.3: "Once an ability has triggered, its controller puts it on the stack..."
    */
+  /**
+   * Main entry point for any game event (LifeGain, ETB, Death, etc.)
+   * Rule 603.3: "Once an ability has triggered, its controller puts it on the stack..."
+   */
   public static onEvent(state: GameState, event: GameEvent, log: (msg: string) => void) {
-    // 1. Find all matching triggers on the "Whiteboard"
-    const triggers = state.ruleRegistry.triggeredAbilities.filter(t => {
-      // Check if the event type matches (e.g. 'ON_ETB')
-      if ((t as any).triggerEvent !== event.type && t.eventMatch !== event.type) return false;
+    // 1. Identify all triggered abilities that match this event (Rule 603.2)
+    const matchingTriggers = state.ruleRegistry.triggeredAbilities.filter(t => {
+      // Logic for event matching (supports legacy and new schemas)
+      const eventType = (t as any).triggerEvent || t.eventMatch;
+      if (eventType !== event.type) return false;
 
-      // Check if the source card is in a valid zone (Rule 603.2)
-      if (!this.isSourceInValidZone(state, t, event.type)) return false;
+      // Rule 603.2: Triggered abilities only function in their active zone (usually Battlefield)
+      if (!this.checkZoneRequirement(state, t, event.type)) return false;
 
-      // Evaluate condition (Rule 603.4)
+      // Rule 603.4: "Intervening If" clauses and dynamic conditions
       const condition = (t as any).triggerCondition || t.condition;
       if (condition && !condition(state, event, t)) return false;
 
       return true;
     });
 
-    if (triggers.length === 0) return;
+    if (matchingTriggers.length === 0) return;
 
-    // 2. Sort by APNAP order...
-    const sortedTriggers = this.sortByAPNAP(state, triggers);
+    // 2. Sort by APNAP order (Rule 101.4)
+    // All triggers belonging to the Active Player go on the stack first, then the Non-Active Players.
+    const sortedTriggers = this.sortByAPNAP(state, matchingTriggers);
 
-    // 3. Put them on the stack
+    // 3. Move triggers from registration to the Stack (Rule 603.3)
     for (const trigger of sortedTriggers) {
-      const sourceName = state.battlefield.find(o => o.id === trigger.sourceId)?.definition.name || trigger.sourceId;
-      log(`[TRIGGER] ${sourceName} triggered by ${event.type}: ${(trigger as any).oracleText || ''}`);
-
-      const stackId = `trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-      const stackObj: any = {
-        id: stackId,
-        controllerId: trigger.controllerId,
-        sourceId: trigger.sourceId,
-        type: 'TriggeredAbility',
-        name: (state.battlefield.find(o => o.id === trigger.sourceId)?.definition.name || 'Unknown') + "'s Trigger",
-        oracleText: (trigger as any).oracleText || 'Resolving trigger...',
-        targets: [], 
-        abilityIndex: (trigger as any).abilityIndex,
-        data: { 
-            effects: (trigger as any).effects || [],
-            targetDefinition: (trigger as any).targetDefinition
-        }
-      };
-
-      state.stack.push(stackObj);
-      state.consecutivePasses = 0; // Rule 117.4: Reset pass count when stack is added to
-
-      // Rule 603.3d: If the trigger requires targets, the controller chooses them now.
-      const targetDef = (trigger as any).targetDefinition;
-      if (targetDef) {
-         const legalTargetIds = state.battlefield
-            .filter(o => ValidationProcessor.isLegalTarget(state, trigger.sourceId, o.id, targetDef))
-            .map(o => o.id);
-
-         if (legalTargetIds.length === 0) {
-            if (targetDef.optional) {
-               log(`No legal targets found for ${sourceName}'s optional trigger. Continuing with zero targets.`);
-               // Ability stays on stack but requires no targets
-               const onStack = state.stack.find(s => s.id === stackId);
-               if (onStack) onStack.targets = [];
-               continue;
-            } else {
-               log(`[ERROR] No legal targets for ${sourceName}'s required trigger. Trigger removed from stack (Rule 603.3d).`);
-               state.stack = state.stack.filter(s => s.id !== stackId);
-               continue;
-            }
-         }
-
-         state.pendingAction = {
-            type: 'TARGETING',
-            playerId: trigger.controllerId,
-            sourceId: trigger.sourceId,
-            data: { 
-                stackId: stackId,
-                targetDefinition: targetDef,
-                legalTargetIds: legalTargetIds,
-                optional: targetDef.optional
-            }
-         };
-         state.priorityPlayerId = trigger.controllerId;
-         log(`[TARGETING] Player ${state.players[trigger.controllerId]?.name} must choose targets for ${sourceName}'s trigger: ${(trigger as any).oracleText}`);
-      }
+      this.putTriggerOnStack(state, trigger, event, log);
     }
   }
 
-  private static isSourceInValidZone(state: GameState, trigger: TriggeredAbility, eventType?: string): boolean {
-    // Rule 603.10: Leaves-the-battlefield abilities look back in time.
-    // If it's a death trigger, it triggers regardless of whether the source is still on the battlefield
-    // because it just moved to the graveyard.
-    if (eventType === 'ON_DEATH') return true;
+  private static putTriggerOnStack(state: GameState, trigger: TriggeredAbility, event: GameEvent, log: (msg: string) => void) {
+    const sourceObj = state.battlefield.find(o => o.id === trigger.sourceId) || 
+                      state.exile.find(o => o.id === trigger.sourceId);
+    
+    const sourceName = sourceObj?.definition.name || "Unknown Source";
+    
+    // Create the Stack Object (Rule 608.2)
+    const stackId = `trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    const stackObj: any = {
+      id: stackId,
+      controllerId: trigger.controllerId,
+      sourceId: trigger.sourceId,
+      type: 'TriggeredAbility',
+      name: `${sourceName}'s Trigger`,
+      oracleText: (trigger as any).oracleText || `Triggered by ${event.type}`,
+      targets: [], 
+      abilityIndex: (trigger as any).abilityIndex,
+      data: { 
+          effects: (trigger as any).effects || [],
+          targetDefinition: (trigger as any).targetDefinition
+      }
+    };
+
+    state.stack.push(stackObj);
+    state.consecutivePasses = 0; // Rule 117.4: Reset pass count
+
+    // Rule 603.3d: Choice of targets occurs as the ability is put on the stack.
+    const targetDef = (trigger as any).targetDefinition;
+    if (targetDef) {
+       this.initializeTriggerTargeting(state, trigger, stackId, targetDef, sourceName, log);
+    } else {
+       log(`[TRIGGER] ${sourceName} triggered by ${event.type}.`);
+    }
+  }
+
+  private static initializeTriggerTargeting(
+    state: GameState, 
+    trigger: TriggeredAbility, 
+    stackId: string, 
+    targetDef: any, 
+    sourceName: string, 
+    log: (m: string) => void
+  ) {
+    const legalTargetIds = [
+        ...state.battlefield.map(o => o.id),
+        ...Object.keys(state.players)
+    ].filter(tid => ValidationProcessor.isLegalTarget(state, trigger.sourceId, tid, targetDef));
+
+    if (legalTargetIds.length === 0) {
+       // Rule 603.3d: If no legal targets can be chosen, it's removed from the stack unless optional.
+       if (targetDef.optional) {
+          log(`[TRIGGER] ${sourceName}: No legal targets. Optional trigger skipped.`);
+          const onStack = state.stack.find(s => s.id === stackId);
+          if (onStack) onStack.targets = [];
+       } else {
+          log(`[ERROR] ${sourceName}: No legal targets for required trigger. Ability removed (Rule 603.3d).`);
+          state.stack = state.stack.filter(s => s.id !== stackId);
+       }
+       return;
+    }
+
+    // Set up the interactive targeting session (Rule 117)
+    state.pendingAction = {
+       type: 'TARGETING',
+       playerId: trigger.controllerId,
+       sourceId: trigger.sourceId,
+       data: { 
+           stackId: stackId,
+           targetDefinition: targetDef,
+           legalTargetIds: legalTargetIds,
+           optional: targetDef.optional
+       }
+    };
+    state.priorityPlayerId = trigger.controllerId;
+    log(`[TARGETING] ${state.players[trigger.controllerId]?.name} choosing targets for ${sourceName}.`);
+  }
+
+  private static checkZoneRequirement(state: GameState, trigger: TriggeredAbility, eventType: string): boolean {
+    // Rule 603.10: "Leaves-the-battlefield" abilities look back in time.
+    if (eventType === 'ON_DEATH' || eventType === 'ON_LEAVE_BATTLEFIELD') return true;
 
     const activeZone = (trigger as any).activeZone || Zone.Battlefield;
     if (activeZone === 'Any') return true;
 
     const sourceId = trigger.sourceId;
+    
+    // Check if source object is currently in the required zone
+    const isInBattlefield = state.battlefield.some(o => o.id === sourceId);
+    if (activeZone === Zone.Battlefield) return isInBattlefield;
 
-    if (activeZone === Zone.Battlefield) return state.battlefield.some(o => o.id === sourceId);
-    if (activeZone === Zone.Graveyard) {
-      return Object.values(state.players).some(p => p.graveyard.some(o => o.id === sourceId));
-    }
-    if (activeZone === Zone.Hand) {
-      return Object.values(state.players).some(p => p.hand.some(o => o.id === sourceId));
-    }
+    const isInGraveyard = Object.values(state.players).some(p => p.graveyard.some(o => o.id === sourceId));
+    if (activeZone === Zone.Graveyard) return isInGraveyard;
+
+    const isInHand = Object.values(state.players).some(p => p.hand.some(o => o.id === sourceId));
+    if (activeZone === Zone.Hand) return isInHand;
 
     return false;
   }
+
 
   private static sortByAPNAP(state: GameState, triggers: TriggeredAbility[]): TriggeredAbility[] {
     const activePlayerId = state.activePlayerId;

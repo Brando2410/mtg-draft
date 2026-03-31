@@ -140,24 +140,43 @@ export class CombatProcessor {
     const isFirstStrikeStep = state.currentStep === Step.FirstStrikeDamage;
     const assignments: { sourceId: string, targetId: string, amount: number }[] = [];
 
-    // 1. Attacker Damage Assignment (Rule 510.1c)
+    // 1. Assign Attacker Damage (Rule 510.1c)
+    this.assignAttackerDamage(state, isFirstStrikeStep, assignments, log);
+
+    // 2. Assign Blocker Damage (Rule 510.1d)
+    this.assignBlockerDamage(state, isFirstStrikeStep, assignments, log);
+
+    // 3. APPLY ALL DAMAGE SIMULTANEOUSLY (Rule 510.2)
+    // "Damage assigned by all creatures is dealt at the same time."
+    for (const a of assignments) {
+        DamageProcessor.dealDamage(state, a.sourceId, a.targetId, a.amount, true, log);
+    }
+
+    // 4. Trigger State-Based Actions (Rule 704)
+    // Critical: If in FS, dead creatures must be removed BEFORE Regular Damage Step
+    const { StateBasedActionsProcessor } = require('./../state/StateBasedActionsProcessor');
+    StateBasedActionsProcessor.resolveSBAs(state, log);
+
+    // Only clear combat state after the FINAL damage step
+    if (!isFirstStrikeStep) {
+       state.combat = undefined;
+    }
+  }
+
+  private static assignAttackerDamage(state: GameState, isFS: boolean, assignments: { sourceId: string, targetId: string, amount: number }[], log: (m: string) => void) {
+    if (!state.combat) return;
+
     for (const attack of state.combat.attackers) {
       const attacker = state.battlefield.find(c => c.id === attack.attackerId);
       if (!attacker) continue;
 
       const aStats = LayerProcessor.getEffectiveStats(attacker, state);
       
-      // First Strike Step Logic (Rule 511.1)
+      // Filter for First Strike compatibility (Rule 511.1)
       const hasFS = aStats.keywords.includes('First Strike');
       const hasDS = aStats.keywords.includes('Double Strike');
-      if (isFirstStrikeStep) {
-          if (!hasFS && !hasDS) continue;
-      } else {
-          // Regular step: Only if it hasn't dealt FS damage or has DS
-          // Note: If no one has FS, we proceed directly to CombatDamage
-          // But if we had a FS step, then only non-FS and DS deal damage now
-          if (this.hasFirstStrikeStep(state) && hasFS && !hasDS) continue;
-      }
+      if (isFS && !hasFS && !hasDS) continue;
+      if (!isFS && this.hasFirstStrikeStep(state) && hasFS && !hasDS) continue;
 
       const aPower = aStats.power;
       if (aPower <= 0) continue;
@@ -165,10 +184,10 @@ export class CombatProcessor {
       const blockers = state.combat.blockers.filter(b => b.attackerId === attack.attackerId);
       
       if (blockers.length === 0) {
-        // UNBLOCKED: Damage to Player or Planeswalker (510.1c)
+        // UNBLOCKED: Rule 510.1c
         assignments.push({ sourceId: attacker.id, targetId: attack.targetId, amount: aPower });
       } else {
-        // BLOCKED: Damage to Creatures (Rule 510.1c)
+        // BLOCKED: Rule 510.1c
         const order = attack.order || blockers.map(b => b.blockerId);
         let remainingPower = aPower;
         const hasDeathtouch = aStats.keywords.includes('Deathtouch');
@@ -195,32 +214,29 @@ export class CombatProcessor {
         }
       }
     }
+  }
 
-    // 2. Blocker Damage Assignment (Rule 510.1d)
-    const activeBlockers = state.combat.blockers;
-    for (const b of activeBlockers) {
+  private static assignBlockerDamage(state: GameState, isFS: boolean, assignments: { sourceId: string, targetId: string, amount: number }[], log: (m: string) => void) {
+    if (!state.combat) return;
+
+    for (const b of state.combat.blockers) {
         const blockerObj = state.battlefield.find(c => c.id === b.blockerId);
         if (!blockerObj) continue;
 
         const bStats = LayerProcessor.getEffectiveStats(blockerObj, state);
-
         const hasFS = bStats.keywords.includes('First Strike');
         const hasDS = bStats.keywords.includes('Double Strike');
-        if (isFirstStrikeStep) {
-            if (!hasFS && !hasDS) continue;
-        } else {
-            if (this.hasFirstStrikeStep(state) && hasFS && !hasDS) continue;
-        }
+        if (isFS && !hasFS && !hasDS) continue;
+        if (!isFS && this.hasFirstStrikeStep(state) && hasFS && !hasDS) continue;
 
         const bPower = bStats.power;
         if (bPower <= 0) continue;
 
-        const attackersBlocked = activeBlockers.filter(ab => ab.blockerId === b.blockerId);
-        
-        if (attackersBlocked.length === 1) {
-            assignments.push({ sourceId: blockerObj.id, targetId: attackersBlocked[0].attackerId, amount: bPower });
+        const blockedAttackers = state.combat.blockers.filter(ab => ab.blockerId === b.blockerId);
+        if (blockedAttackers.length === 1) {
+            assignments.push({ sourceId: blockerObj.id, targetId: blockedAttackers[0].attackerId, amount: bPower });
         } else {
-            const order = b.order || attackersBlocked.map(a => a.attackerId);
+            const order = b.order || blockedAttackers.map(a => a.attackerId);
             let remainingPower = bPower;
             const hasDeathtouch = bStats.keywords.includes('Deathtouch');
 
@@ -240,20 +256,6 @@ export class CombatProcessor {
             }
         }
     }
-
-    // 3. APPLY ALL DAMAGE SIMULTANEOUSLY (Rule 510.2)
-    for (const a of assignments) {
-        DamageProcessor.dealDamage(state, a.sourceId, a.targetId, a.amount, true, log);
-    }
-
-    // 4. Trigger State-Based Actions (Rule 704)
-    // Critical: If in First Strike, dead creatures must be removed BEFORE Regular Damage Step
-    const { StateBasedActionsProcessor } = require('../state/StateBasedActionsProcessor');
-    StateBasedActionsProcessor.resolveSBAs(state, log);
-
-    // Only clear combat state after the FINAL damage step
-    if (!isFirstStrikeStep) {
-       state.combat = undefined;
-    }
   }
+
 }

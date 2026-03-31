@@ -1,9 +1,11 @@
 import { Server, Socket } from 'socket.io';
-import { Room, PlayerId } from '@shared/types';
+import { Room } from '@shared/types';
+import { PlayerId, Zone } from '@shared/engine_types';
 import { DraftService } from '../../services/DraftService';
 import { BotLogic } from '../../bots/BotLogic';
 import { PersistenceService } from '../../services/PersistenceService';
 import { LoggerService } from '../../services/LoggerService';
+import { oracle } from '../../engine/OracleLogicMap';
 import { GameEngine } from '../../engine/GameEngine';
 
 export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<string, Room>) => {
@@ -21,7 +23,11 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
   socket.on('start_draft', async ({ roomId, deck }) => {
     const room = rooms.get(roomId);
-    if (!room || room.host !== socket.id) return;
+    if (!room) return;
+    
+    // Use persistent ID for authorization
+    const isHost = room.host === socket.id || room.hostPlayerId === socket.data.playerId;
+    if (!isHost) return;
 
     if (room.isNormalMatch) {
        // Load default deck if missing
@@ -292,4 +298,141 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       console.warn(`[SOCKET] Resolve ordering error:`, error);
     }
   });
+
+  /* --- DEBUG COMMANDS --- */
+
+  socket.on('debug_reset_game', async ({ roomId }) => {
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    const playerIds = room.players.map(p => p.playerId as PlayerId);
+    const decksByPlayer: Record<string, any[]> = {};
+    const playerNames: Record<string, string> = {};
+
+    const defaultDeck = await PersistenceService.getDeck('m21_test_deck.json');
+
+    for (const p of room.players) {
+        const pDeck = (p as any).deck || defaultDeck;
+        decksByPlayer[p.playerId] = pDeck?.mainEntry || pDeck?.cards || [];
+        playerNames[p.playerId] = p.name;
+    }
+
+    const engine = new GameEngine(playerIds, decksByPlayer, playerNames);
+    engine.startGame();
+    
+    room.gameState = engine.getState();
+    room.gameState.logs.push(">> [DEBUG] GAME RESET BY ADMIN");
+    
+    io.to(roomId).emit('draft_update', room);
+    await PersistenceService.saveRooms(rooms);
+    console.log(`[DEBUG] Room ${roomId} has been reset.`);
+  });
+
+  socket.on('debug_add_life', async ({ roomId, playerId, amount }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+
+    const playerIds = room.players.map(p => p.playerId as PlayerId);
+    const engine = new GameEngine(playerIds);
+    engine.setState(room.gameState);
+
+    try {
+      engine.gainLife(playerId, amount);
+      room.gameState = engine.getState();
+      io.to(roomId).emit('draft_update', room);
+      await PersistenceService.saveRooms(rooms);
+    } catch (error) {
+      console.warn(`[SOCKET] Debug life error:`, error);
+    }
+  });
+
+  socket.on('debug_draw_card', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+
+    const playerIds = room.players.map(p => p.playerId as PlayerId);
+    const engine = new GameEngine(playerIds);
+    engine.setState(room.gameState);
+
+    try {
+      engine.drawCard(playerId);
+      room.gameState = engine.getState();
+      io.to(roomId).emit('draft_update', room);
+      await PersistenceService.saveRooms(rooms);
+    } catch (error) {
+      console.warn(`[SOCKET] Debug draw error:`, error);
+    }
+  });
+
+  socket.on('toggle_mana_cheat', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+    const player = room.gameState.players[playerId];
+    if (player) {
+      player.manaCheat = !player.manaCheat;
+      io.to(roomId).emit('draft_update', room);
+    }
+  });
+
+  socket.on('save_checkpoint', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room || room.hostPlayerId !== playerId) return;
+    room.checkpoint = JSON.parse(JSON.stringify(room.gameState));
+    io.to(roomId).emit('draft_update', room);
+    console.log(`[DEBUG] Checkpoint saved for room ${roomId}`);
+  });
+
+  socket.on('load_checkpoint', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room || room.hostPlayerId !== playerId) return;
+    const restoredState = JSON.parse(JSON.stringify(room.checkpoint));
+    if (restoredState) {
+        restoredState.logs.push(">> [DEBUG] GAME RESTORED FROM CHECKPOINT");
+        room.gameState = restoredState;
+        io.to(roomId).emit('draft_update', room);
+        console.log(`[DEBUG] Checkpoint restored for room ${roomId}`);
+    }
+  });
+
+  socket.on('debug_add_card', async ({ roomId, playerId, cardName }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+
+    const logic = oracle.getCard(cardName);
+    if (!logic) {
+        console.warn(`[DEBUG] Card logic not found for: ${cardName}`);
+        return;
+    }
+
+    const player = room.gameState.players[playerId];
+    if (!player) return;
+
+    const instanceId = `debug_${cardName}_${Date.now()}`;
+    const newCard: any = {
+        id: instanceId,
+        ownerId: playerId,
+        controllerId: playerId,
+        zone: Zone.Hand,
+        definition: {
+            name: cardName,
+            manaCost: logic.manaCost || "{0}",
+            types: logic.types || [],
+            oracleText: logic.oracleText || "",
+            image_url: logic.image_url || `https://cards.scryfall.io/normal/front/d/e/debug.jpg`,
+            ...logic
+        },
+        counters: {},
+        damageMarked: 0,
+        isTapped: false,
+        summoningSickness: false,
+        keywords: logic.keywords || []
+    };
+
+    player.hand.push(newCard);
+    room.gameState.logs.push(`>> [DEBUG] Added ${cardName} to ${player.name}'s hand.`);
+    io.to(roomId).emit('draft_update', room);
+    await PersistenceService.saveRooms(rooms);
+  });
 };
+
+

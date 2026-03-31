@@ -187,6 +187,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           roomId={room.id}
           onClose={() => setShowDebug(false)}
           onSwapControl={(newId) => setEffectivePlayerId(newId)}
+          room={room}
         />
       )}
 

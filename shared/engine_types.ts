@@ -134,6 +134,7 @@ export interface PlayerState {
   fullControl: boolean;
   maxHandSize: number;
   pendingDiscardCount: number;
+  manaCheat?: boolean; // DEBUG: Infinite mana
 }
 
 export interface CombatState {
@@ -241,6 +242,7 @@ export interface ContinuousEffect {
 export interface AbilityCost {
   type: 'Tap' | 'Mana' | 'PayLife' | 'Discard' | 'Sacrifice' | 'Loyalty';
   value: any; // e.g. "{G}" or 3 life
+  restrictions?: string[]; // e.g. ["Creature"]
 }
 
 export interface ActivatedAbility {

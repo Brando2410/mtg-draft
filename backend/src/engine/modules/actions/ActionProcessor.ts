@@ -12,174 +12,170 @@ export class ActionProcessor {
    * becomes a new object with no memory of or relation to its previous existence.
    */
   public static moveCard(state: GameState, card: GameObject, to: Zone, ownerId: PlayerId, log?: (m: string) => void) {
-    // 1. CR 400.7: Remove from the current zone
+    const fromZone = card.zone;
+    
+    // 1. Rule 400.7: Remove from the current zone
+    this.removeFromCurrentZone(state, card);
+
+    // 2. Rule 400.7: Reset characteristics and update zone
+    card.zone = to;
+    const isToken = (card as any).isToken || card.id.startsWith('token_');
+
+    // Rule 400.7: Objects leaving the battlefield lose memory of their state
+    if (to !== Zone.Battlefield) {
+        this.resetObjectState(state, card, fromZone, to);
+    }
+
+    // 3. Rule 400.1: Add to the new zone
+    this.addToTargetZone(state, card, to, ownerId, isToken, fromZone, log);
+  }
+
+  private static removeFromCurrentZone(state: GameState, card: GameObject) {
     if (card.zone === Zone.Battlefield) {
       state.battlefield = state.battlefield.filter(c => c.id !== card.id);
     } else if (card.zone === Zone.Stack) {
-      state.stack = state.stack.filter(s => s.sourceId !== card.id);
+      state.stack = state.stack.filter(s => s.id !== card.id && s.sourceId !== card.id);
     } else {
       const player = state.players[card.ownerId];
       if (player) {
          if (card.zone === Zone.Hand) player.hand = player.hand.filter(c => c.id !== card.id);
          else if (card.zone === Zone.Graveyard) player.graveyard = player.graveyard.filter(c => c.id !== card.id);
          else if (card.zone === Zone.Library) player.library = player.library.filter(c => c.id !== card.id);
+         else if (card.zone === Zone.Exile) state.exile = state.exile.filter(c => c.id !== card.id);
       }
     }
+  }
 
-    // 2. CR 400.7: Add to the new zone
-    const fromZone = card.zone;
-    card.zone = to;
-
-    // Rule 111.7: A token that leaves the battlefield cesses to exist.
-    const isToken = (card as any).isToken || card.id.startsWith('token_');
-
+  private static addToTargetZone(state: GameState, card: GameObject, to: Zone, ownerId: PlayerId, isToken: boolean, from: Zone, log?: (m: string) => void) {
     if (to === Zone.Battlefield) {
       state.battlefield.push(card);
-      const isCreature = (card.definition.types || []).some(t => t.toLowerCase() === 'creature');
+      const isCreature = card.definition.types.some(t => t.toLowerCase() === 'creature');
       card.summoningSickness = isCreature;
       this.registerAbilities(state, card);
       
-      TriggerProcessor.onEvent(state, {
-          type: 'ON_ETB',
-          targetId: card.id,
-          sourceId: card.id,
-          data: { object: card }
-      }, log || (() => {}));
-
-      if (card.definition.types.some(t => t.toLowerCase() === 'planeswalker')) {
-          const logic = M21_LOGIC[card.definition.name];
-          const startingLoyalty = parseInt((card.definition as any).loyalty || (logic as any)?.loyalty || "0", 10);
-          card.counters.loyalty = startingLoyalty;
-          if (log) log(`${card.definition.name} enters with ${startingLoyalty} loyalty.`);
-      }
+      this.handleEnteringBattlefield(state, card, log);
 
     } else if (to === Zone.Exile) {
       if (!isToken) state.exile.push(card);
     } else {
       const player = state.players[ownerId];
-      if (player) {
-         if (to === Zone.Hand && !isToken) player.hand.push(card);
-         else if (to === Zone.Graveyard) {
-             if (!isToken) player.graveyard.push(card);
-             
-             const types = (card.definition.types || []).map(t => t.toLowerCase());
-             if (fromZone === Zone.Battlefield && types.includes('creature')) {
-                TriggerProcessor.onEvent(state, {
-                    type: 'ON_DEATH',
-                    targetId: card.id,
-                    sourceId: card.id,
-                    data: { object: card }
-                }, log || (() => {}));
-             }
-         }
-         else if (to === Zone.Library && !isToken) player.library.push(card);
-      }
-    }
-    
-    // Rule 400.7: Reset characteristics on zone change (except for cards staying on the battlefield)
-    if (to !== Zone.Battlefield) {
-       // NEW: Unregister abilities when leaving the Battlefield
-       if (fromZone === Zone.Battlefield) {
-          this.unregisterAbilities(state, card.id);
-       }
+      if (!player) return;
 
-       if (card.zone === Zone.Battlefield && to === Zone.Hand) {
-          state.turnState.permanentReturnedToHandThisTurn = true;
-       }
-       card.isTapped = false;
-       card.damageMarked = 0;
-       const isCreature = card.definition.types.includes('Creature');
-       // 302.6: Summoning sickness is refreshed only when entering the battlefield or changing controllers
-       card.summoningSickness = isCreature;
+      if (to === Zone.Hand && !isToken) player.hand.push(card);
+      else if (to === Zone.Library && !isToken) player.library.push(card);
+      else if (to === Zone.Graveyard) {
+          if (!isToken) player.graveyard.push(card);
+          this.handleEnteringGraveyard(state, card, from, log);
+      }
     }
   }
 
+  private static resetObjectState(state: GameState, card: GameObject, from: Zone, to: Zone) {
+    if (from === Zone.Battlefield) {
+        this.unregisterAbilities(state, card.id);
+        if (to === Zone.Hand) state.turnState.permanentReturnedToHandThisTurn = true;
+    }
+    card.isTapped = false;
+    card.damageMarked = 0;
+    card.deathtouchMarked = false;
+    card.counters = {};
+  }
+
+  private static handleEnteringBattlefield(state: GameState, card: GameObject, log?: (m: string) => void) {
+    // Rule 603.6a: Enters-the-battlefield triggers
+    TriggerProcessor.onEvent(state, { type: 'ON_ETB', targetId: card.id, sourceId: card.id, data: { object: card } }, log || (() => {}));
+
+    // Rule 306.5b: Planeswalkers enter with loyalty counters
+    if (card.definition.types.some(t => t.toLowerCase() === 'planeswalker')) {
+        const logic = M21_LOGIC[card.definition.name];
+        const startingLoyalty = parseInt((card.definition as any).loyalty || (logic as any)?.loyalty || "0", 10);
+        card.counters['loyalty'] = startingLoyalty;
+        if (log) log(`[ETB] ${card.definition.name} enters with ${startingLoyalty} loyalty.`);
+    }
+  }
+
+  private static handleEnteringGraveyard(state: GameState, card: GameObject, from: Zone, log?: (m: string) => void) {
+      const types = card.definition.types.map(t => t.toLowerCase());
+      if (from === Zone.Battlefield && types.includes('creature')) {
+          // Rule 603.10a: "Dies" triggers
+          TriggerProcessor.onEvent(state, { type: 'ON_DEATH', targetId: card.id, sourceId: card.id, data: { object: card } }, log || (() => {}));
+      }
+  }
+
+  /* --- Ability Management (Rule 113) --- */
+
   private static registerAbilities(state: GameState, card: GameObject) {
-    // 1. Look up card logic
-    const name = card.definition.name;
-    const logic = M21_LOGIC[name];
-    
+    const logic = M21_LOGIC[card.definition.name];
     if (!logic || !logic.abilities) return;
 
-    // 2. Map abilities into the registry
     logic.abilities.forEach((ability: any, index: number) => {
         const instanceId = `${card.id}_ability_${index}`;
-        
-        if (ability.type === 'Triggered') {
-            state.ruleRegistry.triggeredAbilities.push({
-                id: instanceId,
-                sourceId: card.id,
-                controllerId: card.controllerId,
-                eventMatch: ability.triggerEvent || ability.on, // Support both
-                condition: ability.triggerCondition || ability.condition,
-                oracleText: ability.oracleText || card.definition.oracleText || 'Triggered ability',
-                // Pass extra data used by engine later
-                ...ability
-            } as any);
-        } else if (ability.type === 'Activated') {
-            state.ruleRegistry.activatedAbilities.push({
-                id: instanceId,
-                sourceId: card.id,
-                controllerId: card.controllerId,
-                costs: ability.costs,
-                isManaAbility: ability.isManaAbility || false,
-                ...ability
-            } as any);
-        } else if (ability.type === 'Static') {
-            // Register all Static 'ApplyContinuousEffect' into continuousEffects
-            if (ability.effects) {
-                ability.effects.forEach((eff: any, eId: number) => {
-                   if (eff.type === 'ApplyContinuousEffect') {
-                       // Convert targetMapping to valid targetIds where applicable
-                       let targetIds: string[] | undefined = undefined;
-                       if (eff.targetMapping === 'SELF') {
-                           targetIds = [card.id];
-                       }
+        switch (ability.type) {
+            case 'Triggered': this.registerTriggeredAbility(state, card, ability, instanceId); break;
+            case 'Activated': this.registerActivatedAbility(state, card, ability, instanceId); break;
+            case 'Static':    this.registerStaticAbility(state, card, ability, instanceId); break;
+            case 'Replacement': this.registerReplacementAbility(state, card, ability, instanceId); break;
+        }
+    });
+  }
 
-                       state.ruleRegistry.continuousEffects.push({
-                           id: `${instanceId}_eff_${eId}`,
-                           sourceId: card.id,
-                           controllerId: card.controllerId,
-                           layer: eff.layer || 7,
-                           timestamp: state.turnNumber * 1000 + Date.now() % 1000, // simple heuristic
-                           activeZones: [Zone.Battlefield],
-                           duration: { type: 'Static' as any },
-                           targetIds,
-                           targetMapping: eff.targetMapping, // Used by LayerProcessor if targetIds is undefined
-                           powerModifier: eff.powerModifier,
-                           toughnessModifier: eff.toughnessModifier,
-                           abilitiesToAdd: eff.abilitiesToAdd,
-                           abilitiesToRemove: eff.abilitiesToRemove
-                       } as any);
-                   } else if (eff.type === 'CombatConstraint') {
-                       // Track combat constraints in restrictions
-                       state.ruleRegistry.restrictions.push({
-                           id: `${instanceId}_eff_${eId}`,
-                           sourceId: card.id,
-                           type: eff.value as any, // e.g., CANNOT_ATTACK
-                           duration: { type: 'Static' as any },
-                           condition: eff.condition,
-                           targetMapping: eff.targetMapping,
-                           targetIds: eff.targetMapping === 'SELF' ? [card.id] : undefined
-                       } as any);
-                   }
-                });
-            }
-        } else if (ability.type === 'Replacement') {
-            // Register replacement effects for the ruleRegistry to intersect
-            if (!state.ruleRegistry.replacementEffects) state.ruleRegistry.replacementEffects = [];
-            state.ruleRegistry.replacementEffects.push({
-                id: instanceId,
+  private static registerTriggeredAbility(state: GameState, card: GameObject, ability: any, id: string) {
+    state.ruleRegistry.triggeredAbilities.push({
+        id,
+        sourceId: card.id,
+        controllerId: card.controllerId,
+        eventMatch: ability.triggerEvent || ability.on,
+        condition: ability.triggerCondition || ability.condition,
+        oracleText: ability.oracleText || card.definition.oracleText || 'Triggered ability',
+        ...ability
+    } as any);
+  }
+
+  private static registerActivatedAbility(state: GameState, card: GameObject, ability: any, id: string) {
+    state.ruleRegistry.activatedAbilities.push({
+        id,
+        sourceId: card.id,
+        controllerId: card.controllerId,
+        costs: ability.costs,
+        isManaAbility: ability.isManaAbility || false,
+        ...ability
+    } as any);
+  }
+
+  private static registerStaticAbility(state: GameState, card: GameObject, ability: any, id: string) {
+    if (!ability.effects) return;
+    ability.effects.forEach((eff: any, eId: number) => {
+        const effId = `${id}_eff_${eId}`;
+        if (eff.type === 'ApplyContinuousEffect') {
+            state.ruleRegistry.continuousEffects.push({
+                id: effId,
                 sourceId: card.id,
                 controllerId: card.controllerId,
-                replaceEvent: ability.replaceEvent,
-                condition: ability.condition,
-                effects: ability.effects,
-                ...ability
+                layer: eff.layer || 7,
+                timestamp: Date.now(),
+                activeZones: [Zone.Battlefield],
+                duration: { type: 'Static' as any },
+                targetMapping: eff.targetMapping,
+                targetIds: eff.targetMapping === 'SELF' ? [card.id] : undefined,
+                ...eff
+            } as any);
+        } else if (eff.type === 'CombatConstraint') {
+            state.ruleRegistry.restrictions.push({
+                id: effId,
+                sourceId: card.id,
+                type: eff.value as any,
+                duration: { type: 'Static' as any },
+                ...eff
             } as any);
         }
     });
   }
+
+  private static registerReplacementAbility(state: GameState, card: GameObject, ability: any, id: string) {
+    if (!state.ruleRegistry.replacementEffects) state.ruleRegistry.replacementEffects = [];
+    state.ruleRegistry.replacementEffects.push({ id, sourceId: card.id, ...ability } as any);
+  }
+
 
   private static unregisterAbilities(state: GameState, cardId: string) {
     state.ruleRegistry.triggeredAbilities = state.ruleRegistry.triggeredAbilities.filter(t => t.sourceId !== cardId);

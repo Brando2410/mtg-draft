@@ -25,109 +25,76 @@ export class DamageProcessor {
 
     // Rule 702.16e: Protection prevents damage
     if (ValidationProcessor.shouldPreventDamage(state, sourceId, targetId)) {
-        log(`Damage to ${targetId} prevented by Protection.`);
+        log(`[MISS] Damage to ${targetId} prevented by Protection.`);
         return;
     }
 
-    // 1. Check for Creature/Planeswalker Target
-    const battlefieldObj = state.battlefield.find(o => o.id === targetId);
-    if (battlefieldObj) {
-      if (battlefieldObj.definition.types.includes('Planeswalker')) {
-        // Rule 120.3c: Damage to planeswalker removes loyalty counters
-        const currentLoyalty = battlefieldObj.counters.loyalty || 0;
-        battlefieldObj.counters.loyalty = Math.max(0, currentLoyalty - amount);
-        log(`${battlefieldObj.definition.name} loses ${amount} loyalty (Current: ${battlefieldObj.counters.loyalty}).`);
-      } else {
-        // Rule 120.3: Damage to creature marks damage
-        battlefieldObj.damageMarked += amount;
-        log(`${battlefieldObj.definition.name} takes ${amount} damage (Total: ${battlefieldObj.damageMarked}).`);
-
-        // Rule 702.2: Deathtouch (Any nonzero amount of damage is lethal)
-        const sourceObj = state.battlefield.find(o => o.id === sourceId) || 
-                          state.stack.find(s => s.id === sourceId)?.card;
-        if (sourceObj) {
-            const { LayerProcessor } = require('../state/LayerProcessor');
-            const sourceStats = LayerProcessor.getEffectiveStats(sourceObj, state);
-            if (sourceStats.keywords.includes('Deathtouch') && amount > 0) {
-                battlefieldObj.deathtouchMarked = true;
-                log(`[DEATHTOUCH] ${battlefieldObj.definition.name} is marked for destruction.`);
-            }
-        }
-      }
-      
-      state.turnState.lastDamageAmount = amount;
-      
-      // Emit trigger event
-      TriggerProcessor.onEvent(state, {
-        type: 'ON_DAMAGE_TAKED',
-        targetId: targetId,
-        sourceId: sourceId,
-        amount: amount,
-        data: { isCombat, object: battlefieldObj }
-      }, log);
-    } else {
-      // 2. Check for Player Target
-      const targetPlayer = state.players[targetId];
-      if (targetPlayer) {
-        const oldLife = targetPlayer.life;
-        targetPlayer.life -= amount;
-        state.turnState.lastDamageAmount = amount;
-        log(`Player ${targetId} takes ${amount} damage (${oldLife} -> ${targetPlayer.life}).`);
-
-        // M21 State Tracking: Non-combat damage to opponents
-        const sourceObj = state.battlefield.find(o => o.id === sourceId) || 
-                          state.stack.find(s => s.id === sourceId)?.card;
-        
-        const sourceControllerId = sourceObj?.controllerId || state.activePlayerId;
-
-        if (!isCombat && sourceControllerId !== targetId) {
-          state.turnState.noncombatDamageDealtToOpponents += amount;
-          
-          // Trigger for Chandra's Incinerator
-          TriggerProcessor.onEvent(state, {
-              type: 'ON_NONCOMBAT_DAMAGE_OPPONENT',
-              targetId: targetId,
-              sourceId: sourceId,
-              amount: amount
-          }, log);
-        }
-
-        // Emit general player damage event
-        TriggerProcessor.onEvent(state, {
-          type: 'ON_DAMAGE_PLAYER',
-          targetId: targetId,
-          sourceId: sourceId,
-          amount: amount,
-          data: { isCombat }
-        }, log);
-      }
-    }
-
-    // NEW: Handle Lifelink (Rule 702.15)
-    // Damage dealt by a source with lifelink also causes that source’s controller to gain that much life.
+    const { LayerProcessor } = require('../state/LayerProcessor');
     const sourceObj = state.battlefield.find(o => o.id === sourceId) || 
                       state.stack.find(s => s.id === sourceId)?.card;
-    
-    if (sourceObj) {
-        const { LayerProcessor } = require('../state/LayerProcessor');
-        const stats = LayerProcessor.getEffectiveStats(sourceObj, state);
-        if (stats.keywords.includes('Lifelink')) {
-            const controllerId = sourceObj.controllerId;
-            const player = state.players[controllerId];
-            if (player) {
-                const oldLife = player.life;
-                player.life += amount;
-                log(`${player.name} gains ${amount} life from Lifelink (${oldLife} -> ${player.life}).`);
-                
-                // Fire life gain event
-                TriggerProcessor.onEvent(state, {
-                    type: 'ON_LIFE_GAIN',
-                    playerId: controllerId,
-                    amount: amount,
-                    data: { sourceId: sourceObj.id }
-                }, log);
-            }
+    const sourceStats = sourceObj ? LayerProcessor.getEffectiveStats(sourceObj, state) : null;
+
+    // 1. Resolve Damage to Permanents (Battlefield)
+    const battlefieldObj = state.battlefield.find(o => o.id === targetId);
+    if (battlefieldObj) {
+        this.applyDamageToPermanent(state, sourceObj, sourceStats, battlefieldObj, amount, isCombat, log);
+        state.turnState.lastDamageAmount = amount;
+    } else {
+        // 2. Resolve Damage to Players
+        const targetPlayer = state.players[targetId];
+        if (targetPlayer) {
+            this.applyDamageToPlayer(state, sourceObj, targetPlayer, amount, isCombat, log);
+            state.turnState.lastDamageAmount = amount;
+        }
+    }
+
+    // 3. Handle Lifelink (Rule 702.15)
+    if (sourceObj && sourceStats?.keywords.includes('Lifelink')) {
+        const controllerId = sourceObj.controllerId;
+        const player = state.players[controllerId];
+        if (player) {
+            player.life += amount;
+            log(`[LIFELINK] ${player.name} gains ${amount} life (Total: ${player.life}).`);
+            TriggerProcessor.onEvent(state, { type: 'ON_LIFE_GAIN', playerId: controllerId, amount, data: { sourceId: sourceObj.id } }, log);
         }
     }
   }
+
+  private static applyDamageToPermanent(state: GameState, sourceObj: any, sourceStats: any, target: GameObject, amount: number, isCombat: boolean, log: (m: string) => void) {
+    const types = target.definition.types.map(t => t.toLowerCase());
+
+    if (types.includes('planeswalker')) {
+      // Rule 120.3c: Damage to planeswalker removes loyalty
+      const currentLoyalty = target.counters['loyalty'] || 0;
+      target.counters['loyalty'] = Math.max(0, currentLoyalty - amount);
+      log(`[DAMAGE] ${target.definition.name} loses ${amount} loyalty.`);
+    } else {
+      // Rule 120.3: Damage to creature marks damage
+      target.damageMarked += amount;
+      log(`[DAMAGE] ${target.definition.name} takes ${amount} damage (Total: ${target.damageMarked}).`);
+
+      // Rule 702.2: Deathtouch
+      if (sourceStats?.keywords.includes('Deathtouch')) {
+          target.deathtouchMarked = true;
+          log(`[DEATHTOUCH] ${target.definition.name} is marked by lethal poison.`);
+      }
+    }
+
+    TriggerProcessor.onEvent(state, { type: 'ON_DAMAGE_TAKED', targetId: target.id, sourceId: sourceObj?.id, amount, data: { isCombat } }, log);
+  }
+
+  private static applyDamageToPlayer(state: GameState, sourceObj: any, player: any, amount: number, isCombat: boolean, log: (m: string) => void) {
+    player.life -= amount;
+    log(`[DAMAGE] Player ${player.name} takes ${amount} damage (Life: ${player.life}).`);
+
+    // Rule 120.3a: Damage dealt to opponent results in loss of life
+    const sourceControllerId = sourceObj?.controllerId || state.activePlayerId;
+    if (!isCombat && sourceControllerId !== player.id) {
+      state.turnState.noncombatDamageDealtToOpponents += amount;
+      TriggerProcessor.onEvent(state, { type: 'ON_NONCOMBAT_DAMAGE_OPPONENT', targetId: player.id, sourceId: sourceObj?.id, amount }, log);
+    }
+
+    TriggerProcessor.onEvent(state, { type: 'ON_DAMAGE_PLAYER', targetId: player.id, sourceId: sourceObj?.id, amount, data: { isCombat } }, log);
+  }
+
 }
