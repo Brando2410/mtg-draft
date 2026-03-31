@@ -1,6 +1,6 @@
 import { memo, useMemo, useState, useEffect } from 'react';
 import { Heart, Library, Trash2, XCircle, X as CloseIcon, Zap, RefreshCw } from 'lucide-react';
-import { type PlayerState, type GameObject } from '@shared/engine_types';
+import { type PlayerState, type GameObject, type StackObject } from '@shared/engine_types';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- ARROWS COMPONENT ---
@@ -21,7 +21,7 @@ const CombatArrows = memo(({ combat, battlefield }: {
       const newCoords: any[] = [];
       
       // Attackers -> Target (Direct to Player or Planeswalker)
-      combat.attackers.forEach(a => {
+      combat.attackers.forEach((a: { attackerId: string, targetId: string }) => {
         const el = document.getElementById(`card-${a.attackerId}`);
         // First try to find card element (for PW targets), then fall back to player life element
         const targetEl = document.getElementById(`card-${a.targetId}`) || document.getElementById(`player-HP-${a.targetId}`); 
@@ -48,7 +48,7 @@ const CombatArrows = memo(({ combat, battlefield }: {
       });
 
       // Blockers -> Attackers
-      combat.blockers.forEach(b => {
+      combat.blockers.forEach((b: { blockerId: string, attackerId: string }) => {
         const elB = document.getElementById(`card-${b.blockerId}`);
         const elA = document.getElementById(`card-${b.attackerId}`);
         if (elB && elA) {
@@ -96,20 +96,6 @@ const CombatArrows = memo(({ combat, battlefield }: {
     </svg>
   );
 });
-
-interface BattlefieldProps {
-  me: PlayerState | undefined;
-  opponent: PlayerState | null | undefined;
-  battlefield: GameObject[];
-  stack: any[];
-  onTapCard?: (cardId: string) => void;
-  onHoverStart?: (obj: GameObject) => void;
-  onHoverEnd?: () => void;
-  combat?: {
-    attackers: { attackerId: string, targetId: string }[];
-    blockers: { blockerId: string, attackerId: string }[];
-  };
-}
 
 // 1. Card Component
 const BattlefieldCard = memo(({ 
@@ -197,6 +183,8 @@ const BattlefieldCard = memo(({
           {stats?.keywords.includes('Trample') && <div title="Trample" className="w-4 h-4 bg-orange-700/80 rounded shadow-lg flex items-center justify-center text-[8px] font-bold">🐘</div>}
           {stats?.keywords.includes('Menace') && <div title="Menace" className="w-4 h-4 bg-red-900/80 rounded shadow-lg flex items-center justify-center text-[8px] font-bold">🎭</div>}
           {stats?.keywords.includes('Indestructible') && <div title="Indestructible" className="w-4 h-4 bg-amber-500/80 rounded shadow-lg flex items-center justify-center text-[8px] font-bold">🛡️</div>}
+          {stats?.keywords.includes('Hexproof') && <div title="Hexproof" className="w-4 h-4 bg-cyan-500/80 rounded shadow-lg flex items-center justify-center text-[8px] font-bold">💠</div>}
+          {stats?.keywords.includes('Vigilance') && <div title="Vigilance" className="w-4 h-4 bg-indigo-500/80 rounded shadow-lg flex items-center justify-center text-[8px] font-bold">👁️</div>}
           {stats?.keywords.includes('Lifelink') && <div title="Lifelink" className="w-4 h-4 bg-red-500/80 rounded shadow-lg flex items-center justify-center text-[8px] font-bold">❤️</div>}
       </div>
 
@@ -341,7 +329,19 @@ const SubZone = memo(({
   );
 });
 
-export const Battlefield = memo(({ me, opponent, battlefield, stack, onTapCard, onHoverStart, onHoverEnd, combat, pendingAction }: BattlefieldProps & { pendingAction?: any }) => {
+interface BattlefieldProps {
+  me: PlayerState | undefined;
+  opponent: PlayerState | null | undefined;
+  battlefield: GameObject[];
+  stack: StackObject[];
+  combat: any;
+  exile: any[];
+  onTapCard: (id: string) => void;
+  onHoverStart?: (obj: GameObject) => void;
+  onHoverEnd?: () => void;
+}
+
+export const Battlefield = ({ me, opponent, battlefield, stack, combat, pendingAction, exile, onTapCard, onHoverStart, onHoverEnd }: BattlefieldProps & { pendingAction?: any }) => {
   const [inspectingZone, setInspectingZone] = useState<{ cards: GameObject[], label: string } | null>(null);
 
   const targetableIds = useMemo(() => {
@@ -367,7 +367,7 @@ export const Battlefield = memo(({ me, opponent, battlefield, stack, onTapCard, 
 
     if (pendingAction?.type === 'DECLARE_BLOCKERS' && pendingAction.sourceId) {
         // We selected a blocker, now highlight legal attackers to block
-        return new Set<string>(combat?.attackers.map(a => a.attackerId) || []);
+        return new Set<string>(combat?.attackers.map((a: any) => a.attackerId) || []);
     }
 
     return new Set<string>();
@@ -529,6 +529,12 @@ export const Battlefield = memo(({ me, opponent, battlefield, stack, onTapCard, 
                                     {choice.label}
                                 </button>
                             ))}
+                            <button 
+                                onClick={() => onTapCard?.(`CHOICE_undo`)}
+                                className="w-full mt-2 p-3 bg-red-500/10 hover:bg-red-500/30 rounded-xl border border-red-500/20 text-xs font-black uppercase italic tracking-widest transition-all text-red-400"
+                            >
+                                ANNULLA (Undo)
+                            </button>
                         </div>
                   </motion.div>
               </motion.div>
@@ -604,47 +610,75 @@ export const Battlefield = memo(({ me, opponent, battlefield, stack, onTapCard, 
         </div>
         <div className="flex-1 w-full flex flex-col-reverse gap-3 items-center mb-6 px-2 overflow-y-auto custom-scrollbar">
             <AnimatePresence>
-              {stack.map((sobj, i) => (
-                <motion.div 
-                  key={sobj.id} 
-                  initial={{ x: 20, opacity: 0 }} 
-                  animate={{ x: 0, opacity: 1 }} 
-                  exit={{ scale: 1.5, opacity: 0 }} 
-                  className="relative group w-full flex justify-center"
-                >
-                  {sobj.card ? (
-                    <div className="relative">
-                      <BattlefieldCard obj={sobj.card} size="small" />
-                      {sobj.type === 'ActivatedAbility' && (
-                        <div className="absolute -bottom-1 -left-1 bg-amber-500 rounded-full p-1 border border-white/20 shadow-lg z-30">
-                          <Zap className="w-2 h-2 text-white" />
+              {(() => {
+                const effectiveStack = [...stack];
+                if (pendingAction?.playerId === me?.id && pendingAction?.data?.stackObj) {
+                  effectiveStack.push(pendingAction.data.stackObj);
+                }
+                
+                return effectiveStack.map((sobj, i) => {
+                  const isPending = pendingAction?.data?.stackObj?.id === sobj.id;
+                  return (
+                    <motion.div 
+                      key={sobj.id} 
+                      initial={{ x: 20, opacity: 0 }} 
+                      animate={{ x: 0, opacity: isPending ? 0.6 : 1 }} 
+                      exit={{ scale: 1.5, opacity: 0 }} 
+                      className={`relative group w-full flex justify-center ${isPending ? 'grayscale-[0.5] contrast-[0.8]' : ''}`}
+                    >
+                      {sobj.card || sobj.image_url ? (
+                        <div className="relative">
+                          {sobj.card ? (
+                             <BattlefieldCard obj={sobj.card} size="small" />
+                          ) : (
+                            <div className="w-14 h-20 rounded-lg overflow-hidden border border-white/20 shadow-2xl relative bg-slate-900 group-hover:scale-110 transition-transform duration-300">
+                               <img src={sobj.image_url} alt={sobj.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                               <div className="absolute bottom-1 left-0 right-0 px-1">
+                                  <p className="text-[6px] font-bold text-white truncate text-center leading-tight shadow-sm">{sobj.name || 'Ability'}</p>
+                               </div>
+                            </div>
+                          )}
+                          {(sobj.type === 'ActivatedAbility' || sobj.type === 'TriggeredAbility') && (
+                            <div className={`absolute -bottom-1 -left-1 ${sobj.type === 'TriggeredAbility' ? 'bg-emerald-500' : 'bg-amber-500'} rounded-full p-1 border border-white/20 shadow-lg z-30`}>
+                              {sobj.type === 'TriggeredAbility' ? (
+                                <RefreshCw className="w-2 h-2 text-white" />
+                              ) : (
+                                <Zap className="w-2 h-2 text-white" />
+                              )}
+                            </div>
+                          )}
+                          {isPending && (
+                            <div className="absolute inset-0 bg-indigo-500/10 rounded-lg animate-pulse pointer-events-none border border-indigo-400/30" />
+                          )}
+                        </div>
+                      ) : (
+                        /* GENERIC ABILITY/TRIGGER BLOCK (Fallback) */
+                        <div className={`w-16 h-16 rounded-2xl bg-slate-900 border flex flex-col items-center justify-center p-2 text-center shadow-xl ring-2 ring-indigo-500/10 ${isPending ? 'border-amber-500/50' : 'border-indigo-500/30'}`}>
+                            {sobj.type === 'TriggeredAbility' ? (
+                              <RefreshCw className="w-4 h-4 text-emerald-400 mb-1 animate-spin-slow" />
+                            ) : (
+                              <Zap className="w-4 h-4 text-amber-400 mb-1" />
+                            )}
+                            <span className="text-[7px] font-black uppercase tracking-tighter text-indigo-300 leading-[1] line-clamp-2">
+                              {sobj.name || (sobj.type === 'TriggeredAbility' ? 'Innesco' : 'Abilità')}
+                            </span>
+                            {isPending && <span className="text-[6px] font-black text-amber-400 mt-0.5 animate-pulse">PENDING...</span>}
                         </div>
                       )}
-                    </div>
-                  ) : (
-                    /* ABILITY/TRIGGER BLOCK */
-                    <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-indigo-500/30 flex flex-col items-center justify-center p-2 text-center shadow-xl ring-2 ring-indigo-500/10">
-                        {sobj.type === 'TriggeredAbility' ? (
-                          <RefreshCw className="w-4 h-4 text-emerald-400 mb-1 animate-spin-slow" />
-                        ) : (
-                          <Zap className="w-4 h-4 text-amber-400 mb-1" />
-                        )}
-                        <span className="text-[7px] font-black uppercase tracking-tighter text-indigo-300 leading-[1] line-clamp-2">
-                          {sobj.description || (sobj.type === 'TriggeredAbility' ? 'Innesco' : 'Abilità')}
-                        </span>
-                    </div>
-                  )}
-                  {i === stack.length - 1 && (
-                    <motion.div 
-                      animate={{ x: [-2, 2, -2] }} 
-                      transition={{ repeat: Infinity, duration: 1 }}
-                      className="absolute -left-6 top-1/2 -translate-y-1/2 text-indigo-400 font-black text-xs"
-                    >
-                      ▶
+                      {!isPending && i === effectiveStack.length - 1 && (
+                        <motion.div 
+                          animate={{ x: [-2, 2, -2] }} 
+                          transition={{ repeat: Infinity, duration: 1 }}
+                          className="absolute -left-6 top-1/2 -translate-y-1/2 text-indigo-400 font-black text-xs"
+                        >
+                          ▶
+                        </motion.div>
+                      )}
                     </motion.div>
-                  )}
-                </motion.div>
-              ))}
+                  );
+                });
+              })()}
             </AnimatePresence>
         </div>
 
@@ -671,9 +705,9 @@ export const Battlefield = memo(({ me, opponent, battlefield, stack, onTapCard, 
                   <Trash2 className="w-4 h-4 text-white/10 group-hover:text-red-400" />
                   <span className="absolute bottom-0 right-0 bg-indigo-600 px-1 text-[8px] font-bold">{me?.graveyard.length}</span>
                 </button>
-                <button onClick={() => setInspectingZone({ cards: [], label: "Global Exile" })} className="relative w-11 h-15 bg-amber-900/10 rounded border border-amber-500/20 flex items-center justify-center group">
+                <button onClick={() => setInspectingZone({ cards: exile || [], label: "Global Exile" })} className="relative w-11 h-15 bg-amber-900/10 rounded border border-amber-500/20 flex items-center justify-center group">
                   <XCircle className="w-4 h-4 text-amber-500/20 group-hover:text-amber-400" />
-                  <span className="absolute bottom-0 right-0 bg-amber-600 px-1 text-[8px] font-bold">0</span>
+                  <span className="absolute bottom-0 right-0 bg-amber-600 px-1 text-[8px] font-bold">{exile?.length || 0}</span>
                 </button>
              </div>
         </div>
@@ -726,4 +760,4 @@ export const Battlefield = memo(({ me, opponent, battlefield, stack, onTapCard, 
       </AnimatePresence>
     </div>
   );
-});
+};

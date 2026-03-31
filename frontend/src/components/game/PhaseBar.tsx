@@ -9,10 +9,11 @@ interface PhaseBarProps {
   pendingAction?: PendingAction;
   onPassPriority: () => void;
   onSkipAction?: () => void;
+  onUndo?: () => void;
   onBack: () => void;
 }
 
-export const PhaseBar = ({ currentPhase, currentStep, turnNumber, hasPriority, pendingAction, onPassPriority, onSkipAction, onBack }: PhaseBarProps) => {
+export const PhaseBar = ({ currentPhase, currentStep, turnNumber, hasPriority, pendingAction, onPassPriority, onSkipAction, onUndo, onBack }: PhaseBarProps) => {
   
   const getActionLabel = (action: PendingAction) => {
     switch(action.type) {
@@ -20,6 +21,7 @@ export const PhaseBar = ({ currentPhase, currentStep, turnNumber, hasPriority, p
       case 'DECLARE_BLOCKERS': return 'DICHIARA BLOCCANTI';
       case 'DISCARD': return 'SCARTA CARTE';
       case 'TARGETING': return 'SCEGLI BERSAGLIO';
+      case 'CHOICE': return 'SCEGLI OPZIONE';
       default: return 'AZIONE OBBLIGATORIA';
     }
   };
@@ -28,6 +30,7 @@ export const PhaseBar = ({ currentPhase, currentStep, turnNumber, hasPriority, p
   return (
     <div className="h-12 bg-slate-900/80 border-b border-white/5 backdrop-blur-md flex items-center justify-between px-6 z-20">
       <div className="flex items-center gap-4">
+        {/* ... existing state indicators ... */}
         <div className="flex items-center gap-3">
           <div className={`px-3 py-1 rounded-lg border flex items-center gap-2 ${
             isAlertStatus ? 'bg-red-500/20 border-red-500/40' : 
@@ -79,6 +82,15 @@ export const PhaseBar = ({ currentPhase, currentStep, turnNumber, hasPriority, p
       </div>
 
       <div className="flex items-center gap-3">
+        {hasPriority && (pendingAction?.type === 'TARGETING' || pendingAction?.type === 'CHOICE') && (
+           <button 
+             onClick={onUndo}
+             className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30 transition-colors"
+           >
+             ANNULLA (Undo)
+           </button>
+        )}
+        
         {pendingAction?.type === 'TARGETING' && pendingAction.data?.optional && (
            <button 
              onClick={onSkipAction}

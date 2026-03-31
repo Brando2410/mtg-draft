@@ -77,9 +77,14 @@ export class GameSetupProcessor {
     if (!player || player.library.length === 0) return false;
     const card = player.library.pop();
     if (card) {
+      const fromZone = card.zone;
       card.zone = Zone.Hand;
       player.hand.push(card);
       log(`${player.name} draws a card.`);
+      
+      const { TriggerProcessor } = require('../effects/TriggerProcessor');
+      TriggerProcessor.onEvent(state, { type: 'ON_DRAW', playerId: playerId, data: { card } }, log);
+      
       return true;
     }
     return false;

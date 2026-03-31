@@ -108,6 +108,21 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
               });
             }
           }}
+          onUndo={() => {
+            if (gameState.pendingAction?.type === 'TARGETING') {
+              socket.emit('resolve_target', { 
+                roomId: room.id, 
+                playerId: effectivePlayerId, 
+                targetId: 'undo'
+              });
+            } else if (gameState.pendingAction?.type === 'CHOICE') {
+              socket.emit('resolve_choice', { 
+                roomId: room.id, 
+                playerId: effectivePlayerId, 
+                choiceIndex: 'undo'
+              });
+            }
+          }}
           onBack={onBack}
         />
 
@@ -118,6 +133,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           stack={gameState.stack || []}
           combat={gameState.combat}
           pendingAction={gameState.pendingAction}
+          exile={gameState.exile || []}
           onTapCard={(id) => {
             if (id.startsWith('ORDER_')) {
               const order = id.replace('ORDER_', '').split(',');
@@ -130,7 +146,8 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
             }
 
             if (id.startsWith('CHOICE_')) {
-              const choiceIndex = parseInt(id.split('_')[1]);
+              const choiceRaw = id.split('_')[1];
+              const choiceIndex = choiceRaw === 'undo' ? 'undo' : parseInt(choiceRaw);
               socket.emit('resolve_choice', { 
                 roomId: room.id, 
                 playerId: effectivePlayerId, 

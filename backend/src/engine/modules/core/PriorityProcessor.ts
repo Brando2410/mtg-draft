@@ -1,6 +1,7 @@
 import { GameState, PlayerId, Phase, Step, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
+import { SpellProcessor } from '../actions/SpellProcessor';
 import { M21_LOGIC } from '../../data/m21_logic';
 import { ValidationProcessor } from '../state/ValidationProcessor';
 
@@ -79,12 +80,14 @@ export class PriorityProcessor {
        const isYourTurn = state.activePlayerId === playerId;
 
        let canPlay = false;
+       const effectiveCost = SpellProcessor.getEffectiveManaCost(state, cardInHand);
+
        if (isLand) {
            canPlay = isYourTurn && isMain && stackEmpty && !player.hasPlayedLandThisTurn;
        } else if (isInstantOrFlash) {
-           canPlay = ManaProcessor.canPayWithTotal(player, state.battlefield, cardInHand.definition.manaCost);
+           canPlay = ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost);
        } else {
-           canPlay = isYourTurn && isMain && stackEmpty && ManaProcessor.canPayWithTotal(player, state.battlefield, cardInHand.definition.manaCost);
+           canPlay = isYourTurn && isMain && stackEmpty && ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost);
        }
 
        if (canPlay) {

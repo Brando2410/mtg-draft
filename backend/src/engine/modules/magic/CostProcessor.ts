@@ -1,6 +1,7 @@
 import { GameState, GameObject, PlayerId, GameObjectId, AbilityCost, RestrictionType, Zone } from '@shared/engine_types';
 import { ManaProcessor } from './ManaProcessor';
 import { ActionProcessor } from '../actions/ActionProcessor';
+import { LayerProcessor } from '../state/LayerProcessor';
 
 /**
  * Rules Engine Module: Cost Processing (Rule 601.2h / 101.1)
@@ -47,8 +48,10 @@ export class CostProcessor {
         
         // Rule 302.6: Summoning Sickness applies to tap abilities of creatures
         if (source.definition.types.includes('Creature') && source.summoningSickness) {
-           // Haste check should be here (simplified for now as Haste is in effectiveStats)
-           return false; 
+           const stats = LayerProcessor.getEffectiveStats(source, state);
+           if (!stats.keywords.includes('Haste')) {
+                return false; 
+           }
         }
 
         const hasRestriction = state.ruleRegistry.restrictions.some(r => 

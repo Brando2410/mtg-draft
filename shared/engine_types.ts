@@ -108,6 +108,8 @@ export interface StackObject {
   card?: GameObject;
   abilityIndex?: number;
   data?: any;
+  name?: string;
+  image_url?: string;
   xValue?: number; // Rule 107.3: The value of X
 }
 
@@ -160,6 +162,7 @@ export interface TurnState {
   lastDamageAmount: number;
   lastLifeGainedAmount: number;
   lastCardsDrawnAmount: number;
+  spellsCastThisTurn: Record<PlayerId, number>;
 }
 
 export interface PendingAction {

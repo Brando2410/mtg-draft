@@ -90,6 +90,19 @@ export class ManaProcessor {
     }
   }
 
+  public static refundManaCost(player: PlayerState, costStr: string) {
+    if (!costStr || player.manaCheat) return;
+    const requirements = this.parseManaCost(costStr);
+
+    // Refund colored mana
+    for (const [color, amount] of Object.entries(requirements.colored)) {
+      player.manaPool[color as keyof typeof player.manaPool] += amount;
+    }
+
+    // Refund generic mana as colorless by default
+    player.manaPool['C'] += requirements.generic;
+  }
+
 
   public static parseManaCost(costStr: string): { colored: Record<string, number>, generic: number } {
     const colored: Record<string, number> = {};

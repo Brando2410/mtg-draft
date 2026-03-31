@@ -44,6 +44,10 @@ export class CombatProcessor {
     else if (state.currentStep === Step.CombatDamage || state.currentStep === Step.FirstStrikeDamage) {
       this.resolveDamage(state, log);
     }
+    else if (state.currentStep === Step.EndOfCombat) {
+      // Rule 511.3: Creatures stop being attacking/blocking when End of Combat starts
+      state.combat = undefined;
+    }
   }
 
   public static hasFirstStrikeStep(state: GameState): boolean {
@@ -156,11 +160,6 @@ export class CombatProcessor {
     // Critical: If in FS, dead creatures must be removed BEFORE Regular Damage Step
     const { StateBasedActionsProcessor } = require('./../state/StateBasedActionsProcessor');
     StateBasedActionsProcessor.resolveSBAs(state, log);
-
-    // Only clear combat state after the FINAL damage step
-    if (!isFirstStrikeStep) {
-       state.combat = undefined;
-    }
   }
 
   private static assignAttackerDamage(state: GameState, isFS: boolean, assignments: { sourceId: string, targetId: string, amount: number }[], log: (m: string) => void) {

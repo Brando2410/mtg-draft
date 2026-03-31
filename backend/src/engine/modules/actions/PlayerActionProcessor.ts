@@ -19,6 +19,7 @@ export class PlayerActionProcessor {
       declareAttacker: (pId: string, cId: string) => boolean;
       handleBlockSelection: (pId: string, cId: string) => boolean;
       tapForMana: (pId: string, cId: string) => boolean;
+      activateAbility: (pId: PlayerId, cId: string, idx: number) => boolean;
     }
   ): boolean {
     const obj = state.battlefield.find(c => c.id === cardId);
@@ -90,7 +91,40 @@ export class PlayerActionProcessor {
       return true;
     }
 
-    // 3. Default: Tap for Mana or non-PW interaction
+    // 3. Generic Activated Ability Choice (Non-Planeswalker)
+    const { M21_LOGIC: mLogic } = require('../../data/m21_logic');
+    const logic = mLogic[obj.definition.name];
+    const activatedAbilities = logic?.abilities?.filter((a: any) => a.type === 'Activated' && !a.isManaAbility) || [];
+
+    if (activatedAbilities.length > 0) {
+        if (state.priorityPlayerId !== playerId) {
+            log(`Player tried to activate ability without priority.`);
+            return false;
+        }
+
+        // If only one ability, just try to activate it directly (targeting will follow if needed)
+        if (activatedAbilities.length === 1) {
+            const index = logic.abilities.indexOf(activatedAbilities[0]);
+            return actionHandlers.activateAbility(playerId, cardId, index);
+        }
+
+        // If multiple, show CHOICE
+        state.pendingAction = {
+            type: 'CHOICE',
+            playerId: playerId,
+            sourceId: cardId,
+            data: {
+                choices: activatedAbilities.map((a: any) => ({
+                    label: a.id || 'Activate Ability',
+                    value: logic.abilities.indexOf(a)
+                }))
+            }
+        };
+        state.priorityPlayerId = null;
+        return true;
+    }
+
+    // 4. Default: Tap for Mana or non-PW interaction
     return actionHandlers.tapForMana(playerId, cardId);
   }
 
@@ -193,8 +227,15 @@ export class PlayerActionProcessor {
        if (card.isTapped) return false;
        const opponentId = Object.keys(state.players).find(id => id !== playerId);
        state.combat.attackers.push({ attackerId: cardId, targetId: targetId || opponentId! });
-       card.isTapped = true;
-       log(`${card.definition.name} attacking ${!!state.players[(targetId || opponentId!) as PlayerId] ? 'Opponent' : 'Planeswalker'}.`);
+       
+       // Rule 702.24: Vigilance prevents tapping when attacking
+       const hasVigilance = stats.keywords.includes('Vigilance');
+       if (!hasVigilance) {
+           card.isTapped = true;
+           log(`${card.definition.name} attacking ${!!state.players[(targetId || opponentId!) as PlayerId] ? 'Opponent' : 'Planeswalker'}.`);
+       } else {
+           log(`${card.definition.name} attacking with Vigilance.`);
+       }
     }
     return true;
   }

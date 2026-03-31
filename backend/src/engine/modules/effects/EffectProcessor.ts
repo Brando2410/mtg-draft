@@ -18,11 +18,26 @@ export class EffectProcessor {
     effects: EffectDefinition[], 
     sourceId: GameObjectId, 
     targets: string[], 
-    log: (m: string) => void
-  ) {
-    for (const effect of effects) {
-      this.executeEffect(state, effect, sourceId, targets, log);
+    log: (m: string) => void,
+    startIndex: number = 0,
+    stackObject?: any
+  ): boolean {
+    for (let i = startIndex; i < effects.length; i++) {
+        const effect = effects[i];
+        this.executeEffect(state, effect, sourceId, targets, log, stackObject);
+        
+        // If an effect creates a pending action (like Choice), suspend resolution.
+        if (state.pendingAction) {
+            state.pendingAction.data = {
+                ...state.pendingAction.data,
+                nextEffectIndex: i + 1,
+                sourceId: sourceId,
+                targets: targets
+            };
+            return false;
+        }
     }
+    return true;
   }
 
   private static executeEffect(
@@ -30,9 +45,10 @@ export class EffectProcessor {
     effect: EffectDefinition, 
     sourceId: GameObjectId, 
     targets: string[], 
-    log: (msg: string) => void
+    log: (msg: string) => void,
+    stackObject?: any
   ) {
-    const sourceObj = this.findObject(state, sourceId);
+    const sourceObj = this.findObject(state, sourceId) || stackObject?.card || stackObject;
     const controllerId = sourceObj?.controllerId || state.activePlayerId;
 
     const resolvedTargetIds = this.resolveTargetMapping(state, effect.targetMapping, targets, sourceId, controllerId);
@@ -46,12 +62,14 @@ export class EffectProcessor {
         if (['TARGET_1', 'TARGET_2', 'TARGET_ALL', 'TARGET_1_CONTROLLER', 'TARGET_1_OPPONENT'].includes(effect.targetMapping)) {
             const stackObj = state.stack.find(s => s.id === (state as any).lastResolvedStackId || s.sourceId === sourceId);
             const targetDef = (effect as any).targetDefinition || stackObj?.data?.targetDefinition;
-            return ValidationProcessor.isLegalTarget(state, sourceId, tid, targetDef);
+            return ValidationProcessor.isLegalTarget(state, sourceObj || sourceId, tid, targetDef);
         }
         return true;
     });
 
-    const amount = this.resolveAmount(state, effect.amount, sourceId, controllerId);
+    let amount = (effect as any).amount !== undefined 
+        ? this.resolveAmount(state, effect.amount, sourceId, controllerId)
+        : 1; // Default to 1 if amount is not specified in data (MTG: "a" token, "a" card, etc.)
 
     // CR 609: Effect Strategy Dispatcher
     switch (effect.type) {
@@ -67,12 +85,44 @@ export class EffectProcessor {
       case 'CreateToken':         this.handleCreateToken(state, validTargetIds, amount, effect.tokenBlueprint, log); break;
       case 'SearchLibrary':       this.handleSearchLibrary(state, validTargetIds, log); break;
       case 'ApplyContinuousEffect': this.handleApplyContinuousEffect(state, effect, sourceId, validTargetIds, log); break;
+      case 'Choice':              this.handleChoice(state, effect, sourceId, targets, log, stackObject); break;
       default:
         log(`[WARNING] Effect type ${effect.type} not yet implemented.`);
     }
   }
 
   /* --- Concrete Effect Handlers (CR 609) --- */
+
+  private static handleChoice(state: GameState, effect: any, sourceId: string, targets: string[], log: (m: string) => void, stackObject?: any) {
+    const sourceObj = this.findObject(state, sourceId) || stackObject?.card || stackObject;
+    if (!sourceObj) return;
+
+    // --- SUPPORT FOR PRE-SELECTED CHOICES (MODAL SETUP) ---
+    // If the spell was popped from the stack for resolution, it's passed here directly.
+    const preSelectedIdx = stackObject?.data?.preSelectedChoice;
+
+    if (preSelectedIdx !== undefined) {
+        const choice = effect.choices[preSelectedIdx];
+        if (choice && choice.effects) {
+            log(`[RESOLVING CHOICE] Auto-resolved pre-selected mode: ${choice.label}`);
+            this.resolveEffects(state, choice.effects, sourceId, targets, log);
+        }
+        return;
+    }
+
+    const controllerId = sourceObj.controllerId || state.activePlayerId;
+    state.pendingAction = {
+      type: 'CHOICE',
+      playerId: controllerId,
+      sourceId: sourceId,
+      data: {
+        label: effect.label || 'Choose an option',
+        choices: effect.choices,
+        targets: targets // Pass along targets for sub-effects
+      }
+    };
+    log(`[CHOICE] ${state.players[controllerId]?.name} must choose: ${effect.label || 'an option'}`);
+  }
 
   private static handleDrawCards(state: GameState, targets: string[], amount: number, log: (m: string) => void) {
     targets.forEach(pid => {
@@ -271,6 +321,13 @@ export class EffectProcessor {
       }
       case 'SHRINE_COUNT':
         return state.battlefield.filter(o => o.controllerId === controllerId && o.definition.subtypes.includes('Shrine')).length;
+      case (typeof amount === 'string' && (amount as string).startsWith('COUNT_')) ? amount : '___NON_MATCHING___': {
+          const filter = (amount as string).split('_')[1];
+          return state.battlefield.filter(o => 
+            o.controllerId === controllerId && 
+            (o.definition.types.includes(filter) || o.definition.subtypes.includes(filter))
+          ).length;
+      }
       case '2_PER_FLYING_CREATURE_YOU_CONTROL':
         const flyingCount = state.battlefield.filter(o => o.controllerId === controllerId && (o.effectiveStats?.keywords.includes('Flying') || o.definition.keywords.includes('Flying'))).length;
         return 2 * flyingCount;

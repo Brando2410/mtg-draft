@@ -19,11 +19,23 @@ export class TriggerProcessor {
     // 1. Identify all triggered abilities that match this event (Rule 603.2)
     const matchingTriggers = state.ruleRegistry.triggeredAbilities.filter(t => {
       // Logic for event matching (supports legacy and new schemas)
-      const eventType = (t as any).triggerEvent || t.eventMatch;
-      if (eventType !== event.type) return false;
+      const tEvent = (t as any).triggerEvent || t.eventMatch;
+      if (tEvent !== event.type && !(tEvent === 'ON_ETB_OTHER' && event.type === 'ON_ETB')) return false;
 
       // Rule 603.2: Triggered abilities only function in their active zone (usually Battlefield)
       if (!this.checkZoneRequirement(state, t, event.type)) return false;
+
+      // Special Logic for ETB filtering (Self vs Other)
+      if (event.type === 'ON_ETB') {
+        const enteringObjId = event.data?.object?.id;
+        if (tEvent === 'ON_ETB') {
+           // "When [this] enters" -> must be itself
+           if (enteringObjId !== t.sourceId) return false;
+        } else if (tEvent === 'ON_ETB_OTHER') {
+           // "Whenever another enters" -> must NOT be itself
+           if (enteringObjId === t.sourceId) return false;
+        }
+      }
 
       // Rule 603.4: "Intervening If" clauses and dynamic conditions
       const condition = (t as any).triggerCondition || t.condition;
@@ -45,8 +57,13 @@ export class TriggerProcessor {
   }
 
   private static putTriggerOnStack(state: GameState, trigger: TriggeredAbility, event: GameEvent, log: (msg: string) => void) {
-    const sourceObj = state.battlefield.find(o => o.id === trigger.sourceId) || 
-                      state.exile.find(o => o.id === trigger.sourceId);
+    // CR 603.10: Identify source object (handles Look Back In Time)
+    const eventObj = event.data?.object;
+    const sourceObj = (eventObj && eventObj.id === trigger.sourceId) ? eventObj : (
+                      state.battlefield.find(o => o.id === trigger.sourceId) || 
+                      state.exile.find(o => o.id === trigger.sourceId) ||
+                      Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === trigger.sourceId)
+    );
     
     const sourceName = sourceObj?.definition.name || "Unknown Source";
     
@@ -58,8 +75,8 @@ export class TriggerProcessor {
       sourceId: trigger.sourceId,
       type: 'TriggeredAbility',
       name: `${sourceName}'s Trigger`,
-      oracleText: (trigger as any).oracleText || `Triggered by ${event.type}`,
-      targets: [], 
+      image_url: sourceObj?.definition.image_url,
+      targets: [],
       abilityIndex: (trigger as any).abilityIndex,
       data: { 
           effects: (trigger as any).effects || [],

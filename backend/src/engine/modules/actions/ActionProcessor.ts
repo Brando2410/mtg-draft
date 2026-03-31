@@ -17,6 +17,17 @@ export class ActionProcessor {
     // 1. Rule 400.7: Remove from the current zone
     this.removeFromCurrentZone(state, card);
 
+    // CR 121: Drawing a card
+    if (fromZone === Zone.Library && to === Zone.Hand) {
+        TriggerProcessor.onEvent(state, { type: 'ON_DRAW', playerId: ownerId, data: { card } }, log || (() => {}));
+    }
+
+    // CR 603.10: "Leaves-the-battlefield" events MUST look back in time.
+    // Trigger them while we still have the Battlefield state (counters, registered abilities).
+    if (fromZone === Zone.Battlefield && to !== Zone.Battlefield) {
+        this.handleLeavingBattlefield(state, card, to, log);
+    }
+
     // 2. Rule 400.7: Reset characteristics and update zone
     card.zone = to;
     const isToken = (card as any).isToken || card.id.startsWith('token_');
@@ -28,6 +39,18 @@ export class ActionProcessor {
 
     // 3. Rule 400.1: Add to the new zone
     this.addToTargetZone(state, card, to, ownerId, isToken, fromZone, log);
+  }
+
+  private static handleLeavingBattlefield(state: GameState, card: GameObject, to: Zone, log?: (m: string) => void) {
+      const types = card.definition.types.map(t => t.toLowerCase());
+      
+      // Rule 603.10a: "Dies" triggers (specifically for creatures moving to graveyard)
+      if (to === Zone.Graveyard && types.includes('creature')) {
+          TriggerProcessor.onEvent(state, { type: 'ON_DEATH', targetId: card.id, sourceId: card.id, data: { object: card } }, log || (() => {}));
+      }
+
+      // General Leave trigger
+      TriggerProcessor.onEvent(state, { type: 'ON_LEAVE_BATTLEFIELD', targetId: card.id, sourceId: card.id, data: { object: card, toZone: to } }, log || (() => {}));
   }
 
   private static removeFromCurrentZone(state: GameState, card: GameObject) {
@@ -95,11 +118,7 @@ export class ActionProcessor {
   }
 
   private static handleEnteringGraveyard(state: GameState, card: GameObject, from: Zone, log?: (m: string) => void) {
-      const types = card.definition.types.map(t => t.toLowerCase());
-      if (from === Zone.Battlefield && types.includes('creature')) {
-          // Rule 603.10a: "Dies" triggers
-          TriggerProcessor.onEvent(state, { type: 'ON_DEATH', targetId: card.id, sourceId: card.id, data: { object: card } }, log || (() => {}));
-      }
+      // Logic for entering graveyard (not used for dies triggers anymore)
   }
 
   /* --- Ability Management (Rule 113) --- */
@@ -153,7 +172,7 @@ export class ActionProcessor {
                 controllerId: card.controllerId,
                 layer: eff.layer || 7,
                 timestamp: Date.now(),
-                activeZones: [Zone.Battlefield],
+                activeZones: [ability.activeZone || Zone.Battlefield],
                 duration: { type: 'Static' as any },
                 targetMapping: eff.targetMapping,
                 targetIds: eff.targetMapping === 'SELF' ? [card.id] : undefined,
@@ -164,6 +183,17 @@ export class ActionProcessor {
                 id: effId,
                 sourceId: card.id,
                 type: eff.value as any,
+                duration: { type: 'Static' as any },
+                ...eff
+            } as any);
+        } else if (['SpellTax', 'CostReduction', 'AdditionalCost'].includes(eff.type)) {
+             state.ruleRegistry.continuousEffects.push({
+                id: effId,
+                sourceId: card.id,
+                controllerId: card.controllerId,
+                layer: 8, // Costs are determined after layers 1-7
+                timestamp: Date.now(),
+                activeZones: [ability.activeZone || Zone.Battlefield],
                 duration: { type: 'Static' as any },
                 ...eff
             } as any);

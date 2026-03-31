@@ -1,6 +1,7 @@
 import { GameState, Zone, PlayerId } from '@shared/engine_types';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { ActionProcessor } from '../actions/ActionProcessor';
+import { ValidationProcessor } from './ValidationProcessor';
 
 /**
  * Rules Engine Module: State-Based Actions (Rule 704)
@@ -101,6 +102,35 @@ export class StateBasedActionsProcessor {
                 }
             }
         });
+    }
+
+    // 5. Rule 704.5n & 704.5p: Aura/Equipment detachment (Protection "E" in DEBT)
+    const attachments = state.battlefield.filter(o => {
+        const types = o.definition.types.map(t => t.toLowerCase());
+        return types.includes('enchantment') && o.definition.subtypes.some(s => s.toLowerCase() === 'aura') ||
+               types.includes('artifact') && o.definition.subtypes.some(s => s.toLowerCase() === 'equipment');
+    });
+
+    for (const attach of attachments) {
+        // Find what it's attached to (stored in counters or specific data field?)
+        // In this engine, attachedToId is usually in the object's data
+        const targetId = (attach as any).attachedToId;
+        if (!targetId) continue;
+
+        // Check if the target is still legal
+        // (source is the attachment, target is the permanent)
+        if (!ValidationProcessor.isLegalTarget(state, attach.id, targetId)) {
+            const types = attach.definition.types.map(t => t.toLowerCase());
+            if (types.includes('enchantment')) {
+                log(`[SBA] Aura ${attach.definition.name} is attached to an illegal target and is put into graveyard.`);
+                ActionProcessor.moveCard(state, attach, Zone.Graveyard, attach.ownerId, log);
+                actionTaken = true;
+            } else {
+                log(`[SBA] Equipment ${attach.definition.name} detached from illegal target.`);
+                (attach as any).attachedToId = undefined;
+                actionTaken = true;
+            }
+        }
     }
 
     return actionTaken;

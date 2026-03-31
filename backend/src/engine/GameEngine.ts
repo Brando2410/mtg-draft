@@ -54,7 +54,8 @@ export class GameEngine {
         creaturesAttackedThisTurn: 0,
         lastDamageAmount: 0,
         lastLifeGainedAmount: 0,
-        lastCardsDrawnAmount: 0
+        lastCardsDrawnAmount: 0,
+        spellsCastThisTurn: {}
       }
     };
     
@@ -124,7 +125,8 @@ export class GameEngine {
       {
         declareAttacker: (pId: string, cId: string) => this.declareAttacker(pId, cId),
         handleBlockSelection: (pId: string, cId: string) => this.handleBlockSelection(pId, cId),
-        tapForMana: (pId: string, cId: string) => this.tapForMana(pId, cId)
+        tapForMana: (pId: string, cId: string) => this.tapForMana(pId, cId),
+        activateAbility: (pId: PlayerId, cId: string, idx: number) => this.activateAbility(pId, cId, idx)
       }
     );
   }
@@ -157,8 +159,17 @@ export class GameEngine {
     
     this.log(`${this.getPlayerName(playerId)} confirmed attackers.`);
     
-    // Track count for M21 logic (e.g. Basri Ket)
-    this.state.turnState.creaturesAttackedThisTurn += (this.state.combat?.attackers || []).length;
+    const attackers = this.state.combat?.attackers || [];
+    this.state.turnState.creaturesAttackedThisTurn += attackers.length;
+
+    // Rule 508.1: "Whenever an opponent attacks..." (Mangara support)
+    if (attackers.length > 0) {
+        TriggerProcessor.onEvent(this.state, {
+            type: 'ON_ATTACKERS_DECLARED',
+            playerId: playerId as PlayerId,
+            data: { attackers }
+        }, (m: string) => this.log(m));
+    }
 
     this.state.pendingAction = undefined;
     this.resetPriorityToActivePlayer();
@@ -203,6 +214,8 @@ export class GameEngine {
   public discardCard(playerId: PlayerId, cardInstanceId: string): boolean {
     const res = PlayerActionProcessor.discardCard(this.state, playerId, cardInstanceId, (m: string) => this.log(m));
     if (res.finished) {
+       this.resetPriorityToActivePlayer();
+       
        if (this.state.currentStep === Step.Cleanup) {
          this.advanceStep(); 
        } else {
@@ -306,11 +319,24 @@ export class GameEngine {
     if (this.state.stack.length > 0) {
       const objectToResolve = this.state.stack.pop();
       if (objectToResolve) {
+        this.state.consecutivePasses = 0; // CR 117.4: Resolution or stack changes reset pass count
+        
         this.log(`--------------------------------------------------`);
         this.log(`[RESOLVING] >>> ${objectToResolve.card?.definition.name || 'Effect'} is resolving <<<`);
-        
         const effects = StackProcessor.getEffectsForResolution(this.state, objectToResolve);
-        this.resolver.resolveObject(objectToResolve, effects);
+        const startIndex = (objectToResolve as any).data?.nextEffectIndex || 0;
+        const completed = this.resolver.resolveObject(objectToResolve, effects, startIndex);
+        
+        if (!completed) {
+            // Suspended resolution. Push the object back to the stack.
+            if (!objectToResolve.data) objectToResolve.data = {};
+            objectToResolve.data.nextEffectIndex = this.state.pendingAction?.data?.nextEffectIndex || 0;
+            this.state.stack.push(objectToResolve);
+            
+            // During suspended resolution, priority is given to the player who must act
+            this.state.priorityPlayerId = this.state.pendingAction?.playerId || null;
+            return;
+        }
         
         const stackRemaining = this.state.stack.map(s => s.card?.definition.name || 'Effect').join(', ');
         if (stackRemaining) {
@@ -349,7 +375,24 @@ export class GameEngine {
 
     this.state.currentPhase = next.phase;
     this.state.currentStep = next.step;
+    this.state.consecutivePasses = 0; 
     this.log(`[PHASE] >>> Entering ${this.state.currentPhase}: ${this.state.currentStep} <<<`);
+
+    // CR 603.6: Phase/Step Transition Triggers
+    const phaseName = this.state.currentPhase.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
+    const stepName = this.state.currentStep.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
+
+    // Fire generic event for the step (e.g., ON_END_STEP, ON_UPKEEP_STEP)
+    TriggerProcessor.onEvent(this.state, { 
+        type: `ON_${stepName}_STEP`, 
+        data: { phase: this.state.currentPhase, step: this.state.currentStep } 
+    }, (m) => this.log(m));
+
+    // Fire generic event for the phase (e.g., ON_PRECOMBAT_MAIN_PHASE_START)
+    TriggerProcessor.onEvent(this.state, { 
+        type: `ON_${phaseName}_PHASE_START`, 
+        data: { phase: this.state.currentPhase, step: this.state.currentStep } 
+    }, (m) => this.log(m));
 
     this.emptyAllManaPools();
     this.handleStepEntryRules();
@@ -386,7 +429,8 @@ export class GameEngine {
         creaturesAttackedThisTurn: 0,
         lastDamageAmount: 0,
         lastLifeGainedAmount: 0,
-        lastCardsDrawnAmount: 0
+        lastCardsDrawnAmount: 0,
+        spellsCastThisTurn: {}
     };
   }
 
@@ -416,6 +460,8 @@ export class GameEngine {
   }
 
   private checkAutoPass(playerId: PlayerId) {
+    if (!this.state.priorityPlayerId || String(this.state.priorityPlayerId) !== String(playerId)) return;
+
     const player = this.state.players[playerId];
     const canAct = this.canPlayerTakeAnyAction(playerId);
 
@@ -459,14 +505,14 @@ export class GameEngine {
     } 
     else if (this.state.currentStep === Step.Cleanup) {
       const player = this.state.players[activeId];
-      if (player && player.hand.length > 7) {
-        player.pendingDiscardCount = player.hand.length - 7;
+      if (player && player.hand.length > player.maxHandSize) {
+        player.pendingDiscardCount = player.hand.length - player.maxHandSize;
         this.state.pendingAction = { 
           type: 'DISCARD', 
           playerId: activeId, 
           count: player.pendingDiscardCount 
         };
-        this.log(`${player.name} must discard ${player.pendingDiscardCount} card(s) to reach hand size.`);
+        this.log(`${player.name} must discard ${player.pendingDiscardCount} card(s) to reach hand size (${player.maxHandSize}).`);
       }
       
       // Rule 514.2: Remove all damage and cleanup continuous effects
@@ -546,21 +592,37 @@ export class GameEngine {
     const actionData = this.state.pendingAction?.data;
     const sourceId = this.state.pendingAction?.sourceId;
     const abilityIndex = actionData?.abilityIndex;
-    const stackId = actionData?.stackId;
+    const stackObj = actionData?.stackObj; // Get the hidden stack object
+    const stackId = actionData?.stackId;     // Get the trigger stack ID (for existing triggers)
+
+    if (stackObj) {
+        stackObj.targets = resolvedTargets;
+        this.state.stack.push(stackObj); // Reveal to everyone now!
+        this.state.consecutivePasses = 0;
+        
+        this.log(`--------------------------------------------------`);
+        this.log(`[STACK] + ${this.getPlayerName(stackObj.controllerId)} cast/activated ${stackObj.card?.definition.name || stackObj.type}`);
+        if (resolvedTargets.length > 0) {
+            this.log(`[STACK] Target(s): ${resolvedTargets.join(', ')}`);
+        }
+        this.log(`--------------------------------------------------`);
+
+        this.state.pendingAction = undefined;
+        this.state.priorityPlayerId = playerId; 
+        this.checkAutoPass(playerId);
+        return true;
+    }
 
     if (stackId) {
-       const stackObj = this.state.stack.find(s => s.id === stackId);
-       if (stackObj) {
-          stackObj.targets = resolvedTargets;
-          this.log(`--------------------------------------------------`);
-          this.log(`[STACK] + ${this.getPlayerName(stackObj.controllerId)} cast ${stackObj.card?.definition.name || stackObj.type}`);
-          this.log(`[STACK] Target(s): ${resolvedTargets.join(', ')}`);
-          this.log(`--------------------------------------------------`);
-       }
-       this.state.pendingAction = undefined;
-       this.state.consecutivePasses = 0;
-       this.checkAutoPass(playerId);
-       return true;
+        const existingTrigger = this.state.stack.find(s => s.id === stackId);
+        if (existingTrigger) {
+            existingTrigger.targets = resolvedTargets;
+            this.log(`[TARGETING] Targets confirmed for Trigger: ${resolvedTargets.join(', ')}`);
+            this.state.pendingAction = undefined;
+            this.state.priorityPlayerId = playerId;
+            this.checkAutoPass(playerId);
+            return true;
+        }
     }
 
     if (abilityIndex !== undefined) {

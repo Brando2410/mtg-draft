@@ -12,7 +12,10 @@ export class ValidationProcessor {
    * CR 608.2b: Checks if a target is still legal as a spell or ability attempts to resolve.
    * Also used during the casting process (CR 601.2c).
    */
-  public static isLegalTarget(state: GameState, sourceId: string, targetId: string, abilityTargetDef?: any): boolean {
+  public static isLegalTarget(state: GameState, sourceOrId: string | any, targetId: string, abilityTargetDef?: any): boolean {
+    const sourceId = typeof sourceOrId === 'string' ? sourceOrId : (sourceOrId as any).sourceId || (sourceOrId as any).id;
+    const sourceObjProvided = typeof sourceOrId === 'string' ? null : sourceOrId;
+
     // 1. If target is a player (e.g., Lightning Bolt to face)
     if (state.players[targetId]) {
         const type = (abilityTargetDef?.type || '').toLowerCase();
@@ -87,7 +90,7 @@ export class ValidationProcessor {
     // Source can be on the stack, battlefield, or still in hand (during casting validation)
     const sourceStack = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
     const sourceBattlefield = state.battlefield.find(o => o.id === sourceId);
-    let source = sourceStack || (sourceBattlefield as any);
+    let source = sourceObjProvided || sourceStack || (sourceBattlefield as any);
 
     let sourceControllerId = source?.controllerId || (sourceStack as any)?.controllerId;
 
@@ -104,17 +107,20 @@ export class ValidationProcessor {
     }
 
 
+
     // 2. Check Protection (Rule 702.16)
     // "T" in DEBT: Targeted by spells or abilities with the protected quality.
     const keywords = LayerProcessor.getEffectiveStats(targetObj, state).keywords;
     const protectionKeywords = keywords.filter(k => k.toLowerCase().startsWith('protection from'));
 
+
     for (const prot of protectionKeywords) {
       const qualityStr = prot.toLowerCase().replace('protection from ', '');
-      const qualities = qualityStr.split(/[\s,]+/).filter(Boolean); // e.g. ["demons", "and", "from", "dragons"]
+      const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
       
+
       if (source && ValidationProcessor.sourceHasQualities(source, qualities)) {
-        console.log(`[VALIDATION] Target has protection from source qualities: ${qualities}`);
+
         return false;
       }
     }
@@ -193,18 +199,28 @@ export class ValidationProcessor {
             }
         }
 
-        const pLimit = restrictions.find((r: string) => r.startsWith('power_'));
-        if (pLimit) {
-            const limit = parseInt(pLimit.split('_')[1]);
-            const stats = LayerProcessor.getEffectiveStats(targetObj, state);
-            if (stats.power > limit) return false;
+        if (restrictions.includes('power_')) {
+            const pLimit = restrictions.find((r: string) => r.startsWith('power_'));
+            if (pLimit) {
+                const limit = parseInt(pLimit.split('_')[1]);
+                const stats = LayerProcessor.getEffectiveStats(targetObj, state);
+                if (stats.power > limit) return false;
+            }
         }
 
-        const tLimit = restrictions.find((r: string) => r.startsWith('toughness_'));
-        if (tLimit) {
-            const limit = parseInt(tLimit.split('_')[1]);
-            const stats = LayerProcessor.getEffectiveStats(targetObj, state);
-            if (stats.toughness > limit) return false;
+        if (restrictions.includes('toughness_')) {
+            const tLimit = restrictions.find((r: string) => r.startsWith('toughness_'));
+            if (tLimit) {
+                const limit = parseInt(tLimit.split('_')[1]);
+                const stats = LayerProcessor.getEffectiveStats(targetObj, state);
+                if (stats.toughness > limit) return false;
+            }
+        }
+
+        if (restrictions.includes('attackingorblocking')) {
+            const isAttacking = (state.combat?.attackers || []).some(a => a.attackerId === targetId);
+            const isBlocking = (state.combat?.blockers || []).some(b => b.blockerId === targetId);
+            if (!isAttacking && !isBlocking) return false;
         }
     }
 
@@ -293,28 +309,36 @@ export class ValidationProcessor {
 
   private static sourceHasQualities(source: any, qualities: string[]): boolean {
     const s = source.card || source; 
-    const definition = s.definition || s;
+    let definition = s.definition || s;
 
     const sourceTypes = (definition.types || []).map((t: string) => t.toLowerCase());
     const sourceSubtypes = (definition.subtypes || []).map((t: string) => t.toLowerCase());
-    const sourceColors = (definition.colors || definition.card_colors || []).map((c: string) => c.toLowerCase());
     
+    // Core color logic: property check + mana cost deduction fallback
+    let sourceColors = (Array.isArray(definition.colors) ? definition.colors : [])
+        .map((c: string) => ValidationProcessor.colorMap(c));
+
+    // Fallback: Deduce colors from mana cost string (e.g. {1}{B} -> black)
+    const manaCost = (definition.manaCost || definition.mana_cost || '').toUpperCase();
+    if (manaCost.includes('W') && !sourceColors.includes('white')) sourceColors.push('white');
+    if (manaCost.includes('U') && !sourceColors.includes('blue')) sourceColors.push('blue');
+    if (manaCost.includes('B') && !sourceColors.includes('black')) sourceColors.push('black');
+    if (manaCost.includes('R') && !sourceColors.includes('red')) sourceColors.push('red');
+    if (manaCost.includes('G') && !sourceColors.includes('green')) sourceColors.push('green');
+
     return qualities.some(q => {
         const lowerQ = q.toLowerCase();
         if (lowerQ === 'and' || lowerQ === 'from') return false; 
         
-        // CR 702.16: "Protection from multicolored"
-        if (lowerQ === 'multicolored') {
-            return sourceColors.length > 1;
-        }
+        if (lowerQ === 'multicolored') return sourceColors.length > 1;
 
-        // Simple plural normalization (Demons -> Demon, Dragons -> Dragon)
         const singularQ = lowerQ.endsWith('s') ? lowerQ.slice(0, -1) : lowerQ;
 
-        return sourceTypes.includes(lowerQ) || sourceTypes.includes(singularQ) ||
-               sourceSubtypes.includes(lowerQ) || sourceSubtypes.includes(singularQ) ||
-               sourceColors.includes(lowerQ) || sourceColors.includes(singularQ) ||
-               sourceColors.some((c: string) => ValidationProcessor.colorMap(c) === lowerQ || ValidationProcessor.colorMap(c) === singularQ);
+        const matchesType = sourceTypes.includes(lowerQ) || sourceTypes.includes(singularQ);
+        const matchesSubtype = sourceSubtypes.includes(lowerQ) || sourceSubtypes.includes(singularQ);
+        const matchesColor = sourceColors.includes(lowerQ) || sourceColors.includes(singularQ);
+
+        return matchesType || matchesSubtype || matchesColor;
     });
   }
 

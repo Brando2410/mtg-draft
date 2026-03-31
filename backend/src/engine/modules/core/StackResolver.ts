@@ -25,29 +25,39 @@ export class StackResolver {
    * CR 608.2: Resolving a Spell or Ability
    * This is called by the GameEngine when all players pass priority sequentially.
    */
-  public resolveObject(stackObj: StackObject, effects: EffectDefinition[]) {
-    this.log(`Resolving: ${this.getObjectName(stackObj)}`);
+  public resolveObject(stackObj: StackObject, effects: EffectDefinition[], startIndex: number = 0): boolean {
+    if (startIndex === 0) {
+        this.log(`Resolving: ${this.getObjectName(stackObj)}`);
+    } else {
+        this.log(`Resuming: ${this.getObjectName(stackObj)}...`);
+    }
     
     // 1. Re-evaluate Targets (Rule 608.2b)
-    // If all targets are illegal, the spell/ability is removed from the stack and fizzles.
-    if (this.areAllTargetsIllegal(stackObj)) {
+    // Only on initial resolution
+    if (startIndex === 0 && this.areAllTargetsIllegal(stackObj)) {
       this.log(`${this.getObjectName(stackObj)} fizzled (all targets illegal).`);
       this.fizzle(stackObj);
-      return;
+      return true;
     }
     
     // 2. Execute Effects (Rule 608.2c)
-    // Even if some targets are illegal, others might still be affected.
-    EffectProcessor.resolveEffects(
+    const completed = EffectProcessor.resolveEffects(
         this.state, 
         effects, 
         stackObj.sourceId, 
         stackObj.targets, 
-        (m: string) => this.log(m)
+        (m: string) => this.log(m),
+        startIndex,
+        stackObj
     );
+    
+    if (!completed) {
+        return false; // SUSPENDED
+    }
     
     // 3. Post-Resolution Cleanup (Rule 608.2m)
     this.postResolutionCleanup(stackObj);
+    return true;
   }
 
   private areAllTargetsIllegal(stackObj: StackObject): boolean {
@@ -57,7 +67,7 @@ export class StackResolver {
     return stackObj.targets.every(targetId => {
         return !ValidationProcessor.isLegalTarget(
             this.state, 
-            stackObj.sourceId, 
+            stackObj, 
             targetId, 
             stackObj.data?.targetDefinition
         );

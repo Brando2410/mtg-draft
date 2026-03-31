@@ -201,6 +201,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                         types: ['Creature'], subtypes: ['Knight'], keywords: ['Vigilance'],
                         image_url: 'https://cards.scryfall.io/large/front/2/0/204b3adf-e76b-4ce9-b84d-b4e65b7054d4.jpg'
                     },
+                    amount: 1,
                     targetMapping: 'CONTROLLER'
                 }]
             }
@@ -524,6 +525,46 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
         ]
     },
 
+    "Mangara, the Diplomat": {
+        ...metadata["Mangara, the Diplomat"],
+        abilities: [
+            {
+                id: "mangara_attack_trigger",
+                type: AbilityType.Triggered,
+                triggerEvent: 'ON_ATTACKERS_DECLARED',
+                activeZone: ZoneRequirement.Battlefield,
+                triggerCondition: (state: any, event: any, source: any) => {
+                    // "Whenever an opponent attacks with creatures..."
+                    const isOpponent = event.playerId !== source.controllerId;
+                    if (!isOpponent) return false;
+
+                    // "...if two or more of those creatures are attacking you and/or planeswalkers you control..."
+                    const myPlaneswalkers = state.battlefield
+                        .filter((o: any) => o.controllerId === source.controllerId && (o.definition.types || []).includes('Planeswalker'))
+                        .map((o: any) => o.id);
+
+                    const attackingMeOrMyPWs = (event.data.attackers || []).filter((a: any) => 
+                        a.targetId === source.controllerId || myPlaneswalkers.includes(a.targetId)
+                    );
+
+                    return attackingMeOrMyPWs.length >= 2;
+                },
+                effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }]
+            },
+            {
+                id: "mangara_second_spell_trigger",
+                type: AbilityType.Triggered,
+                triggerEvent: 'ON_SECOND_SPELL_CAST',
+                activeZone: ZoneRequirement.Battlefield,
+                triggerCondition: (state: any, event: any, source: any) => {
+                    // "Whenever an opponent casts their second spell each turn..."
+                    return event.playerId !== source.controllerId;
+                },
+                effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }]
+            }
+        ]
+    },
+
     "Mazemind Tome": {
         ...metadata["Mazemind Tome"],
         abilities: [
@@ -628,26 +669,6 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
         ]
     },
 
-    "Mangara, the Diplomat": {
-        ...metadata["Mangara, the Diplomat"],
-        abilities: [
-            {
-                id: "mangara_attack_trigger",
-                type: AbilityType.Triggered,
-                triggerEvent: 'ON_ATTACK_MULTIPLE',
-                activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.attackers.length >= 2 && event.defenderId === source.controllerId,
-                effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }]
-            },
-            {
-                id: "mangara_second_spell_trigger",
-                type: AbilityType.Triggered,
-                triggerEvent: 'ON_OPPONENT_CAST_SECOND_SPELL',
-                activeZone: ZoneRequirement.Battlefield,
-                effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }]
-            }
-        ]
-    },
 
     "Nine Lives": {
         ...metadata["Nine Lives"],
@@ -1464,7 +1485,16 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                     { type: 'Exile', targetMapping: 'TARGET_1' },
                     {
                         type: 'CreateToken',
-                        tokenBlueprint: { name: 'Soldier', power: '1', toughness: '1', colors: ['W'], types: ['Creature'], subtypes: ['Soldier'] },
+                        tokenBlueprint: { 
+                            name: 'Soldier', 
+                            power: '1', 
+                            toughness: '1', 
+                            colors: ['W'], 
+                            types: ['Creature'], 
+                            subtypes: ['Soldier'],
+                            cmc: 0,
+                            image_url: 'https://cards.scryfall.io/large/front/d/0/d003cc2e-6e47-49f3-8f0a-b3287667bf97.jpg' 
+                        },
                         targetMapping: 'TARGET_1_CONTROLLER'
                     }
                 ]
@@ -1555,12 +1585,25 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
             {
                 id: "sanctum_calm_waters_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_PRECOMBAT_MAIN_PHASE_START',
+                triggerEvent: 'ON_PRE_COMBAT_MAIN_PHASE_START',
                 activeZone: ZoneRequirement.Battlefield,
                 triggerCondition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId,
                 effects: [
-                    { type: 'DrawCards', amount: 'SHRINE_COUNT', targetMapping: 'CONTROLLER' },
-                    { type: 'DiscardCards', amount: 1, targetMapping: 'CONTROLLER' }
+                    {
+                        type: 'Choice',
+                        label: 'Draw cards for each Sanctum you control? (and discard a card)',
+                        choices: [
+                            {
+                                label: 'Yes',
+                                effects: [
+                                    { type: 'DrawCards', amount: 'SHRINE_COUNT', targetMapping: 'CONTROLLER' },
+                                    { type: 'DiscardCards', amount: 1, targetMapping: 'CONTROLLER' }
+                                ]
+                            },
+                            { label: 'No', effects: [] }
+                        ],
+                        targetMapping: 'CONTROLLER'
+                    }
                 ]
             }
         ]
