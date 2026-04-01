@@ -156,7 +156,7 @@ export class SpellProcessor {
             sourceId: cardToPlay.id,
             data: { 
                 label: "Sacrifice a creature to cast " + cardToPlay.definition.name,
-                hideUndo: true,
+                hideUndo: false,
                 isCostChoice: true,
                 costType: 'Sacrifice',
                 declaredTargets: declaredTargets || [],
@@ -237,9 +237,19 @@ export class SpellProcessor {
     cardToPlay.zone = Zone.Stack;
     (cardToPlay as any).paidCost = totalMana;
 
+    const isInstantOrSorcery = cardToPlay.definition.types.some((t: string) => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery');
+    const isFirstInstantOrSorcery = isInstantOrSorcery && !state.turnState.instantOrSorceryCastThisTurn[playerId];
+    if (isInstantOrSorcery) {
+        state.turnState.instantOrSorceryCastThisTurn[playerId] = true;
+    }
+
     state.turnState.spellsCastThisTurn[playerId] = (state.turnState.spellsCastThisTurn[playerId] || 0) + 1;
     if (state.turnState.spellsCastThisTurn[playerId] === 2) {
-        TriggerProcessor.onEvent(state, { type: 'ON_SECOND_SPELL_CAST', playerId: playerId }, log);
+        TriggerProcessor.onEvent(state, { type: 'ON_SECOND_SPELL_CAST', playerId: playerId, data: {} }, log);
+    }
+
+    if (isFirstInstantOrSorcery) {
+        TriggerProcessor.onEvent(state, { type: 'ON_CAST_FIRST_INSTANT_SORCERY', playerId: playerId, data: { card: cardToPlay, sourceId: cardToPlay.id } }, log);
     }
 
     const stackObj = {
@@ -263,8 +273,10 @@ export class SpellProcessor {
     TriggerProcessor.onEvent(state, { 
         type: 'ON_CAST_SPELL', 
         playerId: playerId, 
-        card: cardToPlay,
-        sourceId: cardToPlay.id
+        data: {
+            card: cardToPlay,
+            sourceId: cardToPlay.id
+        }
     }, log);
 
     const isNonCreature = !cardToPlay.definition.types.some((t: string) => t.toLowerCase() === 'creature');
@@ -272,8 +284,10 @@ export class SpellProcessor {
         TriggerProcessor.onEvent(state, { 
             type: 'ON_CAST_NON_CREATURE', 
             playerId: playerId, 
-            card: cardToPlay,
-            sourceId: cardToPlay.id
+            data: {
+                card: cardToPlay,
+                sourceId: cardToPlay.id
+            }
         }, log);
     }
 
@@ -307,7 +321,7 @@ export class SpellProcessor {
             // Case A: Static abilities that apply costs to the card itself (creatures)
             if (a.type === AbilityType.Static && a.activeZone === Zone.Hand) {
                 a.effects?.forEach((e: any) => {
-                    if (e.type === 'AdditionalCost' && e.targetMapping === 'SELF') {
+                    if ((e.type === 'AdditionalCost' || e.type === 'CostReduction') && e.targetMapping === 'SELF') {
                         modifiers.push({ ...e, sourceId: card.id, controllerId: card.controllerId } as any);
                     }
                 });
@@ -334,7 +348,16 @@ export class SpellProcessor {
         if (!matches) continue;
 
         if (type === 'SpellTax') extraGeneric += (mod as any).amount || 0;
-        if (type === 'CostReduction') extraGeneric -= (mod as any).amount || 0;
+        if (type === 'CostReduction') {
+            extraGeneric -= (mod as any).amount || 0;
+            if ((mod as any).manaReduction) {
+               const red = ManaProcessor.parseManaCost((mod as any).manaReduction);
+               extraGeneric -= red.generic;
+               for (const [s, c] of Object.entries(red.colored)) {
+                   parsed.colored[s] = Math.max(0, (parsed.colored[s] || 0) - (c as number));
+               }
+            }
+        }
         if (type === 'AdditionalCost') {
             const extra = (mod as any).costs || [];
             additionalCosts = [...additionalCosts, ...extra];
@@ -389,6 +412,12 @@ export class SpellProcessor {
 
     const ability = cardLogic.abilities[abilityIndex];
     if (ability.type !== AbilityType.Activated) return false;
+
+    // Requirement Check (Rule 602.5b)
+    if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) {
+        log(`Illegal Activation: Activation requirements for ${obj.definition.name} are not met.`);
+        return false;
+    }
 
     const isPlaneswalker = obj.definition.types.includes('Planeswalker');
     if (isPlaneswalker) {

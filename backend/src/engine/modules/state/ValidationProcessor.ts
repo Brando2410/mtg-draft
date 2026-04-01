@@ -88,6 +88,7 @@ export class ValidationProcessor {
     if (!expectedZone) {
         if (targetZone === Zone.Stack) expectedZone = Zone.Stack;
         else if (abilityTargetDef?.type === 'CardInGraveyard') expectedZone = Zone.Graveyard;
+        else if (abilityTargetDef?.restrictions?.some((r: string) => r.toLowerCase() === 'graveyard')) expectedZone = Zone.Graveyard;
         else expectedZone = Zone.Battlefield; // Default assumption for most MTG targets (creatures, artifacts, etc.)
     }
 
@@ -213,6 +214,7 @@ export class ValidationProcessor {
             if (lr === 'nonartifact' && objTypes.includes('artifact')) return false;
             if (lr === 'nonenchantment' && objTypes.includes('enchantment')) return false;
             if (lr === 'nonplaneswalker' && objTypes.includes('planeswalker')) return false;
+            if (lr === 'graveyard' && targetObj.zone !== Zone.Graveyard) return false;
             if (lr === 'other' && targetObj.id === sourceId) return false;
             if (lr === 'notcontrolled' || lr === 'opponentcontrol') {
                  if (controllerId && targetObj.controllerId === controllerId) return false;
@@ -251,6 +253,10 @@ export class ValidationProcessor {
                 const isAttacking = (state.combat?.attackers || []).some(a => a.attackerId === targetObj.id);
                 const isBlocking = (state.combat?.blockers || []).some(b => b.blockerId === targetObj.id);
                 if (!isAttacking && !isBlocking) return false;
+            }
+
+            if (lr === 'instantorsorcerycastthisturn') {
+                if (!state.turnState.instantOrSorceryCastThisTurn[controllerId]) return false;
             }
         }
 

@@ -19,7 +19,13 @@ export class ActionProcessor {
     card.controllerId = targetPlayerId;
 
     // 1. Rule 400.7: Remove from the current zone
-    if (log) log(`[MOVE] ${card.definition.name} (${card.id}) from ${card.zone} to ${to}...`);
+    if (log) log(`[MOVE] ${card.definition.name} (${card.id}) from ${fromZone} to ${to}...`);
+
+    // Track original zone if moving to stack (Rule 400.7 memoization)
+    if (to === Zone.Stack && fromZone !== Zone.Stack) {
+        card.lastNonStackZone = fromZone;
+    }
+
     this.removeFromCurrentZone(state, card);
 
     // CR 121: Drawing a card
@@ -90,7 +96,7 @@ export class ActionProcessor {
       (card as any).isRevealed = false; // Always clear when entering public zone
       this.registerAbilities(state, card);
       
-      this.handleEnteringBattlefield(state, card, log);
+      this.handleEnteringBattlefield(state, card, from, log);
 
     } else if (to === Zone.Exile) {
         if (!isToken) state.exile.push(card);
@@ -119,7 +125,10 @@ export class ActionProcessor {
   private static resetObjectState(state: GameState, card: GameObject, from: Zone, to: Zone) {
     if (from === Zone.Battlefield) {
         this.unregisterAbilities(state, card.id);
-        if (to === Zone.Hand) state.turnState.permanentReturnedToHandThisTurn = true;
+        if (to === Zone.Hand) {
+            state.turnState.permanentReturnedToHandThisTurn = true;
+            state.turnState.playersWithPermanentReturnedThisTurn[card.ownerId] = true;
+        }
     }
 
     // Rule 400.7: Object changes zones -> becomes a new object
@@ -148,14 +157,21 @@ export class ActionProcessor {
     c.isRevealed = false; // Rule 400.7: Clear revealed status on zone change
     c.counters = {};
     
+    // Rule 400.7: Objects leaving the battlefield/stack lose their identity 
+    // BUT we preserve lastNonStackZone if moving TO the Battlefield from Stack 
+    // to allow ETB triggers to know where the spell was cast from.
+    if (to !== Zone.Battlefield && to !== Zone.Stack) {
+        delete card.lastNonStackZone;
+    }
+    
     // 3. Wipe calculated stats (they will be recalculated for the new zone)
     c.effectiveStats = null;
     c.modifierSnapshot = null;
   }
 
-  private static handleEnteringBattlefield(state: GameState, card: GameObject, log?: (m: string) => void) {
+  private static handleEnteringBattlefield(state: GameState, card: GameObject, fromZone: Zone, log?: (m: string) => void) {
     // Rule 603.6a: Enters-the-battlefield triggers
-    TriggerProcessor.onEvent(state, { type: 'ON_ETB', targetId: card.id, sourceId: card.id, data: { object: card } }, log || (() => {}));
+    TriggerProcessor.onEvent(state, { type: 'ON_ETB', targetId: card.id, sourceId: card.id, sourceZone: fromZone, data: { object: card } }, log || (() => {}));
 
     // Rule 306.5b: Planeswalkers enter with loyalty counters
     if (card.definition.types.some(t => t.toLowerCase() === 'planeswalker')) {
@@ -169,6 +185,12 @@ export class ActionProcessor {
   private static handleEnteringGraveyard(state: GameState, card: GameObject, from: Zone, log?: (m: string) => void) {
       // Rule 603.10: "Leaves the battlefield" triggers look at the object before it moved.
       if (from === Zone.Battlefield) {
+          // Rule 700.4: "Died" means put into graveyard from battlefield.
+          const isCreature = card.definition.types.some(t => t.toLowerCase() === 'creature');
+          if (isCreature) {
+              state.turnState.creaturesDiedThisTurn++;
+          }
+
           // Snapshot for Last Known Information (LKI)
           const lkiSnapshot = JSON.parse(JSON.stringify(card));
           TriggerProcessor.onEvent(state, { type: 'ON_DEATH', targetId: card.id, sourceId: card.id, data: { object: lkiSnapshot } }, log || (() => {}));

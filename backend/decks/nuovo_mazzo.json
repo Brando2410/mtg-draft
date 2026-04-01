@@ -312,8 +312,484 @@
       "type_line": "Sorcery",
       "mana_cost": "{B}",
       "keywords": []
+    },
+    {
+      "scryfall_id": "aac00055-640e-4749-8d23-d242e6d0b23a",
+      "name": "Peer into the Abyss",
+      "rarity": "rare",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/a/aac00055-640e-4749-8d23-d242e6d0b23a.jpg?1594736330",
+      "cmc": 7,
+      "type_line": "Sorcery",
+      "mana_cost": "{4}{B}{B}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "a8b94bc1-68d1-41dc-914c-a33ecb9aeb49",
+      "name": "Pack Leader",
+      "rarity": "rare",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/8/a8b94bc1-68d1-41dc-914c-a33ecb9aeb49.jpg?1594735110",
+      "cmc": 2,
+      "type_line": "Creature — Dog",
+      "mana_cost": "{1}{W}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "e70b7a73-484e-48f1-944c-3d38866cdc20",
+      "name": "Nine Lives",
+      "rarity": "rare",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/7/e70b7a73-484e-48f1-944c-3d38866cdc20.jpg?1594735092",
+      "cmc": 3,
+      "type_line": "Enchantment",
+      "mana_cost": "{1}{W}{W}",
+      "keywords": [
+        "Hexproof"
+      ]
+    },
+    {
+      "scryfall_id": "8c504c23-1e9a-411b-9cfe-4180d0c744f6",
+      "name": "Scavenging Ooze",
+      "rarity": "rare",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/8/c/8c504c23-1e9a-411b-9cfe-4180d0c744f6.jpg?1730489464",
+      "cmc": 2,
+      "type_line": "Creature — Ooze",
+      "mana_cost": "{1}{G}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "d961c441-b76b-4bd8-b510-a3e073207a1b",
+      "name": "Mistral Singer",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/9/d961c441-b76b-4bd8-b510-a3e073207a1b.jpg?1594735588",
+      "cmc": 3,
+      "type_line": "Creature — Siren",
+      "mana_cost": "{2}{U}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Flying",
+        "Prowess"
+      ]
+    },
+    {
+      "scryfall_id": "f45072cd-e3f2-4090-b984-50ec8d360bf2",
+      "name": "Mazemind Tome",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/f/4/f45072cd-e3f2-4090-b984-50ec8d360bf2.jpg?1730491155",
+      "cmc": 2,
+      "type_line": "Artifact",
+      "mana_cost": "{2}",
+      "keywords": [
+        "Scry"
+      ]
+    },
+    {
+      "scryfall_id": "e329a3e2-6702-4758-8aac-c3017e77b619",
+      "name": "Liliana, Waker of the Dead",
+      "rarity": "mythic",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/3/e329a3e2-6702-4758-8aac-c3017e77b619.jpg?1594739061",
+      "cmc": 4,
+      "type_line": "Legendary Planeswalker — Liliana",
+      "mana_cost": "{2}{B}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "07015524-874f-4856-a5c1-3148bd126886",
+      "name": "Indulgent Aristocrat",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/7/07015524-874f-4856-a5c1-3148bd126886.jpg?1736467987",
+      "cmc": 1,
+      "type_line": "Creature — Vampire Noble",
+      "mana_cost": "{B}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "6ea1ee60-5644-4f78-913d-32c36065957f",
+      "name": "Griffin Aerie",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/e/6ea1ee60-5644-4f78-913d-32c36065957f.jpg?1594734998",
+      "cmc": 2,
+      "type_line": "Enchantment",
+      "mana_cost": "{1}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "2f6a3605-950d-488b-8e4f-e2c339ef48dc",
+      "name": "Ghostly Pilferer",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/f/2f6a3605-950d-488b-8e4f-e2c339ef48dc.jpg?1712354148",
+      "cmc": 2,
+      "type_line": "Creature — Spirit Rogue",
+      "mana_cost": "{1}{U}",
+      "power": "2",
+      "toughness": "1",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "af2fdbec-bca2-4af5-9c2a-28b0b35b18a3",
+      "name": "Garruk, Unleashed",
+      "rarity": "mythic",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/f/af2fdbec-bca2-4af5-9c2a-28b0b35b18a3.jpg?1594736982",
+      "cmc": 4,
+      "type_line": "Legendary Planeswalker — Garruk",
+      "mana_cost": "{2}{G}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "249bf4b2-9239-4303-9c5d-81d06f6b7fb1",
+      "name": "Gadrak, the Crown-Scourge",
+      "rarity": "rare",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/4/249bf4b2-9239-4303-9c5d-81d06f6b7fb1.jpg?1743206671",
+      "cmc": 3,
+      "type_line": "Legendary Creature — Dragon",
+      "mana_cost": "{2}{R}",
+      "power": "5",
+      "toughness": "4",
+      "keywords": [
+        "Flying",
+        "Treasure"
+      ]
+    },
+    {
+      "scryfall_id": "28a1dd7f-2e42-4062-a941-b489b98a49fc",
+      "name": "Fierce Empath",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/8/28a1dd7f-2e42-4062-a941-b489b98a49fc.jpg?1730491011",
+      "cmc": 3,
+      "type_line": "Creature — Elf",
+      "mana_cost": "{2}{G}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "d3bc7176-abe0-47cf-a242-cf22a1f590be",
+      "name": "Enthralling Hold",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/3/d3bc7176-abe0-47cf-a242-cf22a1f590be.jpg?1594735471",
+      "cmc": 5,
+      "type_line": "Enchantment — Aura",
+      "mana_cost": "{3}{U}{U}",
+      "keywords": [
+        "Enchant"
+      ]
+    },
+    {
+      "scryfall_id": "39c6e952-97b5-435c-a7fd-6271ddc23200",
+      "name": "Deathless Knight",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/9/39c6e952-97b5-435c-a7fd-6271ddc23200.jpg?1572490881",
+      "cmc": 4,
+      "type_line": "Creature — Skeleton Knight",
+      "mana_cost": "{B/G}{B/G}{B/G}{B/G}",
+      "power": "4",
+      "toughness": "2",
+      "keywords": [
+        "Haste"
+      ]
+    },
+    {
+      "scryfall_id": "a4c3ca8c-c77c-43b8-84ad-796313ecc813",
+      "name": "Chandra, Heart of Fire",
+      "rarity": "mythic",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/4/a4c3ca8c-c77c-43b8-84ad-796313ecc813.jpg?1594752360",
+      "cmc": 5,
+      "type_line": "Legendary Planeswalker — Chandra",
+      "mana_cost": "{3}{R}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "288b056a-ea80-4fdc-990d-0ee1e9a7bf64",
+      "name": "Drowsing Tyrannodon",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/8/288b056a-ea80-4fdc-990d-0ee1e9a7bf64.jpg?1616399654",
+      "cmc": 2,
+      "type_line": "Creature — Dinosaur",
+      "mana_cost": "{1}{G}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Defender"
+      ]
+    },
+    {
+      "scryfall_id": "91d3e366-4da5-42c8-bbd5-a0c178c0da28",
+      "name": "Chandra's Magmutt",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/1/91d3e366-4da5-42c8-bbd5-a0c178c0da28.jpg?1594736548",
+      "cmc": 2,
+      "type_line": "Creature — Elemental Dog",
+      "mana_cost": "{1}{R}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "46666fba-d4a7-4687-8747-a42e4c6d853e",
+      "name": "Celestial Enforcer",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/6/46666fba-d4a7-4687-8747-a42e4c6d853e.jpg?1594734826",
+      "cmc": 3,
+      "type_line": "Creature — Human Cleric",
+      "mana_cost": "{2}{W}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "f8067745-35b6-4abd-9ae9-712159a26c89",
+      "name": "Caged Zombie",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/8/f8067745-35b6-4abd-9ae9-712159a26c89.jpg?1594736024",
+      "cmc": 3,
+      "type_line": "Creature — Zombie",
+      "mana_cost": "{2}{B}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "d10a0f92-c42d-4257-8f64-89fe26687fba",
+      "name": "Burn Bright",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/1/d10a0f92-c42d-4257-8f64-89fe26687fba.jpg?1702429492",
+      "cmc": 3,
+      "type_line": "Instant",
+      "mana_cost": "{2}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "3d0ec3bd-d894-4861-abcb-7b2e4f4de05c",
+      "name": "Burlfist Oak",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/d/3d0ec3bd-d894-4861-abcb-7b2e4f4de05c.jpg?1594736896",
+      "cmc": 4,
+      "type_line": "Creature — Treefolk",
+      "mana_cost": "{2}{G}{G}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "275f8721-a6e5-489b-851f-1676aad5ec39",
+      "name": "Brash Taunter",
+      "rarity": "rare",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/7/275f8721-a6e5-489b-851f-1676aad5ec39.jpg?1726284937",
+      "cmc": 5,
+      "type_line": "Creature — Goblin",
+      "mana_cost": "{4}{R}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Indestructible",
+        "Fight"
+      ]
+    },
+    {
+      "scryfall_id": "6075e0a3-a0ab-4a11-8ad2-7dabb071d309",
+      "name": "Bone Pit Brute",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/0/6075e0a3-a0ab-4a11-8ad2-7dabb071d309.jpg?1594736498",
+      "cmc": 6,
+      "type_line": "Creature — Cyclops",
+      "mana_cost": "{4}{R}{R}",
+      "power": "4",
+      "toughness": "5",
+      "keywords": [
+        "Menace"
+      ]
+    },
+    {
+      "scryfall_id": "fee05f7e-d4da-4a72-8140-d505eecbdd32",
+      "name": "Battle-Rattle Shaman",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/e/fee05f7e-d4da-4a72-8140-d505eecbdd32.jpg?1730490623",
+      "cmc": 4,
+      "type_line": "Creature — Goblin Shaman",
+      "mana_cost": "{3}{R}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "2688b45d-9d74-4d9f-9a63-29c82b48d64f",
+      "name": "Basri, Devoted Paladin",
+      "rarity": "mythic",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/6/2688b45d-9d74-4d9f-9a63-29c82b48d64f.jpg?1596168674",
+      "cmc": 6,
+      "type_line": "Legendary Planeswalker — Basri",
+      "mana_cost": "{4}{W}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "91af15cc-fdd5-4d72-a53a-314fa5353527",
+      "name": "See the Truth",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/1/91af15cc-fdd5-4d72-a53a-314fa5353527.jpg?1594735741",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "0540ee72-6370-4f70-9526-6f441b3cac1e",
+      "name": "Stormwing Entity",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/5/0540ee72-6370-4f70-9526-6f441b3cac1e.jpg?1594735784",
+      "cmc": 5,
+      "type_line": "Creature — Elemental",
+      "mana_cost": "{3}{U}{U}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Scry",
+        "Flying",
+        "Prowess"
+      ]
+    },
+    {
+      "scryfall_id": "0f7d3839-0bc3-402b-b9ea-c903f82d39da",
+      "name": "Sublime Epiphany",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/f/0f7d3839-0bc3-402b-b9ea-c903f82d39da.jpg?1743206406",
+      "cmc": 6,
+      "type_line": "Instant",
+      "mana_cost": "{4}{U}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "752bf493-5839-47e8-95f2-6d8201907428",
+      "name": "Tormod's Crypt",
+      "rarity": "uncommon",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/7/5/752bf493-5839-47e8-95f2-6d8201907428.jpg?1675201100",
+      "cmc": 0,
+      "type_line": "Artifact",
+      "mana_cost": "{0}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "5d878dab-5ed2-4ef3-b2c7-472290892854",
+      "name": "Conspicuous Snoop",
+      "rarity": "rare",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/d/5d878dab-5ed2-4ef3-b2c7-472290892854.jpg?1616182104",
+      "cmc": 2,
+      "type_line": "Creature — Goblin Rogue",
+      "mana_cost": "{R}{R}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "1b597992-8e11-41a0-ac87-33fffd82b993",
+      "name": "Double Vision",
+      "rarity": "rare",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/b/1b597992-8e11-41a0-ac87-33fffd82b993.jpg?1673484331",
+      "cmc": 5,
+      "type_line": "Enchantment",
+      "mana_cost": "{3}{R}{R}",
+      "keywords": []
     }
   ],
-  "cardCount": 21,
-  "lastUpdated": "2026-04-01T17:14:19.817Z"
+  "cardCount": 53,
+  "lastUpdated": "2026-04-01T23:29:34.384Z"
 }

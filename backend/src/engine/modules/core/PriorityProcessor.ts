@@ -150,9 +150,15 @@ export class PriorityProcessor {
     
     if (checkPriority && state.priorityPlayerId !== playerId) return false;
 
-    const logic = M21_LOGIC[obj.definition.name];
-    const ability = logic?.abilities?.[abilityIndex];
-    if (!ability || ability.type !== AbilityType.Activated) return false;
+    const cardLogic = M21_LOGIC[obj.definition.name];
+    const ability = cardLogic.abilities[abilityIndex];
+    if (ability.type !== AbilityType.Activated) return false;
+
+    // Requirement Check (Rule 602.5b)
+    if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) {
+        console.log(`Illegal Activation: Activation requirements for ${obj.definition.name} are not met.`);
+        return false;
+    }
 
     // Skip purely mana-producing abilities for auto-pass
     if (!checkPriority && ability.isManaAbility) return false;
@@ -160,7 +166,7 @@ export class PriorityProcessor {
     // Timing Check (Rule 606.3: Planeswalkers)
     const isPlaneswalker = obj.definition.types.includes('Planeswalker');
     if (isPlaneswalker) {
-       const canActivateAnyTime = (logic.abilities || []).some((a: any) => a.type === 'Static' && a.id.includes('any_turn'));
+       const canActivateAnyTime = (cardLogic.abilities || []).some((a: any) => a.type === 'Static' && a.id.includes('any_turn'));
        const isSorcerySpeed = state.activePlayerId === playerId && (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain) && state.stack.length === 0;
 
        if (!canActivateAnyTime && !isSorcerySpeed) return false;
@@ -169,6 +175,9 @@ export class PriorityProcessor {
 
     // Cost Check
     if (!CostProcessor.canPay(state, ability.costs || [], obj.id, playerId)) return false;
+
+    // Requirement Check (Rule 602.5b)
+    if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) return false;
 
     // Target Check
     if (ability.targetDefinition && !ability.targetDefinition.optional) {

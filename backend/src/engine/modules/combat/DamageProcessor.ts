@@ -29,6 +29,12 @@ export class DamageProcessor {
         return;
     }
 
+    // Rule 615: Prevention Effects
+    if (this.shouldPreventDamage(state, targetId, isCombat)) {
+        log(`[PREVENTED] Damage to ${targetId} was prevented by an effect.`);
+        return;
+    }
+
     const { LayerProcessor } = require('../state/LayerProcessor');
     const sourceObj = state.battlefield.find(o => o.id === sourceId) || 
                       state.stack.find(s => s.id === sourceId)?.card;
@@ -97,4 +103,23 @@ export class DamageProcessor {
     TriggerProcessor.onEvent(state, { type: 'ON_DAMAGE_PLAYER', targetId: player.id, sourceId: sourceObj?.id, amount, data: { isCombat } }, log);
   }
 
+  public static shouldPreventDamage(state: GameState, targetId: string, isCombat: boolean): boolean {
+      const effects = state.ruleRegistry.preventionEffects || [];
+      if (effects.length === 0) return false;
+
+      // We only care if target is a creature for Dog prevention
+      const targetObj = state.battlefield.find(o => o.id === targetId);
+      if (!targetObj) return false;
+
+      // Import EffectProcessor dynamically here if needed to avoid cycles
+      const { EffectProcessor } = require('./../effects/EffectProcessor');
+
+      for (const eff of effects) {
+          if (eff.damageType === 'CombatDamage' && !isCombat) continue;
+          
+          const validIds = EffectProcessor.resolveTargetMapping(state, eff.targetMapping, [], eff.sourceId, eff.controllerId);
+          if (validIds.includes(targetId)) return true;
+      }
+      return false;
+  }
 }

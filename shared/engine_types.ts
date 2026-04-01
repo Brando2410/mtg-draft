@@ -85,6 +85,7 @@ export interface GameObject {
   keywords: string[]; // Dynamic keywords gained (e.g. from an Aura or equipment)
   deathtouchMarked: boolean; // CR 702.2: Damage from a source with deathtouch
   isPhasedOut?: boolean; // CR 702.26: Treated as though it doesn't exist
+  lastNonStackZone?: Zone; // Track where a spell was cast from
   
   // Modifiers (Layer system targets)
   counters: Record<string, number>;
@@ -169,12 +170,15 @@ export interface CombatState {
 
 export interface TurnState {
   permanentReturnedToHandThisTurn: boolean;
+  playersWithPermanentReturnedThisTurn: Record<PlayerId, boolean>;
   noncombatDamageDealtToOpponents: number;
   creaturesAttackedThisTurn: number;
+  creaturesDiedThisTurn: number;
   lastDamageAmount: number;
   lastLifeGainedAmount: number;
   lastCardsDrawnAmount: number;
   spellsCastThisTurn: Record<PlayerId, number>;
+  instantOrSorceryCastThisTurn: Record<PlayerId, boolean>;
 }
 
 export interface ChoicePendingActionData {
@@ -342,6 +346,7 @@ export interface TriggeredAbility {
   // Optional: "Intervening If" clause (Rule 603.4)
   condition?: (event: GameEvent, state: GameState) => boolean;
   // Specific effect to execute or push to stack
+  duration?: EffectDuration;
 }
 
 export interface RuleRegistry {
@@ -350,6 +355,16 @@ export interface RuleRegistry {
   triggeredAbilities: TriggeredAbility[];
   restrictions: AbilityRestriction[];
   replacementEffects?: any[];
+  preventionEffects?: DamagePreventionEffect[];
+}
+
+export interface DamagePreventionEffect {
+    id: string;
+    sourceId: string;
+    controllerId: PlayerId;
+    damageType: 'CombatDamage' | 'AllDamage' | 'Any';
+    targetMapping: string; // e.g. 'DOGS_YOU_CONTROL'
+    duration: string;
 }
 
 export const AbilityType = {
@@ -426,7 +441,13 @@ export const EffectType = {
   PutRemainderOnBottomRandom: 'PutRemainderOnBottomRandom',
   CreateEmblem: 'CreateEmblem',   // CR 114: Creates an emblem in the Command Zone
   Sacrifice: 'Sacrifice',         // CR 701.17: Move permanent(s) to graveyard bypassing indestructible
-  Scry: 'Scry'                    // CR 701.18: Look at top cards and choose top/bottom
+  Scry: 'Scry',                   // CR 701.18: Look at top cards and choose top/bottom
+  AddTriggeredAbility: 'AddTriggeredAbility',
+  AddPreventionEffect: 'AddPreventionEffect',
+  Shuffle: 'Shuffle',
+  Log: 'Log',
+  ExileAllCards: 'ExileAllCards',
+  CopySpellOnStack: 'CopySpellOnStack',
 } as const;
 
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
@@ -463,6 +484,10 @@ export interface EffectDefinition {
 
   // Conditional logic
   condition?: string; 
+  message?: string;
+  destination?: 'Hand' | 'Battlefield' | 'Graveyard' | 'Library';
+  reveal?: boolean;
+  shuffle?: boolean;
   
   /**
    * targetMapping conventions:
@@ -480,7 +505,6 @@ export interface EffectDefinition {
   label?: string; // Top-level label for Choice effects
   targetId?: string; // For MoveToZone
   zone?: Zone; // For MoveToZone
-  reveal?: boolean; // For MoveToZone
   cardsToMoveIds?: string[]; // For PutRemainderOnBottomRandom
   optional?: boolean; // For Choice/LookAtTopAndPick
   hideUndo?: boolean; // For Choice (UI Hint)

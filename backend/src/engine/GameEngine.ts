@@ -44,19 +44,24 @@ export class GameEngine {
         continuousEffects: [],
         activatedAbilities: [],
         triggeredAbilities: [],
-        restrictions: []
+        restrictions: [],
+        replacementEffects: [],
+        preventionEffects: []
       },
       emblems: [],
       consecutivePasses: 0,
       logs: ['Match Start Initialization...'],
       turnState: {
         permanentReturnedToHandThisTurn: false,
+        playersWithPermanentReturnedThisTurn: {},
         noncombatDamageDealtToOpponents: 0,
         creaturesAttackedThisTurn: 0,
+        creaturesDiedThisTurn: 0,
         lastDamageAmount: 0,
         lastLifeGainedAmount: 0,
         lastCardsDrawnAmount: 0,
-        spellsCastThisTurn: {}
+        spellsCastThisTurn: {},
+        instantOrSorceryCastThisTurn: {}
       }
     };
     
@@ -424,12 +429,15 @@ export class GameEngine {
     // CR 500: Reset turn-wide logic tracking
     this.state.turnState = {
         permanentReturnedToHandThisTurn: false,
+        playersWithPermanentReturnedThisTurn: {},
         noncombatDamageDealtToOpponents: 0,
         creaturesAttackedThisTurn: 0,
+        creaturesDiedThisTurn: 0,
         lastDamageAmount: 0,
         lastLifeGainedAmount: 0,
         lastCardsDrawnAmount: 0,
-        spellsCastThisTurn: {}
+        spellsCastThisTurn: {},
+        instantOrSorceryCastThisTurn: {}
     };
   }
 
@@ -520,6 +528,9 @@ export class GameEngine {
       // MTG Arena "Whiteboard Cleanup"
       this.state.ruleRegistry.continuousEffects = this.state.ruleRegistry.continuousEffects.filter(
         e => e.duration.type !== DurationType.UntilEndOfTurn
+      );
+      this.state.ruleRegistry.triggeredAbilities = this.state.ruleRegistry.triggeredAbilities.filter(
+        t => !t.duration || t.duration.type !== DurationType.UntilEndOfTurn
       );
     }
   }

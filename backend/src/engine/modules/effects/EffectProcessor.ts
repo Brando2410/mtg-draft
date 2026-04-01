@@ -1,4 +1,4 @@
-import { GameState, EffectDefinition, GameObjectId, PlayerId, Zone, GameObject, ContinuousEffect, DurationType, EmblemDefinition } from '@shared/engine_types';
+import { GameState, EffectDefinition, GameObjectId, PlayerId, Zone, GameObject, ContinuousEffect, DurationType, EmblemDefinition, TriggeredAbility } from '@shared/engine_types';
 import { ActionProcessor } from '../actions/ActionProcessor';
 import { DamageProcessor } from '../combat/DamageProcessor';
 import { ValidationProcessor } from '../state/ValidationProcessor';
@@ -93,7 +93,7 @@ export class EffectProcessor {
         return; // SUSPEND RESOLUTION
     }
 
-    let resolvedTargetIds = this.resolveTargetMapping(state, (effect as any).targetMapping || "", targets, sourceId, controllerId);
+    let resolvedTargetIds = this.resolveTargetMapping(state, (effect as any).targetMapping || "", targets, sourceId, controllerId, stackObject?.data, effect);
     if ((effect as any).targetId) resolvedTargetIds = [(effect as any).targetId]; // Override if hardcoded specifically for this sub-action
     
     // CR 608.2b: Targeted effects only apply to targets that are still legal.
@@ -103,7 +103,7 @@ export class EffectProcessor {
         const obj = this.findObject(state, tid, stackObject, parentContext);
         if (!obj) return false;
         
-        if (['TARGET_1', 'TARGET_2', 'TARGET_ALL', 'TARGET_1_CONTROLLER', 'TARGET_1_OPPONENT'].includes(effect.targetMapping || "")) {
+        if (['TARGET_1', 'TARGET_2', 'TARGET_ALL', 'TARGET_1_CONTROLLER', 'TARGET_1_OPPONENT', 'EVENT_TARGET'].includes(effect.targetMapping || "")) {
             const tempStackObj = state.stack.find(s => s.id === (state as any).lastResolvedStackId || s.sourceId === sourceId) || stackObject;
             const targetDef = (effect as any).targetDefinition || tempStackObj?.data?.targetDefinition;
             if (!targetDef) return true; // SELECTED/CHOICE result, skip formal targeting validation
@@ -121,12 +121,41 @@ export class EffectProcessor {
         ? this.resolveAmount(state, effect.amount, sourceId, controllerId, stackObject)
         : 1; // Default to 1 if amount is not specified in data (MTG: "a" token, "a" card, etc.)
 
+    // --- CR 608.2: EVALUATE CONDITIONS ---
+    if (effect.condition) {
+        if (effect.condition === 'targetWasCreature') {
+            const firstTargetId = targets[0]; // TARGET_1
+            const targetObj = this.findObject(state, firstTargetId, stackObject, parentContext);
+            const isCreature = targetObj?.definition.types.some(t => t.toLowerCase() === 'creature');
+            if (!isCreature) {
+                log(`[RESOLVING] Condition NOT met: ${firstTargetId} is not a creature card. Skipping ${effect.type}.`);
+                return; 
+            }
+        }
+        if (effect.condition === 'notCastFromHand') {
+            const card = (stackObject as any)?.card;
+            if (card && card.lastNonStackZone === Zone.Hand) {
+                log(`[RESOLVING] Condition NOT met: Spell was cast from hand. Skipping ${effect.type}.`);
+                return;
+            }
+        }
+        if (effect.condition === 'castFromHand') {
+            const card = (stackObject as any)?.card;
+            if (card && card.lastNonStackZone !== Zone.Hand) {
+                log(`[RESOLVING] Condition NOT met: Spell was NOT cast from hand. Skipping ${effect.type}.`);
+                return;
+            }
+        }
+    }
+
     // CR 609: Effect Strategy Dispatcher
     switch (effect.type) {
       case 'DrawCards':           this.handleDrawCards(state, validTargetIds, amount, log); break;
       case 'DiscardCards':        this.handleDiscardCards(state, validTargetIds, amount, sourceId, log); break;
       case 'DealDamage':          this.handleDealDamage(state, validTargetIds, amount, sourceId, log); break;
       case 'Exile':               this.handleExile(state, validTargetIds, sourceId, log, stackObject, parentContext); break;
+      case 'ExileAllCards':       this.handleExileAllCards(state, validTargetIds, effect, log); break;
+      case 'CopySpellOnStack':    this.handleCopySpellOnStack(state, validTargetIds, controllerId, log); break;
       case 'ReturnToHand':        this.handleReturnToHand(state, validTargetIds, log, stackObject, parentContext); break;
       case 'PhasedOut':           this.handlePhasedOut(state, validTargetIds, effect.value !== false, log, stackObject, parentContext); break;
       case 'Destroy':             this.handleDestroy(state, validTargetIds, log, stackObject, parentContext); break;
@@ -139,7 +168,7 @@ export class EffectProcessor {
           this.handleCreateToken(state, validTargetIds, amount, (effect as any).tokenBlueprint, log, p, t); 
           break;
       }
-      case 'SearchLibrary':       this.handleSearchLibrary(state, validTargetIds, log); break;
+      case 'SearchLibrary':       this.handleSearchLibrary(state, validTargetIds, effect, sourceId, log); break;
       case 'CreateEmblem':        this.handleCreateEmblem(state, effect, controllerId, sourceId, log); break;
       case 'ApplyContinuousEffect': this.handleApplyContinuousEffect(state, effect, sourceId, validTargetIds, log, stackObject); break;
       case 'Choice':              this.handleChoice(state, effect, sourceId, validTargetIds, log, stackObject, parentContext); break;
@@ -148,9 +177,106 @@ export class EffectProcessor {
       case 'PutRemainderOnBottomRandom': this.handlePutRemainderOnBottomRandom(state, effect, log, stackObject, parentContext); break;
       case 'Scry':                this.handleScry(state, validTargetIds, amount, sourceId, log); break;
       case 'Sacrifice':            this.handleSacrifice(state, validTargetIds, sourceId, log); break;
+      case 'AddTriggeredAbility':  this.handleAddTriggeredAbility(state, effect, sourceId, log); break;
+      case 'Fight':                this.handleFight(state, validTargetIds, log); break;
+      case 'AddPreventionEffect':  this.handleAddPreventionEffect(state, effect, sourceId, log); break;
+      case 'Shuffle':              this.shuffleLibrary(state.players[validTargetIds[0] as PlayerId], log); break;
+      case 'Log':                  log(effect.message || ""); break;
       default:
         log(`[WARNING] Effect type ${effect.type} not yet implemented.`);
-    }
+      }
+  }
+
+  private static shuffleLibrary(player: any, log: (m: string) => void) {
+      if (!player) return;
+      for (let i = player.library.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [player.library[i], player.library[j]] = [player.library[j], player.library[i]];
+      }
+      log(`[SHUFFLE] ${player.name} shuffled their library.`);
+  }
+
+  private static handleSearchLibrary(state: GameState, targets: string[], effect: any, sourceId: string, log: (m: string) => void) {
+      const playerId = targets[0] || state.activePlayerId;
+      const player = state.players[playerId];
+      if (!player) return;
+
+      // Filter library for legal cards - Rule 701.19
+      const restrictions = effect.targetDefinition?.restrictions || [];
+      const validCards = player.library.filter(c => 
+          ValidationProcessor.matchesRestrictions(state, c, restrictions, player.id, sourceId)
+      );
+
+      log(`[SEARCH] ${player.name} is searching their library...`);
+
+      // 1. Create a Choice Action
+      state.pendingAction = ChoiceGenerator.createCardChoice(state, player.library, {
+          label: effect.label || `Choose ${restrictions.join(', ') || 'a card'} from your library`,
+          playerId: player.id,
+          sourceId: sourceId,
+          restrictions: restrictions,
+          optional: effect.optional !== false,
+          hideUndo: true,
+          onSelected: (c) => {
+              const results = [];
+              if (effect.reveal) {
+                  results.push({ type: 'Log', message: `[REVEAL] ${player.name} reveals ${c.definition.name} from library.` } as any);
+              }
+              
+              // Destination Logic (Default to Hand)
+              const dest = effect.destination || 'Hand';
+              const zoneMap: Record<string, any> = { 'Hand': Zone.Hand, 'Battlefield': Zone.Battlefield, 'Graveyard': Zone.Graveyard };
+              results.push({ type: 'MoveToZone', targetId: c.id, zone: zoneMap[dest] || Zone.Hand } as any);
+
+              if (effect.shuffle !== false) {
+                  results.push({ type: 'Shuffle', targetId: player.id } as any);
+              }
+
+              return results;
+          },
+          onNone: () => {
+              if (effect.shuffle !== false) {
+                  return [{ type: 'Shuffle', targetId: player.id } as any];
+              }
+              return [];
+          }
+      });
+  }
+
+  private static handleAddTriggeredAbility(state: GameState, effect: any, sourceId: string, log: (m: string) => void) {
+      const sourceObj = state.battlefield.find(o => o.id === sourceId) || state.players[sourceId as any];
+      const controllerId = (sourceObj as any)?.controllerId || (state.activePlayerId);
+
+      const trigger: TriggeredAbility = {
+          id: `delayed_trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+          sourceId: sourceId,
+          controllerId: controllerId,
+          eventMatch: effect.eventMatch || effect.on,
+          activeZone: 'Any',
+          duration: { type: (effect.duration || 'UNTIL_END_OF_TURN') as any },
+          ...effect
+      };
+
+      state.ruleRegistry.triggeredAbilities.push(trigger);
+      log(`[DELAYED-TRIGGER] A new trigger was registered until end of turn.`);
+  }
+
+  private static handleAddPreventionEffect(state: GameState, effect: any, sourceId: string, log: (m: string) => void) {
+      const sourceObj = this.findObject(state, sourceId);
+      const controllerId = (sourceObj as any)?.controllerId || state.activePlayerId;
+
+      const prevention: any = {
+          id: `prevention_${Date.now()}_${Math.random()}`,
+          sourceId,
+          controllerId,
+          damageType: effect.damageType || 'CombatDamage',
+          targetMapping: effect.targetMapping,
+          duration: effect.duration || 'UntilEndOfTurn'
+      };
+
+      if (!state.ruleRegistry.preventionEffects) state.ruleRegistry.preventionEffects = [];
+      state.ruleRegistry.preventionEffects.push(prevention);
+      log(`[PREVENTION] ${prevention.damageType} to ${prevention.targetMapping} will be prevented this turn.`);
   }
 
   /* --- Concrete Effect Handlers (CR 609) --- */
@@ -169,7 +295,7 @@ export class EffectProcessor {
         if (amount === 1) {
             const card = cards[0];
             state.pendingAction = ChoiceGenerator.createModalChoice(
-                { label: `Scry: ${card.definition.name}`, playerId: pid, sourceId },
+                { label: `Scry: ${card.definition.name}`, playerId: pid, sourceId, hideUndo: true },
                 [
                     { label: "Keep on Top", value: "top", effects: [{ type: 'MoveToZone', targetId: card.id, zone: Zone.Library, position: 'top' }] },
                     { label: "Put on Bottom", value: "bottom", effects: [{ type: 'MoveToZone', targetId: card.id, zone: Zone.Library, position: 'bottom' }] }
@@ -224,7 +350,7 @@ export class EffectProcessor {
         restrictions: effect.restrictions,
         reveal: effect.reveal,
         optional: effect.optional,
-        hideUndo: effect.hideUndo === true,
+        hideUndo: effect.hideUndo !== undefined ? effect.hideUndo : true,
         onSelected: (c) => [
             { type: 'MoveToZone', targetId: c.id, zone: Zone.Hand, reveal: effect.reveal },
             { type: 'PutRemainderOnBottomRandom', cardsToMoveIds: cards.filter(other => other.id !== c.id).map(o => o.id) }
@@ -334,7 +460,7 @@ export class EffectProcessor {
                 sourceId: sourceId,
                 restrictions: effect.restrictions,
                 optional: effect.optional !== false,
-                hideUndo: effect.hideUndo === true,
+                hideUndo: effect.hideUndo !== undefined ? effect.hideUndo : true,
                 onSelected: (c) => effect.effects,
                 onNone: () => []
             });
@@ -351,7 +477,7 @@ export class EffectProcessor {
             label: effect.label || 'Scegli un\'Opzione', 
             playerId: controllerId, 
             sourceId: sourceId, 
-            hideUndo: effect.hideUndo === true 
+            hideUndo: effect.hideUndo !== undefined ? effect.hideUndo : true
         },
         dynamicChoices || []
     );
@@ -408,6 +534,62 @@ export class EffectProcessor {
 
   private static handleDealDamage(state: GameState, targets: string[], amount: number, sourceId: string, log: (m: string) => void) {
     targets.forEach(tid => DamageProcessor.dealDamage(state, sourceId, tid, amount, false, log));
+  }
+
+  private static handleCopySpellOnStack(state: GameState, targets: string[], controllerId: string, log: (m: string) => void) {
+      targets.forEach(tid => {
+          const stackObj = state.stack.find(s => s.id === tid || s.sourceId === tid);
+          if (!stackObj) return;
+
+          const copy = JSON.parse(JSON.stringify(stackObj)); // Deep copy to avoid reference issues
+          copy.id = `copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+          (copy as any).isCopy = true;
+          copy.controllerId = controllerId;
+
+          state.stack.push(copy);
+          log(`[COPY] Created copy of ${stackObj.card?.definition.name || 'spell'}.`);
+
+          if (copy.data?.targetDefinition) {
+              const targetDef = copy.data.targetDefinition;
+              const legalTargetIds = [
+                  ...Object.keys(state.players),
+                  ...state.battlefield.map(o => o.id),
+                  ...state.stack.map(s => s.id)
+              ].filter(tid => ValidationProcessor.isLegalTarget(state, copy.id, tid, targetDef));
+
+              state.pendingAction = {
+                  type: 'TARGETING' as any,
+                  playerId: controllerId,
+                  sourceId: copy.id,
+                  data: {
+                      targetDefinition: targetDef,
+                      legalTargetIds,
+                      optional: true, // Rule 706.10c: "You may choose new targets"
+                      originalTargets: [...copy.targets]
+                  }
+              };
+              log(`[COPY] ${state.players[controllerId].name} may choose new targets for the copy.`);
+          }
+      });
+  }
+
+  private static handleExileAllCards(state: GameState, targets: string[], effect: any, log: (m: string) => void) {
+      targets.forEach(tid => {
+          const player = state.players[tid];
+          if (!player) return;
+
+          const cardsToExile = [...(player.graveyard || [])];
+          if (cardsToExile.length === 0) {
+              log(`${player.name}'s graveyard is empty.`);
+              return;
+          }
+
+          // Rule 121: Iterating over snapshot to avoid modification issues
+          [...cardsToExile].forEach(card => {
+              ActionProcessor.moveCard(state, card, Zone.Exile, card.ownerId, log);
+          });
+          log(`Exiled all ${cardsToExile.length} cards from ${player.name}'s graveyard.`);
+      });
   }
 
   private static handleExile(state: GameState, targets: string[], sourceId: string, log: (m: string) => void, stackObject?: any, parentContext?: any) {
@@ -512,6 +694,26 @@ export class EffectProcessor {
     });
   }
 
+  private static handleFight(state: GameState, targets: string[], log: (m: string) => void) {
+      if (targets.length < 2) return;
+      const c1 = this.findObject(state, targets[0]);
+      const c2 = this.findObject(state, targets[1]);
+
+      if (!c1 || !c2) {
+          log(`[FIGHT] One or more combatants are missing from the battlefield. Fight canceled.`);
+          return;
+      }
+
+      // Rule 701.12: Each deals damage to the other EQUAL TO ITS POWER
+      const p1 = LayerProcessor.getEffectiveStats(c1, state).power;
+      const p2 = LayerProcessor.getEffectiveStats(c2, state).power;
+
+      log(`[FIGHT] ${c1.definition.name} (${p1}) fights ${c2.definition.name} (${p2}).`);
+
+      this.handleDealDamage(state, [c2.id], p1, c1.id, log);
+      this.handleDealDamage(state, [c1.id], p2, c2.id, log);
+  }
+
   private static handleGainLife(state: GameState, targets: string[], amount: number, log: (m: string) => void) {
     targets.forEach(pid => {
         if (state.players[pid]) {
@@ -554,9 +756,6 @@ export class EffectProcessor {
     });
   }
 
-  private static handleSearchLibrary(state: GameState, targets: string[], log: (m: string) => void) {
-    targets.forEach(pid => log(`[SEARCH] ${state.players[pid]?.name} is searching...`));
-  }
 
   /**
    * CR 114: Create an Emblem and place it in the Command Zone.
@@ -705,6 +904,18 @@ export class EffectProcessor {
         const obj = this.findObject(state, tid as string, stackObject);
         return obj ? ManaProcessor.getManaValue(obj.definition.manaCost || '') : 0;
       }
+      case 'TARGET_1_HALF_LIFE_UP':
+      case 'HALF_LIFE_ROUND_UP': {
+          const tid = (stackObject as any)?.targets?.[0];
+          const player = state.players[tid as string];
+          return player ? Math.ceil(player.life / 2) : 0;
+      }
+      case 'TARGET_1_HALF_LIBRARY_UP':
+      case 'HALF_LIBRARY_ROUND_UP': {
+          const tid = (stackObject as any)?.targets?.[0];
+          const player = state.players[tid as string];
+          return player ? Math.ceil(player.library.length / 2) : 0;
+      }
       case 'SHRINE_COUNT':
         return state.battlefield.filter(o => o.controllerId === controllerId && o.definition.subtypes.includes('Shrine')).length;
       case (typeof amount === 'string' && (amount as string).startsWith('COUNT_')) ? amount : '___NON_MATCHING___': {
@@ -749,14 +960,34 @@ export class EffectProcessor {
     mapping: string, 
     targets: string[], 
     sourceId: GameObjectId,
-    controllerId: PlayerId
+    controllerId: PlayerId,
+    stackData?: any,
+    effect?: EffectDefinition
   ): string[] {
+    const eventData = stackData?.eventData;
     switch (mapping) {
       case 'SELF': return [sourceId];
       case 'CONTROLLER': return [controllerId];
       case 'TARGET_1': return [targets[0]];
+      case 'SELF_AND_TARGET_1': return [sourceId, targets[0]];
       case 'TARGET_2': return [targets[1]];
       case 'TARGET_ALL': return targets;
+      case 'MATCHING_PERMANENTS_YOU_CONTROL':
+          if (!effect?.restrictions) return [];
+          return state.battlefield
+            .filter(o => o.controllerId === controllerId && ValidationProcessor.matchesRestrictions(state, o, effect.restrictions as any, controllerId, sourceId))
+            .map(o => o.id);
+      case 'MATCHING_PERMANENTS':
+          if (!effect?.restrictions) return [];
+          return state.battlefield
+            .filter(o => ValidationProcessor.matchesRestrictions(state, o, effect.restrictions as any, controllerId, sourceId))
+            .map(o => o.id);
+      case 'TRIGGER_SOURCE':
+          return eventData?.sourceId ? [eventData.sourceId] : (stackData?.sourceId ? [stackData.sourceId] : []);
+      case 'TRIGGER_TARGET':
+          return eventData?.targetId ? [eventData.targetId] : (stackData?.targetId ? [stackData.targetId] : []);
+      case 'EVENT_TARGET':
+          return eventData?.object?.id ? [eventData.object.id] : (eventData?.targetId ? [eventData.targetId] : []);
       case 'TARGET_1_CONTROLLER':
         const obj = this.findObject(state, targets[0]);
         return obj ? [obj.controllerId] : [];

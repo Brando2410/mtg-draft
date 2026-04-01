@@ -236,6 +236,9 @@ export class PlayerActionProcessor {
        } else {
            log(`${card.definition.name} attacking with Vigilance.`);
        }
+
+       const { TriggerProcessor } = require('../effects/TriggerProcessor');
+       TriggerProcessor.onEvent(state, { type: 'ON_ATTACK', targetId: cardId, sourceId: cardId, data: { object: card, targetId: (targetId || opponentId!) } }, log);
     }
     return true;
   }
