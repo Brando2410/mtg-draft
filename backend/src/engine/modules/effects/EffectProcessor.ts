@@ -5,6 +5,7 @@ import { ValidationProcessor } from '../state/ValidationProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { TriggerProcessor } from './TriggerProcessor';
+import { ChoiceGenerator } from './ChoiceGenerator';
 
 /**
  * Rules Engine Module: Effect Resolution (Rule 608/609)
@@ -24,6 +25,7 @@ export class EffectProcessor {
     stackObject?: any,
     parentContext?: any
   ): boolean {
+    log(`[RESOLVE-EFFECTS] Starting from index ${startIndex}/${effects.length}. Targets: ${targets.join(', ')}`);
     for (let i = startIndex; i < effects.length; i++) {
         const effect = effects[i];
         this.executeEffect(state, effect, sourceId, targets, log, stackObject, parentContext);
@@ -58,6 +60,7 @@ export class EffectProcessor {
   ) {
     const sourceObj = this.findObject(state, sourceId, stackObject, parentContext) || (stackObject?.card ? stackObject.card : stackObject);
     const controllerId = sourceObj?.controllerId || state.activePlayerId;
+    log(`[EXECUTE-EFFECT] Type: ${effect.type}. Mapping: ${(effect as any).targetMapping}. Targets in context: ${targets.join(', ')}`);
 
     // --- CR 601.2c / 608.2b: TARGETING FOR MID-SPELL EFFECTS ---
     // If an effect has a targetDefinition but no target has been selected yet (length 0),
@@ -103,6 +106,7 @@ export class EffectProcessor {
         if (['TARGET_1', 'TARGET_2', 'TARGET_ALL', 'TARGET_1_CONTROLLER', 'TARGET_1_OPPONENT'].includes(effect.targetMapping || "")) {
             const tempStackObj = state.stack.find(s => s.id === (state as any).lastResolvedStackId || s.sourceId === sourceId) || stackObject;
             const targetDef = (effect as any).targetDefinition || tempStackObj?.data?.targetDefinition;
+            if (!targetDef) return true; // SELECTED/CHOICE result, skip formal targeting validation
             return ValidationProcessor.isLegalTarget(state, (sourceObj as any) || (sourceId as any), tid, targetDef);
         }
         return true;
@@ -164,19 +168,16 @@ export class EffectProcessor {
 
         if (amount === 1) {
             const card = cards[0];
-            state.pendingAction = {
-                type: 'CHOICE',
-                playerId: pid,
-                sourceId,
-                data: {
-                    label: `Scry: ${card.definition.name}`,
-                    choices: [
-                        { label: "Keep on Top", value: "top", effects: [{ type: 'MoveToZone', targetId: card.id, zone: Zone.Library, position: 'top' }] },
-                        { label: "Put on Bottom", value: "bottom", effects: [{ type: 'MoveToZone', targetId: card.id, zone: Zone.Library, position: 'bottom' }] }
-                    ],
-                    cardData: card
-                }
-            };
+            state.pendingAction = ChoiceGenerator.createModalChoice(
+                { label: `Scry: ${card.definition.name}`, playerId: pid, sourceId },
+                [
+                    { label: "Keep on Top", value: "top", effects: [{ type: 'MoveToZone', targetId: card.id, zone: Zone.Library, position: 'top' }] },
+                    { label: "Put on Bottom", value: "bottom", effects: [{ type: 'MoveToZone', targetId: card.id, zone: Zone.Library, position: 'bottom' }] }
+                ]
+            );
+            if (state.pendingAction) {
+                (state.pendingAction.data as any).cardData = card; // Special hint for UI
+            }
             log(`${player.name} is scrying...`);
         } else {
             // For N > 1, we put them all back on top in original order for now (simple implementation)
@@ -216,49 +217,23 @@ export class EffectProcessor {
 
     log(`[LOOK] ${player.name} looks at the top ${cards.length} cards of their library.`);
 
-    const validCards = cards.filter(c => 
-        ValidationProcessor.matchesRestrictions(state, c, effect.restrictions || [], controllerId, sourceId)
-    );
-
-    // Create a CHOICE action for ALL cards, but mark matching/non-matching
-    const options = cards.map(c => {
-        const isMatch = ValidationProcessor.matchesRestrictions(state, c, effect.restrictions || [], controllerId, sourceId);
-        return {
-            label: isMatch ? `Reveal and put ${c.definition.name} into hand` : `[Invalid] ${c.definition.name}`,
-            value: isMatch ? c.id : "none",
-            imageUrl: c.definition.image_url,
-            selectable: isMatch, // Flag for UI
-            cardData: c, 
-            effects: isMatch ? [
-                { type: 'MoveToZone', targetId: c.id, zone: Zone.Hand, reveal: effect.reveal },
-                { type: 'PutRemainderOnBottomRandom', cardsToMoveIds: cards.filter(other => other.id !== c.id).map(o => o.id) }
-            ] : []
-        };
-    });
-
-    if (effect.optional !== false) { // Default to optional ("You may")
-        options.push({
-            label: "Put all on bottom",
-            value: "none",
-            imageUrl: undefined,
-            selectable: true,
-            cardData: undefined,
-            effects: [
-                { type: 'PutRemainderOnBottomRandom', cardsToMoveIds: cards.map(o => o.id) }
-            ]
-        } as any);
-    }
-
-    state.pendingAction = {
-        type: 'CHOICE',
+    state.pendingAction = ChoiceGenerator.createCardChoice(state, cards, {
+        label: `Scegli una carta (${cards.length} viste)`,
         playerId: controllerId,
         sourceId: sourceId,
-        data: {
-            choices: options,
-            lookingCards: cards,
-            label: `Scegli una carta (${cards.length} viste)`
-        }
-    };
+        restrictions: effect.restrictions,
+        reveal: effect.reveal,
+        optional: effect.optional,
+        hideUndo: effect.hideUndo === true,
+        onSelected: (c) => [
+            { type: 'MoveToZone', targetId: c.id, zone: Zone.Hand, reveal: effect.reveal },
+            { type: 'PutRemainderOnBottomRandom', cardsToMoveIds: cards.filter(other => other.id !== c.id).map(o => o.id) }
+        ],
+        onNone: () => [
+            { type: 'PutRemainderOnBottomRandom', cardsToMoveIds: cards.map(o => o.id) }
+        ]
+    });
+
     log(`[LOOK] ${player.name} is choosing a card from the top ${cards.length}.`);
   }
 
@@ -329,46 +304,58 @@ export class EffectProcessor {
     const controllerId = sourceObj.controllerId || state.activePlayerId;
     let dynamicChoices = effect.choices;
 
-    // --- SUPPORT FOR HAND SELECTION (DURESS STYLE) ---
-    if (effect.targetIdMapping === 'TARGET_1_HAND' && !dynamicChoices) {
-        let targetPlayerId: string | undefined = targets[0];
-        if (!targetPlayerId) {
-             targetPlayerId = Object.keys(state.players).find(pid => pid !== controllerId);
+    // --- HAND-PICKING OR GRAVEYARD-PICKING ---
+    const targetZoneMapping = (effect as any).targetIdMapping;
+    if (['TARGET_1_HAND', 'TARGET_1_GRAVEYARD', 'CONTROLLER_HAND', 'CONTROLLER_GRAVEYARD'].includes(targetZoneMapping) && !dynamicChoices) {
+        let targetPlayerId: string | undefined;
+        
+        if (targetZoneMapping.startsWith('TARGET_1_')) {
+            targetPlayerId = targets[0];
+            if (!targetPlayerId) {
+                targetPlayerId = Object.keys(state.players).find(pid => pid !== controllerId);
+            }
+        } else {
+            targetPlayerId = controllerId;
         }
 
         const targetPlayer = state.players[targetPlayerId as PlayerId];
         if (targetPlayer) {
-            // Reveal hand
-            targetPlayer.hand.forEach((c: any) => c.isRevealed = true);
-            log(`[REVEAL] Hand of ${targetPlayer.name} revealed.`);
+            const isGraveyard = targetZoneMapping.endsWith('_GRAVEYARD');
+            const sourceCards = isGraveyard ? targetPlayer.graveyard : targetPlayer.hand;
+            
+            if (targetZoneMapping === 'TARGET_1_HAND') {
+                targetPlayer.hand.forEach((c: any) => c.isRevealed = true);
+                log(`[REVEAL] Hand of ${targetPlayer.name} revealed.`);
+            }
 
-            dynamicChoices = targetPlayer.hand.map((c: any) => {
-                const isMatch = ValidationProcessor.matchesRestrictions(state, c, effect.restrictions || [], controllerId, sourceId);
-                return {
-                    label: isMatch ? `Choose ${c.definition.name} to discard` : `[Invalid] ${c.definition.name}`,
-                    value: c.id,
-                    imageUrl: c.definition.image_url,
-                    cardData: c,
-                    selectable: isMatch,
-                    effects: effect.effects
-                };
+            state.pendingAction = ChoiceGenerator.createCardChoice(state, sourceCards, {
+                label: effect.label || (targetZoneMapping === 'TARGET_1_GRAVEYARD' ? 'Scegli una Carta dal Cimitero' : 'Scegli una Carta dalla Mano'),
+                playerId: controllerId,
+                sourceId: sourceId,
+                restrictions: effect.restrictions,
+                optional: effect.optional !== false,
+                hideUndo: effect.hideUndo === true,
+                onSelected: (c) => effect.effects,
+                onNone: () => []
             });
-
-            effect.hideUndo = true;
+            const parts = targetZoneMapping.split('_');
+            const zoneName = parts[parts.length - 1].toLowerCase();
+            log(`[CHOICE] ${state.players[controllerId]?.name} must choose a card from ${targetPlayer.name}'s ${zoneName}.`);
+            return;
         }
     }
 
-    state.pendingAction = {
-      type: 'CHOICE',
-      playerId: controllerId,
-      sourceId: sourceId,
-      data: {
-        label: effect.label || (effect.targetIdMapping === 'TARGET_1_HAND' ? 'Scegli una Carta dalla Mano' : 'Scegli un\'Opzione'),
-        choices: dynamicChoices || [],
-        targets: targets, // Pass along targets for sub-effects
-        hideUndo: effect.hideUndo === true
-      }
-    };
+    // --- GENERIC MODAL CHOICES ---
+    state.pendingAction = ChoiceGenerator.createModalChoice(
+        { 
+            label: effect.label || 'Scegli un\'Opzione', 
+            playerId: controllerId, 
+            sourceId: sourceId, 
+            hideUndo: effect.hideUndo === true 
+        },
+        dynamicChoices || []
+    );
+
     log(`[CHOICE] ${state.players[controllerId]?.name} must choose: ${effect.label || 'an option'}`);
   }
 
@@ -444,9 +431,11 @@ export class EffectProcessor {
   }
 
    private static handleReturnToHand(state: GameState, targets: string[], log: (m: string) => void, stackObject?: any, parentContext?: any) {
+    log(`[RETURN-TO-HAND] Processing targets: ${targets.join(', ')}`);
     targets.forEach(tid => {
         const obj = this.findObject(state, tid, stackObject, parentContext);
         if (obj) {
+            log(`[RETURN-TO-HAND] Found object ${obj.definition.name}. Triggering moveCard to owner ${obj.ownerId}.`);
             ActionProcessor.moveCard(state, obj, Zone.Hand, obj.ownerId, log);
             state.turnState.permanentReturnedToHandThisTurn = true;
         }
@@ -502,24 +491,14 @@ export class EffectProcessor {
             }
 
             // Multiple options: trigger a choice
-            state.pendingAction = {
-                type: 'CHOICE',
+            state.pendingAction = ChoiceGenerator.createCardChoice(state, creatures, {
+                label: "Scegli una creatura da sacrificare",
                 playerId: tid,
                 sourceId: sourceId,
-                data: {
-                    label: "Choose a creature to sacrifice",
-                    hideUndo: true,
-                    choices: creatures.map(c => ({
-                        label: `Sacrifice ${c.definition.name}`,
-                        value: c.id,
-                        cardData: c,
-                        selectable: true,
-                        effects: [
-                            { type: 'Sacrifice', targetId: c.id } 
-                        ]
-                    }))
-                }
-            };
+                hideUndo: true,
+                optional: false,
+                onSelected: (c) => [{ type: 'Sacrifice', targetId: c.id }]
+            });
             log(`${player.name} must choose a creature to sacrifice.`);
         } else {
             // Direct sacrifice of a specific object (rare for effects, common for costs)

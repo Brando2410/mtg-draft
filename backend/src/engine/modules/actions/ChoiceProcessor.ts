@@ -164,11 +164,12 @@ export class ChoiceProcessor {
         state.pendingAction = undefined; // Clear first to allow sub-effects to set another PENDING_ACTION if needed
         
         const { EffectProcessor } = require('../effects/EffectProcessor');
+        log(`[CHOICE] Resolving sub-effects for ${choice.label}. Targets for resolution: ${targetsForResolution.join(', ')}`);
         EffectProcessor.resolveEffects(state, choice.effects, sourceId, targetsForResolution, log, 0, stackObj, savedActionData);
     
-    // Check if we must resume parent layers (this is the non-suspending case)
+    // --- RESUME PARENT CONTEXTS ---
     let currentCtx = savedActionData;
-    while (!state.pendingAction && currentCtx && currentCtx.nextEffectIndex < currentCtx.effects.length) {
+    while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex < currentCtx.effects.length) {
         log(`[RESOLVING] Resuming parent resolution context for ${sourceId}...`);
         const nextIdx = currentCtx.nextEffectIndex;
         const effs = currentCtx.effects;

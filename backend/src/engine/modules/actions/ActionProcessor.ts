@@ -19,6 +19,7 @@ export class ActionProcessor {
     card.controllerId = targetPlayerId;
 
     // 1. Rule 400.7: Remove from the current zone
+    if (log) log(`[MOVE] ${card.definition.name} (${card.id}) from ${card.zone} to ${to}...`);
     this.removeFromCurrentZone(state, card);
 
     // CR 121: Drawing a card
@@ -64,6 +65,11 @@ export class ActionProcessor {
       state.stack = state.stack.filter(s => s.id !== card.id && s.sourceId !== card.id);
     } else {
       const player = state.players[card.ownerId];
+      if (!player) {
+          // console.log(`[ZONE-REMOVE] Player ${card.ownerId} not found for card ${card.id}`);
+      } else {
+          // console.log(`[ZONE-REMOVE] Found player ${player.name} for card ${card.id}. Zone: ${card.zone}`);
+      }
       if (player) {
          if (card.zone === Zone.Hand) player.hand = player.hand.filter(c => c.id !== card.id);
          else if (card.zone === Zone.Graveyard) player.graveyard = player.graveyard.filter(c => c.id !== card.id);

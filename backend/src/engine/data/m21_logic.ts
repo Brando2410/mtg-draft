@@ -399,22 +399,13 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                     },
                     {
                         type: 'Choice',
-                        label: 'Do you want to return an instant or sorcery card from your graveyard to your hand?',
-                        choices: [
-                            {
-                                label: 'Yes',
-                                effects: [
-                                    {
-                                        type: 'ReturnToHand',
-                                        targetDefinition: { type: 'CardInGraveyard', count: 1, restrictions: ['Yours', 'Instant', 'Sorcery'] },
-                                        targetMapping: 'TARGET_1'
-                                    }
-                                ]
-                            },
-                            {
-                                label: 'No',
-                                effects: []
-                            }
+                        label: 'Scegli un Istantaneo o Stregoneria dal cimitero da rimettere in mano',
+                        targetIdMapping: 'CONTROLLER_GRAVEYARD',
+                        restrictions: ['Instant', 'Sorcery'],
+                        hideUndo: true,
+                        optional: true,
+                        effects: [
+                            { type: 'ReturnToHand', targetMapping: 'TARGET_1' }
                         ]
                     },
                     { type: 'Exile', targetMapping: 'SELF' }
@@ -1610,6 +1601,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                         targetMapping: 'CONTROLLER',
                         reveal: true,
                         optional: true,
+                        hideUndo: true,
                         restrictions: [
                             'creature',
                             { types: ['planeswalker'], nameIncludes: 'Garruk' }
@@ -1830,6 +1822,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                         label: 'Choose a noncreature, nonland card',
                         targetMapping: 'TARGET_1', 
                         targetIdMapping: 'TARGET_1_HAND', 
+                        hideUndo: true,
                         restrictions: ['Noncreature', 'Nonland'],
                         effects: [{ type: 'DiscardCards', amount: 1, targetMapping: 'SELECTED_CARD' }]
                     }

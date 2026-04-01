@@ -473,14 +473,17 @@ export interface EffectDefinition {
    * - 'ALL_CREATURES_YOU_CONTROL', 'OTHER_CREATURES_YOU_CONTROL': Group selectors
    */
   targetMapping?: string; 
+  targetIdMapping?: string; // For modular selection (Hand/Graveyard)
   targetDefinition?: TargetDefinition;
   restrictions?: any[];
+  effects?: EffectDefinition[]; // Sub-effects to execute after a selection
   label?: string; // Top-level label for Choice effects
   targetId?: string; // For MoveToZone
   zone?: Zone; // For MoveToZone
   reveal?: boolean; // For MoveToZone
   cardsToMoveIds?: string[]; // For PutRemainderOnBottomRandom
   optional?: boolean; // For Choice/LookAtTopAndPick
+  hideUndo?: boolean; // For Choice (UI Hint)
 }
 
 export const TargetType = {

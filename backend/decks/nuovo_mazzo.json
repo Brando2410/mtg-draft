@@ -46,26 +46,6 @@
       ]
     },
     {
-      "scryfall_id": "4bd3014b-94bb-4a9f-92cf-239a2dcc7e97",
-      "name": "Baneslayer Angel",
-      "rarity": "mythic",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/4/b/4bd3014b-94bb-4a9f-92cf-239a2dcc7e97.jpg?1594734758",
-      "cmc": 5,
-      "type_line": "Creature — Angel",
-      "mana_cost": "{3}{W}{W}",
-      "power": "5",
-      "toughness": "5",
-      "keywords": [
-        "Flying",
-        "Lifelink",
-        "First strike",
-        "Protection"
-      ]
-    },
-    {
       "scryfall_id": "f8eb4087-3a4c-4de8-8e29-f4cd71acb180",
       "name": "Eliminate",
       "rarity": "uncommon",
@@ -113,19 +93,6 @@
       ]
     },
     {
-      "scryfall_id": "17d154d3-7ae5-43ff-9978-d974285e2c89",
-      "name": "Glorious Anthem",
-      "rarity": "rare",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/1/7/17d154d3-7ae5-43ff-9978-d974285e2c89.jpg?1594734982",
-      "cmc": 3,
-      "type_line": "Enchantment",
-      "mana_cost": "{1}{W}{W}",
-      "keywords": []
-    },
-    {
       "scryfall_id": "e32c67d1-187f-40df-b3b3-6036f5c92834",
       "name": "Heroic Intervention",
       "rarity": "rare",
@@ -137,23 +104,6 @@
       "type_line": "Instant",
       "mana_cost": "{1}{G}",
       "keywords": []
-    },
-    {
-      "scryfall_id": "3ca38f4d-01f5-4a02-9000-01261a440dbf",
-      "name": "Heartfire Immolator",
-      "rarity": "uncommon",
-      "color": [
-        "R"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/3/c/3ca38f4d-01f5-4a02-9000-01261a440dbf.jpg?1730489344",
-      "cmc": 2,
-      "type_line": "Creature — Human Wizard",
-      "mana_cost": "{1}{R}",
-      "power": "2",
-      "toughness": "2",
-      "keywords": [
-        "Prowess"
-      ]
     },
     {
       "scryfall_id": "9e0fa0b6-5f3f-4669-84e8-2c38c9593d88",
@@ -173,19 +123,6 @@
       ]
     },
     {
-      "scryfall_id": "b58c4033-f764-42f6-966f-b7202a2babbf",
-      "name": "Garruk's Uprising",
-      "rarity": "uncommon",
-      "color": [
-        "G"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/b/5/b58c4033-f764-42f6-966f-b7202a2babbf.jpg?1767731186",
-      "cmc": 3,
-      "type_line": "Enchantment",
-      "mana_cost": "{2}{G}",
-      "keywords": []
-    },
-    {
       "scryfall_id": "d6467d96-e43a-4b1e-b6ce-578d991077b5",
       "name": "Secure the Scene",
       "rarity": "common",
@@ -196,21 +133,6 @@
       "cmc": 5,
       "type_line": "Sorcery",
       "mana_cost": "{4}{W}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "fb4733e6-6fe2-4460-ac9f-82feb583d790",
-      "name": "Falconer Adept",
-      "rarity": "uncommon",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/f/b/fb4733e6-6fe2-4460-ac9f-82feb583d790.jpg?1594734928",
-      "cmc": 4,
-      "type_line": "Creature — Human Soldier",
-      "mana_cost": "{3}{W}",
-      "power": "2",
-      "toughness": "3",
       "keywords": []
     },
     {
@@ -225,40 +147,6 @@
       "type_line": "Instant",
       "mana_cost": "{1}{W}",
       "keywords": []
-    },
-    {
-      "scryfall_id": "d2e3b99c-e48e-4f4d-ba7a-e9218137b432",
-      "name": "Gale Swooper",
-      "rarity": "common",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/d/2/d2e3b99c-e48e-4f4d-ba7a-e9218137b432.jpg?1594734966",
-      "cmc": 4,
-      "type_line": "Creature — Griffin",
-      "mana_cost": "{3}{W}",
-      "power": "3",
-      "toughness": "2",
-      "keywords": [
-        "Flying"
-      ]
-    },
-    {
-      "scryfall_id": "17b59819-4746-4c67-b6e5-4157d498a065",
-      "name": "Vryn Wingmare",
-      "rarity": "uncommon",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/1/7/17b59819-4746-4c67-b6e5-4157d498a065.jpg?1594735361",
-      "cmc": 3,
-      "type_line": "Creature — Pegasus",
-      "mana_cost": "{2}{W}",
-      "power": "2",
-      "toughness": "1",
-      "keywords": [
-        "Flying"
-      ]
     },
     {
       "scryfall_id": "3d70dcbe-0b90-40b4-8a54-e5218b7135b1",
@@ -289,17 +177,6 @@
       "keywords": [
         "Flying"
       ]
-    },
-    {
-      "scryfall_id": "082b52c9-c46e-44d3-b723-546ba528e07b",
-      "name": "Dismal Backwater",
-      "rarity": "common",
-      "color": [],
-      "image_url": "https://cards.scryfall.io/normal/front/0/8/082b52c9-c46e-44d3-b723-546ba528e07b.jpg?1743697562",
-      "cmc": 0,
-      "type_line": "Land",
-      "mana_cost": "",
-      "keywords": []
     },
     {
       "scryfall_id": "6f1bace4-a327-4eb6-a6ef-8394e76c06b7",
@@ -334,81 +211,6 @@
       ]
     },
     {
-      "scryfall_id": "80b2fb65-5868-4cab-b45d-e103558ce7dc",
-      "name": "Sanctum of Calm Waters",
-      "rarity": "uncommon",
-      "color": [
-        "U"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/8/0/80b2fb65-5868-4cab-b45d-e103558ce7dc.jpg?1594735727",
-      "cmc": 4,
-      "type_line": "Legendary Enchantment — Shrine",
-      "mana_cost": "{3}{U}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "c392a7e5-6ff5-4c2f-9590-f8811a724f44",
-      "name": "Alpine Watchdog",
-      "rarity": "common",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/c/3/c392a7e5-6ff5-4c2f-9590-f8811a724f44.jpg?1594734679",
-      "cmc": 2,
-      "type_line": "Creature — Dog",
-      "mana_cost": "{1}{W}",
-      "power": "2",
-      "toughness": "2",
-      "keywords": [
-        "Vigilance"
-      ]
-    },
-    {
-      "scryfall_id": "9c977c67-b0c0-40b0-b129-28de094aaf40",
-      "name": "Anointed Chorister",
-      "rarity": "common",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/9/c/9c977c67-b0c0-40b0-b129-28de094aaf40.jpg?1594734721",
-      "cmc": 1,
-      "type_line": "Creature — Human Cleric",
-      "mana_cost": "{W}",
-      "power": "1",
-      "toughness": "1",
-      "keywords": [
-        "Lifelink"
-      ]
-    },
-    {
-      "scryfall_id": "6911759c-7177-402c-a95a-f9f46efaf521",
-      "name": "Selfless Savior",
-      "rarity": "uncommon",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/6/9/6911759c-7177-402c-a95a-f9f46efaf521.jpg?1594735224",
-      "cmc": 1,
-      "type_line": "Creature — Dog",
-      "mana_cost": "{W}",
-      "power": "1",
-      "toughness": "1",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "34c3a894-ee75-4db9-a69f-711bb3cc150a",
-      "name": "Duress",
-      "rarity": "common",
-      "color": [
-        "B"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/3/4/34c3a894-ee75-4db9-a69f-711bb3cc150a.jpg?1730490899",
-      "cmc": 1,
-      "type_line": "Sorcery",
-      "mana_cost": "{B}",
-      "keywords": []
-    },
-    {
       "scryfall_id": "7a3f8bc2-ef66-474f-92a3-9c4df1670cec",
       "name": "Bad Deal",
       "rarity": "uncommon",
@@ -419,97 +221,6 @@
       "cmc": 6,
       "type_line": "Sorcery",
       "mana_cost": "{4}{B}{B}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "760b41a1-c087-4b11-b8a0-fb01d8a4c0c6",
-      "name": "Shock",
-      "rarity": "common",
-      "color": [
-        "R"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/7/6/760b41a1-c087-4b11-b8a0-fb01d8a4c0c6.jpg?1757377337",
-      "cmc": 1,
-      "type_line": "Instant",
-      "mana_cost": "{R}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "3a9fb75e-c8e5-417b-83d4-5105af9c66c1",
-      "name": "Revitalize",
-      "rarity": "common",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/3/a/3a9fb75e-c8e5-417b-83d4-5105af9c66c1.jpg?1631046075",
-      "cmc": 2,
-      "type_line": "Instant",
-      "mana_cost": "{1}{W}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "42ed35e9-51cd-468a-86a9-9412553cf50d",
-      "name": "Village Rites",
-      "rarity": "common",
-      "color": [
-        "B"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/4/2/42ed35e9-51cd-468a-86a9-9412553cf50d.jpg?1736468066",
-      "cmc": 1,
-      "type_line": "Instant",
-      "mana_cost": "{B}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "6e4c9574-1ee3-461e-848f-8f02c6a8b7ee",
-      "name": "Alchemist's Gift",
-      "rarity": "common",
-      "color": [
-        "B"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/6/e/6e4c9574-1ee3-461e-848f-8f02c6a8b7ee.jpg?1594735950",
-      "cmc": 1,
-      "type_line": "Instant",
-      "mana_cost": "{B}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "c2e6fdc0-bdd4-4bba-b8f1-bbc8dfad038e",
-      "name": "Basri's Solidarity",
-      "rarity": "uncommon",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/c/2/c2e6fdc0-bdd4-4bba-b8f1-bbc8dfad038e.jpg?1594734810",
-      "cmc": 2,
-      "type_line": "Sorcery",
-      "mana_cost": "{1}{W}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "edbfe793-6644-43ed-bbe1-e122c01c5e53",
-      "name": "Chandra's Outrage",
-      "rarity": "common",
-      "color": [
-        "R"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/e/d/edbfe793-6644-43ed-bbe1-e122c01c5e53.jpg?1592516870",
-      "cmc": 4,
-      "type_line": "Instant",
-      "mana_cost": "{2}{R}{R}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "da367981-9d6f-419f-9f58-f969b6183336",
-      "name": "Rain of Revelation",
-      "rarity": "uncommon",
-      "color": [
-        "U"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/d/a/da367981-9d6f-419f-9f58-f969b6183336.jpg?1594735631",
-      "cmc": 4,
-      "type_line": "Instant",
-      "mana_cost": "{3}{U}",
       "keywords": []
     },
     {
@@ -524,8 +235,85 @@
       "type_line": "Instant",
       "mana_cost": "{B}{B}",
       "keywords": []
+    },
+    {
+      "scryfall_id": "9f8cf3f9-4e3b-4af2-b5ef-a97eb1d2b674",
+      "name": "Bolt Hound",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/f/9f8cf3f9-4e3b-4af2-b5ef-a97eb1d2b674.jpg?1594736483",
+      "cmc": 3,
+      "type_line": "Creature — Elemental Dog",
+      "mana_cost": "{2}{R}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Haste"
+      ]
+    },
+    {
+      "scryfall_id": "83437022-ba00-4370-83c2-ce1260336fcc",
+      "name": "Archfiend's Vessel",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/8/3/83437022-ba00-4370-83c2-ce1260336fcc.jpg?1594735964",
+      "cmc": 1,
+      "type_line": "Creature — Human Cleric",
+      "mana_cost": "{B}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "cb078fbb-beb9-4c0b-be93-ed1e73e6f8d8",
+      "name": "Barrin, Tolarian Archmage",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/b/cb078fbb-beb9-4c0b-be93-ed1e73e6f8d8.jpg?1594735404",
+      "cmc": 3,
+      "type_line": "Legendary Creature — Human Wizard",
+      "mana_cost": "{1}{U}{U}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "3d0ec3bd-d894-4861-abcb-7b2e4f4de05c",
+      "name": "Burlfist Oak",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/d/3d0ec3bd-d894-4861-abcb-7b2e4f4de05c.jpg?1594736896",
+      "cmc": 4,
+      "type_line": "Creature — Treefolk",
+      "mana_cost": "{2}{G}{G}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "34c3a894-ee75-4db9-a69f-711bb3cc150a",
+      "name": "Duress",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/4/34c3a894-ee75-4db9-a69f-711bb3cc150a.jpg?1730490899",
+      "cmc": 1,
+      "type_line": "Sorcery",
+      "mana_cost": "{B}",
+      "keywords": []
     }
   ],
-  "cardCount": 36,
-  "lastUpdated": "2026-04-01T15:46:54.754Z"
+  "cardCount": 21,
+  "lastUpdated": "2026-04-01T17:14:19.817Z"
 }
