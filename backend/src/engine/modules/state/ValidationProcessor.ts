@@ -23,8 +23,18 @@ export class ValidationProcessor {
         
         if (type === 'player' || type === 'anytarget' || restrictions.includes('player') || restrictions.includes('anytarget')) {
             // Check specific player restrictions (e.g., 'opponent', 'you')
-            const sourceControllerId = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId)?.controllerId || 
+            let sourceControllerId = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId)?.controllerId || 
                                        state.battlefield.find(o => o.id === sourceId)?.controllerId;
+
+            // Look in hand if not found on stack or battlefield (e.g. while casting)
+            if (!sourceControllerId) {
+                for (const pId in state.players) {
+                    if (state.players[pId as PlayerId].hand.some(c => c.id === sourceId)) {
+                        sourceControllerId = pId;
+                        break;
+                    }
+                }
+            }
             
             if (restrictions.includes('opponent')) {
                 if (sourceControllerId && targetId === sourceControllerId) return false;
@@ -77,6 +87,7 @@ export class ValidationProcessor {
     // Auto-infer default zones if the engine logic mapping doesn't explicitly declare it:
     if (!expectedZone) {
         if (targetZone === Zone.Stack) expectedZone = Zone.Stack;
+        else if (abilityTargetDef?.type === 'CardInGraveyard') expectedZone = Zone.Graveyard;
         else expectedZone = Zone.Battlefield; // Default assumption for most MTG targets (creatures, artifacts, etc.)
     }
 
@@ -90,7 +101,13 @@ export class ValidationProcessor {
     // Source can be on the stack, battlefield, or still in hand (during casting validation)
     const sourceStack = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
     const sourceBattlefield = state.battlefield.find(o => o.id === sourceId);
-    let source = sourceObjProvided || sourceStack || (sourceBattlefield as any);
+    const sourceGraveyard = Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === sourceId);
+    
+    // Resolve underlying object (GameObject or definition)
+    let source = sourceObjProvided || (sourceStack?.card) || sourceBattlefield || sourceGraveyard;
+
+    // Use sourceStack directly as a fallback for things like cost validation or if the permanent was removed
+    if (!source && sourceStack) source = sourceStack;
 
     let sourceControllerId = source?.controllerId || (sourceStack as any)?.controllerId;
 
@@ -153,78 +170,111 @@ export class ValidationProcessor {
     // We check both the passed targeting data and potentially the stack ability definition
     const targetDef = abilityTargetDef || sourceStack?.data?.targetDefinition || (sourceStack as any)?.targetDefinition;
     if (targetDef?.restrictions) {
-        const restrictions = targetDef.restrictions.map((r: string) => r.toLowerCase());
-        const objTypes = (targetObj.definition.types || []).map((t: string) => t.toLowerCase());
-        
-        const baseTypes = ['creature', 'planeswalker', 'land', 'artifact', 'enchantment'];
-        const typeRestrictions = restrictions.filter((r: string) => baseTypes.includes(r));
-        
-        // Logical OR for basic card types (Rule 608.2b: "Target creature OR planeswalker")
-        if (typeRestrictions.length > 0) {
-            const matchesType = typeRestrictions.some((r: string) => objTypes.includes(r));
-            if (!matchesType) {
-                return false;
-            }
-        }
-
-        // Logical AND for everything else
-        if (restrictions.includes('nonland') && objTypes.includes('land')) return false;
-        if (restrictions.includes('other') && targetObj.id === sourceId) return false;
-        if (restrictions.includes('notcontrolled') || restrictions.includes('opponentcontrol')) {
-             if (sourceControllerId && targetObj.controllerId === sourceControllerId) return false;
-        }
-        if (restrictions.includes('youcontrol') && sourceControllerId && targetObj.controllerId !== sourceControllerId) return false;
-
-        if (restrictions.includes('tapped') && !targetObj.isTapped) return false;
-        if (restrictions.includes('untapped') && targetObj.isTapped) return false;
-
-        // CMC / Mana Value restrictions (e.g. "CMC<=3", "CMC>=6")
-        const cmcLimit = restrictions.find((r: string) => r.startsWith('cmc'));
-        if (cmcLimit) {
-            const mv = ManaProcessor.getManaValue(targetObj.definition.manaCost || '');
-            const opMatch = cmcLimit.match(/(<=|>=|<|>|==|=)(\d+)/);
-            if (opMatch) {
-                const op = opMatch[1];
-                const val = parseInt(opMatch[2]);
-                let isCmcValid = true;
-                if (op === '<=' && !(mv <= val)) isCmcValid = false;
-                if (op === '>=' && !(mv >= val)) isCmcValid = false;
-                if (op === '<' && !(mv < val)) isCmcValid = false;
-                if (op === '>' && !(mv > val)) isCmcValid = false;
-                if ((op === '==' || op === '=') && !(mv === val)) isCmcValid = false;
-                
-                if (!isCmcValid) {
-                    return false;
-                }
-            }
-        }
-
-        if (restrictions.includes('power_')) {
-            const pLimit = restrictions.find((r: string) => r.startsWith('power_'));
-            if (pLimit) {
-                const limit = parseInt(pLimit.split('_')[1]);
-                const stats = LayerProcessor.getEffectiveStats(targetObj, state);
-                if (stats.power > limit) return false;
-            }
-        }
-
-        if (restrictions.includes('toughness_')) {
-            const tLimit = restrictions.find((r: string) => r.startsWith('toughness_'));
-            if (tLimit) {
-                const limit = parseInt(tLimit.split('_')[1]);
-                const stats = LayerProcessor.getEffectiveStats(targetObj, state);
-                if (stats.toughness > limit) return false;
-            }
-        }
-
-        if (restrictions.includes('attackingorblocking')) {
-            const isAttacking = (state.combat?.attackers || []).some(a => a.attackerId === targetId);
-            const isBlocking = (state.combat?.blockers || []).some(b => b.blockerId === targetId);
-            if (!isAttacking && !isBlocking) return false;
-        }
+        return this.matchesRestrictions(state, targetObj, targetDef.restrictions, sourceControllerId, sourceId);
     }
 
     return true;
+  }
+
+  /**
+   * Evaluates a set of restrictions against a target object or player.
+   * 
+   * @param restrictions - An array of strings (e.g. 'nonland', 'permanent') and/or logic objects.
+   * 
+   * LOGIC ARCHITECTURE (MTG-Optimized Strategy):
+   * 1. Categorize restrictions into "Mandatory Filters" (AND) and "Qualifying Alternatives" (OR).
+   * 2. Mandatory Filters: Must ALL be met (e.g., 'nonland', 'youcontrol', 'other', 'tapped').
+   * 3. Qualifying Alternatives: At least ONE must be met (e.g., 'creature', 'planeswalker', or custom type objects).
+   *    Note: If no alternatives are provided, the object passes this check by default.
+   * 
+   * Example: ['nonland', 'creature', 'planeswalker']
+   *   -> Must be (NOT Land) AND (Creature OR Planeswalker).
+   */
+  public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], controllerId: string, sourceId: string): boolean {
+        const objTypes = (targetObj.definition.types || []).map((t: string) => t.toLowerCase());
+        const baseTypes = ['creature', 'planeswalker', 'land', 'artifact', 'enchantment', 'instant', 'sorcery', 'permanent', 'card'];
+        
+        // Helper to check if a restriction is an alternative (OR) or a modifier (AND)
+        const isAlternative = (r: any) => typeof r === 'object' || (typeof r === 'string' && baseTypes.includes(r.toLowerCase()));
+
+        /**
+         * Logic:
+         * 1. ALL "Modifiers" (e.g., 'nonland', 'youcontrol') must match (AND logic).
+         * 2. At least ONE "Alternative" (e.g., 'creature', { nameEquals: '...' }) must match (OR logic).
+         */
+
+        // 1. Handle "Mandatory Filters" (ALL must match)
+        for (const r of restrictions) {
+            if (typeof r !== 'string' || isAlternative(r)) continue;
+            const lr = r.toLowerCase();
+            
+            if (lr === 'nonland' && objTypes.includes('land')) return false;
+            if (lr === 'noncreature' && objTypes.includes('creature')) return false;
+            if (lr === 'nonartifact' && objTypes.includes('artifact')) return false;
+            if (lr === 'nonenchantment' && objTypes.includes('enchantment')) return false;
+            if (lr === 'nonplaneswalker' && objTypes.includes('planeswalker')) return false;
+            if (lr === 'other' && targetObj.id === sourceId) return false;
+            if (lr === 'notcontrolled' || lr === 'opponentcontrol') {
+                 if (controllerId && targetObj.controllerId === controllerId) return false;
+            }
+            if (lr === 'youcontrol' && controllerId && targetObj.controllerId !== controllerId) return false;
+            if (lr === 'self' && targetObj.id !== sourceId) return false;
+            if (lr === 'tapped' && !targetObj.isTapped) return false;
+            if (lr === 'untapped' && targetObj.isTapped) return false;
+            if (lr === 'yours' && (targetObj.controllerId || targetObj.ownerId) !== controllerId) return false;
+            if (lr === 'opponents' && (targetObj.controllerId || targetObj.ownerId) === controllerId) return false;
+
+            if (lr.startsWith('cmc')) {
+                const mv = ManaProcessor.getManaValue(targetObj.definition.manaCost || '');
+                const opMatch = lr.match(/(<=|>=|<|>|==|=)(\d+)/);
+                if (opMatch) {
+                    const op = opMatch[1];
+                    const val = parseInt(opMatch[2]);
+                    if (op === '<=' && !(mv <= val)) return false;
+                    if (op === '>=' && !(mv >= val)) return false;
+                    if (op === '<' && !(mv < val)) return false;
+                    if (op === '>' && !(mv > val)) return false;
+                    if ((op === '==' || op === '=') && !(mv === val)) return false;
+                }
+            }
+
+            if (lr.startsWith('power_')) {
+                const limit = parseInt(lr.split('_')[1]);
+                if (LayerProcessor.getEffectiveStats(targetObj, state).power > limit) return false;
+            }
+            if (lr.startsWith('toughness_')) {
+                const limit = parseInt(lr.split('_')[1]);
+                if (LayerProcessor.getEffectiveStats(targetObj, state).toughness > limit) return false;
+            }
+
+            if (lr === 'attackingorblocking') {
+                const isAttacking = (state.combat?.attackers || []).some(a => a.attackerId === targetObj.id);
+                const isBlocking = (state.combat?.blockers || []).some(b => b.blockerId === targetObj.id);
+                if (!isAttacking && !isBlocking) return false;
+            }
+        }
+
+        // 2. Handle "Qualifying Alternatives" (ANY must match)
+        const alternatives = restrictions.filter(r => isAlternative(r));
+        if (alternatives.length > 0) {
+            return alternatives.some(r => {
+                if (typeof r === 'string') {
+                    const lr = r.toLowerCase();
+                    if (lr === 'card' || lr === 'permanent') return true;
+                    return objTypes.includes(lr);
+                } else {
+                    // Object Match (Chained AND within the object)
+                    let match = true;
+                    if (r.types && !r.types.some((t: string) => objTypes.includes(t.toLowerCase()))) match = false;
+                    if (r.subtypes && !r.subtypes.some((s: string) => targetObj.definition.subtypes.some((ts: string) => ts.toLowerCase() === s.toLowerCase()))) match = false;
+                    if (r.nameIncludes && !targetObj.definition.name.toLowerCase().includes(r.nameIncludes.toLowerCase())) match = false;
+                    if (r.nameEquals && targetObj.definition.name.toLowerCase() !== r.nameEquals.toLowerCase()) match = false;
+                    return match;
+                }
+            });
+        }
+
+        return true;
   }
 
   /**
@@ -313,18 +363,10 @@ export class ValidationProcessor {
 
     const sourceTypes = (definition.types || []).map((t: string) => t.toLowerCase());
     const sourceSubtypes = (definition.subtypes || []).map((t: string) => t.toLowerCase());
-    
-    // Core color logic: property check + mana cost deduction fallback
-    let sourceColors = (Array.isArray(definition.colors) ? definition.colors : [])
-        .map((c: string) => ValidationProcessor.colorMap(c));
-
-    // Fallback: Deduce colors from mana cost string (e.g. {1}{B} -> black)
-    const manaCost = (definition.manaCost || definition.mana_cost || '').toUpperCase();
-    if (manaCost.includes('W') && !sourceColors.includes('white')) sourceColors.push('white');
-    if (manaCost.includes('U') && !sourceColors.includes('blue')) sourceColors.push('blue');
-    if (manaCost.includes('B') && !sourceColors.includes('black')) sourceColors.push('black');
-    if (manaCost.includes('R') && !sourceColors.includes('red')) sourceColors.push('red');
-    if (manaCost.includes('G') && !sourceColors.includes('green')) sourceColors.push('green');
+    const sourceColors = (Array.isArray(definition.colors) ? definition.colors : []).map((c: string) => {
+        const map: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
+        return map[c.toUpperCase()] || c.toLowerCase();
+    });
 
     return qualities.some(q => {
         const lowerQ = q.toLowerCase();
@@ -340,10 +382,5 @@ export class ValidationProcessor {
 
         return matchesType || matchesSubtype || matchesColor;
     });
-  }
-
-  private static colorMap(c: string): string {
-    const map: Record<string, string> = { 'w': 'white', 'u': 'blue', 'b': 'black', 'r': 'red', 'g': 'green' };
-    return map[c.toLowerCase()] || c.toLowerCase();
   }
 }

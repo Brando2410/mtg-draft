@@ -103,9 +103,12 @@ export class LayerProcessor {
   }
 
   private static isTarget(state: GameState, effect: ContinuousEffect, objId: string): boolean {
-    if (effect.targetIds) return effect.targetIds.includes(objId);
+    // 1. Explicit target list (snapshotted spells like Heroic Intervention)
+    //    An empty array [] means "no targets" — affects nothing. Must check Array.isArray.
+    if (Array.isArray(effect.targetIds)) return effect.targetIds.includes(objId);
+
     
-    // Evaluate dynamic target mapping if targetIds is not explicitly set
+    // 2. Dynamic target mapping (Standard for static abilities like Glorious Anthem)
     if (effect.targetMapping) {
        const obj = state.battlefield.find(o => o.id === objId);
        if (!obj) return false;
@@ -117,9 +120,14 @@ export class LayerProcessor {
            return obj.controllerId === effect.controllerId;
          case 'OTHER_CREATURES_YOU_CONTROL':
            return obj.id !== effect.sourceId && obj.controllerId === effect.controllerId && obj.definition.types.some(t => t.toLowerCase() === 'creature');
+         default:
+           // If a mapping is specified but not handled here, we MUST NOT fall back to global.
+           return false; 
        }
     }
-    return true; // Fallback to global if no specific mapping restricts it
+
+    // 3. Global fallback (Only if no targetIds AND no targetMapping restricts the effect)
+    return true; 
   }
 
   // Helper methods...
@@ -155,16 +163,28 @@ export class LayerProcessor {
         };
     });
 
-    // 2. Update Hand cards
+    // 2. Update Hand, Graveyard, and Library cards
     Object.values(state.players).forEach(player => {
-        player.hand.forEach(card => {
-            card.effectiveStats = {
-                power: parseInt(card.definition.power || '0') || 0,
-                toughness: parseInt(card.definition.toughness || '0') || 0,
-                keywords: card.definition.keywords || [],
-                isPlayable: state.priorityPlayerId === player.id && PriorityProcessor.canObjectBePlayed(state, player.id, card.id)
-            };
+        [player.hand, player.graveyard, player.library].forEach(zone => {
+            zone.forEach(card => {
+                // Determine if it matches the current battlefield/spell logic, 
+                // or just fallback to base stats if hidden.
+                const stats = this.getEffectiveStats(card, state);
+                card.effectiveStats = {
+                    ...stats,
+                    isPlayable: state.priorityPlayerId === player.id && PriorityProcessor.canObjectBePlayed(state, player.id, card.id)
+                };
+            });
         });
+    });
+
+    // 3. Update Exile
+    state.exile.forEach(card => {
+        const stats = this.getEffectiveStats(card, state);
+        card.effectiveStats = {
+            ...stats,
+            isPlayable: false
+        };
     });
   }
 }

@@ -1,4 +1,4 @@
-import { GameState, PlayerId, Zone } from '@shared/engine_types';
+import { GameState, PlayerId, Zone, AbilityType } from '@shared/engine_types';
 import { ValidationProcessor } from '../state/ValidationProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { TurnProcessor } from '../core/TurnProcessor';
@@ -68,7 +68,7 @@ export class PlayerActionProcessor {
         sourceId: cardId,
         data: {
           choices: logic.abilities
-            .filter((a: any) => a.type === 'Activated' && a.costs.some((c: any) => c.type === 'Loyalty'))
+            .filter((a: any) => a.type === AbilityType.Activated && a.costs.some((c: any) => c.type === 'Loyalty'))
             .map((a: any) => {
                const lCost = a.costs.find((c: any) => c.type === 'Loyalty').value;
                const effectSummary = a.effects.map((e: any) => {
@@ -94,7 +94,7 @@ export class PlayerActionProcessor {
     // 3. Generic Activated Ability Choice (Non-Planeswalker)
     const { M21_LOGIC: mLogic } = require('../../data/m21_logic');
     const logic = mLogic[obj.definition.name];
-    const activatedAbilities = logic?.abilities?.filter((a: any) => a.type === 'Activated' && !a.isManaAbility) || [];
+    const activatedAbilities = logic?.abilities?.filter((a: any) => a.type === AbilityType.Activated && !a.isManaAbility) || [];
 
     if (activatedAbilities.length > 0) {
         if (state.priorityPlayerId !== playerId) {

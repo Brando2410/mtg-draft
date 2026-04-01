@@ -1,56 +1,19 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone } from '@shared/engine_types';
-import m21Data from './m21_parsed.json';
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameState, GameEvent, GameObject } from '@shared/engine_types';
 
 /**
  * M21 RULES REGISTRY
  * -------------------
  * This is the primary source of truth for Core Set 2021 cards.
- * It combines static Scryfall metadata with manual engine logic.
+ * Card metadata (PT, images, costs) is provided by the Deck JSON.
+ * Manual engine logic for abilities is defined below.
  */
 
 const metadata: Record<string, any> = {};
-m21Data.forEach((c: any) => {
-    metadata[c.name] = {
-        name: c.name,
-        manaCost: c.manaCost || c.mana_cost || "",
-        colors: c.card_colors || c.colors || [],
-        supertypes: [],
-        types: (c.typeLine || c.type_line || "").split(/[-—]/)[0].trim().split(/\s+/).filter(Boolean),
-        subtypes: (c.typeLine || c.type_line || "").includes('—') ? (c.typeLine || c.type_line || "").split(/[-—]/)[1].trim().split(/\s+/).filter(Boolean) : [],
-        type_line: c.typeLine || c.type_line || "",
-        power: c.power,
-        toughness: c.toughness,
-        keywords: c.keywords || [],
-        oracleText: c.oracleText || c.oracle_text || "",
-        image_url: c.image_url || c.image_uris?.normal,
-        scryfall_id: c.id
-    };
 
-});
+
 
 export const M21_LOGIC: Record<string, ImplementableCard> = {
-    "Alchemist's Gift": {
-        ...metadata["Alchemist's Gift"],
-        abilities: [
-            {
-                id: "alchemist_gift_spell",
-                type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Stack,
-                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
-                effects: [
-                    { type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', powerModifier: 1, toughnessModifier: 1, layer: 7, targetMapping: 'TARGET_1' },
-                    {
-                        type: 'Choice',
-                        targetMapping: 'TARGET_1',
-                        choices: [
-                            { label: 'Deathtouch', effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Deathtouch'], layer: 6, targetMapping: 'TARGET_1' }] },
-                            { label: 'Lifelink', effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Lifelink'], layer: 6, targetMapping: 'TARGET_1' }] }
-                        ]
-                    }
-                ]
-            }
-        ]
-    },
+
 
 
     "Archfiend's Vessel": {
@@ -114,7 +77,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 ]
             },
             {
-                id: "basri_ket_plus_1", // Error in duplicate ID, but I'll fix the logic below
+                id: "basri_ket_minus_2",
                 type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Loyalty', value: '-2' }],
@@ -135,9 +98,40 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Loyalty', value: '-6' }],
                 effects: [{
-                    type: 'CreateToken',
-                    tokenBlueprint: { name: 'Basri Ket Emblem', power: '', toughness: '', colors: ['W'], types: ['Emblem'], subtypes: ['Basri'], keywords: [], oracleText: 'At the beginning of combat on your turn, create a 1/1 white Soldier creature token, then put a +1/+1 counter on each creature you control.' },
-                    targetMapping: 'CONTROLLER'
+                    type: 'CreateEmblem',
+                    emblemBlueprint: {
+                        name: "Basri Ket Emblem",
+                        oracleText: "At the beginning of combat on your turn, create a 1/1 white Soldier creature token, then put a +1/+1 counter on each creature you control.",
+                        abilities: [
+                            {
+                                triggerEvent: 'ON_BEGINNING_OF_COMBAT_STEP',
+                                // Condition: only trigger on the emblem controller's turn
+                                triggerCondition: (state: any, event: any, trigger: any) => {
+                                    return state.activePlayerId === trigger.controllerId;
+                                },
+                                effects: [
+                                    // 1. Create a 1/1 Soldier token for the controller
+                                    {
+                                        type: 'CreateToken',
+                                        amount: 1,
+                                        targetMapping: 'CONTROLLER',
+                                        tokenBlueprint: {
+                                            name: 'Soldier', power: '1', toughness: '1', colors: ['W'],
+                                            types: ['Creature'], subtypes: ['Soldier'], keywords: [],
+                                            image_url: 'https://cards.scryfall.io/large/front/b/7/b7b55dcf-ae63-4b84-8d39-80b5a6de3c1a.jpg'
+                                        }
+                                    },
+                                    // 2. Put a +1/+1 counter on each creature the controller controls
+                                    {
+                                        type: 'AddCounters',
+                                        amount: 1,
+                                        value: '+1/+1',
+                                        targetMapping: 'ALL_CREATURES_YOU_CONTROL'
+                                    }
+                                ]
+                            }
+                        ]
+                    }
                 }]
             }
         ]
@@ -306,7 +300,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Loyalty', value: '+1' }],
-                targetDefinition: { type: 'Player', count: 1, restrictions: ['AnyTarget'] },
+                targetDefinition: { type: 'AnyTarget', count: 1 },
                 effects: [{ type: 'DealDamage', amount: 2, targetMapping: 'TARGET_1' }]
             },
             {
@@ -338,18 +332,27 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
         ]
     },
 
-    "Eliminate": {
-        ...metadata["Eliminate"],
+    "Dismal Backwater": {
+        ...metadata["Dismal Backwater"],
         abilities: [
             {
-                id: "eliminate_spell",
-                type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Stack,
-                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'Planeswalker', 'CMC<=3'] },
-                effects: [{ type: 'Destroy', targetMapping: 'TARGET_1' }]
+                id: "dismal_backwater_etb_tapped",
+                type: AbilityType.Static,
+                activeZone: ZoneRequirement.Battlefield,
+                effects: [{ type: 'Tapped', value: true, targetMapping: 'SELF' }]
+            },
+            {
+                id: "dismal_backwater_etb_life",
+                type: AbilityType.Triggered,
+                triggerEvent: 'ON_ETB',
+                activeZone: ZoneRequirement.Battlefield,
+                triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
+                effects: [{ type: 'GainLife', amount: 1, targetMapping: 'CONTROLLER' }]
             }
         ]
     },
+
+
 
     "Enthralling Hold": {
         ...metadata["Enthralling Hold"],
@@ -359,6 +362,63 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 type: AbilityType.Static,
                 activeZone: ZoneRequirement.Battlefield,
                 effects: [{ type: 'ApplyContinuousEffect', layer: 2, value: 'CONTROL_ENCHANTED', targetMapping: 'SELF' }]
+            }
+        ]
+    },
+
+    "Experimental Overload": {
+        name: "Experimental Overload",
+        manaCost: "{2}{U}{R}",
+        colors: ["blue", "red"],
+        types: ["Sorcery"],
+        supertypes: [],
+        subtypes: [],
+        keywords: [],
+        type_line: "Sorcery",
+        oracleText: "Create a 0/0 blue and red Weird creature token, then put X +1/+1 counters on it, where X is the number of instant and sorcery cards in your graveyard. You may return an instant or sorcery card from your graveyard to your hand. Exile Experimental Overload.",
+        image_url: "https://cards.scryfall.io/large/front/d/1/d1fded7b-c97e-43ed-babf-db17d0a6c24a.jpg",
+        abilities: [
+            {
+                id: "experimental_overload_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                effects: [
+                    {
+                        type: 'CreateToken',
+                        tokenBlueprint: {
+                            name: 'Weird',
+                            colors: ['U', 'R'],
+                            types: ['Creature'],
+                            subtypes: ['Weird'],
+                            image_url: 'https://cards.scryfall.io/large/front/d/1/d1fded7b-c97e-43ed-babf-db17d0a6c24a.jpg'
+                        },
+                        amount: 1,
+                        powerOverride: 'INSTANT_SORCERY_IN_GRAVEYARD_COUNT',
+                        toughnessOverride: 'INSTANT_SORCERY_IN_GRAVEYARD_COUNT',
+                        targetMapping: 'CONTROLLER'
+                    },
+                    {
+                        type: 'Choice',
+                        label: 'Do you want to return an instant or sorcery card from your graveyard to your hand?',
+                        choices: [
+                            {
+                                label: 'Yes',
+                                effects: [
+                                    {
+                                        type: 'ReturnToHand',
+                                        targetDefinition: { type: 'CardInGraveyard', count: 1, restrictions: ['Yours', 'Instant', 'Sorcery'] },
+                                        targetMapping: 'TARGET_1'
+                                    }
+                                ]
+                            },
+                            {
+                                label: 'No',
+                                effects: []
+                            }
+                        ]
+                    },
+                    { type: 'Exile', targetMapping: 'SELF' }
+                ]
             }
         ]
     },
@@ -543,7 +603,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                         .filter((o: any) => o.controllerId === source.controllerId && (o.definition.types || []).includes('Planeswalker'))
                         .map((o: any) => o.id);
 
-                    const attackingMeOrMyPWs = (event.data.attackers || []).filter((a: any) => 
+                    const attackingMeOrMyPWs = (event.data.attackers || []).filter((a: any) =>
                         a.targetId === source.controllerId || myPlaneswalkers.includes(a.targetId)
                     );
 
@@ -617,7 +677,15 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
     },
 
     "Scavenging Ooze": {
-        ...metadata["Scavenging Ooze"],
+        name: "Scavenging Ooze",
+        manaCost: "{1}{G}",
+        colors: ["green"],
+        types: ["Creature"],
+        subtypes: ["Ooze"],
+        supertypes: [],
+        oracleText: "{G}: Exile target card from a graveyard. If it was a creature card, put a +1/+1 counter on Scavenging Ooze and you gain 1 life.",
+        image_url: "https://cards.scryfall.io/normal/front/1/7/17b59819-4746-4c67-b6e5-4157d498a065.jpg",
+        keywords: [],
         abilities: [
             {
                 id: "scavenging_ooze_exile",
@@ -627,16 +695,24 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 targetDefinition: { type: 'Card', count: 1, restrictions: ['Graveyard'] },
                 effects: [
                     { type: 'Exile', targetMapping: 'TARGET_1' },
-                    { type: 'AddCounters', amount: 1, value: '+1/+1', conditionPath: 'targetWasCreature', targetMapping: 'SELF' },
-                    { type: 'GainLife', amount: 1, conditionPath: 'targetWasCreature', targetMapping: 'CONTROLLER' }
+                    { type: 'AddCounters', amount: 1, value: '+1/+1', condition: 'targetWasCreature', targetMapping: 'SELF' },
+                    { type: 'GainLife', amount: 1, condition: 'targetWasCreature', targetMapping: 'CONTROLLER' }
                 ]
             }
         ]
     },
 
     "Teferi, Master of Time": {
-        ...metadata["Teferi, Master of Time"],
+        name: "Teferi, Master of Time",
+        manaCost: "{2}{U}{U}",
+        colors: ["blue"],
+        types: ["Planeswalker"],
+        subtypes: ["Teferi"],
+        supertypes: ["Legendary"],
+        oracleText: "You may activate loyalty abilities of Teferi, Master of Time on any player's turn any time you could cast an instant.\n+1: Draw a card, then discard a card.\n−3: Target creature an opponent controls phases out. (Treat it and anything attached to it as though they don't exist until its controller's next turn.)\n−10: Take two extra turns after this one.",
+        image_url: "https://cards.scryfall.io/normal/front/9/c/9c0c61e3-9f3d-4e7f-9046-0ea336dd8a2d.jpg",
         loyalty: "3",
+        keywords: [],
         abilities: [
             {
                 id: "teferi_master_any_turn",
@@ -672,13 +748,8 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
 
     "Nine Lives": {
         ...metadata["Nine Lives"],
+        keywords: ["Hexproof"],
         abilities: [
-            {
-                id: "nine_lives_hexproof",
-                type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
-                effects: [{ type: 'ApplyContinuousEffect', layer: 6, abilitiesToAdd: ['Hexproof'], targetMapping: 'SELF' }]
-            },
             {
                 id: "nine_lives_replacement_damage",
                 type: AbilityType.Replacement,
@@ -743,17 +814,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
         ]
     },
 
-    "Rain of Revelation": {
-        ...metadata["Rain of Revelation"],
-        abilities: [
-            {
-                id: "rain_revelation_spell",
-                type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Stack,
-                effects: [{ type: 'DrawCards', amount: 3, targetMapping: 'CONTROLLER' }, { type: 'DiscardCard', amount: 1, targetMapping: 'CONTROLLER' }]
-            }
-        ]
-    },
+
 
     "See the Truth": {
         ...metadata["See the Truth"],
@@ -882,6 +943,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 triggerEvent: 'ON_OTHER_ETB_YOU_CONTROL',
                 activeZone: ZoneRequirement.Battlefield,
                 triggerCondition: (state: any, event: any, source: any) => event.target.controllerId === source.controllerId && event.target.definition.types.includes('Creature') && event.target.id !== source.sourceId,
+                targetDefinition: { type: 'AnyTarget', count: 1 },
                 effects: [{ type: 'DealDamage', amount: 'TRIGGER_TARGET_POWER', targetMapping: 'ANY_TARGET' }]
             }
         ]
@@ -985,7 +1047,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 type: AbilityType.Spell,
                 activeZone: ZoneRequirement.Stack,
                 costs: [{ type: 'Mana', value: '{X}{G}' }],
-                targetDefinition: { type: 'Permanent', count: 2, restrictions: ['CreatureYouControl', 'CreatureOpponentControl'] },
+                targetDefinition: { type: 'Permanent', count: 2, restrictions: ['Creature', 'YouControl', 'Creature', 'OpponentControl'] },
                 effects: [
                     { type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', powerModifier: 'X', toughnessModifier: 'X', layer: 7, targetMapping: 'TARGET_1' },
                     { type: 'Fight', targetMapping: 'TARGET_1', target2Mapping: 'TARGET_2' }
@@ -1061,6 +1123,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Mana', value: '{R}{G}{W}' }, { type: 'Tap', value: null }],
+                targetDefinition: { type: 'AnyTarget', count: 1 },
                 effects: [
                     { type: 'DealDamage', amount: 'DOGS_YOU_CONTROL_COUNT', targetMapping: 'ANY_TARGET' },
                     { type: 'GainLife', amount: 'CATS_YOU_CONTROL_COUNT', targetMapping: 'CONTROLLER' }
@@ -1185,19 +1248,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
         ]
     },
 
-    "Selfless Savior": {
-        ...metadata["Selfless Savior"],
-        abilities: [
-            {
-                id: "selfless_savior_sacrifice",
-                type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
-                costs: [{ type: 'Sacrifice', targetMapping: 'SELF' }],
-                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'YouControl', 'Other'] },
-                effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', layer: 6, abilitiesToAdd: ['Indestructible'], targetMapping: 'TARGET_1' }]
-            }
-        ]
-    },
+
 
     "Angelic Ascension": {
         ...metadata["Angelic Ascension"],
@@ -1234,6 +1285,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 triggerEvent: 'ON_DRAW',
                 activeZone: ZoneRequirement.Battlefield,
                 triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                targetDefinition: { type: 'Player', restrictions: ['Opponent'], count: 1 },
                 effects: [{ type: 'Mill', amount: 2, repeatIfTypeMatch: ['Nonland', 'Nonland'], targetMapping: 'TARGET_OPPONENT' }]
             }
         ]
@@ -1485,15 +1537,15 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                     { type: 'Exile', targetMapping: 'TARGET_1' },
                     {
                         type: 'CreateToken',
-                        tokenBlueprint: { 
-                            name: 'Soldier', 
-                            power: '1', 
-                            toughness: '1', 
-                            colors: ['W'], 
-                            types: ['Creature'], 
+                        tokenBlueprint: {
+                            name: 'Soldier',
+                            power: '1',
+                            toughness: '1',
+                            colors: ['W'],
+                            types: ['Creature'],
                             subtypes: ['Soldier'],
                             cmc: 0,
-                            image_url: 'https://cards.scryfall.io/large/front/d/0/d003cc2e-6e47-49f3-8f0a-b3287667bf97.jpg' 
+                            image_url: 'https://cards.scryfall.io/large/front/d/0/d003cc2e-6e47-49f3-8f0a-b3287667bf97.jpg'
                         },
                         targetMapping: 'TARGET_1_CONTROLLER'
                     }
@@ -1534,25 +1586,36 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
 
     "Garruk's Harbinger": {
         ...metadata["Garruk's Harbinger"],
+        keywords: ["Hexproof from black", "Trample"],
         abilities: [
             {
-                id: "garruk_harbinger_hexproof_black",
-                type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
-                effects: [{ type: 'ApplyContinuousEffect', layer: 6, abilitiesToAdd: ['Hexproof from Black'], targetMapping: 'SELF' }]
-            },
-            {
-                id: "garruk_harbinger_combat_damage_trigger",
+                id: "harbinger_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_COMBAT_DAMAGE_DEALT_TO_PLAYER',
                 activeZone: ZoneRequirement.Battlefield,
-                effects: [{
-                    type: 'SearchLibrary',
-                    amount: 'DAMAGE_DEALT_AMOUNT',
-                    value: 'TOP_OF_LIBRARY',
-                    restrictions: ['Creature', 'Planeswalker_Garruk'],
-                    targetMapping: 'CONTROLLER'
-                }]
+                triggerEvent: ['ON_DAMAGE_TAKED', 'ON_DAMAGE_PLAYER'],
+                triggerCondition: (state: any, event: any, t: any) => {
+                    // Deal combat damage to player or planeswalker
+                    if (event.sourceId !== t.sourceId || !event.data?.isCombat) return false;
+
+                    const target = state.players[event.targetId] || state.battlefield.find((o: any) => o.id === event.targetId);
+                    if (!target) return false;
+
+                    if (state.players[event.targetId]) return true; // It's a player
+                    return (target as any).definition.types.some((type: string) => type.toLowerCase() === 'planeswalker');
+                },
+                effects: [
+                    {
+                        type: EffectType.LookAtTopAndPick,
+                        amount: 'EVENT_AMOUNT',
+                        targetMapping: 'CONTROLLER',
+                        reveal: true,
+                        optional: true,
+                        restrictions: [
+                            'creature',
+                            { types: ['planeswalker'], nameIncludes: 'Garruk' }
+                        ]
+                    }
+                ]
             }
         ]
     },
@@ -1560,14 +1623,6 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
     "Heartfire Immolator": {
         ...metadata["Heartfire Immolator"],
         abilities: [
-            {
-                id: "heartfire_immolator_prowess",
-                type: AbilityType.Triggered,
-                triggerEvent: 'ON_CAST_NON_CREATURE',
-                activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
-                effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', powerModifier: 1, toughnessModifier: 1, layer: 7, targetMapping: 'SELF' }]
-            },
             {
                 id: "heartfire_immolator_sacrifice",
                 type: AbilityType.Activated,
@@ -1587,7 +1642,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 type: AbilityType.Triggered,
                 triggerEvent: 'ON_PRE_COMBAT_MAIN_PHASE_START',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId,
+                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 effects: [
                     {
                         type: 'Choice',
@@ -1664,49 +1719,245 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 triggerEvent: 'ON_SACRIFICE',
                 activeZone: ZoneRequirement.Battlefield,
                 triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                targetDefinition: { type: 'AnyTarget', count: 1 },
                 effects: [{ type: 'DealDamage', amount: 1, targetMapping: 'ANY_TARGET' }]
             }
         ]
     },
 
-    "Experimental Overload": {
-        ...metadata["Experimental Overload"],
+    "Opt": {
+        ...metadata["Opt"],
         abilities: [
             {
-                id: "experimental_overload_spell",
+                id: "opt_spell",
                 type: AbilityType.Spell,
                 activeZone: ZoneRequirement.Stack,
                 effects: [
-                    {
-                        type: 'CreateToken',
-                        tokenBlueprint: { name: 'Weird', colors: ['U', 'R'], types: ['Creature'], subtypes: ['Weird'] },
-                        amount: 'INSTANT_SORCERY_IN_GRAVEYARD_COUNT',
-                        targetMapping: 'CONTROLLER'
-                    },
-                    { type: 'ReturnToHand', restrictions: ['Instant', 'Sorcery', 'Graveyard'], targetMapping: 'CONTROLLER' },
-                    { type: 'Exile', targetMapping: 'SELF' }
+                    { type: 'Scry', amount: 1, targetMapping: 'CONTROLLER' },
+                    { type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }
                 ]
             }
         ]
     },
 
-    "Dismal Backwater": {
-        ...metadata["Dismal Backwater"],
+    "Shock": {
+        ...metadata["Shock"],
         abilities: [
             {
-                id: "dismal_backwater_etb_tapped",
-                type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
-                effects: [{ type: 'Tapped', value: true, targetMapping: 'SELF' }]
-            },
+                id: "shock_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                targetDefinition: { type: 'AnyTarget', count: 1 },
+                effects: [{ type: 'DealDamage', amount: 2, targetMapping: 'TARGET_1' }]
+            }
+        ]
+    },
+
+    "Revitalize": {
+        ...metadata["Revitalize"],
+        abilities: [
             {
-                id: "dismal_backwater_etb_life",
-                type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                id: "revitalize_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                effects: [
+                    { type: 'GainLife', amount: 3, targetMapping: 'CONTROLLER' },
+                    { type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }
+                ]
+            }
+        ]
+    },
+
+    "Defiant Strike": {
+        ...metadata["Defiant Strike"],
+        abilities: [
+            {
+                id: "defiant_strike_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
+                effects: [
+                    { type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 0, duration: 'UNTIL_END_OF_TURN', layer: 7, targetMapping: 'TARGET_1' },
+                    { type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }
+                ]
+            }
+        ]
+    },
+
+    "Alpine Watchdog": {
+        ...metadata["Alpine Watchdog"],
+        abilities: [] // Vigilance is handled by keywords in LayerProcessor
+    },
+
+    "Anointed Chorister": {
+        ...metadata["Anointed Chorister"],
+        abilities: [
+            {
+                id: "anointed_chorister_pump",
+                type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
-                effects: [{ type: 'GainLife', amount: 1, targetMapping: 'CONTROLLER' }]
+                costs: [{ type: 'Mana', value: '{4}{W}' }],
+                effects: [{ type: 'ApplyContinuousEffect', powerModifier: 3, toughnessModifier: 3, duration: 'UNTIL_END_OF_TURN', layer: 7, targetMapping: 'SELF' }]
+            }
+        ]
+    },
+
+    "Selfless Savior": {
+        ...metadata["Selfless Savior"],
+        abilities: [
+            {
+                id: "selfless_savior_sac",
+                type: AbilityType.Activated,
+                activeZone: ZoneRequirement.Battlefield,
+                costs: [{ type: 'Sacrifice', restrictions: ['SELF'] }],
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'Another'] },
+                effects: [{ type: 'ApplyContinuousEffect', abilitiesToAdd: ['Indestructible'], duration: 'UNTIL_END_OF_TURN', layer: 6, targetMapping: 'TARGET_1' }]
+            }
+        ]
+    },
+
+    "Duress": {
+        ...metadata["Duress"],
+        abilities: [
+            {
+                id: "duress_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                targetDefinition: { type: 'Player', count: 1, restrictions: ['Opponent'] },
+                effects: [
+                    {
+                        type: 'Choice',
+                        label: 'Choose a noncreature, nonland card',
+                        targetMapping: 'TARGET_1', 
+                        targetIdMapping: 'TARGET_1_HAND', 
+                        restrictions: ['Noncreature', 'Nonland'],
+                        effects: [{ type: 'DiscardCards', amount: 1, targetMapping: 'SELECTED_CARD' }]
+                    }
+                ]
+            }
+        ]
+    },
+
+    "Bad Deal": {
+        ...metadata["Bad Deal"],
+        abilities: [
+            {
+                id: "bad_deal_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                effects: [
+                    { type: 'DrawCards', amount: 2, targetMapping: 'CONTROLLER' },
+                    { type: 'DiscardCards', amount: 2, targetMapping: 'EACH_OPPONENT' },
+                    { type: 'LoseLife', amount: 2, targetMapping: 'EACH_PLAYER' }
+                ]
+            }
+        ]
+    },
+
+    "Village Rites": {
+        ...metadata["Village Rites"],
+        abilities: [
+            {
+                id: "village_rites_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                costs: [{ type: 'Sacrifice', restrictions: ['Creature'] }],
+                effects: [{ type: 'DrawCards', amount: 2, targetMapping: 'CONTROLLER' }]
+            }
+        ]
+    },
+
+    "Alchemist's Gift": {
+        ...metadata["Alchemist's Gift"],
+        abilities: [
+            {
+                id: "alchemist_gift_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
+                effects: [
+                    { type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 1, duration: 'UNTIL_END_OF_TURN', layer: 7, targetMapping: 'TARGET_1' },
+                    {
+                        type: 'Choice',
+                        label: 'Choose a keyword',
+                        choices: [
+                            { label: 'Deathtouch', effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Deathtouch'], layer: 6, targetMapping: 'TARGET_1' }] },
+                            { label: 'Lifelink', effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Lifelink'], layer: 6, targetMapping: 'TARGET_1' }] }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+
+    "Basri's Solidarity": {
+        ...metadata["Basri's Solidarity"],
+        abilities: [
+            {
+                id: "basri_solidarity_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                effects: [{ type: 'AddCounters', amount: 1, value: '+1/+1', targetMapping: 'ALL_CREATURES_YOU_CONTROL' }]
+            }
+        ]
+    },
+
+    "Chandra's Outrage": {
+        ...metadata["Chandra's Outrage"],
+        abilities: [
+            {
+                id: "chandra_outrage_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
+                effects: [
+                    { type: 'DealDamage', amount: 4, targetMapping: 'TARGET_1' },
+                    { type: 'DealDamage', amount: 2, targetMapping: 'TARGET_1_CONTROLLER' }
+                ]
+            }
+        ]
+    },
+
+    "Rain of Revelation": {
+        ...metadata["Rain of Revelation"],
+        abilities: [
+            {
+                id: "rain_revelation_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                effects: [
+                    { type: 'DrawCards', amount: 3, targetMapping: 'CONTROLLER' },
+                    { type: 'DiscardCards', amount: 1, targetMapping: 'CONTROLLER' }
+                ]
+            }
+        ]
+    },
+
+    "Eliminate": {
+        ...metadata["Eliminate"],
+        abilities: [
+            {
+                id: "eliminate_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['CreatureOrPlaneswalker', 'CMC<=3'] },
+                effects: [{ type: 'Destroy', targetMapping: 'TARGET_1' }]
+            }
+        ]
+    },
+
+    "Grasp of Darkness": {
+        ...metadata["Grasp of Darkness"],
+        abilities: [
+            {
+                id: "grasp_darkness_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
+                effects: [{ type: 'ApplyContinuousEffect', powerModifier: -4, toughnessModifier: -4, duration: 'UNTIL_END_OF_TURN', layer: 7, targetMapping: 'TARGET_1' }]
             }
         ]
     }
 };
+
+

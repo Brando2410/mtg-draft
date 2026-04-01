@@ -237,14 +237,63 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
                       <img 
                         src={hoveredCard.definition.image_url} 
                         alt={hoveredCard.definition.name}
-                        className="w-full h-auto border-b border-white/5"
+                        className="w-full h-auto"
                       />
-                      {/* Oracle Text BELOW image - Refined design */}
-                      {hoveredCard.definition.oracleText && (
-                        <div className="bg-black/40 p-6 backdrop-blur-md">
-                            <p className="text-indigo-100/90 text-sm font-medium leading-relaxed whitespace-pre-wrap tracking-wide italic">
-                                {hoveredCard.definition.oracleText}
-                            </p>
+
+                      {/* BATTLEFIELD-ONLY DEBUG INFO */}
+                      {hoveredCard.zone === 'Battlefield' && (
+                        <div className="bg-slate-950/90 p-5 border-t border-white/10 flex flex-col gap-4 backdrop-blur-xl">
+                            
+                            {/* Counters & Keywords */}
+                            <div className="flex flex-col gap-2">
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-400/60">Stato Permanente</h4>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {/* Keywords (Deduplicated) */}
+                                    {(() => {
+                                        const seen = new Set<string>();
+                                        return (hoveredCard.effectiveStats?.keywords || []).filter(k => {
+                                            const lowerK = k.toLowerCase();
+                                            if (seen.has(lowerK)) return false;
+                                            seen.add(lowerK);
+                                            return true;
+                                        }).map(k => (
+                                            <span key={k} className="bg-indigo-500/20 text-indigo-300 text-[9px] font-bold px-2 py-0.5 rounded border border-indigo-500/30 capitalize">
+                                                {k}
+                                            </span>
+                                        ));
+                                    })()}
+                                    {/* Markers/Counters */}
+                                    {Object.entries(hoveredCard.counters || {}).map(([type, val]) => (
+                                        val > 0 && (
+                                            <span key={type} className="bg-emerald-500/20 text-emerald-400 text-[9px] font-bold px-2 py-0.5 rounded border border-emerald-500/30">
+                                                {val}x {type}
+                                            </span>
+                                        )
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Technical Debug Info */}
+                            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/5">
+                                <div>
+                                    <p className="text-[8px] font-black uppercase text-slate-500 mb-0.5">Colori</p>
+                                    <p className="text-[11px] font-bold text-slate-300 uppercase">
+                                        {hoveredCard.definition.colors.length > 0 ? hoveredCard.definition.colors.join(', ') : 'Incolore'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-[8px] font-black uppercase text-slate-500 mb-0.5">Costo Mana</p>
+                                    <p className="text-[11px] font-bold text-slate-300 tracking-wider">
+                                        {hoveredCard.definition.manaCost || 'N/A'}
+                                    </p>
+                                </div>
+                                <div className="col-span-2">
+                                    <p className="text-[8px] font-black uppercase text-slate-500 mb-0.5">Linea di Tipo</p>
+                                    <p className="text-[11px] font-bold text-slate-300">
+                                        {hoveredCard.definition.type_line}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                       )}
                   </div>

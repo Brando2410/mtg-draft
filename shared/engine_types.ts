@@ -8,7 +8,7 @@ export const Zone = {
   Graveyard: 'Graveyard',
   Stack: 'Stack',
   Exile: 'Exile',
-  Command: 'Command'
+  Command: 'Command' // CR 408: The Command Zone (Emblems live here forever)
 } as const;
 export type Zone = (typeof Zone)[keyof typeof Zone];
 
@@ -98,12 +98,24 @@ export interface GameObject {
   };
 }
 
+// A player's interactive request to the game engine
+export const ActionType = {
+  DeclareAttackers: 'DECLARE_ATTACKERS',
+  DeclareBlockers: 'DECLARE_BLOCKERS',
+  OrderBlockers: 'ORDER_BLOCKERS',
+  OrderAttackers: 'ORDER_ATTACKERS',
+  Discard: 'DISCARD',
+  Targeting: 'TARGETING',
+  Choice: 'CHOICE'
+} as const;
+export type ActionType = (typeof ActionType)[keyof typeof ActionType];
+
 // An object residing on the stack waiting to resolve
 export interface StackObject {
   id: string;
   controllerId: PlayerId;
   sourceId: GameObjectId; 
-  type: 'Spell' | 'ActivatedAbility' | 'TriggeredAbility' | 'SpecialAction';
+  type: AbilityType;
   targets: GameObjectId[] | PlayerId[];
   card?: GameObject;
   abilityIndex?: number;
@@ -165,12 +177,39 @@ export interface TurnState {
   spellsCastThisTurn: Record<PlayerId, number>;
 }
 
+export interface ChoicePendingActionData {
+  label: string;
+  choices: { label: string; effects: EffectDefinition[] }[];
+  targets?: string[];
+  nextEffectIndex?: number;
+  sourceId?: string;
+  abilityIndex?: number;
+  stackObj?: StackObject;
+  stackId?: string;
+}
+
+export interface TargetingPendingActionData {
+  targetDefinition: TargetDefinition;
+  nextEffectIndex?: number;
+  sourceId: string;
+  abilityIndex?: number;
+  stackObj?: StackObject;
+  stackId?: string;
+  targets: string[];
+}
+
+export interface DiscardPendingActionData {
+  amount: number;
+}
+
+export type PendingActionData = ChoicePendingActionData | TargetingPendingActionData | DiscardPendingActionData | any;
+
 export interface PendingAction {
-  type: 'DECLARE_ATTACKERS' | 'DECLARE_BLOCKERS' | 'ORDER_BLOCKERS' | 'ORDER_ATTACKERS' | 'DISCARD' | 'TARGETING' | 'CHOICE';
+  type: ActionType;
   playerId: PlayerId;
   count?: number; 
   sourceId?: string; // For targeting or specific effects
-  data?: any;      // Contextual data (e.g. choice options)
+  data?: PendingActionData;      // Contextual data (e.g. choice options)
 }
 
 // The monolithic Game State representing the "Source of Truth"
@@ -188,6 +227,9 @@ export interface GameState {
   // Active Public Zones
   battlefield: GameObject[];
   exile: GameObject[];
+  
+  // CR 408: Command Zone — holds emblems permanently
+  emblems: EmblemDefinition[];
   
   // The Stack
   stack: StackObject[];
@@ -207,13 +249,14 @@ export interface GameState {
 }
 
 export const DurationType = {
-  Static: 'Static',                      // As long as source is in a specific zone (Layer 611.3a)
-  UntilEndOfTurn: 'UntilEndOfTurn',      // Rule 514.2
-  UntilEndOfCombat: 'UntilEndOfCombat',  // Rule 511.3
-  UntilEvent: 'UntilEvent',              // e.g., "Until your next turn"
-  Permanent: 'Permanent'                 // e.g., Counters or Emblems
+  Static: 'STATIC',                      // As long as source is in a specific zone (Layer 611.3a)
+  UntilEndOfTurn: 'UNTIL_END_OF_TURN',      // Rule 514.2
+  UntilEndOfCombat: 'UNTIL_END_OF_COMBAT',  // Rule 511.3
+  UntilEvent: 'UNTIL_EVENT',              // e.g., "Until your next turn"
+  Permanent: 'PERMANENT'                 // e.g., Counters or Emblems
 } as const;
 export type DurationType = (typeof DurationType)[keyof typeof DurationType];
+
 
 export interface EffectDuration {
   type: DurationType;
@@ -250,6 +293,7 @@ export interface AbilityCost {
   type: 'Tap' | 'Mana' | 'PayLife' | 'Discard' | 'Sacrifice' | 'Loyalty';
   value: any; // e.g. "{G}" or 3 life
   restrictions?: string[]; // e.g. ["Creature"]
+  targetMapping?: string;  // e.g. "SELF"
 }
 
 export interface ActivatedAbility {
@@ -286,6 +330,7 @@ export interface GameEvent {
   targetId?: GameObjectId;
   amount?: number;
   sourceZone?: Zone;
+  card?: GameObject;
   data?: any; // e.g. { amount: 2 } or { targetId: '...' }
 }
 
@@ -306,10 +351,11 @@ export interface RuleRegistry {
   restrictions: AbilityRestriction[];
   replacementEffects?: any[];
 }
+
 export const AbilityType = {
   Spell: 'Spell',
-  Activated: 'Activated',
-  Triggered: 'Triggered',
+  Activated: 'ActivatedAbility',
+  Triggered: 'TriggeredAbility',
   Static: 'Static',
   Replacement: 'Replacement'
 } as const;
@@ -326,17 +372,67 @@ export type ZoneRequirement = (typeof ZoneRequirement)[keyof typeof ZoneRequirem
 
 export interface TokenBlueprint {
   name: string;
-  power: string;
-  toughness: string;
+  power?: string;
+  toughness?: string;
   colors: string[];
   types: string[];
   subtypes: string[];
-  keywords: string[];
+  keywords?: string[];
   oracleText?: string;
+  image_url?: string;
+}
+// CR 114: Emblems
+// An emblem is a marker that lives in the Command Zone permanently.
+// It cannot be targeted, destroyed, or affected by spells/abilities.
+// Its triggered abilities function just like those from a permanent.
+export interface EmblemDefinition {
+  id: string;              // Unique instance ID
+  name: string;            // e.g. "Basri Ket Emblem"
+  controllerId: PlayerId;  // The player who "gets" the emblem
+  oracleText: string;      // For display purposes
+  image_url?: string;      // Source planeswalker image for UI
+  abilities: any[];        // Triggered/Static abilities the emblem provides
 }
 
+
+export const EffectType = {
+  DealDamage: 'DealDamage',
+  DrawCards: 'DrawCards',
+  DiscardCards: 'DiscardCards',
+  Destroy: 'Destroy',
+  Exile: 'Exile',
+  Counter: 'Counter',
+  CreateToken: 'CreateToken',
+  AddCounters: 'AddCounters',
+  ApplyContinuousEffect: 'ApplyContinuousEffect',
+  CopyObject: 'CopyObject',
+  Choice: 'Choice',
+  SearchLibrary: 'SearchLibrary',
+  PutOnBattlefield: 'PutOnBattlefield',
+  PutInHand: 'PutInHand',
+  ShuffleLibrary: 'ShuffleLibrary',
+  ReturnToHand: 'ReturnToHand',
+  GainLife: 'GainLife',
+  LoseLife: 'LoseLife',
+  AddMana: 'AddMana',
+  Tapped: 'Tapped',
+  Fight: 'Fight',
+  CostReduction: 'CostReduction',
+  PhasedOut: 'PhasedOut',
+  AllowOutOfTurnActivation: 'AllowOutOfTurnActivation',
+  ExtraTurns: 'ExtraTurns',
+  LookAtTopAndPick: 'LookAtTopAndPick',
+  MoveToZone: 'MoveToZone',
+  PutRemainderOnBottomRandom: 'PutRemainderOnBottomRandom',
+  CreateEmblem: 'CreateEmblem',   // CR 114: Creates an emblem in the Command Zone
+  Sacrifice: 'Sacrifice',         // CR 701.17: Move permanent(s) to graveyard bypassing indestructible
+  Scry: 'Scry'                    // CR 701.18: Look at top cards and choose top/bottom
+} as const;
+
+export type EffectType = (typeof EffectType)[keyof typeof EffectType];
+
 export interface EffectDefinition {
-  type: 'DealDamage' | 'DrawCards' | 'Destroy' | 'Exile' | 'Counter' | 'CreateToken' | 'AddCounters' | 'ApplyContinuousEffect' | 'CopyObject' | 'Choice' | 'SearchLibrary' | 'PutOnBattlefield' | 'PutInHand' | 'ShuffleLibrary' | 'ReturnToHand' | 'GainLife' | 'AddMana' | 'Tapped' | 'Fight' | 'CostReduction' | 'DiscardCards' | 'PhasedOut';
+  type: EffectType;
   amount?: number | string;
   value?: any; 
   
@@ -361,6 +457,13 @@ export interface EffectDefinition {
   layer?: number;
   targetControllerId?: string;
   
+  // Dynamic Token stats
+  powerOverride?: number | string;
+  toughnessOverride?: number | string;
+
+  // Conditional logic
+  condition?: string; 
+  
   /**
    * targetMapping conventions:
    * - 'SELF': The card itself
@@ -369,11 +472,28 @@ export interface EffectDefinition {
    * - 'CONTROLLER': The controller of the ability
    * - 'ALL_CREATURES_YOU_CONTROL', 'OTHER_CREATURES_YOU_CONTROL': Group selectors
    */
-  targetMapping: string; 
+  targetMapping?: string; 
+  targetDefinition?: TargetDefinition;
+  restrictions?: any[];
+  label?: string; // Top-level label for Choice effects
+  targetId?: string; // For MoveToZone
+  zone?: Zone; // For MoveToZone
+  reveal?: boolean; // For MoveToZone
+  cardsToMoveIds?: string[]; // For PutRemainderOnBottomRandom
+  optional?: boolean; // For Choice/LookAtTopAndPick
 }
 
+export const TargetType = {
+  Player: 'Player',
+  Permanent: 'Permanent',
+  Spell: 'Spell',
+  CardInGraveyard: 'CardInGraveyard',
+  Card: 'Card'
+} as const;
+export type TargetType = (typeof TargetType)[keyof typeof TargetType];
+
 export interface TargetDefinition {
-  type: 'Player' | 'Permanent' | 'Spell' | 'CardInGraveyard';
+  type: TargetType;
   count: number;
   optional?: boolean;
   restrictions?: string[];

@@ -15,19 +15,6 @@
       "keywords": []
     },
     {
-      "scryfall_id": "98c85699-2daf-4e87-a3be-465d02bd64bb",
-      "name": "Basri Ket",
-      "rarity": "mythic",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/9/8/98c85699-2daf-4e87-a3be-465d02bd64bb.jpg?1594734775",
-      "cmc": 3,
-      "type_line": "Legendary Planeswalker — Basri",
-      "mana_cost": "{1}{W}{W}",
-      "keywords": []
-    },
-    {
       "scryfall_id": "9c0c61e3-9f3d-4e7f-9046-0ea336dd8a2d",
       "name": "Teferi, Master of Time",
       "rarity": "mythic",
@@ -55,43 +42,7 @@
       "toughness": "4",
       "keywords": [
         "Vigilance",
-        "Protection"
-      ]
-    },
-    {
-      "scryfall_id": "74b1eae0-1bf8-4922-a9e3-45c01ece9005",
-      "name": "Basri's Lieutenant",
-      "rarity": "rare",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/7/4/74b1eae0-1bf8-4922-a9e3-45c01ece9005.jpg?1594734796",
-      "cmc": 4,
-      "type_line": "Creature — Human Knight",
-      "mana_cost": "{3}{W}",
-      "power": "3",
-      "toughness": "4",
-      "keywords": [
-        "Vigilance",
-        "Protection"
-      ]
-    },
-    {
-      "scryfall_id": "74b1eae0-1bf8-4922-a9e3-45c01ece9005",
-      "name": "Basri's Lieutenant",
-      "rarity": "rare",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/7/4/74b1eae0-1bf8-4922-a9e3-45c01ece9005.jpg?1594734796",
-      "cmc": 4,
-      "type_line": "Creature — Human Knight",
-      "mana_cost": "{3}{W}",
-      "power": "3",
-      "toughness": "4",
-      "keywords": [
-        "Vigilance",
-        "Protection"
+        "Protection from Multicolor"
       ]
     },
     {
@@ -126,53 +77,6 @@
       "type_line": "Instant",
       "mana_cost": "{1}{B}",
       "keywords": []
-    },
-    {
-      "scryfall_id": "f8eb4087-3a4c-4de8-8e29-f4cd71acb180",
-      "name": "Eliminate",
-      "rarity": "uncommon",
-      "color": [
-        "B"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/f/8/f8eb4087-3a4c-4de8-8e29-f4cd71acb180.jpg?1594736106",
-      "cmc": 2,
-      "type_line": "Instant",
-      "mana_cost": "{1}{B}",
-      "keywords": []
-    },
-    {
-      "scryfall_id": "452b735c-791f-4843-9390-8803154cde62",
-      "name": "Mangara, the Diplomat",
-      "rarity": "rare",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/4/5/452b735c-791f-4843-9390-8803154cde62.jpg?1743206167",
-      "cmc": 4,
-      "type_line": "Legendary Creature — Human Cleric",
-      "mana_cost": "{3}{W}",
-      "power": "2",
-      "toughness": "4",
-      "keywords": [
-        "Lifelink"
-      ]
-    },
-    {
-      "scryfall_id": "452b735c-791f-4843-9390-8803154cde62",
-      "name": "Mangara, the Diplomat",
-      "rarity": "rare",
-      "color": [
-        "W"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/4/5/452b735c-791f-4843-9390-8803154cde62.jpg?1743206167",
-      "cmc": 4,
-      "type_line": "Legendary Creature — Human Cleric",
-      "mana_cost": "{3}{W}",
-      "power": "2",
-      "toughness": "4",
-      "keywords": [
-        "Lifelink"
-      ]
     },
     {
       "scryfall_id": "452b735c-791f-4843-9390-8803154cde62",
@@ -235,19 +139,6 @@
       "keywords": []
     },
     {
-      "scryfall_id": "80b2fb65-5868-4cab-b45d-e103558ce7dc",
-      "name": "Sanctum of Calm Waters",
-      "rarity": "uncommon",
-      "color": [
-        "U"
-      ],
-      "image_url": "https://cards.scryfall.io/normal/front/8/0/80b2fb65-5868-4cab-b45d-e103558ce7dc.jpg?1594735727",
-      "cmc": 4,
-      "type_line": "Legendary Enchantment — Shrine",
-      "mana_cost": "{3}{U}",
-      "keywords": []
-    },
-    {
       "scryfall_id": "3ca38f4d-01f5-4a02-9000-01261a440dbf",
       "name": "Heartfire Immolator",
       "rarity": "uncommon",
@@ -278,8 +169,7 @@
       "power": "4",
       "toughness": "3",
       "keywords": [
-        "Hexproof from",
-        "Hexproof"
+        "Hexproof from Black"
       ]
     },
     {
@@ -455,8 +345,187 @@
       "type_line": "Legendary Enchantment — Shrine",
       "mana_cost": "{3}{U}",
       "keywords": []
+    },
+    {
+      "scryfall_id": "c392a7e5-6ff5-4c2f-9590-f8811a724f44",
+      "name": "Alpine Watchdog",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/3/c392a7e5-6ff5-4c2f-9590-f8811a724f44.jpg?1594734679",
+      "cmc": 2,
+      "type_line": "Creature — Dog",
+      "mana_cost": "{1}{W}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Vigilance"
+      ]
+    },
+    {
+      "scryfall_id": "9c977c67-b0c0-40b0-b129-28de094aaf40",
+      "name": "Anointed Chorister",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/c/9c977c67-b0c0-40b0-b129-28de094aaf40.jpg?1594734721",
+      "cmc": 1,
+      "type_line": "Creature — Human Cleric",
+      "mana_cost": "{W}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "6911759c-7177-402c-a95a-f9f46efaf521",
+      "name": "Selfless Savior",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/9/6911759c-7177-402c-a95a-f9f46efaf521.jpg?1594735224",
+      "cmc": 1,
+      "type_line": "Creature — Dog",
+      "mana_cost": "{W}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "34c3a894-ee75-4db9-a69f-711bb3cc150a",
+      "name": "Duress",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/4/34c3a894-ee75-4db9-a69f-711bb3cc150a.jpg?1730490899",
+      "cmc": 1,
+      "type_line": "Sorcery",
+      "mana_cost": "{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "7a3f8bc2-ef66-474f-92a3-9c4df1670cec",
+      "name": "Bad Deal",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/a/7a3f8bc2-ef66-474f-92a3-9c4df1670cec.jpg?1594735984",
+      "cmc": 6,
+      "type_line": "Sorcery",
+      "mana_cost": "{4}{B}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "760b41a1-c087-4b11-b8a0-fb01d8a4c0c6",
+      "name": "Shock",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/6/760b41a1-c087-4b11-b8a0-fb01d8a4c0c6.jpg?1757377337",
+      "cmc": 1,
+      "type_line": "Instant",
+      "mana_cost": "{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "3a9fb75e-c8e5-417b-83d4-5105af9c66c1",
+      "name": "Revitalize",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/a/3a9fb75e-c8e5-417b-83d4-5105af9c66c1.jpg?1631046075",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "42ed35e9-51cd-468a-86a9-9412553cf50d",
+      "name": "Village Rites",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/2/42ed35e9-51cd-468a-86a9-9412553cf50d.jpg?1736468066",
+      "cmc": 1,
+      "type_line": "Instant",
+      "mana_cost": "{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "6e4c9574-1ee3-461e-848f-8f02c6a8b7ee",
+      "name": "Alchemist's Gift",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/e/6e4c9574-1ee3-461e-848f-8f02c6a8b7ee.jpg?1594735950",
+      "cmc": 1,
+      "type_line": "Instant",
+      "mana_cost": "{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "c2e6fdc0-bdd4-4bba-b8f1-bbc8dfad038e",
+      "name": "Basri's Solidarity",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/2/c2e6fdc0-bdd4-4bba-b8f1-bbc8dfad038e.jpg?1594734810",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "edbfe793-6644-43ed-bbe1-e122c01c5e53",
+      "name": "Chandra's Outrage",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/d/edbfe793-6644-43ed-bbe1-e122c01c5e53.jpg?1592516870",
+      "cmc": 4,
+      "type_line": "Instant",
+      "mana_cost": "{2}{R}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "da367981-9d6f-419f-9f58-f969b6183336",
+      "name": "Rain of Revelation",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/a/da367981-9d6f-419f-9f58-f969b6183336.jpg?1594735631",
+      "cmc": 4,
+      "type_line": "Instant",
+      "mana_cost": "{3}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "7737b578-8ae3-4846-b508-93ef40f25244",
+      "name": "Grasp of Darkness",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/7/7737b578-8ae3-4846-b508-93ef40f25244.jpg?1594736166",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{B}{B}",
+      "keywords": []
     }
   ],
-  "cardCount": 30,
-  "lastUpdated": "2026-03-30T21:59:43.048Z"
+  "cardCount": 36,
+  "lastUpdated": "2026-04-01T15:46:54.754Z"
 }

@@ -1,4 +1,4 @@
-import { GameState, Phase, Step, PlayerId, Zone, GameObject, PlayerState } from '@shared/engine_types';
+import { GameState, Phase, Step, PlayerId, Zone, GameObject, PlayerState, DurationType } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { StackResolver } from './modules';
 import { M21_LOGIC } from './data/m21_logic';
@@ -46,6 +46,7 @@ export class GameEngine {
         triggeredAbilities: [],
         restrictions: []
       },
+      emblems: [],
       consecutivePasses: 0,
       logs: ['Match Start Initialization...'],
       turnState: {
@@ -214,13 +215,9 @@ export class GameEngine {
   public discardCard(playerId: PlayerId, cardInstanceId: string): boolean {
     const res = PlayerActionProcessor.discardCard(this.state, playerId, cardInstanceId, (m: string) => this.log(m));
     if (res.finished) {
-       this.resetPriorityToActivePlayer();
-       
-       if (this.state.currentStep === Step.Cleanup) {
-         this.advanceStep(); 
-       } else {
-         this.checkAutoPass(playerId);
-       }
+       // CR 608.2: If discarding was part of a spell resolution, we must resume resolution immediately.
+       // resolveTopOrAdvanceStep handles both resuming the stack and advancing steps (like Cleanup).
+       this.resolveTopOrAdvanceStep();
     }
     return res.success;
   }
@@ -385,12 +382,14 @@ export class GameEngine {
     // Fire generic event for the step (e.g., ON_END_STEP, ON_UPKEEP_STEP)
     TriggerProcessor.onEvent(this.state, { 
         type: `ON_${stepName}_STEP`, 
+        playerId: this.state.activePlayerId,
         data: { phase: this.state.currentPhase, step: this.state.currentStep } 
     }, (m) => this.log(m));
 
-    // Fire generic event for the phase (e.g., ON_PRECOMBAT_MAIN_PHASE_START)
+    // Fire generic event for the phase (e.g., ON_PRE_COMBAT_MAIN_PHASE_START)
     TriggerProcessor.onEvent(this.state, { 
         type: `ON_${phaseName}_PHASE_START`, 
+        playerId: this.state.activePlayerId,
         data: { phase: this.state.currentPhase, step: this.state.currentStep } 
     }, (m) => this.log(m));
 
@@ -520,7 +519,7 @@ export class GameEngine {
       
       // MTG Arena "Whiteboard Cleanup"
       this.state.ruleRegistry.continuousEffects = this.state.ruleRegistry.continuousEffects.filter(
-        e => e.duration.type !== 'UntilEndOfTurn'
+        e => e.duration.type !== DurationType.UntilEndOfTurn
       );
     }
   }
@@ -563,20 +562,27 @@ export class GameEngine {
   }
 
   public resolveChoice(playerId: string, choiceIndex: number): boolean {
-    return ChoiceProcessor.resolveChoice(
+    const success = ChoiceProcessor.resolveChoice(
         this.state,
         playerId,
         choiceIndex,
         (m: string) => this.log(m),
         {
             resetPriorityToActivePlayer: () => this.resetPriorityToActivePlayer(),
-            activateAbility: (p: PlayerId, c: string, i: number, t: string[]) => this.activateAbility(p, c, i, t)
+            activateAbility: (p: PlayerId, c: string, i: number, t: string[], b: boolean = false) => this.activateAbility(p, c, i, t, b),
+            tapForMana: (p: string, c: string) => this.tapForMana(p, c),
+            checkAutoPass: (p: string) => this.checkAutoPass(p)
         }
     );
+
+    if (success && !this.state.pendingAction && this.state.stack.length > 0) {
+        this.resolveTopOrAdvanceStep();
+    }
+    return success;
   }
 
   public resolveTargeting(playerId: PlayerId, targetId: string): boolean {
-    return ChoiceProcessor.resolveTargeting(
+    const success = ChoiceProcessor.resolveTargeting(
         this.state,
         playerId,
         targetId,
@@ -586,6 +592,11 @@ export class GameEngine {
             finaliseTargeting: (p: PlayerId, t: string[]) => this.finaliseTargeting(p, t)
         }
     );
+
+    if (success && !this.state.pendingAction && this.state.stack.length > 0) {
+       this.resolveTopOrAdvanceStep();
+    }
+    return success;
   }
 
   private finaliseTargeting(playerId: PlayerId, resolvedTargets: string[]): boolean {
@@ -594,6 +605,50 @@ export class GameEngine {
     const abilityIndex = actionData?.abilityIndex;
     const stackObj = actionData?.stackObj; // Get the hidden stack object
     const stackId = actionData?.stackId;     // Get the trigger stack ID (for existing triggers)
+
+    if (actionData?.isCostTargeting) {
+        if (actionData.costType === 'Sacrifice') {
+            (this.state as any).lastChosenSacrificeId = resolvedTargets[0];
+        }
+        this.state.pendingAction = undefined;
+        this.state.priorityPlayerId = playerId;
+        return this.playCard(playerId, sourceId!, actionData.declaredTargets || []);
+    }
+
+    if (actionData?.nextEffectIndex !== undefined) {
+        this.state.pendingAction = undefined;
+        this.state.priorityPlayerId = playerId;
+        const savedTargets = [...(actionData.targets || []), ...resolvedTargets];
+        const savedEffects = actionData.effects || [];
+        const useSourceId = actionData.sourceId || sourceId!;
+        const { EffectProcessor } = require('./modules/effects/EffectProcessor');
+        EffectProcessor.resolveEffects(this.state, savedEffects, useSourceId, savedTargets, (m: string) => this.log(m), actionData.nextEffectIndex, stackObj, actionData.parentContext);
+        
+        // --- RESUME PARENT CONTEXTS (NESTED RESOLUTION) ---
+        // If the current effect list (e.g. a Choice branch) is finished, go back to parent spell layers.
+        let currentCtx = actionData.parentContext;
+        while (!this.state.pendingAction && currentCtx && currentCtx.nextEffectIndex < currentCtx.effects.length) {
+            this.log(`[RESOLVING] Returning to parent context for ${useSourceId}...`);
+            const pEffs = currentCtx.effects;
+            const pNext = currentCtx.nextEffectIndex;
+            const pSource = currentCtx.sourceId || sourceId!;
+            const pTargets = currentCtx.targets || [];
+            const pStackObj = currentCtx.stackObj;
+            const pGrantContext = currentCtx.parentContext; // Grandma context
+            
+            currentCtx = pGrantContext; // Shift up before call to avoid loops
+            EffectProcessor.resolveEffects(this.state, pEffs, pSource, pTargets, (m: string) => this.log(m), pNext, pStackObj, pGrantContext);
+        }
+
+        if (!this.state.pendingAction) {
+            if (this.state.stack.length > 0) {
+                this.resolveTopOrAdvanceStep();
+            } else {
+                this.resetPriorityToActivePlayer();
+            }
+        }
+        return true;
+    }
 
     if (stackObj) {
         stackObj.targets = resolvedTargets;
@@ -627,10 +682,16 @@ export class GameEngine {
 
     if (abilityIndex !== undefined) {
        this.state.pendingAction = undefined;
-       return this.activateAbility(playerId, sourceId!, abilityIndex, resolvedTargets, true);
+       this.state.priorityPlayerId = playerId; 
+       const success = this.activateAbility(playerId, sourceId!, abilityIndex, resolvedTargets, true);
+       this.checkAutoPass(playerId);
+       return success;
     } else {
        this.state.pendingAction = undefined;
-       return this.playCard(playerId, sourceId!, resolvedTargets, true);
+       this.state.priorityPlayerId = playerId;
+       const success = this.playCard(playerId, sourceId!, resolvedTargets, true);
+       this.checkAutoPass(playerId);
+       return success;
     }
   }
 
@@ -639,7 +700,7 @@ export class GameEngine {
     
     // 1. Remove floating continuous effects (Rule 614)
     this.state.ruleRegistry.continuousEffects = this.state.ruleRegistry.continuousEffects.filter(eff => {
-       return eff.duration?.type !== 'UntilEndOfTurn';
+       return eff.duration?.type !== DurationType.UntilEndOfTurn;
     });
 
     // 2. Clear damage markers and deathtouch flags (Rule 514.2)

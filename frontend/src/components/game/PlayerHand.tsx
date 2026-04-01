@@ -60,6 +60,13 @@ export const PlayerHand = ({ hand, onPlayCard, pendingDiscardCount = 0, onHoverS
                     (e.target as HTMLImageElement).src = 'https://cards.scryfall.io/large/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg';
                   }}
                 />
+
+                {/* REVEALED STATUS EYE ICON */}
+                {(card as any).isRevealed && (
+                  <div className="absolute top-2 left-2 w-6 h-6 bg-purple-600 border border-purple-400/50 rounded-full shadow-2xl flex items-center justify-center text-xs font-bold ring-2 ring-black/40 animate-pulse z-30">
+                      <span className="text-white drop-shadow-md">👁️</span>
+                  </div>
+                )}
                 
                 {/* HINT PER PLAY/DISCARD */}
                 <div className={`absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider text-white whitespace-nowrap pointer-events-none shadow-2xl border border-white/20 ${

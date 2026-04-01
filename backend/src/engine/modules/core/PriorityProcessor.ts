@@ -1,4 +1,4 @@
-import { GameState, PlayerId, Phase, Step, Zone } from '@shared/engine_types';
+import { GameState, PlayerId, Phase, Step, Zone, AbilityType } from '@shared/engine_types';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
 import { SpellProcessor } from '../actions/SpellProcessor';
@@ -79,32 +79,49 @@ export class PriorityProcessor {
        const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
        const isYourTurn = state.activePlayerId === playerId;
 
-       let canPlay = false;
-       const effectiveCost = SpellProcessor.getEffectiveManaCost(state, cardInHand);
+        let canPlay = false;
+        const { totalMana: effectiveCost, additionalCosts } = SpellProcessor.getEffectiveCosts(state, cardInHand);
 
-       if (isLand) {
-           canPlay = isYourTurn && isMain && stackEmpty && !player.hasPlayedLandThisTurn;
-       } else if (isInstantOrFlash) {
-           canPlay = ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost);
-       } else {
-           canPlay = isYourTurn && isMain && stackEmpty && ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost);
-       }
+        if (isLand) {
+            canPlay = isYourTurn && isMain && stackEmpty && !player.hasPlayedLandThisTurn;
+        } else if (isInstantOrFlash) {
+            canPlay = ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost);
+        } else {
+            canPlay = isYourTurn && isMain && stackEmpty && ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost);
+        }
 
-       if (canPlay) {
-           const logic = M21_LOGIC[cardInHand.definition.name];
-           const targetDefinition = (logic as any)?.targetDefinition || logic?.abilities?.find(a => a.type === 'Spell')?.targetDefinition;
-           if (targetDefinition && !targetDefinition.optional) {
-               const legalTargetIds = [
-                   ...Object.keys(state.players),
-                   ...state.battlefield.map(o => o.id)
-               ].filter(tid => ValidationProcessor.isLegalTarget(state, cardInHand.id, tid, targetDefinition));
-               
-               const requiredCount = targetDefinition.count || 0;
-               if (legalTargetIds.length < requiredCount) {
-                   canPlay = false;
-               }
-           }
-       }
+        // --- CHECK ADDITIONAL COSTS (e.g. Goremand) ---
+        if (canPlay && additionalCosts.length > 0) {
+            const canPayAllExtras = additionalCosts.every(cost => {
+                if (cost.type === 'Sacrifice') {
+                    // Check if there is at least one permanent that can be sacrificed
+                    const candidates = state.battlefield.filter(o => 
+                        o.controllerId === playerId && 
+                        ValidationProcessor.matchesRestrictions(state, o, cost.restrictions || [], playerId, cardInHand.id)
+                    );
+                    return candidates.length > 0;
+                }
+                // (Add other cost checks here if needed)
+                return true;
+            });
+            if (!canPayAllExtras) canPlay = false;
+        }
+
+        if (canPlay) {
+            const logic = M21_LOGIC[cardInHand.definition.name];
+            const targetDefinition = (logic as any)?.targetDefinition || logic?.abilities?.find(a => a.type === 'Spell')?.targetDefinition;
+            if (targetDefinition && !targetDefinition.optional) {
+                const legalTargetIds = [
+                    ...Object.keys(state.players),
+                    ...state.battlefield.map(o => o.id)
+                ].filter(tid => ValidationProcessor.isLegalTarget(state, cardInHand.id, tid, targetDefinition));
+                
+                const requiredCount = targetDefinition.count || 0;
+                if (legalTargetIds.length < requiredCount) {
+                    canPlay = false;
+                }
+            }
+        }
 
        return canPlay;
     }
@@ -135,7 +152,7 @@ export class PriorityProcessor {
 
     const logic = M21_LOGIC[obj.definition.name];
     const ability = logic?.abilities?.[abilityIndex];
-    if (!ability || ability.type !== 'Activated') return false;
+    if (!ability || ability.type !== AbilityType.Activated) return false;
 
     // Skip purely mana-producing abilities for auto-pass
     if (!checkPriority && ability.isManaAbility) return false;

@@ -1,4 +1,4 @@
-import { GameState, PlayerId, GameObject, Zone } from '@shared/engine_types';
+import { GameState, PlayerId, GameObject, Zone, AbilityType, DurationType } from '@shared/engine_types';
 import { TriggerProcessor } from '../effects/TriggerProcessor';
 import { M21_LOGIC } from '../../data/m21_logic';
 
@@ -11,15 +11,19 @@ export class ActionProcessor {
    * CR 400.1 / 400.7: An object that moves from one zone to another 
    * becomes a new object with no memory of or relation to its previous existence.
    */
-  public static moveCard(state: GameState, card: GameObject, to: Zone, ownerId: PlayerId, log?: (m: string) => void) {
+   public static moveCard(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, log?: (m: string) => void) {
     const fromZone = card.zone;
     
+    // Rule 110.2: A permanent's controller is the player under whose control it entered.
+    // Rule 108.4: A card's owner doesn't change, but its controller can.
+    card.controllerId = targetPlayerId;
+
     // 1. Rule 400.7: Remove from the current zone
     this.removeFromCurrentZone(state, card);
 
     // CR 121: Drawing a card
     if (fromZone === Zone.Library && to === Zone.Hand) {
-        TriggerProcessor.onEvent(state, { type: 'ON_DRAW', playerId: ownerId, data: { card } }, log || (() => {}));
+        TriggerProcessor.onEvent(state, { type: 'ON_DRAW', playerId: targetPlayerId, data: { card } }, log || (() => {}));
     }
 
     // CR 603.10: "Leaves-the-battlefield" events MUST look back in time.
@@ -38,7 +42,7 @@ export class ActionProcessor {
     }
 
     // 3. Rule 400.1: Add to the new zone
-    this.addToTargetZone(state, card, to, ownerId, isToken, fromZone, log);
+    this.addToTargetZone(state, card, to, targetPlayerId, isToken, fromZone, log);
   }
 
   private static handleLeavingBattlefield(state: GameState, card: GameObject, to: Zone, log?: (m: string) => void) {
@@ -69,23 +73,36 @@ export class ActionProcessor {
     }
   }
 
-  private static addToTargetZone(state: GameState, card: GameObject, to: Zone, ownerId: PlayerId, isToken: boolean, from: Zone, log?: (m: string) => void) {
+   private static addToTargetZone(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, isToken: boolean, from: Zone, log?: (m: string) => void) {
     if (to === Zone.Battlefield) {
       state.battlefield.push(card);
+      // Rule 110.2: Always sync controllerId when entering battlefield
+      card.controllerId = targetPlayerId;
+      
       const isCreature = card.definition.types.some(t => t.toLowerCase() === 'creature');
       card.summoningSickness = isCreature;
+      (card as any).isRevealed = false; // Always clear when entering public zone
       this.registerAbilities(state, card);
       
       this.handleEnteringBattlefield(state, card, log);
 
     } else if (to === Zone.Exile) {
-      if (!isToken) state.exile.push(card);
+        if (!isToken) state.exile.push(card);
+        card.controllerId = targetPlayerId; // Usually same as ownerId, but for clarity
     } else {
-      const player = state.players[ownerId];
+      const player = state.players[targetPlayerId];
       if (!player) return;
 
+      // Always sync controller to the destination player (owner) for private zones
+      card.controllerId = targetPlayerId;
+
       if (to === Zone.Hand && !isToken) player.hand.push(card);
-      else if (to === Zone.Library && !isToken) player.library.push(card);
+      else if (to === Zone.Library && !isToken) {
+          const position = (card as any).libraryPosition || 'top';
+          if (position === 'bottom') player.library.unshift(card);
+          else player.library.push(card);
+          delete (card as any).libraryPosition;
+      }
       else if (to === Zone.Graveyard) {
           if (!isToken) player.graveyard.push(card);
           this.handleEnteringGraveyard(state, card, from, log);
@@ -98,10 +115,36 @@ export class ActionProcessor {
         this.unregisterAbilities(state, card.id);
         if (to === Zone.Hand) state.turnState.permanentReturnedToHandThisTurn = true;
     }
-    card.isTapped = false;
-    card.damageMarked = 0;
-    card.deathtouchMarked = false;
-    card.counters = {};
+
+    // Rule 400.7: Object changes zones -> becomes a new object
+    // 1. Clear floating continuous effects targeting this ID
+    state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
+        // Remove effects that were attached to this object (unless they are permanent)
+        if (eff.sourceId === card.id && eff.duration.type !== DurationType.Permanent) return false;
+        
+        // Remove this object from target lists
+        if (eff.targetIds && eff.targetIds.includes(card.id)) {
+            eff.targetIds = eff.targetIds.filter(id => id !== card.id);
+        }
+        return true;
+    });
+
+    // 2. Reset dynamic engine properties
+    const c = card as any;
+    c.isTapped = false;
+    c.damage = 0;
+    c.damageMarked = 0;
+    c.deathtouchMarked = false;
+    c.isAttacking = false;
+    c.isBlocking = false;
+    c.summoningSickness = false;
+    c.isPhasedOut = false;
+    c.isRevealed = false; // Rule 400.7: Clear revealed status on zone change
+    c.counters = {};
+    
+    // 3. Wipe calculated stats (they will be recalculated for the new zone)
+    c.effectiveStats = null;
+    c.modifierSnapshot = null;
   }
 
   private static handleEnteringBattlefield(state: GameState, card: GameObject, log?: (m: string) => void) {
@@ -118,7 +161,14 @@ export class ActionProcessor {
   }
 
   private static handleEnteringGraveyard(state: GameState, card: GameObject, from: Zone, log?: (m: string) => void) {
-      // Logic for entering graveyard (not used for dies triggers anymore)
+      // Rule 603.10: "Leaves the battlefield" triggers look at the object before it moved.
+      if (from === Zone.Battlefield) {
+          // Snapshot for Last Known Information (LKI)
+          const lkiSnapshot = JSON.parse(JSON.stringify(card));
+          TriggerProcessor.onEvent(state, { type: 'ON_DEATH', targetId: card.id, sourceId: card.id, data: { object: lkiSnapshot } }, log || (() => {}));
+      }
+
+      this.resetObjectState(state, card, from, Zone.Graveyard);
   }
 
   /* --- Ability Management (Rule 113) --- */
@@ -130,8 +180,8 @@ export class ActionProcessor {
     logic.abilities.forEach((ability: any, index: number) => {
         const instanceId = `${card.id}_ability_${index}`;
         switch (ability.type) {
-            case 'Triggered': this.registerTriggeredAbility(state, card, ability, instanceId); break;
-            case 'Activated': this.registerActivatedAbility(state, card, ability, instanceId); break;
+            case AbilityType.Triggered: this.registerTriggeredAbility(state, card, ability, instanceId); break;
+            case AbilityType.Activated: this.registerActivatedAbility(state, card, ability, instanceId); break;
             case 'Static':    this.registerStaticAbility(state, card, ability, instanceId); break;
             case 'Replacement': this.registerReplacementAbility(state, card, ability, instanceId); break;
         }

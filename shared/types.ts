@@ -14,10 +14,8 @@ export interface Card {
   };
   back_image_url?: string;
   type_line?: string;
-  oracle_text?: string;
-  oracleText?: string;
-  mana_cost?: string;
-  manaCost?: string;
+  oracleText?: string; // Standard used by the engine
+  manaCost?: string;   // Standard used by the engine
   power?: string;
   toughness?: string;
   keywords?: string[];

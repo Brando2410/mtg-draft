@@ -17,12 +17,17 @@ export class ChoiceProcessor {
         activateAbility: (p: PlayerId, c: string, idx: number, targets: string[], bypass?: boolean) => boolean;
         finaliseTargeting?: (p: PlayerId, targets: string[]) => boolean;
         tapForMana?: (p: PlayerId, c: string) => void;
+        checkAutoPass?: (p: PlayerId) => void;
     }
   ): boolean {
     if (state.pendingAction?.type !== 'CHOICE' || state.pendingAction.playerId !== playerId) return false;
 
     // Handle "Back/Undo" from choice
     if (String(choiceIndex) === 'undo' || choiceIndex === -1) {
+        if (state.pendingAction.data?.hideUndo) {
+            log(`Undo not available for this mandatory action.`);
+            return false;
+        }
         const sourceId = state.pendingAction.sourceId;
         const savedActionData = state.pendingAction.data;
 
@@ -65,7 +70,7 @@ export class ChoiceProcessor {
 
         log(`Action cancelled.`);
         state.pendingAction = undefined;
-        state.priorityPlayerId = playerId; // Return priority to the acting player
+        state.priorityPlayerId = playerId; 
         return true;
     }
 
@@ -91,6 +96,7 @@ export class ChoiceProcessor {
               if (targetDef.optional) {
                    log(`No legal targets found, auto-skipping target selection for ${obj.definition.name}.`);
                    state.pendingAction = undefined;
+                   state.priorityPlayerId = playerId;
                    return engine.activateAbility(playerId, sourceId, abilityIndex, [], true);
               } else {
                   log(`No legal targets available. Activation invalid.`);
@@ -104,6 +110,7 @@ export class ChoiceProcessor {
             sourceId,
             data: { abilityIndex, legalTargetIds, optional: targetDef.optional, targetDefinition: targetDef }
          };
+         state.priorityPlayerId = playerId;
          log(`Select target for ${obj.definition.name}'s ability.`);
          return true;
       }
@@ -113,17 +120,23 @@ export class ChoiceProcessor {
         return engine.activateAbility(playerId, sourceId, abilityIndex, [], true);
     }
 
-        // --- MODAL SPELL HANDLING (Casting Phase choice) ---
-        if (state.pendingAction.data?.isSpellCasting) {
+        // --- MODAL SPELL OR COST HANDLING (Casting Phase choice) ---
+        if (state.pendingAction.data?.isSpellCasting || state.pendingAction.data?.isCostChoice) {
              const savedTargets = state.pendingAction.data.declaredTargets || [];
+             const costType = state.pendingAction.data.costType;
+             
              state.pendingAction = undefined; // Clear choice action
              
-             // Temporarily store the choice so SpellProcessor can pick it up
-             (state as any).lastChoiceIndex = choiceIndex;
+             if (costType === 'Sacrifice') {
+                 (state as any).lastChosenSacrificeId = choice.value;
+             } else {
+                 // Temporarily store the choice so SpellProcessor can pick it up
+                 (state as any).lastChoiceIndex = choiceIndex;
+             }
              
-             log(`Selected choice: ${choice.label}`);
+             log(`Selected ${costType ? costType + ' item' : 'choice'}: ${choice.label}`);
              
-             // RE-CALL playCard to finalize (it will now see hasPreSelectedChoice and bypass choice phase)
+             // RE-CALL playCard to finalize (it will now see hasPreSelectedChoice or lastChosenSacrificeId)
              const { SpellProcessor } = require('./SpellProcessor');
              return SpellProcessor.playCard(
                  state, 
@@ -132,8 +145,8 @@ export class ChoiceProcessor {
                  savedTargets, 
                  log, 
                  {
-                     tapForMana: (p: any, c: any) => engine.finaliseTargeting !== undefined ? (engine as any).tapForMana(p, c) : {},
-                     checkAutoPass: (p: any) => engine.resetPriorityToActivePlayer() // Close enough for setup
+                     tapForMana: (p: any, c: any) => engine.tapForMana ? engine.tapForMana(p, c) : true,
+                     checkAutoPass: (p: any) => engine.checkAutoPass ? engine.checkAutoPass(p) : engine.resetPriorityToActivePlayer()
                  },
                  true // Finalizing
              );
@@ -142,13 +155,32 @@ export class ChoiceProcessor {
     // --- GENERIC CHOICE EFFECTS (Rule 608.2d) ---
     if (choice.effects) {
         log(`Option selected: ${choice.label}`);
-        const savedTargets = state.pendingAction.data?.targets || [];
+        const savedActionData = state.pendingAction.data;
+        const stackObj = savedActionData?.stackObj;
+        
+        // If the choice had a value (e.g. card selection), we use it as the target for the resolution of sub-effects
+        const targetsForResolution = choice.value ? [choice.value] : (savedActionData?.targets || []);
+        
         state.pendingAction = undefined; // Clear first to allow sub-effects to set another PENDING_ACTION if needed
         
         const { EffectProcessor } = require('../effects/EffectProcessor');
-        EffectProcessor.resolveEffects(state, choice.effects, sourceId, savedTargets, log);
+        EffectProcessor.resolveEffects(state, choice.effects, sourceId, targetsForResolution, log, 0, stackObj, savedActionData);
+    
+    // Check if we must resume parent layers (this is the non-suspending case)
+    let currentCtx = savedActionData;
+    while (!state.pendingAction && currentCtx && currentCtx.nextEffectIndex < currentCtx.effects.length) {
+        log(`[RESOLVING] Resuming parent resolution context for ${sourceId}...`);
+        const nextIdx = currentCtx.nextEffectIndex;
+        const effs = currentCtx.effects;
+        const parentTargets = currentCtx.targets || [];
+        const parentCtx = currentCtx.parentContext;
         
-        if (!(state as any).pendingAction) {
+        // Advance currentCtx to parent before call (in case resolveEffects sets a new suspension)
+        currentCtx = parentCtx; 
+        EffectProcessor.resolveEffects(state, effs, sourceId, parentTargets, log, nextIdx, stackObj, parentCtx);
+    }
+
+        if (!state.pendingAction) {
            engine.resetPriorityToActivePlayer(); 
         } else {
            state.priorityPlayerId = (state as any).pendingAction.playerId || null;
@@ -232,7 +264,7 @@ export class ChoiceProcessor {
             }
 
             state.pendingAction = undefined;
-            state.priorityPlayerId = playerId; // Return priority to player who was targeting
+            state.priorityPlayerId = playerId; 
             return true;
         }
     }

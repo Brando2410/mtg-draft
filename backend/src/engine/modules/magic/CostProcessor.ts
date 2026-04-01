@@ -2,6 +2,7 @@ import { GameState, GameObject, PlayerId, GameObjectId, AbilityCost, Restriction
 import { ManaProcessor } from './ManaProcessor';
 import { ActionProcessor } from '../actions/ActionProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
+import { ValidationProcessor } from '../state/ValidationProcessor';
 
 /**
  * Rules Engine Module: Cost Processing (Rule 601.2h / 101.1)
@@ -70,8 +71,11 @@ export class CostProcessor {
         return val >= 0 || current >= Math.abs(val);
 
       case 'Sacrifice':
-        if (cost.restrictions && cost.restrictions.includes('Creature')) {
-           return state.battlefield.some(c => c.controllerId === playerId && c.definition.types.includes('Creature'));
+        if (cost.targetMapping === 'SELF') {
+           return state.battlefield.some(c => c.id === source.id);
+        }
+        if (cost.restrictions) {
+           return state.battlefield.some(c => c.controllerId === playerId && ValidationProcessor.matchesRestrictions(state, c, cost.restrictions!, playerId, source.id));
         }
         return state.battlefield.some(c => c.controllerId === playerId);
 
@@ -109,9 +113,16 @@ export class CostProcessor {
         break;
 
       case 'Sacrifice':
-        // Simplified: just sacrifice the first valid source if not specified
-        // In a real version, this should trigger a pending action or take a parameter
-        const toSac = state.battlefield.find(c => c.controllerId === playerId && (!cost.restrictions || cost.restrictions.includes(c.definition.types[0])));
+        // CR 701.17: To sacrifice a permanent, move it to its owner's graveyard.
+        let toSac;
+        if (cost.targetMapping === 'SELF') {
+            toSac = source;
+        } else {
+            // Simplified: just sacrifice the first valid source if not specified
+            // In a real version, this should trigger a pending action or take a parameter
+            toSac = state.battlefield.find(c => c.controllerId === playerId && (!cost.restrictions || ValidationProcessor.matchesRestrictions(state, c, cost.restrictions!, playerId, source.id)));
+        }
+        
         if (toSac) {
             ActionProcessor.moveCard(state, toSac, Zone.Graveyard, playerId, log);
         }

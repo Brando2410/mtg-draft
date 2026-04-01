@@ -96,8 +96,9 @@ export class StackResolver {
                           types.includes('land');
 
       if (isPermanent) {
-        ActionProcessor.moveCard(this.state, card, Zone.Battlefield, card.ownerId, (m: string) => this.log(m));
-      } else {
+        // Rule 110.2: "Every permanent spell enters the battlefield under the control of its controller."
+        ActionProcessor.moveCard(this.state, card, Zone.Battlefield, stackObj.controllerId, (m: string) => this.log(m));
+      } else if (card.zone === Zone.Stack) {
         ActionProcessor.moveCard(this.state, card, Zone.Graveyard, card.ownerId, (m: string) => this.log(m));
       }
     }

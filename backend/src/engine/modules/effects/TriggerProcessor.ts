@@ -1,5 +1,6 @@
-import { GameState, GameEvent, TriggeredAbility, PlayerId, GameObjectId, Zone, ZoneRequirement } from '@shared/engine_types';
+import { GameState, GameEvent, TriggeredAbility, PlayerId, GameObjectId, Zone, ZoneRequirement, AbilityType } from '@shared/engine_types';
 import { ValidationProcessor } from '../state/ValidationProcessor';
+import { LayerProcessor } from '../state/LayerProcessor';
 
 /**
  * Rules Engine Module: Triggered Abilities (Rule 603)
@@ -18,9 +19,15 @@ export class TriggerProcessor {
   public static onEvent(state: GameState, event: GameEvent, log: (msg: string) => void) {
     // 1. Identify all triggered abilities that match this event (Rule 603.2)
     const matchingTriggers = state.ruleRegistry.triggeredAbilities.filter(t => {
-      // Logic for event matching (supports legacy and new schemas)
+      // Logic for event matching (supports legacy, new schemas, and multi-event triggers)
       const tEvent = (t as any).triggerEvent || t.eventMatch;
-      if (tEvent !== event.type && !(tEvent === 'ON_ETB_OTHER' && event.type === 'ON_ETB')) return false;
+      const tEvents = Array.isArray(tEvent) ? tEvent : [tEvent];
+
+      const matchesPrimary = tEvents.some(type => 
+        type === event.type || (type === 'ON_ETB_OTHER' && event.type === 'ON_ETB')
+      );
+
+      if (!matchesPrimary) return false;
 
       // Rule 603.2: Triggered abilities only function in their active zone (usually Battlefield)
       if (!this.checkZoneRequirement(state, t, event.type)) return false;
@@ -43,6 +50,23 @@ export class TriggerProcessor {
 
       return true;
     });
+    
+    // --- SYSTEM RECOGNIZED KEYWORDS: PROWESS ---
+    // Rule 702.108: "Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn."
+    if (event.type === 'ON_CAST_NON_CREATURE' && event.playerId) {
+        state.battlefield.forEach(obj => {
+            const stats = LayerProcessor.getEffectiveStats(obj, state);
+            if (stats.keywords.includes('Prowess') && obj.controllerId === event.playerId) {
+                matchingTriggers.push({
+                   id: `prowess_system_${obj.id}_${Date.now()}`,
+                   sourceId: obj.id,
+                   controllerId: obj.controllerId,
+                   eventMatch: 'ON_CAST_NON_CREATURE',
+                   effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', powerModifier: 1, toughnessModifier: 1, layer: 7, targetMapping: 'SELF' }]
+                } as any);
+            }
+        });
+    }
 
     if (matchingTriggers.length === 0) return;
 
@@ -65,7 +89,10 @@ export class TriggerProcessor {
                       Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === trigger.sourceId)
     );
     
-    const sourceName = sourceObj?.definition.name || "Unknown Source";
+    // CR 114: Emblem triggers — look up in Command Zone for name/image
+    const emblemSource = !sourceObj ? state.emblems?.find(e => e.id === trigger.sourceId) : undefined;
+    const sourceName = sourceObj?.definition.name || emblemSource?.name || "Unknown Source";
+    const sourceImage = sourceObj?.definition.image_url || emblemSource?.image_url;
     
     // Create the Stack Object (Rule 608.2)
     const stackId = `trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
@@ -73,14 +100,16 @@ export class TriggerProcessor {
       id: stackId,
       controllerId: trigger.controllerId,
       sourceId: trigger.sourceId,
-      type: 'TriggeredAbility',
+      type: AbilityType.Triggered,
       name: `${sourceName}'s Trigger`,
-      image_url: sourceObj?.definition.image_url,
+      image_url: sourceImage, // Now supports emblems too
       targets: [],
       abilityIndex: (trigger as any).abilityIndex,
       data: { 
           effects: (trigger as any).effects || [],
-          targetDefinition: (trigger as any).targetDefinition
+          targetDefinition: (trigger as any).targetDefinition,
+          eventData: event.data,
+          eventAmount: (event as any).amount
       }
     };
 
@@ -147,6 +176,11 @@ export class TriggerProcessor {
 
     const sourceId = trigger.sourceId;
     
+    // CR 114: Emblem abilities function from the Command Zone (always active)
+    if (activeZone === 'Command') {
+      return state.emblems?.some(e => e.id === sourceId) ?? false;
+    }
+
     // Check if source object is currently in the required zone
     const isInBattlefield = state.battlefield.some(o => o.id === sourceId);
     if (activeZone === Zone.Battlefield) return isInBattlefield;
