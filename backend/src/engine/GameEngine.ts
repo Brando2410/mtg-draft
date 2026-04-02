@@ -60,6 +60,7 @@ export class GameEngine {
         lastDamageAmount: 0,
         lastLifeGainedAmount: 0,
         lastCardsDrawnAmount: 0,
+        cardsDrawnThisTurn: {},
         spellsCastThisTurn: {},
         instantOrSorceryCastThisTurn: {}
       }
@@ -436,6 +437,7 @@ export class GameEngine {
         lastDamageAmount: 0,
         lastLifeGainedAmount: 0,
         lastCardsDrawnAmount: 0,
+        cardsDrawnThisTurn: {},
         spellsCastThisTurn: {},
         instantOrSorceryCastThisTurn: {}
     };
@@ -550,6 +552,7 @@ export class GameEngine {
     TriggerProcessor.onEvent(this.state, {
       type: 'ON_LIFE_GAIN',
       playerId,
+      amount,
       data: { amount }
     }, (m: string) => this.log(m));
   }

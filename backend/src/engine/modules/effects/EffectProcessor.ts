@@ -165,7 +165,7 @@ export class EffectProcessor {
       case 'CreateToken': {
           let p = (effect as any).powerOverride !== undefined ? this.resolveAmount(state, (effect as any).powerOverride, sourceId, controllerId, stackObject) : undefined;
           let t = (effect as any).toughnessOverride !== undefined ? this.resolveAmount(state, (effect as any).toughnessOverride, sourceId, controllerId, stackObject) : undefined;
-          this.handleCreateToken(state, validTargetIds, amount, (effect as any).tokenBlueprint, log, p, t); 
+          this.handleCreateToken(state, validTargetIds, amount, (effect as any).tokenBlueprint, log, p, t, effect); 
           break;
       }
       case 'SearchLibrary':       this.handleSearchLibrary(state, validTargetIds, effect, sourceId, log); break;
@@ -741,15 +741,28 @@ export class EffectProcessor {
         if (obj) {
             obj.counters[type] = (obj.counters[type] || 0) + amount;
             log(`Added ${amount} ${type} counter(s) to ${obj.definition.name}.`);
+            TriggerProcessor.onEvent(state, {
+                type: 'ON_COUNTERS_ADDED',
+                targetId: obj.id,
+                amount,
+                counterType: type,
+                data: { object: obj }
+            }, log);
         }
     });
   }
 
-  private static handleCreateToken(state: GameState, targets: string[], amount: number, blueprint: any, log: (m: string) => void, pOverride?: number, tOverride?: number) {
+  private static handleCreateToken(state: GameState, targets: string[], amount: number, blueprint: any, log: (m: string) => void, pOverride?: number, tOverride?: number, effect?: any) {
     targets.forEach(pid => {
         if (!blueprint) return;
         for (let i = 0; i < amount; i++) {
-            this.createToken(state, blueprint, pid, pOverride, tOverride);
+            const token = this.createToken(state, blueprint, pid, pOverride, tOverride);
+            if (effect?.isAttacking && state.combat) {
+                const opponentId = Object.keys(state.players).find(id => id !== pid);
+                state.combat.attackers.push({ attackerId: token.id, targetId: (effect.attackTargetId || opponentId!) });
+                token.isTapped = true;
+                log(`[COMBAT] ${token.definition.name} enters the battlefield attacking!`);
+            }
         }
         const pt = pOverride !== undefined ? ` [${pOverride}/${tOverride}]` : "";
         log(`Created ${amount} ${blueprint.name}${pt} token(s) for ${state.players[pid]?.name}.`);
@@ -863,8 +876,10 @@ export class EffectProcessor {
         targetIds: finalTargetIds,
         abilitiesToAdd: (effect as any).abilitiesToAdd,
         abilitiesToRemove: (effect as any).abilitiesToRemove,
-        powerModifier: (effect as any).powerModifier,
-        toughnessModifier: (effect as any).toughnessModifier,
+        powerModifier: (effect as any).powerModifier !== undefined ? this.resolveAmount(state, (effect as any).powerModifier, sourceId, controllerId, stackObject) : undefined,
+        toughnessModifier: (effect as any).toughnessModifier !== undefined ? this.resolveAmount(state, (effect as any).toughnessModifier, sourceId, controllerId, stackObject) : undefined,
+        powerSet: (effect as any).powerSet !== undefined ? this.resolveAmount(state, (effect as any).powerSet, sourceId, controllerId, stackObject) : undefined,
+        toughnessSet: (effect as any).toughnessSet !== undefined ? this.resolveAmount(state, (effect as any).toughnessSet, sourceId, controllerId, stackObject) : undefined,
     };
 
     state.ruleRegistry.continuousEffects.push(continuousEff);
@@ -916,18 +931,46 @@ export class EffectProcessor {
           const player = state.players[tid as string];
           return player ? Math.ceil(player.library.length / 2) : 0;
       }
-      case 'SHRINE_COUNT':
-        return state.battlefield.filter(o => o.controllerId === controllerId && o.definition.subtypes.includes('Shrine')).length;
+      case 'COUNT_hand':
+      case 'CARDS_IN_HAND_COUNT':
+          return state.players[controllerId]?.hand.length || 0;
+      case 'COUNT_drawn':
+          return state.turnState.cardsDrawnThisTurn[controllerId] || 0;
       case (typeof amount === 'string' && (amount as string).startsWith('COUNT_')) ? amount : '___NON_MATCHING___': {
-          const filter = (amount as string).split('_')[1];
-          return state.battlefield.filter(o => 
-            o.controllerId === controllerId && 
-            (o.definition.types.some(t => t.toLowerCase() === filter.toLowerCase()) || o.definition.subtypes.some(t => t.toLowerCase() === filter.toLowerCase()))
-          ).length;
+          const parts = (amount as string).split('_').map(p => p.toLowerCase());
+          let objects = state.battlefield.filter(o => o.controllerId === controllerId);
+
+          if (parts.includes('other')) {
+              objects = objects.filter(o => o.id !== sourceId);
+          }
+
+          if (parts.includes('attacking')) {
+              objects = objects.filter(o => state.combat?.attackers.some(a => a.attackerId === o.id));
+          }
+
+          const filter = parts[parts.length - 1];
+          if (parts.includes('is')) {
+              if (filter.startsWith('power') && filter.endsWith('plus')) {
+                  const threshold = parseInt(filter.replace('power', '').replace('plus', ''));
+                  objects = objects.filter(o => (o.effectiveStats?.power ?? parseInt(o.definition.power || '0')) >= threshold);
+              } else {
+                  // Keyword check
+                  objects = objects.filter(o => {
+                      const keywords = (o.effectiveStats?.keywords || []).concat(o.definition.keywords || []).map(k => k.toLowerCase());
+                      return keywords.includes(filter);
+                  });
+              }
+          } else if (filter !== 'other' && filter !== 'attacking') {
+              // Type/Subtype check
+              objects = objects.filter(o => 
+                (o.definition.types.some(t => t.toLowerCase() === filter) || 
+                 o.definition.subtypes.some(t => t.toLowerCase() === filter))
+              );
+          }
+          return objects.length;
       }
       case '2_PER_FLYING_CREATURE_YOU_CONTROL':
-        const flyingCount = state.battlefield.filter(o => o.controllerId === controllerId && (o.effectiveStats?.keywords.includes('Flying') || o.definition.keywords.includes('Flying'))).length;
-        return 2 * flyingCount;
+        return 2 * EffectProcessor.resolveAmount(state, 'COUNT_is_flying', controllerId, sourceId, stackObject);
       case 'INSTANT_SORCERY_IN_GRAVEYARD_COUNT':
         const p = state.players[controllerId];
         return p ? p.graveyard.filter(o => o.definition.types.includes('Instant') || o.definition.types.includes('Sorcery')).length : 0;
@@ -935,7 +978,16 @@ export class EffectProcessor {
       case 'EVENT_AMOUNT':
           return (stackObject?.data?.eventAmount) !== undefined ? stackObject.data.eventAmount : (state.turnState.lastDamageAmount || 0);
       case 'LIFE_GAINED_AMOUNT':
-          return state.turnState.lastLifeGainedAmount || 0;
+          return (stackObject?.data?.eventAmount) !== undefined ? stackObject.data.eventAmount : (state.turnState.lastLifeGainedAmount || 0);
+      case 'EVENT_OBJECT_POWER': {
+          const eventObj = stackObject?.data?.eventData?.object;
+          if (eventObj) {
+              const objOnField = state.battlefield.find(o => o.id === eventObj.id);
+              if (objOnField) return (objOnField.effectiveStats?.power !== undefined) ? objOnField.effectiveStats.power : parseInt(objOnField.definition.power || '0') || 0;
+              return parseInt(eventObj.definition?.power || '0') || 0;
+          }
+          return 0;
+      }
       case 'X': {
         return stackObject?.xValue || 0;
       }
@@ -968,6 +1020,10 @@ export class EffectProcessor {
     switch (mapping) {
       case 'SELF': return [sourceId];
       case 'CONTROLLER': return [controllerId];
+      case 'ENCHANTED_CREATURE': {
+          const aura = state.battlefield.find(o => o.id === sourceId);
+          return aura?.attachedTo ? [aura.attachedTo] : [];
+      }
       case 'TARGET_1': return [targets[0]];
       case 'SELF_AND_TARGET_1': return [sourceId, targets[0]];
       case 'TARGET_2': return [targets[1]];
@@ -1064,7 +1120,7 @@ export class EffectProcessor {
     return undefined;
   }
 
-  private static createToken(state: GameState, blueprint: any, controllerId: PlayerId, pOverride?: number, tOverride?: number) {
+  private static createToken(state: GameState, blueprint: any, controllerId: PlayerId, pOverride?: number, tOverride?: number): GameObject {
     const token: GameObject = {
       id: `token_${Math.random().toString(36).substr(2, 9)}`,
       ownerId: controllerId,
@@ -1099,5 +1155,6 @@ export class EffectProcessor {
     };
     (token as any).isToken = true;
     state.battlefield.push(token);
+    return token;
   }
 }

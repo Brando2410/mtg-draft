@@ -1132,21 +1132,18 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
 
     "Terror of the Peaks": {
         ...metadata["Terror of the Peaks"],
+        keywords: ["Flying", "Ward 3_LIFE"],
         abilities: [
-            {
-                id: "terror_peaks_spell_tax",
-                type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
-                effects: [{ type: 'SpellTax', amount: 3, value: 'LIFE', targetMapping: 'SELF' }]
-            },
             {
                 id: "terror_peaks_etb_damage",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_OTHER_ETB_YOU_CONTROL',
+                triggerEvent: 'ON_ETB_OTHER',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.target.controllerId === source.controllerId && event.target.definition.types.includes('Creature') && event.target.id !== source.sourceId,
+                triggerCondition: (state: any, event: any, source: any) =>
+                    event.data?.object?.controllerId === source.controllerId &&
+                    event.data?.object?.definition?.types?.includes('Creature'),
                 targetDefinition: { type: 'AnyTarget', count: 1 },
-                effects: [{ type: 'DealDamage', amount: 'TRIGGER_TARGET_POWER', targetMapping: 'ANY_TARGET' }]
+                effects: [{ type: 'DealDamage', amount: 'EVENT_OBJECT_POWER', targetMapping: 'ANY_TARGET' }]
             }
         ]
     },
@@ -1157,10 +1154,11 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
             {
                 id: "vito_life_gain_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_LIFE_GAINED',
+                triggerEvent: 'ON_LIFE_GAIN',
                 activeZone: ZoneRequirement.Battlefield,
                 triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
-                effects: [{ type: 'LoseLife', amount: 'LIFE_GAINED_AMOUNT', targetMapping: 'TARGET_OPPONENT' }]
+                targetDefinition: { type: 'Opponent', count: 1 },
+                effects: [{ type: 'LoseLife', amount: 'EVENT_AMOUNT', targetMapping: 'TARGET_1' }]
             },
             {
                 id: "vito_activated_lifelink",
@@ -1174,13 +1172,17 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
 
     "Wildwood Scourge": {
         ...metadata["Wildwood Scourge"],
+        entersWithXCounters: true,
         abilities: [
             {
                 id: "wildwood_scourge_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_COUNTER_ADDED_OTHER',
+                triggerEvent: 'ON_COUNTERS_ADDED_OTHER',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.target.controllerId === source.controllerId && event.counterType === '+1/+1' && !event.target.definition.subtypes.includes('Hydra') && event.target.id !== source.sourceId,
+                triggerCondition: (state: any, event: any, source: any) =>
+                    event.data?.object?.controllerId === source.controllerId &&
+                    event.counterType === '+1/+1' &&
+                    !event.data?.object?.definition?.subtypes?.includes('Hydra'),
                 effects: [{ type: 'AddCounters', amount: 1, value: '+1/+1', targetMapping: 'SELF' }]
             }
         ]
@@ -1188,13 +1190,13 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
 
     "Containment Priest": {
         ...metadata["Containment Priest"],
+        keywords: ["Flash"],
         abilities: [
             {
-                id: "containment_priest_replacement",
-                type: AbilityType.Replacement,
+                id: "containment_priest_entry_replacement",
+                type: 'Replacement',
                 activeZone: ZoneRequirement.Battlefield,
-                replaceEvent: 'ON_NON_TOKEN_ENTRY_NON_CAST',
-                effects: [{ type: 'ExileEntryInstead', targetMapping: 'TRIGGER_TARGET' }]
+                oracleText: "If a nontoken creature would enter the battlefield and it wasn't cast, exile it instead."
             }
         ]
     },
@@ -1278,8 +1280,6 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
         ]
     },
 
-    // --- BATCH 9 ---
-
     "Obsessive Stitcher": {
         ...metadata["Obsessive Stitcher"],
         abilities: [
@@ -1309,7 +1309,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 type: AbilityType.Triggered,
                 triggerEvent: 'ON_CAST_SPELL',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId && event.card.definition.subtypes.includes('Dog'),
+                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId && event.data?.card?.definition?.subtypes?.includes('Dog'),
                 effects: [{ type: 'CreateToken', tokenBlueprint: { name: 'Cat', power: '1', toughness: '1', colors: ['G'], types: ['Creature'], subtypes: ['Cat'] }, targetMapping: 'CONTROLLER' }]
             },
             {
@@ -1317,18 +1317,18 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 type: AbilityType.Triggered,
                 triggerEvent: 'ON_CAST_SPELL',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId && event.card.definition.subtypes.includes('Cat'),
+                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId && event.data?.card?.definition?.subtypes?.includes('Cat'),
                 effects: [{ type: 'CreateToken', tokenBlueprint: { name: 'Dog', power: '1', toughness: '1', colors: ['W'], types: ['Creature'], subtypes: ['Dog'] }, targetMapping: 'CONTROLLER' }]
             },
             {
                 id: "rin_seri_activated",
                 type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
-                costs: [{ type: 'Mana', value: '{R}{G}{W}' }, { type: 'Tap', value: null }],
+                costs: [{ type: 'Mana', value: '{R}{G}{W}' }, { type: 'Tap' }],
                 targetDefinition: { type: 'AnyTarget', count: 1 },
                 effects: [
-                    { type: 'DealDamage', amount: 'DOGS_YOU_CONTROL_COUNT', targetMapping: 'ANY_TARGET' },
-                    { type: 'GainLife', amount: 'CATS_YOU_CONTROL_COUNT', targetMapping: 'CONTROLLER' }
+                    { type: 'DealDamage', amount: 'COUNT_Dog', targetMapping: 'TARGET_1' },
+                    { type: 'GainLife', amount: 'COUNT_Cat', targetMapping: 'CONTROLLER' }
                 ]
             }
         ]
@@ -1429,8 +1429,6 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
         ]
     },
 
-
-
     "Angelic Ascension": {
         ...metadata["Angelic Ascension"],
         abilities: [
@@ -1446,8 +1444,6 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
             }
         ]
     },
-
-    // --- BATCH 10 ---
 
     "Teferi's Tutelage": {
         ...metadata["Teferi's Tutelage"],
@@ -1494,7 +1490,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 type: AbilityType.Triggered,
                 triggerEvent: 'ON_DRAW',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId && (state.turnState.cardsDrawnThisTurn || 0) === 2,
+                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId && (state.turnState.cardsDrawnThisTurn[source.controllerId] || 0) === 2,
                 effects: [{ type: 'CreateToken', tokenBlueprint: { name: 'Cat', power: '2', toughness: '2', colors: ['G'], types: ['Creature'], subtypes: ['Cat'] }, targetMapping: 'CONTROLLER' }]
             },
             {
@@ -1502,7 +1498,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Mana', value: '{4}{G}{G}' }],
-                effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', powerModifier: 'CARDS_IN_HAND_COUNT', toughnessModifier: 'CARDS_IN_HAND_COUNT', layer: 7, targetMapping: 'ALL_CREATURES_YOU_CONTROL' }]
+                effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', powerSet: 'COUNT_hand', toughnessSet: 'COUNT_hand', layer: 7, targetMapping: 'ALL_CREATURES_YOU_CONTROL' }]
             }
         ]
     },
@@ -1553,6 +1549,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 id: "liliana_steward_sacrifice",
                 type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
+                activatedOnlyAsSorcery: true,
                 costs: [{ type: 'Tap', value: null }, { type: 'Sacrifice', targetMapping: 'SELF' }],
                 targetDefinition: { type: 'Player', count: 1, restrictions: ['Opponent'] },
                 effects: [{ type: 'DiscardCard', amount: 1, targetMapping: 'TARGET_1' }]
@@ -1573,8 +1570,6 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
             }
         ]
     },
-
-    // --- BATCH 11 ---
 
     "Aven Gagglemaster": {
         ...metadata["Aven Gagglemaster"],
@@ -1696,11 +1691,12 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 type: AbilityType.Triggered,
                 triggerEvent: 'ON_ATTACK',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId && event.attackerId === source.sourceId,
+                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId && event.targetId === source.sourceId,
                 effects: [{
                     type: 'CreateToken',
                     tokenBlueprint: { name: 'Bird', power: '1', toughness: '1', colors: ['W'], types: ['Creature'], subtypes: ['Bird'], keywords: ['Flying'] },
-                    targetMapping: 'CONTROLLER'
+                    targetMapping: 'CONTROLLER',
+                    isAttacking: true
                 }]
             }
         ]
@@ -1734,8 +1730,6 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
             }
         ]
     },
-
-    // --- BATCH 12 ---
 
     "Garruk's Uprising": {
         ...metadata["Garruk's Uprising"],
@@ -1833,7 +1827,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                             {
                                 label: 'Yes',
                                 effects: [
-                                    { type: 'DrawCards', amount: 'SHRINE_COUNT', targetMapping: 'CONTROLLER' },
+                                    { type: 'DrawCards', amount: 'COUNT_Shrine', targetMapping: 'CONTROLLER' },
                                     { type: 'DiscardCards', amount: 1, targetMapping: 'CONTROLLER' }
                                 ]
                             },
@@ -1842,6 +1836,68 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                         targetMapping: 'CONTROLLER'
                     }
                 ]
+            }
+        ]
+    },
+
+    "Sanctum of Stone Fangs": {
+        ...metadata["Sanctum of Stone Fangs"],
+        abilities: [
+            {
+                id: "sanctum_stone_fangs_trigger",
+                type: AbilityType.Triggered,
+                triggerEvent: 'ON_PRE_COMBAT_MAIN_PHASE_START',
+                activeZone: ZoneRequirement.Battlefield,
+                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                effects: [
+                    { type: 'LoseLife', amount: 'COUNT_Shrine', targetMapping: 'EACH_OPPONENT' },
+                    { type: 'GainLife', amount: 'COUNT_Shrine', targetMapping: 'CONTROLLER' }
+                ]
+            }
+        ]
+    },
+
+    "Sanctum of Fruitful Harvest": {
+        ...metadata["Sanctum of Fruitful Harvest"],
+        abilities: [
+            {
+                id: "sanctum_fruitful_harvest_trigger",
+                type: AbilityType.Triggered,
+                triggerEvent: 'ON_PRE_COMBAT_MAIN_PHASE_START',
+                activeZone: ZoneRequirement.Battlefield,
+                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                effects: [{ type: 'AddMana', amount: 'COUNT_Shrine', manaType: 'ANY', targetMapping: 'CONTROLLER' }]
+            }
+        ]
+    },
+
+    "Sanctum of Shattered Heights": {
+        ...metadata["Sanctum of Shattered Heights"],
+        abilities: [
+            {
+                id: "sanctum_shattered_heights_trigger",
+                type: AbilityType.Triggered,
+                triggerEvent: 'ON_PRE_COMBAT_MAIN_PHASE_START',
+                activeZone: ZoneRequirement.Battlefield,
+                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                costs: [{ type: 'Mana', value: '{1}' }, { type: 'Discard', targetMapping: 'SELF' }], // Wait, Shattered Heights cost is discard card
+                effects: [{ type: 'DealDamage', amount: 'COUNT_Shrine', targetMapping: 'TARGET_1' }],
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'Planeswalker'] }
+            }
+        ]
+    },
+
+    "Sanctum of Tranquil Light": {
+        ...metadata["Sanctum of Tranquil Light"],
+        abilities: [
+            {
+                id: "sanctum_tranquil_light_tap",
+                type: AbilityType.Activated,
+                activeZone: ZoneRequirement.Battlefield,
+                costs: [{ type: 'Mana', value: '{5}{W}' }], // Reduction needed
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
+                effects: [{ type: 'Tap', targetMapping: 'TARGET_1' }],
+                costReduction: { type: 'ManaReduction', amount: 'COUNT_Shrine', manaType: 'GENERIC' }
             }
         ]
     },
@@ -1968,7 +2024,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
 
     "Alpine Watchdog": {
         ...metadata["Alpine Watchdog"],
-        abilities: [] // Vigilance is handled by keywords in LayerProcessor
+        abilities: []
     },
 
     "Anointed Chorister": {
@@ -2128,6 +2184,102 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
         ]
     },
 
+    "Liliana's Devotee": {
+        ...metadata["Liliana's Devotee"],
+        abilities: [
+            {
+                id: "liliana_devotee_lord",
+                type: AbilityType.Static,
+                activeZone: ZoneRequirement.Battlefield,
+                effects: [{ type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 1, duration: 'Static', targetMapping: 'ALL_ZOMBIES_YOU_CONTROL', layer: 7 }]
+            },
+            {
+                id: "liliana_devotee_trigger",
+                type: AbilityType.Triggered,
+                triggerEvent: 'ON_END_STEP',
+                activeZone: ZoneRequirement.Battlefield,
+                triggerCondition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId && state.turnState.creaturesDiedThisTurn > 0,
+                effects: [
+                    {
+                        type: 'Choice',
+                        choices: [
+                            {
+                                label: 'Pay {1}{B} to create a Zombie',
+                                costs: [{ type: 'Mana', value: '{1}{B}' }],
+                                effects: [{ type: 'CreateToken', tokenBlueprint: { name: 'Zombie', power: '2', toughness: '2', colors: ['B'], types: ['Creature'], subtypes: ['Zombie'] }, targetMapping: 'CONTROLLER' }]
+                            },
+                            { label: 'Do not pay', effects: [] }
+                        ],
+                        targetMapping: 'CONTROLLER'
+                    }
+                ]
+            }
+        ]
+    },
+
+    "Feline Sovereign": {
+        ...metadata["Feline Sovereign"],
+        abilities: [
+            {
+                id: "feline_sovereign_lord",
+                type: AbilityType.Static,
+                activeZone: ZoneRequirement.Battlefield,
+                effects: [{ type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 1, duration: 'Static', targetMapping: 'ALL_OTHER_CATS_YOU_CONTROL', layer: 7 }]
+            },
+            {
+                id: "feline_sovereign_trigger",
+                type: AbilityType.Triggered,
+                triggerEvent: 'ON_COMBAT_DAMAGE_PLAYER',
+                activeZone: ZoneRequirement.Battlefield,
+                triggerCondition: (state: any, event: any, source: any) => event.damageSources.some((s: any) => s.controllerId === source.controllerId && s.definition.subtypes.includes('Cat')),
+                targetDefinition: { type: 'Permanent', count: 1, optional: true, restrictions: ['ArtifactOrEnchantment', 'OpponentControls'] },
+                effects: [{ type: 'Destroy', targetMapping: 'TARGET_1' }]
+            }
+        ]
+    },
+
+    "Leafkin Avenger": {
+        ...metadata["Leafkin Avenger"],
+        abilities: [
+            {
+                id: "leafkin_avenger_buff",
+                type: AbilityType.Activated,
+                activeZone: ZoneRequirement.Battlefield,
+                costs: [{ type: 'Mana', value: '{G}' }],
+                effects: [{ type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 1, duration: 'UNTIL_END_OF_TURN', layer: 7, targetMapping: 'SELF' }]
+            },
+            {
+                id: "leafkin_avenger_damage",
+                type: AbilityType.Activated,
+                activeZone: ZoneRequirement.Battlefield,
+                costs: [{ type: 'Mana', value: '{7}{R}' }, { type: 'Tap' }],
+                targetDefinition: { type: 'PlayerOrPlaneswalker', count: 1 },
+                effects: [{ type: 'DealDamage', amount: 'COUNT_is_power4plus', targetMapping: 'TARGET_1' }]
+            }
+        ]
+    },
+
+    "Alpine Houndmaster": {
+        ...metadata["Alpine Houndmaster"],
+        abilities: [
+            {
+                id: "alpine_houndmaster_etb",
+                type: AbilityType.Triggered,
+                triggerEvent: 'ON_ETB',
+                activeZone: ZoneRequirement.Battlefield,
+                effects: [{ type: 'SearchLibrary', filter: { name: 'Alpine Watchdog' }, targetMapping: 'HAND' }, { type: 'SearchLibrary', filter: { name: 'Igneous Cur' }, targetMapping: 'HAND' }]
+            },
+            {
+                id: "alpine_houndmaster_attack",
+                type: AbilityType.Triggered,
+                triggerEvent: 'ON_ATTACK',
+                activeZone: ZoneRequirement.Battlefield,
+                triggerCondition: (state: any, event: any, source: any) => event.targetId === source.id,
+                effects: [{ type: 'ApplyContinuousEffect', powerModifier: 'COUNT_other_attacking', toughnessModifier: 0, duration: 'UNTIL_END_OF_TURN', layer: 7, targetMapping: 'SELF' }]
+            }
+        ]
+    },
+
     "Grasp of Darkness": {
         ...metadata["Grasp of Darkness"],
         abilities: [
@@ -2141,5 +2293,3 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
         ]
     },
 };
-
-

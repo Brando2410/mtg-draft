@@ -86,9 +86,11 @@ export interface GameObject {
   deathtouchMarked: boolean; // CR 702.2: Damage from a source with deathtouch
   isPhasedOut?: boolean; // CR 702.26: Treated as though it doesn't exist
   lastNonStackZone?: Zone; // Track where a spell was cast from
+  xValue?: number;         // Rule 107.3: Snapshot of X during casting
   
   // Modifiers (Layer system targets)
   counters: Record<string, number>;
+  attachedTo?: GameObjectId;
 
   // Rules Engine output (Calculated on server, displayed on client)
   effectiveStats?: {
@@ -177,6 +179,7 @@ export interface TurnState {
   lastDamageAmount: number;
   lastLifeGainedAmount: number;
   lastCardsDrawnAmount: number;
+  cardsDrawnThisTurn: Record<PlayerId, number>;
   spellsCastThisTurn: Record<PlayerId, number>;
   instantOrSorceryCastThisTurn: Record<PlayerId, boolean>;
 }
@@ -333,6 +336,7 @@ export interface GameEvent {
   sourceId?: GameObjectId;
   targetId?: GameObjectId;
   amount?: number;
+  counterType?: string;
   sourceZone?: Zone;
   card?: GameObject;
   data?: any; // e.g. { amount: 2 } or { targetId: '...' }
@@ -535,6 +539,7 @@ export interface ParsedAbility {
   triggerEvent?: string; 
   triggerCondition?: any; 
   targetDefinition?: TargetDefinition;
+  activatedOnlyAsSorcery?: boolean;
   effects: EffectDefinition[];
 }
 

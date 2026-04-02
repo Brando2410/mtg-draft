@@ -73,7 +73,9 @@ export class PriorityProcessor {
        if (checkPriority && !hasPriority) return false;
 
        const typeLine = (cardInHand.definition.type_line || '').toLowerCase();
-       const isInstantOrFlash = typeLine.includes('instant') || (cardInHand.definition.oracleText || '').includes('Flash');
+       const isInstantOrFlash = typeLine.includes('instant') || 
+                                (cardInHand.definition.oracleText || '').includes('Flash') ||
+                                (cardInHand.definition.keywords || []).includes('Flash');
        const isLand = typeLine.includes('land');
        const stackEmpty = state.stack.length === 0;
        const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;

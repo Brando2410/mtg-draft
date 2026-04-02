@@ -96,7 +96,15 @@ export class StackResolver {
                           types.includes('land');
 
       if (isPermanent) {
-        // Rule 110.2: "Every permanent spell enters the battlefield under the control of its controller."
+        // Rule 303.4: Auras enter attached to their target
+        const isAura = card.definition.subtypes.some(s => s.toLowerCase() === 'aura');
+        if (isAura && stackObj.targets.length > 0) {
+            card.attachedTo = stackObj.targets[0];
+            this.log(`${card.definition.name} enters attached to ${this.getObjectName({ id: card.attachedTo, sourceId: card.attachedTo } as any)}.`);
+        }
+
+        // Rule 110.2: Permanent enters under controller's control
+        card.xValue = stackObj.xValue;
         ActionProcessor.moveCard(this.state, card, Zone.Battlefield, stackObj.controllerId, (m: string) => this.log(m));
       } else if (card.zone === Zone.Stack) {
         ActionProcessor.moveCard(this.state, card, Zone.Graveyard, card.ownerId, (m: string) => this.log(m));

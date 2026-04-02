@@ -14,6 +14,26 @@ export class ActionProcessor {
    public static moveCard(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, log?: (m: string) => void) {
     const fromZone = card.zone;
     
+    // --- REPLACEMENT EFFECT HOOK (Rule 614/616) ---
+    // Currently specialized for Containment Priest-style entry replacement.
+    if (to === Zone.Battlefield && state.ruleRegistry.replacementEffects) {
+        const isToken = (card as any).isToken || card.id.startsWith('token_');
+        const types = card.definition.types.map(t => t.toLowerCase());
+
+        for (const replacement of state.ruleRegistry.replacementEffects) {
+             const source = state.battlefield.find(o => o.id === replacement.sourceId);
+             if (!source || source.isPhasedOut) continue;
+
+             if (replacement.id.toLowerCase().includes('containment_priest')) {
+                 if (types.includes('creature') && !isToken && fromZone !== Zone.Stack) {
+                     if (log) log(`[REPLACED] ${source.definition.name} exiles ${card.definition.name} (not cast).`);
+                     to = Zone.Exile; // Divert destination!
+                     break;
+                 }
+             }
+        }
+    }
+
     // Rule 110.2: A permanent's controller is the player under whose control it entered.
     // Rule 108.4: A card's owner doesn't change, but its controller can.
     card.controllerId = targetPlayerId;
@@ -170,6 +190,12 @@ export class ActionProcessor {
   }
 
   private static handleEnteringBattlefield(state: GameState, card: GameObject, fromZone: Zone, log?: (m: string) => void) {
+    // Replacement-style entry counters for X costs (Rule 122.6)
+    if (card.xValue && (card.definition as any).entersWithXCounters) {
+        card.counters['+1/+1'] = (card.counters['+1/+1'] || 0) + card.xValue;
+        if (log) log(`[X-COST] ${card.definition.name} enters with ${card.xValue} +1/+1 counters.`);
+    }
+
     // Rule 603.6a: Enters-the-battlefield triggers
     TriggerProcessor.onEvent(state, { type: 'ON_ETB', targetId: card.id, sourceId: card.id, sourceZone: fromZone, data: { object: card } }, log || (() => {}));
 

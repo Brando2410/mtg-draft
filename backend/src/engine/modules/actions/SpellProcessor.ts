@@ -267,6 +267,20 @@ export class SpellProcessor {
     };
 
     state.stack.push(stackObj);
+    
+    // CR 601.2i: Fire Targeting Triggers
+    (declaredTargets || []).forEach(tid => {
+        TriggerProcessor.onEvent(state, {
+            type: 'ON_BECOME_TARGET',
+            playerId: playerId,
+            targetId: tid,
+            data: { 
+                sourceId: stackObj.id,
+                sourceCard: cardToPlay
+            }
+        }, log);
+    });
+
     state.consecutivePasses = 0;
     
     // CR 601.2i: Fire cast triggers
@@ -420,19 +434,21 @@ export class SpellProcessor {
     }
 
     const isPlaneswalker = obj.definition.types.includes('Planeswalker');
-    if (isPlaneswalker) {
+    const isSorceryOnly = ability.activatedOnlyAsSorcery || (ability as any).isSorcerySpeed;
+
+    if (isPlaneswalker || isSorceryOnly) {
       const activeId = String(state.activePlayerId).trim();
       const isMainPhase = (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain);
       const stackEmpty = state.stack.length === 0;
-      const canActivateAnyTime = (cardLogic.abilities || []).some((a: any) => a.type === 'Static' && a.id.includes('any_turn'));
       const isSorcerySpeed = String(playerId) === activeId && isMainPhase && stackEmpty;
+      const canActivateAnyTime = (cardLogic.abilities || []).some((a: any) => a.type === 'Static' && a.id.includes('any_turn'));
 
       if (!canActivateAnyTime && !isSorcerySpeed) {
-        log(`Illegal Activation: Planeswalker abilities can only be activated at sorcery speed.`);
+        log(`Illegal Activation: This ability can only be activated at sorcery speed.`);
         return false;
       }
 
-      if (obj.abilitiesUsedThisTurn > 0) {
+      if (isPlaneswalker && obj.abilitiesUsedThisTurn > 0) {
         log(`Illegal Activation: This permanent's activated abilities have already been used this turn.`);
         return false;
       }
@@ -494,6 +510,20 @@ export class SpellProcessor {
 
     state.stack.push(stackObj);
     log(`Activated ability of ${obj.definition.name}: ${ability.id}`);
+    
+    // CR 601.2i: Fire Targeting Triggers
+    (declaredTargets || []).forEach(tid => {
+        TriggerProcessor.onEvent(state, {
+            type: 'ON_BECOME_TARGET',
+            playerId: playerId,
+            targetId: tid,
+            data: { 
+                sourceId: stackId,
+                sourceCard: obj
+            }
+        }, log);
+    });
+
     state.consecutivePasses = 0;
     engine.passPriority(playerId);
     return true;

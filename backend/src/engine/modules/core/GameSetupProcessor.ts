@@ -89,6 +89,10 @@ export class GameSetupProcessor {
       player.hand.push(card);
       log(`${player.name} draws a card.`);
       
+      // Update turn-wide tracking
+      state.turnState.cardsDrawnThisTurn[playerId] = (state.turnState.cardsDrawnThisTurn[playerId] || 0) + 1;
+      state.turnState.lastCardsDrawnAmount = 1;
+
       const { TriggerProcessor } = require('../effects/TriggerProcessor');
       TriggerProcessor.onEvent(state, { type: 'ON_DRAW', playerId: playerId, data: { card } }, log);
       

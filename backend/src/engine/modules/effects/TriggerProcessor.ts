@@ -44,6 +44,16 @@ export class TriggerProcessor {
         }
       }
 
+      // Special Logic for Counter Added (Self vs Other)
+      if (event.type === 'ON_COUNTERS_ADDED') {
+        const targetId = event.targetId;
+        if (tEvent === 'ON_COUNTERS_ADDED') {
+            if (targetId !== t.sourceId) return false;
+        } else if (tEvent === 'ON_COUNTERS_ADDED_OTHER') {
+            if (targetId === t.sourceId) return false;
+        }
+      }
+
       // Rule 603.4: "Intervening If" clauses and dynamic conditions
       const condition = (t as any).triggerCondition || t.condition;
       if (condition && !condition(state, event, t)) return false;
@@ -66,6 +76,44 @@ export class TriggerProcessor {
                 } as any);
             }
         });
+    }
+
+    // --- SYSTEM RECOGNIZED KEYWORDS: WARD ---
+    if (event.type === 'ON_BECOME_TARGET' && event.targetId) {
+        const targetObj = state.battlefield.find(o => o.id === event.targetId);
+        if (targetObj) {
+            const stats = LayerProcessor.getEffectiveStats(targetObj, state);
+            const wards = stats.keywords.filter(k => k.toLowerCase().startsWith('ward'));
+            
+            const sourceControllerId = event.playerId; // Player who cast the targeting spell
+            if (sourceControllerId && sourceControllerId !== targetObj.controllerId) {
+                wards.forEach(wardStr => {
+                    const costStr = wardStr.replace(/Ward /i, '').trim();
+                    const choiceEffects: any[] = [];
+                    
+                    if (costStr === '3_LIFE') {
+                         choiceEffects.push({ type: 'LoseLife', amount: 3, targetMapping: 'CONTROLLER' });
+                    }
+
+                    matchingTriggers.push({
+                        id: `ward_gen_${targetObj.id}_${Date.now()}`,
+                        sourceId: targetObj.id,
+                        controllerId: targetObj.controllerId,
+                        triggerEvent: 'ON_BECOME_TARGET',
+                        activeZone: 'Battlefield',
+                        effects: [{
+                            type: 'Choice',
+                            label: `Ward Trigger: Pay ${costStr.replace('_', ' ')} or spell will be countered.`,
+                            targetId: sourceControllerId, // Specific player who cast the spell
+                            choices: [
+                                { label: `Pay ${costStr.replace('_', ' ')}`, effects: choiceEffects },
+                                { label: "Don't Pay (Counter Spell)", effects: [{ type: 'Counter', targetMapping: 'TRIGGER_SOURCE' }] }
+                            ]
+                        }]
+                    } as any);
+                });
+            }
+        }
     }
 
     if (matchingTriggers.length === 0) return;
