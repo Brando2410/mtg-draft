@@ -435,8 +435,8 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Loyalty', value: '+1' }],
                 effects: [
-                    { type: 'DiscardHand', targetMapping: 'CONTROLLER' },
-                    { type: 'Exile', amount: 3, value: 'TOP_OF_LIBRARY', targetMapping: 'CONTROLLER' },
+                    { type: 'DiscardCards', amount: -1, targetMapping: 'CONTROLLER' },
+                    { type: 'ExileTopCard', amount: 3, targetMapping: 'CONTROLLER' },
                     { type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', value: 'MAY_PLAY_EXILED', targetMapping: 'CONTROLLER' }
                 ]
             },
@@ -454,10 +454,19 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Loyalty', value: '-9' }],
                 effects: [
-                    { type: 'SearchLibrary', value: 'Instant,Sorcery', targetMapping: 'CONTROLLER' },
-                    { type: 'Exile', targetMapping: 'SELECTED' },
-                    { type: 'ApplyContinuousEffect', value: 'MAY_CAST_WITHOUT_PAYING', targetMapping: 'CONTROLLER' },
-                    { type: 'ShuffleLibrary', targetMapping: 'CONTROLLER' }
+                    { 
+                        type: 'Choice', 
+                        label: 'Search Library and Graveyard for Red Instant/Sorcery cards', 
+                        targetIdMapping: 'CONTROLLER_GRAVEYARD_AND_LIBRARY', 
+                        restrictions: ['Red', 'InstantOrSorcery'], 
+                        maxCount: 99, 
+                        optional: true,
+                        effects: [
+                            { type: 'Exile', targetMapping: 'SELECTED' },
+                            { type: 'ApplyContinuousEffect', value: 'MAY_CAST_WITHOUT_PAYING', duration: 'UNTIL_END_OF_TURN', targetMapping: 'CONTROLLER' }
+                        ]
+                    },
+                    { type: 'Shuffle', targetMapping: 'CONTROLLER' }
                 ]
             }
         ]
@@ -592,9 +601,15 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                     return event.data?.object?.id === source.sourceId;
                 },
                 effects: [
-                    { type: 'SearchLibrary', value: 'Creature', restrictions: ['CMC>=6'], targetMapping: 'CONTROLLER' },
-                    { type: 'PutInHand', targetMapping: 'TARGET_1' },
-                    { type: 'ShuffleLibrary', targetMapping: 'CONTROLLER' }
+                    { 
+                        type: 'SearchLibrary', 
+                        reveal: true,
+                        targetDefinition: { 
+                            type: 'Card', 
+                            count: 1, 
+                            restrictions: ['Creature', 'CMC>=6'] 
+                        } 
+                    }
                 ]
             }
         ]
@@ -1141,7 +1156,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Battlefield,
                 triggerCondition: (state: any, event: any, source: any) =>
                     event.data?.object?.controllerId === source.controllerId &&
-                    event.data?.object?.definition?.types?.includes('Creature'),
+                    event.data?.object?.definition?.types?.some((t: string) => t.toLowerCase() === 'creature'),
                 targetDefinition: { type: 'AnyTarget', count: 1 },
                 effects: [{ type: 'DealDamage', amount: 'EVENT_OBJECT_POWER', targetMapping: 'ANY_TARGET' }]
             }
@@ -1561,12 +1576,24 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
         ...metadata["Light of Promise"],
         abilities: [
             {
+                id: "light_promise_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
+                effects: [] 
+            },
+            {
                 id: "light_promise_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_LIFE_GAINED',
+                triggerEvent: 'ON_LIFE_GAIN',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
-                effects: [{ type: 'AddCounters', amount: 'LIFE_GAINED_AMOUNT', value: '+1/+1', targetMapping: 'ENCHANTED_CREATURE' }]
+                triggerCondition: (state: any, event: any, source: any) => {
+                    const hostId = (source as any).attachedTo;
+                    if (!hostId) return false;
+                    const host = state.battlefield.find((o: any) => o.id === hostId);
+                    return host && event.playerId === host.controllerId;
+                },
+                effects: [{ type: 'AddCounters', amount: 'EVENT_AMOUNT', value: '+1/+1', targetMapping: 'ENCHANTED_CREATURE' }]
             }
         ]
     },
@@ -2191,7 +2218,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 id: "liliana_devotee_lord",
                 type: AbilityType.Static,
                 activeZone: ZoneRequirement.Battlefield,
-                effects: [{ type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 1, duration: 'Static', targetMapping: 'ALL_ZOMBIES_YOU_CONTROL', layer: 7 }]
+                effects: [{ type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 0, targetMapping: 'MATCHING_PERMANENTS_YOU_CONTROL', restrictions: ['Zombie'], layer: 7 }]
             },
             {
                 id: "liliana_devotee_trigger",
@@ -2224,14 +2251,21 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 id: "feline_sovereign_lord",
                 type: AbilityType.Static,
                 activeZone: ZoneRequirement.Battlefield,
-                effects: [{ type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 1, duration: 'Static', targetMapping: 'ALL_OTHER_CATS_YOU_CONTROL', layer: 7 }]
+                effects: [
+                    { type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 1, targetMapping: 'MATCHING_PERMANENTS_YOU_CONTROL', restrictions: ['Other', 'Cat'], layer: 7 },
+                    { type: 'ApplyContinuousEffect', abilitiesToAdd: ['Protection from Dogs'], targetMapping: 'MATCHING_PERMANENTS_YOU_CONTROL', restrictions: ['Other', 'Cat'], layer: 6 }
+                ]
             },
             {
                 id: "feline_sovereign_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_COMBAT_DAMAGE_PLAYER',
+                triggerEvent: 'ON_DAMAGE_PLAYER',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.damageSources.some((s: any) => s.controllerId === source.controllerId && s.definition.subtypes.includes('Cat')),
+                triggerCondition: (state: any, event: any, source: any) => {
+                    if (!event.data?.isCombat) return false;
+                    const attacker = state.battlefield.find((o: any) => o.id === event.sourceId);
+                    return attacker && attacker.controllerId === source.controllerId && attacker.definition.subtypes.some((s: any) => s.toLowerCase() === 'cat');
+                },
                 targetDefinition: { type: 'Permanent', count: 1, optional: true, restrictions: ['ArtifactOrEnchantment', 'OpponentControls'] },
                 effects: [{ type: 'Destroy', targetMapping: 'TARGET_1' }]
             }

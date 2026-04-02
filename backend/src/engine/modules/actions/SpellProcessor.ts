@@ -319,6 +319,13 @@ export class SpellProcessor {
     const parsed = ManaProcessor.parseManaCost(baseCost);
     let extraGeneric = 0;
     let additionalCosts: AbilityCost[] = [];
+    
+    // 0. Check for Free Cast permissions (Alternative Costs)
+    const isFree = state.ruleRegistry.continuousEffects.find(e => 
+        e.isFreeCast && 
+        (e.targetIds?.includes(card.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === card.controllerId))
+    );
+    if (isFree) return { totalMana: "", additionalCosts };
 
     // 1. Gather global modifiers
     const modifiers = state.ruleRegistry.continuousEffects.filter(e => {

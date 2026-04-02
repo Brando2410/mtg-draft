@@ -12,6 +12,7 @@ export interface ChoiceConfig {
 export interface CardChoiceConfig extends ChoiceConfig {
     restrictions?: any[];
     reveal?: boolean;
+    filterSelectable?: boolean;
     onSelected?: (card: GameObject) => any[]; // Returns effects to run
     onNone?: () => any[]; // Returns effects if skipped/none selected
 }
@@ -32,7 +33,7 @@ export class ChoiceGenerator {
     ) {
         const { playerId, sourceId, restrictions = [], onSelected, onNone } = config;
 
-        const options = cards.map(c => {
+        let options = cards.map(c => {
             const isMatch = ValidationProcessor.matchesRestrictions(state, c, restrictions, playerId, sourceId);
             
             return {
@@ -44,6 +45,11 @@ export class ChoiceGenerator {
                 effects: isMatch && onSelected ? onSelected(c) : []
             };
         });
+
+        // CR 701.19: When searching, hidden invalid choices improve UX
+        if (config.filterSelectable) {
+            options = options.filter(o => o.selectable);
+        }
 
         // Add the 'None/Skip' option if optional
         if (config.optional !== false) {

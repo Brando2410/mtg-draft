@@ -294,6 +294,11 @@ export interface ContinuousEffect {
   
   // For Layer 1 (Copying)
   copyFromId?: GameObjectId;
+
+  // Rule 611 permissions & alternative costs
+  canPlayExiled?: boolean;
+  isFreeCast?: boolean;
+  restrictions?: AbilityRestriction[];
 }
 
 export interface AbilityCost {
@@ -420,6 +425,8 @@ export const EffectType = {
   DiscardCards: 'DiscardCards',
   Destroy: 'Destroy',
   Exile: 'Exile',
+  ExileTopCard: 'ExileTopCard',
+  ExileAllCards: 'ExileAllCards',
   Counter: 'Counter',
   CreateToken: 'CreateToken',
   AddCounters: 'AddCounters',
@@ -450,7 +457,6 @@ export const EffectType = {
   AddPreventionEffect: 'AddPreventionEffect',
   Shuffle: 'Shuffle',
   Log: 'Log',
-  ExileAllCards: 'ExileAllCards',
   CopySpellOnStack: 'CopySpellOnStack',
 } as const;
 
@@ -481,6 +487,8 @@ export interface EffectDefinition {
   removeAllAbilities?: boolean;
   layer?: number;
   targetControllerId?: string;
+  isFreeCast?: boolean;
+  canPlayExiled?: boolean;
   
   // Dynamic Token stats
   powerOverride?: number | string;
@@ -502,7 +510,8 @@ export interface EffectDefinition {
    * - 'ALL_CREATURES_YOU_CONTROL', 'OTHER_CREATURES_YOU_CONTROL': Group selectors
    */
   targetMapping?: string; 
-  targetIdMapping?: string; // For modular selection (Hand/Graveyard)
+  targetIdMapping?: string; 
+  targetIds?: string[]; // For specific snapshots (Exile/Choice results)
   targetDefinition?: TargetDefinition;
   restrictions?: any[];
   effects?: EffectDefinition[]; // Sub-effects to execute after a selection

@@ -1,4 +1,5 @@
 import { GameObject, GameState, ContinuousEffect } from '@shared/engine_types';
+import { ValidationProcessor } from './ValidationProcessor';
 
 /**
  * Rules Engine Module: Continuous Effects Architecture (Chapter 6)
@@ -120,6 +121,12 @@ export class LayerProcessor {
            return obj.controllerId === effect.controllerId;
          case 'OTHER_CREATURES_YOU_CONTROL':
            return obj.id !== effect.sourceId && obj.controllerId === effect.controllerId && obj.definition.types.some(t => t.toLowerCase() === 'creature');
+         case 'ALL_OTHER_CATS_YOU_CONTROL':
+           return obj.id !== effect.sourceId && obj.controllerId === effect.controllerId && obj.definition.subtypes.some(s => s.toLowerCase() === 'cat');
+         case 'MATCHING_PERMANENTS_YOU_CONTROL':
+           return obj.controllerId === effect.controllerId && ValidationProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId);
+         case 'MATCHING_PERMANENTS':
+           return ValidationProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId);
          default:
            // If a mapping is specified but not handled here, we MUST NOT fall back to global.
            return false; 

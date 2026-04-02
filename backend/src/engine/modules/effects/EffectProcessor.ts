@@ -23,20 +23,21 @@ export class EffectProcessor {
     log: (m: string) => void,
     startIndex: number = 0,
     stackObject?: any,
-    parentContext?: any
+    parentContext: any = {}
   ): boolean {
     log(`[RESOLVE-EFFECTS] Starting from index ${startIndex}/${effects.length}. Targets: ${targets.join(', ')}`);
     for (let i = startIndex; i < effects.length; i++) {
         const effect = effects[i];
         this.executeEffect(state, effect, sourceId, targets, log, stackObject, parentContext);
         
-        // If an effect creates a pending action (like Choice), suspend resolution.
         if (state.pendingAction) {
-            const isTargeting = state.pendingAction.type === 'TARGETING';
             state.pendingAction.data = {
                 ...state.pendingAction.data,
-                nextEffectIndex: isTargeting ? i : i + 1, // Resume at SAME effect for targeting, NEXT for choice
-                sourceId: sourceId,
+                startIndex: i + 1,
+                isFreeCast: effect.isFreeCast,
+                canPlayExiled: effect.canPlayExiled,
+                restrictions: effect.restrictions,
+                ...effect,
                 targets: targets,
                 effects: effects,
                 stackObj: stackObject,
@@ -153,7 +154,8 @@ export class EffectProcessor {
       case 'DrawCards':           this.handleDrawCards(state, validTargetIds, amount, log); break;
       case 'DiscardCards':        this.handleDiscardCards(state, validTargetIds, amount, sourceId, log); break;
       case 'DealDamage':          this.handleDealDamage(state, validTargetIds, amount, sourceId, log); break;
-      case 'Exile':               this.handleExile(state, validTargetIds, sourceId, log, stackObject, parentContext); break;
+      case 'Exile':               this.handleExile(state, validTargetIds, sourceId, log, stackObject, effect); break;
+      case 'ExileTopCard':        this.handleExileTopCard(state, validTargetIds, amount, log, effect); break;
       case 'ExileAllCards':       this.handleExileAllCards(state, validTargetIds, effect, log); break;
       case 'CopySpellOnStack':    this.handleCopySpellOnStack(state, validTargetIds, controllerId, log); break;
       case 'ReturnToHand':        this.handleReturnToHand(state, validTargetIds, log, stackObject, parentContext); break;
@@ -170,7 +172,7 @@ export class EffectProcessor {
       }
       case 'SearchLibrary':       this.handleSearchLibrary(state, validTargetIds, effect, sourceId, log); break;
       case 'CreateEmblem':        this.handleCreateEmblem(state, effect, controllerId, sourceId, log); break;
-      case 'ApplyContinuousEffect': this.handleApplyContinuousEffect(state, effect, sourceId, validTargetIds, log, stackObject); break;
+      case 'ApplyContinuousEffect': this.handleApplyContinuousEffect(state, effect, sourceId, validTargetIds, log, stackObject, parentContext); break;
       case 'Choice':              this.handleChoice(state, effect, sourceId, validTargetIds, log, stackObject, parentContext); break;
       case 'LookAtTopAndPick':     this.handleLookAtTopAndPick(state, effect, sourceId, validTargetIds, log, stackObject, parentContext); break;
       case 'MoveToZone':           this.handleMoveToZone(state, effect, log, stackObject, parentContext); break;
@@ -202,7 +204,7 @@ export class EffectProcessor {
       if (!player) return;
 
       // Filter library for legal cards - Rule 701.19
-      const restrictions = effect.targetDefinition?.restrictions || [];
+      const restrictions = (effect as any).restrictions || (effect as any).targetDefinition?.restrictions || [];
       const validCards = player.library.filter(c => 
           ValidationProcessor.matchesRestrictions(state, c, restrictions, player.id, sourceId)
       );
@@ -216,6 +218,7 @@ export class EffectProcessor {
           sourceId: sourceId,
           restrictions: restrictions,
           optional: effect.optional !== false,
+          filterSelectable: true,
           hideUndo: true,
           onSelected: (c) => {
               const results = [];
@@ -607,8 +610,28 @@ export class EffectProcessor {
             if (card) ActionProcessor.moveCard(state, card, Zone.Exile, card.ownerId, log);
         } else {
             const obj = this.findObject(state, tid, { card: stackObject?.card || stackObject } as any, parentContext);
-            if (obj) ActionProcessor.moveCard(state, obj, Zone.Exile, obj.ownerId, log);
+            if (obj) {
+                ActionProcessor.moveCard(state, obj, Zone.Exile, obj.ownerId, log);
+                if (parentContext) (parentContext.exiledIds = parentContext.exiledIds || []).push(obj.id);
+            }
         }
+    });
+  }
+
+  private static handleExileTopCard(state: GameState, targets: string[], amount: number, log: (m: string) => void, context?: any) {
+    targets.forEach(pid => {
+        const player = state.players[pid];
+        if (!player) return;
+        const exiledIds = [];
+        for (let i = 0; i < amount; i++) {
+            const card = player.library.pop();
+            if (card) {
+                ActionProcessor.moveCard(state, card, Zone.Exile, pid, log);
+                exiledIds.push(card.id);
+            }
+        }
+        if (context) context.exiledIds = exiledIds;
+        log(`${player.name} exiled the top ${exiledIds.length} card(s) of their library.`);
     });
   }
 
@@ -831,7 +854,8 @@ export class EffectProcessor {
     sourceId: GameObjectId,
     resolvedTargetIds: string[],
     log: (m: string) => void,
-    stackObject?: any
+    stackObject?: any,
+    parentContext?: any
   ) {
     // PRIORITY for controllerId:
     // 1. The stackObject itself (most reliable — the actual spell being resolved)
@@ -855,10 +879,11 @@ export class EffectProcessor {
         if (mapping === 'ALL_PERMANENTS_YOU_CONTROL') {
             finalTargetIds = state.battlefield.filter(o => o.controllerId === controllerId).map(o => o.id);
         } else if (mapping === 'ALL_CREATURES_YOU_CONTROL') {
-            finalTargetIds = state.battlefield.filter(o => 
-                o.controllerId === controllerId && 
-                o.definition.types.some(t => t.toLowerCase() === 'creature')
-            ).map(o => o.id);
+            finalTargetIds = state.battlefield.filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature')).map(o => o.id);
+        } else if (mapping === 'MATCHING_PERMANENTS_YOU_CONTROL') {
+            finalTargetIds = state.battlefield.filter(o => o.controllerId === controllerId && ValidationProcessor.matchesRestrictions(state, o, effect.restrictions || [], controllerId, sourceId)).map(o => o.id);
+        } else if (mapping === 'MATCHING_PERMANENTS') {
+            finalTargetIds = state.battlefield.filter(o => ValidationProcessor.matchesRestrictions(state, o, effect.restrictions || [], controllerId, sourceId)).map(o => o.id);
         }
     }
 
@@ -873,13 +898,15 @@ export class EffectProcessor {
         activeZones: ['Battlefield'],
         duration: { type: durationType },
         targetMapping: finalTargetIds ? undefined : mapping, // If we have IDs, we don't need mapping
-        targetIds: finalTargetIds,
+        targetIds: finalTargetIds || (effect as any).exiledIds || (parentContext as any)?.exiledIds,
         abilitiesToAdd: (effect as any).abilitiesToAdd,
         abilitiesToRemove: (effect as any).abilitiesToRemove,
         powerModifier: (effect as any).powerModifier !== undefined ? this.resolveAmount(state, (effect as any).powerModifier, sourceId, controllerId, stackObject) : undefined,
         toughnessModifier: (effect as any).toughnessModifier !== undefined ? this.resolveAmount(state, (effect as any).toughnessModifier, sourceId, controllerId, stackObject) : undefined,
         powerSet: (effect as any).powerSet !== undefined ? this.resolveAmount(state, (effect as any).powerSet, sourceId, controllerId, stackObject) : undefined,
         toughnessSet: (effect as any).toughnessSet !== undefined ? this.resolveAmount(state, (effect as any).toughnessSet, sourceId, controllerId, stackObject) : undefined,
+        canPlayExiled: (effect as any).value === 'MAY_PLAY_EXILED',
+        isFreeCast: (effect as any).value === 'MAY_CAST_WITHOUT_PAYING'
     };
 
     state.ruleRegistry.continuousEffects.push(continuousEff);
@@ -969,11 +996,12 @@ export class EffectProcessor {
           }
           return objects.length;
       }
-      case '2_PER_FLYING_CREATURE_YOU_CONTROL':
+      case 'OTHER_FLYING_CREATURES_YOU_CONTROL':
         return 2 * EffectProcessor.resolveAmount(state, 'COUNT_is_flying', controllerId, sourceId, stackObject);
-      case 'INSTANT_SORCERY_IN_GRAVEYARD_COUNT':
-        const p = state.players[controllerId];
-        return p ? p.graveyard.filter(o => o.definition.types.includes('Instant') || o.definition.types.includes('Sorcery')).length : 0;
+      case 'INSTANT_SORCERY_IN_GRAVEYARD_COUNT': {
+        const player = state.players[controllerId];
+        return player ? player.graveyard.filter(o => o.definition.types.includes('Instant') || o.definition.types.includes('Sorcery')).length : 0;
+      }
       case 'DAMAGE_DEALT_AMOUNT':
       case 'EVENT_AMOUNT':
           return (stackObject?.data?.eventAmount) !== undefined ? stackObject.data.eventAmount : (state.turnState.lastDamageAmount || 0);
@@ -1065,10 +1093,22 @@ export class EffectProcessor {
           return Object.keys(state.players);
       case 'SELECTED_CARD':
           return [targets[0]]; // We treat the choice value as the first target
-      case 'TARGET_OPPONENT': {
-          const opponentId = Object.keys(state.players).find(pid => pid !== controllerId);
-          return opponentId ? [opponentId] : [];
-      }
+      case 'CONTROLLER_GRAVEYARD':
+          const cp = state.players[controllerId];
+          return cp ? cp.graveyard.map(c => c.id) : [];
+      case 'CONTROLLER_GRAVEYARD_AND_LIBRARY':
+          const pc = state.players[controllerId];
+          return pc ? [...pc.graveyard.map(c => c.id), ...pc.library.map(c => c.id)] : [];
+      case 'ALL_PLAYERS':
+          return Object.keys(state.players);
+      case 'MATCHING_PERMANENTS_YOU_CONTROL':
+          return state.battlefield
+            .filter(o => o.controllerId === controllerId && ValidationProcessor.matchesRestrictions(state, o, effect?.restrictions as any || [], controllerId, sourceId))
+            .map(o => o.id);
+      case 'MATCHING_PERMANENTS':
+          return state.battlefield
+            .filter(o => ValidationProcessor.matchesRestrictions(state, o, effect?.restrictions as any || [], controllerId, sourceId))
+            .map(o => o.id);
       case 'ANY_TARGET':
           return targets;
       default:
@@ -1155,6 +1195,20 @@ export class EffectProcessor {
     };
     (token as any).isToken = true;
     state.battlefield.push(token);
+    
+    // Ensure the token's abilities (like Flying) are registered and it triggers ETB
+    // We import here to avoid circular dependencies if any
+    const { ActionProcessor } = require('../actions/ActionProcessor');
+    const { TriggerProcessor } = require('./TriggerProcessor');
+    
+    ActionProcessor.registerAbilities(state, token);
+    TriggerProcessor.onEvent(state, { 
+        type: 'ON_ETB', 
+        targetId: token.id, 
+        sourceId: token.id, 
+        data: { object: token } 
+    }, (m: string) => {});
+
     return token;
   }
 }
