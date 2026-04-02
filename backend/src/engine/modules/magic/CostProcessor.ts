@@ -2,7 +2,7 @@ import { GameState, GameObject, PlayerId, GameObjectId, AbilityCost, Restriction
 import { ManaProcessor } from './ManaProcessor';
 import { ActionProcessor } from '../actions/ActionProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
-import { ValidationProcessor } from '../state/ValidationProcessor';
+import { TargetingProcessor } from '../actions/TargetingProcessor';
 
 /**
  * Rules Engine Module: Cost Processing (Rule 601.2h / 101.1)
@@ -75,7 +75,7 @@ export class CostProcessor {
            return state.battlefield.some(c => c.id === source.id);
         }
         if (cost.restrictions) {
-           return state.battlefield.some(c => c.controllerId === playerId && ValidationProcessor.matchesRestrictions(state, c, cost.restrictions!, playerId, source.id));
+           return state.battlefield.some(c => c.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, c, cost.restrictions!, playerId, source.id));
         }
         return state.battlefield.some(c => c.controllerId === playerId);
 
@@ -120,7 +120,7 @@ export class CostProcessor {
         } else {
             // Simplified: just sacrifice the first valid source if not specified
             // In a real version, this should trigger a pending action or take a parameter
-            toSac = state.battlefield.find(c => c.controllerId === playerId && (!cost.restrictions || ValidationProcessor.matchesRestrictions(state, c, cost.restrictions!, playerId, source.id)));
+            toSac = state.battlefield.find(c => c.controllerId === playerId && (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions!, playerId, source.id)));
         }
         
         if (toSac) {

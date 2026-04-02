@@ -1,5 +1,5 @@
 import { GameObject, GameState, ContinuousEffect } from '@shared/engine_types';
-import { ValidationProcessor } from './ValidationProcessor';
+import { TargetingProcessor } from '../actions/TargetingProcessor';
 
 /**
  * Rules Engine Module: Continuous Effects Architecture (Chapter 6)
@@ -124,9 +124,9 @@ export class LayerProcessor {
          case 'ALL_OTHER_CATS_YOU_CONTROL':
            return obj.id !== effect.sourceId && obj.controllerId === effect.controllerId && obj.definition.subtypes.some(s => s.toLowerCase() === 'cat');
          case 'MATCHING_PERMANENTS_YOU_CONTROL':
-           return obj.controllerId === effect.controllerId && ValidationProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId);
+           return obj.controllerId === effect.controllerId && TargetingProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId);
          case 'MATCHING_PERMANENTS':
-           return ValidationProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId);
+           return TargetingProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId);
          default:
            // If a mapping is specified but not handled here, we MUST NOT fall back to global.
            return false; 
@@ -164,6 +164,19 @@ export class LayerProcessor {
     // 1. Update Battlefield objects
     state.battlefield.forEach(obj => {
         const stats = this.getEffectiveStats(obj, state);
+
+        // --- SUMMONING SICKNESS & HASTE FIX ---
+        // CR 302.6: Haste allows creatures to bypass summoning sickness. 
+        // We clear the sickness property so that both backend logic and frontend UI (ZZZ tag) 
+        // correctly identify that the creature is ready.
+        const isCreature = obj.definition.types.some(t => t.toLowerCase() === 'creature');
+        if (isCreature && obj.summoningSickness) {
+            const hasHaste = stats.keywords.some(k => k.toLowerCase() === 'haste');
+            if (hasHaste) {
+                obj.summoningSickness = false;
+            }
+        }
+
         obj.effectiveStats = {
             ...stats,
             isPlayable: state.priorityPlayerId === obj.controllerId && PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id)

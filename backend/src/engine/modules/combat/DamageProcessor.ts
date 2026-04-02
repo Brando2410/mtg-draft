@@ -1,6 +1,5 @@
 import { GameState, GameObjectId, PlayerId, GameObject, Zone } from '@shared/engine_types';
 import { TriggerProcessor } from '../effects/TriggerProcessor';
-import { ValidationProcessor } from '../state/ValidationProcessor';
 
 /**
  * Rules Engine Module: Damage Handling (Rule 120)
@@ -24,7 +23,7 @@ export class DamageProcessor {
     if (amount <= 0) return;
 
     // Rule 702.16e: Protection prevents damage
-    if (ValidationProcessor.shouldPreventDamage(state, sourceId, targetId)) {
+    if (this.shouldPreventProtectionDamage(state, sourceId, targetId)) {
         log(`[MISS] Damage to ${targetId} prevented by Protection.`);
         return;
     }
@@ -100,6 +99,7 @@ export class DamageProcessor {
       TriggerProcessor.onEvent(state, { type: 'ON_NONCOMBAT_DAMAGE_OPPONENT', targetId: player.id, sourceId: sourceObj?.id, amount }, log);
     }
 
+    TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId: player.id, amount, data: { sourceId: sourceObj?.id } }, log);
     TriggerProcessor.onEvent(state, { type: 'ON_DAMAGE_PLAYER', targetId: player.id, sourceId: sourceObj?.id, amount, data: { isCombat } }, log);
   }
 
@@ -121,5 +121,34 @@ export class DamageProcessor {
           if (validIds.includes(targetId)) return true;
       }
       return false;
+  }
+
+  /**
+   * CR 702.16e: Damage that would be dealt by sources with that quality is prevented.
+   */
+  public static shouldPreventProtectionDamage(state: GameState, sourceId: string, targetId: string): boolean {
+    const targetObj = state.battlefield.find(o => o.id === targetId);
+    if (!targetObj) return false;
+
+    const sourceStack = state.stack.find(s => s.id === sourceId);
+    const sourceBattlefield = state.battlefield.find(o => o.id === sourceId);
+    const source = sourceStack || (sourceBattlefield as any);
+    if (!source) return false;
+
+    const { LayerProcessor } = require('./../state/LayerProcessor');
+    const keywords = LayerProcessor.getEffectiveStats(targetObj, state).keywords;
+    const protectionKeywords = keywords.filter((k: string) => k.toLowerCase().startsWith('protection from'));
+
+    if (protectionKeywords.length > 0) {
+        const { TargetingProcessor } = require('./../actions/TargetingProcessor');
+        for (const prot of protectionKeywords) {
+          const qualityStr = prot.toLowerCase().replace('protection from ', '');
+          const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
+          if (TargetingProcessor.sourceHasQualities(source, qualities)) {
+            return true;
+          }
+        }
+    }
+    return false;
   }
 }

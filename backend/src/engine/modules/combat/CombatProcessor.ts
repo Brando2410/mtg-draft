@@ -1,6 +1,13 @@
 import { GameState, Step, Phase, PlayerId, GameObjectId, GameObject } from '@shared/engine_types';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { DamageProcessor } from '../combat/DamageProcessor';
+import { TriggerProcessor } from '../effects/TriggerProcessor';
+
+export interface CombatCallbacks {
+    log: (m: string) => void;
+    getPlayerName: (id: PlayerId) => string;
+    resetPriorityToActivePlayer: () => void;
+}
 
 /**
  * Combat Mechanism (Chapter 506-511)
@@ -51,14 +58,64 @@ export class CombatProcessor {
   }
 
   public static hasFirstStrikeStep(state: GameState): boolean {
-    const attackers = state.combat?.attackers.map(a => state.battlefield.find(o => o.id === a.attackerId)) || [];
-    const blockers = state.combat?.blockers.map(b => state.battlefield.find(o => o.id === b.blockerId)) || [];
+    const attackers = (state.combat?.attackers || []).map(a => state.battlefield.find(o => o.id === a.attackerId)) || [];
+    const blockers = (state.combat?.blockers || []).map(b => state.battlefield.find(o => o.id === b.blockerId)) || [];
     
     return [...attackers, ...blockers].some(obj => {
         if (!obj) return false;
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         return stats.keywords.includes('First Strike') || stats.keywords.includes('Double Strike');
     });
+  }
+
+  /**
+   * CR 508.2: Confirming the Attacker Declaration Action
+   */
+  public static confirmAttackers(state: GameState, playerId: PlayerId, callbacks: CombatCallbacks) {
+    if (state.pendingAction?.type !== 'DECLARE_ATTACKERS' || state.pendingAction.playerId !== playerId) return;
+    
+    callbacks.log(`${callbacks.getPlayerName(playerId)} confirmed attackers.`);
+    
+    const attackers = state.combat?.attackers || [];
+    state.turnState.creaturesAttackedThisTurn += attackers.length;
+
+    // Rule 508.1: "Whenever an opponent attacks..." (Mangara support)
+    if (attackers.length > 0) {
+        TriggerProcessor.onEvent(state, {
+            type: 'ON_ATTACKERS_DECLARED',
+            playerId: playerId,
+            data: { attackers }
+        }, (m: string) => callbacks.log(m));
+    }
+
+    state.pendingAction = undefined;
+    callbacks.resetPriorityToActivePlayer();
+  }
+
+  /**
+   * CR 509.2: Confirming the Blocker Declaration Action
+   */
+  public static confirmBlockers(state: GameState, playerId: PlayerId, callbacks: CombatCallbacks) {
+    if (state.pendingAction?.type !== 'DECLARE_BLOCKERS' || state.pendingAction.playerId !== playerId) return;
+    
+    // CR 509.1: Validate global block requirements (e.g. Menace)
+    const validation = this.validateAllBlockers(state);
+    if (!validation.isValid) {
+        callbacks.log(`[BLOCK] ERR: ${validation.error}`);
+        // Keep in block declaration mode until fixed
+        return;
+    }
+
+    callbacks.log(`${callbacks.getPlayerName(playerId)} confirmed blockers.`);
+    state.pendingAction = undefined;
+    
+    // CR 509.2 / 509.3: If multiple blockers/attackers are involved, we need damage assignment order first.
+    if (this.needsOrdering(state)) {
+        this.setupNextOrderingAction(state, (m) => callbacks.log(m));
+    } else {
+        // CR 509.4: Give priority window in Declare Blockers step.
+        callbacks.resetPriorityToActivePlayer();
+    }
   }
 
   /**
@@ -249,6 +306,7 @@ export class CombatProcessor {
                 remainingPower -= damageToAssign;
                 if (remainingPower <= 0) break;
             }
+
             if (remainingPower > 0 && order.length > 0) {
                 const last = assignments.find(a => a.sourceId === blockerObj.id && a.targetId === order[order.length - 1]);
                 if (last) last.amount += remainingPower;
@@ -257,4 +315,73 @@ export class CombatProcessor {
     }
   }
 
+
+  /**
+   * CR 509.2 / 509.3: Finalize a damage assignment order.
+   */
+  public static resolveCombatOrdering(state: GameState, playerId: string, order: string[], callbacks: CombatCallbacks): boolean {
+    const { PlayerActionProcessor } = require('../actions/PlayerActionProcessor');
+    PlayerActionProcessor.resolveCombatOrdering(state, playerId, order, (m: string) => callbacks.log(m));
+    
+    // Once ordering is complete (and no more pending actions exist), give priority back to AP.
+    callbacks.resetPriorityToActivePlayer();
+    return true;
+  }
+  
+  /**
+   * CR 702.16n: A creature with protection from [quality] can’t be blocked by creatures with [quality].
+   */
+  public static isLegalBlocker(state: GameState, blockerId: string, attackerId: string): boolean {
+    const blocker = state.battlefield.find(o => o.id === blockerId);
+    const attacker = state.battlefield.find(o => o.id === attackerId);
+    if (!blocker || !attacker) return true;
+
+    const bStats = LayerProcessor.getEffectiveStats(blocker, state);
+    const aStats = LayerProcessor.getEffectiveStats(attacker, state);
+
+    // 1. CR 702.9: Flying check
+    // "A creature with flying can't be blocked except by creatures with flying and/or reach."
+    if (aStats.keywords.includes('Flying')) {
+        if (!bStats.keywords.includes('Flying') && !bStats.keywords.includes('Reach')) {
+            return false;
+        }
+    }
+
+    // 2. Protection check (Blocking) (Rule 702.16)
+    const protectionKeywords = aStats.keywords.filter(k => k.toLowerCase().startsWith('protection from'));
+    if (protectionKeywords.length > 0) {
+        const { TargetingProcessor } = require('./../actions/TargetingProcessor');
+        for (const prot of protectionKeywords) {
+          const qualityStr = prot.toLowerCase().replace('protection from ', '');
+          const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
+          if (TargetingProcessor.sourceHasQualities(blocker, qualities)) {
+            return false;
+          }
+        }
+    }
+
+    return true;
+  }
+
+  /**
+   * CR 702.110: Menace check and other multi-creature requirements.
+   */
+  public static validateAllBlockers(state: GameState): { isValid: boolean, error?: string } {
+    if (!state.combat) return { isValid: true };
+    
+    for (const attackerDef of state.combat.attackers) {
+      const attacker = state.battlefield.find(o => o.id === attackerDef.attackerId);
+      if (!attacker) continue;
+      
+      const aStats = LayerProcessor.getEffectiveStats(attacker, state);
+      const blockers = state.combat.blockers.filter(b => b.attackerId === attackerDef.attackerId);
+      
+      // Menace: cannot be blocked by exactly one creature
+      if (aStats.keywords.includes('Menace') && blockers.length === 1) {
+          return { isValid: false, error: `${attacker.definition.name} ha Menace e deve essere bloccata da almeno due creature.` };
+      }
+    }
+    
+    return { isValid: true };
+  }
 }

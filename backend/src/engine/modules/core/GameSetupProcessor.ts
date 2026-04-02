@@ -27,7 +27,7 @@ export class GameSetupProcessor {
     }
   }
 
-  private static createGameObject(ownerId: PlayerId, cardRef: Card, index: number): GameObject {
+  public static createGameObject(ownerId: PlayerId, cardRef: Card, index: number): GameObject {
     const logicData = M21_LOGIC[cardRef.name];
     const typeLine = cardRef.typeLine || cardRef.type_line || logicData?.type_line || '';
     const colorMap: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
@@ -79,25 +79,4 @@ export class GameSetupProcessor {
     }
   }
 
-  public static drawCard(state: GameState, playerId: PlayerId, log: (msg: string) => void): boolean {
-    const player = state.players[playerId];
-    if (!player || player.library.length === 0) return false;
-    const card = player.library.pop();
-    if (card) {
-      const fromZone = card.zone;
-      card.zone = Zone.Hand;
-      player.hand.push(card);
-      log(`${player.name} draws a card.`);
-      
-      // Update turn-wide tracking
-      state.turnState.cardsDrawnThisTurn[playerId] = (state.turnState.cardsDrawnThisTurn[playerId] || 0) + 1;
-      state.turnState.lastCardsDrawnAmount = 1;
-
-      const { TriggerProcessor } = require('../effects/TriggerProcessor');
-      TriggerProcessor.onEvent(state, { type: 'ON_DRAW', playerId: playerId, data: { card } }, log);
-      
-      return true;
-    }
-    return false;
-  }
 }

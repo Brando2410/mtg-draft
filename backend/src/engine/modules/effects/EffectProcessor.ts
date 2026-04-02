@@ -1,7 +1,6 @@
 import { GameState, EffectDefinition, GameObjectId, PlayerId, Zone, GameObject, ContinuousEffect, DurationType, EmblemDefinition, TriggeredAbility } from '@shared/engine_types';
 import { ActionProcessor } from '../actions/ActionProcessor';
 import { DamageProcessor } from '../combat/DamageProcessor';
-import { ValidationProcessor } from '../state/ValidationProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { TriggerProcessor } from './TriggerProcessor';
@@ -14,6 +13,39 @@ import { ChoiceGenerator } from './ChoiceGenerator';
  * DESIGN: Strategy Pattern for effect execution.
  */
 export class EffectProcessor {
+
+  public static troubleshoot(state: GameState, sourceId?: GameObjectId) {
+    const logs: string[] = [];
+    logs.push("--- ENGINE TROUBLESHOOTING REPORT ---");
+    logs.push(`Stack Length: ${state.stack.length}`);
+    state.stack.forEach((so, i) => {
+        const name = (so as any).name || (so as any).card?.definition.name || (so as any).type || "Object";
+        const nextIdx = so.data?.nextEffectIndex !== undefined ? so.data.nextEffectIndex : "N/A";
+        logs.push(`Stack[${i}]: ${name} (ID: ${so.id}, NextEffectIndex: ${nextIdx})`);
+    });
+    
+    if (state.pendingAction) {
+        logs.push(`Pending Action: ${state.pendingAction.type} for Player: ${state.pendingAction.playerId}`);
+        const data = state.pendingAction.data || {};
+        logs.push(`Pending Action Data: nextIdx=${data.nextEffectIndex}, effectsCount=${data.effects?.length}, stackObjId=${data.stackObj?.id}`);
+        if (data.parentContext) {
+            logs.push(`Parent Context exists (NextIdx: ${data.parentContext.nextEffectIndex})`);
+        }
+    } else {
+        logs.push("No Active Pending Action.");
+    }
+    
+    if (sourceId) {
+        const obj = (state.battlefield as any[]).find(o => o.id === sourceId) || (state.stack as any[]).find(s => s.sourceId === sourceId);
+        if (obj) {
+            const name = (obj as any).name || (obj as any).definition?.name || "Unnamed";
+            logs.push(`Source Object: ${name} (ID: ${sourceId})`);
+        }
+    }
+    
+    console.log(logs.join("\n"));
+    return logs;
+  }
 
   public static resolveEffects(
     state: GameState, 
@@ -31,21 +63,30 @@ export class EffectProcessor {
         this.executeEffect(state, effect, sourceId, targets, log, stackObject, parentContext);
         
         if (state.pendingAction) {
+            // Save context for resumption
+            if (stackObject) {
+                if (!stackObject.data) stackObject.data = {};
+                stackObject.data.nextEffectIndex = i + 1;
+            }
+
             state.pendingAction.data = {
-                ...state.pendingAction.data,
-                startIndex: i + 1,
-                isFreeCast: effect.isFreeCast,
-                canPlayExiled: effect.canPlayExiled,
-                restrictions: effect.restrictions,
-                ...effect,
-                targets: targets,
+                ...(state.pendingAction.data || {}),
                 effects: effects,
+                nextEffectIndex: i + 1,
+                targets: targets,
                 stackObj: stackObject,
                 parentContext: parentContext
             };
+
             state.priorityPlayerId = state.pendingAction.playerId;
             return false;
         }
+    }
+
+    // Mark as completed in the stack object to prevent redundant resolution
+    if (stackObject) {
+        if (!stackObject.data) stackObject.data = {};
+        stackObject.data.nextEffectIndex = effects.length;
     }
     return true;
   }
@@ -68,6 +109,7 @@ export class EffectProcessor {
     // it means this effect is part of a complex spell (like a choice) that needs a NEW targeting phase.
     if ((effect as any).targetDefinition && targets.length === 0) {
         const targetDef = (effect as any).targetDefinition;
+        const { TargetingProcessor } = require('../actions/TargetingProcessor');
         const legalTargetIds = this.getLegalTargetIdsForEffect(state, sourceId, targetDef, stackObject);
         
         if (legalTargetIds.length === 0) {
@@ -94,11 +136,12 @@ export class EffectProcessor {
         return; // SUSPEND RESOLUTION
     }
 
-    let resolvedTargetIds = this.resolveTargetMapping(state, (effect as any).targetMapping || "", targets, sourceId, controllerId, stackObject?.data, effect);
+    const { TargetingProcessor } = require('../actions/TargetingProcessor');
+    let resolvedTargetIds = TargetingProcessor.resolveTargetMapping(state, (effect as any).targetMapping || "", targets, sourceId, controllerId, stackObject?.data, effect);
     if ((effect as any).targetId) resolvedTargetIds = [(effect as any).targetId]; // Override if hardcoded specifically for this sub-action
     
     // CR 608.2b: Targeted effects only apply to targets that are still legal.
-    const validTargetIds = resolvedTargetIds.filter(tid => {
+    const validTargetIds = resolvedTargetIds.filter((tid: string) => {
         if (!tid) return false;
         if (state.players[tid]) return true; // Keep players
         const obj = this.findObject(state, tid, stackObject, parentContext);
@@ -108,7 +151,7 @@ export class EffectProcessor {
             const tempStackObj = state.stack.find(s => s.id === (state as any).lastResolvedStackId || s.sourceId === sourceId) || stackObject;
             const targetDef = (effect as any).targetDefinition || tempStackObj?.data?.targetDefinition;
             if (!targetDef) return true; // SELECTED/CHOICE result, skip formal targeting validation
-            return ValidationProcessor.isLegalTarget(state, (sourceObj as any) || (sourceId as any), tid, targetDef);
+            return TargetingProcessor.isLegalTarget(state, (sourceObj as any) || (sourceId as any), tid, targetDef);
         }
         return true;
     });
@@ -205,15 +248,22 @@ export class EffectProcessor {
 
       // Filter library for legal cards - Rule 701.19
       const restrictions = (effect as any).restrictions || (effect as any).targetDefinition?.restrictions || [];
+      const { TargetingProcessor } = require('../actions/TargetingProcessor');
       const validCards = player.library.filter(c => 
-          ValidationProcessor.matchesRestrictions(state, c, restrictions, player.id, sourceId)
+          TargetingProcessor.matchesRestrictions(state, c, restrictions, player.id, sourceId)
       );
 
       log(`[SEARCH] ${player.name} is searching their library...`);
 
       // 1. Create a Choice Action
+      const restrictionLabels = restrictions.map((r: any) => {
+          if (typeof r === 'string') return r;
+          if (r.nameEquals || r.name) return r.nameEquals || r.name;
+          if (r.types) return r.types.join('/');
+          return 'a card';
+      });
       state.pendingAction = ChoiceGenerator.createCardChoice(state, player.library, {
-          label: effect.label || `Choose ${restrictions.join(', ') || 'a card'} from your library`,
+          label: effect.label || `Choose ${restrictionLabels.join(' and ') || 'a card'} from your library`,
           playerId: player.id,
           sourceId: sourceId,
           restrictions: restrictions,
@@ -488,7 +538,7 @@ export class EffectProcessor {
     log(`[CHOICE] ${state.players[controllerId]?.name} must choose: ${effect.label || 'an option'}`);
   }
 
-  private static handleDrawCards(state: GameState, targets: string[], amount: number, log: (m: string) => void) {
+  public static handleDrawCards(state: GameState, targets: string[], amount: number, log: (m: string) => void) {
     targets.forEach(pid => {
         const player = state.players[pid];
         if (!player) return;
@@ -503,17 +553,20 @@ export class EffectProcessor {
     });
   }
 
-  private static handleDiscardCards(state: GameState, targets: string[], amount: number, sourceId: string, log: (m: string) => void) {
+  public static handleDiscardCards(state: GameState, targets: string[], amount: number, sourceId: string, log: (m: string) => void) {
     targets.forEach(id => {
         // 1. Check if the target is a Player (Standard Discard)
         const player = state.players[id];
         if (player) {
             if (amount === -1) {
                 const handCount = player.hand.length;
+                const handCopy = [...player.hand];
                 while (player.hand.length > 0) {
-                    ActionProcessor.moveCard(state, player.hand[0], Zone.Graveyard, id, log);
+                    const card = player.hand[0];
+                    ActionProcessor.moveCard(state, card, Zone.Graveyard, id, log);
+                    TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId: id, data: { card, sourceId } }, log);
                 }
-                log(`${player.name} discarded their hand.`);
+                log(`${player.name} discarded their hand (${handCount} cards).`);
             } else if (amount > 0) {
                 state.pendingAction = { type: 'DISCARD', playerId: id, sourceId, data: { amount } };
                 player.pendingDiscardCount = amount;
@@ -529,6 +582,7 @@ export class EffectProcessor {
             const owner = state.players[obj.ownerId];
             if (owner && owner.hand.some(c => c.id === obj.id)) {
                 ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.ownerId, log);
+                TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId: obj.ownerId, data: { card: obj, sourceId } }, log);
                 log(`${owner.name} discarded ${obj.definition.name}.`);
             }
         }
@@ -554,11 +608,12 @@ export class EffectProcessor {
 
           if (copy.data?.targetDefinition) {
               const targetDef = copy.data.targetDefinition;
+              const { TargetingProcessor } = require('../actions/TargetingProcessor');
               const legalTargetIds = [
                   ...Object.keys(state.players),
-                  ...state.battlefield.map(o => o.id),
-                  ...state.stack.map(s => s.id)
-              ].filter(tid => ValidationProcessor.isLegalTarget(state, copy.id, tid, targetDef));
+                  ...state.battlefield.filter(o => TargetingProcessor.isLegalTarget(state, copy.id, o.id, targetDef)).map(o => o.id),
+                  ...state.stack.filter(s => TargetingProcessor.isLegalTarget(state, copy.id, s.id, targetDef)).map(s => s.id)
+              ];
 
               state.pendingAction = {
                   type: 'TARGETING' as any,
@@ -737,12 +792,21 @@ export class EffectProcessor {
       this.handleDealDamage(state, [c1.id], p2, c2.id, log);
   }
 
-  private static handleGainLife(state: GameState, targets: string[], amount: number, log: (m: string) => void) {
+  public static handleGainLife(state: GameState, targets: string[], amount: number, log: (m: string) => void) {
     targets.forEach(pid => {
         if (state.players[pid]) {
+            const oldLife = state.players[pid].life;
             state.players[pid].life += amount;
             state.turnState.lastLifeGainedAmount = amount;
-            log(`${state.players[pid].name} gains ${amount} life.`);
+            log(`${state.players[pid].name} gains ${amount} life (${oldLife} -> ${state.players[pid].life})`);
+
+            // CR 603: Emit trigger event for life gain
+            TriggerProcessor.onEvent(state, {
+                type: 'ON_LIFE_GAIN',
+                playerId: pid,
+                amount,
+                data: { amount }
+            }, (m: string) => log(m));
         }
     });
   }
@@ -752,7 +816,8 @@ export class EffectProcessor {
         if (state.players[pid]) {
             // Rule 119.3: Loss of life occurs when an effect explicitly says so.
             state.players[pid].life -= amount;
-            // Optionally: state.turnState.lastLifeLostAmount = amount; // If needed by other cards
+            // Rule 119.3: Loss of life occurs when an effect explicitly says so.
+            TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId: pid, amount }, log);
             log(`${state.players[pid].name} loses ${amount} life.`);
         }
     });
@@ -876,14 +941,15 @@ export class EffectProcessor {
     // If it's a floating effect (from a spell) and has a dynamic mapping, we convert it to a snapshot of IDs
     const mapping = (effect as any).targetMapping;
     if (!finalTargetIds && mapping) {
+        const { TargetingProcessor } = require('../actions/TargetingProcessor');
         if (mapping === 'ALL_PERMANENTS_YOU_CONTROL') {
             finalTargetIds = state.battlefield.filter(o => o.controllerId === controllerId).map(o => o.id);
         } else if (mapping === 'ALL_CREATURES_YOU_CONTROL') {
             finalTargetIds = state.battlefield.filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature')).map(o => o.id);
         } else if (mapping === 'MATCHING_PERMANENTS_YOU_CONTROL') {
-            finalTargetIds = state.battlefield.filter(o => o.controllerId === controllerId && ValidationProcessor.matchesRestrictions(state, o, effect.restrictions || [], controllerId, sourceId)).map(o => o.id);
+            finalTargetIds = state.battlefield.filter(o => o.controllerId === controllerId && TargetingProcessor.matchesRestrictions(state, o, effect.restrictions || [], controllerId, sourceId)).map(o => o.id);
         } else if (mapping === 'MATCHING_PERMANENTS') {
-            finalTargetIds = state.battlefield.filter(o => ValidationProcessor.matchesRestrictions(state, o, effect.restrictions || [], controllerId, sourceId)).map(o => o.id);
+            finalTargetIds = state.battlefield.filter(o => TargetingProcessor.matchesRestrictions(state, o, effect.restrictions || [], controllerId, sourceId)).map(o => o.id);
         }
     }
 
@@ -1026,94 +1092,13 @@ export class EffectProcessor {
 
 
   private static getLegalTargetIdsForEffect(state: GameState, sourceId: string, targetDef: any, stackObject?: any): string[] {
-      // Potential pool of targets:
+      const { TargetingProcessor } = require('../actions/TargetingProcessor');
       const pool = [
           ...Object.keys(state.players),
           ...state.battlefield.map(o => o.id),
           ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
       ];
-      return pool.filter(tid => ValidationProcessor.isLegalTarget(state, stackObject || sourceId, tid, targetDef));
-  }
-
-  private static resolveTargetMapping(
-    state: GameState, 
-    mapping: string, 
-    targets: string[], 
-    sourceId: GameObjectId,
-    controllerId: PlayerId,
-    stackData?: any,
-    effect?: EffectDefinition
-  ): string[] {
-    const eventData = stackData?.eventData;
-    switch (mapping) {
-      case 'SELF': return [sourceId];
-      case 'CONTROLLER': return [controllerId];
-      case 'ENCHANTED_CREATURE': {
-          const aura = state.battlefield.find(o => o.id === sourceId);
-          return aura?.attachedTo ? [aura.attachedTo] : [];
-      }
-      case 'TARGET_1': return [targets[0]];
-      case 'SELF_AND_TARGET_1': return [sourceId, targets[0]];
-      case 'TARGET_2': return [targets[1]];
-      case 'TARGET_ALL': return targets;
-      case 'MATCHING_PERMANENTS_YOU_CONTROL':
-          if (!effect?.restrictions) return [];
-          return state.battlefield
-            .filter(o => o.controllerId === controllerId && ValidationProcessor.matchesRestrictions(state, o, effect.restrictions as any, controllerId, sourceId))
-            .map(o => o.id);
-      case 'MATCHING_PERMANENTS':
-          if (!effect?.restrictions) return [];
-          return state.battlefield
-            .filter(o => ValidationProcessor.matchesRestrictions(state, o, effect.restrictions as any, controllerId, sourceId))
-            .map(o => o.id);
-      case 'TRIGGER_SOURCE':
-          return eventData?.sourceId ? [eventData.sourceId] : (stackData?.sourceId ? [stackData.sourceId] : []);
-      case 'TRIGGER_TARGET':
-          return eventData?.targetId ? [eventData.targetId] : (stackData?.targetId ? [stackData.targetId] : []);
-      case 'EVENT_TARGET':
-          return eventData?.object?.id ? [eventData.object.id] : (eventData?.targetId ? [eventData.targetId] : []);
-      case 'TARGET_1_CONTROLLER':
-        const obj = this.findObject(state, targets[0]);
-        return obj ? [obj.controllerId] : [];
-      case 'ALL_CREATURES_YOU_CONTROL':
-        return state.battlefield
-          .filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature'))
-          .map(o => o.id);
-      case 'ALL_PERMANENTS_YOU_CONTROL':
-        return state.battlefield
-          .filter(o => o.controllerId === controllerId)
-          .map(o => o.id);
-      case 'ALL_CREATURES':
-        return state.battlefield
-          .filter(o => o.definition.types.some(t => t.toLowerCase() === 'creature'))
-          .map(o => o.id);
-      case 'EACH_OPPONENT':
-          return Object.keys(state.players).filter(pid => pid !== controllerId);
-      case 'EACH_PLAYER':
-          return Object.keys(state.players);
-      case 'SELECTED_CARD':
-          return [targets[0]]; // We treat the choice value as the first target
-      case 'CONTROLLER_GRAVEYARD':
-          const cp = state.players[controllerId];
-          return cp ? cp.graveyard.map(c => c.id) : [];
-      case 'CONTROLLER_GRAVEYARD_AND_LIBRARY':
-          const pc = state.players[controllerId];
-          return pc ? [...pc.graveyard.map(c => c.id), ...pc.library.map(c => c.id)] : [];
-      case 'ALL_PLAYERS':
-          return Object.keys(state.players);
-      case 'MATCHING_PERMANENTS_YOU_CONTROL':
-          return state.battlefield
-            .filter(o => o.controllerId === controllerId && ValidationProcessor.matchesRestrictions(state, o, effect?.restrictions as any || [], controllerId, sourceId))
-            .map(o => o.id);
-      case 'MATCHING_PERMANENTS':
-          return state.battlefield
-            .filter(o => ValidationProcessor.matchesRestrictions(state, o, effect?.restrictions as any || [], controllerId, sourceId))
-            .map(o => o.id);
-      case 'ANY_TARGET':
-          return targets;
-      default:
-          return [];
-    }
+      return pool.filter(tid => TargetingProcessor.isLegalTarget(state, stackObject || sourceId, tid, targetDef));
   }
 
   private static findObject(state: GameState, id: string, stackObject?: any, parentContext?: any): GameObject | undefined {

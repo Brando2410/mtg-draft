@@ -253,6 +253,7 @@ export interface GameState {
   logs: string[];            // Real-time game events/engine logs
   
   turnState: TurnState;      // Grouped turn-wide logic tracking
+  playerOrder: PlayerId[];   // CR 103: The order of players in the game
 }
 
 export const DurationType = {

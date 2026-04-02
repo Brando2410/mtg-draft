@@ -1,9 +1,19 @@
 import { GameState, PlayerId, Zone, AbilityType } from '@shared/engine_types';
-import { ValidationProcessor } from '../state/ValidationProcessor';
+import { CombatProcessor } from '../combat/CombatProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { TurnProcessor } from '../core/TurnProcessor';
 import { PriorityProcessor } from '../core/PriorityProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
+import { ChoiceProcessor } from './ChoiceProcessor';
+
+export interface PlayerActionCallbacks {
+    log: (m: string) => void;
+    getPlayerName: (id: PlayerId) => string;
+    playCard: (pId: PlayerId, cId: string, targets: string[], bypass: boolean) => boolean;
+    activateAbility: (pId: PlayerId, cId: string, idx: number, targets: string[], bypass: boolean) => boolean;
+    resetPriorityToActivePlayer: () => void;
+    checkAutoPass: (pId: PlayerId) => void;
+}
 
 // Need to safely interact with Rule registries without causing circular dependencies.
 export class PlayerActionProcessor {
@@ -274,7 +284,7 @@ export class PlayerActionProcessor {
       return false;
     }
 
-    if (!ValidationProcessor.isLegalBlocker(state, blockerId, cardId)) {
+    if (!CombatProcessor.isLegalBlocker(state, blockerId, cardId)) {
         log(`${blockerObj?.definition.name} cannot block ${card.definition.name} due to protection.`);
         return false;
     }
@@ -287,6 +297,9 @@ export class PlayerActionProcessor {
     state.combat.blockers.push({ blockerId, attackerId: cardId });
     log(`${state.battlefield.find(c => c.id === blockerId)?.definition.name} blocking ${card.definition.name}`);
     
+    const { TriggerProcessor } = require('../effects/TriggerProcessor');
+    TriggerProcessor.onEvent(state, { type: 'ON_BLOCK', targetId: blockerId, sourceId: blockerId, data: { object: blockerObj, attackerId: cardId } }, log);
+
     state.pendingAction!.sourceId = undefined;
     return true;
   }
@@ -302,6 +315,10 @@ export class PlayerActionProcessor {
     card.zone = Zone.Graveyard;
     player.graveyard.push(card);
     
+    const sourceId = state.pendingAction?.sourceId;
+    const { TriggerProcessor } = require('./../effects/TriggerProcessor');
+    TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card, sourceId } }, log);
+
     if (player.pendingDiscardCount > 0) {
       player.pendingDiscardCount--;
       log(`${player.name} discarded ${card.definition.name} (${player.pendingDiscardCount} more to go).`);
@@ -343,5 +360,23 @@ export class PlayerActionProcessor {
     if (CombatProcessor.needsOrdering(state)) {
       CombatProcessor.setupNextOrderingAction(state, log);
     }
+  }
+
+  /**
+   * CR 603: Resolve a specific target selection from the UI.
+   */
+  public static resolveTargeting(state: GameState, playerId: PlayerId, targetId: string, callbacks: PlayerActionCallbacks): boolean {
+    const { TargetingProcessor } = require('./TargetingProcessor');
+    return TargetingProcessor.resolveInteractiveTargeting(
+        state,
+        playerId,
+        targetId,
+        (m: string) => callbacks.log(m),
+        {
+            ...callbacks,
+            resetPriorityToActivePlayer: () => callbacks.resetPriorityToActivePlayer(),
+            finaliseTargeting: (p: PlayerId, t: string[]) => TargetingProcessor.finaliseTargeting(state, p, t, callbacks)
+        }
+    );
   }
 }

@@ -9,7 +9,6 @@ export * from './actions/SpellProcessor';
 export * from './actions/ChoiceProcessor';
 export * from './magic/ManaProcessor';
 export * from './magic/CostProcessor';
-export * from './state/ValidationProcessor';
 export * from './state/StateBasedActionsProcessor';
 export * from './state/LayerProcessor';
 export * from './effects/EffectProcessor';

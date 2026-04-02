@@ -1,6 +1,5 @@
 import { GameState, PlayerId, Zone } from '@shared/engine_types';
 import { M21_LOGIC } from '../../data/m21_logic';
-import { ValidationProcessor } from '../state/ValidationProcessor';
 
 /**
  * Handles interactive player choices (Targeting, Modal Choices)
@@ -82,6 +81,7 @@ export class ChoiceProcessor {
 
     const obj = state.battlefield.find(o => o.id === sourceId);
     if (obj && obj.definition.types.includes('Planeswalker')) {
+      const { TargetingProcessor } = require('./TargetingProcessor');
       const abilityIndex = choice.value;
       const ability = M21_LOGIC[obj.definition.name].abilities[abilityIndex];
 
@@ -90,7 +90,7 @@ export class ChoiceProcessor {
          const legalTargetIds = [
             ...Object.keys(state.players),
             ...state.battlefield.map(o => o.id)
-         ].filter(tid => ValidationProcessor.isLegalTarget(state, sourceId, tid, targetDef));
+         ].filter(tid => TargetingProcessor.isLegalTarget(state, sourceId, tid, targetDef));
             
          if (legalTargetIds.length === 0) {
               if (targetDef.optional) {
@@ -178,15 +178,32 @@ export class ChoiceProcessor {
         
         // Advance currentCtx to parent before call (in case resolveEffects sets a new suspension)
         currentCtx = parentCtx; 
-        EffectProcessor.resolveEffects(state, effs, sourceId, parentTargets, log, nextIdx, stackObj, parentCtx);
-    }
-
-        if (!state.pendingAction) {
-           engine.resetPriorityToActivePlayer(); 
-        } else {
-           state.priorityPlayerId = (state as any).pendingAction.playerId || null;
+        const completed = EffectProcessor.resolveEffects(state, effs, sourceId, parentTargets, log, nextIdx, stackObj, parentCtx);
+        
+        // Ensure the source stack object's state matches the resumption point
+        if (stackObj && !completed && state.pendingAction) {
+           stackObj.data = {
+              ...stackObj.data,
+              nextEffectIndex: (state.pendingAction as any).data.nextEffectIndex
+           };
         }
-        return true;
+
+        // If the entire stack object is now finished, remove it from the stack
+        if (completed && stackObj) {
+            const index = state.stack.indexOf(stackObj);
+            if (index !== -1) {
+                state.stack.splice(index, 1);
+                log(`[STACK] Removed completed trigger for ${sourceId} from stack.`);
+            }
+        }
+    }
+    
+    if (!state.pendingAction) {
+       engine.resetPriorityToActivePlayer(); 
+    } else {
+       state.priorityPlayerId = (state as any).pendingAction.playerId || null;
+    }
+    return true;
     }
 
     state.pendingAction = undefined;
@@ -204,98 +221,7 @@ export class ChoiceProcessor {
         finaliseTargeting: (p: PlayerId, targets: string[]) => boolean;
     }
   ): boolean {
-    if (state.pendingAction?.type !== 'TARGETING' || state.pendingAction.playerId !== playerId) return false;
-
-    const actionData = state.pendingAction.data;
-    const isOptional = actionData?.optional;
-    const isSkipping = targetId === 'skip' || targetId === 'none';
-    const isUndoing = targetId === 'undo' || targetId === 'back';
-    const targetDef = actionData?.targetDefinition;
-    const targetCount = targetDef?.count || 1;
-    
-    actionData.selectedTargets = actionData.selectedTargets || [];
-
-    if (isUndoing) {
-        if (actionData.selectedTargets.length > 0) {
-            const removed = actionData.selectedTargets.pop();
-            log(`Removed last target: ${removed}`);
-            return true;
-        } else {
-            log(`Targeting cancelled.`);
-            const sourceId = state.pendingAction.sourceId;
-            const stackId = actionData.stackId;
-            const stackObj = actionData.stackObj; // Get the hidden stack object
-
-            if (stackObj) {
-                if (stackObj.card) {
-                    // Move card back to hand if it was a spell
-                    const player = state.players[stackObj.controllerId];
-                    if (player) {
-                        stackObj.card.zone = Zone.Hand;
-                        player.hand.push(stackObj.card);
-                        
-                        // Refund mana
-                        const costStr = stackObj.card.definition.manaCost;
-                        const { ManaProcessor } = require('../magic/ManaProcessor');
-                        ManaProcessor.refundManaCost(player, costStr);
-                        log(`Refunding mana for ${stackObj.card.definition.name}: ${costStr}`);
-                    }
-                }
-            }
-            
-            // Clean up stack effectively (though it shouldn't be in state.stack if hidden)
-            state.stack = state.stack.filter(s => s.id !== stackId);
-
-            const sourceOnField = state.battlefield.find(o => o.id === sourceId);
-            if (sourceOnField) {
-                if (sourceOnField.abilitiesUsedThisTurn > 0) sourceOnField.abilitiesUsedThisTurn--;
-                
-                // Refund Loyalty if applicable
-                const abilityIndex = actionData.abilityIndex;
-                if (abilityIndex !== undefined) {
-                    const { M21_LOGIC } = require('../../data/m21_logic');
-                    const logic = M21_LOGIC[sourceOnField.definition.name];
-                    const ability = logic?.abilities[abilityIndex];
-                    const lCost = ability?.costs?.find((c: any) => c.type === 'Loyalty')?.value;
-                    if (lCost !== undefined) {
-                        sourceOnField.counters['Loyalty'] = (sourceOnField.counters['Loyalty'] || 0) - lCost;
-                        log(`Refunding loyalty for ${sourceOnField.definition.name}: ${lCost > 0 ? '+' : ''}${lCost}`);
-                    }
-                }
-            }
-
-            state.pendingAction = undefined;
-            state.priorityPlayerId = playerId; 
-            return true;
-        }
-    }
-
-    if (isSkipping) {
-        if (!isOptional && actionData.selectedTargets.length === 0) {
-            log(`Targeting is required, cannot skip.`);
-            return false;
-        }
-        return engine.finaliseTargeting(playerId, actionData.selectedTargets);
-    }
-
-    const legalTargetIds = actionData.legalTargetIds || [];
-    if (!legalTargetIds.includes(targetId)) {
-        log(`Invalid target selected.`);
-        return false;
-    }
-
-    if (actionData.selectedTargets.includes(targetId)) {
-        log(`Target already selected.`);
-        return false;
-    }
-
-    actionData.selectedTargets.push(targetId);
-    log(`Target ${actionData.selectedTargets.length}/${targetCount} selected: ${targetId}`);
-
-    if (actionData.selectedTargets.length >= targetCount) {
-        return engine.finaliseTargeting(playerId, actionData.selectedTargets);
-    }
-
-    return true;
+    const { TargetingProcessor } = require('./TargetingProcessor');
+    return TargetingProcessor.resolveInteractiveTargeting(state, playerId, targetId, log, engine);
   }
 }

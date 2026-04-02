@@ -1,39 +1,54 @@
-import { PlayerState } from '@shared/engine_types';
+import { PlayerState, GameState } from '@shared/engine_types';
 
 /**
  * Handle Mana Pool, Cost Analysis, and Payments (Chapters 106 & 117)
  */
 export class ManaProcessor {
 
+  /**
+   * CR 106.4: Mana pools empty at the end of each step and phase.
+   */
+  public static emptyAllManaPools(state: GameState) {
+    for (const player of Object.values(state.players) as PlayerState[]) {
+      player.manaPool = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
+    }
+  }
+
   public static canPayManaCost(player: PlayerState, costStr: string): boolean {
     if (!costStr || player.manaCheat) return true;
     const requirements = this.parseManaCost(costStr);
     
-    // Check colored mana first (Rule 117.1)
-    for (const [color, amount] of Object.entries(requirements.colored)) {
-      if ((player.manaPool[color as keyof typeof player.manaPool] || 0) < amount) return false;
+    // Check colored mana first (including hybrids)
+    for (const [symbol, amount] of Object.entries(requirements.colored)) {
+      if (symbol.includes('/')) {
+        const options = symbol.split('/');
+        // For simplicity, we check if the total available of all options is enough.
+        // This is a heuristic but works for most cases.
+        const totalAvailable = options.reduce((sum, opt) => {
+          if (opt === 'P') return sum; // Skip Phyrexians for pool check
+          return sum + (player.manaPool[opt as keyof typeof player.manaPool] || 0);
+        }, 0);
+        if (totalAvailable < amount) return false;
+      } else {
+        if ((player.manaPool[symbol as keyof typeof player.manaPool] || 0) < amount) return false;
+      }
     }
 
-    // Check generic/colorless remainder (Rule 107.4)
-    const totalFloating = Object.values(player.manaPool).reduce((a, b) => a + b, 0);
-    const totalRequired = Object.values(requirements.colored).reduce((a, b) => a + b, 0) + requirements.generic;
+    // Check generic/colorless remainder
+    const totalFloating = Object.values(player.manaPool).reduce((a, b: any) => a + b, 0);
+    const totalRequired = this.getManaValue(costStr);
     
     return totalFloating >= totalRequired;
   }
 
   /**
    * Fast estimation for auto-pass logic.
-   * Checks if total available mana (Pool + untapped lands) can pay for the cost.
-   * Assumes colored requirements can be met if total amount is high enough (approximation).
    */
   public static canPayWithTotal(player: PlayerState, battlefield: any[], costStr: string): boolean {
     if (!costStr || player.manaCheat) return true;
     const requirements = this.parseManaCost(costStr);
     
-    // 1. Calculate potential mana pool (Pool + untapped basic lands)
     const potential = { ...player.manaPool };
-    let totalPotentialCount = 0;
-
     battlefield.forEach(obj => {
       if (obj.controllerId === player.id && !obj.isTapped) {
         const types = (obj.definition.types || obj.definition.typeLine || obj.definition.type_line || "").toString().toLowerCase();
@@ -56,17 +71,20 @@ export class ManaProcessor {
       }
     });
 
-    totalPotentialCount = Object.values(potential).reduce((a, b: number) => a + b, 0);
+    let totalPotentialCount = Object.values(potential).reduce((a, b: number) => a + b, 0);
 
-    // 2. Check colored requirements strictly
-    for (const [color, requiredAmount] of Object.entries(requirements.colored)) {
-      if ((potential[color as keyof typeof potential] || 0) < (requiredAmount as number)) {
-        return false; 
+    for (const [symbol, requiredAmount] of Object.entries(requirements.colored)) {
+      const valPerSymbol = this.getManaValue(`{${symbol}}`);
+      if (symbol.includes('/')) {
+        const options = symbol.split('/');
+        const totalAvailable = options.reduce((sum, opt) => sum + ((potential as any)[opt] || 0), 0);
+        if (totalAvailable < (requiredAmount as number)) return false;
+      } else {
+        if (((potential as any)[symbol] || 0) < (requiredAmount as number)) return false;
       }
-      totalPotentialCount -= (requiredAmount as number);
+      totalPotentialCount -= (requiredAmount as number) * valPerSymbol;
     }
 
-    // 3. Check generic requirement against remaining mana
     return totalPotentialCount >= requirements.generic;
   }
 
@@ -74,12 +92,24 @@ export class ManaProcessor {
     if (!costStr || player.manaCheat) return;
     const requirements = this.parseManaCost(costStr);
 
-    // Rule 117.3c: Colored mana is spent first
-    for (const [color, amount] of Object.entries(requirements.colored)) {
-      player.manaPool[color as keyof typeof player.manaPool] -= amount;
+    // Deduct colored/hybrid mana first
+    for (const [symbol, amount] of Object.entries(requirements.colored)) {
+      if (symbol.includes('/')) {
+        let left = amount;
+        const options = symbol.split('/');
+        // Greedy deduction: prefer options that are currently in the pool
+        for (const opt of options) {
+          if (opt === 'P') continue; // Life payment not handled here
+          const spendable = Math.min(left, player.manaPool[opt as keyof typeof player.manaPool] || 0);
+          player.manaPool[opt as keyof typeof player.manaPool] -= spendable;
+          left -= spendable;
+          if (left <= 0) break;
+        }
+      } else {
+        player.manaPool[symbol as keyof typeof player.manaPool] -= amount;
+      }
     }
 
-    // Rule 117.4: Generic costs can be satisfied by any type
     let genericLeft = requirements.generic;
     const priority: (keyof typeof player.manaPool)[] = ['C', 'W', 'U', 'B', 'R', 'G'];
     for (const color of priority) {
@@ -94,12 +124,15 @@ export class ManaProcessor {
     if (!costStr || player.manaCheat) return;
     const requirements = this.parseManaCost(costStr);
 
-    // Refund colored mana
-    for (const [color, amount] of Object.entries(requirements.colored)) {
-      player.manaPool[color as keyof typeof player.manaPool] += amount;
+    for (const [symbol, amount] of Object.entries(requirements.colored)) {
+      if (symbol.includes('/')) {
+         // Default refund to first option
+         const first = symbol.split('/')[0];
+         if (first !== 'P') (player.manaPool as any)[first] += amount;
+      } else {
+        player.manaPool[symbol as keyof typeof player.manaPool] += amount;
+      }
     }
-
-    // Refund generic mana as colorless by default
     player.manaPool['C'] += requirements.generic;
   }
 
@@ -111,8 +144,11 @@ export class ManaProcessor {
     // Rule 107.4: Mana symbols are enclosed in braces
     const matches = costStr.match(/\{([^}]+)\}/g) || [];
     for (const m of matches) {
-      const symbol = m.replace(/\{|\}/g, '');
+      let symbol = m.replace(/\{|\}/g, '').toUpperCase();
       if (['W', 'U', 'B', 'R', 'G', 'C'].includes(symbol)) {
+        colored[symbol] = (colored[symbol] || 0) + 1;
+      } else if (symbol.includes('/')) {
+        // Hybrid mana
         colored[symbol] = (colored[symbol] || 0) + 1;
       } else if (!isNaN(parseInt(symbol, 10))) {
         generic += parseInt(symbol, 10);
@@ -122,15 +158,22 @@ export class ManaProcessor {
     return { colored, generic };
   }
 
-  /**
-   * Rule 202.3: The mana value of an object is the total amount of mana in its mana cost, regardless of color.
-   */
   public static getManaValue(costStr: string): number {
     if (!costStr) return 0;
     const { colored, generic } = this.parseManaCost(costStr);
-    const coloredTotal = Object.values(colored).reduce((a, b) => a + b, 0);
+    
+    let coloredTotal = 0;
+    for (const [symbol, count] of Object.entries(colored)) {
+        if (symbol.startsWith('2/')) {
+            // Rule 107.4b: Monocolored hybrid mana value is 2
+            coloredTotal += (count * 2);
+        } else {
+            coloredTotal += count;
+        }
+    }
     return coloredTotal + generic;
   }
+
 
   public static autoTapLandsForCost(state: any, playerId: string, costStr: string, log: (m: string) => void, tapForManaCallback: (p: string, c: string) => void) {
     const player = state.players[playerId];

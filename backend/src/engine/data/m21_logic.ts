@@ -474,9 +474,11 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
 
     "Deathless Knight": {
         ...metadata["Deathless Knight"],
+        keywords: ["Haste"],
         abilities: [
             {
                 id: "deathless_knight_trigger",
+
                 type: AbilityType.Triggered,
                 triggerEvent: 'ON_LIFE_GAIN',
                 activeZone: ZoneRequirement.Graveyard,
@@ -580,7 +582,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                         restrictions: ['Instant', 'Sorcery'],
                         optional: true,
                         effects: [
-                            { type: 'ReturnToHand', targetMapping: 'TARGET_1' }
+                            { type: 'ReturnToHand', targetMapping: 'SELECTED_CARD' }
                         ]
                     },
                     { type: 'Exile', targetMapping: 'SELF' }
@@ -604,11 +606,10 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                     { 
                         type: 'SearchLibrary', 
                         reveal: true,
-                        targetDefinition: { 
-                            type: 'Card', 
-                            count: 1, 
-                            restrictions: ['Creature', 'CMC>=6'] 
-                        } 
+                        optional: true,
+                        toZone: Zone.Hand,
+                        restrictions: ['Creature', 'CMC>=6'],
+                        targetMapping: 'CONTROLLER' 
                     }
                 ]
             }
@@ -844,16 +845,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
 
     "Mistral Singer": {
         ...metadata["Mistral Singer"],
-        abilities: [
-            {
-                id: "mistral_singer_prowess",
-                type: AbilityType.Triggered,
-                triggerEvent: 'ON_CAST_NON_CREATURE',
-                activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
-                effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', powerModifier: 1, toughnessModifier: 1, layer: 7, targetMapping: 'SELF' }]
-            }
-        ]
+        abilities: []
     },
 
     "Scavenging Ooze": {
@@ -1052,14 +1044,6 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 ]
             },
             {
-                id: "stormwing_prowess",
-                type: AbilityType.Triggered,
-                triggerEvent: 'ON_CAST_NON_CREATURE',
-                activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
-                effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', powerModifier: 1, toughnessModifier: 1, layer: 7, targetMapping: 'SELF' }]
-            },
-            {
                 id: "stormwing_etb_scry",
                 type: AbilityType.Triggered,
                 triggerEvent: 'ON_ETB',
@@ -1246,8 +1230,10 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 type: AbilityType.Triggered,
                 triggerEvent: 'ON_ATTACK_OR_BLOCK',
                 activeZone: ZoneRequirement.Battlefield,
+                triggerCondition: (state: any, event: any, source: any) => event.sourceId === source.sourceId,
                 effects: [{
                     type: 'Choice',
+                    label: 'Choose a mode for Elder Gargaroth:',
                     choices: [
                         { label: 'Create 3/3 Beast', effects: [{ type: 'CreateToken', tokenBlueprint: { name: 'Beast', power: '3', toughness: '3', colors: ['G'], types: ['Creature'], subtypes: ['Beast'] }, targetMapping: 'CONTROLLER' }] },
                         { label: 'Gain 3 life', effects: [{ type: 'GainLife', amount: 3, targetMapping: 'CONTROLLER' }] },
@@ -2301,7 +2287,24 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 type: AbilityType.Triggered,
                 triggerEvent: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                effects: [{ type: 'SearchLibrary', filter: { name: 'Alpine Watchdog' }, targetMapping: 'HAND' }, { type: 'SearchLibrary', filter: { name: 'Igneous Cur' }, targetMapping: 'HAND' }]
+                effects: [
+                    { 
+                        type: 'SearchLibrary', 
+                        optional: true,
+                        reveal: true,
+                        restrictions: [{ nameEquals: 'Alpine Watchdog' }], 
+                        toZone: Zone.Hand,
+                        targetMapping: 'CONTROLLER' 
+                    }, 
+                    { 
+                        type: 'SearchLibrary', 
+                        optional: true,
+                        reveal: true,
+                        restrictions: [{ nameEquals: 'Igneous Cur' }], 
+                        toZone: Zone.Hand,
+                        targetMapping: 'CONTROLLER' 
+                    }
+                ]
             },
             {
                 id: "alpine_houndmaster_attack",

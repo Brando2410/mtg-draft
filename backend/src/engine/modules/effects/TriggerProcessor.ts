@@ -1,5 +1,4 @@
 import { GameState, GameEvent, TriggeredAbility, PlayerId, GameObjectId, Zone, ZoneRequirement, AbilityType } from '@shared/engine_types';
-import { ValidationProcessor } from '../state/ValidationProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
 
 /**
@@ -24,7 +23,9 @@ export class TriggerProcessor {
       const tEvents = Array.isArray(tEvent) ? tEvent : [tEvent];
 
       const matchesPrimary = tEvents.some(type => 
-        type === event.type || (type === 'ON_ETB_OTHER' && event.type === 'ON_ETB')
+        type === event.type || 
+        (type === 'ON_ETB_OTHER' && event.type === 'ON_ETB') ||
+        (type === 'ON_ATTACK_OR_BLOCK' && (event.type === 'ON_ATTACK' || event.type === 'ON_BLOCK'))
       );
 
       if (!matchesPrimary) return false;
@@ -181,10 +182,11 @@ export class TriggerProcessor {
     sourceName: string, 
     log: (m: string) => void
   ) {
+    const { TargetingProcessor } = require('../actions/TargetingProcessor');
     const legalTargetIds = [
         ...state.battlefield.map(o => o.id),
         ...Object.keys(state.players)
-    ].filter(tid => ValidationProcessor.isLegalTarget(state, trigger.sourceId, tid, targetDef));
+    ].filter(tid => TargetingProcessor.isLegalTarget(state, trigger.sourceId, tid, targetDef));
 
     if (legalTargetIds.length === 0) {
        // Rule 603.3d: If no legal targets can be chosen, it's removed from the stack unless optional.

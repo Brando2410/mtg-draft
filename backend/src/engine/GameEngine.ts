@@ -3,7 +3,7 @@ import { Card } from '@shared/types';
 import { StackResolver } from './modules';
 import { M21_LOGIC } from './data/m21_logic';
 import { ManaProcessor } from './modules/magic/ManaProcessor';
-import { GameSetupProcessor, PlayerActionProcessor, TurnProcessor, PriorityProcessor, StackProcessor, ActionProcessor, SpellProcessor, ChoiceProcessor, StateBasedActionsProcessor, CombatProcessor, ValidationProcessor, TriggerProcessor, LayerProcessor } from './modules';
+import { GameSetupProcessor, PlayerActionProcessor, PlayerActionCallbacks, TurnProcessor, PriorityProcessor, PriorityCallbacks, StackProcessor, ActionProcessor, SpellProcessor, ChoiceProcessor, StateBasedActionsProcessor, CombatProcessor, CombatCallbacks, TriggerProcessor, LayerProcessor, EffectProcessor } from './modules';
 
 /**
  * CENTRALIZED MTG RULE ENGINE (Orchestrator)
@@ -28,19 +28,19 @@ export class GameEngine {
     this.playerOrder = players;
     this.decks = decks;
     this.names = names;
-    
+
     // CR 100: Create the initial monolithic GameState
     this.state = {
-      players: {}, 
-      activePlayerId: players[0],    
-      priorityPlayerId: players[0],  
+      players: {},
+      activePlayerId: players[0],
+      priorityPlayerId: players[0],
       currentPhase: Phase.Beginning,
       currentStep: Step.Untap,
       turnNumber: 1,
       battlefield: [],
       exile: [],
       stack: [],
-      ruleRegistry: { 
+      ruleRegistry: {
         continuousEffects: [],
         activatedAbilities: [],
         triggeredAbilities: [],
@@ -51,6 +51,7 @@ export class GameEngine {
       emblems: [],
       consecutivePasses: 0,
       logs: ['Match Start Initialization...'],
+      playerOrder: players,
       turnState: {
         permanentReturnedToHandThisTurn: false,
         playersWithPermanentReturnedThisTurn: {},
@@ -65,7 +66,7 @@ export class GameEngine {
         instantOrSorceryCastThisTurn: {}
       }
     };
-    
+
     GameSetupProcessor.initializePlayers(this.state, players, names, decks);
     this.resolver = new StackResolver(this.state);
   }
@@ -76,7 +77,7 @@ export class GameEngine {
   private log(message: string) {
     const formattedMessage = `> ${message}`;
     const newLogs = [...(this.state.logs || []), formattedMessage];
-    this.state.logs = newLogs.slice(-40); 
+    this.state.logs = newLogs.slice(-40);
     console.log(`[GameEngine] ${message}`);
   }
 
@@ -92,7 +93,7 @@ export class GameEngine {
    */
   public startGame() {
     for (const playerId of this.playerOrder) {
-      this.shuffleLibrary(playerId); 
+      this.shuffleLibrary(playerId);
       for (let i = 0; i < 7; i++) {
         this.drawCard(playerId);
       }
@@ -113,7 +114,10 @@ export class GameEngine {
    * @returns false if the player loses due to deck-out (CR 704.5b)
    */
   public drawCard(playerId: PlayerId): boolean {
-    return GameSetupProcessor.drawCard(this.state, playerId, (m) => this.log(m));
+    const player = this.state.players[playerId];
+    if (!player || player.library.length === 0) return false;
+    EffectProcessor.handleDrawCards(this.state, [playerId], 1, (m) => this.log(m));
+    return true;
   }
 
   // --- Player Actions (Rule 117) ---
@@ -162,24 +166,7 @@ export class GameEngine {
    * CR 508.2: Confirming the Attacker Declaration Action
    */
   public confirmAttackers(playerId: string) {
-    if (this.state.pendingAction?.type !== 'DECLARE_ATTACKERS' || this.state.pendingAction.playerId !== playerId) return;
-    
-    this.log(`${this.getPlayerName(playerId)} confirmed attackers.`);
-    
-    const attackers = this.state.combat?.attackers || [];
-    this.state.turnState.creaturesAttackedThisTurn += attackers.length;
-
-    // Rule 508.1: "Whenever an opponent attacks..." (Mangara support)
-    if (attackers.length > 0) {
-        TriggerProcessor.onEvent(this.state, {
-            type: 'ON_ATTACKERS_DECLARED',
-            playerId: playerId as PlayerId,
-            data: { attackers }
-        }, (m: string) => this.log(m));
-    }
-
-    this.state.pendingAction = undefined;
-    this.resetPriorityToActivePlayer();
+    CombatProcessor.confirmAttackers(this.state, playerId as PlayerId, this.getCombatCallbacks());
   }
 
   /**
@@ -193,26 +180,7 @@ export class GameEngine {
    * CR 509.2: Confirming the Blocker Declaration Action
    */
   public confirmBlockers(playerId: string) {
-    if (this.state.pendingAction?.type !== 'DECLARE_BLOCKERS' || this.state.pendingAction.playerId !== playerId) return;
-    
-    // CR 509.1: Validate global block requirements (e.g. Menace)
-    const validation = ValidationProcessor.validateAllBlockers(this.state);
-    if (!validation.isValid) {
-        this.log(`[BLOCK] ERR: ${validation.error}`);
-        // Keep in block declaration mode until fixed
-        return;
-    }
-
-    this.log(`${this.getPlayerName(playerId)} confirmed blockers.`);
-    this.state.pendingAction = undefined;
-    
-    // CR 509.2 / 509.3: If multiple blockers/attackers are involved, we need damage assignment order first.
-    if (CombatProcessor.needsOrdering(this.state)) {
-        CombatProcessor.setupNextOrderingAction(this.state, (m) => this.log(m));
-    } else {
-        // CR 509.4: Give priority window in Declare Blockers step.
-        this.resetPriorityToActivePlayer();
-    }
+    CombatProcessor.confirmBlockers(this.state, playerId as PlayerId, this.getCombatCallbacks());
   }
 
   /**
@@ -221,9 +189,9 @@ export class GameEngine {
   public discardCard(playerId: PlayerId, cardInstanceId: string): boolean {
     const res = PlayerActionProcessor.discardCard(this.state, playerId, cardInstanceId, (m: string) => this.log(m));
     if (res.finished) {
-       // CR 608.2: If discarding was part of a spell resolution, we must resume resolution immediately.
-       // resolveTopOrAdvanceStep handles both resuming the stack and advancing steps (like Cleanup).
-       this.resolveTopOrAdvanceStep();
+      // CR 608.2: If discarding was part of a spell resolution, we must resume resolution immediately.
+      // resolveTopOrAdvanceStep handles both resuming the stack and advancing steps (like Cleanup).
+      this.resolveTopOrAdvanceStep();
     }
     return res.success;
   }
@@ -234,18 +202,18 @@ export class GameEngine {
    */
   public playCard(playerId: PlayerId, cardInstanceId: string, declaredTargets: string[] = [], bypassTargeting: boolean = false): boolean {
     return SpellProcessor.playCard(
-        this.state,
-        playerId,
-        cardInstanceId,
-        declaredTargets,
-        (m) => this.log(m),
-        {
-            tapForMana: (p, c) => this.tapForMana(p, c),
-            passPriority: (p) => this.passPriority(p),
-            checkAutoPass: (p) => this.checkAutoPass(p),
-            checkStateBasedActions: () => this.checkStateBasedActions()
-        },
-        bypassTargeting
+      this.state,
+      playerId,
+      cardInstanceId,
+      declaredTargets,
+      (m) => this.log(m),
+      {
+        tapForMana: (p, c) => this.tapForMana(p, c),
+        passPriority: (p) => this.passPriority(p),
+        checkAutoPass: (p) => this.checkAutoPass(p),
+        checkStateBasedActions: () => this.checkStateBasedActions()
+      },
+      bypassTargeting
     );
   }
 
@@ -255,17 +223,17 @@ export class GameEngine {
    */
   public activateAbility(playerId: PlayerId, cardId: string, abilityIndex: number, declaredTargets: string[] = [], bypassTargeting: boolean = false): boolean {
     return SpellProcessor.activateAbility(
-        this.state,
-        playerId,
-        cardId,
-        abilityIndex,
-        declaredTargets,
-        (m) => this.log(m),
-        {
-            passPriority: (p) => this.passPriority(p),
-            checkAutoPass: (p) => this.checkAutoPass(p)
-        },
-        bypassTargeting
+      this.state,
+      playerId,
+      cardId,
+      abilityIndex,
+      declaredTargets,
+      (m) => this.log(m),
+      {
+        passPriority: (p) => this.passPriority(p),
+        checkAutoPass: (p) => this.checkAutoPass(p)
+      },
+      bypassTargeting
     );
   }
 
@@ -276,46 +244,7 @@ export class GameEngine {
    * Handles the passing of priority and automatic resolution of the stack.
    */
   public passPriority(playerId: PlayerId, isAuto = false) {
-    // 1. Intercept for special actions
-    if (this.state.pendingAction?.playerId === playerId) {
-      if (this.state.pendingAction.type === 'DECLARE_ATTACKERS') {
-        this.confirmAttackers(playerId);
-        return;
-      }
-      if (this.state.pendingAction.type === 'DECLARE_BLOCKERS') {
-        this.confirmBlockers(playerId);
-        return;
-      }
-    }
-
-    if (String(this.state.priorityPlayerId) !== String(playerId)) {
-      console.log(`[ENGINE] passPriority IGNORED: current priority is ${this.state.priorityPlayerId}, but ${playerId} tried to pass.`);
-      return;
-    }
-    
-    // CR 117.1: A player must resolve pending mandatory actions before passing
-    if (this.state.pendingAction && String(this.state.pendingAction.playerId) === String(playerId)) {
-      console.log(`[ENGINE] passPriority BLOCKED: ${playerId} has pending ${this.state.pendingAction.type}.`);
-      this.log(`Invalid Action: Player must resolve pending ${this.state.pendingAction.type} first.`);
-      return;
-    }
-
-    const player = this.state.players[playerId];
-    if (player && player.pendingDiscardCount > 0) {
-      if (!isAuto) this.log(`${this.getPlayerName(playerId)} must finish discarding first.`);
-      return;
-    }
-
-    this.state.consecutivePasses++;
-    
-    const prefix = isAuto ? '[Auto-Pass] ' : '[Manual-Pass] ';
-    this.log(`${prefix}${this.getPlayerName(playerId)} passed. (${this.state.consecutivePasses}/${this.playerOrder.length} passes)`);
-
-    if (this.state.consecutivePasses >= this.playerOrder.length) {
-      this.resolveTopOrAdvanceStep();
-    } else {
-      this.givePriorityToNextPlayer();
-    }
+    PriorityProcessor.passPriority(this.state, playerId, this.getPriorityCallbacks(), isAuto);
   }
 
   private resolveTopOrAdvanceStep() {
@@ -323,29 +252,39 @@ export class GameEngine {
       const objectToResolve = this.state.stack.pop();
       if (objectToResolve) {
         this.state.consecutivePasses = 0; // CR 117.4: Resolution or stack changes reset pass count
-        
+        if (this.state.stack.length > 0) {
+          console.log(`[DEBUG] STACK CONTENTS:`, this.state.stack.map(s => ({ id: s.id, name: (s as any).name || s.card?.definition.name, idx: (s as any).data?.nextEffectIndex })));
+        }
+
         this.log(`--------------------------------------------------`);
-        this.log(`[RESOLVING] >>> ${objectToResolve.card?.definition.name || 'Effect'} is resolving <<<`);
+        const objectName = (objectToResolve as any).name || objectToResolve.card?.definition.name || 'Effect';
+        this.log(`[RESOLVING] >>> ${objectName} is resolving <<<`);
+
+        // --- DIAGNOSTIC TRACING ---
+        if (this.state.stack.length > 5) {
+          const { EffectProcessor } = require('./modules/effects/EffectProcessor');
+          EffectProcessor.troubleshoot(this.state, objectToResolve.sourceId);
+        }
         const effects = StackProcessor.getEffectsForResolution(this.state, objectToResolve);
         const startIndex = (objectToResolve as any).data?.nextEffectIndex || 0;
         const completed = this.resolver.resolveObject(objectToResolve, effects, startIndex);
-        
+
         if (!completed) {
-            // Suspended resolution. Push the object back to the stack.
-            if (!objectToResolve.data) objectToResolve.data = {};
-            objectToResolve.data.nextEffectIndex = this.state.pendingAction?.data?.nextEffectIndex || 0;
-            this.state.stack.push(objectToResolve);
-            
-            // During suspended resolution, priority is given to the player who must act
-            this.state.priorityPlayerId = this.state.pendingAction?.playerId || null;
-            return;
+          // Suspended resolution. Push the object back to the stack.
+          if (!objectToResolve.data) objectToResolve.data = {};
+          objectToResolve.data.nextEffectIndex = this.state.pendingAction?.data?.nextEffectIndex || 0;
+          this.state.stack.push(objectToResolve);
+
+          // During suspended resolution, priority is given to the player who must act
+          this.state.priorityPlayerId = this.state.pendingAction?.playerId || null;
+          return;
         }
-        
+
         const stackRemaining = this.state.stack.map(s => s.card?.definition.name || 'Effect').join(', ');
         if (stackRemaining) {
-            this.log(`[STACK-LEFT] Still on stack: [${stackRemaining}]`);
+          this.log(`[STACK-LEFT] Still on stack: [${stackRemaining}]`);
         } else {
-            this.log(`[STACK-EMPTY] The stack is now empty.`);
+          this.log(`[STACK-EMPTY] The stack is now empty.`);
         }
         this.log(`--------------------------------------------------`);
         this.resetPriorityToActivePlayer();
@@ -360,12 +299,12 @@ export class GameEngine {
     const prevStep = this.state.currentStep;
 
     let next = TurnProcessor.getNextStep(this.state);
-    
+
     // 3. Skip First Strike Damage if no First Strike scorers (Rule 510.4)
     if (next.step === Step.FirstStrikeDamage) {
-        if (!CombatProcessor.hasFirstStrikeStep(this.state)) {
-            next = { phase: Phase.Combat, step: Step.CombatDamage, turnEnded: false };
-        }
+      if (!CombatProcessor.hasFirstStrikeStep(this.state)) {
+        next = { phase: Phase.Combat, step: Step.CombatDamage, turnEnded: false };
+      }
     }
 
     if (next.turnEnded) {
@@ -378,7 +317,7 @@ export class GameEngine {
 
     this.state.currentPhase = next.phase;
     this.state.currentStep = next.step;
-    this.state.consecutivePasses = 0; 
+    this.state.consecutivePasses = 0;
     this.log(`[PHASE] >>> Entering ${this.state.currentPhase}: ${this.state.currentStep} <<<`);
 
     // CR 603.6: Phase/Step Transition Triggers
@@ -386,31 +325,31 @@ export class GameEngine {
     const stepName = this.state.currentStep.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
 
     // Fire generic event for the step (e.g., ON_END_STEP, ON_UPKEEP_STEP)
-    TriggerProcessor.onEvent(this.state, { 
-        type: `ON_${stepName}_STEP`, 
-        playerId: this.state.activePlayerId,
-        data: { phase: this.state.currentPhase, step: this.state.currentStep } 
+    TriggerProcessor.onEvent(this.state, {
+      type: `ON_${stepName}_STEP`,
+      playerId: this.state.activePlayerId,
+      data: { phase: this.state.currentPhase, step: this.state.currentStep }
     }, (m) => this.log(m));
 
     // Fire generic event for the phase (e.g., ON_PRE_COMBAT_MAIN_PHASE_START)
-    TriggerProcessor.onEvent(this.state, { 
-        type: `ON_${phaseName}_PHASE_START`, 
-        playerId: this.state.activePlayerId,
-        data: { phase: this.state.currentPhase, step: this.state.currentStep } 
+    TriggerProcessor.onEvent(this.state, {
+      type: `ON_${phaseName}_PHASE_START`,
+      playerId: this.state.activePlayerId,
+      data: { phase: this.state.currentPhase, step: this.state.currentStep }
     }, (m) => this.log(m));
 
-    this.emptyAllManaPools();
+    ManaProcessor.emptyAllManaPools(this.state);
     this.handleStepEntryRules();
-    
+
     if (this.state.pendingAction) {
-       this.log(`[WAITING] Pending Action: ${this.state.pendingAction.type} for ${this.getPlayerName(this.state.pendingAction.playerId)}`);
-       return;
+      this.log(`[WAITING] Pending Action: ${this.state.pendingAction.type} for ${this.getPlayerName(this.state.pendingAction.playerId)}`);
+      return;
     }
 
     if (this.state.currentStep === Step.Untap || this.state.currentStep === Step.Cleanup) {
       this.log(`[FLOW] Auto-advancing from administrative step ${this.state.currentStep}`);
-      this.state.priorityPlayerId = null; 
-      this.advanceStep(); 
+      this.state.priorityPlayerId = null;
+      this.advanceStep();
     } else {
       this.resetPriorityToActivePlayer();
     }
@@ -423,75 +362,61 @@ export class GameEngine {
     if (this.state.players[this.state.activePlayerId]) {
       this.state.players[this.state.activePlayerId].hasPlayedLandThisTurn = false;
     }
-    
+
     // Rule 606.3: Reset activated ability usage for all permanents
     this.state.battlefield.forEach(obj => obj.abilitiesUsedThisTurn = 0);
 
     // CR 500: Reset turn-wide logic tracking
     this.state.turnState = {
-        permanentReturnedToHandThisTurn: false,
-        playersWithPermanentReturnedThisTurn: {},
-        noncombatDamageDealtToOpponents: 0,
-        creaturesAttackedThisTurn: 0,
-        creaturesDiedThisTurn: 0,
-        lastDamageAmount: 0,
-        lastLifeGainedAmount: 0,
-        lastCardsDrawnAmount: 0,
-        cardsDrawnThisTurn: {},
-        spellsCastThisTurn: {},
-        instantOrSorceryCastThisTurn: {}
+      permanentReturnedToHandThisTurn: false,
+      playersWithPermanentReturnedThisTurn: {},
+      noncombatDamageDealtToOpponents: 0,
+      creaturesAttackedThisTurn: 0,
+      creaturesDiedThisTurn: 0,
+      lastDamageAmount: 0,
+      lastLifeGainedAmount: 0,
+      lastCardsDrawnAmount: 0,
+      cardsDrawnThisTurn: {},
+      spellsCastThisTurn: {},
+      instantOrSorceryCastThisTurn: {}
     };
   }
 
   private givePriorityToNextPlayer() {
-    if (!this.state.priorityPlayerId) return;
-    const currentIndex = this.playerOrder.indexOf(this.state.priorityPlayerId);
-    const nextIndex = (currentIndex + 1) % this.playerOrder.length;
-    this.checkStateBasedActions();
-    this.state.priorityPlayerId = this.playerOrder[nextIndex];
-    this.log(`[PRIORITY] Shifted to ${this.getPlayerName(this.state.priorityPlayerId)}.`);
-    
-    this.checkAutoPass(this.state.priorityPlayerId);
+    PriorityProcessor.givePriorityToNextPlayer(this.state, this.getPriorityCallbacks());
   }
 
   private resetPriorityToActivePlayer() {
-    this.state.consecutivePasses = 0;
-    this.checkStateBasedActions();
-    
-    // Only set priority to active player if an SBA or trigger didn't just set up a mandatory action.
-    if (!this.state.pendingAction) {
-      this.state.priorityPlayerId = this.state.activePlayerId;
-    }
-    
-    if (this.state.priorityPlayerId) {
-       this.checkAutoPass(this.state.priorityPlayerId);
-    }
+    PriorityProcessor.resetPriorityToActivePlayer(this.state, this.getPriorityCallbacks());
   }
 
   private checkAutoPass(playerId: PlayerId) {
-    if (!this.state.priorityPlayerId || String(this.state.priorityPlayerId) !== String(playerId)) return;
+    PriorityProcessor.checkAutoPass(this.state, playerId, this.getPriorityCallbacks());
+  }
 
-    const player = this.state.players[playerId];
-    const canAct = this.canPlayerTakeAnyAction(playerId);
+  private getPriorityCallbacks(): PriorityCallbacks {
+    return {
+      log: (m: string) => this.log(m),
+      getPlayerName: (id: PlayerId) => this.getPlayerName(id),
+      resolveTopOrAdvanceStep: () => this.resolveTopOrAdvanceStep(),
+      confirmAttackers: (pId: string) => this.confirmAttackers(pId),
+      confirmBlockers: (pId: string) => this.confirmBlockers(pId),
+      checkStateBasedActions: () => this.checkStateBasedActions()
+    };
+  }
 
-    if (player && !player.fullControl && !canAct) {
-      this.log(`[Auto-Pass] ${this.getPlayerName(playerId)} skipped: no legal actions found.`);
-      console.log(`[ENGINE] Auto-Pass triggered for ${playerId} (Reason: PriorityProcessor returned false)`);
-      this.passPriority(playerId, true);
-    } else if (player && canAct) {
-      console.log(`[ENGINE] Priority held by ${playerId} (Actions available)`);
-    }
+  private getCombatCallbacks(): CombatCallbacks {
+    return {
+      log: (m: string) => this.log(m),
+      getPlayerName: (id: PlayerId) => this.getPlayerName(id),
+      resetPriorityToActivePlayer: () => this.resetPriorityToActivePlayer()
+    };
   }
 
   private canPlayerTakeAnyAction(playerId: PlayerId): boolean {
     return PriorityProcessor.canPlayerTakeAnyAction(this.state, playerId);
   }
 
-  private emptyAllManaPools() {
-    for (const player of Object.values(this.state.players) as PlayerState[]) {
-      player.manaPool = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
-    }
-  }
 
   private checkStateBasedActions() {
     StateBasedActionsProcessor.resolveSBAs(this.state, (msg) => this.log(msg));
@@ -502,7 +427,7 @@ export class GameEngine {
 
     if (this.state.currentStep === Step.Untap) {
       ActionProcessor.untapAll(this.state, activeId, (m) => this.log(m));
-    } 
+    }
     else if (this.state.currentPhase === Phase.Combat) {
       CombatProcessor.handleStepEntry(this.state, (m) => this.log(m));
     }
@@ -511,22 +436,22 @@ export class GameEngine {
       if (!skipDraw && !this.drawCard(activeId)) {
         this.log(`${this.getPlayerName(activeId)} deck-out loss.`);
       }
-    } 
+    }
     else if (this.state.currentStep === Step.Cleanup) {
       const player = this.state.players[activeId];
       if (player && player.hand.length > player.maxHandSize) {
         player.pendingDiscardCount = player.hand.length - player.maxHandSize;
-        this.state.pendingAction = { 
-          type: 'DISCARD', 
-          playerId: activeId, 
-          count: player.pendingDiscardCount 
+        this.state.pendingAction = {
+          type: 'DISCARD',
+          playerId: activeId,
+          count: player.pendingDiscardCount
         };
         this.log(`${player.name} must discard ${player.pendingDiscardCount} card(s) to reach hand size (${player.maxHandSize}).`);
       }
-      
+
       // Rule 514.2: Remove all damage and cleanup continuous effects
       this.state.battlefield.forEach(obj => obj.damageMarked = 0);
-      
+
       // MTG Arena "Whiteboard Cleanup"
       this.state.ruleRegistry.continuousEffects = this.state.ruleRegistry.continuousEffects.filter(
         e => e.duration.type !== DurationType.UntilEndOfTurn
@@ -536,30 +461,13 @@ export class GameEngine {
       );
     }
   }
-
   /**
    * Core Action: Player Gain Life (Rule 119.3)
    */
   public gainLife(playerId: PlayerId, amount: number) {
-    const player = this.state.players[playerId];
-    if (!player) return;
-
-    player.life += amount;
-    this.state.turnState.lastLifeGainedAmount = amount;
-    this.log(`${player.name} gains ${amount} life (${player.life - amount} -> ${player.life})`);
-
-    // Emit event to the "Whiteboard"
-    TriggerProcessor.onEvent(this.state, {
-      type: 'ON_LIFE_GAIN',
-      playerId,
-      amount,
-      data: { amount }
-    }, (m: string) => this.log(m));
+    EffectProcessor.handleGainLife(this.state, [playerId], amount, (m) => this.log(m));
   }
 
-  private isPlayer(id: string): boolean {
-    return !!this.state.players[id as PlayerId];
-  }
 
   public getState(): GameState {
     // CR 613: Re-evaluate the "Derived State" (P/T, Keywords, isPlayable) before returning to the UI.
@@ -567,165 +475,61 @@ export class GameEngine {
     return this.state;
   }
 
-  public resolveCombatOrdering(playerId: string, order: string[]): boolean {
-    PlayerActionProcessor.resolveCombatOrdering(this.state, playerId, order, (m) => this.log(m));
-    
-    // Once ordering is complete (and no more pending actions exist), give priority back to AP.
-    this.resetPriorityToActivePlayer();
-    return true;
-  }
 
   public resolveChoice(playerId: string, choiceIndex: number): boolean {
     const success = ChoiceProcessor.resolveChoice(
-        this.state,
-        playerId,
-        choiceIndex,
-        (m: string) => this.log(m),
-        {
-            resetPriorityToActivePlayer: () => this.resetPriorityToActivePlayer(),
-            activateAbility: (p: PlayerId, c: string, i: number, t: string[], b: boolean = false) => this.activateAbility(p, c, i, t, b),
-            tapForMana: (p: string, c: string) => this.tapForMana(p, c),
-            checkAutoPass: (p: string) => this.checkAutoPass(p)
-        }
+      this.state,
+      playerId,
+      choiceIndex,
+      (m: string) => this.log(m),
+      {
+        resetPriorityToActivePlayer: () => this.resetPriorityToActivePlayer(),
+        activateAbility: (p: PlayerId, c: string, i: number, t: string[], b: boolean = false) => this.activateAbility(p, c, i, t, b),
+        tapForMana: (p: string, c: string) => this.tapForMana(p, c),
+        checkAutoPass: (p: string) => this.checkAutoPass(p)
+      }
     );
 
-    if (success && !this.state.pendingAction && this.state.stack.length > 0) {
-        this.resolveTopOrAdvanceStep();
+    if (success && !this.state.pendingAction) {
+      this.resetPriorityToActivePlayer();
     }
     return success;
   }
 
   public resolveTargeting(playerId: PlayerId, targetId: string): boolean {
-    const success = ChoiceProcessor.resolveTargeting(
-        this.state,
-        playerId,
-        targetId,
-        (m: string) => this.log(m),
-        {
-            resetPriorityToActivePlayer: () => this.resetPriorityToActivePlayer(),
-            finaliseTargeting: (p: PlayerId, t: string[]) => this.finaliseTargeting(p, t)
-        }
-    );
-
-    if (success && !this.state.pendingAction && this.state.stack.length > 0) {
-       this.resolveTopOrAdvanceStep();
-    }
-    return success;
+    return PlayerActionProcessor.resolveTargeting(this.state, playerId, targetId, this.getPlayerActionCallbacks());
   }
 
-  private finaliseTargeting(playerId: PlayerId, resolvedTargets: string[]): boolean {
-    const actionData = this.state.pendingAction?.data;
-    const sourceId = this.state.pendingAction?.sourceId;
-    const abilityIndex = actionData?.abilityIndex;
-    const stackObj = actionData?.stackObj; // Get the hidden stack object
-    const stackId = actionData?.stackId;     // Get the trigger stack ID (for existing triggers)
-
-    if (actionData?.isCostTargeting) {
-        if (actionData.costType === 'Sacrifice') {
-            (this.state as any).lastChosenSacrificeId = resolvedTargets[0];
-        }
-        this.state.pendingAction = undefined;
-        this.state.priorityPlayerId = playerId;
-        return this.playCard(playerId, sourceId!, actionData.declaredTargets || []);
-    }
-
-    if (actionData?.nextEffectIndex !== undefined) {
-        this.state.pendingAction = undefined;
-        this.state.priorityPlayerId = playerId;
-        const savedTargets = [...(actionData.targets || []), ...resolvedTargets];
-        const savedEffects = actionData.effects || [];
-        const useSourceId = actionData.sourceId || sourceId!;
-        const { EffectProcessor } = require('./modules/effects/EffectProcessor');
-        EffectProcessor.resolveEffects(this.state, savedEffects, useSourceId, savedTargets, (m: string) => this.log(m), actionData.nextEffectIndex, stackObj, actionData.parentContext);
-        
-        // --- RESUME PARENT CONTEXTS (NESTED RESOLUTION) ---
-        // If the current effect list (e.g. a Choice branch) is finished, go back to parent spell layers.
-        let currentCtx = actionData.parentContext;
-        while (!this.state.pendingAction && currentCtx && currentCtx.nextEffectIndex < currentCtx.effects.length) {
-            this.log(`[RESOLVING] Returning to parent context for ${useSourceId}...`);
-            const pEffs = currentCtx.effects;
-            const pNext = currentCtx.nextEffectIndex;
-            const pSource = currentCtx.sourceId || sourceId!;
-            const pTargets = currentCtx.targets || [];
-            const pStackObj = currentCtx.stackObj;
-            const pGrantContext = currentCtx.parentContext; // Grandma context
-            
-            currentCtx = pGrantContext; // Shift up before call to avoid loops
-            EffectProcessor.resolveEffects(this.state, pEffs, pSource, pTargets, (m: string) => this.log(m), pNext, pStackObj, pGrantContext);
-        }
-
-        if (!this.state.pendingAction) {
-            if (this.state.stack.length > 0) {
-                this.resolveTopOrAdvanceStep();
-            } else {
-                this.resetPriorityToActivePlayer();
-            }
-        }
-        return true;
-    }
-
-    if (stackObj) {
-        stackObj.targets = resolvedTargets;
-        this.state.stack.push(stackObj); // Reveal to everyone now!
-        this.state.consecutivePasses = 0;
-        
-        this.log(`--------------------------------------------------`);
-        this.log(`[STACK] + ${this.getPlayerName(stackObj.controllerId)} cast/activated ${stackObj.card?.definition.name || stackObj.type}`);
-        if (resolvedTargets.length > 0) {
-            this.log(`[STACK] Target(s): ${resolvedTargets.join(', ')}`);
-        }
-        this.log(`--------------------------------------------------`);
-
-        this.state.pendingAction = undefined;
-        this.state.priorityPlayerId = playerId; 
-        this.checkAutoPass(playerId);
-        return true;
-    }
-
-    if (stackId) {
-        const existingTrigger = this.state.stack.find(s => s.id === stackId);
-        if (existingTrigger) {
-            existingTrigger.targets = resolvedTargets;
-            this.log(`[TARGETING] Targets confirmed for Trigger: ${resolvedTargets.join(', ')}`);
-            this.state.pendingAction = undefined;
-            this.state.priorityPlayerId = playerId;
-            this.checkAutoPass(playerId);
-            return true;
-        }
-    }
-
-    if (abilityIndex !== undefined) {
-       this.state.pendingAction = undefined;
-       this.state.priorityPlayerId = playerId; 
-       const success = this.activateAbility(playerId, sourceId!, abilityIndex, resolvedTargets, true);
-       this.checkAutoPass(playerId);
-       return success;
-    } else {
-       this.state.pendingAction = undefined;
-       this.state.priorityPlayerId = playerId;
-       const success = this.playCard(playerId, sourceId!, resolvedTargets, true);
-       this.checkAutoPass(playerId);
-       return success;
-    }
+  private getPlayerActionCallbacks(): PlayerActionCallbacks {
+    return {
+        log: (m: string) => this.log(m),
+        getPlayerName: (id: PlayerId) => this.getPlayerName(id),
+        playCard: (pId, cId, targets, bypass) => this.playCard(pId, cId, targets, bypass),
+        activateAbility: (pId, cId, idx, targets, bypass) => this.activateAbility(pId, cId, idx, targets, bypass),
+        resetPriorityToActivePlayer: () => this.resetPriorityToActivePlayer(),
+        checkAutoPass: (pId: PlayerId) => this.checkAutoPass(pId)
+    };
   }
 
   private cleanupEndOfTurn() {
     this.log(`[CLEANUP] Removing 'Until End of Turn' effects and resetting markers.`);
-    
+
     // 1. Remove floating continuous effects (Rule 614)
     this.state.ruleRegistry.continuousEffects = this.state.ruleRegistry.continuousEffects.filter(eff => {
-       return eff.duration?.type !== DurationType.UntilEndOfTurn;
+      return eff.duration?.type !== DurationType.UntilEndOfTurn;
     });
 
     // 2. Clear damage markers and deathtouch flags (Rule 514.2)
     this.state.battlefield.forEach(obj => {
-       obj.damageMarked = 0;
-       obj.deathtouchMarked = false;
-       obj.abilitiesUsedThisTurn = 0;
+      obj.damageMarked = 0;
+      obj.deathtouchMarked = false;
+      obj.abilitiesUsedThisTurn = 0;
     });
   }
 
-
+  public resolveCombatOrdering(playerId: string, order: string[]): boolean {
+    return CombatProcessor.resolveCombatOrdering(this.state, playerId, order, this.getCombatCallbacks());
+  }
 
   public setState(newState: GameState) {
     this.state = newState;

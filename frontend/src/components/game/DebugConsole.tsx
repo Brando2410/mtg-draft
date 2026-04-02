@@ -30,12 +30,6 @@ export const DebugConsole = ({
   const terminalRef = useRef<HTMLDivElement>(null);
   const [cardSearch, setCardSearch] = useState('');
 
-  // Example M21 cards for the dropdown injection
-  const QUICK_CARDS = [
-    "Eliminate", "Basri Ket", "Chandra's Incinerator", "Cultivate", "Opt", 
-    "Shock", "Vito, Thorn of the Dusk Rose", "Teferi, Master of Time", "Baneslayer Angel"
-  ];
-
   useEffect(() => {
     if (terminalRef.current) {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
@@ -101,44 +95,57 @@ export const DebugConsole = ({
              </div>
           </div>
 
-          {/* ADD CARD WORKSHOP */}
           <div className="space-y-4">
-             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Card Lab</h4>
-             <div className="bg-slate-950 border border-white/5 rounded-2xl p-4 space-y-4">
-                <div className="flex gap-2">
+             <div className="flex justify-between items-center">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Card Lab</h4>
+                <span className="text-[8px] font-bold text-slate-500 bg-slate-800 px-2 py-0.5 rounded uppercase">
+                   {pState?.library.length || 0} in Library
+                </span>
+             </div>
+             
+             <div className="bg-slate-950 border border-white/5 rounded-2xl p-4 space-y-4 relative">
+                <div className="relative">
                    <div className="relative flex-1">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-500" />
                       <input 
                          type="text" 
                          value={cardSearch}
                          onChange={(e) => setCardSearch(e.target.value)}
-                         placeholder="Nome carta M21..."
+                         placeholder="Cerca nella tua Library..."
                          className="w-full bg-slate-900 border border-white/10 rounded-lg py-2 pl-8 pr-3 text-[10px] text-white focus:outline-none focus:border-indigo-500/50"
                       />
                    </div>
-                   <button 
-                      disabled={!cardSearch}
-                      onClick={() => {
-                        socket.emit('debug_add_card', { roomId, playerId: effectivePlayerId, cardName: cardSearch });
-                        setCardSearch('');
-                      }}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 rounded-lg text-[10px] font-black uppercase transition-colors"
-                   >
-                      Add
-                   </button>
+
+                   {/* AUTOCOMPLETE DROPDOWN */}
+                   {cardSearch.length >= 2 && (
+                      <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl max-h-[200px] overflow-y-auto custom-scrollbar">
+                         {pState?.library
+                            .filter(c => c.definition.name.toLowerCase().includes(cardSearch.toLowerCase()))
+                            .map((card, idx) => (
+                               <button
+                                  key={`${card.id}-${idx}`}
+                                  onClick={() => {
+                                     socket.emit('debug_move_card_from_library', { roomId, playerId: effectivePlayerId, cardId: card.id });
+                                     setCardSearch('');
+                                  }}
+                                  className="w-full text-left p-3 hover:bg-indigo-600/20 border-b border-white/5 last:border-0 flex items-center justify-between group transition-colors"
+                               >
+                                  <span className="text-[10px] font-bold text-slate-300 group-hover:text-white transition-colors">
+                                     {card.definition.name}
+                                  </span>
+                                  <Plus className="w-3 h-3 text-slate-600 group-hover:text-indigo-400" />
+                               </button>
+                            ))
+                         }
+                         {pState?.library.filter(c => c.definition.name.toLowerCase().includes(cardSearch.toLowerCase())).length === 0 && (
+                            <div className="p-4 text-center">
+                               <span className="text-[9px] font-bold text-slate-600 uppercase italic">Nessun match trovato</span>
+                            </div>
+                         )}
+                      </div>
+                   )}
                 </div>
-                
-                <div className="flex flex-wrap gap-2">
-                   {QUICK_CARDS.slice(0, 4).map(name => (
-                      <button 
-                         key={name}
-                         onClick={() => socket.emit('debug_add_card', { roomId, playerId: effectivePlayerId, cardName: name })}
-                         className="text-[8px] font-bold px-2 py-1 bg-white/5 border border-white/5 hover:border-white/20 rounded-md text-slate-400 hover:text-white transition-all"
-                      >
-                         +{name}
-                      </button>
-                   ))}
-                </div>
+               
              </div>
           </div>
 

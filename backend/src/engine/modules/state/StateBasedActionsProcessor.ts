@@ -1,7 +1,7 @@
 import { GameState, Zone, PlayerId } from '@shared/engine_types';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { ActionProcessor } from '../actions/ActionProcessor';
-import { ValidationProcessor } from './ValidationProcessor';
+import { TargetingProcessor } from '../actions/TargetingProcessor';
 
 /**
  * Rules Engine Module: State-Based Actions (Rule 704)
@@ -119,7 +119,7 @@ export class StateBasedActionsProcessor {
 
         // Check if the target is still legal
         // (source is the attachment, target is the permanent)
-        if (!ValidationProcessor.isLegalTarget(state, attach.id, targetId)) {
+        if (!TargetingProcessor.isLegalTarget(state, attach.id, targetId)) {
             const types = attach.definition.types.map(t => t.toLowerCase());
             if (types.includes('enchantment')) {
                 log(`[SBA] Aura ${attach.definition.name} is attached to an illegal target and is put into graveyard.`);

@@ -1,7 +1,7 @@
 import { GameState, GameObjectId, PlayerId, Zone, StackObject, GameObject, EffectDefinition } from '@shared/engine_types';
 import { ActionProcessor } from '../actions/ActionProcessor';
 import { EffectProcessor } from '../effects/EffectProcessor';
-import { ValidationProcessor } from '../state/ValidationProcessor';
+import { TargetingProcessor } from '../actions/TargetingProcessor';
 
 /**
  * Rules Engine Module: Stack Resolution (Rule 608)
@@ -65,9 +65,9 @@ export class StackResolver {
 
     // A spell/ability is countered if ALL its targets are illegal.
     return stackObj.targets.every(targetId => {
-        return !ValidationProcessor.isLegalTarget(
+        return !TargetingProcessor.isLegalTarget(
             this.state, 
-            stackObj, 
+            stackObj.card || stackObj.sourceId, 
             targetId, 
             stackObj.data?.targetDefinition
         );

@@ -50,6 +50,8 @@ export class ActionProcessor {
 
     // CR 121: Drawing a card
     if (fromZone === Zone.Library && to === Zone.Hand) {
+        state.turnState.cardsDrawnThisTurn[targetPlayerId] = (state.turnState.cardsDrawnThisTurn[targetPlayerId] || 0) + 1;
+        state.turnState.lastCardsDrawnAmount = 1;
         TriggerProcessor.onEvent(state, { type: 'ON_DRAW', playerId: targetPlayerId, data: { card } }, log || (() => {}));
     }
 
@@ -111,8 +113,11 @@ export class ActionProcessor {
       // Rule 110.2: Always sync controllerId when entering battlefield
       card.controllerId = targetPlayerId;
       
+      // CR 302.6: Creature enters the battlefield with summoning sickness
       const isCreature = card.definition.types.some(t => t.toLowerCase() === 'creature');
-      card.summoningSickness = isCreature;
+      const hasHasteInDefinition = (card.definition.keywords || []).some(k => k.toLowerCase() === 'haste');
+      const hasHasteOnCard = (card.keywords || []).some(k => k.toLowerCase() === 'haste');
+      card.summoningSickness = isCreature && !hasHasteInDefinition && !hasHasteOnCard;
       (card as any).isRevealed = false; // Always clear when entering public zone
       this.registerAbilities(state, card);
       

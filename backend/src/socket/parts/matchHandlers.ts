@@ -345,6 +345,64 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     }
   });
 
+  socket.on('debug_move_card_from_library', async ({ roomId, playerId, cardId }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+
+    const playerIds = room.players.map(p => p.playerId as PlayerId);
+    const engine = new GameEngine(playerIds);
+    engine.setState(room.gameState);
+
+    try {
+      const pState = room.gameState.players[playerId];
+      if (!pState) return;
+
+      const card = pState.library.find(c => c.id === cardId);
+      if (card) {
+          // Unified move using ActionProcessor (which GameEngine uses internally)
+          const { ActionProcessor } = require('../../engine/modules/actions/ActionProcessor');
+          ActionProcessor.moveCard(room.gameState, card, Zone.Hand, playerId, (m: string) => room.gameState!.logs.push(`>> [DEBUG] ${m}`));
+          
+          room.gameState = engine.getState();
+          io.to(roomId).emit('draft_update', room);
+          await PersistenceService.saveRooms(rooms);
+      }
+    } catch (error) {
+      console.warn(`[SOCKET] Debug move card error:`, error);
+    }
+  });
+
+  socket.on('debug_add_card', async ({ roomId, playerId, cardName }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+
+    const playerIds = room.players.map(p => p.playerId as PlayerId);
+    const engine = new GameEngine(playerIds);
+    engine.setState(room.gameState);
+
+    try {
+      const pState = room.gameState.players[playerId];
+      if (!pState) return;
+
+      const allCards = await PersistenceService.getDeck('all.json');
+      const cardRef = allCards?.cards?.find((c: any) => c.name.toLowerCase() === cardName.toLowerCase());
+      
+      if (cardRef) {
+          const { GameSetupProcessor } = require('../../engine/modules/core/GameSetupProcessor');
+          const card = GameSetupProcessor.createGameObject(playerId, cardRef, pState.hand.length + pState.library.length + 999);
+          card.zone = Zone.Hand;
+          pState.hand.push(card);
+          
+          room.gameState.logs.push(`>> [DEBUG] Added ${cardRef.name} to ${pState.name}'s hand.`);
+          room.gameState = engine.getState();
+          io.to(roomId).emit('draft_update', room);
+          await PersistenceService.saveRooms(rooms);
+      }
+    } catch (error) {
+      console.warn(`[SOCKET] Debug add card error:`, error);
+    }
+  });
+
   socket.on('debug_draw_card', async ({ roomId, playerId }) => {
     const room = rooms.get(roomId);
     if (!room || !room.gameState) return;

@@ -3,12 +3,125 @@ import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
 import { SpellProcessor } from '../actions/SpellProcessor';
 import { M21_LOGIC } from '../../data/m21_logic';
-import { ValidationProcessor } from '../state/ValidationProcessor';
 
 /**
  * Priority Handling (Rule 117)
  */
+export interface PriorityCallbacks {
+  log: (m: string) => void;
+  getPlayerName: (id: PlayerId) => string;
+  resolveTopOrAdvanceStep: () => void;
+  confirmAttackers: (pId: string) => void;
+  confirmBlockers: (pId: string) => void;
+  checkStateBasedActions: () => void;
+}
+
 export class PriorityProcessor {
+
+  /**
+   * CR 117.4: Timing and Priority
+   * Handles the passing of priority and automatic resolution of the stack.
+   */
+  public static passPriority(
+    state: GameState, 
+    playerId: PlayerId, 
+    callbacks: PriorityCallbacks,
+    isAuto = false
+  ) {
+    // 1. Intercept for special actions
+    if (state.pendingAction?.playerId === playerId) {
+      if (state.pendingAction.type === 'DECLARE_ATTACKERS') {
+        callbacks.confirmAttackers(playerId);
+        return;
+      }
+      if (state.pendingAction.type === 'DECLARE_BLOCKERS') {
+        callbacks.confirmBlockers(playerId);
+        return;
+      }
+    }
+
+    if (String(state.priorityPlayerId) !== String(playerId)) {
+      console.log(`[PRIORITY-PROC] passPriority IGNORED: current priority is ${state.priorityPlayerId}, but ${playerId} tried to pass.`);
+      return;
+    }
+    
+    // CR 117.1: A player must resolve pending mandatory actions before passing
+    if (state.pendingAction && String(state.pendingAction.playerId) === String(playerId)) {
+      console.log(`[PRIORITY-PROC] passPriority BLOCKED: ${playerId} has pending ${state.pendingAction.type}.`);
+      callbacks.log(`Invalid Action: Player must resolve pending ${state.pendingAction.type} first.`);
+      return;
+    }
+
+    const player = state.players[playerId];
+    if (player && player.pendingDiscardCount > 0) {
+      if (!isAuto) callbacks.log(`${callbacks.getPlayerName(playerId)} must finish discarding first.`);
+      return;
+    }
+
+    state.consecutivePasses++;
+    
+    const prefix = isAuto ? '[Auto-Pass] ' : '[Manual-Pass] ';
+    callbacks.log(`${prefix}${callbacks.getPlayerName(playerId)} passed. (${state.consecutivePasses}/${state.playerOrder.length} passes)`);
+
+    if (state.consecutivePasses >= state.playerOrder.length) {
+      callbacks.resolveTopOrAdvanceStep();
+    } else {
+      this.givePriorityToNextPlayer(state, callbacks);
+    }
+  }
+
+  public static givePriorityToNextPlayer(
+    state: GameState, 
+    callbacks: PriorityCallbacks
+  ) {
+    if (!state.priorityPlayerId) return;
+    const currentIndex = state.playerOrder.indexOf(state.priorityPlayerId);
+    const nextIndex = (currentIndex + 1) % state.playerOrder.length;
+    
+    callbacks.checkStateBasedActions();
+    
+    state.priorityPlayerId = state.playerOrder[nextIndex];
+    callbacks.log(`[PRIORITY] Shifted to ${callbacks.getPlayerName(state.priorityPlayerId)}.`);
+    
+    this.checkAutoPass(state, state.priorityPlayerId, callbacks);
+  }
+
+  public static resetPriorityToActivePlayer(
+    state: GameState, 
+    callbacks: PriorityCallbacks
+  ) {
+    state.consecutivePasses = 0;
+    callbacks.checkStateBasedActions();
+    
+    // Only set priority to active player if an SBA or trigger didn't just set up a mandatory action.
+    if (!state.pendingAction) {
+      state.priorityPlayerId = state.activePlayerId;
+    }
+    
+    if (state.priorityPlayerId) {
+       this.checkAutoPass(state, state.priorityPlayerId, callbacks);
+    }
+  }
+
+  public static checkAutoPass(
+    state: GameState, 
+    playerId: PlayerId, 
+    callbacks: PriorityCallbacks
+  ) {
+    if (!state.priorityPlayerId || String(state.priorityPlayerId) !== String(playerId)) return;
+
+    const player = state.players[playerId];
+    const canAct = this.canPlayerTakeAnyAction(state, playerId);
+
+    if (player && !player.fullControl && !canAct) {
+      callbacks.log(`[Auto-Pass] ${callbacks.getPlayerName(playerId)} skipped: no legal actions found.`);
+      console.log(`[ENGINE] Auto-Pass triggered for ${playerId}`);
+      this.passPriority(state, playerId, callbacks, true);
+    } else if (player && canAct) {
+      console.log(`[ENGINE] Priority held by ${playerId} (Actions available)`);
+    }
+  }
+
 
   /**
    * Rule 117.1: A player can take action IF: 
@@ -97,9 +210,10 @@ export class PriorityProcessor {
             const canPayAllExtras = additionalCosts.every(cost => {
                 if (cost.type === 'Sacrifice') {
                     // Check if there is at least one permanent that can be sacrificed
+                    const { TargetingProcessor } = require('../actions/TargetingProcessor');
                     const candidates = state.battlefield.filter(o => 
                         o.controllerId === playerId && 
-                        ValidationProcessor.matchesRestrictions(state, o, cost.restrictions || [], playerId, cardInHand.id)
+                        TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], playerId, cardInHand.id)
                     );
                     return candidates.length > 0;
                 }
@@ -113,10 +227,11 @@ export class PriorityProcessor {
             const logic = M21_LOGIC[cardInHand.definition.name];
             const targetDefinition = (logic as any)?.targetDefinition || logic?.abilities?.find(a => a.type === 'Spell')?.targetDefinition;
             if (targetDefinition && !targetDefinition.optional) {
+                const { TargetingProcessor } = require('../actions/TargetingProcessor');
                 const legalTargetIds = [
                     ...Object.keys(state.players),
                     ...state.battlefield.map(o => o.id)
-                ].filter(tid => ValidationProcessor.isLegalTarget(state, cardInHand.id, tid, targetDefinition));
+                ].filter(tid => TargetingProcessor.isLegalTarget(state, cardInHand.id, tid, targetDefinition));
                 
                 const requiredCount = targetDefinition.count || 0;
                 if (legalTargetIds.length < requiredCount) {
@@ -183,10 +298,11 @@ export class PriorityProcessor {
 
     // Target Check
     if (ability.targetDefinition && !ability.targetDefinition.optional) {
+        const { TargetingProcessor } = require('../actions/TargetingProcessor');
         const legalTargetIds = [
             ...Object.keys(state.players),
             ...state.battlefield.map(o => o.id)
-        ].filter(tid => ValidationProcessor.isLegalTarget(state, obj.id, tid, ability.targetDefinition));
+        ].filter(tid => TargetingProcessor.isLegalTarget(state, obj.id, tid, ability.targetDefinition));
         const requiredCount = ability.targetDefinition.count || 1;
         if (legalTargetIds.length < requiredCount) return false;
     }

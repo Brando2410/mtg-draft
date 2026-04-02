@@ -1,5 +1,4 @@
 import { GameState, GameObject, PlayerId, ActionType } from '@shared/engine_types';
-import { ValidationProcessor } from '../state/ValidationProcessor';
 
 export interface ChoiceConfig {
     label: string;
@@ -33,8 +32,9 @@ export class ChoiceGenerator {
     ) {
         const { playerId, sourceId, restrictions = [], onSelected, onNone } = config;
 
+        const { TargetingProcessor } = require('../actions/TargetingProcessor');
         let options = cards.map(c => {
-            const isMatch = ValidationProcessor.matchesRestrictions(state, c, restrictions, playerId, sourceId);
+            const isMatch = TargetingProcessor.matchesRestrictions(state, c, restrictions, playerId, sourceId);
             
             return {
                 label: isMatch ? `Seleziona ${c.definition.name}` : `[Invalid] ${c.definition.name}`,
