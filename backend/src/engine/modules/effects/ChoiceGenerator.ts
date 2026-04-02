@@ -6,6 +6,9 @@ export interface ChoiceConfig {
     sourceId: string;
     hideUndo?: boolean;
     optional?: boolean;
+    actionType?: ActionType;
+    stackObj?: any;
+    parentContext?: any;
 }
 
 export interface CardChoiceConfig extends ChoiceConfig {
@@ -67,8 +70,10 @@ export class ChoiceGenerator {
             label: config.label,
             choices: options,
             hideUndo: config.hideUndo,
-            lookingCards: cards // Preserve for UI/Context
-        });
+            lookingCards: cards, // Preserve for UI/Context
+            stackObj: config.stackObj,
+            parentContext: config.parentContext
+        }, config.actionType);
     }
 
     /**
@@ -84,19 +89,22 @@ export class ChoiceGenerator {
                 ...c,
                 selectable: true
             })),
-            hideUndo: config.hideUndo
-        });
+            hideUndo: config.hideUndo,
+            stackObj: config.stackObj,
+            parentContext: config.parentContext
+        }, config.actionType);
     }
 
     /**
      * Wraps data into the standard engine pendingAction format.
      */
-    private static wrap(playerId: string, sourceId: string, data: any): any {
+    private static wrap(playerId: string, sourceId: string, data: any, type: ActionType = ActionType.ResolutionChoice): any {
         return {
-            type: ActionType.Choice,
+            type,
             playerId,
             sourceId,
             data
         };
     }
 }
+

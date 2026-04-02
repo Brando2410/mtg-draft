@@ -72,8 +72,9 @@ export class PlayerActionProcessor {
         return false;
       }
 
+      const { ActionType } = require('@shared/engine_types');
       state.pendingAction = {
-        type: 'CHOICE',
+        type: ActionType.ModalSelection,
         playerId: playerId,
         sourceId: cardId,
         data: {
@@ -119,8 +120,9 @@ export class PlayerActionProcessor {
         }
 
         // If multiple, show CHOICE
+        const { ActionType: AT } = require('@shared/engine_types');
         state.pendingAction = {
-            type: 'CHOICE',
+            type: AT.ModalSelection,
             playerId: playerId,
             sourceId: cardId,
             data: {

@@ -109,7 +109,10 @@ export const ActionType = {
   OrderAttackers: 'ORDER_ATTACKERS',
   Discard: 'DISCARD',
   Targeting: 'TARGETING',
-  Choice: 'CHOICE'
+  ModalSelection: 'MODAL_SELECTION',
+  ResolutionChoice: 'RESOLUTION_CHOICE',
+  OptionalAction: 'OPTIONAL_ACTION',
+  Choice: 'CHOICE' // Deprecated, keeping for backward compatibility
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 
@@ -498,9 +501,7 @@ export interface EffectDefinition {
   // Conditional logic
   condition?: string; 
   message?: string;
-  destination?: 'Hand' | 'Battlefield' | 'Graveyard' | 'Library';
-  reveal?: boolean;
-  shuffle?: boolean;
+  destination?: Zone;
   
   /**
    * targetMapping conventions:
@@ -519,9 +520,20 @@ export interface EffectDefinition {
   label?: string; // Top-level label for Choice effects
   targetId?: string; // For MoveToZone
   zone?: Zone; // For MoveToZone
+  sourceZone?: Zone; // For consolidated movement/exile
+  selectionType?: 'Target' | 'All' | 'TopN' | 'Search'; // For consolidated targeting
   cardsToMoveIds?: string[]; // For PutRemainderOnBottomRandom
   optional?: boolean; // For Choice/LookAtTopAndPick
   hideUndo?: boolean; // For Choice (UI Hint)
+  all?: boolean; // For Mass effects
+  revealed?: boolean; // For Library/Hand visible info
+  playDuration?: 'UNTIL_END_OF_TURN' | 'UNTIL_NEXT_TURN_END'; // For impulsive draw
+  sourceZones?: Zone[]; // For multizone search/movement
+  splitDestinations?: { count: number, zone: Zone, tapped?: boolean }[]; // For complex splits (e.g. Cultivate)
+  remainderZone?: Zone; // For leftovers (Top/Bottom/Graveyard)
+  fromTop?: number; // Number of cards to look at from top (Scry/LookAtTop)
+  shuffle?: boolean; // For library search
+  reveal?: boolean; // For hidden zone search
 }
 
 export const TargetType = {

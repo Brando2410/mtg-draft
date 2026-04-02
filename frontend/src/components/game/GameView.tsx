@@ -7,7 +7,7 @@ import { PlayerHand } from './PlayerHand';
 import { DebugConsole } from './DebugConsole';
 import { socket } from '../../services/socket';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type GameObject } from '@shared/engine_types';
+import { type GameObject, ActionType } from '@shared/engine_types';
 
 interface GameViewProps {
   room: Room;
@@ -63,17 +63,17 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
     }
 
     socket.emit('play_card', { 
-       roomId: room.id, 
-       playerId: effectivePlayerId, 
-       cardInstanceId 
+      roomId: room.id, 
+      playerId: effectivePlayerId, 
+      cardInstanceId 
     });
   };
 
   const handleTapCard = (cardId: string) => {
     socket.emit('tap_permanent', { 
-       roomId: room.id, 
-       playerId: effectivePlayerId, 
-       cardId 
+      roomId: room.id, 
+      playerId: effectivePlayerId, 
+      cardId 
     });
   };
 
@@ -100,7 +100,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           pendingAction={gameState.pendingAction}
           onPassPriority={() => socket.emit('pass_priority', { roomId: room.id, playerId: effectivePlayerId })}
           onSkipAction={() => {
-            if (gameState.pendingAction?.type === 'TARGETING') {
+            if (gameState.pendingAction?.type === ActionType.Targeting) {
               socket.emit('resolve_target', { 
                 roomId: room.id, 
                 playerId: effectivePlayerId, 
@@ -109,13 +109,14 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
             }
           }}
           onUndo={() => {
-            if (gameState.pendingAction?.type === 'TARGETING') {
+            const paType = gameState.pendingAction?.type;
+            if (paType === ActionType.Targeting) {
               socket.emit('resolve_target', { 
                 roomId: room.id, 
                 playerId: effectivePlayerId, 
                 targetId: 'undo'
               });
-            } else if (gameState.pendingAction?.type === 'CHOICE') {
+            } else if ([ActionType.Choice, ActionType.ModalSelection, ActionType.ResolutionChoice, ActionType.OptionalAction].includes(paType as any)) {
               socket.emit('resolve_choice', { 
                 roomId: room.id, 
                 playerId: effectivePlayerId, 
@@ -156,7 +157,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
               return;
             }
             
-            if (gameState.pendingAction?.type === 'TARGETING') {
+            if (gameState.pendingAction?.type === ActionType.Targeting) {
               socket.emit('resolve_target', { 
                 roomId: room.id, 
                 playerId: effectivePlayerId, 

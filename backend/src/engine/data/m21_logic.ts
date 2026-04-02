@@ -436,7 +436,7 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 costs: [{ type: 'Loyalty', value: '+1' }],
                 effects: [
                     { type: 'DiscardCards', amount: -1, targetMapping: 'CONTROLLER' },
-                    { type: 'ExileTopCard', amount: 3, targetMapping: 'CONTROLLER' },
+                    { type: 'Exile', selectionType: 'TopN', sourceZone: Zone.Library, amount: 3, targetMapping: 'CONTROLLER' },
                     { type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', value: 'MAY_PLAY_EXILED', targetMapping: 'CONTROLLER' }
                 ]
             },
@@ -604,11 +604,14 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 },
                 effects: [
                     { 
-                        type: 'SearchLibrary', 
+                        type: 'MoveToZone', 
+                        selectionType: 'Search',
+                        sourceZones: [Zone.Library],
+                        destination: Zone.Hand,
                         reveal: true,
+                        shuffle: true,
                         optional: true,
-                        toZone: Zone.Hand,
-                        restrictions: ['Creature', 'CMC>=6'],
+                        restrictions: ['Creature', 'CMC >= 6'],
                         targetMapping: 'CONTROLLER' 
                     }
                 ]
@@ -1010,15 +1013,22 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Stack,
                 effects: [
                     {
-                        condition: "castFromHand",
-                        type: 'LookAtTopAndPick',
-                        amount: 3,
+                        condition: "CAST_FROM_HAND",
+                        type: 'MoveToZone',
+                        selectionType: 'TopN',
+                        fromTop: 3,
+                        destination: Zone.Hand,
+                        maxCount: 1,
+                        remainderZone: Zone.Library,
+                        remainderPosition: 'bottom',
                         targetMapping: 'CONTROLLER'
                     },
                     {
-                        condition: "notCastFromHand",
-                        type: 'DrawCards',
-                        amount: 3,
+                        condition: "NOT_CAST_FROM_HAND",
+                        type: 'MoveToZone',
+                        selectionType: 'TopN',
+                        fromTop: 3,
+                        destination: Zone.Hand,
                         targetMapping: 'CONTROLLER'
                     }
                 ]
@@ -1111,6 +1121,40 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 type: AbilityType.Static,
                 activeZone: ZoneRequirement.Battlefield,
                 effects: [{ type: 'GainAbilitiesOfTopCard', condition: 'TOP_CARD_IS_GOBLIN', targetMapping: 'SELF' }]
+            }
+        ]
+    },
+
+
+    "Cultivate": {
+        ...metadata["Cultivate"],
+        abilities: [
+            {
+                id: "cultivate_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                effects: [
+                    { 
+                        type: 'SearchLibrary', 
+                        count: 1, 
+                        destination: Zone.Battlefield, 
+                        tapped: true, 
+                        restrictions: ['BasicLand'],
+                        reveal: true,
+                        optional: true,
+                        targetMapping: 'CONTROLLER'
+                    },
+                    { 
+                        type: 'SearchLibrary', 
+                        count: 1, 
+                        destination: Zone.Hand, 
+                        restrictions: ['BasicLand'],
+                        reveal: true,
+                        optional: true,
+                        shuffle: true,
+                        targetMapping: 'CONTROLLER'
+                    }
+                ]
             }
         ]
     },
@@ -1298,6 +1342,22 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 costs: [{ type: 'Mana', value: '{2}{B}' }, { type: 'Tap', value: null }, { type: 'Sacrifice', targetMapping: 'SELF' }],
                 targetDefinition: { type: 'CardInGraveyard', count: 1, restrictions: ['Creature'] },
                 effects: [{ type: 'PutOnBattlefield', targetMapping: 'TARGET_1' }]
+            }
+        ]
+    },
+
+
+    "Opt": {
+        ...metadata["Opt"],
+        abilities: [
+            {
+                id: "opt_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                effects: [
+                    { type: 'Scry', amount: 1, targetMapping: 'CONTROLLER' },
+                    { type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }
+                ]
             }
         ]
     },
@@ -1972,21 +2032,6 @@ export const M21_LOGIC: Record<string, ImplementableCard> = {
                 triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 targetDefinition: { type: 'AnyTarget', count: 1 },
                 effects: [{ type: 'DealDamage', amount: 1, targetMapping: 'ANY_TARGET' }]
-            }
-        ]
-    },
-
-    "Opt": {
-        ...metadata["Opt"],
-        abilities: [
-            {
-                id: "opt_spell",
-                type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Stack,
-                effects: [
-                    { type: 'Scry', amount: 1, targetMapping: 'CONTROLLER' },
-                    { type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }
-                ]
             }
         ]
     },

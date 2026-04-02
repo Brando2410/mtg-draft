@@ -87,7 +87,7 @@ export class SpellProcessor {
         const logic = M21_LOGIC[cardToPlay.definition.name];
         const targetDefinition = (logic as any)?.targetDefinition || (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition;
         const spellEffects = (logic as any)?.effects || (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.effects || [];
-        const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices && !e.targetMapping);
+        const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices);
         const hasPreSelectedChoice = (state as any).lastChoiceIndex !== undefined;
 
         // CR 601.2f: Determine total cost
@@ -110,7 +110,7 @@ export class SpellProcessor {
                 ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
             ].filter(tid => TargetingProcessor.isLegalTarget(state, cardToPlay.id, tid, targetDefinition));
 
-            if (precalculatedTargets.length === 1 && !targetDefinition.optional) {
+            if (false) { // Disabled AUTO-TARGET for spells: user must always select
                 declaredTargets = precalculatedTargets;
                 log(`[AUTO-TARGET] Only one legal target found for ${cardToPlay.definition.name}: ${state.players[precalculatedTargets[0]]?.name || precalculatedTargets[0]}`);
             } else {
@@ -122,7 +122,7 @@ export class SpellProcessor {
                         log(`Illegal Play: No valid targets available for ${cardToPlay.definition.name}.`);
                         return false;
                     }
-                }
+                    }
 
                 state.pendingAction = {
                     type: 'TARGETING',
@@ -150,9 +150,10 @@ export class SpellProcessor {
                 return false;
             }
 
+            const { ActionType } = require('@shared/engine_types');
             // Trigger a choice phase specifically for the cost
             state.pendingAction = {
-                type: 'CHOICE',
+                type: ActionType.ModalSelection,
                 playerId: playerId,
                 sourceId: cardToPlay.id,
                 data: {
@@ -180,8 +181,9 @@ export class SpellProcessor {
         if (choiceEffectIndex !== -1 && !hasPreSelectedChoice) {
             // Trigger choice phase (targets are already in declaredTargets if we are here)
             const choiceEffect = spellEffects[choiceEffectIndex];
+            const { ActionType } = require('@shared/engine_types');
             state.pendingAction = {
-                type: 'CHOICE',
+                type: ActionType.ModalSelection,
                 playerId: playerId,
                 sourceId: cardToPlay.id,
                 data: {
