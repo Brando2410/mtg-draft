@@ -1,5 +1,5 @@
 import { GameState, PlayerId, Zone, Phase, GameObject, AbilityType, AbilityCost } from '@shared/engine_types';
-import { M21_LOGIC } from '../../data/m21_logic';
+import { m21 } from '../../data/m21';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
 import { TriggerProcessor } from '../effects/TriggerProcessor';
@@ -70,21 +70,33 @@ export class SpellProcessor {
 
         // 3. Land Handling (Rule 305)
         if (isLand) {
-            if (player.hasPlayedLandThisTurn) {
-                log(`Illegal Play: Already played a land this turn.`);
+            let maxLands = 1;
+            // Support for cards like Azusa that add additional land plays
+            state.ruleRegistry.continuousEffects.forEach(effect => {
+                if ((effect as any).type === 'AdditionalLandPlays' && effect.targetMapping === 'CONTROLLER' && effect.controllerId === playerId) {
+                    maxLands += ((effect as any).amount as number) || 0;
+                }
+            });
+
+            const currentLandsPlayed = state.turnState.landsPlayedThisTurn[playerId] || 0;
+
+            if (currentLandsPlayed >= maxLands) {
+                log(`Illegal Play: Already reached land play limit of ${maxLands} this turn.`);
                 return false;
             }
+            
             player.hand = player.hand.filter((c: any) => c.id !== cardInstanceId);
             cardToPlay.zone = Zone.Battlefield;
             state.battlefield = [...state.battlefield, cardToPlay];
-            player.hasPlayedLandThisTurn = true;
-            log(`Played Land: ${cardToPlay.definition.name}`);
+            state.turnState.landsPlayedThisTurn[playerId] = currentLandsPlayed + 1;
+            player.hasPlayedLandThisTurn = true; // Kept for legacy compatibility if needed
+            log(`Played Land: ${cardToPlay.definition.name} (${currentLandsPlayed + 1}/${maxLands})`);
             engine.checkStateBasedActions();
             return true;
         }
 
         // 4. Extract logic and effects
-        const logic = M21_LOGIC[cardToPlay.definition.name];
+        const logic = m21[cardToPlay.definition.name];
         const targetDefinition = (logic as any)?.targetDefinition || (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition;
         const spellEffects = (logic as any)?.effects || (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.effects || [];
         const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices);
@@ -338,7 +350,7 @@ export class SpellProcessor {
         });
 
         // 2. Add the card's OWN static additional costs (e.g. Goremand) OR inherent spell costs (e.g. Village Rites)
-        const cardLogic = M21_LOGIC[card.definition.name];
+        const cardLogic = m21[card.definition.name];
         if (cardLogic && cardLogic.abilities) {
             cardLogic.abilities.forEach((a: any) => {
                 // Case A: Static abilities that apply costs to the card itself (creatures)
@@ -427,8 +439,8 @@ export class SpellProcessor {
             return false;
         }
 
-        const cardLogic = M21_LOGIC[obj.definition.name];
-        if (!cardLogic || !cardLogic.abilities[abilityIndex]) return false;
+        const cardLogic = m21[obj.definition.name];
+        if (!cardLogic || !cardLogic.abilities || !cardLogic.abilities[abilityIndex]) return false;
         if (obj.definition.name === "Teferi, Master of Time") {
             const ability = cardLogic.abilities[abilityIndex];
             log(`[DEBUG] Activating Teferi ability index ${abilityIndex} (${ability.id}): ${JSON.stringify(obj.definition, null, 2)}`);

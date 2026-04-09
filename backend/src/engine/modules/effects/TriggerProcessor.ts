@@ -25,6 +25,7 @@ export class TriggerProcessor {
       const matchesPrimary = tEvents.some(type => 
         type === event.type || 
         (type === 'ON_ETB_OTHER' && event.type === 'ON_ETB') ||
+        (type === 'ON_SECOND_DRAW' && event.type === 'ON_SECOND_DRAW') ||
         (type === 'ON_ATTACK_OR_BLOCK' && (event.type === 'ON_ATTACK' || event.type === 'ON_BLOCK'))
       );
 
@@ -57,7 +58,13 @@ export class TriggerProcessor {
 
       // Rule 603.4: "Intervening If" clauses and dynamic conditions
       const condition = (t as any).triggerCondition || t.condition;
-      if (condition && !condition(state, event, t)) return false;
+      if (condition) {
+          if (typeof condition === 'function') {
+              if (!condition(state, event, t)) return false;
+          } else if (typeof condition === 'string') {
+              if (!LayerProcessor.matchesCondition(state, condition, t.sourceId, t.controllerId, event)) return false;
+          }
+      }
 
       return true;
     });

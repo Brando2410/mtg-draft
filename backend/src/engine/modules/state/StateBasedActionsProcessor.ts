@@ -112,9 +112,8 @@ export class StateBasedActionsProcessor {
     });
 
     for (const attach of attachments) {
-        // Find what it's attached to (stored in counters or specific data field?)
-        // In this engine, attachedToId is usually in the object's data
-        const targetId = (attach as any).attachedToId;
+        // Find what it's attached to (Populated by StackResolver for Auras)
+        const targetId = (attach as any).attachedTo;
         if (!targetId) continue;
 
         // Check if the target is still legal
@@ -127,7 +126,7 @@ export class StateBasedActionsProcessor {
                 actionTaken = true;
             } else {
                 log(`[SBA] Equipment ${attach.definition.name} detached from illegal target.`);
-                (attach as any).attachedToId = undefined;
+                (attach as any).attachedTo = undefined;
                 actionTaken = true;
             }
         }

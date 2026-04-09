@@ -1,6 +1,6 @@
 import { GameState, PlayerId, Zone, GameObject } from '@shared/engine_types';
 import { Card } from '@shared/types';
-import { M21_LOGIC } from '../../data/m21_logic';
+import { m21 } from '../../data/m21';
 
 export class GameSetupProcessor {
   public static initializePlayers(
@@ -28,7 +28,7 @@ export class GameSetupProcessor {
   }
 
   public static createGameObject(ownerId: PlayerId, cardRef: Card, index: number): GameObject {
-    const logicData = M21_LOGIC[cardRef.name];
+    const logicData = m21[cardRef.name];
     const typeLine = cardRef.typeLine || cardRef.type_line || logicData?.type_line || '';
     const colorMap: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
     const rawColors = cardRef.colors || cardRef.card_colors || (cardRef as any).color || logicData?.colors || [];

@@ -307,8 +307,8 @@ export class TargetingProcessor {
                     if (sourceOnField.abilitiesUsedThisTurn > 0) sourceOnField.abilitiesUsedThisTurn--;
                     const abilityIndex = actionData.abilityIndex;
                     if (abilityIndex !== undefined) {
-                        const { M21_LOGIC } = require('../../data/m21_logic');
-                        const logic = M21_LOGIC[sourceOnField.definition.name];
+                        const { m21 } = require('../../data/m21');
+                        const logic = m21[sourceOnField.definition.name];
                         const ability = logic?.abilities[abilityIndex];
                         const lCost = ability?.costs?.find((c: any) => c.type === 'Loyalty')?.value;
                         if (lCost !== undefined) {

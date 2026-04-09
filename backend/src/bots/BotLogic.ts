@@ -68,8 +68,8 @@ export class BotLogic {
       if (!pack || pack.length === 0) return null as any;
 
       const isRemoval = (card: Card) => {
-         if (!card.oracle_text) return false;
-         const text = card.oracle_text.toLowerCase();
+         if (!card.oracleText) return false;
+         const text = card.oracleText.toLowerCase();
          return text.includes("destroy target") || 
                 text.includes("exile target") || 
                 text.includes("deals damage to target creature") ||

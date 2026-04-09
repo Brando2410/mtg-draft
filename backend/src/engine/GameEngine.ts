@@ -1,7 +1,7 @@
 import { GameState, Phase, Step, PlayerId, Zone, GameObject, PlayerState, DurationType } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { StackResolver } from './modules';
-import { M21_LOGIC } from './data/m21_logic';
+import { m21 } from './data/m21';
 import { ManaProcessor } from './modules/magic/ManaProcessor';
 import { GameSetupProcessor, PlayerActionProcessor, PlayerActionCallbacks, TurnProcessor, PriorityProcessor, PriorityCallbacks, StackProcessor, ActionProcessor, SpellProcessor, ChoiceProcessor, StateBasedActionsProcessor, CombatProcessor, CombatCallbacks, TriggerProcessor, LayerProcessor, EffectProcessor } from './modules';
 
@@ -57,13 +57,14 @@ export class GameEngine {
         playersWithPermanentReturnedThisTurn: {},
         noncombatDamageDealtToOpponents: 0,
         creaturesAttackedThisTurn: 0,
-        creaturesDiedThisTurn: 0,
+        creaturesDiedThisTurn: [],
         lastDamageAmount: 0,
         lastLifeGainedAmount: 0,
         lastCardsDrawnAmount: 0,
         cardsDrawnThisTurn: {},
         spellsCastThisTurn: {},
-        instantOrSorceryCastThisTurn: {}
+        instantOrSorceryCastThisTurn: {},
+        landsPlayedThisTurn: {}
       }
     };
 
@@ -219,7 +220,7 @@ export class GameEngine {
 
   /**
    * CR 602: Activating Activated Abilities
-   * @param abilityIndex The index of the ability in the card's M21_LOGIC entry
+   * @param abilityIndex The index of the ability in the card's m21 entry
    */
   public activateAbility(playerId: PlayerId, cardId: string, abilityIndex: number, declaredTargets: string[] = [], bypassTargeting: boolean = false): boolean {
     return SpellProcessor.activateAbility(
@@ -372,13 +373,14 @@ export class GameEngine {
       playersWithPermanentReturnedThisTurn: {},
       noncombatDamageDealtToOpponents: 0,
       creaturesAttackedThisTurn: 0,
-      creaturesDiedThisTurn: 0,
+      creaturesDiedThisTurn: [],
       lastDamageAmount: 0,
       lastLifeGainedAmount: 0,
       lastCardsDrawnAmount: 0,
       cardsDrawnThisTurn: {},
       spellsCastThisTurn: {},
-      instantOrSorceryCastThisTurn: {}
+      instantOrSorceryCastThisTurn: {},
+      landsPlayedThisTurn: {}
     };
   }
 

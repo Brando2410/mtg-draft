@@ -5,6 +5,7 @@ import fs from 'fs';
 import multer from 'multer';
 import { PersistenceService } from './services/PersistenceService';
 import { AssetService } from './services/AssetService';
+import { m21 } from './engine/data/m21';
 
 const app = express();
 
@@ -137,6 +138,22 @@ app.delete('/api/assets/:type/:filename', async (req, res) => {
   }
 });
 
+// --- Implemented Cards Registry ---
+app.get('/api/implemented', (req, res) => {
+  try {
+    const cards = Object.values(m21).map(card => ({
+      name: card.name,
+      oracleText: card.oracleText,
+      engineStatus: card.abilities?.length ? 'IMPLEMENTED' : 'DATA_ONLY',
+      manualStatus: card.abilities?.length ? 'VERIFIED' : 'MISSING', // Default for now
+    }));
+    res.json(cards);
+  } catch (err) {
+    res.status(500).json({ error: 'Errore nel recupero delle carte implementate' });
+  }
+});
+
+
 // --- Servizio File Statici per il Frontend (Produzione) ---
 // Cerchiamo la cartella dist in più punti per supportare sia local che monorepo build
 const possibleFrontendPaths = [
@@ -151,7 +168,7 @@ const frontendPath = possibleFrontendPaths.find(p => fs.existsSync(p)) || '';
 if (frontendPath) {
   console.log('Serving frontend from:', frontendPath);
   app.use(express.static(frontendPath));
-  
+
   // Rotta catch-all per gestire il routing lato client (Single Page App)
   app.get(/.*/, (req, res, next) => {
     // Escludiamo le API

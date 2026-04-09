@@ -1,5 +1,5 @@
 import { GameState, PlayerId, Zone } from '@shared/engine_types';
-import { M21_LOGIC } from '../../data/m21_logic';
+import { m21 } from '../../data/m21';
 
 /**
  * Handles interactive player choices (Targeting, Modal Choices)
@@ -70,8 +70,8 @@ export class ChoiceProcessor {
         // Refund Loyalty
         const abilityIndex = savedActionData?.abilityIndex;
         if (abilityIndex !== undefined) {
-            const logic = M21_LOGIC[objOnBattlefield.definition.name];
-            const ability = logic?.abilities[abilityIndex];
+            const logic = m21[objOnBattlefield.definition.name];
+            const ability = (logic?.abilities as any)?.[abilityIndex];
             const lCost = ability?.costs?.find((c: any) => c.type === 'Loyalty')?.value;
             if (lCost !== undefined) {
                 objOnBattlefield.counters['loyalty'] = (objOnBattlefield.counters['loyalty'] || 0) - lCost;
@@ -105,7 +105,10 @@ export class ChoiceProcessor {
   private static handlePlaneswalkerActivation(state: GameState, playerId: string, obj: any, choice: any, log: (m: string) => void, engine: any): boolean {
     const { TargetingProcessor } = require('./TargetingProcessor');
     const abilityIndex = choice.value;
-    const ability = M21_LOGIC[obj.definition.name].abilities[abilityIndex];
+    const logic = m21[obj.definition.name];
+    const ability = (logic as any)?.abilities?.[abilityIndex];
+
+    if (!ability) return false;
 
     if (ability.targetDefinition) {
        const targetDef = ability.targetDefinition;
@@ -180,6 +183,16 @@ export class ChoiceProcessor {
     state.pendingAction = undefined; 
     
     const { EffectProcessor } = require('../effects/EffectProcessor');
+    const { CostProcessor } = require('../../magic/CostProcessor');
+
+    if (choice.costs && choice.costs.length > 0) {
+        if (!CostProcessor.canPay(state, choice.costs, sourceId, action.playerId)) {
+            log(`Insufficient resources to select: ${choice.label}`);
+            return false;
+        }
+        CostProcessor.pay(state, choice.costs, sourceId, action.playerId, log);
+    }
+
     if (choice.effects && choice.effects.length > 0) {
         EffectProcessor.resolveEffects(state, choice.effects, sourceId, targetsForResolution, log, 0, stackObj, savedActionData);
     }

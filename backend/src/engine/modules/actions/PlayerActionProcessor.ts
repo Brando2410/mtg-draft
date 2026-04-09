@@ -58,8 +58,8 @@ export class PlayerActionProcessor {
       const stackEmpty = state.stack.length === 0;
       const isMyTurn = state.activePlayerId === playerId;
 
-      const { M21_LOGIC } = require('../../data/m21_logic');
-      const logic = M21_LOGIC[obj.definition.name];
+      const { m21 } = require('../../data/m21');
+      const logic = m21[obj.definition.name];
       const canActivateAnyTime = logic?.abilities.some((a: any) => a.type === 'Static' && a.id.includes('any_turn'));
 
       if (!canActivateAnyTime && (!isMyTurn || !isMainPhase || !stackEmpty)) {
@@ -103,7 +103,7 @@ export class PlayerActionProcessor {
     }
 
     // 3. Generic Activated Ability Choice (Non-Planeswalker)
-    const { M21_LOGIC: mLogic } = require('../../data/m21_logic');
+    const { m21: mLogic } = require('../../data/m21');
     const logic = mLogic[obj.definition.name];
     const activatedAbilities = logic?.abilities?.filter((a: any) => a.type === AbilityType.Activated && !a.isManaAbility) || [];
 

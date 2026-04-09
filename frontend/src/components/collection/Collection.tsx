@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Home, Trash2, ExternalLink, Calendar, Search, Loader2, Sword, LayoutGrid, Plus } from 'lucide-react';
+import { Home, Trash2, ExternalLink, Calendar, Search, Loader2, Sword, LayoutGrid, Plus, ShieldCheck } from 'lucide-react';
+import { ImplementedCards } from './ImplementedCards';
 
 interface SavedItem {
   id: string;
@@ -21,22 +22,29 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
   const [items, setItems] = useState<SavedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState<'cube' | 'deck'>('cube');
+  const [activeTab, setActiveTab] = useState<'cube' | 'deck' | 'implemented'>('cube');
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const isDev = window.location.port === '5173';
+      const API_URL = import.meta.env.VITE_API_URL || (isDev ? 'http://localhost:4000' : window.location.origin);
       
       // Fetch cubes
       const cubeRes = await fetch(`${API_URL}/api/cubes`);
-      const cubes = await cubeRes.json();
-      const mappedCubes = Array.isArray(cubes) ? cubes.map((c: any) => ({ ...c, type: 'cube' })) : [];
+      let mappedCubes: SavedItem[] = [];
+      if (cubeRes.ok) {
+        const cubes = await cubeRes.json();
+        mappedCubes = Array.isArray(cubes) ? cubes.map((c: any) => ({ ...c, type: 'cube' })) : [];
+      }
 
       // Fetch decks
       const deckRes = await fetch(`${API_URL}/api/decks`);
-      const decks = await deckRes.json();
-      const mappedDecks = Array.isArray(decks) ? decks.map((d: any) => ({ ...d, type: 'deck' })) : [];
+      let mappedDecks: SavedItem[] = [];
+      if (deckRes.ok) {
+        const decks = await deckRes.json();
+        mappedDecks = Array.isArray(decks) ? decks.map((d: any) => ({ ...d, type: 'deck' })) : [];
+      }
 
       setItems([...mappedCubes, ...mappedDecks]);
     } catch (e) {
@@ -53,9 +61,11 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
 
   const handleLoadItem = async (id: string, type: 'cube' | 'deck') => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const isDev = window.location.port === '5173';
+      const API_URL = import.meta.env.VITE_API_URL || (isDev ? 'http://localhost:4000' : window.location.origin);
       const endpoint = type === 'cube' ? 'cubes' : 'decks';
       const res = await fetch(`${API_URL}/api/${endpoint}/${id}`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       
       if (type === 'cube') {
@@ -65,13 +75,15 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
       }
     } catch (e) {
       console.error(`Error loading ${type}:`, e);
+      alert(`Errore nel caricamento del ${type === 'cube' ? 'cubo' : 'mazzo'}`);
     }
   };
 
   const handleDeleteItem = async (id: string, name: string, type: 'cube' | 'deck') => {
     if (!window.confirm(`Sei sicuro di voler eliminare ${type === 'cube' ? 'il cubo' : 'il mazzo'} "${name}"? L'azione è irreversibile.`)) return;
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const isDev = window.location.port === '5173';
+      const API_URL = import.meta.env.VITE_API_URL || (isDev ? 'http://localhost:4000' : window.location.origin);
       const endpoint = type === 'cube' ? 'cubes' : 'decks';
       const res = await fetch(`${API_URL}/api/${endpoint}/${id}`, { method: 'DELETE' });
       if (res.ok) fetchData();
@@ -82,7 +94,7 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
 
   const filteredItems = items.filter(item => 
     item.type === activeTab &&
-    item.name.toLowerCase().includes(search.toLowerCase())
+    (item.name || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -122,6 +134,13 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
                 <Sword className="w-4 h-4" />
                 Mazzi
               </button>
+              <button 
+                onClick={() => setActiveTab('implemented')}
+                className={`flex-1 sm:flex-none flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeTab === 'implemented' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'text-slate-500 hover:text-slate-300'}`}
+              >
+                <ShieldCheck className="w-4 h-4" />
+                Implemented
+              </button>
            </div>
 
           <div className="relative w-full group">
@@ -145,72 +164,80 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* NEW ITEM CARD */}
-          <button 
-            onClick={activeTab === 'cube' ? onCreateNewCube : onCreateNewDeck}
-            className="group relative bg-slate-900/10 border-2 border-dashed border-white/5 rounded-[2.5rem] p-8 hover:bg-slate-900/30 hover:border-indigo-500/30 transition-all duration-500 flex flex-col items-center justify-center gap-6 min-h-[300px]"
-          >
-            <div className={`p-6 rounded-3xl ${activeTab === 'cube' ? 'bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500' : 'bg-purple-500/10 text-purple-400 group-hover:bg-purple-500'} group-hover:text-white transition-all duration-500`}>
-              <Plus className="w-10 h-10" />
-            </div>
-            <div className="text-center space-y-2">
-              <h4 className="text-2xl font-black text-white uppercase tracking-tight italic">
-                Crea {activeTab === 'cube' ? 'Nuovo Cubo' : 'Nuovo Mazzo'}
-              </h4>
-              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest group-hover:text-slate-300 transition-colors">
-                {activeTab === 'cube' ? 'Inizia un nuovo progetto draft' : 'Componi una strategia micidiale'}
-              </p>
-            </div>
-          </button>
-
-          {filteredItems.map(item => (
-            <div 
-              key={item.id}
-              className="group relative bg-slate-900/30 border border-white/5 rounded-[2.5rem] p-8 hover:bg-slate-900/50 hover:border-indigo-500/20 transition-all duration-500 shadow-xl overflow-hidden"
+          {activeTab !== 'implemented' && (
+            <button 
+              onClick={activeTab === 'cube' ? onCreateNewCube : onCreateNewDeck}
+              className="group relative bg-slate-900/10 border-2 border-dashed border-white/5 rounded-[2.5rem] p-8 hover:bg-slate-900/30 hover:border-indigo-500/30 transition-all duration-500 flex flex-col items-center justify-center gap-6 min-h-[300px]"
             >
-              <div className={`absolute top-0 right-0 w-32 h-32 ${item.type === 'cube' ? 'bg-indigo-500/5' : 'bg-purple-500/5'} rounded-full blur-3xl transition-colors`} />
-              
-              <div className="relative space-y-6">
-                <div className="flex justify-between items-start">
-                  <div className={`p-4 rounded-2xl ${item.type === 'cube' ? 'bg-indigo-500/10 text-indigo-500' : 'bg-purple-500/10 text-purple-500'}`}>
-                    {item.type === 'cube' ? <LayoutGrid className="w-6 h-6" /> : <Sword className="w-6 h-6" />}
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Ultima Modifica</span>
-                    <div className="flex items-center gap-2 text-slate-400 text-xs font-bold">
-                      <Calendar className="w-3 h-3" />
-                      {item.lastUpdated ? new Date(item.lastUpdated).toLocaleDateString() : '---'}
+              <div className={`p-6 rounded-3xl ${activeTab === 'cube' ? 'bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500' : 'bg-purple-500/10 text-purple-400 group-hover:bg-purple-500'} group-hover:text-white transition-all duration-500`}>
+                <Plus className="w-10 h-10" />
+              </div>
+              <div className="text-center space-y-2">
+                <h4 className="text-2xl font-black text-white uppercase tracking-tight italic">
+                  Crea {activeTab === 'cube' ? 'Nuovo Cubo' : 'Nuovo Mazzo'}
+                </h4>
+                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest group-hover:text-slate-300 transition-colors">
+                  {activeTab === 'cube' ? 'Inizia un nuovo progetto draft' : 'Componi una strategia micidiale'}
+                </p>
+              </div>
+            </button>
+          )}
+
+          {activeTab === 'implemented' ? (
+             <div className="col-span-full">
+                <ImplementedCards />
+             </div>
+          ) : (
+            filteredItems.map(item => (
+              <div 
+                key={item.id}
+                className="group relative bg-slate-900/30 border border-white/5 rounded-[2.5rem] p-8 hover:bg-slate-900/50 hover:border-indigo-500/20 transition-all duration-500 shadow-xl overflow-hidden"
+              >
+                <div className={`absolute top-0 right-0 w-32 h-32 ${item.type === 'cube' ? 'bg-indigo-500/5' : 'bg-purple-500/5'} rounded-full blur-3xl transition-colors`} />
+                
+                <div className="relative space-y-6">
+                  <div className="flex justify-between items-start">
+                    <div className={`p-4 rounded-2xl ${item.type === 'cube' ? 'bg-indigo-500/10 text-indigo-500' : 'bg-purple-500/10 text-purple-500'}`}>
+                      {item.type === 'cube' ? <LayoutGrid className="w-6 h-6" /> : <Sword className="w-6 h-6" />}
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">Ultima Modifica</span>
+                      <div className="flex items-center gap-2 text-slate-400 text-xs font-bold">
+                        <Calendar className="w-3 h-3" />
+                        {item.lastUpdated ? new Date(item.lastUpdated).toLocaleDateString() : '---'}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <h4 className={`text-2xl font-black text-white uppercase tracking-tight transition-colors truncate ${item.type === 'cube' ? 'group-hover:text-indigo-400' : 'group-hover:text-purple-400'}`}>
-                    {item.name}
-                  </h4>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-950/50 rounded-lg border border-white/5">
-                    <span className={`${item.type === 'cube' ? 'text-indigo-400' : 'text-purple-400'} font-black text-sm`}>{item.cardCount}</span>
-                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Carte</span>
+                  <div className="space-y-2">
+                    <h4 className={`text-2xl font-black text-white uppercase tracking-tight transition-colors truncate ${item.type === 'cube' ? 'group-hover:text-indigo-400' : 'group-hover:text-purple-400'}`}>
+                      {item.name}
+                    </h4>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-950/50 rounded-lg border border-white/5">
+                      <span className={`${item.type === 'cube' ? 'text-indigo-400' : 'text-purple-400'} font-black text-sm`}>{item.cardCount}</span>
+                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Carte</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-6 flex items-center gap-3">
+                    <button 
+                      onClick={() => handleLoadItem(item.id, item.type)}
+                      className={`flex-1 py-4 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all shadow-lg ${item.type === 'cube' ? 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/20' : 'bg-purple-600 hover:bg-purple-500 shadow-purple-600/20'}`}
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Visualizza {item.type === 'cube' ? 'Cubo' : 'Mazzo'}
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteItem(item.id, item.name, item.type)}
+                      className="p-4 bg-slate-800/50 hover:bg-red-500/10 text-slate-600 hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-500/20"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-
-                <div className="pt-6 flex items-center gap-3">
-                  <button 
-                    onClick={() => handleLoadItem(item.id, item.type)}
-                    className={`flex-1 py-4 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 transition-all shadow-lg ${item.type === 'cube' ? 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/20' : 'bg-purple-600 hover:bg-purple-500 shadow-purple-600/20'}`}
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Visualizza {item.type === 'cube' ? 'Cubo' : 'Mazzo'}
-                  </button>
-                  <button 
-                    onClick={() => handleDeleteItem(item.id, item.name, item.type)}
-                    className="p-4 bg-slate-800/50 hover:bg-red-500/10 text-slate-600 hover:text-red-500 rounded-2xl transition-all border border-transparent hover:border-red-500/20"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       )}
 

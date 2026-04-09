@@ -260,7 +260,7 @@ export const DebugConsole = ({
                                <div className="flex flex-wrap gap-1.5 mt-2">
                                   {effect.powerModifier !== undefined && (
                                      <span className="text-[8px] font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                                        {effect.powerModifier > 0 ? '+' : ''}{effect.powerModifier}/{effect.toughnessModifier ?? 0}
+                                        {Number(effect.powerModifier) > 0 ? '+' : ''}{effect.powerModifier}/{effect.toughnessModifier ?? 0}
                                      </span>
                                   )}
                                   {effect.abilitiesToAdd?.map(ability => (

@@ -8,6 +8,8 @@ import { DebugConsole } from './DebugConsole';
 import { socket } from '../../services/socket';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type GameObject, ActionType } from '@shared/engine_types';
+import { useDraftStore } from '../../store/useDraftStore';
+import { Settings, RefreshCw, LogOut, Trash2, Play } from 'lucide-react';
 
 interface GameViewProps {
   room: Room;
@@ -20,6 +22,10 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
   const [effectivePlayerId, setEffectivePlayerId] = useState(playerId);
   const [hoveredCard, setHoveredCard] = useState<GameObject | null>(null);
   const [zoomTimer, setZoomTimer] = useState<any>(null);
+  const [showEscMenu, setShowEscMenu] = useState(false);
+
+  const { resetMatch, backToLobby, closeRoom } = useDraftStore();
+  const isHost = room.hostPlayerId === playerId;
 
   const startZoom = (obj: GameObject) => {
     if (zoomTimer) clearTimeout(zoomTimer);
@@ -45,6 +51,9 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
       // MTG Arena uses Ctrl to toggle/hold full control
       if (e.key === 'Control') {
         socket.emit('toggle_full_control', { roomId: room.id, playerId: effectivePlayerId });
+      }
+      if (e.key === 'Escape') {
+        setShowEscMenu(prev => !prev);
       }
     };
 
@@ -300,6 +309,96 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
                   </div>
               </motion.div>
           )}
+      </AnimatePresence>
+
+      {/* ESC MENU OVERLAY */}
+      <AnimatePresence>
+        {showEscMenu && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[500] bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-6"
+            onClick={() => setShowEscMenu(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="w-full max-w-md bg-slate-900 border border-white/10 rounded-[2.5rem] p-8 shadow-2xl flex flex-col gap-6"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-4 mb-2">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                  <Settings className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white leading-none">Menu <span className="text-indigo-500">Opzioni</span></h2>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Game Session Controls</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={() => setShowEscMenu(false)}
+                  className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 hover:border-white/20 transition-all text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <Play className="w-5 h-5 text-indigo-400" />
+                    <span className="font-bold text-slate-200">Torna in Gioco</span>
+                  </div>
+                  <span className="text-[10px] font-black text-slate-500 uppercase">ESC</span>
+                </button>
+
+                {isHost && (
+                  <>
+                    <div className="h-px bg-white/5 my-2" />
+                    <p className="text-[10px] font-black text-indigo-400/50 uppercase tracking-[0.2em] px-2 mb-1">Host Controls</p>
+                    
+                    <button 
+                      onClick={() => { resetMatch(); setShowEscMenu(false); }}
+                      className="group flex items-center gap-3 p-4 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-2xl border border-indigo-500/20 hover:border-indigo-500/40 transition-all text-left"
+                    >
+                      <RefreshCw className="w-5 h-5 text-indigo-400" />
+                      <div>
+                        <span className="font-bold text-indigo-100 block">Ricomincia Partita</span>
+                        <span className="text-[9px] font-bold text-indigo-400/60 uppercase">Resetta lo stato attuale</span>
+                      </div>
+                    </button>
+
+                    <button 
+                      onClick={() => { backToLobby(); setShowEscMenu(false); }}
+                      className="group flex items-center gap-3 p-4 bg-slate-800/40 hover:bg-slate-800/60 rounded-2xl border border-white/5 hover:border-white/10 transition-all text-left"
+                    >
+                      <LogOut className="w-5 h-5 text-slate-400" />
+                      <div>
+                        <span className="font-bold text-slate-200 block">Torna alla Lobby</span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase">Per riscegliere i mazzi</span>
+                      </div>
+                    </button>
+
+                    <button 
+                      onClick={() => { if(confirm("Sei sicuro? La stanza verrà distrutta per tutti.")) closeRoom(); }}
+                      className="group flex items-center gap-3 p-4 bg-red-500/10 hover:bg-red-500/20 rounded-2xl border border-red-500/20 hover:border-red-500/40 transition-all text-left mt-2"
+                    >
+                      <Trash2 className="w-5 h-5 text-red-500" />
+                      <div>
+                        <span className="font-bold text-red-100 block">Chiudi Stanza</span>
+                        <span className="text-[9px] font-bold text-red-500/60 uppercase">Distruggi match per tutti</span>
+                      </div>
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="text-center">
+                <p className="text-[9px] font-bold text-slate-700 uppercase tracking-widest">
+                  Match ID: {room.id} • {room.isNormalMatch ? 'Normal Match' : 'Draft Match'}
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
     </div>

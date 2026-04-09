@@ -1,4 +1,4 @@
-import { GameObject, GameState, ContinuousEffect } from '@shared/engine_types';
+import { GameObject, GameState, ContinuousEffect, PlayerId, GameEvent } from '@shared/engine_types';
 import { TargetingProcessor } from '../actions/TargetingProcessor';
 
 /**
@@ -23,7 +23,11 @@ export class LayerProcessor {
                        state.exile.find(o => o.id === e.sourceId);
         
         if (!source) return false;
-        return e.activeZones.includes(source.zone);
+        if (!e.activeZones.includes(source.zone)) return false;
+
+        // Check declarative conditions (if any)
+        // Note: recursion depth is managed in getEffectiveStats
+        return this.matchesCondition(state, e.condition, e.sourceId, e.controllerId);
       })
       .sort((a, b) => (a.layer - b.layer) || (a.timestamp - b.timestamp));
 
@@ -47,11 +51,18 @@ export class LayerProcessor {
     let power = parseInt(currentDefinition.power || '0') || 0;
     let toughness = parseInt(currentDefinition.toughness || '0') || 0;
     let keywords = new Set([...(currentDefinition.keywords || []), ...(obj.keywords || [])]);
+    let types = new Set([...(currentDefinition.types || [])]);
+    let subtypes = new Set([...(currentDefinition.subtypes || [])]);
 
     // 4. APPLY REMAINING LAYERS (2-7)
     for (const effect of effects) {
       if (effect.layer === 1) continue; 
       if (!this.isTarget(state, effect, obj.id)) continue;
+
+      // Layer 4: Type-changing effects
+      if (effect.layer === 4) {
+        effect.subtypesToAdd?.forEach(t => subtypes.add(t));
+      }
 
       // Layer 6: Ability Adding/Removing
       if (effect.layer === 6) {
@@ -64,14 +75,29 @@ export class LayerProcessor {
 
       // Layer 7: Power/Toughness
       if (effect.layer === 7) {
-        if (effect.powerSet !== undefined) power = effect.powerSet;
-        if (effect.toughnessSet !== undefined) toughness = effect.toughnessSet;
-        if (effect.powerModifier) power += effect.powerModifier;
-        if (effect.toughnessModifier) toughness += effect.toughnessModifier;
+        // Sublayer 7a: Characteristic-defining abilities
+        if ((effect as any).powerDynamic === 'INSTANTS_AND_SORCERIES_IN_GRAVEYARD') {
+            const player = state.players[obj.controllerId];
+            if (player) {
+                power = player.graveyard.filter(c => c.definition.types.some(t => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery')).length;
+            }
+        }
+        
+        // Sublayer 7b: Effects that set power and/or toughness
+        if (effect.powerSet !== undefined) power = Number(effect.powerSet);
+        if (effect.toughnessSet !== undefined) toughness = Number(effect.toughnessSet);
       }
     }
 
-    // Layer 7d: Counters (Rule 613.4c)
+    // 5. LAYER 7c: Power/Toughness Modifiers (CR 613.4c)
+    for (const effect of effects) {
+        if (effect.layer === 7 && this.isTarget(state, effect, obj.id)) {
+            if (effect.powerModifier !== undefined) power += Number(effect.powerModifier);
+            if (effect.toughnessModifier !== undefined) toughness += Number(effect.toughnessModifier);
+        }
+    }
+
+    // 6. LAYER 7d: Counters (Rule 613.4c)
     const plus1 = (obj.counters?.['+1/+1'] || 0) + (obj.counters?.['1/1'] || 0);
     const minus1 = (obj.counters?.['-1/-1'] || 0) + (obj.counters?.['-1/-1_counter'] || 0);
     
@@ -82,7 +108,9 @@ export class LayerProcessor {
     return {
       power: Math.max(0, power),
       toughness: Math.max(0, toughness),
-      keywords: Array.from(keywords)
+      keywords: Array.from(keywords),
+      types: Array.from(types),
+      subtypes: Array.from(subtypes)
     };
   }
 
@@ -101,6 +129,71 @@ export class LayerProcessor {
       }
     }
     return controllerId;
+  }
+
+  public static matchesCondition(state: GameState, condition: string | undefined, sourceId: string, controllerId: string, event?: GameEvent): boolean {
+    if (!condition) return true;
+
+    // Support for multiple conditions: CONDITION_1 && CONDITION_2
+    if (condition.includes('&&')) {
+        return condition.split('&&').every(c => this.matchesCondition(state, c.trim(), sourceId, controllerId));
+    }
+
+    // Parameterized conditions: HAS_PERMANENT:creature,power>=4
+    if (condition.includes(':')) {
+        const [type, params] = condition.split(':');
+        const restrictions = params.split(',').map(r => r.trim());
+
+        switch (type) {
+            case 'HAS_PERMANENT':
+                return state.battlefield.some(obj => 
+                    TargetingProcessor.matchesRestrictions(state, obj, restrictions, controllerId, sourceId)
+                );
+            case 'NOT_HAS_PERMANENT':
+                return !state.battlefield.some(obj => 
+                    TargetingProcessor.matchesRestrictions(state, obj, restrictions, controllerId, sourceId)
+                );
+            case 'PLAYER_HAS_LIFE_GE':
+                const life = parseInt(restrictions[0]);
+                return (state.players[controllerId as PlayerId]?.life || 0) >= life;
+            case 'OPPONENT_HAS_LIFE_LE':
+                const oppLife = parseInt(restrictions[0]);
+                const opponent = Object.keys(state.players).find(pid => pid !== controllerId);
+                return opponent ? (state.players[opponent as PlayerId]?.life || 0) <= oppLife : false;
+            case 'EVENT_OBJECT_MATCHES':
+                const eventObj = event?.data?.object || (event as any)?.gameObject;
+                if (!eventObj) return false;
+                return TargetingProcessor.matchesRestrictions(state, eventObj, restrictions, controllerId, sourceId);
+            case 'TARGET_1_MATCHES':
+            case 'TARGET_2_MATCHES':
+                const targetIdx = type === 'TARGET_1_MATCHES' ? 0 : 1;
+                const targetId = (event as any)?.targetIds?.[targetIdx] || (event as any)?.targetId;
+                if (!targetId) return false;
+                const targetObj = state.battlefield.find(o => o.id === targetId) || 
+                                  state.exile.find(o => o.id === targetId) ||
+                                  Object.values(state.players).flatMap(p => [...p.hand, ...p.graveyard, ...p.library]).find(o => o.id === targetId);
+                if (!targetObj) return false;
+                return TargetingProcessor.matchesRestrictions(state, targetObj, restrictions, controllerId, sourceId);
+        }
+    }
+
+    // Generic/Legacy strings
+    switch (condition) {
+        case 'IS_YOUR_TURN':
+            return state.activePlayerId === controllerId;
+        case 'HAS_CREATURE_POWER_4_PLUS':
+            return state.battlefield.some(obj => 
+                obj.controllerId === controllerId && 
+                obj.definition.types.some(t => t.toLowerCase() === 'creature') &&
+                (parseInt(obj.definition.power || '0') >= 4 || (obj.effectiveStats?.power || 0) >= 4)
+            );
+        case 'PLAYER_IS_CONTROLLER':
+            return true;
+        case 'OBJECT_IS_SELF':
+            return true;
+        default:
+            return true;
+    }
   }
 
   private static isTarget(state: GameState, effect: ContinuousEffect, objId: string): boolean {
@@ -127,6 +220,13 @@ export class LayerProcessor {
            return obj.controllerId === effect.controllerId && TargetingProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId);
          case 'MATCHING_PERMANENTS':
            return TargetingProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId);
+         case 'ALL_CREATURES_OPPONENTS_CONTROL':
+         case 'OPPONENTS_CREATURES':
+           return obj.controllerId !== effect.controllerId && obj.definition.types.some(t => t.toLowerCase() === 'creature');
+         case 'ALL_PERMANENTS_OPPONENTS_CONTROL':
+           return obj.controllerId !== effect.controllerId;
+         case 'ALL_OTHER_CREATURES':
+           return obj.id !== effect.sourceId && obj.definition.types.some(t => t.toLowerCase() === 'creature');
          default:
            // If a mapping is specified but not handled here, we MUST NOT fall back to global.
            return false; 

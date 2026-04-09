@@ -1,5 +1,5 @@
 import { GameState, StackObject, EffectDefinition, AbilityType } from '@shared/engine_types';
-import { M21_LOGIC } from '../../data/m21_logic';
+import { m21 } from '../../data/m21';
 
 /**
  * Handles the management and resolution of objects on the stack (Rule 405)
@@ -16,16 +16,16 @@ export class StackProcessor {
     // Priority 2: Fallback logic for legacy objects or specific spell/ability types
     if (effects.length === 0) {
         if (objectToResolve.type === AbilityType.Spell && objectToResolve.card) {
-          const logic = M21_LOGIC[objectToResolve.card.definition.name];
+          const logic = m21[objectToResolve.card.definition.name];
           effects = logic?.abilities?.find((a: any) => a.type === AbilityType.Spell)?.effects || [];
         } 
         else if (objectToResolve.type === AbilityType.Activated) {
             const sourceObj = state.battlefield.find(o => o.id === objectToResolve.sourceId);
             if (sourceObj) {
-              const cardLogic = M21_LOGIC[sourceObj.definition.name];
+              const cardLogic = m21[sourceObj.definition.name];
               const ability = cardLogic?.abilities?.[objectToResolve.abilityIndex ?? -1];
               if (ability) {
-                  effects = ability.effects;
+                  effects = ability.effects || [];
               }
             }
         }

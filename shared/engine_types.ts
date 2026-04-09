@@ -26,7 +26,7 @@ export const Step = {
   Untap: 'Untap',
   Upkeep: 'Upkeep',
   Draw: 'Draw',
-  
+
   // Main Phases don't have distinct steps inside them usually, just the 'Main' step
   Main: 'Main',
 
@@ -63,6 +63,7 @@ export interface CardDefinition {
   type_line?: string;
   image_url?: string;
   scryfall_id?: string;
+  set?: string;
 }
 
 // A physical/virtual object existing in a Zone.
@@ -72,10 +73,10 @@ export interface GameObject {
   ownerId: PlayerId;
   controllerId: PlayerId;
   zone: Zone;
-  
+
   // The base blueprint
   definition: CardDefinition;
-  
+
   // Volatile state
   isTapped: boolean;
   damageMarked: number;
@@ -87,7 +88,7 @@ export interface GameObject {
   isPhasedOut?: boolean; // CR 702.26: Treated as though it doesn't exist
   lastNonStackZone?: Zone; // Track where a spell was cast from
   xValue?: number;         // Rule 107.3: Snapshot of X during casting
-  
+
   // Modifiers (Layer system targets)
   counters: Record<string, number>;
   attachedTo?: GameObjectId;
@@ -120,7 +121,7 @@ export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 export interface StackObject {
   id: string;
   controllerId: PlayerId;
-  sourceId: GameObjectId; 
+  sourceId: GameObjectId;
   type: AbilityType;
   targets: GameObjectId[] | PlayerId[];
   card?: GameObject;
@@ -137,12 +138,12 @@ export interface PlayerState {
   name: string;
   life: number;
   poisonCounters: number;
-  
+
   // Zones that belong to the player
   library: GameObject[];
   hand: GameObject[];
   graveyard: GameObject[];
-  
+
   // Mana Pool resets every Step/Phase
   manaPool: {
     W: number;
@@ -152,7 +153,7 @@ export interface PlayerState {
     G: number;
     C: number; // Colorless
   };
-  
+
   hasPlayedLandThisTurn: boolean;
   fullControl: boolean;
   maxHandSize: number;
@@ -161,15 +162,15 @@ export interface PlayerState {
 }
 
 export interface CombatState {
-  attackers: { 
-    attackerId: GameObjectId; 
-    targetId: PlayerId | GameObjectId;
-    order?: GameObjectId[]; 
-  }[];
-  blockers: { 
-    blockerId: GameObjectId; 
+  attackers: {
     attackerId: GameObjectId;
-    order?: GameObjectId[]; 
+    targetId: PlayerId | GameObjectId;
+    order?: GameObjectId[];
+  }[];
+  blockers: {
+    blockerId: GameObjectId;
+    attackerId: GameObjectId;
+    order?: GameObjectId[];
   }[];
 }
 
@@ -178,13 +179,14 @@ export interface TurnState {
   playersWithPermanentReturnedThisTurn: Record<PlayerId, boolean>;
   noncombatDamageDealtToOpponents: number;
   creaturesAttackedThisTurn: number;
-  creaturesDiedThisTurn: number;
+  creaturesDiedThisTurn: any[];
   lastDamageAmount: number;
   lastLifeGainedAmount: number;
   lastCardsDrawnAmount: number;
   cardsDrawnThisTurn: Record<PlayerId, number>;
   spellsCastThisTurn: Record<PlayerId, number>;
   instantOrSorceryCastThisTurn: Record<PlayerId, boolean>;
+  landsPlayedThisTurn: Record<PlayerId, number>;
 }
 
 export interface ChoicePendingActionData {
@@ -217,7 +219,7 @@ export type PendingActionData = ChoicePendingActionData | TargetingPendingAction
 export interface PendingAction {
   type: ActionType;
   playerId: PlayerId;
-  count?: number; 
+  count?: number;
   sourceId?: string; // For targeting or specific effects
   data?: PendingActionData;      // Contextual data (e.g. choice options)
 }
@@ -225,25 +227,25 @@ export interface PendingAction {
 // The monolithic Game State representing the "Source of Truth"
 export interface GameState {
   players: Record<PlayerId, PlayerState>;
-  
+
   // Sequencing and Priority
   activePlayerId: PlayerId;      // Whose turn it is
   priorityPlayerId: PlayerId | null; // Who currently holds priority (null if resolving or in Untap/Cleanup)
-  
+
   currentPhase: Phase;
   currentStep: Step;
   turnNumber: number;
-  
+
   // Active Public Zones
   battlefield: GameObject[];
   exile: GameObject[];
-  
+
   // CR 408: Command Zone — holds emblems permanently
   emblems: EmblemDefinition[];
-  
+
   // The Stack
   stack: StackObject[];
-  
+
   // Combat data
   combat?: CombatState;
   pendingAction?: PendingAction;
@@ -254,7 +256,7 @@ export interface GameState {
   // Mechanic logic
   consecutivePasses: number; // To track when all players pass priority
   logs: string[];            // Real-time game events/engine logs
-  
+
   turnState: TurnState;      // Grouped turn-wide logic tracking
   playerOrder: PlayerId[];   // CR 103: The order of players in the game
 }
@@ -272,7 +274,7 @@ export type DurationType = (typeof DurationType)[keyof typeof DurationType];
 export interface EffectDuration {
   type: DurationType;
   untilStep?: Step;          // For "Until next end step"
-  untilTurnOfPlayerId?: PlayerId; 
+  untilTurnOfPlayerId?: PlayerId;
   expiryEvent?: string;      // Hook for the Event Bus (e.g., 'ON_LEAVES_BATTLEFIELD')
 }
 
@@ -283,19 +285,23 @@ export interface ContinuousEffect {
   layer: number;
   sublayer?: string;
   timestamp: number;
-  activeZones: Zone[]; 
+  activeZones: Zone[];
   duration: EffectDuration;
   targetIds?: GameObjectId[];
   targetMapping?: string;
   targetControllerId?: PlayerId;
-  powerModifier?: number;
-  toughnessModifier?: number;
-  powerSet?: number;      // Layer 7b
-  toughnessSet?: number;  // Layer 7b
+  powerModifier?: number | string;
+  toughnessModifier?: number | string;
+  powerSet?: number | string;      // Layer 7b
+  toughnessSet?: number | string;  // Layer 7b
+  powerDynamic?: string;
+  toughnessDynamic?: string;
   abilitiesToAdd?: string[];
   abilitiesToRemove?: string[];
+  subtypesToAdd?: string[];
   removeAllAbilities?: boolean; // Layer 6
-  
+  condition?: string;
+
   // For Layer 1 (Copying)
   copyFromId?: GameObjectId;
 
@@ -307,7 +313,7 @@ export interface ContinuousEffect {
 
 export interface AbilityCost {
   type: 'Tap' | 'Mana' | 'PayLife' | 'Discard' | 'Sacrifice' | 'Loyalty';
-  value: any; // e.g. "{G}" or 3 life
+  value?: any; // e.g. "{G}" or 3 life
   restrictions?: string[]; // e.g. ["Creature"]
   targetMapping?: string;  // e.g. "SELF"
 }
@@ -326,7 +332,8 @@ export const RestrictionType = {
   CannotUntap: 'CannotUntap',
   CannotAttack: 'CannotAttack',
   CannotBlock: 'CannotBlock',
-  CannotCastType: 'CannotCastType'
+  CannotCastType: 'CannotCastType',
+  CannotActivateNonManaAbilities: 'CannotActivateNonManaAbilities'
 } as const;
 export type RestrictionType = (typeof RestrictionType)[keyof typeof RestrictionType];
 
@@ -372,12 +379,12 @@ export interface RuleRegistry {
 }
 
 export interface DamagePreventionEffect {
-    id: string;
-    sourceId: string;
-    controllerId: PlayerId;
-    damageType: 'CombatDamage' | 'AllDamage' | 'Any';
-    targetMapping: string; // e.g. 'DOGS_YOU_CONTROL'
-    duration: string;
+  id: string;
+  sourceId: string;
+  controllerId: PlayerId;
+  damageType: 'CombatDamage' | 'AllDamage' | 'Any';
+  targetMapping: string; // e.g. 'DOGS_YOU_CONTROL'
+  duration: string;
 }
 
 export const AbilityType = {
@@ -422,6 +429,13 @@ export interface EmblemDefinition {
   abilities: any[];        // Triggered/Static abilities the emblem provides
 }
 
+export interface EmblemBlueprint {
+  name: string;
+  oracleText: string;
+  abilities: any[];
+  image_url?: string;
+}
+
 
 export const EffectType = {
   DealDamage: 'DealDamage',
@@ -462,47 +476,88 @@ export const EffectType = {
   Shuffle: 'Shuffle',
   Log: 'Log',
   CopySpellOnStack: 'CopySpellOnStack',
+  SpellTax: 'SpellTax',
+  AdditionalCost: 'AdditionalCost',
+  AdditionalLandPlays: 'AdditionalLandPlays',
+  Mill: 'Mill',
+  ModifyDrawAmount: 'ModifyDrawAmount',
+  ModifyCountersAmount: 'ModifyCountersAmount',
+  GainAbilitiesOfTopCard: 'GainAbilitiesOfTopCard',
+  AllowCastFromGraveyard: 'AllowCastFromGraveyard',
+  CombatConstraint: 'CombatConstraint',
+  PreventDamage: 'PreventDamage',
+  LoseGame: 'LoseGame',
+  AddAdditionalTrigger: 'AddAdditionalTrigger',
+  Tap: 'Tap',
+  CounterSpell: 'CounterSpell',
+  CounterAbility: 'CounterAbility',
+  CreateTokenCopy: 'CreateTokenCopy',
+  ChangeTarget: 'ChangeTarget',
+  PlayWithTopCardRevealed: 'PlayWithTopCardRevealed',
+  AllowCastFromTop: 'AllowCastFromTop',
 } as const;
 
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
 
 export interface EffectDefinition {
   type: EffectType;
-  amount?: number | string;
-  value?: any; 
-  
+  amount?: number | string | ((state: any, source: any) => number);
+  value?: any;
+  tapped?: boolean;
+  costs?: AbilityCost[];
+
+  eventMatch?: string; // For AddTriggeredAbility
+
+  manaType?: string;
+  maxCount?: number;
+  manaReduction?: string;
+  emblemBlueprint?: EmblemBlueprint;
+
   // Modular Token Support
   tokenBlueprint?: TokenBlueprint;
-  
+
   // Choice Properties
   choices?: {
     label: string;
+    costs?: AbilityCost[];
     effects: EffectDefinition[];
   }[];
 
   // Continuous Effect Properties
-  duration?: string;
-  powerModifier?: number;
-  toughnessModifier?: number;
-  powerSet?: number;
-  toughnessSet?: number;
+  duration?: string | EffectDuration;
+  powerModifier?: number | string;
+  toughnessModifier?: number | string;
+  powerSet?: number | string;
+  toughnessSet?: number | string;
+  powerDynamic?: string; // For CDAs (Layer 7a) like Tarmogoyf or Kinetic Augur
+  toughnessDynamic?: string; // For CDAs (Layer 7a)
   abilitiesToAdd?: string[];
   abilitiesToRemove?: string[];
   removeAllAbilities?: boolean;
+  subtypesToAdd?: string[];
   layer?: number;
   targetControllerId?: string;
   isFreeCast?: boolean;
   canPlayExiled?: boolean;
-  
+
   // Dynamic Token stats
   powerOverride?: number | string;
   toughnessOverride?: number | string;
 
+  multiplier?: number;
+  repeatIfTypeMatch?: string[];
+
+  target2Mapping?: string;
+  target3Mapping?: string;
+  isAttacking?: boolean;
+  damageType?: string;
+  additionalCosts?: any[];
+
   // Conditional logic
-  condition?: string; 
+  condition?: string;
   message?: string;
   destination?: Zone;
-  
+
   /**
    * targetMapping conventions:
    * - 'SELF': The card itself
@@ -511,8 +566,9 @@ export interface EffectDefinition {
    * - 'CONTROLLER': The controller of the ability
    * - 'ALL_CREATURES_YOU_CONTROL', 'OTHER_CREATURES_YOU_CONTROL': Group selectors
    */
-  targetMapping?: string; 
-  targetIdMapping?: string; 
+  targetMapping?: string;
+  damageSourceMapping?: string; // Optional mapping for who deals the damage (e.g., 'TARGET_1')
+  targetIdMapping?: string;
   targetIds?: string[]; // For specific snapshots (Exile/Choice results)
   targetDefinition?: TargetDefinition;
   restrictions?: any[];
@@ -531,9 +587,12 @@ export interface EffectDefinition {
   sourceZones?: Zone[]; // For multizone search/movement
   splitDestinations?: { count: number, zone: Zone, tapped?: boolean }[]; // For complex splits (e.g. Cultivate)
   remainderZone?: Zone; // For leftovers (Top/Bottom/Graveyard)
+  remainderPosition?: 'top' | 'bottom'; // Explicit destination position for remainders
   fromTop?: number; // Number of cards to look at from top (Scry/LookAtTop)
   shuffle?: boolean; // For library search
   reveal?: boolean; // For hidden zone search
+  libraryPosition?: 'top' | 'bottom'; // Destination within library
+  shuffleRemainder?: boolean; // For LookAtTopAndPick leftovers
 }
 
 export const TargetType = {
@@ -541,7 +600,8 @@ export const TargetType = {
   Permanent: 'Permanent',
   Spell: 'Spell',
   CardInGraveyard: 'CardInGraveyard',
-  Card: 'Card'
+  Card: 'Card',
+  AnyTarget: 'AnyTarget'
 } as const;
 export type TargetType = (typeof TargetType)[keyof typeof TargetType];
 
@@ -549,20 +609,31 @@ export interface TargetDefinition {
   type: TargetType;
   count: number;
   optional?: boolean;
-  restrictions?: string[];
+  restrictions?: (string | any)[];
 }
 
 export interface ParsedAbility {
   id: string;
   type: AbilityType;
+  multiMode?: { type: string };
+  multiTargetMapping?: boolean; // Support for complex multi-target structures (e.g. Sublime Epiphany)
+  modes?: any[];
   activeZone: ZoneRequirement;
   costs?: AbilityCost[];
   isManaAbility?: boolean;
-  triggerEvent?: string; 
-  triggerCondition?: any; 
+  triggerEvent?: string | string[];
+  triggerCondition?: any;
   targetDefinition?: TargetDefinition;
   activatedOnlyAsSorcery?: boolean;
-  effects: EffectDefinition[];
+  triggerMetadata?: {
+    isCombat?: boolean;
+    triggerDescription?: string; // Optional manual override for the "Whenever..." part
+  };
+  oracleText?: string;
+  replacesEvent?: string;
+  costReduction?: any;
+  restrictions?: { type: string, value?: string, effectZone?: string }[];
+  effects?: EffectDefinition[];
 }
 
 export interface ImplementableCard extends CardDefinition {

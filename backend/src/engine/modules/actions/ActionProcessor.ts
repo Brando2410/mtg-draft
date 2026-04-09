@@ -1,6 +1,6 @@
 import { GameState, PlayerId, GameObject, Zone, AbilityType, DurationType } from '@shared/engine_types';
 import { TriggerProcessor } from '../effects/TriggerProcessor';
-import { M21_LOGIC } from '../../data/m21_logic';
+import { m21 } from '../../data/m21';
 
 /**
  * Physical Actions Handling (Rule 400/103)
@@ -11,7 +11,7 @@ export class ActionProcessor {
    * CR 400.1 / 400.7: An object that moves from one zone to another 
    * becomes a new object with no memory of or relation to its previous existence.
    */
-   public static moveCard(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, log?: (m: string) => void) {
+   public static moveCard(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, log?: (m: string) => void, libraryPosition: 'top' | 'bottom' = 'top') {
     const fromZone = card.zone;
     
     // --- REPLACEMENT EFFECT HOOK (Rule 614/616) ---
@@ -53,6 +53,11 @@ export class ActionProcessor {
         state.turnState.cardsDrawnThisTurn[targetPlayerId] = (state.turnState.cardsDrawnThisTurn[targetPlayerId] || 0) + 1;
         state.turnState.lastCardsDrawnAmount = 1;
         TriggerProcessor.onEvent(state, { type: 'ON_DRAW', playerId: targetPlayerId, data: { card } }, log || (() => {}));
+
+        // Jolrael support: Emit ON_SECOND_DRAW
+        if (state.turnState.cardsDrawnThisTurn[targetPlayerId] === 2) {
+            TriggerProcessor.onEvent(state, { type: 'ON_SECOND_DRAW', playerId: targetPlayerId, data: { card } }, log || (() => {}));
+        }
     }
 
     // CR 603.10: "Leaves-the-battlefield" events MUST look back in time.
@@ -71,7 +76,7 @@ export class ActionProcessor {
     }
 
     // 3. Rule 400.1: Add to the new zone
-    this.addToTargetZone(state, card, to, targetPlayerId, isToken, fromZone, log);
+    this.addToTargetZone(state, card, to, targetPlayerId, isToken, fromZone, log, libraryPosition);
   }
 
   private static handleLeavingBattlefield(state: GameState, card: GameObject, to: Zone, log?: (m: string) => void) {
@@ -107,7 +112,7 @@ export class ActionProcessor {
     }
   }
 
-   private static addToTargetZone(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, isToken: boolean, from: Zone, log?: (m: string) => void) {
+   private static addToTargetZone(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, isToken: boolean, from: Zone, log?: (m: string) => void, libraryPosition: 'top' | 'bottom' = 'top') {
     if (to === Zone.Battlefield) {
       state.battlefield.push(card);
       // Rule 110.2: Always sync controllerId when entering battlefield
@@ -135,10 +140,8 @@ export class ActionProcessor {
 
       if (to === Zone.Hand && !isToken) player.hand.push(card);
       else if (to === Zone.Library && !isToken) {
-          const position = (card as any).libraryPosition || 'top';
-          if (position === 'bottom') player.library.unshift(card);
+          if (libraryPosition === 'bottom') player.library.unshift(card);
           else player.library.push(card);
-          delete (card as any).libraryPosition;
       }
       else if (to === Zone.Graveyard) {
           if (!isToken) player.graveyard.push(card);
@@ -157,10 +160,17 @@ export class ActionProcessor {
     }
 
     // Rule 400.7: Object changes zones -> becomes a new object
-    // 1. Clear floating continuous effects targeting this ID
+    // 1. Clear floating continuous effects tied to this object
     state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
         // Remove effects that were attached to this object (unless they are permanent)
-        if (eff.sourceId === card.id && eff.duration.type !== DurationType.Permanent) return false;
+        if (eff.sourceId === card.id && eff.duration.type !== DurationType.Permanent) {
+            // If it's UntilEvent and the event is ON_LEAVE_BATTLEFIELD, remove it
+            if (eff.duration.type === DurationType.UntilEvent && eff.duration.expiryEvent === 'ON_LEAVE_BATTLEFIELD') {
+                return false;
+            }
+            // Default: Remove non-permanent effects sourced from this object if it leaves the active zone
+            return false; 
+        }
         
         // Remove this object from target lists
         if (eff.targetIds && eff.targetIds.includes(card.id)) {
@@ -206,7 +216,7 @@ export class ActionProcessor {
 
     // Rule 306.5b: Planeswalkers enter with loyalty counters
     if (card.definition.types.some(t => t.toLowerCase() === 'planeswalker')) {
-        const logic = M21_LOGIC[card.definition.name];
+        const logic = m21[card.definition.name];
         const startingLoyalty = parseInt((card.definition as any).loyalty || (logic as any)?.loyalty || "0", 10);
         card.counters['loyalty'] = startingLoyalty;
         if (log) log(`[ETB] ${card.definition.name} enters with ${startingLoyalty} loyalty.`);
@@ -219,7 +229,7 @@ export class ActionProcessor {
           // Rule 700.4: "Died" means put into graveyard from battlefield.
           const isCreature = card.definition.types.some(t => t.toLowerCase() === 'creature');
           if (isCreature) {
-              state.turnState.creaturesDiedThisTurn++;
+              state.turnState.creaturesDiedThisTurn.push(card);
           }
 
           // Snapshot for Last Known Information (LKI)
@@ -233,7 +243,7 @@ export class ActionProcessor {
   /* --- Ability Management (Rule 113) --- */
 
   private static registerAbilities(state: GameState, card: GameObject) {
-    const logic = M21_LOGIC[card.definition.name];
+    const logic = m21[card.definition.name];
     if (!logic || !logic.abilities) return;
 
     logic.abilities.forEach((ability: any, index: number) => {
@@ -271,6 +281,20 @@ export class ActionProcessor {
   }
 
   private static registerStaticAbility(state: GameState, card: GameObject, ability: any, id: string) {
+    if (ability.restrictions) {
+        ability.restrictions.forEach((rest: any, rId: number) => {
+           state.ruleRegistry.restrictions.push({
+               id: `${id}_rest_${rId}`,
+               sourceId: card.id,
+               type: rest.type,
+               duration: { type: 'Static' },
+               // Restrictions from an enchantment commonly apply to their attached target, or fallback to the source itself 
+               targetId: (card as any).attachedTo || card.id, 
+               ...rest
+           } as any);
+        });
+    }
+
     if (!ability.effects) return;
     ability.effects.forEach((eff: any, eId: number) => {
         const effId = `${id}_eff_${eId}`;
@@ -351,5 +375,12 @@ export class ActionProcessor {
         obj.summoningSickness = false;
       }
     });
+  }
+  
+  public static shuffle(array: any[]) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
   }
 }

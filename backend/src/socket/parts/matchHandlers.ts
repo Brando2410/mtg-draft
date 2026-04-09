@@ -298,6 +298,26 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     }
   });
 
+  socket.on('back_to_lobby', async ({ roomId }) => {
+    const room = rooms.get(roomId);
+    if (!room) return;
+    
+    // Auth check
+    const isHost = room.host === socket.id || room.hostPlayerId === socket.data.playerId;
+    if (!isHost) return;
+
+    room.status = 'waiting';
+    room.gameState = undefined;
+    // Clear ready decks to allow re-selection
+    room.players.forEach(p => {
+        (p as any).deck = undefined;
+    });
+
+    LoggerService.info('DRAFT', `Room ${roomId} returned to lobby by host.`);
+    io.to(roomId).emit('draft_update', room);
+    await PersistenceService.saveRooms(rooms);
+  });
+
   /* --- DEBUG COMMANDS --- */
 
   socket.on('debug_reset_game', async ({ roomId }) => {

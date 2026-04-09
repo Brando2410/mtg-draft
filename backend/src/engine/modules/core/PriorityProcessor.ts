@@ -2,7 +2,7 @@ import { GameState, PlayerId, Phase, Step, Zone, AbilityType } from '@shared/eng
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
 import { SpellProcessor } from '../actions/SpellProcessor';
-import { M21_LOGIC } from '../../data/m21_logic';
+import { m21 } from '../../data/m21';
 
 /**
  * Priority Handling (Rule 117)
@@ -159,7 +159,7 @@ export class PriorityProcessor {
     // Chapter 3 Check: Battlefield Activated Abilities - IGNORING priority check
     const hasBattlefieldAction = state.battlefield.some(obj => {
       if (obj.controllerId !== playerId) return false;
-      const logic = M21_LOGIC[obj.definition.name];
+      const logic = m21[obj.definition.name];
       if (!logic || !logic.abilities) return false;
 
       return logic.abilities.some((_, index) => this.canAbilityBeActivated(state, playerId, obj.id, index, false));
@@ -224,7 +224,7 @@ export class PriorityProcessor {
         }
 
         if (canPlay) {
-            const logic = M21_LOGIC[cardInHand.definition.name];
+            const logic = m21[cardInHand.definition.name];
             const targetDefinition = (logic as any)?.targetDefinition || logic?.abilities?.find(a => a.type === 'Spell')?.targetDefinition;
             if (targetDefinition && !targetDefinition.optional) {
                 const { TargetingProcessor } = require('../actions/TargetingProcessor');
@@ -246,7 +246,7 @@ export class PriorityProcessor {
     // Check battlefield (for activating abilities)
     const objOnField = state.battlefield.find(o => o.id === objId);
     if (objOnField && objOnField.controllerId === playerId) {
-        const logic = M21_LOGIC[objOnField.definition.name];
+        const logic = m21[objOnField.definition.name];
         if (!logic || !logic.abilities) return false;
 
         return logic.abilities.some((_, index) => this.canAbilityBeActivated(state, playerId, objId, index, checkPriority));
@@ -267,7 +267,8 @@ export class PriorityProcessor {
     
     if (checkPriority && state.priorityPlayerId !== playerId) return false;
 
-    const cardLogic = M21_LOGIC[obj.definition.name];
+    const cardLogic = m21[obj.definition.name];
+    if (!cardLogic || !cardLogic.abilities || !cardLogic.abilities[abilityIndex]) return false;
     const ability = cardLogic.abilities[abilityIndex];
     if (ability.type !== AbilityType.Activated) return false;
 
@@ -279,6 +280,15 @@ export class PriorityProcessor {
 
     // Skip purely mana-producing abilities for auto-pass
     if (!checkPriority && ability.isManaAbility) return false;
+
+    // Restriction Check: Faith's Fetters / Arrest effects
+    const isRestricted = state.ruleRegistry.restrictions.some(r => 
+        r.targetId === objId && r.type === 'CannotActivateNonManaAbilities'
+    );
+    if (isRestricted && !ability.isManaAbility) {
+        console.log(`Illegal Activation: ${obj.definition.name}'s non-mana abilities are restricted.`);
+        return false;
+    }
 
     // Timing Check (Rule 606.3: Planeswalkers)
     const isPlaneswalker = obj.definition.types.includes('Planeswalker');

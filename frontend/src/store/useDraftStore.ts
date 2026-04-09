@@ -28,6 +28,8 @@ interface DraftState {
   kickPlayer: (playerIdToKick: string) => void;
   changeAvatar: (avatar: string) => void;
   closeRoom: () => void;
+  resetMatch: () => void;
+  backToLobby: () => void;
   addBot: () => void;
   selectDeck: (deck: any) => void;
   setSelectedDeck: (deck: any | null) => void;
@@ -66,8 +68,8 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     socket.on('connect', () => {
       logger.info('Socket connected, attempting re-join...');
       const savedRoomId = localStorage.getItem('mtg_room_id');
-      const savedPlayerName = localStorage.getItem('mtg_player_name');
-      if (savedRoomId && savedPlayerName) {
+      const savedPlayerName = localStorage.getItem('mtg_player_name') || 'Giocatore';
+      if (savedRoomId) {
         socket.emit('join_room', { 
           roomId: savedRoomId, 
           playerName: savedPlayerName, 
@@ -116,6 +118,8 @@ export const useDraftStore = create<DraftState>((set, get) => ({
       set({ room });
       if (room.status === 'drafting' || room.status === 'completed') {
         set({ activeView: 'drafting' });
+      } else if (room.status === 'waiting') {
+        set({ activeView: 'draft_lobby' });
       }
       if (room.status === 'completed') {
         localStorage.removeItem('mtg_room_id');
@@ -146,8 +150,8 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     // Handle initial connection if already connected
     if (socket.connected) {
       const savedRoomId = localStorage.getItem('mtg_room_id');
-      const savedPlayerName = localStorage.getItem('mtg_player_name');
-      if (savedRoomId && savedPlayerName) {
+      const savedPlayerName = localStorage.getItem('mtg_player_name') || 'Giocatore';
+      if (savedRoomId) {
         socket.emit('join_room', { 
           roomId: savedRoomId, 
           playerName: savedPlayerName, 
@@ -179,7 +183,12 @@ export const useDraftStore = create<DraftState>((set, get) => ({
   createRoom: (setupData) => {
     logger.info('Attempting to create room', { setupData });
     set({ isJoining: true });
-    socket.emit('create_room', { ...setupData, playerId: PLAYER_ID, hostName: setupData.hostName || localStorage.getItem('mtg_player_name') });
+    
+    // Assicuriamo persistenza del nome anche per l'host
+    const nameToSave = setupData.hostName || localStorage.getItem('mtg_player_name') || 'Giocatore';
+    localStorage.setItem('mtg_player_name', nameToSave);
+    
+    socket.emit('create_room', { ...setupData, playerId: PLAYER_ID, hostName: nameToSave });
   },
 
   startDraft: () => {
@@ -219,6 +228,16 @@ export const useDraftStore = create<DraftState>((set, get) => ({
       socket.emit('destroy_room', { roomId: room.id });
       get().leaveRoom();
     }
+  },
+
+  resetMatch: () => {
+    const { room } = get();
+    if (room) socket.emit('debug_reset_game', { roomId: room.id });
+  },
+
+  backToLobby: () => {
+    const { room } = get();
+    if (room) socket.emit('back_to_lobby', { roomId: room.id });
   },
 
   addBot: () => {
