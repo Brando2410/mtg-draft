@@ -5,13 +5,24 @@ export const LifeGoesOn: Record<string, ImplementableCard> = {
         name: "Life Goes On",
         manaCost: "{G}",
         oracleText: "You gain 4 life. If a creature died this turn, you gain 8 life instead.",
-        colors: [],
+        colors: ["green"],
         supertypes: [],
-        types: [],
+        types: ["Instant"],
         subtypes: [],
-        power: "",
-        toughness: "",
+        power: undefined,
+        toughness: undefined,
         keywords: [],
-        abilities: []
+        abilities: [
+            {
+                id: "life_goes_on_spell",
+                type: AbilityType.Spell,
+                activeZone: Zone.Hand,
+                effects: [{
+                    type: EffectType.GainLife,
+                    targetMapping: 'CONTROLLER',
+                    amount: (state: any) => state.turnState.creaturesDiedThisTurn.length > 0 ? 8 : 4
+                }]
+            }
+        ]
     }
 };

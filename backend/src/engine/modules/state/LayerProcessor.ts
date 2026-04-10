@@ -130,6 +130,17 @@ export class LayerProcessor {
         }
       }
 
+      if ((effect as any).powerDynamic === 'GREATEST_POWER_IN_GRAVEYARD') {
+          const player = state.players[obj.controllerId];
+          if (player) {
+              const powers = player.graveyard
+                  .filter(c => c.definition.types.some(t => t.toLowerCase() === 'creature'))
+                  .map(c => parseInt(c.definition.power || '0'));
+              const maxPower = powers.length > 0 ? Math.max(...powers) : 0;
+              update(maxPower, undefined);
+          }
+      }
+
       // Sublayer 7b: Effects that set power and/or toughness
       if (effect.powerSet !== undefined || effect.toughnessSet !== undefined) {
           update(

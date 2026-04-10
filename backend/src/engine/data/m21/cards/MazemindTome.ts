@@ -36,9 +36,9 @@ export const MazemindTome: Record<string, ImplementableCard> = {
             {
                 id: "mazemind_tome_exile_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_COUNTER_ADDED',
+                triggerEvent: 'ON_COUNTERS_ADDED',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any) => event.counterType === 'page' && (event.target.counters['page'] || 0) >= 4,
+                triggerCondition: (state: any, event: any) => event.counterType === 'page' && (event.data?.object?.counters['page'] || 0) >= 4,
                 effects: [
                     { type: 'Exile', targetMapping: 'SELF' },
                     { type: 'GainLife', amount: 4, targetMapping: 'CONTROLLER' }

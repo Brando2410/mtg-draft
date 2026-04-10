@@ -5,13 +5,31 @@ export const GoblinArsonist: Record<string, ImplementableCard> = {
         name: "Goblin Arsonist",
         manaCost: "{R}",
         oracleText: "When this creature dies, you may have it deal 1 damage to any target.",
-        colors: [],
+        colors: ["red"],
         supertypes: [],
-        types: [],
-        subtypes: [],
+        types: ["Creature"],
+        subtypes: ["Goblin", "Shaman"],
         power: "1",
         toughness: "1",
         keywords: [],
-        abilities: []
+        abilities: [
+            {
+                id: "goblin_arsonist_death_trigger",
+                type: AbilityType.Triggered,
+                triggerEvent: "ON_DEATH",
+                activeZone: ZoneRequirement.Graveyard, // Dies trigger fires from graveyard (Rule 603.10a)
+                targetDefinition: {
+                    type: TargetType.AnyTarget,
+                    count: 1,
+                    optional: true
+                },
+                effects: [{
+                    type: EffectType.DealDamage,
+                    amount: 1,
+                    targetMapping: "TARGET_1"
+                }],
+                oracleText: "When Goblin Arsonist dies, you may have it deal 1 damage to any target."
+            }
+        ]
     }
 };

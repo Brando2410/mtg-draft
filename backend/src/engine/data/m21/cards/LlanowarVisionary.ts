@@ -5,13 +5,32 @@ export const LlanowarVisionary: Record<string, ImplementableCard> = {
         name: "Llanowar Visionary",
         manaCost: "{2}{G}",
         oracleText: "When this creature enters, draw a card.\n{T}: Add {G}.",
-        colors: [],
+        colors: ["green"],
         supertypes: [],
-        types: [],
-        subtypes: [],
+        types: ["Creature"],
+        subtypes: ["Elf", "Druid"],
         power: "2",
         toughness: "2",
         keywords: [],
-        abilities: []
+        abilities: [
+            {
+                id: "llanowar_visionary_etb",
+                type: AbilityType.Triggered,
+                triggerEvent: 'ON_ETB',
+                activeZone: ZoneRequirement.Battlefield,
+                triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
+                effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: 'CONTROLLER' }],
+                oracleText: "When this creature enters, draw a card."
+            },
+            {
+                id: "llanowar_visionary_mana",
+                type: AbilityType.Activated,
+                activeZone: ZoneRequirement.Battlefield,
+                isManaAbility: true,
+                costs: [{ type: 'Tap', targetMapping: 'SELF' }],
+                effects: [{ type: EffectType.AddMana, value: '{G}' }],
+                oracleText: "{T}: Add {G}."
+            }
+        ]
     }
 };

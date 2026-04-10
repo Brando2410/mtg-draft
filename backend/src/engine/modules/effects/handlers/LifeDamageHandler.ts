@@ -17,6 +17,7 @@ export class LifeDamageHandler {
             const oldLife = state.players[pid].life;
             state.players[pid].life += amount;
             state.turnState.lastLifeGainedAmount = amount;
+            state.turnState.lifeGainedThisTurn[pid] = (state.turnState.lifeGainedThisTurn[pid] || 0) + amount;
             log(`${state.players[pid].name} gains ${amount} life (${oldLife} -> ${state.players[pid].life})`);
 
             TriggerProcessor.onEvent(state, {

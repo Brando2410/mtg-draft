@@ -157,8 +157,8 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
             }
 
             if (id.startsWith('CHOICE_')) {
-              const choiceRaw = id.split('_')[1];
-              const choiceIndex = choiceRaw === 'undo' ? 'undo' : parseInt(choiceRaw);
+              const choiceRaw = id.replace('CHOICE_', '');
+              const choiceIndex = (choiceRaw === 'undo' || choiceRaw.includes('|')) ? choiceRaw : parseInt(choiceRaw);
               socket.emit('resolve_choice', { 
                 roomId: room.id, 
                 playerId: effectivePlayerId, 

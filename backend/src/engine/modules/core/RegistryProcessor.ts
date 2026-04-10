@@ -91,10 +91,19 @@ export class RegistryProcessor {
   private static registerStaticAbility(state: GameState, card: GameObject, ability: any, id: string) {
     if (ability.restrictions) {
         ability.restrictions.forEach((rest: any, rId: number) => {
+           let targetId = rest.targetId;
+           if (rest.targetMapping === 'SELF') {
+               targetId = card.id;
+           }
+
+           const cleanRest = { ...rest };
+           delete cleanRest.targetMapping;
+
            state.ruleRegistry.restrictions.push({
                id: `${id}_rest_${rId}`,
                sourceId: card.id,
-               ...rest
+               targetId: targetId,
+               ...cleanRest
            } as AbilityRestriction);
         });
     }

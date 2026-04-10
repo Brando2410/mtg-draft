@@ -134,6 +134,7 @@ export interface StackObject {
   name?: string;
   image_url?: string;
   xValue?: number; // Rule 107.3: The value of X
+  exileOnResolution?: boolean;
 }
 
 // Player's isolated state within a game
@@ -189,6 +190,7 @@ export interface TurnState {
   lastLifeGainedAmount: number;
   lastCardsDrawnAmount: number;
   cardsDrawnThisTurn: Record<PlayerId, number>;
+  lifeGainedThisTurn: Record<PlayerId, number>;
   spellsCastThisTurn: Record<PlayerId, number>;
   instantOrSorceryCastThisTurn: Record<PlayerId, boolean>;
   landsPlayedThisTurn: Record<PlayerId, number>;
@@ -277,6 +279,7 @@ export const DurationType = {
   UntilEndOfTurn: 'UNTIL_END_OF_TURN',      // Rule 514.2
   UntilEndOfCombat: 'UNTIL_END_OF_COMBAT',  // Rule 511.3
   UntilEvent: 'UNTIL_EVENT',              // e.g., "Until your next turn"
+  UntilNextUntapStep: 'UNTIL_NEXT_UNTAP_STEP', // For "frozen" effects
   Permanent: 'PERMANENT'                 // e.g., Counters or Emblems
 } as const;
 export type DurationType = (typeof DurationType)[keyof typeof DurationType];
@@ -315,6 +318,7 @@ export interface ContinuousEffect {
   abilitiesToAdd?: string[];
   abilitiesToRemove?: string[];
   removeAllAbilities?: boolean; // Layer 6
+  exileOnMoveToGraveyard?: boolean;
   condition?: string;
 
   // For Layer 1 (Copying)
@@ -348,7 +352,9 @@ export const RestrictionType = {
   CannotAttack: 'CannotAttack',
   CannotBlock: 'CannotBlock',
   CannotCastType: 'CannotCastType',
-  CannotActivateNonManaAbilities: 'CannotActivateNonManaAbilities'
+  CannotActivateNonManaAbilities: 'CannotActivateNonManaAbilities',
+  MustAttack: 'MustAttack',
+  MustBeBlocked: 'MustBeBlocked'
 } as const;
 export type RestrictionType = (typeof RestrictionType)[keyof typeof RestrictionType];
 
@@ -517,6 +523,7 @@ export const EffectType = {
   AllowLookAtTop: 'AllowLookAtTop',
   AllowPlayExiled: 'AllowPlayExiled',
   Surveil: 'Surveil',
+  AllowCastWithoutPaying: 'AllowCastWithoutPaying',
   PENDING_ACTION: 'PENDING_ACTION',
 } as const;
 
@@ -562,6 +569,7 @@ export interface EffectDefinition {
   targetControllerId?: string;
   isFreeCast?: boolean;
   canPlayExiled?: boolean;
+  exileOnMoveToGraveyard?: boolean;
 
   // Dynamic Token stats
   powerOverride?: number | string;
@@ -605,6 +613,9 @@ export interface EffectDefinition {
   optional?: boolean; // For Choice/LookAtTopAndPick
   hideUndo?: boolean; // For Choice (UI Hint)
   all?: boolean; // For Mass effects
+  on?: string; // For AddTriggeredAbility (legacy)
+  triggerCondition?: (state: any, event: any, source: any) => boolean; // For AddTriggeredAbility
+  onSelected?: (card: any) => EffectDefinition[]; // For Choice logic
   revealed?: boolean; // For Library/Hand visible info
   playDuration?: 'UNTIL_END_OF_TURN' | 'UNTIL_NEXT_TURN_END'; // For impulsive draw
   sourceZones?: Zone[]; // For multizone search/movement
@@ -616,6 +627,7 @@ export interface EffectDefinition {
   reveal?: boolean; // For hidden zone search
   libraryPosition?: 'top' | 'bottom'; // Destination within library
   shuffleRemainder?: boolean; // For LookAtTopAndPick leftovers
+  chooseNewTargets?: boolean; // For CopySpellOnStack
 }
 
 export const TargetType = {

@@ -82,7 +82,15 @@ export class StackResolver {
     if (stackObj.type === 'Spell' && stackObj.card) {
       const card = stackObj.card;
       if (fizzled) {
-        ActionProcessor.moveCard(this.state, card, Zone.Graveyard, card.ownerId, (m: string) => this.log(m));
+        if (stackObj.exileOnResolution || (stackObj as any).isCopy) {
+            this.log(`[RULE 701.5] ${card.definition.name} (fizzled) was exiled instead of being put into graveyard.`);
+            ActionProcessor.removeFromCurrentZone(this.state, card);
+            if (!(stackObj as any).isCopy) {
+                ActionProcessor.moveCard(this.state, card, Zone.Exile, card.ownerId, (m: string) => this.log(m));
+            }
+        } else {
+            ActionProcessor.moveCard(this.state, card, Zone.Graveyard, card.ownerId, (m: string) => this.log(m));
+        }
         return;
       }
 
@@ -107,7 +115,15 @@ export class StackResolver {
         card.xValue = stackObj.xValue;
         ActionProcessor.moveCard(this.state, card, Zone.Battlefield, stackObj.controllerId, (m: string) => this.log(m));
       } else if (card.zone === Zone.Stack) {
-        ActionProcessor.moveCard(this.state, card, Zone.Graveyard, card.ownerId, (m: string) => this.log(m));
+        if (stackObj.exileOnResolution || (stackObj as any).isCopy) {
+            this.log(`[RULE 701.5] ${card.definition.name} was exiled instead of being put into graveyard.`);
+            ActionProcessor.removeFromCurrentZone(this.state, card);
+            if (! (stackObj as any).isCopy) {
+                ActionProcessor.moveCard(this.state, card, Zone.Exile, card.ownerId, (m: string) => this.log(m));
+            }
+        } else {
+            ActionProcessor.moveCard(this.state, card, Zone.Graveyard, card.ownerId, (m: string) => this.log(m));
+        }
       }
     }
   }

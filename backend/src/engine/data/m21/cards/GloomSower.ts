@@ -5,13 +5,34 @@ export const GloomSower: Record<string, ImplementableCard> = {
         name: "Gloom Sower",
         manaCost: "{5}{B}{B}",
         oracleText: "Whenever this creature becomes blocked by a creature, that creature's controller loses 2 life and you gain 2 life.",
-        colors: [],
+        colors: ["black"],
         supertypes: [],
-        types: [],
-        subtypes: [],
+        types: ["Creature"],
+        subtypes: ["Horror"],
         power: "8",
         toughness: "6",
         keywords: [],
-        abilities: []
+        abilities: [
+            {
+                id: "gloom_sower_blocked_trigger",
+                type: AbilityType.Triggered,
+                triggerEvent: "ON_BECAME_BLOCKED",
+                activeZone: ZoneRequirement.Battlefield,
+                triggerCondition: (state: any, event: any, source: any) => event.sourceId === source.sourceId,
+                effects: [
+                    {
+                        type: EffectType.LoseLife,
+                        amount: 2,
+                        targetMapping: "TRIGGER_TARGET_CONTROLLER"
+                    },
+                    {
+                        type: EffectType.GainLife,
+                        amount: 2,
+                        targetMapping: "CONTROLLER"
+                    }
+                ],
+                oracleText: "Whenever Gloom Sower becomes blocked by a creature, that creature's controller loses 2 life and you gain 2 life."
+            }
+        ]
     }
 };

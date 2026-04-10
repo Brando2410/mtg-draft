@@ -133,6 +133,7 @@ export class EffectProcessor {
       case 'PutInHand':
       case 'PutOnBattlefield':
       case 'Mill': {
+          log(`[DEBUG] EffectProcessor: Dispatching ${effect.type} for targets: ${validTargetIds}`);
           const { MoveEffectHandler } = require('./handlers/MoveEffectHandler');
           return MoveEffectHandler.handle(state, effect, validTargetIds, log, controllerId, stackObject, parentContext);
       }
@@ -271,14 +272,15 @@ export class EffectProcessor {
           break;
       case 'INSTANT_SORCERY_IN_GRAVEYARD_COUNT': {
           const player = state.players[controllerId];
-          if (!player) {
-              result = 0;
-          } else {
-              result = player.graveyard.filter(c => {
-                  const types = c.definition.types.map(t => t.toLowerCase());
-                  return types.includes('instant') || types.includes('sorcery');
-              }).length;
-          }
+          result = player ? player.graveyard.filter(c => {
+              const types = c.definition.types.map(t => t.toLowerCase());
+              return types.includes('instant') || types.includes('sorcery');
+          }).length : 0;
+          break;
+      }
+      case 'FRANTIC_INVENTORY_COUNT': {
+          const player = state.players[controllerId];
+          result = player ? player.graveyard.filter(c => c.definition.name === "Frantic Inventory").length : 0;
           break;
       }
       case 'EVENT_AMOUNT': 

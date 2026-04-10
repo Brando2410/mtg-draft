@@ -7,11 +7,12 @@ export const ForgottenSentinel: Record<string, ImplementableCard> = {
         oracleText: "This creature enters tapped.",
         colors: [],
         supertypes: [],
-        types: [],
-        subtypes: [],
+        types: ["Artifact", "Creature"],
+        subtypes: ["Golem"],
         power: "4",
         toughness: "3",
         keywords: [],
+        entersTapped: true,
         abilities: []
     }
 };

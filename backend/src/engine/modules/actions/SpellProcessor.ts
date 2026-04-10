@@ -357,10 +357,11 @@ export class SpellProcessor {
             TriggerProcessor.onEvent(state, { type: 'ON_SECOND_SPELL_CAST', playerId: playerId, data: {} }, log);
         }
 
-        if (isFirstInstantOrSorcery) {
-            TriggerProcessor.onEvent(state, { type: 'ON_CAST_FIRST_INSTANT_SORCERY', playerId: playerId, data: { card: cardToPlay, sourceId: cardToPlay.id } }, log);
-        }
-
+        const exileOnResolution = state.ruleRegistry.continuousEffects.some(e => 
+            e.exileOnMoveToGraveyard && 
+            (e.targetIds?.includes(cardToPlay.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === playerId))
+        );
+        
         const stackObj = {
             id: `spell_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
             controllerId: playerId,
@@ -369,6 +370,7 @@ export class SpellProcessor {
             targets: declaredTargets || [],
             card: cardToPlay,
             xValue: cardToPlay.xValue,
+            exileOnResolution: exileOnResolution,
             data: {
                 effects: spellEffects,
                 targetDefinition: targetDefinition,
@@ -399,9 +401,22 @@ export class SpellProcessor {
             playerId: playerId,
             data: {
                 card: cardToPlay,
-                sourceId: cardToPlay.id
+                sourceId: cardToPlay.id,
+                stackSnapshot: JSON.parse(JSON.stringify(stackObj))
             }
         }, log);
+
+        if (isFirstInstantOrSorcery) {
+            TriggerProcessor.onEvent(state, { 
+                type: 'ON_CAST_FIRST_INSTANT_SORCERY', 
+                playerId: playerId, 
+                data: { 
+                    card: cardToPlay, 
+                    sourceId: cardToPlay.id,
+                    stackSnapshot: JSON.parse(JSON.stringify(stackObj))
+                } 
+            }, log);
+        }
 
         const isNonCreature = !cardToPlay.definition.types.some((t: string) => t.toLowerCase() === 'creature');
         if (isNonCreature) {
@@ -434,13 +449,23 @@ export class SpellProcessor {
         const parsed = ManaProcessor.parseManaCost(baseCost);
         let extraGeneric = 0;
         let additionalCosts: AbilityCost[] = [];
+        let effectiveCost: string | null = null;
 
         // 0. Check for Free Cast permissions (Alternative Costs)
         const isFree = state.ruleRegistry.continuousEffects.find(e =>
-            e.isFreeCast &&
+            (e.isFreeCast || (e as any).value === "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING") &&
             (e.targetIds?.includes(card.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === card.controllerId))
         );
-        if (isFree) return { totalMana: "", additionalCosts };
+        
+        if (isFree) {
+            if ((isFree as any).value === "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING" && card.zone !== Zone.Hand) {
+                // Keep looking
+            } else {
+                effectiveCost = "{0}";
+            }
+        }
+
+        if (effectiveCost !== null) return { totalMana: effectiveCost, additionalCosts };
 
         // 1. Gather global modifiers
         const { TargetingProcessor } = require('./TargetingProcessor');

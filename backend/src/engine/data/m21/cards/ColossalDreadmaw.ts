@@ -5,13 +5,13 @@ export const ColossalDreadmaw: Record<string, ImplementableCard> = {
         name: "Colossal Dreadmaw",
         manaCost: "{4}{G}{G}",
         oracleText: "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)",
-        colors: [],
+        colors: ["green"],
         supertypes: [],
-        types: [],
-        subtypes: [],
+        types: ["Creature"],
+        subtypes: ["Dinosaur"],
         power: "6",
         toughness: "6",
-        keywords: [],
+        keywords: ["Trample"],
         abilities: []
     }
 };

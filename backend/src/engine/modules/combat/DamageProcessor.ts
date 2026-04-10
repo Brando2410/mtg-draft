@@ -59,6 +59,8 @@ export class DamageProcessor {
         const player = state.players[controllerId];
         if (player) {
             player.life += amount;
+            state.turnState.lifeGainedThisTurn[controllerId] = (state.turnState.lifeGainedThisTurn[controllerId] || 0) + amount;
+            state.turnState.lastLifeGainedAmount = amount;
             log(`[LIFELINK] ${player.name} gains ${amount} life (Total: ${player.life}).`);
             TriggerProcessor.onEvent(state, { type: 'ON_LIFE_GAIN', playerId: controllerId, amount, data: { sourceId: sourceObj.id } }, log);
         }

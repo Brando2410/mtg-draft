@@ -49,7 +49,10 @@ export class ChoiceProcessor {
 
     // Handle multi-choice (batch selection) separated by '|'
     if (typeof choiceIndex === 'string' && choiceIndex.includes('|')) {
-        const indices = choiceIndex.split('|').map(s => parseInt(s.substring(7))); // CHOICE_X -> X
+        const indices = choiceIndex.split('|').map(s => {
+            const raw = s.startsWith('CHOICE_') ? s.substring(7) : s;
+            return parseInt(raw);
+        });
         const sourceId = action.sourceId;
         const allEffects: any[] = [];
         let finalChoice: any = null;
@@ -82,26 +85,26 @@ export class ChoiceProcessor {
         return this.resumeResolution(state, sourceId as string, action.data?.stackObj, action.data?.parentContext, log, engine);
     }
 
+    // 3. Handle Scry/Surveil Reordering early as payload is not an index
+    if (isScry) {
+        return this.handleScrySurveil(state, playerId, action, choiceIndex, log, engine);
+    }
+
     const idx = typeof choiceIndex === 'string' ? parseInt(choiceIndex) : choiceIndex;
     const sourceId = action.sourceId;
-    const choice = action.data?.choices[idx];
+    const choice = action.data?.choices?.[idx];
     
     if (!choice || !sourceId) return false;
 
     // 1. Handle Selection of Abilities (Planeswalkers/Modal costs in battlefield)
     const obj = state.battlefield.find(o => o.id === sourceId);
-    if (obj && obj.definition.types.includes('Planeswalker') && isModal) {
-        return this.handlePlaneswalkerActivation(state, playerId, obj, choice, log, engine);
+    if (obj && isModal) {
+        return this.handleBattlefieldAbilityActivation(state, playerId, obj, choice, log, engine);
     }
 
     // 2. Handle Casting-Phase Choices (Modes, Additional Costs)
     if (isModal || action.data?.isSpellCasting || action.data?.isCostChoice) {
         return this.handleModalSelection(state, playerId, sourceId, choice, choiceIndex, action, log, engine);
-    }
-
-    // 3. Handle Scry/Surveil Reordering
-    if (isReorder) {
-        return this.handleScrySurveil(state, playerId, action, choiceIndex, log, engine);
     }
 
     // 4. Handle Resolution-Phase Choices (Effects, Search, Scry, May)
@@ -250,8 +253,8 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     return true;
   }
 
-  private static handlePlaneswalkerActivation(state: GameState, playerId: string, obj: any, choice: any, log: (m: string) => void, engine: any): boolean {
-    const abilityIndex = choice.value;
+  private static handleBattlefieldAbilityActivation(state: GameState, playerId: string, obj: any, choice: any, log: (m: string) => void, engine: any): boolean {
+    const abilityIndex = typeof choice.value === 'number' ? choice.value : parseInt(choice.value);
     const logic = m21[obj.definition.name];
     const ability = (logic as any)?.abilities?.[abilityIndex];
 

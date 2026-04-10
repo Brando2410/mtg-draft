@@ -8,10 +8,10 @@ export const HeartfireImmolator: Record<string, ImplementableCard> = {
         colors: ["red"],
         supertypes: [],
         types: ["Creature"],
-        subtypes: ["Human","Wizard"],
+        subtypes: ["Human", "Wizard"],
         power: "2",
         toughness: "2",
-        keywords: [],
+        keywords: ["Prowess"],
         abilities: [
             {
                 id: "heartfire_immolator_sacrifice",

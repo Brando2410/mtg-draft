@@ -19,7 +19,7 @@ export const DoubleVision: Record<string, ImplementableCard> = {
                 triggerEvent: 'ON_CAST_FIRST_INSTANT_SORCERY',
                 activeZone: ZoneRequirement.Battlefield,
                 triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
-                effects: [{ type: 'CopySpellOnStack', targetMapping: 'TRIGGER_SOURCE' }]
+                effects: [{ type: 'CopySpellOnStack', targetMapping: 'TRIGGER_SOURCE', chooseNewTargets: true }]
             }
         ]
     }

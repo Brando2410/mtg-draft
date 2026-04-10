@@ -63,6 +63,7 @@ export class GameEngine {
         lastCardsDrawnAmount: 0,
         cardsDrawnThisTurn: {},
         spellsCastThisTurn: {},
+        lifeGainedThisTurn: {},
         instantOrSorceryCastThisTurn: {},
         landsPlayedThisTurn: {}
       }
@@ -380,6 +381,7 @@ export class GameEngine {
       lastCardsDrawnAmount: 0,
       cardsDrawnThisTurn: {},
       spellsCastThisTurn: {},
+      lifeGainedThisTurn: {},
       instantOrSorceryCastThisTurn: {},
       landsPlayedThisTurn: {}
     };
@@ -432,6 +434,16 @@ export class GameEngine {
       const { RegistryProcessor } = require('./modules/core/RegistryProcessor');
       this.state.battlefield.filter(c => c.controllerId === activeId).forEach(c => RegistryProcessor.registerAbilities(this.state, c));
       ActionProcessor.untapAll(this.state, activeId, (m) => this.log(m));
+
+      // CR 611.2: Expire "Until Next Untap Step" effects that applied to the active player's permanents
+      this.state.ruleRegistry.continuousEffects = this.state.ruleRegistry.continuousEffects.filter(eff => {
+          if (eff.duration?.type === 'UNTIL_NEXT_UNTAP_STEP') {
+              const targets = (eff as any).targetIds || [];
+              const hasActiveTarget = targets.some((tid: string) => this.state.battlefield.find(o => o.id === tid)?.controllerId === activeId);
+              if (hasActiveTarget) return false;
+          }
+          return true;
+      });
     }
     else if (this.state.currentPhase === Phase.Combat) {
       CombatProcessor.handleStepEntry(this.state, (m) => this.log(m));
@@ -482,7 +494,7 @@ export class GameEngine {
   }
 
 
-  public resolveChoice(playerId: string, choiceIndex: number): boolean {
+  public resolveChoice(playerId: string, choiceIndex: any): boolean {
     const success = ChoiceProcessor.resolveChoice(
       this.state,
       playerId,

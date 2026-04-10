@@ -5,13 +5,13 @@ export const ConcordiaPegasus: Record<string, ImplementableCard> = {
         name: "Concordia Pegasus",
         manaCost: "{1}{W}",
         oracleText: "Flying",
-        colors: [],
+        colors: ["white"],
         supertypes: [],
-        types: [],
-        subtypes: [],
+        types: ["Creature"],
+        subtypes: ["Pegasus"],
         power: "1",
         toughness: "3",
-        keywords: [],
+        keywords: ["Flying"],
         abilities: []
     }
 };

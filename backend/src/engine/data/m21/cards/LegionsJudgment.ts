@@ -5,13 +5,30 @@ export const LegionsJudgment: Record<string, ImplementableCard> = {
         name: "Legion's Judgment",
         manaCost: "{2}{W}",
         oracleText: "Destroy target creature with power 4 or greater.",
-        colors: [],
+        colors: ["white"],
         supertypes: [],
-        types: [],
+        types: ["Sorcery"],
         subtypes: [],
-        power: "",
-        toughness: "",
+        power: undefined,
+        toughness: undefined,
         keywords: [],
-        abilities: []
+        abilities: [
+            {
+                id: "legions_judgment_spell",
+                type: AbilityType.Spell,
+                activeZone: Zone.Hand,
+                targetDefinition: {
+                    type: TargetType.Permanent,
+                    count: 1,
+                    minCount: 1,
+                    restrictions: ["creature", "power >= 4"]
+                },
+                effects: [{
+                    type: EffectType.Destroy,
+                    targetMapping: "TARGET_1"
+                }],
+                oracleText: "Destroy target creature with power 4 or greater."
+            }
+        ]
     }
 };

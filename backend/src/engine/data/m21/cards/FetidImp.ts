@@ -1,17 +1,37 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, DurationType } from "@shared/engine_types";
 
 export const FetidImp: Record<string, ImplementableCard> = {
     "Fetid Imp": {
         name: "Fetid Imp",
         manaCost: "{1}{B}",
         oracleText: "Flying\n{B}: This creature gains deathtouch until end of turn. (Any amount of damage it deals to a creature is enough to destroy it.)",
-        colors: [],
+        colors: ["black"],
         supertypes: [],
-        types: [],
-        subtypes: [],
+        types: ["Creature"],
+        subtypes: ["Imp"],
         power: "1",
         toughness: "2",
-        keywords: [],
-        abilities: []
+        keywords: ["Flying"],
+        abilities: [
+            {
+                id: "fetid_imp_deathtouch",
+                type: AbilityType.Activated,
+                activeZone: ZoneRequirement.Battlefield,
+                costs: [
+                    { type: 'Mana', value: "{B}" }
+                ],
+                effects: [
+                    {
+                        type: EffectType.ApplyContinuousEffect,
+                        abilitiesToAdd: ["Deathtouch"],
+                        duration: {
+                            type: DurationType.UntilEndOfTurn
+                        },
+                        targetMapping: "SELF"
+                    }
+                ],
+                oracleText: "{B}: Fetid Imp gains deathtouch until end of turn."
+            }
+        ]
     }
 };

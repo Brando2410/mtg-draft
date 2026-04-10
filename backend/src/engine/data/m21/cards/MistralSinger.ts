@@ -8,10 +8,10 @@ export const MistralSinger: Record<string, ImplementableCard> = {
         colors: ["blue"],
         supertypes: [],
         types: ["Creature"],
-        subtypes: ["Siren"],
+        subtypes: ["Siren", "Wizard"],
         power: "2",
         toughness: "2",
-        keywords: ["Flying"],
+        keywords: ["Flying", "Prowess"],
         abilities: []
     }
 };

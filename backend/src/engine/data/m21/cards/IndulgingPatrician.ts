@@ -4,14 +4,31 @@ export const IndulgingPatrician: Record<string, ImplementableCard> = {
     "Indulging Patrician": {
         name: "Indulging Patrician",
         manaCost: "{1}{W}{B}",
-        oracleText: "Flying\nLifelink (Damage dealt by this creature also causes you to gain that much life.)\nAt the beginning of your end step, if you gained 3 or more life this turn, each opponent loses 3 life.",
-        colors: [],
+        oracleText: "Flying, lifelink\nAt the beginning of your end step, if you gained 3 or more life this turn, each opponent loses 3 life.",
+        colors: ["white", "black"],
         supertypes: [],
-        types: [],
-        subtypes: [],
+        types: ["Creature"],
+        subtypes: ["Vampire", "Knight"],
         power: "1",
         toughness: "4",
-        keywords: [],
-        abilities: []
+        keywords: ["Flying", "Lifelink"],
+        abilities: [
+            {
+                id: "indulging_patrician_end_step",
+                type: AbilityType.Triggered,
+                activeZone: ZoneRequirement.Battlefield,
+                triggerEvent: "ON_END_STEP_STEP",
+                triggerCondition: (state: any, event: any, source: any) => {
+                    const gained = state.turnState.lifeGainedThisTurn[source.controllerId] || 0;
+                    return state.activePlayerId === source.controllerId && gained >= 3;
+                },
+                effects: [{
+                    type: EffectType.LoseLife,
+                    amount: 3,
+                    targetMapping: "EACH_OPPONENT"
+                }],
+                oracleText: "At the beginning of your end step, if you gained 3 or more life this turn, each opponent loses 3 life."
+            }
+        ]
     }
 };

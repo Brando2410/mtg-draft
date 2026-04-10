@@ -4,14 +4,32 @@ export const Hobblefiend: Record<string, ImplementableCard> = {
     "Hobblefiend": {
         name: "Hobblefiend",
         manaCost: "{1}{R}",
-        oracleText: "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\n{1}, Sacrifice another creature: Put a +1/+1 counter on this creature.",
-        colors: [],
+        oracleText: "Trample\n{1}, Sacrifice another creature: Put a +1/+1 counter on Hobblefiend. Activate only as a sorcery.",
+        colors: ["red"],
         supertypes: [],
-        types: [],
-        subtypes: [],
+        types: ["Creature"],
+        subtypes: ["Elemental", "Devil"],
         power: "2",
         toughness: "1",
-        keywords: [],
-        abilities: []
+        keywords: ["Trample"],
+        abilities: [
+            {
+                id: "hobblefiend_sacrifice",
+                type: AbilityType.Activated,
+                activeZone: ZoneRequirement.Battlefield,
+                costs: [
+                    { type: 'Mana', value: '{1}' },
+                    { type: 'Sacrifice', restrictions: ['creature', 'other'] }
+                ],
+                effects: [{
+                    type: EffectType.AddCounters,
+                    value: '+1/+1',
+                    amount: 1,
+                    targetMapping: 'SELF'
+                }],
+                activatedOnlyAsSorcery: true,
+                oracleText: "{1}, Sacrifice another creature: Put a +1/+1 counter on Hobblefiend. Activate only as a sorcery."
+            }
+        ]
     }
 };

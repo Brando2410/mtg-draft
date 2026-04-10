@@ -5,13 +5,28 @@ export const HellkitePunisher: Record<string, ImplementableCard> = {
         name: "Hellkite Punisher",
         manaCost: "{5}{R}{R}",
         oracleText: "Flying\n{R}: This creature gets +1/+0 until end of turn.",
-        colors: [],
+        colors: ["red"],
         supertypes: [],
-        types: [],
-        subtypes: [],
+        types: ["Creature"],
+        subtypes: ["Dragon"],
         power: "6",
         toughness: "6",
-        keywords: [],
-        abilities: []
+        keywords: ["Flying"],
+        abilities: [
+            {
+                id: "hellkite_punisher_firebreathing",
+                type: AbilityType.Activated,
+                activeZone: ZoneRequirement.Battlefield,
+                costs: [{ type: 'Mana', value: '{R}' }],
+                effects: [{
+                    type: EffectType.ApplyContinuousEffect,
+                    duration: 'UNTIL_END_OF_TURN',
+                    powerModifier: 1,
+                    layer: 7,
+                    targetMapping: 'SELF'
+                }],
+                oracleText: "{R}: Hellkite Punisher gets +1/+0 until end of turn."
+            }
+        ]
     }
 };

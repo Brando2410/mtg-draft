@@ -309,6 +309,14 @@ export class ActionProcessor {
 
     state.battlefield.forEach(obj => {
       if (obj.controllerId === playerId) {
+        // Rule 502.1: Check for restrictions that prevent untapping
+        const { LayerProcessor } = require('../state/LayerProcessor');
+        const stats = LayerProcessor.getEffectiveStats(obj, state);
+        if (stats.keywords.includes('CannotUntap') || (obj as any).cannotUntapThisTurn) {
+            if (log) log(`${obj.definition.name} does not untap.`);
+            return;
+        }
+
         if (obj.isTapped) {
             obj.isTapped = false;
             count++;

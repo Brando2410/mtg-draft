@@ -64,6 +64,9 @@ export class ConditionProcessor {
             Object.values(state.players).flatMap(p => [...p.hand, ...p.graveyard, ...p.library]).find(o => o.id === targetId);
           if (!targetObj) return false;
           return TargetingProcessor.matchesRestrictions(state, targetObj, restrictions, controllerId, sourceId);
+        case 'DRAWN_CARDS_GE':
+          const threshold = parseInt(restrictions[0]);
+          return (state.turnState.cardsDrawnThisTurn[controllerId] || 0) >= threshold;
       }
     }
 
@@ -87,6 +90,8 @@ export class ConditionProcessor {
         const topCard = player.library[player.library.length - 1];
         return topCard.definition.subtypes.some(s => s.toLowerCase() === 'goblin');
       }
+      case 'CREATURE_DIED_THIS_TURN':
+        return state.turnState.creaturesDiedThisTurn.length > 0;
       default:
         // Assume true if unknown (safer for gameplay)
         return true;

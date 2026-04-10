@@ -31,34 +31,42 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
   const maxChoices = pendingAction.data?.maxChoices || 1;
   const hasCards = choices.some((c: any) => c.cardData);
   
-  // Separate 'none' choice if it exists
-  const noneChoiceIdx = choices.findIndex((c: any) => c.value === 'none' || c.label?.includes('Salte') || c.label?.includes('Skip') || c.label?.includes('Saluta') || c.label?.includes('Nessuna'));
-  const filteredChoices = noneChoiceIdx !== -1 ? choices.filter((_: any, i: number) => i !== noneChoiceIdx) : choices;
+  // Find 'None/Skip' choice
+  const noneChoiceIdx = choices.findIndex((c: any) => 
+    c.value === 'none' || 
+    c.label?.toLowerCase().includes('salta') || 
+    c.label?.toLowerCase().includes('skip') || 
+    c.label?.toLowerCase().includes('nessuna')
+  );
+  
+  // Separate into card choices and button choices
+  const cardChoices = choices.filter((c: any) => c.cardData && c.selectable !== false);
+  const buttonChoices = choices.filter((c: any, i: number) => !c.cardData && c.selectable !== false && i !== noneChoiceIdx);
   const noneChoice = noneChoiceIdx !== -1 ? choices[noneChoiceIdx] : null;
 
   const handleChoiceClick = (originalIdx: number) => {
       const choice = choices[originalIdx];
-      if (!choice.selectable) return;
+      if (!choice || choice.selectable === false) return;
 
-      if (choice.cardData) {
-          if (maxChoices === 1) {
-              // Standard single select
+      if (maxChoices === 1) {
+          // Standard single select
+          if (choice.cardData) {
               if (selectedIndices.includes(originalIdx)) {
                   confirmSelection([originalIdx]);
               } else {
                   setSelectedIndices([originalIdx]);
               }
           } else {
-              // Multi-select
-              if (selectedIndices.includes(originalIdx)) {
-                  setSelectedIndices(selectedIndices.filter(i => i !== originalIdx));
-              } else if (selectedIndices.length < maxChoices) {
-                  setSelectedIndices([...selectedIndices, originalIdx]);
-              }
+              // Direct pick for non-card choices (buttons)
+              onTapCard?.(`CHOICE_${originalIdx}`);
           }
       } else {
-          // Direct pick for non-card choices (buttons)
-          onTapCard?.(`CHOICE_${originalIdx}`);
+          // Multi-select
+          if (selectedIndices.includes(originalIdx)) {
+              setSelectedIndices(selectedIndices.filter(i => i !== originalIdx));
+          } else if (selectedIndices.length < maxChoices) {
+              setSelectedIndices([...selectedIndices, originalIdx]);
+          }
       }
   };
 
@@ -89,80 +97,77 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
           
           <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">
             {pendingAction.data?.label || (hasCards ? "Scegli una Carta" : "Scegli un'Opzione")}
-            {maxChoices > 1 && <span className="block text-sm text-indigo-400 mt-1">Seleziona {minChoices === maxChoices ? minChoices : `${minChoices}-${maxChoices}`} carte ({selectedIndices.length} selezionate)</span>}
+            {maxChoices > 1 && (
+                <span className="block text-sm text-indigo-400 mt-1">
+                    Seleziona {minChoices === maxChoices ? minChoices : `${minChoices}-${maxChoices}`} opzioni ({selectedIndices.length} selezionate)
+                </span>
+            )}
           </h3>
           
           <div className={`w-full custom-scrollbar overflow-y-auto max-h-[50vh] px-2 py-4 ${hasCards ? 'bg-black/20 rounded-3xl border border-white/5' : ''}`}>
-            <div className={`w-full ${hasCards ? 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 p-4' : 'flex flex-col gap-3'}`}>
-              {filteredChoices.map((choice: any, idx: number) => {
-                if (!choice.cardData) return null; // Skip non-card choices in the grid
-                
-                const originalIdx = choices.indexOf(choice);
-                const isSelected = selectedIndices.includes(originalIdx);
+            {/* CARD GRID */}
+            {cardChoices.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 p-4">
+                    {cardChoices.map((choice: any) => {
+                        const originalIdx = choices.indexOf(choice);
+                        const isSelected = selectedIndices.includes(originalIdx);
+                        
+                        return (
+                            <motion.div 
+                                key={choice.cardData.id}
+                                className={`relative cursor-pointer transition-all ${isSelected ? 'scale-105' : 'hover:scale-105'}`}
+                                onClick={() => handleChoiceClick(originalIdx)}
+                            >
+                                <BattlefieldCard 
+                                    obj={choice.cardData} 
+                                    onHoverStart={onHoverStart} 
+                                    onHoverEnd={onHoverEnd}
+                                />
+                                {isSelected && (
+                                    <div className="absolute inset-0 border-4 border-yellow-400 rounded-2xl shadow-[0_0_20px_rgba(250,204,21,0.6)] pointer-events-none z-10" />
+                                )}
+                            </motion.div>
+                        );
+                    })}
+                </div>
+            )}
 
-                return (
-                  <div key={idx} className="flex flex-col gap-3 group items-center">
-                    <div 
-                      onClick={() => handleChoiceClick(originalIdx)}
-                      className={`relative transition-all duration-300 ${
-                        choice.selectable 
-                        ? `cursor-pointer hover:scale-110 active:scale-95 ring-offset-4 ring-offset-slate-900 ring-4 rounded-xl ${
-                            isSelected 
-                            ? 'ring-yellow-400 scale-110 shadow-[0_0_40px_rgba(250,204,21,0.6)] z-10' 
-                            : 'ring-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.4)]'
-                          }` 
-                        : 'opacity-40 grayscale cursor-not-allowed'
-                      }`}
-                    >
-                      <BattlefieldCard 
-                        obj={choice.cardData} 
-                        size="normal"
-                        onHoverStart={onHoverStart}
-                        onHoverEnd={onHoverEnd}
-                        me={me}
-                        forceNormal={true}
-                      />
-                      {choice.selectable && (
-                        <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap ${isSelected ? 'bg-yellow-400 text-black' : 'bg-cyan-500 text-slate-950'} text-[10px] font-black px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-xl`}>
-                          {maxChoices === 1 ? (isSelected ? 'CLICCA DI NUOVO' : 'SELEZIONA') : (isSelected ? 'DESELEZIONA' : 'AGGIUNGI')}
-                        </div>
-                      )}
-                      
-                      {maxChoices > 1 && isSelected && (
-                        <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center text-slate-950 font-black shadow-lg z-20 animate-bounce">
-                          {selectedIndices.indexOf(originalIdx) + 1}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-              
-              {!hasCards && filteredChoices.map((choice: any, idx: number) => {
-                const originalIdx = choices.indexOf(choice);
-                return (
-                  <button 
-                    key={idx}
-                    onClick={() => handleChoiceClick(originalIdx)}
-                    className="w-full p-5 bg-slate-800 hover:bg-indigo-600 rounded-2xl border border-white/5 text-sm font-black uppercase italic tracking-widest transition-all hover:scale-[1.02] active:scale-[0.98] text-white shadow-lg"
-                  >
-                    {choice.label}
-                  </button>
-                );
-              })}
-            </div>
+            {/* BUTTON LIST */}
+            {buttonChoices.length > 0 && (
+                <div className="flex flex-col gap-3 w-full">
+                    {buttonChoices.map((choice: any) => {
+                        const originalIdx = choices.indexOf(choice);
+                        const isSelected = selectedIndices.includes(originalIdx);
+                        
+                        return (
+                            <button 
+                                key={originalIdx}
+                                onClick={() => handleChoiceClick(originalIdx)}
+                                className={`w-full p-5 rounded-2xl border text-sm font-black uppercase italic tracking-widest transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg
+                                    ${isSelected 
+                                        ? 'bg-indigo-600 border-yellow-400 text-white ring-2 ring-yellow-400/50' 
+                                        : 'bg-slate-800 hover:bg-indigo-600 border-white/5 text-slate-300 hover:text-white'}`}
+                            >
+                                {choice.label}
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-4 w-full max-w-xs">
-            {selectedIndices.length >= minChoices && (
+            {/* MULTI-SELECT CONFIRM BUTTON */}
+            {maxChoices > 1 && selectedIndices.length >= minChoices && (
                <button 
                  onClick={() => confirmSelection(selectedIndices)}
                  className="w-full p-6 bg-yellow-400 hover:bg-yellow-300 rounded-2xl border-none text-md font-black uppercase italic tracking-widest transition-all hover:scale-[1.05] active:scale-[0.95] text-slate-950 shadow-[0_0_30px_rgba(250,204,21,0.4)]"
                >
-                 {maxChoices > 1 ? `CONFERMA (${selectedIndices.length})` : 'CONFERMA SELEZIONE'}
+                 CONFERMA {maxChoices > 1 ? `(${selectedIndices.length})` : 'SELEZIONE'}
                </button>
             )}
 
+            {/* NONE/SKIP BUTTON */}
             {noneChoice && selectedIndices.length === 0 && (
               <button 
                 onClick={() => onTapCard?.(`CHOICE_${noneChoiceIdx}`)}
@@ -172,24 +177,8 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
               </button>
             )}
 
-            {filteredChoices.map((choice: any, idx: number) => {
-               if (choice.cardData || !choice.selectable || choice === noneChoice) return null;
-               if (hasCards && choice.label.includes(choice.cardData?.definition?.name || "")) return null;
-
-               const originalIdx = choices.indexOf(choice);
-               
-               return (
-                 <button 
-                   key={idx}
-                   onClick={() => handleChoiceClick(originalIdx)}
-                   className="w-full p-4 bg-indigo-600/20 hover:bg-indigo-600/40 rounded-2xl border border-indigo-500/30 text-sm font-black uppercase italic tracking-widest transition-all hover:scale-[1.05] active:scale-[0.95] text-white shadow-lg shadow-indigo-500/10"
-                 >
-                   {choice.label}
-                 </button>
-               );
-            })}
-
-            {!pendingAction.data?.hideUndo && pendingAction.type === ActionType.ModalSelection && (
+            {/* UNDO BUTTON */}
+            {!pendingAction.data?.hideUndo && (
               <button 
                 onClick={() => onTapCard?.(`CHOICE_undo`)}
                 className="px-8 py-3 bg-red-500/10 hover:bg-red-500/30 rounded-full border border-red-500/20 text-xs font-black uppercase italic tracking-widest transition-all text-red-100/60 hover:text-red-100"
@@ -203,4 +192,3 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
     </AnimatePresence>
   );
 };
-

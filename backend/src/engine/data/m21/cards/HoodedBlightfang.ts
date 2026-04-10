@@ -16,13 +16,42 @@ export const HoodedBlightfang: Record<string, ImplementableCard> = {
             {
                 id: "hooded_blightfang_attack_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ATTACKS',
+                triggerEvent: "ON_ATTACK",
                 activeZone: ZoneRequirement.Battlefield,
-                // Condition: attacker has deathtouch and is controlled by you
+                triggerCondition: (state: any, event: any, source: any) => {
+                    const attacker = state.battlefield.find((o: any) => o.id === event.sourceId);
+                    if (!attacker || attacker.controllerId !== source.controllerId) return false;
+                    const { LayerProcessor } = require('../../modules/state/LayerProcessor');
+                    const stats = LayerProcessor.getEffectiveStats(attacker, state);
+                    return stats.keywords.includes('Deathtouch');
+                },
                 effects: [
-                    { type: EffectType.LoseLife, amount: 1, targetMapping: 'OPPONENTS' },
-                    { type: EffectType.GainLife, amount: 1, targetMapping: 'CONTROLLER' }
-                ]
+                    { type: EffectType.LoseLife, amount: 1, targetMapping: "EACH_OPPONENT" },
+                    { type: EffectType.GainLife, amount: 1, targetMapping: "CONTROLLER" }
+                ],
+                oracleText: "Whenever a creature you control with deathtouch attacks, each opponent loses 1 life and you gain 1 life."
+            },
+            {
+                id: "hooded_blightfang_planeswalker_damage",
+                type: AbilityType.Triggered,
+                triggerEvent: "ON_DAMAGE_TAKED",
+                activeZone: ZoneRequirement.Battlefield,
+                triggerCondition: (state: any, event: any, source: any) => {
+                    const targetObj = state.battlefield.find((o: any) => o.id === event.targetId);
+                    if (!targetObj || !targetObj.definition.types.some((t: string) => t.toLowerCase() === 'planeswalker')) return false;
+
+                    const sourceObj = state.battlefield.find((o: any) => o.id === event.sourceId);
+                    if (!sourceObj || sourceObj.controllerId !== source.controllerId) return false;
+
+                    const { LayerProcessor } = require('../../modules/state/LayerProcessor');
+                    const stats = LayerProcessor.getEffectiveStats(sourceObj, state);
+                    return stats.keywords.includes('Deathtouch');
+                },
+                effects: [{
+                    type: EffectType.Destroy,
+                    targetMapping: "EVENT_TARGET"
+                }],
+                oracleText: "Whenever a creature you control with deathtouch deals damage to a planeswalker, destroy that planeswalker."
             }
         ]
     }

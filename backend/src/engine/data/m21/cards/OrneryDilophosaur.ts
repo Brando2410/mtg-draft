@@ -1,17 +1,35 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, TargetType, RestrictionType } from "@shared/engine_types";
 
 export const OrneryDilophosaur: Record<string, ImplementableCard> = {
     "Ornery Dilophosaur": {
         name: "Ornery Dilophosaur",
         manaCost: "{3}{G}",
-        oracleText: "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)Whenever this creature attacks, if you control a creature with power 4 or greater, this creature gets +2/+2 until end of turn.",
-        colors: [],
+        oracleText: "Deathtouch\nWhenever Ornery Dilophosaur attacks, if you control a creature with power 4 or greater, Ornery Dilophosaur gets +2/+2 until end of turn.",
+        colors: ["G"],
         supertypes: [],
-        types: [],
-        subtypes: [],
+        types: ["Creature"],
+        subtypes: ["Dinosaur"],
         power: "2",
         toughness: "2",
-        keywords: [],
-        abilities: []
+        keywords: ["Deathtouch"],
+        abilities: [
+            {
+                id: "ornery_dilophosaur_attack_trigger",
+                type: AbilityType.Triggered,
+                triggerEvent: "ON_ATTACK",
+                condition: "HAS_PERMANENT:creature,power>=4",
+                effects: [
+                    {
+                        type: EffectType.ApplyContinuousEffect,
+                        powerModifier: 2,
+                        toughnessModifier: 2,
+                        duration: "UNTIL_END_OF_TURN",
+                        targetMapping: "SELF"
+                    }
+                ],
+                activeZone: ZoneRequirement.Battlefield,
+                oracleText: "Whenever Ornery Dilophosaur attacks, if you control a creature with power 4 or greater, Ornery Dilophosaur gets +2/+2 until end of turn."
+            }
+        ]
     }
 };

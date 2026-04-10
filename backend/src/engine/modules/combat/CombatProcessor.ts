@@ -117,6 +117,7 @@ export class CombatProcessor {
     if (state.combat?.blockers) {
         state.combat.blockers.forEach(b => {
             TriggerProcessor.onEvent(state, { type: 'ON_BLOCK', sourceId: b.blockerId, playerId: playerId }, (m: string) => callbacks.log(m));
+            TriggerProcessor.onEvent(state, { type: 'ON_BECAME_BLOCKED', sourceId: b.attackerId, targetId: b.blockerId, playerId: playerId }, (m: string) => callbacks.log(m));
         });
     }
 
@@ -352,6 +353,12 @@ export class CombatProcessor {
     const bStats = LayerProcessor.getEffectiveStats(blocker, state);
     const aStats = LayerProcessor.getEffectiveStats(attacker, state);
 
+    // 0. Restriction Check (CannotBlock)
+    const isRestricted = state.ruleRegistry.restrictions.some(r => 
+        r.targetId === blockerId && r.type === 'CannotBlock'
+    );
+    if (isRestricted) return false;
+
     // 1. CR 702.9: Flying check
     // "A creature with flying can't be blocked except by creatures with flying and/or reach."
     if (aStats.keywords.includes('Flying')) {
@@ -391,7 +398,21 @@ export class CombatProcessor {
       
       // Menace: cannot be blocked by exactly one creature
       if (aStats.keywords.includes('Menace') && blockers.length === 1) {
-          return { isValid: false, error: `${attacker.definition.name} ha Menace e deve essere bloccata da almeno due creature.` };
+          return { isValid: false, error: `${attacker.definition.name} has Menace and must be blocked by at least two creatures.` };
+      }
+
+      // MustBeBlocked requirement (Rule 509.1c)
+      const mustBeBlocked = state.ruleRegistry.restrictions.some(r => r.targetId === attacker.id && r.type === 'MustBeBlocked');
+      if (mustBeBlocked && blockers.length === 0) {
+          const defenderId = state.pendingAction?.playerId || Object.keys(state.players).find(id => id !== state.activePlayerId)!;
+          const hasLegalBlocker = state.battlefield.some(b => 
+              b.controllerId === defenderId && 
+              !b.isTapped &&
+              this.isLegalBlocker(state, b.id, attacker.id)
+          );
+          if (hasLegalBlocker) {
+              return { isValid: false, error: `${attacker.definition.name} must be blocked if able.` };
+          }
       }
     }
     

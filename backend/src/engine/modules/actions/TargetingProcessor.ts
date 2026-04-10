@@ -315,7 +315,11 @@ export class TargetingProcessor {
             return alternatives.some(r => {
                 if (typeof r === 'string') {
                     const lr = r.toLowerCase();
-                    if (lr === 'card' || lr === 'permanent') return true;
+                    if (lr === 'card') return true;
+                    if (lr === 'permanent') {
+                        const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
+                        return objTypes.some((t: string) => permTypes.includes(t.toLowerCase()));
+                    }
                     return objTypes.includes(lr);
                 } else {
                     let match = true;
@@ -487,16 +491,28 @@ export class TargetingProcessor {
         if (actionData?.nextEffectIndex !== undefined) {
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
-            const savedTargets = [...(actionData.targets || []), ...resolvedTargets];
+            const finalTargets = (actionData.isCopyTargeting && resolvedTargets.length === 0) 
+                ? (actionData.originalTargets || []) 
+                : resolvedTargets;
+
+            const savedTargets = [...(actionData.targets || []), ...finalTargets];
             const savedEffects = actionData.effects || [];
             const useSourceId = actionData.sourceId || sourceId!;
+
+            if (actionData.stackId) {
+                const existingObject = state.stack.find(s => s.id === actionData.stackId);
+                if (existingObject) {
+                    existingObject.targets = finalTargets;
+                    engine.log(`[TARGETING] Targets confirmed for ${existingObject.type === 'TriggeredAbility' ? 'Trigger' : 'Spell'}: ${finalTargets.join(', ')}`);
+                }
+            }
 
             const { EffectProcessor } = require('./../effects/EffectProcessor');
             EffectProcessor.resolveEffects(state, savedEffects, useSourceId, savedTargets, (m: string) => engine.log(m), actionData.nextEffectIndex, stackObj, actionData.parentContext);
 
             // --- RESUME PARENT CONTEXTS (NESTED RESOLUTION) ---
             let currentCtx = actionData.parentContext;
-            while (!state.pendingAction && currentCtx && currentCtx.nextEffectIndex < currentCtx.effects.length) {
+            while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex < currentCtx.effects.length) {
                 engine.log(`[RESOLVING] Returning to parent context for ${useSourceId}...`);
                 const pEffs = currentCtx.effects;
                 const pNext = currentCtx.nextEffectIndex;
@@ -534,10 +550,16 @@ export class TargetingProcessor {
         }
 
         if (stackId) {
-            const existingTrigger = state.stack.find(s => s.id === stackId);
-            if (existingTrigger) {
-                existingTrigger.targets = resolvedTargets;
-                engine.log(`[TARGETING] Targets confirmed for Trigger: ${resolvedTargets.join(', ')}`);
+            const existingObject = state.stack.find(s => s.id === stackId);
+            if (existingObject) {
+                if (actionData.isCopyTargeting && resolvedTargets.length === 0) {
+                    existingObject.targets = actionData.originalTargets || [];
+                    engine.log(`[COPY] Kept original targets for copy.`);
+                } else {
+                    existingObject.targets = resolvedTargets;
+                    engine.log(`[TARGETING] Targets confirmed for ${existingObject.type === 'TriggeredAbility' ? 'Trigger' : 'Spell'}: ${resolvedTargets.join(', ')}`);
+                }
+                
                 state.pendingAction = undefined;
                 state.priorityPlayerId = playerId;
                 engine.checkAutoPass(playerId);
@@ -601,11 +623,18 @@ export class TargetingProcessor {
                 return eventData?.targetId ? [eventData.targetId] : (stackData?.targetId ? [stackData.targetId] : []);
             case 'EVENT_TARGET':
                 return eventData?.object?.id ? [eventData.object.id] : (eventData?.targetId ? [eventData.targetId] : []);
-            case 'TARGET_1_CONTROLLER':
+            case 'TARGET_1_CONTROLLER': {
                 const obj = state.battlefield.find(o => o.id === targets[0]) || 
                             Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === targets[0]) ||
                             state.exile.find(o => o.id === targets[0]);
                 return obj ? [obj.controllerId] : [];
+            }
+            case 'TRIGGER_TARGET_CONTROLLER': {
+                const tId = eventData?.targetId || (stackData?.data?.eventData?.targetId);
+                const obj = state.battlefield.find(o => o.id === tId) || 
+                            Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === tId);
+                return obj ? [obj.controllerId] : [];
+            }
             case 'ALL_CREATURES_YOU_CONTROL':
                 return state.battlefield
                     .filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature'))
@@ -617,6 +646,10 @@ export class TargetingProcessor {
             case 'ALL_CREATURES':
                 return state.battlefield
                     .filter(o => o.definition.types.some(t => t.toLowerCase() === 'creature'))
+                    .map(o => o.id);
+            case 'ALL_CREATURES_WITHOUT_FLYING':
+                return state.battlefield
+                    .filter(o => o.definition.types.some(t => t.toLowerCase() === 'creature') && !LayerProcessor.hasKeyword(o, state, 'Flying'))
                     .map(o => o.id);
             case 'EACH_OPPONENT':
                 return Object.keys(state.players).filter(pid => pid !== controllerId);

@@ -165,7 +165,7 @@ export class TriggerProcessor {
       data: { 
           effects: (trigger as any).effects || [],
           targetDefinition: (trigger as any).targetDefinition,
-          eventData: event.data,
+          eventData: event,
           eventAmount: (event as any).amount
       }
     };

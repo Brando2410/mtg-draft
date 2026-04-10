@@ -39,7 +39,13 @@ export class MoveEffectHandler {
         return this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], destination: Zone.Graveyard, fromTop: (effect as any).amount || 1 }, controllerId, log, stackObject, parentContext);
     }
     if (effect.type === 'SearchLibrary') {
-        return this.resolveLibrarySearch(state, { ...effect, selectionType: 'Search', sourceZones: [Zone.Library], shuffle: true, reveal: true }, controllerId, log, stackObject, parentContext);
+        return this.resolveLibrarySearch(state, { ...effect, selectionType: 'Search', sourceZones: effect.sourceZones || [Zone.Library], shuffle: true, reveal: true }, controllerId, log, stackObject, parentContext);
+    }
+    if (effect.type === 'Scry') {
+        return this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: (effect as any).amount || 1 }, controllerId, log, stackObject, parentContext);
+    }
+    if (effect.type === 'Surveil') {
+        return this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: (effect as any).amount || 1 }, controllerId, log, stackObject, parentContext);
     }
 
     if (effect.type === 'PutRemainderOnBottomRandom' && targetIds.length > 1) {
@@ -86,10 +92,16 @@ export class MoveEffectHandler {
     const destination = effect.zone || effect.destination || Zone.Hand;
     const cards: GameObject[] = [];
     
-    for (let i = 0; i < fromTop && player.library.length > 0; i++) {
+    log(`[DEBUG] resolveLibraryTopMoves: player=${controllerId}, fromTop=${fromTop}, librarySize=${player.library.length}`);
+    
+    for (let i = 0; i < Number(fromTop) && player.library.length > 0; i++) {
         cards.push(player.library.pop()!);
     }
-    if (cards.length === 0) return;
+    
+    if (cards.length === 0) {
+        log(`[DEBUG] Scry/Surveil aborted: No cards found in library.`);
+        return;
+    }
 
     // Special logic for choices from top
     if (effect.type === 'LookAtTopAndPick') {
@@ -146,7 +158,7 @@ export class MoveEffectHandler {
             stackObj: stackObject,
             parentContext: parentContext
         });
-        log(`[RESOLVING] Initiated Scry ${cards.length} for ${controllerId}.`);
+        log(`[RESOLVING] Initiated Scry ${cards.length} for ${controllerId}. (Action: ${state.pendingAction!.type})`);
         return;
     }
 
@@ -177,7 +189,15 @@ export class MoveEffectHandler {
     const player = state.players[controllerId];
     if (!player) return;
 
-    state.pendingAction = ChoiceGenerator.createCardChoice(state, player.library, {
+    const sourceZones = effect.sourceZones || [Zone.Library];
+    const pool: GameObject[] = [];
+    sourceZones.forEach(z => {
+        if (z === Zone.Library) pool.push(...player.library);
+        if (z === Zone.Graveyard) pool.push(...player.graveyard);
+        if (z === Zone.Hand) pool.push(...player.hand);
+    });
+
+    state.pendingAction = ChoiceGenerator.createCardChoice(state, pool, {
         label: `${effect.label || "Search your library"} (${(effect as any).count || 1}/${effect.amount || 1})`,
         playerId: controllerId,
         sourceId: stackObject?.sourceId || '',

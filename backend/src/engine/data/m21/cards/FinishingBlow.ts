@@ -5,13 +5,31 @@ export const FinishingBlow: Record<string, ImplementableCard> = {
         name: "Finishing Blow",
         manaCost: "{4}{B}",
         oracleText: "Destroy target creature or planeswalker.",
-        colors: [],
+        colors: ["black"],
         supertypes: [],
-        types: [],
+        types: ["Instant"],
         subtypes: [],
         power: "",
         toughness: "",
         keywords: [],
-        abilities: []
+        abilities: [
+            {
+                id: "finishing_blow_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Hand,
+                targetDefinition: {
+                    type: TargetType.Permanent,
+                    count: 1,
+                    restrictions: ["creature", "planeswalker"]
+                },
+                effects: [
+                    {
+                        type: EffectType.Destroy,
+                        targetMapping: "TARGET_1"
+                    }
+                ],
+                oracleText: "Destroy target creature or planeswalker."
+            }
+        ]
     }
 };
