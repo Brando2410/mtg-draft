@@ -22,7 +22,8 @@ export class GameSetupProcessor {
         hasPlayedLandThisTurn: false,
         fullControl: false,
         maxHandSize: 7,
-        pendingDiscardCount: 0
+        pendingDiscardCount: 0,
+        virtualHand: []
       };
     }
   }

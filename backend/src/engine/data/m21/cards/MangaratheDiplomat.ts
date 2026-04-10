@@ -1,6 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType } from "@shared/engine_types";
 
-export const MangaratheDiplomat: Record<string, ImplementableCard> = {
+export const MangaraTheDiplomat: Record<string, ImplementableCard> = {
     "Mangara, the Diplomat": {
         name: "Mangara, the Diplomat",
         manaCost: "{3}{W}",
@@ -8,44 +8,45 @@ export const MangaratheDiplomat: Record<string, ImplementableCard> = {
         colors: ["white"],
         supertypes: ["Legendary"],
         types: ["Creature"],
-        subtypes: ["Human","Cleric"],
+        subtypes: ["Human", "Cleric"],
         power: "2",
         toughness: "4",
         keywords: ["Lifelink"],
         abilities: [
             {
-                id: "mangara_attack_trigger",
+                id: "mangara_attack_draw",
                 type: AbilityType.Triggered,
                 triggerEvent: 'ON_ATTACKERS_DECLARED',
                 activeZone: ZoneRequirement.Battlefield,
                 triggerCondition: (state: any, event: any, source: any) => {
-                    // "Whenever an opponent attacks with creatures..."
+                    // Must be an opponent attacking
                     const isOpponent = event.playerId !== source.controllerId;
                     if (!isOpponent) return false;
 
-                    // "...if two or more of those creatures are attacking you and/or planeswalkers you control..."
-                    const myPlaneswalkers = state.battlefield
-                        .filter((o: any) => o.controllerId === source.controllerId && (o.definition.types || []).includes('Planeswalker'))
+                    // Count creatures attacking you and/or planeswalkers you control
+                    const attackers = event.data?.attackers || [];
+                    const myPlaneswalkerIds = state.battlefield
+                        .filter((o: any) => o.controllerId === source.controllerId && 
+                            o.definition.types.some((t: string) => t.toLowerCase() === 'planeswalker'))
                         .map((o: any) => o.id);
 
-                    const attackingMeOrMyPWs = (event.data.attackers || []).filter((a: any) =>
-                        a.targetId === source.controllerId || myPlaneswalkers.includes(a.targetId)
-                    );
+                    const attackingMeCount = attackers.filter((a: any) => 
+                        a.targetId === source.controllerId || myPlaneswalkerIds.includes(a.targetId)
+                    ).length;
 
-                    return attackingMeOrMyPWs.length >= 2;
+                    return attackingMeCount >= 2;
                 },
-                effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }]
+                effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: 'CONTROLLER' }]
             },
             {
-                id: "mangara_second_spell_trigger",
+                id: "mangara_second_spell_draw",
                 type: AbilityType.Triggered,
                 triggerEvent: 'ON_SECOND_SPELL_CAST',
                 activeZone: ZoneRequirement.Battlefield,
                 triggerCondition: (state: any, event: any, source: any) => {
-                    // "Whenever an opponent casts their second spell each turn..."
                     return event.playerId !== source.controllerId;
                 },
-                effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }]
+                effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: 'CONTROLLER' }]
             }
         ]
     }

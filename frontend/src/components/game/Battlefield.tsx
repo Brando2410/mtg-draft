@@ -10,6 +10,8 @@ import { StackView } from './StackView';
 import { ChoiceModal } from './modals/ChoiceModal';
 import { OrderingModal } from './modals/OrderingModal';
 import { ZoneInspector } from './modals/ZoneInspector';
+import { ScrySurveilModal } from './modals/ScrySurveilModal';
+import { XSelectionModal } from './modals/XSelectionModal';
 
 // --- HELPER: Land Stack ---
 const LandStack = memo(({ 
@@ -58,9 +60,68 @@ const LandStack = memo(({
   );
 });
 
+// --- HELPER: Permanent WITH ATTACHMENTS ---
+const PermanentWithAttachments = memo(({ 
+  obj, 
+  attachments,
+  onTapCard, 
+  targetableIds,
+  onHoverStart,
+  onHoverEnd,
+  me
+}: { 
+  obj: GameObject, 
+  attachments: GameObject[],
+  onTapCard?: (id: string) => void,
+  targetableIds: Set<string>,
+  onHoverStart?: (obj: GameObject) => void,
+  onHoverEnd?: () => void,
+  me?: PlayerState
+}) => {
+  return (
+    <div className="relative group/permanent">
+      <BattlefieldCard 
+        obj={obj} 
+        onTapCard={onTapCard} 
+        isTargetable={targetableIds.has(obj.id)}
+        onHoverStart={onHoverStart}
+        onHoverEnd={onHoverEnd}
+        me={me}
+      />
+      {attachments.length > 0 && (
+        <div className="absolute -top-4 -right-6 flex flex-col -space-y-10 pointer-events-none group-hover/permanent:pointer-events-auto">
+          {attachments.map((aura, idx) => (
+            <motion.div
+              key={aura.id}
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1, transition: { delay: idx * 0.1 } }}
+              className="z-10 hover:z-50 hover:scale-150 transition-transform origin-top-right cursor-pointer"
+              onClick={(e) => {
+                 e.stopPropagation();
+                 onTapCard?.(aura.id);
+              }}
+              onMouseEnter={() => onHoverStart?.(aura)}
+              onMouseLeave={() => onHoverEnd?.()}
+            >
+              <BattlefieldCard 
+                obj={aura} 
+                size="tiny"
+                onTapCard={onTapCard}
+                isTargetable={targetableIds.has(aura.id)}
+                me={me}
+              />
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});
+
 // --- HELPER: SubZone ---
 const SubZone = memo(({ 
   cards, 
+  allBattlefieldCards, // Need all to find attachments
   label, 
   align = 'center', 
   onTapCard, 
@@ -71,6 +132,7 @@ const SubZone = memo(({
   me
 }: { 
   cards: GameObject[], 
+  allBattlefieldCards: GameObject[],
   label: string, 
   align?: 'start' | 'center' | 'end',
   onTapCard?: (id: string) => void,
@@ -81,20 +143,27 @@ const SubZone = memo(({
   me?: PlayerState
 }) => {
   const content = useMemo(() => {
-    if (!stackLands) return cards.map(obj => (
-      <BattlefieldCard 
-        key={obj.id} 
-        obj={obj} 
-        onTapCard={onTapCard} 
-        isTargetable={targetableIds.has(obj.id)}
-        onHoverStart={onHoverStart}
-        onHoverEnd={onHoverEnd}
-        me={me}
-      />
-    ));
+    // Filter out cards that are attached to something else (they will be rendered by their host)
+    const rootCards = cards.filter(c => !(c as any).attachedTo);
+
+    if (!stackLands) return rootCards.map(obj => {
+      const attachments = allBattlefieldCards.filter(a => (a as any).attachedTo === obj.id);
+      return (
+        <PermanentWithAttachments
+          key={obj.id}
+          obj={obj}
+          attachments={attachments}
+          onTapCard={onTapCard}
+          targetableIds={targetableIds}
+          onHoverStart={onHoverStart}
+          onHoverEnd={onHoverEnd}
+          me={me}
+        />
+      );
+    });
     
     const groups: Record<string, GameObject[]> = {};
-    cards.forEach(c => {
+    rootCards.forEach(c => {
       const name = c.definition.name;
       if (!groups[name]) groups[name] = [];
       groups[name].push(c);
@@ -103,7 +172,7 @@ const SubZone = memo(({
     return Object.entries(groups).map(([name, group]) => (
       <LandStack key={name} cards={group} onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
     ));
-  }, [cards, onTapCard, stackLands, targetableIds, onHoverStart, onHoverEnd, me]);
+  }, [cards, allBattlefieldCards, onTapCard, stackLands, targetableIds, onHoverStart, onHoverEnd, me]);
 
   return (
     <div className="flex flex-col gap-1 w-full h-full min-w-[100px]">
@@ -129,13 +198,17 @@ interface BattlefieldProps {
   combat: any;
   exile: any[];
   onTapCard: (id: string) => void;
+  onChoiceResolve: (payload: any) => void;
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: () => void;
   pendingAction?: any;
 }
 
 export const Battlefield = ({ 
-  me, opponent, battlefield, stack, combat, pendingAction, exile, onTapCard, onHoverStart, onHoverEnd 
+  me, opponent, battlefield, stack, combat, pendingAction, exile,  onTapCard,
+  onChoiceResolve,
+  onHoverStart,
+ onHoverEnd 
 }: BattlefieldProps) => {
   const [inspectingZone, setInspectingZone] = useState<{ cards: GameObject[], label: string } | null>(null);
   const [orderingList, setOrderingList] = useState<string[]>([]);
@@ -236,8 +309,10 @@ export const Battlefield = ({
     <div className="flex-1 relative flex flex-row bg-[#020617] overflow-hidden">
       
       {/* MODALS */}
+      <ScrySurveilModal pendingAction={pendingAction} me={me} onResolve={onChoiceResolve} />
       <OrderingModal pendingAction={pendingAction} me={me} battlefield={battlefield} orderingList={orderingList} onOrderClick={handleOrderClick} />
       <ChoiceModal pendingAction={pendingAction} me={me} onTapCard={onTapCard} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} />
+      <XSelectionModal pendingAction={pendingAction} me={me} onResolve={onChoiceResolve} />
       <ZoneInspector 
         inspectingZone={inspectingZone} 
         onClose={() => setInspectingZone(null)} 
@@ -298,24 +373,24 @@ export const Battlefield = ({
         {/* OPPONENT SIDE */}
         <div className="w-full h-1/2 flex flex-col relative border-b border-indigo-500/10">
           <div className="h-1/2 flex border-b border-white/[0.01]">
-            <SubZone cards={zones.opp.lands} label="Opponent Lands" align="start" onTapCard={onTapCard} stackLands={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
-            <SubZone cards={zones.opp.planeswalkers} label="Opponent Planeswalkers" align="center" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
-            <SubZone cards={zones.opp.support} label="Opponent Support" align="end" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
+            <SubZone cards={zones.opp.lands} allBattlefieldCards={battlefield} label="Opponent Lands" align="start" onTapCard={onTapCard} stackLands={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
+            <SubZone cards={zones.opp.planeswalkers} allBattlefieldCards={battlefield} label="Opponent Planeswalkers" align="center" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
+            <SubZone cards={zones.opp.support} allBattlefieldCards={battlefield} label="Opponent Support" align="end" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
           </div>
           <div className="h-1/2 bg-red-500/[0.005]">
-            <SubZone cards={zones.opp.creatures} label="Opponent Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
+            <SubZone cards={zones.opp.creatures} allBattlefieldCards={battlefield} label="Opponent Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
           </div>
         </div>
 
         {/* PLAYER SIDE */}
         <div className="w-full h-1/2 flex flex-col relative">
           <div className="h-1/2 bg-indigo-500/[0.005] border-b border-white/[0.01]">
-            <SubZone cards={zones.me.creatures} label="Your Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
+            <SubZone cards={zones.me.creatures} allBattlefieldCards={battlefield} label="Your Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
           </div>
           <div className="h-1/2 flex">
-            <SubZone cards={zones.me.lands} label="Your Lands" align="start" onTapCard={onTapCard} stackLands={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
-            <SubZone cards={zones.me.planeswalkers} label="Your Planeswalkers" align="center" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
-            <SubZone cards={zones.me.support} label="Your Support" align="end" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
+            <SubZone cards={zones.me.lands} allBattlefieldCards={battlefield} label="Your Lands" align="start" onTapCard={onTapCard} stackLands={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
+            <SubZone cards={zones.me.planeswalkers} allBattlefieldCards={battlefield} label="Your Planeswalkers" align="center" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
+            <SubZone cards={zones.me.support} allBattlefieldCards={battlefield} label="Your Support" align="end" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} />
           </div>
         </div>
 

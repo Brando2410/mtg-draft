@@ -12,6 +12,7 @@ export const ChandraHeartofFire: Record<string, ImplementableCard> = {
         power: undefined,
         toughness: undefined,
         keywords: [],
+        loyalty: "5",
         abilities: [
             {
                 id: "chandra_heart_fire_plus_1_a",

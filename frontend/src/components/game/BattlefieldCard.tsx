@@ -164,11 +164,31 @@ export const BattlefieldCard = memo(({
           })}
           
           {(obj as any).isRevealed && (
-            <div title="Revealed to Opponent" className="w-4 h-4 bg-purple-600 border border-purple-400/50 rounded shadow-lg flex items-center justify-center text-[8px] font-bold ring-1 ring-black/40 animate-pulse">
+            <div title="Revealed to Opponent" className="w-4 h-4 bg-purple-600 border border-purple-400/50 rounded-full shadow-lg flex items-center justify-center text-[8px] font-bold ring-1 ring-black/40 animate-pulse">
                 <span className="text-white scale-75">👁️</span>
             </div>
           )}
+          
+          {(obj as any).attachedTo && (
+            <div 
+              title="Attached to another permanent" 
+              className="w-5 h-5 bg-indigo-600 border border-indigo-400 rounded-full shadow-lg flex items-center justify-center text-[10px] ring-2 ring-black/50 animate-bounce"
+            >
+                <span className="text-white">🔗</span>
+            </div>
+          )}
       </div>
+
+      {/* ATTACHMENT INFO (Bottom Center) */}
+      {(obj as any).attachedTo && (
+        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap">
+            <div className="bg-indigo-900/90 backdrop-blur-md border border-indigo-400/50 rounded-full px-2 py-0.5 shadow-2xl">
+                <span className="text-[7px] font-bold text-indigo-200 uppercase tracking-tighter">
+                   LINKED
+                </span>
+            </div>
+        </div>
+      )}
 
       {isCreature && (
         <div className="absolute bottom-1 right-1 bg-black border border-white/40 rounded shadow-[0_0_10px_rgba(0,0,0,0.8)] px-2 py-0.5 flex items-center justify-center gap-1 z-50 min-w-[38px]">

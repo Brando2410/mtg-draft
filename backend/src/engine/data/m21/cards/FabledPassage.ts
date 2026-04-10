@@ -7,11 +7,36 @@ export const FabledPassage: Record<string, ImplementableCard> = {
         oracleText: "{T}, Sacrifice this land: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. Then if you control four or more lands, untap that land.",
         colors: [],
         supertypes: [],
-        types: [],
+        types: ["Land"],
         subtypes: [],
         power: "",
         toughness: "",
         keywords: [],
-        abilities: []
+        abilities: [
+            {
+                id: "fabled_passage_activated",
+                type: AbilityType.Activated,
+                activeZone: ZoneRequirement.Battlefield,
+                costs: [
+                    { type: 'Tap', targetMapping: 'SELF' },
+                    { type: 'Sacrifice', targetMapping: 'SELF' }
+                ],
+                effects: [
+                    {
+                        type: EffectType.SearchLibrary,
+                        restrictions: ['Basic', 'Land'],
+                        destination: Zone.Battlefield,
+                        tapped: true,
+                        shuffle: true,
+                        effects: [
+                            {
+                                type: EffectType.Untap,
+                                condition: 'LAND_COUNT_GE:4'
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     }
 };

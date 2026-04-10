@@ -1,11 +1,11 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType } from '@shared/engine_types';
 
 export const ExperimentalOverload: Record<string, ImplementableCard> = {
     "Experimental Overload": {
         name: "Experimental Overload",
         manaCost: "{2}{U}{R}",
         oracleText: "Create an X/X blue and red Weird creature token, where X is the number of instant and sorcery cards in your graveyard. Then you may return an instant or sorcery card from your graveyard to your hand. Exile Experimental Overload.",
-        colors: ["red","blue"],
+        colors: ["red", "blue"],
         supertypes: [],
         types: ["Sorcery"],
         subtypes: [],
@@ -19,7 +19,7 @@ export const ExperimentalOverload: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Stack,
                 effects: [
                     {
-                        type: 'CreateToken',
+                        type: EffectType.CreateToken,
                         tokenBlueprint: {
                             name: 'Weird',
                             colors: ['U', 'R'],
@@ -33,16 +33,16 @@ export const ExperimentalOverload: Record<string, ImplementableCard> = {
                         targetMapping: 'CONTROLLER'
                     },
                     {
-                        type: 'Choice',
-                        label: 'Scegli un Istantaneo o Stregoneria dal cimitero da rimettere in mano',
+                        type: EffectType.Choice,
+                        label: 'Choose an instant or sorcery card from your graveyard to return to your hand',
                         targetIdMapping: 'CONTROLLER_GRAVEYARD',
                         restrictions: ['Instant', 'Sorcery'],
                         optional: true,
                         effects: [
-                            { type: 'ReturnToHand', targetMapping: 'SELECTED_CARD' }
+                            { type: EffectType.ReturnToHand, targetMapping: 'SELECTED_CARD' }
                         ]
                     },
-                    { type: 'Exile', targetMapping: 'SELF' }
+                    { type: EffectType.Exile, targetMapping: 'SELF' }
                 ]
             }
         ]

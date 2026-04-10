@@ -12,6 +12,7 @@ export const GarrukSavageHerald: Record<string, ImplementableCard> = {
         power: "",
         toughness: "",
         keywords: [],
+        loyalty: "5",
         abilities: [
             {
                 id: "garruk_savage_herald_plus_1",
@@ -34,7 +35,14 @@ export const GarrukSavageHerald: Record<string, ImplementableCard> = {
                 type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Mana', value: '-2' }],
-                targetDefinition: { type: 'Permanent', count: 2, restrictions: ['Creature'] },
+                targetDefinition: { 
+                    type: 'Permanent', 
+                    count: 2, 
+                    perTargetRestrictions: [
+                        ['Creature', 'YouControl'],
+                        ['Creature', 'Other']
+                    ] 
+                },
                 effects: [{
                     type: EffectType.DealDamage,
                     amount: 'TARGET_1_POWER',

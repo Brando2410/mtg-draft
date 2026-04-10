@@ -6,12 +6,21 @@ export const Plains: Record<string, ImplementableCard> = {
         manaCost: "",
         oracleText: "({T}: Add {W}.)",
         colors: [],
-        supertypes: [],
-        types: [],
-        subtypes: [],
-        power: "",
-        toughness: "",
+        supertypes: ["Basic"],
+        types: ["Land"],
+        subtypes: ["Plains"],
+        power: undefined,
+        toughness: undefined,
         keywords: [],
-        abilities: []
+        abilities: [
+            {
+                id: "plains_mana",
+                type: AbilityType.Activated,
+                activeZone: Zone.Battlefield,
+                isManaAbility: true,
+                costs: [{ type: 'Tap', targetMapping: 'SELF' }],
+                effects: [{ type: EffectType.AddMana, value: '{W}' }]
+            }
+        ]
     }
 };

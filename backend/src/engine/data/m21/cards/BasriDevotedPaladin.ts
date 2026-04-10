@@ -12,6 +12,7 @@ export const BasriDevotedPaladin: Record<string, ImplementableCard> = {
         power: undefined,
         toughness: undefined,
         keywords: [],
+        loyalty: "4",
         abilities: [
             {
                 id: "basri_devoted_plus_1",

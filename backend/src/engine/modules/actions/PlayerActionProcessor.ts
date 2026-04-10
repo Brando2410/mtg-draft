@@ -105,7 +105,15 @@ export class PlayerActionProcessor {
     // 3. Generic Activated Ability Choice (Non-Planeswalker)
     const { m21: mLogic } = require('../../data/m21');
     const logic = mLogic[obj.definition.name];
-    const activatedAbilities = logic?.abilities?.filter((a: any) => a.type === AbilityType.Activated && !a.isManaAbility) || [];
+    
+    const typeLine = (obj.definition.types?.join(' ') + ' ' + (obj.definition.type_line || '')).toLowerCase();
+    const isLand = typeLine.includes('land');
+
+    const activatedAbilities = logic?.abilities?.filter((a: any) => {
+        if (a.type !== AbilityType.Activated) return false;
+        if (isLand) return true; // Land abilities always shown
+        return !a.isManaAbility; // Non-land mana abilities hidden for simplicity for now
+    }) || [];
 
     if (activatedAbilities.length > 0) {
         if (state.priorityPlayerId !== playerId) {
@@ -116,27 +124,31 @@ export class PlayerActionProcessor {
         // If only one ability, just try to activate it directly (targeting will follow if needed)
         if (activatedAbilities.length === 1) {
             const index = logic.abilities.indexOf(activatedAbilities[0]);
-            return actionHandlers.activateAbility(playerId, cardId, index);
+            const success = actionHandlers.activateAbility(playerId, cardId, index);
+            if (success) return true;
+            // If activation failed (likely already tapped), fall through to possible undo logic
         }
 
         // If multiple, show CHOICE
-        const { ActionType: AT } = require('@shared/engine_types');
-        state.pendingAction = {
-            type: AT.ModalSelection,
-            playerId: playerId,
-            sourceId: cardId,
-            data: {
-                choices: activatedAbilities.map((a: any) => ({
-                    label: a.id || 'Activate Ability',
-                    value: logic.abilities.indexOf(a)
-                }))
-            }
-        };
-        state.priorityPlayerId = null;
-        return true;
+        if (activatedAbilities.length > 1) {
+            const { ActionType: AT } = require('@shared/engine_types');
+            state.pendingAction = {
+                type: AT.ModalSelection,
+                playerId: playerId,
+                sourceId: cardId,
+                data: {
+                    choices: activatedAbilities.map((a: any) => ({
+                        label: a.id || 'Activate Ability',
+                        value: logic.abilities.indexOf(a)
+                    }))
+                }
+            };
+            state.priorityPlayerId = null;
+            return true;
+        }
     }
 
-    // 4. Default: Tap for Mana or non-PW interaction
+    // 4. Default: Tap for Mana (Undo/Untap) or non-PW interaction
     return actionHandlers.tapForMana(playerId, cardId);
   }
 
@@ -150,52 +162,41 @@ export class PlayerActionProcessor {
       handleBlockSelection: (pId: string, cId: string) => boolean;
     }
   ): boolean {
-    if (state.pendingAction?.playerId === playerId) {
-      if (state.pendingAction.type === 'DECLARE_ATTACKERS') {
-        return actionHandlers.declareAttacker(playerId, cardId);
-      }
-      if (state.pendingAction.type === 'DECLARE_BLOCKERS') {
-        return actionHandlers.handleBlockSelection(playerId, cardId);
-      }
-    }
-
-    if (state.priorityPlayerId !== playerId && state.pendingAction?.playerId !== playerId) {
-      log(`Action error: Player tried to tap for mana without priority.`);
-      return false;
-    }
-
     const card = state.battlefield.find(c => c.id === cardId);
     if (!card || card.controllerId !== playerId) return false;
 
-    const typeLine = (card.definition.type_line || '').toLowerCase();
-    if (!typeLine.includes('land')) return false;
+    // We only handle "Undo" here now. Tapping for mana is handled via ActivateAbility (Step 3 above)
+    if (!card.isTapped) return false;
+
+    const { m21: mLogic } = require('../../data/m21');
+    const logic = mLogic[card.definition.name];
+    if (!logic) return false;
+
+    // GENERIC UNDO LOGIC: If a land has exactly one mana ability, we can try to undo it
+    const manaAbilities = logic.abilities.filter((a: any) => a.isManaAbility);
+    if (manaAbilities.length !== 1) return false; 
+
+    const ability = manaAbilities[0];
+    const addManaEffect = ability.effects.find((e: any) => e.type === 'AddMana');
+    if (!addManaEffect) return false;
 
     const player = state.players[playerId];
-    const name = card.definition.name.toLowerCase();
+    const { ManaProcessor } = require('./../magic/ManaProcessor');
+    const manaStr = addManaEffect.value || '{C}';
+    const requirements = ManaProcessor.parseManaCost(manaStr.startsWith('{') ? manaStr : `{${manaStr}}`);
     
-    let color: keyof typeof player.manaPool = 'C';
-    if (name.includes('plains')) color = 'W';
-    else if (name.includes('island')) color = 'U';
-    else if (name.includes('swamp')) color = 'B';
-    else if (name.includes('mountain')) color = 'R';
-    else if (name.includes('forest')) color = 'G';
+    // Extract the primary color symbol
+    const color = (Object.keys(requirements.colored)[0] as keyof typeof player.manaPool) || 'C';
 
-    if (card.isTapped) {
-      if (player.manaPool[color] > 0) {
-        card.isTapped = false;
-        player.manaPool[color]--;
-        log(`${player.name} untapping ${card.definition.name} (Undo Mana {${color}})`);
-        return true;
-      } else {
-        log(`Cannot undo: Mana {${color}} already spent.`);
-        return false;
-      }
-    } else {
-      card.isTapped = true;
-      player.manaPool[color]++;
-      log(`${player.name} tapped ${card.definition.name} for {${color}}`);
+    if (player.manaPool[color] > 0) {
+      card.isTapped = false;
+      player.manaPool[color]--;
+      log(`${player.name} untapping ${card.definition.name} (Undo Mana {${color}})`);
       return true;
     }
+
+    log(`Cannot undo: Mana {${color}} already spent.`);
+    return false;
   }
 
   public static declareAttacker(state: GameState, playerId: string, cardId: string, targetId: string | undefined, log: (m: string) => void): boolean {
@@ -309,6 +310,16 @@ export class PlayerActionProcessor {
   public static discardCard(state: GameState, playerId: PlayerId, cardInstanceId: string, log: (m: string) => void): { finished: boolean, success: boolean } {
     const player = state.players[playerId];
     if (!player) return { finished: false, success: false };
+
+    // BUG FIX: Prevent race condition where rapid clicking discards more than required.
+    // We only allow discard if there's a pending DISCARD action for this player.
+    if (state.pendingAction?.type !== 'DISCARD' || state.pendingAction.playerId !== playerId) {
+        return { finished: false, success: false };
+    }
+
+    if (player.pendingDiscardCount <= 0) {
+        return { finished: false, success: false };
+    }
 
     const cardIndex = player.hand.findIndex(c => c.id === cardInstanceId);
     if (cardIndex === -1) return { finished: false, success: false };

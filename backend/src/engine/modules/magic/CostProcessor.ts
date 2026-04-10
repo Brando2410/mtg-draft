@@ -3,6 +3,7 @@ import { ManaProcessor } from './ManaProcessor';
 import { ActionProcessor } from '../actions/ActionProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { TargetingProcessor } from '../actions/TargetingProcessor';
+import { TriggerProcessor } from '../effects/TriggerProcessor';
 
 /**
  * Rules Engine Module: Cost Processing (Rule 601.2h / 101.1)
@@ -97,6 +98,7 @@ export class CostProcessor {
     switch (cost.type) {
       case 'Tap':
         source.isTapped = true;
+        TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: source.id, data: { object: source } }, log);
         break;
 
       case 'Mana':
@@ -124,17 +126,34 @@ export class CostProcessor {
         }
         
         if (toSac) {
+            TriggerProcessor.onEvent(state, { 
+                type: 'ON_SACRIFICE', 
+                playerId, 
+                sourceId: toSac.id, 
+                data: { object: toSac } 
+            }, log);
             ActionProcessor.moveCard(state, toSac, Zone.Graveyard, playerId, log);
         }
         break;
 
       case 'Discard':
-        // Should trigger DISCARD action
+        // CR 701.8: To discard a card, move it from hand to graveyard.
+        // If it's a cost, we typically expect a pre-selected cardId in state.lastChosenDiscardId
+        // or we need to trigger a choice if it's not present.
+        const discardId = (state as any).lastChosenDiscardId;
+        const cardToDiscard = player.hand.find(c => c.id === discardId) || player.hand[0]; 
+        if (cardToDiscard) {
+            TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card: cardToDiscard, sourceId: source.id } }, log);
+            ActionProcessor.moveCard(state, cardToDiscard, Zone.Graveyard, playerId, log);
+            log(`${player.name} discarded ${cardToDiscard.definition.name} as a cost.`);
+        }
+        delete (state as any).lastChosenDiscardId;
         break;
 
        case 'PayLife':
          const lifeVal = parseInt(cost.value) || 0;
          player.life -= lifeVal;
+         TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
          log(`${player.name} pays ${lifeVal} life (${player.life + lifeVal} -> ${player.life})`);
          break;
     }

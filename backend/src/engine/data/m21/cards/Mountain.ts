@@ -6,12 +6,21 @@ export const Mountain: Record<string, ImplementableCard> = {
         manaCost: "",
         oracleText: "({T}: Add {R}.)",
         colors: [],
-        supertypes: [],
-        types: [],
-        subtypes: [],
-        power: "",
-        toughness: "",
+        supertypes: ["Basic"],
+        types: ["Land"],
+        subtypes: ["Mountain"],
+        power: undefined,
+        toughness: undefined,
         keywords: [],
-        abilities: []
+        abilities: [
+            {
+                id: "mountain_mana",
+                type: AbilityType.Activated,
+                activeZone: Zone.Battlefield,
+                isManaAbility: true,
+                costs: [{ type: 'Tap', targetMapping: 'SELF' }],
+                effects: [{ type: EffectType.AddMana, value: '{R}' }]
+            }
+        ]
     }
 };

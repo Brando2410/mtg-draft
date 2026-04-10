@@ -12,6 +12,7 @@ export const UgintheSpiritDragon: Record<string, ImplementableCard> = {
         power: "",
         toughness: "",
         keywords: [],
+        loyalty: "7",
         abilities: [
             {
                 id: "ugin_plus_2",

@@ -12,6 +12,7 @@ export const LilianaDeathMage: Record<string, ImplementableCard> = {
         power: "",
         toughness: "",
         keywords: [],
+        loyalty: "4",
         abilities: []
     }
 };

@@ -14,10 +14,16 @@ export const EnthrallingHold: Record<string, ImplementableCard> = {
         keywords: [],
         abilities: [
             {
+                id: "enthralling_hold_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'Tapped'] }
+            },
+            {
                 id: "enthralling_hold_aura",
                 type: AbilityType.Static,
                 activeZone: ZoneRequirement.Battlefield,
-                effects: [{ type: 'ApplyContinuousEffect', layer: 2, value: 'CONTROL_ENCHANTED', targetMapping: 'SELF' }]
+                effects: [{ type: 'ApplyContinuousEffect', layer: 2, targetControllerId: 'CONTROLLER', targetMapping: 'ENCHANTED_CREATURE' }]
             }
         ]
     }

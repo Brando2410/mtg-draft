@@ -1,8 +1,9 @@
-import { GameState, PlayerId, Zone, Phase, GameObject, AbilityType, AbilityCost } from '@shared/engine_types';
+import { GameState, PlayerId, Zone, Phase, GameObject, AbilityType, AbilityCost, EffectType } from '@shared/engine_types';
 import { m21 } from '../../data/m21';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
 import { TriggerProcessor } from '../effects/TriggerProcessor';
+import { ActionProcessor } from './ActionProcessor';
 
 /**
  * Casting Spells and Activating Abilities (Chapters 601 & 602)
@@ -44,16 +45,49 @@ export class SpellProcessor {
         }
 
         let cardToPlay: any;
+        const { PriorityProcessor } = require('./../core/PriorityProcessor');
+        const { TargetingProcessor } = require('./TargetingProcessor');
+
+        // 1. Search in Hand
         const cardInHand = player.hand.find((c: any) => c.id === cardInstanceId);
         if (cardInHand) {
             cardToPlay = cardInHand;
-        } else if (bypassTargeting) {
-            cardToPlay = player.hand.find((c: any) => c.id === cardInstanceId);
+        } else {
+            // 2. Search in Non-hand zones with Permission Check
+            const obj = TargetingProcessor.findObjectInAnyZone(state, cardInstanceId);
+            if (obj && obj.controllerId === playerId) {
+                let permissionType: string | undefined;
+                if (obj.zone === Zone.Graveyard) permissionType = EffectType.AllowCastFromGraveyard;
+                else if (obj.zone === Zone.Exile) permissionType = EffectType.AllowPlayExiled;
+                else if (obj.zone === Zone.Library) permissionType = EffectType.AllowPlayFromTop;
+
+                if (permissionType) {
+                    const hasPermission = PriorityProcessor.findPermissionEffect(state, playerId, permissionType, obj.id);
+                    if (hasPermission) {
+                        cardToPlay = obj;
+                    } else {
+                        log(`[DEBUG] No ${permissionType} permission found for ${obj.definition.name} in ${obj.zone}.`);
+                    }
+                } else {
+                    log(`[DEBUG] No permission type for zone ${obj.zone}.`);
+                }
+            } else if (obj) {
+                log(`[DEBUG] Player ${playerId} does not control object ${cardInstanceId} (controller: ${obj.controllerId}).`);
+            } else {
+                log(`[DEBUG] Object ${cardInstanceId} not found in any zone.`);
+            }
         }
 
         if (!cardToPlay) {
-            log(`Card not found in hand.`);
+            log(`Card not found in hand or current zone is restricted (Zone: ${TargetingProcessor.findObjectInAnyZone(state, cardInstanceId)?.zone || 'N/A'}).`);
             return false;
+        }
+
+        // --- X-VALUE RESET FAIL-SAFE ---
+        // If this is a fresh attempt to play the card (not a resume from a modal/X-choice),
+        // we must clear any stale xValue to ensure the player isn't "locked" into a previous choice.
+        if (!bypassTargeting && cardToPlay.xValue !== undefined) {
+             cardToPlay.xValue = undefined;
         }
 
         const typeLine = (cardToPlay.definition.type_line || '').toLowerCase();
@@ -85,7 +119,7 @@ export class SpellProcessor {
                 return false;
             }
             
-            player.hand = player.hand.filter((c: any) => c.id !== cardInstanceId);
+            ActionProcessor.removeFromCurrentZone(state, cardToPlay);
             cardToPlay.zone = Zone.Battlefield;
             state.battlefield = [...state.battlefield, cardToPlay];
             state.turnState.landsPlayedThisTurn[playerId] = currentLandsPlayed + 1;
@@ -102,15 +136,33 @@ export class SpellProcessor {
         const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices);
         const hasPreSelectedChoice = (state as any).lastChoiceIndex !== undefined;
 
+        // Step 0.5: Check for X in cost
+        const costStr = cardToPlay.definition.manaCost;
+        if (costStr.includes('{X}') && cardToPlay.xValue === undefined) {
+             const { ActionType } = require('@shared/engine_types');
+             state.pendingAction = {
+                 type: ActionType.ChooseX,
+                 playerId: playerId,
+                 sourceId: cardToPlay.id,
+                 data: {
+                     label: `Choose a value for X for ${cardToPlay.definition.name}`,
+                     declaredTargets: declaredTargets || [],
+                 }
+             };
+             log(`[CHOOSE_X] ${state.players[playerId].name} is choosing X for ${cardToPlay.definition.name}...`);
+             return true;
+        }
+
         // CR 601.2f: Determine total cost
         const { totalMana, additionalCosts } = this.getEffectiveCosts(state, cardToPlay);
 
         // --- SETUP SEQUENCE: TARGETING -> CHOICE -> FINALIZATION ---
 
         // Step 1: Check Targeting
-        if (targetDefinition && (!declaredTargets || declaredTargets.length === 0) && !bypassTargeting) {
+        if (targetDefinition && (!declaredTargets || declaredTargets.length === 0)) {
             if (!ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana)) {
                 log(`Illegal Play: Not enough mana available to even start casting ${cardToPlay.definition.name}.`);
+                cardToPlay.xValue = undefined; // Cleanup for next attempt
                 return false;
             }
 
@@ -148,10 +200,15 @@ export class SpellProcessor {
         }
 
         // Step 1.5: Check Additional Costs (e.g. Goremand's sacrifice)
+        log(`[DEBUG] Additional costs found: ${additionalCosts.length} -> ${JSON.stringify(additionalCosts)}`);
         const costRequiresTarget = additionalCosts.find(c => c.type === 'Sacrifice' && !c.targetMapping);
         const hasChosenSacrifice = (state as any).lastChosenSacrificeId !== undefined;
+        const discardCost = additionalCosts.find(c => (c.type as string).toLowerCase() === 'discard');
+        const hasChosenDiscard = (state as any).lastChosenDiscardId !== undefined;
 
-        if (costRequiresTarget && !hasChosenSacrifice && !bypassTargeting) {
+        if (discardCost) log(`[DEBUG] Discard cost found. hasChosenDiscard: ${hasChosenDiscard}`);
+
+        if (costRequiresTarget && !hasChosenSacrifice) {
             const { TargetingProcessor } = require('./TargetingProcessor');
             const legalSacrificeIds = state.battlefield
                 .filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, costRequiresTarget.restrictions || [], playerId, cardToPlay.id))
@@ -163,7 +220,6 @@ export class SpellProcessor {
             }
 
             const { ActionType } = require('@shared/engine_types');
-            // Trigger a choice phase specifically for the cost
             state.pendingAction = {
                 type: ActionType.ModalSelection,
                 playerId: playerId,
@@ -186,6 +242,30 @@ export class SpellProcessor {
                 }
             };
             log(`[SACRIFICE] ${state.players[playerId].name} must choose an object to sacrifice to cast ${cardToPlay.definition.name}.`);
+            return true;
+        }
+
+        if (discardCost && !hasChosenDiscard) {
+            const { ActionType } = require('@shared/engine_types');
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: cardToPlay.id,
+                data: {
+                    label: "Discard a card to cast " + cardToPlay.definition.name,
+                    hideUndo: false,
+                    isCostChoice: true,
+                    costType: 'Discard',
+                    declaredTargets: declaredTargets || [],
+                    choices: player.hand.filter(c => c.id !== cardInstanceId).map(c => ({
+                        label: `Discard ${c.definition.name}`,
+                        value: c.id,
+                        cardData: c,
+                        selectable: true
+                    }))
+                }
+            };
+            log(`[DISCARD] ${state.players[playerId].name} must choose a card to discard to cast ${cardToPlay.definition.name}.`);
             return true;
         }
 
@@ -235,21 +315,35 @@ export class SpellProcessor {
                 const chosenId = (state as any).lastChosenSacrificeId;
                 const obj = state.battlefield.find(o => o.id === (chosenId || cardToPlay.id));
                 if (obj) {
-                    const { ActionProcessor } = require('../actions/ActionProcessor');
-                    const { TriggerProcessor } = require('../effects/TriggerProcessor');
                     TriggerProcessor.onEvent(state, { type: 'ON_SACRIFICE', playerId, sourceId: obj.id, data: { object: obj } }, log);
                     ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId, log);
                     log(`Paid additional cost: Sacrificed ${obj.definition.name}.`);
                 }
+            } else if (cost.type === 'Discard') {
+                const chosenId = (state as any).lastChosenDiscardId;
+                const obj = player.hand.find(o => o.id === chosenId);
+                if (obj) {
+                    TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card: obj, sourceId: cardToPlay.id } }, log);
+                    ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId, log);
+                    log(`Paid additional cost: Discarded ${obj.definition.name}.`);
+                }
+            } else if (cost.type === 'PayLife') {
+                const lifeVal = parseInt(cost.value as string) || 0;
+                player.life -= lifeVal;
+                TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
+                log(`Paid additional cost: ${lifeVal} life.`);
             }
         });
 
         // Cleanup temporary selection
         delete (state as any).lastChosenSacrificeId;
+        delete (state as any).lastChosenDiscardId;
 
-
-        player.hand = player.hand.filter((c: any) => c.id !== cardInstanceId);
+        // 5. Remove from current zone and move to stack
+        const lastZone = cardToPlay.zone;
+        ActionProcessor.removeFromCurrentZone(state, cardToPlay);
         cardToPlay.zone = Zone.Stack;
+        cardToPlay.lastNonStackZone = lastZone;
         (cardToPlay as any).paidCost = totalMana;
 
         const isInstantOrSorcery = cardToPlay.definition.types.some((t: string) => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery');
@@ -274,6 +368,7 @@ export class SpellProcessor {
             type: 'Spell' as const,
             targets: declaredTargets || [],
             card: cardToPlay,
+            xValue: cardToPlay.xValue,
             data: {
                 effects: spellEffects,
                 targetDefinition: targetDefinition,
@@ -329,7 +424,13 @@ export class SpellProcessor {
     }
 
     public static getEffectiveCosts(state: GameState, card: GameObject): { totalMana: string, additionalCosts: AbilityCost[] } {
-        const baseCost = card.definition.manaCost;
+        let baseCost = card.definition.manaCost;
+        
+        // Handle X cost substitution (Rule 107.3)
+        if (baseCost.includes('{X}') && card.xValue !== undefined) {
+            baseCost = baseCost.replace(/\{X\}/g, `{${card.xValue}}`);
+        }
+
         const parsed = ManaProcessor.parseManaCost(baseCost);
         let extraGeneric = 0;
         let additionalCosts: AbilityCost[] = [];
@@ -342,9 +443,11 @@ export class SpellProcessor {
         if (isFree) return { totalMana: "", additionalCosts };
 
         // 1. Gather global modifiers
+        const { TargetingProcessor } = require('./TargetingProcessor');
         const modifiers = state.ruleRegistry.continuousEffects.filter(e => {
-            if ((e as any).type !== 'SpellTax' && (e as any).type !== 'CostReduction' && (e as any).type !== 'AdditionalCost') return false;
-            const source = state.battlefield.find(o => o.id === e.sourceId) || state.exile.find(o => o.id === e.sourceId);
+            if (!['SpellTax', 'CostReduction', 'AdditionalCost', 'AllowCastFromGraveyard', 'AllowPlayFromTop', 'AllowPlayExiled'].includes((e as any).type)) return false;
+            
+            const source = TargetingProcessor.findObjectInAnyZone(state, e.sourceId);
             if (source && e.activeZones && !e.activeZones.includes(source.zone)) return false;
             return true;
         });
@@ -379,9 +482,12 @@ export class SpellProcessor {
 
             const restrictions = (mod as any).restrictions || [];
             const { TargetingProcessor } = require('./TargetingProcessor');
+            const { LayerProcessor } = require('../state/LayerProcessor');
+            
             const matches = TargetingProcessor.matchesRestrictions(state, card, (restrictions as any[] || []), card.controllerId, mod.sourceId);
+            const conditionMatches = !mod.condition || LayerProcessor.matchesCondition(state, mod.condition, mod.sourceId, card.controllerId);
 
-            if (!matches) continue;
+            if (!matches || !conditionMatches) continue;
 
             if (type === 'SpellTax') extraGeneric += (mod as any).amount || 0;
             if (type === 'CostReduction') {
@@ -394,8 +500,8 @@ export class SpellProcessor {
                     }
                 }
             }
-            if (type === 'AdditionalCost') {
-                const extra = (mod as any).costs || [];
+            if (type === 'AdditionalCost' || type === 'AllowCastFromGraveyard' || type === 'AllowPlayExiled') {
+                const extra = (mod as any).additionalCosts || (mod as any).costs || [];
                 additionalCosts = [...additionalCosts, ...extra];
             }
         }
@@ -528,6 +634,15 @@ export class SpellProcessor {
                 }
             };
             log(`[TARGETING] Player must choose targets for ${obj.definition.name}'s ability.`);
+            return true;
+        }
+
+        if (ability.isManaAbility) {
+            const { EffectProcessor } = require('../effects/EffectProcessor');
+            (ability as any).effects.forEach((eff: any) => {
+                EffectProcessor.executeEffect(state, eff, obj.id, [], (m: string) => log(m), null);
+            });
+            log(`Activated mana ability of ${obj.definition.name}`);
             return true;
         }
 

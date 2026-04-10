@@ -12,6 +12,7 @@ export const LilianaWakeroftheDead: Record<string, ImplementableCard> = {
         power: undefined,
         toughness: undefined,
         keywords: [],
+        loyalty: "4",
         abilities: [
             {
                 id: "liliana_waker_plus_1",

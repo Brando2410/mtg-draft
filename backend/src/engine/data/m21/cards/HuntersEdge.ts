@@ -17,7 +17,14 @@ export const HuntersEdge: Record<string, ImplementableCard> = {
                 id: "hunters_edge_spell",
                 type: AbilityType.Spell,
                 activeZone: ZoneRequirement.Hand,
-                targetDefinition: { type: 'Permanent', count: 2, restrictions: ['Creature'] },
+                targetDefinition: { 
+                    type: 'Permanent', 
+                    count: 2, 
+                    perTargetRestrictions: [
+                        ['Creature', 'YouControl'],
+                        ['Creature', 'OpponentControl']
+                    ] 
+                },
                 effects: [
                     {
                         type: EffectType.AddCounters,

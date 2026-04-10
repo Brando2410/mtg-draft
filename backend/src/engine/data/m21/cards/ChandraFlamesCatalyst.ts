@@ -12,6 +12,7 @@ export const ChandraFlamesCatalyst: Record<string, ImplementableCard> = {
         power: "",
         toughness: "",
         keywords: [],
+        loyalty: "5",
         abilities: []
     }
 };

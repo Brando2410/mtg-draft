@@ -2,6 +2,9 @@ import { GameState, PlayerId, Phase, Step, Zone, AbilityType } from '@shared/eng
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
 import { SpellProcessor } from '../actions/SpellProcessor';
+import { LayerProcessor } from '../state/LayerProcessor';
+import { ConditionProcessor } from '../core/ConditionProcessor';
+import { EffectType } from '@shared/engine_types';
 import { m21 } from '../../data/m21';
 
 /**
@@ -177,25 +180,55 @@ export class PriorityProcessor {
     const player = state.players[playerId];
     if (!player) return false;
 
+    const { TargetingProcessor } = require('../actions/TargetingProcessor');
+
     // Check hand
-    const cardInHand = player.hand.find(o => o.id === objId);
-    if (cardInHand) {
+    let cardToPlay = player.hand.find(o => o.id === objId);
+    
+    // Check top of library (Radha, Snoop, etc.)
+    if (!cardToPlay && player.library.length > 0 && player.library[player.library.length - 1].id === objId) {
+        const topCard = player.library[player.library.length - 1];
+        const hasAllowEffect = this.findPermissionEffect(state, playerId, EffectType.AllowPlayFromTop, topCard.id);
+        if (hasAllowEffect) {
+            cardToPlay = topCard;
+        }
+    }
+
+    // Check graveyard (Demonic Embrace, Flashback, etc.)
+    if (!cardToPlay) {
+        const graveCard = player.graveyard.find(c => c.id === objId);
+        if (graveCard) {
+            const hasAllowEffect = this.findPermissionEffect(state, playerId, EffectType.AllowCastFromGraveyard, graveCard.id);
+            if (hasAllowEffect) cardToPlay = graveCard;
+        }
+    }
+
+    // Check exile (Idol of Endurance, Ugin's +2, etc.)
+    if (!cardToPlay) {
+        const exileCard = state.exile.find(c => c.id === objId);
+        if (exileCard && exileCard.controllerId === playerId) {
+            const hasAllowEffect = this.findPermissionEffect(state, playerId, EffectType.AllowPlayExiled, exileCard.id);
+            if (hasAllowEffect) cardToPlay = exileCard;
+        }
+    }
+
+    if (cardToPlay) {
        if (state.pendingAction) return false;
        
        const hasPriority = state.priorityPlayerId === playerId;
        if (checkPriority && !hasPriority) return false;
 
-       const typeLine = (cardInHand.definition.type_line || '').toLowerCase();
+       const typeLine = (cardToPlay.definition.type_line || '').toLowerCase();
        const isInstantOrFlash = typeLine.includes('instant') || 
-                                (cardInHand.definition.oracleText || '').includes('Flash') ||
-                                (cardInHand.definition.keywords || []).includes('Flash');
+                                (cardToPlay.definition.oracleText || '').includes('Flash') ||
+                                (cardToPlay.definition.keywords || []).includes('Flash');
        const isLand = typeLine.includes('land');
        const stackEmpty = state.stack.length === 0;
        const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
        const isYourTurn = state.activePlayerId === playerId;
 
         let canPlay = false;
-        const { totalMana: effectiveCost, additionalCosts } = SpellProcessor.getEffectiveCosts(state, cardInHand);
+        const { totalMana: effectiveCost, additionalCosts } = SpellProcessor.getEffectiveCosts(state, cardToPlay);
 
         if (isLand) {
             canPlay = isYourTurn && isMain && stackEmpty && !player.hasPlayedLandThisTurn;
@@ -205,36 +238,26 @@ export class PriorityProcessor {
             canPlay = isYourTurn && isMain && stackEmpty && ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost);
         }
 
-        // --- CHECK ADDITIONAL COSTS (e.g. Goremand) ---
+        // --- CHECK ADDITIONAL COSTS ---
         if (canPlay && additionalCosts.length > 0) {
             const canPayAllExtras = additionalCosts.every(cost => {
                 if (cost.type === 'Sacrifice') {
-                    // Check if there is at least one permanent that can be sacrificed
-                    const { TargetingProcessor } = require('../actions/TargetingProcessor');
                     const candidates = state.battlefield.filter(o => 
                         o.controllerId === playerId && 
-                        TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], playerId, cardInHand.id)
+                        TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], playerId, cardToPlay!.id)
                     );
                     return candidates.length > 0;
                 }
-                // (Add other cost checks here if needed)
                 return true;
             });
             if (!canPayAllExtras) canPlay = false;
         }
 
         if (canPlay) {
-            const logic = m21[cardInHand.definition.name];
+            const logic = m21[cardToPlay.definition.name];
             const targetDefinition = (logic as any)?.targetDefinition || logic?.abilities?.find(a => a.type === 'Spell')?.targetDefinition;
             if (targetDefinition && !targetDefinition.optional) {
-                const { TargetingProcessor } = require('../actions/TargetingProcessor');
-                const legalTargetIds = [
-                    ...Object.keys(state.players),
-                    ...state.battlefield.map(o => o.id)
-                ].filter(tid => TargetingProcessor.isLegalTarget(state, cardInHand.id, tid, targetDefinition));
-                
-                const requiredCount = targetDefinition.count || 0;
-                if (legalTargetIds.length < requiredCount) {
+                if (!TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, targetDefinition, playerId)) {
                     canPlay = false;
                 }
             }
@@ -268,8 +291,29 @@ export class PriorityProcessor {
     if (checkPriority && state.priorityPlayerId !== playerId) return false;
 
     const cardLogic = m21[obj.definition.name];
-    if (!cardLogic || !cardLogic.abilities || !cardLogic.abilities[abilityIndex]) return false;
-    const ability = cardLogic.abilities[abilityIndex];
+    let abilities = [...(cardLogic?.abilities || [])];
+
+    // --- SUPPORT FOR GRANTED ABILITIES (Conspicuous Snoop, etc.) ---
+    const gainTopEffect = state.ruleRegistry.continuousEffects.find(e => 
+        e.type === EffectType.GainAbilitiesOfTopCard && 
+        (e.targetIds?.includes(objId) || (e.targetMapping === 'SELF' && e.sourceId === objId)) &&
+        ConditionProcessor.matchesCondition(state, e.condition, e.sourceId, e.controllerId)
+    );
+
+    if (gainTopEffect) {
+        const topCard = player.library[player.library.length - 1];
+        if (topCard) {
+            const topLogic = m21[topCard.definition.name];
+            if (topLogic?.abilities) {
+                // Snoop specifically gains ONLY activated abilities.
+                const granted = topLogic.abilities.filter(a => a.type === AbilityType.Activated);
+                abilities = [...abilities, ...granted];
+            }
+        }
+    }
+
+    if (!abilities[abilityIndex]) return false;
+    const ability = abilities[abilityIndex];
     if (ability.type !== AbilityType.Activated) return false;
 
     // Requirement Check (Rule 602.5b)
@@ -309,14 +353,38 @@ export class PriorityProcessor {
     // Target Check
     if (ability.targetDefinition && !ability.targetDefinition.optional) {
         const { TargetingProcessor } = require('../actions/TargetingProcessor');
-        const legalTargetIds = [
-            ...Object.keys(state.players),
-            ...state.battlefield.map(o => o.id)
-        ].filter(tid => TargetingProcessor.isLegalTarget(state, obj.id, tid, ability.targetDefinition));
-        const requiredCount = ability.targetDefinition.count || 1;
-        if (legalTargetIds.length < requiredCount) return false;
+        if (!TargetingProcessor.hasLegalTargets(state, obj.id, ability.targetDefinition, playerId)) {
+            return false;
+        }
     }
 
     return true;
+  }
+
+  /**
+   * Helper to find an active permission effect in the registry.
+   */
+  public static findPermissionEffect(state: GameState, playerId: string, effectType: string, targetId: string): any {
+    const { TargetingProcessor } = require('../actions/TargetingProcessor');
+    const { LayerProcessor } = require('../state/LayerProcessor');
+
+    return state.ruleRegistry.continuousEffects.find(e => {
+        // 1. Basic Type/Owner check
+        const eType = e.type as string;
+        const matchesType = eType === effectType || (effectType === EffectType.AllowPlayExiled && (e as any).canPlayExiled);
+        if (!matchesType || e.controllerId !== playerId) return false;
+
+        // 2. Active Zone check (Source must be in an active zone for the ability)
+        const source = TargetingProcessor.findObjectInAnyZone(state, e.sourceId);
+        if (!source || !e.activeZones?.includes(source.zone)) return false;
+
+        // 3. Condition check
+        if (!ConditionProcessor.matchesCondition(state, e.condition, e.sourceId, e.controllerId)) return false;
+
+        // 4. Target check (Is this card the target of the permission?)
+        if (!LayerProcessor.isTarget(state, e, targetId)) return false;
+
+        return true;
+    });
   }
 }

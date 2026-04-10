@@ -3,24 +3,32 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface PlayerHandProps {
   hand: GameObject[];
+  virtualHand?: GameObject[];
   onPlayCard?: (cardId: string) => void;
   pendingDiscardCount?: number;
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: () => void;
 }
 
-export const PlayerHand = ({ hand, onPlayCard, pendingDiscardCount = 0, onHoverStart, onHoverEnd }: PlayerHandProps) => {
+export const PlayerHand = ({ hand, virtualHand = [], onPlayCard, pendingDiscardCount = 0, onHoverStart, onHoverEnd }: PlayerHandProps) => {
   const isDiscardMode = pendingDiscardCount > 0;
+  
+  // Combine real hand and virtual hand for rendering, but with markers
+  const allCards = [
+    ...hand.map(c => ({ ...c, isVirtual: false })),
+    ...virtualHand.map(c => ({ ...c, isVirtual: true }))
+  ];
+
   return (
     <div className="h-56 bg-slate-900/95 border-t border-white/10 backdrop-blur-2xl flex items-center justify-center z-20 overflow-visible px-20">
-      {hand.length === 0 ? (
+      {allCards.length === 0 ? (
         <div className="text-slate-600 font-black uppercase text-[10px] tracking-widest italic animate-pulse">
           La tua mano è vuota
         </div>
       ) : (
         <div className="flex items-center justify-center h-full w-full gap-2 relative">
           <AnimatePresence>
-            {hand.map((card, index) => (
+            {allCards.map((card, index) => (
               <motion.div
                 key={card.id}
                 layoutId={card.id}
@@ -46,20 +54,31 @@ export const PlayerHand = ({ hand, onPlayCard, pendingDiscardCount = 0, onHoverS
                 className={`relative group shrink-0 cursor-pointer -ml-8 first:ml-0 ${card.effectiveStats?.isPlayable ? 'z-10' : ''}`}
                 onClick={() => onPlayCard?.(card.id)}
               >
-                <img 
-                  src={card.definition.image_url} 
-                  alt={card.definition.name}
-                  className={`w-32 h-44 object-cover rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 select-none transition-all duration-300 ${
-                    card.effectiveStats?.isPlayable
-                    ? 'ring-4 ring-cyan-500/60 shadow-[0_0_40px_rgba(34,211,238,0.7)] border-cyan-400'
-                    : isDiscardMode 
-                    ? 'group-hover:border-red-500/50 group-hover:shadow-[0_0_50px_rgba(239,68,68,0.4)]' 
-                    : 'group-hover:border-cyan-500/50 group-hover:shadow-[0_0_50px_rgba(34,211,238,0.4)]'
-                  }`}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://cards.scryfall.io/large/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg';
-                  }}
-                />
+                <div className={`relative ${card.isVirtual ? 'p-1 rounded-2xl bg-gradient-to-b from-purple-500/50 to-indigo-500/50 shadow-[0_0_30px_rgba(168,85,247,0.4)]' : ''}`}>
+                    <img 
+                    src={card.definition.image_url} 
+                    alt={card.definition.name}
+                    className={`w-32 h-44 object-cover rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 select-none transition-all duration-300 ${
+                        card.effectiveStats?.isPlayable
+                        ? card.isVirtual 
+                            ? 'ring-4 ring-purple-500 shadow-[0_0_50px_rgba(168,85,247,0.8)] border-purple-400' 
+                            : 'ring-4 ring-cyan-500/60 shadow-[0_0_40px_rgba(34,211,238,0.7)] border-cyan-400'
+                        : isDiscardMode 
+                        ? 'group-hover:border-red-500/50 group-hover:shadow-[0_0_50px_rgba(239,68,68,0.4)]' 
+                        : 'group-hover:border-cyan-500/50 group-hover:shadow-[0_0_50px_rgba(34,211,238,0.4)]'
+                    }`}
+                    onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://cards.scryfall.io/large/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg';
+                    }}
+                    />
+
+                    {/* VIRTUAL BADGE */}
+                    {card.isVirtual && (
+                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-purple-600 border border-purple-400 px-2 py-0.5 rounded-full shadow-2xl z-30">
+                            <span className="text-[7px] font-black uppercase text-white tracking-tighter">Playable from {card.zone}</span>
+                        </div>
+                    )}
+                </div>
 
                 {/* REVEALED STATUS EYE ICON */}
                 {(card as any).isRevealed && (

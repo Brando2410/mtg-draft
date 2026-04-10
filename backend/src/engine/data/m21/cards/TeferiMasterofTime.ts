@@ -12,6 +12,7 @@ export const TeferiMasterofTime: Record<string, ImplementableCard> = {
         power: undefined,
         toughness: undefined,
         keywords: [],
+        loyalty: "3",
         abilities: [
             {
                 id: "teferi_master_any_turn",

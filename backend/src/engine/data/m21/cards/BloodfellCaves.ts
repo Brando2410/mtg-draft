@@ -4,7 +4,7 @@ export const BloodfellCaves: Record<string, ImplementableCard> = {
     "Bloodfell Caves": {
         name: "Bloodfell Caves",
         manaCost: "",
-        oracleText: "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {B} or {R}.",
+        oracleText: "Bloodfell Caves enters the battlefield tapped.\nWhen Bloodfell Caves enters the battlefield, you gain 1 life.\n{T}: Add {B} or {R}.",
         colors: [],
         supertypes: [],
         types: ["Land"],
@@ -12,20 +12,34 @@ export const BloodfellCaves: Record<string, ImplementableCard> = {
         power: undefined,
         toughness: undefined,
         keywords: [],
+        entersTapped: true,
         abilities: [
-            {
-                id: "bloodfell_caves_etb_tapped",
-                type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
-                effects: [{ type: 'Tapped', targetMapping: 'SELF' }]
-            },
+            
             {
                 id: "bloodfell_caves_etb_life",
                 type: AbilityType.Triggered,
                 triggerEvent: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: 'OBJECT_IS_SELF',
+                triggerCondition: (state: any, event: any, source: any) => {
+                    return event.data?.object?.id === source.sourceId;
+                },
                 effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: 'CONTROLLER' }]
+            },
+            {
+                id: "bloodfell_caves_mana_b",
+                type: AbilityType.Activated,
+                activeZone: ZoneRequirement.Battlefield,
+                isManaAbility: true,
+                costs: [{ type: 'Tap', targetMapping: 'SELF' }],
+                effects: [{ type: EffectType.AddMana, value: 'B', amount: 1, targetMapping: 'CONTROLLER' }]
+            },
+            {
+                id: "bloodfell_caves_mana_r",
+                type: AbilityType.Activated,
+                activeZone: ZoneRequirement.Battlefield,
+                isManaAbility: true,
+                costs: [{ type: 'Tap', targetMapping: 'SELF' }],
+                effects: [{ type: EffectType.AddMana, value: 'R', amount: 1, targetMapping: 'CONTROLLER' }]
             }
         ]
     }

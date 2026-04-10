@@ -12,6 +12,7 @@ export const BasriKet: Record<string, ImplementableCard> = {
         power: undefined,
         toughness: undefined,
         keywords: [],
+        loyalty: "3",
         abilities: [
             {
                 id: "basri_ket_plus_1",

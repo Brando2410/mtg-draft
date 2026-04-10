@@ -1,4 +1,4 @@
-import { GameState, Phase, Step, PlayerId, Zone, GameObject, PlayerState, DurationType } from '@shared/engine_types';
+import { GameState, Phase, Step, PlayerId, Zone, GameObject, PlayerState, DurationType, TriggeredAbility } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { StackResolver } from './modules';
 import { m21 } from './data/m21';
@@ -117,7 +117,8 @@ export class GameEngine {
   public drawCard(playerId: PlayerId): boolean {
     const player = this.state.players[playerId];
     if (!player || player.library.length === 0) return false;
-    EffectProcessor.handleDrawCards(this.state, [playerId], 1, (m) => this.log(m));
+    const { MoveEffectHandler } = require('./modules/effects/handlers/MoveEffectHandler');
+    MoveEffectHandler.handle(this.state, { type: 'DrawCards', amount: 1 } as any, [playerId], (m: string) => this.log(m), playerId);
     return true;
   }
 
@@ -428,6 +429,8 @@ export class GameEngine {
     const activeId = this.state.activePlayerId;
 
     if (this.state.currentStep === Step.Untap) {
+      const { RegistryProcessor } = require('./modules/core/RegistryProcessor');
+      this.state.battlefield.filter(c => c.controllerId === activeId).forEach(c => RegistryProcessor.registerAbilities(this.state, c));
       ActionProcessor.untapAll(this.state, activeId, (m) => this.log(m));
     }
     else if (this.state.currentPhase === Phase.Combat) {
@@ -467,7 +470,8 @@ export class GameEngine {
    * Core Action: Player Gain Life (Rule 119.3)
    */
   public gainLife(playerId: PlayerId, amount: number) {
-    EffectProcessor.handleGainLife(this.state, [playerId], amount, (m) => this.log(m));
+    const { LifeDamageHandler } = require('./modules/effects/handlers/LifeDamageHandler');
+    LifeDamageHandler.handleGainLife(this.state, [playerId], amount, (m: string) => this.log(m));
   }
 
 

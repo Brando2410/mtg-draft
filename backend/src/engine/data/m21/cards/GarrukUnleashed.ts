@@ -12,6 +12,7 @@ export const GarrukUnleashed: Record<string, ImplementableCard> = {
         power: undefined,
         toughness: undefined,
         keywords: [],
+        loyalty: "4",
         abilities: [
             {
                 id: "garruk_unleashed_plus_1",

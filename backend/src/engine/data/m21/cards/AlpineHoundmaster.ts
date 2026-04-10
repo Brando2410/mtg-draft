@@ -18,7 +18,6 @@ export const AlpineHoundmaster: Record<string, ImplementableCard> = {
                 type: AbilityType.Triggered,
                 triggerEvent: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
                 effects: [
                     {
                         type: EffectType.SearchLibrary,
@@ -27,7 +26,10 @@ export const AlpineHoundmaster: Record<string, ImplementableCard> = {
                         reveal: true,
                         shuffle: true,
                         optional: true,
-                        restrictions: ['Alpine Watchdog', 'Igneous Cur'],
+                        restrictions: [
+                            { name: 'Alpine Watchdog' },
+                            { name: 'Igneous Cur' }
+                        ],
                         targetMapping: 'CONTROLLER'
                     }
                 ]

@@ -27,8 +27,7 @@ export const TeferisTutelage: Record<string, ImplementableCard> = {
                 triggerEvent: 'ON_DRAW',
                 activeZone: ZoneRequirement.Battlefield,
                 triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
-                targetDefinition: { type: 'Player', restrictions: ['Opponent'], count: 1 },
-                effects: [{ type: 'Mill', amount: 2, targetMapping: 'TARGET_1' }]
+                effects: [{ type: 'Mill', amount: 2, targetMapping: 'EACH_OPPONENT' }]
             }
         ]
     }

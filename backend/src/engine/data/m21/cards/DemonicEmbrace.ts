@@ -14,16 +14,42 @@ export const DemonicEmbrace: Record<string, ImplementableCard> = {
         keywords: [],
         abilities: [
             {
+                id: "demonic_embrace_spell",
+                type: AbilityType.Spell,
+                activeZone: ZoneRequirement.Stack,
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] }
+            },
+            {
                 id: "demonic_embrace_aura",
                 type: AbilityType.Static,
                 activeZone: ZoneRequirement.Battlefield,
-                effects: [{ type: 'ApplyContinuousEffect', powerModifier: 3, toughnessModifier: 1, abilitiesToAdd: ['Flying'], layer: 7, targetMapping: 'ENCHANTED_CREATURE' }]
+                effects: [
+                    { 
+                        type: EffectType.ApplyContinuousEffect, 
+                        layer: 4, 
+                        subtypesToAdd: ['Demon'], 
+                        targetMapping: 'ENCHANTED_CREATURE' 
+                    },
+                    { 
+                        type: EffectType.ApplyContinuousEffect, 
+                        layer: 6, 
+                        abilitiesToAdd: ['Flying'], 
+                        targetMapping: 'ENCHANTED_CREATURE' 
+                    },
+                    { 
+                        type: EffectType.ApplyContinuousEffect, 
+                        layer: 7, 
+                        powerModifier: 3, 
+                        toughnessModifier: 1, 
+                        targetMapping: 'ENCHANTED_CREATURE' 
+                    }
+                ]
             },
             {
                 id: "demonic_embrace_graveyard_cast",
                 type: AbilityType.Static,
                 activeZone: ZoneRequirement.Graveyard,
-                effects: [{ type: 'AllowCastFromGraveyard', additionalCosts: [{ type: 'Life', value: 3 }, { type: 'Discard', amount: 1 }], targetMapping: 'SELF' }]
+                effects: [{ type: 'AllowCastFromGraveyard', additionalCosts: [{ type: 'PayLife', value: 3 }, { type: 'Discard', amount: 1 }], targetMapping: 'SELF' }]
             }
         ]
     }

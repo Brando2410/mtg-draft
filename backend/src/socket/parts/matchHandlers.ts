@@ -41,7 +41,14 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
       for (const p of room.players) {
         const pDeck = (p as any).deck || finalDeck;
-        decksByPlayer[p.playerId] = pDeck?.mainEntry || pDeck?.cards || [];
+        // Handle both object { cards: [] } and raw array [] formats
+        let cards = [];
+        if (Array.isArray(pDeck)) {
+            cards = pDeck;
+        } else {
+            cards = pDeck?.mainEntry || pDeck?.cards || [];
+        }
+        decksByPlayer[p.playerId] = cards;
         playerNames[p.playerId] = p.name;
       }
 
@@ -332,7 +339,13 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
     for (const p of room.players) {
       const pDeck = (p as any).deck || defaultDeck;
-      decksByPlayer[p.playerId] = pDeck?.mainEntry || pDeck?.cards || [];
+      let cards = [];
+      if (Array.isArray(pDeck)) {
+          cards = pDeck;
+      } else {
+          cards = pDeck?.mainEntry || pDeck?.cards || [];
+      }
+      decksByPlayer[p.playerId] = cards;
       playerNames[p.playerId] = p.name;
     }
 

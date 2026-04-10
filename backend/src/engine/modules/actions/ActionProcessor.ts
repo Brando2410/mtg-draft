@@ -1,6 +1,6 @@
 import { GameState, PlayerId, GameObject, Zone, AbilityType, DurationType } from '@shared/engine_types';
 import { TriggerProcessor } from '../effects/TriggerProcessor';
-import { m21 } from '../../data/m21';
+import { RegistryProcessor } from '../core/RegistryProcessor';
 
 /**
  * Physical Actions Handling (Rule 400/103)
@@ -11,9 +11,43 @@ export class ActionProcessor {
    * CR 400.1 / 400.7: An object that moves from one zone to another 
    * becomes a new object with no memory of or relation to its previous existence.
    */
-   public static moveCard(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, log?: (m: string) => void, libraryPosition: 'top' | 'bottom' = 'top') {
+    public static moveCard(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, log?: (m: string) => void, libraryPosition: 'top' | 'bottom' = 'top', isDraw: boolean = false) {
     const fromZone = card.zone;
     
+    // --- DRAW REPLACEMENT EFFECT HOOK (Rule 614/616/121.6) ---
+    if (isDraw && fromZone === Zone.Library && to === Zone.Hand && !(state as any).isResolvingDrawReplacement) {
+        const registry = state.ruleRegistry;
+        if (registry.replacementEffects) {
+            for (const replacement of registry.replacementEffects) {
+                if (replacement.id.includes('teferi_ageless_insight')) {
+                    const isYourTurn = state.activePlayerId === targetPlayerId;
+                    const isYourDrawStep = isYourTurn && (state as any).currentStep === 'Draw';
+                    const cardsDrawn = state.turnState.cardsDrawnThisTurn[targetPlayerId] || 0;
+                    const skipFirstDrawInDrawStep = isYourDrawStep && cardsDrawn === 0;
+
+                    if (!skipFirstDrawInDrawStep) {
+                        if (log) log(`[REPLACED] Teferi's Ageless Insight replaces draw with 2 draws.`);
+                        (state as any).isResolvingDrawReplacement = true;
+                        
+                        // Rule 121.6: The draw is considered to have never happened.
+                        // We must perform two separate draws instead.
+                        // We draw the card that was supposed to be drawn, then another one.
+                        this.moveCard(state, card, Zone.Hand, targetPlayerId, log, libraryPosition, true);
+                        
+                        const player = state.players[targetPlayerId];
+                        if (player && player.library.length > 0) {
+                            const nextCard = player.library.pop()!;
+                            this.moveCard(state, nextCard, Zone.Hand, targetPlayerId, log, 'top', true);
+                        }
+                        
+                        (state as any).isResolvingDrawReplacement = false;
+                        return; // Original draw call consumed/replaced
+                    }
+                }
+            }
+        }
+    }
+
     // --- REPLACEMENT EFFECT HOOK (Rule 614/616) ---
     // Currently specialized for Containment Priest-style entry replacement.
     if (to === Zone.Battlefield && state.ruleRegistry.replacementEffects) {
@@ -39,17 +73,23 @@ export class ActionProcessor {
     card.controllerId = targetPlayerId;
 
     // 1. Rule 400.7: Remove from the current zone
-    if (log) log(`[MOVE] ${card.definition.name} (${card.id}) from ${fromZone} to ${to}...`);
+    if (log) log(`[MOVE] ${card.definition.name} (${card.id}) from ${fromZone} to ${to} (isDraw: ${isDraw})...`);
 
     // Track original zone if moving to stack (Rule 400.7 memoization)
     if (to === Zone.Stack && fromZone !== Zone.Stack) {
         card.lastNonStackZone = fromZone;
     }
 
+    // CR 603.10: "Leaves-the-battlefield" events MUST look back in time.
+    // Trigger them while we still have the Battlefield state (counters, registered abilities).
+    if (fromZone === Zone.Battlefield && to !== Zone.Battlefield) {
+        this.handleLeavingBattlefield(state, card, to, log);
+    }
+
     this.removeFromCurrentZone(state, card);
 
     // CR 121: Drawing a card
-    if (fromZone === Zone.Library && to === Zone.Hand) {
+    if (isDraw && fromZone === Zone.Library && to === Zone.Hand) {
         state.turnState.cardsDrawnThisTurn[targetPlayerId] = (state.turnState.cardsDrawnThisTurn[targetPlayerId] || 0) + 1;
         state.turnState.lastCardsDrawnAmount = 1;
         TriggerProcessor.onEvent(state, { type: 'ON_DRAW', playerId: targetPlayerId, data: { card } }, log || (() => {}));
@@ -58,12 +98,6 @@ export class ActionProcessor {
         if (state.turnState.cardsDrawnThisTurn[targetPlayerId] === 2) {
             TriggerProcessor.onEvent(state, { type: 'ON_SECOND_DRAW', playerId: targetPlayerId, data: { card } }, log || (() => {}));
         }
-    }
-
-    // CR 603.10: "Leaves-the-battlefield" events MUST look back in time.
-    // Trigger them while we still have the Battlefield state (counters, registered abilities).
-    if (fromZone === Zone.Battlefield && to !== Zone.Battlefield) {
-        this.handleLeavingBattlefield(state, card, to, log);
     }
 
     // 2. Rule 400.7: Reset characteristics and update zone
@@ -91,24 +125,20 @@ export class ActionProcessor {
       TriggerProcessor.onEvent(state, { type: 'ON_LEAVE_BATTLEFIELD', targetId: card.id, sourceId: card.id, data: { object: card, toZone: to } }, log || (() => {}));
   }
 
-  private static removeFromCurrentZone(state: GameState, card: GameObject) {
-    if (card.zone === Zone.Battlefield) {
-      state.battlefield = state.battlefield.filter(c => c.id !== card.id);
-    } else if (card.zone === Zone.Stack) {
-      state.stack = state.stack.filter(s => s.id !== card.id && s.sourceId !== card.id);
-    } else {
-      const player = state.players[card.ownerId];
-      if (!player) {
-          // console.log(`[ZONE-REMOVE] Player ${card.ownerId} not found for card ${card.id}`);
-      } else {
-          // console.log(`[ZONE-REMOVE] Found player ${player.name} for card ${card.id}. Zone: ${card.zone}`);
-      }
-      if (player) {
-         if (card.zone === Zone.Hand) player.hand = player.hand.filter(c => c.id !== card.id);
-         else if (card.zone === Zone.Graveyard) player.graveyard = player.graveyard.filter(c => c.id !== card.id);
-         else if (card.zone === Zone.Library) player.library = player.library.filter(c => c.id !== card.id);
-         else if (card.zone === Zone.Exile) state.exile = state.exile.filter(c => c.id !== card.id);
-      }
+  public static removeFromCurrentZone(state: GameState, card: GameObject) {
+    RegistryProcessor.unregisterAbilities(state, card.id);
+    // Nuclear option: scrub the card ID from EVERYTHING to ensure no ghost copies
+    const cid = card.id;
+
+    state.battlefield = state.battlefield.filter(c => c.id !== cid);
+    state.stack = state.stack.filter(s => s.id !== cid && s.sourceId !== cid);
+    state.exile = state.exile.filter(c => c.id !== cid);
+
+    for (const pid in state.players) {
+        const p = state.players[pid as PlayerId];
+        p.hand = p.hand.filter(c => c.id !== cid);
+        p.graveyard = p.graveyard.filter(c => c.id !== cid);
+        p.library = p.library.filter(c => c.id !== cid);
     }
   }
 
@@ -123,19 +153,22 @@ export class ActionProcessor {
       const hasHasteInDefinition = (card.definition.keywords || []).some(k => k.toLowerCase() === 'haste');
       const hasHasteOnCard = (card.keywords || []).some(k => k.toLowerCase() === 'haste');
       card.summoningSickness = isCreature && !hasHasteInDefinition && !hasHasteOnCard;
+      if (card.definition.entersTapped) {
+        card.isTapped = true;
+      }
       (card as any).isRevealed = false; // Always clear when entering public zone
-      this.registerAbilities(state, card);
+      RegistryProcessor.registerAbilities(state, card);
       
       this.handleEnteringBattlefield(state, card, from, log);
 
     } else if (to === Zone.Exile) {
-        if (!isToken) state.exile.push(card);
-        card.controllerId = targetPlayerId; // Usually same as ownerId, but for clarity
+        state.exile.push(card);
+        card.controllerId = targetPlayerId;
+        RegistryProcessor.registerAbilities(state, card);
     } else {
       const player = state.players[targetPlayerId];
       if (!player) return;
 
-      // Always sync controller to the destination player (owner) for private zones
       card.controllerId = targetPlayerId;
 
       if (to === Zone.Hand && !isToken) player.hand.push(card);
@@ -144,15 +177,17 @@ export class ActionProcessor {
           else player.library.push(card);
       }
       else if (to === Zone.Graveyard) {
-          if (!isToken) player.graveyard.push(card);
+          player.graveyard.push(card);
           this.handleEnteringGraveyard(state, card, from, log);
       }
+      
+      RegistryProcessor.registerAbilities(state, card);
     }
   }
 
   private static resetObjectState(state: GameState, card: GameObject, from: Zone, to: Zone) {
     if (from === Zone.Battlefield) {
-        this.unregisterAbilities(state, card.id);
+        RegistryProcessor.unregisterAbilities(state, card.id);
         if (to === Zone.Hand) {
             state.turnState.permanentReturnedToHandThisTurn = true;
             state.turnState.playersWithPermanentReturnedThisTurn[card.ownerId] = true;
@@ -162,13 +197,18 @@ export class ActionProcessor {
     // Rule 400.7: Object changes zones -> becomes a new object
     // 1. Clear floating continuous effects tied to this object
     state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
-        // Remove effects that were attached to this object (unless they are permanent)
-        if (eff.sourceId === card.id && eff.duration.type !== DurationType.Permanent) {
-            // If it's UntilEvent and the event is ON_LEAVE_BATTLEFIELD, remove it
-            if (eff.duration.type === DurationType.UntilEvent && eff.duration.expiryEvent === 'ON_LEAVE_BATTLEFIELD') {
-                return false;
+        // Rule 611.2a: Floating effects (UntilEndOfTurn, UntilEndOfCombat) do NOT depend on the source card staying in the zone.
+        // We only clear effects that are tied to the presence of the object (Static) or reach their natural expiry.
+        if (eff.sourceId === card.id) {
+            if (
+                eff.duration.type === DurationType.UntilEndOfTurn || 
+                eff.duration.type === DurationType.UntilEndOfCombat ||
+                eff.duration.type === DurationType.UntilEvent ||
+                eff.duration.type === DurationType.Permanent
+            ) {
+                return true; // Keep floating/permanent effects!
             }
-            // Default: Remove non-permanent effects sourced from this object if it leaves the active zone
+            // Default: Remove non-floating effects sourced from this object if it leaves the zone (e.g. STATIC)
             return false; 
         }
         
@@ -191,7 +231,15 @@ export class ActionProcessor {
     c.isPhasedOut = false;
     c.isRevealed = false; // Rule 400.7: Clear revealed status on zone change
     c.counters = {};
+    c.attachedTo = undefined;
+    c.faceDown = false;
     
+    // Rule 107.3: The value of X is preserved as long as the object is on the stack or battlefield.
+    // If it moves to Hand, Graveyard, Library, or Exile, it must be reset.
+    if (to !== Zone.Stack && to !== Zone.Battlefield) {
+        c.xValue = undefined;
+    }
+
     // Rule 400.7: Objects leaving the battlefield/stack lose their identity 
     // BUT we preserve lastNonStackZone if moving TO the Battlefield from Stack 
     // to allow ETB triggers to know where the spell was cast from.
@@ -205,6 +253,8 @@ export class ActionProcessor {
   }
 
   private static handleEnteringBattlefield(state: GameState, card: GameObject, fromZone: Zone, log?: (m: string) => void) {
+    const { m21 } = require('../../data/m21');
+
     // Replacement-style entry counters for X costs (Rule 122.6)
     if (card.xValue && (card.definition as any).entersWithXCounters) {
         card.counters['+1/+1'] = (card.counters['+1/+1'] || 0) + card.xValue;
@@ -240,115 +290,7 @@ export class ActionProcessor {
       this.resetObjectState(state, card, from, Zone.Graveyard);
   }
 
-  /* --- Ability Management (Rule 113) --- */
-
-  private static registerAbilities(state: GameState, card: GameObject) {
-    const logic = m21[card.definition.name];
-    if (!logic || !logic.abilities) return;
-
-    logic.abilities.forEach((ability: any, index: number) => {
-        const instanceId = `${card.id}_ability_${index}`;
-        switch (ability.type) {
-            case AbilityType.Triggered: this.registerTriggeredAbility(state, card, ability, instanceId); break;
-            case AbilityType.Activated: this.registerActivatedAbility(state, card, ability, instanceId); break;
-            case 'Static':    this.registerStaticAbility(state, card, ability, instanceId); break;
-            case 'Replacement': this.registerReplacementAbility(state, card, ability, instanceId); break;
-        }
-    });
-  }
-
-  private static registerTriggeredAbility(state: GameState, card: GameObject, ability: any, id: string) {
-    state.ruleRegistry.triggeredAbilities.push({
-        id,
-        sourceId: card.id,
-        controllerId: card.controllerId,
-        eventMatch: ability.triggerEvent || ability.on,
-        condition: ability.triggerCondition || ability.condition,
-        oracleText: ability.oracleText || card.definition.oracleText || 'Triggered ability',
-        ...ability
-    } as any);
-  }
-
-  private static registerActivatedAbility(state: GameState, card: GameObject, ability: any, id: string) {
-    state.ruleRegistry.activatedAbilities.push({
-        id,
-        sourceId: card.id,
-        controllerId: card.controllerId,
-        costs: ability.costs,
-        isManaAbility: ability.isManaAbility || false,
-        ...ability
-    } as any);
-  }
-
-  private static registerStaticAbility(state: GameState, card: GameObject, ability: any, id: string) {
-    if (ability.restrictions) {
-        ability.restrictions.forEach((rest: any, rId: number) => {
-           state.ruleRegistry.restrictions.push({
-               id: `${id}_rest_${rId}`,
-               sourceId: card.id,
-               type: rest.type,
-               duration: { type: 'Static' },
-               // Restrictions from an enchantment commonly apply to their attached target, or fallback to the source itself 
-               targetId: (card as any).attachedTo || card.id, 
-               ...rest
-           } as any);
-        });
-    }
-
-    if (!ability.effects) return;
-    ability.effects.forEach((eff: any, eId: number) => {
-        const effId = `${id}_eff_${eId}`;
-        if (eff.type === 'ApplyContinuousEffect') {
-            state.ruleRegistry.continuousEffects.push({
-                id: effId,
-                sourceId: card.id,
-                controllerId: card.controllerId,
-                layer: eff.layer || 7,
-                timestamp: Date.now(),
-                activeZones: [ability.activeZone || Zone.Battlefield],
-                duration: { type: 'Static' as any },
-                targetMapping: eff.targetMapping,
-                targetIds: eff.targetMapping === 'SELF' ? [card.id] : undefined,
-                ...eff
-            } as any);
-        } else if (eff.type === 'CombatConstraint') {
-            state.ruleRegistry.restrictions.push({
-                id: effId,
-                sourceId: card.id,
-                type: eff.value as any,
-                duration: { type: 'Static' as any },
-                ...eff
-            } as any);
-        } else if (['SpellTax', 'CostReduction', 'AdditionalCost'].includes(eff.type)) {
-             state.ruleRegistry.continuousEffects.push({
-                id: effId,
-                sourceId: card.id,
-                controllerId: card.controllerId,
-                layer: 8, // Costs are determined after layers 1-7
-                timestamp: Date.now(),
-                activeZones: [ability.activeZone || Zone.Battlefield],
-                duration: { type: 'Static' as any },
-                ...eff
-            } as any);
-        }
-    });
-  }
-
-  private static registerReplacementAbility(state: GameState, card: GameObject, ability: any, id: string) {
-    if (!state.ruleRegistry.replacementEffects) state.ruleRegistry.replacementEffects = [];
-    state.ruleRegistry.replacementEffects.push({ id, sourceId: card.id, ...ability } as any);
-  }
-
-
-  private static unregisterAbilities(state: GameState, cardId: string) {
-    state.ruleRegistry.triggeredAbilities = state.ruleRegistry.triggeredAbilities.filter(t => t.sourceId !== cardId);
-    state.ruleRegistry.activatedAbilities = state.ruleRegistry.activatedAbilities.filter(a => a.sourceId !== cardId);
-    state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(c => c.sourceId !== cardId);
-    state.ruleRegistry.restrictions = state.ruleRegistry.restrictions.filter(r => r.sourceId !== cardId);
-    if (state.ruleRegistry.replacementEffects) {
-        state.ruleRegistry.replacementEffects = state.ruleRegistry.replacementEffects.filter((r: any) => r.sourceId !== cardId);
-    }
-  }
+  /* --- Turn Actions (Rule 500) --- */
 
   /**
    * CR 502.2: The Untap Step
@@ -375,6 +317,8 @@ export class ActionProcessor {
         obj.summoningSickness = false;
       }
     });
+
+    if (log && count > 0) log(`${count} permanents untapped.`);
   }
   
   public static shuffle(array: any[]) {

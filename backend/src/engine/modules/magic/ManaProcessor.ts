@@ -14,8 +14,17 @@ export class ManaProcessor {
     }
   }
 
-  public static canPayManaCost(player: PlayerState, costStr: string): boolean {
+  public static canPayManaCost(player: PlayerState, costStr: string, state?: GameState): boolean {
     if (!costStr || player.manaCheat) return true;
+    
+    // Support for Chromatic Orrery / Spend as Any Color
+    const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some(e => e.type === 'AllowSpendManaAsAnyColor' && e.controllerId === player.id);
+    if (canSpendAsAnyColor) {
+        const totalFloating = Object.values(player.manaPool).reduce((a, b: any) => a + b, 0);
+        const totalRequired = this.getManaValue(costStr);
+        return totalFloating >= totalRequired;
+    }
+
     const requirements = this.parseManaCost(costStr);
     
     // Check colored mana first (including hybrids)
@@ -41,55 +50,97 @@ export class ManaProcessor {
     return totalFloating >= totalRequired;
   }
 
-  /**
-   * Fast estimation for auto-pass logic.
-   */
   public static canPayWithTotal(player: PlayerState, battlefield: any[], costStr: string): boolean {
     if (!costStr || player.manaCheat) return true;
     const requirements = this.parseManaCost(costStr);
     
-    const potential = { ...player.manaPool };
+    // 1. Prepare available sources
+    const pool = { ...player.manaPool };
+    const untappedLands: any[] = [];
+
+    const { m21: mLogic } = require('../../data/m21');
     battlefield.forEach(obj => {
       if (obj.controllerId === player.id && !obj.isTapped) {
-        const types = (obj.definition.types || obj.definition.typeLine || obj.definition.type_line || "").toString().toLowerCase();
-        const oracleText = (obj.definition.oracleText || obj.definition.oracle_text || "").toString().toLowerCase();
-        
-        if (types.includes('land')) {
-          const name = obj.definition.name.toLowerCase();
-          if (name.includes('plains')) { potential.W++; }
-          else if (name.includes('island')) { potential.U++; }
-          else if (name.includes('swamp')) { potential.B++; }
-          else if (name.includes('mountain')) { potential.R++; }
-          else if (name.includes('forest')) { potential.G++; }
-          else if (oracleText.includes('add {w}')) { potential.W++; }
-          else if (oracleText.includes('add {u}')) { potential.U++; }
-          else if (oracleText.includes('add {b}')) { potential.B++; }
-          else if (oracleText.includes('add {r}')) { potential.R++; }
-          else if (oracleText.includes('add {g}')) { potential.G++; }
-          else { potential.C++; } 
-        }
+        const logic = mLogic[obj.definition.name];
+        if (!logic) return;
+
+        const manaAbilities = (logic.abilities || []).filter((a: any) => a.isManaAbility);
+        if (manaAbilities.length === 0) return;
+
+        const colors = new Set<string>();
+        manaAbilities.forEach((a: any) => {
+           const effect = a.effects.find((e: any) => e.type === 'AddMana');
+           if (effect) {
+               const manaStr = effect.value || '{C}';
+               const reqs = this.parseManaCost(manaStr.startsWith('{') ? manaStr : `{${manaStr}}`);
+               Object.keys(reqs.colored).forEach(c => colors.add(c));
+               if (reqs.generic > 0) colors.add('C');
+           }
+        });
+        untappedLands.push({ id: obj.id, colors: Array.from(colors) });
       }
     });
 
-    let totalPotentialCount = Object.values(potential).reduce((a, b: number) => a + b, 0);
+    // 2. Greedy validation for colored costs
+    // Sort requirements by "rareness" or just iterate. 
+    // In MTG, it's better to satisfy colored costs using the most restrictive lands first.
+    // However, an even better trick: try to satisfy pool first, then use lands.
+    
+    const coloredReqs: string[] = [];
+    Object.entries(requirements.colored).forEach(([symbol, amount]) => {
+        for (let i = 0; i < (amount as number); i++) coloredReqs.push(symbol);
+    });
 
-    for (const [symbol, requiredAmount] of Object.entries(requirements.colored)) {
-      const valPerSymbol = this.getManaValue(`{${symbol}}`);
-      if (symbol.includes('/')) {
-        const options = symbol.split('/');
-        const totalAvailable = options.reduce((sum, opt) => sum + ((potential as any)[opt] || 0), 0);
-        if (totalAvailable < (requiredAmount as number)) return false;
-      } else {
-        if (((potential as any)[symbol] || 0) < (requiredAmount as number)) return false;
-      }
-      totalPotentialCount -= (requiredAmount as number) * valPerSymbol;
+    // Strategy: Try to satisfy each colored requirement
+    const usedLands = new Set<string>();
+    
+    for (const req of coloredReqs) {
+        // a. Try pool first
+        if (req.includes('/')) {
+            const options = req.split('/');
+            const found = options.find(opt => (pool as any)[opt] > 0);
+            if (found) { (pool as any)[found]--; continue; }
+        } else if ((pool as any)[req] > 0) {
+            (pool as any)[req]--;
+            continue;
+        }
+
+        // b. Try lands (prioritizing lands with the fewest color options to save flexibility)
+        const options = req.includes('/') ? req.split('/') : [req];
+        const possibleLands = untappedLands
+            .filter(l => !usedLands.has(l.id) && l.colors.some((c: string) => options.includes(c)))
+            .sort((a, b) => a.colors.length - b.colors.length);
+
+        if (possibleLands.length > 0) {
+            usedLands.add(possibleLands[0].id);
+        } else {
+            return false; // Could not satisfy a colored requirement
+        }
     }
 
-    return totalPotentialCount >= requirements.generic;
+    // 3. Final generic check
+    const remainingPool = Object.values(pool).reduce((a, b: number) => a + b, 0);
+    const remainingLands = untappedLands.length - usedLands.size;
+    
+    return (remainingPool + remainingLands) >= requirements.generic;
   }
 
-  public static deductManaCost(player: PlayerState, costStr: string) {
+  public static deductManaCost(player: PlayerState, costStr: string, state?: GameState) {
     if (!costStr || player.manaCheat) return;
+
+    const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some(e => e.type === 'AllowSpendManaAsAnyColor' && e.controllerId === player.id);
+    if (canSpendAsAnyColor) {
+        let genericLeft = this.getManaValue(costStr);
+        const priority: (keyof typeof player.manaPool)[] = ['C', 'W', 'U', 'B', 'R', 'G'];
+        for (const color of priority) {
+            const spendable = Math.min(genericLeft, player.manaPool[color]);
+            player.manaPool[color] -= spendable;
+            genericLeft -= spendable;
+            if (genericLeft <= 0) break;
+        }
+        return;
+    }
+
     const requirements = this.parseManaCost(costStr);
 
     // Deduct colored/hybrid mana first
@@ -194,18 +245,22 @@ export class ManaProcessor {
        if (poolVal > 0) continue; 
        
        const landToTap = state.battlefield.find((obj: any) => {
-          const types = (obj.definition.types || obj.definition.typeLine || obj.definition.type_line || "").toString().toLowerCase();
-          if (obj.controllerId !== playerId || obj.isTapped || !types.includes('land')) return false;
-          const name = obj.definition.name.toLowerCase();
-          if (req === 'W' && name.includes('plains')) return true;
-          if (req === 'U' && name.includes('island')) return true;
-          if (req === 'B' && name.includes('swamp')) return true;
-          if (req === 'R' && name.includes('mountain')) return true;
-          if (req === 'G' && name.includes('forest')) return true;
-          return false;
-       });
+           if (obj.controllerId !== playerId || obj.isTapped) return false;
+           
+           const { m21: mLogic } = require('../../data/m21');
+           const logic = mLogic[obj.definition.name];
+           if (!logic) return false;
 
-       if (landToTap) tapForManaCallback(playerId, landToTap.id);
+           const manaAbilities = (logic.abilities || []).filter((a: any) => a.isManaAbility);
+           return manaAbilities.some((a: any) => {
+               const effect = a.effects.find((e: any) => e.type === 'AddMana');
+               if (!effect) return false;
+               const manaStr = effect.value || '{C}';
+               return manaStr.includes(req as string);
+           });
+        });
+
+        if (landToTap) tapForManaCallback(playerId, landToTap.id);
     }
 
     let genericNeeded = requirements.generic;

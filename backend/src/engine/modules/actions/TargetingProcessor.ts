@@ -1,6 +1,8 @@
 import { GameState, GameObject, Zone, PlayerId, GameObjectId, AbilityType, DurationType } from '@shared/engine_types';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
+import { ActionProcessor } from './ActionProcessor';
+import { m21 } from '../../data/m21';
 
 /**
  * Rules Engine Module: Targeting (Rule 115)
@@ -12,7 +14,33 @@ export class TargetingProcessor {
      * CR 608.2b: Checks if a target is still legal as a spell or ability attempts to resolve.
      * Also used during the casting process (CR 601.2c).
      */
-    public static isLegalTarget(state: GameState, sourceOrId: string | any, targetId: string, abilityTargetDef?: any): boolean {
+    public static findObjectInAnyZone(state: GameState, id: string): GameObject | null {
+        // 1. Battlefield
+        const bf = state.battlefield.find(o => o.id === id);
+        if (bf) return bf;
+
+        // 2. Exile
+        const ex = state.exile.find(o => o.id === id);
+        if (ex) return ex;
+
+        // 3. Hands & Graveyards
+        for (const p of Object.values(state.players)) {
+            const h = p.hand.find(o => o.id === id);
+            if (h) return h;
+            const g = p.graveyard.find(o => o.id === id);
+            if (g) return g;
+            const l = p.library.find(o => o.id === id);
+            if (l) return l;
+        }
+
+        return null;
+    }
+
+    /**
+     * CR 608.2b: Checks if a target is still legal as a spell or ability attempts to resolve.
+     * Also used during the casting process (CR 601.2c).
+     */
+    public static isLegalTarget(state: GameState, sourceOrId: string | any, targetId: string, abilityTargetDef?: any, targetIndex: number = 0): boolean {
         const sourceId = typeof sourceOrId === 'string' ? sourceOrId : (sourceOrId as any).sourceId || (sourceOrId as any).id;
         const sourceObjProvided = typeof sourceOrId === 'string' ? null : sourceOrId;
 
@@ -132,12 +160,80 @@ export class TargetingProcessor {
         // Shroud (Rule 702.18)
         if (keywords.includes('Shroud')) return false;
 
-        const targetDef = abilityTargetDef || sourceStack?.data?.targetDefinition || (sourceStack as any)?.targetDefinition;
-        if (targetDef?.restrictions) {
-            return this.matchesRestrictions(state, targetObj, targetDef.restrictions, sourceControllerId, sourceId);
+        let targetDef = abilityTargetDef || sourceStack?.data?.targetDefinition || (sourceStack as any)?.targetDefinition;
+        
+        // If no target definition provided (common in SBAs checking Auras), try to find the Enchant restriction
+        if (!targetDef && source) {
+            const types = source.definition.types.map((t: string) => t.toLowerCase());
+            const subtypes = (source.definition.subtypes || []).map((s: string) => s.toLowerCase());
+            if (types.includes('enchantment') && subtypes.includes('aura')) {
+                const logic = m21[source.definition.name];
+                targetDef = (logic as any)?.targetDefinition || (logic as any)?.enchant;
+            }
+        }
+
+        let restrictions = targetDef?.restrictions;
+        if (targetDef?.perTargetRestrictions && targetDef.perTargetRestrictions[targetIndex]) {
+            restrictions = targetDef.perTargetRestrictions[targetIndex];
+        }
+
+        if (restrictions) {
+            return this.matchesRestrictions(state, targetObj, restrictions, sourceControllerId, sourceId);
         }
 
         return true;
+    }
+
+    /**
+     * Evaluates a set of restrictions against a target object or player.
+     */
+    public static hasLegalTargets(state: GameState, sourceId: string, targetDef: any, controllerId: string): boolean {
+        if (!targetDef || targetDef.optional) return true;
+
+        const count = targetDef.count || 1;
+        const minCount = targetDef.minCount !== undefined ? targetDef.minCount : count;
+        const perTarget = targetDef.perTargetRestrictions;
+
+        // Collect all potential targetable IDs
+        const allPotentialTargets = [
+            ...Object.keys(state.players),
+            ...state.battlefield.map(o => o.id),
+            ...Object.values(state.players).flatMap(p => p.graveyard.map(o => o.id))
+        ];
+
+        if (!perTarget) {
+            const legalTargets = allPotentialTargets.filter(tid => this.isLegalTarget(state, sourceId, tid, targetDef, 0));
+            return legalTargets.length >= minCount;
+        }
+
+        // Heterogeneous targets (e.g. Primal Might: 1 you control, 1 you don't)
+        // We need to find if there's a valid assignment of distinct targets to each slot.
+        // For correctness with minCount, we check if we can satisfy at least the first 'minCount' slots.
+        
+        const legalPerIndex: string[][] = [];
+        for (let i = 0; i < count; i++) {
+            const legal = allPotentialTargets.filter(tid => this.isLegalTarget(state, sourceId, tid, targetDef, i));
+            if (i < minCount && legal.length === 0) return false; // Mandatory slot i has no candidates
+            legalPerIndex.push(legal);
+        }
+
+        // Distinctness check (Simulating a simple bipartite matching)
+        // For efficiency in common MTG cases (minCount=1, count=2), we just need to ensure slot 0 is filled.
+        if (minCount === 1 && count >= 2) {
+            return legalPerIndex[0].length > 0;
+        }
+
+        // For minCount=2: Exists x in legal[0], y in legal[1] s.t. x != y
+        if (count === 2 && minCount === 2) {
+            const l0 = legalPerIndex[0];
+            const l1 = legalPerIndex[1];
+            if (l0.length > 1 || l1.length > 1) return true; // If either has multiple, we can always pick two distinct
+            return l0[0] !== l1[0]; // If both have only one, they must be different
+        }
+
+        // Fallback for larger counts: just ensure we have at least 'minCount' unique IDs across mandatory slots
+        const allUniqueLegal = new Set(legalPerIndex.slice(0, minCount).flat());
+        return allUniqueLegal.size >= minCount;
     }
 
     /**
@@ -203,9 +299,14 @@ export class TargetingProcessor {
             ].includes(lr) || lr.startsWith('cmc') || lr.startsWith('mv') || lr.startsWith('power') || lr.startsWith('toughness');
 
             if (!isKnownFilter && !baseTypes.includes(lr)) {
-                const objSubtypes = (targetObj.definition.subtypes || []).map((s: string) => s.toLowerCase());
+                const targetName = (targetObj.definition?.name || targetObj.name || "").toLowerCase();
+                const objSubtypes = (targetObj.definition?.subtypes || []).map((s: string) => s.toLowerCase());
                 const singularLr = lr.endsWith('s') ? lr.slice(0, -1) : lr;
-                if (!objSubtypes.includes(lr) && !objSubtypes.includes(singularLr)) return false;
+                
+                const isNameMatch = targetName === lr || targetName === singularLr;
+                const isSubtypeMatch = objSubtypes.includes(lr) || objSubtypes.includes(singularLr);
+
+                if (!isNameMatch && !isSubtypeMatch) return false;
             }
         }
 
@@ -294,8 +395,8 @@ export class TargetingProcessor {
                 if (stackObj && stackObj.card) {
                     const player = state.players[stackObj.controllerId];
                     if (player) {
-                        stackObj.card.zone = Zone.Hand;
-                        player.hand.push(stackObj.card);
+                        stackObj.card.xValue = undefined; // Explicitly clear before move
+                        ActionProcessor.moveCard(state, stackObj.card, Zone.Hand, stackObj.controllerId, log);
                         ManaProcessor.refundManaCost(player, stackObj.card.definition.manaCost);
                         log(`Refunding mana for ${stackObj.card.definition.name}: ${stackObj.card.definition.manaCost}`);
                     }
@@ -345,6 +446,17 @@ export class TargetingProcessor {
 
         actionData.selectedTargets.push(targetId);
         log(`Target ${actionData.selectedTargets.length}/${targetCount} selected: ${targetId}`);
+
+        // Update legal targets for the next index if there are more targets to select
+        if (actionData.selectedTargets.length < targetCount) {
+            const nextIndex = actionData.selectedTargets.length;
+            const pool = [
+                ...Object.keys(state.players),
+                ...state.battlefield.map(o => o.id),
+                ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
+            ];
+            actionData.legalTargetIds = pool.filter(tid => this.isLegalTarget(state, state.pendingAction!.sourceId, tid, targetDef, nextIndex));
+        }
 
         if (actionData.selectedTargets.length >= targetCount) {
             return this.finaliseTargeting(state, playerId, actionData.selectedTargets, engine);
@@ -490,7 +602,9 @@ export class TargetingProcessor {
             case 'EVENT_TARGET':
                 return eventData?.object?.id ? [eventData.object.id] : (eventData?.targetId ? [eventData.targetId] : []);
             case 'TARGET_1_CONTROLLER':
-                const obj = state.battlefield.find(o => o.id === targets[0]) || Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === targets[0]);
+                const obj = state.battlefield.find(o => o.id === targets[0]) || 
+                            Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === targets[0]) ||
+                            state.exile.find(o => o.id === targets[0]);
                 return obj ? [obj.controllerId] : [];
             case 'ALL_CREATURES_YOU_CONTROL':
                 return state.battlefield
@@ -523,20 +637,5 @@ export class TargetingProcessor {
             default:
                 return [];
         }
-    }
-
-    /**
-     * CR 602.5b: Check if an ability or spell has ANY legal targets available.
-     */
-    public static hasLegalTargets(state: GameState, sourceId: string, targetDef: any): boolean {
-        if (!targetDef) return true;
-
-        const pool = [
-            ...Object.keys(state.players),
-            ...state.battlefield.map(o => o.id),
-            ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
-        ];
-
-        return pool.some(tid => this.isLegalTarget(state, sourceId, tid, targetDef));
     }
 }

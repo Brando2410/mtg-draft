@@ -145,6 +145,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           pendingAction={gameState.pendingAction}
           exile={gameState.exile || []}
           onTapCard={(id) => {
+            // ... (keep existing onTapCard logic)
             if (id.startsWith('ORDER_')) {
               const order = id.replace('ORDER_', '').split(',');
               socket.emit('resolve_combat_ordering', { 
@@ -177,12 +178,20 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
 
             handleTapCard(id);
           }}
+          onChoiceResolve={(payload) => {
+            socket.emit('resolve_choice', {
+              roomId: room.id,
+              playerId: effectivePlayerId,
+              choiceIndex: payload
+            });
+          }}
           onHoverStart={startZoom}
           onHoverEnd={stopZoom}
         />
 
         <PlayerHand 
           hand={me?.hand || []} 
+          virtualHand={me?.virtualHand || []}
           onPlayCard={handlePlayCard} 
           onHoverStart={startZoom}
           onHoverEnd={stopZoom}

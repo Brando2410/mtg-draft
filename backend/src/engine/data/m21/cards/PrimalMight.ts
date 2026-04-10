@@ -18,7 +18,15 @@ export const PrimalMight: Record<string, ImplementableCard> = {
                 type: AbilityType.Spell,
                 activeZone: ZoneRequirement.Stack,
                 costs: [{ type: 'Mana', value: '{X}{G}' }],
-                targetDefinition: { type: 'Permanent', count: 2, restrictions: ['Creature', 'YouControl', 'Creature', 'OpponentControl'] },
+                targetDefinition: { 
+                    type: 'Permanent', 
+                    count: 2, 
+                    minCount: 1,
+                    perTargetRestrictions: [
+                        ['Creature', 'YouControl'],
+                        ['Creature', 'OpponentControl']
+                    ] 
+                },
                 effects: [
                     { type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', powerModifier: 'X', toughnessModifier: 'X', layer: 7, targetMapping: 'TARGET_1' },
                     { type: 'Fight', targetMapping: 'TARGET_1', target2Mapping: 'TARGET_2' }

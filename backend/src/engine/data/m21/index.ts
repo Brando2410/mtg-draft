@@ -41,7 +41,7 @@ import { GarrukUnleashed } from './cards/GarrukUnleashed';
 import { GhostlyPilferer } from './cards/GhostlyPilferer';
 import { GriffinAerie } from './cards/GriffinAerie';
 import { LilianaWakeroftheDead } from './cards/LilianaWakeroftheDead';
-import { MangaratheDiplomat } from './cards/MangaratheDiplomat';
+import { MangaraTheDiplomat } from './cards/MangaratheDiplomat';
 import { MazemindTome } from './cards/MazemindTome';
 import { MistralSinger } from './cards/MistralSinger';
 import { ScavengingOoze } from './cards/ScavengingOoze';
@@ -180,6 +180,18 @@ import { LilianasStandardBearer } from './cards/LilianasStandardBearer';
 import { LlanowarVisionary } from './cards/LlanowarVisionary';
 import { LoftyDenial } from './cards/LoftyDenial';
 import { LorescaleCoatl } from './cards/LorescaleCoatl';
+import { RuggedHighlands } from './cards/RuggedHighlands';
+import { ScouredBarrens } from './cards/ScouredBarrens';
+import { Swamp } from './cards/Swamp';
+import { SwiftwaterCliffs } from './cards/SwiftwaterCliffs';
+import { TempleOfEpiphany } from './cards/TempleOfEpiphany';
+import { TempleOfMalady } from './cards/TempleOfMalady';
+import { TempleOfMystery } from './cards/TempleOfMystery';
+import { TempleOfSilence } from './cards/TempleOfSilence';
+import { TempleOfTriumph } from './cards/TempleOfTriumph';
+import { ThornwoodFalls } from './cards/ThornwoodFalls';
+import { TranquilCove } from './cards/TranquilCove';
+import { WindScarredCrag } from './cards/WindScarredCrag';
 import { MakeshiftBattalion } from './cards/MakeshiftBattalion';
 import { MaleficScythe } from './cards/MaleficScythe';
 import { MaskedBlackguard } from './cards/MaskedBlackguard';
@@ -240,7 +252,7 @@ export const m21: Record<string, ImplementableCard | Partial<ImplementableCard>>
     ...GhostlyPilferer,
     ...GriffinAerie,
     ...LilianaWakeroftheDead,
-    ...MangaratheDiplomat,
+    ...MangaraTheDiplomat,
     ...MazemindTome,
     ...MistralSinger,
     ...ScavengingOoze,
@@ -386,6 +398,18 @@ export const m21: Record<string, ImplementableCard | Partial<ImplementableCard>>
     ...LlanowarVisionary,
     ...LoftyDenial,
     ...LorescaleCoatl,
+    ...RuggedHighlands,
+    ...ScouredBarrens,
+    ...Swamp,
+    ...SwiftwaterCliffs,
+    ...TempleOfEpiphany,
+    ...TempleOfMalady,
+    ...TempleOfMystery,
+    ...TempleOfSilence,
+    ...TempleOfTriumph,
+    ...ThornwoodFalls,
+    ...TranquilCove,
+    ...WindScarredCrag,
     ...MakeshiftBattalion,
     ...MaleficScythe,
     ...MaskedBlackguard,

@@ -86,6 +86,11 @@ export class CombatProcessor {
             playerId: playerId,
             data: { attackers }
         }, (m: string) => callbacks.log(m));
+
+        // Rule 508.1m: Individual attack triggers
+        attackers.forEach(a => {
+            TriggerProcessor.onEvent(state, { type: 'ON_ATTACK', sourceId: a.attackerId, playerId: playerId }, (m: string) => callbacks.log(m));
+        });
     }
 
     state.pendingAction = undefined;
@@ -107,6 +112,14 @@ export class CombatProcessor {
     }
 
     callbacks.log(`${callbacks.getPlayerName(playerId)} confirmed blockers.`);
+    
+    // Rule 509.1: Individual block triggers
+    if (state.combat?.blockers) {
+        state.combat.blockers.forEach(b => {
+            TriggerProcessor.onEvent(state, { type: 'ON_BLOCK', sourceId: b.blockerId, playerId: playerId }, (m: string) => callbacks.log(m));
+        });
+    }
+
     state.pendingAction = undefined;
     
     // CR 509.2 / 509.3: If multiple blockers/attackers are involved, we need damage assignment order first.

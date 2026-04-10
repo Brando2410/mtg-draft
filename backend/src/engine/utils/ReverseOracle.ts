@@ -60,6 +60,7 @@ export class ReverseOracle {
         } else {
             switch (event) {
                 case 'ON_ETB': trigger = "When this creature enters, "; break;
+                case 'ON_ETB_OTHER': trigger = `Whenever another ${meta.restrictions?.join(" ") || "permanent"} enters, `; break;
                 case 'ON_DEATH': trigger = "When this creature dies, "; break;
                 case 'ON_ATTACK': trigger = "Whenever this creature attacks, "; break;
                 case 'ON_DRAW': trigger = `Whenever ${subject} draw${subject === 'you' ? "" : "s"} a card, `; break;
@@ -166,7 +167,7 @@ export class ReverseOracle {
                 break;
             case EffectType.DiscardCards:
                 verb = "discard";
-                payload = `${amount} card${amount === 1 ? "" : "s"}`;
+                payload = `${amount === 'that many' ? 'that many' : (amount || 1)} card${amount === 1 ? "" : "s"}`;
                 subject = target;
                 isSubjectYou = targetMapping === 'CONTROLLER';
                 break;
@@ -174,6 +175,24 @@ export class ReverseOracle {
                 const restr = this.reconstructRestrictions(effect.restrictions || []);
                 verb = "search";
                 payload = `your library for ${amount === 1 ? "a" : amount} ${restr} card${amount === 1 ? "" : "s"}, reveal it, put it into your hand, then shuffle your library`;
+                break;
+            case EffectType.Scry:
+                verb = "scry";
+                payload = `${amount}`;
+                break;
+            case EffectType.Surveil:
+                verb = "surveil";
+                payload = `${amount}`;
+                break;
+            case EffectType.Mill:
+                verb = "mill";
+                payload = `${amount === 1 ? 'a' : amount} card${amount === 1 ? "" : "s"}`;
+                subject = target;
+                isSubjectYou = targetMapping === 'CONTROLLER';
+                break;
+            case EffectType.Shuffle:
+                verb = "shuffle";
+                payload = "your library";
                 break;
             case EffectType.ApplyContinuousEffect:
                 let mod = "";
@@ -247,6 +266,7 @@ export class ReverseOracle {
             case 'CONTROLLER': return "you";
             case 'TARGET_1': return `target ${other}${restrText || "permanent"}${controlSuffix}`;
             case 'EACH_OPPONENT': return "each opponent";
+            case 'EACH_PLAYER': return "each player";
             case 'ALL_CREATURES_YOU_CONTROL': return "each creature you control";
             case 'ANY_TARGET': return "any target";
             default: return mapping || "target";

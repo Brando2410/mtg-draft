@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType } from "@shared/engine_types";
 
 export const TeferisAgelessInsight: Record<string, ImplementableCard> = {
     "Teferi's Ageless Insight": {
@@ -7,19 +7,17 @@ export const TeferisAgelessInsight: Record<string, ImplementableCard> = {
         oracleText: "If you would draw a card except the first one you draw in each of your draw steps, draw two cards instead.",
         colors: ["blue"],
         supertypes: ["Legendary"],
-        types: ["Enchantment"],
+        types: ["Artifact"],
         subtypes: [],
         power: undefined,
         toughness: undefined,
         keywords: [],
         abilities: [
             {
-                id: "teferi_ageless_replacement",
+                id: "teferi_ageless_insight_replacement",
                 type: AbilityType.Replacement,
                 activeZone: ZoneRequirement.Battlefield,
-                replacesEvent: 'ON_DRAW',
-                triggerCondition: (state: any) => (state.turnState.cardsDrawnThisTurn || 0) >= 1,
-                effects: [{ type: 'ModifyDrawAmount', multiplier: 2, targetMapping: 'CONTROLLER' }]
+                effects: [] // Handled by ActionProcessor via the id 'teferi_ageless_insight'
             }
         ]
     }

@@ -6,12 +6,21 @@ export const Island: Record<string, ImplementableCard> = {
         manaCost: "",
         oracleText: "({T}: Add {U}.)",
         colors: [],
-        supertypes: [],
-        types: [],
-        subtypes: [],
-        power: "",
-        toughness: "",
+        supertypes: ["Basic"],
+        types: ["Land"],
+        subtypes: ["Island"],
+        power: undefined,
+        toughness: undefined,
         keywords: [],
-        abilities: []
+        abilities: [
+            {
+                id: "island_mana",
+                type: AbilityType.Activated,
+                activeZone: Zone.Battlefield,
+                isManaAbility: true,
+                costs: [{ type: 'Tap', targetMapping: 'SELF' }],
+                effects: [{ type: EffectType.AddMana, value: '{U}' }]
+            }
+        ]
     }
 };

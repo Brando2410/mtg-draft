@@ -62,7 +62,8 @@ export class TriggerProcessor {
           if (typeof condition === 'function') {
               if (!condition(state, event, t)) return false;
           } else if (typeof condition === 'string') {
-              if (!LayerProcessor.matchesCondition(state, condition, t.sourceId, t.controllerId, event)) return false;
+              const { ConditionProcessor } = require('../core/ConditionProcessor');
+              if (!ConditionProcessor.matchesCondition(state, condition, t.sourceId, t.controllerId, event)) return false;
           }
       }
 

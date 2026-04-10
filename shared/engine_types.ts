@@ -64,6 +64,7 @@ export interface CardDefinition {
   image_url?: string;
   scryfall_id?: string;
   set?: string;
+  entersTapped?: boolean; // Replacement effect-style state for entry
 }
 
 // A physical/virtual object existing in a Zone.
@@ -113,7 +114,10 @@ export const ActionType = {
   ModalSelection: 'MODAL_SELECTION',
   ResolutionChoice: 'RESOLUTION_CHOICE',
   OptionalAction: 'OPTIONAL_ACTION',
-  Choice: 'CHOICE' // Deprecated, keeping for backward compatibility
+  Choice: 'CHOICE', // Deprecated, keeping for backward compatibility
+  Scry: 'SCRY',
+  Surveil: 'SURVEIL',
+  ChooseX: 'CHOOSE_X'
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 
@@ -159,6 +163,7 @@ export interface PlayerState {
   maxHandSize: number;
   pendingDiscardCount: number;
   manaCheat?: boolean; // DEBUG: Infinite mana
+  virtualHand: GameObject[]; // Cards playable from non-hand zones (Exile, Graveyard, Library)
 }
 
 export interface CombatState {
@@ -214,7 +219,13 @@ export interface DiscardPendingActionData {
   amount: number;
 }
 
-export type PendingActionData = ChoicePendingActionData | TargetingPendingActionData | DiscardPendingActionData | any;
+export interface XSelectionPendingActionData {
+  label: string;
+  sourceId: string;
+  declaredTargets: string[];
+}
+
+export type PendingActionData = ChoicePendingActionData | TargetingPendingActionData | DiscardPendingActionData | XSelectionPendingActionData | any;
 
 export interface PendingAction {
   type: ActionType;
@@ -280,6 +291,7 @@ export interface EffectDuration {
 
 export interface ContinuousEffect {
   id: string;
+  type?: EffectType;
   sourceId: GameObjectId;
   controllerId: PlayerId;
   layer: number;
@@ -296,9 +308,12 @@ export interface ContinuousEffect {
   toughnessSet?: number | string;  // Layer 7b
   powerDynamic?: string;
   toughnessDynamic?: string;
+  typesToAdd?: string[];
+  subtypesToAdd?: string[];
+  colorsToAdd?: string[];
+  colorSet?: string[];
   abilitiesToAdd?: string[];
   abilitiesToRemove?: string[];
-  subtypesToAdd?: string[];
   removeAllAbilities?: boolean; // Layer 6
   condition?: string;
 
@@ -459,7 +474,9 @@ export const EffectType = {
   GainLife: 'GainLife',
   LoseLife: 'LoseLife',
   AddMana: 'AddMana',
+  Necromentia: 'Necromentia',
   Tapped: 'Tapped',
+  Untap: 'Untap',
   Fight: 'Fight',
   CostReduction: 'CostReduction',
   PhasedOut: 'PhasedOut',
@@ -493,8 +510,14 @@ export const EffectType = {
   CounterAbility: 'CounterAbility',
   CreateTokenCopy: 'CreateTokenCopy',
   ChangeTarget: 'ChangeTarget',
+  EndTurn: 'EndTurn',
   PlayWithTopCardRevealed: 'PlayWithTopCardRevealed',
-  AllowCastFromTop: 'AllowCastFromTop',
+  AllowPlayFromTop: 'AllowPlayFromTop',
+  AllowSpendManaAsAnyColor: 'AllowSpendManaAsAnyColor',
+  AllowLookAtTop: 'AllowLookAtTop',
+  AllowPlayExiled: 'AllowPlayExiled',
+  Surveil: 'Surveil',
+  PENDING_ACTION: 'PENDING_ACTION',
 } as const;
 
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
@@ -608,8 +631,10 @@ export type TargetType = (typeof TargetType)[keyof typeof TargetType];
 export interface TargetDefinition {
   type: TargetType;
   count: number;
+  minCount?: number;
   optional?: boolean;
   restrictions?: (string | any)[];
+  perTargetRestrictions?: (string | any)[][];
 }
 
 export interface ParsedAbility {
@@ -633,6 +658,7 @@ export interface ParsedAbility {
   replacesEvent?: string;
   costReduction?: any;
   restrictions?: { type: string, value?: string, effectZone?: string }[];
+  condition?: string;
   effects?: EffectDefinition[];
 }
 

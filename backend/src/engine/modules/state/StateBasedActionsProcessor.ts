@@ -1,4 +1,4 @@
-import { GameState, Zone, PlayerId } from '@shared/engine_types';
+import { GameState, Zone, PlayerId, GameObject } from '@shared/engine_types';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { ActionProcessor } from '../actions/ActionProcessor';
 import { TargetingProcessor } from '../actions/TargetingProcessor';
@@ -87,17 +87,32 @@ export class StateBasedActionsProcessor {
     // 4. Rule 704.5d: Token in a non-battlefield zone
     // "A token in a zone other than the battlefield ceases to exist."
     const nonBattlefieldZones = [Zone.Graveyard, Zone.Exile, Zone.Hand, Zone.Library];
+    
+    // Global zones
+    const exileTokens = state.exile.filter(o => (o as any).isToken);
+    if (exileTokens.length > 0) {
+        exileTokens.forEach(t => log(`[SBA] Token ${t.definition.name} ceased to exist in Exile.`));
+        state.exile = state.exile.filter(o => !(o as any).isToken);
+        actionTaken = true;
+    }
+
+    // Player zones
     for (const zoneName of nonBattlefieldZones) {
+        if (zoneName === Zone.Exile) continue; // Handled above
+
         Object.values(state.players).forEach(player => {
-            const list = zoneName === Zone.Graveyard ? player.graveyard : 
-                         zoneName === Zone.Hand ? player.hand : player.library;
+            let list: GameObject[] = [];
+            if (zoneName === Zone.Graveyard) list = player.graveyard;
+            else if (zoneName === Zone.Hand) list = player.hand;
+            else if (zoneName === Zone.Library) list = player.library;
             
-            if (list) {
+            if (list.length > 0) {
                 const tokens = list.filter(o => (o as any).isToken);
                 if (tokens.length > 0) {
                     tokens.forEach(t => log(`[SBA] Token ${t.definition.name} ceased to exist in ${zoneName}.`));
                     if (zoneName === Zone.Graveyard) player.graveyard = player.graveyard.filter(o => !(o as any).isToken);
                     if (zoneName === Zone.Hand) player.hand = player.hand.filter(o => !(o as any).isToken);
+                    if (zoneName === Zone.Library) player.library = player.library.filter(o => !(o as any).isToken);
                     actionTaken = true;
                 }
             }
@@ -114,7 +129,17 @@ export class StateBasedActionsProcessor {
     for (const attach of attachments) {
         // Find what it's attached to (Populated by StackResolver for Auras)
         const targetId = (attach as any).attachedTo;
-        if (!targetId) continue;
+        const subtypes = attach.definition.subtypes.map(s => s.toLowerCase());
+        const isAura = subtypes.includes('aura');
+
+        if (!targetId) {
+            if (isAura) {
+                log(`[SBA] Aura ${attach.definition.name} is not attached to anything and is put into graveyard.`);
+                ActionProcessor.moveCard(state, attach, Zone.Graveyard, attach.ownerId, log);
+                actionTaken = true;
+            }
+            continue;
+        }
 
         // Check if the target is still legal
         // (source is the attachment, target is the permanent)
