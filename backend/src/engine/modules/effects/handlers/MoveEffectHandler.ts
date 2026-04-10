@@ -47,6 +47,9 @@ export class MoveEffectHandler {
     if (effect.type === 'Surveil') {
         return this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: (effect as any).amount || 1 }, controllerId, log, stackObject, parentContext);
     }
+    if (effect.type === 'LookAtTopAndPick') {
+        return this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: (effect as any).amount || 1 }, controllerId, log, stackObject, parentContext);
+    }
 
     if (effect.type === 'PutRemainderOnBottomRandom' && targetIds.length > 1) {
         ActionProcessor.shuffle(targetIds);
@@ -345,6 +348,19 @@ export class MoveEffectHandler {
 
       const foundInExile = state.exile.find(o => o.id === id);
       if (foundInExile) return foundInExile;
+
+      if ((state.pendingAction as any)?.data?.lookingCards) {
+          const found = ((state.pendingAction as any).data.lookingCards as GameObject[]).find(o => o.id === id);
+          if (found) return found;
+      }
+      if (parentContext?.lookingCards) {
+          const found = (parentContext.lookingCards as GameObject[]).find(o => o.id === id);
+          if (found) return found;
+      }
+      if (stackObject?.data?.lookingCards) {
+          const found = (stackObject.data.lookingCards as GameObject[]).find(o => o.id === id);
+          if (found) return found;
+      }
 
       for (const playerId in state.players) {
           const foundInHand = state.players[playerId as PlayerId].hand.find(o => o.id === id);

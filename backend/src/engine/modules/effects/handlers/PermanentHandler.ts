@@ -59,6 +59,17 @@ export class PermanentHandler {
       });
   }
 
+  public static handleTap(state: GameState, targets: string[], log: (m: string) => void) {
+      targets.forEach(tid => {
+          const obj = state.battlefield.find(o => o.id === tid);
+          if (obj) {
+              if (obj.isTapped) return;
+              obj.isTapped = true;
+              log(`${obj.definition.name} tapped.`);
+          }
+      });
+  }
+
   public static handleFight(state: GameState, targets: string[], log: (m: string) => void) {
       if (targets.length < 2) return;
       const c1 = state.battlefield.find(o => o.id === targets[0]);

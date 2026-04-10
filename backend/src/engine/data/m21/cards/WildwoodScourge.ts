@@ -12,6 +12,7 @@ export const WildwoodScourge: Record<string, ImplementableCard> = {
         power: "0",
         toughness: "0",
         keywords: [],
+        entersWithXCounters: true,
         abilities: [
             {
                 id: "wildwood_scourge_trigger",
@@ -21,7 +22,7 @@ export const WildwoodScourge: Record<string, ImplementableCard> = {
                 triggerCondition: (state: any, event: any, source: any) =>
                     event.data?.object?.controllerId === source.controllerId &&
                     event.counterType === '+1/+1' &&
-                    !event.data?.object?.definition?.subtypes?.includes('Hydra'),
+                    !event.data?.object?.definition?.subtypes?.some((s: string) => s.toLowerCase() === 'hydra'),
                 effects: [{ type: 'AddCounters', amount: 1, value: '+1/+1', targetMapping: 'SELF' }]
             }
         ]

@@ -52,6 +52,7 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
           // Standard single select
           if (choice.cardData) {
               if (selectedIndices.includes(originalIdx)) {
+                  // Second click on the same card = confirm (Double-click behavior)
                   confirmSelection([originalIdx]);
               } else {
                   setSelectedIndices([originalIdx]);
@@ -82,7 +83,7 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+        className="fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-hidden"
         onClick={() => setSelectedIndices([])}
       >
         <motion.div 
@@ -107,7 +108,7 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
           <div className={`w-full custom-scrollbar overflow-y-auto max-h-[50vh] px-2 py-4 ${hasCards ? 'bg-black/20 rounded-3xl border border-white/5' : ''}`}>
             {/* CARD GRID */}
             {cardChoices.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 p-4">
+                <div className="flex flex-wrap justify-center gap-6 p-4">
                     {cardChoices.map((choice: any) => {
                         const originalIdx = choices.indexOf(choice);
                         const isSelected = selectedIndices.includes(originalIdx);
@@ -115,16 +116,17 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                         return (
                             <motion.div 
                                 key={choice.cardData.id}
-                                className={`relative cursor-pointer transition-all ${isSelected ? 'scale-105' : 'hover:scale-105'}`}
+                                className={`relative cursor-pointer transition-none ${isSelected ? 'z-20' : 'z-10'}`}
                                 onClick={() => handleChoiceClick(originalIdx)}
                             >
                                 <BattlefieldCard 
                                     obj={choice.cardData} 
                                     onHoverStart={onHoverStart} 
                                     onHoverEnd={onHoverEnd}
+                                    isSelected={isSelected}
                                 />
                                 {isSelected && (
-                                    <div className="absolute inset-0 border-4 border-yellow-400 rounded-2xl shadow-[0_0_20px_rgba(250,204,21,0.6)] pointer-events-none z-10" />
+                                    <div className="absolute inset-x-[-6px] inset-y-[-6px] border-[3px] border-yellow-400 rounded-[1.2rem] shadow-[0_0_20px_rgba(250,204,21,0.4)] pointer-events-none z-10" />
                                 )}
                             </motion.div>
                         );
@@ -156,34 +158,36 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
             )}
           </div>
 
-          <div className="flex flex-col gap-4 w-full max-w-xs">
-            {/* MULTI-SELECT CONFIRM BUTTON */}
-            {maxChoices > 1 && selectedIndices.length >= minChoices && (
-               <button 
-                 onClick={() => confirmSelection(selectedIndices)}
-                 className="w-full p-6 bg-yellow-400 hover:bg-yellow-300 rounded-2xl border-none text-md font-black uppercase italic tracking-widest transition-all hover:scale-[1.05] active:scale-[0.95] text-slate-950 shadow-[0_0_30px_rgba(250,204,21,0.4)]"
-               >
-                 CONFERMA {maxChoices > 1 ? `(${selectedIndices.length})` : 'SELEZIONE'}
-               </button>
+          <div className="flex flex-row items-center justify-center gap-4 w-full max-w-xl mt-4">
+            {/* UNDO BUTTON (Now on the left) */}
+            {!pendingAction.data?.hideUndo && (
+              <button 
+                onClick={() => onTapCard?.(`CHOICE_undo`)}
+                className="flex-1 max-w-[160px] p-3 bg-red-500/10 hover:bg-red-500/20 rounded-xl border border-red-500/20 text-[10px] font-black uppercase italic tracking-widest transition-all text-red-100/60 hover:text-red-100"
+              >
+                ANNULLA
+              </button>
             )}
+
+            {/* CONFIRM BUTTON (Always visible, disabled if no selection) */}
+            <button 
+              disabled={selectedIndices.length < minChoices}
+              onClick={() => confirmSelection(selectedIndices)}
+              className={`flex-1 max-w-[200px] p-4 rounded-xl border-none text-sm font-black uppercase italic tracking-widest transition-all shadow-lg
+                ${selectedIndices.length >= minChoices 
+                  ? 'bg-yellow-400 hover:bg-yellow-300 text-slate-950 scale-105 shadow-[0_0_20px_rgba(250,204,21,0.3)]' 
+                  : 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'}`}
+            >
+              CONFERMA {selectedIndices.length > 1 ? `(${selectedIndices.length})` : ''}
+            </button>
 
             {/* NONE/SKIP BUTTON */}
             {noneChoice && selectedIndices.length === 0 && (
               <button 
                 onClick={() => onTapCard?.(`CHOICE_${noneChoiceIdx}`)}
-                className="w-full p-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 text-sm font-black uppercase italic tracking-widest transition-all hover:scale-[1.05] active:scale-[0.95] text-white"
+                className="flex-1 max-w-[160px] p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 text-[10px] font-black uppercase italic tracking-widest transition-all text-white"
               >
                 {noneChoice.label}
-              </button>
-            )}
-
-            {/* UNDO BUTTON */}
-            {!pendingAction.data?.hideUndo && (
-              <button 
-                onClick={() => onTapCard?.(`CHOICE_undo`)}
-                className="px-8 py-3 bg-red-500/10 hover:bg-red-500/30 rounded-full border border-red-500/20 text-xs font-black uppercase italic tracking-widest transition-all text-red-100/60 hover:text-red-100"
-              >
-                ANNULLA (Undo)
               </button>
             )}
           </div>

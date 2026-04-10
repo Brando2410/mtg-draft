@@ -45,6 +45,8 @@ export class ContinuousEffectHandler {
             finalTargetIds = state.battlefield.filter(o => o.controllerId === controllerId && TargetingProcessor.matchesRestrictions(state, o, effect.restrictions || [], controllerId, sourceId)).map(o => o.id);
         } else if (mapping === 'MATCHING_PERMANENTS') {
             finalTargetIds = state.battlefield.filter(o => TargetingProcessor.matchesRestrictions(state, o, effect.restrictions || [], controllerId, sourceId)).map(o => o.id);
+        } else if (mapping === 'OTHER_CREATURES_YOU_CONTROL') {
+            finalTargetIds = state.battlefield.filter(o => o.id !== sourceId && o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature')).map(o => o.id);
         } else if (mapping === 'SELF') {
             finalTargetIds = [sourceId];
         }
@@ -57,6 +59,9 @@ export class ContinuousEffectHandler {
         sourceId,
         controllerId,
         layer: (effect as any).layer || 7,
+        sublayer: effect.sublayer,
+        powerDynamic: effect.powerDynamic,
+        toughnessDynamic: effect.toughnessDynamic,
         timestamp: Date.now(),
         activeZones: ['Battlefield' as any],
         duration: duration,
@@ -78,8 +83,8 @@ export class ContinuousEffectHandler {
         removeAllAbilities: (effect as any).removeAllAbilities
     } as any;
 
-    log(`[CE] Pushing effect with ${continuousEff.targetIds?.length || 0} targets and ${continuousEff.abilitiesToAdd?.length || 0} abilities.`);
+    log(`[CE] Pushing effect with ${continuousEff.targetIds?.length || 0} targets and mapping ${continuousEff.targetMapping}. ControllerId=${controllerId}`);
     state.ruleRegistry.continuousEffects.push(continuousEff);
-    log(`Applied continuous effect [${duration.type}] to ${finalTargetIds?.length || mapping} target(s).`);
+    log(`[CE] Applied continuous effect [${duration.type}] to ${finalTargetIds?.length || mapping} target(s). Snapshot: ${!!finalTargetIds}`);
   }
 }

@@ -90,7 +90,8 @@ export class ChoiceProcessor {
         return this.handleScrySurveil(state, playerId, action, choiceIndex, log, engine);
     }
 
-    const idx = typeof choiceIndex === 'string' ? parseInt(choiceIndex) : choiceIndex;
+    const rawIdx = typeof choiceIndex === 'string' && choiceIndex.startsWith('CHOICE_') ? choiceIndex.substring(7) : choiceIndex;
+    const idx = typeof rawIdx === 'string' ? parseInt(rawIdx) : rawIdx;
     const sourceId = action.sourceId;
     const choice = action.data?.choices?.[idx];
     
@@ -98,7 +99,7 @@ export class ChoiceProcessor {
 
     // 1. Handle Selection of Abilities (Planeswalkers/Modal costs in battlefield)
     const obj = state.battlefield.find(o => o.id === sourceId);
-    if (obj && isModal) {
+    if (obj && isModal && !action.data?.isCostChoice) {
         return this.handleBattlefieldAbilityActivation(state, playerId, obj, choice, log, engine);
     }
 
@@ -305,12 +306,29 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         (state as any).lastChosenSacrificeId = choice.value;
     } else if (costType === 'Discard') {
         (state as any).lastChosenDiscardId = choice.value;
+        log(`[DEBUG] ChoiceProcessor: Set lastChosenDiscardId to ${choice.value}`);
     } else {
         (state as any).lastChoiceIndex = choiceIndex;
     }
     
     log(`Selected ${costType ? costType + ' item' : 'choice'}: ${choice.label}`);
     
+    if (action.data.abilityIndex !== undefined) {
+        return SpellProcessor.activateAbility(
+            state, 
+            playerId, 
+            sourceId, 
+            action.data.abilityIndex, 
+            savedTargets, 
+            log, 
+            {
+                passPriority: (p: any) => engine.passPriority ? engine.passPriority(p) : engine.resetPriorityToActivePlayer(),
+                checkAutoPass: (p: any) => engine.checkAutoPass ? engine.checkAutoPass(p) : engine.resetPriorityToActivePlayer()
+            },
+            true 
+        );
+    }
+
     return SpellProcessor.playCard(
         state, 
         playerId, 

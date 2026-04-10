@@ -21,7 +21,7 @@ export const NiambiEsteemedSpeaker: Record<string, ImplementableCard> = {
                 triggerCondition: (state: any, event: any, source: any) => {
                     return event.data?.object?.id === source.sourceId;
                 },
-                targetDefinition: { type: 'Permanent', count: 1, optional: true, restrictions: ['Creature', 'Legendary', 'YouControl', 'Other'] },
+                targetDefinition: { type: 'Permanent', count: 1, optional: true, restrictions: ['Creature', 'YouControl', 'Other'] },
                 effects: [{ type: 'ReturnToHand', targetMapping: 'TARGET_1' }, { type: 'GainLife', amount: 'TARGET_1_CMC', targetMapping: 'CONTROLLER' }],
             },
             {

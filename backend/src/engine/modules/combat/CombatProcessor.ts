@@ -89,7 +89,13 @@ export class CombatProcessor {
 
         // Rule 508.1m: Individual attack triggers
         attackers.forEach(a => {
-            TriggerProcessor.onEvent(state, { type: 'ON_ATTACK', sourceId: a.attackerId, playerId: playerId }, (m: string) => callbacks.log(m));
+            const attackerObj = state.battlefield.find(o => o.id === a.attackerId);
+            TriggerProcessor.onEvent(state, { 
+                type: 'ON_ATTACK', 
+                sourceId: a.attackerId, 
+                playerId: playerId,
+                data: { object: attackerObj, targetId: a.targetId }
+            }, (m: string) => callbacks.log(m));
         });
     }
 
@@ -116,8 +122,21 @@ export class CombatProcessor {
     // Rule 509.1: Individual block triggers
     if (state.combat?.blockers) {
         state.combat.blockers.forEach(b => {
-            TriggerProcessor.onEvent(state, { type: 'ON_BLOCK', sourceId: b.blockerId, playerId: playerId }, (m: string) => callbacks.log(m));
-            TriggerProcessor.onEvent(state, { type: 'ON_BECAME_BLOCKED', sourceId: b.attackerId, targetId: b.blockerId, playerId: playerId }, (m: string) => callbacks.log(m));
+            const blockerObj = state.battlefield.find(o => o.id === b.blockerId);
+            const attackerObj = state.battlefield.find(o => o.id === b.attackerId);
+            TriggerProcessor.onEvent(state, { 
+                type: 'ON_BLOCK', 
+                sourceId: b.blockerId, 
+                playerId: playerId,
+                data: { object: blockerObj, targetId: b.attackerId }
+            }, (m: string) => callbacks.log(m));
+            TriggerProcessor.onEvent(state, { 
+                type: 'ON_BECAME_BLOCKED', 
+                sourceId: b.attackerId, 
+                targetId: b.blockerId, 
+                playerId: playerId,
+                data: { object: attackerObj, targetId: b.blockerId }
+            }, (m: string) => callbacks.log(m));
         });
     }
 

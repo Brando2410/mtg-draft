@@ -11,8 +11,19 @@ export const TerrorofthePeaks: Record<string, ImplementableCard> = {
         subtypes: ["Dragon"],
         power: "5",
         toughness: "4",
-        keywords: [],
+        keywords: ["Flying"],
         abilities: [
+            {
+                id: "terror_peaks_tax",
+                type: AbilityType.Static,
+                activeZone: ZoneRequirement.Battlefield,
+                effects: [{
+                    type: 'AdditionalCost',
+                    targetMapping: 'EACH_OPPONENT',
+                    condition: 'SPELL_TARGETS_SOURCE',
+                    additionalCosts: [{ type: 'PayLife', value: '3' }]
+                } as any]
+            },
             {
                 id: "terror_peaks_etb_damage",
                 type: AbilityType.Triggered,

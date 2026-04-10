@@ -72,6 +72,10 @@ export class ConditionProcessor {
 
     // Generic/Legacy strings
     switch (condition.toUpperCase()) {
+      case 'SPELL_TARGETS_SOURCE': {
+        const targets = (event?.data as any)?.targets || [];
+        return targets.includes(sourceId);
+      }
       case 'IS_YOUR_TURN':
         return state.activePlayerId === controllerId;
       case 'HAS_CREATURE_POWER_4_PLUS':

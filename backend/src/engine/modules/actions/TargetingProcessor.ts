@@ -240,7 +240,10 @@ export class TargetingProcessor {
      * Evaluates a set of restrictions against a target object or player.
      */
     public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], controllerId: string | null, sourceId: string): boolean {
-        const objTypes = (targetObj.definition.types || []).map((t: string) => t.toLowerCase());
+        const objTypes = [
+            ...(targetObj.definition.types || []),
+            ...(targetObj.definition.supertypes || [])
+        ].map((t: string) => t.toLowerCase());
         const baseTypes = ['creature', 'planeswalker', 'land', 'artifact', 'enchantment', 'instant', 'sorcery', 'permanent', 'card'];
         const isAlternative = (r: any) => typeof r === 'object' || (typeof r === 'string' && baseTypes.includes(r.toLowerCase()));
 
@@ -259,6 +262,7 @@ export class TargetingProcessor {
                 if (controllerId && targetObj.controllerId === controllerId) return false;
             }
             if (lr === 'youcontrol' && controllerId && targetObj.controllerId !== controllerId) return false;
+            if (lr === 'legendary' && !objTypes.includes('legendary')) return false;
             if (lr === 'self' && targetObj.id !== sourceId) return false;
             if (lr === 'tapped' && !targetObj.isTapped) return false;
             if (lr === 'untapped' && targetObj.isTapped) return false;
@@ -293,7 +297,7 @@ export class TargetingProcessor {
 
             const isKnownFilter = [
                 'nonland', 'noncreature', 'nonartifact', 'nonenchantment', 'nonplaneswalker',
-                'graveyard', 'other', 'notcontrolled', 'opponentcontrol', 'youcontrol', 'self',
+                'graveyard', 'other', 'notcontrolled', 'opponentcontrol', 'youcontrol', 'self', 'legendary',
                 'tapped', 'untapped', 'yours', 'opponents', 'attackingorblocking',
                 'instantorsorcerycastthisturn', 'player', 'anytarget', 'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 'instant', 'sorcery'
             ].includes(lr) || lr.startsWith('cmc') || lr.startsWith('mv') || lr.startsWith('power') || lr.startsWith('toughness');
@@ -599,7 +603,8 @@ export class TargetingProcessor {
         switch (mapping) {
             case 'SELF': return [sourceId];
             case 'CONTROLLER': return [controllerId];
-            case 'ENCHANTED_CREATURE': {
+            case 'ENCHANTED_CREATURE':
+            case 'ENCHANTED_PERMANENT': {
                 const aura = state.battlefield.find(o => o.id === sourceId);
                 return aura?.attachedTo ? [aura.attachedTo] : [];
             }
@@ -638,6 +643,10 @@ export class TargetingProcessor {
             case 'ALL_CREATURES_YOU_CONTROL':
                 return state.battlefield
                     .filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature'))
+                    .map(o => o.id);
+            case 'OTHER_CREATURES_YOU_CONTROL':
+                return state.battlefield
+                    .filter(o => o.id !== sourceId && o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature'))
                     .map(o => o.id);
             case 'ALL_PERMANENTS_YOU_CONTROL':
                 return state.battlefield

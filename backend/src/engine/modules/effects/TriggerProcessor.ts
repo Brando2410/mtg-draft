@@ -26,7 +26,10 @@ export class TriggerProcessor {
         type === event.type || 
         (type === 'ON_ETB_OTHER' && event.type === 'ON_ETB') ||
         (type === 'ON_SECOND_DRAW' && event.type === 'ON_SECOND_DRAW') ||
-        (type === 'ON_ATTACK_OR_BLOCK' && (event.type === 'ON_ATTACK' || event.type === 'ON_BLOCK'))
+        (type === 'ON_ATTACK_OR_BLOCK' && (event.type === 'ON_ATTACK' || event.type === 'ON_BLOCK')) ||
+        (type === 'ON_DAMAGE_DEALT_TO_CREATURE' && event.type === 'ON_DAMAGE_TAKED') ||
+        (type === 'ON_DAMAGE_DEALT_TO_PLAYER' && event.type === 'ON_DAMAGE_PLAYER') ||
+        (type === 'ON_COUNTERS_ADDED_OTHER' && event.type === 'ON_COUNTERS_ADDED')
       );
 
       if (!matchesPrimary) return false;

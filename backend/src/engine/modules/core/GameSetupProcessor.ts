@@ -55,7 +55,9 @@ export class GameSetupProcessor {
         scryfall_id: (cardRef as any).scryfall_id || (cardRef as any).id || logicData?.scryfall_id,
         power: (cardRef as any).power || logicData?.power,
         toughness: (cardRef as any).toughness || logicData?.toughness,
-        keywords: baseKeywords
+        keywords: baseKeywords,
+        entersWithXCounters: (logicData as any)?.entersWithXCounters,
+        entersTapped: (logicData as any)?.entersTapped
       },
       isTapped: false,
       damageMarked: 0,

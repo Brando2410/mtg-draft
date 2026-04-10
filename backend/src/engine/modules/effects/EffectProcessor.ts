@@ -163,6 +163,11 @@ export class EffectProcessor {
           const { PermanentHandler } = require('./handlers/PermanentHandler');
           return PermanentHandler.handleUntap(state, validTargetIds, log);
       }
+      case 'Tap':
+      case 'Tapped': {
+          const { PermanentHandler } = require('./handlers/PermanentHandler');
+          return PermanentHandler.handleTap(state, validTargetIds, log);
+      }
       case 'Fight': {
           const { PermanentHandler } = require('./handlers/PermanentHandler');
           return PermanentHandler.handleFight(state, [...validTargetIds, ...validTarget2Ids], log);
@@ -223,6 +228,7 @@ export class EffectProcessor {
         if (state.players[tid]) return true;
         const obj = this.findObject(state, tid, stackObject, parentContext);
         if (!obj) return false;
+        if (tid === sourceId) return true; // Source is always a legal part of its own mapping (Rule 608.2b)
         if (['SELECTED_CARD', 'EVENT_TARGET'].includes(effect.targetMapping)) return true;
         const targetDef = effect.targetDefinition || (stackObject || parentContext?.stackObj)?.data?.targetDefinition;
         if (!targetDef) return true;
@@ -232,11 +238,12 @@ export class EffectProcessor {
 
   private static checkCondition(state: GameState, condition: string, stackObject?: any, parentContext?: any): boolean {
       const card = stackObject?.card || stackObject;
-      const { LayerProcessor } = require('../../state/LayerProcessor');
       
-      switch (condition) {
-          case 'castFromHand': return card?.lastNonStackZone === Zone.Hand;
-          case 'notCastFromHand': return card?.lastNonStackZone !== Zone.Hand;
+      switch (condition.toUpperCase()) {
+          case 'CASTFROMHAND':
+          case 'CAST_FROM_HAND': return card?.lastNonStackZone === Zone.Hand;
+          case 'NOTCASTFROMHAND':
+          case 'NOT_CAST_FROM_HAND': return card?.lastNonStackZone !== Zone.Hand;
           case 'ARTIFACT_COUNT_GE:':
           case 'LAND_COUNT_GE:':
               const threshold = parseInt(condition.split(':')[1]);
@@ -302,6 +309,8 @@ export class EffectProcessor {
            Object.values(state.players).flatMap(p => [...p.graveyard, ...p.hand, ...p.library]).find(o => o.id === id) ||
            state.exile.find(o => o.id === id) ||
            (stackObject?.card?.id === id ? stackObject.card : undefined) ||
-           (state.pendingAction?.data?.lookingCards as GameObject[])?.find(o => o.id === id);
+           (state.pendingAction?.data?.lookingCards as GameObject[])?.find(o => o.id === id) ||
+           (parentContext?.lookingCards as GameObject[])?.find(o => o.id === id) ||
+           (stackObject?.data?.lookingCards as GameObject[])?.find(o => o.id === id);
   }
 }

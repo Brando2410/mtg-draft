@@ -65,6 +65,7 @@ export interface CardDefinition {
   scryfall_id?: string;
   set?: string;
   entersTapped?: boolean; // Replacement effect-style state for entry
+  entersWithXCounters?: boolean; // Rule 122.6: Entry with counters based on X
 }
 
 // A physical/virtual object existing in a Zone.
@@ -566,6 +567,7 @@ export interface EffectDefinition {
   removeAllAbilities?: boolean;
   subtypesToAdd?: string[];
   layer?: number;
+  sublayer?: string;
   targetControllerId?: string;
   isFreeCast?: boolean;
   canPlayExiled?: boolean;

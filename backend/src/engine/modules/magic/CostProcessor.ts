@@ -81,7 +81,7 @@ export class CostProcessor {
         return state.battlefield.some(c => c.controllerId === playerId);
 
       case 'Discard':
-        return player.hand.length > 0;
+        return player.hand.some(c => !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, playerId, source.id));
 
       case 'PayLife':
         return player.life > (parseInt(cost.value) || 0);
@@ -141,7 +141,7 @@ export class CostProcessor {
         // If it's a cost, we typically expect a pre-selected cardId in state.lastChosenDiscardId
         // or we need to trigger a choice if it's not present.
         const discardId = (state as any).lastChosenDiscardId;
-        const cardToDiscard = player.hand.find(c => c.id === discardId) || player.hand[0]; 
+        const cardToDiscard = player.hand.find(c => c.id === discardId); 
         if (cardToDiscard) {
             TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card: cardToDiscard, sourceId: source.id } }, log);
             ActionProcessor.moveCard(state, cardToDiscard, Zone.Graveyard, playerId, log);

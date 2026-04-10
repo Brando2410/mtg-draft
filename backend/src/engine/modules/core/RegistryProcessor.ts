@@ -111,7 +111,8 @@ export class RegistryProcessor {
     if (!ability.effects) return;
     ability.effects.forEach((eff: any, eId: number) => {
         const effId = `${id}_eff_${eId}`;
-        if (eff.type === 'ApplyContinuousEffect') {
+        const continuousTypes = ['ApplyContinuousEffect', 'AdditionalCost', 'SpellTax', 'CostReduction', 'AllowCastFromGraveyard', 'AllowPlayFromTop', 'AllowPlayExiled'];
+        if (continuousTypes.includes(eff.type)) {
             state.ruleRegistry.continuousEffects.push({
                 id: effId,
                 sourceId: card.id,

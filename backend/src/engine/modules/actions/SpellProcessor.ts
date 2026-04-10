@@ -154,7 +154,7 @@ export class SpellProcessor {
         }
 
         // CR 601.2f: Determine total cost
-        const { totalMana, additionalCosts } = this.getEffectiveCosts(state, cardToPlay);
+        const { totalMana, additionalCosts } = this.getEffectiveCosts(state, cardToPlay, declaredTargets);
 
         // --- SETUP SEQUENCE: TARGETING -> CHOICE -> FINALIZATION ---
 
@@ -246,6 +246,16 @@ export class SpellProcessor {
         }
 
         if (discardCost && !hasChosenDiscard) {
+            const { TargetingProcessor } = require('./TargetingProcessor');
+            const legalDiscardIds = player.hand
+                .filter(c => c.id !== cardInstanceId && TargetingProcessor.matchesRestrictions(state, c, discardCost.restrictions || [], playerId, cardToPlay.id))
+                .map(c => c.id);
+
+            if (legalDiscardIds.length === 0) {
+                log(`Illegal Play: No valid cards to discard for ${cardToPlay.definition.name}.`);
+                return false;
+            }
+
             const { ActionType } = require('@shared/engine_types');
             state.pendingAction = {
                 type: ActionType.ModalSelection,
@@ -256,13 +266,18 @@ export class SpellProcessor {
                     hideUndo: false,
                     isCostChoice: true,
                     costType: 'Discard',
+                    minChoices: 1,
+                    maxChoices: 1,
                     declaredTargets: declaredTargets || [],
-                    choices: player.hand.filter(c => c.id !== cardInstanceId).map(c => ({
-                        label: `Discard ${c.definition.name}`,
-                        value: c.id,
-                        cardData: c,
-                        selectable: true
-                    }))
+                    choices: legalDiscardIds.map(id => {
+                        const c = player.hand.find(o => o.id === id)!;
+                        return {
+                            label: `Discard ${c.definition.name}`,
+                            value: c.id,
+                            cardData: c,
+                            selectable: true
+                        }
+                    })
                 }
             };
             log(`[DISCARD] ${state.players[playerId].name} must choose a card to discard to cast ${cardToPlay.definition.name}.`);
@@ -438,7 +453,7 @@ export class SpellProcessor {
         return true;
     }
 
-    public static getEffectiveCosts(state: GameState, card: GameObject): { totalMana: string, additionalCosts: AbilityCost[] } {
+    public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = []): { totalMana: string, additionalCosts: AbilityCost[] } {
         let baseCost = card.definition.manaCost;
         
         // Handle X cost substitution (Rule 107.3)
@@ -506,11 +521,10 @@ export class SpellProcessor {
             if (!impacts) continue;
 
             const restrictions = (mod as any).restrictions || [];
-            const { TargetingProcessor } = require('./TargetingProcessor');
-            const { LayerProcessor } = require('../state/LayerProcessor');
+            const { ConditionProcessor } = require('./../core/ConditionProcessor');
             
             const matches = TargetingProcessor.matchesRestrictions(state, card, (restrictions as any[] || []), card.controllerId, mod.sourceId);
-            const conditionMatches = !mod.condition || LayerProcessor.matchesCondition(state, mod.condition, mod.sourceId, card.controllerId);
+            const conditionMatches = !mod.condition || ConditionProcessor.matchesCondition(state, mod.condition, mod.sourceId, card.controllerId, { data: { targets } } as any);
 
             if (!matches || !conditionMatches) continue;
 
@@ -580,6 +594,12 @@ export class SpellProcessor {
         const ability = cardLogic.abilities[abilityIndex];
         if (ability.type !== AbilityType.Activated) return false;
 
+        // Step 1: Preliminary Cost & Rule Check (including Summoning Sickness via CostProcessor)
+        if (!CostProcessor.canPay(state, ability.costs || [], obj.id, playerId)) {
+            log(`Illegal Activation: Cannot pay costs for ${obj.definition.name}'s ability.`);
+            return false;
+        }
+
         // Requirement Check (Rule 602.5b)
         if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) {
             log(`Illegal Activation: Activation requirements for ${obj.definition.name} are not met.`);
@@ -621,10 +641,54 @@ export class SpellProcessor {
             }
         }
 
-        if (!CostProcessor.canPay(state, ability.costs || [], obj.id, playerId)) {
-            log(`Illegal Activation: Cannot pay costs for ${obj.definition.name}'s ability.`);
-            return false;
+        // Step 1.6: Check Additional Costs for Ability (e.g. Discard for Niambi)
+        const additionalCosts = ability.costs || [];
+        const discardCost = additionalCosts.find(c => c.type === 'Discard');
+        const hasChosenDiscard = (state as any).lastChosenDiscardId !== undefined;
+        
+        if (discardCost) log(`[DEBUG] activateAbility: discardCost present. hasChosenDiscard: ${hasChosenDiscard} (${(state as any).lastChosenDiscardId})`);
+
+        if (discardCost && !hasChosenDiscard) {
+            const player = state.players[playerId];
+            const { TargetingProcessor } = require('./TargetingProcessor');
+            const legalDiscardIds = player.hand
+                .filter(c => TargetingProcessor.matchesRestrictions(state, c, discardCost.restrictions || [], playerId, obj.id))
+                .map(c => c.id);
+
+            if (legalDiscardIds.length === 0) {
+                log(`Illegal Activation: No valid cards to discard for ${obj.definition.name}.`);
+                return false;
+            }
+
+            const { ActionType } = require('@shared/engine_types');
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: obj.id,
+                data: {
+                    label: "Discard a card to activate " + obj.definition.name,
+                    hideUndo: false,
+                    isCostChoice: true,
+                    costType: 'Discard',
+                    abilityIndex: abilityIndex,
+                    minChoices: 1,
+                    maxChoices: 1,
+                    declaredTargets: declaredTargets || [],
+                    choices: legalDiscardIds.map(id => {
+                        const c = player.hand.find(o => o.id === id)!;
+                        return {
+                            label: `Discard ${c.definition.name}`,
+                            value: id,
+                            cardData: c,
+                            selectable: true
+                        }
+                    })
+                }
+            };
+            log(`[DISCARD] ${player.name} must choose a card to discard to activate ${obj.definition.name}.`);
+            return true;
         }
+
         CostProcessor.pay(state, ability.costs || [], obj.id, playerId, (m) => log(m));
 
         obj.abilitiesUsedThisTurn++;
