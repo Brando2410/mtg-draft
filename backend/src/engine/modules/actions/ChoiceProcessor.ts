@@ -92,8 +92,8 @@ export class ChoiceProcessor {
             state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, action.data.label, action.data.stackObj, action.data.parentContext, failureEffects);
         }
 
-        // Resume whatever was happening
-        return this.resumeResolution(state, sourceId as string, action.data?.stackObj, action.data?.parentContext, log, engine);
+        // Resume whatever was happening - CRITICAL: must start from action.data to catch local effects (like Draw after Discard)
+        return this.resumeResolution(state, sourceId as string, action.data?.stackObj, action.data, log, engine);
     }
 
     // 3. Handle Scry/Surveil Reordering early as payload is not an index
@@ -170,10 +170,10 @@ private static handleScrySurveil(
     const parentContext = action.data.parentContext;
     state.pendingAction = undefined;
 
-    // 6. Resume resolution if needed
+    // 6. Resume resolution if needed - CRITICAL: must start from action.data to catch local effects
     if (stackObj) {
         log(`[RESOLVING] Resuming resolution after ${action.type}...`);
-        return this.resumeResolution(state, action.sourceId, stackObj, parentContext, log, engine);
+        return this.resumeResolution(state, action.sourceId, stackObj, action.data, log, engine);
     }
 
     engine.resetPriorityToActivePlayer();

@@ -116,13 +116,19 @@ export const GameCard = memo(({
   const KeywordIcon = ({ keyword }: { keyword: string }) => {
     const icons: Record<string, string> = {
       'flying': '🕊️', 'reach': '🏹', 'trample': '🐘', 'deathtouch': '☠️', 
-      'lifelink': '❤️', 'vigilance': '👁️', 'menace': '🎭', 'haste': '🔥'
+      'lifelink': '❤️', 'vigilance': '👁️', 'menace': '🎭', 'haste': '🔥',
+      'hexproof': '💠', 'prowess': '💪', 'defender': '🧱', 'first strike': '⚔️',
+      'double strike': '⚔️⚔️', 'indestructible': '💎'
     };
     const key = keyword.toLowerCase();
-    if (!icons[key]) return null;
+    
+    let icon = icons[key];
+    if (!icon && key.includes('protection')) icon = '🛡️';
+    
+    if (!icon) return null;
     return (
         <div title={keyword} className="w-4 h-4 bg-black/60 backdrop-blur-sm rounded flex items-center justify-center text-[8px] shadow-sm">
-            {icons[key]}
+            {icon}
         </div>
     );
   };

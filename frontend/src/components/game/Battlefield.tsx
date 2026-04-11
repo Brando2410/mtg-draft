@@ -7,9 +7,7 @@ import { GameCard } from './GameCard';
 import { CombatArrows } from './CombatArrows';
 import { StackView } from './StackView';
 import { ChoiceModal } from './modals/ChoiceModal';
-import { OrderingModal } from './modals/OrderingModal';
 import { ZoneInspector } from './modals/ZoneInspector';
-import { ScrySurveilModal } from './modals/ScrySurveilModal';
 import { XSelectionModal } from './modals/XSelectionModal';
 
 const CardStack = memo(({ 
@@ -266,12 +264,6 @@ export const Battlefield = ({
     <div className="flex-1 relative flex flex-col bg-transparent overflow-hidden">
       
       {/* MODALS */}
-      <ScrySurveilModal pendingAction={pendingAction} me={me} onResolve={onChoiceResolve} />
-      <OrderingModal pendingAction={pendingAction} me={me} battlefield={battlefield} orderingList={orderingList} onOrderClick={(id) => {
-          const newList = [...orderingList, id];
-          setOrderingList(newList);
-          if (newList.length === (pendingAction?.data?.ids?.length || 0)) onTapCard?.(`ORDER_${newList.join(',')}`);
-      }} />
       <ChoiceModal pendingAction={pendingAction} me={me} onTapCard={onTapCard} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} />
       <XSelectionModal pendingAction={pendingAction} me={me} onResolve={onChoiceResolve} />
       <ZoneInspector 

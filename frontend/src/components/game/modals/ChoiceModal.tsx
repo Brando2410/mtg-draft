@@ -16,20 +16,31 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [minimized, setMinimized] = useState(false);
   const [orderedTriggers, setOrderedTriggers] = useState<any[]>([]);
+  const [scryState, setScryState] = useState<{ top: any[], bottom: any[], graveyard: any[] }>({ top: [], bottom: [], graveyard: [] });
 
   const isOrderTriggers = pendingAction?.type === ActionType.OrderTriggers;
+  const isScrySurveil = pendingAction?.type === ActionType.Scry || pendingAction?.type === ActionType.Surveil;
   const isChoiceAction = [
     ActionType.Choice,
     ActionType.ModalSelection,
     ActionType.ResolutionChoice,
-    ActionType.OptionalAction
+    ActionType.OptionalAction,
+    ActionType.Scry,
+    ActionType.Surveil
   ].includes(pendingAction?.type) || isOrderTriggers;
 
   useEffect(() => {
     if (isOrderTriggers && pendingAction.data?.triggers) {
         setOrderedTriggers(pendingAction.data.triggers);
     }
-  }, [pendingAction?.data?.triggers, isOrderTriggers]);
+    if (isScrySurveil && pendingAction.data?.lookingCards) {
+        setScryState({
+            top: [...pendingAction.data.lookingCards],
+            bottom: [],
+            graveyard: []
+        });
+    }
+  }, [pendingAction?.data?.triggers, pendingAction?.data?.lookingCards, isOrderTriggers, isScrySurveil]);
 
   if (!isChoiceAction) return null;
 
@@ -86,6 +97,23 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
     onTapCard?.(`CHOICE_${orderedTriggers.map(t => t.id).join('|')}`);
   };
 
+  const moveCard = (card: any, from: 'top' | 'bottom' | 'graveyard', to: 'top' | 'bottom' | 'graveyard') => {
+      setScryState(prev => {
+          const newFrom = prev[from].filter((c: any) => c.id !== card.id);
+          const newTo = [...prev[to], card];
+          return { ...prev, [from]: newFrom, [to]: newTo };
+      });
+  };
+  
+  const confirmScryResult = () => {
+      const payload = JSON.stringify({
+          top: scryState.top.map((c: any) => c.id),
+          bottom: scryState.bottom.map((c: any) => c.id),
+          graveyard: scryState.graveyard.map((c: any) => c.id)
+      });
+      onTapCard?.(`CHOICE_${payload}`);
+  };
+
   return (
     <>
       <AnimatePresence>
@@ -94,46 +122,181 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto custom-scrollbar"
+            className="fixed inset-0 z-[1000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-hidden"
           >
             <motion.div 
-              initial={{ scale: 0.9, y: 20 }} 
+              initial={{ scale: 0.9, y: 10 }} 
               animate={{ scale: 1, y: 0 }}
-              className="bg-[#0b0f1a] border border-white/10 p-10 rounded-[3.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.9)] max-w-7xl w-full flex flex-col items-center gap-8 text-center relative overflow-hidden"
+              className="bg-[#0b0f1a]/80 border border-white/10 p-5 rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.8)] max-w-5xl w-full flex flex-col items-center gap-4 text-center relative overflow-hidden backdrop-blur-md"
             >
               {/* Background Glow */}
-              <div className="absolute top-0 left-1/4 w-1/2 h-1 bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
-              <div className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-500/5 blur-[120px] rounded-full" />
-              <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-600/5 blur-[120px] rounded-full" />
-
+              <div className="absolute top-0 left-1/4 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+              
               {/* MINIMIZE BUTTON */}
               <button 
                 onClick={() => setMinimized(true)}
-                className="absolute top-4 left-1/2 -translate-x-1/2 p-2 px-6 bg-white/5 hover:bg-white/10 rounded-full text-slate-500 hover:text-white transition-all flex items-center gap-3 text-[10px] font-black z-30 tracking-[0.3em] border border-white/5"
+                className="absolute top-3 right-4 p-2 px-4 bg-white/5 hover:bg-white/10 rounded-full text-slate-500 hover:text-white transition-all flex items-center gap-2 text-[9px] font-black z-30 tracking-widest border border-white/5"
               >
-                <EyeOff className="w-3.5 h-3.5" />
-                SHOW BATTLEFIELD
+                <EyeOff className="w-3 h-3" />
+                MINIMIZE
               </button>
 
-              <div className="w-20 h-20 bg-indigo-600/20 rounded-3xl flex items-center justify-center mb-2 shadow-2xl border border-indigo-500/30">
-                <span className="text-3xl font-black italic text-indigo-400 drop-shadow-lg leading-none">?</span>
-              </div>
-              
-              <div className="flex flex-col gap-2">
-                <h3 className="text-4xl font-black italic uppercase tracking-tighter text-white drop-shadow-sm">
-                  {isOrderTriggers ? "Choose Order" : (pendingAction.data?.label || (hasCards ? "Choose a Card" : "Choose an Option"))}
+              {/* Header Title */}
+              <div className="flex flex-col gap-1 mt-4">
+                <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                  {isScrySurveil ? (pendingAction.type === ActionType.Surveil ? "Surveil" : "Scry") : 
+                   isOrderTriggers ? "Order Triggers" : 
+                   (pendingAction.data?.label || (hasCards ? "Choose a Card" : "Choose an Option"))}
                 </h3>
-                {isOrderTriggers ? (
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Drag items to define resolution order</p>
-                ) : maxChoices > 1 && (
-                    <span className="text-sm font-bold text-indigo-400 uppercase tracking-widest">
-                        Select {minChoices === maxChoices ? minChoices : `${minChoices}-${maxChoices}`} options ({selectedIndices.length} selected)
-                    </span>
-                )}
               </div>
               
-              <div className={`w-full custom-scrollbar overflow-y-auto max-h-[55vh] px-4 py-8 ${hasCards || isOrderTriggers ? 'bg-black/30 rounded-[3rem] border border-white/5 shadow-inner' : ''}`}>
+              <div className={`w-full custom-scrollbar overflow-x-auto max-h-[60vh] px-4 py-4 ${hasCards || isOrderTriggers ? 'bg-black/20 rounded-[1.5rem] border border-white/5 shadow-inner' : ''}`}>
                 
+                {/* SCRY / SURVEIL VIEW - ARENA STYLE */}
+                {isScrySurveil && (
+                    <div className="flex flex-col items-center w-full gap-6 py-2">
+                        <div className="flex flex-row items-start justify-center gap-6 w-full relative">
+                            
+                            {/* GRAVEYARD ZONE (Left) */}
+                            {pendingAction.type === ActionType.Surveil && (
+                                <div className="flex flex-col items-center gap-3 flex-1 min-w-[200px]" data-zone="graveyard">
+                                    <h4 className="text-sm font-black italic uppercase tracking-widest text-red-500/80">Graveyard</h4>
+                                    <div className="w-full aspect-[4/3] rounded-2xl border border-white/10 bg-white/5 flex flex-wrap justify-center items-center gap-1 p-2 relative group/zone overflow-hidden">
+                                        {scryState.graveyard.map((card: any) => (
+                                            <motion.div 
+                                                layoutId={card.id}
+                                                key={card.id} 
+                                                className="scale-[0.7] -m-10 relative z-10 cursor-grab active:cursor-grabbing"
+                                                drag
+                                                dragSnapToOrigin
+                                                whileDrag={{ pointerEvents: 'none', zIndex: 100, scale: 0.6 }}
+                                                onDragEnd={(_, info) => {
+                                                    const el = document.elementFromPoint(info.point.x, info.point.y);
+                                                    const zone = el?.closest('[data-zone]');
+                                                    const targetZone = zone?.getAttribute('data-zone');
+                                                    if (targetZone && targetZone !== 'graveyard') {
+                                                        moveCard(card, 'graveyard', targetZone as any);
+                                                    }
+                                                }}
+                                            >
+                                                <GameCard 
+                                                    obj={card} 
+                                                    variant="battlefield" 
+                                                    onHoverStart={() => onHoverStart?.(card)}
+                                                    onHoverEnd={onHoverEnd}
+                                                />
+                                                <button 
+                                                    onClick={() => moveCard(card, 'graveyard', 'top')}
+                                                    className="absolute -top-10 left-1/2 -translate-x-1/2 bg-cyan-600 hover:bg-cyan-500 text-[8px] font-black px-3 py-1.5 rounded-lg border border-white/20 shadow-2xl opacity-0 group-hover/zone:opacity-100 transition-all uppercase tracking-widest z-50 whitespace-nowrap"
+                                                >
+                                                    TO TOP
+                                                </button>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TOP ZONE (Center) */}
+                            <div className="flex flex-col items-center gap-3 flex-1 min-w-[200px]" data-zone="top">
+                                <h4 className="text-sm font-black italic uppercase tracking-widest text-cyan-400">Top</h4>
+                                <div className="w-full aspect-[4/3] rounded-2xl border border-white/10 bg-white/5 shadow-xl flex flex-col items-center justify-center p-2 relative overflow-hidden">
+                                    <Reorder.Group 
+                                        axis="x" 
+                                        values={scryState.top} 
+                                        onReorder={(vals) => setScryState(p => ({ ...p, top: vals }))}
+                                        className="flex flex-row justify-center items-center w-full"
+                                    >
+                                        {scryState.top.map((card: any) => (
+                                            <Reorder.Item 
+                                                key={card.id} 
+                                                value={card}
+                                                className="relative scale-[0.7] -mx-10 cursor-grab active:cursor-grabbing transform"
+                                                drag="y" // Allow y dragging to pull out of the x-reorder group
+                                                whileDrag={{ pointerEvents: 'none', zIndex: 100, scale: 0.6 }}
+                                                onDragEnd={(_, info) => {
+                                                    // Only move if dragged significantly up or down
+                                                    if (Math.abs(info.offset.y) > 50) {
+                                                        const el = document.elementFromPoint(info.point.x, info.point.y);
+                                                        const zone = el?.closest('[data-zone]');
+                                                        const targetZone = zone?.getAttribute('data-zone');
+                                                        if (targetZone && targetZone !== 'top') {
+                                                            moveCard(card, 'top', targetZone as any);
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                <div className="relative group/card shadow-2xl">
+                                                    <GameCard 
+                                                        obj={card} 
+                                                        onHoverStart={() => onHoverStart?.(card)}
+                                                        onHoverEnd={onHoverEnd}
+                                                    />
+                                                    <div className="absolute inset-x-0 -bottom-12 flex justify-center gap-1 opacity-0 group-hover/card:opacity-100 transition-all z-50">
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); moveCard(card, 'top', 'bottom'); }}
+                                                            className="bg-amber-600 hover:bg-amber-500 text-[8px] font-black px-3 py-1.5 rounded-lg border border-white/20 shadow-2xl uppercase tracking-widest"
+                                                        >
+                                                            BOTTOM
+                                                        </button>
+                                                        {pendingAction.type === ActionType.Surveil && (
+                                                            <button 
+                                                                onClick={(e) => { e.stopPropagation(); moveCard(card, 'top', 'graveyard'); }}
+                                                                className="bg-red-600 hover:bg-red-500 text-[8px] font-black px-3 py-1.5 rounded-lg border border-white/20 shadow-2xl uppercase tracking-widest"
+                                                            >
+                                                                GY
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </Reorder.Item>
+                                        ))}
+                                    </Reorder.Group>
+                                </div>
+                            </div>
+
+                            {/* BOTTOM ZONE (Right) */}
+                                <div className="flex flex-col items-center gap-3 flex-1 min-w-[200px]" data-zone="bottom">
+                                    <h4 className="text-sm font-black italic uppercase tracking-widest text-amber-500/80">Bottom</h4>
+                                    <div className="w-full aspect-[4/3] rounded-2xl border border-white/10 bg-white/5 shadow-xl flex flex-wrap justify-center items-center gap-1 p-2 group/zone overflow-hidden">
+                                        {scryState.bottom.map((card: any) => (
+                                        <motion.div 
+                                            layoutId={card.id}
+                                            key={card.id} 
+                                            className="scale-[0.7] -m-10 relative z-10 cursor-grab active:cursor-grabbing"
+                                            drag
+                                            dragSnapToOrigin
+                                            whileDrag={{ pointerEvents: 'none', zIndex: 100, scale: 0.6 }}
+                                            onDragEnd={(_, info) => {
+                                                const el = document.elementFromPoint(info.point.x, info.point.y);
+                                                const zone = el?.closest('[data-zone]');
+                                                const targetZone = zone?.getAttribute('data-zone');
+                                                if (targetZone && targetZone !== 'bottom') {
+                                                    moveCard(card, 'bottom', targetZone as any);
+                                                }
+                                            }}
+                                        >
+                                            <GameCard 
+                                                obj={card} 
+                                                variant="battlefield" 
+                                                onHoverStart={() => onHoverStart?.(card)}
+                                                onHoverEnd={onHoverEnd}
+                                            />
+                                            <button 
+                                                onClick={() => moveCard(card, 'bottom', 'top')}
+                                                className="absolute -top-10 left-1/2 -translate-x-1/2 bg-cyan-600 hover:bg-cyan-500 text-[8px] font-black px-3 py-1.5 rounded-lg border border-white/20 shadow-2xl opacity-0 group-hover/zone:opacity-100 transition-all uppercase tracking-widest z-50 whitespace-nowrap"
+                                            >
+                                                TO TOP
+                                            </button>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                )}
+
                 {/* TRIGGER ORDERING VIEW */}
                 {isOrderTriggers && (
                     <div className="flex flex-col items-center w-full px-12">
@@ -164,7 +327,7 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
 
                                     <div className="relative">
                                         <div className="absolute inset-0 bg-indigo-500/10 blur-2xl opacity-0 group-hover/trigger:opacity-100 transition-all" />
-                                        <div className="relative transform transition-transform group-hover/trigger:scale-[1.03]">
+                                        <div className="relative transform transition-transform group-hover/trigger:scale-[1.03] scale-75 -my-10">
                                             <GameCard 
                                                 obj={{
                                                    id: trigger.id,
@@ -203,7 +366,7 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                 )}
 
                 {/* CARD GRID */}
-                {!isOrderTriggers && cardChoices.length > 0 && (
+                {!isOrderTriggers && !isScrySurveil && cardChoices.length > 0 && (
                     <div className="flex flex-wrap justify-center gap-6 p-4">
                         {cardChoices.map((choice: any) => {
                             const originalIdx = choices.indexOf(choice);
@@ -231,7 +394,7 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                 )}
 
                 {/* BUTTON LIST */}
-                {!isOrderTriggers && buttonChoices.length > 0 && (
+                {!isOrderTriggers && !isScrySurveil && buttonChoices.length > 0 && (
                     <div className="flex flex-col gap-4 w-full max-w-2xl mx-auto">
                         {buttonChoices.map((choice: any) => {
                             const originalIdx = choices.indexOf(choice);
@@ -254,12 +417,12 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                 )}
               </div>
 
-              <div className="flex flex-row items-center justify-center gap-6 w-full max-w-2xl mt-4 relative z-20">
+              <div className="flex flex-row items-center justify-center gap-4 w-full max-w-xl mt-2 relative z-20">
                 {/* UNDO/CANCEL BUTTON */}
-                {!pendingAction.data?.hideUndo && !isOrderTriggers && (
+                {!pendingAction.data?.hideUndo && !isOrderTriggers && !isScrySurveil && (
                   <button 
                     onClick={() => onTapCard?.(`CHOICE_undo`)}
-                    className="flex-1 max-w-[180px] p-4 bg-red-500/5 hover:bg-red-500/10 rounded-2xl border border-red-500/10 text-[11px] font-black uppercase italic tracking-[0.2em] transition-all text-red-500/60 hover:text-red-500"
+                    className="flex-1 max-w-[120px] p-2 bg-red-500/5 hover:bg-red-500/10 rounded-xl border border-red-500/10 text-[9px] font-black uppercase italic tracking-widest transition-all text-red-500/60 hover:text-red-500"
                   >
                     CANCEL
                   </button>
@@ -267,21 +430,25 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
 
                 {/* CONFIRM BUTTON */}
                 <button 
-                  disabled={!isOrderTriggers && selectedIndices.length < minChoices}
-                  onClick={() => isOrderTriggers ? confirmTriggerOrder() : confirmSelection(selectedIndices)}
-                  className={`flex-1 max-w-[280px] p-5 rounded-[1.25rem] border-none text-base font-black uppercase italic tracking-[0.2em] transition-all shadow-[0_15px_30px_rgba(0,0,0,0.3)]
-                    ${(isOrderTriggers || selectedIndices.length >= minChoices)
-                      ? 'bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 scale-105 shadow-[0_0_30px_rgba(250,204,21,0.4)]' 
+                  disabled={!isOrderTriggers && !isScrySurveil && selectedIndices.length < minChoices}
+                  onClick={() => {
+                      if (isOrderTriggers) confirmTriggerOrder();
+                      else if (isScrySurveil) confirmScryResult();
+                      else confirmSelection(selectedIndices);
+                  }}
+                  className={`flex-1 max-w-[200px] p-3 rounded-xl border-none text-sm font-black uppercase italic tracking-widest transition-all shadow-xl
+                    ${(isOrderTriggers || isScrySurveil || selectedIndices.length >= minChoices)
+                      ? 'bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 scale-105 shadow-[0_0_20px_rgba(250,204,21,0.3)]' 
                       : 'bg-slate-800 text-slate-600 cursor-not-allowed opacity-50'}`}
                 >
-                  {isOrderTriggers ? "Stack Triggers" : `Confirm ${selectedIndices.length > 1 ? `(${selectedIndices.length})` : ''}`}
+                  {isOrderTriggers ? "Stack" : isScrySurveil ? "Done" : `Confirm ${selectedIndices.length > 0 ? `(${selectedIndices.length})` : ''}`}
                 </button>
 
                 {/* NONE/SKIP BUTTON */}
                 {noneChoice && !isOrderTriggers && (
                   <button 
                     onClick={() => onTapCard?.(`CHOICE_${noneChoiceIdx}`)}
-                    className="flex-1 max-w-[180px] p-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 text-[11px] font-black uppercase italic tracking-[0.2em] transition-all text-white/70 hover:text-white"
+                    className="flex-1 max-w-[120px] p-2 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 text-[9px] font-black uppercase italic tracking-widest transition-all text-white/70 hover:text-white"
                   >
                     {noneChoice.label}
                   </button>

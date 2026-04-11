@@ -293,14 +293,14 @@ export const ActionButton = memo(({
                    </motion.button>
                 )}
 
-                {/* SHARED SUB LABEL (Arena Style) */}
-                {subLabel && (
-                    <div className="flex justify-center w-full mt-1">
+                {/* SHARED SUB LABEL (Arena Style) - Fixed height to prevent layout jumping */}
+                <div className="flex justify-center w-full h-[14px] mt-1 items-center">
+                    {subLabel && (
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 italic oblique leading-none text-center">
                             {subLabel}
                         </span>
-                    </div>
-                )}
+                    )}
+                </div>
             </motion.div>
         </AnimatePresence>
     </div>

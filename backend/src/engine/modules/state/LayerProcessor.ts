@@ -136,7 +136,7 @@ export class LayerProcessor {
         const player = state.players[obj.controllerId];
         if (player) {
           const count = player.graveyard.filter(c => c.definition.types.some(t => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery')).length;
-          update(count, count);
+          update(count, undefined);
         }
       }
 

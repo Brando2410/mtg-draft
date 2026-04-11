@@ -35,7 +35,12 @@ export class GameSetupProcessor {
 
   public static createGameObject(ownerId: PlayerId, cardRef: Card, index: number): GameObject {
     const logicData = m21[cardRef.name];
-    const typeLine = cardRef.typeLine || cardRef.type_line || logicData?.type_line || '';
+    let typeLine = cardRef.typeLine || cardRef.type_line || logicData?.type_line || '';
+    
+    // Normalize legacy "Enchant Creature" to "Enchantment — Aura"
+    if (typeLine.toLowerCase().trim() === 'enchant creature') {
+        typeLine = 'Enchantment — Aura';
+    }
     const colorMap: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
     const rawColors = cardRef.colors || cardRef.card_colors || (cardRef as any).color || logicData?.colors || [];
     const normalizedColors = rawColors.map((c: string) => colorMap[c.toUpperCase()] || c.toLowerCase());

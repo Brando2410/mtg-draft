@@ -311,6 +311,7 @@ export class TargetingProcessor {
             }
             if (lr === 'youcontrol' && controllerId && targetObj.controllerId !== controllerId) return false;
             if (lr === 'legendary' && !objTypes.includes('legendary')) return false;
+            if (lr === 'basic' && !objTypes.includes('basic')) return false;
             if (lr === 'self' && targetObj.id !== sourceId) return false;
             if (lr === 'tapped' && !targetObj.isTapped) return false;
             if (lr === 'untapped' && targetObj.isTapped) return false;
@@ -354,7 +355,7 @@ export class TargetingProcessor {
             const isKnownFilter = [
                 'nonland', 'noncreature', 'nonartifact', 'nonenchantment', 'nonplaneswalker',
                 'graveyard', 'other', 'another', 'notcontrolled', 'opponentcontrol', 'youcontrol', 'self', 'legendary',
-                'tapped', 'untapped', 'yours', 'opponents', 'attackingorblocking',
+                'tapped', 'untapped', 'yours', 'opponents', 'attackingorblocking', 'basic',
                 'instantorsorcerycastthisturn', 'player', 'anytarget', 'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 'instant', 'sorcery'
             ].includes(lr) || lr.startsWith('cmc') || lr.startsWith('mv') || lr.startsWith('power') || lr.startsWith('toughness') || lr.startsWith('hascounter');
 
