@@ -20,14 +20,16 @@ export class GameEngine {
   private resolver: StackResolver;
   private decks: Record<string, Card[]>;
   private names: Record<string, string>;
+  private avatars: Record<string, string>;
 
   /**
    * CR 103: Starting the Game
    */
-  constructor(players: PlayerId[], decks: Record<string, Card[]> = {}, names: Record<string, string> = {}) {
+  constructor(players: PlayerId[], decks: Record<string, Card[]> = {}, names: Record<string, string> = {}, avatars: Record<string, string> = {}) {
     this.playerOrder = players;
     this.decks = decks;
     this.names = names;
+    this.avatars = avatars;
 
     // CR 100: Create the initial monolithic GameState
     this.state = {
@@ -69,7 +71,7 @@ export class GameEngine {
       }
     };
 
-    GameSetupProcessor.initializePlayers(this.state, players, names, decks);
+    GameSetupProcessor.initializePlayers(this.state, players, names, decks, avatars);
     this.resolver = new StackResolver(this.state);
   }
 
@@ -145,6 +147,22 @@ export class GameEngine {
     );
   }
 
+  public autoTapLand(playerId: PlayerId, cardId: string): boolean {
+    const obj = this.state.battlefield.find(o => o.id === cardId);
+    if (!obj || obj.controllerId !== playerId || obj.isTapped) return false;
+    
+    // We use a simplified check for the first mana ability to ensure synchronous tapping
+    const { m21 } = require('./data/m21');
+    const logic = m21[obj.definition.name];
+    if (!logic || !logic.abilities) return false;
+
+    const manaAbilityIdx = logic.abilities.findIndex((a: any) => a.isManaAbility);
+    if (manaAbilityIdx === -1) return false;
+
+    // Use activateAbility with bypassTargeting=true for silent autotap
+    return this.activateAbility(playerId, cardId, manaAbilityIdx, [], true);
+  }
+
   public tapForMana(playerId: PlayerId, cardId: string): boolean {
     return PlayerActionProcessor.tapForMana(
       this.state,
@@ -170,6 +188,11 @@ export class GameEngine {
    */
   public confirmAttackers(playerId: string) {
     CombatProcessor.confirmAttackers(this.state, playerId as PlayerId, this.getCombatCallbacks());
+    
+    // Arena style: If no attackers were declared, jump directly to next phase (Main 2)
+    if (!this.state.combat?.attackers || this.state.combat.attackers.length === 0) {
+      this.advanceStep();
+    }
   }
 
   /**
@@ -184,6 +207,14 @@ export class GameEngine {
    */
   public confirmBlockers(playerId: string) {
     CombatProcessor.confirmBlockers(this.state, playerId as PlayerId, this.getCombatCallbacks());
+  }
+
+  public clearAttackers(playerId: string) {
+    CombatProcessor.clearAttackers(this.state, playerId as PlayerId, this.getCombatCallbacks());
+  }
+
+  public clearBlockers(playerId: string) {
+    CombatProcessor.clearBlockers(this.state, playerId as PlayerId, this.getCombatCallbacks());
   }
 
   /**
@@ -211,7 +242,7 @@ export class GameEngine {
       declaredTargets,
       (m) => this.log(m),
       {
-        tapForMana: (p, c) => this.tapForMana(p, c),
+        tapForMana: (p, c) => this.autoTapLand(p, c),
         passPriority: (p) => this.passPriority(p),
         checkAutoPass: (p) => this.checkAutoPass(p),
         checkStateBasedActions: () => this.checkStateBasedActions()
@@ -233,6 +264,7 @@ export class GameEngine {
       declaredTargets,
       (m) => this.log(m),
       {
+        tapForMana: (p, c) => this.autoTapLand(p, c),
         passPriority: (p) => this.passPriority(p),
         checkAutoPass: (p) => this.checkAutoPass(p)
       },

@@ -38,6 +38,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       const playerIds = room.players.map(p => p.playerId as PlayerId);
       const decksByPlayer: Record<string, any[]> = {};
       const playerNames: Record<string, string> = {};
+      const playerAvatars: Record<string, string> = {};
 
       for (const p of room.players) {
         const pDeck = (p as any).deck || finalDeck;
@@ -50,9 +51,10 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
         }
         decksByPlayer[p.playerId] = cards;
         playerNames[p.playerId] = p.name;
+        playerAvatars[p.playerId] = (p as any).avatar || 'ajani.png';
       }
 
-      const engine = new GameEngine(playerIds, decksByPlayer, playerNames);
+      const engine = new GameEngine(playerIds, decksByPlayer, playerNames, playerAvatars);
       engine.startGame();
       room.status = 'drafting';
       room.gameState = engine.getState();
@@ -217,6 +219,20 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     }
   });
 
+  socket.on('toggle_stop', async ({ roomId, playerId, step }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+
+    const player = room.gameState.players[playerId];
+    if (player) {
+      if (!player.stops) player.stops = {};
+      player.stops[step] = !player.stops[step];
+      io.to(roomId).emit('draft_update', room);
+      console.log(`[Socket] Stop toggled for ${player.name}: ${step} = ${player.stops[step]}`);
+      await PersistenceService.saveRooms(rooms);
+    }
+  });
+
   socket.on('discard_card', async ({ roomId, playerId, cardId }) => {
     const room = rooms.get(roomId);
     if (!room || !room.gameState) return;
@@ -305,6 +321,58 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     }
   });
 
+  socket.on('clear_attackers', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+    const engine = new GameEngine(room.players.map(p => p.playerId as PlayerId));
+    engine.setState(room.gameState);
+    try {
+      engine.clearAttackers(playerId);
+      room.gameState = engine.getState();
+      io.to(roomId).emit('draft_update', room);
+      await PersistenceService.saveRooms(rooms);
+    } catch (err) { console.warn(err); }
+  });
+
+  socket.on('clear_blockers', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+    const engine = new GameEngine(room.players.map(p => p.playerId as PlayerId));
+    engine.setState(room.gameState);
+    try {
+      engine.clearBlockers(playerId);
+      room.gameState = engine.getState();
+      io.to(roomId).emit('draft_update', room);
+      await PersistenceService.saveRooms(rooms);
+    } catch (err) { console.warn(err); }
+  });
+
+  socket.on('clear_attackers', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+    const engine = new GameEngine(room.players.map(p => p.playerId as PlayerId));
+    engine.setState(room.gameState);
+    try {
+      engine.clearAttackers(playerId);
+      room.gameState = engine.getState();
+      io.to(roomId).emit('draft_update', room);
+      await PersistenceService.saveRooms(rooms);
+    } catch (err) { console.warn(err); }
+  });
+
+  socket.on('clear_blockers', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+    const engine = new GameEngine(room.players.map(p => p.playerId as PlayerId));
+    engine.setState(room.gameState);
+    try {
+      engine.clearBlockers(playerId);
+      room.gameState = engine.getState();
+      io.to(roomId).emit('draft_update', room);
+      await PersistenceService.saveRooms(rooms);
+    } catch (err) { console.warn(err); }
+  });
+
   socket.on('back_to_lobby', async ({ roomId }) => {
     const room = rooms.get(roomId);
     if (!room) return;
@@ -334,6 +402,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     const playerIds = room.players.map(p => p.playerId as PlayerId);
     const decksByPlayer: Record<string, any[]> = {};
     const playerNames: Record<string, string> = {};
+    const playerAvatars: Record<string, string> = {};
 
     const defaultDeck = await PersistenceService.getDeck('m21_test_deck.json');
 
@@ -347,9 +416,10 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       }
       decksByPlayer[p.playerId] = cards;
       playerNames[p.playerId] = p.name;
+      playerAvatars[p.playerId] = (p as any).avatar || 'ajani.png';
     }
 
-    const engine = new GameEngine(playerIds, decksByPlayer, playerNames);
+    const engine = new GameEngine(playerIds, decksByPlayer, playerNames, playerAvatars);
     engine.startGame();
 
     room.gameState = engine.getState();

@@ -231,19 +231,31 @@ export class ManaProcessor {
     if (!player) return;
     const requirements = this.parseManaCost(costStr);
     
-    const requirementsArray: (keyof typeof player.manaPool)[] = [];
+    // 1. Create a local tracking pool
+    const localPool = { ...player.manaPool };
+
+    // 2. Handle colored requirements (greedy approach)
+    const coloredReqs: string[] = [];
     Object.entries(requirements.colored).forEach(([c, amt]) => {
-       for(let i=0; i<amt; i++) requirementsArray.push(c as any);
+       for(let i=0; i<amt; i++) coloredReqs.push(c);
     });
-    for(let i=0; i<requirements.generic; i++) requirementsArray.push('C');
 
-    for (const req of requirementsArray) {
-       if (req === 'C') continue; 
-
-       const poolVal = player.manaPool[req as keyof typeof player.manaPool] || 0;
+    for (const req of coloredReqs) {
+       // Satisfy from pool if possible
+       if (req.includes('/')) {
+           const options = req.split('/');
+           const found = options.find(opt => (localPool as any)[opt] > 0);
+           if (found) {
+               (localPool as any)[found]--;
+               continue; 
+           }
+       } else if ((localPool as any)[req] > 0) {
+           (localPool as any)[req]--;
+           continue; 
+       }
        
-       if (poolVal > 0) continue; 
-       
+       // Otherwise, tap a land that provides this color
+       const options = req.includes('/') ? req.split('/') : [req];
        const landToTap = state.battlefield.find((obj: any) => {
            if (obj.controllerId !== playerId || obj.isTapped) return false;
            
@@ -255,23 +267,36 @@ export class ManaProcessor {
            return manaAbilities.some((a: any) => {
                const effect = a.effects.find((e: any) => e.type === 'AddMana');
                if (!effect) return false;
-               const manaStr = effect.value || '{C}';
-               return manaStr.includes(req as string);
+               const val = effect.value || '{C}';
+               return options.some(opt => val.includes(opt));
            });
         });
 
-        if (landToTap) tapForManaCallback(playerId, landToTap.id);
+        if (landToTap) {
+            tapForManaCallback(playerId, landToTap.id);
+            // Optimization: We don't need to manually update localPool here if the callback 
+            // synchronously updates player.manaPool, but for safety in this loop's logic 
+            // (in case we tap a dual land), we just assume it satisfied the requirement.
+        }
     }
 
+    // 3. Handle generic mana
     let genericNeeded = requirements.generic;
-    const floatPoolVal = Object.values(player.manaPool).reduce((a, b: any) => a + b, 0);
+    
+    // Satisfy from remaining pool first
+    const poolTotal = Object.values(localPool).reduce((a: number, b: any) => a + b, 0);
+    const genericFromPool = Math.min(genericNeeded, poolTotal);
+    genericNeeded -= genericFromPool;
 
+    // Tap for the rest
     for (let i = 0; i < genericNeeded; i++) {
         const landToTap = state.battlefield.find((obj: any) => {
            const types = (obj.definition.types || obj.definition.typeLine || obj.definition.type_line || "").toString().toLowerCase();
            return obj.controllerId === playerId && !obj.isTapped && types.includes('land');
         });
-        if (landToTap) tapForManaCallback(playerId, landToTap.id);
+        if (landToTap) {
+            tapForManaCallback(playerId, landToTap.id);
+        }
     }
   }
 }

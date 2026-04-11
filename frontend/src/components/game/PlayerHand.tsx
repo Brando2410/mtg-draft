@@ -1,110 +1,111 @@
 import { type GameObject } from '@shared/engine_types';
 import { motion, AnimatePresence } from 'framer-motion';
+import { GameCard } from './GameCard';
 
 interface PlayerHandProps {
   hand: GameObject[];
   virtualHand?: GameObject[];
   onPlayCard?: (cardId: string) => void;
-  pendingDiscardCount?: number;
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: () => void;
 }
 
-export const PlayerHand = ({ hand, virtualHand = [], onPlayCard, pendingDiscardCount = 0, onHoverStart, onHoverEnd }: PlayerHandProps) => {
-  const isDiscardMode = pendingDiscardCount > 0;
+/**
+ * PlayerHand: Precise Vision Polish.
+ * - Removed blocking tray background.
+ * - Higher baseline to keep names above screen edge.
+ * - Dynamic z-index for natural overlapping.
+ */
+export const PlayerHand = ({ 
+  hand, 
+  virtualHand = [], 
+  onPlayCard, 
+  onHoverStart, 
+  onHoverEnd 
+}: PlayerHandProps) => {
   
-  // Combine real hand and virtual hand for rendering, but with markers
   const allCards = [
     ...hand.map(c => ({ ...c, isVirtual: false })),
     ...virtualHand.map(c => ({ ...c, isVirtual: true }))
   ];
 
+  const totalCards = allCards.length;
+  // Dynamic spread: Ensure names are always visible by limiting overlap
+  const maxHandWidth = 800;
+  const spacing = Math.min(80, maxHandWidth / Math.max(totalCards, 1));
+
+  const getCardRotation = (index: number) => {
+    if (totalCards <= 1) return 0;
+    const middle = (totalCards - 1) / 2;
+    // Minimal rotation to keep text mostly horizontal for legibility
+    return (index - middle) * (18 / Math.max(totalCards - 1, 1)); 
+  };
+
+  const getCardY = (index: number) => {
+    const middle = (totalCards - 1) / 2;
+    const offset = Math.abs(index - middle);
+    // Positioned so that the name bar (top 30px) is fully above the screen edge.
+    // 176 (height) - 100 (offset) = 76px visible. This provides ample space for name + art peek.
+    return 100 + (offset * 5); // Linear arch for subtler curve
+  };
+
+  const getCardX = (index: number) => {
+    const middle = (totalCards - 1) / 2;
+    return (index - middle) * spacing;
+  };
+
   return (
-    <div className="h-56 bg-slate-900/95 border-t border-white/10 backdrop-blur-2xl flex items-center justify-center z-20 overflow-visible px-20">
-      {allCards.length === 0 ? (
-        <div className="text-slate-600 font-black uppercase text-[10px] tracking-widest italic animate-pulse">
-          La tua mano è vuota
-        </div>
-      ) : (
-        <div className="flex items-center justify-center h-full w-full gap-2 relative">
-          <AnimatePresence>
-            {allCards.map((card, index) => (
+    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full h-80 flex items-end justify-center z-[600] pointer-events-none">
+      <div className="relative w-full h-full flex items-end justify-center pointer-events-none">
+        <AnimatePresence>
+          {allCards.map((card, index) => {
+            const rotation = getCardRotation(index);
+            const xBase = getCardX(index);
+            const yBase = getCardY(index);
+            
+            return (
               <motion.div
                 key={card.id}
-                layoutId={card.id}
-                initial={{ y: 100, opacity: 0, rotate: index % 2 === 0 ? 5 : -5 }}
+                initial={{ y: 300, opacity: 0, rotate: rotation }}
                 animate={{ 
-                  y: 0, 
+                  y: yBase, 
+                  x: xBase,
                   opacity: 1, 
-                  rotate: 0,
-                  transition: { delay: index * 0.05 }
+                  rotate: rotation,
+                  zIndex: index, // Left-to-right overlapping
+                  transition: { type: 'spring', stiffness: 200, damping: 25 }
                 }}
-                exit={card.definition.types?.includes('Land') 
-                  ? { y: 200, opacity: 0, scale: 0.8, filter: 'blur(10px)' } 
-                  : { y: -400, opacity: 0, scale: 1.5, filter: 'brightness(2) blur(5px)' }
-                }
+                exit={{ y: 400, opacity: 0 }}
                 whileHover={{ 
-                  y: -60, 
-                  scale: 1.25, 
-                  zIndex: 100,
-                  transition: { type: 'spring', stiffness: 300, damping: 20 }
+                  y: 0, 
+                  rotate: 0,
+                  scale: 1.35,
+                  zIndex: 800, // Pop above Avatar (500)
+                  transition: { type: 'spring', stiffness: 500, damping: 30 }
                 }}
-                onMouseEnter={() => onHoverStart?.(card)}
-                onMouseLeave={() => onHoverEnd?.()}
-                className={`relative group shrink-0 cursor-pointer -ml-8 first:ml-0 ${card.effectiveStats?.isPlayable ? 'z-10' : ''}`}
+                className="absolute origin-bottom cursor-pointer pointer-events-auto"
                 onClick={() => onPlayCard?.(card.id)}
               >
-                <div className={`relative ${card.isVirtual ? 'p-1 rounded-2xl bg-gradient-to-b from-purple-500/50 to-indigo-500/50 shadow-[0_0_30px_rgba(168,85,247,0.4)]' : ''}`}>
-                    <img 
-                    src={card.definition.image_url} 
-                    alt={card.definition.name}
-                    className={`w-32 h-44 object-cover rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 select-none transition-all duration-300 ${
-                        card.effectiveStats?.isPlayable
-                        ? card.isVirtual 
-                            ? 'ring-4 ring-purple-500 shadow-[0_0_50px_rgba(168,85,247,0.8)] border-purple-400' 
-                            : 'ring-4 ring-cyan-500/60 shadow-[0_0_40px_rgba(34,211,238,0.7)] border-cyan-400'
-                        : isDiscardMode 
-                        ? 'group-hover:border-red-500/50 group-hover:shadow-[0_0_50px_rgba(239,68,68,0.4)]' 
-                        : 'group-hover:border-cyan-500/50 group-hover:shadow-[0_0_50px_rgba(34,211,238,0.4)]'
-                    }`}
-                    onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://cards.scryfall.io/large/front/2/d/2dfe1926-c0d5-40a2-b1aa-988524aefc31.jpg';
-                    }}
+                <div className="relative group">
+                    <GameCard 
+                        obj={card} 
+                        variant="hand" 
+                        isPlayable={card.effectiveStats?.isPlayable}
+                        onHoverStart={onHoverStart}
+                        onHoverEnd={onHoverEnd}
                     />
 
-                    {/* VIRTUAL BADGE */}
-                    {card.isVirtual && (
-                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-purple-600 border border-purple-400 px-2 py-0.5 rounded-full shadow-2xl z-30">
-                            <span className="text-[7px] font-black uppercase text-white tracking-tighter">Playable from {card.zone}</span>
-                        </div>
-                    )}
-                </div>
 
-                {/* REVEALED STATUS EYE ICON */}
-                {(card as any).isRevealed && (
-                  <div className="absolute top-2 left-2 w-6 h-6 bg-purple-600 border border-purple-400/50 rounded-full shadow-2xl flex items-center justify-center text-xs font-bold ring-2 ring-black/40 animate-pulse z-30">
-                      <span className="text-white drop-shadow-md">👁️</span>
-                  </div>
-                )}
-                
-                {/* HINT PER PLAY/DISCARD */}
-                <div className={`absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider text-white whitespace-nowrap pointer-events-none shadow-2xl border border-white/20 ${
-                  isDiscardMode ? 'bg-red-600' : 'bg-indigo-600'
-                }`}>
-                   {isDiscardMode ? 'Clicca per scartare' : 'Clicca per lanciare'}
+                    {/* Removed duplicate playable indicator, handled by GameCard */}
                 </div>
-
-                {/* MANA COST OVERLAY (OPTIONAL) */}
-                {card.definition.manaCost && (
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all bg-black/60 px-2 py-0.5 rounded text-[8px] font-bold text-white border border-white/10 backdrop-blur-sm">
-                    {card.definition.manaCost}
-                  </div>
-                )}
               </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      )}
+            );
+          })}
+        </AnimatePresence>
+      </div>
+
+      {/* SUBTLE VIGNETTE (Optional, non-blocking) */}
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent pointer-events-none z-[-1]" />
     </div>
   );
 };

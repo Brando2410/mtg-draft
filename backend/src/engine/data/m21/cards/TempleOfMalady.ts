@@ -1,4 +1,4 @@
-import { AbilityType, Zone, EffectType, ImplementableCard } from '@shared/engine_types';
+import { AbilityType, Zone, EffectType, ImplementableCard, ZoneRequirement } from '@shared/engine_types';
 
 export const TempleOfMalady: Record<string, ImplementableCard> = {
     "Temple of Malady": {
@@ -16,7 +16,7 @@ export const TempleOfMalady: Record<string, ImplementableCard> = {
                 type: AbilityType.Triggered,
                 id: "temple_of_malady_etb_scry",
                 triggerEvent: "ON_ETB",
-                activeZone: Zone.Battlefield,
+                activeZone: ZoneRequirement.Battlefield,
                 triggerCondition: (state: any, event: any, source: any) => {
                     return event.data?.object?.id === source.sourceId;
                 },

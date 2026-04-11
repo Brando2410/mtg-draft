@@ -142,6 +142,7 @@ export interface StackObject {
 export interface PlayerState {
   id: PlayerId;
   name: string;
+  avatar?: string;
   life: number;
   poisonCounters: number;
 
@@ -166,6 +167,7 @@ export interface PlayerState {
   pendingDiscardCount: number;
   manaCheat?: boolean; // DEBUG: Infinite mana
   virtualHand: GameObject[]; // Cards playable from non-hand zones (Exile, Graveyard, Library)
+  stops: Record<string, boolean>; // Phase/Step stops (Arena-style)
 }
 
 export interface CombatState {
@@ -536,6 +538,7 @@ export interface EffectDefinition {
   value?: any;
   tapped?: boolean;
   costs?: AbilityCost[];
+  isDiscard?: boolean;
 
   eventMatch?: string; // For AddTriggeredAbility
 

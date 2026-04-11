@@ -11,8 +11,13 @@ export class ActionProcessor {
    * CR 400.1 / 400.7: An object that moves from one zone to another 
    * becomes a new object with no memory of or relation to its previous existence.
    */
-    public static moveCard(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, log?: (m: string) => void, libraryPosition: 'top' | 'bottom' = 'top', isDraw: boolean = false) {
+    public static moveCard(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, log?: (m: string) => void, libraryPosition: 'top' | 'bottom' = 'top', isDraw: boolean = false, isDiscard: boolean = false) {
     const fromZone = card.zone;
+
+    // CR 701.8: To discard a card, move it from hand to graveyard.
+    if ((isDiscard || (fromZone === Zone.Hand && to === Zone.Graveyard)) && !isDraw) {
+        TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId: card.ownerId, data: { card: card } }, log || (() => {}));
+    }
     
     // --- DRAW REPLACEMENT EFFECT HOOK (Rule 614/616/121.6) ---
     if (isDraw && fromZone === Zone.Library && to === Zone.Hand && !(state as any).isResolvingDrawReplacement) {

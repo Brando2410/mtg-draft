@@ -19,7 +19,8 @@ export class TurnProcessor {
       const attackerCount = (state.combat?.attackers || []).length;
       
       if (attackerCount === 0) {
-        next = { phase: Phase.Combat, step: Step.EndOfCombat, turnEnded: false };
+        // Arena-style skip: jumping directly to Main 2 if no combat intent
+        next = { phase: Phase.PostCombatMain, step: Step.Main, turnEnded: false };
       }
       else if (defenderId && !this.hasPotentialBlockers(state, defenderId)) {
         next = { phase: Phase.Combat, step: Step.CombatDamage, turnEnded: false };

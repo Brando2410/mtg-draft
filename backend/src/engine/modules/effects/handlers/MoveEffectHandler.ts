@@ -79,7 +79,7 @@ export class MoveEffectHandler {
         const obj = this.findObject(state, tid, stackObject, parentContext);
         if (obj) {
             const from = obj.zone;
-            ActionProcessor.moveCard(state, obj, destination, obj.ownerId, log, effect.libraryPosition);
+            ActionProcessor.moveCard(state, obj, destination, obj.ownerId, log, effect.libraryPosition, false, (effect as any).isDiscard);
             if (destination === Zone.Exile) {
                 TriggerProcessor.onEvent(state, { type: 'ON_EXILE', targetId: tid, sourceId: (stackObject as any)?.sourceId || '', sourceZone: from }, log);
             }
@@ -320,7 +320,7 @@ export class MoveEffectHandler {
             if (effect.type === 'Exile') destination = Zone.Exile;
             else destination = Zone.Hand;
         }
-        ActionProcessor.moveCard(state, obj, destination, obj.ownerId, log, effect.libraryPosition);
+        ActionProcessor.moveCard(state, obj, destination, obj.ownerId, log, effect.libraryPosition, false, (effect as any).isDiscard);
         if (effect.tapped && destination === Zone.Battlefield) obj.isTapped = true;
         if (effect.reveal) (obj as any).isRevealed = true;
         if (destination === Zone.Exile) {

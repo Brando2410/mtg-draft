@@ -1,6 +1,7 @@
 import { 
-  Terminal, Play, ChevronRight, Layers, Users, RotateCcw, 
-  Heart, Plus, Minus, MousePointer2, Save, History, Zap, Search 
+  Terminal, Play, ChevronLeft, Layers, Users, 
+  Heart, Plus, Minus, MousePointer2, Save, History, Zap, Search,
+  Activity, Cpu, Database
 } from 'lucide-react';
 import { type GameState } from '@shared/types';
 import { socket } from '../../services/socket';
@@ -14,7 +15,7 @@ interface DebugConsoleProps {
   roomId: string;
   onClose: () => void;
   onSwapControl: (newId: string) => void;
-  room?: any; // To check for checkpoints
+  room?: any;
 }
 
 export const DebugConsole = ({ 
@@ -39,275 +40,293 @@ export const DebugConsole = ({
   const pState = gameState.players[effectivePlayerId];
 
   return (
-    <div className="w-[400px] border-l border-white/5 bg-[#0a0f1e]/95 backdrop-blur-xl flex flex-col p-6 z-30 shadow-[-20px_0_50px_rgba(0,0,0,0.5)] h-full overflow-hidden">
-       <div className="flex justify-between items-center mb-6 flex-shrink-0">
-          <div className="flex items-center gap-3">
-             <Terminal className="w-5 h-5 text-indigo-500" />
-             <h3 className="text-xl font-black uppercase italic tracking-tighter">Debug <span className="text-indigo-500">Console</span></h3>
+    <div className="w-[420px] border-r border-white/10 bg-[#07090f]/98 backdrop-blur-2xl flex flex-col z-30 shadow-[30px_0_60px_rgba(0,0,0,0.7)] h-full overflow-hidden pointer-events-auto">
+       
+       {/* COMPACT DASHBOARD HEADER */}
+       <div className="flex items-center justify-between px-6 py-4 bg-white/[0.02] border-b border-white/5">
+          <div className="flex items-center gap-2.5">
+             <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                <Cpu className="w-4 h-4 text-indigo-400" />
+             </div>
+             <div>
+                <h3 className="text-sm font-black uppercase italic tracking-wider text-white flex items-center gap-2">
+                   System <span className="text-indigo-400">Debugger</span>
+                </h3>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                   <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">{roomId.split('-')[0]} // LIVE</span>
+                </div>
+             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
-            title="Chiudi Console"
+            className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-all text-slate-400 hover:text-white"
           >
-            <ChevronRight className="w-3 h-3" />
+            <ChevronLeft className="w-5 h-5" />
           </button>
        </div>
 
-       <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-8 pb-10">
-          
-          {/* SNAPSHOT SYSTEM */}
-          <div className="grid grid-cols-2 gap-3">
-             <button 
-                onClick={() => socket.emit('save_checkpoint', { roomId })}
-                className="flex items-center justify-center gap-2 py-3 bg-indigo-600/10 border border-indigo-500/30 rounded-xl text-[9px] font-black uppercase text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-lg active:scale-95"
-             >
-                <Save className="w-3 h-3" /> Save Checkpoint
-             </button>
-             <button 
-                onClick={() => socket.emit('load_checkpoint', { roomId })}
-                disabled={!room?.checkpoint}
-                className={`flex items-center justify-center gap-2 py-3 border rounded-xl text-[9px] font-black uppercase transition-all shadow-lg active:scale-95 ${room?.checkpoint ? 'bg-indigo-600/10 border-indigo-500/30 text-indigo-400 hover:bg-amber-600 hover:text-white hover:border-amber-400' : 'bg-slate-900 border-white/5 text-slate-700 opacity-50 cursor-not-allowed'}`}
-             >
-                <History className="w-3 h-3" /> Restore State
-             </button>
-          </div>
+       <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="p-6 space-y-6">
+            
+            {/* 1. STATE MANAGEMENT (CHECKPOINTS) */}
+            <div className="space-y-3">
+               <div className="flex items-center gap-2 mb-1">
+                  <Database className="w-3 h-3 text-slate-500" />
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">State Persistence</span>
+               </div>
+               <div className="grid grid-cols-2 gap-2">
+                  <button 
+                      onClick={() => socket.emit('save_checkpoint', { roomId })}
+                      className="flex items-center justify-center gap-2 py-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-[10px] font-black uppercase text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all active:scale-[0.97]"
+                  >
+                      <Save className="w-3.5 h-3.5" /> Save
+                  </button>
+                  <button 
+                      onClick={() => socket.emit('load_checkpoint', { roomId })}
+                      disabled={!room?.checkpoint}
+                      className={`flex items-center justify-center gap-2 py-2.5 border rounded-lg text-[10px] font-black uppercase transition-all active:scale-[0.97]
+                        ${room?.checkpoint 
+                            ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-white' 
+                            : 'bg-slate-900 border-white/5 text-slate-700 opacity-50 cursor-not-allowed'}`}
+                  >
+                      <History className="w-3.5 h-3.5" /> Restore
+                  </button>
+               </div>
+            </div>
 
-          {/* STATUS CARD */}
-          <div className="bg-slate-900/80 border border-white/5 rounded-2xl p-4 space-y-3 relative overflow-hidden group">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-indigo-500/10 transition-colors" />
-             
-             <div className="flex justify-between relative">
-                <span className="text-[10px] font-bold uppercase text-slate-500">Priority</span>
-                <span className="text-[10px] font-black uppercase text-indigo-400 italic">
-                   {gameState.priorityPlayerId === effectivePlayerId ? 'Tu' : 'Avversario'}
-                </span>
-             </div>
-             <div className="flex justify-between relative">
-                <span className="text-[10px] font-bold uppercase text-slate-500">Step</span>
-                <span className="text-[10px] font-black uppercase text-indigo-400 italic">{gameState.currentStep}</span>
-             </div>
-             <div className="flex justify-between relative">
-                <span className="text-[10px] font-bold uppercase text-slate-500">PROPRIETARIO TURNO</span>
-                <span className={`text-[10px] font-black uppercase italic ${gameState.activePlayerId === effectivePlayerId ? 'text-emerald-400' : 'text-orange-400'}`}>
-                   {gameState.activePlayerId === effectivePlayerId ? 'TU' : 'AVVERSARIO'} 
-                </span>
-             </div>
-          </div>
-
-          <div className="space-y-4">
-             <div className="flex justify-between items-center">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Card Lab</h4>
-                <span className="text-[8px] font-bold text-slate-500 bg-slate-800 px-2 py-0.5 rounded uppercase">
-                   {pState?.library.length || 0} in Library
-                </span>
-             </div>
-             
-             <div className="bg-slate-950 border border-white/5 rounded-2xl p-4 space-y-4 relative">
-                <div className="relative">
-                   <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-500" />
-                      <input 
-                         type="text" 
-                         value={cardSearch}
-                         onChange={(e) => setCardSearch(e.target.value)}
-                         placeholder="Cerca nella tua Library..."
-                         className="w-full bg-slate-900 border border-white/10 rounded-lg py-2 pl-8 pr-3 text-[10px] text-white focus:outline-none focus:border-indigo-500/50"
-                      />
-                   </div>
-
-                   {/* AUTOCOMPLETE DROPDOWN */}
-                   {cardSearch.length >= 2 && (
-                      <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl max-h-[200px] overflow-y-auto custom-scrollbar">
-                         {pState?.library
-                            .filter(c => c.definition.name.toLowerCase().includes(cardSearch.toLowerCase()))
-                            .map((card, idx) => (
-                               <button
-                                  key={`${card.id}-${idx}`}
-                                  onClick={() => {
-                                     socket.emit('debug_move_card_from_library', { roomId, playerId: effectivePlayerId, cardId: card.id });
-                                     setCardSearch('');
-                                  }}
-                                  className="w-full text-left p-3 hover:bg-indigo-600/20 border-b border-white/5 last:border-0 flex items-center justify-between group transition-colors"
-                               >
-                                  <span className="text-[10px] font-bold text-slate-300 group-hover:text-white transition-colors">
-                                     {card.definition.name}
-                                  </span>
-                                  <Plus className="w-3 h-3 text-slate-600 group-hover:text-indigo-400" />
-                               </button>
-                            ))
-                         }
-                         {pState?.library.filter(c => c.definition.name.toLowerCase().includes(cardSearch.toLowerCase())).length === 0 && (
-                            <div className="p-4 text-center">
-                               <span className="text-[9px] font-bold text-slate-600 uppercase italic">Nessun match trovato</span>
-                            </div>
-                         )}
-                      </div>
-                   )}
+            {/* 2. LIVE TELEMETRY (STATUS) */}
+            <div className="grid grid-cols-3 gap-2">
+                <div className="bg-slate-900/50 border border-white/5 rounded-xl p-3 flex flex-col gap-1">
+                    <span className="text-[7px] font-bold text-slate-500 uppercase tracking-tighter">Priority</span>
+                    <span className="text-[9px] font-black uppercase italic text-indigo-300">
+                        {gameState.priorityPlayerId === effectivePlayerId ? 'Yours' : 'Opponent'}
+                    </span>
                 </div>
-               
-             </div>
-          </div>
+                <div className="bg-slate-900/50 border border-white/5 rounded-xl p-3 flex flex-col gap-1">
+                    <span className="text-[7px] font-bold text-slate-500 uppercase tracking-tighter">Active Step</span>
+                    <span className="text-[9px] font-black uppercase italic text-cyan-400 text-ellipsis overflow-hidden whitespace-nowrap">
+                        {gameState.currentStep}
+                    </span>
+                </div>
+                <div className="bg-slate-900/50 border border-white/5 rounded-xl p-3 flex flex-col gap-1">
+                    <span className="text-[7px] font-bold text-slate-500 uppercase tracking-tighter">Control</span>
+                    <span className={`text-[9px] font-black uppercase italic ${gameState.activePlayerId === effectivePlayerId ? 'text-emerald-400' : 'text-orange-400'}`}>
+                        {gameState.activePlayerId === effectivePlayerId ? 'PLAYER' : 'OPPONENT'}
+                    </span>
+                </div>
+            </div>
 
-          {/* QUICK ACTIONS */}
-          <div className="space-y-4">
-             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Comandi Rapidi</h4>
-             <div className="grid grid-cols-2 gap-3">
-                <button 
-                    onClick={() => socket.emit('pass_priority', { roomId, playerId: effectivePlayerId })}
-                    className="flex items-center gap-2 p-3 bg-slate-900 border border-white/5 rounded-xl text-[9px] font-black uppercase text-slate-400 hover:bg-indigo-600 hover:text-white transition-all shadow-lg active:scale-95"
-                 >
-                    <Play className="w-3 h-3" /> Passa Priorità
-                 </button>
-                 <button 
-                    onClick={() => opponentId && onSwapControl(effectivePlayerId === playerId ? opponentId : playerId)}
-                    className="flex items-center gap-2 p-3 bg-slate-900 border border-white/5 rounded-xl text-[9px] font-black uppercase text-slate-400 hover:bg-orange-600 hover:text-white transition-all shadow-lg active:scale-95"
-                 >
-                    <Users className="w-3 h-3" /> Inverti Controllo
-                 </button>
-                 <button 
-                    onClick={() => socket.emit('toggle_mana_cheat', { roomId, playerId: effectivePlayerId })}
-                    className={`flex items-center gap-2 p-3 border rounded-xl text-[9px] font-black uppercase transition-all shadow-lg active:scale-95 ${pState?.manaCheat ? 'bg-emerald-500 text-white border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-slate-900 border-white/5 text-slate-400 hover:bg-slate-700'}`}
-                 >
-                    <Zap className="w-3 h-3" /> Infinite Mana
-                 </button>
-                 <button 
-                    onClick={() => socket.emit('debug_draw_card', { roomId, playerId: effectivePlayerId })}
-                    className="flex items-center gap-2 p-3 bg-slate-900 border border-white/5 rounded-xl text-[9px] font-black uppercase text-slate-400 hover:bg-emerald-600 hover:text-white transition-all shadow-lg active:scale-95"
-                 >
-                    <Plus className="w-3 h-3" /> Pesca Carta
-                 </button>
-                 <button 
-                    onClick={() => socket.emit('toggle_full_control', { roomId, playerId: effectivePlayerId })}
-                    className={`flex items-center gap-2 p-3 border rounded-xl text-[9px] font-black uppercase transition-all shadow-lg active:scale-95 ${pState?.fullControl ? 'bg-amber-500 text-white border-amber-400' : 'bg-slate-900 border-white/5 text-slate-400 hover:bg-slate-700'}`}
-                 >
-                    <MousePointer2 className="w-3 h-3" /> Full Control
-                 </button>
-                 <button 
-                    onClick={() => socket.emit('debug_swap_hand', { roomId, playerId: effectivePlayerId })}
-                    className="flex items-center gap-2 p-3 bg-slate-900 border border-white/5 rounded-xl text-[9px] font-black uppercase text-slate-400 hover:bg-purple-600 hover:text-white transition-all shadow-lg active:scale-95"
-                 >
-                    <Layers className="w-3 h-3" /> Cambia Mano
-                 </button>
-                 
-                 <div className="col-span-2 grid grid-cols-2 gap-3 pt-2 border-t border-white/5">
+            {/* 3. CARD LAB (SEARCH & TUTOR) */}
+            <div className="space-y-3">
+               <div className="flex justify-between items-center px-1">
+                  <div className="flex items-center gap-2">
+                      <Search className="w-3 h-3 text-slate-500" />
+                      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Card Lab</span>
+                  </div>
+                  <span className="text-[8px] font-black text-indigo-400 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10">
+                     {pState?.library.length || 0} LIBRARY
+                  </span>
+               </div>
+               
+               <div className="relative">
+                  <input 
+                     type="text" 
+                     value={cardSearch}
+                     onChange={(e) => setCardSearch(e.target.value)}
+                     placeholder="Search library to tutor card..."
+                     className="w-full bg-slate-900/80 border border-white/10 rounded-xl py-3 pl-4 pr-3 text-[11px] text-white focus:outline-none focus:border-indigo-500/50 transition-colors shadow-inner"
+                  />
+                  
+                  {cardSearch.length >= 2 && (
+                     <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl max-h-[220px] overflow-y-auto custom-scrollbar">
+                        {pState?.library
+                           .filter(c => c.definition.name.toLowerCase().includes(cardSearch.toLowerCase()))
+                           .map((card, idx) => (
+                              <button
+                                 key={`${card.id}-${idx}`}
+                                 onClick={() => {
+                                    socket.emit('debug_move_card_from_library', { roomId, playerId: effectivePlayerId, cardId: card.id });
+                                    setCardSearch('');
+                                 }}
+                                 className="w-full text-left p-3 hover:bg-indigo-600/20 border-b border-white/5 last:border-0 flex items-center justify-between group transition-colors"
+                              >
+                                 <div className="flex flex-col">
+                                    <span className="text-[10px] font-black text-slate-200 uppercase group-hover:text-white">{card.definition.name}</span>
+                                    <span className="text-[7px] font-bold text-slate-600 uppercase italic">Tutor to hand</span>
+                                 </div>
+                                 <Plus className="w-3.5 h-3.5 text-slate-600 group-hover:text-indigo-400" />
+                              </button>
+                           ))
+                        }
+                     </div>
+                  )}
+               </div>
+            </div>
+
+            {/* 4. PLAYER MANIPULATION (LIFE & STATS) */}
+            <div className="bg-slate-950/50 border border-white/5 rounded-2xl p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Heart className="w-3 h-3 text-rose-500" />
+                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Vital Signs</span>
+                    </div>
+                    <span className="text-[11px] font-black text-rose-500 tabular-nums">{pState?.life ?? 20} <span className="text-[8px] text-slate-600">HP</span></span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2">
                     <button 
                         onClick={() => socket.emit('debug_add_life', { roomId, playerId: effectivePlayerId, amount: 5 })}
-                        className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-[9px] font-black uppercase text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-lg active:scale-95"
+                        className="flex items-center justify-center gap-2 py-2 bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-[9px] font-black uppercase text-emerald-400 transition-all active:scale-95"
                     >
-                        <Heart className="w-3 h-3" /> +5 Life
+                        <Plus className="w-3 h-3" /> 5 Life
                     </button>
                     <button 
                         onClick={() => socket.emit('debug_add_life', { roomId, playerId: effectivePlayerId, amount: -5 })}
-                        className="flex items-center gap-2 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-[9px] font-black uppercase text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-lg active:scale-95"
+                        className="flex items-center justify-center gap-2 py-2 bg-rose-500/5 hover:bg-rose-500/10 border border-rose-500/20 rounded-lg text-[9px] font-black uppercase text-rose-400 transition-all active:scale-95"
                     >
-                        <Minus className="w-3 h-3" /> -5 Life
+                        <Minus className="w-3 h-3" /> 5 Life
                     </button>
-                 </div>
+                </div>
 
-                 <button 
-                    onClick={() => {
-                        if (confirm('Sicuro di voler resettare il match?')) {
-                            socket.emit('debug_reset_game', { roomId });
-                        }
-                    }}
-                    className="col-span-2 flex items-center justify-center gap-3 p-4 bg-red-600/10 border border-red-600/40 rounded-xl text-[10px] font-black uppercase text-red-500 hover:bg-red-600 hover:text-white transition-all shadow-[0_0_20px_rgba(220,38,38,0.2)] active:scale-[0.98] mt-2 group"
-                 >
-                    <RotateCcw className="w-4 h-4 group-hover:rotate-[-45deg] transition-transform" /> 
-                    Reset Match (Full)
-                 </button>
-             </div>
-          </div>
+                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/5">
+                    <button 
+                        onClick={() => socket.emit('debug_draw_card', { roomId, playerId: effectivePlayerId })}
+                        className="flex flex-col items-center gap-1.5 p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all group"
+                        title="Draw Card"
+                    >
+                        <Plus className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition-colors" />
+                        <span className="text-[7px] font-black uppercase text-slate-600 group-hover:text-emerald-400">Draw</span>
+                    </button>
+                    <button 
+                        onClick={() => socket.emit('toggle_mana_cheat', { roomId, playerId: effectivePlayerId })}
+                        className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all group ${pState?.manaCheat ? 'bg-emerald-500/20 border border-emerald-500/50' : 'bg-white/5 hover:bg-white/10'}`}
+                        title="Infinite Mana"
+                    >
+                        <Zap className={`w-4 h-4 ${pState?.manaCheat ? 'text-emerald-400 animate-pulse' : 'text-slate-500 group-hover:text-amber-400'}`} />
+                        <span className={`text-[7px] font-black uppercase ${pState?.manaCheat ? 'text-emerald-400' : 'text-slate-600'}`}>Mana</span>
+                    </button>
+                    <button 
+                        onClick={() => socket.emit('toggle_full_control', { roomId, playerId: effectivePlayerId })}
+                        className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all group ${pState?.fullControl ? 'bg-amber-500/20 border border-amber-500/50' : 'bg-white/5 hover:bg-white/10'}`}
+                        title="Full Control"
+                    >
+                        <MousePointer2 className={`w-4 h-4 ${pState?.fullControl ? 'text-amber-400 shadow-glow' : 'text-slate-500 group-hover:text-indigo-400'}`} />
+                        <span className={`text-[7px] font-black uppercase ${pState?.fullControl ? 'text-amber-400' : 'text-slate-600'}`}>Control</span>
+                    </button>
+                </div>
+            </div>
 
+            {/* 5. ENGINE UTILITIES */}
+            <div className="grid grid-cols-2 gap-2">
+                <button 
+                    onClick={() => socket.emit('pass_priority', { roomId, playerId: effectivePlayerId })}
+                    className="flex flex-col items-start gap-1 p-3 bg-slate-900 border border-white/5 rounded-xl hover:bg-indigo-600/20 transition-all group active:scale-95"
+                >
+                    <Play className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400" />
+                    <span className="text-[8px] font-black uppercase tracking-wider text-slate-500 group-hover:text-white">Pass Priority</span>
+                </button>
+                <button 
+                    onClick={() => opponentId && onSwapControl(effectivePlayerId === playerId ? opponentId : playerId)}
+                    className="flex flex-col items-start gap-1 p-3 bg-slate-900 border border-white/5 rounded-xl hover:bg-orange-600/20 transition-all group active:scale-95"
+                >
+                    <Users className="w-3.5 h-3.5 text-slate-500 group-hover:text-orange-400" />
+                    <span className="text-[8px] font-black uppercase tracking-wider text-slate-500 group-hover:text-white">Swap View</span>
+                </button>
+            </div>
 
+            {/* 6. LOGS & REGISTRY (Scrollable Bottom Sections) */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Activity className="w-3 h-3 text-emerald-500" />
+                        <span className="text-[10px] font-black uppercase text-slate-600 tracking-widest">Combat Registry</span>
+                    </div>
+                </div>
 
-          {/* EFFECT WHITEBOARD */}
-          <div className="space-y-4">
-             <div className="flex justify-between items-center">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Effect Whiteboard</h4>
-                <span className="text-[9px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
-                   {gameState.ruleRegistry.continuousEffects.length} Active
-                </span>
-             </div>
-             
-             <div className="min-h-[100px] border border-white/5 bg-slate-900/50 rounded-2xl overflow-hidden">
-                {gameState.ruleRegistry.continuousEffects.length === 0 ? (
-                   <div className="h-[100px] flex items-center justify-center p-4">
-                      <span className="text-[9px] font-bold text-slate-700 uppercase tracking-widest italic">Nessun Effetto Attivo</span>
-                   </div>
-                ) : (
-                   <div className="divide-y divide-white/5">
-                      {gameState.ruleRegistry.continuousEffects.map((effect, idx) => {
-                         // Attempt to find the source name
-                         const allObjects = [
-                            ...gameState.battlefield,
-                            ...gameState.exile,
-                            ...Object.values(gameState.players).flatMap(p => [...p.graveyard, ...p.hand])
-                         ];
-                         const source = allObjects.find(o => o.id === effect.sourceId);
-                         const sourceName = source?.definition.name || 'Unknown Source';
-
-                         return (
-                            <div key={effect.id || idx} className="p-3 hover:bg-white/5 transition-colors group">
-                               <div className="flex justify-between items-start mb-1">
-                                  <span className="text-[10px] font-black text-indigo-300 uppercase italic truncate max-w-[180px]">
-                                     {sourceName}
-                                  </span>
-                                  <span className="text-[8px] font-bold text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded uppercase">
-                                     Layer {effect.layer}
-                                  </span>
-                               </div>
-                               <div className="flex flex-wrap gap-1.5 mt-2">
-                                  {effect.powerModifier !== undefined && (
-                                     <span className="text-[8px] font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                                        {Number(effect.powerModifier) > 0 ? '+' : ''}{effect.powerModifier}/{effect.toughnessModifier ?? 0}
-                                     </span>
-                                  )}
-                                  {effect.abilitiesToAdd?.map(ability => (
-                                     <span key={ability} className="text-[8px] font-black text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 uppercase">
-                                        +{ability}
-                                     </span>
-                                  ))}
-                                  <span className="text-[8px] font-bold text-slate-600 uppercase ml-auto self-center">
-                                     {effect.duration.type.replace('Until', '')}
-                                  </span>
-                               </div>
+                <div className="max-h-[220px] overflow-hidden flex flex-col border border-white/5 rounded-2xl bg-slate-950/80 backdrop-blur-md">
+                    <div className="p-3 bg-white/[0.02] border-b border-white/5 flex items-center gap-2">
+                        <Layers className="w-3 h-3 text-indigo-400" />
+                        <span className="text-[8px] font-black uppercase text-slate-500 italic">Continuous Effects Registry</span>
+                    </div>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-1">
+                        {gameState.ruleRegistry.continuousEffects.length === 0 ? (
+                            <div className="py-8 text-center bg-slate-900/40 m-2 rounded-xl border border-dashed border-white/5">
+                                <span className="text-[9px] font-bold text-slate-700 uppercase tracking-widest italic">Stable - No Active Effects</span>
                             </div>
-                         );
-                      })}
-                   </div>
-                )}
-             </div>
-          </div>
+                        ) : (
+                            <div className="divide-y divide-white/5">
+                                {gameState.ruleRegistry.continuousEffects.map((effect, idx) => {
+                                    const allObjects = [
+                                        ...gameState.battlefield,
+                                        ...gameState.exile,
+                                        ...Object.values(gameState.players).flatMap(p => [...p.graveyard, ...p.hand])
+                                    ];
+                                    const source = allObjects.find(o => o.id === effect.sourceId);
+                                    const sourceName = source?.definition.name || 'Floating Effect';
 
-          {/* TERMINAL LOG */}
-          <div className="border border-white/5 bg-slate-950 p-4 rounded-2xl">
-             <div className="flex items-center gap-2 mb-2">
-                <Terminal className="w-3 h-3 text-emerald-500" />
-                <span className="text-[9px] font-black uppercase text-emerald-500/70">Terminal Log</span>
-             </div>
-             <div 
-                ref={terminalRef}
-                className="text-[10px] font-mono text-slate-300 leading-tight space-y-1.5 overflow-y-auto max-h-[150px] custom-scrollbar pt-1 pr-2"
-             >
-                {(gameState.logs || []).length === 0 && <span className="text-slate-600 italic">{`> Awaiting logs...`}</span>}
-                {(gameState.logs || []).map((logLine, index) => (
-                   <div key={index} className="break-words leading-relaxed border-l border-emerald-500/20 pl-2 opacity-80 hover:opacity-100 transition-opacity">
-                      {logLine}
-                   </div>
-                ))}
-             </div>
-          </div>
+                                    return (
+                                        <div key={effect.id || idx} className="p-3 hover:bg-white/[0.03] transition-colors group">
+                                            <div className="flex justify-between items-start mb-1.5">
+                                                <span className="text-[9px] font-black text-indigo-300 uppercase italic truncate max-w-[160px]">
+                                                    {sourceName}
+                                                </span>
+                                                <span className="text-[7px] font-black text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-white/5 uppercase">
+                                                    Lay. {effect.layer}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {effect.powerModifier !== undefined && (
+                                                    <span className="text-[8px] font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/10">
+                                                        {Number(effect.powerModifier) > 0 ? '+' : ''}{effect.powerModifier}/{effect.toughnessModifier ?? 0}
+                                                    </span>
+                                                )}
+                                                {effect.abilitiesToAdd?.map(ability => (
+                                                    <span key={ability} className="text-[8px] font-black text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/10 uppercase">
+                                                        {ability}
+                                                    </span>
+                                                ))}
+                                                <span className="text-[7px] font-bold text-slate-600 uppercase ml-auto">
+                                                    {effect.duration.type.replace('Until', '')}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
 
-       </div>
-       
-       {/* FOOTER */}
-       <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
-          <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-             <span className="text-[8px] font-black text-emerald-500 uppercase">Live Sync</span>
+            {/* 7. TERMINAL OUTPUT */}
+            <div className="flex flex-col rounded-2xl border border-white/10 bg-slate-950 overflow-hidden shadow-2xl">
+                <div className="px-4 py-2 bg-white/5 border-b border-white/5 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Terminal className="w-3 h-3 text-emerald-500" />
+                        <span className="text-[8px] font-black uppercase text-emerald-500/70 tracking-widest">Engine Stream</span>
+                    </div>
+                    <div className="flex gap-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-red-500/50" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500/50" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
+                    </div>
+                </div>
+                <div 
+                    ref={terminalRef}
+                    className="p-4 text-[10px] font-mono text-slate-400 leading-relaxed font-semibold h-[180px] overflow-y-auto custom-scrollbar bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.03),transparent)]"
+                >
+                    {(gameState.logs || []).length === 0 && <span className="text-slate-700 italic block">{`// Awaiting engine initialization...`}</span>}
+                    {(gameState.logs || []).map((logLine, index) => (
+                    <div key={index} className="flex gap-2 group mb-1 last:mb-0">
+                        <span className="text-emerald-500/30 font-bold shrink-0">{(index + 1).toString().padStart(3, '0')}</span>
+                        <span className="text-slate-300 group-hover:text-white transition-colors break-words">{logLine}</span>
+                    </div>
+                    ))}
+                </div>
+            </div>
+
           </div>
-          <span className="text-[8px] font-bold text-slate-600 uppercase">MTG Engine v0.1-poc</span>
        </div>
     </div>
   );

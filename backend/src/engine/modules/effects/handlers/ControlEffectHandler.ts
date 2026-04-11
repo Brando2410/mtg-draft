@@ -82,7 +82,7 @@ export class ControlEffectHandler {
                                 isCopyTargeting: true,
                                 stackId: copy.id,
                                 targetDefinition: targetDef,
-                                legalTargetIds: legalTargetIds,
+                                targets: legalTargetIds,
                                 selectedTargets: [],
                                 optional: true,
                                 originalTargets: [...copy.targets]

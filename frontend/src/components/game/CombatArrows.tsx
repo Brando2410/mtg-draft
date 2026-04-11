@@ -4,10 +4,11 @@ import { type GameObject } from '@shared/engine_types';
 interface CombatArrowsProps {
   combat: any;
   battlefield: GameObject[];
+  planningArrow?: { x1: number, y1: number, x2: number, y2: number } | null;
 }
 
-export const CombatArrows = memo(({ combat, battlefield }: CombatArrowsProps) => {
-  const [coords, setCoords] = useState<{ x1: number, y1: number, x2: number, y2: number, color: string }[]>([]);
+export const CombatArrows = memo(({ combat, battlefield, planningArrow }: CombatArrowsProps) => {
+  const [coords, setCoords] = useState<{ x1: number, y1: number, x2: number, y2: number, color: string, isPlanning?: boolean }[]>([]);
 
   useEffect(() => {
     const update = () => {
@@ -63,6 +64,14 @@ export const CombatArrows = memo(({ combat, battlefield }: CombatArrowsProps) =>
         }
       });
 
+      if (planningArrow) {
+          newCoords.push({
+              ...planningArrow,
+              color: '#facc15', // Vibrant Gold for planning
+              isPlanning: true
+          });
+      }
+
       setCoords(newCoords);
     };
 
@@ -75,22 +84,36 @@ export const CombatArrows = memo(({ combat, battlefield }: CombatArrowsProps) =>
   return (
     <svg className="absolute inset-0 pointer-events-none z-[60]" style={{ width: '100%', height: '100%' }}>
       <defs>
-        <marker id="head-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L6,3 Z" fill="#ef4444" />
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+        <marker id="head-red" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+          <path d="M0,0 L0,10 L10,5 Z" fill="#ef4444" />
         </marker>
-        <marker id="head-yellow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-          <path d="M0,0 L0,6 L6,3 Z" fill="#fbbf24" />
+        <marker id="head-yellow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+          <path d="M0,0 L0,10 L10,5 Z" fill="#facc15" />
         </marker>
       </defs>
       {coords.map((c, i) => (
-        <line
-          key={i}
-          x1={c.x1} y1={c.y1} x2={c.x2} y2={c.y2}
-          stroke={c.color}
-          strokeWidth="3"
-          markerEnd={c.color === '#ef4444' ? 'url(#head-red)' : 'url(#head-yellow)'}
-          opacity="0.6"
-        />
+        <g key={i} filter="url(#glow)">
+            <line
+                x1={c.x1} y1={c.y1} x2={c.x2} y2={c.y2}
+                stroke={c.color}
+                strokeWidth={c.isPlanning ? "5" : "4"}
+                strokeLinecap="round"
+                markerEnd={c.color === '#ef4444' ? 'url(#head-red)' : 'url(#head-yellow)'}
+                opacity={c.isPlanning ? "0.9" : "0.7"}
+            />
+            {/* Inner bright core */}
+            <line
+                x1={c.x1} y1={c.y1} x2={c.x2} y2={c.y2}
+                stroke="white"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                opacity="0.4"
+            />
+        </g>
       ))}
     </svg>
   );

@@ -119,9 +119,10 @@ export class SpellProcessor {
                 return false;
             }
             
-            ActionProcessor.removeFromCurrentZone(state, cardToPlay);
-            cardToPlay.zone = Zone.Battlefield;
-            state.battlefield = [...state.battlefield, cardToPlay];
+            // Rule 305: Playing a land is a special action, not a spell.
+            // ActionProcessor.moveCard handles entersTapped, registerAbilities, and ON_ETB triggers.
+            ActionProcessor.moveCard(state, cardToPlay, Zone.Battlefield, playerId, log);
+
             state.turnState.landsPlayedThisTurn[playerId] = currentLandsPlayed + 1;
             player.hasPlayedLandThisTurn = true; // Kept for legacy compatibility if needed
             log(`Played Land: ${cardToPlay.definition.name} (${currentLandsPlayed + 1}/${maxLands})`);
@@ -174,9 +175,14 @@ export class SpellProcessor {
                 ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
             ].filter(tid => TargetingProcessor.isLegalTarget(state, cardToPlay.id, tid, targetDefinition));
 
-            if (false) { // Disabled AUTO-TARGET for spells: user must always select
+            const isSingleOpponentTarget = targetDefinition.type === 'Player' && 
+                                           targetDefinition.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'opponent') &&
+                                           precalculatedTargets.length === 1 &&
+                                           state.playerOrder.length === 2;
+
+            if (isSingleOpponentTarget) {
                 declaredTargets = precalculatedTargets;
-                log(`[AUTO-TARGET] Only one legal target found for ${cardToPlay.definition.name}: ${state.players[precalculatedTargets[0]]?.name || precalculatedTargets[0]}`);
+                log(`[AUTO-TARGET] Automatically targeting the only opponent for ${cardToPlay.definition.name}.`);
             } else {
                 if (precalculatedTargets.length === 0) {
                     if (targetDefinition.optional) {
@@ -192,7 +198,7 @@ export class SpellProcessor {
                     type: 'TARGETING',
                     playerId: playerId,
                     sourceId: cardToPlay.id,
-                    data: { targetDefinition, legalTargetIds: precalculatedTargets, isSpellCasting: true }
+                    data: { targetDefinition, targets: precalculatedTargets, isSpellCasting: true }
                 };
                 log(`[TARGETING] ${state.players[playerId].name} is selecting targets for ${cardToPlay.definition.name}...`);
                 return true;
@@ -566,6 +572,7 @@ export class SpellProcessor {
         declaredTargets: string[],
         log: (m: string) => void,
         engine: {
+            tapForMana: (p: PlayerId, c: string) => void;
             passPriority: (p: PlayerId) => void;
             checkAutoPass: (p: PlayerId) => void;
         },
@@ -573,6 +580,9 @@ export class SpellProcessor {
     ): boolean {
         const obj = state.battlefield.find(o => o.id === cardId);
         if (!obj) return false;
+
+        const player = state.players[playerId];
+        if (!player) return false;
 
         if (!bypassTargeting && String(state.priorityPlayerId) !== String(playerId)) {
             log(`Tried to activate ability without priority.`);
@@ -630,10 +640,14 @@ export class SpellProcessor {
         let precalculatedTargets: string[] | undefined;
         if (ability.targetDefinition && (declaredTargets === undefined || declaredTargets.length === 0) && !bypassTargeting) {
             const { TargetingProcessor } = require('./TargetingProcessor');
-            precalculatedTargets = [
+            const pool = [
                 ...Object.keys(state.players),
-                ...state.battlefield.map(o => o.id)
-            ].filter(tid => TargetingProcessor.isLegalTarget(state, obj.id, tid, ability.targetDefinition));
+                ...state.battlefield.map(o => o.id),
+                ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id)),
+                ...state.exile.map(o => o.id),
+                ...state.stack.map(o => o.id)
+            ];
+            precalculatedTargets = pool.filter(tid => TargetingProcessor.isLegalTarget(state, obj.id, tid, ability.targetDefinition));
 
             if (precalculatedTargets.length === 0) {
                 log(`Illegal Activation: No valid targets available for ${obj.definition.name}'s ability.`);
@@ -649,7 +663,6 @@ export class SpellProcessor {
         if (discardCost) log(`[DEBUG] activateAbility: discardCost present. hasChosenDiscard: ${hasChosenDiscard} (${(state as any).lastChosenDiscardId})`);
 
         if (discardCost && !hasChosenDiscard) {
-            const player = state.players[playerId];
             const { TargetingProcessor } = require('./TargetingProcessor');
             const legalDiscardIds = player.hand
                 .filter(c => TargetingProcessor.matchesRestrictions(state, c, discardCost.restrictions || [], playerId, obj.id))
@@ -689,6 +702,15 @@ export class SpellProcessor {
             return true;
         }
 
+        // Rule 601.2h: Pay costs
+        const manaCost = (ability.costs || []).find(c => c.type === 'Mana');
+        if (manaCost && !ManaProcessor.canPayManaCost(player, manaCost.value, state)) {
+             if (ManaProcessor.canPayWithTotal(player, state.battlefield, manaCost.value)) {
+                  log(`Auto-tapping lands to pay ability cost ${manaCost.value}...`);
+                  ManaProcessor.autoTapLandsForCost(state, playerId, manaCost.value, log, engine.tapForMana);
+             }
+        }
+
         CostProcessor.pay(state, ability.costs || [], obj.id, playerId, (m) => log(m));
 
         obj.abilitiesUsedThisTurn++;
@@ -710,6 +732,15 @@ export class SpellProcessor {
         };
 
         if (ability.targetDefinition && (declaredTargets === undefined || declaredTargets.length === 0) && precalculatedTargets && !bypassTargeting) {
+            const isSingleOpponentTarget = ability.targetDefinition?.type === 'Player' && 
+                                           ability.targetDefinition?.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'opponent') &&
+                                           precalculatedTargets.length === 1 &&
+                                           state.playerOrder.length === 2;
+
+            if (isSingleOpponentTarget) {
+                return this.activateAbility(state, playerId, cardId, abilityIndex, precalculatedTargets, log, engine, true);
+            }
+
             state.pendingAction = {
                 type: 'TARGETING',
                 playerId: playerId,
@@ -719,7 +750,7 @@ export class SpellProcessor {
                     stackObj: stackObj,
                     abilityIndex: abilityIndex,
                     targetDefinition: ability.targetDefinition,
-                    legalTargetIds: precalculatedTargets
+                    targets: precalculatedTargets
                 }
             };
             log(`[TARGETING] Player must choose targets for ${obj.definition.name}'s ability.`);
@@ -729,7 +760,7 @@ export class SpellProcessor {
         if (ability.isManaAbility) {
             const { EffectProcessor } = require('../effects/EffectProcessor');
             (ability as any).effects.forEach((eff: any) => {
-                EffectProcessor.executeEffect(state, eff, obj.id, [], (m: string) => log(m), null);
+                EffectProcessor.executeEffect(state, eff, obj.id, [], (m: string) => log(m), stackObj, null);
             });
             log(`Activated mana ability of ${obj.definition.name}`);
             return true;

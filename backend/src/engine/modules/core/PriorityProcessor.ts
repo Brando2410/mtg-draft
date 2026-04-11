@@ -61,6 +61,23 @@ export class PriorityProcessor {
       return;
     }
 
+    // --- STOPPER LOGIC: Untoggle stop after it "did its work" ---
+    if (!isAuto && player?.stops) {
+      const isOurTurn = state.activePlayerId === playerId;
+      const currentStepId = state.currentStep.toLowerCase();
+      const stopKey = isOurTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
+      const beginKey = isOurTurn ? `my_beginning` : `opp_beginning`;
+      const isBeginning = currentStepId === 'upkeep' || currentStepId === 'draw';
+      
+      if (player.stops[stopKey] || (isBeginning && player.stops[beginKey])) {
+        if (player.stops[stopKey]) player.stops[stopKey] = false;
+        if (isBeginning && player.stops[beginKey]) player.stops[beginKey] = false;
+        
+        console.log(`[STOPPER] Untoggled stop for ${stopKey}/beginning after manual pass.`);
+        callbacks.log(`Stop cleared for ${state.currentStep}.`);
+      }
+    }
+
     state.consecutivePasses++;
     
     const prefix = isAuto ? '[Auto-Pass] ' : '[Manual-Pass] ';
@@ -116,12 +133,22 @@ export class PriorityProcessor {
     const player = state.players[playerId];
     const canAct = this.canPlayerTakeAnyAction(state, playerId);
 
-    if (player && !player.fullControl && !canAct) {
+    const isOurTurn = state.activePlayerId === playerId;
+    const currentStepId = state.currentStep.toLowerCase();
+    const stopKey = isOurTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
+    
+    // Support for consolidated "Beginning" stop (covers Upkeep and Draw)
+    const beginKey = isOurTurn ? `my_beginning` : `opp_beginning`;
+    const isBeginning = currentStepId === 'upkeep' || currentStepId === 'draw';
+    
+    const hasManualStop = player?.stops?.[stopKey] || (isBeginning && player?.stops?.[beginKey]);
+
+    if (player && !player.fullControl && !hasManualStop && !canAct) {
       callbacks.log(`[Auto-Pass] ${callbacks.getPlayerName(playerId)} skipped: no legal actions found.`);
       console.log(`[ENGINE] Auto-Pass triggered for ${playerId}`);
       this.passPriority(state, playerId, callbacks, true);
-    } else if (player && canAct) {
-      console.log(`[ENGINE] Priority held by ${playerId} (Actions available)`);
+    } else if (player && (canAct || hasManualStop)) {
+      console.log(`[ENGINE] Priority held by ${playerId} (Actions available or Stop set)`);
     }
   }
 
@@ -142,13 +169,17 @@ export class PriorityProcessor {
     }
     if (player.pendingDiscardCount > 0) return true;
 
-    // Remove the restrictive pendingAction check that freezes priority inappropriately.
-    // if (state.pendingAction) return false;
+    const isOurTurn = state.activePlayerId === playerId;
+    const currentStepId = state.currentStep.toLowerCase();
+    const stopKey = isOurTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
+    const hasManualStop = player?.stops?.[stopKey];
 
     const stackEmpty = state.stack.length === 0;
 
-    // Auto-pass Upkeep and Draw steps if the stack is empty (Full Control will still catch them upstream)
+    // Auto-pass Upkeep and Draw steps if the stack is empty 
+    // UNLESS a manual stop is set for this phase.
     if (state.currentPhase === Phase.Beginning && (state.currentStep === Step.Upkeep || state.currentStep === Step.Draw) && stackEmpty) {
+        if (hasManualStop) return true;
         return false;
     }
 

@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X as CloseIcon } from 'lucide-react';
-import { BattlefieldCard } from '../BattlefieldCard';
-import { type GameObject, type PlayerState } from '@shared/engine_types';
+import { X as CloseIcon, RefreshCw as SwapIcon } from 'lucide-react';
+import { GameCard } from '../GameCard';
+import { type GameObject } from '@shared/engine_types';
 
 interface ZoneInspectorProps {
   inspectingZone: { cards: GameObject[], label: string } | null;
@@ -10,10 +10,10 @@ interface ZoneInspectorProps {
   targetableIds: Set<string>;
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: () => void;
-  me: PlayerState | undefined;
+  onSwap?: () => void;
 }
 
-export const ZoneInspector = ({ inspectingZone, onClose, onTapCard, targetableIds, onHoverStart, onHoverEnd, me }: ZoneInspectorProps) => {
+export const ZoneInspector = ({ inspectingZone, onClose, onTapCard, targetableIds, onHoverStart, onHoverEnd, onSwap }: ZoneInspectorProps) => {
   if (!inspectingZone) return null;
 
   return (
@@ -22,16 +22,29 @@ export const ZoneInspector = ({ inspectingZone, onClose, onTapCard, targetableId
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl p-8 flex flex-col items-center"
+        className="fixed inset-0 z-[2000] bg-black/95 backdrop-blur-3xl p-8 flex flex-col items-center"
       >
         <div className="w-full max-w-6xl flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white">
-              {inspectingZone.label}
-            </h2>
-            <p className="text-indigo-400 text-xs font-bold uppercase tracking-widest mt-1">
-              {inspectingZone.cards.length} Carte in Totale
-            </p>
+          <div className="flex items-center gap-6">
+            <div>
+              <div className="flex items-center gap-3">
+                <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white">
+                    {inspectingZone.label}
+                </h2>
+                {onSwap && (
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); onSwap(); }}
+                        className="p-2 bg-white/5 hover:bg-white/10 text-purple-400 rounded-lg border border-white/5 transition-all group"
+                        title="Swap Player"
+                    >
+                        <SwapIcon className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
+                    </button>
+                )}
+              </div>
+              <p className="text-indigo-400 text-xs font-bold uppercase tracking-widest mt-1">
+                {inspectingZone.cards.length} Total Cards
+              </p>
+            </div>
           </div>
           <button 
             onClick={onClose}
@@ -44,14 +57,13 @@ export const ZoneInspector = ({ inspectingZone, onClose, onTapCard, targetableId
         <div className="flex-1 w-full max-w-6xl overflow-y-auto pr-4 custom-scrollbar">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 pb-20 justify-items-center">
             {inspectingZone.cards.map((obj) => (
-              <BattlefieldCard 
+              <GameCard 
                 key={obj.id} 
                 obj={obj} 
-                onTapCard={() => onTapCard(obj.id)} 
+                onClick={() => onTapCard(obj.id)} 
                 isTargetable={targetableIds.has(obj.id)}
                 onHoverStart={onHoverStart}
                 onHoverEnd={onHoverEnd}
-                me={me}
               />
             ))}
             {inspectingZone.cards.length === 0 && (

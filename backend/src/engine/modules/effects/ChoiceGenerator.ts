@@ -41,8 +41,8 @@ export class ChoiceGenerator {
             const isMatch = TargetingProcessor.matchesRestrictions(state, c, restrictions, playerId, sourceId);
             
             return {
-                label: isMatch ? `Seleziona ${c.definition.name}` : `[Invalid] ${c.definition.name}`,
-                value: isMatch ? c.id : "none",
+                label: isMatch ? `Select ${c.definition.name}` : `[Invalid] ${c.definition.name}`,
+                value: c.id,
                 imageUrl: c.definition.image_url,
                 cardData: c,
                 selectable: isMatch,
@@ -58,7 +58,7 @@ export class ChoiceGenerator {
         // Add the 'None/Skip' option if optional
         if (config.optional !== false) {
             options.push({
-                label: "Nessuna / Salta",
+                label: "None / Skip",
                 value: "none",
                 imageUrl: undefined,
                 cardData: undefined,
@@ -160,7 +160,7 @@ export class ChoiceGenerator {
             parentContext: pruneContext(parentContext),
             onSelected: (card: GameObject) => {
                 // This is now called for each card in the batch by ChoiceProcessor
-                return [{ type: 'MoveToZone', targetId: card.id, zone: Zone.Graveyard }];
+                return [{ type: 'MoveToZone', targetId: card.id, zone: Zone.Graveyard, isDiscard: true }];
             }
         });
     }

@@ -252,7 +252,7 @@ export class EffectProcessor {
               return state.battlefield.filter(o => o.controllerId === ctrl && o.definition.types.some(t => t.toLowerCase() === type.toLowerCase())).length >= threshold;
           default:
               const { ConditionProcessor } = require('../core/ConditionProcessor');
-              return ConditionProcessor.matchesCondition(state, condition, stackObject?.sourceId || '', state.activePlayerId, {});
+              return ConditionProcessor.matchesCondition(state, condition, stackObject?.sourceId || '', state.activePlayerId, stackObject || {});
       }
   }
 

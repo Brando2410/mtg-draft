@@ -21,8 +21,9 @@ export class ChoiceProcessor {
         resetPriorityToActivePlayer: () => void;
         activateAbility: (p: PlayerId, c: string, idx: number, targets: string[], bypass?: boolean) => boolean;
         finaliseTargeting?: (p: PlayerId, targets: string[]) => boolean;
-        tapForMana?: (p: PlayerId, c: string) => void;
+        tapForMana: (p: PlayerId, c: string) => void;
         checkAutoPass?: (p: PlayerId) => void;
+        passPriority?: (p: PlayerId) => void;
     }
   ): boolean {
     const action = state.pendingAction;
@@ -174,13 +175,8 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     let currentCtx = { ...parentContext, stackObj }; // Wrap to start resuming
     
     // First, check if the object we are resuming is actually done
-    if (stackObj && !state.pendingAction) {
-        const index = state.stack.findIndex(s => s.id === stackObj.id);
-        if (index !== -1) {
-            state.stack.splice(index, 1);
-            log(`[STACK] Removed completed trigger/spell for ${sourceId} from stack.`);
-        }
-    }
+    // Cleanup moved to end to support multi-effect spells
+
 
     // Then resume parent contexts
     while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex < currentCtx.effects.length) {
@@ -199,6 +195,26 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     }
     
     if (!state.pendingAction) {
+       if (stackObj) {
+           const fullStackObj = state.stack.find(s => s.id === stackObj.id);
+           if (fullStackObj) {
+               if (fullStackObj.type === 'Spell' && fullStackObj.card) {
+                   const card = fullStackObj.card;
+                   const types = card.definition.types.map(t => (t as string).toLowerCase());
+                   const isPermanent = types.includes('creature') || types.includes('artifact') || types.includes('enchantment') || types.includes('planeswalker');
+                   
+                   if (isPermanent) {
+                       ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId, log);
+                   } else {
+                       ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId, log);
+                   }
+               } else {
+                   // Clean up ability/trigger
+                   ActionProcessor.removeFromCurrentZone(state, { id: fullStackObj.id, zone: Zone.Stack } as any);
+               }
+               log(`[STACK] Completed resolution of ${stackObj.type} for ${sourceId}.`);
+           }
+       }
        engine.resetPriorityToActivePlayer(); 
     } else {
        state.priorityPlayerId = (state as any).pendingAction.playerId || null;
@@ -284,7 +300,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
           type: 'TARGETING',
           playerId,
           sourceId: obj.id,
-          data: { abilityIndex, legalTargetIds, optional: targetDef.optional, targetDefinition: targetDef }
+          data: { abilityIndex, targets: legalTargetIds, optional: targetDef.optional, targetDefinition: targetDef }
        };
        state.priorityPlayerId = playerId;
        log(`Select target for ${obj.definition.name}'s ability.`);
@@ -322,6 +338,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             savedTargets, 
             log, 
             {
+                tapForMana: (p: any, c: any) => engine.tapForMana(p, c),
                 passPriority: (p: any) => engine.passPriority ? engine.passPriority(p) : engine.resetPriorityToActivePlayer(),
                 checkAutoPass: (p: any) => engine.checkAutoPass ? engine.checkAutoPass(p) : engine.resetPriorityToActivePlayer()
             },
@@ -365,18 +382,8 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         EffectProcessor.resolveEffects(state, choice.effects, sourceId, targetsForResolution, log, 0, stackObj, savedActionData);
     }
 
-    if (stackObj) {
-        // We have to check if resolution is truly finished for this object
-        // EffectProcessor.resolveEffects already ran the final effects above.
-        // If no pending action is set, it's done.
-        if (!state.pendingAction) {
-            const index = state.stack.findIndex(s => s.id === stackObj.id);
-            if (index !== -1) {
-                state.stack.splice(index, 1);
-                log(`[STACK] Removed completed trigger for ${sourceId} from stack.`);
-            }
-        }
-    }
+    // Cleanup block removed from here and moved to the end
+
 
     // Resume Parent Contexts
     let currentCtx = savedActionData;
@@ -396,6 +403,26 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     }
     
     if (!state.pendingAction) {
+       if (stackObj) {
+           const fullStackObj = state.stack.find(s => s.id === stackObj.id);
+           if (fullStackObj) {
+               if (fullStackObj.type === 'Spell' && fullStackObj.card) {
+                   const card = fullStackObj.card;
+                   const types = card.definition.types.map(t => (t as string).toLowerCase());
+                   const isPermanent = types.includes('creature') || types.includes('artifact') || types.includes('enchantment') || types.includes('planeswalker');
+                   
+                   if (isPermanent) {
+                       ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId, log);
+                   } else {
+                       ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId, log);
+                   }
+               } else {
+                   // Clean up ability/trigger
+                   ActionProcessor.removeFromCurrentZone(state, { id: fullStackObj.id, zone: Zone.Stack } as any);
+               }
+               log(`[STACK] Completed resolution of ${stackObj.type} for ${sourceId}.`);
+           }
+       }
        engine.resetPriorityToActivePlayer(); 
     } else {
        state.priorityPlayerId = (state as any).pendingAction.playerId || null;

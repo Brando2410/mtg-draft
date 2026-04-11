@@ -25,7 +25,7 @@ export const Duress: Record<string, ImplementableCard> = {
                         targetMapping: 'TARGET_1',
                         targetIdMapping: 'TARGET_1_HAND',
                         restrictions: ['Noncreature', 'Nonland'],
-                        effects: [{ type: 'DiscardCards', amount: 1, targetMapping: 'SELECTED_CARD' }]
+                        effects: [{ type: 'MoveToZone', destination: Zone.Graveyard, targetMapping: 'SELECTED_CARD', isDiscard: true }]
                     }
                 ]
             }

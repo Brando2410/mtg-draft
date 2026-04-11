@@ -7,12 +7,14 @@ export class GameSetupProcessor {
     state: GameState,
     playerIds: PlayerId[],
     names: Record<string, string>,
-    decks: Record<string, Card[]>
+    decks: Record<string, Card[]>,
+    avatars: Record<string, string> = {}
   ) {
     for (const id of playerIds) {
       state.players[id] = {
         id,
         name: names[id] || `Player ${id.slice(0, 4)}`,
+        avatar: avatars[id],
         life: 20,
         poisonCounters: 0,
         library: (decks[id] || []).map((cardRef, index) => this.createGameObject(id, cardRef, index)),
@@ -23,7 +25,8 @@ export class GameSetupProcessor {
         fullControl: false,
         maxHandSize: 7,
         pendingDiscardCount: 0,
-        virtualHand: []
+        virtualHand: [],
+        stops: {}
       };
     }
   }

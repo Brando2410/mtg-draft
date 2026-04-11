@@ -1,4 +1,4 @@
-import { GameState, GameEvent, TriggeredAbility, PlayerId, GameObjectId, Zone, ZoneRequirement, AbilityType } from '@shared/engine_types';
+import { GameState, GameEvent, TriggeredAbility, PlayerId, GameObjectId, Zone, ZoneRequirement, AbilityType, ActionType } from '@shared/engine_types';
 import { LayerProcessor } from '../state/LayerProcessor';
 
 /**
@@ -179,7 +179,7 @@ export class TriggerProcessor {
     // Rule 603.3d: Choice of targets occurs as the ability is put on the stack.
     const targetDef = (trigger as any).targetDefinition;
     if (targetDef) {
-       this.initializeTriggerTargeting(state, trigger, stackId, targetDef, sourceName, log);
+       this.initializeTriggerTargeting(state, trigger, stackId, targetDef, sourceName, log, stackObj);
     } else {
        log(`[TRIGGER] ${sourceName} triggered by ${event.type}.`);
     }
@@ -191,7 +191,8 @@ export class TriggerProcessor {
     stackId: string, 
     targetDef: any, 
     sourceName: string, 
-    log: (m: string) => void
+    log: (m: string) => void,
+    stackObj: any
   ) {
     const { TargetingProcessor } = require('../actions/TargetingProcessor');
     const legalTargetIds = [
@@ -214,14 +215,14 @@ export class TriggerProcessor {
 
     // Set up the interactive targeting session (Rule 117)
     state.pendingAction = {
-       type: 'TARGETING',
-       playerId: trigger.controllerId,
-       sourceId: trigger.sourceId,
+       type: ActionType.Targeting,
+       playerId: stackObj.controllerId,
+       sourceId: stackObj.sourceId,
        data: { 
-           stackId: stackId,
-           targetDefinition: targetDef,
-           legalTargetIds: legalTargetIds,
-           optional: targetDef.optional
+           targetDefinition: targetDef, 
+           targets: legalTargetIds, 
+           stackId: stackObj.id,
+           stackObj: stackObj
        }
     };
     state.priorityPlayerId = trigger.controllerId;

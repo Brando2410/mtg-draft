@@ -63,9 +63,11 @@ export class ChoiceEffectHandler {
                 playerId: controllerId,
                 sourceId: sourceId,
                 restrictions: effect.restrictions,
+                filterSelectable: true,
                 optional: effect.optional !== false,
                 actionType: effect.optional ? ActionType.OptionalAction : ActionType.ResolutionChoice,
                 onSelected: (c) => (effect.effects || []).map((sub: any) => ({ ...sub, targetId: c.id })),
+                hideUndo: true,
                 stackObj: stackObject,
                 parentContext: parentContext
             });
@@ -80,6 +82,7 @@ export class ChoiceEffectHandler {
             playerId: controllerId, 
             sourceId: sourceId, 
             actionType: effect.optional ? ActionType.OptionalAction : ActionType.ResolutionChoice,
+            hideUndo: true,
             stackObj: stackObject,
             parentContext: parentContext
         },

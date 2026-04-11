@@ -103,6 +103,28 @@ export class CombatProcessor {
     callbacks.resetPriorityToActivePlayer();
   }
 
+  public static clearAttackers(state: GameState, playerId: PlayerId, callbacks: CombatCallbacks) {
+    if (state.pendingAction?.type !== 'DECLARE_ATTACKERS' || state.pendingAction.playerId !== playerId) return;
+    if (!state.combat) return;
+
+    state.combat.attackers.forEach(a => {
+        const card = state.battlefield.find(o => o.id === a.attackerId);
+        if (card) card.isTapped = false;
+    });
+    state.combat.attackers = [];
+    callbacks.log(`${callbacks.getPlayerName(playerId)} cleared all attackers.`);
+    callbacks.resetPriorityToActivePlayer();
+  }
+
+  public static clearBlockers(state: GameState, playerId: PlayerId, callbacks: CombatCallbacks) {
+    if (state.pendingAction?.type !== 'DECLARE_BLOCKERS' || state.pendingAction.playerId !== playerId) return;
+    if (!state.combat) return;
+
+    state.combat.blockers = [];
+    callbacks.log(`${callbacks.getPlayerName(playerId)} cleared all blockers.`);
+    callbacks.resetPriorityToActivePlayer();
+  }
+
   /**
    * CR 509.2: Confirming the Blocker Declaration Action
    */

@@ -57,7 +57,7 @@ export class ConditionProcessor {
         case 'TARGET_1_MATCHES':
         case 'TARGET_2_MATCHES':
           const targetIdx = type === 'TARGET_1_MATCHES' ? 0 : 1;
-          const targetId = (event as any)?.targetIds?.[targetIdx] || (event as any)?.targetId;
+          const targetId = (event as any)?.targetIds?.[targetIdx] || (event as any)?.targets?.[targetIdx] || (event as any)?.targetId;
           if (!targetId) return false;
           const targetObj = state.battlefield.find(o => o.id === targetId) ||
             state.exile.find(o => o.id === targetId) ||

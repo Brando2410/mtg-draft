@@ -47,7 +47,7 @@ export class TargetingProcessor {
         // 1. If target is a player
         if (state.players[targetId]) {
             const type = (abilityTargetDef?.type || '').toLowerCase();
-            const restrictions = (abilityTargetDef?.restrictions || []).map((r: string) => r.toLowerCase());
+            const restrictions = (abilityTargetDef?.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
 
             if (type === 'player' || type === 'anytarget' || restrictions.includes('player') || restrictions.includes('anytarget')) {
                 let sourceControllerId = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId)?.controllerId ||
@@ -87,6 +87,11 @@ export class TargetingProcessor {
         }
 
         if (!targetObj) {
+            targetObj = state.exile.find(o => o.id === targetId);
+            if (targetObj) targetZone = Zone.Exile;
+        }
+
+        if (!targetObj) {
             targetObj = state.stack.find(s => s.id === targetId);
             if (targetObj) {
                 targetZone = Zone.Stack;
@@ -105,7 +110,7 @@ export class TargetingProcessor {
         if (!expectedZone) {
             if (targetZone === Zone.Stack) expectedZone = Zone.Stack;
             else if (abilityTargetDef?.type === 'CardInGraveyard') expectedZone = Zone.Graveyard;
-            else if (abilityTargetDef?.restrictions?.some((r: string) => r.toLowerCase() === 'graveyard')) expectedZone = Zone.Graveyard;
+            else if (abilityTargetDef?.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'graveyard')) expectedZone = Zone.Graveyard;
             else expectedZone = Zone.Battlefield;
         }
 
@@ -198,7 +203,9 @@ export class TargetingProcessor {
         const allPotentialTargets = [
             ...Object.keys(state.players),
             ...state.battlefield.map(o => o.id),
-            ...Object.values(state.players).flatMap(p => p.graveyard.map(o => o.id))
+            ...Object.values(state.players).flatMap(p => p.graveyard.map(o => o.id)),
+            ...state.exile.map(o => o.id),
+            ...state.stack.map(o => o.id)
         ];
 
         if (!perTarget) {
@@ -240,9 +247,23 @@ export class TargetingProcessor {
      * Evaluates a set of restrictions against a target object or player.
      */
     public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], controllerId: string | null, sourceId: string): boolean {
+        if (!targetObj) return false;
+
+        // Extract definition: either direct (GameObject) or from card property (Stack Spell)
+        const definition = targetObj.definition || targetObj.card?.definition;
+
+        // If no definition and not a player, this object cannot match most restrictions
+        if (!definition) {
+            if (state.players[targetObj.id || targetObj]) {
+                // Handle player-specific target checks if necessary
+                return restrictions.includes('player') || restrictions.includes('anytarget');
+            }
+            return false;
+        }
+
         const objTypes = [
-            ...(targetObj.definition.types || []),
-            ...(targetObj.definition.supertypes || [])
+            ...(definition.types || []),
+            ...(definition.supertypes || [])
         ].map((t: string) => t.toLowerCase());
         const baseTypes = ['creature', 'planeswalker', 'land', 'artifact', 'enchantment', 'instant', 'sorcery', 'permanent', 'card'];
         const isAlternative = (r: any) => typeof r === 'object' || (typeof r === 'string' && baseTypes.includes(r.toLowerCase()));
@@ -303,8 +324,8 @@ export class TargetingProcessor {
             ].includes(lr) || lr.startsWith('cmc') || lr.startsWith('mv') || lr.startsWith('power') || lr.startsWith('toughness');
 
             if (!isKnownFilter && !baseTypes.includes(lr)) {
-                const targetName = (targetObj.definition?.name || targetObj.name || "").toLowerCase();
-                const objSubtypes = (targetObj.definition?.subtypes || []).map((s: string) => s.toLowerCase());
+                const targetName = (definition?.name || targetObj.name || "").toLowerCase();
+                const objSubtypes = (definition?.subtypes || []).map((s: string) => s.toLowerCase());
                 const singularLr = lr.endsWith('s') ? lr.slice(0, -1) : lr;
                 
                 const isNameMatch = targetName === lr || targetName === singularLr;
@@ -328,10 +349,10 @@ export class TargetingProcessor {
                 } else {
                     let match = true;
                     if (r.types && !r.types.some((t: string) => objTypes.includes(t.toLowerCase()))) match = false;
-                    if (r.subtypes && !r.subtypes.some((s: string) => targetObj.definition.subtypes.some((ts: string) => ts.toLowerCase() === s.toLowerCase()))) match = false;
-                    if (r.nameIncludes && targetObj.definition.name && !targetObj.definition.name.toLowerCase().includes(r.nameIncludes.toLowerCase())) match = false;
+                    if (r.subtypes && !r.subtypes.some((s: string) => (definition.subtypes || []).some((ts: string) => ts.toLowerCase() === s.toLowerCase()))) match = false;
+                    if (r.nameIncludes && definition.name && !definition.name.toLowerCase().includes(r.nameIncludes.toLowerCase())) match = false;
                     if (r.nameEquals || r.name) {
-                        const targetName = targetObj.definition?.name || targetObj.name;
+                        const targetName = definition?.name || targetObj.name;
                         const filterName = r.nameEquals || r.name || "";
                         if (!targetName || targetName.toLowerCase() !== filterName.toLowerCase()) match = false;
                     }
@@ -441,8 +462,8 @@ export class TargetingProcessor {
             return engine.finaliseTargeting(playerId, actionData.selectedTargets);
         }
 
-        const legalTargetIds = actionData.legalTargetIds || [];
-        if (!legalTargetIds.includes(targetId)) {
+        const validTargets = actionData.targets || [];
+        if (!validTargets.includes(targetId)) {
             log(`Invalid target selected.`);
             return false;
         }
@@ -463,7 +484,7 @@ export class TargetingProcessor {
                 ...state.battlefield.map(o => o.id),
                 ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
             ];
-            actionData.legalTargetIds = pool.filter(tid => this.isLegalTarget(state, state.pendingAction!.sourceId, tid, targetDef, nextIndex));
+            actionData.targets = pool.filter(tid => this.isLegalTarget(state, state.pendingAction!.sourceId, tid, targetDef, nextIndex));
         }
 
         if (actionData.selectedTargets.length >= targetCount) {

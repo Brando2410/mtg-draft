@@ -38,8 +38,8 @@ export const JolraelMwonvuliRecluse: Record<string, ImplementableCard> = {
                 effects: [{
                     type: EffectType.ApplyContinuousEffect,
                     duration: 'UNTIL_END_OF_TURN',
-                    powerSet: 'COUNT_hand',
-                    toughnessSet: 'COUNT_hand',
+                    powerSet: 'CARDS_IN_HAND_COUNT',
+                    toughnessSet: 'CARDS_IN_HAND_COUNT',
                     layer: 7,
                     targetMapping: 'ALL_CREATURES_YOU_CONTROL'
                 }]
