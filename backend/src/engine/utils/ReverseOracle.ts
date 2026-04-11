@@ -265,6 +265,7 @@ export class ReverseOracle {
             case 'SELF': return "this creature";
             case 'CONTROLLER': return "you";
             case 'TARGET_1': return `target ${other}${restrText || "permanent"}${controlSuffix}`;
+            case 'OPPONENT': return "your opponent";
             case 'EACH_OPPONENT': return "each opponent";
             case 'EACH_PLAYER': return "each player";
             case 'ALL_CREATURES_YOU_CONTROL': return "each creature you control";

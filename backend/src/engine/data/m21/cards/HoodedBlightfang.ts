@@ -26,7 +26,7 @@ export const HoodedBlightfang: Record<string, ImplementableCard> = {
                     return stats.keywords.includes('Deathtouch');
                 },
                 effects: [
-                    { type: EffectType.LoseLife, amount: 1, targetMapping: "EACH_OPPONENT" },
+                    { type: EffectType.LoseLife, amount: 1, targetMapping: "OPPONENT" },
                     { type: EffectType.GainLife, amount: 1, targetMapping: "CONTROLLER" }
                 ],
                 oracleText: "Whenever a creature you control with deathtouch attacks, each opponent loses 1 life and you gain 1 life."

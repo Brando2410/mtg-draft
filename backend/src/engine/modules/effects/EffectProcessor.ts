@@ -95,7 +95,12 @@ export class EffectProcessor {
     const { TargetingProcessor } = require('../actions/TargetingProcessor');
 
     // Rule 608.2: Evaluate conditions
-    if (effect.condition && !this.checkCondition(state, effect.condition, stackObject, parentContext)) return;
+    const sourceObjForCondition = this.findObject(state, sourceId, stackObject, parentContext) || (stackObject?.card ? stackObject.card : stackObject);
+    const controllerIdForCondition = sourceObjForCondition?.controllerId || state.activePlayerId;
+    if (effect.condition) {
+        const met = this.checkCondition(state, effect.condition, stackObject, parentContext, controllerIdForCondition, targets);
+        if (!met) return;
+    }
 
     // Resolve Target Mappings
     const resolveMapping = (m: string, index: number) => {
@@ -184,7 +189,7 @@ export class EffectProcessor {
         }
         case 'DiscardCards': {
             const { ChoiceGenerator } = require('./ChoiceGenerator');
-            state.pendingAction = ChoiceGenerator.createDiscardChoice(state, validTargetIds as PlayerId[], sourceId, amount, effect.label || "Discard Cards", stackObject, parentContext);
+            state.pendingAction = ChoiceGenerator.createDiscardChoice(state, validTargetIds as PlayerId[], sourceId, amount, effect.label || "Discard Cards", stackObject, parentContext, (effect as any).onFailureEffects, log);
             return;
         }
         case 'CreateToken': {
@@ -242,7 +247,7 @@ export class EffectProcessor {
     });
   }
 
-  private static checkCondition(state: GameState, condition: string, stackObject?: any, parentContext?: any): boolean {
+  private static checkCondition(state: GameState, condition: string, stackObject?: any, parentContext?: any, controllerId?: string, targets?: string[]): boolean {
       const card = stackObject?.card || stackObject;
       
       switch (condition.toUpperCase()) {
@@ -253,12 +258,13 @@ export class EffectProcessor {
           case 'ARTIFACT_COUNT_GE:':
           case 'LAND_COUNT_GE:':
               const threshold = parseInt(condition.split(':')[1]);
-              const ctrl = stackObject?.controllerId || state.activePlayerId;
+              const ctrl = controllerId || stackObject?.controllerId || state.activePlayerId;
               const type = condition.includes('ARTIFACT') ? 'Artifact' : 'Land';
               return state.battlefield.filter(o => o.controllerId === ctrl && o.definition.types.some(t => t.toLowerCase() === type.toLowerCase())).length >= threshold;
           default:
               const { ConditionProcessor } = require('../core/ConditionProcessor');
-              return ConditionProcessor.matchesCondition(state, condition, stackObject?.sourceId || '', state.activePlayerId, stackObject || {});
+              const extendedEvent = { ...(stackObject || {}), targets };
+              return ConditionProcessor.matchesCondition(state, condition, stackObject?.sourceId || '', controllerId || state.activePlayerId, extendedEvent);
       }
   }
 

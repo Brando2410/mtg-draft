@@ -109,36 +109,33 @@ export class PlayerActionProcessor {
     const typeLine = (obj.definition.types?.join(' ') + ' ' + (obj.definition.type_line || '')).toLowerCase();
     const isLand = typeLine.includes('land');
 
-    const activatedAbilities = logic?.abilities?.filter((a: any) => {
-        if (a.type !== AbilityType.Activated) return false;
-        if (isLand) return true; // Land abilities always shown
-        return !a.isManaAbility; // Non-land mana abilities hidden for simplicity for now
-    }) || [];
+    const allActivated = logic?.abilities?.filter((a: any) => a.type === AbilityType.Activated) || [];
 
-    if (activatedAbilities.length > 0) {
+    if (allActivated.length > 0) {
         if (state.priorityPlayerId !== playerId) {
             log(`Player tried to activate ability without priority.`);
             return false;
         }
 
-        // If only one ability, just try to activate it directly (targeting will follow if needed)
-        if (activatedAbilities.length === 1) {
-            const index = logic.abilities.indexOf(activatedAbilities[0]);
+        const nonMana = allActivated.filter((a: any) => !a.isManaAbility);
+
+        // If only one non-mana ability and no other choices, direct activate
+        if (allActivated.length === 1 && nonMana.length === 1) {
+            const index = logic.abilities.indexOf(nonMana[0]);
             const success = actionHandlers.activateAbility(playerId, cardId, index);
             if (success) return true;
-            // If activation failed (likely already tapped), fall through to possible undo logic
         }
 
-        // If multiple, show CHOICE
-        if (activatedAbilities.length > 1) {
+        // If multiple abilities (common for creatures with utility + mana or multiple utilities)
+        if (allActivated.length > 1) {
             const { ActionType: AT } = require('@shared/engine_types');
             state.pendingAction = {
                 type: AT.ModalSelection,
                 playerId: playerId,
                 sourceId: cardId,
                 data: {
-                    choices: activatedAbilities.map((a: any) => ({
-                        label: a.id || 'Activate Ability',
+                    choices: allActivated.map((a: any) => ({
+                        label: a.oracleText || a.id || 'Activate Ability',
                         value: logic.abilities.indexOf(a)
                     }))
                 }
@@ -233,6 +230,18 @@ export class PlayerActionProcessor {
 
     const existingIndex = state.combat.attackers.findIndex(a => a.attackerId === cardId);
     if (existingIndex >= 0) {
+       // Requirement Check: MustAttack (Rule 508.1d)
+       const mustAttack = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'MustAttack') ||
+                         stats.restrictions?.includes('MustAttack');
+       if (mustAttack) {
+          const canAttack = !card.isTapped && !card.summoningSickness && !stats.keywords.includes('Defender');
+          const cannotAttackFlags = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'CannotAttack');
+          
+          if (canAttack && !cannotAttackFlags) {
+             log(`${card.definition.name} must attack and cannot be deselected.`);
+             return false;
+          }
+       }
        state.combat.attackers.splice(existingIndex, 1);
        log(`${card.definition.name} removed from attackers.`);
     } else {

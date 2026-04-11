@@ -66,6 +66,7 @@ export interface CardDefinition {
   set?: string;
   entersTapped?: boolean; // Replacement effect-style state for entry
   entersWithXCounters?: boolean; // Rule 122.6: Entry with counters based on X
+  abilities?: any[];
 }
 
 // A physical/virtual object existing in a Zone.
@@ -100,6 +101,7 @@ export interface GameObject {
     power: number;
     toughness: number;
     keywords: string[];
+    restrictions?: string[];
     isPlayable?: boolean; // For hand cards
   };
 }
@@ -447,6 +449,7 @@ export interface TokenBlueprint {
   types: string[];
   subtypes: string[];
   keywords?: string[];
+  abilities?: any[];
   oracleText?: string;
   image_url?: string;
 }
@@ -569,10 +572,10 @@ export interface EffectDefinition {
 
   // Continuous Effect Properties
   duration?: string | EffectDuration;
-  powerModifier?: number | string;
-  toughnessModifier?: number | string;
-  powerSet?: number | string;
-  toughnessSet?: number | string;
+  powerModifier?: number | string | ((state: any, source: any) => number);
+  toughnessModifier?: number | string | ((state: any, source: any) => number);
+  powerSet?: number | string | ((state: any, source: any) => number);
+  toughnessSet?: number | string | ((state: any, source: any) => number);
   powerDynamic?: string; // For CDAs (Layer 7a) like Tarmogoyf or Kinetic Augur
   toughnessDynamic?: string; // For CDAs (Layer 7a)
   abilitiesToAdd?: string[];
@@ -587,8 +590,8 @@ export interface EffectDefinition {
   exileOnMoveToGraveyard?: boolean;
 
   // Dynamic Token stats
-  powerOverride?: number | string;
-  toughnessOverride?: number | string;
+  powerOverride?: number | string | ((state: any, source: any) => number);
+  toughnessOverride?: number | string | ((state: any, source: any) => number);
 
   multiplier?: number;
   repeatIfTypeMatch?: string[];
@@ -601,6 +604,7 @@ export interface EffectDefinition {
 
   // Conditional logic
   condition?: string;
+  onFailureEffects?: EffectDefinition[];
   message?: string;
   destination?: Zone;
 

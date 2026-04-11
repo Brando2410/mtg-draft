@@ -116,15 +116,19 @@ export class LayerProcessor {
     power += counterBonus;
     toughness += counterBonus;
 
+    // 7. Collect restrictions from active effects
+    const restrictionTypes = activeEffects.flatMap(e => e.restrictions || []).map((r: any) => typeof r === 'string' ? r : r.type);
+
     return {
       power,
       toughness,
       keywords: Array.from(keywords),
       colors: Array.from(colors),
       types: Array.from(types),
-      subtypes: Array.from(subtypes)
+      subtypes: Array.from(subtypes),
+      restrictions: Array.from(new Set(restrictionTypes))
     };
-  }
+}
 
   private static applyLayer7(state: GameState, effect: ContinuousEffect, obj: GameObject, update: (p?: number, t?: number) => void) {
       // Sublayer 7a: Characteristic-defining abilities

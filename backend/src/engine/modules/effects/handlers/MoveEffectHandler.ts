@@ -119,9 +119,9 @@ export class MoveEffectHandler {
             onSelected: (c: any) => {
                 const subEffects = [];
                 if (effect.splitDestinations) {
-                    subEffects.push({ type: 'MoveToZone', targetId: (c as any).id, zone: effect.splitDestinations[0].zone, tapped: effect.splitDestinations[0].tapped, reveal: effect.reveal });
+                    subEffects.push({ type: 'MoveToZone', targetId: (c as any).id, targetMapping: 'SELECTED_CARD', zone: effect.splitDestinations[0].zone, tapped: effect.splitDestinations[0].tapped, reveal: effect.reveal });
                 } else {
-                    subEffects.push({ type: 'MoveToZone', targetId: (c as any).id, zone: destination, reveal: effect.reveal });
+                    subEffects.push({ type: 'MoveToZone', targetId: (c as any).id, targetMapping: 'SELECTED_CARD', zone: destination, reveal: effect.reveal });
                 }
                 
                 const remainder = cards.filter(o => o.id !== c.id);
@@ -213,7 +213,7 @@ export class MoveEffectHandler {
             const subEffects: any[] = [];
             const destination = effect.zone || effect.destination || Zone.Hand;
             
-            subEffects.push({ type: 'MoveToZone', targetId: (c as any).id, zone: destination, tapped: effect.tapped, reveal: effect.reveal });
+            subEffects.push({ type: 'MoveToZone', targetId: (c as any).id, targetMapping: 'SELECTED_CARD', zone: destination, tapped: effect.tapped, reveal: effect.reveal });
             
             const currentAmount = (effect.amount as number) || 1;
             const currentCount = ((effect as any).count as number) || 1;
@@ -312,20 +312,26 @@ export class MoveEffectHandler {
   }
 
   private static resolveSingleTargetMove(state: GameState, effect: EffectDefinition, targetIds: string[], log: (m: string) => void, stackObject?: any, parentContext?: any) {
-    const obj = this.findObject(state, (effect as any).targetId || targetIds[0], stackObject, parentContext);
-    if (obj) {
-        const from = obj.zone;
-        let destination = effect.zone || effect.destination;
-        if (!destination) {
-            if (effect.type === 'Exile') destination = Zone.Exile;
-            else destination = Zone.Hand;
-        }
-        ActionProcessor.moveCard(state, obj, destination, obj.ownerId, log, effect.libraryPosition, false, (effect as any).isDiscard);
-        if (effect.tapped && destination === Zone.Battlefield) obj.isTapped = true;
-        if (effect.reveal) (obj as any).isRevealed = true;
-        if (destination === Zone.Exile) {
-            TriggerProcessor.onEvent(state, { type: 'ON_EXILE', targetId: obj.id, sourceId: (stackObject as any)?.sourceId || '', sourceZone: from }, log);
-        }
+    const tid = (effect as any).targetId || targetIds[0];
+    const obj = this.findObject(state, tid, stackObject, parentContext);
+    if (!obj) {
+        log(`[WARNING] resolveSingleTargetMove: Could not find object with ID ${tid}`);
+        return;
+    }
+
+    const from = obj.zone;
+    let destination = effect.zone || effect.destination;
+    if (!destination) {
+        if (effect.type === 'Exile') destination = Zone.Exile;
+        else destination = Zone.Hand;
+    }
+    
+    ActionProcessor.moveCard(state, obj, destination, obj.ownerId, log, effect.libraryPosition, false, (effect as any).isDiscard);
+    
+    if (effect.tapped && destination === Zone.Battlefield) obj.isTapped = true;
+    if (effect.reveal) (obj as any).isRevealed = true;
+    if (destination === Zone.Exile) {
+        TriggerProcessor.onEvent(state, { type: 'ON_EXILE', targetId: obj.id, sourceId: (stackObject as any)?.sourceId || '', sourceZone: from }, log);
     }
   }
 

@@ -20,7 +20,7 @@ export const SanctumofStoneFangs: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Battlefield,
                 triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 effects: [
-                    { type: 'LoseLife', amount: 'COUNT_Shrine', targetMapping: 'EACH_OPPONENT' },
+                    { type: 'LoseLife', amount: 'COUNT_Shrine', targetMapping: 'OPPONENT' },
                     { type: 'GainLife', amount: 'COUNT_Shrine', targetMapping: 'CONTROLLER' }
                 ]
             }

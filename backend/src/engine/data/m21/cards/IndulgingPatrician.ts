@@ -25,7 +25,7 @@ export const IndulgingPatrician: Record<string, ImplementableCard> = {
                 effects: [{
                     type: EffectType.LoseLife,
                     amount: 3,
-                    targetMapping: "EACH_OPPONENT"
+                    targetMapping: "OPPONENT"
                 }],
                 oracleText: "At the beginning of your end step, if you gained 3 or more life this turn, each opponent loses 3 life."
             }

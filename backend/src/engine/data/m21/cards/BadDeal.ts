@@ -19,7 +19,7 @@ export const BadDeal: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Stack,
                 effects: [
                     { type: 'DrawCards', amount: 2, targetMapping: 'CONTROLLER' },
-                    { type: 'DiscardCards', amount: 2, targetMapping: 'EACH_OPPONENT' },
+                    { type: 'DiscardCards', amount: 2, targetMapping: 'OPPONENT' },
                     { type: 'LoseLife', amount: 2, targetMapping: 'EACH_PLAYER' }
                 ]
             }

@@ -96,6 +96,11 @@ export class ConditionProcessor {
       }
       case 'CREATURE_DIED_THIS_TURN':
         return state.turnState.creaturesDiedThisTurn.length > 0;
+      case 'TARGET_IS_OPPONENT': {
+        const tId = (event as any)?.targets?.[0] || (event as any)?.targetId;
+        if (!tId) return false;
+        return tId !== controllerId;
+      }
       default:
         // Assume true if unknown (safer for gameplay)
         return true;

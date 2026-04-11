@@ -106,10 +106,19 @@ export class TargetingProcessor {
         const isPlayerTargetOnly = typeLineCheck === 'player';
         if (isPlayerTargetOnly) return false;
 
+        if (typeLineCheck === 'anytarget') {
+            const stats = LayerProcessor.getEffectiveStats(targetObj, state);
+            const isValidAnyTarget = stats.types.some(t => {
+                const lt = t.toLowerCase();
+                return lt === 'creature' || lt === 'planeswalker';
+            });
+            if (!isValidAnyTarget) return false;
+        }
+
         let expectedZone = abilityTargetDef?.zone;
         if (!expectedZone) {
             if (targetZone === Zone.Stack) expectedZone = Zone.Stack;
-            else if (abilityTargetDef?.type === 'CardInGraveyard') expectedZone = Zone.Graveyard;
+            else if (abilityTargetDef?.type === 'CardInGraveyard' || String(abilityTargetDef?.type).toLowerCase() === 'cardingraveyard') expectedZone = Zone.Graveyard;
             else if (abilityTargetDef?.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'graveyard')) expectedZone = Zone.Graveyard;
             else expectedZone = Zone.Battlefield;
         }
@@ -124,7 +133,7 @@ export class TargetingProcessor {
 
         let source = sourceObjProvided || (sourceStack?.card) || sourceBattlefield || sourceGraveyard;
         if (!source && sourceStack) source = sourceStack;
-
+        
         let sourceControllerId = source?.controllerId || (sourceStack as any)?.controllerId;
 
         if (!sourceControllerId) {
@@ -201,6 +210,8 @@ export class TargetingProcessor {
 
         const count = targetDef.count || 1;
         const minCount = targetDef.minCount !== undefined ? targetDef.minCount : count;
+        if (minCount === 0) return true;
+
         const perTarget = targetDef.perTargetRestrictions;
 
         // Collect all potential targetable IDs
@@ -214,6 +225,9 @@ export class TargetingProcessor {
 
         if (!perTarget) {
             const legalTargets = allPotentialTargets.filter(tid => this.isLegalTarget(state, sourceId, tid, targetDef, 0));
+            if (legalTargets.length < minCount) {
+                console.log(`[TARGET-DEBUG] hasLegalTargets FAILED for ${sourceId}. Found: ${legalTargets.length}, Required: ${minCount}. DEF:`, JSON.stringify(targetDef));
+            }
             return legalTargets.length >= minCount;
         }
 
@@ -269,6 +283,7 @@ export class TargetingProcessor {
             ...(definition.types || []),
             ...(definition.supertypes || [])
         ].map((t: string) => t.toLowerCase());
+
         const baseTypes = ['creature', 'planeswalker', 'land', 'artifact', 'enchantment', 'instant', 'sorcery', 'permanent', 'card'];
         const isAlternative = (r: any) => typeof r === 'object' || (typeof r === 'string' && baseTypes.includes(r.toLowerCase()));
 
@@ -281,6 +296,14 @@ export class TargetingProcessor {
             if (lr === 'nonartifact' && objTypes.includes('artifact')) return false;
             if (lr === 'nonenchantment' && objTypes.includes('enchantment')) return false;
             if (lr === 'nonplaneswalker' && objTypes.includes('planeswalker')) return false;
+            if (lr === 'anytarget') {
+                const stats = LayerProcessor.getEffectiveStats(targetObj, state);
+                const isValidAnyTarget = stats.types.some(t => {
+                    const lt = t.toLowerCase();
+                    return lt === 'creature' || lt === 'planeswalker';
+                });
+                if (!isValidAnyTarget) return false;
+            }
             if (lr === 'graveyard' && targetObj.zone !== Zone.Graveyard) return false;
             if ((lr === 'other' || lr === 'another') && targetObj.id === sourceId) return false;
             if (lr === 'notcontrolled' || lr === 'opponentcontrol') {
@@ -360,8 +383,11 @@ export class TargetingProcessor {
                     return objTypes.includes(lr);
                 } else {
                     let match = true;
-                    if (r.types && !r.types.some((t: string) => objTypes.includes(t.toLowerCase()))) match = false;
-                    if (r.subtypes && !r.subtypes.some((s: string) => (definition.subtypes || []).some((ts: string) => ts.toLowerCase() === s.toLowerCase()))) match = false;
+                    const rTypes = r.types || (r.type ? [r.type] : []);
+                    const rSubtypes = r.subtypes || (r.subtype ? [r.subtype] : []);
+                    
+                    if (rTypes.length > 0 && !rTypes.some((t: string) => objTypes.includes(t.toLowerCase()))) match = false;
+                    if (rSubtypes.length > 0 && !rSubtypes.some((s: string) => (definition.subtypes || []).some((ts: string) => ts.toLowerCase() === s.toLowerCase()))) match = false;
                     if (r.nameIncludes && definition.name && !definition.name.toLowerCase().includes(r.nameIncludes.toLowerCase())) match = false;
                     if (r.nameEquals || r.name) {
                         const targetName = definition?.name || targetObj.name;
@@ -708,6 +734,7 @@ export class TargetingProcessor {
                 return state.battlefield
                     .filter(o => o.definition.types.some(t => t.toLowerCase() === 'creature') && !LayerProcessor.hasKeyword(o, state, 'Flying'))
                     .map(o => o.id);
+            case 'OPPONENT':
             case 'EACH_OPPONENT':
                 return Object.keys(state.players).filter(pid => pid !== controllerId);
             case 'EACH_PLAYER':

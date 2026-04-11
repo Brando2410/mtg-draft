@@ -126,6 +126,7 @@ export class PermanentHandler {
               power: pOverride !== undefined ? pOverride.toString() : (blueprint.power || "0"),
               toughness: tOverride !== undefined ? tOverride.toString() : (blueprint.toughness || "0"),
               keywords: blueprint.keywords || [],
+              abilities: blueprint.abilities || [],
               oracleText: blueprint.oracleText || "",
               image_url: blueprint.image_url || ""
           },

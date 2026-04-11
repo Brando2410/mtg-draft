@@ -25,7 +25,7 @@ export const Goremand: Record<string, ImplementableCard> = {
                 triggerEvent: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
                 triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
-                effects: [{ type: 'Sacrifice', targetMapping: 'EACH_OPPONENT' }]
+                effects: [{ type: 'Sacrifice', targetMapping: 'OPPONENT' }]
             }
         ]
     }

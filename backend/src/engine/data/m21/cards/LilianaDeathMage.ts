@@ -23,7 +23,7 @@ export const LilianaDeathMage: Record<string, ImplementableCard> = {
                     type: TargetType.CardInGraveyard,
                     count: 1,
                     minCount: 0,
-                    restrictions: [{ type: 'Creature' }, 'graveyard', 'yours']
+                    restrictions: [{ type: 'Creature' }, 'yours']
                 },
                 effects: [{
                     type: EffectType.ReturnToHand,

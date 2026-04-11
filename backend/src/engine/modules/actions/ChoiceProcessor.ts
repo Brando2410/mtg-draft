@@ -88,7 +88,8 @@ export class ChoiceProcessor {
         const nextPlayerIds = action.data?.stackObj?.data?.nextPlayerIds || [];
         if (!state.pendingAction && nextPlayerIds.length > 0) {
             const discardAmount = action.data?.stackObj?.data?.discardAmount;
-            state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, action.data.label, action.data.stackObj, action.data.parentContext);
+            const failureEffects = action.data?.stackObj?.data?.onFailureEffects;
+            state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, action.data.label, action.data.stackObj, action.data.parentContext, failureEffects);
         }
 
         // Resume whatever was happening
@@ -288,14 +289,26 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
 
     if (ability.targetDefinition) {
        const targetDef = ability.targetDefinition;
-       const legalTargetIds = [
-          ...Object.keys(state.players),
-          ...state.battlefield.map(o => o.id)
-       ].filter(tid => TargetingProcessor.isLegalTarget(state, obj.id, tid, targetDef));
-          
-       if (legalTargetIds.length === 0) {
+        const pool = [
+           ...Object.keys(state.players),
+           ...state.battlefield.map(o => o.id),
+           ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id)),
+           ...state.exile.map(o => o.id),
+           ...state.stack.map(o => o.id)
+        ];
+        const legalTargetIds = pool.filter(tid => TargetingProcessor.isLegalTarget(state, obj.id, tid, targetDef));
+           
+       const minCount = targetDef.minCount !== undefined ? targetDef.minCount : (targetDef.count || 1);
+       if (legalTargetIds.length === 0 && minCount === 0) {
+            log(`No targets found, auto-skipping target selection for ${obj.definition.name} (+1 ability).`);
+            state.priorityPlayerId = playerId;
+            state.pendingAction = undefined;
+            return engine.activateAbility(playerId, obj.id, abilityIndex, [], true);
+       }
+
+       if (legalTargetIds.length < minCount) {
             if (targetDef.optional) {
-                 log(`No legal targets found, auto-skipping target selection for ${obj.definition.name}.`);
+                 log(`No valid targets found, auto-skipping target selection for ${obj.definition.name}.`);
                  state.pendingAction = undefined;
                  state.priorityPlayerId = playerId;
                  return engine.activateAbility(playerId, obj.id, abilityIndex, [], true);
@@ -303,6 +316,37 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                 log(`No legal targets available. Activation invalid.`);
                 return false;
             }
+       }
+       
+       const isGraveyardTargeting = targetDef.type === 'CardInGraveyard';
+       
+       if (isGraveyardTargeting && legalTargetIds.length > 0) {
+           const { ChoiceGenerator } = require('../effects/ChoiceGenerator');
+           const { ActionType: AT } = require('@shared/engine_types');
+           
+           const action = ChoiceGenerator.createCardChoice(
+               state,
+               legalTargetIds.map(id => TargetingProcessor.findObjectInAnyZone(state, id)!),
+               {
+                   label: "Select a card from graveyard",
+                   playerId,
+                   sourceId: obj.id,
+                   optional: targetDef.minCount === 0 || targetDef.optional,
+                   actionType: AT.ModalSelection,
+                   filterSelectable: true,
+                   minChoices: targetDef.minCount !== undefined ? targetDef.minCount : 0,
+                   maxChoices: targetDef.count || 1
+               }
+           );
+           
+           if (action && action.data) {
+               action.data.abilityIndex = abilityIndex;
+               action.data.isTargetingModal = true;
+           }
+           state.pendingAction = action;
+           
+           log(`Select target from graveyard for ${obj.definition.name}'s ability.`);
+           return true;
        }
        
        state.pendingAction = {
@@ -339,12 +383,17 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     log(`Selected ${costType ? costType + ' item' : 'choice'}: ${choice.label}`);
     
     if (action.data.abilityIndex !== undefined) {
+        let targets = savedTargets;
+        if (action.data.isTargetingModal) {
+            targets = choice.value === 'none' ? [] : (Array.isArray(choice.value) ? choice.value : [choice.value]);
+        }
+
         return SpellProcessor.activateAbility(
             state, 
             playerId, 
             sourceId, 
             action.data.abilityIndex, 
-            savedTargets, 
+            targets, 
             log, 
             {
                 tapForMana: (p: any, c: any) => engine.tapForMana(p, c),
@@ -408,6 +457,30 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         
         if (stackObj && !completed && state.pendingAction) {
            stackObj.data = { ...stackObj.data, nextEffectIndex: (state.pendingAction as any).data.nextEffectIndex };
+        }
+    }
+
+    // --- NEXT PLAYER DISCARD CHECK ---
+    if (!state.pendingAction) {
+        const nextPlayerIds = action.data?.nextPlayerIds || action.data?.stackObj?.data?.nextPlayerIds || [];
+        log(`[DISCARD-DEBUG] Resolution finished for current player. Checking queue...`);
+        log(`[DISCARD-DEBUG] Is nextPlayerIds present? ${!!nextPlayerIds}. Length: ${nextPlayerIds.length}`);
+        
+        if (nextPlayerIds.length > 0) {
+            log(`[DISCARD-DEBUG] Advancing to next player: ${nextPlayerIds[0]}`);
+            const discardAmount = action.data?.discardAmount || action.data?.stackObj?.data?.discardAmount;
+            const failureEffects = action.data?.onFailureEffects || action.data?.stackObj?.data?.onFailureEffects;
+            state.pendingAction = ChoiceGenerator.createDiscardChoice(
+                state, 
+                nextPlayerIds, 
+                sourceId as string, 
+                discardAmount, 
+                action.data.label, 
+                action.data.stackObj, 
+                action.data.parentContext, 
+                failureEffects,
+                log
+            );
         }
     }
     

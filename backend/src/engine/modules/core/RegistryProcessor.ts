@@ -14,9 +14,10 @@ export class RegistryProcessor {
   public static registerAbilities(state: GameState, card: GameObject) {
     this.unregisterAbilities(state, card.id);
     const logic = m21[card.definition.name];
-    if (!logic || !logic.abilities) return;
+    const abilities = (logic?.abilities || (card.definition as any).abilities || []);
+    if (!abilities || abilities.length === 0) return;
 
-    logic.abilities.forEach((ability: any, index: number) => {
+    abilities.forEach((ability: any, index: number) => {
         const id = `${card.id}_ability_${index}`;
         const activeZone = ability.activeZone || Zone.Battlefield;
 

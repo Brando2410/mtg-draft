@@ -27,6 +27,34 @@ export class CombatProcessor {
     } 
     else if (state.currentStep === Step.DeclareAttackers) {
       // 508.1: Active player chooses attackers
+      if (!state.combat) this.initializeCombat(state);
+
+      // Requirement Check: Auto-assign MustAttack (Rule 508.1d)
+      const creatures = state.battlefield.filter(o => 
+          o.controllerId === state.activePlayerId && 
+          o.definition.types.some(t => t.toLowerCase() === 'creature')
+      );
+      
+      const opponentId = Object.keys(state.players).find(id => id !== state.activePlayerId);
+
+      creatures.forEach(creature => {
+          const stats = LayerProcessor.getEffectiveStats(creature, state);
+          const hasMustAttack = state.ruleRegistry.restrictions.some(r => r.targetId === creature.id && r.type === 'MustAttack') ||
+                               (stats as any).restrictions?.includes('MustAttack');
+          if (hasMustAttack) {
+              const canAttack = !creature.isTapped && !creature.summoningSickness && !stats.keywords.includes('Defender');
+              const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === creature.id && r.type === 'CannotAttack');
+              
+              if (canAttack && !cannotAttack && opponentId) {
+                  const alreadyAttacking = state.combat!.attackers.some(a => a.attackerId === creature.id);
+                  if (!alreadyAttacking) {
+                    state.combat!.attackers.push({ attackerId: creature.id, targetId: opponentId });
+                    log(`[AUTO-ATTACK] ${creature.definition.name} must attack.`);
+                  }
+              }
+          }
+      });
+
       state.pendingAction = {
         type: 'DECLARE_ATTACKERS',
         playerId: state.activePlayerId
@@ -74,6 +102,13 @@ export class CombatProcessor {
   public static confirmAttackers(state: GameState, playerId: PlayerId, callbacks: CombatCallbacks) {
     if (state.pendingAction?.type !== 'DECLARE_ATTACKERS' || state.pendingAction.playerId !== playerId) return;
     
+    // CR 508.1: Validate global attack requirements (e.g. MustAttack)
+    const validation = this.validateAllAttackers(state);
+    if (!validation.isValid) {
+        callbacks.log(`[ATTACK] ERR: ${validation.error}`);
+        return;
+    }
+
     callbacks.log(`${callbacks.getPlayerName(playerId)} confirmed attackers.`);
     
     const attackers = state.combat?.attackers || [];
@@ -126,12 +161,32 @@ export class CombatProcessor {
     if (state.pendingAction?.type !== 'DECLARE_ATTACKERS' || state.pendingAction.playerId !== playerId) return;
     if (!state.combat) return;
 
-    state.combat.attackers.forEach(a => {
+    // Requirement Check: MustAttack (Rule 508.1d)
+    // We only clear attackers that are NOT mandated to attack
+    const mandatoryAttackers = state.combat.attackers.filter(a => {
         const card = state.battlefield.find(o => o.id === a.attackerId);
-        if (card) card.isTapped = false;
+        if (!card) return false;
+        
+        const stats = LayerProcessor.getEffectiveStats(card, state);
+        const hasMustAttack = state.ruleRegistry.restrictions.some(r => r.targetId === card.id && r.type === 'MustAttack') ||
+                             stats.restrictions?.includes('MustAttack');
+        if (!hasMustAttack) return false;
+
+        const canAttack = !card.isTapped && !card.summoningSickness && !stats.keywords.includes('Defender');
+        const cannotAttackFlags = state.ruleRegistry.restrictions.some(r => r.targetId === card.id && r.type === 'CannotAttack');
+        return canAttack && !cannotAttackFlags;
     });
-    state.combat.attackers = [];
-    callbacks.log(`${callbacks.getPlayerName(playerId)} cleared all attackers.`);
+
+    state.combat.attackers.forEach(a => {
+        const isMandatory = mandatoryAttackers.some(m => m.attackerId === a.attackerId);
+        if (!isMandatory) {
+            const card = state.battlefield.find(o => o.id === a.attackerId);
+            if (card) card.isTapped = false;
+        }
+    });
+
+    state.combat.attackers = mandatoryAttackers;
+    callbacks.log(`${callbacks.getPlayerName(playerId)} cleared non-mandatory attackers.`);
     callbacks.resetPriorityToActivePlayer();
   }
 
@@ -444,6 +499,40 @@ export class CombatProcessor {
     }
 
     return { legal: true };
+  }
+
+  /**
+   * CR 508.1: Validates that the current attacker declaration satisfies all requirements.
+   */
+  public static validateAllAttackers(state: GameState): { isValid: boolean, error?: string } {
+    if (!state.combat) return { isValid: true };
+    
+    // 1. Gather all creatures controlled by the active player
+    const creatures = state.battlefield.filter(o => 
+        o.controllerId === state.activePlayerId && 
+        o.definition.types.some(t => t.toLowerCase() === 'creature')
+    );
+
+    for (const creature of creatures) {
+        const stats = LayerProcessor.getEffectiveStats(creature, state);
+        const isAttacking = state.combat.attackers.some(a => a.attackerId === creature.id);
+        
+        // Requirement Check: MustAttack (Rule 508.1d)
+        // A requirement is ignored if it's impossible (e.g. creature is tapped or has summoning sickness)
+        const mustAttack = state.ruleRegistry.restrictions.some(r => r.targetId === creature.id && r.type === 'MustAttack') ||
+                          (stats as any).restrictions?.includes('MustAttack');
+        if (mustAttack && !isAttacking) {
+            const canAttack = !creature.isTapped && !creature.summoningSickness && !stats.keywords.includes('Defender');
+            // Additional check: CannotAttack restrictions
+            const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === creature.id && r.type === 'CannotAttack');
+            
+            if (canAttack && !cannotAttack) {
+                return { isValid: false, error: `${creature.definition.name} must attack if able.` };
+            }
+        }
+    }
+    
+    return { isValid: true };
   }
 
   /**

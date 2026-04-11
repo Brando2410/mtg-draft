@@ -20,8 +20,14 @@ export const LilianaWakeroftheDead: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Loyalty', value: '+1' }],
                 effects: [
-                    { type: EffectType.DiscardCards, targetMapping: 'EACH_PLAYER' },
-                    { type: EffectType.LoseLife, amount: 3, condition: 'playerDidNotDiscard', targetMapping: 'EACH_OPPONENT' }
+                    { 
+                        type: EffectType.DiscardCards, 
+                        amount: 1, 
+                        targetMapping: 'EACH_PLAYER',
+                        onFailureEffects: [
+                            { type: EffectType.LoseLife, amount: 3, condition: 'TARGET_IS_OPPONENT', targetMapping: 'TARGET_1' }
+                        ]
+                    }
                 ]
             },
             {
@@ -30,7 +36,14 @@ export const LilianaWakeroftheDead: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Loyalty', value: '-3' }],
                 targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
-                effects: [{ type: EffectType.ApplyContinuousEffect, duration: 'UNTIL_END_OF_TURN', layer: 7, powerModifier: '-COUNT_graveyard', toughnessModifier: '-COUNT_graveyard', targetMapping: 'TARGET_1' }]
+                effects: [{ 
+                    type: EffectType.ApplyContinuousEffect, 
+                    duration: 'UNTIL_END_OF_TURN', 
+                    layer: 7, 
+                    powerModifier: (state: any, source: any) => -(state.players[source.controllerId]?.graveyard.length || 0), 
+                    toughnessModifier: (state: any, source: any) => -(state.players[source.controllerId]?.graveyard.length || 0), 
+                    targetMapping: 'TARGET_1' 
+                }]
             },
             {
                 id: "liliana_waker_minus_7",

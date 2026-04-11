@@ -16,6 +16,8 @@ export interface CardChoiceConfig extends ChoiceConfig {
     restrictions?: any[];
     reveal?: boolean;
     filterSelectable?: boolean;
+    minChoices?: number;
+    maxChoices?: number;
     onSelected?: (card: GameObject) => any[]; // Returns effects to run
     onNone?: () => any[]; // Returns effects if skipped/none selected
 }
@@ -74,8 +76,8 @@ export class ChoiceGenerator {
             lookingCards: cards, // Preserve for UI/Context
             stackObj: config.stackObj,
             parentContext: pruneContext(config.parentContext),
-            minChoices: config.stackObj?.data?.minChoices || 1,
-            maxChoices: config.stackObj?.data?.maxChoices || 1,
+            minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.data?.minChoices || 1),
+            maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.data?.maxChoices || 1),
         }, config.actionType);
     }
 
@@ -128,20 +130,28 @@ export class ChoiceGenerator {
      * Build interactive Discard action.
      * Supports multiple players sequentially, but each player selects all their cards in one go.
      */
-    public static createDiscardChoice(state: GameState, playerIds: PlayerId[], sourceId: string, amount: number | any, label: string, stackObj?: any, parentContext?: any): any {
+    public static createDiscardChoice(state: GameState, playerIds: PlayerId[], sourceId: string, amount: number | any, label: string, stackObj?: any, parentContext?: any, onFailureEffects?: any[], log?: (m: string) => void): any {
         if (playerIds.length === 0) return null;
         
         const [currentPlayerId, ...nextPlayerIds] = playerIds;
         const player = state.players[currentPlayerId];
         
+        if (log) log(`[DISCARD-DEBUG] createDiscardChoice for ${currentPlayerId}. Next: ${JSON.stringify(nextPlayerIds)}`);
+        
         // Skip player if hand is empty
         if (!player || player.hand.length === 0) {
-            return this.createDiscardChoice(state, nextPlayerIds, sourceId, amount, label, stackObj, parentContext);
+            const failureEffects = onFailureEffects || (stackObj?.data?.onFailureEffects);
+            if (failureEffects) {
+                const { EffectProcessor } = require('./EffectProcessor');
+                if (log) log(`[DISCARD-DEBUG] ${currentPlayerId} cannot discard. Triggering failure effects.`);
+                EffectProcessor.resolveEffects(state, failureEffects, sourceId, [currentPlayerId], (m: string) => { if (log) log(m); }, 0, stackObj, parentContext);
+            }
+            return this.createDiscardChoice(state, nextPlayerIds, sourceId, amount, label, stackObj, parentContext, failureEffects, log);
         }
 
         const discardAmount = Math.min(player.hand.length, (typeof amount === 'number' ? amount : 1));
 
-        return this.createCardChoice(state, player.hand, {
+        const finalAction = this.createCardChoice(state, player.hand, {
             label: `${label} (${discardAmount})`,
             playerId: currentPlayerId,
             sourceId,
@@ -153,8 +163,7 @@ export class ChoiceGenerator {
                     ...(stackObj?.data || {}),
                     minChoices: discardAmount,
                     maxChoices: discardAmount,
-                    nextPlayerIds: nextPlayerIds,
-                    discardAmount: amount // Original amount for next players
+                    onFailureEffects: onFailureEffects // Preserve for next steps
                 }
             },
             parentContext: pruneContext(parentContext),
@@ -163,6 +172,15 @@ export class ChoiceGenerator {
                 return [{ type: 'MoveToZone', targetId: card.id, zone: Zone.Graveyard, isDiscard: true }];
             }
         });
+
+        // Inject sequence metadata directly into the data payload
+        if (finalAction && finalAction.data) {
+            finalAction.data.nextPlayerIds = nextPlayerIds;
+            finalAction.data.discardAmount = amount;
+            finalAction.data.onFailureEffects = onFailureEffects;
+        }
+
+        return finalAction;
     }
 
     /**

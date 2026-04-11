@@ -520,7 +520,7 @@ export class SpellProcessor {
         for (const mod of modifiers) {
             const type = (mod as any).type;
             const impacts = (mod.targetMapping === 'EACH_PLAYER') ||
-                (mod.targetMapping === 'EACH_OPPONENT' && mod.controllerId !== card.controllerId) ||
+                (mod.targetMapping === 'EACH_OPPONENT' || mod.targetMapping === 'OPPONENT') && mod.controllerId !== card.controllerId ||
                 (mod.targetMapping === 'SELF' && mod.sourceId === card.id) ||
                 (mod.targetMapping === 'CONTROLLER' && mod.controllerId === card.controllerId);
 
@@ -656,8 +656,9 @@ export class SpellProcessor {
             ];
             precalculatedTargets = pool.filter(tid => TargetingProcessor.isLegalTarget(state, obj.id, tid, ability.targetDefinition));
 
-            if (precalculatedTargets.length === 0) {
-                log(`Illegal Activation: No valid targets available for ${obj.definition.name}'s ability.`);
+            const minCount = ability.targetDefinition.minCount !== undefined ? ability.targetDefinition.minCount : (ability.targetDefinition.count || 1);
+            if (precalculatedTargets.length < minCount) {
+                log(`Illegal Activation: Not enough valid targets available for ${obj.definition.name}'s ability. Found ${precalculatedTargets.length}, need ${minCount}.`);
                 return false;
             }
         }

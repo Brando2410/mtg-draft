@@ -24,7 +24,7 @@ export const ChandraFlamesCatalyst: Record<string, ImplementableCard> = {
                     {
                         type: EffectType.DealDamage,
                         amount: 3,
-                        targetMapping: "EACH_OPPONENT"
+                        targetMapping: "OPPONENT"
                     }
                 ]
             },
