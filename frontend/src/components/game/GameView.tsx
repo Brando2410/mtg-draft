@@ -10,7 +10,7 @@ import { ActionButton } from './ActionButton';
 import { ZonePile } from './ZonePile';
 import { socket } from '../../services/socket';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type GameObject, ActionType, Step } from '@shared/engine_types';
+import { type GameObject, ActionType } from '@shared/engine_types';
 import { useDraftStore } from '../../store/useDraftStore';
 import { GameCard } from './GameCard';
 import battlefieldBg from '../../assets/syd-roberts-portfolio-dsk-battlefield-lightsoff.jpg';
@@ -164,7 +164,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
       </div>
 
       {/* TOP: Opponent HUD & Hand */}
-      <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[500]">
+      <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[500]">
           <Avatar 
                 player={opponent!} 
                 isOpponent isActive={gameState.activePlayerId === opponentId}

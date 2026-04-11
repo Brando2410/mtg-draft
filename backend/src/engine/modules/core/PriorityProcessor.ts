@@ -176,9 +176,12 @@ export class PriorityProcessor {
 
     const stackEmpty = state.stack.length === 0;
 
-    // Auto-pass Upkeep and Draw steps if the stack is empty 
+    // Auto-pass Upkeep, Draw, AND End steps if the stack is empty 
     // UNLESS a manual stop is set for this phase.
-    if (state.currentPhase === Phase.Beginning && (state.currentStep === Step.Upkeep || state.currentStep === Step.Draw) && stackEmpty) {
+    const isBeginning = state.currentPhase === Phase.Beginning && (state.currentStep === Step.Upkeep || state.currentStep === Step.Draw);
+    const isEndStep = state.currentStep === Step.End;
+
+    if ((isBeginning || isEndStep) && stackEmpty) {
         if (hasManualStop) return true;
         return false;
     }
