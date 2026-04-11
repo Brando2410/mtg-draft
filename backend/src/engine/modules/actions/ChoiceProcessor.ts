@@ -1,4 +1,4 @@
-import { GameState, PlayerId, Zone } from '@shared/engine_types';
+import { GameState, PlayerId, Zone, ActionType } from '@shared/engine_types';
 import { m21 } from '../../data/m21';
 import { EffectProcessor } from '../effects/EffectProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
@@ -6,6 +6,7 @@ import { ActionProcessor } from './ActionProcessor';
 import { SpellProcessor } from './SpellProcessor';
 import { TargetingProcessor } from './TargetingProcessor';
 import { ChoiceGenerator } from '../effects/ChoiceGenerator';
+import { PlayerActionProcessor } from './PlayerActionProcessor';
 
 /**
  * Handles interactive player choices (Targeting, Modal Choices)
@@ -33,8 +34,16 @@ export class ChoiceProcessor {
     const isResolution = action.type === 'RESOLUTION_CHOICE' || action.type === 'OPTIONAL_ACTION' || action.type === 'CHOICE';
     const isScry = action.type === 'SCRY' || action.type === 'SURVEIL';
     const isChoosingX = action.type === 'CHOOSE_X';
+    const isOrderTriggers = action.type === ActionType.OrderTriggers;
 
-    if (!isModal && !isResolution && !isScry && !isChoosingX) return false;
+    if (!isModal && !isResolution && !isScry && !isChoosingX && !isOrderTriggers) return false;
+
+    // Handle Trigger Ordering
+    if (isOrderTriggers) {
+        const orderRaw = typeof choiceIndex === 'string' ? choiceIndex.split('|') : [];
+        const order = orderRaw.map(s => s.startsWith('CHOICE_') ? s.substring(7) : s);
+        return PlayerActionProcessor.resolveTriggerOrdering(state, playerId, order, log);
+    }
 
     // Handle "Back/Undo"
     if (String(choiceIndex) === 'undo' || choiceIndex === -1) {

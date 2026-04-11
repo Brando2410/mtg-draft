@@ -146,7 +146,7 @@ export class DamageProcessor {
         for (const prot of protectionKeywords) {
           const qualityStr = prot.toLowerCase().replace('protection from ', '');
           const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
-          if (TargetingProcessor.sourceHasQualities(source, qualities)) {
+          if (TargetingProcessor.sourceHasQualities(source, qualities, state)) {
             return true;
           }
         }

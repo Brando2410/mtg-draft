@@ -1,7 +1,7 @@
 import { memo, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Phase, ActionType, Step } from '@shared/engine_types';
-import { Sword, Shield, Zap, Diamond, Compass } from 'lucide-react';
+import { Sword, Shield, Zap, Diamond, Compass, ChevronsRight } from 'lucide-react';
 
 interface ActionButtonProps {
   hasPriority: boolean;
@@ -20,7 +20,69 @@ interface ActionButtonProps {
   onCancelAttacks?: () => void;
   onCancelBlocks?: () => void;
   fullControl?: boolean;
+  passUntilEndOfTurn?: boolean;
+  onTogglePassTurn?: () => void;
 }
+
+interface PhaseIndicatorProps {
+    id: string;
+    icon: any;
+    label: string;
+    currentStep?: string;
+    isMyTurn: boolean;
+    stops: Record<string, boolean>;
+    onToggleStop?: (step: string) => void;
+}
+  
+const PhaseIndicator = memo(({ id, icon: Icon, label, currentStep, isMyTurn, stops, onToggleStop }: PhaseIndicatorProps) => {
+    const internalId = isMyTurn ? `my_${id.toLowerCase()}` : `opp_${id.toLowerCase()}`;
+    const isStopped = stops[internalId];
+    
+    // Check if we are currently in this step
+    const isCurrentStep = currentStep === id;
+    
+    // Determine active styling: Cyan for Current, Orange for Stopped
+    const highlightColor = isCurrentStep ? 'text-cyan-400' : (isStopped ? 'text-orange-500' : 'text-slate-600');
+
+    return (
+        <div 
+        onClick={() => onToggleStop?.(internalId)}
+        title={label}
+        className={`relative cursor-pointer transition-all flex flex-col items-center group px-1
+            ${highlightColor} hover:scale-110 active:scale-90`}
+        >
+            {/* Active Liquid Glow Backlight (Current Phase Only) */}
+            {isCurrentStep && (
+                <motion.div 
+                layoutId="phase-glow"
+                className="absolute inset-0 bg-cyan-500/15 rounded-full blur-[10px] -z-10"
+                />
+            )}
+
+            <div className={`p-1.5 rounded-sm border transition-all duration-300
+            ${isCurrentStep ? 'border-cyan-400/40 bg-cyan-400/5' : ''}
+            ${isStopped ? 'border-orange-500/50 bg-orange-500/10 shadow-[0_0_10px_rgba(249,115,22,0.3)]' : 'border-transparent'}
+            `}>
+                <Icon className={`w-3.5 h-3.5 transition-all
+                ${isCurrentStep ? 'drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]' : ''}
+                ${isStopped ? 'fill-orange-500/20' : ''}`} 
+                />
+            </div>
+            
+            {/* Arena-style Underline (Current Phase Indicator) */}
+            {isCurrentStep && (
+                <motion.div 
+                layoutId="phase-indicator"
+                className="absolute -bottom-1 w-full h-0.5 bg-cyan-400 rounded-full shadow-[0_0_8px_rgba(34,211,238,0.8)]"
+                />
+            )}
+
+            <span className="absolute bottom-full mb-3 opacity-0 group-hover:opacity-100 text-[8.5px] font-black uppercase tracking-wider whitespace-nowrap bg-black/90 text-white px-2 py-1 rounded-md transition-opacity pointer-events-none z-[1000] border border-white/10 italic">
+                {label}
+            </span>
+        </div>
+    );
+});
 
 /**
  * Arena Action Button with Universal Phase Navigator.
@@ -41,7 +103,9 @@ export const ActionButton = memo(({
   onAllAttack,
   onCancelAttacks,
   onCancelBlocks,
-  fullControl = false
+  fullControl = false,
+  passUntilEndOfTurn = false,
+  onTogglePassTurn
 }: ActionButtonProps) => {
 
   const [isHovered, setIsHovered] = useState(false);
@@ -145,56 +209,6 @@ export const ActionButton = memo(({
   const isCombat = currentPhase === Phase.Combat;
   const showCombatNavigator = isCombat || fullControl;
 
-  const PhaseIndicator = ({ id, icon: Icon, label }: { id: string, icon: any, label: string }) => {
-    const internalId = isMyTurn ? `my_${id.toLowerCase()}` : `opp_${id.toLowerCase()}`;
-    const isStopped = stops[internalId];
-    
-    // Check if we are currently in this step
-    const isCurrentStep = currentStep === id;
-    
-    // Determine active styling: Cyan for Current, Orange for Stopped
-    const highlightColor = isCurrentStep ? 'text-cyan-400' : (isStopped ? 'text-orange-500' : 'text-slate-600');
-
-    return (
-      <div 
-        onClick={() => onToggleStop?.(internalId)}
-        title={label}
-        className={`relative cursor-pointer transition-all flex flex-col items-center group px-1
-          ${highlightColor} hover:scale-110 active:scale-90`}
-      >
-          {/* Active Liquid Glow Backlight (Current Phase Only) */}
-          {isCurrentStep && (
-              <motion.div 
-                layoutId="phase-glow"
-                className="absolute inset-0 bg-cyan-500/15 rounded-full blur-[10px] -z-10"
-              />
-          )}
-
-          <div className={`p-1.5 rounded-sm border transition-all duration-300
-            ${isCurrentStep ? 'border-cyan-400/40 bg-cyan-400/5' : ''}
-            ${isStopped ? 'border-orange-500/50 bg-orange-500/10 shadow-[0_0_10px_rgba(249,115,22,0.3)]' : 'border-transparent'}
-          `}>
-              <Icon className={`w-3.5 h-3.5 transition-all
-                ${isCurrentStep ? 'drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]' : ''}
-                ${isStopped ? 'fill-orange-500/20' : ''}`} 
-              />
-          </div>
-          
-          {/* Arena-style Underline (Current Phase Indicator) */}
-          {isCurrentStep && (
-              <motion.div 
-                layoutId="phase-indicator"
-                className="absolute -bottom-1 w-full h-0.5 bg-cyan-400 rounded-full shadow-[0_0_8px_rgba(34,211,238,0.8)]"
-              />
-          )}
-
-          <span className="absolute bottom-full mb-3 opacity-0 group-hover:opacity-100 text-[8.5px] font-black uppercase tracking-wider whitespace-nowrap bg-black/90 text-white px-2 py-1 rounded-md transition-opacity pointer-events-none z-[1000] border border-white/10 italic">
-              {label}
-          </span>
-      </div>
-    );
-  };
-
   return (
     <div className="fixed bottom-12 right-12 flex flex-col items-center gap-4 z-[700]">
         
@@ -207,11 +221,11 @@ export const ActionButton = memo(({
                     exit={{ opacity: 0, y: 10 }}
                     className="flex items-center gap-0.5 bg-slate-950/80 backdrop-blur-xl px-4 py-2 rounded-xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] mb-1"
                 >
-                    <PhaseIndicator id={Step.BeginningOfCombat} icon={Compass} label="Start Combat" />
-                    <PhaseIndicator id={Step.DeclareAttackers} icon={Sword} label="Attackers" />
-                    <PhaseIndicator id={Step.DeclareBlockers} icon={Shield} label="Blockers" />
-                    <PhaseIndicator id={Step.CombatDamage} icon={Zap} label="Damage" />
-                    <PhaseIndicator id={Step.EndOfCombat} icon={Diamond} label="End Combat" />
+                    <PhaseIndicator id={Step.BeginningOfCombat} icon={Compass} label="Start Combat" currentStep={currentStep} isMyTurn={isMyTurn} stops={stops} onToggleStop={onToggleStop} />
+                    <PhaseIndicator id={Step.DeclareAttackers} icon={Sword} label="Attackers" currentStep={currentStep} isMyTurn={isMyTurn} stops={stops} onToggleStop={onToggleStop} />
+                    <PhaseIndicator id={Step.DeclareBlockers} icon={Shield} label="Blockers" currentStep={currentStep} isMyTurn={isMyTurn} stops={stops} onToggleStop={onToggleStop} />
+                    <PhaseIndicator id={Step.CombatDamage} icon={Zap} label="Damage" currentStep={currentStep} isMyTurn={isMyTurn} stops={stops} onToggleStop={onToggleStop} />
+                    <PhaseIndicator id={Step.EndOfCombat} icon={Diamond} label="End Combat" currentStep={currentStep} isMyTurn={isMyTurn} stops={stops} onToggleStop={onToggleStop} />
                 </motion.div>
             )}
         </AnimatePresence>
@@ -243,6 +257,23 @@ export const ActionButton = memo(({
                     )}
                     <span className="drop-shadow-md">{buttonText}</span>
                 </button>
+
+                {/* SKIP TURN BUTTON (Fast Forward) */}
+                <div className="absolute -bottom-2 -right-2 transform translate-x-1/2 translate-y-1/2">
+                    <button
+                        onClick={onTogglePassTurn}
+                        title="Pass Turn (Until End of Turn)"
+                        className={`
+                            p-3 rounded-full border-2 transition-all duration-300 shadow-xl flex items-center justify-center
+                            ${passUntilEndOfTurn 
+                                ? 'bg-cyan-500 border-cyan-400 text-white shadow-[0_0_20px_rgba(34,211,238,0.5)]' 
+                                : 'bg-slate-900 border-white/10 text-slate-500 hover:text-slate-300 hover:border-white/30'}
+                            active:scale-95
+                        `}
+                    >
+                        <ChevronsRight className={`w-6 h-6 ${passUntilEndOfTurn ? 'animate-pulse' : ''}`} />
+                    </button>
+                </div>
 
                 {/* SECONDARY COMBAT ACTION */}
                 {(pendingAction?.playerId === effectivePlayerId) && (pendingAction?.type === ActionType.DeclareAttackers || (pendingAction?.type === ActionType.DeclareBlockers && blockerCount > 0)) && (

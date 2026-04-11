@@ -234,7 +234,6 @@ export class PlayerActionProcessor {
     const existingIndex = state.combat.attackers.findIndex(a => a.attackerId === cardId);
     if (existingIndex >= 0) {
        state.combat.attackers.splice(existingIndex, 1);
-       card.isTapped = false;
        log(`${card.definition.name} removed from attackers.`);
     } else {
        if (card.isTapped) return false;
@@ -242,13 +241,8 @@ export class PlayerActionProcessor {
        state.combat.attackers.push({ attackerId: cardId, targetId: targetId || opponentId! });
        
        // Rule 702.24: Vigilance prevents tapping when attacking
-       const hasVigilance = stats.keywords.includes('Vigilance');
-       if (!hasVigilance) {
-           card.isTapped = true;
-           log(`${card.definition.name} attacking ${!!state.players[(targetId || opponentId!) as PlayerId] ? 'Opponent' : 'Planeswalker'}.`);
-       } else {
-           log(`${card.definition.name} attacking with Vigilance.`);
-       }
+       // Note: Tapping now happens upon CONFIRMATION in CombatProcessor
+       log(`${card.definition.name} selected as attacker.`);
     }
     return true;
   }
@@ -284,8 +278,9 @@ export class PlayerActionProcessor {
       return false;
     }
 
-    if (!CombatProcessor.isLegalBlocker(state, blockerId, cardId)) {
-        log(`${blockerObj?.definition.name} cannot block ${card.definition.name} due to protection.`);
+    const { legal, reason } = CombatProcessor.isLegalBlocker(state, blockerId, cardId);
+    if (!legal) {
+        log(`${blockerObj?.definition.name} cannot block ${card.definition.name}${reason ? ` (${reason})` : ''}.`);
         return false;
     }
 
@@ -370,6 +365,32 @@ export class PlayerActionProcessor {
     if (CombatProcessor.needsOrdering(state)) {
       CombatProcessor.setupNextOrderingAction(state, log);
     }
+  }
+
+  public static resolveTriggerOrdering(state: GameState, playerId: string, orderedIds: string[], log: (m: string) => void): boolean {
+    if (!state.pendingAction || (state.pendingAction.type as any) !== 'ORDER_TRIGGERS' || state.pendingAction.playerId !== playerId) return false;
+
+    const { triggers } = state.pendingAction.data;
+    
+    // The player sends us the IDs in "Stacking Order" (MTGA UI)
+    // index 0 -> Last to resolve (Bottom of stack)
+    // index N-1 -> First to resolve (Top of stack)
+    const orderedTriggers = orderedIds.map(id => triggers.find((t: any) => t.id === id)).filter(Boolean);
+    
+    if (state.pendingTriggers) {
+      state.pendingTriggers = state.pendingTriggers.filter(t => !orderedIds.includes(t.id));
+    }
+
+    state.pendingAction = undefined;
+
+    const { TriggerProcessor } = require('./../effects/TriggerProcessor');
+    for (const t of orderedTriggers) {
+        TriggerProcessor.stackTrigger(state, t, log);
+    }
+
+    // Process remaining if anyone else has triggers
+    TriggerProcessor.processPendingTriggers(state, log);
+    return true;
   }
 
   /**

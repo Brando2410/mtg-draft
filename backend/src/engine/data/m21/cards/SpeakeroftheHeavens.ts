@@ -8,10 +8,10 @@ export const SpeakeroftheHeavens: Record<string, ImplementableCard> = {
         colors: ["white"],
         supertypes: [],
         types: ["Creature"],
-        subtypes: ["Human","Cleric"],
+        subtypes: ["Human", "Cleric"],
         power: "1",
         toughness: "1",
-        keywords: ["Vigilance"],
+        keywords: ["Vigilance", "Lifelink"],
         abilities: [
             {
                 id: "speaker_heavens_angel",

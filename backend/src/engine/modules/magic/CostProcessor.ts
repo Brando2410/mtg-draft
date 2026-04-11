@@ -119,13 +119,20 @@ export class CostProcessor {
         let toSac;
         if (cost.targetMapping === 'SELF') {
             toSac = source;
+            log(`[SACRIFICE] Identified source ${source.definition.name} as SELF sacrifice target.`);
         } else {
-            // Simplified: just sacrifice the first valid source if not specified
-            // In a real version, this should trigger a pending action or take a parameter
-            toSac = state.battlefield.find(c => c.controllerId === playerId && (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions!, playerId, source.id)));
+            // Check for pre-selected target from modal choice
+            const chosenId = (state as any).lastChosenSacrificeId;
+            if (chosenId) {
+                toSac = state.battlefield.find(c => c.id === chosenId);
+            } else {
+                // Fallback for auto-order/automated effects (not recommended for complex costs)
+                toSac = state.battlefield.find(c => c.controllerId === playerId && (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions!, playerId, source.id)));
+            }
         }
         
         if (toSac) {
+            log(`[SACRIFICE] Processor executing moveCard for ${toSac.definition.name}...`);
             TriggerProcessor.onEvent(state, { 
                 type: 'ON_SACRIFICE', 
                 playerId, 
@@ -133,7 +140,11 @@ export class CostProcessor {
                 data: { object: toSac } 
             }, log);
             ActionProcessor.moveCard(state, toSac, Zone.Graveyard, playerId, log);
+            log(`${player.name} sacrificed ${toSac.definition.name} as a cost.`);
+        } else {
+            log(`[SACRIFICE] Error: No valid object found to sacrifice for cost.`);
         }
+        delete (state as any).lastChosenSacrificeId;
         break;
 
       case 'Discard':

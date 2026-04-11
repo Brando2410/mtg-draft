@@ -26,7 +26,9 @@ export class GameSetupProcessor {
         maxHandSize: 7,
         pendingDiscardCount: 0,
         virtualHand: [],
-        stops: {}
+        stops: {},
+        autoOrderTriggers: true,
+        passUntilEndOfTurn: false
       };
     }
   }

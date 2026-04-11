@@ -17,8 +17,8 @@ export const SelflessSavior: Record<string, ImplementableCard> = {
                 id: "selfless_savior_sac",
                 type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
-                costs: [{ type: 'Sacrifice', restrictions: ['SELF'] }],
-                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'Another'] },
+                costs: [{ type: 'Sacrifice', targetMapping: 'SELF' }],
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'Another', 'YouControl'] },
                 effects: [{ type: 'ApplyContinuousEffect', abilitiesToAdd: ['Indestructible'], duration: 'UNTIL_END_OF_TURN', layer: 6, targetMapping: 'TARGET_1' }]
             }
         ]

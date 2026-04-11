@@ -118,7 +118,8 @@ export const ActionType = {
   Choice: 'CHOICE', // Deprecated, keeping for backward compatibility
   Scry: 'SCRY',
   Surveil: 'SURVEIL',
-  ChooseX: 'CHOOSE_X'
+  ChooseX: 'CHOOSE_X',
+  OrderTriggers: 'ORDER_TRIGGERS'
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 
@@ -168,6 +169,8 @@ export interface PlayerState {
   manaCheat?: boolean; // DEBUG: Infinite mana
   virtualHand: GameObject[]; // Cards playable from non-hand zones (Exile, Graveyard, Library)
   stops: Record<string, boolean>; // Phase/Step stops (Arena-style)
+  autoOrderTriggers: boolean;
+  passUntilEndOfTurn: boolean;
 }
 
 export interface CombatState {
@@ -229,8 +232,11 @@ export interface XSelectionPendingActionData {
   sourceId: string;
   declaredTargets: string[];
 }
+export interface OrderTriggersPendingActionData {
+  triggers: StackObject[];
+}
 
-export type PendingActionData = ChoicePendingActionData | TargetingPendingActionData | DiscardPendingActionData | XSelectionPendingActionData | any;
+export type PendingActionData = ChoicePendingActionData | TargetingPendingActionData | DiscardPendingActionData | XSelectionPendingActionData | OrderTriggersPendingActionData | any;
 
 export interface PendingAction {
   type: ActionType;
@@ -264,6 +270,10 @@ export interface GameState {
 
   // Combat data
   combat?: CombatState;
+
+  // Simultaneous triggers waiting to be ordered
+  pendingTriggers?: StackObject[]; 
+  
   pendingAction?: PendingAction;
 
   // Rules Engine: The "Whiteboard"

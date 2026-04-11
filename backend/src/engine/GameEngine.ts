@@ -398,6 +398,11 @@ export class GameEngine {
       this.state.players[this.state.activePlayerId].hasPlayedLandThisTurn = false;
     }
 
+    // CR 500: Reset turn-wide logic tracking
+    for (const pId in this.state.players) {
+        this.state.players[pId].passUntilEndOfTurn = false;
+    }
+
     // Rule 606.3: Reset activated ability usage for all permanents
     this.state.battlefield.forEach(obj => obj.abilitiesUsedThisTurn = 0);
 
@@ -429,6 +434,19 @@ export class GameEngine {
 
   private checkAutoPass(playerId: PlayerId) {
     PriorityProcessor.checkAutoPass(this.state, playerId, this.getPriorityCallbacks());
+  }
+
+  public togglePassTurn(playerId: string) {
+    const player = this.state.players[playerId];
+    if (!player) return;
+    
+    player.passUntilEndOfTurn = !player.passUntilEndOfTurn;
+    this.log(`[PASS-TURN] ${player.name} ${player.passUntilEndOfTurn ? 'enabled' : 'disabled'} Pass Turn.`);
+    
+    // Immediately check if we should auto-pass now that it's toggled
+    if (player.passUntilEndOfTurn && this.state.priorityPlayerId === playerId) {
+        this.checkAutoPass(playerId);
+    }
   }
 
   private getPriorityCallbacks(): PriorityCallbacks {

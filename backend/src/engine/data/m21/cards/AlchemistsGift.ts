@@ -19,13 +19,23 @@ export const AlchemistsGift: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Stack,
                 targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
                 effects: [
-                    { type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 1, duration: 'UNTIL_END_OF_TURN', layer: 7, targetMapping: 'TARGET_1' },
                     {
                         type: 'Choice',
+                        targetMapping: 'TARGET_1',
                         label: 'Choose a keyword',
                         choices: [
-                            { label: 'Deathtouch', effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Deathtouch'], layer: 6, targetMapping: 'TARGET_1' }] },
-                            { label: 'Lifelink', effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Lifelink'], layer: 6, targetMapping: 'TARGET_1' }] }
+                            { 
+                                label: 'Deathtouch', 
+                                effects: [
+                                    { type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 1, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Deathtouch'], layer: 7, targetMapping: 'TARGET_1' }
+                                ] 
+                            },
+                            { 
+                                label: 'Lifelink', 
+                                effects: [
+                                    { type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 1, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Lifelink'], layer: 7, targetMapping: 'TARGET_1' }
+                                ] 
+                            }
                         ]
                     }
                 ]

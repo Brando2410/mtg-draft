@@ -99,7 +99,13 @@ export class EffectProcessor {
 
     // Resolve Target Mappings
     const resolveMapping = (m: string, index: number) => {
-        const ids = TargetingProcessor.resolveTargetMapping(state, m || "", targets, sourceId, controllerId, stackObject?.data, effect);
+        let ids = TargetingProcessor.resolveTargetMapping(state, m || "", targets, sourceId, controllerId, stackObject?.data, effect);
+        
+        // If Choice effect has no explicit mapping, it should receive all parent targets to pass them down
+        if (effect.type === 'Choice' && !m && ids.length === 0) {
+            ids = [...targets];
+        }
+
         return this.getValidTargetIds(state, effect, ids, sourceId, sourceObj, stackObject, parentContext, index);
     };
 

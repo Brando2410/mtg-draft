@@ -1,4 +1,4 @@
-import { GameState, EffectDefinition, GameObjectId, PlayerId, GameObject, ContinuousEffect, DurationType } from '@shared/engine_types';
+import { GameState, EffectDefinition, GameObjectId, PlayerId, GameObject, ContinuousEffect, DurationType, EffectDuration, Zone } from '@shared/engine_types';
 import { TargetingProcessor } from '../../actions/TargetingProcessor';
 
 /**
@@ -15,76 +15,95 @@ export class ContinuousEffectHandler {
     controllerId: PlayerId,
     amountResolver: (amt: any) => number
   ) {
-    log(`[CE] Resolving continuous effect. ControllerId=${controllerId}`);
+    log(`[CE_HANDLER] Resolving effect for source ${sourceId}. Targets: ${resolvedTargetIds.join(', ')}`);
     
     // 1. Resolve Duration
-    const rawDuration = (effect as any).duration;
-    let duration: any = { type: DurationType.UntilEndOfTurn };
+    const rawDuration = effect.duration;
+    let duration: EffectDuration = { type: DurationType.UntilEndOfTurn };
 
     if (typeof rawDuration === 'string') {
-        const upper = rawDuration.toUpperCase();
-        if (Object.values(DurationType).includes(upper as any)) {
-            duration.type = upper as DurationType;
+        const dStr = rawDuration.toUpperCase();
+        if (dStr === 'UNTIL_END_OF_TURN' || dStr === 'UNTILENDOFTURN' || dStr === 'EOT') {
+            duration.type = DurationType.UntilEndOfTurn;
+        } else if (dStr === 'UNTIL_END_OF_COMBAT' || dStr === 'UNTILENDOFCOMBAT') {
+            duration.type = DurationType.UntilEndOfCombat;
+        } else if (dStr === 'STATIC') {
+            duration.type = DurationType.Static;
+        } else if (dStr === 'PERMANENT') {
+            duration.type = DurationType.Permanent;
         } else {
             duration.type = DurationType.Static;
         }
     } else if (rawDuration && typeof rawDuration === 'object') {
-        duration = { ...rawDuration };
+        duration = { ...rawDuration as any };
     }
 
     // 2. Resolve Targets (Rule 611.2a: Snap targets at resolution)
     let finalTargetIds = resolvedTargetIds.length > 0 ? [...resolvedTargetIds] : undefined;
-    const mapping = (effect as any).targetMapping;
+    const mapping = effect.targetMapping;
 
     if (!finalTargetIds && mapping) {
-        if (mapping === 'ALL_PERMANENTS_YOU_CONTROL') {
-            finalTargetIds = state.battlefield.filter(o => o.controllerId === controllerId).map(o => o.id);
-        } else if (mapping === 'ALL_CREATURES_YOU_CONTROL') {
-            finalTargetIds = state.battlefield.filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature')).map(o => o.id);
-        } else if (mapping === 'MATCHING_PERMANENTS_YOU_CONTROL') {
-            finalTargetIds = state.battlefield.filter(o => o.controllerId === controllerId && TargetingProcessor.matchesRestrictions(state, o, effect.restrictions || [], controllerId, sourceId)).map(o => o.id);
-        } else if (mapping === 'MATCHING_PERMANENTS') {
-            finalTargetIds = state.battlefield.filter(o => TargetingProcessor.matchesRestrictions(state, o, effect.restrictions || [], controllerId, sourceId)).map(o => o.id);
-        } else if (mapping === 'OTHER_CREATURES_YOU_CONTROL') {
-            finalTargetIds = state.battlefield.filter(o => o.id !== sourceId && o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature')).map(o => o.id);
-        } else if (mapping === 'SELF') {
+        if (mapping === 'SELF') {
             finalTargetIds = [sourceId];
+        } else {
+            // Re-resolve mapping if not provided (safety fallback)
+            finalTargetIds = TargetingProcessor.resolveTargetMapping(state, mapping, [], sourceId, controllerId);
         }
+    }
+
+    if (!finalTargetIds || finalTargetIds.length === 0) {
+        log(`[CE_HANDLER] [WARNING] No targets found for continuous effect. Source: ${sourceId}, Mapping: ${mapping}`);
+        return;
     }
 
     // 3. Register Floating Effect
     const effId = `floating_${sourceId}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    
+    // CR 613: Intelligent Layer attribution
+    let layer = effect.layer;
+    if (layer === undefined) {
+        if (effect.abilitiesToAdd || effect.abilitiesToRemove || effect.removeAllAbilities) {
+            layer = 6;
+        } else if ((effect as any).typesToAdd || (effect as any).subtypesToAdd || (effect as any).colorSet || (effect as any).colorsToAdd) {
+            layer = ((effect as any).typesToAdd || (effect as any).subtypesToAdd) ? 4 : 5;
+        } else if (effect.powerModifier !== undefined || effect.toughnessModifier !== undefined || effect.powerSet !== undefined || effect.toughnessSet !== undefined || effect.powerDynamic || effect.toughnessDynamic) {
+            layer = 7;
+        } else {
+            layer = 7;
+        }
+    }
+
     const continuousEff: ContinuousEffect = {
         id: effId,
         sourceId,
         controllerId,
-        layer: (effect as any).layer || 7,
+        layer: layer,
         sublayer: effect.sublayer,
         powerDynamic: effect.powerDynamic,
         toughnessDynamic: effect.toughnessDynamic,
         timestamp: Date.now(),
-        activeZones: ['Battlefield' as any],
+        activeZones: [Zone.Battlefield],
         duration: duration,
-        targetMapping: finalTargetIds ? undefined : mapping,
+        targetMapping: mapping,
         targetIds: finalTargetIds,
-        abilitiesToAdd: (effect as any).abilitiesToAdd,
-        abilitiesToRemove: (effect as any).abilitiesToRemove,
-        powerModifier: (effect as any).powerModifier !== undefined ? amountResolver((effect as any).powerModifier) : undefined,
-        toughnessModifier: (effect as any).toughnessModifier !== undefined ? amountResolver((effect as any).toughnessModifier) : undefined,
-        powerSet: (effect as any).powerSet !== undefined ? amountResolver((effect as any).powerSet) : undefined,
-        toughnessSet: (effect as any).toughnessSet !== undefined ? amountResolver((effect as any).toughnessSet) : undefined,
-        canPlayExiled: (effect as any).canPlayExiled || (effect as any).value === 'MAY_PLAY_EXILED',
-        isFreeCast: (effect as any).isFreeCast || (effect as any).value === 'MAY_CAST_WITHOUT_PAYING',
-        condition: (effect as any).condition,
+        abilitiesToAdd: effect.abilitiesToAdd,
+        abilitiesToRemove: effect.abilitiesToRemove,
+        powerModifier: effect.powerModifier !== undefined ? amountResolver(effect.powerModifier) : undefined,
+        toughnessModifier: effect.toughnessModifier !== undefined ? amountResolver(effect.toughnessModifier) : undefined,
+        powerSet: effect.powerSet !== undefined ? amountResolver(effect.powerSet) : undefined,
+        toughnessSet: effect.toughnessSet !== undefined ? amountResolver(effect.toughnessSet) : undefined,
+        canPlayExiled: effect.canPlayExiled,
+        isFreeCast: effect.isFreeCast,
+        condition: effect.condition,
         typesToAdd: (effect as any).typesToAdd,
-        subtypesToAdd: (effect as any).subtypesToAdd,
+        subtypesToAdd: effect.subtypesToAdd,
         colorsToAdd: (effect as any).colorsToAdd,
         colorSet: (effect as any).colorSet,
-        removeAllAbilities: (effect as any).removeAllAbilities
-    } as any;
+        removeAllAbilities: effect.removeAllAbilities
+    };
 
-    log(`[CE] Pushing effect with ${continuousEff.targetIds?.length || 0} targets and mapping ${continuousEff.targetMapping}. ControllerId=${controllerId}`);
     state.ruleRegistry.continuousEffects.push(continuousEff);
-    log(`[CE] Applied continuous effect [${duration.type}] to ${finalTargetIds?.length || mapping} target(s). Snapshot: ${!!finalTargetIds}`);
+    log(`[CE_HANDLER] Registered Layer ${layer} effect on ${finalTargetIds.join(', ')}. Duration: ${duration.type}. Abilities: ${continuousEff.abilitiesToAdd || 'none'}`);
+    log(`[DEBUG] Registry size: ${state.ruleRegistry.continuousEffects.length}`);
   }
 }

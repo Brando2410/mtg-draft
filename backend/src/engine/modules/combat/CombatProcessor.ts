@@ -79,6 +79,25 @@ export class CombatProcessor {
     const attackers = state.combat?.attackers || [];
     state.turnState.creaturesAttackedThisTurn += attackers.length;
 
+    // Rule 508.1f: Tapping attackers as a cost of declaration (unless they have Vigilance)
+    attackers.forEach(a => {
+        const attackerObj = state.battlefield.find(o => o.id === a.attackerId);
+        if (attackerObj) {
+            const stats = LayerProcessor.getEffectiveStats(attackerObj, state);
+            if (!stats.keywords.includes('Vigilance')) {
+                attackerObj.isTapped = true;
+                // rule 508.1m: If a creature becomes tapped this way, it's not a "cost" in the sense of pay(), 
+                // but it still triggers events that care about tapping.
+                TriggerProcessor.onEvent(state, {
+                    type: 'ON_TAP',
+                    playerId: playerId,
+                    targetId: attackerObj.id,
+                    data: { object: attackerObj }
+                }, (m: string) => callbacks.log(m));
+            }
+        }
+    });
+
     // Rule 508.1: "Whenever an opponent attacks..." (Mangara support)
     if (attackers.length > 0) {
         TriggerProcessor.onEvent(state, {
@@ -385,11 +404,12 @@ export class CombatProcessor {
   
   /**
    * CR 702.16n: A creature with protection from [quality] can’t be blocked by creatures with [quality].
+   * Returns { legal: boolean, reason?: string }
    */
-  public static isLegalBlocker(state: GameState, blockerId: string, attackerId: string): boolean {
+  public static isLegalBlocker(state: GameState, blockerId: string, attackerId: string): { legal: boolean, reason?: string } {
     const blocker = state.battlefield.find(o => o.id === blockerId);
     const attacker = state.battlefield.find(o => o.id === attackerId);
-    if (!blocker || !attacker) return true;
+    if (!blocker || !attacker) return { legal: true };
 
     const bStats = LayerProcessor.getEffectiveStats(blocker, state);
     const aStats = LayerProcessor.getEffectiveStats(attacker, state);
@@ -398,30 +418,32 @@ export class CombatProcessor {
     const isRestricted = state.ruleRegistry.restrictions.some(r => 
         r.targetId === blockerId && r.type === 'CannotBlock'
     );
-    if (isRestricted) return false;
+    if (isRestricted) return { legal: false, reason: "this creature cannot block" };
 
     // 1. CR 702.9: Flying check
     // "A creature with flying can't be blocked except by creatures with flying and/or reach."
     if (aStats.keywords.includes('Flying')) {
         if (!bStats.keywords.includes('Flying') && !bStats.keywords.includes('Reach')) {
-            return false;
+            return { legal: false, reason: "flying requirement not met" };
         }
     }
 
-    // 2. Protection check (Blocking) (Rule 702.16)
+    // 2. Protection check (Blocking) (Rule 702.16n)
+    // IMPORTANT: Protection FROM [quality] on the ATTACKER prevents creatures with [quality] from blocking it.
+    // Blocker's protection from attacker does NOT prevent it from blocking.
     const protectionKeywords = aStats.keywords.filter(k => k.toLowerCase().startsWith('protection from'));
     if (protectionKeywords.length > 0) {
         const { TargetingProcessor } = require('./../actions/TargetingProcessor');
         for (const prot of protectionKeywords) {
           const qualityStr = prot.toLowerCase().replace('protection from ', '');
           const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
-          if (TargetingProcessor.sourceHasQualities(blocker, qualities)) {
-            return false;
+          if (TargetingProcessor.sourceHasQualities(blocker, qualities, state)) {
+            return { legal: false, reason: `attacker has ${prot}` };
           }
         }
     }
 
-    return true;
+    return { legal: true };
   }
 
   /**
@@ -449,7 +471,7 @@ export class CombatProcessor {
           const hasLegalBlocker = state.battlefield.some(b => 
               b.controllerId === defenderId && 
               !b.isTapped &&
-              this.isLegalBlocker(state, b.id, attacker.id)
+              this.isLegalBlocker(state, b.id, attacker.id).legal
           );
           if (hasLegalBlocker) {
               return { isValid: false, error: `${attacker.definition.name} must be blocked if able.` };

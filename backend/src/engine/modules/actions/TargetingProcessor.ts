@@ -138,6 +138,10 @@ export class TargetingProcessor {
             }
         }
 
+        if (!source) {
+            // Log missing source if needed
+        }
+
         const keywords = LayerProcessor.getEffectiveStats(targetObj, state).keywords;
 
         // Protection (Rule 702.16)
@@ -145,7 +149,7 @@ export class TargetingProcessor {
         for (const prot of protectionKeywords) {
             const qualityStr = prot.toLowerCase().replace('protection from ', '');
             const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
-            if (source && this.sourceHasQualities(source, qualities)) return false;
+            if (source && this.sourceHasQualities(source, qualities, state)) return false;
         }
 
         // Hexproof (Rule 702.11)
@@ -157,7 +161,7 @@ export class TargetingProcessor {
                 const qualityStr = hp.toLowerCase().replace('hexproof from ', '');
                 const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
                 if (sourceControllerId && sourceControllerId !== targetObj.controllerId) {
-                    if (source && this.sourceHasQualities(source, qualities)) return false;
+                    if (source && this.sourceHasQualities(source, qualities, state)) return false;
                 }
             }
         }
@@ -278,7 +282,7 @@ export class TargetingProcessor {
             if (lr === 'nonenchantment' && objTypes.includes('enchantment')) return false;
             if (lr === 'nonplaneswalker' && objTypes.includes('planeswalker')) return false;
             if (lr === 'graveyard' && targetObj.zone !== Zone.Graveyard) return false;
-            if (lr === 'other' && targetObj.id === sourceId) return false;
+            if ((lr === 'other' || lr === 'another') && targetObj.id === sourceId) return false;
             if (lr === 'notcontrolled' || lr === 'opponentcontrol') {
                 if (controllerId && targetObj.controllerId === controllerId) return false;
             }
@@ -316,12 +320,20 @@ export class TargetingProcessor {
                 if (controllerId && !state.turnState.instantOrSorceryCastThisTurn[controllerId]) return false;
             }
 
+            // --- COUNTER CHECK (Rule 122) ---
+            if (lr.startsWith('hascounter_')) {
+                const counterType = r.split('_')[1]; // Keep original case for counter type if needed
+                if (!targetObj.counters || !targetObj.counters[counterType] || targetObj.counters[counterType] <= 0) {
+                    return false;
+                }
+            }
+
             const isKnownFilter = [
                 'nonland', 'noncreature', 'nonartifact', 'nonenchantment', 'nonplaneswalker',
-                'graveyard', 'other', 'notcontrolled', 'opponentcontrol', 'youcontrol', 'self', 'legendary',
+                'graveyard', 'other', 'another', 'notcontrolled', 'opponentcontrol', 'youcontrol', 'self', 'legendary',
                 'tapped', 'untapped', 'yours', 'opponents', 'attackingorblocking',
                 'instantorsorcerycastthisturn', 'player', 'anytarget', 'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 'instant', 'sorcery'
-            ].includes(lr) || lr.startsWith('cmc') || lr.startsWith('mv') || lr.startsWith('power') || lr.startsWith('toughness');
+            ].includes(lr) || lr.startsWith('cmc') || lr.startsWith('mv') || lr.startsWith('power') || lr.startsWith('toughness') || lr.startsWith('hascounter');
 
             if (!isKnownFilter && !baseTypes.includes(lr)) {
                 const targetName = (definition?.name || targetObj.name || "").toLowerCase();
@@ -363,21 +375,36 @@ export class TargetingProcessor {
         return true;
     }
 
-    public static sourceHasQualities(source: any, qualities: string[]): boolean {
+    public static sourceHasQualities(source: any, qualities: string[], state?: GameState): boolean {
         const s = source.card || source;
         let definition = s.definition || s;
 
+        let sourceColors: string[] = [];
+        if (state && s.id && state.battlefield.some(o => o.id === s.id)) {
+            const stats = LayerProcessor.getEffectiveStats(s, state);
+            sourceColors = stats.colors.map(c => {
+                const map: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
+                return map[c.toUpperCase()] || c.toLowerCase();
+            });
+        } else {
+            sourceColors = (Array.isArray(definition.colors) ? definition.colors : []).map((c: string) => {
+                const map: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
+                return map[c.toUpperCase()] || c.toLowerCase();
+            });
+        }
+
         const sourceTypes = (definition.types || []).map((t: string) => t.toLowerCase());
         const sourceSubtypes = (definition.subtypes || []).map((t: string) => t.toLowerCase());
-        const sourceColors = (Array.isArray(definition.colors) ? definition.colors : []).map((c: string) => {
-            const map: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
-            return map[c.toUpperCase()] || c.toLowerCase();
-        });
 
         return qualities.some(q => {
             const lowerQ = q.toLowerCase();
             if (lowerQ === 'and' || lowerQ === 'from') return false;
+            
+            // Multicolored check
             if (lowerQ === 'multicolored') return sourceColors.length > 1;
+            if (lowerQ === 'monocolored') return sourceColors.length === 1;
+            if (lowerQ === 'colorless') return sourceColors.length === 0;
+
             const singularQ = lowerQ.endsWith('s') ? lowerQ.slice(0, -1) : lowerQ;
             const matchesType = sourceTypes.includes(lowerQ) || sourceTypes.includes(singularQ);
             const matchesSubtype = sourceSubtypes.includes(lowerQ) || sourceSubtypes.includes(singularQ);

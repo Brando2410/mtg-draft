@@ -1,6 +1,6 @@
 import { type Room } from '@shared/types';
 import { Settings, RefreshCw, LogOut, Trash2, ShieldAlert, Play, ChevronRight, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Battlefield } from './Battlefield';
 import { PlayerHand } from './PlayerHand';
 import { OpponentHand } from './OpponentHand';
@@ -28,6 +28,8 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
   const [hoveredCard, setHoveredCard] = useState<GameObject | null>(null);
   const [zoomTimer, setZoomTimer] = useState<any>(null);
   const [showEscMenu, setShowEscMenu] = useState(false);
+  const [turnTransition, setTurnTransition] = useState<{ label: string; isMe: boolean } | null>(null);
+  const prevActivePlayerId = useRef<string | null>(null);
 
   const { resetMatch, backToLobby } = useDraftStore();
   const [inspectingZone, setInspectingZone] = useState<{ cards: GameObject[], label: string, type: 'graveyard' | 'exile', isMe: boolean } | null>(null);
@@ -66,6 +68,31 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [room.id, effectivePlayerId, showEscMenu]);
+
+  // Turn Change Detection
+  useEffect(() => {
+    if (!gameState) return;
+    
+    // Initialize first turn
+    if (prevActivePlayerId.current === null) {
+        prevActivePlayerId.current = gameState.activePlayerId;
+        return;
+    }
+
+    if (gameState.activePlayerId !== prevActivePlayerId.current) {
+        const isMe = gameState.activePlayerId === effectivePlayerId;
+        setTurnTransition({
+            label: isMe ? "Your Turn" : "Opponent's Turn",
+            isMe
+        });
+        prevActivePlayerId.current = gameState.activePlayerId;
+        
+        const timer = setTimeout(() => {
+            setTurnTransition(null);
+        }, 1000);
+        return () => clearTimeout(timer);
+    }
+  }, [gameState?.activePlayerId, effectivePlayerId]);
 
   if (!gameState) {
     return (
@@ -144,6 +171,45 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/20 via-transparent to-black/20" />
       </div>
+
+      {/* TURN TRANSITION OVERLAY */}
+      <AnimatePresence>
+          {turnTransition && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[5000] flex items-center justify-center pointer-events-none"
+              >
+                  <motion.div 
+                    initial={{ scale: 0.5, letterSpacing: '0.5em', opacity: 0, y: 20 }}
+                    animate={{ scale: 1, letterSpacing: '0.1em', opacity: 1, y: 0 }}
+                    exit={{ scale: 1.2, opacity: 0, filter: 'blur(20px)' }}
+                    transition={{ type: "spring", damping: 15, stiffness: 100 }}
+                    className="relative"
+                  >
+                      {/* Ambient Glow */}
+                      <div className={`absolute inset-0 blur-[80px] opacity-40 rounded-full
+                        ${turnTransition.isMe ? 'bg-cyan-400' : 'bg-orange-500'}`} 
+                      />
+                      
+                      <div className="relative flex flex-col items-center">
+                          <h1 className={`text-7xl font-black uppercase italic tracking-tight drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]
+                            ${turnTransition.isMe ? 'text-cyan-400' : 'text-slate-100'}`}
+                          >
+                            {turnTransition.label.split(' ')[0]}
+                            <span className={turnTransition.isMe ? 'text-white' : 'text-orange-500'}>
+                                {turnTransition.label.split(' ')[1] ? ` ${turnTransition.label.split(' ')[1]}` : ''}
+                            </span>
+                          </h1>
+                          <div className={`h-1 w-full mt-4 bg-gradient-to-r from-transparent via-current to-transparent opacity-50
+                            ${turnTransition.isMe ? 'text-cyan-400' : 'text-orange-500'}`} 
+                          />
+                      </div>
+                  </motion.div>
+              </motion.div>
+          )}
+      </AnimatePresence>
 
       {/* GLOBAL UI CONTROLS (Top Left) */}
       <div className="fixed top-6 left-6 flex items-center gap-4 z-[400]">
@@ -308,6 +374,8 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           onAllAttack={handleAllAttack}
           onCancelAttacks={handleCancelAttacks}
           onCancelBlocks={handleCancelBlocks}
+          passUntilEndOfTurn={me?.passUntilEndOfTurn}
+          onTogglePassTurn={() => socket.emit('toggle_pass_turn', { roomId: room.id, playerId: effectivePlayerId })}
           fullControl={me?.fullControl}
         />
       </div>
@@ -471,13 +539,29 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
                 </div>
 
                 {/* DANGER ZONE: LEAVE GAME */}
-                <button 
-                    onClick={() => onBack()} 
-                    className="flex items-center justify-center gap-3 p-5 mt-4 group/danger hover:bg-red-500/10 rounded-2xl transition-all border border-transparent hover:border-red-500/20 active:scale-95"
-                >
-                    <Trash2 className="w-4 h-4 text-red-500/40 group-hover/danger:text-red-500 transition-colors" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500/50 group-hover/danger:text-red-500">Concede & Leave Game</span>
-                </button>
+                <div className="flex flex-col gap-2 mt-4">
+                    <button 
+                        onClick={() => {
+                            socket.emit('toggle_auto_order', { roomId: room.id, playerId: effectivePlayerId });
+                        }} 
+                        className={`flex items-center justify-between p-5 rounded-2xl transition-all border ${me?.autoOrderTriggers ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' : 'bg-white/5 border-white/5 text-slate-400'}`}
+                    >
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Auto-order Triggers</span>
+                        </div>
+                        <div className={`w-10 h-5 rounded-full relative transition-all ${me?.autoOrderTriggers ? 'bg-indigo-500' : 'bg-slate-700'}`}>
+                            <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${me?.autoOrderTriggers ? 'left-6' : 'left-1'}`} />
+                        </div>
+                    </button>
+
+                    <button 
+                        onClick={() => onBack()} 
+                        className="flex items-center justify-center gap-3 p-5 group/danger hover:bg-red-500/10 rounded-2xl transition-all border border-transparent hover:border-red-500/20 active:scale-95"
+                    >
+                        <Trash2 className="w-4 h-4 text-red-500/40 group-hover/danger:text-red-500 transition-colors" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500/50 group-hover/danger:text-red-500">Concede & Leave Game</span>
+                    </button>
+                </div>
               </div>
 
               {/* CLOSE ICON (Top Right) */}

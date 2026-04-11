@@ -68,26 +68,32 @@ export class LayerProcessor {
       }
 
       // Layer 6: Ability Adding/Removing
-      if (effect.layer === 6) {
+      // We process Layer 6 if the effect explicitly targets layer 6 OR has ability-related properties
+      if (effect.layer === 6 || effect.abilitiesToAdd || effect.abilitiesToRemove || effect.removeAllAbilities) {
         if (effect.removeAllAbilities) {
           keywords.clear();
         }
-        effect.abilitiesToAdd?.forEach(k => keywords.add(k));
+        effect.abilitiesToAdd?.forEach(k => {
+            keywords.add(k);
+            console.log(`[LAYER 6] Added keyword ${k} to ${obj.id}`);
+        });
         effect.abilitiesToRemove?.forEach(k => keywords.delete(k));
       }
 
-      // Layer 7: Power/Toughness
-      if (effect.layer === 7) {
+      // Layer 7a, 7b: Power/Toughness Set/Dynamic
+      if (effect.layer === 7 || effect.powerSet !== undefined || effect.toughnessSet !== undefined || effect.powerDynamic || effect.toughnessDynamic) {
         this.applyLayer7(state, effect, obj, (p, t) => {
             power = p !== undefined ? p : power;
             toughness = t !== undefined ? t : toughness;
+            console.log(`[LAYER 7] Updated PT of ${obj.id} to ${power}/${toughness}`);
         });
       }
     }
 
     // 5. LAYER 7c: Power/Toughness Modifiers (CR 613.4c)
     for (const effect of activeEffects) {
-      if (effect.layer === 7 && this.isTarget(state, effect, obj.id)) {
+      if (!this.isTarget(state, effect, obj.id)) continue;
+      if (effect.layer === 7 || effect.powerModifier !== undefined || effect.toughnessModifier !== undefined) {
         let pMod = effect.powerModifier !== undefined ? Number(effect.powerModifier) : 0;
         let tMod = effect.toughnessModifier !== undefined ? Number(effect.toughnessModifier) : 0;
 

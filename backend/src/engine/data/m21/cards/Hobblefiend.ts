@@ -27,7 +27,6 @@ export const Hobblefiend: Record<string, ImplementableCard> = {
                     amount: 1,
                     targetMapping: 'SELF'
                 }],
-                activatedOnlyAsSorcery: true,
                 oracleText: "{1}, Sacrifice another creature: Put a +1/+1 counter on Hobblefiend. Activate only as a sorcery."
             }
         ]

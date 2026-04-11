@@ -604,6 +604,13 @@ export class SpellProcessor {
         const ability = cardLogic.abilities[abilityIndex];
         if (ability.type !== AbilityType.Activated) return false;
 
+        // PRE-CALCULATE COST VARIABLES (Available for both steps)
+        const additionalCosts = ability.costs || [];
+        const sacrificeCost = additionalCosts.find(c => c.type === 'Sacrifice');
+        const hasChosenSacrifice = (state as any).lastChosenSacrificeId !== undefined;
+        const discardCost = additionalCosts.find(c => (c.type as string).toLowerCase() === 'discard');
+        const hasChosenDiscard = (state as any).lastChosenDiscardId !== undefined;
+
         // Step 1: Preliminary Cost & Rule Check (including Summoning Sickness via CostProcessor)
         if (!CostProcessor.canPay(state, ability.costs || [], obj.id, playerId)) {
             log(`Illegal Activation: Cannot pay costs for ${obj.definition.name}'s ability.`);
@@ -655,11 +662,56 @@ export class SpellProcessor {
             }
         }
 
-        // Step 1.6: Check Additional Costs for Ability (e.g. Discard for Niambi)
-        const additionalCosts = ability.costs || [];
-        const discardCost = additionalCosts.find(c => c.type === 'Discard');
-        const hasChosenDiscard = (state as any).lastChosenDiscardId !== undefined;
-        
+        // Step 1.6: Check Additional Costs for Ability (e.g. Sacrifice or Discard)
+        if (sacrificeCost && !hasChosenSacrifice) {
+            const { TargetingProcessor } = require('./TargetingProcessor');
+            // Check for explicit SELF mapping OR keyword restrictions
+            const isSelfSac = sacrificeCost.targetMapping === 'SELF' || 
+                             (sacrificeCost.restrictions || []).some((r: any) => typeof r === 'string' && r.toLowerCase() === 'self');
+            
+            const legalSacrificeIds = state.battlefield
+                .filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, sacrificeCost.restrictions || [], playerId, obj.id))
+                .map(o => o.id);
+
+            if (legalSacrificeIds.length === 0 && !isSelfSac) {
+                log(`Illegal Activation: No valid objects to sacrifice for ${obj.definition.name}.`);
+                return false;
+            }
+
+            // AUTO-SKIP if there's only one choice and it's a SELF sacrifice
+            if (isSelfSac) {
+                (state as any).lastChosenSacrificeId = obj.id;
+            } else if (legalSacrificeIds.length === 1) {
+                (state as any).lastChosenSacrificeId = legalSacrificeIds[0];
+            } else {
+                const { ActionType } = require('@shared/engine_types');
+                state.pendingAction = {
+                    type: ActionType.ModalSelection,
+                    playerId: playerId,
+                    sourceId: obj.id,
+                    data: {
+                        label: "Sacrifice a creature to activate " + obj.definition.name,
+                        hideUndo: false,
+                        isCostChoice: true,
+                        costType: 'Sacrifice',
+                        abilityIndex: abilityIndex,
+                        declaredTargets: declaredTargets || [],
+                        choices: legalSacrificeIds.map(id => {
+                            const sObj = state.battlefield.find(o => o.id === id);
+                            return {
+                                label: `Sacrifice ${sObj?.definition.name || id}`,
+                                value: id,
+                                cardData: sObj,
+                                selectable: true
+                            }
+                        })
+                    }
+                };
+                log(`[SACRIFICE] ${player.name} must choose an object to sacrifice to activate ${obj.definition.name}.`);
+                return true;
+            }
+        }
+
         if (discardCost) log(`[DEBUG] activateAbility: discardCost present. hasChosenDiscard: ${hasChosenDiscard} (${(state as any).lastChosenDiscardId})`);
 
         if (discardCost && !hasChosenDiscard) {
@@ -702,19 +754,6 @@ export class SpellProcessor {
             return true;
         }
 
-        // Rule 601.2h: Pay costs
-        const manaCost = (ability.costs || []).find(c => c.type === 'Mana');
-        if (manaCost && !ManaProcessor.canPayManaCost(player, manaCost.value, state)) {
-             if (ManaProcessor.canPayWithTotal(player, state.battlefield, manaCost.value)) {
-                  log(`Auto-tapping lands to pay ability cost ${manaCost.value}...`);
-                  ManaProcessor.autoTapLandsForCost(state, playerId, manaCost.value, log, engine.tapForMana);
-             }
-        }
-
-        CostProcessor.pay(state, ability.costs || [], obj.id, playerId, (m) => log(m));
-
-        obj.abilitiesUsedThisTurn++;
-
         const stackId = `ability_${Date.now()}`;
         const stackObj = {
             id: stackId,
@@ -731,6 +770,8 @@ export class SpellProcessor {
             }
         };
 
+        // --- STEP 2: TARGETING (Interactive or Automatic) ---
+        // CR 602.2b: Choice of targets must happen BEFORE cost payment.
         if (ability.targetDefinition && (declaredTargets === undefined || declaredTargets.length === 0) && precalculatedTargets && !bypassTargeting) {
             const isSingleOpponentTarget = ability.targetDefinition?.type === 'Player' && 
                                            ability.targetDefinition?.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'opponent') &&
@@ -746,8 +787,6 @@ export class SpellProcessor {
                 playerId: playerId,
                 sourceId: obj.id,
                 data: {
-                    stackId: stackId,
-                    stackObj: stackObj,
                     abilityIndex: abilityIndex,
                     targetDefinition: ability.targetDefinition,
                     targets: precalculatedTargets
@@ -756,6 +795,28 @@ export class SpellProcessor {
             log(`[TARGETING] Player must choose targets for ${obj.definition.name}'s ability.`);
             return true;
         }
+
+        // --- STEP 3: COST PAYMENT ---
+        // CR 602.2h: Total cost is paid after targets and choices are finalized.
+        if (log) log(`[FLOW-DEBUG] Starting Step 3: Cost Payment for ${obj.definition.name}...`);
+        
+        const playerObj = state.players[playerId];
+        const manaCost = (ability.costs || []).find(c => c.type === 'Mana');
+        if (manaCost && !ManaProcessor.canPayManaCost(playerObj, manaCost.value, state)) {
+             if (ManaProcessor.canPayWithTotal(playerObj, state.battlefield, manaCost.value)) {
+                  log(`Auto-tapping lands to pay ability cost ${manaCost.value}...`);
+                  ManaProcessor.autoTapLandsForCost(state, playerId, manaCost.value, log, engine.tapForMana);
+             }
+        }
+
+        if (log) log(`[FLOW-DEBUG] Calling CostProcessor.pay for ${obj.id} with ${ability.costs?.length || 0} costs.`);
+        CostProcessor.pay(state, ability.costs || [], obj.id, playerId, (m) => log(m));
+
+        // Clean up choice flags
+        delete (state as any).lastChosenSacrificeId;
+        delete (state as any).lastChosenDiscardId;
+
+        obj.abilitiesUsedThisTurn++;
 
         if (ability.isManaAbility) {
             const { EffectProcessor } = require('../effects/EffectProcessor');

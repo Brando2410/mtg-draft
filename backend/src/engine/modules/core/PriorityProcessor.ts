@@ -142,9 +142,19 @@ export class PriorityProcessor {
     const isBeginning = currentStepId === 'upkeep' || currentStepId === 'draw';
     
     const hasManualStop = player?.stops?.[stopKey] || (isBeginning && player?.stops?.[beginKey]);
+    const isSkipActive = player?.passUntilEndOfTurn;
 
-    if (player && !player.fullControl && !hasManualStop && !canAct) {
-      callbacks.log(`[Auto-Pass] ${callbacks.getPlayerName(playerId)} skipped: no legal actions found.`);
+    // Skip if no possible actions OR if Pass Turn is active (and no manual stop is reached)
+    const shouldSkip = !canAct || (isSkipActive && !hasManualStop);
+    
+    if (player && !player.fullControl && !hasManualStop && shouldSkip) {
+      // We still need to prompt for attackers/blockers if it's the right step
+      const isCombatSelection = state.pendingAction?.type === 'DECLARE_ATTACKERS' || state.pendingAction?.type === 'DECLARE_BLOCKERS';
+      if (isSkipActive && isCombatSelection) {
+          return; // Don't auto-pass combat declarations even if Skip is active
+      }
+
+      callbacks.log(`[Auto-Pass] ${callbacks.getPlayerName(playerId)} skipped${!canAct ? ': no legal actions found' : ' (Pass Turn active)'}.`);
       console.log(`[ENGINE] Auto-Pass triggered for ${playerId}`);
       this.passPriority(state, playerId, callbacks, true);
     } else if (player && (canAct || hasManualStop)) {

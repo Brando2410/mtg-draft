@@ -13,6 +13,10 @@ export class ActionProcessor {
    */
     public static moveCard(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, log?: (m: string) => void, libraryPosition: 'top' | 'bottom' = 'top', isDraw: boolean = false, isDiscard: boolean = false) {
     const fromZone = card.zone;
+    
+    // Rule 400.3: Objects move to their OWNER'S hand/graveyard/library, not the controller's.
+    const destinationPlayerId = (to === Zone.Hand || to === Zone.Graveyard || to === Zone.Library) ? card.ownerId : targetPlayerId;
+    const effectiveTargetId = destinationPlayerId;
 
     // CR 701.8: To discard a card, move it from hand to graveyard.
     if ((isDiscard || (fromZone === Zone.Hand && to === Zone.Graveyard)) && !isDraw) {
@@ -25,9 +29,9 @@ export class ActionProcessor {
         if (registry.replacementEffects) {
             for (const replacement of registry.replacementEffects) {
                 if (replacement.id.includes('teferi_ageless_insight')) {
-                    const isYourTurn = state.activePlayerId === targetPlayerId;
+                    const isYourTurn = state.activePlayerId === effectiveTargetId;
                     const isYourDrawStep = isYourTurn && (state as any).currentStep === 'Draw';
-                    const cardsDrawn = state.turnState.cardsDrawnThisTurn[targetPlayerId] || 0;
+                    const cardsDrawn = state.turnState.cardsDrawnThisTurn[effectiveTargetId] || 0;
                     const skipFirstDrawInDrawStep = isYourDrawStep && cardsDrawn === 0;
 
                     if (!skipFirstDrawInDrawStep) {
@@ -37,12 +41,12 @@ export class ActionProcessor {
                         // Rule 121.6: The draw is considered to have never happened.
                         // We must perform two separate draws instead.
                         // We draw the card that was supposed to be drawn, then another one.
-                        this.moveCard(state, card, Zone.Hand, targetPlayerId, log, libraryPosition, true);
+                        this.moveCard(state, card, Zone.Hand, effectiveTargetId, log, libraryPosition, true);
                         
-                        const player = state.players[targetPlayerId];
+                        const player = state.players[effectiveTargetId];
                         if (player && player.library.length > 0) {
                             const nextCard = player.library.pop()!;
-                            this.moveCard(state, nextCard, Zone.Hand, targetPlayerId, log, 'top', true);
+                            this.moveCard(state, nextCard, Zone.Hand, effectiveTargetId, log, 'top', true);
                         }
                         
                         (state as any).isResolvingDrawReplacement = false;
@@ -75,10 +79,12 @@ export class ActionProcessor {
 
     // Rule 110.2: A permanent's controller is the player under whose control it entered.
     // Rule 108.4: A card's owner doesn't change, but its controller can.
-    card.controllerId = targetPlayerId;
+    card.controllerId = effectiveTargetId;
 
     // 1. Rule 400.7: Remove from the current zone
     if (log) log(`[MOVE] ${card.definition.name} (${card.id}) from ${fromZone} to ${to} (isDraw: ${isDraw})...`);
+
+    this.removeFromCurrentZone(state, card);
 
     // Track original zone if moving to stack (Rule 400.7 memoization)
     if (to === Zone.Stack && fromZone !== Zone.Stack) {
@@ -91,20 +97,6 @@ export class ActionProcessor {
         this.handleLeavingBattlefield(state, card, to, log);
     }
 
-    this.removeFromCurrentZone(state, card);
-
-    // CR 121: Drawing a card
-    if (isDraw && fromZone === Zone.Library && to === Zone.Hand) {
-        state.turnState.cardsDrawnThisTurn[targetPlayerId] = (state.turnState.cardsDrawnThisTurn[targetPlayerId] || 0) + 1;
-        state.turnState.lastCardsDrawnAmount = 1;
-        TriggerProcessor.onEvent(state, { type: 'ON_DRAW', playerId: targetPlayerId, data: { card } }, log || (() => {}));
-
-        // Jolrael support: Emit ON_SECOND_DRAW
-        if (state.turnState.cardsDrawnThisTurn[targetPlayerId] === 2) {
-            TriggerProcessor.onEvent(state, { type: 'ON_SECOND_DRAW', playerId: targetPlayerId, data: { card } }, log || (() => {}));
-        }
-    }
-
     // 2. Rule 400.7: Reset characteristics and update zone
     card.zone = to;
     const isToken = (card as any).isToken || card.id.startsWith('token_');
@@ -115,7 +107,20 @@ export class ActionProcessor {
     }
 
     // 3. Rule 400.1: Add to the new zone
-    this.addToTargetZone(state, card, to, targetPlayerId, isToken, fromZone, log, libraryPosition);
+    if (log) log(`[MOVE-DEBUG] Adding ${card.definition.name} to ${to} for player ${effectiveTargetId}`);
+    this.addToTargetZone(state, card, to, effectiveTargetId, isToken, fromZone, log, libraryPosition);
+
+    // CR 121: Drawing a card
+    if (isDraw && fromZone === Zone.Library && to === Zone.Hand) {
+        state.turnState.cardsDrawnThisTurn[effectiveTargetId] = (state.turnState.cardsDrawnThisTurn[effectiveTargetId] || 0) + 1;
+        state.turnState.lastCardsDrawnAmount = 1;
+        TriggerProcessor.onEvent(state, { type: 'ON_DRAW', playerId: effectiveTargetId, data: { card } }, log || (() => {}));
+
+        // Jolrael support: Emit ON_SECOND_DRAW
+        if (state.turnState.cardsDrawnThisTurn[effectiveTargetId] === 2) {
+            TriggerProcessor.onEvent(state, { type: 'ON_SECOND_DRAW', playerId: effectiveTargetId, data: { card } }, log || (() => {}));
+        }
+    }
   }
 
   private static handleLeavingBattlefield(state: GameState, card: GameObject, to: Zone, log?: (m: string) => void) {
@@ -132,10 +137,16 @@ export class ActionProcessor {
 
   public static removeFromCurrentZone(state: GameState, card: GameObject) {
     RegistryProcessor.unregisterAbilities(state, card.id);
-    // Nuclear option: scrub the card ID from EVERYTHING to ensure no ghost copies
     const cid = card.id;
+    const beforeCount = state.battlefield.length;
 
     state.battlefield = state.battlefield.filter(c => c.id !== cid);
+
+    const afterCount = state.battlefield.length;
+    if (afterCount < beforeCount) {
+        // Successfully removed
+    }
+
     state.stack = state.stack.filter(s => s.id !== cid && s.sourceId !== cid);
     state.exile = state.exile.filter(c => c.id !== cid);
 

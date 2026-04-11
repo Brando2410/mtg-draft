@@ -130,18 +130,64 @@ export class TriggerProcessor {
 
     if (matchingTriggers.length === 0) return;
 
-    // 2. Sort by APNAP order (Rule 101.4)
-    // All triggers belonging to the Active Player go on the stack first, then the Non-Active Players.
-    const sortedTriggers = this.sortByAPNAP(state, matchingTriggers);
-
-    // 3. Move triggers from registration to the Stack (Rule 603.3)
-    for (const trigger of sortedTriggers) {
-      this.putTriggerOnStack(state, trigger, event, log);
+    // 2. Queue all triggers in pending state
+    if (!state.pendingTriggers) state.pendingTriggers = [];
+    
+    for (const trigger of matchingTriggers) {
+        const stackObj = this.createStackObject(state, trigger, event, log);
+        state.pendingTriggers.push(stackObj);
     }
+
+    // 3. Process the queue in APNAP order
+    this.processPendingTriggers(state, log);
   }
 
-  private static putTriggerOnStack(state: GameState, trigger: TriggeredAbility, event: GameEvent, log: (msg: string) => void) {
-    // CR 603.10: Identify source object (handles Look Back In Time)
+  /**
+   * CR 603.3b: "If multiple abilities have triggered... each player, in APNAP order, 
+   * puts any abilities they control on the stack in any order they choose."
+   */
+  public static processPendingTriggers(state: GameState, log: (msg: string) => void) {
+      if (!state.pendingTriggers || state.pendingTriggers.length === 0) return;
+
+      // Rule 101.4: APNAP Order
+      const apId = state.activePlayerId;
+      const order = state.playerOrder;
+      const apIndex = order.indexOf(apId);
+      const apnapOrder = [...order.slice(apIndex), ...order.slice(0, apIndex)];
+
+      for (const pId of apnapOrder) {
+          const playersTriggers = state.pendingTriggers.filter(t => t.controllerId === pId);
+          if (playersTriggers.length === 0) continue;
+
+          if (playersTriggers.length === 1) {
+              const trigger = playersTriggers[0];
+              state.pendingTriggers = state.pendingTriggers.filter(t => t.id !== trigger.id);
+              this.stackTrigger(state, trigger, log);
+              this.processPendingTriggers(state, log);
+              return;
+          } else {
+              const player = state.players[pId];
+              if (player?.autoOrderTriggers) {
+                 // Auto-order: Just stack them in the order they arrived (arbitrary but consistent)
+                 for (const t of playersTriggers) {
+                     state.pendingTriggers = state.pendingTriggers.filter(q => q.id !== t.id);
+                     this.stackTrigger(state, t, log);
+                 }
+                 this.processPendingTriggers(state, log);
+                 return;
+              }
+
+              state.pendingAction = {
+                  type: ActionType.OrderTriggers,
+                  playerId: pId,
+                  data: { triggers: playersTriggers }
+              };
+              return;
+          }
+      }
+  }
+
+  private static createStackObject(state: GameState, trigger: TriggeredAbility, event: GameEvent, log: (msg: string) => void): any {
     const eventObj = event.data?.object;
     const sourceObj = (eventObj && eventObj.id === trigger.sourceId) ? eventObj : (
                       state.battlefield.find(o => o.id === trigger.sourceId) || 
@@ -149,45 +195,46 @@ export class TriggerProcessor {
                       Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === trigger.sourceId)
     );
     
-    // CR 114: Emblem triggers — look up in Command Zone for name/image
     const emblemSource = !sourceObj ? state.emblems?.find(e => e.id === trigger.sourceId) : undefined;
     const sourceName = sourceObj?.definition.name || emblemSource?.name || "Unknown Source";
     const sourceImage = sourceObj?.definition.image_url || emblemSource?.image_url;
     
-    // Create the Stack Object (Rule 608.2)
     const stackId = `trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-    const stackObj: any = {
+    return {
       id: stackId,
       controllerId: trigger.controllerId,
       sourceId: trigger.sourceId,
       type: AbilityType.Triggered,
       name: `${sourceName}'s Trigger`,
-      image_url: sourceImage, // Now supports emblems too
+      image_url: sourceImage,
       targets: [],
       abilityIndex: (trigger as any).abilityIndex,
       data: { 
           effects: (trigger as any).effects || [],
           targetDefinition: (trigger as any).targetDefinition,
           eventData: event,
-          eventAmount: (event as any).amount
+          eventAmount: (event as any).amount,
+          sourceName: sourceName
       }
     };
+  }
 
+  public static stackTrigger(state: GameState, stackObj: any, log: (msg: string) => void) {
     state.stack.push(stackObj);
-    state.consecutivePasses = 0; // Rule 117.4: Reset pass count
+    state.consecutivePasses = 0;
 
-    // Rule 603.3d: Choice of targets occurs as the ability is put on the stack.
-    const targetDef = (trigger as any).targetDefinition;
+    const targetDef = stackObj.data.targetDefinition;
+    const sourceName = stackObj.data.sourceName;
+
     if (targetDef) {
-       this.initializeTriggerTargeting(state, trigger, stackId, targetDef, sourceName, log, stackObj);
+       this.initializeTriggerTargeting(state, stackObj.id, targetDef, sourceName, log, stackObj);
     } else {
-       log(`[TRIGGER] ${sourceName} triggered by ${event.type}.`);
+       log(`[TRIGGER] ${sourceName} triggered.`);
     }
   }
 
   private static initializeTriggerTargeting(
     state: GameState, 
-    trigger: TriggeredAbility, 
     stackId: string, 
     targetDef: any, 
     sourceName: string, 
@@ -198,10 +245,9 @@ export class TriggerProcessor {
     const legalTargetIds = [
         ...state.battlefield.map(o => o.id),
         ...Object.keys(state.players)
-    ].filter(tid => TargetingProcessor.isLegalTarget(state, trigger.sourceId, tid, targetDef));
+    ].filter(tid => TargetingProcessor.isLegalTarget(state, stackObj.sourceId, tid, targetDef));
 
     if (legalTargetIds.length === 0) {
-       // Rule 603.3d: If no legal targets can be chosen, it's removed from the stack unless optional.
        if (targetDef.optional) {
           log(`[TRIGGER] ${sourceName}: No legal targets. Optional trigger skipped.`);
           const onStack = state.stack.find(s => s.id === stackId);
@@ -213,7 +259,6 @@ export class TriggerProcessor {
        return;
     }
 
-    // Set up the interactive targeting session (Rule 117)
     state.pendingAction = {
        type: ActionType.Targeting,
        playerId: stackObj.controllerId,
@@ -225,8 +270,8 @@ export class TriggerProcessor {
            stackObj: stackObj
        }
     };
-    state.priorityPlayerId = trigger.controllerId;
-    log(`[TARGETING] ${state.players[trigger.controllerId]?.name} choosing targets for ${sourceName}.`);
+    state.priorityPlayerId = stackObj.controllerId;
+    log(`[TARGETING] ${state.players[stackObj.controllerId]?.name} choosing targets for ${sourceName}.`);
   }
 
   private static checkZoneRequirement(state: GameState, trigger: TriggeredAbility, eventType: string): boolean {

@@ -88,6 +88,27 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     }
   });
 
+  socket.on('toggle_pass_turn', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+
+    const playerIds = room.players.map(p => p.playerId as PlayerId);
+    const playerNames: Record<string, string> = {};
+    room.players.forEach(p => playerNames[p.playerId] = p.name);
+
+    const engine = new GameEngine(playerIds, {}, playerNames);
+    engine.setState(room.gameState);
+
+    try {
+      engine.togglePassTurn(playerId);
+      room.gameState = engine.getState();
+      io.to(roomId).emit('draft_update', room);
+      await PersistenceService.saveRooms(rooms);
+    } catch (error) {
+      console.warn(`[SOCKET] Toggle pass turn error:`, error);
+    }
+  });
+
   socket.on('play_card', async ({ roomId, playerId, cardInstanceId, targets = [] }) => {
     const room = rooms.get(roomId);
     if (!room || !room.gameState) return;
@@ -215,6 +236,19 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       player.fullControl = !player.fullControl;
       io.to(roomId).emit('draft_update', room);
       console.log(`[Socket] Full control toggled for ${player.name}: ${player.fullControl}`);
+      await PersistenceService.saveRooms(rooms);
+    }
+  });
+
+  socket.on('toggle_auto_order', async ({ roomId, playerId }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.gameState) return;
+
+    const player = room.gameState.players[playerId];
+    if (player) {
+      player.autoOrderTriggers = !player.autoOrderTriggers;
+      io.to(roomId).emit('draft_update', room);
+      console.log(`[Socket] Auto-order triggers toggled for ${player.name}: ${player.autoOrderTriggers}`);
       await PersistenceService.saveRooms(rooms);
     }
   });

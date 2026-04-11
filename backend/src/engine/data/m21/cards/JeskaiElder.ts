@@ -17,9 +17,9 @@ export const JeskaiElder: Record<string, ImplementableCard> = {
                 id: "jeskai_elder_combat_damage",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: "ON_DAMAGE_PLAYER",
-                triggerCondition: (state: any, event: any, source: any) => {
-                    return event.data?.isCombat && event.sourceId === source.sourceId;
+                triggerEvent: "ON_DAMAGE_DEALT_TO_PLAYER",
+                triggerCondition: (state: any, event: any, trigger: any) => {
+                    return event.data?.isCombat && event.sourceId === trigger.sourceId;
                 },
                 effects: [{
                     type: "Choice",

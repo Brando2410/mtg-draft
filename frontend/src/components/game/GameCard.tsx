@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { type GameObject } from '@shared/engine_types';
 import { motion } from 'framer-motion';
-import { Zap, Box } from 'lucide-react';
+import { Zap, Eye } from 'lucide-react';
 
 export interface GameCardProps {
   obj: GameObject;
@@ -58,8 +58,8 @@ export const GameCard = memo(({
   const verticalShift = isBlocking ? (lungeDirection * 25) : 0;
   
   // TAP VISUALS: No rotation, just grayed out + icon
-  const rotation = 0; 
-  const isActuallyTapped = isTapped && !isCurrentlyDeclaringAttack && variant !== 'zoom';
+  const rotation = 0;
+  const isActuallyTapped = isTapped && variant !== 'zoom';
 
   // DIMENSIONS
   const dimensions = {
@@ -85,18 +85,24 @@ export const GameCard = memo(({
   const borderClass = colorMap[cardColor] || colorMap.colorless;
 
   // MANA SYMBOLS (Official Scryfall SVGs)
-  const ManaSymbols = ({ cost }: { cost: string }) => {
+  const ManaSymbols = ({ cost, variant }: { cost: string, variant: string }) => {
     if (!cost) return null;
     const symbols = cost.match(/\{([^}]+)\}/g)?.map(s => s.slice(1, -1)) || [];
     
+    // Scale down if many symbols
+    const tooMany = symbols.length > 5;
+    const baseSize = variant === 'zoom' ? 20 : 12;
+    const finalSize = tooMany && variant !== 'zoom' ? Math.max(8, baseSize - (symbols.length - 5) * 1) : baseSize;
+
     return (
-      <div className="flex gap-0.5 items-center">
+      <div className="flex gap-0.5 items-center justify-end shrink-0 ml-auto">
         {symbols.map((s, i) => (
           <img 
             key={i}
             src={`https://svgs.scryfall.io/card-symbols/${s.toUpperCase()}.svg`}
             alt={s}
-            className={`${variant === 'zoom' ? 'w-5 h-5' : 'w-3 h-3'} drop-shadow-sm select-none`}
+            style={{ width: `${finalSize}px`, height: `${finalSize}px` }}
+            className="drop-shadow-sm select-none shrink-0"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
@@ -180,7 +186,7 @@ export const GameCard = memo(({
             ${isCurrentlyDeclaringAttack ? 'bg-orange-600 border-orange-400/50 text-white' : headerClass}
         `}>
             <h3 className={`font-black tracking-tighter truncate w-full whitespace-nowrap
-                ${definition.name.length > 28 ? 'text-[8px]' : definition.name.length > 20 ? 'text-[9.5px]' : 'text-[11px]'}
+                ${definition.name.length > 25 ? 'text-[8.5px]' : definition.name.length > 18 ? 'text-[10px]' : 'text-[11.5px]'}
             `}>
                 {formatName(definition.name)}
             </h3>
@@ -212,9 +218,8 @@ export const GameCard = memo(({
                   {variant !== 'battlefield' && (
                       <>
                           {/* Header shroud to hide original printed text */}
-                          <div className="absolute inset-x-0 top-0 h-5 bg-slate-950/50 z-10" />
-                          <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-black/80 via-black/20 to-transparent" />
-                          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/90 to-transparent" />
+                          <div className="absolute inset-x-0 top-0 h-4 bg-slate-950/40 z-10" />
+                          <div className="absolute inset-x-0 top-0 h-[25%] bg-gradient-to-b from-black/80 via-black/20 to-transparent" />
                       </>
                   )}
               </div>
@@ -222,11 +227,13 @@ export const GameCard = memo(({
 
           {/* FULL IMAGE (For Zoom mode) */}
           {variant === 'zoom' && (
-              <img 
-                  src={definition.image_url} 
-                  alt={definition.name}
-                  className="w-full h-auto rounded-2xl shadow-2xl border-2 border-white/10"
-              />
+              <div className="relative group/zoom flex flex-col">
+                  <img 
+                      src={definition.image_url} 
+                      alt={definition.name}
+                      className="w-full h-auto rounded-2xl shadow-2xl border-2 border-white/10"
+                  />
+              </div>
           )}
 
           {/* HUD OVERLAY (Stats, keywords, etc) - Rendered over art if not zoom */}
@@ -240,60 +247,63 @@ export const GameCard = memo(({
                           ${headerClass}
                       `}>
                           <h3 className={`font-black leading-tight tracking-tighter drop-shadow-md truncate flex-1 min-w-0
-                              ${definition.name.length > 20 ? 'text-[8px]' : definition.name.length > 15 ? 'text-[9px]' : 'text-[10px]'}
+                              ${definition.name.length > 20 ? 'text-[8.5px]' : definition.name.length > 15 ? 'text-[9.5px]' : 'text-[11px]'}
                           `}>
                               {formatName(definition.name)}
                           </h3>
                           {variant !== 'tiny' && (
                               <div className="shrink-0">
-                                  <ManaSymbols cost={definition.manaCost} />
+                                  <ManaSymbols cost={definition.manaCost} variant={variant} />
                               </div>
                           )}
                       </div>
                   )}
 
-                  {/* MIDDLE: KEYWORDS & STATUS */}
-                  <div className="flex flex-col gap-1 items-start mt-1">
-                      <div className="flex flex-wrap gap-0.5">
-                          {(stats?.keywords || []).map(k => <KeywordIcon key={k} keyword={k} />)}
-                          {summoningSickness && !isTapped && variant === 'battlefield' && (
-                              <div title="Summoning Sickness" className="w-4 h-4 bg-indigo-600/80 rounded flex items-center justify-center text-[8px] animate-pulse shadow-sm">
-                                  💤
-                              </div>
-                          )}
-                      </div>
-                  </div>
+                  {/* MIDDLE: KEYWORDS & STATUS - Battlefield only */}
+                  {variant === 'battlefield' && (
+                    <div className="flex flex-col gap-1 items-start mt-1">
+                        <div className="flex flex-wrap gap-0.5">
+                            {(stats?.keywords || []).map(k => <KeywordIcon key={k} keyword={k} />)}
+                            {summoningSickness && !isTapped && (
+                                <div title="Summoning Sickness" className="w-4 h-4 bg-indigo-600/80 rounded flex items-center justify-center text-[8px] animate-pulse shadow-sm">
+                                    💤
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                  )}
 
-                  {/* BOTTOM: P/T or LOYALTY */}
+                  {/* BOTTOM: P/T or LOYALTY - Battlefield only */}
                   <div className="flex justify-between items-end">
-                      <div className="flex flex-col-reverse gap-0.5">
-                          {Object.entries(counters).map(([type, val]) => val > 0 && (
-                              <div key={type} className="bg-emerald-500 text-black text-[8px] font-black px-1 rounded shadow-lg border border-white/20">
-                                  {type === '+1/+1' ? `+${val}` : `${val} ${type}`}
-                              </div>
-                          ))}
-                      </div>
 
-                      {isCreature && (
+                      {isCreature && variant === 'battlefield' && (
                           <div className={`bg-black shadow-2xl z-30 flex items-center justify-center
-                              ${variant === 'battlefield' ? 'absolute bottom-0 right-0 px-2 py-0.5 border-t border-l border-white/30 rounded-tl-md' : 'rounded-lg p-1.5 border border-white/40'}
+                              absolute bottom-0 right-0 px-2 py-0.5 border-t border-l border-white/30 rounded-tl-md
                           `}>
                               <div className="flex items-center gap-1">
-                                  <span className={`font-black tracking-normal ${variant === 'battlefield' ? 'text-xs' : 'text-sm'} ${stats?.power !== parseInt(definition.power || '0') ? 'text-emerald-400' : 'text-white'}`}>
+                                  <span className={`font-black tracking-normal text-xs ${stats?.power !== parseInt(definition.power || '0') ? 'text-emerald-400' : 'text-white'}`}>
                                       {stats?.power ?? definition.power}
                                   </span>
                                   <span className="text-[10px] text-white/40 font-bold">/</span>
-                                  <span className={`font-black tracking-normal ${variant === 'battlefield' ? 'text-xs' : 'text-sm'} ${damageMarked > 0 ? 'text-red-400' : stats?.toughness !== parseInt(definition.toughness || '0') ? 'text-emerald-400' : 'text-white'}`}>
+                                  <span className={`font-black tracking-normal text-xs ${damageMarked > 0 ? 'text-red-400' : stats?.toughness !== parseInt(definition.toughness || '0') ? 'text-emerald-400' : 'text-white'}`}>
                                       {(stats?.toughness ?? parseInt(definition.toughness || '0')) - damageMarked}
                                   </span>
                               </div>
                           </div>
                       )}
 
-                      {isPlaneswalker && (
-                          <div className="bg-indigo-900 border border-indigo-400 rounded-md px-1.5 py-0.5 flex items-center gap-1 shadow-2xl">
-                              <Zap className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-                              <span className="text-xs font-black text-white px-0.5">
+                      {isPlaneswalker && variant === 'battlefield' && (
+                          <div className={`border rounded-md px-1.5 py-0.5 flex items-center gap-1 shadow-2xl
+                            ${cardColor === 'white' ? 'bg-stone-100 border-stone-400 text-stone-900' :
+                              cardColor === 'blue' ? 'bg-blue-800 border-blue-400 text-white' :
+                              cardColor === 'black' ? 'bg-slate-900 border-slate-700 text-white' :
+                              cardColor === 'red' ? 'bg-red-800 border-red-500 text-white' :
+                              cardColor === 'green' ? 'bg-emerald-800 border-emerald-500 text-white' :
+                              cardColor === 'multicolor' ? 'bg-amber-700 border-amber-400 text-white' :
+                              'bg-slate-900 border-slate-600 text-white'}
+                          `}>
+                              <Zap className={`w-2.5 h-2.5 ${cardColor === 'white' ? 'text-stone-900 fill-stone-900' : 'text-amber-400 fill-amber-400'}`} />
+                              <span className="text-xs font-black px-0.5">
                                   {counters.loyalty || 0}
                               </span>
                           </div>
@@ -324,12 +334,43 @@ export const GameCard = memo(({
             )}
 
             {(obj as any).isRevealed && (
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
-                    <Box className="w-12 h-12 text-purple-400" />
+                <div className="absolute top-7 left-2 z-[60] bg-black/60 backdrop-blur-md rounded-full p-1 shadow-lg border border-white/20">
+                    <Eye className="w-3 h-3 text-cyan-400" />
                 </div>
             )}
         </>
       )}
+
+      {/* COUNTER BADGES - Top Level (Prevent Clipping) */}
+      {variant === 'battlefield' && (
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 flex flex-col gap-1 items-center z-[200] group-hover:scale-110 transition-transform">
+          {Object.entries(counters).map(([type, val]) => {
+              if (val <= 0 || type === 'loyalty') return null;
+              
+              const isPlus = type === '+1/+1';
+              const isMinus = type === '-1/-1';
+              
+              const gradient = isPlus 
+                ? 'radial-gradient(circle at 30% 30%, #60a5fa, #2563eb 60%, #1d4ed8)' 
+                : isMinus 
+                  ? 'radial-gradient(circle at 30% 30%, #f87171, #dc2626 60%, #b91c1c)'
+                  : 'radial-gradient(circle at 30% 30%, #fbbf24, #d97706 60%, #b45309)';
+
+              return (
+                <div 
+                  key={type}
+                  style={{ background: gradient }}
+                  className="w-6 h-6 rounded-full flex items-center justify-center border border-white/50 shadow-[0_2px_6px_rgba(0,0,0,0.6),inset_0_-2px_4px_rgba(0,0,0,0.3)]"
+                >
+                  <span className="text-white text-[10px] font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] select-none">
+                    {val}
+                  </span>
+                </div>
+              );
+          })}
+      </div>
+      )}
     </motion.div>
   );
 });
+
