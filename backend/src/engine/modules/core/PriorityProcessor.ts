@@ -5,7 +5,8 @@ import { SpellProcessor } from '../actions/SpellProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { ConditionProcessor } from '../core/ConditionProcessor';
 import { EffectType } from '@shared/engine_types';
-import { m21 } from '../../data/m21';
+import { oracle } from '../../OracleLogicMap';
+
 
 /**
  * Priority Handling (Rule 117)
@@ -205,10 +206,12 @@ export class PriorityProcessor {
     // Chapter 3 Check: Battlefield Activated Abilities - IGNORING priority check
     const hasBattlefieldAction = state.battlefield.some(obj => {
       if (obj.controllerId !== playerId) return false;
-      const logic = m21[obj.definition.name];
+      const logic = oracle.getCard(obj.definition.name);
+
       if (!logic || !logic.abilities) return false;
 
-      return logic.abilities.some((_, index) => this.canAbilityBeActivated(state, playerId, obj.id, index, false));
+      return logic.abilities.some((ability: any, index: number) => this.canAbilityBeActivated(state, playerId, obj.id, index, false));
+
     });
 
     return hasBattlefieldAction;
@@ -275,14 +278,19 @@ export class PriorityProcessor {
        const isYourTurn = state.activePlayerId === playerId;
 
         let canPlay = false;
+        const { RestrictionProcessor } = require('../actions/RestrictionProcessor');
+        if (!RestrictionProcessor.isCastAllowed(state, playerId, cardToPlay)) {
+            return false;
+        }
+
         const { totalMana: effectiveCost, additionalCosts } = SpellProcessor.getEffectiveCosts(state, cardToPlay);
 
         if (isLand) {
             canPlay = isYourTurn && isMain && stackEmpty && !player.hasPlayedLandThisTurn;
         } else if (isInstantOrFlash) {
-            canPlay = ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost);
+            canPlay = ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost, cardToPlay);
         } else {
-            canPlay = isYourTurn && isMain && stackEmpty && ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost);
+            canPlay = isYourTurn && isMain && stackEmpty && ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost, cardToPlay);
         }
 
         // --- CHECK ADDITIONAL COSTS ---
@@ -301,8 +309,9 @@ export class PriorityProcessor {
         }
 
         if (canPlay) {
-            const logic = m21[cardToPlay.definition.name];
-            const targetDefinition = (logic as any)?.targetDefinition || logic?.abilities?.find(a => a.type === 'Spell')?.targetDefinition;
+            const logic = oracle.getCard(cardToPlay.definition.name);
+            const targetDefinition = (logic as any)?.targetDefinition || logic?.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition;
+
             if (targetDefinition && !targetDefinition.optional) {
                 if (!TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, targetDefinition, playerId)) {
                     canPlay = false;
@@ -316,10 +325,12 @@ export class PriorityProcessor {
     // Check battlefield (for activating abilities)
     const objOnField = state.battlefield.find(o => o.id === objId);
     if (objOnField && objOnField.controllerId === playerId) {
-        const logic = m21[objOnField.definition.name];
-        if (!logic || !logic.abilities) return false;
+        const logic = oracle.getCard(objOnField.definition.name);
+        if (!logic || (!logic.abilities && !state.ruleRegistry.continuousEffects.some(e => e.type === EffectType.AddTriggeredAbility))) return false;
 
-        return logic.abilities.some((_, index) => this.canAbilityBeActivated(state, playerId, objId, index, checkPriority));
+
+        return logic.abilities.some((ability: any, index: number) => this.canAbilityBeActivated(state, playerId, objId, index, checkPriority));
+
     }
 
     return false;
@@ -337,30 +348,36 @@ export class PriorityProcessor {
     
     if (checkPriority && state.priorityPlayerId !== playerId) return false;
 
-    const cardLogic = m21[obj.definition.name];
+    const cardLogic = oracle.getCard(obj.definition.name);
     let abilities = [...(cardLogic?.abilities || [])];
 
-    // --- SUPPORT FOR GRANTED ABILITIES (Conspicuous Snoop, etc.) ---
-    const gainTopEffect = state.ruleRegistry.continuousEffects.find(e => 
-        e.type === EffectType.GainAbilitiesOfTopCard && 
-        (e.targetIds?.includes(objId) || (e.targetMapping === 'SELF' && e.sourceId === objId)) &&
+    // --- SUPPORT FOR GRANTED ABILITIES (Conspicuous Snoop, Galazeth, etc.) ---
+    const grantedAbilityEffects = state.ruleRegistry.continuousEffects.filter(e => 
+        (e.type === EffectType.GainAbilitiesOfTopCard || e.type === EffectType.AddTriggeredAbility) && 
+        (e.targetIds?.includes(objId) || (e.targetMapping === 'SELF' && e.sourceId === objId) || LayerProcessor.isTarget(state, e, objId)) &&
         ConditionProcessor.matchesCondition(state, e.condition, e.sourceId, e.controllerId)
     );
 
-    if (gainTopEffect) {
-        const topCard = player.library[player.library.length - 1];
-        if (topCard) {
-            const topLogic = m21[topCard.definition.name];
-            if (topLogic?.abilities) {
-                // Snoop specifically gains ONLY activated abilities.
-                const granted = topLogic.abilities.filter(a => a.type === AbilityType.Activated);
-                abilities = [...abilities, ...granted];
+    for (const e of grantedAbilityEffects) {
+        if (e.type === EffectType.GainAbilitiesOfTopCard) {
+            const topCard = player.library[player.library.length - 1];
+            if (topCard) {
+                const topLogic = oracle.getCard(topCard.definition.name);
+                if (topLogic?.abilities) {
+                    const granted = topLogic.abilities.filter((a: any) => a.type === AbilityType.Activated);
+                    abilities = [...abilities, ...granted];
+                }
             }
+        } else if (e.type === EffectType.AddTriggeredAbility && (e as any).value) {
+            // value contains the granted ability (which could be Activated despite the effect name)
+            abilities = [...abilities, (e as any).value];
         }
+
     }
 
     if (!abilities[abilityIndex]) return false;
     const ability = abilities[abilityIndex];
+
     if (ability.type !== AbilityType.Activated) return false;
 
     // Requirement Check (Rule 602.5b)

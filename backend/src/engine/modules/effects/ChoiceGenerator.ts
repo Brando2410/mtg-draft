@@ -85,7 +85,7 @@ export class ChoiceGenerator {
      * Build generic button-based choices.
      */
     public static createModalChoice(
-        config: ChoiceConfig,
+        config: ChoiceConfig & { minChoices?: number, maxChoices?: number },
         choices: { label: string, value: any, effects?: any[] }[]
     ) {
         return this.wrap(config.playerId, config.sourceId, {
@@ -96,7 +96,9 @@ export class ChoiceGenerator {
             })),
             hideUndo: config.hideUndo,
             stackObj: config.stackObj,
-            parentContext: pruneContext(config.parentContext)
+            parentContext: pruneContext(config.parentContext),
+            minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.data?.minChoices || 1),
+            maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.data?.maxChoices || 1),
         }, config.actionType);
     }
 

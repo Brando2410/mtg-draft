@@ -1,10 +1,11 @@
-import { GameState, PlayerId, Zone, AbilityType } from '@shared/engine_types';
+import { GameState, PlayerId, Zone, AbilityType, ActionType } from '@shared/engine_types';
 import { CombatProcessor } from '../combat/CombatProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { TurnProcessor } from '../core/TurnProcessor';
 import { PriorityProcessor } from '../core/PriorityProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { ChoiceProcessor } from './ChoiceProcessor';
+import { oracle } from '../../OracleLogicMap';
 
 export interface PlayerActionCallbacks {
     log: (m: string) => void;
@@ -58,9 +59,8 @@ export class PlayerActionProcessor {
       const stackEmpty = state.stack.length === 0;
       const isMyTurn = state.activePlayerId === playerId;
 
-      const { m21 } = require('../../data/m21');
-      const logic = m21[obj.definition.name];
-      const canActivateAnyTime = logic?.abilities.some((a: any) => a.type === 'Static' && a.id.includes('any_turn'));
+      const logic = oracle.getCard(obj.definition.name);
+      const canActivateAnyTime = logic?.abilities?.some((a: any) => a.type === 'Static' && a.id.includes('any_turn'));
 
       if (!canActivateAnyTime && (!isMyTurn || !isMainPhase || !stackEmpty)) {
         log(`Cannot activate Planeswalker: Sorcery speed only.`);
@@ -103,8 +103,7 @@ export class PlayerActionProcessor {
     }
 
     // 3. Generic Activated Ability Choice (Non-Planeswalker)
-    const { m21: mLogic } = require('../../data/m21');
-    const logic = mLogic[obj.definition.name];
+    const logic = oracle.getCard(obj.definition.name);
     
     const typeLine = (obj.definition.types?.join(' ') + ' ' + (obj.definition.type_line || '')).toLowerCase();
     const isLand = typeLine.includes('land');
@@ -122,10 +121,9 @@ export class PlayerActionProcessor {
         // Safety Step: If only one non-mana ability, show a confirmation modal instead of immediate activation
         // This prevents misclicks on utility creatures like Portcullis Vine.
         if (allActivated.length === 1 && nonMana.length === 1) {
-            const { ActionType: AT } = require('@shared/engine_types');
             const ability = nonMana[0];
             state.pendingAction = {
-                type: AT.ModalSelection,
+                type: ActionType.ModalSelection,
                 playerId: playerId,
                 sourceId: cardId,
                 data: {
@@ -148,9 +146,8 @@ export class PlayerActionProcessor {
 
         // If multiple abilities (common for creatures with utility + mana or multiple utilities)
         if (allActivated.length > 1) {
-            const { ActionType: AT } = require('@shared/engine_types');
             state.pendingAction = {
-                type: AT.ModalSelection,
+                type: ActionType.ModalSelection,
                 playerId: playerId,
                 sourceId: cardId,
                 data: {

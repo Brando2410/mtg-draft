@@ -1,4 +1,4 @@
-import { PlayerState, GameState } from '@shared/engine_types';
+import { PlayerState, GameState, GameObject } from '@shared/engine_types';
 
 /**
  * Handle Mana Pool, Cost Analysis, and Payments (Chapters 106 & 117)
@@ -11,16 +11,19 @@ export class ManaProcessor {
   public static emptyAllManaPools(state: GameState) {
     for (const player of Object.values(state.players) as PlayerState[]) {
       player.manaPool = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
+      player.restrictedMana = [];
     }
   }
 
-  public static canPayManaCost(player: PlayerState, costStr: string, state?: GameState): boolean {
+  public static canPayManaCost(player: PlayerState, costStr: string, state?: GameState, payingFor?: GameObject): boolean {
     if (!costStr || player.manaCheat) return true;
     
     // Support for Chromatic Orrery / Spend as Any Color
     const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some(e => e.type === 'AllowSpendManaAsAnyColor' && e.controllerId === player.id);
+    const pool = this.getUsableMana(player, payingFor);
+
     if (canSpendAsAnyColor) {
-        const totalFloating = Object.values(player.manaPool).reduce((a, b: any) => a + b, 0);
+        const totalFloating = Object.values(pool).reduce((a, b: any) => a + b, 0);
         const totalRequired = this.getManaValue(costStr);
         return totalFloating >= totalRequired;
     }
@@ -31,37 +34,37 @@ export class ManaProcessor {
     for (const [symbol, amount] of Object.entries(requirements.colored)) {
       if (symbol.includes('/')) {
         const options = symbol.split('/');
-        // For simplicity, we check if the total available of all options is enough.
-        // This is a heuristic but works for most cases.
         const totalAvailable = options.reduce((sum, opt) => {
-          if (opt === 'P') return sum; // Skip Phyrexians for pool check
-          return sum + (player.manaPool[opt as keyof typeof player.manaPool] || 0);
+          if (opt === 'P') return sum;
+          return sum + (pool[opt as keyof typeof pool] || 0);
         }, 0);
         if (totalAvailable < amount) return false;
       } else {
-        if ((player.manaPool[symbol as keyof typeof player.manaPool] || 0) < amount) return false;
+        if ((pool[symbol as keyof typeof pool] || 0) < amount) return false;
       }
     }
 
-    // Check generic/colorless remainder
-    const totalFloating = Object.values(player.manaPool).reduce((a, b: any) => a + b, 0);
+    const totalFloating = Object.values(pool).reduce((a, b: any) => a + b, 0);
     const totalRequired = this.getManaValue(costStr);
     
     return totalFloating >= totalRequired;
   }
 
-  public static canPayWithTotal(player: PlayerState, battlefield: any[], costStr: string): boolean {
+  public static canPayWithTotal(player: PlayerState, battlefield: any[], costStr: string, payingFor?: GameObject): boolean {
     if (!costStr || player.manaCheat) return true;
     const requirements = this.parseManaCost(costStr);
     
     // 1. Prepare available sources
-    const pool = { ...player.manaPool };
+    const pool = this.getUsableMana(player, payingFor);
     const untappedLands: any[] = [];
 
     const { m21: mLogic } = require('../../data/m21');
+    const { stx: stxLogic } = require('../../data/stx');
+    const combinedLogic = { ...mLogic, ...stxLogic };
+
     battlefield.forEach(obj => {
       if (obj.controllerId === player.id && !obj.isTapped) {
-        const logic = mLogic[obj.definition.name];
+        const logic = combinedLogic[obj.definition.name];
         if (!logic) return;
 
         const manaAbilities = (logic.abilities || []).filter((a: any) => a.isManaAbility);
@@ -69,7 +72,7 @@ export class ManaProcessor {
 
         const colors = new Set<string>();
         manaAbilities.forEach((a: any) => {
-           const effect = a.effects.find((e: any) => e.type === 'AddMana');
+           const effect = (a.effects || []).find((e: any) => e.type === 'AddMana');
            if (effect) {
                const manaStr = effect.value || '{C}';
                const reqs = this.parseManaCost(manaStr.startsWith('{') ? manaStr : `{${manaStr}}`);
@@ -82,18 +85,12 @@ export class ManaProcessor {
     });
 
     // 2. Greedy validation for colored costs
-    // Sort requirements by "rareness" or just iterate. 
-    // In MTG, it's better to satisfy colored costs using the most restrictive lands first.
-    // However, an even better trick: try to satisfy pool first, then use lands.
-    
     const coloredReqs: string[] = [];
     Object.entries(requirements.colored).forEach(([symbol, amount]) => {
         for (let i = 0; i < (amount as number); i++) coloredReqs.push(symbol);
     });
 
-    // Strategy: Try to satisfy each colored requirement
     const usedLands = new Set<string>();
-    
     for (const req of coloredReqs) {
         // a. Try pool first
         if (req.includes('/')) {
@@ -105,7 +102,7 @@ export class ManaProcessor {
             continue;
         }
 
-        // b. Try lands (prioritizing lands with the fewest color options to save flexibility)
+        // b. Try lands
         const options = req.includes('/') ? req.split('/') : [req];
         const possibleLands = untappedLands
             .filter(l => !usedLands.has(l.id) && l.colors.some((c: string) => options.includes(c)))
@@ -114,7 +111,7 @@ export class ManaProcessor {
         if (possibleLands.length > 0) {
             usedLands.add(possibleLands[0].id);
         } else {
-            return false; // Could not satisfy a colored requirement
+            return false;
         }
     }
 
@@ -125,49 +122,115 @@ export class ManaProcessor {
     return (remainingPool + remainingLands) >= requirements.generic;
   }
 
-  public static deductManaCost(player: PlayerState, costStr: string, state?: GameState) {
+  public static getUsableMana(player: PlayerState, payingFor?: GameObject) {
+    const combined = { ...player.manaPool };
+    if (player.restrictedMana && player.restrictedMana.length > 0) {
+        player.restrictedMana.forEach(m => {
+            let matches = true;
+            if (m.restrictions && m.restrictions.length > 0) {
+                if (!payingFor) {
+                    matches = false;
+                } else {
+                    const typeLine = (payingFor.definition.type_line || '').toLowerCase();
+                    const oracleText = (payingFor.definition.oracleText || '').toLowerCase();
+                    matches = m.restrictions.every(r => {
+                        const lowR = r.toLowerCase();
+                        // Handle common STX restrictions like "Instant", "Sorcery"
+                        return typeLine.includes(lowR) || oracleText.includes(lowR);
+                    });
+                }
+            }
+            if (matches) {
+                (combined as any)[m.color] += m.amount;
+            }
+        });
+    }
+    return combined;
+  }
+
+  public static deductManaCost(player: PlayerState, costStr: string, state?: GameState, payingFor?: GameObject) {
     if (!costStr || player.manaCheat) return;
 
+    const requirements = this.parseManaCost(costStr);
     const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some(e => e.type === 'AllowSpendManaAsAnyColor' && e.controllerId === player.id);
+
+    // Helper to spend mana from pool OR restricted mana
+    const spend = (color: string, amount: number) => {
+        let left = amount;
+        // Prioritize restricted mana (CR 601.2g equivalent for software: use most specific resource first)
+        if (player.restrictedMana) {
+            for (const rm of player.restrictedMana) {
+                if (left <= 0) break;
+                if (rm.color === color && rm.amount > 0) {
+                    // Check if this restricted mana is actually usable for this card
+                    let matches = true;
+                    if (rm.restrictions && rm.restrictions.length > 0) {
+                        if (!payingFor) {
+                            matches = false;
+                        } else {
+                    const typeLine = (payingFor.definition.type_line || '').toLowerCase();
+                    const types = (payingFor.definition.types || []).map(t => t.toLowerCase());
+                    matches = rm.restrictions.every(r => {
+                        const lowR = r.toLowerCase();
+                        return typeLine.includes(lowR) || types.includes(lowR);
+                    });
+                        }
+                    }
+
+                    if (matches) {
+                        const take = Math.min(left, rm.amount);
+                        rm.amount -= take;
+                        left -= take;
+                    }
+                }
+            }
+            player.restrictedMana = player.restrictedMana.filter(m => m.amount > 0);
+        }
+
+        if (left > 0) {
+            player.manaPool[color as keyof typeof player.manaPool] -= left;
+        }
+    };
+
     if (canSpendAsAnyColor) {
         let genericLeft = this.getManaValue(costStr);
         const priority: (keyof typeof player.manaPool)[] = ['C', 'W', 'U', 'B', 'R', 'G'];
         for (const color of priority) {
-            const spendable = Math.min(genericLeft, player.manaPool[color]);
-            player.manaPool[color] -= spendable;
-            genericLeft -= spendable;
             if (genericLeft <= 0) break;
+            const pool = this.getUsableMana(player, payingFor);
+            const spendable = Math.min(genericLeft, pool[color]);
+            spend(color, spendable);
+            genericLeft -= spendable;
         }
         return;
     }
-
-    const requirements = this.parseManaCost(costStr);
 
     // Deduct colored/hybrid mana first
     for (const [symbol, amount] of Object.entries(requirements.colored)) {
       if (symbol.includes('/')) {
         let left = amount;
         const options = symbol.split('/');
-        // Greedy deduction: prefer options that are currently in the pool
+        const pool = this.getUsableMana(player, payingFor);
         for (const opt of options) {
-          if (opt === 'P') continue; // Life payment not handled here
-          const spendable = Math.min(left, player.manaPool[opt as keyof typeof player.manaPool] || 0);
-          player.manaPool[opt as keyof typeof player.manaPool] -= spendable;
+          if (opt === 'P') continue;
+          const spendable = Math.min(left, pool[opt as keyof typeof pool] || 0);
+          spend(opt, spendable);
           left -= spendable;
           if (left <= 0) break;
         }
       } else {
-        player.manaPool[symbol as keyof typeof player.manaPool] -= amount;
+        spend(symbol, amount);
       }
     }
 
     let genericLeft = requirements.generic;
     const priority: (keyof typeof player.manaPool)[] = ['C', 'W', 'U', 'B', 'R', 'G'];
     for (const color of priority) {
-      const spendable = Math.min(genericLeft, player.manaPool[color]);
-      player.manaPool[color] -= spendable;
-      genericLeft -= spendable;
       if (genericLeft <= 0) break;
+      const pool = this.getUsableMana(player, payingFor);
+      const spendable = Math.min(genericLeft, pool[color]);
+      spend(color, spendable);
+      genericLeft -= spendable;
     }
   }
 
@@ -226,13 +289,13 @@ export class ManaProcessor {
   }
 
 
-  public static autoTapLandsForCost(state: any, playerId: string, costStr: string, log: (m: string) => void, tapForManaCallback: (p: string, c: string) => void) {
+  public static autoTapLandsForCost(state: any, playerId: string, costStr: string, log: (m: string) => void, tapForManaCallback: (p: string, c: string) => void, payingFor?: GameObject) {
     const player = state.players[playerId];
     if (!player) return;
     const requirements = this.parseManaCost(costStr);
     
-    // 1. Create a local tracking pool
-    const localPool = { ...player.manaPool };
+    // 1. Create a local tracking pool (including applicable restricted mana)
+    const localPool = this.getUsableMana(player, payingFor);
 
     // 2. Handle colored requirements (greedy approach)
     const coloredReqs: string[] = [];

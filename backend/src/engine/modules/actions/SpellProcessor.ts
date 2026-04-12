@@ -1,5 +1,5 @@
 import { GameState, PlayerId, Zone, Phase, GameObject, AbilityType, AbilityCost, EffectType } from '@shared/engine_types';
-import { m21 } from '../../data/m21';
+import { oracle } from '../../OracleLogicMap';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
 import { TriggerProcessor } from '../effects/TriggerProcessor';
@@ -79,20 +79,44 @@ export class SpellProcessor {
         }
 
         if (!cardToPlay) {
-            log(`Card not found in hand or current zone is restricted (Zone: ${TargetingProcessor.findObjectInAnyZone(state, cardInstanceId)?.zone || 'N/A'}).`);
+            log(`Card not found in hand or current zone is restricted.`);
             return false;
         }
 
+        // --- MDFC FACE SELECTION (CR 711.1) ---
+        if (cardToPlay.definition.faces && !bypassTargeting && !(cardToPlay as any).selectedFaceDefinition) {
+            const { ChoiceGenerator } = require('./../effects/ChoiceGenerator');
+            const { ActionType } = require('@shared/engine_types');
+            state.pendingAction = ChoiceGenerator.createModalChoice({
+                label: `Cast ${cardToPlay.definition.name}: Choose Face`,
+                playerId: playerId,
+                sourceId: cardToPlay.id,
+                actionType: ActionType.ModalSelection
+            }, cardToPlay.definition.faces.map((face: any, idx: number) => ({
+                label: `${face.name} (${face.type_line})`,
+                value: `FACE_SELECTION_${idx}`
+            })));
+            state.priorityPlayerId = null;
+            return true;
+        }
+
+        const currentDefinition = (cardToPlay as any).selectedFaceDefinition || cardToPlay.definition;
+
         // --- X-VALUE RESET FAIL-SAFE ---
-        // If this is a fresh attempt to play the card (not a resume from a modal/X-choice),
-        // we must clear any stale xValue to ensure the player isn't "locked" into a previous choice.
         if (!bypassTargeting && cardToPlay.xValue !== undefined) {
              cardToPlay.xValue = undefined;
         }
 
-        const typeLine = (cardToPlay.definition.type_line || '').toLowerCase();
+        const typeLine = (currentDefinition.type_line || '').toLowerCase();
         const isLand = typeLine.includes('land');
-        const isInstantOrFlash = typeLine.includes('instant') || (cardToPlay.definition.oracleText || '').includes('Flash');
+        const isInstantOrFlash = typeLine.includes('instant') || (currentDefinition.oracleText || '').includes('Flash');
+
+        // Timing/Restriction Check (Rule 101.2: "Cannot" wins)
+        const { RestrictionProcessor } = require('./RestrictionProcessor');
+        if (!RestrictionProcessor.isCastAllowed(state, playerId, cardToPlay)) {
+            log(`Illegal Action: Casting ${cardToPlay.definition.name} is currently restricted.`);
+            return false;
+        }
 
         // 2. Timing/Speed (Rule 305/307)
         if (!isInstantOrFlash) {
@@ -131,14 +155,17 @@ export class SpellProcessor {
         }
 
         // 4. Extract logic and effects
-        const logic = m21[cardToPlay.definition.name];
+        const logic = oracle.getCard(currentDefinition.name);
+        if (!logic && !isLand) {
+            log(`[WARNING] No logic definition found for ${currentDefinition.name}.`);
+        }
         const targetDefinition = (logic as any)?.targetDefinition || (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition;
         const spellEffects = (logic as any)?.effects || (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.effects || [];
         const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices);
         const hasPreSelectedChoice = (state as any).lastChoiceIndex !== undefined;
 
         // Step 0.5: Check for X in cost
-        const costStr = cardToPlay.definition.manaCost;
+        const costStr = currentDefinition.manaCost;
         if (costStr.includes('{X}') && cardToPlay.xValue === undefined) {
              const { ActionType } = require('@shared/engine_types');
              state.pendingAction = {
@@ -155,7 +182,7 @@ export class SpellProcessor {
         }
 
         // CR 601.2f: Determine total cost
-        const { totalMana, additionalCosts } = this.getEffectiveCosts(state, cardToPlay, declaredTargets);
+        const { totalMana, additionalCosts } = this.getEffectiveCosts(state, cardToPlay, declaredTargets, currentDefinition);
 
         // --- SETUP SEQUENCE: TARGETING -> CHOICE -> FINALIZATION ---
 
@@ -302,6 +329,8 @@ export class SpellProcessor {
                 data: {
                     label: choiceEffect.label || 'Choose an option',
                     choices: choiceEffect.choices,
+                    minChoices: choiceEffect.minChoices || 1,
+                    maxChoices: choiceEffect.maxChoices || 1,
                     isSpellCasting: true,
                     declaredTargets: declaredTargets || []
                 }
@@ -314,10 +343,10 @@ export class SpellProcessor {
         const preSelectedChoice = (state as any).lastChoiceIndex;
         delete (state as any).lastChoiceIndex;
 
-        if (!ManaProcessor.canPayManaCost(player, totalMana)) {
-            if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana)) {
+        if (!ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
+            if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, cardToPlay)) {
                 log(`Auto-tapping lands to pay ${totalMana}...`);
-                ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, log, engine.tapForMana);
+                ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, log, engine.tapForMana, cardToPlay);
             } else {
                 log(`Illegal Play: Not enough mana for ${cardToPlay.definition.name} (Effective Cost: ${totalMana})`);
                 return false;
@@ -328,7 +357,7 @@ export class SpellProcessor {
             log(`[DEBUG] Playing Teferi, Master of Time: ${JSON.stringify(cardToPlay.definition, null, 2)}`);
         }
         log(`Paying ${totalMana} for ${cardToPlay.definition.name}...`);
-        ManaProcessor.deductManaCost(player, totalMana);
+        ManaProcessor.deductManaCost(player, totalMana, state, cardToPlay);
 
         // Pay additional costs (CR 601.2h)
         additionalCosts.forEach(cost => {
@@ -390,6 +419,7 @@ export class SpellProcessor {
             type: 'Spell' as const,
             targets: declaredTargets || [],
             card: cardToPlay,
+            definition: currentDefinition,
             xValue: cardToPlay.xValue,
             exileOnResolution: exileOnResolution,
             data: {
@@ -439,6 +469,18 @@ export class SpellProcessor {
             }, log);
         }
 
+        if (isInstantOrSorcery) {
+            TriggerProcessor.onEvent(state, {
+                type: 'ON_CAST_INSTANT_SORCERY',
+                playerId: playerId,
+                data: {
+                    card: cardToPlay,
+                    sourceId: cardToPlay.id,
+                    stackSnapshot: JSON.parse(JSON.stringify(stackObj))
+                }
+            }, log);
+        }
+
         const isNonCreature = !cardToPlay.definition.types.some((t: string) => t.toLowerCase() === 'creature');
         if (isNonCreature) {
             TriggerProcessor.onEvent(state, {
@@ -459,8 +501,9 @@ export class SpellProcessor {
         return true;
     }
 
-    public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = []): { totalMana: string, additionalCosts: AbilityCost[] } {
-        let baseCost = card.definition.manaCost;
+    public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: any): { totalMana: string, additionalCosts: AbilityCost[] } {
+        const currentDef = overrideDefinition || card.definition;
+        let baseCost = currentDef.manaCost;
         
         // Handle X cost substitution (Rule 107.3)
         if (baseCost.includes('{X}') && card.xValue !== undefined) {
@@ -499,7 +542,7 @@ export class SpellProcessor {
         });
 
         // 2. Add the card's OWN static additional costs (e.g. Goremand) OR inherent spell costs (e.g. Village Rites)
-        const cardLogic = m21[card.definition.name];
+        const cardLogic = oracle.getCard(currentDef.name);
         if (cardLogic && cardLogic.abilities) {
             cardLogic.abilities.forEach((a: any) => {
                 // Case A: Static abilities that apply costs to the card itself (creatures)
@@ -594,7 +637,7 @@ export class SpellProcessor {
             return false;
         }
 
-        const cardLogic = m21[obj.definition.name];
+        const cardLogic = oracle.getCard(obj.definition.name);
         if (!cardLogic || !cardLogic.abilities || !cardLogic.abilities[abilityIndex]) return false;
         if (obj.definition.name === "Teferi, Master of Time") {
             const ability = cardLogic.abilities[abilityIndex];
@@ -606,9 +649,9 @@ export class SpellProcessor {
 
         // PRE-CALCULATE COST VARIABLES (Available for both steps)
         const additionalCosts = ability.costs || [];
-        const sacrificeCost = additionalCosts.find(c => c.type === 'Sacrifice');
+        const sacrificeCost = additionalCosts.find((cost: AbilityCost) => cost.type === 'Sacrifice');
         const hasChosenSacrifice = (state as any).lastChosenSacrificeId !== undefined;
-        const discardCost = additionalCosts.find(c => (c.type as string).toLowerCase() === 'discard');
+        const discardCost = additionalCosts.find((cost: AbilityCost) => (cost.type as string).toLowerCase() === 'discard');
         const hasChosenDiscard = (state as any).lastChosenDiscardId !== undefined;
 
         // Step 1: Preliminary Cost & Rule Check (including Summoning Sickness via CostProcessor)
@@ -802,7 +845,7 @@ export class SpellProcessor {
         if (log) log(`[FLOW-DEBUG] Starting Step 3: Cost Payment for ${obj.definition.name}...`);
         
         const playerObj = state.players[playerId];
-        const manaCost = (ability.costs || []).find(c => c.type === 'Mana');
+        const manaCost = (ability.costs || []).find((cost: AbilityCost) => cost.type === 'Mana');
         if (manaCost && !ManaProcessor.canPayManaCost(playerObj, manaCost.value, state)) {
              if (ManaProcessor.canPayWithTotal(playerObj, state.battlefield, manaCost.value)) {
                   log(`Auto-tapping lands to pay ability cost ${manaCost.value}...`);

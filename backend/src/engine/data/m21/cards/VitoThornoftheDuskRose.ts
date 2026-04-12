@@ -8,7 +8,7 @@ export const VitoThornoftheDuskRose: Record<string, ImplementableCard> = {
         colors: ["black"],
         supertypes: ["Legendary"],
         types: ["Creature"],
-        subtypes: ["Vampire","Cleric"],
+        subtypes: ["Vampire", "Cleric"],
         power: "1",
         toughness: "3",
         keywords: [],

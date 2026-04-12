@@ -105,7 +105,7 @@ export class EffectProcessor {
 
     // Resolve Target Mappings
     const resolveMapping = (m: string, index: number) => {
-        let ids = TargetingProcessor.resolveTargetMapping(state, m || "", targets, sourceId, controllerId, stackObject?.data, effect);
+        let ids = TargetingProcessor.resolveTargetMapping(state, m || "", targets, sourceId, controllerId, stackObject?.data, effect, parentContext);
         
         // If Choice effect has no explicit mapping, it should receive all parent targets to pass them down
         if (effect.type === 'Choice' && !m && ids.length === 0) {
@@ -127,9 +127,10 @@ export class EffectProcessor {
         if (validTargetIds.length === 0) return;
     }
 
-    const amount = (effect as any).amount !== undefined ? this.resolveAmount(state, effect.amount, sourceId, controllerId, stackObject) : 1;
+    const amount = (effect as any).amount !== undefined ? this.resolveAmount(state, effect.amount, sourceId, controllerId, stackObject, validTargetIds) : 1;
 
     // Strategy Dispatcher
+
     switch (effect.type) {
       case 'DrawCards':
       case 'Exile':
@@ -169,7 +170,7 @@ export class EffectProcessor {
       }
       case 'Sacrifice': {
           const { PermanentHandler } = require('./handlers/PermanentHandler');
-          return PermanentHandler.handleSacrifice(state, validTargetIds, sourceId, log, stackObject, parentContext);
+          return PermanentHandler.handleSacrifice(state, validTargetIds, sourceId, log, stackObject, parentContext, effect);
       }
       case 'Untap': {
           const { PermanentHandler } = require('./handlers/PermanentHandler');
@@ -197,7 +198,7 @@ export class EffectProcessor {
           const { PermanentHandler } = require('./handlers/PermanentHandler');
           let p = (effect as any).powerOverride !== undefined ? this.resolveAmount(state, (effect as any).powerOverride, sourceId, controllerId, stackObject) : undefined;
           let t = (effect as any).toughnessOverride !== undefined ? this.resolveAmount(state, (effect as any).toughnessOverride, sourceId, controllerId, stackObject) : undefined;
-          return PermanentHandler.handleCreateToken(state, validTargetIds, amount, (effect as any).tokenBlueprint, log, p, t, effect);
+          return PermanentHandler.handleCreateToken(state, validTargetIds, amount, (effect as any).tokenBlueprint, log, p, t, effect, stackObject);
       }
       case 'Choice': {
           const { ChoiceEffectHandler } = require('./handlers/ChoiceEffectHandler');
@@ -211,6 +212,68 @@ export class EffectProcessor {
           const { ContinuousEffectHandler } = require('./handlers/ContinuousEffectHandler');
           return ContinuousEffectHandler.handle(state, effect, sourceId, validTargetIds, log, controllerId, (amt: any) => this.resolveAmount(state, amt, sourceId, controllerId, stackObject));
       }
+      case 'Learn': {
+          const { ChoiceGenerator } = require('./ChoiceGenerator');
+          const player = state.players[controllerId];
+          const lessons = (player?.sideboard || []).filter(c => 
+              c.definition.subtypes.some(s => s.toLowerCase() === 'lesson')
+          );
+
+          const choices = [];
+          if (lessons.length > 0) {
+              choices.push({
+                  label: "Reveal Lesson",
+                  value: 'REVEAL_LESSON',
+                  effects: [
+                      {
+                          type: 'Choice',
+                          label: "Choose a Lesson to put into your hand",
+                          targetIdMapping: 'CONTROLLER_SIDEBOARD',
+                          restrictions: ['Lesson'],
+                          effects: [{ type: 'MoveToZone', zone: Zone.Hand, revealed: true }]
+                      }
+                  ]
+              });
+          }
+
+          choices.push({
+              label: "Discard and Draw",
+              value: 'DISCARD_DRAW',
+              effects: [
+                  { type: 'DiscardCards', amount: 1, label: "Discard a card (Learn)" },
+                  { type: 'DrawCards', amount: 1 }
+              ]
+          });
+
+          choices.push({
+              label: "Decline",
+              value: 'NONE',
+              effects: []
+          });
+
+          state.pendingAction = ChoiceGenerator.createModalChoice({
+              label: "Learn",
+              playerId: controllerId,
+              sourceId: sourceId,
+              stackObj: stackObject,
+              parentContext: parentContext
+          }, choices);
+          return;
+      }
+      case 'CastSpell': {
+          const { SpellProcessor } = require('../actions/SpellProcessor');
+          const targetId = (effect as any).targetId || validTargetIds[0];
+          if (targetId) {
+              SpellProcessor.playCard(state, controllerId, targetId, [], log, {
+                  tapForMana: () => {},
+                  passPriority: () => {},
+                  checkAutoPass: () => {},
+                  checkStateBasedActions: () => {}
+              }, true); // bypassTargeting = true
+          }
+          return;
+      }
+
       case 'EndTurn':
       case 'Shuffle':
       case 'Log':
@@ -269,10 +332,11 @@ export class EffectProcessor {
       }
   }
 
-  public static resolveAmount(state: GameState, amount: any, sourceId: GameObjectId, controllerId: PlayerId, stackObject?: any): number {
+  public static resolveAmount(state: GameState, amount: any, sourceId: GameObjectId, controllerId: PlayerId, stackObject?: any, targetIds: string[] = []): number {
     if (amount === undefined) return 0;
     if (typeof amount === 'number') return amount === -1 ? state.turnState.lastDamageAmount || 0 : amount;
-    if (typeof amount === 'function') return amount(state, this.findObject(state, sourceId, stackObject) || { id: sourceId, controllerId });
+    if (typeof amount === 'function') return amount(state, this.findObject(state, sourceId, stackObject) || { id: sourceId, controllerId }, targetIds);
+
 
     const obj = this.findObject(state, sourceId, stackObject);
     let result = 0;
@@ -306,6 +370,22 @@ export class EffectProcessor {
       case 'EVENT_AMOUNT': 
           result = stackObject?.data?.eventAmount !== undefined ? stackObject.data.eventAmount : (state.turnState.lastDamageAmount || 0);
           break;
+      case 'SACRIFICED_OBJECT_POWER':
+          const lastSac = (state.turnState as any).lastSacrificedObject;
+          result = lastSac?.effectiveStats?.power || parseInt(lastSac?.definition.power || '0') || 0;
+          break;
+      case 'TARGET_HAND_SIZE_7_MINUS': {
+          const targetId = stackObject?.targets?.[0];
+          const target = state.battlefield.find(o => o.id === targetId);
+          const handSize = state.players[target?.controllerId as PlayerId]?.hand.length || 0;
+          result = -(7 - handSize); // Return negative for pMod
+          break;
+      }
+      case '2_POW_X': {
+          const x = stackObject?.xValue || 0;
+          result = Math.pow(2, x);
+          break;
+      }
       default: 
           result = 0;
     }
@@ -317,6 +397,10 @@ export class EffectProcessor {
   }
 
   public static findObject(state: GameState, id: string, stackObject?: any, parentContext?: any): GameObject | undefined {
+    // Priority 1: Trigger snapshot (for leaves-battlefield triggers like Star Pupil)
+    const snapshot = stackObject?.data?.eventData?.data?.object;
+    if (snapshot && snapshot.id === id) return snapshot;
+
     return state.battlefield.find(o => o.id === id) || 
            state.stack.find(s => s.id === id || s.sourceId === id)?.card ||
            Object.values(state.players).flatMap(p => [...p.graveyard, ...p.hand, ...p.library]).find(o => o.id === id) ||

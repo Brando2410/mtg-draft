@@ -36,6 +36,10 @@ export class ContinuousEffectHandler {
         }
     } else if (rawDuration && typeof rawDuration === 'object') {
         duration = { ...rawDuration as any };
+        if (duration.untilTurnOfPlayerId && typeof duration.untilTurnOfPlayerId === 'function') {
+            const source = state.battlefield.find(o => o.id === sourceId) || state.stack.find(o => (o as any).id === sourceId);
+            duration.untilTurnOfPlayerId = duration.untilTurnOfPlayerId(state, source);
+        }
     }
 
     // 2. Resolve Targets (Rule 611.2a: Snap targets at resolution)
@@ -99,7 +103,14 @@ export class ContinuousEffectHandler {
         subtypesToAdd: effect.subtypesToAdd,
         colorsToAdd: (effect as any).colorsToAdd,
         colorSet: (effect as any).colorSet,
-        removeAllAbilities: effect.removeAllAbilities
+        removeAllAbilities: effect.removeAllAbilities,
+        restrictions: (effect as any).restrictions ? (effect as any).restrictions.map((r: any) => ({
+            id: `rest_${effId}`,
+            sourceId,
+            type: typeof r === 'string' ? r as any : r.type,
+            targetControllerId: controllerId,
+            duration: duration
+        })) : undefined
     };
 
     state.ruleRegistry.continuousEffects.push(continuousEff);

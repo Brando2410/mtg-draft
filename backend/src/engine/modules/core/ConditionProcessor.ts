@@ -64,9 +64,24 @@ export class ConditionProcessor {
             Object.values(state.players).flatMap(p => [...p.hand, ...p.graveyard, ...p.library]).find(o => o.id === targetId);
           if (!targetObj) return false;
           return TargetingProcessor.matchesRestrictions(state, targetObj, restrictions, controllerId, sourceId);
+        case 'EVENT_MANA_VALUE_GE': {
+          const threshold = parseInt(restrictions[0]);
+          const obj = event?.data?.object || event?.data?.card || event?.data?.copy || (event as any)?.gameObject;
+          if (!obj) return false;
+          const { ManaProcessor } = require('./../magic/ManaProcessor');
+          return ManaProcessor.getManaValue(obj.definition.manaCost) >= threshold;
+        }
         case 'DRAWN_CARDS_GE':
           const threshold = parseInt(restrictions[0]);
           return (state.turnState.cardsDrawnThisTurn[controllerId] || 0) >= threshold;
+        case 'X_EQUALS': {
+          const xValue = (event as any)?.xValue || 0;
+          return xValue === parseInt(restrictions[0]);
+        }
+        case 'X_GE': {
+          const xValue = (event as any)?.xValue || 0;
+          return xValue >= parseInt(restrictions[0]);
+        }
       }
     }
 
@@ -75,6 +90,14 @@ export class ConditionProcessor {
       case 'SPELL_TARGETS_SOURCE': {
         const targets = (event?.data as any)?.targets || [];
         return targets.includes(sourceId);
+      }
+      case 'SPELL_TARGETS_CREATURE': {
+        const targets = (event as any)?.targets || (event as any)?.data?.targets || [];
+        if (targets.length === 0) return false;
+        return targets.some((tid: string) => {
+          const obj = state.battlefield.find(o => o.id === tid);
+          return obj && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
+        });
       }
       case 'IS_YOUR_TURN':
         return state.activePlayerId === controllerId;

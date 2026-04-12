@@ -22,18 +22,26 @@ export class PermanentHandler {
     });
   }
 
-  public static handleSacrifice(state: GameState, targets: string[], sourceId: string, log: (m: string) => void, stackObject?: any, parentContext?: any) {
+  public static handleSacrifice(state: GameState, targets: string[], sourceId: string, log: (m: string) => void, stackObject?: any, parentContext?: any, effect?: any) {
     targets.forEach(tid => {
         const player = state.players[tid as PlayerId];
         if (player) {
-            const creatures = state.battlefield.filter(o => o.controllerId === tid && o.definition.types.some(t => t.toLowerCase() === 'creature'));
+            let creatures = state.battlefield.filter(o => o.controllerId === tid && o.definition.types.some(t => t.toLowerCase() === 'creature'));
+            
+            // Apply GreatestPower restriction (Professor Onyx)
+            if (effect?.restrictions?.includes('GreatestPower')) {
+                const powers = creatures.map(c => LayerProcessor.getEffectiveStats(c, state).power);
+                const maxPower = powers.length > 0 ? Math.max(...powers) : 0;
+                creatures = creatures.filter(c => LayerProcessor.getEffectiveStats(c, state).power === maxPower);
+            }
+
             if (creatures.length === 0) return;
             if (creatures.length === 1) {
                 ActionProcessor.moveCard(state, creatures[0], Zone.Graveyard, tid, log);
                 return;
             }
             state.pendingAction = ChoiceGenerator.createCardChoice(state, creatures, {
-                label: "Choose a creature to sacrifice",
+                label: effect?.label || "Choose a creature to sacrifice",
                 playerId: tid as PlayerId,
                 sourceId: sourceId,
                 optional: false,
@@ -95,11 +103,25 @@ export class PermanentHandler {
     });
   }
 
-  public static handleCreateToken(state: GameState, targets: string[], amount: number, blueprint: any, log: (m: string) => void, pOverride?: number, tOverride?: number, effect?: any) {
+  public static handleCreateToken(state: GameState, targets: string[], amount: number, blueprint: any, log: (m: string) => void, pOverride?: number, tOverride?: number, effect?: any, stackObject?: any) {
     targets.forEach(pid => {
         if (!blueprint) return;
         for (let i = 0; i < amount; i++) {
             const token = this.createToken(state, blueprint, pid as PlayerId, pOverride, tOverride);
+            
+            // Manage starting counters (e.g. Fractal tokens)
+            if (effect?.startingCounters) {
+                const { type, amount: cAmount } = effect.startingCounters;
+                let resolvedAmount = typeof cAmount === 'string' ? 0 : cAmount;
+                if (typeof cAmount === 'string') {
+                    const { EffectProcessor } = require('../effects/EffectProcessor');
+                    resolvedAmount = EffectProcessor.resolveAmount(state, cAmount, token.id, pid as PlayerId, stackObject);
+                }
+                if (resolvedAmount > 0) {
+                    token.counters[type] = (token.counters[type] || 0) + resolvedAmount;
+                }
+            }
+
             if (effect?.isAttacking && state.combat) {
                 state.combat.attackers.push({ attackerId: token.id, targetId: (effect.attackTargetId || Object.keys(state.players).find(id => id !== pid)!) });
                 token.isTapped = true;

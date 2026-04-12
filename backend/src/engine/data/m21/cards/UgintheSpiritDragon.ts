@@ -19,7 +19,7 @@ export const UgintheSpiritDragon: Record<string, ImplementableCard> = {
                 type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Loyalty', value: '+2' }],
-                targetDefinition: { type: 'Permanent', count: 1, optional: false }, // Simplified target definition
+                targetDefinition: { type: 'AnyTarget', count: 1, optional: false },
                 effects: [
                     { type: EffectType.DealDamage, amount: 3, targetMapping: 'TARGET_1' }
                 ]

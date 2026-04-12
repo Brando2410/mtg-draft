@@ -151,7 +151,7 @@ export const DeckReviewView = ({
     return (
       <div className="flex items-center gap-0.5">
         {symbols.map((sym, i) => {
-          const s = sym.replace(/[{}]/g, '').replace('/', '');
+          const s = sym.replace(/[{}]/g, '').replace(/\//g, '_');
           return (
             <img 
               key={i} 

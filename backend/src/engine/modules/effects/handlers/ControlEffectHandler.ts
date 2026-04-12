@@ -1,4 +1,4 @@
-import { GameState, GameObjectId, PlayerId, ActionType, ContinuousEffect, EffectDefinition, Zone } from '@shared/engine_types';
+import { GameState, GameObjectId, PlayerId, ActionType, ContinuousEffect, EffectDefinition, Zone, EffectType } from '@shared/engine_types';
 import { ActionProcessor } from '../../actions/ActionProcessor';
 import { TriggerProcessor } from '../TriggerProcessor';
 
@@ -25,19 +25,19 @@ export class ControlEffectHandler {
         state.pendingAction = undefined;
         break;
 
-      case 'Shuffle':
-        const player = state.players[targets[0] as PlayerId] || state.players[controllerId];
-        if (player) {
-            ActionProcessor.shuffle(player.library);
-            log(`[SHUFFLE] ${player.name} shuffled library.`);
+      case EffectType.Shuffle:
+        const playerToShuffle = state.players[targets[0] as PlayerId] || state.players[controllerId];
+        if (playerToShuffle) {
+            ActionProcessor.shuffle(playerToShuffle.library);
+            log(`[SHUFFLE] ${playerToShuffle.name} shuffled library.`);
         }
         break;
 
-      case 'Log':
+      case EffectType.Log:
         log(effect.message || "");
         break;
 
-      case 'CopySpellOnStack':
+      case EffectType.CopySpellOnStack:
         targets.forEach(tid => {
             let stackObj = state.stack.find(s => s.id === tid || s.sourceId === tid);
             
@@ -57,10 +57,33 @@ export class ControlEffectHandler {
             if (copy.card) {
                 copy.card.id = `card_copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
                 copy.sourceId = copy.card.id;
+                
+                // Allow overriding legend status (Double Major)
+                if (effect.isLegendary === false) {
+                    copy.card.definition = {
+                        ...copy.card.definition,
+                        supertypes: (copy.card.definition.supertypes || []).filter((s: string) => s.toLowerCase() !== 'legendary'),
+                        types: (copy.card.definition.types || []).filter((s: string) => s.toLowerCase() !== 'legendary'),
+                        type_line: copy.card.definition.type_line?.replace(/Legendary /i, '')
+                    };
+                }
             }
 
             state.stack.push(copy);
             log(`[COPY] Created copy of ${stackObj.card?.definition.name || 'spell'}.`);
+
+            // Emit copy event for Magecraft
+            TriggerProcessor.onEvent(state, {
+                type: 'ON_COPY_SPELL',
+                playerId: controllerId,
+                data: {
+                    originalId: tid,
+                    copyId: copy.id,
+                    card: copy.card,
+                    sourceId: copy.id,
+                    isInstantOrSorcery: copy.card?.definition.types.some((t: string) => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery')
+                }
+            }, log);
 
             if (effect.chooseNewTargets && copy.targets && copy.targets.length > 0) {
                 const targetDef = copy.data?.targetDefinition || copy.targetDefinition;
@@ -101,6 +124,7 @@ export class ControlEffectHandler {
             controllerId: controllerId,
             eventMatch: effect.eventMatch || effect.on,
             activeZone: 'Any',
+            targetIds: targets, // Store targets for condition matching
             duration: { type: (effect.duration || 'UNTIL_END_OF_TURN') as any },
             ...effect
         });
@@ -129,13 +153,25 @@ export class ControlEffectHandler {
         break;
 
       case 'AddMana':
-        const { ManaProcessor } = require('../../magic/ManaProcessor');
+        const { ManaProcessor: MP } = require('../../magic/ManaProcessor');
         targets.forEach(tid => {
             const p = state.players[tid as PlayerId];
             if (p) {
-                const res = ManaProcessor.parseManaCost(`{${effect.value || effect.amount || 'C'}}`);
-                Object.entries(res.colored).forEach(([s, a]) => (p.manaPool as any)[s] += (a as number));
-                p.manaPool['C'] += res.generic;
+                const res = MP.parseManaCost(`{${effect.value || effect.amount || 'C'}}`);
+                
+                if (effect.manaRestrictions) {
+                    if (!p.restrictedMana) p.restrictedMana = [];
+                    // Handle colored mana in restrictions
+                    Object.entries(res.colored).forEach(([s, a]) => {
+                        p.restrictedMana!.push({ color: s as any, amount: a as number, restrictions: effect.manaRestrictions });
+                    });
+                    if (res.generic > 0) {
+                        p.restrictedMana!.push({ color: 'C', amount: res.generic, restrictions: effect.manaRestrictions });
+                    }
+                } else {
+                    Object.entries(res.colored).forEach(([s, a]) => (p.manaPool as any)[s] += (a as number));
+                    p.manaPool['C'] += res.generic;
+                }
             }
         });
         break;

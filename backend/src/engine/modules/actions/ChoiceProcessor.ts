@@ -1,5 +1,5 @@
 import { GameState, PlayerId, Zone, ActionType } from '@shared/engine_types';
-import { m21 } from '../../data/m21';
+import { oracle } from '../../OracleLogicMap';
 import { EffectProcessor } from '../effects/EffectProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
 import { ActionProcessor } from './ActionProcessor';
@@ -249,7 +249,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         // Refund Loyalty
         const abilityIndex = savedActionData?.abilityIndex;
         if (abilityIndex !== undefined) {
-            const logic = m21[objOnBattlefield.definition.name];
+            const logic = oracle.getCard(objOnBattlefield.definition.name);
             const ability = (logic?.abilities as any)?.[abilityIndex];
             const lCost = ability?.costs?.find((c: any) => c.type === 'Loyalty')?.value;
             if (lCost !== undefined) {
@@ -265,13 +265,21 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         const card = stackObj.card;
         const player = state.players[card.ownerId];
         if (player) {
+            const refundCost = card.definition.manaCost;
             card.xValue = undefined; // Explicitly clear
             ActionProcessor.moveCard(state, card, Zone.Hand, card.ownerId, log);
             
             const { ManaProcessor } = require('../magic/ManaProcessor');
-            ManaProcessor.refundManaCost(player, card.definition.manaCost);
+            ManaProcessor.refundManaCost(player, refundCost);
             log(`Undo Choice: ${card.definition.name} returned to hand.`);
         }
+    }
+
+    // C. Revert Hand source (MDFC selection phase)
+    const player = state.players[playerId];
+    const cardInHand = player?.hand.find(c => c.id === sourceId);
+    if (cardInHand) {
+        (cardInHand as any).selectedFaceDefinition = undefined;
     }
 
     log(`Action cancelled.`);
@@ -289,7 +297,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     }
 
     const abilityIndex = typeof choice.value === 'number' ? choice.value : parseInt(choice.value);
-    const logic = m21[obj.definition.name];
+    const logic = oracle.getCard(obj.definition.name);
     const ability = (logic as any)?.abilities?.[abilityIndex];
 
     if (!ability) return false;
@@ -383,6 +391,12 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     } else if (costType === 'Discard') {
         (state as any).lastChosenDiscardId = choice.value;
         log(`[DEBUG] ChoiceProcessor: Set lastChosenDiscardId to ${choice.value}`);
+    } else if (String(choice.value).startsWith('FACE_SELECTION_')) {
+        const faceIdx = parseInt(String(choice.value).substring(15));
+        const card = TargetingProcessor.findObjectInAnyZone(state, sourceId);
+        if (card && card.definition.faces) {
+            (card as any).selectedFaceDefinition = card.definition.faces[faceIdx];
+        }
     } else {
         (state as any).lastChoiceIndex = choiceIndex;
     }

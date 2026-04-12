@@ -52,12 +52,12 @@ export interface CardDefinition {
   name: string;
   manaCost: string;
   colors: string[];
-  supertypes: string[]; // e.g. "Legendary", "Basic", "Snow"
+  supertypes?: string[]; // e.g. "Legendary", "Basic", "Snow"
   types: string[];      // e.g. "Creature", "Instant", "Land"
-  subtypes: string[];   // e.g. "Goblin", "Warrior", "Aura"
+  subtypes?: string[];   // e.g. "Goblin", "Warrior", "Aura"
   power?: string;       // string to allow "*" or "1+*"
   toughness?: string;
-  keywords: string[];   // Static keywords: ["Flying", "Trample", "Haste"]
+  keywords?: string[];   // Static keywords: ["Flying", "Trample", "Haste"]
   loyalty?: string;
   oracleText: string;
   type_line?: string;
@@ -66,6 +66,7 @@ export interface CardDefinition {
   set?: string;
   entersTapped?: boolean; // Replacement effect-style state for entry
   entersWithXCounters?: boolean; // Rule 122.6: Entry with counters based on X
+  faces?: CardDefinition[]; // CR 711.1: Double-faced cards
   abilities?: any[];
 }
 
@@ -153,6 +154,7 @@ export interface PlayerState {
   library: GameObject[];
   hand: GameObject[];
   graveyard: GameObject[];
+  sideboard: GameObject[];
 
   // Mana Pool resets every Step/Phase
   manaPool: {
@@ -163,6 +165,12 @@ export interface PlayerState {
     G: number;
     C: number; // Colorless
   };
+  
+  restrictedMana?: {
+    color: 'W' | 'U' | 'B' | 'R' | 'G' | 'C';
+    amount: number;
+    restrictions: string[]; // e.g. ['Instant', 'Sorcery']
+  }[];
 
   hasPlayedLandThisTurn: boolean;
   fullControl: boolean;
@@ -202,6 +210,7 @@ export interface TurnState {
   spellsCastThisTurn: Record<PlayerId, number>;
   instantOrSorceryCastThisTurn: Record<PlayerId, boolean>;
   landsPlayedThisTurn: Record<PlayerId, number>;
+  namedCards?: Record<string, string>; // Store named card choices (e.g. for Pithing Needle or Academic Probation)
 }
 
 export interface ChoicePendingActionData {
@@ -274,8 +283,8 @@ export interface GameState {
   combat?: CombatState;
 
   // Simultaneous triggers waiting to be ordered
-  pendingTriggers?: StackObject[]; 
-  
+  pendingTriggers?: StackObject[];
+
   pendingAction?: PendingAction;
 
   // Rules Engine: The "Whiteboard"
@@ -303,7 +312,7 @@ export type DurationType = (typeof DurationType)[keyof typeof DurationType];
 export interface EffectDuration {
   type: DurationType;
   untilStep?: Step;          // For "Until next end step"
-  untilTurnOfPlayerId?: PlayerId;
+  untilTurnOfPlayerId?: any; // PlayerId or (state: GameState, source: GameObject) => PlayerId
   expiryEvent?: string;      // Hook for the Event Bus (e.g., 'ON_LEAVES_BATTLEFIELD')
 }
 
@@ -330,7 +339,7 @@ export interface ContinuousEffect {
   subtypesToAdd?: string[];
   colorsToAdd?: string[];
   colorSet?: string[];
-  abilitiesToAdd?: string[];
+  abilitiesToAdd?: (string | ParsedAbility)[];
   abilitiesToRemove?: string[];
   removeAllAbilities?: boolean; // Layer 6
   exileOnMoveToGraveyard?: boolean;
@@ -346,7 +355,7 @@ export interface ContinuousEffect {
 }
 
 export interface AbilityCost {
-  type: 'Tap' | 'Mana' | 'PayLife' | 'Discard' | 'Sacrifice' | 'Loyalty';
+  type: 'Tap' | 'Mana' | 'PayLife' | 'Discard' | 'Sacrifice' | 'Loyalty' | 'Exile';
   value?: any; // e.g. "{G}" or 3 life
   restrictions?: string[]; // e.g. ["Creature"]
   targetMapping?: string;  // e.g. "SELF"
@@ -368,6 +377,8 @@ export const RestrictionType = {
   CannotBlock: 'CannotBlock',
   CannotCastType: 'CannotCastType',
   CannotActivateNonManaAbilities: 'CannotActivateNonManaAbilities',
+  CannotCastNamedCard: 'CannotCastNamedCard',
+  CannotCastPermanentSpells: 'CannotCastPermanentSpells',
   MustAttack: 'MustAttack',
   MustBeBlocked: 'MustBeBlocked'
 } as const;
@@ -441,6 +452,50 @@ export const ZoneRequirement = {
 } as const;
 export type ZoneRequirement = (typeof ZoneRequirement)[keyof typeof ZoneRequirement];
 
+export const TriggerEvent = {
+  EnterBattlefield: 'ON_ETB',
+  EnterBattlefieldOther: 'ON_ETB_OTHER',
+  Death: 'ON_DEATH',
+  LeaveBattlefield: 'ON_LEAVE_BATTLEFIELD',
+  Attack: 'ON_ATTACK',
+  Block: 'ON_BLOCK',
+  BecameBlocked: 'ON_BECAME_BLOCKED',
+  AttackersDeclared: 'ON_ATTACKERS_DECLARED',
+  AttackOrBlock: 'ON_ATTACK_OR_BLOCK',
+  DamageDealtToCreature: 'ON_DAMAGE_DEALT_TO_CREATURE',
+  DamageDealtToPlayer: 'ON_DAMAGE_PLAYER',
+  DamageDealtToPlayerLegacy: 'ON_DAMAGE_DEALT_TO_PLAYER',
+  DamageTaken: 'ON_DAMAGE_TAKED',
+  NoncombatDamageOpponent: 'ON_NONCOMBAT_DAMAGE_OPPONENT',
+  CountersAdded: 'ON_COUNTERS_ADDED',
+  CountersAddedOther: 'ON_COUNTERS_ADDED_OTHER',
+  CounterAdded: 'ON_COUNTER_ADDED', // Singular check
+  CastInstantOrSorcery: 'ON_CAST_INSTANT_SORCERY',
+  CastFirstInstantOrSorcery: 'ON_CAST_FIRST_INSTANT_SORCERY',
+  CastNonCreature: 'ON_CAST_NON_CREATURE',
+  CastSpell: 'ON_CAST_SPELL',
+  OpponentCastNonHand: 'ON_OPPONENT_CAST_NON_HAND',
+  SecondSpellCast: 'ON_SECOND_SPELL_CAST',
+  CopySpell: 'ON_COPY_SPELL',
+  Magecraft: 'ON_MAGECRAFT',
+  MagecraftOpponent: 'ON_MAGECRAFT_OPPONENT',
+  Draw: 'ON_DRAW',
+  SecondDraw: 'ON_SECOND_DRAW',
+  BecomeTarget: 'ON_BECOME_TARGET',
+  LifeGain: 'ON_LIFE_GAIN',
+  Sacrifice: 'ON_SACRIFICE',
+  Untap: 'ON_UNTAP',
+  EndOfTurn: 'ON_END_OF_TURN',
+  EndStep: 'ON_END_STEP',
+  StartOfCombat: 'ON_START_OF_COMBAT',
+  BeginningOfCombatStep: 'ON_BEGINNING_OF_COMBAT_STEP',
+  PreCombatMainPhaseStart: 'ON_PRE_COMBAT_MAIN_PHASE_START',
+  Upkeep: 'ON_UPKEEP_STEP',
+  Cleanup: 'ON_CLEANUP_STEP'
+} as const;
+
+export type TriggerEvent = (typeof TriggerEvent)[keyof typeof TriggerEvent];
+
 export interface TokenBlueprint {
   name: string;
   power?: string;
@@ -511,6 +566,10 @@ export const EffectType = {
   Sacrifice: 'Sacrifice',         // CR 701.17: Move permanent(s) to graveyard bypassing indestructible
   Scry: 'Scry',                   // CR 701.18: Look at top cards and choose top/bottom
   AddTriggeredAbility: 'AddTriggeredAbility',
+  AddActivatedAbility: 'AddActivatedAbility',
+  CreateDelayedTrigger: 'CreateDelayedTrigger',
+  ExchangeHandAndGraveyard: 'ExchangeHandAndGraveyard',
+  Learn: 'Learn',
   AddPreventionEffect: 'AddPreventionEffect',
   Shuffle: 'Shuffle',
   Log: 'Log',
@@ -540,14 +599,17 @@ export const EffectType = {
   AllowPlayExiled: 'AllowPlayExiled',
   Surveil: 'Surveil',
   AllowCastWithoutPaying: 'AllowCastWithoutPaying',
+  CastSpell: 'CastSpell',
   PENDING_ACTION: 'PENDING_ACTION',
 } as const;
+
 
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
 
 export interface EffectDefinition {
   type: EffectType;
-  amount?: number | string | ((state: any, source: any) => number);
+  amount?: number | string | ((state: any, source: any, targets?: string[]) => number);
+
   value?: any;
   tapped?: boolean;
   costs?: AbilityCost[];
@@ -562,10 +624,12 @@ export interface EffectDefinition {
 
   // Modular Token Support
   tokenBlueprint?: TokenBlueprint;
+  startingCounters?: { type: string, amount: number | string };
 
   // Choice Properties
   choices?: {
     label: string;
+    condition?: string;
     costs?: AbilityCost[];
     effects: EffectDefinition[];
   }[];
@@ -578,7 +642,7 @@ export interface EffectDefinition {
   toughnessSet?: number | string | ((state: any, source: any) => number);
   powerDynamic?: string; // For CDAs (Layer 7a) like Tarmogoyf or Kinetic Augur
   toughnessDynamic?: string; // For CDAs (Layer 7a)
-  abilitiesToAdd?: string[];
+  abilitiesToAdd?: (string | ParsedAbility)[];
   abilitiesToRemove?: string[];
   removeAllAbilities?: boolean;
   subtypesToAdd?: string[];
@@ -588,6 +652,13 @@ export interface EffectDefinition {
   isFreeCast?: boolean;
   canPlayExiled?: boolean;
   exileOnMoveToGraveyard?: boolean;
+  isLegendary?: boolean;
+  next?: EffectDefinition;
+  powerMultiplier?: number | string;
+  toughnessMultiplier?: number | string;
+  restriction?: string;
+  restriction2?: string;
+  playerIdMapping?: string;
 
   // Dynamic Token stats
   powerOverride?: number | string | ((state: any, source: any) => number);
@@ -647,6 +718,8 @@ export interface EffectDefinition {
   libraryPosition?: 'top' | 'bottom'; // Destination within library
   shuffleRemainder?: boolean; // For LookAtTopAndPick leftovers
   chooseNewTargets?: boolean; // For CopySpellOnStack
+  minChoices?: number; // For Choice effects
+  maxChoices?: number; // For Choice effects
 }
 
 export const TargetType = {
@@ -674,10 +747,10 @@ export interface ParsedAbility {
   multiMode?: { type: string };
   multiTargetMapping?: boolean; // Support for complex multi-target structures (e.g. Sublime Epiphany)
   modes?: any[];
-  activeZone: ZoneRequirement;
+  activeZone?: ZoneRequirement;
   costs?: AbilityCost[];
   isManaAbility?: boolean;
-  triggerEvent?: string | string[];
+  triggerEvent?: TriggerEvent | TriggerEvent[];
   triggerCondition?: any;
   targetDefinition?: TargetDefinition;
   activatedOnlyAsSorcery?: boolean;
@@ -685,8 +758,14 @@ export interface ParsedAbility {
     isCombat?: boolean;
     triggerDescription?: string; // Optional manual override for the "Whenever..." part
   };
+  isModal?: boolean;
+  minChoices?: number;
+  maxChoices?: number;
+  optional?: boolean;
+  limitPerTurn?: number;
   oracleText?: string;
   replacesEvent?: string;
+  exileOnResolution?: boolean;
   costReduction?: any;
   restrictions?: { type: string, value?: string, effectZone?: string }[];
   condition?: string;
@@ -694,5 +773,5 @@ export interface ParsedAbility {
 }
 
 export interface ImplementableCard extends CardDefinition {
-  abilities: ParsedAbility[];
+  abilities?: any[]; 
 }

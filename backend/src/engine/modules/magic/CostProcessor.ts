@@ -86,6 +86,12 @@ export class CostProcessor {
       case 'PayLife':
         return player.life > (parseInt(cost.value) || 0);
 
+      case 'Exile':
+        if (cost.targetMapping === 'SELF') {
+           return state.battlefield.some(c => c.id === source.id);
+        }
+        return state.battlefield.some(c => c.controllerId === playerId);
+
       default:
         return false;
     }
@@ -166,6 +172,22 @@ export class CostProcessor {
          player.life -= lifeVal;
          TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
          log(`${player.name} pays ${lifeVal} life (${player.life + lifeVal} -> ${player.life})`);
+         break;
+
+       case 'Exile':
+         let toExile;
+         if (cost.targetMapping === 'SELF') {
+             toExile = source;
+         } else {
+             const chosenId = (state as any).lastChosenExileId;
+             toExile = state.battlefield.find(c => c.id === chosenId);
+         }
+         
+         if (toExile) {
+             ActionProcessor.moveCard(state, toExile, Zone.Exile, playerId, log);
+             log(`${player.name} exiled ${toExile.definition.name} as a cost.`);
+         }
+         delete (state as any).lastChosenExileId;
          break;
     }
   }

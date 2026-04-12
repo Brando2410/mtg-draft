@@ -106,7 +106,15 @@ export class ActionProcessor {
         this.resetObjectState(state, card, fromZone, to);
     }
 
-    // 3. Rule 400.1: Add to the new zone
+    // 3. Rule 711.8: MDFC Face Handling
+    if ((to === Zone.Battlefield || to === Zone.Stack) && (card as any).selectedFaceDefinition) {
+        if (!(card as any).originalDefinition) {
+            (card as any).originalDefinition = card.definition;
+        }
+        card.definition = (card as any).selectedFaceDefinition;
+    }
+
+    // 4. Rule 400.1: Add to the new zone
     if (log) log(`[MOVE-DEBUG] Adding ${card.definition.name} to ${to} for player ${effectiveTargetId}`);
     this.addToTargetZone(state, card, to, effectiveTargetId, isToken, fromZone, log, libraryPosition);
 
@@ -251,6 +259,18 @@ export class ActionProcessor {
     c.isRevealed = false; // Rule 400.7: Clear revealed status on zone change
     c.counters = {};
     c.attachedTo = undefined;
+    c.isGoaded = false;
+    
+    // Rule 711.4a: MDFC reverts to front face in non-battlefield/stack zones
+    if (to !== Zone.Battlefield && to !== Zone.Stack) {
+        if ((card as any).originalDefinition) {
+            card.definition = (card as any).originalDefinition;
+            (card as any).originalDefinition = undefined;
+        }
+        if ((card as any).selectedFaceDefinition) {
+            (card as any).selectedFaceDefinition = undefined;
+        }
+    }
     c.faceDown = false;
     
     // Rule 107.3: The value of X is preserved as long as the object is on the stack or battlefield.

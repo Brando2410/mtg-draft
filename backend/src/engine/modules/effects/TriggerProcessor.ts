@@ -29,7 +29,9 @@ export class TriggerProcessor {
         (type === 'ON_ATTACK_OR_BLOCK' && (event.type === 'ON_ATTACK' || event.type === 'ON_BLOCK')) ||
         (type === 'ON_DAMAGE_DEALT_TO_CREATURE' && event.type === 'ON_DAMAGE_TAKED') ||
         (type === 'ON_DAMAGE_DEALT_TO_PLAYER' && event.type === 'ON_DAMAGE_PLAYER') ||
-        (type === 'ON_COUNTERS_ADDED_OTHER' && event.type === 'ON_COUNTERS_ADDED')
+        (type === 'ON_COUNTERS_ADDED_OTHER' && event.type === 'ON_COUNTERS_ADDED') ||
+        (type === 'ON_MAGECRAFT' && event.playerId === t.controllerId && (event.type === 'ON_CAST_INSTANT_SORCERY' || (event.type === 'ON_COPY_SPELL' && event.data?.isInstantOrSorcery))) ||
+        (type === 'ON_MAGECRAFT_OPPONENT' && event.playerId !== t.controllerId && (event.type === 'ON_CAST_INSTANT_SORCERY' || (event.type === 'ON_COPY_SPELL' && event.data?.isInstantOrSorcery)))
       );
 
       if (!matchesPrimary) return false;
@@ -43,13 +45,12 @@ export class TriggerProcessor {
       if (event.type === 'ON_ETB') {
         const enteringObjId = event.data?.object?.id;
         if (tEvent === 'ON_ETB') {
-           // "When [this] enters" -> must be itself
            if (enteringObjId !== t.sourceId) return false;
         } else if (tEvent === 'ON_ETB_OTHER') {
-           // "Whenever another enters" -> must NOT be itself
            if (enteringObjId === t.sourceId) return false;
         }
       }
+
 
       // Special Logic for Counter Added (Self vs Other)
       if (event.type === 'ON_COUNTERS_ADDED') {
@@ -102,11 +103,20 @@ export class TriggerProcessor {
             const sourceControllerId = event.playerId; // Player who cast the targeting spell
             if (sourceControllerId && sourceControllerId !== targetObj.controllerId) {
                 wards.forEach((wardStr: string) => {
-                    const costStr = wardStr.replace(/Ward /i, '').trim();
-                    const choiceEffects: any[] = [];
+                    const match = wardStr.match(/Ward(?:\s+|—\s*(?:Pay\s+)?)(.+)/i);
+                    if (!match) return;
                     
-                    if (costStr === '3_LIFE') {
-                         choiceEffects.push({ type: 'LoseLife', amount: 3, targetMapping: 'CONTROLLER' });
+                    const costStr = match[1].trim();
+                    const choiceEffects: any[] = [];
+                    let labelStr = costStr;
+
+                    if (costStr.toLowerCase().includes('life')) {
+                        const amount = parseInt(costStr) || 0;
+                        choiceEffects.push({ type: 'LoseLife', amount: amount, targetMapping: 'CONTROLLER' });
+                        labelStr = `Pay ${amount} life`;
+                    } else if (costStr.startsWith('{') && costStr.endsWith('}')) {
+                         choiceEffects.push({ type: 'PayMana', value: costStr }); // Hypothetical mana effect in Choice modal
+                         labelStr = `Pay ${costStr}`;
                     }
 
                     matchingTriggers.push({
@@ -117,11 +127,11 @@ export class TriggerProcessor {
                         activeZone: 'Battlefield',
                         effects: [{
                             type: 'Choice',
-                            label: `Ward Trigger: Pay ${costStr.replace('_', ' ')} or spell will be countered.`,
-                            targetId: sourceControllerId, // Specific player who cast the spell
+                            label: `Ward Trigger: ${labelStr} or spell will be countered.`,
+                            targetId: sourceControllerId,
                             choices: [
-                                { label: `Pay ${costStr.replace('_', ' ')}`, effects: choiceEffects },
-                                { label: "Don't Pay (Counter Spell)", effects: [{ type: 'Counter', targetMapping: 'TRIGGER_SOURCE' }] }
+                                { label: labelStr, effects: choiceEffects },
+                                { label: "Don't Pay (Counter Spell)", effects: [{ type: 'CounterSpell', targetMapping: 'TRIGGER_SOURCE' }] }
                             ]
                         }]
                     } as any);

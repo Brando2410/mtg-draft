@@ -315,8 +315,15 @@ export class TargetingProcessor {
             if (lr === 'self' && targetObj.id !== sourceId) return false;
             if (lr === 'tapped' && !targetObj.isTapped) return false;
             if (lr === 'untapped' && targetObj.isTapped) return false;
-            if (lr === 'yours' && (targetObj.controllerId || targetObj.ownerId) !== controllerId) return false;
             if (lr === 'opponents' && (targetObj.controllerId || targetObj.ownerId) === controllerId) return false;
+
+            if (lr === 'mv_le_power' && sourceId) {
+                const source = state.battlefield.find(o => o.id === sourceId);
+                const sourcePower = source ? LayerProcessor.getEffectiveStats(source, state).power : 0;
+                const targetMV = ManaProcessor.getManaValue(targetObj.definition.manaCost || '');
+                if (targetMV > sourcePower) return false;
+            }
+
 
             const numericMatch = lr.match(/^(cmc|mv|power|toughness)\s*(<=|>=|==|=|<|>)\s*(\d+)$/);
             if (numericMatch) {
@@ -386,6 +393,9 @@ export class TargetingProcessor {
                 if (typeof r === 'string') {
                     const lr = r.toLowerCase();
                     if (lr === 'card') return true;
+                    if (lr === 'instant_or_sorcery') {
+                        return objTypes.includes('instant') || objTypes.includes('sorcery');
+                    }
                     if (lr === 'permanent') {
                         const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
                         return objTypes.some((t: string) => permTypes.includes(t.toLowerCase()));
@@ -403,6 +413,13 @@ export class TargetingProcessor {
                         const targetName = definition?.name || targetObj.name;
                         const filterName = r.nameEquals || r.name || "";
                         if (!targetName || targetName.toLowerCase() !== filterName.toLowerCase()) match = false;
+                    }
+                    if (r.type === 'ManaValue') {
+                        const mv = ManaProcessor.getManaValue(definition.manaCost || '');
+                        const val = r.value;
+                        if (r.comparison === 'LessOrEqual' && mv > val) match = false;
+                        if (r.comparison === 'GreaterOrEqual' && mv < val) match = false;
+                        if (r.comparison === 'Equal' && mv !== val) match = false;
                     }
                     return match;
                 }
@@ -645,24 +662,6 @@ export class TargetingProcessor {
             return true;
         }
 
-        if (stackId) {
-            const existingObject = state.stack.find(s => s.id === stackId);
-            if (existingObject) {
-                if (actionData.isCopyTargeting && resolvedTargets.length === 0) {
-                    existingObject.targets = actionData.originalTargets || [];
-                    engine.log(`[COPY] Kept original targets for copy.`);
-                } else {
-                    existingObject.targets = resolvedTargets;
-                    engine.log(`[TARGETING] Targets confirmed for ${existingObject.type === 'TriggeredAbility' ? 'Trigger' : 'Spell'}: ${resolvedTargets.join(', ')}`);
-                }
-                
-                state.pendingAction = undefined;
-                state.priorityPlayerId = playerId;
-                engine.checkAutoPass(playerId);
-                return true;
-            }
-        }
-
         if (abilityIndex !== undefined) {
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
@@ -678,6 +677,7 @@ export class TargetingProcessor {
         }
     }
 
+
     /**
      * CR 114: Resolve target mapping for effects.
      */
@@ -688,7 +688,8 @@ export class TargetingProcessor {
         sourceId: GameObjectId,
         controllerId: PlayerId,
         stackData?: any,
-        effect?: any
+        effect?: any,
+        parentContext?: any
     ): string[] {
         const eventData = stackData?.eventData;
 
@@ -723,6 +724,8 @@ export class TargetingProcessor {
                 return eventData?.targetId ? [eventData.targetId] : (stackData?.targetId ? [stackData.targetId] : []);
             case 'EVENT_TARGET':
                 return eventData?.object?.id ? [eventData.object.id] : (eventData?.targetId ? [eventData.targetId] : []);
+            case 'EVENT_PLAYER':
+                return eventData?.playerId ? [eventData.playerId] : [];
             case 'TARGET_1_CONTROLLER': {
                 const obj = state.battlefield.find(o => o.id === targets[0]) || 
                             Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === targets[0]) ||
@@ -743,6 +746,10 @@ export class TargetingProcessor {
                 return state.battlefield
                     .filter(o => o.id !== sourceId && o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature'))
                     .map(o => o.id);
+            case 'OTHER_SPIRITS_YOU_CONTROL':
+                return state.battlefield
+                    .filter(o => o.id !== sourceId && o.controllerId === controllerId && o.definition.subtypes.some(t => t.toLowerCase() === 'spirit'))
+                    .map(o => o.id);
             case 'ALL_PERMANENTS_YOU_CONTROL':
                 return state.battlefield
                     .filter(o => o.controllerId === controllerId)
@@ -760,6 +767,8 @@ export class TargetingProcessor {
                 return state.battlefield
                     .filter(o => o.definition.types.some(t => t.toLowerCase() === 'creature') && !LayerProcessor.hasKeyword(o, state, 'Flying'))
                     .map(o => o.id);
+            case 'OPPONENT_1':
+                return [Object.keys(state.players).filter(pid => pid !== controllerId)[0]];
             case 'OPPONENT':
             case 'EACH_OPPONENT':
                 return Object.keys(state.players).filter(pid => pid !== controllerId);
@@ -777,6 +786,30 @@ export class TargetingProcessor {
                 return Object.keys(state.players);
             case 'ANY_TARGET':
                 return targets;
+            case 'OTHER_CREATURES_AND_PLANESWALKERS':
+                const chosenId = targets[0];
+                return state.battlefield
+                    .filter(o => o.id !== chosenId && (o.definition.types.some(t => t.toLowerCase() === 'creature') || o.definition.types.some(t => t.toLowerCase() === 'planeswalker')))
+                    .map(o => o.id);
+            case 'ALL_CREATURES_CONTROLLED_BY_TARGET_1':
+                const targetPlayerId = targets[0];
+                return state.battlefield
+                    .filter(o => o.controllerId === targetPlayerId && o.definition.types.some(t => t.toLowerCase() === 'creature'))
+                    .map(o => o.id);
+            case 'ALL_PLANESWALKERS_YOU_CONTROL':
+                return state.battlefield
+                    .filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'planeswalker'))
+                    .map(o => o.id);
+            case 'OTHER_PLANESWALKERS_YOU_CONTROL':
+                return state.battlefield
+                    .filter(o => o.id !== sourceId && o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'planeswalker'))
+                    .map(o => o.id);
+            case 'EVENT_OBJECT':
+                return eventData?.object?.id ? [eventData.object.id] : [];
+            case 'EXILED_CARD': {
+                // Return the ID of the object that was just exiled by this effect chain
+                return parentContext?.exiledIds || [];
+            }
             default:
                 return [];
         }

@@ -355,18 +355,24 @@ export class GameEngine {
     const stepName = this.state.currentStep.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
 
     // Fire generic event for the step (e.g., ON_END_STEP, ON_UPKEEP_STEP)
-    TriggerProcessor.onEvent(this.state, {
+    const stepEvent = {
       type: `ON_${stepName}_STEP`,
       playerId: this.state.activePlayerId,
       data: { phase: this.state.currentPhase, step: this.state.currentStep }
-    }, (m) => this.log(m));
+    };
+    TriggerProcessor.onEvent(this.state, stepEvent, (m) => this.log(m));
+    this.cleanupExpiredEffectsByEvent(stepEvent.type, this.state.activePlayerId);
+
 
     // Fire generic event for the phase (e.g., ON_PRE_COMBAT_MAIN_PHASE_START)
-    TriggerProcessor.onEvent(this.state, {
+    const phaseEvent = {
       type: `ON_${phaseName}_PHASE_START`,
       playerId: this.state.activePlayerId,
       data: { phase: this.state.currentPhase, step: this.state.currentStep }
-    }, (m) => this.log(m));
+    };
+    TriggerProcessor.onEvent(this.state, phaseEvent, (m) => this.log(m));
+    this.cleanupExpiredEffectsByEvent(phaseEvent.type, this.state.activePlayerId);
+
 
     ManaProcessor.emptyAllManaPools(this.state);
     this.handleStepEntryRules();
@@ -531,6 +537,24 @@ export class GameEngine {
     LifeDamageHandler.handleGainLife(this.state, [playerId], amount, (m: string) => this.log(m));
   }
 
+
+  private cleanupExpiredEffectsByEvent(eventType: string, activePlayerId?: PlayerId) {
+    const previousCount = this.state.ruleRegistry.continuousEffects.length;
+    this.state.ruleRegistry.continuousEffects = this.state.ruleRegistry.continuousEffects.filter(eff => {
+      if (eff.duration?.type === 'UNTIL_EVENT' && eff.duration.expiryEvent === eventType) {
+        // If untilTurnOfPlayerId is specified, only expire if it's that player's turn
+        if (eff.duration.untilTurnOfPlayerId && eff.duration.untilTurnOfPlayerId !== activePlayerId) {
+            return true;
+        }
+        return false;
+      }
+      return true;
+    });
+
+    if (this.state.ruleRegistry.continuousEffects.length < previousCount) {
+      this.log(`[FLOW] Expired ${previousCount - this.state.ruleRegistry.continuousEffects.length} continuous effect(s) on event ${eventType}.`);
+    }
+  }
 
   public getState(): GameState {
     // CR 613: Re-evaluate the "Derived State" (P/T, Keywords, isPlayable) before returning to the UI.

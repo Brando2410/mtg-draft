@@ -23,6 +23,13 @@ export class ChoiceEffectHandler {
     if (!sourceObj) return;
 
     let dynamicChoices = effect.choices;
+    if (dynamicChoices) {
+        const { ConditionProcessor } = require('./../../core/ConditionProcessor');
+        dynamicChoices = dynamicChoices.filter((c: any) => {
+            if (!c.condition) return true;
+            return ConditionProcessor.matchesCondition(state, c.condition, sourceId, controllerId, stackObject);
+        });
+    }
 
     // --- SUPPORT FOR PRE-SELECTED CHOICES ---
     const preSelectedIdx = stackObject?.data?.preSelectedChoice !== undefined 
@@ -30,40 +37,90 @@ export class ChoiceEffectHandler {
         : (stackObject as any)?.preSelectedChoice;
 
     if (preSelectedIdx !== undefined && dynamicChoices) {
-        const choice = dynamicChoices[preSelectedIdx];
-        if (choice && choice.effects) {
-            log(`[RESOLVING CHOICE] Auto-resolved pre-selected mode: ${choice.label}`);
+        const rawIndices = String(preSelectedIdx).split('|').map(s => {
+            return s.startsWith('CHOICE_') ? parseInt(s.substring(7)) : parseInt(s);
+        });
+
+        const allEffects: any[] = [];
+        rawIndices.forEach(idx => {
+            const choice = dynamicChoices[idx];
+            if (choice && choice.effects) {
+                allEffects.push(...choice.effects);
+            }
+        });
+
+        if (allEffects.length > 0) {
+            log(`[RESOLVING CHOICE] Auto-resolved pre-selected modes: ${rawIndices.join(', ')}`);
             const { EffectProcessor } = require('../EffectProcessor');
-            EffectProcessor.resolveEffects(state, choice.effects, sourceId, targets, log, 0, stackObject, parentContext);
+            EffectProcessor.resolveEffects(state, allEffects, sourceId, targets, log, 0, stackObject, parentContext);
             return;
         }
     }
 
     // --- HAND-PICKING OR GRAVEYARD-PICKING ---
     const targetZoneMapping = (effect as any).targetIdMapping;
-    if (['TARGET_1_HAND', 'TARGET_1_GRAVEYARD', 'CONTROLLER_HAND', 'CONTROLLER_GRAVEYARD'].includes(targetZoneMapping)) {
+    if (['TARGET_1_HAND', 'TARGET_1_GRAVEYARD', 'TARGET_1_BATTLEFIELD', 'CONTROLLER_HAND', 'CONTROLLER_GRAVEYARD', 'CONTROLLER_BATTLEFIELD', 'CONTROLLER_SIDEBOARD', 'NAME_A_CARD'].includes(targetZoneMapping)) {
         let targetPlayerId: string | undefined;
+        let mappingPlayerId: string | undefined; // Player who chooses
+
         if (targetZoneMapping.startsWith('TARGET_1_')) {
-            targetPlayerId = targets[0];
+            mappingPlayerId = targets[0];
         } else {
-            targetPlayerId = controllerId;
+            mappingPlayerId = controllerId;
         }
 
-        const targetPlayer = state.players[targetPlayerId as PlayerId];
-        if (targetPlayer) {
+        const targetPlayer = state.players[mappingPlayerId as PlayerId];
+        if (targetPlayer || targetZoneMapping.endsWith('_BATTLEFIELD')) {
             const isGraveyard = targetZoneMapping.endsWith('_GRAVEYARD');
-            const sourceCards = isGraveyard ? targetPlayer.graveyard : targetPlayer.hand;
+            const isSideboard = targetZoneMapping.endsWith('_SIDEBOARD');
+            const isBattlefield = targetZoneMapping.endsWith('_BATTLEFIELD');
+            const isNameACard = targetZoneMapping === 'NAME_A_CARD';
+
+            let sourceCards: GameObject[] = [];
+            if (isNameACard) {
+                // Use controller's library as a pool of names
+                sourceCards = state.players[controllerId].library;
+            } else if (isBattlefield) {
+                sourceCards = state.battlefield.filter(o => o.controllerId === mappingPlayerId);
+            } else if (targetPlayer) {
+                sourceCards = isGraveyard ? targetPlayer.graveyard : (isSideboard ? (targetPlayer.sideboard || []) : targetPlayer.hand);
+            }
+            
+            if (isNameACard) {
+                state.pendingAction = ChoiceGenerator.createCardChoice(state, sourceCards, {
+                    label: "Name a non-land card",
+                    playerId: mappingPlayerId as PlayerId,
+                    sourceId: sourceId,
+                    restrictions: effect.restrictions || ['Nonland'],
+                    filterSelectable: true,
+                    optional: false,
+                    actionType: ActionType.ResolutionChoice,
+                    onSelected: (c: any) => {
+                        if (stackObject) {
+                            if (!stackObject.data) stackObject.data = {};
+                            stackObject.data.chosenName = c.definition.name;
+                        }
+                        return (effect.effects || []);
+                    },
+                    hideUndo: true,
+                    stackObj: stackObject,
+                    parentContext: parentContext
+                });
+                return;
+            }
             
             if (targetZoneMapping === 'TARGET_1_HAND') {
-                targetPlayer.hand.forEach((c: any) => (c as any).isRevealed = true);
+                targetPlayer!.hand.forEach((c: any) => (c as any).isRevealed = true);
             }
 
             state.pendingAction = ChoiceGenerator.createCardChoice(state, sourceCards, {
-                label: effect.label || (isGraveyard ? 'Choose a card from Graveyard' : 'Choose a card from Hand'),
-                playerId: controllerId,
+                label: effect.label || (isGraveyard ? 'Choose a card from Graveyard' : (isSideboard ? 'Choose a Lesson from Sideboard' : (isBattlefield ? 'Choose a permanent to return' : 'Choose a card from Hand'))),
+                playerId: mappingPlayerId as PlayerId, // The player who makes the choice
                 sourceId: sourceId,
                 restrictions: effect.restrictions,
                 filterSelectable: true,
+                minChoices: effect.minChoices,
+                maxChoices: effect.maxChoices,
                 optional: effect.optional !== false,
                 actionType: effect.optional ? ActionType.OptionalAction : ActionType.ResolutionChoice,
                 onSelected: (c) => (effect.effects || []).map((sub: any) => ({ ...sub, targetId: c.id })),
@@ -83,6 +140,8 @@ export class ChoiceEffectHandler {
             sourceId: sourceId, 
             actionType: effect.optional ? ActionType.OptionalAction : ActionType.ResolutionChoice,
             hideUndo: true,
+            minChoices: effect.minChoices,
+            maxChoices: effect.maxChoices,
             stackObj: stackObject,
             parentContext: parentContext
         },

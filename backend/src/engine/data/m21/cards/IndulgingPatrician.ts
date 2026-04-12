@@ -17,7 +17,7 @@ export const IndulgingPatrician: Record<string, ImplementableCard> = {
                 id: "indulging_patrician_end_step",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: "ON_END_STEP_STEP",
+                triggerEvent: "ON_END_STEP",
                 triggerCondition: (state: any, event: any, source: any) => {
                     const gained = state.turnState.lifeGainedThisTurn[source.controllerId] || 0;
                     return state.activePlayerId === source.controllerId && gained >= 3;

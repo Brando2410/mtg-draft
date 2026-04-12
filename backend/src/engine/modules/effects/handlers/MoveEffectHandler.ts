@@ -1,4 +1,4 @@
-import { GameState, EffectDefinition, GameObjectId, PlayerId, Zone, GameObject, ActionType } from '@shared/engine_types';
+import { GameState, EffectDefinition, GameObjectId, PlayerId, Zone, GameObject, ActionType, EffectType } from '@shared/engine_types';
 import { ActionProcessor } from '../../actions/ActionProcessor';
 import { TriggerProcessor } from '../TriggerProcessor';
 import { ChoiceGenerator } from '../ChoiceGenerator';
@@ -47,8 +47,24 @@ export class MoveEffectHandler {
     if (effect.type === 'Surveil') {
         return this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: (effect as any).amount || 1 }, controllerId, log, stackObject, parentContext);
     }
-    if (effect.type === 'LookAtTopAndPick') {
+    if (effect.type === EffectType.LookAtTopAndPick) {
         return this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: (effect as any).amount || 1 }, controllerId, log, stackObject, parentContext);
+    }
+
+    if (effect.type === EffectType.ExchangeHandAndGraveyard) {
+        const player = state.players[targets[0] as PlayerId] || state.players[controllerId];
+        if (player) {
+            const oldHand = [...player.hand];
+            const oldGY = [...player.graveyard];
+            
+            log(`[EXCHANGE] Swapping hand (${oldHand.length} cards) and graveyard (${oldGY.length} cards) for ${player.name}.`);
+            
+            // Move GY to hand
+            oldGY.forEach(c => ActionProcessor.moveCard(state, c, Zone.Hand, player.id, log));
+            // Move Hand to GY
+            oldHand.forEach(c => ActionProcessor.moveCard(state, c, Zone.Graveyard, player.id, log));
+        }
+        return;
     }
 
     if (effect.type === 'PutRemainderOnBottomRandom' && targetIds.length > 1) {
@@ -81,6 +97,10 @@ export class MoveEffectHandler {
             const from = obj.zone;
             ActionProcessor.moveCard(state, obj, destination, obj.ownerId, log, effect.libraryPosition, false, (effect as any).isDiscard);
             if (destination === Zone.Exile) {
+                if (parentContext) {
+                    if (!parentContext.exiledIds) parentContext.exiledIds = [];
+                    parentContext.exiledIds.push(tid);
+                }
                 TriggerProcessor.onEvent(state, { type: 'ON_EXILE', targetId: tid, sourceId: (stackObject as any)?.sourceId || '', sourceZone: from }, log);
             }
         }
@@ -118,7 +138,9 @@ export class MoveEffectHandler {
             actionType: effect.optional ? ActionType.OptionalAction : ActionType.ResolutionChoice,
             onSelected: (c: any) => {
                 const subEffects = [];
-                if (effect.splitDestinations) {
+                if (effect.isFreeCast) {
+                    subEffects.push({ type: 'CastSpell', targetId: (c as any).id, isFreeCast: true });
+                } else if (effect.splitDestinations) {
                     subEffects.push({ type: 'MoveToZone', targetId: (c as any).id, targetMapping: 'SELECTED_CARD', zone: effect.splitDestinations[0].zone, tapped: effect.splitDestinations[0].tapped, reveal: effect.reveal });
                 } else {
                     subEffects.push({ type: 'MoveToZone', targetId: (c as any).id, targetMapping: 'SELECTED_CARD', zone: destination, reveal: effect.reveal });
@@ -194,11 +216,46 @@ export class MoveEffectHandler {
 
     const sourceZones = effect.sourceZones || [Zone.Library];
     const pool: GameObject[] = [];
-    sourceZones.forEach(z => {
-        if (z === Zone.Library) pool.push(...player.library);
-        if (z === Zone.Graveyard) pool.push(...player.graveyard);
-        if (z === Zone.Hand) pool.push(...player.hand);
-    });
+
+    // --- SUPPORT FOR 'REVEAL UNTIL' (TopN selection mode) ---
+    if (effect.selectionType === 'TopN' && sourceZones.includes(Zone.Library)) {
+        const nonMatchingCards: GameObject[] = [];
+        const { TargetingProcessor } = require('../../actions/TargetingProcessor');
+        let match: GameObject | undefined;
+
+        while (player.library.length > 0) {
+            const card = player.library.pop()!;
+            if (TargetingProcessor.matchesRestrictions(state, card, effect.restrictions || [], controllerId, (stackObject as any)?.sourceId || '')) {
+                match = card;
+                break;
+            } else {
+                nonMatchingCards.push(card);
+            }
+        }
+
+        if (nonMatchingCards.length > 0) {
+            const rZone = effect.remainderZone || Zone.Graveyard;
+            const rPos = effect.remainderPosition || 'bottom';
+            log(`[DEBUG] Reveal-Until: ${nonMatchingCards.length} cards didn't match. Moving to ${rZone}.`);
+            if (effect.shuffleRemainder) ActionProcessor.shuffle(nonMatchingCards);
+            nonMatchingCards.forEach(c => ActionProcessor.moveCard(state, c, rZone, controllerId, log, rPos as any));
+        }
+
+        if (match) {
+            log(`[DEBUG] Reveal-Until: Found match: ${match.definition.name}.`);
+            pool.push(match);
+        } else {
+            log(`[DEBUG] Reveal-Until: No match found.`);
+            if (effect.shuffle) ActionProcessor.shuffle(player.library);
+            return;
+        }
+    } else {
+        sourceZones.forEach(z => {
+            if (z === Zone.Library) pool.push(...player.library);
+            if (z === Zone.Graveyard) pool.push(...player.graveyard);
+            if (z === Zone.Hand) pool.push(...player.hand);
+        });
+    }
 
     state.pendingAction = ChoiceGenerator.createCardChoice(state, pool, {
         label: `${effect.label || "Search your library"} (${(effect as any).count || 1}/${effect.amount || 1})`,
@@ -331,6 +388,10 @@ export class MoveEffectHandler {
     if (effect.tapped && destination === Zone.Battlefield) obj.isTapped = true;
     if (effect.reveal) (obj as any).isRevealed = true;
     if (destination === Zone.Exile) {
+        if (parentContext) {
+            if (!parentContext.exiledIds) parentContext.exiledIds = [];
+            parentContext.exiledIds.push(obj.id);
+        }
         TriggerProcessor.onEvent(state, { type: 'ON_EXILE', targetId: obj.id, sourceId: (stackObject as any)?.sourceId || '', sourceZone: from }, log);
     }
   }

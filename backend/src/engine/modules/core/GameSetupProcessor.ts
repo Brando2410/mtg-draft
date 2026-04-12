@@ -20,6 +20,7 @@ export class GameSetupProcessor {
         library: (decks[id] || []).map((cardRef, index) => this.createGameObject(id, cardRef, index)),
         hand: [],
         graveyard: [],
+        sideboard: [],
         manaPool: { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 },
         hasPlayedLandThisTurn: false,
         fullControl: false,

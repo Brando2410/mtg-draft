@@ -69,7 +69,11 @@ export const GameCard = memo(({
     hand: { w: 'w-32', h: 'h-44', rounded: 'rounded-lg' },
     stack: { w: 'w-28', h: 'h-40', rounded: 'rounded-lg' },
     tiny: { w: 'w-12', h: 'h-16', rounded: 'rounded-sm' },
-    zoom: { w: 'w-[340px]', h: 'h-auto', rounded: 'rounded-2xl' }
+    zoom: { 
+      w: (definition.faces && definition.faces.length > 1) ? 'w-[640px]' : 'w-[340px]', 
+      h: 'h-auto', 
+      rounded: 'rounded-2xl' 
+    }
   }[variant];
 
   // COLORS & STYLING
@@ -101,7 +105,7 @@ export const GameCard = memo(({
         {symbols.map((s, i) => (
           <img 
             key={i}
-            src={`https://svgs.scryfall.io/card-symbols/${s.toUpperCase()}.svg`}
+            src={`https://svgs.scryfall.io/card-symbols/${s.toUpperCase().replace(/\//g, '_')}.svg`}
             alt={s}
             style={{ width: `${finalSize}px`, height: `${finalSize}px` }}
             className="drop-shadow-sm select-none shrink-0"
@@ -235,12 +239,30 @@ export const GameCard = memo(({
 
           {/* FULL IMAGE (For Zoom mode) */}
           {variant === 'zoom' && (
-              <div className="relative group/zoom flex flex-col">
-                  <img 
-                      src={definition.image_url} 
-                      alt={definition.name}
-                      className="w-full h-auto rounded-2xl shadow-2xl border-2 border-white/10"
-                  />
+              <div className={`relative group/zoom flex ${definition.faces && definition.faces.length > 1 ? 'flex-row gap-4 p-4 items-start bg-slate-900/40 backdrop-blur-md rounded-2xl border border-white/5' : 'flex-col'}`}>
+                  {definition.faces && definition.faces.length > 1 ? (
+                    definition.faces.map((face, idx) => (
+                      <div key={idx} className="flex-1 min-w-0 flex flex-col items-center">
+                        <img 
+                            src={face.image_url || definition.image_url} 
+                            alt={face.name}
+                            className="w-full h-auto rounded-xl shadow-2xl border-2 border-white/10"
+                        />
+                        <div className="mt-2 text-[10px] font-black uppercase text-white/40 tracking-widest">{idx === 0 ? 'Front' : 'Back'}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <img 
+                        src={definition.image_url} 
+                        alt={definition.name}
+                        className="w-full h-auto rounded-2xl shadow-2xl border-2 border-white/10"
+                    />
+                  )}
+                  {definition.faces && definition.faces.length > 1 && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg border border-indigo-400/50 uppercase tracking-tighter z-50">
+                      Double Faced Card
+                    </div>
+                  )}
               </div>
           )}
 

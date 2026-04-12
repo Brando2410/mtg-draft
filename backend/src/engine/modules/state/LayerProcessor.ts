@@ -173,6 +173,17 @@ export class LayerProcessor {
       }
     }
 
+    if (effect.powerDynamic === 'SOURCE_POWER' || effect.toughnessDynamic === 'SOURCE_TOUGHNESS') {
+        const source = state.battlefield.find(o => o.id === effect.sourceId);
+        if (source) {
+            const stats = this.getEffectiveStats(source, state);
+            update(
+                effect.powerDynamic === 'SOURCE_POWER' ? stats.power : undefined,
+                effect.toughnessDynamic === 'SOURCE_TOUGHNESS' ? stats.toughness : undefined
+            );
+        }
+    }
+
     // Sublayer 7b: Effects that set power and/or toughness
     if (effect.powerSet !== undefined || effect.toughnessSet !== undefined) {
       update(
