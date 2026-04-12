@@ -78,14 +78,14 @@ export const XSelectionModal = ({ pendingAction, me, onResolve }: XSelectionModa
 
                 <div className="flex items-center gap-4 w-full">
                   <button 
-                    onClick={() => onResolve?.({ x: 0 })}
+                    onClick={() => onResolve?.('undo')}
                     className="flex-1 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-black uppercase italic tracking-widest transition-all"
                   >
                     Cancel
                   </button>
                   
                   <button 
-                    onClick={() => onResolve?.({ x: value })}
+                    onClick={() => onResolve?.(value)}
                     className="flex-[2] py-4 bg-yellow-400 hover:bg-yellow-300 text-slate-950 rounded-2xl font-black uppercase italic tracking-widest transition-all shadow-xl shadow-yellow-400/10"
                   >
                     Submit X={value}

@@ -16,14 +16,16 @@ const CardStack = memo(({
   targetableIds = new Set(),
   onHoverStart,
   onHoverEnd,
-  variant = 'battlefield'
+  variant = 'battlefield',
+  pendingAction
 }: { 
   cards: GameObject[], 
   onTapCard?: (id: string) => void,
   targetableIds?: Set<string>,
   onHoverStart?: (obj: GameObject) => void,
   onHoverEnd?: () => void,
-  variant?: 'battlefield' | 'tiny'
+  variant?: 'battlefield' | 'tiny',
+  pendingAction?: any
 }) => {
   if (cards.length === 0) return null;
   
@@ -54,6 +56,7 @@ const CardStack = memo(({
                         isTargetable={stack.some(c => targetableIds.has(c.id))}
                         onHoverStart={onHoverStart}
                         onHoverEnd={onHoverEnd}
+                        pendingAction={pendingAction}
                     />
                 </div>
             ))}
@@ -131,6 +134,7 @@ const SubZone = memo(({
                     isDeclaringAttacks={isDeclaringAttacks}
                     isOpponent={isOpponent}
                     isSelected={obj.id === pendingAction?.sourceId}
+                    pendingAction={pendingAction}
                 />
                 {allBattlefieldCards.filter(a => (a as any).attachedTo === obj.id).map((aura, i) => (
                     <div 
@@ -154,9 +158,9 @@ const SubZone = memo(({
     });
 
     return Object.entries(groups).map(([name, group]) => (
-      <CardStack key={name} cards={group} onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} />
+      <CardStack key={name} cards={group} onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} pendingAction={pendingAction} />
     ));
-  }, [cards, allBattlefieldCards, onTapCard, stackSameName, targetableIds, onHoverStart, onHoverEnd, isDeclaringAttacks, attackers]);
+  }, [cards, allBattlefieldCards, onTapCard, stackSameName, targetableIds, onHoverStart, onHoverEnd, isDeclaringAttacks, attackers, pendingAction]);
 
   return (
     <div className="flex-1 flex flex-col gap-1 w-full h-full min-w-[100px]">
@@ -196,7 +200,6 @@ export const Battlefield = ({
   onHoverEnd 
 }: BattlefieldProps) => {
   const [inspectingZone, setInspectingZone] = useState<{ cards: GameObject[], label: string } | null>(null);
-  const [orderingList, setOrderingList] = useState<string[]>([]);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const planningArrow = useMemo(() => {
@@ -268,7 +271,7 @@ export const Battlefield = ({
       <XSelectionModal pendingAction={pendingAction} me={me} onResolve={onChoiceResolve} />
       <ZoneInspector 
         inspectingZone={inspectingZone} onClose={() => setInspectingZone(null)} 
-        onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} me={me} 
+        onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} 
       />
 
       <div 

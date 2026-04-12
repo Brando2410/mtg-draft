@@ -281,6 +281,13 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
   }
 
   private static handleBattlefieldAbilityActivation(state: GameState, playerId: string, obj: any, choice: any, log: (m: string) => void, engine: any): boolean {
+    if (choice.value === 'none') {
+        state.pendingAction = undefined;
+        state.priorityPlayerId = playerId;
+        log(`Action cancelled.`);
+        return true;
+    }
+
     const abilityIndex = typeof choice.value === 'number' ? choice.value : parseInt(choice.value);
     const logic = m21[obj.definition.name];
     const ability = (logic as any)?.abilities?.[abilityIndex];
@@ -526,15 +533,24 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
   }
 
   private static handleXChoice(state: GameState, playerId: string, action: any, xValue: any, log: (m: string) => void, engine: any): boolean {
-    const x = parseInt(String(xValue));
+    let x = 0;
+    if (typeof xValue === 'object' && xValue !== null && 'x' in xValue) {
+        x = parseInt(String(xValue.x));
+    } else {
+        x = parseInt(String(xValue));
+    }
+
     if (isNaN(x) || x < 0) {
-        log(`Invalid value for X: ${xValue}`);
+        log(`Invalid value for X: ${JSON.stringify(xValue)}`);
         return false;
     }
 
     const sourceId = action.sourceId;
     const card = TargetingProcessor.findObjectInAnyZone(state, sourceId);
-    if (!card) return false;
+    if (!card) {
+        log(`[CHOOSE_X] Error: Could not find card for sourceId ${sourceId}`);
+        return false;
+    }
 
     card.xValue = x;
     state.pendingAction = undefined;

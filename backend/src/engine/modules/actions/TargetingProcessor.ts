@@ -352,6 +352,15 @@ export class TargetingProcessor {
                 }
             }
 
+            // --- KEYWORD CHECK (Rule 702) ---
+            const knownKeywords = ['defender', 'flying', 'haste', 'vigilance', 'lifelink', 'deathtouch', 'trample', 'menace', 'reach', 'first strike', 'double strike', 'indestructible'];
+            if (knownKeywords.includes(lr)) {
+                const stats = LayerProcessor.getEffectiveStats(targetObj, state);
+                const hasKeyword = stats.keywords.some(k => k.toLowerCase() === lr);
+                if (!hasKeyword) return false;
+                continue;
+            }
+
             const isKnownFilter = [
                 'nonland', 'noncreature', 'nonartifact', 'nonenchantment', 'nonplaneswalker',
                 'graveyard', 'other', 'another', 'notcontrolled', 'opponentcontrol', 'youcontrol', 'self', 'legendary',
@@ -456,10 +465,10 @@ export class TargetingProcessor {
         if (state.pendingAction?.type !== 'TARGETING' || state.pendingAction.playerId !== playerId) return false;
 
         const actionData = state.pendingAction.data;
-        const isOptional = actionData?.optional;
-        const isSkipping = targetId === 'skip' || targetId === 'none';
-        const isUndoing = targetId === 'undo' || targetId === 'back';
         const targetDef = actionData?.targetDefinition;
+        const isOptional = targetDef?.optional || targetDef?.minCount === 0;
+        const isSkipping = targetId === 'skip' || targetId === 'none' || targetId === 'confirm';
+        const isUndoing = targetId === 'undo' || targetId === 'back';
         const targetCount = targetDef?.count || 1;
 
         actionData.selectedTargets = actionData.selectedTargets || [];
@@ -508,6 +517,12 @@ export class TargetingProcessor {
             }
         }
 
+        if (targetId === 'clear') {
+            actionData.selectedTargets = [];
+            log(`Targeting selection cleared.`);
+            return true;
+        }
+
         if (isSkipping) {
             if (!isOptional && actionData.selectedTargets.length === 0) {
                 log(`Targeting is required, cannot skip.`);
@@ -527,7 +542,13 @@ export class TargetingProcessor {
             return false;
         }
 
-        actionData.selectedTargets.push(targetId);
+        // Prevent adding more than the max allowed targets
+        if (actionData.selectedTargets.length >= targetCount) {
+            log(`Maximum targets (${targetCount}) reached. Please confirm your selection.`);
+            return false;
+        }
+
+        actionData.selectedTargets = [...actionData.selectedTargets, targetId];
         log(`Target ${actionData.selectedTargets.length}/${targetCount} selected: ${targetId}`);
 
         // Update legal targets for the next index if there are more targets to select
@@ -539,10 +560,6 @@ export class TargetingProcessor {
                 ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
             ];
             actionData.targets = pool.filter(tid => this.isLegalTarget(state, state.pendingAction!.sourceId, tid, targetDef, nextIndex));
-        }
-
-        if (actionData.selectedTargets.length >= targetCount) {
-            return this.finaliseTargeting(state, playerId, actionData.selectedTargets, engine);
         }
 
         return true;
@@ -677,7 +694,10 @@ export class TargetingProcessor {
 
         switch (mapping) {
             case 'SELF': return [sourceId];
-            case 'CONTROLLER': return [controllerId];
+            case 'CONTROLLER': 
+                const ctrlIds = [controllerId];
+                // process.stdout.write(`[TARGET-DEBUG] Mapping CONTROLLER to ${ctrlIds}\n`);
+                return ctrlIds;
             case 'ENCHANTED_CREATURE':
             case 'ENCHANTED_PERMANENT': {
                 const aura = state.battlefield.find(o => o.id === sourceId);
@@ -726,6 +746,11 @@ export class TargetingProcessor {
             case 'ALL_PERMANENTS_YOU_CONTROL':
                 return state.battlefield
                     .filter(o => o.controllerId === controllerId)
+                    .map(o => o.id);
+            case 'OTHER_CREATURES':
+            case 'ALL_OTHER_CREATURES':
+                return state.battlefield
+                    .filter(o => o.id !== sourceId && o.definition.types.some(t => t.toLowerCase() === 'creature'))
                     .map(o => o.id);
             case 'ALL_CREATURES':
                 return state.battlefield

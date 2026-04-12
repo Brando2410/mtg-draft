@@ -13,7 +13,7 @@ export class ActionProcessor {
    */
     public static moveCard(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, log?: (m: string) => void, libraryPosition: 'top' | 'bottom' = 'top', isDraw: boolean = false, isDiscard: boolean = false) {
     const fromZone = card.zone;
-    
+
     // Rule 400.3: Objects move to their OWNER'S hand/graveyard/library, not the controller's.
     const destinationPlayerId = (to === Zone.Hand || to === Zone.Graveyard || to === Zone.Library) ? card.ownerId : targetPlayerId;
     const effectiveTargetId = destinationPlayerId;
@@ -81,21 +81,21 @@ export class ActionProcessor {
     // Rule 108.4: A card's owner doesn't change, but its controller can.
     card.controllerId = effectiveTargetId;
 
+    // CR 603.10: "Leaves-the-battlefield" events MUST look back in time.
+    // Trigger them while we still have the Battlefield state (counters, registered abilities).
+    if (fromZone === Zone.Battlefield && to !== Zone.Battlefield) {
+        this.handleLeavingBattlefield(state, card, to, log);
+    }
+
     // 1. Rule 400.7: Remove from the current zone
     if (log) log(`[MOVE] ${card.definition.name} (${card.id}) from ${fromZone} to ${to} (isDraw: ${isDraw})...`);
-
-    this.removeFromCurrentZone(state, card);
 
     // Track original zone if moving to stack (Rule 400.7 memoization)
     if (to === Zone.Stack && fromZone !== Zone.Stack) {
         card.lastNonStackZone = fromZone;
     }
 
-    // CR 603.10: "Leaves-the-battlefield" events MUST look back in time.
-    // Trigger them while we still have the Battlefield state (counters, registered abilities).
-    if (fromZone === Zone.Battlefield && to !== Zone.Battlefield) {
-        this.handleLeavingBattlefield(state, card, to, log);
-    }
+    this.removeFromCurrentZone(state, card);
 
     // 2. Rule 400.7: Reset characteristics and update zone
     card.zone = to;
@@ -128,6 +128,7 @@ export class ActionProcessor {
       
       // Rule 603.10a: "Dies" triggers (specifically for creatures moving to graveyard)
       if (to === Zone.Graveyard && types.includes('creature')) {
+          state.turnState.creaturesDiedThisTurn.push(card);
           TriggerProcessor.onEvent(state, { type: 'ON_DEATH', targetId: card.id, sourceId: card.id, data: { object: card } }, log || (() => {}));
       }
 
@@ -147,7 +148,9 @@ export class ActionProcessor {
         // Successfully removed
     }
 
-    state.stack = state.stack.filter(s => s.id !== cid && s.sourceId !== cid);
+    // Rule 113.7a: Abilities on the stack exist independently of their source.
+    // We only remove the object from the stack if it IS the card (e.g. a Spell being countered/moved).
+    state.stack = state.stack.filter(s => s.id !== cid);
     state.exile = state.exile.filter(c => c.id !== cid);
 
     for (const pid in state.players) {
@@ -290,19 +293,6 @@ export class ActionProcessor {
   }
 
   private static handleEnteringGraveyard(state: GameState, card: GameObject, from: Zone, log?: (m: string) => void) {
-      // Rule 603.10: "Leaves the battlefield" triggers look at the object before it moved.
-      if (from === Zone.Battlefield) {
-          // Rule 700.4: "Died" means put into graveyard from battlefield.
-          const isCreature = card.definition.types.some(t => t.toLowerCase() === 'creature');
-          if (isCreature) {
-              state.turnState.creaturesDiedThisTurn.push(card);
-          }
-
-          // Snapshot for Last Known Information (LKI)
-          const lkiSnapshot = JSON.parse(JSON.stringify(card));
-          TriggerProcessor.onEvent(state, { type: 'ON_DEATH', targetId: card.id, sourceId: card.id, data: { object: lkiSnapshot } }, log || (() => {}));
-      }
-
       this.resetObjectState(state, card, from, Zone.Graveyard);
   }
 

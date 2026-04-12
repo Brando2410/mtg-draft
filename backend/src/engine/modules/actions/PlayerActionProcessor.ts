@@ -119,11 +119,31 @@ export class PlayerActionProcessor {
 
         const nonMana = allActivated.filter((a: any) => !a.isManaAbility);
 
-        // If only one non-mana ability and no other choices, direct activate
+        // Safety Step: If only one non-mana ability, show a confirmation modal instead of immediate activation
+        // This prevents misclicks on utility creatures like Portcullis Vine.
         if (allActivated.length === 1 && nonMana.length === 1) {
-            const index = logic.abilities.indexOf(nonMana[0]);
-            const success = actionHandlers.activateAbility(playerId, cardId, index);
-            if (success) return true;
+            const { ActionType: AT } = require('@shared/engine_types');
+            const ability = nonMana[0];
+            state.pendingAction = {
+                type: AT.ModalSelection,
+                playerId: playerId,
+                sourceId: cardId,
+                data: {
+                    isContextual: true,
+                    choices: [
+                        {
+                            label: 'Activate Ability',
+                            value: logic.abilities.indexOf(ability)
+                        },
+                        {
+                            label: 'Cancel',
+                            value: 'none'
+                        }
+                    ]
+                }
+            };
+            state.priorityPlayerId = null;
+            return true;
         }
 
         // If multiple abilities (common for creatures with utility + mana or multiple utilities)
@@ -246,6 +266,20 @@ export class PlayerActionProcessor {
        log(`${card.definition.name} removed from attackers.`);
     } else {
        if (card.isTapped) return false;
+       
+       // Rule 702.3a: Defender prevents attacking.
+       if (stats.keywords.includes('Defender')) {
+           log(`[ATTACK] ERR: ${card.definition.name} has Defender and cannot attack.`);
+           return false;
+       }
+
+       // Check for external "CannotAttack" restrictions
+       const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'CannotAttack');
+       if (cannotAttack) {
+           log(`[ATTACK] ERR: ${card.definition.name} cannot attack.`);
+           return false;
+       }
+
        const opponentId = Object.keys(state.players).find(id => id !== playerId);
        state.combat.attackers.push({ attackerId: cardId, targetId: targetId || opponentId! });
        

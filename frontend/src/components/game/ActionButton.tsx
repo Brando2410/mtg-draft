@@ -22,6 +22,7 @@ interface ActionButtonProps {
   fullControl?: boolean;
   passUntilEndOfTurn?: boolean;
   onTogglePassTurn?: () => void;
+  onClear?: () => void;
 }
 
 interface PhaseIndicatorProps {
@@ -105,8 +106,10 @@ export const ActionButton = memo(({
   onCancelBlocks,
   fullControl = false,
   passUntilEndOfTurn = false,
-  onTogglePassTurn
+  onTogglePassTurn,
+  onClear
 }: ActionButtonProps) => {
+  const isTargeting = (pendingAction?.playerId === effectivePlayerId) && (pendingAction?.type === ActionType.Targeting || (pendingAction?.type as any) === 'TARGETING');
 
   const [isHovered, setIsHovered] = useState(false);
 
@@ -141,19 +144,40 @@ export const ActionButton = memo(({
             text = blockerCount > 0 ? `${blockerCount} Blocker${blockerCount > 1 ? 's' : ''}` : "No Blocks";
             sub = "To Damage";
             orange = true;
-        } else if (pendingAction.type === ActionType.Choice || pendingAction.type === ActionType.ModalSelection) {
-            text = "Submit";
-            sub = "Select targets";
+        } else if (pendingAction.type === ActionType.Choice || pendingAction.type === ActionType.ModalSelection || pendingAction.type === ActionType.ResolutionChoice) {
+            const isContextual = pendingAction.data?.isContextual;
+            text = isContextual ? "Waiting" : "Confirm";
+            sub = isContextual ? "Choice required" : "Make a choice";
+            orange = !isContextual;
+            disabled = isContextual;
         } else if (pendingAction.type === ActionType.Discard) {
             text = "Pending Discard";
             sub = "";
             orange = false;
             disabled = true;
-        } else if (pendingAction.type === ActionType.Targeting) {
-            text = "Cancel";
-            sub = "Choosing targets";
-            orange = false;
-            disabled = false;
+        } else if (pendingAction.type === ActionType.Targeting || (pendingAction.type as any) === 'TARGETING') {
+            const selected = pendingAction.data?.selectedTargets || [];
+            const targetDef = pendingAction.data?.targetDefinition;
+            const isOptional = targetDef?.optional || targetDef?.minCount === 0;
+            const min = targetDef?.minCount ?? (isOptional ? 0 : (targetDef?.count ?? 1));
+            const isSpellCasting = pendingAction.data?.isSpellCasting;
+            
+            const canConfirm = selected.length >= min;
+            
+            if (canConfirm) {
+                text = "Confirm";
+                orange = true;
+                disabled = false;
+            } else {
+                // If it's a spell casting phase, we can 'Cancel' (Undo)
+                // Otherwise (mandatory trigger), we must wait for targets
+                text = isSpellCasting ? "Cancel" : "Waiting";
+                sub = isSpellCasting ? "Undo Action" : "Target Required";
+                orange = false;
+                disabled = !isSpellCasting;
+            }
+            
+            if (!sub) sub = `Targets: ${selected.length} / ${targetDef?.count || 1}`;
         }
     } else {
         // We calculate sub regardless of priority to let the player know what's coming
@@ -204,7 +228,7 @@ export const ActionButton = memo(({
     }
 
     return { buttonText: text, subLabel: sub, isOrange: orange, isDisabled: disabled };
-  }, [hasPriority, pendingAction, currentStep, currentPhase, stackLength, isMyTurn, effectivePlayerId, attackerCount, blockerCount, isHovered]);
+  }, [hasPriority, pendingAction, currentStep, currentPhase, stackLength, isMyTurn, effectivePlayerId, attackerCount, blockerCount, isHovered, JSON.stringify(pendingAction?.data?.selectedTargets)]);
 
   const isCombat = currentPhase === Phase.Combat;
   const showCombatNavigator = isCombat || fullControl;
@@ -237,6 +261,32 @@ export const ActionButton = memo(({
                 animate={{ opacity: 1, scale: 1, x: 0 }}
                 className="flex flex-col gap-2 w-64"
             >
+                {/* SECONDARY TARGETING ACTIONS */}
+                {isTargeting && (
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex justify-center"
+                    >
+                        <button 
+                            onClick={onClear}
+                            disabled={(pendingAction.data?.selectedTargets || []).length === 0}
+                            className={`
+                                flex items-center justify-center gap-2 px-6 py-2 rounded-full w-full
+                                border-t border-white/20
+                                font-serif text-lg font-bold tracking-tight
+                                transition-all duration-300
+                                ${ (pendingAction.data?.selectedTargets || []).length === 0
+                                    ? 'bg-slate-800 text-slate-500 opacity-50 cursor-not-allowed grayscale'
+                                    : 'bg-gradient-to-b from-slate-700 to-slate-900 text-white shadow-[0_4px_15px_rgba(0,0,0,0.4)] border border-white/10 hover:scale-105 active:scale-95 cursor-pointer shadow-lg'
+                                }
+                            `}
+                        >
+                            <span>Clear Selection</span>
+                        </button>
+                    </motion.div>
+                )}
+
                 {/* PRIMARY ACTION BUTTON */}
                 <button
                     onClick={onPass}

@@ -517,6 +517,17 @@ export class CombatProcessor {
         const stats = LayerProcessor.getEffectiveStats(creature, state);
         const isAttacking = state.combat.attackers.some(a => a.attackerId === creature.id);
         
+        // Rule 702.3a / 508.1a: Defender & other "Cannot Attack" restrictions
+        if (isAttacking) {
+            if (stats.keywords.includes('Defender')) {
+                return { isValid: false, error: `${creature.definition.name} has Defender and cannot attack.` };
+            }
+            const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === creature.id && r.type === 'CannotAttack');
+            if (cannotAttack) {
+                return { isValid: false, error: `${creature.definition.name} cannot attack.` };
+            }
+        }
+
         // Requirement Check: MustAttack (Rule 508.1d)
         // A requirement is ignored if it's impossible (e.g. creature is tapped or has summoning sickness)
         const mustAttack = state.ruleRegistry.restrictions.some(r => r.targetId === creature.id && r.type === 'MustAttack') ||

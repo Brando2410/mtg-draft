@@ -345,7 +345,8 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
               socket.emit('resolve_choice', { roomId: room.id, playerId: effectivePlayerId, choiceIndex });
               return;
             }
-            if (gameState.pendingAction?.type === ActionType.Targeting) {
+            const pType = gameState.pendingAction?.type as any;
+            if (pType === 'TARGETING' || pType === ActionType.Targeting) {
               socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: id });
               return;
             }
@@ -363,7 +364,32 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           pendingAction={gameState.pendingAction}
           currentPhase={gameState.currentPhase}
           currentStep={gameState.currentStep}
-          onPass={() => socket.emit('pass_priority', { roomId: room.id, playerId: effectivePlayerId })}
+          onPass={() => {
+            const currentPending = room.gameState?.pendingAction;
+            const pendingType = currentPending?.type as any;
+            const isTargeting = pendingType === 'TARGETING' || pendingType === ActionType.Targeting;
+            
+            console.log(`[ACTION-BUTTON] onPass called. pendingType: ${pendingType}, isTargeting: ${isTargeting}`);
+            
+            if (isTargeting) {
+              const selected = currentPending?.data?.selectedTargets || [];
+              const targetDef = currentPending?.data?.targetDefinition;
+              const isOptional = targetDef?.optional || targetDef?.minCount === 0;
+              const min = targetDef?.minCount ?? (isOptional ? 0 : (targetDef?.count ?? 1));
+              const canConfirm = selected.length >= min;
+              
+              console.log(`[ACTION-BUTTON] Targeting confirmed: ${canConfirm}. Selected: ${selected.length}, Min: ${min}`);
+
+              socket.emit('resolve_target', { 
+                roomId: room.id, 
+                playerId: effectivePlayerId, 
+                targetId: canConfirm ? 'skip' : 'undo' 
+              });
+            } else {
+              socket.emit('pass_priority', { roomId: room.id, playerId: effectivePlayerId });
+            }
+          }}
+          onClear={() => socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: 'clear' })}
           onToggleStop={handleToggleStop}
           stackLength={gameState.stack?.length || 0}
           isMyTurn={gameState.activePlayerId === effectivePlayerId}

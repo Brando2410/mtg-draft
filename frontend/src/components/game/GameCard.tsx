@@ -17,6 +17,7 @@ export interface GameCardProps {
   isDeclaringAttacks?: boolean;
   isBlocking?: boolean;
   isOpponent?: boolean;
+  pendingAction?: any;
 }
 
 /**
@@ -36,7 +37,8 @@ export const GameCard = memo(({
   isAttacking = false,
   isDeclaringAttacks = false,
   isBlocking = false,
-  isOpponent = false
+  isOpponent = false,
+  pendingAction
 }: GameCardProps) => {
   const { definition, effectiveStats, counters, isTapped, isPhasedOut, damageMarked, summoningSickness } = obj;
   const stats = effectiveStats;
@@ -170,7 +172,7 @@ export const GameCard = memo(({
         flex flex-col
         ${dimensions.w} ${dimensions.h} ${dimensions.rounded} ${variant !== 'zoom' ? `border-[1.5px] ${borderClass} shadow-xl` : ''}
         ${isTargetable ? 'ring-4 ring-red-500 ring-offset-2 ring-offset-slate-900 shadow-[0_0_20px_rgba(239,68,68,0.8)]' : ''} 
-        ${isPlayable ? 'ring-2 ring-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)]' : ''} 
+        ${(isPlayable && !isOpponent) ? 'ring-2 ring-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)]' : ''} 
         ${isSelected ? 'ring-2 ring-yellow-400' : ''}
         ${isCurrentlyDeclaringAttack ? 'ring-4 ring-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.9)] !border-orange-400' : ''}`}
     >
@@ -282,21 +284,30 @@ export const GameCard = memo(({
                   {/* BOTTOM: P/T or LOYALTY - Battlefield only */}
                   <div className="flex justify-between items-end">
 
-                      {isCreature && variant === 'battlefield' && (
-                          <div className={`bg-black shadow-2xl z-30 flex items-center justify-center
-                              absolute bottom-0 right-0 px-2 py-0.5 border-t border-l border-white/30 rounded-tl-md
-                          `}>
-                              <div className="flex items-center gap-1">
-                                  <span className={`font-black tracking-normal text-xs ${stats?.power !== parseInt(definition.power || '0') ? 'text-emerald-400' : 'text-white'}`}>
-                                      {stats?.power ?? definition.power}
-                                  </span>
-                                  <span className="text-[10px] text-white/40 font-bold">/</span>
-                                  <span className={`font-black tracking-normal text-xs ${damageMarked > 0 ? 'text-red-400' : stats?.toughness !== parseInt(definition.toughness || '0') ? 'text-emerald-400' : 'text-white'}`}>
-                                      {(stats?.toughness ?? parseInt(definition.toughness || '0')) - damageMarked}
-                                  </span>
+                      {isCreature && variant === 'battlefield' && (() => {
+                          const origP = parseInt(definition.power || '0');
+                          const origT = parseInt(definition.toughness || '0');
+                          const currentP = stats?.power ?? origP;
+                          const currentT = stats?.toughness ?? origT;
+                          const displayT = currentT - damageMarked;
+
+                          const pColor = currentP > origP ? 'text-emerald-400' : currentP < origP ? 'text-red-400' : 'text-white';
+                          const tColor = (damageMarked > 0 || currentT < origT) ? 'text-red-400' : currentT > origT ? 'text-emerald-400' : 'text-white';
+
+                          return (
+                              <div className="bg-black shadow-2xl z-30 flex items-center justify-center absolute bottom-0 right-0 px-2 py-0.5 border-t border-l border-white/30 rounded-tl-md">
+                                  <div className="flex items-center gap-1">
+                                      <span className={`font-black tracking-normal text-xs ${pColor}`}>
+                                          {currentP}
+                                      </span>
+                                      <span className="text-[10px] text-white/40 font-bold">/</span>
+                                      <span className={`font-black tracking-normal text-xs ${tColor}`}>
+                                          {displayT}
+                                      </span>
+                                  </div>
                               </div>
-                          </div>
-                      )}
+                          );
+                      })()}
 
                       {isPlaneswalker && variant === 'battlefield' && (
                           <div className={`border rounded-md px-1.5 py-0.5 flex items-center gap-1 shadow-2xl
@@ -375,6 +386,31 @@ export const GameCard = memo(({
               );
           })}
       </div>
+      )}
+
+      {/* CONTEXTUAL ACTION BUTTONS (Safety Step) */}
+      {pendingAction?.data?.isContextual && pendingAction.sourceId === obj.id && !isOpponent && (
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[300] flex flex-col gap-1.5 w-[140px] animate-in slide-in-from-top-2 fade-in duration-200">
+           {pendingAction.data.choices.map((choice: any, idx: number) => {
+              const isCancel = choice.value === 'none' || choice.label.toLowerCase().includes('cancel');
+              return (
+                <button
+                  key={idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClick?.(`CHOICE_${idx}`);
+                  }}
+                  className={`w-full py-2.5 px-3 rounded-lg font-black text-[10px] uppercase tracking-tighter shadow-2xl border-2 transition-all active:scale-95
+                    ${isCancel 
+                      ? 'bg-slate-900/95 border-slate-600 text-slate-400 hover:bg-slate-800 hover:text-white' 
+                      : 'bg-indigo-600/95 border-indigo-400 text-white hover:bg-indigo-500 hover:scale-105 shadow-indigo-500/20 shadow-lg'}
+                  `}
+                >
+                  {choice.label}
+                </button>
+              );
+           })}
+        </div>
       )}
     </motion.div>
   );

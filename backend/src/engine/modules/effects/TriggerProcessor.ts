@@ -35,7 +35,9 @@ export class TriggerProcessor {
       if (!matchesPrimary) return false;
 
       // Rule 603.2: Triggered abilities only function in their active zone (usually Battlefield)
-      if (!this.checkZoneRequirement(state, t, event.type)) return false;
+      if (!this.checkZoneRequirement(state, t, event.type)) {
+          return false;
+      }
 
       // Special Logic for ETB filtering (Self vs Other)
       if (event.type === 'ON_ETB') {
@@ -60,7 +62,7 @@ export class TriggerProcessor {
       }
 
       // Rule 603.4: "Intervening If" clauses and dynamic conditions
-      const condition = (t as any).triggerCondition || t.condition;
+      const condition = (t as any).triggerCondition || (t as any).condition;
       if (condition) {
           if (typeof condition === 'function') {
               if (!condition(state, event, t)) return false;
@@ -200,7 +202,7 @@ export class TriggerProcessor {
     const sourceImage = sourceObj?.definition.image_url || emblemSource?.image_url;
     
     const stackId = `trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-    return {
+    const stackObj = {
       id: stackId,
       controllerId: trigger.controllerId,
       sourceId: trigger.sourceId,
@@ -217,6 +219,7 @@ export class TriggerProcessor {
           sourceName: sourceName
       }
     };
+    return stackObj;
   }
 
   public static stackTrigger(state: GameState, stackObj: any, log: (msg: string) => void) {

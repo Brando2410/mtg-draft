@@ -189,6 +189,7 @@ export class LayerProcessor {
           return obj.controllerId !== effect.controllerId && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
         case 'ALL_PERMANENTS_OPPONENTS_CONTROL':
           return obj.controllerId !== effect.controllerId;
+        case 'OTHER_CREATURES':
         case 'ALL_OTHER_CREATURES':
           return obj.id !== effect.sourceId && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
         case 'ENCHANTED_CREATURE':

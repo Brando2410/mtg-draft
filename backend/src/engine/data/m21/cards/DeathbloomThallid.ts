@@ -18,6 +18,7 @@ export const DeathbloomThallid: Record<string, ImplementableCard> = {
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
                 triggerEvent: "ON_DEATH",
+                triggerCondition: (state: any, event: any, source: any) => event.targetId === source.sourceId,
                 effects: [
                     {
                         type: EffectType.CreateToken,

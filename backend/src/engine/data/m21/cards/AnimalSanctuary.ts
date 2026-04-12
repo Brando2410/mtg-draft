@@ -27,7 +27,10 @@ export const AnimalSanctuary: Record<string, ImplementableCard> = {
                 costs: [{ type: 'Mana', value: '{2}' }, { type: 'Tap', value: null }],
                 targetDefinition: {
                     type: TargetType.Permanent, count: 1,
-                    restrictions: ['Bird', 'Cat', 'Dog', 'Goat', 'Ox', 'Snake', 'Creature']
+                    restrictions: [{ 
+                        types: ['Creature'], 
+                        subtypes: ['Bird', 'Cat', 'Dog', 'Goat', 'Ox', 'Snake'] 
+                    }]
                 },
                 effects: [{ type: EffectType.AddCounters, value: '+1/+1', amount: 1, targetMapping: 'TARGET_1' }]
             }

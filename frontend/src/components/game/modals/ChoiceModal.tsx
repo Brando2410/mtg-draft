@@ -45,7 +45,7 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
   if (!isChoiceAction) return null;
 
   const isMyChoice = pendingAction.playerId === me?.id;
-  if (!isMyChoice) return null;
+  if (!isMyChoice || pendingAction.data?.isContextual) return null;
 
   const choices = pendingAction.data?.choices || [];
   const minChoices = pendingAction.data?.minChoices || 1;

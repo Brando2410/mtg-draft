@@ -90,6 +90,7 @@ export class EffectProcessor {
     stackObject?: any,
     parentContext?: any
   ) {
+    process.stdout.write(`[EFFECT-DEBUG] Executing ${effect.type} from ${sourceId}\n`);
     const sourceObj = this.findObject(state, sourceId, stackObject, parentContext) || (stackObject?.card ? stackObject.card : stackObject);
     const controllerId = sourceObj?.controllerId || state.activePlayerId;
     const { TargetingProcessor } = require('../actions/TargetingProcessor');

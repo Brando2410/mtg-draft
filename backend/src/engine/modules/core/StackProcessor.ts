@@ -12,8 +12,6 @@ export class StackProcessor {
   public static getEffectsForResolution(state: GameState, objectToResolve: StackObject): EffectDefinition[] {
     // Priority 1: Effects already stored in stack object data during casting/activation
     let effects: EffectDefinition[] = (objectToResolve.data as any)?.effects || [];
-    
-    // Priority 2: Fallback logic for legacy objects or specific spell/ability types
     if (effects.length === 0) {
         if (objectToResolve.type === AbilityType.Spell && objectToResolve.card) {
           const logic = m21[objectToResolve.card.definition.name];

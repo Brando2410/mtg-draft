@@ -20,8 +20,8 @@ export const PortcullisVine: Record<string, ImplementableCard> = {
                 costs: [
                     { type: 'Mana', value: '{2}' },
                     { type: 'Tap' },
-                    { 
-                        type: 'Sacrifice', 
+                    {
+                        type: 'Sacrifice',
                         restrictions: ['Creature', 'Defender']
                     }
                 ],
