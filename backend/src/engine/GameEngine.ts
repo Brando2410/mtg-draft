@@ -188,11 +188,6 @@ export class GameEngine {
    */
   public confirmAttackers(playerId: string) {
     CombatProcessor.confirmAttackers(this.state, playerId as PlayerId, this.getCombatCallbacks());
-    
-    // Arena style: If no attackers were declared, jump directly to next phase (Main 2)
-    if (!this.state.combat?.attackers || this.state.combat.attackers.length === 0) {
-      this.advanceStep();
-    }
   }
 
   /**

@@ -7,29 +7,45 @@ import { TargetingProcessor } from '../actions/TargetingProcessor';
  * This is the "Pipeline" that calculates effective stats based on the "Whiteboard" (Registry).
  */
 export class LayerProcessor {
+  private static calculationStack = new Set<string>();
 
   /**
    * CR 613: Interaction of Continuous Effects
    * Returns a copy of the object's stats after applying all relevant layers.
    */
   public static getEffectiveStats(obj: GameObject, state: GameState) {
-    const effects = state.ruleRegistry.continuousEffects || [];
+    // RECURSION GUARD: Prevent infinite loops where conditions depend on effective stats
+    if (this.calculationStack.has(obj.id)) {
+        return {
+            power: parseInt(obj.definition.power || '0'),
+            toughness: parseInt(obj.definition.toughness || '0'),
+            keywords: [],
+            types: obj.definition.types,
+            subtypes: obj.definition.subtypes || [],
+            isPlayable: false
+        } as any;
+    }
 
-    // 1. FILTER RELEVANT EFFECTS (Rule 613.1)
-    // An effect applies to an object if its condition (if any) is met 
-    // AND the source is in an active zone (for static abilities).
-    const activeEffects = effects.filter(e => {
-        // Rule 611.2a: Floating effects do not depend on source zone
-        if (e.id?.startsWith('floating_') || e.sourceId === 'global') return true;
-        
-        const source = state.battlefield.find(o => o.id === e.sourceId);
-        if (!source || !e.activeZones.includes(source.zone)) return false;
+    this.calculationStack.add(obj.id);
 
-        if (e.condition) {
+    try {
+        const effects = state.ruleRegistry.continuousEffects || [];
+
+        // 1. FILTER RELEVANT EFFECTS (Rule 613.1)
+        // An effect applies to an object if its condition (if any) is met 
+        // AND the source is in an active zone (for static abilities).
+        const activeEffects = effects.filter(e => {
+          // Rule 611.2a: Floating effects do not depend on source zone
+          if (e.id?.startsWith('floating_') || e.sourceId === 'global') return true;
+
+          const source = state.battlefield.find(o => o.id === e.sourceId);
+          if (!source || !e.activeZones.includes(source.zone)) return false;
+
+          if (e.condition) {
             return ConditionProcessor.matchesCondition(state, e.condition, e.sourceId, e.controllerId);
-        }
-        return true;
-    });
+          }
+          return true;
+        });
 
     // 2. LAYER 1: Copiable Values (Rule 707)
     let currentDefinition = { ...obj.definition };
@@ -63,8 +79,8 @@ export class LayerProcessor {
       // Layer 5: Color-changing effects
       effect.colorsToAdd?.forEach(c => colors.add(c));
       if (effect.colorSet) {
-          colors.clear();
-          effect.colorSet.forEach(c => colors.add(c));
+        colors.clear();
+        effect.colorSet.forEach(c => colors.add(c));
       }
 
       // Layer 6: Ability Adding/Removing
@@ -74,8 +90,8 @@ export class LayerProcessor {
           keywords.clear();
         }
         effect.abilitiesToAdd?.forEach(k => {
-            keywords.add(k);
-            console.log(`[LAYER 6] Added keyword ${k} to ${obj.id}`);
+          keywords.add(k);
+          console.log(`[LAYER 6] Added keyword ${k} to ${obj.id}`);
         });
         effect.abilitiesToRemove?.forEach(k => keywords.delete(k));
       }
@@ -83,9 +99,9 @@ export class LayerProcessor {
       // Layer 7a, 7b: Power/Toughness Set/Dynamic
       if (effect.layer === 7 || effect.powerSet !== undefined || effect.toughnessSet !== undefined || effect.powerDynamic || effect.toughnessDynamic) {
         this.applyLayer7(state, effect, obj, (p, t) => {
-            power = p !== undefined ? p : power;
-            toughness = t !== undefined ? t : toughness;
-            console.log(`[LAYER 7] Updated PT of ${obj.id} to ${power}/${toughness}`);
+          power = p !== undefined ? p : power;
+          toughness = t !== undefined ? t : toughness;
+          console.log(`[LAYER 7] Updated PT of ${obj.id} to ${power}/${toughness}`);
         });
       }
     }
@@ -98,10 +114,10 @@ export class LayerProcessor {
         let tMod = effect.toughnessModifier !== undefined ? Number(effect.toughnessModifier) : 0;
 
         if (effect.powerDynamic === 'attacking_dogs_count') {
-            pMod += state.combat?.attackers.filter(a => {
-                const attacker = state.battlefield.find(o => o.id === a.attackerId);
-                return attacker && attacker.id !== obj.id && attacker.definition.subtypes.some(s => s.toLowerCase() === 'dog');
-            }).length || 0;
+          pMod += state.combat?.attackers.filter(a => {
+            const attacker = state.battlefield.find(o => o.id === a.attackerId);
+            return attacker && attacker.id !== obj.id && attacker.definition.subtypes.some(s => s.toLowerCase() === 'dog');
+          }).length || 0;
         }
 
         power += pMod;
@@ -116,8 +132,11 @@ export class LayerProcessor {
     power += counterBonus;
     toughness += counterBonus;
 
-    // 7. Collect restrictions from active effects
-    const restrictionTypes = activeEffects.flatMap(e => e.restrictions || []).map((r: any) => typeof r === 'string' ? r : r.type);
+    // 7. Collect restrictions from active effects that target this object
+    const restrictionTypes = activeEffects
+        .filter(e => this.isTarget(state, e, obj.id))
+        .flatMap(e => e.restrictions || [])
+        .map((r: any) => typeof r === 'string' ? r : r.type);
 
     return {
       power,
@@ -128,36 +147,39 @@ export class LayerProcessor {
       subtypes: Array.from(subtypes),
       restrictions: Array.from(new Set(restrictionTypes))
     };
-}
+    } finally {
+        this.calculationStack.delete(obj.id);
+    }
+  }
 
   private static applyLayer7(state: GameState, effect: ContinuousEffect, obj: GameObject, update: (p?: number, t?: number) => void) {
-      // Sublayer 7a: Characteristic-defining abilities
-      if ((effect as any).powerDynamic === 'INSTANTS_AND_SORCERIES_IN_GRAVEYARD') {
-        const player = state.players[obj.controllerId];
-        if (player) {
-          const count = player.graveyard.filter(c => c.definition.types.some(t => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery')).length;
-          update(count, undefined);
-        }
+    // Sublayer 7a: Characteristic-defining abilities
+    if ((effect as any).powerDynamic === 'INSTANTS_AND_SORCERIES_IN_GRAVEYARD') {
+      const player = state.players[obj.controllerId];
+      if (player) {
+        const count = player.graveyard.filter(c => c.definition.types.some(t => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery')).length;
+        update(count, undefined);
       }
+    }
 
-      if ((effect as any).powerDynamic === 'GREATEST_POWER_IN_GRAVEYARD') {
-          const player = state.players[obj.controllerId];
-          if (player) {
-              const powers = player.graveyard
-                  .filter(c => c.definition.types.some(t => t.toLowerCase() === 'creature'))
-                  .map(c => parseInt(c.definition.power || '0'));
-              const maxPower = powers.length > 0 ? Math.max(...powers) : 0;
-              update(maxPower, undefined);
-          }
+    if ((effect as any).powerDynamic === 'GREATEST_POWER_IN_GRAVEYARD') {
+      const player = state.players[obj.controllerId];
+      if (player) {
+        const powers = player.graveyard
+          .filter(c => c.definition.types.some(t => t.toLowerCase() === 'creature'))
+          .map(c => parseInt(c.definition.power || '0'));
+        const maxPower = powers.length > 0 ? Math.max(...powers) : 0;
+        update(maxPower, undefined);
       }
+    }
 
-      // Sublayer 7b: Effects that set power and/or toughness
-      if (effect.powerSet !== undefined || effect.toughnessSet !== undefined) {
-          update(
-              effect.powerSet !== undefined ? Number(effect.powerSet) : undefined,
-              effect.toughnessSet !== undefined ? Number(effect.toughnessSet) : undefined
-          );
-      }
+    // Sublayer 7b: Effects that set power and/or toughness
+    if (effect.powerSet !== undefined || effect.toughnessSet !== undefined) {
+      update(
+        effect.powerSet !== undefined ? Number(effect.powerSet) : undefined,
+        effect.toughnessSet !== undefined ? Number(effect.toughnessSet) : undefined
+      );
+    }
   }
 
   public static isTarget(state: GameState, effect: ContinuousEffect, objId: string): boolean {
@@ -238,7 +260,7 @@ export class LayerProcessor {
       // correctly identify that the creature is ready.
       const isCreature = obj.definition.types.some(t => t.toLowerCase() === 'creature');
       if (isCreature && obj.summoningSickness) {
-        const hasHaste = stats.keywords.some(k => k.toLowerCase() === 'haste');
+        const hasHaste = stats.keywords.some((k: string) => k.toLowerCase() === 'haste');
         if (hasHaste) {
           obj.summoningSickness = false;
         }

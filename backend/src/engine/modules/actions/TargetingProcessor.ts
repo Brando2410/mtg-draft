@@ -108,7 +108,7 @@ export class TargetingProcessor {
 
         if (typeLineCheck === 'anytarget') {
             const stats = LayerProcessor.getEffectiveStats(targetObj, state);
-            const isValidAnyTarget = stats.types.some(t => {
+            const isValidAnyTarget = stats.types.some((t: string) => {
                 const lt = t.toLowerCase();
                 return lt === 'creature' || lt === 'planeswalker';
             });
@@ -154,7 +154,7 @@ export class TargetingProcessor {
         const keywords = LayerProcessor.getEffectiveStats(targetObj, state).keywords;
 
         // Protection (Rule 702.16)
-        const protectionKeywords = keywords.filter(k => k.toLowerCase().startsWith('protection from'));
+        const protectionKeywords = keywords.filter((k: string) => k.toLowerCase().startsWith('protection from'));
         for (const prot of protectionKeywords) {
             const qualityStr = prot.toLowerCase().replace('protection from ', '');
             const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
@@ -162,7 +162,7 @@ export class TargetingProcessor {
         }
 
         // Hexproof (Rule 702.11)
-        const hexproofKeywords = keywords.filter(k => k.toLowerCase().startsWith('hexproof'));
+        const hexproofKeywords = keywords.filter((k: string) => k.toLowerCase().startsWith('hexproof'));
         for (const hp of hexproofKeywords) {
             if (hp.toLowerCase() === 'hexproof') {
                 if (sourceControllerId && sourceControllerId !== targetObj.controllerId) return false;
@@ -298,7 +298,7 @@ export class TargetingProcessor {
             if (lr === 'nonplaneswalker' && objTypes.includes('planeswalker')) return false;
             if (lr === 'anytarget') {
                 const stats = LayerProcessor.getEffectiveStats(targetObj, state);
-                const isValidAnyTarget = stats.types.some(t => {
+                const isValidAnyTarget = stats.types.some((t: string) => {
                     const lt = t.toLowerCase();
                     return lt === 'creature' || lt === 'planeswalker';
                 });
@@ -356,7 +356,7 @@ export class TargetingProcessor {
             const knownKeywords = ['defender', 'flying', 'haste', 'vigilance', 'lifelink', 'deathtouch', 'trample', 'menace', 'reach', 'first strike', 'double strike', 'indestructible'];
             if (knownKeywords.includes(lr)) {
                 const stats = LayerProcessor.getEffectiveStats(targetObj, state);
-                const hasKeyword = stats.keywords.some(k => k.toLowerCase() === lr);
+                const hasKeyword = stats.keywords.some((k: string) => k.toLowerCase() === lr);
                 if (!hasKeyword) return false;
                 continue;
             }
@@ -418,7 +418,7 @@ export class TargetingProcessor {
         let sourceColors: string[] = [];
         if (state && s.id && state.battlefield.some(o => o.id === s.id)) {
             const stats = LayerProcessor.getEffectiveStats(s, state);
-            sourceColors = stats.colors.map(c => {
+            sourceColors = stats.colors.map((c: string) => {
                 const map: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
                 return map[c.toUpperCase()] || c.toLowerCase();
             });

@@ -21,7 +21,7 @@ export const DrowsingTyrannodon: Record<string, ImplementableCard> = {
                     type: EffectType.ApplyContinuousEffect,
                     layer: 6,
                     abilitiesToRemove: ['Defender'],
-                    condition: 'HAS_PERMANENT:creature,power>=4',
+                    condition: 'HAS_PERMANENT:creature,youcontrol,power>=4',
                     targetMapping: 'SELF'
                 }]
             }

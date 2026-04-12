@@ -155,7 +155,6 @@ export class PriorityProcessor {
       }
 
       callbacks.log(`[Auto-Pass] ${callbacks.getPlayerName(playerId)} skipped${!canAct ? ': no legal actions found' : ' (Pass Turn active)'}.`);
-      console.log(`[ENGINE] Auto-Pass triggered for ${playerId}`);
       this.passPriority(state, playerId, callbacks, true);
     } else if (player && (canAct || hasManualStop)) {
       console.log(`[ENGINE] Priority held by ${playerId} (Actions available or Stop set)`);
@@ -262,11 +261,15 @@ export class PriorityProcessor {
        const hasPriority = state.priorityPlayerId === playerId;
        if (checkPriority && !hasPriority) return false;
 
-       const typeLine = (cardToPlay.definition.type_line || '').toLowerCase();
+       const def = cardToPlay.definition;
+       const typeLine = (def.type_line || '').toLowerCase();
+       const types = (def.types || []).map(t => t.toLowerCase());
+       
        const isInstantOrFlash = typeLine.includes('instant') || 
-                                (cardToPlay.definition.oracleText || '').includes('Flash') ||
-                                (cardToPlay.definition.keywords || []).includes('Flash');
-       const isLand = typeLine.includes('land');
+                                types.includes('instant') ||
+                                (def.oracleText || '').includes('Flash') ||
+                                (def.keywords || []).includes('Flash');
+       const isLand = typeLine.includes('land') || types.includes('land');
        const stackEmpty = state.stack.length === 0;
        const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
        const isYourTurn = state.activePlayerId === playerId;

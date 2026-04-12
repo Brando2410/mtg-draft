@@ -97,11 +97,11 @@ export class TriggerProcessor {
         const targetObj = state.battlefield.find(o => o.id === event.targetId);
         if (targetObj) {
             const stats = LayerProcessor.getEffectiveStats(targetObj, state);
-            const wards = stats.keywords.filter(k => k.toLowerCase().startsWith('ward'));
+            const wards = stats.keywords.filter((k: string) => k.toLowerCase().startsWith('ward'));
             
             const sourceControllerId = event.playerId; // Player who cast the targeting spell
             if (sourceControllerId && sourceControllerId !== targetObj.controllerId) {
-                wards.forEach(wardStr => {
+                wards.forEach((wardStr: string) => {
                     const costStr = wardStr.replace(/Ward /i, '').trim();
                     const choiceEffects: any[] = [];
                     

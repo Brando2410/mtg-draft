@@ -477,8 +477,13 @@ export class CombatProcessor {
 
     // 1. CR 702.9: Flying check
     // "A creature with flying can't be blocked except by creatures with flying and/or reach."
-    if (aStats.keywords.includes('Flying')) {
-        if (!bStats.keywords.includes('Flying') && !bStats.keywords.includes('Reach')) {
+    const hasFlying = aStats.keywords.some((k: string) => k.toLowerCase() === 'flying');
+    if (hasFlying) {
+        const canBlockFlying = bStats.keywords.some((k: string) => {
+            const lk = k.toLowerCase();
+            return lk === 'flying' || lk === 'reach';
+        });
+        if (!canBlockFlying) {
             return { legal: false, reason: "flying requirement not met" };
         }
     }
@@ -486,7 +491,7 @@ export class CombatProcessor {
     // 2. Protection check (Blocking) (Rule 702.16n)
     // IMPORTANT: Protection FROM [quality] on the ATTACKER prevents creatures with [quality] from blocking it.
     // Blocker's protection from attacker does NOT prevent it from blocking.
-    const protectionKeywords = aStats.keywords.filter(k => k.toLowerCase().startsWith('protection from'));
+    const protectionKeywords = aStats.keywords.filter((k: string) => k.toLowerCase().startsWith('protection from'));
     if (protectionKeywords.length > 0) {
         const { TargetingProcessor } = require('./../actions/TargetingProcessor');
         for (const prot of protectionKeywords) {
@@ -519,7 +524,8 @@ export class CombatProcessor {
         
         // Rule 702.3a / 508.1a: Defender & other "Cannot Attack" restrictions
         if (isAttacking) {
-            if (stats.keywords.includes('Defender')) {
+            const hasDefender = stats.keywords.some((k: string) => k.toLowerCase() === 'defender');
+            if (hasDefender) {
                 return { isValid: false, error: `${creature.definition.name} has Defender and cannot attack.` };
             }
             const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === creature.id && r.type === 'CannotAttack');
