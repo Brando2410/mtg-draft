@@ -15,8 +15,8 @@ export const MageTowerReferee: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
-            triggerCondition: (state, event) => {
+                    eventMatch: TriggerEvent.CastSpell,
+            condition: (state, event) => {
                 const card = event.data?.card;
                 if (!card) return false;
                 return (card.definition.colors || []).length >= 2;
@@ -24,7 +24,7 @@ export const MageTowerReferee: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    counterType: "plus1plus1",
+                    counterType: 'p1p1',
                     amount: 1,
                     targetMapping: TargetMapping.Self
                 }
@@ -34,3 +34,7 @@ export const MageTowerReferee: CardDefinition = {
     "power": "2",
     "toughness": "1"
 };
+
+
+
+

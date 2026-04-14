@@ -10,6 +10,8 @@ export const TomeBlast: CardDefinition = {
         "Sorcery"
     ],
     "subtypes": [],
+    "keywords": ["Flashback"],
+    "flashbackCost": "{4}{R}",
     "oracleText": "Tome Blast deals 2 damage to any target.\nFlashback {4}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
     "abilities": [
         {
@@ -26,3 +28,5 @@ export const TomeBlast: CardDefinition = {
         }
     ]
 };
+
+

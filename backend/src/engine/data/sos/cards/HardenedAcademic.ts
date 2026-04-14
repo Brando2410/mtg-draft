@@ -31,7 +31,7 @@ export const HardenedAcademic: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.LeaveGraveyard,
+                    eventMatch: TriggerEvent.LeaveGraveyard,
             targetDefinition: {
                 type: TargetType.Permanent,
                 count: 1,
@@ -40,7 +40,7 @@ export const HardenedAcademic: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    counterType: 'plus1plus1',
+                    counterType: 'p1p1',
                     amount: 1,
                     targetMapping: TargetMapping.Target1
                 }
@@ -50,3 +50,6 @@ export const HardenedAcademic: CardDefinition = {
     "power": "2",
     "toughness": "1"
 };
+
+
+

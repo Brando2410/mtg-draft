@@ -16,9 +16,9 @@ export const MakeshiftBattalion: Record<string, ImplementableCard> = {
             {
                 id: "makeshift_battalion_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ATTACK',
+                    eventMatch: 'ON_ATTACK',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     return event.sourceId === source.sourceId && 
                            (state.combat?.attackers?.length || 0) >= 3;
                 },
@@ -33,3 +33,5 @@ export const MakeshiftBattalion: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

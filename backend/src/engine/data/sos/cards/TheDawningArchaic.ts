@@ -31,7 +31,7 @@ export const TheDawningArchaic: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Attack,
+                    eventMatch: TriggerEvent.Attack,
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 restrictions: [
@@ -66,3 +66,6 @@ export const TheDawningArchaic: CardDefinition = {
     "power": "7",
     "toughness": "7"
 };
+
+
+

@@ -17,7 +17,7 @@ export const ChandrasFiremaw: Record<string, ImplementableCard> = {
                 id: "chandras_firemaw_etb",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: "ON_ETB",
+                    eventMatch: "ON_ETB",
                 effects: [
                     {
                         type: EffectType.SearchLibrary,
@@ -34,3 +34,5 @@ export const ChandrasFiremaw: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

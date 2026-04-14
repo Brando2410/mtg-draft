@@ -13,8 +13,9 @@ export const Eyetwitch: CardDefinition = {
     abilities: [
       {
         type: AbilityType.Triggered,
-        eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
         effects: [{ type: EffectType.Learn }]
       }
     ]
   };
+

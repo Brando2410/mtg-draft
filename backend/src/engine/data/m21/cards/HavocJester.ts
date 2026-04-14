@@ -16,12 +16,14 @@ export const HavocJester: Record<string, ImplementableCard> = {
             {
                 id: "havoc_jester_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_SACRIFICE',
+                    eventMatch: 'ON_SACRIFICE',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: 'PLAYER_IS_CONTROLLER',
+                condition: 'PLAYER_IS_CONTROLLER',
                 targetDefinition: { type: TargetType.AnyTarget, count: 1 },
                 effects: [{ type: 'DealDamage', amount: 1, targetMapping: 'ANY_TARGET' }]
             }
         ]
     }
 };
+
+

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount, Restriction } from '@shared/engine_types';
 
 export const VanishingVerse: CardDefinition = {
         name: 'Vanishing Verse',
@@ -12,7 +12,7 @@ export const VanishingVerse: CardDefinition = {
                 targetDefinition: {
                     type: TargetType.Permanent,
                     count: 1,
-                    restrictions: [{ type: 'Monocolored' }]
+                    restrictions: [Restriction.Monocolored]
                 },
                 effects: [
                     {

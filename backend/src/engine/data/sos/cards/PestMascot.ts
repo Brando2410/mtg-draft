@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, ConditionType } from '@shared/engine_types';
 
 export const PestMascot: CardDefinition = {
     "name": "Pest Mascot",
@@ -15,7 +15,23 @@ export const PestMascot: CardDefinition = {
         "Ape"
     ],
     "oracleText": "Trample\nWhenever you gain life, put a +1/+1 counter on this creature.",
-    "abilities": [],
+    "keywords": ["Trample"],
+    "abilities": [
+        {
+            type: AbilityType.Triggered,
+                    eventMatch: TriggerEvent.LifeGain,
+            condition: ConditionType.PlayerIsController,
+            effects: [
+                {
+                    type: EffectType.AddCounters,
+                    counterType: 'p1p1',
+                    amount: 1,
+                    targetMapping: TargetMapping.Self
+                }
+            ]
+        }
+    ],
     "power": "2",
     "toughness": "3"
 };
+

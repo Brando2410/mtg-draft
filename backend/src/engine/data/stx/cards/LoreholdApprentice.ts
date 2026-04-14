@@ -12,7 +12,7 @@ export const LoreholdApprentice: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.DealDamage,
@@ -25,3 +25,4 @@ export const LoreholdApprentice: CardDefinition = {
         }
     ]
   };
+

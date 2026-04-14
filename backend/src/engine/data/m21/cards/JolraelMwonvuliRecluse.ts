@@ -16,9 +16,9 @@ export const JolraelMwonvuliRecluse: Record<string, ImplementableCard> = {
             {
                 id: "jolrael_second_draw_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_SECOND_DRAW',
+                    eventMatch: 'ON_SECOND_DRAW',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 effects: [{
                     type: EffectType.CreateToken,
                     tokenBlueprint: {
@@ -47,3 +47,5 @@ export const JolraelMwonvuliRecluse: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

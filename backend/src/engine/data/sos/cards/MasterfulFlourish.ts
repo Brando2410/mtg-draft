@@ -14,7 +14,7 @@ export const MasterfulFlourish: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Permanent', restrictions: ['Creature', 'Yourside'] },
+            targetDefinition: { type: 'Permanent', restrictions: ['Creature', 'YouControl'] },
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -24,7 +24,7 @@ export const MasterfulFlourish: CardDefinition = {
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    indestructible: true,
+                    abilitiesToAdd: ["Indestructible"],
                     duration: "UNTIL_END_OF_TURN",
                     targetMapping: TargetMapping.Target1
                 }
@@ -32,3 +32,5 @@ export const MasterfulFlourish: CardDefinition = {
         }
     ]
 };
+
+

@@ -19,7 +19,7 @@ export const FractalTender: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EndStep,
+                    eventMatch: TriggerEvent.EndStep,
             condition: 'PUT_COUNTER_ON_SELF_THIS_TURN',
             effects: [
                 {
@@ -44,3 +44,6 @@ export const FractalTender: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
+
+

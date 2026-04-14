@@ -18,7 +18,7 @@ export const AbstractPaintmage: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.PreCombatMainPhaseStart,
+                    eventMatch: TriggerEvent.PreCombatMainPhaseStart,
             condition: ConditionType.IsYourTurn,
             effects: [
                 { 
@@ -32,3 +32,6 @@ export const AbstractPaintmage: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
+
+

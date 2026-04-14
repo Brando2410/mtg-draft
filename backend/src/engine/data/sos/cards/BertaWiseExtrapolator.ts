@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping, ConditionType } from '@shared/engine_types';
 
 export const BertaWiseExtrapolator: CardDefinition = {
     "name": "Berta, Wise Extrapolator",
@@ -20,56 +20,46 @@ export const BertaWiseExtrapolator: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
-            condition: 'SPENT_MANA_GT_POWER_OR_TOUGHNESS',
+                    eventMatch: TriggerEvent.CountersAdded,
+            condition: 'TRIGGER_TARGET_IS_SELF && EVENT_COUNTER_TYPE_MATCHES:p1p1',
             effects: [
-                {
-                    type: EffectType.AddCounters,
-                    amount: 1,
-                    value: '+1/+1',
-                    targetMapping: TargetMapping.Self
-                }
-            ]
+            {
+                type: EffectType.AddMana,
+                manaType: 'ANY',
+                amount: 1
+            }
+        ]
         },
-        {
-            type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CountersAdded,
-            condition: 'TRIGGER_TARGET_IS_SELF',
-            effects: [
-                { 
-                    type: EffectType.AddMana, 
-                    manaType: 'ANY',
-                    amount: 1
-                }
-            ]
-        },
-        {
-            type: AbilityType.Activated,
-            costs: [
-                { type: 'Mana', value: '{X}' }, 
-                { type: 'Tap', targetMapping: TargetMapping.Self }
-            ],
-            effects: [
-                {
-                    type: EffectType.CreateToken,
-                    tokenBlueprint: { 
-                        name: 'Fractal', 
-                        power: '0', 
-                        toughness: '0', 
-                        colors: ['G', 'U'], 
-                        types: ['Creature'], 
-                        subtypes: ['Fractal'] 
-                    }
+    {
+        type: AbilityType.Activated,
+        costs: [
+            { type: 'Mana', value: '{X}' },
+            { type: 'Tap', targetMapping: TargetMapping.Self }
+        ],
+        effects: [
+            {
+                type: EffectType.CreateToken,
+                tokenBlueprint: {
+                    name: 'Fractal',
+                    power: '0',
+                    toughness: '0',
+                    colors: ['G', 'U'],
+        types: ['Creature'],
+        subtypes: ['Fractal']
+    }
                 },
-                {
-                    type: EffectType.AddCounters,
-                    targetMapping: 'LAST_CREATED_TOKEN',
-                    amount: 'X',
-                    value: '+1/+1'
-                }
+{
+    type: EffectType.AddCounters,
+        targetMapping: 'LAST_CREATED_TOKEN',
+            amount: 'X',
+                value: 'p1p1'
+}
             ]
         }
     ],
-    "power": "1",
+"power": "1",
     "toughness": "4"
 };
+
+
+

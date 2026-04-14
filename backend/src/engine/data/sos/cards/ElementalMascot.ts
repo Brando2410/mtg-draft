@@ -22,8 +22,8 @@ export const ElementalMascot: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastInstantOrSorcery,
-            triggerCondition: 'PLAYER_IS_CONTROLLER',
+                    eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: 'PLAYER_IS_CONTROLLER',
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -44,3 +44,7 @@ export const ElementalMascot: CardDefinition = {
     "power": "1",
     "toughness": "4"
 };
+
+
+
+

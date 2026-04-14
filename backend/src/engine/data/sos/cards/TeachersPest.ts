@@ -13,7 +13,7 @@ export const TeachersPest: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Attack,
+                    eventMatch: TriggerEvent.Attack,
             effects: [
                 { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }
             ]
@@ -35,3 +35,6 @@ export const TeachersPest: CardDefinition = {
         }
     ]
 };
+
+
+

@@ -15,7 +15,7 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
                 effects: [{ type: EffectType.CreateToken, tokenBlueprint: { name: 'Treasure', types: ['Artifact', 'Token'], subtypes: ['Treasure'], oracleText: '{T}, Sacrifice this artifact: Add one mana of any color.' } }]
             },
             {
@@ -53,8 +53,8 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.BeginningOfCombatStep,
-                triggerCondition: "IS_YOUR_TURN",
+                    eventMatch: TriggerEvent.BeginningOfCombatStep,
+                condition: "IS_YOUR_TURN",
                 effects: [{
                     type: EffectType.Choice,
                     label: "Choose two modes (must different targets)",
@@ -104,8 +104,8 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Attack,
-                triggerCondition: "SelfAttacks",
+                    eventMatch: TriggerEvent.Attack,
+                condition: "SelfAttacks",
                 effects: [{
                     type: EffectType.SearchLibrary,
                     fromTop: 7,
@@ -144,14 +144,14 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
                 abilities: [
                     {
                         type: AbilityType.Triggered,
-                        eventMatch: TriggerEvent.Attack,
-                        triggerCondition: "OpponentAttacksYourPlaneswalker",
+                    eventMatch: TriggerEvent.Attack,
+                        condition: "OpponentAttacksYourPlaneswalker",
                         effects: [{ type: EffectType.CreateToken, tokenBlueprint: { name: 'Spirit', power: "1", toughness: "1", colors: ['W'], types: ['Creature', 'Token'], subtypes: ['Spirit'] } }]
                     },
                     {
                         type: AbilityType.Triggered,
-                        eventMatch: TriggerEvent.BecomeTarget,
-                        triggerCondition: "OpponentTargetsYourPermanent",
+                    eventMatch: TriggerEvent.BecomeTarget,
+                        condition: "OpponentTargetsYourPermanent",
                         effects: [{ type: EffectType.DrawCards, amount: 1, optional: true }]
                     }
                 ]
@@ -209,8 +209,8 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
                                 oracleText: "Whenever a creature enters the battlefield under your control, it deals damage equal to its power to any target.",
                                 abilities: [{
                                     type: AbilityType.Triggered,
-                                    eventMatch: TriggerEvent.EnterBattlefieldOther,
-                                    triggerCondition: "TargetYourPermanent_OpponentSource",
+                    eventMatch: TriggerEvent.EnterBattlefieldOther,
+                                    condition: "TargetYourPermanent_OpponentSource",
                                     targetDefinition: { count: 1, type: TargetType.AnyTarget },
                                     effects: [{ type: EffectType.DealDamage, amount: DynamicAmount.SourcePower, targetMapping: TargetMapping.Target1 }]
                                 }]
@@ -264,7 +264,7 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
                                 oracleText: "Whenever you cast an instant or sorcery spell, you may pay {2}. If you do, copy that spell. You may choose new targets for the copy.",
                                 abilities: [{
                                     type: AbilityType.Triggered,
-                                    eventMatch: TriggerEvent.CastInstantOrSorcery,
+                    eventMatch: TriggerEvent.CastInstantOrSorcery,
                                     effects: [{
                                         type: EffectType.Choice,
                                         label: "Pay {2} to copy spell?",
@@ -329,3 +329,5 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
         ]
     }
 ];
+
+

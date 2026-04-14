@@ -14,3 +14,5 @@ export const Forest: CardDefinition = {
     "oracleText": "({T}: Add {G}.)",
     "abilities": []
 };
+
+

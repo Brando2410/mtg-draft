@@ -69,7 +69,7 @@ export class StateBasedActionsProcessor {
 
     // 3. Rule 704.5j: Legend Rule
     // "If a player controls two or more legendary permanents with the same name..."
-    const legendaryPermanents = state.battlefield.filter(o => o.definition.supertypes.includes('Legendary'));
+    const legendaryPermanents = state.battlefield.filter(o => o.definition.supertypes?.includes('Legendary'));
     const namesByController: Record<string, string[]> = {};
     
     for (const legend of legendaryPermanents) {
@@ -122,14 +122,14 @@ export class StateBasedActionsProcessor {
     // 5. Rule 704.5n & 704.5p: Aura/Equipment detachment (Protection "E" in DEBT)
     const attachments = state.battlefield.filter(o => {
         const types = o.definition.types.map(t => t.toLowerCase());
-        return types.includes('enchantment') && o.definition.subtypes.some(s => s.toLowerCase() === 'aura') ||
-               types.includes('artifact') && o.definition.subtypes.some(s => s.toLowerCase() === 'equipment');
+        return types.includes('enchantment') && o.definition.subtypes?.some(s => s.toLowerCase() === 'aura') ||
+               types.includes('artifact') && o.definition.subtypes?.some(s => s.toLowerCase() === 'equipment');
     });
 
     for (const attach of attachments) {
         // Find what it's attached to (Populated by StackResolver for Auras)
         const targetId = (attach as any).attachedTo;
-        const subtypes = attach.definition.subtypes.map(s => s.toLowerCase());
+        const subtypes = (attach.definition.subtypes || []).map(s => s.toLowerCase());
         const isAura = subtypes.includes('aura');
 
         if (!targetId) {

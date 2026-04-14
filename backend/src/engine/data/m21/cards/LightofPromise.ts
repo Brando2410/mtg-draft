@@ -23,9 +23,9 @@ export const LightofPromise: Record<string, ImplementableCard> = {
             {
                 id: "light_promise_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_LIFE_GAIN',
+                    eventMatch: 'ON_LIFE_GAIN',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     const hostId = (source as any).attachedTo;
                     if (!hostId) return false;
                     const host = state.battlefield.find((o: any) => o.id === hostId);
@@ -36,3 +36,5 @@ export const LightofPromise: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

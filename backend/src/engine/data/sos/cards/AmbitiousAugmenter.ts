@@ -18,7 +18,7 @@ export const AmbitiousAugmenter: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
             condition: 'HAS_COUNTERS',
             effects: [
                 {
@@ -45,3 +45,6 @@ export const AmbitiousAugmenter: CardDefinition = {
     "power": "1",
     "toughness": "1"
 };
+
+
+

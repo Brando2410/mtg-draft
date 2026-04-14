@@ -16,9 +16,9 @@ export const AvenGagglemaster: Record<string, ImplementableCard> = {
             {
                 id: "aven_gagglemaster_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
+                condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
                 effects: [{
                     type: 'GainLife',
                     amount: (state: any, source: any) => {
@@ -35,3 +35,5 @@ export const AvenGagglemaster: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

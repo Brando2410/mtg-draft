@@ -35,7 +35,7 @@ export const WiltintheHeat: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     duration: DurationType.UntilEndOfTurn,
                     replacementEffect: {
-                        matchEvent: 'ON_DEATH',
+                    eventMatch: 'ON_DEATH',
                         condition: 'EVENT_OBJECT_IS_TARGET_1',
                         effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.EventTarget }]
                     },
@@ -45,3 +45,7 @@ export const WiltintheHeat: CardDefinition = {
         }
     ]
 };
+
+
+
+

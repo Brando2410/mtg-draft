@@ -15,7 +15,6 @@ export const LandscapePainterVibrantIdea: CardDefinition = {
         "Wizard"
     ],
     "oracleText": "Landscape Painter enters prepared.\nVibrant Idea: Draw two cards.",
-    "entersPrepared": true,
     "abilities": [],
     "power": "2",
     "toughness": "1",
@@ -32,6 +31,7 @@ export const LandscapePainterVibrantIdea: CardDefinition = {
                 "Wizard"
             ],
             "oracleText": "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+            "entersPrepared": true,
             "abilities": [],
             "power": "2",
             "toughness": "1"
@@ -54,3 +54,6 @@ export const LandscapePainterVibrantIdea: CardDefinition = {
         }
     ]
 };
+
+
+

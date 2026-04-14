@@ -21,7 +21,7 @@ export const SilverquillCharm: CardDefinition = {
                     label: "Put two +1/+1 counters on target creature",
                     targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
                     effects: [
-                        { type: EffectType.AddCounters, amount: 2, counterType: '+1/+1', targetMapping: TargetMapping.Target1 }
+                        { type: EffectType.AddCounters, amount: 2, counterType: 'p1p1', targetMapping: TargetMapping.Target1 }
                     ]
                 },
                 {
@@ -42,3 +42,5 @@ export const SilverquillCharm: CardDefinition = {
         }
     ]
 };
+
+

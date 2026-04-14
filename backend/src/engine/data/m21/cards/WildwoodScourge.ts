@@ -17,9 +17,9 @@ export const WildwoodScourge: Record<string, ImplementableCard> = {
             {
                 id: "wildwood_scourge_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_COUNTERS_ADDED_OTHER',
+                    eventMatch: 'ON_COUNTERS_ADDED_OTHER',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) =>
+                condition: (state: any, event: any, source: any) =>
                     event.data?.object?.controllerId === source.controllerId &&
                     event.counterType === '+1/+1' &&
                     !event.data?.object?.definition?.subtypes?.some((s: string) => s.toLowerCase() === 'hydra'),
@@ -28,3 +28,5 @@ export const WildwoodScourge: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

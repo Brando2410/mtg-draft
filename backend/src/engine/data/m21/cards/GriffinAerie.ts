@@ -16,9 +16,9 @@ export const GriffinAerie: Record<string, ImplementableCard> = {
             {
                 id: "griffin_aerie_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_END_STEP',
+                    eventMatch: 'ON_END_STEP',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId && (state.turnState.lifeGainedThisTurn || 0) >= 3,
+                condition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId && (state.turnState.lifeGainedThisTurn || 0) >= 3,
                 effects: [{
                     type: 'CreateToken',
                     tokenBlueprint: { name: 'Griffin', power: '2', toughness: '2', colors: ['W'], types: ['Creature'], subtypes: ['Griffin'], keywords: ['Flying'] },
@@ -28,3 +28,5 @@ export const GriffinAerie: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

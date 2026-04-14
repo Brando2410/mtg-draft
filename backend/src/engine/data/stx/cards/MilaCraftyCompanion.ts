@@ -24,14 +24,14 @@ export const MilaCraftyCompanion: CardDefinition = {
                 abilities: [
                     {
                         type: AbilityType.Triggered,
-                        eventMatch: TriggerEvent.Attack,
-                        triggerCondition: "OpponentAttacksYourPlaneswalker",
+                    eventMatch: TriggerEvent.Attack,
+                        condition: "OpponentAttacksYourPlaneswalker",
                         effects: [{ type: EffectType.CreateToken, tokenBlueprint: { name: 'Spirit', power: "1", toughness: "1", colors: ['W'], types: ['Creature', 'Token'], subtypes: ['Spirit'] } }]
                     },
                     {
                         type: AbilityType.Triggered,
-                        eventMatch: TriggerEvent.BecomeTarget,
-                        triggerCondition: "OpponentTargetsYourPermanent",
+                    eventMatch: TriggerEvent.BecomeTarget,
+                        condition: "OpponentTargetsYourPermanent",
                         effects: [{ type: EffectType.DrawCards, amount: 1, optional: true }]
                     }
                 ]
@@ -89,8 +89,8 @@ export const MilaCraftyCompanion: CardDefinition = {
                                 oracleText: "Whenever a creature enters the battlefield under your control, it deals damage equal to its power to any target.",
                                 abilities: [{
                                     type: AbilityType.Triggered,
-                                    eventMatch: TriggerEvent.EnterBattlefieldOther,
-                                    triggerCondition: "TargetYourPermanent_OpponentSource",
+                    eventMatch: TriggerEvent.EnterBattlefieldOther,
+                                    condition: "TargetYourPermanent_OpponentSource",
                                     targetDefinition: { count: 1, type: TargetType.AnyTarget },
                                     effects: [{ type: EffectType.DealDamage, amount: DynamicAmount.SourcePower, targetMapping: TargetMapping.Target1 }]
                                 }]
@@ -101,3 +101,5 @@ export const MilaCraftyCompanion: CardDefinition = {
             }
         ]
     };
+
+

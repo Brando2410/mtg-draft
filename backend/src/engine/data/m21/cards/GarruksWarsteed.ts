@@ -17,7 +17,7 @@ export const GarruksWarsteed: Record<string, ImplementableCard> = {
                 id: "garruks_warsteed_etb",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 effects: [
                     {
                         type: EffectType.Choice,
@@ -47,3 +47,5 @@ export const GarruksWarsteed: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

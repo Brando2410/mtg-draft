@@ -17,7 +17,7 @@ export const EagerGlyphmage: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 { 
                     type: EffectType.CreateToken, 
@@ -38,3 +38,6 @@ export const EagerGlyphmage: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
+
+

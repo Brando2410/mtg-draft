@@ -269,12 +269,38 @@ export class SpellProcessor {
 
         // Step 1.5: Check Additional Costs (e.g. Goremand's sacrifice)
         log(`[DEBUG] Additional costs found: ${additionalCosts.length} -> ${JSON.stringify(additionalCosts)}`);
+        const choiceCost = additionalCosts.find(c => (c.type as string) === 'Choice');
+        const hasChosenCostChoice = (state as any).lastChosenCostChoiceIndex !== undefined;
+
+        if (choiceCost && !hasChosenCostChoice) {
+            const { ActionType } = require('@shared/engine_types');
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: cardToPlay.id,
+                data: {
+                    label: choiceCost.label || "Choose an additional cost",
+                    hideUndo: false,
+                    isCostChoice: true,
+                    costType: 'Choice',
+                    declaredTargets: declaredTargets || [],
+                    choices: choiceCost.choices?.map((c, idx) => ({
+                        label: c.label,
+                        value: `COST_CHOICE_${idx}`,
+                        selectable: true
+                    }))
+                }
+            };
+            log(`[COST_CHOICE] ${state.players[playerId].name} must choose an additional cost for ${cardToPlay.definition.name}.`);
+            return true;
+        }
+
         const costRequiresTarget = additionalCosts.find(c => c.type === 'Sacrifice' && !c.targetMapping);
         const hasChosenSacrifice = (state as any).lastChosenSacrificeId !== undefined;
         const discardCost = additionalCosts.find(c => (c.type as string).toLowerCase() === 'discard');
         const hasChosenDiscard = (state as any).lastChosenDiscardId !== undefined;
-
-        if (discardCost) log(`[DEBUG] Discard cost found. hasChosenDiscard: ${hasChosenDiscard}`);
+        const exileCost = additionalCosts.find(c => c.type === 'Exile' && !c.targetMapping);
+        const hasChosenExile = (state as any).lastChosenExileIds !== undefined;
 
         if (costRequiresTarget && !hasChosenSacrifice) {
             const { TargetingProcessor } = require('./TargetingProcessor');
@@ -352,6 +378,54 @@ export class SpellProcessor {
             return true;
         }
 
+        if (exileCost && !hasChosenExile) {
+            const { TargetingProcessor } = require('./TargetingProcessor');
+            const zones = exileCost.sourceZones || (exileCost.sourceZone ? [exileCost.sourceZone] : [Zone.Battlefield]);
+            const pool = zones.flatMap(z => {
+                if (z === Zone.Battlefield) return state.battlefield.filter(o => o.controllerId === playerId);
+                if (z === Zone.Graveyard) return player.graveyard;
+                if (z === Zone.Hand) return player.hand;
+                return [];
+            });
+
+            const legalExileIds = pool
+                .filter(c => TargetingProcessor.matchesRestrictions(state, c, exileCost.restrictions || [], playerId, cardToPlay.id))
+                .map(c => c.id);
+
+            const count = exileCost.amount || 1;
+            if (legalExileIds.length < count) {
+                log(`Illegal Play: Not enough valid objects to exile for ${cardToPlay.definition.name}.`);
+                return false;
+            }
+
+            const { ActionType } = require('@shared/engine_types');
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: cardToPlay.id,
+                data: {
+                    label: `Exile ${count} card(s) to cast ` + cardToPlay.definition.name,
+                    hideUndo: false,
+                    isCostChoice: true,
+                    costType: 'Exile',
+                    minChoices: count,
+                    maxChoices: count,
+                    declaredTargets: declaredTargets || [],
+                    choices: legalExileIds.map(id => {
+                        const obj = pool.find(o => o.id === id);
+                        return {
+                            label: `Exile ${obj?.definition?.name || id}`,
+                            value: id,
+                            cardData: obj,
+                            selectable: true
+                        }
+                    })
+                }
+            };
+            log(`[EXILE] ${state.players[playerId].name} must choose objects to exile to cast ${cardToPlay.definition.name}.`);
+            return true;
+        }
+
         // Step 2: Check Modal Choice
         if (choiceEffectIndex !== -1 && !hasPreSelectedChoice) {
             // Trigger choice phase (targets are already in declaredTargets if we are here)
@@ -422,12 +496,23 @@ export class SpellProcessor {
                 player.life -= lifeVal;
                 TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
                 log(`Paid additional cost: ${lifeVal} life.`);
+            } else if (cost.type === 'Exile') {
+                const chosenIds = (state as any).lastChosenExileIds || [];
+                chosenIds.forEach((cid: string) => {
+                    const obj = TargetingProcessor.findObjectInAnyZone(state, cid);
+                    if (obj) {
+                        ActionProcessor.moveCard(state, obj, Zone.Exile, playerId, log);
+                        log(`Paid additional cost: Exiled ${obj.definition?.name || cid}.`);
+                    }
+                });
             }
         });
 
         // Cleanup temporary selection
         delete (state as any).lastChosenSacrificeId;
         delete (state as any).lastChosenDiscardId;
+        delete (state as any).lastChosenExileIds;
+        delete (state as any).lastChosenCostChoiceIndex;
 
         // 5. Remove from current zone and move to stack
         const lastZone = cardToPlay.zone;
@@ -667,7 +752,7 @@ export class SpellProcessor {
             const { ConditionProcessor } = require('./../core/ConditionProcessor');
             
             const matches = TargetingProcessor.matchesRestrictions(state, card, (restrictions as any[] || []), card.controllerId, mod.sourceId);
-            const conditionMatches = !mod.condition || ConditionProcessor.matchesCondition(state, mod.condition, mod.sourceId, card.controllerId, { data: { targets } } as any);
+            const conditionMatches = !mod.condition || ConditionProcessor.matchesCondition(state, mod.condition, mod.sourceId, card.controllerId, { data: { card: card, targets } } as any);
 
             if (!matches || !conditionMatches) continue;
 
@@ -693,7 +778,31 @@ export class SpellProcessor {
             }
         }
 
-        const finalGeneric = Math.max(0, parsed.generic + extraGeneric);
+        let finalGeneric = Math.max(0, parsed.generic + extraGeneric);
+        
+        // --- CHOICE COST RESOLUTION ---
+        const choiceCostIndex = additionalCosts.findIndex(c => (c.type as string) === 'Choice');
+        if (choiceCostIndex !== -1) {
+            const choice = additionalCosts[choiceCostIndex];
+            const chosenIndex = (state as any).lastChosenCostChoiceIndex;
+            if (chosenIndex !== undefined && choice.choices?.[chosenIndex]) {
+                const chosenCosts = choice.choices[chosenIndex].costs;
+                // Remove the choice and insert its components
+                additionalCosts.splice(choiceCostIndex, 1, ...chosenCosts);
+                
+                // Add any mana costs from the choice to the total
+                chosenCosts.forEach(cc => {
+                    if (cc.type === 'Mana') {
+                        const ccParsed = ManaProcessor.parseManaCost(cc.value);
+                        finalGeneric += ccParsed.generic;
+                        Object.entries(ccParsed.colored).forEach(([s, c]) => {
+                            parsed.colored[s] = (parsed.colored[s] || 0) + (c as number);
+                        });
+                    }
+                });
+            }
+        }
+
         let costStr = '';
         Object.entries(parsed.colored).forEach(([symbol, count]) => {
             for (let i = 0; i < count; i++) costStr += `{${symbol}}`;

@@ -12,8 +12,9 @@ export const SpringmaneCervin: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [{ type: EffectType.GainLife, amount: 2, targetMapping: TargetMapping.Controller }]
         }
     ]
   };
+

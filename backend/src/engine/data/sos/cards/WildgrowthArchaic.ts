@@ -21,28 +21,28 @@ export const WildgrowthArchaic: CardDefinition = {
                 {
                     type: EffectType.EntersWithCounters,
                     amount: 'CONVERGE_AMOUNT',
-                    counterType: '+1/+1',
+                    counterType: 'p1p1',
                     targetMapping: TargetMapping.Self
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
+                    eventMatch: TriggerEvent.CastSpell,
             restrictions: [{ type: 'Type', value: 'Creature' }],
-            triggerCondition: 'PLAYER_IS_CONTROLLER',
+            condition: 'PLAYER_IS_CONTROLLER',
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
                     duration: 'PERMANENT',
                     replacementEffect: {
-                        matchEvent: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
                         condition: 'EVENT_OBJECT_IS_TRIGGER_SOURCE',
                         effects: [
                             {
                                 type: EffectType.AddCounters,
                                 amount: 'CONVERGE_AMOUNT',
-                                counterType: '+1/+1',
+                                counterType: 'p1p1',
                                 targetMapping: TargetMapping.Self
                             }
                         ]
@@ -54,3 +54,7 @@ export const WildgrowthArchaic: CardDefinition = {
     "power": "0",
     "toughness": "0"
 };
+
+
+
+

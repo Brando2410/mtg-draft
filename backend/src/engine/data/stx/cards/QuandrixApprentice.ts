@@ -12,7 +12,7 @@ export const QuandrixApprentice: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.LookAtTopAndPick,
@@ -29,3 +29,4 @@ export const QuandrixApprentice: CardDefinition = {
         }
     ]
   };
+

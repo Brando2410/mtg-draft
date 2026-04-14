@@ -16,9 +16,9 @@ export const HoodedBlightfang: Record<string, ImplementableCard> = {
             {
                 id: "hooded_blightfang_attack_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: "ON_ATTACK",
+                    eventMatch: "ON_ATTACK",
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     const attacker = state.battlefield.find((o: any) => o.id === event.sourceId);
                     if (!attacker || attacker.controllerId !== source.controllerId) return false;
                     const { LayerProcessor } = require('../../modules/state/LayerProcessor');
@@ -34,9 +34,9 @@ export const HoodedBlightfang: Record<string, ImplementableCard> = {
             {
                 id: "hooded_blightfang_planeswalker_damage",
                 type: AbilityType.Triggered,
-                triggerEvent: "ON_DAMAGE_TAKED",
+                    eventMatch: "ON_DAMAGE_TAKED",
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     const targetObj = state.battlefield.find((o: any) => o.id === event.targetId);
                     if (!targetObj || !targetObj.definition.types.some((t: string) => t.toLowerCase() === 'planeswalker')) return false;
 
@@ -56,3 +56,5 @@ export const HoodedBlightfang: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

@@ -16,11 +16,13 @@ export const SanctumofFruitfulHarvest: Record<string, ImplementableCard> = {
             {
                 id: "sanctum_fruitful_harvest_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_PRE_COMBAT_MAIN_PHASE_START',
+                    eventMatch: 'ON_PRE_COMBAT_MAIN_PHASE_START',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 effects: [{ type: 'AddMana', amount: 'COUNT_Shrine', manaType: 'ANY', targetMapping: 'CONTROLLER' }]
             }
         ]
     }
 };
+
+

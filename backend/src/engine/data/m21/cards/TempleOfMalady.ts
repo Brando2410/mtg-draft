@@ -15,9 +15,9 @@ export const TempleOfMalady: Record<string, ImplementableCard> = {
             {
                 type: AbilityType.Triggered,
                 id: "temple_of_malady_etb_scry",
-                triggerEvent: "ON_ETB",
+                    eventMatch: "ON_ETB",
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     return event.data?.object?.id === source.sourceId;
                 },
                 effects: [{ type: EffectType.Scry, amount: 1, targetMapping: 'CONTROLLER' }]
@@ -41,3 +41,5 @@ export const TempleOfMalady: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

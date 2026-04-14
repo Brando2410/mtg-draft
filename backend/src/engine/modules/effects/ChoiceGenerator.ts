@@ -151,9 +151,11 @@ export class ChoiceGenerator {
             return this.createDiscardChoice(state, nextPlayerIds, sourceId, amount, label, stackObj, parentContext, failureEffects, log);
         }
 
-        const isAny = amount === 'ANY' || amount === 'Any';
-        const isAll = amount === 'ALL' || amount === 'All';
-        const discardAmount = isAll ? player.hand.length : (typeof amount === 'number' ? Math.min(player.hand.length, amount) : (isAny ? player.hand.length : 1));
+        const resolvedAmount = (typeof amount === 'number' || amount === 'ANY' || amount === 'ALL') ? amount : (require('./EffectProcessor').EffectProcessor.resolveAmount(state, amount, sourceId, currentPlayerId, [currentPlayerId]));
+        
+        const isAny = resolvedAmount === 'ANY' || resolvedAmount === 'Any';
+        const isAll = resolvedAmount === 'ALL' || resolvedAmount === 'All';
+        const discardAmount = isAll ? player.hand.length : (typeof resolvedAmount === 'number' ? Math.min(player.hand.length, resolvedAmount) : (isAny ? player.hand.length : 1));
         const minChoices = isAny ? 0 : discardAmount;
         const maxChoices = (isAny || isAll) ? player.hand.length : discardAmount;
 

@@ -16,12 +16,14 @@ export const DaybreakCharger: Record<string, ImplementableCard> = {
             {
                 id: "daybreak_charger_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
+                condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
                 targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
                 effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', powerModifier: 2, toughnessModifier: 0, layer: 7, targetMapping: 'TARGET_1' }]
             }
         ]
     }
 };
+
+

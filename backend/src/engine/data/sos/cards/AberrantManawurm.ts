@@ -17,7 +17,7 @@ export const AberrantManawurm: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastInstantOrSorcery,
+                    eventMatch: TriggerEvent.CastInstantOrSorcery,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -31,3 +31,6 @@ export const AberrantManawurm: CardDefinition = {
     "power": "2",
     "toughness": "5"
 };
+
+
+

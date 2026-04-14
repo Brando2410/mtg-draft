@@ -12,7 +12,7 @@ export const DuelingCoach: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
             effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Target1 }]
         },
@@ -29,3 +29,4 @@ export const DuelingCoach: CardDefinition = {
         }
     ]
   };
+

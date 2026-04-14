@@ -15,8 +15,8 @@ export const SocialSnub: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
-            triggerCondition: 'HAS_PERMANENT:creature',
+                    eventMatch: TriggerEvent.CastSpell,
+            condition: 'HAS_PERMANENT:creature',
             effects: [
                 {
                     type: EffectType.CopySpellOnStack,
@@ -47,4 +47,8 @@ export const SocialSnub: CardDefinition = {
         }
     ]
 };
+
+
+
+
 

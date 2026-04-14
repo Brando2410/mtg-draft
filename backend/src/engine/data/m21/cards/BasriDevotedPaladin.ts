@@ -21,7 +21,7 @@ export const BasriDevotedPaladin: Record<string, ImplementableCard> = {
                 costs: [{ type: 'Loyalty', value: '+1' }],
                 targetDefinition: { type: 'Permanent', count: 1, optional: true, restrictions: ['Creature'] },
                 effects: [
-                    { type: 'AddCounters', amount: 1, value: '+1/+1', targetMapping: 'TARGET_1' },
+                    { type: 'AddCounters', amount: 1, counterType: 'p1p1', targetMapping: 'TARGET_1' },
                     { type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Vigilance'], layer: 6, targetMapping: 'TARGET_1' }
                 ]
             },
@@ -33,9 +33,9 @@ export const BasriDevotedPaladin: Record<string, ImplementableCard> = {
                 effects: [
                     {
                         type: 'AddTriggeredAbility',
-                        eventMatch: 'ON_ATTACK',
+                    eventMatch: 'ON_ATTACK',
                         duration: 'UNTIL_END_OF_TURN',
-                        effects: [{ type: 'AddCounters', targetMapping: 'EVENT_TARGET', value: '+1/+1', amount: 1 }]
+                        effects: [{ type: 'AddCounters', targetMapping: 'EVENT_TARGET', counterType: 'p1p1', amount: 1 }]
                     }
                 ]
             },
@@ -67,3 +67,4 @@ export const BasriDevotedPaladin: Record<string, ImplementableCard> = {
         ]
     }
 };
+

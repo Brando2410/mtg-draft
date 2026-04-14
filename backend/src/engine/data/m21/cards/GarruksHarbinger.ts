@@ -17,8 +17,8 @@ export const GarruksHarbinger: Record<string, ImplementableCard> = {
                 id: "harbinger_trigger",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: ['ON_DAMAGE_TAKED', 'ON_DAMAGE_PLAYER'],
-                triggerCondition: (state: any, event: any, t: any) => {
+                    eventMatch: ['ON_DAMAGE_TAKED', 'ON_DAMAGE_PLAYER'],
+                condition: (state: any, event: any, t: any) => {
                     // Deal combat damage to player or planeswalker
                     if (event.sourceId !== t.sourceId || !event.data?.isCombat) return false;
 
@@ -49,3 +49,5 @@ export const GarruksHarbinger: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

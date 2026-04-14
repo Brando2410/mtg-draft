@@ -22,9 +22,9 @@ export const CodieVociferousCodex: CardDefinition = {
                     { type: EffectType.AddMana, manaType: 'WUBRG', amount: 5 },
                     { 
                         type: EffectType.CreateDelayedTrigger,
-                        eventMatch: TriggerEvent.CastSpell,
+                    eventMatch: TriggerEvent.CastSpell,
                         duration: 'UNTIL_END_OF_TURN',
-                        triggerCondition: "NextSpellThisTurn",
+                        condition: "NextSpellThisTurn",
                         effects: [{
                             type: EffectType.SearchLibrary,
                             fromTop: -1, // Search until found
@@ -48,3 +48,5 @@ export const CodieVociferousCodex: CardDefinition = {
             }
         ]
     };
+
+

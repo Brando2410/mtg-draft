@@ -29,9 +29,9 @@ export const PackLeader: Record<string, ImplementableCard> = {
             {
                 id: "pack_leader_attack_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ATTACK',
+                    eventMatch: 'ON_ATTACK',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.data?.attackerId === source.sourceId,
+                condition: (state: any, event: any, source: any) => event.data?.attackerId === source.sourceId,
                 effects: [{
                     type: 'AddPreventionEffect',
                     damageType: 'CombatDamage',
@@ -43,3 +43,5 @@ export const PackLeader: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

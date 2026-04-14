@@ -14,7 +14,7 @@ export const FirstDayofClass: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     duration: 'UNTIL_END_OF_TURN',
                     deferredTrigger: {
-                        eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
                         condition: 'YouControlEnteredObject',
                         effects: [
                             { type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.TriggerEventSource },
@@ -27,3 +27,4 @@ export const FirstDayofClass: CardDefinition = {
         }
     ]
   };
+

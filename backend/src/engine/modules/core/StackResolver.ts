@@ -105,7 +105,7 @@ export class StackResolver {
 
       if (isPermanent) {
         // Rule 303.4: Auras enter attached to their target
-        const isAura = card.definition.subtypes.some(s => s.toLowerCase() === 'aura');
+        const isAura = card.definition.subtypes?.some(s => s.toLowerCase() === 'aura');
         if (isAura && stackObj.targets.length > 0) {
             card.attachedTo = stackObj.targets[0];
             this.log(`${card.definition.name} enters attached to ${this.getObjectName({ id: card.attachedTo, sourceId: card.attachedTo } as any)}.`);

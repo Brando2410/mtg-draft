@@ -18,8 +18,8 @@ export const RehearsedDebater: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastInstantOrSorcery,
-            triggerCondition: 'PLAYER_IS_CONTROLLER && SPELL_TARGETS_CREATURE',
+                    eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: 'PLAYER_IS_CONTROLLER && SPELL_TARGETS_CREATURE',
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -34,3 +34,7 @@ export const RehearsedDebater: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
+
+
+

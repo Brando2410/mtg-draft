@@ -14,7 +14,7 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
     abilities: [
       {
         type: AbilityType.Triggered,
-        eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
         effects: [{ type: EffectType.Learn }]
       }
     ]
@@ -42,7 +42,7 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
               oracleText: 'When this creature dies, you gain 1 life.',
               abilities: [{
                   type: AbilityType.Triggered,
-                  eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
                   effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
               }]
             },
@@ -140,7 +140,7 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
       abilities: [
           {
               type: AbilityType.Triggered,
-              eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
               effects: [{ type: EffectType.Learn }]
           }
       ]
@@ -228,7 +228,7 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
               oracleText: 'When this creature dies, you gain 1 life.',
               abilities: [{
                   type: AbilityType.Triggered,
-                  eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
                   effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
               }]
             },
@@ -264,3 +264,4 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
     ]
   }
 ];
+

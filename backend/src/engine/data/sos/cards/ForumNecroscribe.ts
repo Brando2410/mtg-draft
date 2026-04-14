@@ -17,7 +17,7 @@ import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Z
      "abilities": [
          {
              type: AbilityType.Triggered,
-             eventMatch: TriggerEvent.CastSpell,
+                    eventMatch: TriggerEvent.CastSpell,
              targets: [{ type: 'Card', restrictions: ['Creature', 'Graveyard', 'YouControl'] }],
              condition: 'PLAYER_IS_CONTROLLER && (EVENT_OBJECT_MATCHES:Instant || EVENT_OBJECT_MATCHES:Sorcery) && SPELL_TARGETS_CREATURE',
              effects: [
@@ -32,3 +32,6 @@ import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Z
      "power": "5",
      "toughness": "4"
  };
+
+
+

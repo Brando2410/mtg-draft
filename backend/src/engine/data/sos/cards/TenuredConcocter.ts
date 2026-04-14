@@ -20,8 +20,8 @@ export const TenuredConcocter: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.BecomeTarget,
-            triggerCondition: 'OPPONENT_CONTROLS_SOURCE',
+                    eventMatch: TriggerEvent.BecomeTarget,
+            condition: 'OPPONENT_CONTROLS_SOURCE',
             effects: [
                 {
                     type: EffectType.DrawCards,
@@ -48,3 +48,7 @@ export const TenuredConcocter: CardDefinition = {
     "power": "4",
     "toughness": "5"
 };
+
+
+
+

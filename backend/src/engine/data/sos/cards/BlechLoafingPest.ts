@@ -18,12 +18,12 @@ export const BlechLoafingPest: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.LifeGain,
+                    eventMatch: TriggerEvent.LifeGain,
             effects: [
                 {
                     type: EffectType.AddCounters,
                     amount: 1,
-                    value: '+1/+1',
+                    value: 'p1p1',
                     targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
                     restrictions: [
                         { type: 'Subtype', subtypes: ['Pest', 'Bat', 'Insect', 'Snake', 'Spider'] }
@@ -35,3 +35,6 @@ export const BlechLoafingPest: CardDefinition = {
     "power": "3",
     "toughness": "4"
 };
+
+
+

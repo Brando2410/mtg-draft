@@ -20,7 +20,7 @@ export const GerminationPracticum: CardDefinition = {
                 {
                     type: EffectType.AddCounters,
                     amount: 2,
-                    value: '+1/+1',
+                    value: 'p1p1',
                     targetMapping: TargetMapping.AllCreaturesYouControl
                 },
                 { type: EffectType.Paradigm }
@@ -28,3 +28,5 @@ export const GerminationPracticum: CardDefinition = {
         }
     ]
 };
+
+

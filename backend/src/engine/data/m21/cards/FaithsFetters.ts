@@ -22,7 +22,7 @@ export const FaithsFetters: Record<string, ImplementableCard> = {
             {
                 id: "faiths_fetters_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
                 effects: [{
                     type: EffectType.GainLife,
@@ -48,3 +48,5 @@ export const FaithsFetters: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

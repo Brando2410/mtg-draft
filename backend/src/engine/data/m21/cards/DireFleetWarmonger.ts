@@ -17,8 +17,8 @@ export const DireFleetWarmonger: Record<string, ImplementableCard> = {
                 id: "dire_fleet_warmonger_trigger",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: "ON_BEGINNING_OF_COMBAT_STEP",
-                triggerCondition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId,
+                    eventMatch: "ON_BEGINNING_OF_COMBAT_STEP",
+                condition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId,
                 effects: [
                     {
                         type: EffectType.Choice,
@@ -57,3 +57,5 @@ export const DireFleetWarmonger: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

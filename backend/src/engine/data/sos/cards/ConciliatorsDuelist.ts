@@ -18,7 +18,7 @@ export const ConciliatorsDuelist: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller },
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.EachPlayer }
@@ -26,8 +26,8 @@ export const ConciliatorsDuelist: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastInstantOrSorcery,
-            triggerCondition: 'PLAYER_IS_CONTROLLER && SPELL_TARGETS_CREATURE',
+                    eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: 'PLAYER_IS_CONTROLLER && SPELL_TARGETS_CREATURE',
             effects: [
                 {
                     type: EffectType.Choice,
@@ -42,7 +42,7 @@ export const ConciliatorsDuelist: CardDefinition = {
                                     targetMapping: TargetMapping.Target1,
                                     next: {
                                         type: EffectType.AddTriggeredAbility,
-                                        eventMatch: TriggerEvent.EndStep,
+                    eventMatch: TriggerEvent.EndStep,
                                         duration: { type: DurationType.UntilEndOfTurn },
                                         effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 }]
                                     }
@@ -58,3 +58,7 @@ export const ConciliatorsDuelist: CardDefinition = {
     "power": "4",
     "toughness": "3"
 };
+
+
+
+

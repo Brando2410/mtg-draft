@@ -13,8 +13,8 @@ export const StrictProctor: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: 'ON_TRIGGER_QUEUED', 
-                triggerCondition: "IsETBTrigger",
+                    eventMatch: 'ON_TRIGGER_QUEUED', 
+                condition: "IsETBTrigger",
                 effects: [{
                     type: EffectType.Choice,
                     label: "Strict Proctor: Pay {2} or counter ability?",
@@ -27,3 +27,5 @@ export const StrictProctor: CardDefinition = {
             }
         ]
     };
+
+

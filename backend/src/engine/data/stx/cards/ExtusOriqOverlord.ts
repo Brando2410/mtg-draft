@@ -25,7 +25,7 @@ export const ExtusOriqOverlord: CardDefinition = {
             oracleText: "Double strike\nMagecraft — Whenever you cast or copy an instant or sorcery spell, return target creature card from your graveyard to your hand.",
             abilities: [{
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
                 targetDefinition: { count: 1, type: TargetType.Card, restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Source', value: 'GRAVEYARD' }, { type: 'Source', value: 'CONTROLLER' }] },
                 effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
             }]
@@ -64,8 +64,8 @@ export const ExtusOriqOverlord: CardDefinition = {
                                 oracleText: "Whenever this creature attacks, it deals 3 damage to each opponent.",
                                 abilities: [{
                                     type: AbilityType.Triggered,
-                                    eventMatch: TriggerEvent.Attack,
-                                    triggerCondition: "SelfAttacks",
+                    eventMatch: TriggerEvent.Attack,
+                                    condition: "SelfAttacks",
                                     effects: [{ type: EffectType.LoseLife, amount: 3, targetMapping: TargetMapping.EachOpponent }]
                                 }]
                             }
@@ -76,3 +76,5 @@ export const ExtusOriqOverlord: CardDefinition = {
         }
     ]
 };
+
+

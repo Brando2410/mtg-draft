@@ -13,7 +13,7 @@ export const ArchwayCommons: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [{
                 type: EffectType.Choice,
                 label: "Pay {1} or sacrifice Archway Commons?",
@@ -40,3 +40,4 @@ export const ArchwayCommons: CardDefinition = {
         }
     ]
   };
+

@@ -17,7 +17,7 @@ export const PitchburnDevils: Record<string, ImplementableCard> = {
                 id: "pitchburn_devils_death",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: "ON_DEATH",
+                    eventMatch: "ON_DEATH",
                 targetDefinition: {
                     type: TargetType.AnyTarget,
                     count: 1
@@ -33,3 +33,5 @@ export const PitchburnDevils: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

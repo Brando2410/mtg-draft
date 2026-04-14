@@ -12,7 +12,7 @@ export const BloodAgeGeneral: CardDefinition = {
     abilities: [
       {
         type: AbilityType.Triggered,
-        eventMatch: TriggerEvent.Attack,
+                    eventMatch: TriggerEvent.Attack,
         effects: [{
             type: EffectType.ApplyContinuousEffect,
             powerModifier: 1,
@@ -23,3 +23,4 @@ export const BloodAgeGeneral: CardDefinition = {
       }
     ]
   };
+

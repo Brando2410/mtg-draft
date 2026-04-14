@@ -8,7 +8,7 @@ export const BasrisAcolyte: Record<string, ImplementableCard> = {
         colors: ["white"],
         supertypes: [],
         types: ["Creature"],
-        subtypes: ["Cat","Cleric"],
+        subtypes: ["Cat", "Cleric"],
         power: "2",
         toughness: "3",
         keywords: ["Lifelink"],
@@ -16,14 +16,16 @@ export const BasrisAcolyte: Record<string, ImplementableCard> = {
             {
                 id: "basri_acolyte_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     return event.data?.object?.id === source.sourceId;
                 },
                 targetDefinition: { type: 'Permanent', count: 2, optional: true, restrictions: ['Creature', 'Other', 'YouControl'] },
-                effects: [{ type: 'AddCounters', amount: 1, value: '+1/+1', targetMapping: 'TARGET_ALL' }],
+                effects: [{ type: 'AddCounters', amount: 1, counterType: 'p1p1', targetMapping: 'TARGET_ALL' }],
             }
         ]
     }
 };
+
+

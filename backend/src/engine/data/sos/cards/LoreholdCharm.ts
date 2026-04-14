@@ -67,3 +67,5 @@ export const LoreholdCharm: CardDefinition = {
         }
     ]
 };
+
+

@@ -32,7 +32,7 @@ export const CarrionGrub: Record<string, ImplementableCard> = {
                 id: "carrion_grub_etb",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: "ON_ETB",
+                    eventMatch: "ON_ETB",
                 effects: [
                     {
                         type: EffectType.Mill,
@@ -44,3 +44,5 @@ export const CarrionGrub: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

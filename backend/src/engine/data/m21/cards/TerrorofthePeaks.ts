@@ -27,9 +27,9 @@ export const TerrorofthePeaks: Record<string, ImplementableCard> = {
             {
                 id: "terror_peaks_etb_damage",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB_OTHER',
+                    eventMatch: 'ON_ETB_OTHER',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) =>
+                condition: (state: any, event: any, source: any) =>
                     event.data?.object?.controllerId === source.controllerId &&
                     event.data?.object?.definition?.types?.some((t: string) => t.toLowerCase() === 'creature'),
                 targetDefinition: { type: 'AnyTarget', count: 1 },
@@ -38,3 +38,5 @@ export const TerrorofthePeaks: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

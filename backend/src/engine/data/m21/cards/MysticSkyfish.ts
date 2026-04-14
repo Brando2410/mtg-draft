@@ -16,9 +16,9 @@ export const MysticSkyfish: Record<string, ImplementableCard> = {
             {
                 id: "mystic_skyfish_draw_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_SECOND_DRAW',
+                    eventMatch: 'ON_SECOND_DRAW',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 effects: [{
                     type: EffectType.ApplyContinuousEffect,
                     duration: 'UNTIL_END_OF_TURN',
@@ -30,3 +30,5 @@ export const MysticSkyfish: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

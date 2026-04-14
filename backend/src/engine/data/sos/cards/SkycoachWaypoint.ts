@@ -32,3 +32,5 @@ export const SkycoachWaypoint: CardDefinition = {
         }
     ]
 };
+
+

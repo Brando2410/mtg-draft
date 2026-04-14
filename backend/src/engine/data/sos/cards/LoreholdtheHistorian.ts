@@ -33,7 +33,7 @@ export const LoreholdtheHistorian: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Upkeep,
+                    eventMatch: TriggerEvent.Upkeep,
             condition: 'IS_OPPONENT_UPKEEP',
             effects: [
                 {
@@ -44,7 +44,7 @@ export const LoreholdtheHistorian: CardDefinition = {
                             label: "Discard and Draw",
                             effects: [
                                 {
-                                    type: EffectType.Discard,
+                                    type: EffectType.DiscardCards,
                                     targetMapping: TargetMapping.Controller,
                                     amount: 1
                                 },
@@ -64,3 +64,6 @@ export const LoreholdtheHistorian: CardDefinition = {
     "power": "5",
     "toughness": "5"
 };
+
+
+

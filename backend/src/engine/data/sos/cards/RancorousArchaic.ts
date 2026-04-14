@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const RancorousArchaic: CardDefinition = {
     "name": "Rancorous Archaic",
@@ -11,7 +11,27 @@ export const RancorousArchaic: CardDefinition = {
         "Avatar"
     ],
     "oracleText": "Trample, reach\nConverge — This creature enters with a +1/+1 counter on it for each color of mana spent to cast it.",
-    "abilities": [],
+    "keywords": [
+        "Trample",
+        "Reach"
+    ],
+    "abilities": [
+        {
+            type: AbilityType.Triggered,
+                    eventMatch: TriggerEvent.EnterBattlefield,
+            effects: [
+                {
+                    type: EffectType.EntersWithCounters,
+                    counterType: 'P1P1',
+                    amount: 'CONVERGE_AMOUNT'
+                }
+            ]
+        }
+    ],
     "power": "2",
     "toughness": "2"
 };
+
+
+
+

@@ -15,7 +15,7 @@ export const ArkofHunger: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: 'ON_LEAVE_GRAVEYARD',
+                    eventMatch: 'ON_LEAVE_GRAVEYARD',
             effects: [
                 {
                     type: EffectType.DealDamage,
@@ -39,3 +39,6 @@ export const ArkofHunger: CardDefinition = {
         }
     ]
 };
+
+
+

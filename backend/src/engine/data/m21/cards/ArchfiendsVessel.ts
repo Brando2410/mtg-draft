@@ -16,9 +16,9 @@ export const ArchfiendsVessel: Record<string, ImplementableCard> = {
             {
                 id: "archfiend_vessel_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     const obj = event.data?.object;
                     return event.sourceZone === 'Graveyard' || (event.sourceZone === 'Stack' && obj?.lastNonStackZone === 'Graveyard');
                 },
@@ -38,3 +38,5 @@ export const ArchfiendsVessel: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

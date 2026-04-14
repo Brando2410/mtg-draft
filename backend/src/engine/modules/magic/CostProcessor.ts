@@ -196,21 +196,23 @@ export class CostProcessor {
          break;
 
        case 'Exile':
-         let toExile;
+         let exiles: GameObject[] = [];
          if (cost.targetMapping === 'SELF') {
-             toExile = source;
+             exiles = [source];
          } else {
-             const chosenId = (state as any).lastChosenExileId;
-             if (chosenId) {
-                toExile = this.findObject(state, chosenId);
-             }
+             const chosenIds = (state as any).lastChosenExileIds || ((state as any).lastChosenExileId ? [(state as any).lastChosenExileId] : []);
+             chosenIds.forEach((id: string) => {
+                 const obj = this.findObject(state, id);
+                 if (obj) exiles.push(obj);
+             });
          }
          
-         if (toExile) {
-             ActionProcessor.moveCard(state, toExile, Zone.Exile, playerId, log);
-             log(`${player.name} exiled ${toExile.definition?.name || 'an object'} as a cost.`);
-         }
+         exiles.forEach(obj => {
+             ActionProcessor.moveCard(state, obj, Zone.Exile, playerId, log);
+             log(`${player.name} exiled ${obj.definition?.name || 'an object'} as a cost.`);
+         });
          delete (state as any).lastChosenExileId;
+         delete (state as any).lastChosenExileIds;
          break;
 
        case 'Crew': {

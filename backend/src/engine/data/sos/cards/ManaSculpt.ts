@@ -26,8 +26,8 @@ export const ManaSculpt: CardDefinition = {
                     effects: [
                         {
                             type: EffectType.CreateDelayedTrigger,
-                            eventMatch: 'ON_PRE_COMBAT_MAIN_PHASE_START', // Or ON_BEGIN_PHASE_PRECOMBAT_MAIN
-                            triggerCondition: 'IS_YOUR_TURN',
+                    eventMatch: 'ON_PRE_COMBAT_MAIN_PHASE_START', // Or ON_BEGIN_PHASE_PRECOMBAT_MAIN
+                            condition: 'IS_YOUR_TURN',
                             captureTargetMV: true,
                             effects: [
                                 {
@@ -44,3 +44,7 @@ export const ManaSculpt: CardDefinition = {
         }
     ]
 };
+
+
+
+

@@ -22,7 +22,8 @@ export class LayerProcessor {
             keywords: [],
             types: obj.definition.types,
             subtypes: obj.definition.subtypes || [],
-            isPlayable: false
+            isPlayable: false,
+            supertypes: obj.definition.supertypes || []
         } as any;
     }
 
@@ -49,12 +50,21 @@ export class LayerProcessor {
 
     // 2. LAYER 1: Copiable Values (Rule 707)
     let currentDefinition = { ...obj.definition };
+    const supertypes = new Set<string>(currentDefinition.supertypes || []);
+
     const copyEffects = activeEffects.filter(e => e.layer === 1);
     for (const effect of copyEffects) {
       if (this.isTarget(state, effect, obj.id) && effect.copyFromId) {
-        const sourceObj = state.battlefield.find(o => o.id === effect.copyFromId);
+        const sourceObj = state.battlefield.find(o => o.id === effect.copyFromId) || 
+                          TargetingProcessor.findObjectInAnyZone(state, effect.copyFromId);
         if (sourceObj) {
           currentDefinition = { ...sourceObj.definition };
+          supertypes.clear();
+          (currentDefinition.supertypes || []).forEach(s => supertypes.add(s));
+
+          if ((effect as any).isNotLegendary) {
+              supertypes.delete('Legendary');
+          }
         }
       }
     }
@@ -74,6 +84,10 @@ export class LayerProcessor {
 
       // Layer 4: Type-changing effects
       effect.typesToAdd?.forEach(t => types.add(t));
+      if (effect.typesSet) {
+        types.clear();
+        effect.typesSet.forEach(t => types.add(t));
+      }
       effect.subtypesToAdd?.forEach(s => subtypes.add(s));
       if (effect.subtypesSet) {
         subtypes.clear();
@@ -130,7 +144,7 @@ export class LayerProcessor {
     }
 
     // 6. LAYER 7d: Counters (Rule 613.4c)
-    const plus1 = (obj.counters?.['+1/+1'] || 0) + (obj.counters?.['+1/+1_counter'] || 0);
+    const plus1 = (obj.counters?.['p1p1'] || 0) + (obj.counters?.['p1p1_counter'] || 0) + (obj.counters?.['+1/+1'] || 0) + (obj.counters?.['+1/+1_counter'] || 0) + (obj.counters?.['plus1plus1'] || 0) + (obj.counters?.['plus1plus1_counter'] || 0);
     const minus1 = (obj.counters?.['-1/-1'] || 0) + (obj.counters?.['-1/-1_counter'] || 0);
     const counterBonus = plus1 - minus1;
     power += counterBonus;
@@ -150,7 +164,9 @@ export class LayerProcessor {
       types: Array.from(types),
       subtypes: Array.from(subtypes),
       restrictions: Array.from(new Set(restrictionTypes)),
-      flashbackCostOverride: activeEffects.find(e => this.isTarget(state, e, obj.id) && (e as any).flashbackCostOverride)?.flashbackCostOverride
+      flashbackCostOverride: activeEffects.find(e => this.isTarget(state, e, obj.id) && (e as any).flashbackCostOverride)?.flashbackCostOverride,
+      isPlayable: false,
+      supertypes: Array.from(supertypes)
     };
     } finally {
         this.calculationStack.delete(obj.id);
@@ -311,8 +327,10 @@ export class LayerProcessor {
     (Object.values(state.players) as any[]).forEach(player => {
       player.virtualHand = [];
       player.graveyard.forEach((card: GameObject) => {
+        const stats = this.getEffectiveStats(card, state);
         const hasPermission = PriorityProcessor.findPermissionEffect(state, player.id, 'AllowCastFromGraveyard', card.id);
-        if (hasPermission) {
+        const hasFlashback = stats.keywords?.includes('Flashback');
+        if (hasPermission || hasFlashback) {
           player.virtualHand.push(card);
         }
       });
@@ -337,10 +355,19 @@ export class LayerProcessor {
     });
 
     // 3. Update effective stats for all objects in all zones (to set isPlayable correctly)
+    const { SpellProcessor } = require('../actions/SpellProcessor');
     [...state.battlefield, ...(Object.values(state.players) as any[]).flatMap(p => [...p.hand, ...p.graveyard, ...p.library, ...p.virtualHand]), ...state.exile].forEach(obj => {
       const stats = this.getEffectiveStats(obj, state);
       const isPlayable = state.priorityPlayerId === obj.controllerId && PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id);
-      obj.effectiveStats = { ...stats, isPlayable };
+      
+      // Calculate effective mana cost for display
+      let displayCost = obj.definition.manaCost;
+      try {
+          const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj);
+          displayCost = totalMana;
+      } catch (e) {}
+
+      obj.effectiveStats = { ...stats, isPlayable, manaCost: displayCost };
     });
   }
 }

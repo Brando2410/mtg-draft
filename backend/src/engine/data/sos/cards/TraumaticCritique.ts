@@ -39,3 +39,5 @@ export const TraumaticCritique: CardDefinition = {
         }
     ]
 };
+
+

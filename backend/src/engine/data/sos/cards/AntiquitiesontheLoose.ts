@@ -10,6 +10,8 @@ export const AntiquitiesontheLoose: CardDefinition = {
         "Sorcery"
     ],
     "subtypes": [],
+    "keywords": ["Flashback"],
+    "flashbackCost": "{4}{W}{W}",
     "oracleText": "Create two 2/2 red and white Spirit creature tokens. Then if this spell was cast from anywhere other than your hand, put a +1/+1 counter on each Spirit you control.\nFlashback {4}{W}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
     "abilities": [
         {
@@ -35,7 +37,7 @@ export const AntiquitiesontheLoose: CardDefinition = {
                         {
                             type: EffectType.AddCounters,
                             amount: 1,
-                            value: '+1/+1',
+                            value: 'p1p1',
                             targetMapping: 'ALL_MATCHING_PERMANENTS_YOU_CONTROL',
                             restrictions: [{ type: 'Subtype', value: 'Spirit' }]
                         }
@@ -45,3 +47,5 @@ export const AntiquitiesontheLoose: CardDefinition = {
         }
     ]
 };
+
+

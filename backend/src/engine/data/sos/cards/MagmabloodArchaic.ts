@@ -21,15 +21,15 @@ export const MagmabloodArchaic: CardDefinition = {
                 {
                     type: EffectType.EntersWithCounters,
                     amount: 'CONVERGE_AMOUNT',
-                    counterType: '+1/+1',
+                    counterType: 'p1p1',
                     targetMapping: TargetMapping.Self
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
-            triggerCondition: (state, event, trigger) => {
+                    eventMatch: TriggerEvent.CastSpell,
+            condition: (state, event, trigger) => {
                 if (event.playerId !== trigger.controllerId) return false;
                 const card = event.data?.card || event.data?.object;
                 return card?.definition.types.some((t: string) => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery');
@@ -47,3 +47,7 @@ export const MagmabloodArchaic: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
+
+
+

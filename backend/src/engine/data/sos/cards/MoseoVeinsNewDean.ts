@@ -11,7 +11,7 @@ export const MoseoVeinsNewDean: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -27,7 +27,7 @@ export const MoseoVeinsNewDean: CardDefinition = {
                         abilities: [
                             {
                                 type: AbilityType.Triggered,
-                                eventMatch: TriggerEvent.Attack,
+                    eventMatch: TriggerEvent.Attack,
                                 effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
                             }
                         ]
@@ -37,9 +37,9 @@ export const MoseoVeinsNewDean: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EndStep,
+                    eventMatch: TriggerEvent.EndStep,
             condition: 'GAINED_LIFE_THIS_TURN',
-            triggerCondition: 'PLAYER_IS_CONTROLLER', // Only in your end step
+            condition: 'PLAYER_IS_CONTROLLER', // Only in your end step
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
@@ -61,3 +61,7 @@ export const MoseoVeinsNewDean: CardDefinition = {
     "power": "2",
     "toughness": "1"
 };
+
+
+
+

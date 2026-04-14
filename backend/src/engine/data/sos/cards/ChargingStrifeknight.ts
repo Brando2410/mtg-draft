@@ -30,3 +30,5 @@ export const ChargingStrifeknight: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
+

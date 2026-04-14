@@ -35,3 +35,5 @@ export const ZaffaiandtheTempests: CardDefinition = {
     "power": "5",
     "toughness": "7"
 };
+
+

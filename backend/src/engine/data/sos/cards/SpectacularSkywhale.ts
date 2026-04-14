@@ -19,13 +19,13 @@ export const SpectacularSkywhale: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
+                    eventMatch: TriggerEvent.CastSpell,
             condition: 'PLAYER_IS_CONTROLLER && (EVENT_OBJECT_MATCHES:Instant || EVENT_OBJECT_MATCHES:Sorcery)',
             effects: [
                 {
                     type: EffectType.AddCounters,
                     amount: 3,
-                    counterType: '+1/+1',
+                    counterType: 'p1p1',
                     condition: 'SPENT_MANA_GE:5',
                     targetMapping: TargetMapping.Self
                 },
@@ -43,3 +43,6 @@ export const SpectacularSkywhale: CardDefinition = {
     "power": "1",
     "toughness": "4"
 };
+
+
+

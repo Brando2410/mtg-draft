@@ -70,3 +70,5 @@ export const GoblinGlasswrightCraftwithPride: CardDefinition = {
         }
     ]
 };
+
+

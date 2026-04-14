@@ -16,9 +16,9 @@ export const LorescaleCoatl: Record<string, ImplementableCard> = {
             {
                 id: "lorescale_coatl_draw_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_DRAW',
+                    eventMatch: 'ON_DRAW',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 effects: [{
                     type: EffectType.AddCounters,
                     value: '+1/+1',
@@ -30,3 +30,5 @@ export const LorescaleCoatl: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

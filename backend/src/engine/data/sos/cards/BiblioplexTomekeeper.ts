@@ -15,7 +15,7 @@ export const BiblioplexTomekeeper: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.Choice,
@@ -39,3 +39,6 @@ export const BiblioplexTomekeeper: CardDefinition = {
     "power": "3",
     "toughness": "4"
 };
+
+
+

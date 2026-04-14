@@ -22,3 +22,5 @@ export const RearingEmbermare: CardDefinition = {
     "power": "4",
     "toughness": "5"
 };
+
+

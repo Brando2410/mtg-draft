@@ -19,7 +19,7 @@ export const MicaReaderofRuins: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastInstantOrSorcery,
+                    eventMatch: TriggerEvent.CastInstantOrSorcery,
             effects: [
                 {
                     type: EffectType.Choice,
@@ -49,3 +49,6 @@ export const MicaReaderofRuins: CardDefinition = {
     "power": "4",
     "toughness": "4"
 };
+
+
+

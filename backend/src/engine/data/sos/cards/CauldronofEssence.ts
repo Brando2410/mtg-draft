@@ -15,7 +15,7 @@ export const CauldronofEssence: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.DeathOther,
+                    eventMatch: TriggerEvent.DeathOther,
             condition: ConditionType.OwnCreatureDies,
             effects: [
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.EachOpponent },
@@ -37,3 +37,6 @@ export const CauldronofEssence: CardDefinition = {
         }
     ]
 };
+
+
+

@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const MelancholicPoet: CardDefinition = {
     "name": "Melancholic Poet",
@@ -14,7 +14,31 @@ export const MelancholicPoet: CardDefinition = {
         "Bard"
     ],
     "oracleText": "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, each opponent loses 1 life and you gain 1 life.",
-    "abilities": [],
+    "keywords": ["Repartee"],
+    "abilities": [
+        {
+            type: AbilityType.Triggered,
+                    eventMatch: TriggerEvent.CastSpell,
+            condition: 'REPARTEE_TRIGGER',
+            effects: [
+                {
+                    type: EffectType.LoseLife,
+                    amount: 1,
+                    targetMapping: TargetMapping.EachOpponent
+                },
+                {
+                    type: EffectType.GainLife,
+                    amount: 1,
+                    targetMapping: TargetMapping.Controller
+                }
+            ]
+        }
+    ],
     "power": "2",
     "toughness": "2"
 };
+
+
+
+
+

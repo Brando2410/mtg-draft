@@ -36,7 +36,7 @@ export const ChoreographedSparks: CardDefinition = {
                             abilitiesToAdd: [
                                 {
                                     type: AbilityType.Triggered,
-                                    eventMatch: TriggerEvent.EndStep,
+                    eventMatch: TriggerEvent.EndStep,
                                     effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Self }]
                                 }
                             ]
@@ -47,3 +47,6 @@ export const ChoreographedSparks: CardDefinition = {
         }
     ]
 };
+
+
+

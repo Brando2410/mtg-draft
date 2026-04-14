@@ -18,8 +18,8 @@ export const GarrisonExcavator: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.LeaveGraveyard,
-            triggerCondition: 'PLAYER_IS_CONTROLLER',
+                    eventMatch: TriggerEvent.LeaveGraveyard,
+            condition: 'PLAYER_IS_CONTROLLER',
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -39,3 +39,7 @@ export const GarrisonExcavator: CardDefinition = {
     "power": "3",
     "toughness": "4"
 };
+
+
+
+

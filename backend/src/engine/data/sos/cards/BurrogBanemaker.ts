@@ -34,3 +34,5 @@ export const BurrogBanemaker: CardDefinition = {
     "power": "1",
     "toughness": "1"
 };
+
+

@@ -50,7 +50,7 @@ export const EmilVastlandsRoamer: CardDefinition = {
                     type: EffectType.AddCounters,
                     targetMapping: 'LAST_CREATED_TOKEN',
                     amount: DynamicAmount.DifferentlyNamedLandsCount,
-                    value: '+1/+1'
+                    value: 'p1p1'
                 }
             ]
         }
@@ -58,3 +58,5 @@ export const EmilVastlandsRoamer: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
+

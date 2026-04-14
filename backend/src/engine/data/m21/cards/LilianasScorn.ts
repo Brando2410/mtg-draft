@@ -18,10 +18,8 @@ export const LilianasScorn: Record<string, ImplementableCard> = {
                 type: AbilityType.Spell,
                 activeZone: Zone.Hand,
                 targetDefinition: {
-                    type: TargetType.Permanent,
-                    count: 1,
-                    minCount: 1,
-                    restrictions: [{ type: 'Creature' }]
+                    type: TargetType.Creature,
+                    count: 1
                 },
                 effects: [
                     {

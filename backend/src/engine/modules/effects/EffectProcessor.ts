@@ -128,7 +128,7 @@ export class EffectProcessor {
         if (validTargetIds.length === 0) return;
     }
     
-    const amount = (effect as any).amount !== undefined ? this.resolveAmount(state, (effect as any).amount, sourceId, controllerId, stackObject, validTargetIds) : 1;
+    const amount = (effect as any).amount !== undefined ? this.resolveAmount(state, (effect as any).amount, sourceId, controllerId, stackObject, validTargetIds, parentContext) : 1;
 
     // Strategy Dispatcher
 
@@ -146,7 +146,8 @@ export class EffectProcessor {
       case 'PutRemainderOnBottomRandom':
       case 'PutInHand':
       case 'PutOnBattlefield':
-      case 'Mill': {
+      case 'Mill':
+      case 'RevealUntilCondition': {
           log(`[DEBUG] EffectProcessor: Dispatching ${effect.type} for targets: ${validTargetIds}`);
           const { MoveEffectHandler } = require('./handlers/MoveEffectHandler');
           return MoveEffectHandler.handle(state, effect, validTargetIds, log, controllerId, stackObject, parentContext);
@@ -188,11 +189,12 @@ export class EffectProcessor {
       }
         case 'AddCounters': {
             const { PermanentHandler } = require('./handlers/PermanentHandler');
-            return PermanentHandler.handleAddCounters(state, validTargetIds, amount, (effect as any).counterType || 'plus1plus1', log);
+            const type = (effect as any).counterType || (effect as any).value || (effect as any).type || 'p1p1';
+            return PermanentHandler.handleAddCounters(state, validTargetIds, amount, type, log);
         }
         case 'DoubleCounters': {
             const { PermanentHandler } = require('./handlers/PermanentHandler');
-            return PermanentHandler.handleDoubleCounters(state, validTargetIds, (effect as any).counterType || 'plus1plus1', log);
+            return PermanentHandler.handleDoubleCounters(state, validTargetIds, (effect as any).counterType || 'p1p1', log);
         }
         case 'MoveCounters': {
             const { PermanentHandler } = require('./handlers/PermanentHandler');
@@ -205,17 +207,23 @@ export class EffectProcessor {
         }
         case 'CreateToken': {
           const { PermanentHandler } = require('./handlers/PermanentHandler');
-          let p = (effect as any).powerOverride !== undefined ? this.resolveAmount(state, (effect as any).powerOverride, sourceId, controllerId, stackObject) : undefined;
-          let t = (effect as any).toughnessOverride !== undefined ? this.resolveAmount(state, (effect as any).toughnessOverride, sourceId, controllerId, stackObject) : undefined;
+          let p = (effect as any).powerOverride !== undefined ? this.resolveAmount(state, (effect as any).powerOverride, sourceId, controllerId, stackObject, [], parentContext) : undefined;
+          let t = (effect as any).toughnessOverride !== undefined ? this.resolveAmount(state, (effect as any).toughnessOverride, sourceId, controllerId, stackObject, [], parentContext) : undefined;
           return PermanentHandler.handleCreateToken(state, validTargetIds, amount, (effect as any).tokenBlueprint, log, p, t, effect, stackObject);
       }
       case 'CreateTokenCopy': {
           const { PermanentHandler } = require('./handlers/PermanentHandler');
-          const sourceMappingIds = (effect as any).target2Mapping ? TargetingProcessor.resolveTargetMapping(state, (effect as any).target2Mapping, targets, sourceId, controllerId, stackObject?.data, effect) : [];
-          const copySourceId = sourceMappingIds[0] || (effect as any).copySourceId;
-          const sourceObj = copySourceId ? (state.battlefield.find(o => o.id === copySourceId) || TargetingProcessor.findObjectInAnyZone(state, copySourceId)) : undefined;
+          let sourceCardId = (effect as any).target2Mapping ? validTarget2Ids[0] : validTargetIds[0];
+          
+          if (!sourceCardId && (effect as any).targetMapping === 'TRIGGER_EVENT_SOURCE') {
+              sourceCardId = (stackObject as any)?.data?.eventData?.data?.object?.id || (stackObject as any)?.sourceId;
+          }
+
+          const sourceObj = this.findObject(state, sourceCardId, stackObject, parentContext);
           if (sourceObj) {
-             return PermanentHandler.handleCreateTokenCopy(state, validTargetIds, sourceObj as any, controllerId, log, effect);
+              const controllerIds = (effect as any).target2Mapping ? validTargetIds : [controllerId];
+              const updatedEffect = { ...effect, originalCardId: sourceCardId };
+              return PermanentHandler.handleCreateTokenCopy(state, controllerIds, sourceObj, controllerId, log, updatedEffect);
           }
           return;
       }
@@ -229,7 +237,7 @@ export class EffectProcessor {
       }
       case 'ApplyContinuousEffect': {
           const { ContinuousEffectHandler } = require('./handlers/ContinuousEffectHandler');
-          return ContinuousEffectHandler.handle(state, effect, sourceId, validTargetIds, log, controllerId, (amt: any) => this.resolveAmount(state, amt, sourceId, controllerId, stackObject));
+          return ContinuousEffectHandler.handle(state, effect, sourceId, validTargetIds, log, controllerId, (amt: any) => this.resolveAmount(state, amt, sourceId, controllerId, stackObject, [], parentContext), stackObject);
       }
       case 'Prepare': {
           const { PermanentHandler } = require('./handlers/PermanentHandler');
@@ -256,7 +264,7 @@ export class EffectProcessor {
                       canPlayExiled: true,
                       targetIds: exiledIds,
                       duration: effect.duration || { type: DurationType.UntilEndOfTurn }
-                  } as any, sourceId, exiledIds, log, controllerId, (a: any) => this.resolveAmount(state, a, sourceId, controllerId, stackObject));
+                  } as any, sourceId, exiledIds, log, controllerId, (a: any) => this.resolveAmount(state, a, sourceId, controllerId, stackObject, [], parentContext), stackObject);
               }
           }
           return;
@@ -313,49 +321,61 @@ export class EffectProcessor {
           }, choices);
           return;
       }
-        case 'CastSpell': {
-            const { SpellProcessor } = require('../actions/SpellProcessor');
-            let targetId = (effect as any).targetId || validTargetIds[0];
-            
-            // --- PARADIGM SUPPORT ---
-            if ((effect as any).isParadigmCopy) {
-                const cardName = (effect as any).value;
-                const player = state.players[controllerId];
-                const originalInExile = state.exile.find(c => c.definition.name === cardName && c.ownerId === controllerId);
-                if (originalInExile) {
-                    const copyId = `paradigm_copy_${originalInExile.id}_${Date.now()}`;
-                    // SpellProcessor.playCard will look for this virtual card
-                    targetId = copyId;
-                    (state as any).paradigmCopies = (state as any).paradigmCopies || {};
-                    (state as any).paradigmCopies[copyId] = {
-                        ...originalInExile,
-                        id: copyId,
-                        isParadigmCopy: true
-                    };
-                }
+      case 'CastSpell': {
+        const { SpellProcessor } = require('./../actions/SpellProcessor');
+        const spellName = (effect as any).value;
+        const isFree = (effect as any).isFreeCast;
+        let targetId = (effect as any).targetId || validTargetIds[0];
+
+        if (spellName && !targetId) {
+            const { oracle } = require('../../OracleLogicMap');
+            const cardDef = oracle.getCard(spellName);
+            if (!cardDef) {
+                log(`[ERROR] CastSpell: Could not find definition for ${spellName}.`);
+                return;
             }
 
-            if (targetId) {
-                SpellProcessor.playCard(state, controllerId, targetId, [], log, {
-                    tapForMana: () => {},
-                    passPriority: () => {},
-                    checkAutoPass: () => {},
-                    checkStateBasedActions: () => {}
-                }, true); // bypassTargeting = true
-            }
-            return;
+            const copyId = `cast_copy_${Date.now()}`;
+            const copy = {
+                id: copyId,
+                definition: cardDef,
+                controllerId: controllerId,
+                ownerId: controllerId,
+                zone: Zone.Exile,
+                isCopy: true,
+                isFreeCast: isFree,
+                counters: {}
+            } as any;
+
+            if (!(state as any).paradigmCopies) (state as any).paradigmCopies = {};
+            (state as any).paradigmCopies[copyId] = copy;
+            targetId = copyId;
         }
-        case 'CreateTokenCopy': {
-            const { PermanentHandler } = require('./handlers/PermanentHandler');
-            const sourceCardId = (effect as any).target2Mapping ? validTarget2Ids[0] : validTargetIds[0];
-            const controllerIds = (effect as any).target2Mapping ? validTargetIds : [controllerId];
-            
-            const sourceObj = this.findObject(state, sourceCardId, stackObject, parentContext);
-            if (sourceObj) {
-                return PermanentHandler.handleCreateTokenCopy(state, controllerIds, sourceObj, controllerId, log, effect);
+
+        // --- PARADIGM SUPPORT ---
+        if ((effect as any).isParadigmCopy && spellName) {
+            const originalInExile = state.exile.find(c => c.definition.name === spellName && c.ownerId === controllerId);
+            if (originalInExile) {
+                const copyId = `paradigm_copy_${originalInExile.id}_${Date.now()}`;
+                targetId = copyId;
+                if (!(state as any).paradigmCopies) (state as any).paradigmCopies = {};
+                (state as any).paradigmCopies[copyId] = { ...originalInExile, id: copyId, isParadigmCopy: true };
             }
-            return;
         }
+
+        if (targetId) {
+            const oldPriority = state.priorityPlayerId;
+            state.priorityPlayerId = controllerId;
+            SpellProcessor.playCard(state, controllerId, targetId, [], log, (state as any).gameEngine || {
+                tapForMana: () => {},
+                passPriority: () => {},
+                checkAutoPass: () => {},
+                checkStateBasedActions: () => {}
+            }, true);
+            if (state.priorityPlayerId === controllerId) state.priorityPlayerId = oldPriority;
+        }
+        return;
+      }
         case 'Paradigm': {
             const { ActionProcessor } = require('./../actions/ActionProcessor');
             const { AbilityType } = require('@shared/engine_types');
@@ -416,21 +436,29 @@ export class EffectProcessor {
           const { ControlEffectHandler } = require('./handlers/ControlEffectHandler');
           return ControlEffectHandler.handle(state, effect, sourceId, validTargetIds, log, controllerId, stackObject, parentContext, this.findObject);
       }
-      case 'CreateTokenCopy': {
-          const { PermanentHandler } = require('./handlers/PermanentHandler');
-          let sourceCardId = (effect as any).targetMapping === 'TRIGGER_EVENT_SOURCE' ? (stackObject as any).data?.eventData?.data?.object?.id : validTargetIds[0];
+      case 'PayMana':
+      case 'LoseMana': {
+          const { ManaProcessor } = require('./../magic/ManaProcessor');
+          const value = (effect as any).value || '{0}';
+          const player = state.players[controllerId];
+          if (!player) return;
           
-          if ((effect as any).target2Mapping) {
-              sourceCardId = validTarget2Ids[0];
+          const requirements = ManaProcessor.parseManaCost(value.startsWith('{') ? value : `{${value}}`);
+          player.manaPool.W = Math.max(0, player.manaPool.W - (requirements.colored.W || 0));
+          player.manaPool.U = Math.max(0, player.manaPool.U - (requirements.colored.U || 0));
+          player.manaPool.B = Math.max(0, player.manaPool.B - (requirements.colored.B || 0));
+          player.manaPool.R = Math.max(0, player.manaPool.R - (requirements.colored.R || 0));
+          player.manaPool.G = Math.max(0, player.manaPool.G - (requirements.colored.G || 0));
+          player.manaPool.C = Math.max(0, player.manaPool.C - (requirements.colored.C || 0));
+          
+          let generic = requirements.generic;
+          const colors: ('W'|'U'|'B'|'R'|'G'|'C')[] = ['C', 'W', 'U', 'B', 'R', 'G'];
+          for (const c of colors) {
+              const toSub = Math.min(player.manaPool[c], generic);
+              player.manaPool[c] -= toSub;
+              generic -= toSub;
           }
-
-          const sourceObj = state.battlefield.find(o => o.id === sourceCardId) || 
-                            state.exile.find(o => o.id === sourceCardId) || 
-                            Object.values(state.players).flatMap(p => p.graveyard).find((o: any) => o.id === sourceCardId);
-          if (sourceObj) {
-              const updatedEffect = { ...effect, originalCardId: sourceCardId };
-              return PermanentHandler.handleCreateTokenCopy(state, (effect as any).target2Mapping ? validTargetIds : [controllerId], sourceObj, controllerId, log, updatedEffect);
-          }
+          log(`[PAID/LOST] ${player.name} paid/lost ${value}.`);
           return;
       }
       case 'CreateDelayedTrigger': {
@@ -470,52 +498,10 @@ export class EffectProcessor {
             state.pendingAction = (effect as any).action;
             return;
         }
-      case 'CastSpell': {
-          const { SpellProcessor } = require('./../actions/SpellProcessor');
-          const spellName = (effect as any).value;
-          const isFree = (effect as any).isFreeCast;
-          
-          const { oracle } = require('../../OracleLogicMap');
-          const cardDef = oracle.getCard(spellName);
-          if (!cardDef) {
-              log(`[ERROR] CastSpell: Could not find definition for ${spellName}.`);
-              return;
-          }
-
-          const copyId = `cast_copy_${Date.now()}`;
-          const copy = {
-              id: copyId,
-              definition: cardDef,
-              controllerId: controllerId,
-              ownerId: controllerId,
-              zone: Zone.Exile,
-              isCopy: true,
-              isFreeCast: isFree,
-              counters: {}
-          } as any;
-
-          if (!(state as any).paradigmCopies) (state as any).paradigmCopies = {};
-          (state as any).paradigmCopies[copyId] = copy;
-
-          // Set priority temporarily to allow playCard to proceed
-          const oldPriority = state.priorityPlayerId;
-          state.priorityPlayerId = controllerId;
-          
-          SpellProcessor.playCard(state, controllerId, copyId, [], log, (state as any).gameEngine, false);
-          
-          if (state.priorityPlayerId === controllerId) {
-              state.priorityPlayerId = oldPriority;
-          }
-          return;
-      }
-      case 'Prepare': {
-          const { PermanentHandler } = require('./handlers/PermanentHandler');
-          return PermanentHandler.handlePrepare(state, validTargetIds, log);
-      }
         default:
         log(`[WARNING] Unknown effect type: ${effect.type}`);
     }
-  }
+}
 
   /* --- Internal Rules Engine Logic --- */
 
@@ -540,7 +526,7 @@ export class EffectProcessor {
       return ConditionProcessor.matchesCondition(state, condition, stackObject?.sourceId || '', controllerId || state.activePlayerId, extendedEvent);
   }
 
-  public static resolveAmount(state: GameState, amount: any, sourceId: GameObjectId, controllerId: PlayerId, stackObject?: any, targetIds: string[] = []): number {
+  public static resolveAmount(state: GameState, amount: any, sourceId: GameObjectId, controllerId: PlayerId, stackObject?: any, targetIds: string[] = [], parentContext?: any): number {
     if (amount === undefined) return 0;
     if (typeof amount === 'number') return amount === -1 ? state.turnState.lastDamageAmount || 0 : amount;
     if (typeof amount === 'string' && !isNaN(Number(amount))) return Number(amount);
@@ -610,7 +596,7 @@ export class EffectProcessor {
       case 'INSTANT_SORCERY_IN_GRAVEYARD_COUNT': {
           const player = state.players[controllerId];
           result = player ? player.graveyard.filter(c => {
-              const types = c.definition.types.map(t => t.toLowerCase());
+              const types = (c.definition.types || []).map(t => t.toLowerCase());
               return types.includes('instant') || types.includes('sorcery');
           }).length : 0;
           break;
@@ -642,7 +628,7 @@ export class EffectProcessor {
         result = obj?.paidManaValue || (stackObject as any)?.data?.card?.paidManaValue || 0;
         break;
       }
-      case 'EVENT_MANA_VALUE_GE': {
+      case 'DISCARDED_COUNT': {
           result = state.turnState.lastDiscardedCount || 0;
           break;
       }
@@ -656,11 +642,11 @@ export class EffectProcessor {
       case 'TARGET_1_COUNTERS_P1P1': {
           const tId = targetIds[0] || (stackObject as any)?.targets?.[0];
           const obj = state.battlefield.find(o => o.id === tId);
-          result = obj?.counters?.['+1/+1'] || 0;
+          result = (obj?.counters?.['p1p1'] || 0) + (obj?.counters?.['+1/+1'] || 0);
           break;
       }
-      case 'DISCARDED_COUNT': {
-          result = state.turnState.lastDiscardedCount || 0;
+      case 'CREATURE_COUNT_YOU_CONTROL': {
+          result = state.battlefield.filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature')).length;
           break;
       }
       case 'TARGET_HAND_SIZE_7_MINUS': {

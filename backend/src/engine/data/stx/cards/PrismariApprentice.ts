@@ -12,7 +12,7 @@ export const PrismariApprentice: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 { type: EffectType.ApplyContinuousEffect, abilitiesToAdd: ['CannotBeBlocked'], duration: 'UNTIL_END_OF_TURN', targetMapping: TargetMapping.Self },
                 {
@@ -25,3 +25,4 @@ export const PrismariApprentice: CardDefinition = {
         }
     ]
   };
+

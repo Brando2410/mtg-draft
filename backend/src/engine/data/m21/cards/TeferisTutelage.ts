@@ -16,19 +16,21 @@ export const TeferisTutelage: Record<string, ImplementableCard> = {
             {
                 id: "teferi_tutelage_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
+                condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
                 effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }, { type: 'DiscardCards', amount: 1, targetMapping: 'CONTROLLER' }]
             },
             {
                 id: "teferi_tutelage_draw_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_DRAW',
+                    eventMatch: 'ON_DRAW',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 effects: [{ type: 'Mill', amount: 2, targetMapping: 'OPPONENT' }]
             }
         ]
     }
 };
+
+

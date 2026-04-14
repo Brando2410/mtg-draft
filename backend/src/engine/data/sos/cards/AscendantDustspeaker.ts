@@ -18,7 +18,7 @@ export const AscendantDustspeaker: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: { 
                 type: 'Creature', 
                 restrictions: [{ type: 'NotSelf' }, { type: 'Controller', value: 'player' }] 
@@ -27,14 +27,14 @@ export const AscendantDustspeaker: CardDefinition = {
                 { 
                     type: EffectType.AddCounters, 
                     amount: 1, 
-                    value: '+1/+1', 
+                    value: 'p1p1', 
                     targetMapping: TargetMapping.Target1 
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.BeginningOfCombatStep,
+                    eventMatch: TriggerEvent.BeginningOfCombatStep,
             condition: 'IS_YOUR_TURN',
             targetDefinition: { 
                 type: 'Card', 
@@ -54,3 +54,6 @@ export const AscendantDustspeaker: CardDefinition = {
     "power": "3",
     "toughness": "4"
 };
+
+
+

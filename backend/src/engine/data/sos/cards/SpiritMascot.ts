@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping } from '@shared/engine_types';
 
 export const SpiritMascot: CardDefinition = {
     "name": "Spirit Mascot",
@@ -15,7 +15,25 @@ export const SpiritMascot: CardDefinition = {
         "Ox"
     ],
     "oracleText": "Whenever one or more cards leave your graveyard, put a +1/+1 counter on this creature.",
-    "abilities": [],
+    "abilities": [
+        {
+            type: AbilityType.Triggered,
+                    eventMatch: TriggerEvent.LeaveGraveyard,
+            condition: 'YOUR_CARD_LEAVES_GRAVEYARD',
+            effects: [
+                {
+                    type: EffectType.AddCounters,
+                    counterType: 'P1P1',
+                    amount: 1,
+                    targetMapping: TargetMapping.Self
+                }
+            ]
+        }
+    ],
     "power": "2",
     "toughness": "2"
 };
+
+
+
+

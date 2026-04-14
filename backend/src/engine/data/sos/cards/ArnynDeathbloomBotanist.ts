@@ -19,8 +19,8 @@ export const ArnynDeathbloomBotanist: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.DeathOther,
-            triggerCondition: ConditionType.TriggerSourcePowOrToughLe1,
+                    eventMatch: TriggerEvent.DeathOther,
+            condition: ConditionType.TriggerSourcePowOrToughLe1,
             effects: [
                 {
                     type: EffectType.LoseLife,
@@ -38,3 +38,7 @@ export const ArnynDeathbloomBotanist: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
+
+
+

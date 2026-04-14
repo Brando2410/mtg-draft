@@ -33,3 +33,5 @@ export const UlnaAlleyShopkeep: CardDefinition = {
     "power": "2",
     "toughness": "3"
 };
+
+

@@ -20,7 +20,7 @@ export const TragedyFeaster: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EndStep,
+                    eventMatch: TriggerEvent.EndStep,
             effects: [
                 {
                     type: EffectType.ConditionalEffect,
@@ -39,3 +39,6 @@ export const TragedyFeaster: CardDefinition = {
     "power": "7",
     "toughness": "6"
 };
+
+
+

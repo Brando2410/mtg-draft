@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType } from '@shared/engine_types';
 
 export const SlumberingTrudge: CardDefinition = {
     "name": "Slumbering Trudge",
@@ -14,7 +14,21 @@ export const SlumberingTrudge: CardDefinition = {
         "Beast"
     ],
     "oracleText": "This creature enters with a number of stun counters on it equal to three minus X. If X is 2 or less, it enters tapped.",
-    "abilities": [],
+    "entersTappedCondition": "X_LE:2", //mabye not working
+    "abilities": [
+        {
+            type: AbilityType.Static,
+            effects: [
+                {
+                    type: EffectType.EntersWithCounters,
+                    counterType: 'stun',
+                    amount: 'THREE_MINUS_X'
+                }
+            ]
+        }
+    ],
     "power": "6",
     "toughness": "6"
 };
+
+

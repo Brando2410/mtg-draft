@@ -13,7 +13,7 @@ export const STX_Batch_12_FinalMix: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
                 effects: [
                     {
                         type: EffectType.ApplyContinuousEffect,
@@ -39,7 +39,7 @@ export const STX_Batch_12_FinalMix: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
                 effects: [
                     {
                         type: EffectType.CreateToken,
@@ -54,7 +54,7 @@ export const STX_Batch_12_FinalMix: CardDefinition[] = [
                             oracleText: 'When this creature dies, you gain 1 life.',
                             abilities: [{
                                 type: AbilityType.Triggered,
-                                eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
                                 effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
                             }]
                         },
@@ -77,7 +77,7 @@ export const STX_Batch_12_FinalMix: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.LifeGain,
+                    eventMatch: TriggerEvent.LifeGain,
                 condition: 'YouGainedLife',
                 effects: [{ type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.EachOpponent }]
             },
@@ -159,7 +159,7 @@ export const STX_Batch_12_FinalMix: CardDefinition[] = [
             },
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
                 targetDefinition: {
                     count: 1,
                     type: TargetType.Permanent,
@@ -170,3 +170,4 @@ export const STX_Batch_12_FinalMix: CardDefinition[] = [
         ]
     }
 ];
+

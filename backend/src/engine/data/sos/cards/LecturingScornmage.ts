@@ -14,15 +14,16 @@ export const LecturingScornmage: CardDefinition = {
         "Warlock"
     ],
     "oracleText": "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, put a +1/+1 counter on this creature.",
+    "keywords": ["Repartee"],
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
-            triggerCondition: 'REPARTEE_TRIGGER',
+                    eventMatch: TriggerEvent.CastSpell,
+            condition: 'REPARTEE_TRIGGER',
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    counterType: "plus1plus1",
+                    counterType: 'p1p1',
                     amount: 1,
                     targetMapping: TargetMapping.Self
                 }
@@ -32,3 +33,8 @@ export const LecturingScornmage: CardDefinition = {
     "power": "1",
     "toughness": "1"
 };
+
+
+
+
+

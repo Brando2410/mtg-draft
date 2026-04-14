@@ -17,8 +17,8 @@ export const ChandrasPyreling: Record<string, ImplementableCard> = {
                 id: "chandras_pyreling_trigger",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: "ON_NONCOMBAT_DAMAGE_OPPONENT",
-                triggerCondition: (state: any, event: any, source: any) => {
+                    eventMatch: "ON_NONCOMBAT_DAMAGE_OPPONENT",
+                condition: (state: any, event: any, source: any) => {
                     // event.targetId is the player who was dealt damage.
                     // We trigger if that player is an opponent of Pyreling's controller.
                     return event.targetId !== source.controllerId;
@@ -36,3 +36,5 @@ export const ChandrasPyreling: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

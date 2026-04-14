@@ -18,7 +18,7 @@ export const ColossusoftheBloodAge: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 { type: EffectType.DealDamage, amount: 3, targetMapping: TargetMapping.EachOpponent },
                 { type: EffectType.GainLife, amount: 3, targetMapping: TargetMapping.Controller }
@@ -26,7 +26,7 @@ export const ColossusoftheBloodAge: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
             effects: [
                 {
                     type: EffectType.DiscardCards,
@@ -44,3 +44,6 @@ export const ColossusoftheBloodAge: CardDefinition = {
     "power": "6",
     "toughness": "6"
 };
+
+
+

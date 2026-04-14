@@ -11,17 +11,17 @@ export const GreatHalloftheBiblioplex: CardDefinition = {
         {
             type: AbilityType.Activated,
             isManaAbility: true,
-            costs: [{ type: 'TapSelf' }],
+            costs: [{ type: 'Tap', targetMapping: TargetMapping.Self }],
             effects: [{ type: EffectType.AddMana, value: '{C}' }]
         },
         {
             type: AbilityType.Activated,
             isManaAbility: true,
-            costs: [{ type: 'TapSelf' }, { type: 'LoseLife', amount: 1 }],
-            effects: [{ 
-                type: EffectType.AddMana, 
-                value: '{ANY}', 
-                manaRestrictions: ['Instant', 'Sorcery'] 
+            costs: [{ type: 'Tap', targetMapping: TargetMapping.Self }, { type: 'PayLife', amount: 1 }],
+            effects: [{
+                type: EffectType.AddMana,
+                value: '{ANY}',
+                manaRestrictions: ['Instant', 'Sorcery']
             }]
         },
         {
@@ -42,7 +42,7 @@ export const GreatHalloftheBiblioplex: CardDefinition = {
                             abilitiesToAdd: [
                                 {
                                     type: AbilityType.Triggered,
-                                    eventMatch: TriggerEvent.CastInstantOrSorcery,
+                    eventMatch: TriggerEvent.CastInstantOrSorcery,
                                     effects: [
                                         {
                                             type: EffectType.ApplyContinuousEffect,
@@ -60,3 +60,6 @@ export const GreatHalloftheBiblioplex: CardDefinition = {
         }
     ]
 };
+
+
+

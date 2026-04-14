@@ -37,9 +37,12 @@ export const KilliansConfidence: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.DamageRestored, // Engine often uses DamageDealtToPlayerLegacy or custom
-            triggerEvent: 'ON_COMBAT_DAMAGE_PLAYER',
+                    eventMatch: 'ON_DAMAGE_PLAYER',
             activeZone: Zone.Graveyard,
+            condition: (state: any, event: any, trigger: any) => {
+                const source = state.battlefield.find((o: any) => o.id === event.sourceId);
+                return event.data?.isCombat && source && source.controllerId === trigger.controllerId;
+            },
             effects: [
                 {
                     type: EffectType.Choice,
@@ -59,3 +62,8 @@ export const KilliansConfidence: CardDefinition = {
         }
     ]
 };
+
+
+
+
+

@@ -35,7 +35,7 @@ export const ValentinDeanoftheVein: CardDefinition = {
                     },
                     {
                         type: AbilityType.Triggered,
-                        eventMatch: 'ON_VALENTIN_REPLACEMENT_SUCCESS', 
+                        eventMatch: TriggerEvent.ValentinReplacementSuccess, 
                         oracleText: "When you do, you may pay {2}. If you do, create a 1/1 black and green Pest creature token with \"When this creature dies, you gain 1 life.\"",
                         effects: [{
                             type: EffectType.Choice,
@@ -56,7 +56,7 @@ export const ValentinDeanoftheVein: CardDefinition = {
                                         oracleText: "When this creature dies, you gain 1 life.",
                                         abilities: [{
                                             type: AbilityType.Triggered,
-                                            eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
                                             effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
                                         }]
                                     }
@@ -97,3 +97,4 @@ export const ValentinDeanoftheVein: CardDefinition = {
             }
         ]
     };
+

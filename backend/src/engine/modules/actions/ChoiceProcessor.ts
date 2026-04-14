@@ -410,6 +410,9 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         if (card && card.definition.faces) {
             (card as any).selectedFaceDefinition = card.definition.faces[faceIdx];
         }
+    } else if (String(choice.value).startsWith('COST_CHOICE_')) {
+        const choiceIdx = parseInt(String(choice.value).substring(12));
+        (state as any).lastChosenCostChoiceIndex = choiceIdx;
     } else {
         (state as any).lastChoiceIndex = choiceIndex;
     }
@@ -526,6 +529,10 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                  // Sequenced Sacrifice Choice
                  const { PermanentHandler } = require('../effects/handlers/PermanentHandler');
                  PermanentHandler.handleSacrifice(state, nextPlayerIds, sourceId as string, log, action.data.stackObj, action.data.parentContext, { label: action.data.label });
+            } else if (action.data?.isChoiceSequence) {
+                 // Sequenced Choice (Auto-Sequence)
+                 const { ChoiceEffectHandler } = require('../effects/handlers/ChoiceEffectHandler');
+                 ChoiceEffectHandler.handleChoice(state, action.data.sequencedEffect, sourceId as string, nextPlayerIds, log, action.playerId, action.data.stackObj, action.data.parentContext);
             } else {
                  // Sequenced Discard Choice
                  state.pendingAction = ChoiceGenerator.createDiscardChoice(

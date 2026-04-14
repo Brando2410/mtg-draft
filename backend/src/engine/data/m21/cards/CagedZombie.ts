@@ -18,9 +18,10 @@ export const CagedZombie: Record<string, ImplementableCard> = {
                 type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Mana', value: '{1}{B}' }, { type: 'Tap', value: null }],
-                triggerCondition: (state: any) => state.turnState.creaturesDiedThisTurn.length > 0,
+                condition: (state: any) => state.turnState.creaturesDiedThisTurn.length > 0,
                 effects: [{ type: 'LoseLife', amount: 2, targetMapping: 'OPPONENT' }]
             }
         ]
     }
 };
+

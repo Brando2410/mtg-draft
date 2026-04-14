@@ -13,7 +13,8 @@ export class ContinuousEffectHandler {
     resolvedTargetIds: string[],
     log: (m: string) => void,
     controllerId: PlayerId,
-    amountResolver: (amt: any) => number
+    amountResolver: (amt: any) => number,
+    stackObject?: any
   ) {
     log(`[CE_HANDLER] Resolving effect for source ${sourceId}. Targets: ${resolvedTargetIds.join(', ')}`);
     
@@ -83,7 +84,7 @@ export class ContinuousEffectHandler {
         }
     }
 
-    const continuousEff: ContinuousEffect = {
+    const continuousEff: any = {
         id: effId,
         sourceId,
         controllerId,
@@ -112,6 +113,8 @@ export class ContinuousEffectHandler {
         colorSet: (effect as any).colorSet,
         removeAllAbilities: effect.removeAllAbilities,
         flashbackCostOverride: effect.flashbackCostOverride,
+        spendAnyMana: (effect as any).spendAnyMana,
+        exileOnMoveToGraveyard: (effect as any).exileOnMoveToGraveyard || (effect as any).redirectConditions?.onLeaveZone === Zone.Graveyard,
         playerModifier: (effect as any).playerModifier,
         restrictions: (effect as any).restrictions ? (effect as any).restrictions.map((r: any) => ({
             id: `rest_${effId}`,
@@ -121,6 +124,25 @@ export class ContinuousEffectHandler {
             duration: duration
         })) : undefined
     };
+
+    if (effect.targetControllerMapping) {
+        const { TargetingProcessor } = require('../../actions/TargetingProcessor');
+        const controllerIds = TargetingProcessor.resolveTargetMapping(state, effect.targetControllerMapping, resolvedTargetIds, sourceId, controllerId, undefined, effect);
+        if (controllerIds.length > 0) {
+            continuousEff.duration.untilTurnOfPlayerId = controllerIds[0] as PlayerId;
+            continuousEff.targetControllerId = controllerIds[0] as PlayerId;
+        }
+    } else if ((effect as any).targetControllerId) {
+         continuousEff.targetControllerId = (effect as any).targetControllerId;
+    }
+
+    if (effect.copyFromIdMapping) {
+        const { TargetingProcessor } = require('../../actions/TargetingProcessor');
+        const ids = TargetingProcessor.resolveTargetMapping(state, effect.copyFromIdMapping, resolvedTargetIds, sourceId, controllerId, stackObject?.data || stackObject, effect);
+        if (ids.length > 0) {
+            continuousEff.copyFromId = ids[0];
+        }
+    }
 
     state.ruleRegistry.continuousEffects.push(continuousEff);
     log(`[CE_HANDLER] Registered Layer ${layer} effect on ${finalTargetIds.join(', ')}. Duration: ${duration.type}. Abilities: ${continuousEff.abilitiesToAdd || 'none'}`);

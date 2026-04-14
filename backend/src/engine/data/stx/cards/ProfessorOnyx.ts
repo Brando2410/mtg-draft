@@ -12,7 +12,7 @@ export const ProfessorOnyx: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
                 effects: [
                     { type: EffectType.LoseLife, amount: 2, targetMapping: TargetMapping.EachOpponent },
                     { type: EffectType.GainLife, amount: 2, targetMapping: TargetMapping.Controller }
@@ -56,3 +56,4 @@ export const ProfessorOnyx: CardDefinition = {
             }
         ]
     };
+

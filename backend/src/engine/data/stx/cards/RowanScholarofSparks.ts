@@ -43,7 +43,7 @@ export const RowanScholarofSparks: CardDefinition = {
                                 oracleText: "Whenever you cast an instant or sorcery spell, you may pay {2}. If you do, copy that spell. You may choose new targets for the copy.",
                                 abilities: [{
                                     type: AbilityType.Triggered,
-                                    eventMatch: TriggerEvent.CastInstantOrSorcery,
+                    eventMatch: TriggerEvent.CastInstantOrSorcery,
                                     effects: [{
                                         type: EffectType.Choice,
                                         label: "Pay {2} to copy spell?",
@@ -107,3 +107,4 @@ export const RowanScholarofSparks: CardDefinition = {
             }
         ]
     };
+

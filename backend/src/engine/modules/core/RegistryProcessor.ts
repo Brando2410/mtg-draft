@@ -71,8 +71,8 @@ export class RegistryProcessor {
         id,
         sourceId: card.id,
         controllerId: card.controllerId,
-        eventMatch: ability.eventMatch || ability.triggerEvent || ability.on,
-        condition: ability.triggerCondition || ability.condition,
+        eventMatch: ability.eventMatch,
+        condition: ability.condition,
         oracleText: ability.oracleText || card.definition.oracleText || 'Triggered ability',
         ...ability
     } as TriggeredAbility);

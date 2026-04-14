@@ -14,3 +14,5 @@ export const Island: CardDefinition = {
     "oracleText": "({T}: Add {U}.)",
     "abilities": []
 };
+
+

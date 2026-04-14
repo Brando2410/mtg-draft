@@ -16,9 +16,9 @@ export const SanctumofCalmWaters: Record<string, ImplementableCard> = {
             {
                 id: "sanctum_calm_waters_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_PRE_COMBAT_MAIN_PHASE_START',
+                    eventMatch: 'ON_PRE_COMBAT_MAIN_PHASE_START',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 effects: [
                     {
                         type: 'Choice',
@@ -40,3 +40,5 @@ export const SanctumofCalmWaters: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

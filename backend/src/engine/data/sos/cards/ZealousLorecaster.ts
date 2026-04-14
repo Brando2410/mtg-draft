@@ -18,7 +18,7 @@ export const ZealousLorecaster: CardDefinition = {
         {
             id: "zealous_lorecaster_etb",
             type: AbilityType.Triggered,
-            triggerEvent: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
@@ -36,3 +36,7 @@ export const ZealousLorecaster: CardDefinition = {
     "power": "4",
     "toughness": "4"
 };
+
+
+
+

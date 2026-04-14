@@ -13,7 +13,7 @@ export const DinaSoulSteeper: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.LifeGain,
+                    eventMatch: TriggerEvent.LifeGain,
                 condition: 'YouGainedLife',
                 effects: [{ type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.EachOpponent }]
             },
@@ -34,3 +34,4 @@ export const DinaSoulSteeper: CardDefinition = {
             }
         ]
     };
+

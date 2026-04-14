@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from '@shared/engine_types';
 
 export const CelestialEnforcer: Record<string, ImplementableCard> = {
     "Celestial Enforcer": {
@@ -18,10 +18,14 @@ export const CelestialEnforcer: Record<string, ImplementableCard> = {
                 type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Mana', value: '{1}{W}' }, { type: 'Tap', value: null }],
-                triggerCondition: (state: any, event: any, source: any) => state.battlefield.some((o: any) => o.controllerId === source.controllerId && (o.effectiveStats?.keywords || []).includes('Flying')),
-                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
-                effects: [{ type: 'Tapped', value: true, targetMapping: 'TARGET_1' }]
+                condition: (state: any, event: any, source: any) => {
+                    // Rule 602.2: Activated abilities can have activation requirements
+                    return state.battlefield.some((o: any) => o.controllerId === source.controllerId && (state.effectiveStats?.[o.id]?.keywords || []).includes('Flying'));
+                },
+                targetDefinition: { type: TargetType.Creature, count: 1 },
+                effects: [{ type: EffectType.Tapped, value: true, targetMapping: 'TARGET_1' }]
             }
         ]
     }
 };
+

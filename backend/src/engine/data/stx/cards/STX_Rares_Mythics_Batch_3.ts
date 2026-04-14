@@ -23,9 +23,9 @@ export const STX_Rares_Mythics_Batch_3: CardDefinition[] = [
                     { type: EffectType.AddMana, manaType: 'WUBRG', amount: 5 },
                     { 
                         type: EffectType.CreateDelayedTrigger,
-                        eventMatch: TriggerEvent.CastSpell,
+                    eventMatch: TriggerEvent.CastSpell,
                         duration: 'UNTIL_END_OF_TURN',
-                        triggerCondition: "NextSpellThisTurn",
+                        condition: "NextSpellThisTurn",
                         effects: [{
                             type: EffectType.SearchLibrary,
                             fromTop: -1, // Search until found
@@ -115,7 +115,7 @@ export const STX_Rares_Mythics_Batch_3: CardDefinition[] = [
                     },
                     {
                         type: AbilityType.Triggered,
-                        eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
                         effects: [{
                             type: EffectType.LookAtTopAndPick,
                             fromTop: 1,
@@ -216,8 +216,8 @@ export const STX_Rares_Mythics_Batch_3: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: 'ON_TRIGGER_QUEUED', 
-                triggerCondition: "IsETBTrigger",
+                    eventMatch: 'ON_TRIGGER_QUEUED', 
+                condition: "IsETBTrigger",
                 effects: [{
                     type: EffectType.Choice,
                     label: "Strict Proctor: Pay {2} or counter ability?",
@@ -238,8 +238,8 @@ export const STX_Rares_Mythics_Batch_3: CardDefinition[] = [
         oracleText: "Whenever you attack, put a +1/+1 counter on target attacking creature you control and untap it. Then learn.",
         abilities: [{
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Attack,
-            triggerCondition: "OnYourAttack",
+                    eventMatch: TriggerEvent.Attack,
+            condition: "OnYourAttack",
             targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Attacking' }, { type: 'Source', value: 'CONTROLLER' }] },
             effects: [
                 { type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Target1 },
@@ -249,3 +249,5 @@ export const STX_Rares_Mythics_Batch_3: CardDefinition[] = [
         }]
     }
 ];
+
+

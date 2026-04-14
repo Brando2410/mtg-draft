@@ -19,7 +19,7 @@ export const AzizaMageTowerCaptain: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastInstantOrSorcery,
+                    eventMatch: TriggerEvent.CastInstantOrSorcery,
             effects: [
                 {
                     type: 'Choice',
@@ -45,3 +45,6 @@ export const AzizaMageTowerCaptain: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
+
+

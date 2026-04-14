@@ -14,8 +14,8 @@ export const ComfortingCounsel: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.LifeGain,
-            triggerCondition: 'PLAYER_IS_CONTROLLER',
+                    eventMatch: TriggerEvent.LifeGain,
+            condition: 'PLAYER_IS_CONTROLLER',
             effects: [
                 { type: EffectType.AddCounters, amount: 1, startingCounters: { type: 'growth', amount: 1 }, targetMapping: TargetMapping.Self }
             ]
@@ -35,3 +35,7 @@ export const ComfortingCounsel: CardDefinition = {
         }
     ]
 };
+
+
+
+

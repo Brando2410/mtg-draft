@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const SnarlSong: CardDefinition = {
     "name": "Snarl Song",
@@ -11,5 +11,32 @@ export const SnarlSong: CardDefinition = {
     ],
     "subtypes": [],
     "oracleText": "Converge — Create two 0/0 green and blue Fractal creature tokens. Put X +1/+1 counters on each of them and you gain X life, where X is the number of colors of mana spent to cast this spell.",
-    "abilities": []
+    "abilities": [
+        {
+            type: AbilityType.Spell,
+            effects: [
+                {
+                    type: EffectType.CreateToken,
+                    amount: 2,
+                    tokenBlueprint: {
+                        name: "Fractal",
+                        types: ["Creature"],
+                        subtypes: ["Fractal"],
+                        colors: ["G", "U"],
+                        power: "0",
+                        toughness: "0"
+                    },
+                    startingCounters: { type: 'p1p1', amount: 'CONVERGE_AMOUNT' },
+                    targetMapping: TargetMapping.Controller
+                },
+                {
+                    type: EffectType.GainLife,
+                    amount: 'CONVERGE_AMOUNT',
+                    targetMapping: TargetMapping.Controller
+                }
+            ]
+        }
+    ]
 };
+
+

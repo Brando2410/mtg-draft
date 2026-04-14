@@ -18,7 +18,7 @@ export const EssenceknitScholar: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -34,7 +34,7 @@ export const EssenceknitScholar: CardDefinition = {
                         abilities: [
                             {
                                 type: AbilityType.Triggered,
-                                eventMatch: TriggerEvent.Attack,
+                    eventMatch: TriggerEvent.Attack,
                                 effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
                             }
                         ]
@@ -44,8 +44,8 @@ export const EssenceknitScholar: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EndStep,
-            triggerCondition: 'PLAYER_IS_CONTROLLER', // Only in your end step
+                    eventMatch: TriggerEvent.EndStep,
+            condition: 'PLAYER_IS_CONTROLLER', // Only in your end step
             condition: 'CREATURE_DIED_UNDER_YOUR_CONTROL_THIS_TURN',
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }
@@ -53,3 +53,7 @@ export const EssenceknitScholar: CardDefinition = {
     "power": "3",
     "toughness": "1"
 };
+
+
+
+

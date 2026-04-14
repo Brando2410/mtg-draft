@@ -22,11 +22,13 @@ export const ChandrasIncinerator: Record<string, ImplementableCard> = {
             {
                 id: "chandra_incinerator_trample_damage",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_NONCOMBAT_DAMAGE_OPPONENT',
+                    eventMatch: 'ON_NONCOMBAT_DAMAGE_OPPONENT',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => state.players[event.playerId]?.isOpponentOf?.(source.controllerId) || event.playerId !== source.controllerId,
+                condition: (state: any, event: any, source: any) => state.players[event.playerId]?.isOpponentOf?.(source.controllerId) || event.playerId !== source.controllerId,
                 effects: [{ type: 'DealDamage', amount: 'DAMAGE_DEALT_AMOUNT', targetMapping: 'TARGET_CREATURE_OR_PW_OPPONENT' }]
             }
         ]
     }
 };
+
+

@@ -16,9 +16,9 @@ export const IdolofEndurance: Record<string, ImplementableCard> = {
             {
                 id: "idol_endurance_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
+                condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
                 effects: [{
                     type: EffectType.MoveToZone,
                     selectionType: 'All',
@@ -43,3 +43,5 @@ export const IdolofEndurance: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

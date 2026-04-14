@@ -38,3 +38,5 @@ export const ThornfistStriker: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
+

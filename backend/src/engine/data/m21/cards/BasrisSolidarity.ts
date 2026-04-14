@@ -17,7 +17,7 @@ export const BasrisSolidarity: Record<string, ImplementableCard> = {
                 id: "basri_solidarity_spell",
                 type: AbilityType.Spell,
                 activeZone: ZoneRequirement.Stack,
-                effects: [{ type: 'AddCounters', amount: 1, value: '+1/+1', targetMapping: 'ALL_CREATURES_YOU_CONTROL' }]
+                effects: [{ type: 'AddCounters', amount: 1, counterType: 'p1p1', targetMapping: 'ALL_CREATURES_YOU_CONTROL' }]
             }
         ]
     }

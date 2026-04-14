@@ -16,9 +16,9 @@ export const SanctumofAll: Record<string, ImplementableCard> = {
             {
                 id: "sanctum_all_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
+                condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
                 effects: [{ type: 'SearchLibrary', value: 'Shrine', targetMapping: 'CONTROLLER' }, { type: 'PutOnBattlefield', targetMapping: 'TARGET_1' }]
             },
             {
@@ -26,9 +26,11 @@ export const SanctumofAll: Record<string, ImplementableCard> = {
                 type: AbilityType.Replacement,
                 activeZone: ZoneRequirement.Battlefield,
                 replacesEvent: 'ON_SHRINE_TRIGGER',
-                triggerCondition: (state: any) => state.battlefield.filter((o: any) => o.definition.subtypes.includes('Shrine')).length >= 5,
+                condition: (state: any) => state.battlefield.filter((o: any) => o.definition.subtypes.includes('Shrine')).length >= 5,
                 effects: [{ type: 'AddAdditionalTrigger', targetMapping: 'TRIGGER_SOURCE' }]
             }
         ]
     }
 };
+
+

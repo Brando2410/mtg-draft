@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount, Restriction } from '@shared/engine_types';
 
 export const SilverquillCommand: CardDefinition = {
         name: 'Silverquill Command',
@@ -16,12 +16,16 @@ export const SilverquillCommand: CardDefinition = {
                 choices: [
                     { 
                         label: 'Creature gets +3/+3 and vigilance', 
-                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
+                        targetDefinition: { count: 1, type: TargetType.Creature },
                         effects: [{ type: EffectType.ApplyContinuousEffect, duration: 'UNTIL_END_OF_TURN', powerModifier: 3, toughnessModifier: 3, abilitiesToAdd: ['Vigilance'], targetMapping: TargetMapping.Target1 }] 
                     },
                     { 
                         label: 'Return creature (MV <= 2)', 
-                        targetDefinition: { count: 1, type: TargetType.Card, restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Source', value: 'GRAVEYARD' }, { type: 'Attribute', attribute: 'ManaValue', value: 2, comparison: 'LE' }] },
+                        targetDefinition: { 
+                            count: 1, 
+                            type: TargetType.Creature, 
+                            restrictions: [Restriction.Graveyard, "mv <= 2"] 
+                        },
                         effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 }] 
                     },
                     { 
@@ -31,8 +35,8 @@ export const SilverquillCommand: CardDefinition = {
                     },
                     { 
                         label: 'Opponent sacrifices a creature', 
-                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: [{ type: 'Opponent' }] },
-                        effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Target1, restriction: { type: 'Type', value: 'Creature' } }] 
+                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: [Restriction.Opponent] },
+                        effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Target1, restriction: Restriction.Creature }] 
                     }
                 ]
             }]

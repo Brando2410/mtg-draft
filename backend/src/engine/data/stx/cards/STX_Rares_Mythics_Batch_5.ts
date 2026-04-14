@@ -36,7 +36,7 @@ export const STX_Rares_Mythics_Batch_5: CardDefinition[] = [
                     },
                     {
                         type: AbilityType.Triggered,
-                        eventMatch: 'ON_VALENTIN_REPLACEMENT_SUCCESS', 
+                    eventMatch: 'ON_VALENTIN_REPLACEMENT_SUCCESS', 
                         oracleText: "When you do, you may pay {2}. If you do, create a 1/1 black and green Pest creature token with \"When this creature dies, you gain 1 life.\"",
                         effects: [{
                             type: EffectType.Choice,
@@ -57,7 +57,7 @@ export const STX_Rares_Mythics_Batch_5: CardDefinition[] = [
                                         oracleText: "When this creature dies, you gain 1 life.",
                                         abilities: [{
                                             type: AbilityType.Triggered,
-                                            eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
                                             effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
                                         }]
                                     }
@@ -270,8 +270,8 @@ export const STX_Rares_Mythics_Batch_5: CardDefinition[] = [
                     },
                     {
                         type: AbilityType.Triggered,
-                        eventMatch: TriggerEvent.Attack,
-                        triggerCondition: "OnYourAttack",
+                    eventMatch: TriggerEvent.Attack,
+                        condition: "OnYourAttack",
                         effects: [{ type: EffectType.Untap, targetMapping: 'ALL_CREATURES_YOU_CONTROL' }]
                     }
                 ]
@@ -279,3 +279,5 @@ export const STX_Rares_Mythics_Batch_5: CardDefinition[] = [
         ]
     }
 ];
+
+

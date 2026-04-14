@@ -33,7 +33,7 @@ export const RenderSpeechless: CardDefinition = {
                             label: "Yes",
                             targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
                             effects: [
-                                { type: EffectType.AddCounters, amount: 2, counterType: '+1/+1', targetMapping: TargetMapping.Target2 }
+                                { type: EffectType.AddCounters, amount: 2, counterType: 'p1p1', targetMapping: TargetMapping.Target2 }
                             ]
                         },
                         { label: "No", effects: [] }
@@ -43,3 +43,5 @@ export const RenderSpeechless: CardDefinition = {
         }
     ]
 };
+
+

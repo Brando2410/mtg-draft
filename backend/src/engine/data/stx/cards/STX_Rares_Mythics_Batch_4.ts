@@ -118,8 +118,8 @@ export const STX_Rares_Mythics_Batch_4: CardDefinition[] = [
                                     oracleText: "Whenever this creature attacks, it deals 3 damage to each opponent.",
                                     abilities: [{
                                         type: AbilityType.Triggered,
-                                        eventMatch: TriggerEvent.Attack,
-                                        triggerCondition: "SelfAttacks",
+                    eventMatch: TriggerEvent.Attack,
+                                        condition: "SelfAttacks",
                                         effects: [{ type: EffectType.LoseLife, amount: 3, targetMapping: TargetMapping.EachOpponent }]
                                     }]
                                 }
@@ -131,3 +131,5 @@ export const STX_Rares_Mythics_Batch_4: CardDefinition[] = [
         ]
     }
 ];
+
+

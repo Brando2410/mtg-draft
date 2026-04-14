@@ -18,8 +18,8 @@ export const BogwaterLumaret: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
-            triggerCondition: 'OWN_CREATURE_ENTERS',
+                    eventMatch: TriggerEvent.EnterBattlefield,
+            condition: 'OWN_CREATURE_ENTERS',
             effects: [
                 {
                     type: EffectType.GainLife,
@@ -32,3 +32,7 @@ export const BogwaterLumaret: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
+
+
+

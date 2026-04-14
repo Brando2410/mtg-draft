@@ -16,9 +16,9 @@ export const LlanowarVisionary: Record<string, ImplementableCard> = {
             {
                 id: "llanowar_visionary_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
+                condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
                 effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: 'CONTROLLER' }],
                 oracleText: "When this creature enters, draw a card."
             },
@@ -34,3 +34,5 @@ export const LlanowarVisionary: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

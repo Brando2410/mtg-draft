@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, DurationType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from "@shared/engine_types";
 
 export const KeenGlidemaster: Record<string, ImplementableCard> = {
     "Keen Glidemaster": {
@@ -19,14 +19,12 @@ export const KeenGlidemaster: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Mana', value: '{2}{U}' }],
                 targetDefinition: {
-                    type: TargetType.Permanent,
-                    count: 1,
-                    minCount: 1,
-                    restrictions: ["creature"]
+                    type: TargetType.Creature,
+                    count: 1
                 },
                 effects: [{
                     type: EffectType.ApplyContinuousEffect,
-                    duration: 'UNTIL_END_OF_TURN',
+                    duration: DurationType.UntilEndOfTurn,
                     abilitiesToAdd: ['Flying'],
                     targetMapping: 'TARGET_1'
                 }],

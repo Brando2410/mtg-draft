@@ -16,9 +16,9 @@ export const SanctumofStoneFangs: Record<string, ImplementableCard> = {
             {
                 id: "sanctum_stone_fangs_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_PRE_COMBAT_MAIN_PHASE_START',
+                    eventMatch: 'ON_PRE_COMBAT_MAIN_PHASE_START',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 effects: [
                     { type: 'LoseLife', amount: 'COUNT_Shrine', targetMapping: 'OPPONENT' },
                     { type: 'GainLife', amount: 'COUNT_Shrine', targetMapping: 'CONTROLLER' }
@@ -27,3 +27,5 @@ export const SanctumofStoneFangs: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

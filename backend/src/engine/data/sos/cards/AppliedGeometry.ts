@@ -33,9 +33,11 @@ export const AppliedGeometry: CardDefinition = {
                     type: EffectType.AddCounters,
                     targetMapping: 'LAST_CREATED_TOKEN',
                     amount: 6,
-                    value: '+1/+1'
+                    value: 'p1p1'
                 }
             ]
         }
     ]
 };
+
+

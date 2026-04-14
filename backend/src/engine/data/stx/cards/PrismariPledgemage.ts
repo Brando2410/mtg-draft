@@ -13,8 +13,9 @@ export const PrismariPledgemage: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [{ type: EffectType.ApplyContinuousEffect, duration: 'UNTIL_END_OF_TURN', abilitiesToRemove: ['Defender'], targetMapping: TargetMapping.Self }]
         }
     ]
   };
+

@@ -27,9 +27,9 @@ export const GadraktheCrownScourge: Record<string, ImplementableCard> = {
             {
                 id: "gaddrak_end_step_treasure",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_END_STEP',
+                    eventMatch: 'ON_END_STEP',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId,
+                condition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId,
                 effects: [{
                     type: 'CreateToken',
                     tokenBlueprint: { name: 'Treasure', colors: [], types: ['Artifact'], subtypes: ['Treasure'], oracleText: '{T}, Sacrifice this artifact: Add one mana of any color.' },
@@ -40,3 +40,5 @@ export const GadraktheCrownScourge: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

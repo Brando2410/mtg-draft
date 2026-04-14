@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, DurationType, RestrictionType } from "@shared/engine_types";
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, DurationType, Restriction } from "@shared/engine_types";
 
 export const DestructiveTampering: Record<string, ImplementableCard> = {
     "Destructive Tampering": {
@@ -28,9 +28,8 @@ export const DestructiveTampering: Record<string, ImplementableCard> = {
                                     {
                                         type: EffectType.Destroy,
                                         targetDefinition: {
-                                            type: TargetType.Permanent,
-                                            count: 1,
-                                            restrictions: ["artifact"]
+                                            type: TargetType.Artifact,
+                                            count: 1
                                         },
                                         targetMapping: "TARGET_1"
                                     }
@@ -43,7 +42,7 @@ export const DestructiveTampering: Record<string, ImplementableCard> = {
                                         type: EffectType.ApplyContinuousEffect,
                                         duration: { type: DurationType.UntilEndOfTurn },
                                         targetMapping: "ALL_CREATURES_WITHOUT_FLYING",
-                                        restrictions: [{ type: RestrictionType.CannotBlock }]
+                                        abilitiesToAdd: ["CannotBlock"]
                                     }
                                 ]
                             }

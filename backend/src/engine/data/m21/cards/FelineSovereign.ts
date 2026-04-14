@@ -25,9 +25,9 @@ export const FelineSovereign: Record<string, ImplementableCard> = {
             {
                 id: "feline_sovereign_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_DAMAGE_PLAYER',
+                    eventMatch: 'ON_DAMAGE_PLAYER',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     if (!event.data?.isCombat) return false;
                     const attacker = state.battlefield.find((o: any) => o.id === event.sourceId);
                     return attacker && attacker.controllerId === source.controllerId && attacker.definition.subtypes.some((s: any) => s.toLowerCase() === 'cat');
@@ -38,3 +38,5 @@ export const FelineSovereign: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

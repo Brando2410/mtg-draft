@@ -26,7 +26,7 @@ export const WildHypothesis: CardDefinition = {
                         power: 0,
                         toughness: 0
                     },
-                    startingCounters: { type: '+1/+1', amount: 'X' },
+                    startingCounters: { type: 'p1p1', amount: 'X' },
                     targetMapping: TargetMapping.Controller
                 },
                 {
@@ -38,3 +38,5 @@ export const WildHypothesis: CardDefinition = {
         }
     ]
 };
+
+

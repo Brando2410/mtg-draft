@@ -12,7 +12,7 @@ export const CleverLumimancer: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -25,3 +25,4 @@ export const CleverLumimancer: CardDefinition = {
         }
     ]
   };
+

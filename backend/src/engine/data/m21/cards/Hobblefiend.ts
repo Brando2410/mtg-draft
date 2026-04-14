@@ -23,7 +23,7 @@ export const Hobblefiend: Record<string, ImplementableCard> = {
                 ],
                 effects: [{
                     type: EffectType.AddCounters,
-                    value: '+1/+1',
+                    counterType: 'p1p1',
                     amount: 1,
                     targetMapping: 'SELF'
                 }],

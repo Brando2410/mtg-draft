@@ -17,7 +17,7 @@ export const ExhibitionTidecaller: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
+                    eventMatch: TriggerEvent.CastSpell,
             targets: [{ type: 'Player' }],
             condition: 'PLAYER_IS_CONTROLLER && (EVENT_OBJECT_MATCHES:Instant || EVENT_OBJECT_MATCHES:Sorcery)',
             effects: [
@@ -39,3 +39,6 @@ export const ExhibitionTidecaller: CardDefinition = {
     "power": "0",
     "toughness": "2"
 };
+
+
+

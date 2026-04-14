@@ -16,7 +16,7 @@ export const OrneryDilophosaur: Record<string, ImplementableCard> = {
             {
                 id: "ornery_dilophosaur_attack_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: "ON_ATTACK",
+                    eventMatch: "ON_ATTACK",
                 condition: "HAS_PERMANENT:creature,power>=4",
                 effects: [
                     {
@@ -33,3 +33,5 @@ export const OrneryDilophosaur: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

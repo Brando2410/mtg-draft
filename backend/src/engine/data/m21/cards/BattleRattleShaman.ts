@@ -16,12 +16,14 @@ export const BattleRattleShaman: Record<string, ImplementableCard> = {
             {
                 id: "battle_rattle_shaman_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_BEGINNING_OF_COMBAT_STEP',
+                    eventMatch: 'ON_BEGINNING_OF_COMBAT_STEP',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId,
+                condition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId,
                 targetDefinition: { type: 'Permanent', count: 1, optional: true, restrictions: ['Creature'] },
                 effects: [{ type: 'ApplyContinuousEffect', powerModifier: 2, toughnessModifier: 0, duration: 'UNTIL_END_OF_TURN', layer: 7, targetMapping: 'TARGET_1' }]
             }
         ]
     }
 };
+
+

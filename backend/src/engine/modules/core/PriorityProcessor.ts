@@ -456,7 +456,8 @@ export class PriorityProcessor {
         // 1. Basic Type/Owner check
         const eType = e.type as string;
         const matchesType = eType === effectType || (effectType === EffectType.AllowPlayExiled && (e as any).canPlayExiled);
-        if (!matchesType || e.controllerId !== playerId) return false;
+        const effectiveControllerId = (e as any).targetControllerId || e.controllerId;
+        if (!matchesType || effectiveControllerId !== playerId) return false;
 
         // 2. Active Zone check (Source must be in an active zone for the ability)
         const source = TargetingProcessor.findObjectInAnyZone(state, e.sourceId);

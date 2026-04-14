@@ -18,8 +18,8 @@ export const InkshapeDemonstrator: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
-            triggerCondition: 'REPARTEE_TRIGGER',
+                    eventMatch: TriggerEvent.CastSpell,
+            condition: 'REPARTEE_TRIGGER',
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -34,3 +34,7 @@ export const InkshapeDemonstrator: CardDefinition = {
     "power": "3",
     "toughness": "4"
 };
+
+
+
+

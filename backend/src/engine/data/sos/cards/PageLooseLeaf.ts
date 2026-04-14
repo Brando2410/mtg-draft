@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const PageLooseLeaf: CardDefinition = {
     "name": "Page, Loose Leaf",
@@ -13,7 +13,37 @@ export const PageLooseLeaf: CardDefinition = {
         "Construct"
     ],
     "oracleText": "{T}: Add {C}.\nGrandeur — Discard another card named Page, Loose Leaf: Reveal cards from the top of your library until you reveal an instant or sorcery card. Put that card into your hand and the rest on the bottom of your library in a random order.",
-    "abilities": [],
+    "abilities": [
+        {
+            type: AbilityType.Activated,
+            costs: [{ type: 'Tap' }],
+            effects: [{ type: EffectType.AddMana, value: '{C}' }],
+            isManaAbility: true
+        },
+        {
+            type: AbilityType.Activated,
+            label: "Grandeur",
+            costs: [
+                { 
+                    type: 'Discard', 
+                    restrictions: ['another', 'Page, Loose Leaf'] 
+                }
+            ],
+            effects: [
+                {
+                    type: 'RevealUntilCondition',
+                    restrictions: ['instant_or_sorcery'],
+                    destination: Zone.Hand,
+                    remainderZone: Zone.Library,
+                    remainderPosition: 'bottom',
+                    shuffleRemainder: true,
+                    targetMapping: TargetMapping.Controller
+                }
+            ]
+        }
+    ],
     "power": "0",
     "toughness": "2"
 };
+
+

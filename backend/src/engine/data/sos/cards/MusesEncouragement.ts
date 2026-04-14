@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const MusesEncouragement: CardDefinition = {
     "name": "Muse's Encouragement",
@@ -11,5 +11,35 @@ export const MusesEncouragement: CardDefinition = {
     ],
     "subtypes": [],
     "oracleText": "Create a 3/3 blue and red Elemental creature token with flying.\nSurveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
-    "abilities": []
+    "abilities": [
+        {
+            type: 'Spell',
+            effects: [
+                {
+                    type: EffectType.CreateToken,
+                    tokenBlueprint: {
+                        name: "Elemental",
+                        colors: ["U", "R"],
+                        types: ["Creature"],
+                        subtypes: ["Elemental"],
+                        power: "3",
+                        toughness: "3",
+                        abilities: [
+                            {
+                                type: 'Static',
+                                keyword: 'Flying'
+                            }
+                        ]
+                    },
+                    targetMapping: TargetMapping.Controller
+                },
+                {
+                    type: EffectType.Surveil,
+                    amount: 2,
+                    targetMapping: TargetMapping.Controller
+                }
+            ]
+        }
+    ]
 };
+

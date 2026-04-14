@@ -21,7 +21,7 @@ export const BasriKet: Record<string, ImplementableCard> = {
                 costs: [{ type: 'Loyalty', value: '+1' }],
                 targetDefinition: { type: 'Permanent', count: 1, optional: true, restrictions: ['Creature'] },
                 effects: [
-                    { type: 'AddCounters', amount: 1, value: '+1/+1', targetMapping: 'TARGET_1' },
+                    { type: 'AddCounters', amount: 1, counterType: 'p1p1', targetMapping: 'TARGET_1' },
                     { type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Indestructible'], layer: 6, targetMapping: 'TARGET_1' }
                 ]
             },
@@ -54,9 +54,9 @@ export const BasriKet: Record<string, ImplementableCard> = {
                         oracleText: "At the beginning of combat on your turn, create a 1/1 white Soldier creature token, then put a +1/+1 counter on each creature you control.",
                         abilities: [
                             {
-                                triggerEvent: 'ON_BEGINNING_OF_COMBAT_STEP',
+                    eventMatch: 'ON_BEGINNING_OF_COMBAT_STEP',
                                 // Condition: only trigger on the emblem controller's turn
-                                triggerCondition: (state: any, event: any, trigger: any) => {
+                                condition: (state: any, event: any, trigger: any) => {
                                     return state.activePlayerId === trigger.controllerId;
                                 },
                                 effects: [
@@ -75,7 +75,7 @@ export const BasriKet: Record<string, ImplementableCard> = {
                                     {
                                         type: 'AddCounters',
                                         amount: 1,
-                                        value: '+1/+1',
+                                        counterType: 'p1p1',
                                         targetMapping: 'ALL_CREATURES_YOU_CONTROL'
                                     }
                                 ]
@@ -87,3 +87,5 @@ export const BasriKet: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

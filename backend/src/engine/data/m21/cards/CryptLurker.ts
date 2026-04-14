@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from "@shared/engine_types";
 
 export const CryptLurker: Record<string, ImplementableCard> = {
     "Crypt Lurker": {
@@ -17,7 +17,7 @@ export const CryptLurker: Record<string, ImplementableCard> = {
                 id: "crypt_lurker_etb",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: "ON_ETB",
+                    eventMatch: "ON_ETB",
                 effects: [
                     {
                         type: EffectType.Choice,
@@ -30,9 +30,9 @@ export const CryptLurker: Record<string, ImplementableCard> = {
                                     {
                                         type: EffectType.Sacrifice,
                                         targetDefinition: {
-                                            type: TargetType.Permanent,
+                                            type: TargetType.Creature,
                                             count: 1,
-                                            restrictions: ["creature", "yours"]
+                                            restrictions: [Restriction.YouControl]
                                         },
                                         targetMapping: "CONTROLLER",
                                         effects: [
@@ -51,7 +51,7 @@ export const CryptLurker: Record<string, ImplementableCard> = {
                                     {
                                         type: EffectType.DiscardCards,
                                         amount: 1,
-                                        restrictions: ["creature"],
+                                        restrictions: [Restriction.Creature],
                                         targetMapping: "CONTROLLER",
                                         effects: [
                                             {
@@ -70,3 +70,5 @@ export const CryptLurker: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

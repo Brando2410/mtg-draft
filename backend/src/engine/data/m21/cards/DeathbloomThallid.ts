@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, TriggerEvent, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
 export const DeathbloomThallid: Record<string, ImplementableCard> = {
     "Deathbloom Thallid": {
@@ -17,8 +17,7 @@ export const DeathbloomThallid: Record<string, ImplementableCard> = {
                 id: "deathbloom_thallid_death",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: "ON_DEATH",
-                triggerCondition: (state: any, event: any, source: any) => event.targetId === source.sourceId,
+                    eventMatch: TriggerEvent.Death,
                 effects: [
                     {
                         type: EffectType.CreateToken,
@@ -38,3 +37,5 @@ export const DeathbloomThallid: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

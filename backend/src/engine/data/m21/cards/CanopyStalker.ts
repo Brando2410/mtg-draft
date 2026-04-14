@@ -28,7 +28,7 @@ export const CanopyStalker: Record<string, ImplementableCard> = {
                 id: "canopy_stalker_death",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: "ON_DEATH",
+                    eventMatch: "ON_DEATH",
                 effects: [
                     {
                         type: EffectType.GainLife,
@@ -42,3 +42,5 @@ export const CanopyStalker: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

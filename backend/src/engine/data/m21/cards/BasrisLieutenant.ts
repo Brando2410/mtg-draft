@@ -16,25 +16,25 @@ export const BasrisLieutenant: Record<string, ImplementableCard> = {
             {
                 id: "basri_lieutenant_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
                 targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'YouControl'] },
                 effects: [
-                    { type: EffectType.AddCounters, amount: 1, value: '+1/+1', targetMapping: 'TARGET_1' }
+                    { type: EffectType.AddCounters, amount: 1, counterType: 'p1p1', targetMapping: 'TARGET_1' }
                 ]
             },
             {
                 id: "basri_lieutenant_death_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_DEATH',
+                    eventMatch: 'ON_DEATH',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     const diedObj = event.data?.object;
                     if (!diedObj) return false;
 
                     const isCreature = (diedObj.definition?.types || []).some((t: string) => t.toLowerCase() === 'creature');
                     const isControlledByYou = diedObj.controllerId === source.controllerId;
-                    const hadCounter = (diedObj.counters?.['+1/+1'] || 0) > 0;
+                    const hadCounter = (diedObj.counters?.['p1p1'] || 0) > 0;
 
                     return isCreature && isControlledByYou && hadCounter;
                 },
@@ -54,3 +54,5 @@ export const BasrisLieutenant: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

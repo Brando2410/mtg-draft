@@ -54,7 +54,7 @@ export const AdventurousEaterHaveaBite: CardDefinition = {
                     type: AbilityType.Spell,
                     targetDefinition: { type: 'Creature' },
                     effects: [
-                        { type: EffectType.AddCounters, amount: 1, value: '+1/+1', targetMapping: TargetMapping.Target1 },
+                        { type: EffectType.AddCounters, amount: 1, value: 'p1p1', targetMapping: TargetMapping.Target1 },
                         { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }
                     ]
                 }
@@ -62,3 +62,5 @@ export const AdventurousEaterHaveaBite: CardDefinition = {
         }
     ]
 };
+
+

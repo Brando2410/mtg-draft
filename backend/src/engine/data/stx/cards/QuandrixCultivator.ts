@@ -12,7 +12,7 @@ export const QuandrixCultivator: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.Choice,
@@ -32,3 +32,4 @@ export const QuandrixCultivator: CardDefinition = {
         }
     ]
   };
+

@@ -47,3 +47,5 @@ export const WitherbloomtheBalancer: CardDefinition = {
     "power": "5",
     "toughness": "5"
 };
+
+

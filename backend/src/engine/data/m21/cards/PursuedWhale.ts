@@ -17,7 +17,7 @@ export const PursuedWhale: Record<string, ImplementableCard> = {
                 id: 'pursued_whale_etb',
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 effects: [{
                     type: EffectType.CreateToken,
                     amount: 1,
@@ -58,3 +58,5 @@ export const PursuedWhale: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

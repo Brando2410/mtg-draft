@@ -19,8 +19,8 @@ export const ColorstormStallion: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastInstantOrSorcery,
-            triggerCondition: 'PLAYER_IS_CONTROLLER',
+                    eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: 'PLAYER_IS_CONTROLLER',
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -41,3 +41,7 @@ export const ColorstormStallion: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
+
+
+

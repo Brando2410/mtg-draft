@@ -16,7 +16,7 @@ export const AlpineHoundmaster: Record<string, ImplementableCard> = {
             {
                 id: "alpine_houndmaster_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
                 effects: [
                     {
@@ -37,9 +37,9 @@ export const AlpineHoundmaster: Record<string, ImplementableCard> = {
             {
                 id: "alpine_houndmaster_attack",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ATTACK',
+                    eventMatch: 'ON_ATTACK',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.sourceId === source.sourceId,
+                condition: (state: any, event: any, source: any) => event.sourceId === source.sourceId,
                 effects: [{
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 'COUNT_OTHER_ATTACKING',
@@ -52,3 +52,5 @@ export const AlpineHoundmaster: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

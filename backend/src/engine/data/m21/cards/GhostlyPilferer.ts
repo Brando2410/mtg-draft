@@ -16,19 +16,21 @@ export const GhostlyPilferer: Record<string, ImplementableCard> = {
             {
                 id: "ghostly_pilferer_untap_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_UNTAP',
+                    eventMatch: 'ON_UNTAP',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId !== source.controllerId,
+                condition: (state: any, event: any, source: any) => event.playerId !== source.controllerId,
                 effects: [{ type: 'Choice', label: 'Pay {2} to draw?', costs: [{ type: 'Mana', value: '{2}' }], effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }] }]
             },
             {
                 id: "ghostly_pilferer_cast_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_OPPONENT_CAST_NON_HAND',
+                    eventMatch: 'ON_OPPONENT_CAST_NON_HAND',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId !== source.controllerId,
+                condition: (state: any, event: any, source: any) => event.playerId !== source.controllerId,
                 effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }]
             }
         ]
     }
 };
+
+

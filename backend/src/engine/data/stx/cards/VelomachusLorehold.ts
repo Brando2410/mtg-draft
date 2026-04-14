@@ -14,8 +14,8 @@ export const VelomachusLorehold: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Attack,
-                triggerCondition: "SelfAttacks",
+                    eventMatch: TriggerEvent.Attack,
+                condition: "SelfAttacks",
                 effects: [{
                     type: EffectType.SearchLibrary,
                     fromTop: 7,
@@ -30,3 +30,5 @@ export const VelomachusLorehold: CardDefinition = {
             }
         ]
     };
+
+

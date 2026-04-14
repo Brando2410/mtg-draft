@@ -14,7 +14,7 @@ export const GalazethPrismari: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
                 effects: [{ type: EffectType.CreateToken, tokenBlueprint: { name: 'Treasure', types: ['Artifact', 'Token'], subtypes: ['Treasure'], oracleText: '{T}, Sacrifice this artifact: Add one mana of any color.' } }]
             },
             {
@@ -38,3 +38,4 @@ export const GalazethPrismari: CardDefinition = {
             }
         ]
     };
+

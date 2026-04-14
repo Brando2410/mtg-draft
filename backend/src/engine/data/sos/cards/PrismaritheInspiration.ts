@@ -35,3 +35,5 @@ export const PrismaritheInspiration: CardDefinition = {
     "power": "7",
     "toughness": "7"
 };
+
+

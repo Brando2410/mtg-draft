@@ -13,7 +13,7 @@ export const STX_SchoolUncommons: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.Choice,
@@ -22,7 +22,7 @@ export const STX_SchoolUncommons: CardDefinition[] = [
                     effects: [
                         {
                             type: EffectType.SearchLibrary,
-                            restrictions: [{ type: 'Subtype', value: 'Basic' }, { type: 'Any', restrictions: [{ type: 'Subtype', value: 'Forest' }, { type: 'Subtype', value: 'Island' }] }],
+                            restrictions: ['Basic', 'Forest_or_Island'],
                             destination: Zone.Battlefield,
                             tapped: true,
                             shuffle: true
@@ -42,7 +42,7 @@ export const STX_SchoolUncommons: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EndStep,
+                    eventMatch: TriggerEvent.EndStep,
             condition: 'YourTurn',
             effects: [{ type: EffectType.Mill, amount: 1 }]
         },
@@ -52,8 +52,8 @@ export const STX_SchoolUncommons: CardDefinition[] = [
                 { type: 'Mana', value: '{5}' },
                 { 
                     type: 'Exile', 
-                    zone: Zone.Graveyard, 
-                    restriction: { type: 'Type', value: 'Creature' }
+                    sourceZone: Zone.Graveyard, 
+                    restrictions: ['Creature']
                 }
             ],
             effects: [
@@ -75,3 +75,4 @@ export const STX_SchoolUncommons: CardDefinition[] = [
     ]
   }
 ];
+

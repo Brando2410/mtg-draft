@@ -26,9 +26,9 @@ export const NineLives: Record<string, ImplementableCard> = {
             {
                 id: "nine_lives_loosing_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_COUNTER_ADDED',
+                    eventMatch: 'ON_COUNTER_ADDED',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any) => event.counterType === 'incarnation' && (event.target.counters['incarnation'] || 0) >= 9,
+                condition: (state: any, event: any) => event.counterType === 'incarnation' && (event.target.counters['incarnation'] || 0) >= 9,
                 effects: [
                     { type: 'Exile', targetMapping: 'SELF' },
                     { type: 'LoseGame', targetMapping: 'CONTROLLER' }
@@ -37,10 +37,12 @@ export const NineLives: Record<string, ImplementableCard> = {
             {
                 id: "nine_lives_leave_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_LEAVE_BATTLEFIELD',
+                    eventMatch: 'ON_LEAVE_BATTLEFIELD',
                 activeZone: ZoneRequirement.Battlefield,
                 effects: [{ type: 'LoseGame', targetMapping: 'CONTROLLER' }]
             }
         ]
     }
 };
+
+

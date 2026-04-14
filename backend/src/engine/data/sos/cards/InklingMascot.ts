@@ -18,19 +18,19 @@ export const InklingMascot: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
-            triggerCondition: 'REPARTEE_TRIGGER',
+                    eventMatch: TriggerEvent.CastSpell,
+            condition: 'REPARTEE_TRIGGER',
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    keywords: ["Flying"],
+                    abilitiesToAdd: ["Flying"],
                     duration: "UNTIL_END_OF_TURN",
                     targetMapping: TargetMapping.Self
                 },
                 {
                     type: EffectType.Scry,
                     amount: 1,
-                    destination: "graveyard",
+                    destination: "Graveyard",
                     targetMapping: TargetMapping.Controller
                 }
             ]
@@ -39,3 +39,4 @@ export const InklingMascot: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+

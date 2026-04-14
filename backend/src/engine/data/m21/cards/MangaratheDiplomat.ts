@@ -16,9 +16,9 @@ export const MangaraTheDiplomat: Record<string, ImplementableCard> = {
             {
                 id: "mangara_attack_draw",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ATTACKERS_DECLARED',
+                    eventMatch: 'ON_ATTACKERS_DECLARED',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     // Must be an opponent attacking
                     const isOpponent = event.playerId !== source.controllerId;
                     if (!isOpponent) return false;
@@ -41,9 +41,9 @@ export const MangaraTheDiplomat: Record<string, ImplementableCard> = {
             {
                 id: "mangara_second_spell_draw",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_SECOND_SPELL_CAST',
+                    eventMatch: 'ON_SECOND_SPELL_CAST',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     return event.playerId !== source.controllerId;
                 },
                 effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: 'CONTROLLER' }]
@@ -51,3 +51,5 @@ export const MangaraTheDiplomat: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

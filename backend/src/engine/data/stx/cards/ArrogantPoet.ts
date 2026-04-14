@@ -12,7 +12,7 @@ export const ArrogantPoet: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Attack,
+                    eventMatch: TriggerEvent.Attack,
             condition: 'SelfAttacking',
             effects: [{
                 type: EffectType.Choice,
@@ -27,3 +27,4 @@ export const ArrogantPoet: CardDefinition = {
         }
     ]
   };
+

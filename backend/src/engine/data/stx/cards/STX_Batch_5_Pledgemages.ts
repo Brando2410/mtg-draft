@@ -13,7 +13,7 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.Choice,
@@ -39,7 +39,7 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Self }]
         }
     ]
@@ -57,7 +57,7 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [{ type: EffectType.ApplyContinuousEffect, duration: 'UNTIL_END_OF_TURN', abilitiesToRemove: ['Defender'], targetMapping: TargetMapping.Self }]
         }
     ]
@@ -75,7 +75,7 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 1, toughnessModifier: 1, duration: 'UNTIL_END_OF_TURN', targetMapping: TargetMapping.Self }]
         }
     ]
@@ -92,7 +92,7 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -117,7 +117,7 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             targetDefinition: {
                 type: TargetType.Permanent,
                 count: 1,
@@ -139,7 +139,7 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.LookAtTopAndPick,
@@ -168,7 +168,7 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 { type: EffectType.ApplyContinuousEffect, abilitiesToAdd: ['CannotBeBlocked'], duration: 'UNTIL_END_OF_TURN', targetMapping: TargetMapping.Self },
                 {
@@ -193,7 +193,7 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.DealDamage,
@@ -218,7 +218,7 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.EachOpponent },
                 { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }
@@ -227,3 +227,4 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
     ]
   }
 ];
+

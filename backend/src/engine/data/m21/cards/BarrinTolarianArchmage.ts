@@ -16,20 +16,22 @@ export const BarrinTolarianArchmage: Record<string, ImplementableCard> = {
             {
                 id: "barrin_etb_bounce",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
+                condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
                 targetDefinition: { type: 'Permanent', count: 1, optional: true, restrictions: ['Creature', 'Planeswalker', 'Other'] },
                 effects: [{ type: 'ReturnToHand', targetMapping: 'TARGET_1' }]
             },
             {
                 id: "barrin_end_step_draw",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_END_STEP',
+                    eventMatch: 'ON_END_STEP',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId && state.turnState.playersWithPermanentReturnedThisTurn[source.controllerId] === true,
+                condition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId && state.turnState.playersWithPermanentReturnedThisTurn[source.controllerId] === true,
                 effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }]
             }
         ]
     }
 };
+
+

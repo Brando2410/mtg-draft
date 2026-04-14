@@ -38,7 +38,7 @@ export const KirolHistoryBuffPackaPunch: CardDefinition = {
                 {
                     type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.LeaveGraveyard,
-                    triggerCondition: (state, event, trigger) => {
+                    condition: (state, event, trigger) => {
                         return event.playerId === trigger.controllerId;
                     },
                     effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
@@ -66,10 +66,10 @@ export const KirolHistoryBuffPackaPunch: CardDefinition = {
                     },
                     effects: [
                         { type: EffectType.Mill, amount: 1, targetMapping: TargetMapping.Controller },
-                        { type: EffectType.AddCounters, counterType: "plus1plus1", amount: 2, targetMapping: TargetMapping.Target1 },
-                        { 
+                        { type: EffectType.AddCounters, counterType: 'p1p1', amount: 2, targetMapping: TargetMapping.Target1 },
+                        {
                             type: EffectType.ApplyContinuousEffect,
-                            keywords: ["Trample"],
+                            abilitiesToAdd: ["Trample"],
                             duration: "UNTIL_END_OF_TURN",
                             targetMapping: TargetMapping.Target1
                         }
@@ -79,3 +79,6 @@ export const KirolHistoryBuffPackaPunch: CardDefinition = {
         }
     ]
 };
+
+
+

@@ -18,7 +18,7 @@ export class ChoiceEffectHandler {
     stackObject?: any,
     parentContext?: any,
     findObject?: any
-  ) {
+  ): void {
     const sourceObj = findObject(state, sourceId, stackObject) || stackObject?.card || stackObject;
     if (!sourceObj) return;
 
@@ -139,6 +139,25 @@ export class ChoiceEffectHandler {
             });
             return;
         }
+    }
+
+    // --- GENERIC MODAL CHOICES OR AUTO-SEQUENCE ---
+    if (!effect.choices && effect.effects && targets.length > 0) {
+        const { EffectProcessor } = require('./../EffectProcessor');
+        const firstTargetId = targets[0];
+        const nextTargets = targets.slice(1);
+
+        log(`[AUTO-SEQUENCE] Sequential resolution for target: ${firstTargetId}`);
+        EffectProcessor.resolveEffects(state, effect.effects, sourceId, [firstTargetId], log, 0, stackObject, parentContext);
+
+        if (!state.pendingAction && nextTargets.length > 0) {
+            return this.handleChoice(state, effect, sourceId, nextTargets, log, controllerId, stackObject, parentContext, findObject);
+        } else if (state.pendingAction && nextTargets.length > 0) {
+            state.pendingAction.data.nextPlayerIds = nextTargets;
+            state.pendingAction.data.isChoiceSequence = true;
+            state.pendingAction.data.sequencedEffect = effect;
+        }
+        return;
     }
 
     // --- GENERIC MODAL CHOICES ---

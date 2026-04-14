@@ -14,8 +14,8 @@ export const ShadrixSilverquill: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.BeginningOfCombatStep,
-                triggerCondition: "IS_YOUR_TURN",
+                    eventMatch: TriggerEvent.BeginningOfCombatStep,
+                condition: "IS_YOUR_TURN",
                 effects: [{
                     type: EffectType.Choice,
                     label: "Choose two modes (must different targets)",
@@ -51,3 +51,5 @@ export const ShadrixSilverquill: CardDefinition = {
             }
         ]
     };
+
+

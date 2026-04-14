@@ -16,11 +16,13 @@ export const DoubleVision: Record<string, ImplementableCard> = {
             {
                 id: "double_vision_copy",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_CAST_FIRST_INSTANT_SORCERY',
+                    eventMatch: 'ON_CAST_FIRST_INSTANT_SORCERY',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 effects: [{ type: 'CopySpellOnStack', targetMapping: 'TRIGGER_SOURCE', chooseNewTargets: true }]
             }
         ]
     }
 };
+
+

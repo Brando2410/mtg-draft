@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping } from '@shared/engine_types';
+import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const LeechCollectorBloodletting: CardDefinition = {
     "name": "Leech Collector // Bloodletting",
@@ -36,7 +36,7 @@ export const LeechCollectorBloodletting: CardDefinition = {
                     type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.LifeGain,
                     limitPerTurn: 1,
-                    triggerCondition: (state, event, trigger) => {
+                    condition: (state: any, event: any, trigger: any) => {
                         return event.playerId === trigger.controllerId;
                     },
                     effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
@@ -57,9 +57,13 @@ export const LeechCollectorBloodletting: CardDefinition = {
             "abilities": [
                 {
                     type: AbilityType.Spell,
-                    effects: [{ type: EffectType.LoseLife, amount: 2, targetMapping: "EACH_OPPONENT" }]
+                    effects: [{ type: EffectType.LoseLife, amount: 2, targetMapping: TargetMapping.EachOpponent }]
                 }
             ]
         }
     ]
 };
+
+
+
+

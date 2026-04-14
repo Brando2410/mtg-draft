@@ -16,7 +16,7 @@ export const GoblinArsonist: Record<string, ImplementableCard> = {
             {
                 id: "goblin_arsonist_death_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: "ON_DEATH",
+                    eventMatch: "ON_DEATH",
                 activeZone: ZoneRequirement.Graveyard, // Dies trigger fires from graveyard (Rule 603.10a)
                 targetDefinition: {
                     type: TargetType.AnyTarget,
@@ -33,3 +33,5 @@ export const GoblinArsonist: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

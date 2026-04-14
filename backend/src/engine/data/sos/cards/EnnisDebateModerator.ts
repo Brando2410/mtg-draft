@@ -18,8 +18,8 @@ export const EnnisDebateModerator: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
-            triggerCondition: 'OBJECT_IS_SELF',
+                    eventMatch: TriggerEvent.EnterBattlefield,
+            condition: 'OBJECT_IS_SELF',
             targetDefinition: {
                 type: 'Creature',
                 restrictions: ['YouControl', 'Other'],
@@ -38,14 +38,14 @@ export const EnnisDebateModerator: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EndStep,
-            triggerCondition: 'OUR_TURN && CARDS_EXILED_THIS_TURN',
+                    eventMatch: TriggerEvent.EndStep,
+            condition: 'OUR_TURN && CARDS_EXILED_THIS_TURN',
             effects: [
                 {
                     type: EffectType.AddCounters,
                     targetMapping: TargetMapping.Self,
                     amount: 1,
-                    value: '+1/+1'
+                    value: 'p1p1'
                 }
             ]
         }
@@ -53,3 +53,7 @@ export const EnnisDebateModerator: CardDefinition = {
     "power": "1",
     "toughness": "1"
 };
+
+
+
+

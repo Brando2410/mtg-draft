@@ -16,9 +16,9 @@ export const ElderGargaroth: Record<string, ImplementableCard> = {
             {
                 id: "gargaroth_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ATTACK_OR_BLOCK',
+                    eventMatch: 'ON_ATTACK_OR_BLOCK',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.sourceId === source.sourceId,
+                condition: (state: any, event: any, source: any) => event.sourceId === source.sourceId,
                 effects: [{
                     type: EffectType.Choice,
                     choices: [
@@ -50,3 +50,5 @@ export const ElderGargaroth: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

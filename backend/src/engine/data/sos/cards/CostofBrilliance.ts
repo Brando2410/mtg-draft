@@ -26,7 +26,7 @@ export const CostofBrilliance: CardDefinition = {
                             label: "Yes",
                             targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
                             effects: [
-                                { type: EffectType.AddCounters, amount: 1, startingCounters: { type: '+1/+1', amount: 1 }, targetMapping: TargetMapping.Target2 }
+                                { type: EffectType.AddCounters, amount: 1, startingCounters: { type: 'p1p1', amount: 1 }, targetMapping: TargetMapping.Target2 }
                             ]
                         },
                         { label: "No", effects: [] }
@@ -36,3 +36,5 @@ export const CostofBrilliance: CardDefinition = {
         }
     ]
 };
+
+

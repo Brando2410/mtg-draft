@@ -16,17 +16,17 @@ export const RinandSeriInseparable: Record<string, ImplementableCard> = {
             {
                 id: "rin_seri_cast_dog",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_CAST_SPELL',
+                    eventMatch: 'ON_CAST_SPELL',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId && event.data?.card?.definition?.subtypes?.includes('Dog'),
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId && event.data?.card?.definition?.subtypes?.includes('Dog'),
                 effects: [{ type: 'CreateToken', tokenBlueprint: { name: 'Cat', power: '1', toughness: '1', colors: ['G'], types: ['Creature'], subtypes: ['Cat'] }, targetMapping: 'CONTROLLER' }]
             },
             {
                 id: "rin_seri_cast_cat",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_CAST_SPELL',
+                    eventMatch: 'ON_CAST_SPELL',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId && event.data?.card?.definition?.subtypes?.includes('Cat'),
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId && event.data?.card?.definition?.subtypes?.includes('Cat'),
                 effects: [{ type: 'CreateToken', tokenBlueprint: { name: 'Dog', power: '1', toughness: '1', colors: ['W'], types: ['Creature'], subtypes: ['Dog'] }, targetMapping: 'CONTROLLER' }]
             },
             {
@@ -43,3 +43,5 @@ export const RinandSeriInseparable: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

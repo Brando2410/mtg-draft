@@ -35,3 +35,5 @@ export const QuandrixtheProof: CardDefinition = {
     "power": "6",
     "toughness": "6"
 };
+
+

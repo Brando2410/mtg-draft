@@ -17,8 +17,8 @@ export const LibraryLarcenist: Record<string, ImplementableCard> = {
                 id: "library_larcenist_trigger",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: ["ON_ATTACK", "ON_BLOCK"],
-                triggerCondition: (state: any, event: any, source: any) => {
+                    eventMatch: ["ON_ATTACK", "ON_BLOCK"],
+                condition: (state: any, event: any, source: any) => {
                     return event.sourceId === source.sourceId;
                 },
                 effects: [{
@@ -31,3 +31,5 @@ export const LibraryLarcenist: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

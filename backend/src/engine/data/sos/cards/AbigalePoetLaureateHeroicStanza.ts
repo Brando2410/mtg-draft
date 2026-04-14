@@ -38,7 +38,7 @@ export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
                 {
                     type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastSpell,
-                    triggerCondition: 'SPELL_IS_CREATURE',
+                    condition: 'SPELL_IS_CREATURE',
                     effects: [{ type: 'Prepare', targetMapping: TargetMapping.Self }]
                 }
             ],
@@ -62,7 +62,7 @@ export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
                         {
                             type: EffectType.AddCounters,
                             amount: 1,
-                            value: '+1/+1',
+                            value: 'p1p1',
                             targetMapping: TargetMapping.Target1
                         }
                     ]
@@ -71,3 +71,6 @@ export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
         }
     ]
 };
+
+
+

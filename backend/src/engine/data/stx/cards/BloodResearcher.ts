@@ -13,9 +13,10 @@ export const BloodResearcher: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.LifeGain,
+                    eventMatch: TriggerEvent.LifeGain,
             condition: 'YouGainedLife',
             effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Self }]
         }
     ]
   };
+

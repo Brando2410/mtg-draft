@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping, Restriction } from '@shared/engine_types';
 
 export const STX_RemovalStaples: CardDefinition[] = [
     {
@@ -13,7 +13,7 @@ export const STX_RemovalStaples: CardDefinition[] = [
                 targetDefinition: {
                     type: TargetType.Permanent,
                     count: 1,
-                    restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Artifact' }, { type: 'Type', value: 'Enchantment' }, { type: 'Type', value: 'Planeswalker' }] }]
+                    restrictions: [Restriction.Artifact, Restriction.Enchantment, Restriction.Planeswalker]
                 },
                 effects: [
                     {
@@ -36,7 +36,7 @@ export const STX_RemovalStaples: CardDefinition[] = [
                 targetDefinition: {
                     type: TargetType.Permanent,
                     count: 1,
-                    restrictions: [{ type: 'Monocolored' }]
+                    restrictions: [Restriction.Monocolored]
                 },
                 effects: [
                     {
@@ -63,7 +63,10 @@ export const STX_RemovalStaples: CardDefinition[] = [
                         choices: [
                             {
                                 label: '3 Damage to creature or planeswalker',
-                                targetDefinition: { type: TargetType.Permanent, count: 1, restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Type', value: 'Planeswalker' }] }] },
+                                targetDefinition: { 
+                                    type: TargetType.CreatureOrPlaneswalker, 
+                                    count: 1
+                                },
                                 effects: [
                                     {
                                         type: EffectType.DealDamage,
@@ -74,7 +77,10 @@ export const STX_RemovalStaples: CardDefinition[] = [
                             },
                             {
                                 label: 'Destroy artifact or enchantment',
-                                targetDefinition: { type: TargetType.Permanent, count: 1, restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Artifact' }, { type: 'Type', value: 'Enchantment' }] }] },
+                                targetDefinition: { 
+                                    type: TargetType.ArtifactOrEnchantment, 
+                                    count: 1
+                                },
                                 effects: [
                                     {
                                         type: EffectType.Destroy,

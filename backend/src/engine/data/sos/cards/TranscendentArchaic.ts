@@ -15,7 +15,7 @@ export const TranscendentArchaic: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.Choice,
@@ -54,3 +54,6 @@ export const TranscendentArchaic: CardDefinition = {
     "power": "6",
     "toughness": "6"
 };
+
+
+

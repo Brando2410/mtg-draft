@@ -19,7 +19,7 @@ export const Efflorescence: CardDefinition = {
                 { 
                     type: EffectType.AddCounters, 
                     amount: 2, 
-                    value: '+1/+1', 
+                    value: 'p1p1', 
                     targetMapping: TargetMapping.Target1 
                 },
                 { 
@@ -33,3 +33,5 @@ export const Efflorescence: CardDefinition = {
         }
     ]
 };
+
+

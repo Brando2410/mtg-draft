@@ -47,3 +47,5 @@ export const EmbracetheParadox: CardDefinition = {
         }
     ]
 };
+
+

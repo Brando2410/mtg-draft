@@ -14,8 +14,8 @@ export const GraduationDay: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            triggerEvent: TriggerEvent.CastInstantOrSorcery,
-            triggerCondition: 'EVENT_SPELL_TARGET_MATCHES:creature',
+                    eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: 'EVENT_SPELL_TARGET_MATCHES:creature',
             targetDefinition: {
                 type: TargetType.AnyTarget,
                 count: 1,
@@ -25,10 +25,14 @@ export const GraduationDay: CardDefinition = {
                 {
                     type: EffectType.AddCounters,
                     amount: 1,
-                    value: '+1/+1',
+                    value: 'p1p1',
                     targetMapping: 'TARGET_1'
                 }
             ]
         }
     ]
 };
+
+
+
+

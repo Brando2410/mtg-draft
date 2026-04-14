@@ -123,7 +123,7 @@ export const STX_Batch_10: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
                 effects: [{ type: EffectType.Learn }]
             }
         ]
@@ -145,3 +145,4 @@ export const STX_Batch_10: CardDefinition[] = [
         ]
     }
 ];
+

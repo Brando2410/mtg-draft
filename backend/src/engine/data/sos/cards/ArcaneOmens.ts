@@ -25,3 +25,5 @@ export const ArcaneOmens: CardDefinition = {
         }
     ]
 };
+
+

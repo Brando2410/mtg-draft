@@ -16,9 +16,9 @@ export const BoltHound: Record<string, ImplementableCard> = {
             {
                 id: "bolt_hound_attack_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ATTACK',
+                    eventMatch: 'ON_ATTACK',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     return event.data?.object?.id === source.sourceId;
                 },
                 effects: [{ type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 0, duration: 'UNTIL_END_OF_TURN', layer: 7, targetMapping: 'OTHER_CREATURES_YOU_CONTROL' }]
@@ -26,3 +26,5 @@ export const BoltHound: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

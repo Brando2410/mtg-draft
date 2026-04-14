@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, ZoneRequirement, TriggerEvent, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
 export const CaptureSphere: Record<string, ImplementableCard> = {
     "Capture Sphere": {
@@ -18,16 +18,15 @@ export const CaptureSphere: Record<string, ImplementableCard> = {
                 type: AbilityType.Spell,
                 activeZone: ZoneRequirement.Hand,
                 targetDefinition: {
-                    type: TargetType.Permanent,
+                    type: TargetType.Creature,
                     count: 1,
-                    restrictions: ["creature"]
                 },
                 oracleText: "Flash, Enchant creature"
             },
             {
                 id: "capture_sphere_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: "ON_ETB",
+                    eventMatch: TriggerEvent.EnterBattlefield,
                 activeZone: ZoneRequirement.Battlefield,
                 effects: [
                     {
@@ -54,3 +53,5 @@ export const CaptureSphere: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

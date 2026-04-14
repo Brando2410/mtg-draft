@@ -14,3 +14,5 @@ export const Mountain: CardDefinition = {
     "oracleText": "({T}: Add {R}.)",
     "abilities": []
 };
+
+

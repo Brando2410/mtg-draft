@@ -9,7 +9,7 @@ export const LoreholdExcavation: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EndStep,
+                    eventMatch: TriggerEvent.EndStep,
             condition: 'YourTurn',
             effects: [{ type: EffectType.Mill, amount: 1 }]
         },
@@ -41,3 +41,4 @@ export const LoreholdExcavation: CardDefinition = {
         }
     ]
   };
+

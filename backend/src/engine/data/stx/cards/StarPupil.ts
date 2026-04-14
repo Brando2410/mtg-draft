@@ -16,7 +16,7 @@ export const StarPupil: CardDefinition = {
             },
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
                 targetDefinition: {
                     count: 1,
                     type: TargetType.Permanent,
@@ -26,3 +26,4 @@ export const StarPupil: CardDefinition = {
             }
         ]
     };
+

@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const NoxiousNewt: CardDefinition = {
     "name": "Noxious Newt",
@@ -13,7 +13,24 @@ export const NoxiousNewt: CardDefinition = {
         "Salamander"
     ],
     "oracleText": "Deathtouch\n{T}: Add {G}.",
-    "abilities": [],
+    "keywords": ["Deathtouch"],
+    "abilities": [
+        {
+            type: AbilityType.Activated,
+            costs: [{ type: 'Tap', value: true }],
+            isManaAbility: true,
+            effects: [
+                {
+                    type: EffectType.AddMana,
+                    mana: '{G}',
+                    targetMapping: TargetMapping.Controller
+                }
+            ]
+        }
+    ],
     "power": "1",
     "toughness": "2"
 };
+
+
+

@@ -18,8 +18,8 @@ export const InformedInkwright: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
-            triggerCondition: 'REPARTEE_TRIGGER',
+                    eventMatch: TriggerEvent.CastSpell,
+            condition: 'REPARTEE_TRIGGER',
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -41,3 +41,7 @@ export const InformedInkwright: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
+
+
+

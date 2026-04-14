@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from '@shared/engine_types';
 
 export const Eliminate: Record<string, ImplementableCard> = {
     "Eliminate": {
@@ -17,8 +17,12 @@ export const Eliminate: Record<string, ImplementableCard> = {
                 id: "eliminate_spell",
                 type: AbilityType.Spell,
                 activeZone: ZoneRequirement.Stack,
-                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['CreatureOrPlaneswalker', 'CMC<=3'] },
-                effects: [{ type: 'Destroy', targetMapping: 'TARGET_1' }]
+                targetDefinition: { 
+                    type: TargetType.CreatureOrPlaneswalker, 
+                    count: 1, 
+                    restrictions: ['mv <= 3'] 
+                },
+                effects: [{ type: EffectType.Destroy, targetMapping: 'TARGET_1' }]
             }
         ]
     }

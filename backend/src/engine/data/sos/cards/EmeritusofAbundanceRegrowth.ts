@@ -78,3 +78,5 @@ export const EmeritusofAbundanceRegrowth: CardDefinition = {
         }
     ]
 };
+
+

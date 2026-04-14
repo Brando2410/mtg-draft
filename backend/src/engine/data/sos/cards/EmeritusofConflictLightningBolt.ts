@@ -74,3 +74,5 @@ export const EmeritusofConflictLightningBolt: CardDefinition = {
         }
     ]
 };
+
+

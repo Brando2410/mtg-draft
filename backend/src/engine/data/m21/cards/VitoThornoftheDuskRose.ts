@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, Restriction, GameEvent, GameObject, TargetType } from '@shared/engine_types';
 
 export const VitoThornoftheDuskRose: Record<string, ImplementableCard> = {
     "Vito, Thorn of the Dusk Rose": {
@@ -16,11 +16,11 @@ export const VitoThornoftheDuskRose: Record<string, ImplementableCard> = {
             {
                 id: "vito_life_gain_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_LIFE_GAIN',
+                    eventMatch: 'ON_LIFE_GAIN',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
-                targetDefinition: { type: TargetType.Player, count: 1, restrictions: ['Opponent'] },
-                effects: [{ type: 'LoseLife', amount: 'EVENT_AMOUNT', targetMapping: 'TARGET_1' }]
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                targetDefinition: { type: TargetType.Player, count: 1, restrictions: [Restriction.Opponents] },
+                effects: [{ type: EffectType.LoseLife, amount: 'EVENT_AMOUNT', targetMapping: 'TARGET_1' }]
             },
             {
                 id: "vito_activated_lifelink",
@@ -32,3 +32,5 @@ export const VitoThornoftheDuskRose: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

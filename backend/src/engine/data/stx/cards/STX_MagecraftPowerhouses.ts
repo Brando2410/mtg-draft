@@ -25,7 +25,7 @@ export const STX_MagecraftPowerhouses: CardDefinition[] = [
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -59,7 +59,7 @@ export const STX_MagecraftPowerhouses: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.DrawCards,
@@ -82,7 +82,7 @@ export const STX_MagecraftPowerhouses: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -107,7 +107,7 @@ export const STX_MagecraftPowerhouses: CardDefinition[] = [
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.AddCounters,
@@ -132,3 +132,4 @@ export const STX_MagecraftPowerhouses: CardDefinition[] = [
     ]
   }
 ];
+

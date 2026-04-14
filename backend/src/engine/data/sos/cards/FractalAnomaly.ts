@@ -29,7 +29,7 @@ export const FractalAnomaly: CardDefinition = {
                     },
                     next: {
                         type: EffectType.AddCounters,
-                        counterType: '+1/+1',
+                        counterType: 'p1p1',
                         amount: DynamicAmount.CardsDrawnThisTurn,
                         targetMapping: TargetMapping.LastCreatedToken
                     }
@@ -38,3 +38,5 @@ export const FractalAnomaly: CardDefinition = {
         }
     ],
 };
+
+

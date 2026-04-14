@@ -19,7 +19,7 @@ export const FractalMascot: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
                 type: TargetType.Permanent,
                 count: 1,
@@ -42,3 +42,6 @@ export const FractalMascot: CardDefinition = {
     "power": "6",
     "toughness": "6"
 };
+
+
+

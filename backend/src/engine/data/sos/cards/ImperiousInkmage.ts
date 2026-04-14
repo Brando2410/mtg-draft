@@ -19,7 +19,7 @@ export const ImperiousInkmage: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.Scry, // engine uses Scry for both scry and surveil if zone is graveyard
@@ -33,3 +33,6 @@ export const ImperiousInkmage: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
+
+

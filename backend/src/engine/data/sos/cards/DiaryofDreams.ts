@@ -14,8 +14,8 @@ export const DiaryofDreams: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastInstantOrSorcery,
-            triggerCondition: 'PLAYER_IS_CONTROLLER', // Repartee-style or generic
+                    eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: 'PLAYER_IS_CONTROLLER', // Repartee-style or generic
             effects: [
                 { 
                     type: EffectType.AddCounters, 
@@ -41,3 +41,7 @@ export const DiaryofDreams: CardDefinition = {
         }
     ]
 };
+
+
+
+

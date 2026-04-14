@@ -34,8 +34,8 @@ export const STX_Rares_Mythics_Batch_1: CardDefinition[] = [
             },
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Death,
-                triggerCondition: "AnotherNontokenCreatureYouControlDies",
+                    eventMatch: TriggerEvent.Death,
+                condition: "AnotherNontokenCreatureYouControlDies",
                 effects: [{
                     type: EffectType.Choice,
                     label: "Hofri: Exile and create Spirit token?",
@@ -51,7 +51,7 @@ export const STX_Rares_Mythics_Batch_1: CardDefinition[] = [
                                 storeLinkedId: 'HOFRI_EXILE',
                                 abilitiesToAdd: [{
                                     type: AbilityType.Triggered,
-                                    eventMatch: TriggerEvent.LeaveBattlefield,
+                    eventMatch: TriggerEvent.LeaveBattlefield,
                                     effects: [{ type: EffectType.MoveToZone, zone: Zone.Graveyard, targetMapping: 'LINKED_OBJECT', linkKey: 'HOFRI_EXILE' }]
                                 }]
                             }
@@ -73,7 +73,7 @@ export const STX_Rares_Mythics_Batch_1: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
                 effects: [
                     { type: EffectType.LoseLife, amount: 2, targetMapping: TargetMapping.EachOpponent },
                     { type: EffectType.GainLife, amount: 2, targetMapping: TargetMapping.Controller }
@@ -170,7 +170,7 @@ export const STX_Rares_Mythics_Batch_1: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Upkeep,
+                    eventMatch: TriggerEvent.Upkeep,
                 effects: [{ 
                     type: EffectType.CreateToken, 
                     tokenBlueprint: { 
@@ -182,7 +182,7 @@ export const STX_Rares_Mythics_Batch_1: CardDefinition[] = [
                         subtypes: ['Pest'],
                         abilities: [{
                             type: AbilityType.Triggered,
-                            eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
                             effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
                         }]
                     } 
@@ -210,14 +210,14 @@ export const STX_Rares_Mythics_Batch_1: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
                 targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Source', value: 'CONTROLLER' }] },
                 effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: DynamicAmount.SourcePower, targetMapping: TargetMapping.Target1 }]
             },
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Attack,
-                triggerCondition: "SelfAttacks",
+                    eventMatch: TriggerEvent.Attack,
+                condition: "SelfAttacks",
                 effects: [{
                     type: EffectType.ApplyContinuousEffect,
                     duration: 'UNTIL_END_OF_TURN',
@@ -230,3 +230,5 @@ export const STX_Rares_Mythics_Batch_1: CardDefinition[] = [
         ]
     }
 ];
+
+

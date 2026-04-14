@@ -12,7 +12,7 @@ export const ManifestationSage: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [{
                 type: EffectType.CreateToken,
                 tokenBlueprint: {
@@ -29,3 +29,4 @@ export const ManifestationSage: CardDefinition = {
         }
     ]
   };
+

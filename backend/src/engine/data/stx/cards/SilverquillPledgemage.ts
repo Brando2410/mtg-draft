@@ -12,7 +12,7 @@ export const SilverquillPledgemage: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.Choice,
@@ -26,3 +26,4 @@ export const SilverquillPledgemage: CardDefinition = {
         }
     ]
   };
+

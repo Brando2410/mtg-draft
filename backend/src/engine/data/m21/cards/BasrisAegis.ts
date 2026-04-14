@@ -18,15 +18,14 @@ export const BasrisAegis: Record<string, ImplementableCard> = {
                 type: AbilityType.Spell,
                 activeZone: ZoneRequirement.Stack,
                 targetDefinition: {
-                    type: TargetType.Permanent,
-                    restrictions: ["creature"],
+                    type: TargetType.Creature,
                     count: 2,
                     minCount: 0
                 },
                 effects: [
                     {
                         type: EffectType.AddCounters,
-                        value: "+1/+1",
+                        counterType: "p1p1",
                         amount: 1,
                         targetMapping: "TARGET_ALL"
                     },

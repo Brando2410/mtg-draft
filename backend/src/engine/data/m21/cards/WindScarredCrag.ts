@@ -17,9 +17,9 @@ export const WindScarredCrag: Record<string, ImplementableCard> = {
             {
                 id: "wind_scarred_crag_etb_life",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     return event.data?.object?.id === source.sourceId;
                 },
                 effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: 'CONTROLLER' }]
@@ -43,3 +43,5 @@ export const WindScarredCrag: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

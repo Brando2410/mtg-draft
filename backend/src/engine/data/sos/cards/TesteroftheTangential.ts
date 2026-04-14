@@ -13,24 +13,12 @@ export const TesteroftheTangential: CardDefinition = {
         "Djinn",
         "Wizard"
     ],
+    "keywords": ["Increment"],
     "oracleText": "Increment (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.)\nAt the beginning of combat on your turn, you may pay {X}. When you do, move X +1/+1 counters from this creature onto another target creature.",
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
-            condition: ConditionType.SpentManaGtPowerOrToughness,
-            effects: [
-                {
-                    type: EffectType.AddCounters,
-                    counterType: 'P1P1',
-                    amount: 1,
-                    targetMapping: TargetMapping.Self
-                }
-            ]
-        },
-        {
-            type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.BeginningOfCombatStep,
+                    eventMatch: TriggerEvent.BeginningOfCombatStep,
             condition: ConditionType.PlayerIsController,
             effects: [
                 {
@@ -80,3 +68,6 @@ export const TesteroftheTangential: CardDefinition = {
     "power": "1",
     "toughness": "1"
 };
+
+
+

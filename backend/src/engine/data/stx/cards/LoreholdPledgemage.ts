@@ -13,8 +13,9 @@ export const LoreholdPledgemage: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 1, toughnessModifier: 1, duration: 'UNTIL_END_OF_TURN', targetMapping: TargetMapping.Self }]
         }
     ]
   };
+

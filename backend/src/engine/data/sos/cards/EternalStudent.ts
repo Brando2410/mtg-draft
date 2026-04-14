@@ -40,3 +40,5 @@ export const EternalStudent: CardDefinition = {
     "power": "4",
     "toughness": "2"
 };
+
+

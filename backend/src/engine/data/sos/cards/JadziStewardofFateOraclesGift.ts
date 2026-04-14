@@ -16,7 +16,6 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
         "Wizard"
     ],
     "oracleText": "Jadzi enters prepared.\nWhen Jadzi enters, draw two cards, then discard two cards.\nOracle's Gift: Create X 0/0 green and blue Fractal creature tokens, then put X +1/+1 counters on each Fractal you control.",
-    "entersPrepared": true,
     "abilities": [],
     "power": "2",
     "toughness": "4",
@@ -34,6 +33,7 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
                 "Wizard"
             ],
             "oracleText": "Jadzi enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)\nWhen Jadzi enters, draw two cards, then discard two cards.",
+            "entersPrepared": true,
             "abilities": [
                 {
                     type: AbilityType.Triggered,
@@ -68,9 +68,10 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
                         },
                         {
                             type: EffectType.AddCounters,
-                            counterType: "plus1plus1",
+                            counterType: 'p1p1',
                             amount: "X",
-                            targetMapping: "ALL_FRACTALS_YOU_CONTROL"
+                            targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
+                            restrictions: ['Fractal']
                         }
                     ]
                 }
@@ -78,3 +79,6 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
         }
     ]
 };
+
+
+

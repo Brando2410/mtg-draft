@@ -45,3 +45,5 @@ export const SilverquilltheDisputant: CardDefinition = {
     "power": "4",
     "toughness": "4"
 };
+
+

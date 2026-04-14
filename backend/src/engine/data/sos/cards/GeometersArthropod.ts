@@ -18,8 +18,8 @@ export const GeometersArthropod: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
-            triggerCondition: 'PLAYER_IS_CONTROLLER && EVENT_OBJECT_HAS_X',
+                    eventMatch: TriggerEvent.CastSpell,
+            condition: 'PLAYER_IS_CONTROLLER && EVENT_OBJECT_HAS_X',
             effects: [
                 {
                     type: EffectType.LookAtTopAndPick,
@@ -34,3 +34,7 @@ export const GeometersArthropod: CardDefinition = {
     "power": "1",
     "toughness": "4"
 };
+
+
+
+

@@ -17,7 +17,7 @@ export const EnvironmentalScientist: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             optional: true,
             effects: [
                 {
@@ -34,3 +34,6 @@ export const EnvironmentalScientist: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
+
+

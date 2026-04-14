@@ -17,8 +17,8 @@ export const KitesailFreebooter: Record<string, ImplementableCard> = {
                 id: "kitesail_freebooter_etb",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: "ON_ETB",
-                triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
+                    eventMatch: "ON_ETB",
+                condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
                 targetDefinition: {
                     type: TargetType.Player,
                     count: 1,
@@ -40,8 +40,8 @@ export const KitesailFreebooter: Record<string, ImplementableCard> = {
                             },
                             {
                                 type: "AddTriggeredAbility",
-                                eventMatch: "ON_LEAVE_BATTLEFIELD",
-                                triggerCondition: (state: any, event: any, t: any) => event.sourceId === t.sourceId,
+                    eventMatch: "ON_LEAVE_BATTLEFIELD",
+                                condition: (state: any, event: any, t: any) => event.sourceId === t.sourceId,
                                 effects: [{
                                     type: EffectType.MoveToZone,
                                     destination: Zone.Hand,
@@ -57,3 +57,5 @@ export const KitesailFreebooter: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

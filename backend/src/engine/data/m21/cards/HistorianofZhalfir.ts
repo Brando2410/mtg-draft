@@ -16,9 +16,9 @@ export const HistorianofZhalfir: Record<string, ImplementableCard> = {
             {
                 id: "historian_of_zhalfir_attack_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: "ON_ATTACK",
+                    eventMatch: "ON_ATTACK",
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     if (event.sourceId !== source.sourceId) return false;
                     // Rule 102.1: Teferi planeswalker means a planeswalker with the "Teferi" subtype.
                     return state.battlefield.some((o: any) => 
@@ -37,3 +37,5 @@ export const HistorianofZhalfir: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

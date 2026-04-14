@@ -16,12 +16,14 @@ export const BonePitBrute: Record<string, ImplementableCard> = {
             {
                 id: "bone_pit_brute_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
+                condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
                 targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
                 effects: [{ type: 'ApplyContinuousEffect', powerModifier: 4, toughnessModifier: 0, duration: 'UNTIL_END_OF_TURN', layer: 7, targetMapping: 'TARGET_1' }]
             }
         ]
     }
 };
+
+

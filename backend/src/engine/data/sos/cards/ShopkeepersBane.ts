@@ -18,7 +18,7 @@ export const ShopkeepersBane: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Attack,
+                    eventMatch: TriggerEvent.Attack,
             effects: [
                 { type: EffectType.GainLife, amount: 2, targetMapping: TargetMapping.Controller }
             ]
@@ -27,3 +27,6 @@ export const ShopkeepersBane: CardDefinition = {
     "power": "4",
     "toughness": "2"
 };
+
+
+

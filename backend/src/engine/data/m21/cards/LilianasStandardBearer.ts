@@ -17,7 +17,7 @@ export const LilianasStandardBearer: Record<string, ImplementableCard> = {
                 id: "lilianas_standard_bearer_etb",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 effects: [
                     {
                         type: EffectType.DrawCards,
@@ -29,3 +29,5 @@ export const LilianasStandardBearer: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

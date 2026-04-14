@@ -29,10 +29,12 @@ export const StormwingEntity: Record<string, ImplementableCard> = {
             {
                 id: "stormwing_etb_scry",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
                 effects: [{ type: 'Scry', amount: 2, targetMapping: 'CONTROLLER' }]
             }
         ]
     }
 };
+
+

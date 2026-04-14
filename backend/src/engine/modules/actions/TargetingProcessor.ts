@@ -109,18 +109,45 @@ export class TargetingProcessor {
         const isPlayerTargetOnly = typeLineCheck === 'player';
         if (isPlayerTargetOnly) return false;
 
-        if (typeLineCheck === 'anytarget') {
+        const coreTypes = [
+            'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 'permanent', 
+            'instant', 'sorcery', 'instant_or_sorcery', 'artifact_or_creature', 
+            'artifact_or_enchantment', 'creature_or_planeswalker', 'nonland_permanent'
+        ];
+        
+        if (typeLineCheck === 'anytarget' || coreTypes.includes(typeLineCheck)) {
             const stats = LayerProcessor.getEffectiveStats(targetObj, state);
-            const isValidAnyTarget = stats.types.some((t: string) => {
-                const lt = t.toLowerCase();
-                return lt === 'creature' || lt === 'planeswalker';
-            });
-            if (!isValidAnyTarget) return false;
+            const combinedTypes = [
+                ...(stats.types || []),
+                ...(stats.supertypes || [])
+            ].map(t => t.toLowerCase());
+            
+            if (typeLineCheck === 'anytarget') {
+                const isValidAnyTarget = combinedTypes.some((t: string) => t === 'creature' || t === 'planeswalker');
+                if (!isValidAnyTarget) return false;
+            } else if (typeLineCheck === 'permanent') {
+                const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
+                if (!combinedTypes.some(t => permTypes.includes(t))) return false;
+            } else if (typeLineCheck === 'instant_or_sorcery') {
+                if (!combinedTypes.includes('instant') && !combinedTypes.includes('sorcery')) return false;
+            } else if (typeLineCheck === 'artifact_or_creature') {
+                if (!combinedTypes.includes('artifact') && !combinedTypes.includes('creature')) return false;
+            } else if (typeLineCheck === 'artifact_or_enchantment') {
+                if (!combinedTypes.includes('artifact') && !combinedTypes.includes('enchantment')) return false;
+            } else if (typeLineCheck === 'creature_or_planeswalker') {
+                if (!combinedTypes.includes('creature') && !combinedTypes.includes('planeswalker')) return false;
+            } else if (typeLineCheck === 'nonland_permanent') {
+                const permTypes = ['artifact', 'creature', 'enchantment', 'planeswalker'];
+                if (!combinedTypes.some(t => permTypes.includes(t))) return false;
+            } else {
+                if (!combinedTypes.includes(typeLineCheck)) return false;
+            }
         }
 
         let expectedZone = abilityTargetDef?.zone;
         if (!expectedZone) {
             if (targetZone === Zone.Stack) expectedZone = Zone.Stack;
+            else if (['instant', 'sorcery', 'instant_or_sorcery'].includes(typeLineCheck)) expectedZone = Zone.Stack;
             else if (abilityTargetDef?.type === 'CardInGraveyard' || String(abilityTargetDef?.type).toLowerCase() === 'cardingraveyard') expectedZone = Zone.Graveyard;
             else if (abilityTargetDef?.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'graveyard')) expectedZone = Zone.Graveyard;
             else expectedZone = Zone.Battlefield;
@@ -364,6 +391,9 @@ export class TargetingProcessor {
             if (lr === 'instantorsorcerycastthisturn') {
                 if (controllerId && !state.turnState.instantOrSorceryCastThisTurn[controllerId]) return false;
             }
+            if (lr === 'hasxinmanacost') {
+                if (!definition.manaCost?.includes('X')) return false;
+            }
 
             // --- COUNTER CHECK (Rule 122) ---
             if (lr.startsWith('hascounter_')) {
@@ -386,8 +416,14 @@ export class TargetingProcessor {
                 'nonland', 'noncreature', 'nonartifact', 'nonenchantment', 'nonplaneswalker',
                 'graveyard', 'other', 'another', 'notcontrolled', 'opponentcontrol', 'youcontrol', 'self', 'legendary',
                 'tapped', 'untapped', 'yours', 'opponents', 'attackingorblocking', 'basic',
-                'instantorsorcerycastthisturn', 'player', 'anytarget', 'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 'instant', 'sorcery'
+                'instantorsorcerycastthisturn', 'player', 'anytarget', 'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 
+                'instant', 'sorcery', 'hasxinmanacost', 'monocolored', 'multicolored', 'colorless'
             ].includes(lr) || lr.startsWith('cmc') || lr.startsWith('mv') || lr.startsWith('power') || lr.startsWith('toughness') || lr.startsWith('hascounter');
+
+            if (['monocolored', 'multicolored', 'colorless'].includes(lr)) {
+                if (!this.sourceHasQualities(targetObj, [lr], state)) return false;
+                continue;
+            }
 
             if (!isKnownFilter && !baseTypes.includes(lr)) {
                 const targetName = (definition?.name || targetObj.name || "").toLowerCase();
@@ -417,7 +453,31 @@ export class TargetingProcessor {
                     if (lr === 'artifact_or_creature') {
                         return objTypes.includes('artifact') || objTypes.includes('creature');
                     }
-                    return objTypes.includes(lr);
+                    if (lr === 'artifact_or_enchantment') {
+                        return objTypes.includes('artifact') || objTypes.includes('enchantment');
+                    }
+                    if (lr === 'creature_or_planeswalker') {
+                        return objTypes.includes('creature') || objTypes.includes('planeswalker');
+                    }
+                    if (lr === 'nonland_permanent') {
+                        const permTypes = ['artifact', 'creature', 'enchantment', 'planeswalker'];
+                        return objTypes.some((t: string) => permTypes.includes(t.toLowerCase()));
+                    }
+
+                    if (lr.includes('_or_')) {
+                        const parts = lr.split('_or_');
+                        return parts.some(p => {
+                            const lp = p.trim();
+                            const singular = lp.endsWith('s') ? lp.slice(0, -1) : lp;
+                            return objTypes.includes(lp) || 
+                                   (definition.subtypes || []).some((s: string) => s.toLowerCase() === lp || s.toLowerCase() === singular);
+                        });
+                    }
+
+                    const singularLr = lr.endsWith('s') ? lr.slice(0, -1) : lr;
+                    return objTypes.includes(lr) || 
+                           (definition.subtypes || []).some((s: string) => s.toLowerCase() === lr || s.toLowerCase() === singularLr) ||
+                           (definition.name || "").toLowerCase() === lr;
                 } else {
                     let match = true;
                     const rTypes = r.types || (r.type ? [r.type] : []);
@@ -431,8 +491,8 @@ export class TargetingProcessor {
                         const filterName = r.nameEquals || r.name || "";
                         if (!targetName || targetName.toLowerCase() !== filterName.toLowerCase()) match = false;
                     }
+                    if (r.hasxinmanacost && !definition.manaCost?.includes('X')) match = false;
                     if (r.type === 'ManaValue' || r.type === 'MV' || r.type === 'ManaValueLe') {
-                        const { ManaProcessor } = require('./../magic/ManaProcessor');
                         const mv = ManaProcessor.getManaValue(definition.manaCost || '');
                         let val = r.value;
                         if (val === 'X') {
@@ -440,6 +500,9 @@ export class TargetingProcessor {
                                 ((state.pendingAction as any)?.sourceId === sourceId ? (state.pendingAction as any)?.xValue : 0));
                         } else if (val === 'GAINED_LIFE_AMOUNT') {
                             val = state.turnState.lifeGainedThisTurn[controllerId || ''] || 0;
+                        } else if (val === 'CONVERGE_AMOUNT') {
+                            const sourceObj = this.findObjectInAnyZone(state, sourceId);
+                            val = (sourceObj as any)?.convergeAmount || 0;
                         }
                         
                         const comp = r.type === 'ManaValueLe' ? 'LessOrEqual' : (r.comparison || 'Equal');
@@ -617,6 +680,8 @@ export class TargetingProcessor {
             const pool = [
                 ...Object.keys(state.players),
                 ...state.battlefield.map((o: any) => o.id),
+                ...state.exile.map((o: any) => o.id),
+                ...state.stack.map((o: any) => o.id),
                 ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
             ];
             actionData.targets = pool.filter(tid => this.isLegalTarget(state, state.pendingAction!.sourceId, tid, targetDef, nextIndex));
@@ -735,7 +800,6 @@ export class TargetingProcessor {
         parentContext?: any
     ): string[] {
         const eventData = stackData?.eventData;
-        const { LayerProcessor } = require('../state/LayerProcessor');
 
         switch (mapping) {
             case 'SELF':
@@ -758,6 +822,13 @@ export class TargetingProcessor {
                 return (state as any).lastCreatedTokenId ? [(state as any).lastCreatedTokenId] : [];
             case 'LAST_EXILED_IDS':
                 return (state as any).lastExiledIds || [];
+            case 'PARENT_CONTEXT_EXILED_IDS':
+                return parentContext?.exiledIds || [];
+            case 'PARENT_CONTEXT_EXILED_IDS_OWNERS': {
+                const ids = parentContext?.exiledIds || [];
+                const owners = ids.map((id: string) => this.findObjectInAnyZone(state, id)?.ownerId).filter(Boolean) as string[];
+                return [...new Set(owners)];
+            }
             case 'LAST_MILLED_IDS':
                 return (state as any).lastMilledIds || [];
             case 'TARGET_1': return [targets[0]];
@@ -765,6 +836,10 @@ export class TargetingProcessor {
             case 'TARGET_2': return [targets[1]];
             case 'TARGET_3': return [targets[2]];
             case 'TARGET_4': return [targets[3]];
+            case 'TARGET_5': return [targets[4]];
+            case 'TARGET_6': return [targets[5]];
+            case 'TARGET_7': return [targets[6]];
+            case 'TARGET_8': return [targets[7]];
             case 'TARGET_ALL': return targets;
             case 'MATCHING_PERMANENTS_YOU_CONTROL':
                 if (!effect?.restrictions) return [];
@@ -785,9 +860,11 @@ export class TargetingProcessor {
             case 'EVENT_PLAYER':
                 return eventData?.playerId ? [eventData.playerId] : [];
             case 'TARGET_1_CONTROLLER': {
-                const obj = state.battlefield.find(o => o.id === targets[0]) ||
-                    Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === targets[0]) ||
-                    state.exile.find(o => o.id === targets[0]);
+                const targetId = targets[0];
+                const obj = state.battlefield.find(o => o.id === targetId) ||
+                    state.stack.find(s => s.id === targetId || s.card?.id === targetId) ||
+                    Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === targetId) ||
+                    state.exile.find(o => o.id === targetId);
                 return obj ? [obj.controllerId] : [];
             }
             case 'TRIGGER_TARGET_CONTROLLER': {
@@ -868,6 +945,10 @@ export class TargetingProcessor {
                 const chosenId = targets[0];
                 return state.battlefield
                     .filter(o => o.id !== chosenId && (o.definition.types.some(t => t.toLowerCase() === 'creature') || o.definition.types.some(t => t.toLowerCase() === 'planeswalker')))
+                    .map(o => o.id);
+            case 'ALL_CREATURES_AND_PLANESWALKERS':
+                return state.battlefield
+                    .filter(o => o.definition.types.some(t => t.toLowerCase() === 'creature') || o.definition.types.some(t => t.toLowerCase() === 'planeswalker'))
                     .map(o => o.id);
             case 'ALL_CREATURES_CONTROLLED_BY_TARGET_1':
                 const targetPlayerId = targets[0];

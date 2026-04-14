@@ -16,9 +16,9 @@ export const SanctumofShatteredHeights: Record<string, ImplementableCard> = {
             {
                 id: "sanctum_shattered_heights_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_PRE_COMBAT_MAIN_PHASE_START',
+                    eventMatch: 'ON_PRE_COMBAT_MAIN_PHASE_START',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 costs: [{ type: 'Mana', value: '{1}' }, { type: 'Discard', targetMapping: 'SELF' }], // Wait, Shattered Heights cost is discard card
                 effects: [{ type: 'DealDamage', amount: 'COUNT_Shrine', targetMapping: 'TARGET_1' }],
                 targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'Planeswalker'] }
@@ -26,3 +26,5 @@ export const SanctumofShatteredHeights: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

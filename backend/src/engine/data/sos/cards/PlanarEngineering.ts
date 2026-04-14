@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const PlanarEngineering: CardDefinition = {
     "name": "Planar Engineering",
@@ -11,5 +11,27 @@ export const PlanarEngineering: CardDefinition = {
     ],
     "subtypes": [],
     "oracleText": "Sacrifice two lands. Search your library for four basic land cards, put them onto the battlefield tapped, then shuffle.",
-    "abilities": []
+    "abilities": [
+        {
+            type: AbilityType.Spell,
+            effects: [
+                {
+                    type: EffectType.Sacrifice,
+                    targetMapping: TargetMapping.Controller,
+                    amount: 2,
+                    restrictions: ['Land']
+                },
+                {
+                    type: EffectType.SearchLibrary,
+                    amount: 4,
+                    restrictions: ['Basic', 'Land'],
+                    destination: Zone.Battlefield,
+                    tapped: true,
+                    shuffle: true
+                }
+            ]
+        }
+    ]
 };
+
+

@@ -15,9 +15,9 @@ export const TempleOfMystery: Record<string, ImplementableCard> = {
             {
                 type: AbilityType.Triggered,
                 id: "temple_of_mystery_etb_scry",
-                triggerEvent: "ON_ETB",
+                    eventMatch: "ON_ETB",
                 activeZone: Zone.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     return event.data?.object?.id === source.sourceId;
                 },
                 effects: [{ type: EffectType.Scry, amount: 1, targetMapping: 'CONTROLLER' }]
@@ -41,3 +41,5 @@ export const TempleOfMystery: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

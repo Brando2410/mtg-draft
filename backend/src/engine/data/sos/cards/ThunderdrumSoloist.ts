@@ -18,7 +18,7 @@ export const ThunderdrumSoloist: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
+                    eventMatch: TriggerEvent.CastSpell,
             condition: 'PLAYER_IS_CONTROLLER && (EVENT_OBJECT_MATCHES:Instant || EVENT_OBJECT_MATCHES:Sorcery)',
             effects: [
                 {
@@ -41,3 +41,6 @@ export const ThunderdrumSoloist: CardDefinition = {
     "power": "1",
     "toughness": "3"
 };
+
+
+

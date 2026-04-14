@@ -16,9 +16,9 @@ export const GarruksUprising: Record<string, ImplementableCard> = {
             {
                 id: "garruk_uprising_etb_draw",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => state.battlefield.some((o: any) => o.controllerId === source.controllerId && (o.effectiveStats?.power || 0) >= 4),
+                condition: (state: any, event: any, source: any) => state.battlefield.some((o: any) => o.controllerId === source.controllerId && (o.effectiveStats?.power || 0) >= 4),
                 effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }]
             },
             {
@@ -30,11 +30,13 @@ export const GarruksUprising: Record<string, ImplementableCard> = {
             {
                 id: "garruk_uprising_creature_etb_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB_OTHER',
+                    eventMatch: 'ON_ETB_OTHER',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.target.controllerId === source.controllerId && (event.target.effectiveStats?.power || 0) >= 4 && event.target.id !== source.sourceId,
+                condition: (state: any, event: any, source: any) => event.target.controllerId === source.controllerId && (event.target.effectiveStats?.power || 0) >= 4 && event.target.id !== source.sourceId,
                 effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }]
             }
         ]
     }
 };
+
+

@@ -23,14 +23,14 @@ export const TamObservantSequencerDeepSight: CardDefinition = {
         {
             type: AbilityType.Triggered,
             id: 'Landfall',
-            eventMatch: TriggerEvent.EnterBattlefieldOther,
+                    eventMatch: TriggerEvent.EnterBattlefieldOther,
             restrictions: [
                 {
                     type: 'Type',
                     value: 'Land'
                 }
             ],
-            triggerCondition: 'PLAYER_IS_CONTROLLER',
+            condition: 'PLAYER_IS_CONTROLLER',
             effects: [
                 {
                     type: EffectType.Prepare,
@@ -73,7 +73,7 @@ export const TamObservantSequencerDeepSight: CardDefinition = {
                             value: 'Land'
                         }
                     ],
-                    triggerCondition: 'PLAYER_IS_CONTROLLER',
+                    condition: 'PLAYER_IS_CONTROLLER',
                     effects: [
                         {
                             type: EffectType.Prepare,
@@ -115,3 +115,7 @@ export const TamObservantSequencerDeepSight: CardDefinition = {
         }
     ]
 };
+
+
+
+

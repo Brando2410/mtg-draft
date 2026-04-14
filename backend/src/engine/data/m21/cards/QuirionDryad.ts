@@ -17,8 +17,8 @@ export const QuirionDryad: Record<string, ImplementableCard> = {
                 id: "quirion_dryad_trigger",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: 'ON_CAST_SPELL',
-                triggerCondition: (state: any, event: any, triggerDef: any) => {
+                    eventMatch: 'ON_CAST_SPELL',
+                condition: (state: any, event: any, triggerDef: any) => {
                     const card = event.data?.card;
                     if (!card) return false;
                     const colors = card.definition?.colors || [];
@@ -36,3 +36,5 @@ export const QuirionDryad: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

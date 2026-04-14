@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from "@shared/engine_types";
 
 export const FuroroftheBitten: Record<string, ImplementableCard> = {
     "Furor of the Bitten": {
@@ -18,9 +18,8 @@ export const FuroroftheBitten: Record<string, ImplementableCard> = {
                 type: AbilityType.Spell,
                 activeZone: ZoneRequirement.Hand,
                 targetDefinition: {
-                    type: TargetType.Permanent,
-                    count: 1,
-                    restrictions: ["creature"]
+                    type: TargetType.Creature,
+                    count: 1
                 },
                 oracleText: "Enchant creature"
             },

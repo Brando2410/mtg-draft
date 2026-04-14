@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount, Restriction } from '@shared/engine_types';
 
 export const RipApart: CardDefinition = {
         name: 'Rip Apart',
@@ -16,7 +16,11 @@ export const RipApart: CardDefinition = {
                         choices: [
                             {
                                 label: '3 Damage to creature or planeswalker',
-                                targetDefinition: { type: TargetType.Permanent, count: 1, restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Type', value: 'Planeswalker' }] }] },
+                                targetDefinition: { 
+                                    type: TargetType.Permanent, 
+                                    count: 1, 
+                                    restrictions: [Restriction.Creature, Restriction.Planeswalker] 
+                                },
                                 effects: [
                                     {
                                         type: EffectType.DealDamage,
@@ -27,7 +31,11 @@ export const RipApart: CardDefinition = {
                             },
                             {
                                 label: 'Destroy artifact or enchantment',
-                                targetDefinition: { type: TargetType.Permanent, count: 1, restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Artifact' }, { type: 'Type', value: 'Enchantment' }] }] },
+                                targetDefinition: { 
+                                    type: TargetType.Permanent, 
+                                    count: 1, 
+                                    restrictions: [Restriction.Artifact, Restriction.Enchantment] 
+                                },
                                 effects: [
                                     {
                                         type: EffectType.Destroy,

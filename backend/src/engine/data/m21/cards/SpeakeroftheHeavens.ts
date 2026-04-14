@@ -18,9 +18,10 @@ export const SpeakeroftheHeavens: Record<string, ImplementableCard> = {
                 type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Tap', value: null }],
-                triggerCondition: (state: any) => state.players[state.activePlayerId].life >= 27, // 20 + 7
+                condition: (state: any) => state.players[state.activePlayerId].life >= 27, // 20 + 7
                 effects: [{ type: 'CreateToken', tokenBlueprint: { name: 'Angel', power: '4', toughness: '4', colors: ['W'], types: ['Creature'], subtypes: ['Angel'], keywords: ['Flying'] }, targetMapping: 'CONTROLLER' }]
             }
         ]
     }
 };
+

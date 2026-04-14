@@ -1,10 +1,10 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, ZoneRequirement, TriggerEvent, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from "@shared/engine_types";
 
 export const InfernalScarring: Record<string, ImplementableCard> = {
     "Infernal Scarring": {
         name: "Infernal Scarring",
         manaCost: "{1}{B}",
-        oracleText: "Enchant creature\nEnchanted creature gets +2/+0 and has \"When this creature dies, draw a card.\"",
+        oracleText: "Enchant creature\nEnchanted creature gets +2/+0.\nWhen enchanted creature dies, draw a card.",
         colors: ["black"],
         supertypes: [],
         types: ["Enchantment"],
@@ -18,10 +18,8 @@ export const InfernalScarring: Record<string, ImplementableCard> = {
                 type: AbilityType.Spell,
                 activeZone: ZoneRequirement.Hand,
                 targetDefinition: {
-                    type: TargetType.Permanent,
-                    count: 1,
-                    minCount: 1,
-                    restrictions: ["creature"]
+                    type: TargetType.Creature,
+                    count: 1
                 },
                 oracleText: "Enchant creature"
             },
@@ -42,10 +40,9 @@ export const InfernalScarring: Record<string, ImplementableCard> = {
                 id: "infernal_scarring_death_trigger",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: "ON_DEATH",
-                triggerCondition: (state: any, event: any, source: any) => {
+                    eventMatch: TriggerEvent.DeathOther,
+                condition: (state: any, event: any, source: any) => {
                     const aura = state.battlefield.find((o: any) => o.id === source.sourceId);
-                    console.log(aura, event.targetId, aura.attachedTo);
                     return aura && event.targetId === aura.attachedTo;
                 },
                 effects: [{
@@ -58,3 +55,5 @@ export const InfernalScarring: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

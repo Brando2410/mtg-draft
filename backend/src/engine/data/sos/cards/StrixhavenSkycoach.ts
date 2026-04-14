@@ -15,7 +15,7 @@ export const StrixhavenSkycoach: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             optional: true,
             effects: [
                 {
@@ -44,3 +44,6 @@ export const StrixhavenSkycoach: CardDefinition = {
     "power": "3",
     "toughness": "2"
 };
+
+
+

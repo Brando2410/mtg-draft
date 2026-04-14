@@ -27,7 +27,7 @@ export const RootManipulation: CardDefinition = {
                 {
                     type: EffectType.AddTriggeredAbility,
                     eventMatch: TriggerEvent.Attack,
-                    triggerCondition: 'EVENT_OBJECT_MATCHES:Creature,YouControl',
+                    condition: 'EVENT_OBJECT_MATCHES:Creature,YouControl',
                     duration: { type: DurationType.UntilEndOfTurn },
                     effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
                 }
@@ -35,3 +35,6 @@ export const RootManipulation: CardDefinition = {
         }
     ]
 };
+
+
+

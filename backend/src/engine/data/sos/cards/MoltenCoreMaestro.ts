@@ -18,13 +18,13 @@ export const MoltenCoreMaestro: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
+                    eventMatch: TriggerEvent.CastSpell,
             condition: 'PLAYER_IS_CONTROLLER && (EVENT_OBJECT_MATCHES:Instant || EVENT_OBJECT_MATCHES:Sorcery)',
             effects: [
                 {
                     type: EffectType.AddCounters,
                     amount: 1,
-                    counterType: '+1/+1',
+                    counterType: 'p1p1',
                     targetMapping: TargetMapping.Self
                 },
                 {
@@ -39,3 +39,6 @@ export const MoltenCoreMaestro: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
+
+

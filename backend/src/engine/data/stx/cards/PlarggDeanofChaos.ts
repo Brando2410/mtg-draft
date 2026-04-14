@@ -70,11 +70,13 @@ export const PlarggDeanofChaos: CardDefinition = {
                     },
                     {
                         type: AbilityType.Triggered,
-                        eventMatch: TriggerEvent.Attack,
-                        triggerCondition: "OnYourAttack",
+                    eventMatch: TriggerEvent.Attack,
+                        condition: "OnYourAttack",
                         effects: [{ type: EffectType.Untap, targetMapping: 'ALL_CREATURES_YOU_CONTROL' }]
                     }
                 ]
             }
         ]
     };
+
+

@@ -13,7 +13,7 @@ export const CombatProfessor: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.BeginningOfCombatStep,
+                    eventMatch: TriggerEvent.BeginningOfCombatStep,
             condition: 'IS_YOUR_TURN',
             targetDefinition: {
                 count: 1,
@@ -30,3 +30,4 @@ export const CombatProfessor: CardDefinition = {
         }
     ]
   };
+

@@ -152,7 +152,7 @@ export const STX_Batch_8_Mystical_Archive: CardDefinition[] = [
               abilitiesToAdd: [{
                   id: 'infuse_vitality_death_trigger',
                   type: AbilityType.Triggered,
-                  eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
                   effects: [
                       { type: EffectType.MoveToZone, zone: Zone.Battlefield, entersTapped: true, targetMapping: TargetMapping.Self },
                       { type: EffectType.GainLife, amount: 2, targetMapping: TargetMapping.Controller }
@@ -201,3 +201,4 @@ export const STX_Batch_8_Mystical_Archive: CardDefinition[] = [
     ]
   }
 ];
+

@@ -1,16 +1,40 @@
-import { CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition, Zone, TargetMapping } from '@shared/engine_types';
 
 export const SuspendAggression: CardDefinition = {
-    "name": "Suspend Aggression",
-    "manaCost": "{1}{R}{W}",
-    "colors": [
-        "R",
-        "W"
-    ],
-    "types": [
-        "Instant"
-    ],
-    "subtypes": [],
-    "oracleText": "Exile target nonland permanent and the top card of your library. For each of those cards, its owner may play it until the end of their next turn.",
-    "abilities": []
+    name: "Suspend Aggression",
+    manaCost: "{1}{W}",
+    type_line: "Instant",
+    types: ["Instant"],
+    oracleText: "Exile target nonland permanent. Exile the top card of that card's owner's library. Until the end of that player's next turn, its owner may play those cards.",
+    abilities: [
+        {
+            type: AbilityType.Spell,
+            targetDefinition: {
+                type: 'nonland permanent',
+                count: 1,
+                zone: Zone.Battlefield
+            },
+            effects: [
+                {
+                    type: 'Exile',
+                    targetMapping: TargetMapping.Selection,
+                    next: {
+                        type: 'Exile', // Exile top card of owner's library
+                        targetMapping: 'TARGET_1_OWNER', 
+                        fromTop: 1,
+                        sourceZones: [Zone.Library],
+                        next: {
+                            type: 'ApplyContinuousEffect',
+                            targetMapping: 'PARENT_CONTEXT_EXILED_IDS',
+                            duration: 'UntilEndOfYourNextTurn',
+                            targetControllerMapping: 'PARENT_CONTEXT_EXILED_IDS_OWNERS', // Custom mapping for untilTurnOfPlayerId
+                            canPlayExiled: true
+                        }
+                    }
+                }
+            ]
+        }
+    ]
 };
+
+

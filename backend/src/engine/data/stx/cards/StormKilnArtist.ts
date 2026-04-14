@@ -24,7 +24,7 @@ export const StormKilnArtist: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -46,3 +46,4 @@ export const StormKilnArtist: CardDefinition = {
         }
     ]
   };
+

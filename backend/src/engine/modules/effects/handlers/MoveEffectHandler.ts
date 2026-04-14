@@ -53,6 +53,9 @@ export class MoveEffectHandler {
     if (effect.type === EffectType.LookAtTopAndPick) {
         return this.resolveLookAtTopAndPick(state, effect, controllerId, log, stackObject, parentContext);
     }
+    if (effect.type === 'RevealUntilCondition') {
+        return this.resolveRevealUntilCondition(state, effect, controllerId, log, stackObject, parentContext);
+    }
 
     if (effect.type === EffectType.DiscardCards || (effect.type as any) === 'Discard') {
         const playerIds = targetIds.filter((id: string) => state.players[id as PlayerId]) as PlayerId[];
@@ -164,6 +167,44 @@ export class MoveEffectHandler {
   private static resolveLookAtTopAndPick(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any) {
     const amount = typeof effect.fromTop === 'number' ? effect.fromTop : 1;
     return this.resolveLibraryTopMoves(state, { ...effect, type: EffectType.LookAtTopAndPick, selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: amount }, controllerId, log, stackObject, parentContext);
+  }
+
+  private static resolveRevealUntilCondition(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any) {
+    const player = state.players[controllerId];
+    if (!player) return;
+
+    const revealed: GameObject[] = [];
+    let found = false;
+
+    while (player.library.length > 0 && !found) {
+        const card = player.library.pop()!;
+        revealed.push(card);
+        if (TargetingProcessor.matchesRestrictions(state, card, effect.restrictions || [], controllerId, (stackObject as any)?.sourceId || '')) {
+            found = true;
+        }
+    }
+
+    log(`[REVEAL-UNTIL] Revealed ${revealed.length} cards. Found match: ${found}`);
+
+    if (found) {
+        const targetCard = revealed.pop()!;
+        const destination = effect.zone || effect.destination || Zone.Hand;
+        ActionProcessor.moveCard(state, targetCard, destination, controllerId, log);
+    }
+
+    if (revealed.length > 0) {
+        const remainderZone = (effect as any).remainderZone || Zone.Library;
+        const remainderPos = (effect as any).remainderPosition || 'bottom';
+        const shuffle = (effect as any).shuffleRemainder;
+
+        if (shuffle) {
+            ActionProcessor.shuffle(revealed);
+        }
+
+        revealed.forEach(c => {
+            ActionProcessor.moveCard(state, c, remainderZone, controllerId, log, remainderPos);
+        });
+    }
   }
 
   private static resolveExchangeHandAndGraveyard(state: GameState, effect: EffectDefinition, targets: string[], controllerId: PlayerId, log: (m: string) => void) {
@@ -417,6 +458,12 @@ export class MoveEffectHandler {
                 parentContext.exiledIds.push(obj.id);
             }
             TriggerProcessor.onEvent(state, { type: 'ON_EXILE', targetId: obj.id, sourceId: (stackObject as any)?.sourceId || '', sourceZone: from }, log);
+        }
+
+        // --- CHAINING ---
+        if (effect.next) {
+            const { EffectProcessor } = require('../../EffectProcessor');
+            EffectProcessor.executeEffect(state, effect.next, (stackObject as any)?.sourceId || '', targetIds, log, stackObject, parentContext);
         }
     });
   }

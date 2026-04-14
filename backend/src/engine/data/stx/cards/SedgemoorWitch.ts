@@ -13,7 +13,7 @@ export const SedgemoorWitch: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
                 effects: [
                     {
                         type: EffectType.CreateToken,
@@ -28,7 +28,7 @@ export const SedgemoorWitch: CardDefinition = {
                             oracleText: 'When this creature dies, you gain 1 life.',
                             abilities: [{
                                 type: AbilityType.Triggered,
-                                eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
                                 effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
                             }]
                         },
@@ -38,3 +38,4 @@ export const SedgemoorWitch: CardDefinition = {
             }
         ]
     };
+

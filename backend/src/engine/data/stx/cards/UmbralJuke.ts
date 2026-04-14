@@ -13,7 +13,7 @@ export const UmbralJuke: CardDefinition = {
                     { 
                         type: EffectType.Sacrifice, 
                         targetMapping: TargetMapping.EachOpponent, 
-                        restriction: { type: 'Any', restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Type', value: 'Planeswalker' }] }
+                        restrictions: [TargetType.CreatureOrPlaneswalker]
                     },
                     {
                         type: EffectType.CreateToken,

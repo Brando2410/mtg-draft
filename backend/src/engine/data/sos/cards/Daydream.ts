@@ -10,6 +10,7 @@ export const Daydream: CardDefinition = {
         "Sorcery"
     ],
     "subtypes": [],
+    "keywords": ["Flashback"],
     "oracleText": "Exile target creature you control, then return that card to the battlefield under its owner's control with a +1/+1 counter on it.\nFlashback {2}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
     "flashbackCost": "{2}{W}",
     "abilities": [
@@ -24,10 +25,12 @@ export const Daydream: CardDefinition = {
                     next: {
                         type: EffectType.PutOnBattlefield,
                         targetMapping: TargetMapping.Target1,
-                        startingCounters: { type: '+1/+1', amount: 1 }
+                        startingCounters: { type: 'p1p1', amount: 1 }
                     }
                 }
             ]
         }
     ]
 };
+
+

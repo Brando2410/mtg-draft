@@ -570,6 +570,8 @@ export const sos: Record<string, ImplementableCard> = {
     'Studious First-Year': StudiousFirstYearRampantGrowth,
     'Summoned Dromedary': SummonedDromedary,
     'Sundering Archaic': SunderingArchaic,
+    'Sundering Archaic // Echoing Equation': SunderingArchaic,
+    'Echoing Equation': SunderingArchaic,
     'Sundown Pass': SundownPass,
     'Suspend Aggression': SuspendAggression,
     'Swamp': Swamp,

@@ -18,7 +18,7 @@ export const PostmortemProfessor: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Attack,
+                    eventMatch: TriggerEvent.Attack,
             effects: [
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.EachOpponent },
                 { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }
@@ -47,3 +47,6 @@ export const PostmortemProfessor: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
+
+

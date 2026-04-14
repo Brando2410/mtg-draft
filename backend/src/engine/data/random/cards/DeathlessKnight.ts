@@ -18,11 +18,12 @@ export const DeathlessKnight: Record<string, ImplementableCard> = {
                 id: "deathless_knight_trigger",
 
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_LIFE_GAIN',
+                    eventMatch: 'ON_LIFE_GAIN',
                 activeZone: ZoneRequirement.Graveyard,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 effects: [{ type: 'ReturnToHand', targetMapping: 'SELF' }]
             }
         ]
     }
 };
+

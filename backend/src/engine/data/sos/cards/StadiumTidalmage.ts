@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping } from '@shared/engine_types';
 
 export const StadiumTidalmage: CardDefinition = {
     "name": "Stadium Tidalmage",
@@ -15,7 +15,39 @@ export const StadiumTidalmage: CardDefinition = {
         "Sorcerer"
     ],
     "oracleText": "Whenever this creature enters or attacks, you may draw a card. If you do, discard a card.",
-    "abilities": [],
+    "abilities": [
+        {
+            type: AbilityType.Triggered,
+            eventMatch: [TriggerEvent.EnterBattlefield, TriggerEvent.Attack],
+            effects: [
+                {
+                    type: EffectType.Choice,
+                    label: "Stadium Tidalmage: Draw and discard?",
+                    optional: true,
+                    choices: [
+                        {
+                            label: "Draw 1, then discard 1",
+                            effects: [
+                                {
+                                    type: EffectType.DrawCards,
+                                    amount: 1,
+                                    targetMapping: TargetMapping.Controller
+                                },
+                                {
+                                    type: EffectType.DiscardCards,
+                                    amount: 1,
+                                    targetMapping: TargetMapping.Controller
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
     "power": "4",
     "toughness": "4"
 };
+
+
+

@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const OldGrowthEducator: CardDefinition = {
     "name": "Old-Growth Educator",
@@ -15,7 +15,26 @@ export const OldGrowthEducator: CardDefinition = {
         "Druid"
     ],
     "oracleText": "Vigilance, reach\nInfusion — When this creature enters, put two +1/+1 counters on it if you gained life this turn.",
-    "abilities": [],
+    "keywords": ["Vigilance", "Reach", "Infusion"],
+    "abilities": [
+        {
+            type: AbilityType.Triggered,
+            id: "Infusion",
+                    eventMatch: TriggerEvent.EnterBattlefield,
+            condition: 'INFUSION',
+            effects: [
+                {
+                    type: EffectType.AddCounters,
+                    counterType: 'p1p1',
+                    amount: 2,
+                    targetMapping: TargetMapping.Self
+                }
+            ]
+        }
+    ],
     "power": "4",
     "toughness": "4"
 };
+
+
+

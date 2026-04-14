@@ -38,3 +38,5 @@ export const FieldsofStrife: CardDefinition = {
         }
     ]
 };
+
+

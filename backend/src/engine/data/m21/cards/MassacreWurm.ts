@@ -16,7 +16,7 @@ export const MassacreWurm: Record<string, ImplementableCard> = {
             {
                 id: "massacre_wurm_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
                 effects: [{
                     type: EffectType.ApplyContinuousEffect,
@@ -30,9 +30,9 @@ export const MassacreWurm: Record<string, ImplementableCard> = {
             {
                 id: "massacre_wurm_death_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_DEATH',
+                    eventMatch: 'ON_DEATH',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: 'EVENT_OBJECT_MATCHES:creature,opponentcontrol',
+                condition: 'EVENT_OBJECT_MATCHES:creature,opponentcontrol',
                 effects: [{
                     type: EffectType.LoseLife,
                     amount: 2,
@@ -42,3 +42,5 @@ export const MassacreWurm: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

@@ -17,7 +17,7 @@ export const RadiantFountain: Record<string, ImplementableCard> = {
                 id: "radiant_fountain_etb",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 effects: [{
                     type: EffectType.GainLife,
                     amount: 2,
@@ -40,3 +40,5 @@ export const RadiantFountain: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

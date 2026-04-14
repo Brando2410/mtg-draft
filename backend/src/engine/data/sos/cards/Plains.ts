@@ -14,3 +14,5 @@ export const Plains: CardDefinition = {
     "oracleText": "({T}: Add {W}.)",
     "abilities": []
 };
+
+

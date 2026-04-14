@@ -33,7 +33,7 @@ export const ContainmentBreach: CardDefinition = {
               oracleText: 'When this creature dies, you gain 1 life.',
               abilities: [{
                   type: AbilityType.Triggered,
-                  eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
                   effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
               }]
             },
@@ -43,3 +43,4 @@ export const ContainmentBreach: CardDefinition = {
       }
     ]
   };
+

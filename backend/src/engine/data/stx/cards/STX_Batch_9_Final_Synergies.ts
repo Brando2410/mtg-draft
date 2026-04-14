@@ -126,7 +126,7 @@ export const STX_Batch_9_Final_Synergies: CardDefinition[] = [
     abilities: [
       {
         type: AbilityType.Triggered,
-        eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
         targetDefinition: {
             count: 1,
             type: TargetType.Permanent,
@@ -172,7 +172,7 @@ export const STX_Batch_9_Final_Synergies: CardDefinition[] = [
     abilities: [
       {
         type: AbilityType.Triggered,
-        eventMatch: TriggerEvent.Attack,
+                    eventMatch: TriggerEvent.Attack,
         effects: [{
             type: EffectType.ApplyContinuousEffect,
             powerModifier: 1,
@@ -195,7 +195,7 @@ export const STX_Batch_9_Final_Synergies: CardDefinition[] = [
     abilities: [
       {
         type: AbilityType.Triggered,
-        eventMatch: 'ON_LEAVE_GRAVEYARD',
+                    eventMatch: 'ON_LEAVE_GRAVEYARD',
         maxTriggersPerTurn: 1,
         effects: [{ type: EffectType.Scry, amount: 1 }]
       }
@@ -239,7 +239,7 @@ export const STX_Batch_9_Final_Synergies: CardDefinition[] = [
     abilities: [
       {
         type: AbilityType.Triggered,
-        eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
         targetDefinition: {
             count: 1,
             type: TargetType.Permanent,
@@ -250,3 +250,4 @@ export const STX_Batch_9_Final_Synergies: CardDefinition[] = [
     ]
   }
 ];
+

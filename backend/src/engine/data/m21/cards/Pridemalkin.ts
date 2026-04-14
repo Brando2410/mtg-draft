@@ -17,7 +17,7 @@ export const Pridemalkin: Record<string, ImplementableCard> = {
                 id: "pridemalkin_etb",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'Controller'] },
                 effects: [{
                     type: EffectType.AddCounters,
@@ -41,3 +41,5 @@ export const Pridemalkin: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

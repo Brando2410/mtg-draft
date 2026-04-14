@@ -15,9 +15,8 @@ export const StandUpforYourself: CardDefinition = {
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: TargetType.Creature,
                 restrictions: [
-                    'Creature',
                     { type: 'Power', comparison: 'GreaterOrEqual', value: 3 }
                 ]
             },
@@ -30,3 +29,5 @@ export const StandUpforYourself: CardDefinition = {
         }
     ]
 };
+
+

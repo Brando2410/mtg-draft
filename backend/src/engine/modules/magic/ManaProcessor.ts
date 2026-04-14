@@ -19,7 +19,11 @@ export class ManaProcessor {
     if (!costStr || player.manaCheat) return true;
     
     // Support for Chromatic Orrery / Spend as Any Color
-    const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some(e => e.type === 'AllowSpendManaAsAnyColor' && e.controllerId === player.id);
+    const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some(e => 
+        (e.type === 'AllowSpendManaAsAnyColor' || e.spendAnyMana) && 
+        e.controllerId === player.id &&
+        (!e.targetIds || !payingFor || e.targetIds.includes(payingFor.id))
+    );
     const pool = this.getUsableMana(player, payingFor);
 
     if (canSpendAsAnyColor) {
@@ -150,7 +154,11 @@ export class ManaProcessor {
 
     const colorsSpent = new Set<string>();
     const requirements = this.parseManaCost(costStr);
-    const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some(e => e.type === 'AllowSpendManaAsAnyColor' && e.controllerId === player.id);
+    const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some(e => 
+        (e.type === 'AllowSpendManaAsAnyColor' || e.spendAnyMana) && 
+        e.controllerId === player.id &&
+        (!e.targetIds || !payingFor || e.targetIds.includes(payingFor.id))
+    );
 
     // Helper to spend mana from pool OR restricted mana
     const spend = (color: string, amount: number) => {

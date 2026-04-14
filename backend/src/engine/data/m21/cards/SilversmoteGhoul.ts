@@ -16,9 +16,9 @@ export const SilversmoteGhoul: Record<string, ImplementableCard> = {
             {
                 id: "silversmote_ghoul_return",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_END_STEP',
+                    eventMatch: 'ON_END_STEP',
                 activeZone: ZoneRequirement.Graveyard,
-                triggerCondition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId && (state.turnState.lifeGainedThisTurn || 0) >= 3,
+                condition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId && (state.turnState.lifeGainedThisTurn || 0) >= 3,
                 effects: [{ type: 'PutOnBattlefield', targetMapping: 'SELF', tapped: true }]
             },
             {
@@ -31,3 +31,5 @@ export const SilversmoteGhoul: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

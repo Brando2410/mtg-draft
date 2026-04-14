@@ -23,16 +23,18 @@ export const GrowthCurve: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    counterType: 'plus1plus1',
+                    counterType: 'p1p1',
                     amount: 1,
                     targetMapping: TargetMapping.Target1
                 },
                 {
                     type: EffectType.DoubleCounters,
-                    counterType: 'plus1plus1',
+                    counterType: 'p1p1',
                     targetMapping: TargetMapping.Target1
                 }
             ]
         }
     ]
 };
+
+

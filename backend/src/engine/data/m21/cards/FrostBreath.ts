@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, DurationType } from "@shared/engine_types";
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, DurationType, Restriction } from "@shared/engine_types";
 
 export const FrostBreath: Record<string, ImplementableCard> = {
     "Frost Breath": {
@@ -18,10 +18,9 @@ export const FrostBreath: Record<string, ImplementableCard> = {
                 type: AbilityType.Spell,
                 activeZone: ZoneRequirement.Hand,
                 targetDefinition: {
-                    type: TargetType.Permanent,
+                    type: TargetType.Creature,
                     count: 2,
-                    minCount: 0,
-                    restrictions: ["creature"]
+                    minCount: 0
                 },
                 effects: [
                     {

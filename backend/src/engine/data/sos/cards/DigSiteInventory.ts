@@ -24,7 +24,7 @@ export const DigSiteInventory: CardDefinition = {
                 {
                     type: EffectType.AddCounters,
                     amount: 1,
-                    startingCounters: { type: '+1/+1', amount: 1 },
+                    startingCounters: { type: 'p1p1', amount: 1 },
                     targetMapping: TargetMapping.Target1
                 },
                 {
@@ -37,3 +37,5 @@ export const DigSiteInventory: CardDefinition = {
         }
     ]
 };
+
+

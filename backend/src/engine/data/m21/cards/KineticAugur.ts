@@ -29,9 +29,9 @@ export const KineticAugur: Record<string, ImplementableCard> = {
             {
                 id: "kinetic_augur_etb",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => {
+                condition: (state: any, event: any, source: any) => {
                     return event.data?.object?.id === source.sourceId;
                 },
                 effects: [
@@ -64,3 +64,5 @@ export const KineticAugur: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

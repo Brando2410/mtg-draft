@@ -16,11 +16,13 @@ export const BurlfistOak: Record<string, ImplementableCard> = {
             {
                 id: "burlfist_oak_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_DRAW',
+                    eventMatch: 'ON_DRAW',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', powerModifier: 2, toughnessModifier: 2, layer: 7, targetMapping: 'SELF' }]
             }
         ]
     }
 };
+
+

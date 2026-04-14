@@ -29,7 +29,7 @@ export const JadziOracleofArcavios: CardDefinition = {
                     },
                     {
                         type: AbilityType.Triggered,
-                        eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
                         effects: [{
                             type: EffectType.LookAtTopAndPick,
                             fromTop: 1,
@@ -69,3 +69,4 @@ export const JadziOracleofArcavios: CardDefinition = {
             }
         ]
     };
+

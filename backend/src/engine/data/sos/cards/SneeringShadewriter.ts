@@ -18,3 +18,5 @@ export const SneeringShadewriter: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
+

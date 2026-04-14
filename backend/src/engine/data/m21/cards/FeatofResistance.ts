@@ -19,7 +19,7 @@ export const FeatofResistance: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Stack,
                 targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'YouControl'] },
                 effects: [
-                    { type: 'AddCounters', amount: 1, value: '+1/+1', targetMapping: 'TARGET_1' },
+                    { type: 'AddCounters', amount: 1, counterType: 'p1p1', targetMapping: 'TARGET_1' },
                     {
                         type: 'Choice', label: 'Choose a color', targetMapping: 'TARGET_1', choices: [
                             { label: 'White', effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Protection from White'], layer: 6, targetMapping: 'TARGET_1' }] },

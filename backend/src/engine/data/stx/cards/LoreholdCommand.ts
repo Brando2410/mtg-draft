@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount, Restriction } from '@shared/engine_types';
 
 export const LoreholdCommand: CardDefinition = {
         name: 'Lorehold Command',
@@ -30,7 +30,10 @@ export const LoreholdCommand: CardDefinition = {
                     { 
                         label: 'Player sacrifices permanent, draws 2', 
                         targetDefinition: { count: 1, type: TargetType.Player },
-                        effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Target1, restriction: { type: 'Type', value: 'Permanent' } }, { type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Target1 }] 
+                        effects: [
+                            { type: EffectType.Sacrifice, targetMapping: TargetMapping.Target1, restrictions: [Restriction.Permanent] }, 
+                            { type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Target1 }
+                        ] 
                     }
                 ]
             }]

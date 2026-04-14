@@ -9,7 +9,7 @@ export const SpellSatchel: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [{ type: EffectType.AddCounters, counterType: 'book', amount: 1, targetMapping: TargetMapping.Self }]
         },
         {
@@ -24,3 +24,4 @@ export const SpellSatchel: CardDefinition = {
         }
     ]
   };
+

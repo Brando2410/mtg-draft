@@ -22,9 +22,9 @@ export const LilianasDevotee: Record<string, ImplementableCard> = {
             {
                 id: "liliana_devotee_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_END_STEP',
+                    eventMatch: 'ON_END_STEP',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId && state.turnState.creaturesDiedThisTurn.length > 0,
+                condition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId && state.turnState.creaturesDiedThisTurn.length > 0,
                 effects: [
                     {
                         type: 'Choice',
@@ -43,3 +43,5 @@ export const LilianasDevotee: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

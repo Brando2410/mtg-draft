@@ -14,7 +14,7 @@ export const BeledrosWitherbloom: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Upkeep,
+                    eventMatch: TriggerEvent.Upkeep,
                 effects: [{ 
                     type: EffectType.CreateToken, 
                     tokenBlueprint: { 
@@ -26,7 +26,7 @@ export const BeledrosWitherbloom: CardDefinition = {
                         subtypes: ['Pest'],
                         abilities: [{
                             type: AbilityType.Triggered,
-                            eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
                             effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
                         }]
                     } 
@@ -40,3 +40,4 @@ export const BeledrosWitherbloom: CardDefinition = {
             }
         ]
     };
+

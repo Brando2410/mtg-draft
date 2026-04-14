@@ -283,7 +283,7 @@ export const GameCard = memo(({
                           </h3>
                           {variant !== 'tiny' && (
                               <div className="shrink-0">
-                                  <ManaSymbols cost={definition.manaCost} variant={variant} />
+                                  <ManaSymbols cost={stats?.manaCost || definition.manaCost} variant={variant} />
                               </div>
                           )}
                       </div>

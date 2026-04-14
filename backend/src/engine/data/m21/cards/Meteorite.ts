@@ -17,7 +17,7 @@ export const Meteorite: Record<string, ImplementableCard> = {
                 id: "meteorite_etb",
                 type: AbilityType.Triggered,
                 activeZone: ZoneRequirement.Battlefield,
-                triggerEvent: 'ON_ETB',
+                    eventMatch: 'ON_ETB',
                 targetDefinition: { type: 'AnyTarget', count: 1 },
                 effects: [{
                     type: EffectType.DealDamage,
@@ -41,3 +41,5 @@ export const Meteorite: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

@@ -12,7 +12,7 @@ export const ArchmageEmeritus: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.DrawCards,
@@ -23,3 +23,4 @@ export const ArchmageEmeritus: CardDefinition = {
         }
     ]
   };
+

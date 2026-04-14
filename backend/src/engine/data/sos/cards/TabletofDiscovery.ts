@@ -14,7 +14,7 @@ export const TabletofDiscovery: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.Mill,
@@ -64,3 +64,6 @@ export const TabletofDiscovery: CardDefinition = {
         }
     ]
 };
+
+
+

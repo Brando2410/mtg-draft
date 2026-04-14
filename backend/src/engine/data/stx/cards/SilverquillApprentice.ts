@@ -12,7 +12,7 @@ export const SilverquillApprentice: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
             targetDefinition: {
                 type: TargetType.Permanent,
                 count: 1,
@@ -22,3 +22,4 @@ export const SilverquillApprentice: CardDefinition = {
         }
     ]
   };
+

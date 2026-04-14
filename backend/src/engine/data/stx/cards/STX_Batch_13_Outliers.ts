@@ -23,7 +23,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
 
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
                 effects: [{
                     type: EffectType.Choice,
                     label: "Pay {1} or sacrifice Archway Commons?",
@@ -62,7 +62,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Attack,
+                    eventMatch: TriggerEvent.Attack,
                 condition: 'SelfAttacking',
                 effects: [{
                     type: EffectType.Choice,
@@ -115,7 +115,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
                 targetDefinition: {
                     count: 1,
                     type: TargetType.CardInGraveyard,
@@ -167,7 +167,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.LifeGain,
+                    eventMatch: TriggerEvent.LifeGain,
                 condition: 'YouGainedLife',
                 effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Self }]
             }
@@ -186,7 +186,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.BeginningOfCombatStep,
+                    eventMatch: TriggerEvent.BeginningOfCombatStep,
                 condition: 'IS_YOUR_TURN',
                 targetDefinition: {
                     count: 1,
@@ -262,7 +262,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
                 targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
                 effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Target1 }]
             },
@@ -291,7 +291,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
                 effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Self, duration: 'UNTIL_END_OF_TURN', powerModifier: 1 }]
             }
         ]
@@ -394,7 +394,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
                         type: EffectType.ApplyContinuousEffect,
                         duration: 'UNTIL_END_OF_TURN',
                         deferredTrigger: {
-                            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
                             condition: 'YouControlEnteredObject',
                             effects: [
                                 { type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.TriggerEventSource },
@@ -462,7 +462,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
                     duration: 'UNTIL_END_OF_TURN',
                     abilitiesToAdd: ['Deathtouch'],
                     addedTriggers: [{
-                        eventMatch: TriggerEvent.Death,
+                    eventMatch: TriggerEvent.Death,
                         effects: [
                             { type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Self, libraryPosition: 'top', tapped: true },
                             { type: EffectType.GainLife, amount: 2, targetMapping: TargetMapping.Controller }
@@ -498,7 +498,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Attack,
+                    eventMatch: TriggerEvent.Attack,
                 condition: 'SelfAttacking',
                 effects: [{
                     type: EffectType.Choice,
@@ -525,7 +525,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.MagecraftOpponent,
+                    eventMatch: TriggerEvent.MagecraftOpponent,
                 effects: [{ type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.TriggerController }]
             }
         ]
@@ -542,7 +542,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
                 effects: [{
                     type: EffectType.CreateToken,
                     tokenBlueprint: {
@@ -620,7 +620,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
                 targetDefinition: {
                     count: 1,
                     type: TargetType.CardInGraveyard,
@@ -691,7 +691,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
                 effects: [{ type: EffectType.AddCounters, counterType: 'book', amount: 1, targetMapping: TargetMapping.Self }]
             },
             {
@@ -718,7 +718,7 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
                 effects: [{ type: EffectType.GainLife, amount: 2, targetMapping: TargetMapping.Controller }]
             }
         ]
@@ -756,10 +756,11 @@ export const STX_Batch_13_Outliers: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                eventMatch: TriggerEvent.Magecraft,
+                    eventMatch: TriggerEvent.Magecraft,
                 targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Source', value: 'CONTROLLER' }] },
                 effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: 'UNTIL_END_OF_TURN', powerSet: 2 }]
             }
         ]
     }
 ];
+

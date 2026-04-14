@@ -9,8 +9,6 @@ export const AnimalSanctuary: Record<string, ImplementableCard> = {
         supertypes: [],
         types: ["Land"],
         subtypes: [],
-        power: undefined,
-        toughness: undefined,
         keywords: [],
         abilities: [
             {
@@ -26,13 +24,12 @@ export const AnimalSanctuary: Record<string, ImplementableCard> = {
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [{ type: 'Mana', value: '{2}' }, { type: 'Tap', value: null }],
                 targetDefinition: {
-                    type: TargetType.Permanent, count: 1,
-                    restrictions: [{ 
-                        types: ['Creature'], 
-                        subtypes: ['Bird', 'Cat', 'Dog', 'Goat', 'Ox', 'Snake'] 
+                    type: TargetType.Creature, count: 1,
+                    restrictions: [{
+                        subtypes: ['Bird', 'Cat', 'Dog', 'Goat', 'Ox', 'Snake']
                     }]
                 },
-                effects: [{ type: EffectType.AddCounters, value: '+1/+1', amount: 1, targetMapping: 'TARGET_1' }]
+                effects: [{ type: EffectType.AddCounters, counterType: 'p1p1', amount: 1, targetMapping: 'TARGET_1' }]
             }
         ]
     }

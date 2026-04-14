@@ -12,9 +12,10 @@ export const StoneboundMentor: CardDefinition = {
     abilities: [
       {
         type: AbilityType.Triggered,
-        eventMatch: 'ON_LEAVE_GRAVEYARD',
+                    eventMatch: 'ON_LEAVE_GRAVEYARD',
         maxTriggersPerTurn: 1,
         effects: [{ type: EffectType.Scry, amount: 1 }]
       }
     ]
   };
+

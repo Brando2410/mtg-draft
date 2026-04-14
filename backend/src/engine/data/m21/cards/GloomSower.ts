@@ -16,9 +16,9 @@ export const GloomSower: Record<string, ImplementableCard> = {
             {
                 id: "gloom_sower_blocked_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: "ON_BECAME_BLOCKED",
+                    eventMatch: "ON_BECAME_BLOCKED",
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.sourceId === source.sourceId,
+                condition: (state: any, event: any, source: any) => event.sourceId === source.sourceId,
                 effects: [
                     {
                         type: EffectType.LoseLife,
@@ -36,3 +36,5 @@ export const GloomSower: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

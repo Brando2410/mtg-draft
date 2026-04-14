@@ -13,7 +13,7 @@ export const BiblioplexAssistant: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
                 count: 1,
                 type: TargetType.CardInGraveyard,
@@ -31,3 +31,4 @@ export const BiblioplexAssistant: CardDefinition = {
         }
     ]
   };
+

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, DurationType, Zone, TargetType, TargetMapping, DynamicAmount, Restriction } from '@shared/engine_types';
 
 export const STX_Remaining_Lessons: CardDefinition[] = [
     {
@@ -50,7 +50,7 @@ export const STX_Remaining_Lessons: CardDefinition[] = [
                         type: EffectType.LookAtTopAndPick,
                         fromTop: 6,
                         optional: true,
-                        restrictions: [{ type: 'Type', value: 'Creature' }],
+                        restrictions: [Restriction.Creature],
                         reveal: true,
                         destination: Zone.Hand,
                         targetMapping: TargetMapping.Controller,
@@ -97,7 +97,10 @@ export const STX_Remaining_Lessons: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Nonland' }] },
+                targetDefinition: {
+                    count: 1,
+                    type: TargetType.NonlandPermanent
+                },
                 effects: [
                     {
                         type: EffectType.Choice,
@@ -107,9 +110,9 @@ export const STX_Remaining_Lessons: CardDefinition[] = [
                                 label: 'Frog (1/1)',
                                 effects: [{
                                     type: EffectType.ApplyContinuousEffect,
-                                    duration: 'UNTIL_END_OF_TURN',
+                                    duration: DurationType.UntilEndOfTurn,
                                     removeAllAbilities: true,
-                                    colorsSet: ['U'],
+                                    colorSet: ['U'],
                                     typesSet: ['Creature'],
                                     subtypesSet: ['Frog'],
                                     powerSet: 1,
@@ -121,9 +124,9 @@ export const STX_Remaining_Lessons: CardDefinition[] = [
                                 label: 'Elemental (4/4)',
                                 effects: [{
                                     type: EffectType.ApplyContinuousEffect,
-                                    duration: 'UNTIL_END_OF_TURN',
+                                    duration: DurationType.UntilEndOfTurn,
                                     removeAllAbilities: true,
-                                    colorsSet: ['U'],
+                                    colorSet: ['U'],
                                     typesSet: ['Creature'],
                                     subtypesSet: ['Elemental'],
                                     powerSet: 4,
@@ -154,12 +157,20 @@ export const STX_Remaining_Lessons: CardDefinition[] = [
                         choices: [
                             {
                                 label: "Return from Graveyard",
-                                targetDefinition: { count: 1, type: TargetType.Card, restrictions: [{ type: 'Type', value: 'Planeswalker' }, { type: 'Source', value: 'GRAVEYARD' }, { type: 'ManaValueLessEqualX' }] },
+                                targetDefinition: {
+                                    count: 1,
+                                    type: TargetType.Planeswalker,
+                                    restrictions: [Restriction.Graveyard, { type: 'ManaValueLessEqualX' }]
+                                },
                                 effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 }]
                             },
                             {
                                 label: "Exile from Battlefield",
-                                targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Planeswalker' }, { type: 'ManaValueLessEqualX' }] },
+                                targetDefinition: {
+                                    count: 1,
+                                    type: TargetType.Planeswalker,
+                                    restrictions: [{ type: 'ManaValueLessEqualX' }]
+                                },
                                 effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
                             }
                         ]

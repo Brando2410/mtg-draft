@@ -205,7 +205,7 @@ export class ActionProcessor {
       let entersTapped = card.definition.entersTapped || false;
       if (card.definition.entersTappedCondition) {
           const { ConditionProcessor } = require('./../core/ConditionProcessor');
-          if (ConditionProcessor.matchesCondition(state, card.definition.entersTappedCondition, card.id, targetPlayerId)) {
+          if (ConditionProcessor.matchesCondition(state, card.definition.entersTappedCondition, card.id, targetPlayerId, { xValue: (card as any).xValue } as any)) {
               entersTapped = true;
           }
       }
@@ -339,6 +339,10 @@ export class ActionProcessor {
                 let amount = 0;
                 if (e.amount === 'CONVERGE_AMOUNT') {
                     amount = (card as any).convergeAmount || 0;
+                } else if (e.amount === 'THREE_MINUS_X') {
+                    amount = Math.max(0, 3 - ((card as any).xValue || 0));
+                } else if (e.amount === 'X') {
+                    amount = (card as any).xValue || 0;
                 } else {
                     amount = typeof e.amount === 'number' ? e.amount : 0;
                 }

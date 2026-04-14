@@ -22,9 +22,9 @@ export const BrashTaunter: Record<string, ImplementableCard> = {
             {
                 id: "brash_taunter_damage_trigger",
                 type: AbilityType.Triggered,
-                triggerEvent: 'ON_DAMAGE_DEALT_TO_CREATURE',
+                    eventMatch: 'ON_DAMAGE_DEALT_TO_CREATURE',
                 activeZone: ZoneRequirement.Battlefield,
-                triggerCondition: (state: any, event: any, source: any) => event.targetId === source.sourceId,
+                condition: (state: any, event: any, source: any) => event.targetId === source.sourceId,
                 targetDefinition: { type: 'Player', count: 1, restrictions: ['Opponent'] },
                 effects: [{ type: 'DealDamage', amount: 'EVENT_AMOUNT', targetMapping: 'TARGET_1' }]
             },
@@ -39,3 +39,5 @@ export const BrashTaunter: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

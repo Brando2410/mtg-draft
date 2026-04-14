@@ -13,7 +13,7 @@ export const FrostTrickster: CardDefinition = {
     abilities: [
       {
         type: AbilityType.Triggered,
-        eventMatch: TriggerEvent.EnterBattlefield,
+                    eventMatch: TriggerEvent.EnterBattlefield,
         targetDefinition: {
             count: 1,
             type: TargetType.Permanent,
@@ -26,3 +26,4 @@ export const FrostTrickster: CardDefinition = {
       }
     ]
   };
+
