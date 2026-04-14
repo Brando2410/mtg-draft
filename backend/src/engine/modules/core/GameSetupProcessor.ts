@@ -29,7 +29,9 @@ export class GameSetupProcessor {
         virtualHand: [],
         stops: {},
         autoOrderTriggers: true,
-        passUntilEndOfTurn: false
+        passUntilEndOfTurn: false,
+        extraTurns: 0,
+        turnsToSkip: 0
       };
     }
   }
@@ -76,6 +78,7 @@ export class GameSetupProcessor {
       summoningSickness: false,
       abilitiesUsedThisTurn: 0,
       faceDown: false,
+      isPrepared: false,
       keywords: [...baseKeywords],
       counters: ((cardRef as any).loyalty || logicData?.loyalty)
         ? { loyalty: parseInt((cardRef as any).loyalty || logicData?.loyalty) }

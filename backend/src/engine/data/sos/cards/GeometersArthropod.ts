@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping, Zone, DynamicAmount } from '@shared/engine_types';
 
 export const GeometersArthropod: CardDefinition = {
     "name": "Geometer's Arthropod",
@@ -15,7 +15,22 @@ export const GeometersArthropod: CardDefinition = {
         "Crab"
     ],
     "oracleText": "Whenever you cast a spell with {X} in its mana cost, look at the top X cards of your library. Put one of them into your hand and the rest on the bottom of your library in a random order.",
-    "abilities": [],
+    "abilities": [
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.CastSpell,
+            triggerCondition: 'PLAYER_IS_CONTROLLER && EVENT_OBJECT_HAS_X',
+            effects: [
+                {
+                    type: EffectType.LookAtTopAndPick,
+                    fromTop: DynamicAmount.X, // In this context, the engine should resolve X from the event object
+                    targetMapping: TargetMapping.Controller,
+                    remainderZone: Zone.Library,
+                    remainderPosition: 'bottom'
+                }
+            ]
+        }
+    ],
     "power": "1",
     "toughness": "4"
 };

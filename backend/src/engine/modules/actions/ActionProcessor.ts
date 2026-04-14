@@ -135,6 +135,16 @@ export class ActionProcessor {
             TriggerProcessor.onEvent(state, { type: 'ON_SECOND_DRAW', playerId: effectiveTargetId, data: { card } }, log || (() => {}));
         }
     }
+
+    // SOS: Owlin Historian support
+    if (fromZone === Zone.Graveyard && to !== Zone.Graveyard) {
+        state.turnState.cardLeftGraveyardThisTurn[card.ownerId] = true;
+        TriggerProcessor.onEvent(state, { type: 'ON_LEAVE_GRAVEYARD', playerId: card.ownerId, data: { card } }, log || (() => {}));
+    }
+
+    if (to === Zone.Exile) {
+        state.turnState.cardsExiledThisTurn[card.ownerId] = true;
+    }
   }
 
   private static handleLeavingBattlefield(state: GameState, card: GameObject, to: Zone, log?: (m: string) => void) {
@@ -173,6 +183,7 @@ export class ActionProcessor {
         const isFromGrave = p.graveyard.some(c => c.id === cid);
         p.graveyard = p.graveyard.filter(c => c.id !== cid);
         if (isFromGrave) {
+            state.turnState.cardLeftGraveyardThisTurn[pid] = true;
             TriggerProcessor.onEvent(state, { type: 'ON_LEAVE_GRAVEYARD', targetId: cid, sourceId: cid }, () => {});
         }
         p.library = p.library.filter(c => c.id !== cid);
@@ -325,10 +336,17 @@ export class ActionProcessor {
         a.effects?.forEach((e: any) => {
             if (e.type === 'EntersWithCounters' || e.type === EffectType.EntersWithCounters) {
                 const type = e.counterType || 'P1P1';
-                const amount = typeof e.amount === 'number' ? e.amount : 0;
+                let amount = 0;
+                if (e.amount === 'CONVERGE_AMOUNT') {
+                    amount = (card as any).convergeAmount || 0;
+                } else {
+                    amount = typeof e.amount === 'number' ? e.amount : 0;
+                }
+                
                 if (amount > 0) {
-                    card.counters[type] = (card.counters[type] || 0) + amount;
-                    if (log) log(`[ETB-COUNTERS] ${card.definition.name} enters with ${amount} ${type} counters.`);
+                    const counterKey = type === 'P1P1' ? '+1/+1' : type;
+                    card.counters[counterKey] = (card.counters[counterKey] || 0) + amount;
+                    if (log) log(`[ETB-COUNTERS] ${card.definition.name} enters with ${amount} ${counterKey} counters.`);
                 }
             }
         });
@@ -378,7 +396,12 @@ export class ActionProcessor {
             return;
         }
 
-        if (obj.isTapped) {
+        if (obj.isTapped || (obj.counters['stun'] && obj.counters['stun'] > 0)) {
+            if (obj.counters['stun'] && obj.counters['stun'] > 0) {
+                obj.counters['stun']--;
+                if (log) log(`${obj.definition.name} removed a stun counter and remains tapped.`);
+                return;
+            }
             obj.isTapped = false;
             count++;
         }

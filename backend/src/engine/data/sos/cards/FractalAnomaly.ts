@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
 export const FractalAnomaly: CardDefinition = {
     "name": "Fractal Anomaly",
@@ -17,22 +17,24 @@ export const FractalAnomaly: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CreateToken,
+                    amount: 1,
                     tokenBlueprint: {
                         name: 'Fractal',
-                        colors: ['G', 'U'],
+                        colors: ['green', 'blue'],
                         types: ['Creature'],
                         subtypes: ['Fractal'],
                         power: 0,
-                        toughness: 0
+                        toughness: 0,
+                        oracleText: ''
+                    },
+                    next: {
+                        type: EffectType.AddCounters,
+                        counterType: '+1/+1',
+                        amount: DynamicAmount.CardsDrawnThisTurn,
+                        targetMapping: TargetMapping.LastCreatedToken
                     }
-                },
-                {
-                    type: EffectType.AddCounters,
-                    targetMapping: 'LAST_CREATED_TOKEN',
-                    amount: 'CARDS_DRAWN_THIS_TURN',
-                    value: '+1/+1'
                 }
             ]
         }
-    ]
+    ],
 };

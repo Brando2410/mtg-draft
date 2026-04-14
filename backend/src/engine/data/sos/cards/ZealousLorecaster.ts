@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TriggerEvent, TargetMapping, Zone, TargetType } from '@shared/engine_types';
 
 export const ZealousLorecaster: CardDefinition = {
     "name": "Zealous Lorecaster",
@@ -14,7 +14,25 @@ export const ZealousLorecaster: CardDefinition = {
         "Sorcerer"
     ],
     "oracleText": "When this creature enters, return target instant or sorcery card from your graveyard to your hand.",
-    "abilities": [],
+    "abilities": [
+        {
+            id: "zealous_lorecaster_etb",
+            type: AbilityType.Triggered,
+            triggerEvent: TriggerEvent.EnterBattlefield,
+            targetDefinition: {
+                type: TargetType.CardInGraveyard,
+                count: 1,
+                restrictions: ["Instant", "Sorcery"],
+                zone: Zone.Graveyard
+            },
+            effects: [
+                {
+                    type: EffectType.ReturnToHand,
+                    targetMapping: TargetMapping.Target1
+                }
+            ]
+        }
+    ],
     "power": "4",
     "toughness": "4"
 };

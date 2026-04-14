@@ -68,14 +68,26 @@ export class GameEngine {
         spellsCastThisTurn: {},
         lifeGainedThisTurn: {},
         instantOrSorceryCastThisTurn: {},
+        cardLeftGraveyardThisTurn: {},
         landsPlayedThisTurn: {},
+        triggeredAbilitiesUsedThisTurn: {},
         lastDiscardedCount: 0,
+        cardsExiledThisTurn: {},
+        countersAddedThisTurnIds: [],
         turnStartTime: Date.now()
       }
     };
 
     GameSetupProcessor.initializePlayers(this.state, players, names, decks, avatars);
     this.resolver = new StackResolver(this.state);
+    
+    // Add non-enumerable reference to avoid circular serialization issues
+    Object.defineProperty(this.state, 'gameEngine', {
+      value: this,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    });
   }
 
   /**
@@ -396,8 +408,29 @@ export class GameEngine {
 
   private rotateActivePlayer() {
     const currentIndex = this.playerOrder.indexOf(this.state.activePlayerId);
-    const nextIndex = (currentIndex + 1) % this.playerOrder.length;
-    this.state.activePlayerId = this.playerOrder[nextIndex];
+    
+    // extra turns logic
+    const currentPlayer = this.state.players[this.state.activePlayerId];
+    if (currentPlayer && currentPlayer.extraTurns > 0) {
+        currentPlayer.extraTurns--;
+        this.log(`[TURN] ${currentPlayer.name} takes an EXTRA turn! (${currentPlayer.extraTurns} remaining)`);
+        // activePlayerId stays the same
+    } else {
+        let nextIndex = (currentIndex + 1) % this.playerOrder.length;
+        let nextPlayerId = this.playerOrder[nextIndex];
+        let nextPlayer = this.state.players[nextPlayerId];
+        
+        while (nextPlayer && nextPlayer.turnsToSkip > 0) {
+            this.log(`[TURN] ${nextPlayer.name} SKIPS a turn! (${nextPlayer.turnsToSkip} remaining)`);
+            nextPlayer.turnsToSkip--;
+            nextIndex = (nextIndex + 1) % this.playerOrder.length;
+            nextPlayerId = this.playerOrder[nextIndex];
+            nextPlayer = this.state.players[nextPlayerId];
+        }
+        
+        this.state.activePlayerId = nextPlayerId;
+    }
+
     if (this.state.players[this.state.activePlayerId]) {
       this.state.players[this.state.activePlayerId].hasPlayedLandThisTurn = false;
     }
@@ -425,8 +458,12 @@ export class GameEngine {
       spellsCastThisTurn: {},
       lifeGainedThisTurn: {},
       instantOrSorceryCastThisTurn: {},
+      cardLeftGraveyardThisTurn: {},
       landsPlayedThisTurn: {},
+      triggeredAbilitiesUsedThisTurn: {},
       lastDiscardedCount: 0,
+      cardsExiledThisTurn: {},
+      countersAddedThisTurnIds: [],
       turnStartTime: Date.now()
     };
   }

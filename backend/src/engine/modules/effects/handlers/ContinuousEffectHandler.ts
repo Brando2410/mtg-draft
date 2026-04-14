@@ -107,9 +107,11 @@ export class ContinuousEffectHandler {
         condition: effect.condition,
         typesToAdd: (effect as any).typesToAdd,
         subtypesToAdd: effect.subtypesToAdd,
+        subtypesSet: effect.subtypesSet,
         colorsToAdd: (effect as any).colorsToAdd,
         colorSet: (effect as any).colorSet,
         removeAllAbilities: effect.removeAllAbilities,
+        flashbackCostOverride: effect.flashbackCostOverride,
         playerModifier: (effect as any).playerModifier,
         restrictions: (effect as any).restrictions ? (effect as any).restrictions.map((r: any) => ({
             id: `rest_${effId}`,

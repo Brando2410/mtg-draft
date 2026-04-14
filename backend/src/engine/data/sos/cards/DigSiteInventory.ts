@@ -18,19 +18,20 @@ export const DigSiteInventory: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Spell,
+            flashbackCost: "{W}",
             targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'YouControl'] },
             effects: [
-                { 
-                    type: EffectType.AddCounters, 
-                    amount: 1, 
-                    startingCounters: { type: '+1/+1', amount: 1 }, 
-                    targetMapping: TargetMapping.Target1 
+                {
+                    type: EffectType.AddCounters,
+                    amount: 1,
+                    startingCounters: { type: '+1/+1', amount: 1 },
+                    targetMapping: TargetMapping.Target1
                 },
-                { 
-                    type: EffectType.ApplyContinuousEffect, 
-                    duration: { type: DurationType.UntilEndOfTurn }, 
-                    abilitiesToAdd: ['Vigilance'], 
-                    targetMapping: TargetMapping.Target1 
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    duration: { type: DurationType.UntilEndOfTurn },
+                    abilitiesToAdd: ['Vigilance'],
+                    targetMapping: TargetMapping.Target1
                 }
             ]
         }

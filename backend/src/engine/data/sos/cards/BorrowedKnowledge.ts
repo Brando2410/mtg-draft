@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const BorrowedKnowledge: CardDefinition = {
     "name": "Borrowed Knowledge",
@@ -19,7 +19,7 @@ export const BorrowedKnowledge: CardDefinition = {
             modes: [
                 {
                     label: "Discard hand, draw cards equal to opponent's hand size",
-                    targetDefinition: { type: 'Player', count: 1, restrictions: ['Opponent'] },
+                    targetDefinition: { type: TargetType.Player, count: 1, restrictions: ['Opponent'] },
                     effects: [
                         { type: EffectType.DiscardCards, amount: 'ALL', targetMapping: TargetMapping.Controller },
                         { type: EffectType.DrawCards, amount: 'TARGET_1_HAND_SIZE', targetMapping: TargetMapping.Controller }

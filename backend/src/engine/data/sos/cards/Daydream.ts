@@ -15,6 +15,7 @@ export const Daydream: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Spell,
+            flashbackCost: "{2}{W}",
             targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'YouControl'] },
             effects: [
                 {

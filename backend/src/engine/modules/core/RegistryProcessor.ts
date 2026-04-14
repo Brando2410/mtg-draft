@@ -1,5 +1,5 @@
 import { GameState, GameObject, ContinuousEffect, TriggeredAbility, ActivatedAbility, AbilityRestriction, Zone, DurationType } from '@shared/engine_types';
-import { m21 } from '../../data/m21';
+import { oracle } from '../../OracleLogicMap';
 
 /**
  * Rules Engine Module: Registry Management (Rule 113)
@@ -13,7 +13,7 @@ export class RegistryProcessor {
    */
   public static registerAbilities(state: GameState, card: GameObject) {
     this.unregisterAbilities(state, card.id);
-    const logic = m21[card.definition.name];
+    const logic = oracle.getCard(card.definition.name);
     const abilities = (logic?.abilities || (card.definition as any).abilities || []);
     if (!abilities || abilities.length === 0) return;
 
@@ -71,7 +71,7 @@ export class RegistryProcessor {
         id,
         sourceId: card.id,
         controllerId: card.controllerId,
-        eventMatch: ability.triggerEvent || ability.on,
+        eventMatch: ability.eventMatch || ability.triggerEvent || ability.on,
         condition: ability.triggerCondition || ability.condition,
         oracleText: ability.oracleText || card.definition.oracleText || 'Triggered ability',
         ...ability

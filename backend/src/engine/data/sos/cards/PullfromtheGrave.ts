@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition } from '@shared/engine_types';
 
 export const PullfromtheGrave: CardDefinition = {
     "name": "Pull from the Grave",

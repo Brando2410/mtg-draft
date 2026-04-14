@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
 
 export const HonorboundPageForumsFavor: CardDefinition = {
     "name": "Honorbound Page // Forum's Favor",
@@ -7,21 +7,20 @@ export const HonorboundPageForumsFavor: CardDefinition = {
         "W"
     ],
     "types": [
-        "Creature",
-        "��",
-        "Cat",
-        "Cleric"
+        "Creature"
     ],
-    "subtypes": [],
-    "oracleText": "",
+    "subtypes": ["Cat", "Cleric"],
+    "keywords": ["First strike"],
+    "oracleText": "First strike\nThis creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     "abilities": [],
     "power": "3",
     "toughness": "3",
+    "entersPrepared": true,
     "faces": [
         {
             "name": "Honorbound Page",
             "manaCost": "{3}{W}",
-            "colors": [],
+            "colors": ["W"],
             "types": [
                 "Creature"
             ],
@@ -29,19 +28,42 @@ export const HonorboundPageForumsFavor: CardDefinition = {
                 "Cat",
                 "Cleric"
             ],
+            "keywords": ["First strike"],
             "oracleText": "First strike\nThis creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+            "abilities": [],
             "power": "3",
-            "toughness": "3"
+            "toughness": "3",
+            "entersPrepared": true
         },
         {
             "name": "Forum's Favor",
             "manaCost": "{W}",
-            "colors": [],
+            "colors": ["W"],
             "types": [
                 "Sorcery"
             ],
             "subtypes": [],
-            "oracleText": "Target creature gets +1/+0 and gains flying until end of turn."
+            "oracleText": "Target creature gets +1/+0 and gains flying until end of turn.",
+            "abilities": [
+                {
+                    type: AbilityType.Spell,
+                    targetDefinition: {
+                        type: TargetType.Permanent,
+                        count: 1,
+                        restrictions: ["Creature"]
+                    },
+                    effects: [
+                        {
+                            type: EffectType.ApplyContinuousEffect,
+                            powerModifier: 1,
+                            toughnessModifier: 0,
+                            abilitiesToAdd: ["Flying"],
+                            duration: 'UntilEndOfTurn',
+                            targetMapping: TargetMapping.Target1
+                        }
+                    ]
+                }
+            ]
         }
     ]
 };

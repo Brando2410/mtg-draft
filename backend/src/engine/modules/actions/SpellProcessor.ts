@@ -405,6 +405,9 @@ export class SpellProcessor {
                     TriggerProcessor.onEvent(state, { type: 'ON_SACRIFICE', playerId, sourceId: obj.id, data: { object: obj } }, log);
                     ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId, log);
                     log(`Paid additional cost: Sacrificed ${obj.definition.name}.`);
+                    if ((cost as any).isCasualty) {
+                        (state as any).paidCasualtyFor = cardToPlay.id;
+                    }
                 }
             } else if (cost.type === 'Discard') {
                 const chosenId = (state as any).lastChosenDiscardId;
@@ -455,11 +458,14 @@ export class SpellProcessor {
         if (state.turnState.spellsCastThisTurn[playerId] === 2) {
             TriggerProcessor.onEvent(state, { type: 'ON_SECOND_SPELL_CAST', playerId: playerId, data: {} }, log);
         }
+        if (state.turnState.spellsCastThisTurn[playerId] === 3) {
+            TriggerProcessor.onEvent(state, { type: 'ON_THIRD_SPELL_CAST', playerId: playerId, data: {} }, log);
+        }
 
         const exileOnResolution = (state.ruleRegistry.continuousEffects.some(e => 
             e.exileOnMoveToGraveyard && 
             (e.targetIds?.includes(cardToPlay.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === playerId))
-        )) || (cardToPlay as any).isFlashbackCast;
+        )) || (cardToPlay as any).isFlashbackCast || currentDefinition?.exileOnResolution;
         
         const stackObj = {
             id: `spell_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
@@ -480,6 +486,31 @@ export class SpellProcessor {
         };
 
         state.stack.push(stackObj);
+        
+        // --- CASUALTY COPY (CR 702.152) ---
+        if ((state as any).paidCasualtyFor === cardToPlay.id) {
+            delete (state as any).paidCasualtyFor;
+            const copyStackObj = {
+                id: `casualty_trigger_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                controllerId: playerId,
+                sourceId: stackObj.id,
+                type: AbilityType.Triggered as any,
+                name: `Casualty Copy (${stackObj.definition.name})`,
+                image_url: stackObj.definition.image_url,
+                targets: [],
+                data: {
+                    effects: [
+                        {
+                            type: 'CopySpellOnStack' as const,
+                            targetMapping: 'SOURCE_OBJECT',
+                            chooseNewTargets: true
+                        }
+                    ]
+                }
+            };
+            state.stack.push(copyStackObj);
+            log(`[CASUALTY] Copy trigger for ${stackObj.definition.name} placed on stack.`);
+        }
 
         // CR 601.2i: Fire Targeting Triggers
         (declaredTargets || []).forEach(tid => {
@@ -557,12 +588,13 @@ export class SpellProcessor {
     public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: any): { totalMana: string, additionalCosts: AbilityCost[] } {
         const currentDef = overrideDefinition || card.definition;
         let baseCost = currentDef.manaCost;
-        // CR 702.34a: Flashback cost applies if cast via Flashback.
-        // During playability checks (isPlayable), isFlashbackCast might not be set yet,
-        // so we infer it from the zone if the keyword is present.
-        const isFlashback = (card as any).isFlashbackCast || (card.zone === Zone.Graveyard && currentDef.keywords?.includes('Flashback'));
-        if (isFlashback && currentDef.flashbackCost) {
-            baseCost = currentDef.flashbackCost;
+        const { LayerProcessor } = require('./../state/LayerProcessor');
+        const stats = LayerProcessor.getEffectiveStats(card, state);
+        const isFlashback = (card as any).isFlashbackCast || (card.zone === Zone.Graveyard && stats.keywords?.includes('Flashback'));
+        if (isFlashback) {
+            let override = stats.flashbackCostOverride;
+            if (override === 'SOURCE_MANA_COST') override = currentDef.manaCost;
+            baseCost = currentDef.flashbackCost || override || baseCost;
         }
         
         // Handle X cost substitution (Rule 107.3)
@@ -571,6 +603,8 @@ export class SpellProcessor {
         }
 
         const parsed = ManaProcessor.parseManaCost(baseCost);
+        if ((card as any).isFreeCast) return { totalMana: "{0}", additionalCosts: [] };
+        
         let extraGeneric = 0;
         let additionalCosts: AbilityCost[] = [];
         let effectiveCost: string | null = null;
@@ -638,8 +672,13 @@ export class SpellProcessor {
             if (!matches || !conditionMatches) continue;
 
             if (type === 'SpellTax') extraGeneric += (mod as any).amount || 0;
+            if (type === 'AdditionalCost' && (mod as any).additionalCosts) {
+                additionalCosts = [...additionalCosts, ...(mod as any).additionalCosts];
+            }
             if (type === 'CostReduction') {
-                extraGeneric -= (mod as any).amount || 0;
+                const { EffectProcessor } = require('./../effects/EffectProcessor');
+                const redAmt = EffectProcessor.resolveAmount(state, (mod as any).amount, mod.sourceId, card.controllerId, undefined, targets);
+                extraGeneric -= redAmt || 0;
                 if ((mod as any).manaReduction) {
                     const red = ManaProcessor.parseManaCost((mod as any).manaReduction);
                     extraGeneric -= red.generic;

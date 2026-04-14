@@ -7,16 +7,18 @@ export const CheerfulOsteomancerRaiseDead: CardDefinition = {
         "B"
     ],
     "types": [
-        "Creature"
+        "Creature",
+        "Sorcery"
     ],
     "subtypes": [
         "Orc",
         "Warlock"
     ],
-    "oracleText": "",
+    "oracleText": "Cheerful Osteomancer (Creature): This creature enters prepared.\nRaise Dead (Sorcery): Return target creature card from your graveyard to your hand.",
     "abilities": [],
     "power": "4",
     "toughness": "2",
+    "entersPrepared": true,
     "faces": [
         {
             "name": "Cheerful Osteomancer",
@@ -30,15 +32,10 @@ export const CheerfulOsteomancerRaiseDead: CardDefinition = {
                 "Warlock"
             ],
             "oracleText": "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
-            "abilities": [
-                {
-                    type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
-                    effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
-                }
-            ],
+            "abilities": [],
             "power": "4",
-            "toughness": "2"
+            "toughness": "2",
+            "entersPrepared": true
         },
         {
             "name": "Raise Dead",

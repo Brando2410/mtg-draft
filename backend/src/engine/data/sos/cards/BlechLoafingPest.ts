@@ -26,12 +26,7 @@ export const BlechLoafingPest: CardDefinition = {
                     value: '+1/+1',
                     targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
                     restrictions: [
-                        { type: 'Subtype', value: 'Pest' },
-                        { type: 'Subtype', value: 'Bat' },
-                        { type: 'Subtype', value: 'Insect' },
-                        { type: 'Subtype', value: 'Snake' },
-                        { type: 'Subtype', value: 'Spider' },
-                        'OR_SET'
+                        { type: 'Subtype', subtypes: ['Pest', 'Bat', 'Insect', 'Snake', 'Spider'] }
                     ]
                 }
             ]

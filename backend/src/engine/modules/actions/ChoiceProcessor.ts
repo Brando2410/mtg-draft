@@ -81,16 +81,19 @@ export class ChoiceProcessor {
 
         // Resolve all effects in the batch
         if (allEffects.length > 0) {
-            const discardCount = allEffects.filter(e => e.type === 'MoveToZone' && e.isDiscard).length;
-            if (discardCount > 0) state.turnState.lastDiscardedCount = discardCount;
+            const discardEffects = allEffects.filter(e => e.type === 'MoveToZone' && e.isDiscard);
+            if (discardEffects.length > 0) {
+                state.turnState.lastDiscardedCount = discardEffects.length;
+                state.turnState.lastDiscardedIds = discardEffects.map(e => e.targetId).filter(id => id);
+            }
             EffectProcessor.resolveEffects(state, allEffects, sourceId as string, [], log, 0, action.data?.stackObj, action.data?.parentContext);
         }
 
         // After batch is done, check if we need to move to the next player (for DiscardCards)
-        const nextPlayerIds = action.data?.stackObj?.data?.nextPlayerIds || [];
+        const nextPlayerIds = action.data?.nextPlayerIds || action.data?.stackObj?.data?.nextPlayerIds || [];
         if (!state.pendingAction && nextPlayerIds.length > 0) {
-            const discardAmount = action.data?.stackObj?.data?.discardAmount;
-            const failureEffects = action.data?.stackObj?.data?.onFailureEffects;
+            const discardAmount = action.data?.discardAmount || action.data?.stackObj?.data?.discardAmount;
+            const failureEffects = action.data?.onFailureEffects || action.data?.stackObj?.data?.onFailureEffects;
             state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, action.data.label, action.data.stackObj, action.data.parentContext, failureEffects);
         }
 
@@ -214,11 +217,19 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                    const card = fullStackObj.card;
                    const types = card.definition.types.map(t => (t as string).toLowerCase());
                    const isPermanent = types.includes('creature') || types.includes('artifact') || types.includes('enchantment') || types.includes('planeswalker');
-                   
-                   if (isPermanent) {
-                       ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId, log);
-                   } else {
-                       ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId, log);
+                    
+                   if (card.zone === Zone.Stack) {
+                       if (fullStackObj.exileOnResolution || (fullStackObj as any).isCopy) {
+                           log(`[RULE 701.5] ${card.definition.name} was exiled instead of being put into graveyard.`);
+                           ActionProcessor.removeFromCurrentZone(state, card);
+                           if (!(fullStackObj as any).isCopy) {
+                               ActionProcessor.moveCard(state, card, Zone.Exile, card.ownerId, log);
+                           }
+                       } else if (isPermanent) {
+                           ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId, log);
+                       } else {
+                           ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId, log);
+                       }
                    }
                } else {
                    // Clean up ability/trigger
@@ -494,7 +505,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             const discardAmount = action.data?.discardAmount || action.data?.stackObj?.data?.discardAmount;
             const failureEffects = action.data?.onFailureEffects || action.data?.stackObj?.data?.onFailureEffects;
             
-            if (action.type === 'RESOLUTION_CHOICE' && action.data?.choices && !action.data.LookingCards) {
+            if (action.type === 'RESOLUTION_CHOICE' && action.data?.choices && !action.data.lookingCards) {
                  // Sequenced Modal Choice
                  state.pendingAction = ChoiceGenerator.createModalChoice(
                     {

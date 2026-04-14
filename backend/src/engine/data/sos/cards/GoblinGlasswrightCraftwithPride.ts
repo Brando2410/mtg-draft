@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const GoblinGlasswrightCraftwithPride: CardDefinition = {
     "name": "Goblin Glasswright // Craft with Pride",
@@ -13,7 +13,8 @@ export const GoblinGlasswrightCraftwithPride: CardDefinition = {
         "Goblin",
         "Sorcerer"
     ],
-    "oracleText": "",
+    "oracleText": "This creature enters prepared.\n//\nCreate a Treasure token.",
+    "entersPrepared": true,
     "abilities": [],
     "power": "2",
     "toughness": "2",
@@ -21,7 +22,7 @@ export const GoblinGlasswrightCraftwithPride: CardDefinition = {
         {
             "name": "Goblin Glasswright",
             "manaCost": "{1}{R}",
-            "colors": [],
+            "colors": ["R"],
             "types": [
                 "Creature"
             ],
@@ -30,18 +31,42 @@ export const GoblinGlasswrightCraftwithPride: CardDefinition = {
                 "Sorcerer"
             ],
             "oracleText": "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+            "entersPrepared": true,
             "power": "2",
             "toughness": "2"
         },
         {
             "name": "Craft with Pride",
             "manaCost": "{R}",
-            "colors": [],
+            "colors": ["R"],
             "types": [
                 "Sorcery"
             ],
             "subtypes": [],
-            "oracleText": "Create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")"
+            "oracleText": "Create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+            "abilities": [
+                {
+                    type: AbilityType.Spell,
+                    effects: [
+                        {
+                            type: EffectType.CreateToken,
+                            blueprint: {
+                                name: "Treasure",
+                                types: ["Artifact"],
+                                subtypes: ["Treasure"],
+                                oracleText: "{T}, Sacrifice this artifact: Add one mana of any color.",
+                                abilities: [
+                                    {
+                                        type: AbilityType.Activated,
+                                        costs: [{ type: 'TapSelf' }, { type: 'SacrificeSelf' }],
+                                        effects: [{ type: EffectType.AddMana, value: '{ANY}' }]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 };

@@ -18,14 +18,15 @@ export const DuelTactics: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Spell,
+            flashbackCost: "{1}{R}",
             targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
             effects: [
                 { type: EffectType.DealDamage, amount: 1, targetMapping: TargetMapping.Target1 },
-                { 
-                    type: EffectType.ApplyContinuousEffect, 
-                    duration: { type: DurationType.UntilEndOfTurn }, 
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     restrictions: [{ type: 'CannotBlock' }],
-                    targetMapping: TargetMapping.Target1 
+                    targetMapping: TargetMapping.Target1
                 }
             ]
         }

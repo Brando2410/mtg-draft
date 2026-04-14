@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const EncouragingAviatorJump: CardDefinition = {
     "name": "Encouraging Aviator // Jump",
@@ -13,7 +13,7 @@ export const EncouragingAviatorJump: CardDefinition = {
         "Bird",
         "Wizard"
     ],
-    "oracleText": "",
+    "oracleText": "Flying; Attack: Prepare // Target creature gains flying until end of turn.",
     "abilities": [],
     "power": "2",
     "toughness": "3",
@@ -21,7 +21,7 @@ export const EncouragingAviatorJump: CardDefinition = {
         {
             "name": "Encouraging Aviator",
             "manaCost": "{2}{U}",
-            "colors": [],
+            "colors": ["U"],
             "types": [
                 "Creature"
             ],
@@ -31,17 +31,47 @@ export const EncouragingAviatorJump: CardDefinition = {
             ],
             "oracleText": "Flying\nWhenever this creature attacks, it becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
             "power": "2",
-            "toughness": "3"
+            "toughness": "3",
+            "keywords": ["Flying"],
+            "abilities": [
+                {
+                    type: AbilityType.Triggered,
+                    eventMatch: TriggerEvent.Attack,
+                    effects: [
+                        {
+                            type: EffectType.Prepare,
+                            targetMapping: TargetMapping.Self
+                        }
+                    ]
+                }
+            ]
         },
         {
             "name": "Jump",
             "manaCost": "{U}",
-            "colors": [],
+            "colors": ["U"],
             "types": [
                 "Instant"
             ],
             "subtypes": [],
-            "oracleText": "Target creature gains flying until end of turn."
+            "oracleText": "Target creature gains flying until end of turn.",
+            "abilities": [
+                {
+                    type: AbilityType.Spell,
+                    targetDefinition: {
+                        type: 'Creature',
+                        count: 1
+                    },
+                    effects: [
+                        {
+                            type: EffectType.ApplyContinuousEffect,
+                            targetMapping: TargetMapping.Target1,
+                            duration: 'UNTIL_END_OF_TURN',
+                            abilitiesToAdd: ['Flying']
+                        }
+                    ]
+                }
+            ]
         }
     ]
 };

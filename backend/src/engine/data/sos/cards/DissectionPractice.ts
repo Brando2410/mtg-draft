@@ -14,39 +14,27 @@ export const DissectionPractice: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Player', count: 1, restrictions: ['Opponent'] },
+            targetDefinition: [
+                { type: 'Player', count: 1, restrictions: ['Opponent'] },
+                { type: 'Permanent', count: 1, minCount: 0, restrictions: ['Creature'], optional: true },
+                { type: 'Permanent', count: 1, minCount: 0, restrictions: ['Creature'], optional: true }
+            ],
             effects: [
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.Target1 },
                 { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller },
                 { 
-                    type: EffectType.Choice, 
-                    label: "Choose creature to get +1/+1 (optional)", 
-                    targetIdMapping: 'ALL_BATTLEFIELD',
-                    restrictions: ['Creature'],
-                    optional: true,
-                    effects: [
-                        { 
-                            type: EffectType.ApplyContinuousEffect, 
-                            duration: { type: DurationType.UntilEndOfTurn }, 
-                            powerModifier: 1, toughnessModifier: 1, 
-                            targetMapping: TargetMapping.Target1 
-                        }
-                    ]
+                    type: EffectType.ApplyContinuousEffect, 
+                    duration: { type: DurationType.UntilEndOfTurn }, 
+                    powerModifier: 1, toughnessModifier: 1, 
+                    targetMapping: TargetMapping.Target2,
+                    condition: 'TARGET_2_EXISTS'
                 },
                 { 
-                    type: EffectType.Choice, 
-                    label: "Choose creature to get -1/-1 (optional)", 
-                    targetIdMapping: 'ALL_BATTLEFIELD',
-                    restrictions: ['Creature'],
-                    optional: true,
-                    effects: [
-                        { 
-                            type: EffectType.ApplyContinuousEffect, 
-                            duration: { type: DurationType.UntilEndOfTurn }, 
-                            powerModifier: -1, toughnessModifier: -1, 
-                            targetMapping: TargetMapping.Target1 
-                        }
-                    ]
+                    type: EffectType.ApplyContinuousEffect, 
+                    duration: { type: DurationType.UntilEndOfTurn }, 
+                    powerModifier: -1, toughnessModifier: -1, 
+                    targetMapping: TargetMapping.Target3,
+                    condition: 'TARGET_3_EXISTS'
                 }
             ]
         }

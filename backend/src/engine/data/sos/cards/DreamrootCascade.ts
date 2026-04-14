@@ -15,13 +15,15 @@ export const DreamrootCascade: CardDefinition = {
             type: AbilityType.Activated,
             costs: [{ type: 'Tap' }],
             isManaAbility: true,
-            effects: [{ type: EffectType.AddMana, mana: '{G}' }]
-        },
-        {
-            type: AbilityType.Activated,
-            costs: [{ type: 'Tap' }],
-            isManaAbility: true,
-            effects: [{ type: EffectType.AddMana, mana: '{U}' }]
+            effects: [
+                {
+                    type: EffectType.AddMana,
+                    choices: [
+                        { label: '{G}', effects: [{ type: EffectType.AddMana, manaType: 'G' }] },
+                        { label: '{U}', effects: [{ type: EffectType.AddMana, manaType: 'U' }] }
+                    ]
+                }
+            ]
         }
     ]
 };

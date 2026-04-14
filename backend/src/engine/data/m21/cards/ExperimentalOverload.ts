@@ -16,6 +16,7 @@ export const ExperimentalOverload: Record<string, ImplementableCard> = {
             {
                 id: "experimental_overload_spell",
                 type: AbilityType.Spell,
+                exileOnResolution: true,
                 activeZone: ZoneRequirement.Stack,
                 effects: [
                     {
@@ -41,8 +42,7 @@ export const ExperimentalOverload: Record<string, ImplementableCard> = {
                         effects: [
                             { type: EffectType.ReturnToHand, targetMapping: 'SELECTED_CARD' }
                         ]
-                    },
-                    { type: EffectType.Exile, targetMapping: 'SELF' }
+                    }
                 ]
             }
         ]

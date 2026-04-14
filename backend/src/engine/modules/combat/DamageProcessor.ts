@@ -29,7 +29,7 @@ export class DamageProcessor {
     }
 
     // Rule 615: Prevention Effects
-    if (this.shouldPreventDamage(state, targetId, isCombat)) {
+    if (!state.turnState.damagePreventionDisabled && this.shouldPreventDamage(state, targetId, isCombat)) {
         log(`[PREVENTED] Damage to ${targetId} was prevented by an effect.`);
         return;
     }

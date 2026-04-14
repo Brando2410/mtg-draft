@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const MagmabloodArchaic: CardDefinition = {
     "name": "Magmablood Archaic",
@@ -12,8 +12,38 @@ export const MagmabloodArchaic: CardDefinition = {
     "subtypes": [
         "Avatar"
     ],
+    "keywords": ["Trample", "Reach"],
     "oracleText": "Trample, reach\nConverge — This creature enters with a +1/+1 counter on it for each color of mana spent to cast it.\nWhenever you cast an instant or sorcery spell, creatures you control get +1/+0 until end of turn for each color of mana spent to cast that spell.",
-    "abilities": [],
+    "abilities": [
+        {
+            type: AbilityType.Static,
+            effects: [
+                {
+                    type: EffectType.EntersWithCounters,
+                    amount: 'CONVERGE_AMOUNT',
+                    counterType: '+1/+1',
+                    targetMapping: TargetMapping.Self
+                }
+            ]
+        },
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.CastSpell,
+            triggerCondition: (state, event, trigger) => {
+                if (event.playerId !== trigger.controllerId) return false;
+                const card = event.data?.card || event.data?.object;
+                return card?.definition.types.some((t: string) => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery');
+            },
+            effects: [
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    powerModifier: 'CONVERGE_AMOUNT', // The engine needs to know this refers to the TRIGGERING spell's converge
+                    duration: "UNTIL_END_OF_TURN",
+                    targetMapping: "ALL_CREATURES_YOU_CONTROL"
+                }
+            ]
+        }
+    ],
     "power": "2",
     "toughness": "2"
 };

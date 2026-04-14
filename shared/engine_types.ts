@@ -28,6 +28,7 @@ export const TargetMapping = {
   Self: 'SELF',
   Target1: 'TARGET_1',
   Target2: 'TARGET_2',
+  Target3: 'TARGET_3',
   TargetAll: 'TARGET_ALL',
   Controller: 'CONTROLLER',
   EachOpponent: 'EACH_OPPONENT',
@@ -51,12 +52,18 @@ export const TargetMapping = {
   TargetOpponent: 'TARGET_OPPONENT',
   LookingCards: 'LOOKING_CARDS',
   SelectedCards: 'SELECTED_CARDS',
+  SelectedCard: 'SELECTED_CARD',
   RemainingLookingCards: 'REMAINING_LOOKING_CARDS',
   NameACard: 'NAME_A_CARD',
   EventTarget: 'EVENT_TARGET',
   LastExiledObject: 'LAST_EXILED_OBJECT',
   TriggerSource: 'TRIGGER_SOURCE',
-  TriggerTarget: 'TRIGGER_TARGET'
+  LastDiscardedCards: 'LAST_DISCARDED_CARDS',
+  TriggerTarget: 'TRIGGER_TARGET',
+  LastCreatedToken: 'LAST_CREATED_TOKEN',
+  EachOpponentCreature: 'EACH_OPPONENT_CREATURE',
+  LastExiledIds: 'LAST_EXILED_IDS',
+  LastMilledIds: 'LAST_MILLED_IDS'
 } as const;
 export type TargetMapping = (typeof TargetMapping)[keyof typeof TargetMapping];
 
@@ -71,7 +78,14 @@ export const DynamicAmount = {
   TriggerEventSourcePower: 'TRIGGER_EVENT_SOURCE_POWER',
   DrawnThreeCheck: 'DYNAMIC_DrawnThreeCheck',
   TwoPlusDiscardedMV: 'DYNAMIC_2PlusDiscardedMV',
-  DiscardedCount: 'DISCARDED_COUNT'
+  DiscardedCount: 'DISCARDED_COUNT',
+  CardsDrawnThisTurn: 'CARDS_DRAWN_THIS_TURN',
+  ConvergeAmount: 'CONVERGE_AMOUNT',
+  Target1Power: 'TARGET_1_POWER',
+  Target1HandSize: 'TARGET_1_HAND_SIZE',
+  DiscardedCountPlus1: 'DISCARDED_COUNT_PLUS_1',
+  DifferentlyNamedLandsCount: 'DIFFERENTLY_NAMED_LANDS_COUNT',
+  CreaturesYouControl: 'CREATURES_YOU_CONTROL'
 } as const;
 export type DynamicAmount = (typeof DynamicAmount)[keyof typeof DynamicAmount];
 
@@ -251,6 +265,8 @@ export interface PlayerState {
   stops: Record<string, boolean>; // Phase/Step stops (Arena-style)
   autoOrderTriggers: boolean;
   passUntilEndOfTurn: boolean;
+  extraTurns: number;
+  turnsToSkip: number;
 }
 
 export interface CombatState {
@@ -282,9 +298,15 @@ export interface TurnState {
   lifeGainedThisTurn: Record<PlayerId, number>;
   spellsCastThisTurn: Record<PlayerId, number>;
   instantOrSorceryCastThisTurn: Record<PlayerId, boolean>;
+  cardLeftGraveyardThisTurn: Record<PlayerId, boolean>;
   landsPlayedThisTurn: Record<PlayerId, number>;
+  triggeredAbilitiesUsedThisTurn: Record<string, number>;
   lastDiscardedCount: number;
+  lastDiscardedIds?: string[];
+  cardsExiledThisTurn: Record<PlayerId, boolean>;
   namedCards?: Record<string, string>; // Store named card choices (e.g. for Pithing Needle or Academic Probation)
+  countersAddedThisTurnIds: GameObjectId[];
+  damagePreventionDisabled?: boolean;
 }
 
 export interface ChoicePendingActionData {
@@ -380,7 +402,8 @@ export const DurationType = {
   UntilNextUntapStep: 'UNTIL_NEXT_UNTAP_STEP', // For "frozen" effects
   Permanent: 'PERMANENT',                 // e.g., Counters or Emblems
   UntilYourNextTurn: 'UNTIL_YOUR_NEXT_TURN', // Expire at start of next turn
-  UntilEndOfYourNextTurn: 'UNTIL_END_OF_YOUR_NEXT_TURN' // Expire at end of next turn
+  UntilEndOfYourNextTurn: 'UNTIL_END_OF_YOUR_NEXT_TURN', // Expire at end of next turn
+  NextEndStep: 'NEXT_END_STEP'
 } as const;
 export type DurationType = (typeof DurationType)[keyof typeof DurationType];
 
@@ -413,6 +436,7 @@ export interface ContinuousEffect {
   toughnessDynamic?: string;
   typesToAdd?: string[];
   subtypesToAdd?: string[];
+  subtypesSet?: string[];
   colorsToAdd?: string[];
   colorSet?: string[];
   abilitiesToAdd?: (string | ParsedAbility)[];
@@ -445,6 +469,8 @@ export interface AbilityCost {
   targetMapping?: string;  // e.g. "SELF"
   counterType?: string;    // For RemoveCounter cost
   costModifiers?: { type: 'REDUCE_GENERIC_PER_COUNTER', counterType: string }[];
+  sourceZone?: Zone;
+  sourceZones?: Zone[]; 
 }
 
 export interface ActivatedAbility {
@@ -498,6 +524,7 @@ export interface TriggeredAbility {
   eventMatch: GameEvent['type'];
   // Optional: "Intervening If" clause (Rule 603.4)
   condition?: (event: GameEvent, state: GameState) => boolean;
+  limitPerTurn?: number;
   // Specific effect to execute or push to stack
   duration?: EffectDuration;
 }
@@ -563,6 +590,7 @@ export const TriggerEvent = {
   CastSpell: 'ON_CAST_SPELL',
   OpponentCastNonHand: 'ON_OPPONENT_CAST_NON_HAND',
   SecondSpellCast: 'ON_SECOND_SPELL_CAST',
+  ThirdSpellCast: 'ON_THIRD_SPELL_CAST',
   CopySpell: 'ON_COPY_SPELL',
   Magecraft: 'ON_MAGECRAFT',
   MagecraftOpponent: 'ON_MAGECRAFT_OPPONENT',
@@ -671,6 +699,8 @@ export const EffectType = {
   AdditionalCost: 'AdditionalCost',
   AdditionalLandPlays: 'AdditionalLandPlays',
   Mill: 'Mill',
+  DisableDamagePrevention: 'DisableDamagePrevention',
+  ExileUntilManaValue: 'ExileUntilManaValue',
   ModifyDrawAmount: 'ModifyDrawAmount',
   ModifyCountersAmount: 'ModifyCountersAmount',
   GainAbilitiesOfTopCard: 'GainAbilitiesOfTopCard',
@@ -687,15 +717,16 @@ export const EffectType = {
   EndTurn: 'EndTurn',
   PlayWithTopCardRevealed: 'PlayWithTopCardRevealed',
   AllowPlayFromTop: 'AllowPlayFromTop',
+  Paradigm: 'Paradigm',
   AllowSpendManaAsAnyColor: 'AllowSpendManaAsAnyColor',
   AllowLookAtTop: 'AllowLookAtTop',
   AllowPlayExiled: 'AllowPlayExiled',
   Surveil: 'Surveil',
+  DoubleCounters: 'DoubleCounters',
   AllowCastWithoutPaying: 'AllowCastWithoutPaying',
   CastSpell: 'CastSpell',
   MoveCounters: 'MoveCounters',
   EntersWithCounters: 'EntersWithCounters',
-  Paradigm: 'Paradigm',
   AllowPlayMilledCard: 'AllowPlayMilledCard',
   PENDING_ACTION: 'PENDING_ACTION',
 } as const;
@@ -746,7 +777,8 @@ export const ConditionType = {
     DrawnCardsGe: 'DRAWN_CARDS_GE',
     CounterGe: 'COUNTER_GE',
     OtherLandsLe: 'OTHER_LANDS_LE',
-    HasInstantAndSorceryInGy: 'HAS_INSTANT_AND_SORCERY_IN_GY'
+    HasInstantAndSorceryInGy: 'HAS_INSTANT_AND_SORCERY_IN_GY',
+    OpponentHasMoreCards: 'OPPONENT_HAS_MORE_CARDS',
 } as const;
 export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType] | string;
 
@@ -758,6 +790,9 @@ export interface EffectDefinition {
   tapped?: boolean;
   costs?: AbilityCost[];
   isDiscard?: boolean;
+  returnToBattlefield?: boolean;
+  returnDuration?: DurationType;
+  limitPerTurn?: number;
 
   eventMatch?: string; // For AddTriggeredAbility
 
@@ -791,12 +826,16 @@ export interface EffectDefinition {
   abilitiesToRemove?: string[];
   removeAllAbilities?: boolean;
   subtypesToAdd?: string[];
+  subtypesSet?: string[];
+  colorsToAdd?: string[];
+  colorSet?: string[];
   typesToAdd?: string[];
   layer?: number;
   sublayer?: string;
   targetControllerId?: string;
   isFreeCast?: boolean;
   canPlayExiled?: boolean;
+  flashbackCostOverride?: string;
   exileOnMoveToGraveyard?: boolean;
   isLegendary?: boolean;
   next?: EffectDefinition;
@@ -853,7 +892,7 @@ export interface EffectDefinition {
   splitDestinations?: { count: number, zone: Zone, tapped?: boolean }[]; // For complex splits (e.g. Cultivate)
   remainderZone?: Zone; // For leftovers (Top/Bottom/Graveyard)
   remainderPosition?: 'top' | 'bottom'; // Explicit destination position for remainders
-  fromTop?: number; // Number of cards to look at from top (Scry/LookAtTop)
+  fromTop?: number | string; // Number of cards to look at from top (Scry/LookAtTop)
   shuffle?: boolean; // For library search
   reveal?: boolean; // For hidden zone search
   libraryPosition?: 'top' | 'bottom'; // Destination within library
@@ -905,6 +944,7 @@ export interface TargetDefinition {
   zone?: Zone;
   controller?: string;
   maxSelections?: number;
+  label?: string;
 }
 
 export interface ParsedAbility {

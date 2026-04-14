@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const GerminationPracticum: CardDefinition = {
     "name": "Germination Practicum",
@@ -13,5 +13,18 @@ export const GerminationPracticum: CardDefinition = {
         "Lesson"
     ],
     "oracleText": "Put two +1/+1 counters on each creature you control.\nParadigm (Then exile this spell. After you first resolve a spell with this name, you may cast a copy of it from exile without paying its mana cost at the beginning of each of your first main phases.)",
-    "abilities": []
+    "abilities": [
+        {
+            type: AbilityType.Spell,
+            effects: [
+                {
+                    type: EffectType.AddCounters,
+                    amount: 2,
+                    value: '+1/+1',
+                    targetMapping: TargetMapping.AllCreaturesYouControl
+                },
+                { type: EffectType.Paradigm }
+            ]
+        }
+    ]
 };

@@ -155,6 +155,43 @@ export class ControlEffectHandler {
         });
         break;
 
+      case 'ExtraTurns':
+        targets.forEach(tid => {
+            const p = state.players[tid as PlayerId];
+            if (p) {
+                const amount = effect.amount || 1;
+                p.extraTurns += amount;
+                log(`[TURN] ${p.name} gained ${amount} extra turn(s).`);
+            }
+        });
+        break;
+
+      case 'SkipTurns':
+        targets.forEach(tid => {
+            const p = state.players[tid as PlayerId];
+            if (p) {
+                let amount = effect.amount || 1;
+                
+                // Ral Zarek support: Flip coins
+                if (effect.flipCoins) {
+                    let heads = 0;
+                    for (let i = 0; i < effect.flipCoins; i++) {
+                        if (Math.random() < 0.5) heads++;
+                    }
+                    amount = heads;
+                    log(`[COIN-FLIP] Flipping ${effect.flipCoins} coins... ${heads} heads!`);
+                }
+                
+                if (amount > 0) {
+                    p.turnsToSkip += amount;
+                    log(`[TURN] ${p.name} will skip their next ${amount} turn(s).`);
+                } else {
+                    log(`[TURN] No turns skipped for ${p.name}.`);
+                }
+            }
+        });
+        break;
+
       case 'PhasedOut':
         targets.forEach(tid => {
             const obj = findObject(state, tid, stackObject, parentContext);

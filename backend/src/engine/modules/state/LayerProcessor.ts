@@ -75,6 +75,10 @@ export class LayerProcessor {
       // Layer 4: Type-changing effects
       effect.typesToAdd?.forEach(t => types.add(t));
       effect.subtypesToAdd?.forEach(s => subtypes.add(s));
+      if (effect.subtypesSet) {
+        subtypes.clear();
+        effect.subtypesSet.forEach(s => subtypes.add(s));
+      }
 
       // Layer 5: Color-changing effects
       effect.colorsToAdd?.forEach(c => colors.add(c));
@@ -224,6 +228,8 @@ export class LayerProcessor {
         case 'OTHER_CREATURES':
         case 'ALL_OTHER_CREATURES':
           return obj.id !== effect.sourceId && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
+        case 'MATCHING_CARDS':
+          return TargetingProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId);
         case 'ENCHANTED_CREATURE':
         case 'ENCHANTED_PERMANENT': {
           const source = state.battlefield.find(o => o.id === effect.sourceId);

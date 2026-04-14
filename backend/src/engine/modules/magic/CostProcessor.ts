@@ -91,7 +91,15 @@ export class CostProcessor {
         if (cost.targetMapping === 'SELF') {
            return state.battlefield.some(c => c.id === source.id);
         }
-        return state.battlefield.some(c => c.controllerId === playerId);
+        const zones = cost.sourceZones || (cost.sourceZone ? [cost.sourceZone] : [Zone.Battlefield]);
+        const pool = zones.flatMap(z => {
+            if (z === Zone.Battlefield) return state.battlefield.filter(o => o.controllerId === playerId);
+            if (z === Zone.Graveyard) return player.graveyard;
+            if (z === Zone.Hand) return player.hand;
+            if (z === Zone.Exile) return state.exile; // Rare but possible
+            return [];
+        });
+        return pool.some(c => !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, playerId, source.id));
 
       case 'Crew': {
         const amount = Number(cost.amount || cost.value || 0);
@@ -193,12 +201,14 @@ export class CostProcessor {
              toExile = source;
          } else {
              const chosenId = (state as any).lastChosenExileId;
-             toExile = state.battlefield.find(c => c.id === chosenId);
+             if (chosenId) {
+                toExile = this.findObject(state, chosenId);
+             }
          }
          
          if (toExile) {
              ActionProcessor.moveCard(state, toExile, Zone.Exile, playerId, log);
-             log(`${player.name} exiled ${toExile.definition.name} as a cost.`);
+             log(`${player.name} exiled ${toExile.definition?.name || 'an object'} as a cost.`);
          }
          delete (state as any).lastChosenExileId;
          break;

@@ -325,6 +325,11 @@ export class TargetingProcessor {
             if (lr === 'tapped' && !targetObj.isTapped) return false;
             if (lr === 'untapped' && targetObj.isTapped) return false;
             if (lr === 'opponents' && (targetObj.controllerId || targetObj.ownerId) === controllerId) return false;
+            if (lr === 'fromhand' || lr === 'castfromhand') {
+                const zone = targetObj.zone || targetObj.card?.zone;
+                const lastZone = targetObj.lastNonStackZone || targetObj.card?.lastNonStackZone;
+                if (zone !== Zone.Hand && lastZone !== Zone.Hand) return false;
+            }
 
             if (lr === 'mv_le_power' && sourceId) {
                 const source = state.battlefield.find(o => o.id === sourceId);
@@ -733,7 +738,9 @@ export class TargetingProcessor {
         const { LayerProcessor } = require('../state/LayerProcessor');
 
         switch (mapping) {
-            case 'SELF': return [sourceId];
+            case 'SELF':
+            case 'SOURCE_OBJECT':
+                return [sourceId];
             case 'CONTROLLER':
                 return [controllerId];
             case 'LINKED_OBJECT':
@@ -749,6 +756,10 @@ export class TargetingProcessor {
             }
             case 'LAST_CREATED_TOKEN':
                 return (state as any).lastCreatedTokenId ? [(state as any).lastCreatedTokenId] : [];
+            case 'LAST_EXILED_IDS':
+                return (state as any).lastExiledIds || [];
+            case 'LAST_MILLED_IDS':
+                return (state as any).lastMilledIds || [];
             case 'TARGET_1': return [targets[0]];
             case 'SELF_AND_TARGET_1': return [sourceId, targets[0]];
             case 'TARGET_2': return [targets[1]];
@@ -801,6 +812,10 @@ export class TargetingProcessor {
                 return state.battlefield
                     .filter(o => o.controllerId === controllerId)
                     .map(o => o.id);
+            case 'ALL_FRACTALS_YOU_CONTROL':
+                return state.battlefield
+                    .filter(o => o.controllerId === controllerId && o.definition.subtypes?.some(s => s.toLowerCase() === 'fractal'))
+                    .map(o => o.id);
             case 'OTHER_CREATURES':
             case 'ALL_OTHER_CREATURES':
                 return state.battlefield
@@ -823,6 +838,7 @@ export class TargetingProcessor {
             case 'EACH_OPPONENT':
                 return Object.keys(state.players).filter(pid => pid !== controllerId);
             case 'OPPONENT_1':
+            case 'TARGET_OPPONENT':
                 return [Object.keys(state.players).filter(pid => pid !== controllerId)[0]];
             case 'EACH_OPPONENT_CREATURE':
                 return state.battlefield
@@ -842,6 +858,8 @@ export class TargetingProcessor {
                 return pc ? [...pc.graveyard.map(c => c.id), ...pc.library.map(c => c.id)] : [];
             case 'LAST_EXILED_OBJECT':
                 return (state as any).lastExiledIds || [];
+            case 'LAST_DISCARDED_CARDS':
+                return state.turnState.lastDiscardedIds || [];
             case 'ALL_PLAYERS':
                 return Object.keys(state.players);
             case 'ANY_TARGET':

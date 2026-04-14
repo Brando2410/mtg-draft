@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType } from '@shared/engine_types';
 
 export const StormcarvedCoast: CardDefinition = {
     "name": "Stormcarved Coast",
@@ -9,5 +9,21 @@ export const StormcarvedCoast: CardDefinition = {
     ],
     "subtypes": [],
     "oracleText": "This land enters tapped unless you control two or more other lands.\n{T}: Add {U} or {R}.",
-    "abilities": []
+    "entersTappedCondition": "OTHER_LANDS_LE:1",
+    "abilities": [
+        {
+            type: AbilityType.Activated,
+            costs: [{ type: 'Tap' }],
+            isManaAbility: true,
+            effects: [
+                {
+                    type: EffectType.AddMana,
+                    choices: [
+                        { label: '{U}', effects: [{ type: EffectType.AddMana, manaType: 'U' }] },
+                        { label: '{R}', effects: [{ type: EffectType.AddMana, manaType: 'R' }] }
+                    ]
+                }
+            ]
+        }
+    ]
 };

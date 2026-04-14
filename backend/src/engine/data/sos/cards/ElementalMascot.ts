@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType, TriggerEvent } from '@shared/engine_types';
 
 export const ElementalMascot: CardDefinition = {
     "name": "Elemental Mascot",
@@ -14,8 +14,33 @@ export const ElementalMascot: CardDefinition = {
         "Elemental",
         "Bird"
     ],
+    "keywords": [
+        "Flying",
+        "Vigilance"
+    ],
     "oracleText": "Flying, vigilance\nOpus — Whenever you cast an instant or sorcery spell, this creature gets +1/+0 until end of turn. If five or more mana was spent to cast that spell, exile the top card of your library. You may play that card until the end of your next turn.",
-    "abilities": [],
+    "abilities": [
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
+            triggerCondition: 'PLAYER_IS_CONTROLLER',
+            effects: [
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    sublayer: 'Stats',
+                    powerModifier: 1,
+                    duration: { type: DurationType.UntilEndOfTurn },
+                    targetMapping: TargetMapping.Self
+                },
+                {
+                    type: EffectType.ExileTopCard,
+                    condition: 'SPENT_MANA_GE:5',
+                    canPlayExiled: true,
+                    duration: { type: DurationType.UntilEndOfYourNextTurn }
+                }
+            ]
+        }
+    ],
     "power": "1",
     "toughness": "4"
 };

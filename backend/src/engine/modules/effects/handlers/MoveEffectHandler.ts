@@ -36,7 +36,7 @@ export class MoveEffectHandler {
 
     // Map legacy effect types to selection modes if needed
     if (effect.type === 'DrawCards') {
-        return this.resolveDrawCards(state, effect, controllerId, log, stackObject, parentContext);
+        return this.resolveDrawCards(state, effect, controllerId, log, stackObject, parentContext, targetIds);
     }
     if (effect.type === 'Mill') {
         return this.resolveMill(state, effect, controllerId, log, stackObject, parentContext);
@@ -54,6 +54,12 @@ export class MoveEffectHandler {
         return this.resolveLookAtTopAndPick(state, effect, controllerId, log, stackObject, parentContext);
     }
 
+    if (effect.type === EffectType.DiscardCards || (effect.type as any) === 'Discard') {
+        const playerIds = targetIds.filter((id: string) => state.players[id as PlayerId]) as PlayerId[];
+        const amount = typeof effect.amount === 'number' ? effect.amount : 1;
+        return ChoiceGenerator.createDiscardChoice(state, playerIds, (stackObject as any)?.sourceId || '', amount, effect.label || "Choose a card to discard", stackObject, parentContext, effect.effects, log);
+    }
+
     if (effect.type === EffectType.ExchangeHandAndGraveyard) {
         return this.resolveExchangeHandAndGraveyard(state, effect, targets, controllerId, log);
     }
@@ -65,9 +71,11 @@ export class MoveEffectHandler {
     if (selectionType === 'Target' && targetIds.length > 0) {
         return this.resolveMoveTargets(state, effect, targetIds, controllerId, log, stackObject, parentContext);
     }
-    if ((effect.fromTop || 0) > 0 && (effect.sourceZones || []).includes(Zone.Library)) {
+    const { EffectProcessor } = require('../EffectProcessor');
+    const fromTopResolved = EffectProcessor.resolveAmount(state, effect.fromTop || 0, (stackObject as any)?.sourceId || '', controllerId, stackObject, targetIds);
+    if (fromTopResolved > 0 && (effect.sourceZones || []).includes(Zone.Library)) {
         const affectedPlayerId = targetIds.find((tid: string) => state.players[tid as PlayerId]) as PlayerId || controllerId;
-        return this.resolveLibraryTopMoves(state, effect, affectedPlayerId, log, stackObject, parentContext);
+        return this.resolveLibraryTopMoves(state, { ...effect, fromTop: fromTopResolved }, affectedPlayerId, log, stackObject, parentContext);
     }
     if (selectionType === 'Search' && (effect.sourceZones || []).includes(Zone.Library)) {
         return this.resolveLibrarySearch(state, effect, controllerId, log, stackObject, parentContext);
@@ -76,21 +84,75 @@ export class MoveEffectHandler {
         return this.resolveMassMove(state, effect, targetIds, controllerId, log, stackObject, parentContext);
     }
 
+    if (effect.type === 'ExileUntilManaValue') {
+        return this.resolveExileUntilManaValue(state, effect, controllerId, log, stackObject, parentContext);
+    }
+
     return this.resolveSingleTargetMove(state, effect, targetIds, controllerId, log, stackObject, parentContext);
   }
 
-  private static resolveDrawCards(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any) {
-    const amount = typeof effect.amount === 'number' ? effect.amount : 1;
-    return this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], destination: Zone.Hand, fromTop: amount, isDraw: true }, controllerId, log, stackObject, parentContext);
+  private static resolveExileUntilManaValue(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any) {
+    const player = state.players[controllerId];
+    if (!player) return;
+
+    const threshold = typeof effect.amount === 'number' ? effect.amount : 4;
+    let totalMV = 0;
+    const cards: GameObject[] = [];
+    const { ManaProcessor } = require('../../magic/ManaProcessor');
+
+    // Rule: Rule 701.12: To exile cards until a condition is met
+    while (player.library.length > 0 && totalMV < threshold) {
+        const card = player.library.pop()!;
+        const mv = ManaProcessor.getManaValue(card.definition.manaCost || "");
+        
+        totalMV += mv;
+        cards.push(card);
+        ActionProcessor.moveCard(state, card, Zone.Exile, controllerId, log);
+        TriggerProcessor.onEvent(state, { type: 'ON_EXILE', targetId: card.id, sourceId: (stackObject as any)?.sourceId || '', sourceZone: Zone.Library }, log);
+    }
+
+    if (cards.length > 0) {
+        log(`[EXILE-UNTIL] Exiled ${cards.length} cards with total MV ${totalMV} (Threshold: ${threshold}).`);
+        
+        // Push a choice to cast any number of them
+        state.pendingAction = ChoiceGenerator.createCardChoice(state, cards, {
+            label: `Cast any number of exiled spells?`,
+            playerId: controllerId,
+            sourceId: (stackObject as any)?.sourceId || '',
+            optional: true,
+            minChoices: 0,
+            maxChoices: cards.length,
+            actionType: ActionType.OptionalAction,
+            onSelected: (c: GameObject) => {
+                const subEffects = [];
+                const types = c.definition.types.map(t => t.toLowerCase());
+                if (!types.includes('land')) {
+                    subEffects.push({ type: 'CastSpell' as any, targetId: c.id, isFreeCast: true });
+                }
+                return subEffects;
+            },
+            stackObj: stackObject,
+            parentContext: parentContext
+        });
+    }
+  }
+
+  private static resolveDrawCards(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any, targets: string[] = []) {
+    const { EffectProcessor } = require('../EffectProcessor');
+    const amount = EffectProcessor.resolveAmount(state, effect.amount, (stackObject as any)?.sourceId || '', controllerId, stackObject);
+    const affectedPlayerId = targets.find(tid => state.players[tid as PlayerId]) as PlayerId || controllerId;
+    return this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], destination: Zone.Hand, fromTop: amount, isDraw: true }, affectedPlayerId, log, stackObject, parentContext);
   }
 
   private static resolveMill(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any) {
-    const amount = typeof effect.amount === 'number' ? effect.amount : 1;
+    const { EffectProcessor } = require('../EffectProcessor');
+    const amount = EffectProcessor.resolveAmount(state, effect.amount, (stackObject as any)?.sourceId || '', controllerId, stackObject);
     return this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], destination: Zone.Graveyard, fromTop: amount }, controllerId, log, stackObject, parentContext);
   }
 
   private static resolveScry(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any) {
-    const amount = typeof effect.amount === 'number' ? effect.amount : 1;
+    const { EffectProcessor } = require('../EffectProcessor');
+    const amount = EffectProcessor.resolveAmount(state, effect.amount, (stackObject as any)?.sourceId || '', controllerId, stackObject);
     return this.resolveLibraryTopMoves(state, { ...effect, type: 'Scry', selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: amount }, controllerId, log, stackObject, parentContext);
   }
 
@@ -169,14 +231,20 @@ export class MoveEffectHandler {
             onSelected: (selectedCard: GameObject) => {
                 // Per-card movement response
                 const subEffects: any[] = [];
-                subEffects.push({ 
-                    type: 'MoveToZone', 
-                    targetId: selectedCard.id, 
-                    zone: destination, 
-                    tapped: effect.tapped, 
-                    reveal: effect.reveal,
-                    isFreeCast: effect.isFreeCast
-                });
+                
+                if (typeof (effect as any).onSelected === 'function') {
+                    const custom = (effect as any).onSelected(selectedCard);
+                    if (Array.isArray(custom)) subEffects.push(...custom);
+                } else {
+                    subEffects.push({ 
+                        type: 'MoveToZone', 
+                        targetId: selectedCard.id, 
+                        zone: destination, 
+                        tapped: effect.tapped, 
+                        reveal: effect.reveal,
+                        isFreeCast: effect.isFreeCast
+                    });
+                }
                 
                 if (effect.isFreeCast) {
                     subEffects.push({ type: 'CastSpell', targetId: selectedCard.id, isFreeCast: true });
@@ -236,6 +304,9 @@ export class MoveEffectHandler {
     // Default: Automatic move (Draw, Mill, Exile)
     if (destination === Zone.Exile) {
         (state as any).lastExiledIds = cards.map(c => c.id);
+    }
+    if (effect.type === 'Mill') {
+        (state as any).lastMilledIds = cards.map(c => c.id);
     }
     cards.forEach(c => {
         const from = c.zone;
@@ -323,7 +394,12 @@ export class MoveEffectHandler {
 
   private static resolveSingleTargetMove(state: GameState, effect: EffectDefinition, targetIds: string[], controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any) {
     const idsToMove = (effect as any).targetId ? [(effect as any).targetId] : targetIds;
-    const destination = effect.zone || effect.destination || (effect.type === 'Exile' ? Zone.Exile : Zone.Hand);
+    let destination = effect.zone || effect.destination;
+    if (!destination) {
+        if (effect.type === 'Exile') destination = Zone.Exile;
+        else if (effect.type === 'PutOnBattlefield') destination = Zone.Battlefield;
+        else destination = Zone.Hand;
+    }
     const isDiscard = effect.type === EffectType.DiscardCards || (effect as any).isDiscard;
 
     idsToMove.forEach(tid => {
@@ -346,6 +422,7 @@ export class MoveEffectHandler {
   }
 
   private static findObject(state: GameState, id: string, stackObject?: any, parentContext?: any): GameObject | undefined {
+      if (stackObject && (stackObject.id === id || stackObject.sourceId === id)) return stackObject.card || stackObject;
       return TargetingProcessor.findObjectInAnyZone(state, id) || undefined;
   }
 }

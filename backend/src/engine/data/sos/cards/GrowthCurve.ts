@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
 
 export const GrowthCurve: CardDefinition = {
     "name": "Growth Curve",
@@ -12,5 +12,27 @@ export const GrowthCurve: CardDefinition = {
     ],
     "subtypes": [],
     "oracleText": "Put a +1/+1 counter on target creature you control, then double the number of +1/+1 counters on that creature.",
-    "abilities": []
+    "abilities": [
+        {
+            type: AbilityType.Spell,
+            targetDefinition: {
+                type: TargetType.Permanent,
+                count: 1,
+                restrictions: ["Creature", "YouControl"]
+            },
+            effects: [
+                {
+                    type: EffectType.AddCounters,
+                    counterType: 'plus1plus1',
+                    amount: 1,
+                    targetMapping: TargetMapping.Target1
+                },
+                {
+                    type: EffectType.DoubleCounters,
+                    counterType: 'plus1plus1',
+                    targetMapping: TargetMapping.Target1
+                }
+            ]
+        }
+    ]
 };

@@ -15,8 +15,8 @@ export const CauldronofEssence: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Death,
-            triggerCondition: ConditionType.OwnCreatureDies,
+            eventMatch: TriggerEvent.DeathOther,
+            condition: ConditionType.OwnCreatureDies,
             effects: [
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.EachOpponent },
                 { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }

@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, ConditionType } from '@shared/engine_types';
 
 export const UlnaAlleyShopkeep: CardDefinition = {
     "name": "Ulna Alley Shopkeep",
@@ -14,7 +14,22 @@ export const UlnaAlleyShopkeep: CardDefinition = {
         "Warlock"
     ],
     "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nInfusion — This creature gets +2/+0 as long as you gained life this turn.",
-    "abilities": [],
+    "keywords": ["Menace"],
+    "abilities": [
+        {
+            type: AbilityType.Static,
+            effects: [
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    layer: 7,
+                    powerModifier: 2,
+                    toughnessModifier: 0,
+                    condition: ConditionType.GainedLifeThisTurn,
+                    targetMapping: TargetMapping.Self
+                }
+            ]
+        }
+    ],
     "power": "2",
     "toughness": "3"
 };

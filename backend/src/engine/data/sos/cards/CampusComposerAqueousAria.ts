@@ -7,16 +7,18 @@ export const CampusComposerAqueousAria: CardDefinition = {
         "U"
     ],
     "types": [
-        "Creature"
+        "Creature",
+        "Sorcery"
     ],
     "subtypes": [
         "Merfolk",
         "Bard"
     ],
-    "oracleText": "",
+    "oracleText": "Campus Composer (Creature): Ward {2}\nThis creature enters prepared.\nAqueous Aria (Sorcery): Create a 3/3 blue and red Elemental creature token with flying.",
     "abilities": [],
     "power": "3",
     "toughness": "4",
+    "entersPrepared": true,
     "faces": [
         {
             "name": "Campus Composer",
@@ -29,17 +31,12 @@ export const CampusComposerAqueousAria: CardDefinition = {
                 "Merfolk",
                 "Bard"
             ],
-            "keywords": ["Ward {2}"],
+            "keywords": ["Ward 2"],
             "oracleText": "Ward {2}\nThis creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
-            "abilities": [
-                {
-                    type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
-                    effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
-                }
-            ],
+            "abilities": [],
             "power": "3",
-            "toughness": "4"
+            "toughness": "4",
+            "entersPrepared": true
         },
         {
             "name": "Aqueous Aria",
@@ -56,7 +53,6 @@ export const CampusComposerAqueousAria: CardDefinition = {
                     effects: [
                         {
                             type: EffectType.CreateToken,
-                            amount: 1,
                             tokenBlueprint: {
                                 name: "Elemental",
                                 power: "3",

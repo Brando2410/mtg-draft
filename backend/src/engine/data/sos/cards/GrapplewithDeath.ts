@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
 
 export const GrapplewithDeath: CardDefinition = {
     "name": "Grapple with Death",
@@ -12,5 +12,25 @@ export const GrapplewithDeath: CardDefinition = {
     ],
     "subtypes": [],
     "oracleText": "Destroy target artifact or creature. You gain 1 life.",
-    "abilities": []
+    "abilities": [
+        {
+            type: AbilityType.Spell,
+            targetDefinition: {
+                type: TargetType.Permanent,
+                count: 1,
+                restrictions: ["Artifact or Creature"]
+            },
+            effects: [
+                {
+                    type: EffectType.Destroy,
+                    targetMapping: TargetMapping.Target1
+                },
+                {
+                    type: EffectType.GainLife,
+                    targetMapping: TargetMapping.Controller,
+                    amount: 1
+                }
+            ]
+        }
+    ]
 };

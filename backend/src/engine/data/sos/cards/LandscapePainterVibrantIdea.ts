@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const LandscapePainterVibrantIdea: CardDefinition = {
     "name": "Landscape Painter // Vibrant Idea",
@@ -7,13 +7,15 @@ export const LandscapePainterVibrantIdea: CardDefinition = {
         "U"
     ],
     "types": [
-        "Creature"
+        "Creature",
+        "Sorcery"
     ],
     "subtypes": [
         "Merfolk",
         "Wizard"
     ],
-    "oracleText": "",
+    "oracleText": "Landscape Painter enters prepared.\nVibrant Idea: Draw two cards.",
+    "entersPrepared": true,
     "abilities": [],
     "power": "2",
     "toughness": "1",
@@ -21,7 +23,7 @@ export const LandscapePainterVibrantIdea: CardDefinition = {
         {
             "name": "Landscape Painter",
             "manaCost": "{1}{U}",
-            "colors": [],
+            "colors": ["U"],
             "types": [
                 "Creature"
             ],
@@ -30,18 +32,25 @@ export const LandscapePainterVibrantIdea: CardDefinition = {
                 "Wizard"
             ],
             "oracleText": "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+            "abilities": [],
             "power": "2",
             "toughness": "1"
         },
         {
             "name": "Vibrant Idea",
             "manaCost": "{4}{U}",
-            "colors": [],
+            "colors": ["U"],
             "types": [
                 "Sorcery"
             ],
             "subtypes": [],
-            "oracleText": "Draw two cards."
+            "oracleText": "Draw two cards.",
+            "abilities": [
+                {
+                    type: AbilityType.Spell,
+                    effects: [{ type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Controller }]
+                }
+            ]
         }
     ]
 };

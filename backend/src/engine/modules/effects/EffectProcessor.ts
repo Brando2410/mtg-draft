@@ -127,8 +127,8 @@ export class EffectProcessor {
         if (effect.type === 'Fight') return;
         if (validTargetIds.length === 0) return;
     }
-
-    const amount = (effect as any).amount !== undefined ? this.resolveAmount(state, effect.amount, sourceId, controllerId, stackObject, validTargetIds) : 1;
+    
+    const amount = (effect as any).amount !== undefined ? this.resolveAmount(state, (effect as any).amount, sourceId, controllerId, stackObject, validTargetIds) : 1;
 
     // Strategy Dispatcher
 
@@ -188,7 +188,11 @@ export class EffectProcessor {
       }
         case 'AddCounters': {
             const { PermanentHandler } = require('./handlers/PermanentHandler');
-            return PermanentHandler.handleAddCounters(state, validTargetIds, amount, effect.value || '+1/+1', log);
+            return PermanentHandler.handleAddCounters(state, validTargetIds, amount, (effect as any).counterType || 'plus1plus1', log);
+        }
+        case 'DoubleCounters': {
+            const { PermanentHandler } = require('./handlers/PermanentHandler');
+            return PermanentHandler.handleDoubleCounters(state, validTargetIds, (effect as any).counterType || 'plus1plus1', log);
         }
         case 'MoveCounters': {
             const { PermanentHandler } = require('./handlers/PermanentHandler');
@@ -204,6 +208,16 @@ export class EffectProcessor {
           let p = (effect as any).powerOverride !== undefined ? this.resolveAmount(state, (effect as any).powerOverride, sourceId, controllerId, stackObject) : undefined;
           let t = (effect as any).toughnessOverride !== undefined ? this.resolveAmount(state, (effect as any).toughnessOverride, sourceId, controllerId, stackObject) : undefined;
           return PermanentHandler.handleCreateToken(state, validTargetIds, amount, (effect as any).tokenBlueprint, log, p, t, effect, stackObject);
+      }
+      case 'CreateTokenCopy': {
+          const { PermanentHandler } = require('./handlers/PermanentHandler');
+          const sourceMappingIds = (effect as any).target2Mapping ? TargetingProcessor.resolveTargetMapping(state, (effect as any).target2Mapping, targets, sourceId, controllerId, stackObject?.data, effect) : [];
+          const copySourceId = sourceMappingIds[0] || (effect as any).copySourceId;
+          const sourceObj = copySourceId ? (state.battlefield.find(o => o.id === copySourceId) || TargetingProcessor.findObjectInAnyZone(state, copySourceId)) : undefined;
+          if (sourceObj) {
+             return PermanentHandler.handleCreateTokenCopy(state, validTargetIds, sourceObj as any, controllerId, log, effect);
+          }
+          return;
       }
       case 'Choice': {
           const { ChoiceEffectHandler } = require('./handlers/ChoiceEffectHandler');
@@ -350,8 +364,11 @@ export class EffectProcessor {
             if (!spellName) return;
             
             // 1. Exile the spell
-            if (resolvingStackObj?.card) {
-                ActionProcessor.moveCard(state, resolvingStackObj.card, Zone.Exile, controllerId, log);
+            if (resolvingStackObj) {
+                resolvingStackObj.exileOnResolution = true;
+                if (resolvingStackObj.card) {
+                    ActionProcessor.moveCard(state, resolvingStackObj.card, Zone.Exile, controllerId, log);
+                }
             }
 
             // 2. Register first-main-phase recurring trigger
@@ -401,19 +418,34 @@ export class EffectProcessor {
       }
       case 'CreateTokenCopy': {
           const { PermanentHandler } = require('./handlers/PermanentHandler');
-          const sourceCardId = (effect as any).targetMapping === 'TRIGGER_EVENT_SOURCE' ? (stackObject as any).data?.eventData?.data?.object?.id : validTargetIds[0];
+          let sourceCardId = (effect as any).targetMapping === 'TRIGGER_EVENT_SOURCE' ? (stackObject as any).data?.eventData?.data?.object?.id : validTargetIds[0];
+          
+          if ((effect as any).target2Mapping) {
+              sourceCardId = validTarget2Ids[0];
+          }
+
           const sourceObj = state.battlefield.find(o => o.id === sourceCardId) || 
                             state.exile.find(o => o.id === sourceCardId) || 
                             Object.values(state.players).flatMap(p => p.graveyard).find((o: any) => o.id === sourceCardId);
           if (sourceObj) {
               const updatedEffect = { ...effect, originalCardId: sourceCardId };
-              return PermanentHandler.handleCreateTokenCopy(state, [controllerId], sourceObj, controllerId, log, updatedEffect);
+              return PermanentHandler.handleCreateTokenCopy(state, (effect as any).target2Mapping ? validTargetIds : [controllerId], sourceObj, controllerId, log, updatedEffect);
           }
           return;
       }
       case 'CreateDelayedTrigger': {
           const { TriggerProcessor } = require('./TriggerProcessor');
-          return TriggerProcessor.createDelayedTrigger(state, effect, sourceId, controllerId, log);
+          // Support for capturing data from the current resolution (like MV of countered spell)
+          const data = (effect as any).data || {};
+          if ((effect as any).captureTargetMV) {
+              const { TargetingProcessor } = require('../actions/TargetingProcessor');
+              const targetId = validTargetIds[0];
+              const targetObj = TargetingProcessor.findObjectInAnyZone(state, targetId) || state.stack.find(s => s.id === targetId);
+              if (targetObj) {
+                  data.capturedMV = targetObj.paidManaValue || 0;
+              }
+          }
+          return TriggerProcessor.createDelayedTrigger(state, { ...effect, data }, sourceId, controllerId, log);
       }
       case 'ExchangeHandAndGraveyard': {
           const player = state.players[controllerId];
@@ -429,10 +461,53 @@ export class EffectProcessor {
           log(`[HARNESS INFINITY] ${player.name} exchanged hand and graveyard.`);
           return;
       }
+      case 'DisableDamagePrevention': {
+          state.turnState.damagePreventionDisabled = true;
+          log(`[SYSTEM] Damage can't be prevented this turn.`);
+          return;
+      }
       case 'PENDING_ACTION': {
             state.pendingAction = (effect as any).action;
             return;
         }
+      case 'CastSpell': {
+          const { SpellProcessor } = require('./../actions/SpellProcessor');
+          const spellName = (effect as any).value;
+          const isFree = (effect as any).isFreeCast;
+          
+          const { oracle } = require('../../OracleLogicMap');
+          const cardDef = oracle.getCard(spellName);
+          if (!cardDef) {
+              log(`[ERROR] CastSpell: Could not find definition for ${spellName}.`);
+              return;
+          }
+
+          const copyId = `cast_copy_${Date.now()}`;
+          const copy = {
+              id: copyId,
+              definition: cardDef,
+              controllerId: controllerId,
+              ownerId: controllerId,
+              zone: Zone.Exile,
+              isCopy: true,
+              isFreeCast: isFree,
+              counters: {}
+          } as any;
+
+          if (!(state as any).paradigmCopies) (state as any).paradigmCopies = {};
+          (state as any).paradigmCopies[copyId] = copy;
+
+          // Set priority temporarily to allow playCard to proceed
+          const oldPriority = state.priorityPlayerId;
+          state.priorityPlayerId = controllerId;
+          
+          SpellProcessor.playCard(state, controllerId, copyId, [], log, (state as any).gameEngine, false);
+          
+          if (state.priorityPlayerId === controllerId) {
+              state.priorityPlayerId = oldPriority;
+          }
+          return;
+      }
       case 'Prepare': {
           const { PermanentHandler } = require('./handlers/PermanentHandler');
           return PermanentHandler.handlePrepare(state, validTargetIds, log);
@@ -469,6 +544,7 @@ export class EffectProcessor {
     if (amount === undefined) return 0;
     if (typeof amount === 'number') return amount === -1 ? state.turnState.lastDamageAmount || 0 : amount;
     if (typeof amount === 'string' && !isNaN(Number(amount))) return Number(amount);
+    if (typeof amount === 'string' && ['ANY', 'ALL', 'Any', 'All'].includes(amount)) return amount as any;
     if (typeof amount === 'function') return amount(state, this.findObject(state, sourceId, stackObject) || { id: sourceId, controllerId }, targetIds);
 
 
@@ -484,6 +560,9 @@ export class EffectProcessor {
           break;
       case 'X': 
           result = stackObject?.xValue || 0;
+          break;
+      case 'X_PLUS_1':
+          result = (stackObject?.xValue || 0) + 1;
           break;
         case 'DESTROYED_COUNT':
           result = (state.turnState as any).lastDestroyedCount || 0;
@@ -503,6 +582,25 @@ export class EffectProcessor {
       case 'GAINED_LIFE_AMOUNT':
           result = state.turnState.lifeGainedThisTurn?.[controllerId] || 0;
           break;
+      case 'CONVERGE_AMOUNT':
+          result = (stackObject as any)?.convergeAmount || (stackObject as any)?.card?.convergeAmount;
+          if (result === undefined && stackObject?.data?.eventData?.data?.card?.convergeAmount !== undefined) {
+              result = stackObject.data.eventData.data.card.convergeAmount;
+          }
+          if (result === undefined && stackObject?.data?.convergeAmount !== undefined) {
+              result = stackObject.data.convergeAmount;
+          }
+          result = result || 0;
+          break;
+      case 'X_POWER_OF_2': {
+          const x = stackObject?.xValue || 0;
+          result = Math.pow(2, x);
+          break;
+      }
+      case 'CAPTURED_AMOUNT': {
+          result = stackObject?.data?.amount || (stackObject as any)?.data?.capturedMV || 0;
+          break;
+      }
       case 'TARGET_1_HAND_SIZE': {
           const pid = targetIds[0] as PlayerId;
           const player = state.players[pid];
@@ -529,6 +627,42 @@ export class EffectProcessor {
           const lastSac = (state.turnState as any).lastSacrificedObject;
           result = lastSac?.effectiveStats?.power || parseInt(lastSac?.definition.power || '0') || 0;
           break;
+      case 'TARGET_1_POWER':
+      case 'TARGET_1_TOUGHNESS': {
+          const tid = targetIds[0] || (stackObject as any)?.targets?.[0];
+          const obj = state.battlefield.find(o => o.id === tid) || state.turnState.creaturesDiedThisTurn.find(o => o.id === tid);
+          if (!obj) return 0;
+          const { LayerProcessor } = require('./../state/LayerProcessor');
+          const stats = LayerProcessor.getEffectiveStats(obj, state);
+          result = amount === 'TARGET_1_POWER' ? stats.power : stats.toughness;
+          break;
+      }
+      case 'EVENT_PAID_MANA': {
+        const obj = (stackObject as any)?.data?.object || (stackObject as any)?.card;
+        result = obj?.paidManaValue || (stackObject as any)?.data?.card?.paidManaValue || 0;
+        break;
+      }
+      case 'EVENT_MANA_VALUE_GE': {
+          result = state.turnState.lastDiscardedCount || 0;
+          break;
+      }
+      case 'TARGET_1_MANA_VALUE': {
+          const { ManaProcessor } = require('../magic/ManaProcessor');
+          const tId = targetIds[0] || (stackObject as any)?.targets?.[0];
+          const obj = this.findObject(state, tId, stackObject, parentContext);
+          result = obj ? ManaProcessor.getManaValue(obj.definition.manaCost) : 0;
+          break;
+      }
+      case 'TARGET_1_COUNTERS_P1P1': {
+          const tId = targetIds[0] || (stackObject as any)?.targets?.[0];
+          const obj = state.battlefield.find(o => o.id === tId);
+          result = obj?.counters?.['+1/+1'] || 0;
+          break;
+      }
+      case 'DISCARDED_COUNT': {
+          result = state.turnState.lastDiscardedCount || 0;
+          break;
+      }
       case 'TARGET_HAND_SIZE_7_MINUS': {
           const targetId = stackObject?.targets?.[0];
           const target = state.battlefield.find(o => o.id === targetId);
@@ -549,6 +683,10 @@ export class EffectProcessor {
           const player = state.players[controllerId];
           const name = obj?.definition.name;
           result = player ? player.graveyard.filter(c => c.definition.name === name).length + 1 : 1;
+          break;
+      }
+      case 'CREATURES_YOU_CONTROL': {
+          result = state.battlefield.filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature')).length;
           break;
       }
       default: 

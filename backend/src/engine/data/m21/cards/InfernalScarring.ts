@@ -45,6 +45,7 @@ export const InfernalScarring: Record<string, ImplementableCard> = {
                 triggerEvent: "ON_DEATH",
                 triggerCondition: (state: any, event: any, source: any) => {
                     const aura = state.battlefield.find((o: any) => o.id === source.sourceId);
+                    console.log(aura, event.targetId, aura.attachedTo);
                     return aura && event.targetId === aura.attachedTo;
                 },
                 effects: [{

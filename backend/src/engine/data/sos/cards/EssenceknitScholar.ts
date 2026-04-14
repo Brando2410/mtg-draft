@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const EssenceknitScholar: CardDefinition = {
     "name": "Essenceknit Scholar",
@@ -15,7 +15,41 @@ export const EssenceknitScholar: CardDefinition = {
         "Warlock"
     ],
     "oracleText": "When this creature enters, create a 1/1 black and green Pest creature token with \"Whenever this token attacks, you gain 1 life.\"\nAt the beginning of your end step, if a creature died under your control this turn, draw a card.",
-    "abilities": [],
+    "abilities": [
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.EnterBattlefield,
+            effects: [
+                {
+                    type: EffectType.CreateToken,
+                    amount: 1,
+                    tokenBlueprint: {
+                        name: 'Pest',
+                        colors: ['black', 'green'],
+                        types: ['Creature'],
+                        subtypes: ['Pest'],
+                        power: 1,
+                        toughness: 1,
+                        oracleText: "Whenever this token attacks, you gain 1 life.",
+                        abilities: [
+                            {
+                                type: AbilityType.Triggered,
+                                eventMatch: TriggerEvent.Attack,
+                                effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.EndStep,
+            triggerCondition: 'PLAYER_IS_CONTROLLER', // Only in your end step
+            condition: 'CREATURE_DIED_UNDER_YOUR_CONTROL_THIS_TURN',
+            effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
+        }
+    ],
     "power": "3",
     "toughness": "1"
 };

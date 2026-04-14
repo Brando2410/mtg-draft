@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const TomeBlast: CardDefinition = {
     "name": "Tome Blast",
@@ -11,5 +11,18 @@ export const TomeBlast: CardDefinition = {
     ],
     "subtypes": [],
     "oracleText": "Tome Blast deals 2 damage to any target.\nFlashback {4}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
-    "abilities": []
+    "abilities": [
+        {
+            type: AbilityType.Spell,
+            flashbackCost: "{4}{R}",
+            targetDefinition: { type: TargetType.AnyTarget },
+            effects: [
+                {
+                    type: EffectType.DealDamage,
+                    amount: 2,
+                    targetMapping: TargetMapping.Target1
+                }
+            ]
+        }
+    ]
 };

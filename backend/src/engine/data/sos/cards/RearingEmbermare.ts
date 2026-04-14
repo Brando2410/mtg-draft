@@ -14,6 +14,10 @@ export const RearingEmbermare: CardDefinition = {
         "Beast"
     ],
     "oracleText": "Reach, haste",
+    "keywords": [
+        "Reach",
+        "Haste"
+    ],
     "abilities": [],
     "power": "4",
     "toughness": "5"

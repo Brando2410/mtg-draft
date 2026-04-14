@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const RapturousMoment: CardDefinition = {
     "name": "Rapturous Moment",
@@ -12,5 +12,25 @@ export const RapturousMoment: CardDefinition = {
     ],
     "subtypes": [],
     "oracleText": "Draw three cards, then discard two cards. Add {U}{U}{R}{R}{R}.",
-    "abilities": []
+    "abilities": [
+        {
+            type: AbilityType.Spell,
+            effects: [
+                {
+                    type: EffectType.DrawCards,
+                    amount: 3,
+                    targetMapping: TargetMapping.Controller
+                },
+                {
+                    type: EffectType.DiscardCards,
+                    amount: 2,
+                    targetMapping: TargetMapping.Controller
+                },
+                {
+                    type: EffectType.AddMana,
+                    value: "{U}{U}{R}{R}{R}"
+                }
+            ]
+        }
+    ]
 };

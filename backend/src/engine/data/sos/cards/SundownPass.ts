@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType } from '@shared/engine_types';
 
 export const SundownPass: CardDefinition = {
     "name": "Sundown Pass",
@@ -9,5 +9,21 @@ export const SundownPass: CardDefinition = {
     ],
     "subtypes": [],
     "oracleText": "This land enters tapped unless you control two or more other lands.\n{T}: Add {R} or {W}.",
-    "abilities": []
+    "entersTappedCondition": "OTHER_LANDS_LE:1",
+    "abilities": [
+        {
+            type: AbilityType.Activated,
+            costs: [{ type: 'Tap' }],
+            isManaAbility: true,
+            effects: [
+                {
+                    type: EffectType.AddMana,
+                    choices: [
+                        { label: '{R}', effects: [{ type: EffectType.AddMana, manaType: 'R' }] },
+                        { label: '{W}', effects: [{ type: EffectType.AddMana, manaType: 'W' }] }
+                    ]
+                }
+            ]
+        }
+    ]
 };

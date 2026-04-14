@@ -37,9 +37,9 @@ export const VastlandsScavengerBindtoLife: CardDefinition = {
                         { type: EffectType.Mill, amount: 7, targetMapping: TargetMapping.Controller },
                         { 
                             type: EffectType.Choice, 
-                            targetIdMapping: 'CONTROLLER_GRAVEYARD',
+                            targetIdMapping: TargetMapping.LastMilledIds,
                             restrictions: ['Creature'],
-                            label: 'Put a creature card from graveyard onto the battlefield',
+                            label: 'Put a creature card from among them onto the battlefield',
                             effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield }]
                         }
                     ]

@@ -28,28 +28,30 @@ export class PermanentHandler {
     const [tid, ...nextTargets] = targets;
     const player = state.players[tid as PlayerId];
     if (player) {
-        let creatures = state.battlefield.filter(o => o.controllerId === tid && o.definition.types.some(t => t.toLowerCase() === 'creature'));
+        const { TargetingProcessor } = require('../../actions/TargetingProcessor');
+        const resList = effect?.restrictions || (effect?.restriction ? [effect.restriction] : ['Creature']);
+        let candidates = state.battlefield.filter(o => o.controllerId === tid && TargetingProcessor.matchesRestrictions(state, o, resList, tid as PlayerId, sourceId));
         
         // Apply GreatestPower restriction (Professor Onyx)
         if (effect?.restrictions?.includes('GreatestPower')) {
-            const powers = creatures.map(c => LayerProcessor.getEffectiveStats(c, state).power);
+            const powers = candidates.map(c => LayerProcessor.getEffectiveStats(c, state).power);
             const maxPower = powers.length > 0 ? Math.max(...powers) : 0;
-            creatures = creatures.filter(c => LayerProcessor.getEffectiveStats(c, state).power === maxPower);
+            candidates = candidates.filter(c => LayerProcessor.getEffectiveStats(c, state).power === maxPower);
         }
 
-        if (creatures.length === 0) {
+        if (candidates.length === 0) {
             this.handleSacrifice(state, nextTargets, sourceId, log, stackObject, parentContext, effect);
             return;
         }
         
-        if (creatures.length === 1) {
-            ActionProcessor.moveCard(state, creatures[0], Zone.Graveyard, tid as PlayerId, log);
+        if (candidates.length === 1) {
+            ActionProcessor.moveCard(state, candidates[0], Zone.Graveyard, tid as PlayerId, log);
             this.handleSacrifice(state, nextTargets, sourceId, log, stackObject, parentContext, effect);
             return;
         }
-
-        state.pendingAction = ChoiceGenerator.createCardChoice(state, creatures, {
-            label: effect?.label || "Choose a creature to sacrifice",
+        
+        state.pendingAction = ChoiceGenerator.createCardChoice(state, candidates, {
+            label: effect?.label || "Choose an object to sacrifice",
             playerId: tid as PlayerId,
             sourceId: sourceId,
             optional: false,
@@ -133,7 +135,32 @@ export class PermanentHandler {
         const obj = state.battlefield.find(o => o.id === tid);
         if (obj) {
             obj.counters[type] = (obj.counters[type] || 0) + amount;
+            if (amount > 0) {
+                if (!state.turnState.countersAddedThisTurnIds) state.turnState.countersAddedThisTurnIds = [];
+                if (!state.turnState.countersAddedThisTurnIds.includes(obj.id)) {
+                    state.turnState.countersAddedThisTurnIds.push(obj.id);
+                }
+            }
             TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: obj.id, amount, counterType: type, data: { object: obj } }, log);
+        }
+    });
+  }
+
+  public static handleDoubleCounters(state: GameState, targets: string[], type: string, log: (m: string) => void) {
+    targets.forEach(tid => {
+        const obj = state.battlefield.find(o => o.id === tid);
+        if (obj) {
+            const amount = obj.counters[type] || 0;
+            if (amount > 0) {
+                obj.counters[type] = amount * 2;
+                log(`Doubled ${type} counters on ${obj.definition.name} (+${amount}).`);
+                if (!state.turnState.countersAddedThisTurnIds) state.turnState.countersAddedThisTurnIds = [];
+                if (!state.turnState.countersAddedThisTurnIds.includes(obj.id)) {
+                    state.turnState.countersAddedThisTurnIds.push(obj.id);
+                }
+                const { TriggerProcessor } = require('../TriggerProcessor');
+                TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: obj.id, amount, counterType: type, data: { object: obj } }, log);
+            }
         }
     });
   }

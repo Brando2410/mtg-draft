@@ -20,12 +20,25 @@ export const BertaWiseExtrapolator: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.CastSpell,
+            condition: 'SPENT_MANA_GT_POWER_OR_TOUGHNESS',
+            effects: [
+                {
+                    type: EffectType.AddCounters,
+                    amount: 1,
+                    value: '+1/+1',
+                    targetMapping: TargetMapping.Self
+                }
+            ]
+        },
+        {
+            type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CountersAdded,
-            triggerCondition: 'TRIGGER_TARGET_IS_SELF',
+            condition: 'TRIGGER_TARGET_IS_SELF',
             effects: [
                 { 
-                    type: 'AddMana', 
-                    value: 'ANY',
+                    type: EffectType.AddMana, 
+                    manaType: 'ANY',
                     amount: 1
                 }
             ]
@@ -34,20 +47,19 @@ export const BertaWiseExtrapolator: CardDefinition = {
             type: AbilityType.Activated,
             costs: [
                 { type: 'Mana', value: '{X}' }, 
-                { type: 'Tap', targetMapping: 'SELF' }
+                { type: 'Tap', targetMapping: TargetMapping.Self }
             ],
             effects: [
                 {
                     type: EffectType.CreateToken,
-                    blueprint: { 
+                    tokenBlueprint: { 
                         name: 'Fractal', 
                         power: '0', 
                         toughness: '0', 
                         colors: ['G', 'U'], 
                         types: ['Creature'], 
                         subtypes: ['Fractal'] 
-                    },
-                    amount: 1
+                    }
                 },
                 {
                     type: EffectType.AddCounters,

@@ -85,6 +85,12 @@ export class TriggerProcessor {
           }
       }
 
+      // Rule limitPerTurn
+      if (t.limitPerTurn) {
+          const usedCount = state.turnState.triggeredAbilitiesUsedThisTurn[t.id] || 0;
+          if (usedCount >= t.limitPerTurn) return false;
+      }
+      
       return true;
     });
     
@@ -155,7 +161,7 @@ export class TriggerProcessor {
     // --- SYSTEM RECOGNIZED KEYWORDS: CASCADE & STORM ---
     if (event.type === 'ON_CAST_SPELL' && event.data?.card) {
         const card = event.data.card;
-        const keywords = card.definition.keywords || [];
+        const keywords = [...(card.definition.keywords || []), ...(card.keywords || [])];
         
         // 1. Cascade (Rule 702.85)
         if (keywords.includes('Cascade')) {
@@ -197,7 +203,8 @@ export class TriggerProcessor {
 
         // 2. Storm (Rule 702.40)
         if (keywords.includes('Storm')) {
-            const stormCount = (Number(state.turnState.spellsCastThisTurn) || 0) - 1;
+            const totalSpells = Object.values(state.turnState.spellsCastThisTurn).reduce((a, b) => a + b, 0);
+            const stormCount = totalSpells - 1;
             if (stormCount > 0) {
                 log(`[STORM] ${card.definition.name} triggering for ${stormCount} copies.`);
                 for (let i = 0; i < stormCount; i++) {
@@ -217,7 +224,7 @@ export class TriggerProcessor {
     if (event.type === 'ON_CAST_SPELL' && event.playerId) {
         state.battlefield.forEach(obj => {
             if (obj.controllerId !== event.playerId) return;
-            const keywords = obj.definition.keywords || [];
+            const keywords = [...(obj.definition.keywords || []), ...(obj.keywords || [])];
             if (keywords.includes('Increment')) {
                 const manaSpent = (event.data?.card?.paidManaValue) || 0;
                 const stats = LayerProcessor.getEffectiveStats(obj, state);
@@ -319,6 +326,11 @@ export class TriggerProcessor {
     if (!state.pendingTriggers) state.pendingTriggers = [];
     
     for (const trigger of matchingTriggers) {
+        // Increment usage
+        if (trigger.limitPerTurn) {
+            state.turnState.triggeredAbilitiesUsedThisTurn[trigger.id] = (state.turnState.triggeredAbilitiesUsedThisTurn[trigger.id] || 0) + 1;
+        }
+
         const stackObj = this.createStackObject(state, trigger, event, log);
         state.pendingTriggers.push(stackObj);
     }
@@ -399,6 +411,7 @@ export class TriggerProcessor {
       effects: effect.effects,
       duration: effect.duration || 'UNTIL_END_OF_TURN',
       triggerCondition: effect.triggerCondition,
+      data: effect.data,
       isDelayed: true,
       activeZone: 'Battlefield', // Virtual zone for registry
       type: AbilityType.Triggered
