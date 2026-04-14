@@ -1,0 +1,21 @@
+import { CardDefinition } from '@shared/engine_types';
+
+export const EmilVastlandsRoamer: CardDefinition = {
+    "name": "Emil, Vastlands Roamer",
+    "manaCost": "{2}{G}",
+    "colors": [
+        "G"
+    ],
+    "types": [
+        "Legendary",
+        "Creature"
+    ],
+    "subtypes": [
+        "Elf",
+        "Druid"
+    ],
+    "oracleText": "Creatures you control with +1/+1 counters on them have trample.\n{4}{G}, {T}: Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it, where X is the number of differently named lands you control.",
+    "abilities": [],
+    "power": "3",
+    "toughness": "3"
+};

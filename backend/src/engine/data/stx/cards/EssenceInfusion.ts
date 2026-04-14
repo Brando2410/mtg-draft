@@ -1,41 +1,19 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType, TargetType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const EssenceInfusion: ImplementableCard = {
+export const EssenceInfusion: CardDefinition = {
     name: 'Essence Infusion',
     manaCost: '{1}{B}',
-    type_line: 'Sorcery',
+    colors: ['B'],
     types: ['Sorcery'],
-    subtypes: [],
-    power: '0',
-    toughness: '0',
-    keywords: [],
-    colors: ['black'],
-    supertypes: [],
     oracleText: 'Put two +1/+1 counters on target creature. It gains lifelink until end of turn.',
     abilities: [
         {
-            id: 'essence_infusion_spell',
-            type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Hand,
+            type: AbilityType.Spell,
+            targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
             effects: [
-                {
-                    type: EffectType.AddCounters,
-                    targetMapping: 'TARGET',
-                    amount: 2,
-                    value: '+1/+1'
-                },
-                {
-                    type: EffectType.ApplyContinuousEffect,
-                    targetMapping: 'TARGET',
-                    duration: 'UNTIL_END_OF_TURN',
-                    abilitiesToAdd: ['Lifelink']
-                }
-            ],
-            targetDefinition: {
-                type: TargetType.Permanent,
-                count: 1,
-                restrictions: ['Creature']
-            }
+                { type: EffectType.AddCounters, counterType: 'P1P1', amount: 2, targetMapping: TargetMapping.Target1 },
+                { type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Lifelink'] }
+            ]
         }
     ]
-};
+  };

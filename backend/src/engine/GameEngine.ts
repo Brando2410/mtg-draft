@@ -61,13 +61,16 @@ export class GameEngine {
         creaturesAttackedThisTurn: 0,
         creaturesDiedThisTurn: [],
         lastDamageAmount: 0,
+        lastExcessDamageAmount: 0,
         lastLifeGainedAmount: 0,
         lastCardsDrawnAmount: 0,
         cardsDrawnThisTurn: {},
         spellsCastThisTurn: {},
         lifeGainedThisTurn: {},
         instantOrSorceryCastThisTurn: {},
-        landsPlayedThisTurn: {}
+        landsPlayedThisTurn: {},
+        lastDiscardedCount: 0,
+        turnStartTime: Date.now()
       }
     };
 
@@ -152,8 +155,8 @@ export class GameEngine {
     if (!obj || obj.controllerId !== playerId || obj.isTapped) return false;
     
     // We use a simplified check for the first mana ability to ensure synchronous tapping
-    const { m21 } = require('./data/m21');
-    const logic = m21[obj.definition.name];
+    const { oracle } = require('./OracleLogicMap');
+    const logic = oracle.getCard(obj.definition.name);
     if (!logic || !logic.abilities) return false;
 
     const manaAbilityIdx = logic.abilities.findIndex((a: any) => a.isManaAbility);
@@ -415,13 +418,16 @@ export class GameEngine {
       creaturesAttackedThisTurn: 0,
       creaturesDiedThisTurn: [],
       lastDamageAmount: 0,
+      lastExcessDamageAmount: 0,
       lastLifeGainedAmount: 0,
       lastCardsDrawnAmount: 0,
       cardsDrawnThisTurn: {},
       spellsCastThisTurn: {},
       lifeGainedThisTurn: {},
       instantOrSorceryCastThisTurn: {},
-      landsPlayedThisTurn: {}
+      landsPlayedThisTurn: {},
+      lastDiscardedCount: 0,
+      turnStartTime: Date.now()
     };
   }
 
@@ -487,8 +493,12 @@ export class GameEngine {
       ActionProcessor.untapAll(this.state, activeId, (m) => this.log(m));
 
       // CR 611.2: Expire "Until Next Untap Step" effects that applied to the active player's permanents
+      // SOS: Expire "Until Your Next Turn" effects
       this.state.ruleRegistry.continuousEffects = this.state.ruleRegistry.continuousEffects.filter(eff => {
-          if (eff.duration?.type === 'UNTIL_NEXT_UNTAP_STEP') {
+          if (eff.duration?.type === DurationType.UntilYourNextTurn && eff.duration.untilTurnOfPlayerId === activeId) {
+              return false;
+          }
+          if (eff.duration?.type === DurationType.UntilNextUntapStep) {
               const targets = (eff as any).targetIds || [];
               const hasActiveTarget = targets.some((tid: string) => this.state.battlefield.find(o => o.id === tid)?.controllerId === activeId);
               if (hasActiveTarget) return false;
@@ -520,10 +530,14 @@ export class GameEngine {
       // Rule 514.2: Remove all damage and cleanup continuous effects
       this.state.battlefield.forEach(obj => obj.damageMarked = 0);
 
-      // MTG Arena "Whiteboard Cleanup"
-      this.state.ruleRegistry.continuousEffects = this.state.ruleRegistry.continuousEffects.filter(
-        e => e.duration.type !== DurationType.UntilEndOfTurn
-      );
+      // SOS: Expire "Until End of Your Next Turn" effects
+      this.state.ruleRegistry.continuousEffects = this.state.ruleRegistry.continuousEffects.filter(eff => {
+          if (eff.duration?.type === DurationType.UntilEndOfYourNextTurn && eff.duration.untilTurnOfPlayerId === activeId) {
+              // Only expire if it was NOT created this turn (to survive the turn it was cast)
+              if (eff.timestamp < this.state.turnState.turnStartTime) return false;
+          }
+          return eff.duration.type !== DurationType.UntilEndOfTurn;
+      });
       this.state.ruleRegistry.triggeredAbilities = this.state.ruleRegistry.triggeredAbilities.filter(
         t => !t.duration || t.duration.type !== DurationType.UntilEndOfTurn
       );
@@ -541,7 +555,7 @@ export class GameEngine {
   private cleanupExpiredEffectsByEvent(eventType: string, activePlayerId?: PlayerId) {
     const previousCount = this.state.ruleRegistry.continuousEffects.length;
     this.state.ruleRegistry.continuousEffects = this.state.ruleRegistry.continuousEffects.filter(eff => {
-      if (eff.duration?.type === 'UNTIL_EVENT' && eff.duration.expiryEvent === eventType) {
+      if (eff.duration?.type === DurationType.UntilEvent && eff.duration.expiryEvent === eventType) {
         // If untilTurnOfPlayerId is specified, only expire if it's that player's turn
         if (eff.duration.untilTurnOfPlayerId && eff.duration.untilTurnOfPlayerId !== activePlayerId) {
             return true;

@@ -206,6 +206,25 @@ export class PriorityProcessor {
     // Chapter 3 Check: Battlefield Activated Abilities - IGNORING priority check
     const hasBattlefieldAction = state.battlefield.some(obj => {
       if (obj.controllerId !== playerId) return false;
+
+      // SOS: Prepare check
+      if (obj.isPrepared && obj.definition.faces?.[1]) {
+          const face = obj.definition.faces[1];
+          const isInstant = face.types.some((t: string) => t.toLowerCase() === 'instant');
+          const isSorcery = face.types.some((t: string) => t.toLowerCase() === 'sorcery');
+          
+          let timingOk = isInstant;
+          // Rule 307.1 / 117.1a: Sorcery timing (Active Player, Main Phase, Stack Empty)
+          if (isSorcery && isOurTurn && stackEmpty && (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain)) {
+              timingOk = true;
+          }
+
+          if (timingOk) {
+              const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], face);
+              if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, obj)) return true;
+          }
+      }
+
       const logic = oracle.getCard(obj.definition.name);
 
       if (!logic || !logic.abilities) return false;
@@ -241,13 +260,14 @@ export class PriorityProcessor {
     }
 
     // Check graveyard (Demonic Embrace, Flashback, etc.)
-    if (!cardToPlay) {
-        const graveCard = player.graveyard.find(c => c.id === objId);
-        if (graveCard) {
-            const hasAllowEffect = this.findPermissionEffect(state, playerId, EffectType.AllowCastFromGraveyard, graveCard.id);
-            if (hasAllowEffect) cardToPlay = graveCard;
+        if (!cardToPlay) {
+            const graveCard = player.graveyard.find(c => c.id === objId);
+            if (graveCard) {
+                const hasAllowEffect = this.findPermissionEffect(state, playerId, EffectType.AllowCastFromGraveyard, graveCard.id);
+                const hasFlashback = graveCard.definition.keywords?.includes('Flashback');
+                if (hasAllowEffect || hasFlashback) cardToPlay = graveCard;
+            }
         }
-    }
 
     // Check exile (Idol of Endurance, Ugin's +2, etc.)
     if (!cardToPlay) {

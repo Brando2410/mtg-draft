@@ -1,27 +1,22 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, TriggerEvent, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const CleverLumimancer: ImplementableCard = {
+export const CleverLumimancer: CardDefinition = {
     name: 'Clever Lumimancer',
     manaCost: '{W}',
-    type_line: 'Creature — Human Wizard',
+    colors: ['W'],
     types: ['Creature'],
     subtypes: ['Human', 'Wizard'],
     power: '0',
     toughness: '1',
-    keywords: [],
-    colors: ['white'],
-    supertypes: [],
-    oracleText: 'Magecraft — Whenever you cast or copy an instant or sorcery spell, Clever Lumimancer gets +2/+2 until end of turn.',
+    oracleText: "Magecraft — Whenever you cast or copy an instant or sorcery spell, Clever Lumimancer gets +2/+2 until end of turn.",
     abilities: [
         {
-            id: 'clever_lumimancer_magecraft',
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
-            triggerEvent: TriggerEvent.Magecraft,
+            eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    targetMapping: 'SELF',
+                    targetMapping: TargetMapping.Self,
                     duration: 'UNTIL_END_OF_TURN',
                     powerModifier: 2,
                     toughnessModifier: 2
@@ -29,4 +24,4 @@ export const CleverLumimancer: ImplementableCard = {
             ]
         }
     ]
-};
+  };

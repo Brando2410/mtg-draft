@@ -1,44 +1,29 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, TriggerEvent, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const ArrogantPoet: ImplementableCard = {
+export const ArrogantPoet: CardDefinition = {
     name: 'Arrogant Poet',
     manaCost: '{1}{B}',
-    type_line: 'Creature — Human Warlock',
+    colors: ['B'],
     types: ['Creature'],
     subtypes: ['Human', 'Warlock'],
-    power: '2',
-    toughness: '1',
-    keywords: [],
-    colors: ['black'],
-    supertypes: [],
+    power: "2",
+    toughness: "1",
     oracleText: 'Whenever Arrogant Poet attacks, you may pay 2 life. If you do, it gains flying until end of turn.',
     abilities: [
         {
-            id: 'arrogant_poet_trigger',
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
-            triggerEvent: TriggerEvent.Attack,
-            effects: [
-                {
-                    type: EffectType.Choice,
-                    label: 'Pay 2 life to gain flying?',
-                    choices: [
-                        { 
-                            label: 'Yes (Pay 2 life)', 
-                            effects: [
-                                { type: EffectType.LoseLife, amount: 2, targetMapping: 'CONTROLLER' },
-                                {
-                                    type: EffectType.ApplyContinuousEffect,
-                                    targetMapping: 'SELF',
-                                    duration: 'UNTIL_END_OF_TURN',
-                                    abilitiesToAdd: ['Flying']
-                                }
-                            ]
-                        },
-                        { label: 'No', effects: [] }
-                    ]
-                }
-            ]
+            eventMatch: TriggerEvent.Attack,
+            condition: 'SelfAttacking',
+            effects: [{
+                type: EffectType.Choice,
+                label: "Pay 2 life for flying?",
+                optional: true,
+                choices: [{
+                    label: "Pay 2 Life",
+                    costs: [{ type: 'Life', value: 2 }],
+                    effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Self, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Flying'] }]
+                }]
+            }]
         }
     ]
-};
+  };

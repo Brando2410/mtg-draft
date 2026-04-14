@@ -1,37 +1,33 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, TriggerEvent, EffectType, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const BiblioplexAssistant: ImplementableCard = {
+export const BiblioplexAssistant: CardDefinition = {
     name: 'Biblioplex Assistant',
     manaCost: '{4}',
-    type_line: 'Artifact Creature — Gargoyle',
-    types: ['Artifact', 'Creature'],
-    subtypes: ['Gargoyle'],
-    power: '2',
-    toughness: '1',
-    keywords: ['Flying'],
     colors: [],
-    supertypes: [],
-    oracleText: 'Flying\nWhen Biblioplex Assistant enters, put up to one target instant or sorcery card from your graveyard on top of your library.',
+    types: ['Artifact', 'Creature'],
+    subtypes: ['Construct'],
+    power: "2",
+    toughness: "1",
+    keywords: ['Flying'],
+    oracleText: 'Flying\nWhen Biblioplex Assistant enters the battlefield, you may put target instant or sorcery card from your graveyard on top of your library.',
     abilities: [
         {
-            id: 'biblioplex_assistant_etb',
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
-            triggerEvent: TriggerEvent.EnterBattlefield,
-            effects: [
-                {
-                    type: EffectType.MoveToZone,
-                    targetMapping: 'TARGET_1',
-                    destination: Zone.Library,
-                    libraryPosition: 'top'
-                }
-            ],
+            eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
-                type: 'CardInGraveyard',
                 count: 1,
+                type: TargetType.CardInGraveyard,
+                restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Instant' }, { type: 'Type', value: 'Sorcery' }] }, { type: 'Source', value: 'CONTROLLER' }]
+            },
+            effects: [{
+                type: EffectType.Choice,
+                label: "Put card on top of library?",
                 optional: true,
-                restrictions: ['instant_or_sorcery']
-            }
+                choices: [{
+                    label: "Move to Top",
+                    effects: [{ type: EffectType.MoveToZone, zone: Zone.Library, targetMapping: TargetMapping.Target1, libraryPosition: 'top' }]
+                }]
+            }]
         }
     ]
-};
+  };

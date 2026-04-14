@@ -1,58 +1,35 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const InfuseWithVitality: ImplementableCard = {
+export const InfusewithVitality: CardDefinition = {
     name: 'Infuse with Vitality',
     manaCost: '{B}{G}',
-    type_line: 'Instant',
+    colors: ['B', 'G'],
     types: ['Instant'],
-    subtypes: [],
-    power: '0',
-    toughness: '0',
-    keywords: [],
-    colors: ['black', 'green'],
-    supertypes: [],
-    oracleText: 'Until end of turn, target creature gains deathtouch and “When this creature dies, return it to the battlefield tapped under its owner’s control.” You gain 2 life.',
+    oracleText: 'Until end of turn, target creature gains deathtouch and "When this creature dies, return it to the battlefield tapped under its owner\'s control and you gain 2 life."',
     abilities: [
-        {
-            id: 'infuse_with_vitality_spell',
-            type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Hand,
-            effects: [
-                {
-                    type: EffectType.ApplyContinuousEffect,
-                    targetMapping: 'TARGET',
-                    duration: 'UNTIL_END_OF_TURN',
-                    abilitiesToAdd: ['Deathtouch']
-                },
-                {
-                    type: 'AddTriggeredAbility',
-                    targetMapping: 'TARGET',
-                    eventMatch: 'ON_DEATH',
-                    duration: 'UNTIL_END_OF_TURN',
-                    // Condition: Check if the dying creature is the original target
-                    triggerCondition: (state: any, event: any, t: any) => {
-                        const targetId = t.targetIds?.[0];
-                        return event.targetId === targetId;
-                    },
-                    effects: [
-                        {
-                            type: EffectType.PutOnBattlefield,
-                            targetMapping: 'EVENT_TARGET',
-                            tapped: true
-                        }
-                    ]
-                },
-                {
-                    type: EffectType.GainLife,
-                    targetMapping: 'SELF',
-                    amount: 2
-                }
-            ],
-            targetDefinition: {
-                type: TargetType.Permanent,
-                count: 1,
-                restrictions: ['Creature']
-            }
-        }
+      {
+        type: AbilityType.Spell,
+        targetDefinition: {
+            count: 1,
+            type: TargetType.Permanent,
+            restrictions: [{ type: 'Type', value: 'Creature' }]
+        },
+        effects: [
+          { type: EffectType.ApplyContinuousEffect, duration: 'UNTIL_END_OF_TURN', effects: [{ type: 'GainKeyword', keyword: 'Deathtouch' }], targetMapping: TargetMapping.Target1 },
+          {
+              type: EffectType.ApplyContinuousEffect,
+              duration: 'UNTIL_END_OF_TURN',
+              abilitiesToAdd: [{
+                  id: 'infuse_vitality_death_trigger',
+                  type: AbilityType.Triggered,
+                  eventMatch: TriggerEvent.Death,
+                  effects: [
+                      { type: EffectType.MoveToZone, zone: Zone.Battlefield, entersTapped: true, targetMapping: TargetMapping.Self },
+                      { type: EffectType.GainLife, amount: 2, targetMapping: TargetMapping.Controller }
+                  ]
+              }]
+          }
+        ]
+      }
     ]
-};
+  };

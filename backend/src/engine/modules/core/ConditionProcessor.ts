@@ -1,4 +1,4 @@
-import { GameState, GameObjectId, PlayerId, GameObject, Zone, GameEvent } from '@shared/engine_types';
+import { GameState, GameObjectId, PlayerId, GameObject, Zone, GameEvent, ConditionType } from '@shared/engine_types';
 
 /**
  * Rules Engine Module: Condition Evaluation
@@ -13,7 +13,7 @@ export class ConditionProcessor {
    */
   public static matchesCondition(
     state: GameState, 
-    condition: string | undefined, 
+    condition: ConditionType | undefined, 
     sourceId: GameObjectId, 
     controllerId: PlayerId, 
     event?: GameEvent
@@ -82,6 +82,47 @@ export class ConditionProcessor {
           const xValue = (event as any)?.xValue || 0;
           return xValue >= parseInt(restrictions[0]);
         }
+        case 'SPENT_MANA_GE': {
+          const threshold = parseInt(restrictions[0]);
+          const spent = (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || 0;
+          return spent >= threshold;
+        }
+        case 'COUNTER_GE': {
+          const countType = restrictions[0];
+          const threshold = parseInt(restrictions[1]);
+          const obj = state.battlefield.find(o => o.id === sourceId);
+          if (!obj) return false;
+          const count = obj.counters?.[countType] || 0;
+          return count >= threshold;
+        }
+        case 'EVENT_SPELL_TARGET_MATCHES': {
+          const targets = event?.data?.stackSnapshot?.targets || [];
+          if (!targets.length) return false;
+          return targets.some((tid: string) => {
+            const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
+            if (!obj) return false;
+            return TargetingProcessor.matchesRestrictions(state, obj, restrictions, controllerId, sourceId);
+          });
+        }
+        case 'OTHER_LANDS_LE': {
+          const threshold = parseInt(restrictions[0]);
+          const count = state.battlefield.filter(o => o.id !== sourceId && o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'land')).length;
+          return count <= threshold;
+        }
+        case 'SPENT_MANA_GT_POWER_OR_TOUGHNESS': {
+          const spent = (event as any)?.amount || (event as any)?.data?.card?.paidManaValue || 0;
+          const obj = state.battlefield.find(o => o.id === sourceId);
+          if (!obj) return false;
+          const { LayerProcessor } = require('./../state/LayerProcessor');
+          const stats = LayerProcessor.getEffectiveStats(obj, state);
+          return spent > stats.power || spent > stats.toughness;
+        }
+        case 'ARTIFACT_COUNT_GE':
+        case 'LAND_COUNT_GE': {
+          const threshold = parseInt(restrictions[0]);
+          const targetType = type.includes('ARTIFACT') ? 'Artifact' : 'Land';
+          return state.battlefield.filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === targetType.toLowerCase())).length >= threshold;
+        }
       }
     }
 
@@ -100,7 +141,43 @@ export class ConditionProcessor {
         });
       }
       case 'IS_YOUR_TURN':
+      case 'OUR_TURN':
         return state.activePlayerId === controllerId;
+      case 'IS_OPPONENT_TURN':
+        return state.activePlayerId !== controllerId;
+      case 'TARGET_1_IS_PREPARED': {
+          const targetId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0] || (event as any)?.targetId;
+          const targetObj = state.battlefield.find(o => o.id === targetId);
+          return targetObj?.isPrepared || false;
+      }
+      case 'SPELL_IS_CREATURE': {
+        const card = event?.data?.card || event?.data?.object;
+        return card?.definition.types.some((t: string) => t.toLowerCase() === 'creature') || false;
+      }
+      case 'HAS_COUNTERS': {
+        const obj = state.battlefield.find(o => o.id === sourceId);
+        return obj ? Object.values(obj.counters || {}).some(v => (v as number) > 0) : false;
+      }
+      case 'NOT_CAST_FROM_HAND':
+        return event?.data?.sourceZone !== Zone.Hand && (event as any).sourceZone !== Zone.Hand && (event as any).lastNonStackZone !== Zone.Hand;
+      case 'CAST_FROM_HAND':
+        return event?.data?.sourceZone === Zone.Hand || (event as any).sourceZone === Zone.Hand || (event as any).lastNonStackZone === Zone.Hand;
+      case 'TRIGGER_SOURCE_POW_OR_TOUGH_LE_1': {
+        const tid = event?.data?.object?.id || event?.targetId;
+        const obj = state.battlefield.find(o => o.id === tid);
+        if (!obj) return false;
+        const { LayerProcessor } = require('./../state/LayerProcessor');
+        const stats = LayerProcessor.getEffectiveStats(obj, state);
+        return stats.power <= 1 || stats.toughness <= 1;
+      }
+      case 'TRIGGER_TARGET_IS_SELF':
+        return (event?.targetId === sourceId) || (event?.data?.targetId === sourceId);
+      case 'TARGETS_TAPPED_CREATURE': {
+        const tId = (event as any)?.targets?.[0] || (event as any)?.targetId;
+        if (!tId) return false;
+        const obj = state.battlefield.find(o => o.id === tId);
+        return obj && obj.isTapped && obj.definition.types.map((t: string) => t.toLowerCase()).includes('creature') || false;
+      }
       case 'HAS_CREATURE_POWER_4_PLUS':
         return state.battlefield.some(obj =>
           obj.controllerId === controllerId &&
@@ -115,14 +192,49 @@ export class ConditionProcessor {
         const player = state.players[controllerId];
         if (!player || player.library.length === 0) return false;
         const topCard = player.library[player.library.length - 1];
-        return topCard.definition.subtypes.some(s => s.toLowerCase() === 'goblin');
+        return topCard.definition.subtypes?.some((s: string) => s.toLowerCase() === 'goblin') || false;
+      }
+      case 'HAS_INSTANT_AND_SORCERY_IN_GY': {
+        const gy = state.players[controllerId].graveyard;
+        const hasInstant = gy.some(c => c.definition.types.some(t => t.toLowerCase() === 'instant' || t.toLowerCase() === 'instant_or_sorcery'));
+        const hasSorcery = gy.some(c => c.definition.types.some(t => t.toLowerCase() === 'sorcery' || t.toLowerCase() === 'instant_or_sorcery'));
+        return hasInstant && hasSorcery;
       }
       case 'CREATURE_DIED_THIS_TURN':
         return state.turnState.creaturesDiedThisTurn.length > 0;
+      case 'GAINED_LIFE_THIS_TURN':
+      case 'INFUSION':
+        return (state.turnState.lifeGainedThisTurn[controllerId] || 0) > 0;
       case 'TARGET_IS_OPPONENT': {
         const tId = (event as any)?.targets?.[0] || (event as any)?.targetId;
         if (!tId) return false;
         return tId !== controllerId;
+      }
+      case 'OWN_CREATURE_ENTERS': {
+        const obj = event?.data?.object || (event as any)?.gameObject;
+        if (!obj) return false;
+        return obj.controllerId === controllerId && obj.definition.types.map((t: string) => t.toLowerCase()).includes('creature');
+      }
+      case 'TARGET_IS_INSTANT_OR_SORCERY': {
+        const tId = (event as any)?.targets?.[0] || (event as any)?.targetId;
+        if (!tId) return false;
+        const targetObj = state.stack.find(s => s.id === tId)?.card || state.battlefield.find(o => o.id === tId);
+        if (!targetObj) return false;
+        const types = targetObj.definition.types.map((t: string) => t.toLowerCase());
+        return types.includes('instant') || types.includes('sorcery');
+      }
+      case 'CAST_INSTANT_SORCERY_THIS_TURN':
+        return state.turnState.instantOrSorceryCastThisTurn[controllerId] || false;
+      case 'CAST_ANOTHER_SPELL_THIS_TURN':
+        return (state.turnState.spellsCastThisTurn[controllerId] || 0) > 1;
+      case 'TARGET_1_IS_CONTROLLER': {
+        const tId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0] || (event as any)?.targetId;
+        return tId === controllerId;
+      }
+      case 'OWN_CREATURE_DIES': {
+        const obj = event?.data?.object || (event as any)?.gameObject;
+        if (!obj) return false;
+        return obj.controllerId === controllerId && obj.definition.types.map((t: string) => t.toLowerCase()).includes('creature');
       }
       default:
         // Assume true if unknown (safer for gameplay)

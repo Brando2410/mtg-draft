@@ -89,8 +89,8 @@ export class LayerProcessor {
         if (effect.removeAllAbilities) {
           keywords.clear();
         }
-        effect.abilitiesToAdd?.forEach(k => {
-          keywords.add(k);
+        effect.abilitiesToAdd?.forEach((k: any) => {
+          keywords.add(typeof k === 'string' ? k : (k as any).name || 'Unknown');
           console.log(`[LAYER 6] Added keyword ${k} to ${obj.id}`);
         });
         effect.abilitiesToRemove?.forEach(k => keywords.delete(k));
@@ -116,7 +116,7 @@ export class LayerProcessor {
         if (effect.powerDynamic === 'attacking_dogs_count') {
           pMod += state.combat?.attackers.filter(a => {
             const attacker = state.battlefield.find(o => o.id === a.attackerId);
-            return attacker && attacker.id !== obj.id && attacker.definition.subtypes.some(s => s.toLowerCase() === 'dog');
+            return attacker && attacker.id !== obj.id && attacker.definition.subtypes?.some(s => s.toLowerCase() === 'dog');
           }).length || 0;
         }
 
@@ -145,7 +145,8 @@ export class LayerProcessor {
       colors: Array.from(colors),
       types: Array.from(types),
       subtypes: Array.from(subtypes),
-      restrictions: Array.from(new Set(restrictionTypes))
+      restrictions: Array.from(new Set(restrictionTypes)),
+      flashbackCostOverride: activeEffects.find(e => this.isTarget(state, e, obj.id) && (e as any).flashbackCostOverride)?.flashbackCostOverride
     };
     } finally {
         this.calculationStack.delete(obj.id);
@@ -211,8 +212,6 @@ export class LayerProcessor {
           return obj.controllerId === effect.controllerId;
         case 'OTHER_CREATURES_YOU_CONTROL':
           return obj.id !== effect.sourceId && obj.controllerId === effect.controllerId && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
-        case 'ALL_OTHER_CATS_YOU_CONTROL':
-          return obj.id !== effect.sourceId && obj.controllerId === effect.controllerId && obj.definition.subtypes.some((s: string) => s.toLowerCase() === 'cat');
         case 'MATCHING_PERMANENTS_YOU_CONTROL':
           return obj.controllerId === effect.controllerId && TargetingProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId);
         case 'MATCHING_PERMANENTS':
@@ -261,7 +260,26 @@ export class LayerProcessor {
    * This should be called after any rule-changing event or zone transition.
    */
   public static updateDerivedStats(state: GameState, PriorityProcessor: any) {
-    // 1. Update Battlefield objects
+    // 1. Update Player stats (maxHandSize, etc)
+    Object.values(state.players).forEach(player => {
+        // Reset to base
+        player.maxHandSize = 7;
+        
+        // Apply modifiers from rule registry
+        const relevantEffects = state.ruleRegistry.continuousEffects.filter(e => 
+            e.playerModifier && 
+            this.isTarget(state, e, player.id) &&
+            (!e.condition || ConditionProcessor.matchesCondition(state, e.condition, e.sourceId, e.controllerId))
+        );
+
+        relevantEffects.forEach(e => {
+            if (e.playerModifier?.maxHandSize !== undefined) {
+                player.maxHandSize = Math.max(player.maxHandSize, e.playerModifier.maxHandSize);
+            }
+        });
+    });
+
+    // 2. Update Battlefield objects
     state.battlefield.forEach(obj => {
       const stats = this.getEffectiveStats(obj, state);
 
@@ -284,9 +302,9 @@ export class LayerProcessor {
     });
 
     // 2. Update Hand, Graveyard, and Library cards
-    Object.values(state.players).forEach(player => {
+    (Object.values(state.players) as any[]).forEach(player => {
       player.virtualHand = [];
-      player.graveyard.forEach(card => {
+      player.graveyard.forEach((card: GameObject) => {
         const hasPermission = PriorityProcessor.findPermissionEffect(state, player.id, 'AllowCastFromGraveyard', card.id);
         if (hasPermission) {
           player.virtualHand.push(card);
@@ -313,7 +331,7 @@ export class LayerProcessor {
     });
 
     // 3. Update effective stats for all objects in all zones (to set isPlayable correctly)
-    [...state.battlefield, ...Object.values(state.players).flatMap(p => [...p.hand, ...p.graveyard, ...p.library, ...p.virtualHand]), ...state.exile].forEach(obj => {
+    [...state.battlefield, ...(Object.values(state.players) as any[]).flatMap(p => [...p.hand, ...p.graveyard, ...p.library, ...p.virtualHand]), ...state.exile].forEach(obj => {
       const stats = this.getEffectiveStats(obj, state);
       const isPlayable = state.priorityPlayerId === obj.controllerId && PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id);
       obj.effectiveStats = { ...stats, isPlayable };

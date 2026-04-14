@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, DurationType } from "@shared/engine_types";
 
 export const RangersGuile: Record<string, ImplementableCard> = {
     "Ranger's Guile": {
@@ -17,21 +17,21 @@ export const RangersGuile: Record<string, ImplementableCard> = {
                 id: "rangers_guile_spell",
                 type: AbilityType.Spell,
                 activeZone: ZoneRequirement.Hand,
-                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'Controller'] },
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'YouControl'] },
                 effects: [
                     {
                         type: EffectType.ApplyContinuousEffect,
                         layer: 7,
                         powerModifier: 1,
                         toughnessModifier: 1,
-                        duration: 'UntilEndOfTurn',
+                        duration: DurationType.UntilEndOfTurn,
                         targetMapping: 'TARGET_1'
                     },
                     {
                         type: EffectType.ApplyContinuousEffect,
                         layer: 6,
                         abilitiesToAdd: ['Hexproof'],
-                        duration: 'UntilEndOfTurn',
+                        duration: DurationType.UntilEndOfTurn,
                         targetMapping: 'TARGET_1'
                     }
                 ]

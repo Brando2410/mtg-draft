@@ -1,35 +1,23 @@
-import { ImplementableCard, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const BigPlay: ImplementableCard = {
+export const BigPlay: CardDefinition = {
     name: 'Big Play',
     manaCost: '{1}{G}',
-    type_line: 'Instant',
+    colors: ['G'],
     types: ['Instant'],
-    subtypes: [],
-    keywords: [],
-    colors: ['green'],
-    supertypes: [],
-    oracleText: 'Target creature gets +2/+2 and gains reach until end of turn. Put a +1/+1 counter on it.',
-    abilities: [],
-    effects: [
+    oracleText: 'Target creature gets +2/+2 until end of turn. Put a +1/+1 counter on it.',
+    abilities: [
         {
-            type: EffectType.ApplyContinuousEffect,
-            targetMapping: 'TARGET',
-            duration: 'UNTIL_END_OF_TURN',
-            powerModifier: 2,
-            toughnessModifier: 2,
-            abilitiesToAdd: ['Reach']
-        },
-        {
-            type: EffectType.AddCounters,
-            targetMapping: 'TARGET',
-            amount: 1,
-            value: '+1/+1'
+            type: AbilityType.Spell,
+            targetDefinition: {
+                count: 1,
+                type: TargetType.Permanent,
+                restrictions: [{ type: 'Type', value: 'Creature' }]
+            },
+            effects: [
+                { type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: 'UNTIL_END_OF_TURN', powerModifier: 2, toughnessModifier: 2 },
+                { type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Target1 }
+            ]
         }
-    ],
-    targetDefinition: {
-        type: 'Permanent',
-        count: 1,
-        restrictions: ['Creature']
-    }
-} as any;
+    ]
+  };

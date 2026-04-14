@@ -12,6 +12,69 @@ export const Zone = {
 } as const;
 export type Zone = (typeof Zone)[keyof typeof Zone];
 
+export const SelectionType = {
+  Target: 'Target',
+  Choice: 'Choice',
+  Random: 'Random',
+  All: 'All',
+  TopN: 'TopN',
+  AnyNumber: 'AnyNumber',
+  Look: 'Look',
+  Search: 'Search'
+} as const;
+export type SelectionType = (typeof SelectionType)[keyof typeof SelectionType];
+
+export const TargetMapping = {
+  Self: 'SELF',
+  Target1: 'TARGET_1',
+  Target2: 'TARGET_2',
+  TargetAll: 'TARGET_ALL',
+  Controller: 'CONTROLLER',
+  EachOpponent: 'EACH_OPPONENT',
+  EachPlayer: 'EACH_PLAYER',
+  AllOpponents: 'ALL_OPPONENTS',
+  TriggerEventSource: 'TRIGGER_EVENT_SOURCE',
+  TriggerController: 'TRIGGER_CONTROLLER',
+  AllCreaturesYouControl: 'ALL_CREATURES_YOU_CONTROL',
+  OtherCreaturesYouControl: 'OTHER_CREATURES_YOU_CONTROL',
+  AllOtherCreatures: 'ALL_OTHER_CREATURES',
+  AllPermanents: 'ALL_PERMANENTS',
+  AllMatchingPermanents: 'ALL_MATCHING_PERMANENTS',
+  AllMatchingPermanentsYouControl: 'ALL_MATCHING_PERMANENTS_YOU_CONTROL',
+  OtherPlaneswalkersYouControl: 'OTHER_PLANESWALKERS_YOU_CONTROL',
+  AllLandsYouControl: 'ALL_LANDS_YOU_CONTROL',
+  AllOtherCreaturesAndPlaneswalkers: 'ALL_OTHER_CREATURES_AND_PLANESWALKERS',
+  MatchingCards: 'MATCHING_CARDS',
+  Target1HandRevealPick: 'TARGET_1_HAND_REVEAL_PICK',
+  Target1Controller: 'TARGET_1_CONTROLLER',
+  Target1Owner: 'TARGET_1_OWNER',
+  TargetOpponent: 'TARGET_OPPONENT',
+  LookingCards: 'LOOKING_CARDS',
+  SelectedCards: 'SELECTED_CARDS',
+  RemainingLookingCards: 'REMAINING_LOOKING_CARDS',
+  NameACard: 'NAME_A_CARD',
+  EventTarget: 'EVENT_TARGET',
+  LastExiledObject: 'LAST_EXILED_OBJECT',
+  TriggerSource: 'TRIGGER_SOURCE',
+  TriggerTarget: 'TRIGGER_TARGET'
+} as const;
+export type TargetMapping = (typeof TargetMapping)[keyof typeof TargetMapping];
+
+export const DynamicAmount = {
+  X: 'X',
+  SourcePower: 'SOURCE_POWER',
+  SourceToughness: 'SOURCE_TOUGHNESS',
+  SourceCountersP1P1: 'SOURCE_COUNTERS_P1P1',
+  DestroyedCount: 'DESTROYED_COUNT',
+  SavedMV: 'SAVED_MV',
+  TriggerEventValue: 'TRIGGER_EVENT_VALUE',
+  TriggerEventSourcePower: 'TRIGGER_EVENT_SOURCE_POWER',
+  DrawnThreeCheck: 'DYNAMIC_DrawnThreeCheck',
+  TwoPlusDiscardedMV: 'DYNAMIC_2PlusDiscardedMV',
+  DiscardedCount: 'DISCARDED_COUNT'
+} as const;
+export type DynamicAmount = (typeof DynamicAmount)[keyof typeof DynamicAmount];
+
 export const Phase = {
   Beginning: 'Beginning',
   PreCombatMain: 'PreCombatMain',
@@ -65,9 +128,12 @@ export interface CardDefinition {
   scryfall_id?: string;
   set?: string;
   entersTapped?: boolean; // Replacement effect-style state for entry
+  entersTappedCondition?: string; // e.g. "CONTROL_OTHER_LANDS_LE:1"
   entersWithXCounters?: boolean; // Rule 122.6: Entry with counters based on X
+  entersPrepared?: boolean;      // SOS: Mechanic "Prepare"
   faces?: CardDefinition[]; // CR 711.1: Double-faced cards
-  abilities?: any[];
+  flashbackCost?: string;   // Alternative cost for casting from graveyard
+  abilities?: (ParsedAbility | string)[];
 }
 
 // A physical/virtual object existing in a Zone.
@@ -87,15 +153,18 @@ export interface GameObject {
   summoningSickness: boolean;
   abilitiesUsedThisTurn: number;
   faceDown: boolean;
+  isPrepared: boolean;
   keywords: string[]; // Dynamic keywords gained (e.g. from an Aura or equipment)
   deathtouchMarked: boolean; // CR 702.2: Damage from a source with deathtouch
   isPhasedOut?: boolean; // CR 702.26: Treated as though it doesn't exist
   lastNonStackZone?: Zone; // Track where a spell was cast from
   xValue?: number;         // Rule 107.3: Snapshot of X during casting
+  isFlashbackCast?: boolean; // Rule 702.34a: Exile if leaving stack
 
   // Modifiers (Layer system targets)
   counters: Record<string, number>;
   attachedTo?: GameObjectId;
+  data?: any;
 
   // Rules Engine output (Calculated on server, displayed on client)
   effectiveStats?: {
@@ -140,6 +209,7 @@ export interface StackObject {
   image_url?: string;
   xValue?: number; // Rule 107.3: The value of X
   exileOnResolution?: boolean;
+  isFlashbackCast?: boolean;
 }
 
 // Player's isolated state within a game
@@ -203,6 +273,9 @@ export interface TurnState {
   creaturesAttackedThisTurn: number;
   creaturesDiedThisTurn: any[];
   lastDamageAmount: number;
+  lastExcessDamageAmount: number;
+  lastSacrificedObjectPower?: number;
+  turnStartTime: number; // For effect expiration logic
   lastLifeGainedAmount: number;
   lastCardsDrawnAmount: number;
   cardsDrawnThisTurn: Record<PlayerId, number>;
@@ -210,6 +283,7 @@ export interface TurnState {
   spellsCastThisTurn: Record<PlayerId, number>;
   instantOrSorceryCastThisTurn: Record<PlayerId, boolean>;
   landsPlayedThisTurn: Record<PlayerId, number>;
+  lastDiscardedCount: number;
   namedCards?: Record<string, string>; // Store named card choices (e.g. for Pithing Needle or Academic Probation)
 }
 
@@ -304,7 +378,9 @@ export const DurationType = {
   UntilEndOfCombat: 'UNTIL_END_OF_COMBAT',  // Rule 511.3
   UntilEvent: 'UNTIL_EVENT',              // e.g., "Until your next turn"
   UntilNextUntapStep: 'UNTIL_NEXT_UNTAP_STEP', // For "frozen" effects
-  Permanent: 'PERMANENT'                 // e.g., Counters or Emblems
+  Permanent: 'PERMANENT',                 // e.g., Counters or Emblems
+  UntilYourNextTurn: 'UNTIL_YOUR_NEXT_TURN', // Expire at start of next turn
+  UntilEndOfYourNextTurn: 'UNTIL_END_OF_YOUR_NEXT_TURN' // Expire at end of next turn
 } as const;
 export type DurationType = (typeof DurationType)[keyof typeof DurationType];
 
@@ -352,13 +428,23 @@ export interface ContinuousEffect {
   canPlayExiled?: boolean;
   isFreeCast?: boolean;
   restrictions?: AbilityRestriction[];
+  flashbackCostOverride?: string;
+  playerModifier?: {
+      maxHandSize?: number;
+      canPlayFromGraveyard?: boolean;
+      canPlayFromTop?: boolean;
+      lifeModifier?: number;
+  };
 }
 
 export interface AbilityCost {
-  type: 'Tap' | 'Mana' | 'PayLife' | 'Discard' | 'Sacrifice' | 'Loyalty' | 'Exile';
+  type: 'Tap' | 'Mana' | 'PayLife' | 'Discard' | 'Sacrifice' | 'Loyalty' | 'Exile' | 'Crew' | 'Life' | 'RemoveCounter' | 'TapSelection' | 'ExileSelf';
   value?: any; // e.g. "{G}" or 3 life
-  restrictions?: string[]; // e.g. ["Creature"]
+  amount?: number; // For Crew power
+  restrictions?: (string | any)[]; // e.g. ["Creature"] or [{ type: "Creature" }]
   targetMapping?: string;  // e.g. "SELF"
+  counterType?: string;    // For RemoveCounter cost
+  costModifiers?: { type: 'REDUCE_GENERIC_PER_COUNTER', counterType: string }[];
 }
 
 export interface ActivatedAbility {
@@ -456,6 +542,7 @@ export const TriggerEvent = {
   EnterBattlefield: 'ON_ETB',
   EnterBattlefieldOther: 'ON_ETB_OTHER',
   Death: 'ON_DEATH',
+  DeathOther: 'ON_DEATH_OTHER',
   LeaveBattlefield: 'ON_LEAVE_BATTLEFIELD',
   Attack: 'ON_ATTACK',
   Block: 'ON_BLOCK',
@@ -491,15 +578,16 @@ export const TriggerEvent = {
   BeginningOfCombatStep: 'ON_BEGINNING_OF_COMBAT_STEP',
   PreCombatMainPhaseStart: 'ON_PRE_COMBAT_MAIN_PHASE_START',
   Upkeep: 'ON_UPKEEP_STEP',
-  Cleanup: 'ON_CLEANUP_STEP'
+  Cleanup: 'ON_CLEANUP_STEP',
+  LeaveGraveyard: 'ON_LEAVE_GRAVEYARD'
 } as const;
 
 export type TriggerEvent = (typeof TriggerEvent)[keyof typeof TriggerEvent];
 
 export interface TokenBlueprint {
   name: string;
-  power?: string;
-  toughness?: string;
+  power?: string | number;
+  toughness?: string | number;
   colors: string[];
   types: string[];
   subtypes: string[];
@@ -537,12 +625,14 @@ export const EffectType = {
   Exile: 'Exile',
   ExileTopCard: 'ExileTopCard',
   ExileAllCards: 'ExileAllCards',
+  CREW: 'CREW',
   Counter: 'Counter',
   CreateToken: 'CreateToken',
   AddCounters: 'AddCounters',
   ApplyContinuousEffect: 'ApplyContinuousEffect',
   CopyObject: 'CopyObject',
   Choice: 'Choice',
+  ConditionalEffect: 'ConditionalEffect',
   SearchLibrary: 'SearchLibrary',
   PutOnBattlefield: 'PutOnBattlefield',
   PutInHand: 'PutInHand',
@@ -574,6 +664,9 @@ export const EffectType = {
   Shuffle: 'Shuffle',
   Log: 'Log',
   CopySpellOnStack: 'CopySpellOnStack',
+  Prepare: 'Prepare',
+  Unprepare: 'Unprepare',
+  ExileTopCardsExcessDamage: 'ExileTopCardsExcessDamage',
   SpellTax: 'SpellTax',
   AdditionalCost: 'AdditionalCost',
   AdditionalLandPlays: 'AdditionalLandPlays',
@@ -600,16 +693,67 @@ export const EffectType = {
   Surveil: 'Surveil',
   AllowCastWithoutPaying: 'AllowCastWithoutPaying',
   CastSpell: 'CastSpell',
+  MoveCounters: 'MoveCounters',
+  EntersWithCounters: 'EntersWithCounters',
+  Paradigm: 'Paradigm',
+  AllowPlayMilledCard: 'AllowPlayMilledCard',
   PENDING_ACTION: 'PENDING_ACTION',
 } as const;
 
 
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
 
+export const ConditionType = {
+    IsYourTurn: 'IS_YOUR_TURN',
+    OurTurn: 'OUR_TURN',
+    IsOpponentTurn: 'IS_OPPONENT_TURN',
+    HasCounters: 'HAS_COUNTERS',
+    TriggerTargetIsSelf: 'TRIGGER_TARGET_IS_SELF',
+    TriggerSourcePowOrToughLe1: 'TRIGGER_SOURCE_POW_OR_TOUGH_LE_1',
+    TargetsTappedCreature: 'TARGETS_TAPPED_CREATURE',
+    HasCreaturePower4Plus: 'HAS_CREATURE_POWER_4_PLUS',
+    PlayerIsController: 'PLAYER_IS_CONTROLLER',
+    ObjectIsSelf: 'OBJECT_IS_SELF',
+    CreatureDiedThisTurn: 'CREATURE_DIED_THIS_TURN',
+    GainedLifeThisTurn: 'GAINED_LIFE_THIS_TURN',
+    Infusion: 'INFUSION',
+    TargetIsOpponent: 'TARGET_IS_OPPONENT',
+    OwnCreatureEnters: 'OWN_CREATURE_ENTERS',
+    OwnCreatureDies: 'OWN_CREATURE_DIES',
+    TargetIsInstantOrSorcery: 'TARGET_IS_INSTANT_OR_SORCERY',
+    CastInstantSorceryThisTurn: 'CAST_INSTANT_SORCERY_THIS_TURN',
+    Target1IsController: 'TARGET_1_IS_CONTROLLER',
+    SpentManaGe: 'SPENT_MANA_GE',
+    SpentManaGtPowerOrToughness: 'SPENT_MANA_GT_POWER_OR_TOUGHNESS',
+    HasPermanent: 'HAS_PERMANENT',
+    NotHasPermanent: 'NOT_HAS_PERMANENT',
+    CastFromHand: 'CAST_FROM_HAND',
+    NotCastFromHand: 'NOT_CAST_FROM_HAND',
+    ArtifactCountGe: 'ARTIFACT_COUNT_GE',
+    LandCountGe: 'LAND_COUNT_GE',
+    TopCardIsGoblin: 'TOP_CARD_IS_GOBLIN',
+    XGe: 'X_GE',
+    XEquals: 'X_EQUALS',
+    SpellTargetsSource: 'SPELL_TARGETS_SOURCE',
+    SpellTargetsCreature: 'SPELL_TARGETS_CREATURE',
+    SpellIsCreature: 'SPELL_IS_CREATURE',
+    PlayerHasLifeGe: 'PLAYER_HAS_LIFE_GE',
+    OpponentHasLifeLe: 'OPPONENT_HAS_LIFE_LE',
+    EventObjectMatches: 'EVENT_OBJECT_MATCHES',
+    Target1Matches: 'TARGET_1_MATCHES',
+    Target2Matches: 'TARGET_2_MATCHES',
+    EventManaValueGe: 'EVENT_MANA_VALUE_GE',
+    DrawnCardsGe: 'DRAWN_CARDS_GE',
+    CounterGe: 'COUNTER_GE',
+    OtherLandsLe: 'OTHER_LANDS_LE',
+    HasInstantAndSorceryInGy: 'HAS_INSTANT_AND_SORCERY_IN_GY'
+} as const;
+export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType] | string;
+
 export interface EffectDefinition {
   type: EffectType;
-  amount?: number | string | ((state: any, source: any, targets?: string[]) => number);
-
+  amount?: number | string | DynamicAmount | ((state: any, source: any, targets?: string[]) => number);
+  targetMapping?: TargetMapping | string;
   value?: any;
   tapped?: boolean;
   costs?: AbilityCost[];
@@ -624,14 +768,15 @@ export interface EffectDefinition {
 
   // Modular Token Support
   tokenBlueprint?: TokenBlueprint;
-  startingCounters?: { type: string, amount: number | string };
+  startingCounters?: any;
 
   // Choice Properties
   choices?: {
     label: string;
-    condition?: string;
+    condition?: string | ConditionType;
     costs?: AbilityCost[];
-    effects: EffectDefinition[];
+    effects?: EffectDefinition[];
+    targetDefinition?: TargetDefinition | TargetDefinition[];
   }[];
 
   // Continuous Effect Properties
@@ -646,6 +791,7 @@ export interface EffectDefinition {
   abilitiesToRemove?: string[];
   removeAllAbilities?: boolean;
   subtypesToAdd?: string[];
+  typesToAdd?: string[];
   layer?: number;
   sublayer?: string;
   targetControllerId?: string;
@@ -654,6 +800,9 @@ export interface EffectDefinition {
   exileOnMoveToGraveyard?: boolean;
   isLegendary?: boolean;
   next?: EffectDefinition;
+  replacementEffect?: any;
+  matchEvent?: string;
+  playerModifier?: any;
   powerMultiplier?: number | string;
   toughnessMultiplier?: number | string;
   restriction?: string;
@@ -674,40 +823,32 @@ export interface EffectDefinition {
   additionalCosts?: any[];
 
   // Conditional logic
-  condition?: string;
+  condition?: ConditionType;
   onFailureEffects?: EffectDefinition[];
   message?: string;
   destination?: Zone;
 
-  /**
-   * targetMapping conventions:
-   * - 'SELF': The card itself
-   * - 'TARGET_1', 'TARGET_2': Specific targets from targetDefinition
-   * - 'TARGET_ALL': All targets selected via targetDefinition
-   * - 'CONTROLLER': The controller of the ability
-   * - 'ALL_CREATURES_YOU_CONTROL', 'OTHER_CREATURES_YOU_CONTROL': Group selectors
-   */
-  targetMapping?: string;
   damageSourceMapping?: string; // Optional mapping for who deals the damage (e.g., 'TARGET_1')
   targetIdMapping?: string;
   targetIds?: string[]; // For specific snapshots (Exile/Choice results)
-  targetDefinition?: TargetDefinition;
+  targetDefinition?: TargetDefinition | TargetDefinition[];
   restrictions?: any[];
   effects?: EffectDefinition[]; // Sub-effects to execute after a selection
   label?: string; // Top-level label for Choice effects
   targetId?: string; // For MoveToZone
   zone?: Zone; // For MoveToZone
-  sourceZone?: Zone; // For consolidated movement/exile
-  selectionType?: 'Target' | 'All' | 'TopN' | 'Search'; // For consolidated targeting
+  sourceZone?: Zone; // For consolidated targeting
+  selectionType?: SelectionType; // For consolidated targeting
   cardsToMoveIds?: string[]; // For PutRemainderOnBottomRandom
   optional?: boolean; // For Choice/LookAtTopAndPick
   hideUndo?: boolean; // For Choice (UI Hint)
   all?: boolean; // For Mass effects
   on?: string; // For AddTriggeredAbility (legacy)
-  triggerCondition?: (state: any, event: any, source: any) => boolean; // For AddTriggeredAbility
+  triggerCondition?: string | ((state: any, event: any, source: any) => boolean); // For AddTriggeredAbility
   onSelected?: (card: any) => EffectDefinition[]; // For Choice logic
   revealed?: boolean; // For Library/Hand visible info
   playDuration?: 'UNTIL_END_OF_TURN' | 'UNTIL_NEXT_TURN_END'; // For impulsive draw
+  ownerControl?: boolean; // CR 110.2: Flicker effects use ownerId
   sourceZones?: Zone[]; // For multizone search/movement
   splitDestinations?: { count: number, zone: Zone, tapped?: boolean }[]; // For complex splits (e.g. Cultivate)
   remainderZone?: Zone; // For leftovers (Top/Bottom/Graveyard)
@@ -720,6 +861,22 @@ export interface EffectDefinition {
   chooseNewTargets?: boolean; // For CopySpellOnStack
   minChoices?: number; // For Choice effects
   maxChoices?: number; // For Choice effects
+
+  // SOS specific fields
+  manaRestrictions?: string[];
+  blueprint?: any;
+  sourceMapping?: string;
+  deferredTrigger?: any;
+  cannotBlock?: boolean;
+  addedTriggers?: any[];
+  sublayer_sos?: string;
+  counterType?: string;
+  xValue?: number;
+  isParadigmCopy?: boolean;
+  stats?: any;
+  count?: number;
+  originalCardId?: string;
+  isDraw?: boolean;
 }
 
 export const TargetType = {
@@ -728,21 +885,30 @@ export const TargetType = {
   Spell: 'Spell',
   CardInGraveyard: 'CardInGraveyard',
   Card: 'Card',
-  AnyTarget: 'AnyTarget'
+  AnyTarget: 'AnyTarget',
+  Creature: 'Creature',
+  Artifact: 'Artifact',
+  Land: 'Land',
+  Enchantment: 'Enchantment',
+  Planeswalker: 'Planeswalker'
 } as const;
 export type TargetType = (typeof TargetType)[keyof typeof TargetType];
 
 export interface TargetDefinition {
   type: TargetType;
-  count: number;
+  count?: number;
   minCount?: number;
   optional?: boolean;
   restrictions?: (string | any)[];
   perTargetRestrictions?: (string | any)[][];
+  sourceZones?: Zone[];
+  zone?: Zone;
+  controller?: string;
+  maxSelections?: number;
 }
 
 export interface ParsedAbility {
-  id: string;
+  id?: string;
   type: AbilityType;
   multiMode?: { type: string };
   multiTargetMapping?: boolean; // Support for complex multi-target structures (e.g. Sublime Epiphany)
@@ -750,9 +916,13 @@ export interface ParsedAbility {
   activeZone?: ZoneRequirement;
   costs?: AbilityCost[];
   isManaAbility?: boolean;
+  targets?: any[];
   triggerEvent?: TriggerEvent | TriggerEvent[];
-  triggerCondition?: any;
-  targetDefinition?: TargetDefinition;
+  additionalCosts?: any[];
+  eventMatch?: TriggerEvent | TriggerEvent[];
+  triggerCondition?: string | ConditionType | ((state: any, event: any, t: any) => boolean);
+  targetDefinition?: TargetDefinition | TargetDefinition[];
+  zone?: Zone;
   activatedOnlyAsSorcery?: boolean;
   triggerMetadata?: {
     isCombat?: boolean;
@@ -767,8 +937,10 @@ export interface ParsedAbility {
   replacesEvent?: string;
   exileOnResolution?: boolean;
   costReduction?: any;
+  flashbackCost?: string;
+  manaCost?: string;
   restrictions?: { type: string, value?: string, effectZone?: string }[];
-  condition?: string;
+  condition?: ConditionType;
   effects?: EffectDefinition[];
 }
 

@@ -1,37 +1,24 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, TriggerEvent, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const SilverquillApprentice: ImplementableCard = {
-    name: 'Silverquill Apprentice',
-    manaCost: '{W}{B}',
-    type_line: 'Creature — Human Warlock',
-    types: ['Creature'],
-    subtypes: ['Human', 'Warlock'],
-    power: '2',
-    toughness: '2',
-    keywords: [],
-    colors: ['white', 'black'],
-    supertypes: [],
-    oracleText: 'Magecraft — Whenever you cast or copy an instant or sorcery spell, target creature gets +1/+0 until end of turn.',
+export const SilverquillApprentice: CardDefinition = {
+    name: "Silverquill Apprentice",
+    manaCost: "{1}{W}",
+    colors: ["W"],
+    types: ["Creature"],
+    subtypes: ["Human", "Duelist"], // Scryfall: Human Duelist
+    power: "2",
+    toughness: "2",
+    oracleText: "Magecraft — Whenever you cast or copy an instant or sorcery spell, target creature gets +1/+0 until end of turn.",
     abilities: [
         {
-            id: 'silverquill_apprentice_magecraft',
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
-            triggerEvent: TriggerEvent.Magecraft,
-            effects: [
-                {
-                    type: EffectType.ApplyContinuousEffect,
-                    targetMapping: 'TARGET_1',
-                    duration: 'UNTIL_END_OF_TURN',
-                    powerModifier: 1,
-                    layer: 7
-                }
-            ],
+            eventMatch: TriggerEvent.Magecraft,
             targetDefinition: {
-                type: 'Permanent',
+                type: TargetType.Permanent,
                 count: 1,
-                restrictions: ['Creature']
-            }
+                restrictions: [{ type: 'Type', value: 'Creature' }]
+            },
+            effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 1, duration: 'UNTIL_END_OF_TURN', targetMapping: TargetMapping.Target1 }]
         }
     ]
-};
+  };

@@ -477,7 +477,7 @@ export class CombatProcessor {
     // 0. Restriction Check (CannotBlock)
     const isRestricted = state.ruleRegistry.restrictions.some(r => 
         r.targetId === blockerId && r.type === 'CannotBlock'
-    );
+    ) || bStats.restrictions?.includes('CannotBlock') || bStats.keywords?.includes('CannotBlock');
     if (isRestricted) return { legal: false, reason: "this creature cannot block" };
 
     // 1. CR 702.9: Flying check

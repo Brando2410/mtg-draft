@@ -59,21 +59,21 @@ export class ChoiceEffectHandler {
 
     // --- HAND-PICKING OR GRAVEYARD-PICKING ---
     const targetZoneMapping = (effect as any).targetIdMapping;
-    if (['TARGET_1_HAND', 'TARGET_1_GRAVEYARD', 'TARGET_1_BATTLEFIELD', 'CONTROLLER_HAND', 'CONTROLLER_GRAVEYARD', 'CONTROLLER_BATTLEFIELD', 'CONTROLLER_SIDEBOARD', 'NAME_A_CARD'].includes(targetZoneMapping)) {
+    if (['TARGET_1_HAND', 'TARGET_1_HAND_REVEAL_PICK', 'TARGET_1_GRAVEYARD', 'TARGET_1_BATTLEFIELD', 'ALL_BATTLEFIELD', 'CONTROLLER_HAND', 'CONTROLLER_GRAVEYARD', 'CONTROLLER_BATTLEFIELD', 'CONTROLLER_SIDEBOARD', 'NAME_A_CARD'].includes(targetZoneMapping)) {
         let targetPlayerId: string | undefined;
         let mappingPlayerId: string | undefined; // Player who chooses
 
         if (targetZoneMapping.startsWith('TARGET_1_')) {
-            mappingPlayerId = targets[0];
+            mappingPlayerId = targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK' ? controllerId : targets[0];
         } else {
             mappingPlayerId = controllerId;
         }
 
         const targetPlayer = state.players[mappingPlayerId as PlayerId];
-        if (targetPlayer || targetZoneMapping.endsWith('_BATTLEFIELD')) {
+        if (targetPlayer || targetZoneMapping.endsWith('_BATTLEFIELD') || targetZoneMapping === 'ALL_BATTLEFIELD') {
             const isGraveyard = targetZoneMapping.endsWith('_GRAVEYARD');
             const isSideboard = targetZoneMapping.endsWith('_SIDEBOARD');
-            const isBattlefield = targetZoneMapping.endsWith('_BATTLEFIELD');
+            const isBattlefield = targetZoneMapping.endsWith('_BATTLEFIELD') || targetZoneMapping === 'ALL_BATTLEFIELD';
             const isNameACard = targetZoneMapping === 'NAME_A_CARD';
 
             let sourceCards: GameObject[] = [];
@@ -81,9 +81,18 @@ export class ChoiceEffectHandler {
                 // Use controller's library as a pool of names
                 sourceCards = state.players[controllerId].library;
             } else if (isBattlefield) {
-                sourceCards = state.battlefield.filter(o => o.controllerId === mappingPlayerId);
-            } else if (targetPlayer) {
-                sourceCards = isGraveyard ? targetPlayer.graveyard : (isSideboard ? (targetPlayer.sideboard || []) : targetPlayer.hand);
+                sourceCards = targetZoneMapping === 'ALL_BATTLEFIELD' ? state.battlefield : state.battlefield.filter(o => o.controllerId === mappingPlayerId);
+            } else if (targetPlayer || targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK') {
+                if (targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK') {
+                    const targetOppId = targets[0] as PlayerId;
+                    const targetOpp = state.players[targetOppId];
+                    if (targetOpp) {
+                        sourceCards = targetOpp.hand;
+                        targetOpp.hand.forEach((c: any) => (c as any).isRevealed = true);
+                    }
+                } else {
+                    sourceCards = isGraveyard ? targetPlayer.graveyard : (isSideboard ? (targetPlayer.sideboard || []) : targetPlayer.hand);
+                }
             }
             
             if (isNameACard) {
@@ -133,10 +142,14 @@ export class ChoiceEffectHandler {
     }
 
     // --- GENERIC MODAL CHOICES ---
+    const playerTargets = targets.filter(tid => state.players[tid as PlayerId]);
+    const firstPlayerId = playerTargets.length > 0 ? playerTargets[0] as PlayerId : controllerId;
+    const nextPlayers = playerTargets.length > 1 ? playerTargets.slice(1) as PlayerId[] : [];
+
     state.pendingAction = ChoiceGenerator.createModalChoice(
         { 
             label: effect.label || 'Choose an option', 
-            playerId: controllerId, 
+            playerId: firstPlayerId, 
             sourceId: sourceId, 
             actionType: effect.optional ? ActionType.OptionalAction : ActionType.ResolutionChoice,
             hideUndo: true,
@@ -147,6 +160,10 @@ export class ChoiceEffectHandler {
         },
         dynamicChoices || []
     );
+
+    if (state.pendingAction && state.pendingAction.data && nextPlayers.length > 0) {
+        state.pendingAction.data.nextPlayerIds = nextPlayers;
+    }
   }
 
   public static handleNecromentia(

@@ -1,28 +1,23 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType, TargetType, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const SolveTheEquation: ImplementableCard = {
-    name: 'Solve the Equation',
-    manaCost: '{2}{U}',
-    type_line: 'Sorcery',
-    types: ['Sorcery'],
-    subtypes: [],
-    colors: ['blue'],
-    oracleText: "Search your library for an instant or sorcery card, reveal it, put it into your hand, then shuffle.",
-    abilities: [
-        {
-            id: 'solve_the_equation_spell',
-            type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
-            effects: [
-                {
-                    type: EffectType.SearchLibrary,
-                    targetMapping: 'CONTROLLER',
-                    restrictions: ['Instant_OR_Sorcery'],
-                    reveal: true,
-                    destination: Zone.Hand,
-                    shuffle: true
-                }
-            ]
-        }
-    ]
-};
+export const SolvetheEquation: CardDefinition = {
+        name: 'Solve the Equation',
+        manaCost: '{2}{U}',
+        colors: ['U'],
+        types: ['Sorcery'],
+        oracleText: "Search your library for an instant or sorcery card, reveal it, put it into your hand, then shuffle.",
+        abilities: [
+            {
+                type: AbilityType.Spell,
+                effects: [
+                    {
+                        type: EffectType.SearchLibrary,
+                        restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Instant' }, { type: 'Type', value: 'Sorcery' }] }],
+                        destination: Zone.Hand,
+                        reveal: true,
+                        shuffle: true
+                    }
+                ]
+            }
+        ]
+    };

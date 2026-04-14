@@ -1,32 +1,20 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, TriggerEvent, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const LoreholdPledgemage: ImplementableCard = {
+export const LoreholdPledgemage: CardDefinition = {
     name: 'Lorehold Pledgemage',
-    manaCost: '{1}{RW}{RW}',
-    type_line: 'Creature — Kor Shaman',
+    manaCost: '{1}{R/W}{R/W}', // Scryfall: {1}{R/W}{R/W}
+    colors: ['R', 'W'],
     types: ['Creature'],
-    subtypes: ['Kor', 'Shaman'],
+    subtypes: ['Rhino', 'Cleric'],
     power: '2',
     toughness: '2',
     keywords: ['First strike'],
-    colors: ['red', 'white'],
-    supertypes: [],
-    oracleText: 'First strike\nMagecraft — Whenever you cast or copy an instant or sorcery spell, Lorehold Pledgemage gets +1/+0 until end of turn.',
+    oracleText: 'First strike\nMagecraft — Whenever you cast or copy an instant or sorcery spell, Lorehold Pledgemage gets +1/+1 until end of turn.',
     abilities: [
         {
-            id: 'lorehold_pledgemage_magecraft',
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
-            triggerEvent: TriggerEvent.Magecraft,
-            effects: [
-                {
-                    type: EffectType.ApplyContinuousEffect,
-                    targetMapping: 'SELF',
-                    duration: 'UNTIL_END_OF_TURN',
-                    powerModifier: 1,
-                    toughnessModifier: 0
-                }
-            ]
+            eventMatch: TriggerEvent.Magecraft,
+            effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 1, toughnessModifier: 1, duration: 'UNTIL_END_OF_TURN', targetMapping: TargetMapping.Self }]
         }
     ]
-};
+  };

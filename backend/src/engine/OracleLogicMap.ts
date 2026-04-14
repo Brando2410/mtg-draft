@@ -1,6 +1,7 @@
 import { m21 } from './data/m21';
 import { random } from './data/random';
 import { stx } from './data/stx';
+import { sos } from './data/sos';
 
 /**
  * The Rules Oracle
@@ -15,7 +16,7 @@ class OracleLogicMap {
 
   private initialize() {
     // Load Dedicated Set Logic
-    [m21, random, stx].forEach(setRegistry => {
+    [m21, random, stx, sos].forEach(setRegistry => {
         Object.keys(setRegistry).forEach(name => {
             const enriched = {
                 ...setRegistry[name],

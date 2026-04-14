@@ -1,5 +1,6 @@
-import { GameState, GameEvent, TriggeredAbility, PlayerId, GameObjectId, Zone, ZoneRequirement, AbilityType, ActionType } from '@shared/engine_types';
+import { GameState, GameEvent, TriggeredAbility, PlayerId, GameObjectId, Zone, ZoneRequirement, AbilityType, ActionType, ConditionType, TriggerEvent } from '@shared/engine_types';
 import { LayerProcessor } from '../state/LayerProcessor';
+import { oracle } from '../../OracleLogicMap';
 
 /**
  * Rules Engine Module: Triggered Abilities (Rule 603)
@@ -24,14 +25,15 @@ export class TriggerProcessor {
 
       const matchesPrimary = tEvents.some(type => 
         type === event.type || 
-        (type === 'ON_ETB_OTHER' && event.type === 'ON_ETB') ||
-        (type === 'ON_SECOND_DRAW' && event.type === 'ON_SECOND_DRAW') ||
-        (type === 'ON_ATTACK_OR_BLOCK' && (event.type === 'ON_ATTACK' || event.type === 'ON_BLOCK')) ||
-        (type === 'ON_DAMAGE_DEALT_TO_CREATURE' && event.type === 'ON_DAMAGE_TAKED') ||
-        (type === 'ON_DAMAGE_DEALT_TO_PLAYER' && event.type === 'ON_DAMAGE_PLAYER') ||
-        (type === 'ON_COUNTERS_ADDED_OTHER' && event.type === 'ON_COUNTERS_ADDED') ||
-        (type === 'ON_MAGECRAFT' && event.playerId === t.controllerId && (event.type === 'ON_CAST_INSTANT_SORCERY' || (event.type === 'ON_COPY_SPELL' && event.data?.isInstantOrSorcery))) ||
-        (type === 'ON_MAGECRAFT_OPPONENT' && event.playerId !== t.controllerId && (event.type === 'ON_CAST_INSTANT_SORCERY' || (event.type === 'ON_COPY_SPELL' && event.data?.isInstantOrSorcery)))
+        (type === TriggerEvent.EnterBattlefieldOther && event.type === TriggerEvent.EnterBattlefield) ||
+        (type === TriggerEvent.SecondDraw && event.type === TriggerEvent.SecondDraw) ||
+        (type === TriggerEvent.AttackOrBlock && (event.type === TriggerEvent.Attack || event.type === TriggerEvent.Block)) ||
+        (type === TriggerEvent.DamageDealtToCreature && event.type === TriggerEvent.DamageTaken) ||
+        (type === TriggerEvent.DamageDealtToPlayer && event.type === TriggerEvent.DamageDealtToPlayerLegacy) ||
+        (type === TriggerEvent.DeathOther && event.type === TriggerEvent.Death) ||
+        (type === TriggerEvent.CountersAddedOther && event.type === TriggerEvent.CountersAdded) ||
+        (type === TriggerEvent.Magecraft && event.playerId === t.controllerId && (event.type === TriggerEvent.CastInstantOrSorcery || (event.type === TriggerEvent.CopySpell && event.data?.isInstantOrSorcery))) ||
+        (type === TriggerEvent.MagecraftOpponent && event.playerId !== t.controllerId && (event.type === TriggerEvent.CastInstantOrSorcery || (event.type === TriggerEvent.CopySpell && event.data?.isInstantOrSorcery)))
       );
 
       if (!matchesPrimary) return false;
@@ -42,23 +44,33 @@ export class TriggerProcessor {
       }
 
       // Special Logic for ETB filtering (Self vs Other)
-      if (event.type === 'ON_ETB') {
+      if (event.type === TriggerEvent.EnterBattlefield) {
         const enteringObjId = event.data?.object?.id;
-        if (tEvent === 'ON_ETB') {
+        if (tEvent === TriggerEvent.EnterBattlefield) {
            if (enteringObjId !== t.sourceId) return false;
-        } else if (tEvent === 'ON_ETB_OTHER') {
+        } else if (tEvent === TriggerEvent.EnterBattlefieldOther) {
            if (enteringObjId === t.sourceId) return false;
         }
       }
 
 
       // Special Logic for Counter Added (Self vs Other)
-      if (event.type === 'ON_COUNTERS_ADDED') {
+      if (event.type === TriggerEvent.CountersAdded) {
         const targetId = event.targetId;
-        if (tEvent === 'ON_COUNTERS_ADDED') {
+        if (tEvent === TriggerEvent.CountersAdded) {
             if (targetId !== t.sourceId) return false;
-        } else if (tEvent === 'ON_COUNTERS_ADDED_OTHER') {
+        } else if (tEvent === TriggerEvent.CountersAddedOther) {
             if (targetId === t.sourceId) return false;
+        }
+      }
+      
+      // Special Logic for Death (Self vs Other)
+      if (event.type === TriggerEvent.Death) {
+        const deadObjId = event.targetId;
+        if (tEvent === TriggerEvent.Death) {
+            if (deadObjId !== t.sourceId) return false;
+        } else if (tEvent === TriggerEvent.DeathOther) {
+            if (deadObjId === t.sourceId) return false;
         }
       }
 
@@ -140,6 +152,167 @@ export class TriggerProcessor {
         }
     }
 
+    // --- SYSTEM RECOGNIZED KEYWORDS: CASCADE & STORM ---
+    if (event.type === 'ON_CAST_SPELL' && event.data?.card) {
+        const card = event.data.card;
+        const keywords = card.definition.keywords || [];
+        
+        // 1. Cascade (Rule 702.85)
+        if (keywords.includes('Cascade')) {
+            matchingTriggers.push({
+                id: `cascade_system_${card.id}_${Date.now()}`,
+                sourceId: card.id,
+                controllerId: event.playerId,
+                eventMatch: 'ON_CAST_SPELL',
+                effects: [{
+                    type: 'SearchLibrary',
+                    selectionType: 'TopN',
+                    amount: 1,
+                    sourceZones: [Zone.Library],
+                    restrictions: [{ type: 'ManaValueLess', value: 'SOURCE_MV' }, { type: 'Nonland' }],
+                    destination: Zone.Exile,
+                    remainderZone: Zone.Library,
+                    remainderPosition: 'bottom',
+                    shuffleRemainder: true,
+                    effects: [{
+                        type: 'Choice',
+                        label: 'Cast the revealed card?',
+                        choices: [
+                            { 
+                                label: 'Yes', 
+                                effects: [{ 
+                                    type: 'MoveToZone', 
+                                    zone: Zone.Stack, 
+                                    targetMapping: 'SELECTED_CARD', 
+                                    isFreeCast: true,
+                                    enforceMVCheck: 'SOURCE_MV' 
+                                }] 
+                            },
+                            { label: 'No', effects: [] }
+                        ]
+                    }]
+                }]
+            } as any);
+        }
+
+        // 2. Storm (Rule 702.40)
+        if (keywords.includes('Storm')) {
+            const stormCount = (Number(state.turnState.spellsCastThisTurn) || 0) - 1;
+            if (stormCount > 0) {
+                log(`[STORM] ${card.definition.name} triggering for ${stormCount} copies.`);
+                for (let i = 0; i < stormCount; i++) {
+                    matchingTriggers.push({
+                        id: `storm_copy_${card.id}_${i}_${Date.now()}`,
+                        sourceId: card.id,
+                        controllerId: event.playerId,
+                        eventMatch: 'ON_CAST_SPELL',
+                        effects: [{ type: 'CopySpellOnStack', targetMapping: 'TRIGGER_EVENT_SOURCE' }]
+                    } as any);
+                }
+            }
+        }
+    }
+
+    // --- SYSTEM RECOGNIZED KEYWORDS: INCREMENT ---
+    if (event.type === 'ON_CAST_SPELL' && event.playerId) {
+        state.battlefield.forEach(obj => {
+            if (obj.controllerId !== event.playerId) return;
+            const keywords = obj.definition.keywords || [];
+            if (keywords.includes('Increment')) {
+                const manaSpent = (event.data?.card?.paidManaValue) || 0;
+                const stats = LayerProcessor.getEffectiveStats(obj, state);
+                
+                // Trigger Check: spent > P or spent > T
+                if (manaSpent > stats.power || manaSpent > stats.toughness) {
+                    matchingTriggers.push({
+                        id: `increment_gen_${obj.id}_${Date.now()}`,
+                        sourceId: obj.id,
+                        controllerId: obj.controllerId,
+                        eventMatch: 'ON_CAST_SPELL',
+                        triggerCondition: (s: any, ev: any, t: any) => {
+                            const o = s.battlefield.find((p: any) => p.id === t.sourceId);
+                            if (!o) return false;
+                            const currentStats = LayerProcessor.getEffectiveStats(o, s);
+                            const spent = (ev.data?.card?.paidManaValue) || 0;
+                            return spent > currentStats.power || spent > currentStats.toughness;
+                        },
+                        effects: [{ type: 'AddCounters', amount: 1, value: '+1/+1', targetMapping: 'SELF' }]
+                    } as any);
+                }
+            }
+        });
+    }
+
+    // --- SYSTEM RECOGNIZED KEYWORDS: REPARTEE ---
+    if (event.type === 'ON_CAST_INSTANT_SORCERY' && event.playerId) {
+        const stackObj = event.data?.stackSnapshot;
+        const targets = stackObj?.targets || [];
+        const targetsCreature = targets.some((tid: string) => {
+            const obj = state.battlefield.find(o => o.id === tid);
+            return obj && obj.definition.types.some(t => t.toLowerCase() === 'creature');
+        });
+
+        if (targetsCreature) {
+            state.battlefield.forEach(obj => {
+                if (obj.controllerId !== event.playerId) return;
+                const keywords = obj.definition.keywords || [];
+                if (keywords.includes('Repartee')) {
+                    const logic = oracle.getCard(obj.definition.name);
+                    const reparteeAbility = (logic as any)?.abilities?.find((a: any) => a.id?.includes('repartee') || a.triggerEvent === 'ON_REPARTEE' || a.name === 'Repartee');
+                    
+                    if (reparteeAbility) {
+                        matchingTriggers.push({
+                            ...reparteeAbility,
+                            id: `repartee_gen_${obj.id}_${Date.now()}`,
+                            sourceId: obj.id,
+                            controllerId: obj.controllerId,
+                        } as any);
+                    }
+                }
+            });
+        }
+    }
+
+    // --- SYSTEM RECOGNIZED KEYWORDS: LANDFALL ---
+    if (event.type === 'ON_ETB' && event.data?.object) {
+        const obj = event.data.object;
+        if (obj.definition.types.some((t: string) => t.toLowerCase() === 'land')) {
+            state.battlefield.forEach(p => {
+                if (p.controllerId === obj.controllerId) {
+                    const logic = oracle.getCard(p.definition.name);
+                    const landfallAbility = (logic as any)?.abilities?.find((a: any) => a.triggerEvent === 'ON_LANDFALL' || a.name === 'Landfall');
+                    if (landfallAbility) {
+                        matchingTriggers.push({
+                            ...landfallAbility,
+                            id: `landfall_${p.id}_${Date.now()}`,
+                            sourceId: p.id,
+                            controllerId: p.controllerId
+                        } as any);
+                    }
+                }
+            });
+        }
+    }
+
+    // --- SYSTEM RECOGNIZED KEYWORDS: OPUS ---
+    if (event.type === 'ON_CAST_INSTANT_SORCERY' && event.playerId) {
+        state.battlefield.forEach(p => {
+            if (p.controllerId === event.playerId) {
+                const logic = oracle.getCard(p.definition.name);
+                const opusAbility = (logic as any)?.abilities?.find((a: any) => a.triggerEvent === 'ON_OPUS' || a.name === 'Opus');
+                if (opusAbility) {
+                    matchingTriggers.push({
+                        ...opusAbility,
+                        id: `opus_${p.id}_${Date.now()}`,
+                        sourceId: p.id,
+                        controllerId: p.controllerId,
+                        eventData: { spent: event.data?.card?.paidManaValue || 0 }
+                    } as any);
+                }
+            }
+        });
+    }
+
     if (matchingTriggers.length === 0) return;
 
     // 2. Queue all triggers in pending state
@@ -152,6 +325,13 @@ export class TriggerProcessor {
 
     // 3. Process the queue in APNAP order
     this.processPendingTriggers(state, log);
+
+    // 4. Cleanup single-shot delayed triggers (Rule 603.7)
+    matchingTriggers.forEach(t => {
+        if ((t as any).isDelayed && !(t as any).duration.startsWith('UNTIL')) {
+             state.ruleRegistry.triggeredAbilities = state.ruleRegistry.triggeredAbilities.filter(orig => orig.id !== t.id);
+        }
+    });
   }
 
   /**
@@ -197,6 +377,44 @@ export class TriggerProcessor {
               return;
           }
       }
+  }
+
+  /**
+   * Rule 603.7: Delayed Triggered Abilities
+   * Created by effects during resolution. Usually triggers only once.
+   */
+  public static createDelayedTrigger(
+    state: GameState, 
+    effect: any, 
+    sourceId: GameObjectId, 
+    controllerId: PlayerId, 
+    log: (msg: string) => void
+  ) {
+    const triggerId = `delayed_${sourceId}_${Date.now()}`;
+    const delayedTrigger: any = {
+      id: triggerId,
+      sourceId,
+      controllerId,
+      eventMatch: effect.eventMatch,
+      effects: effect.effects,
+      duration: effect.duration || 'UNTIL_END_OF_TURN',
+      triggerCondition: effect.triggerCondition,
+      isDelayed: true,
+      activeZone: 'Battlefield', // Virtual zone for registry
+      type: AbilityType.Triggered
+    };
+
+    if (!state.ruleRegistry.triggeredAbilities) state.ruleRegistry.triggeredAbilities = [];
+    state.ruleRegistry.triggeredAbilities.push(delayedTrigger);
+    log(`[DELAYED TRIGGER] Registered: triggered on ${effect.eventMatch}.`);
+  }
+
+  public static cleanupDelayedTriggers(state: GameState, log: (m: string) => void) {
+      if (!state.ruleRegistry.triggeredAbilities) return;
+      const initialCount = state.ruleRegistry.triggeredAbilities.length;
+      state.ruleRegistry.triggeredAbilities = state.ruleRegistry.triggeredAbilities.filter(t => !(t as any).isDelayed || (t as any).duration !== 'UNTIL_END_OF_TURN');
+      const removedCount = initialCount - state.ruleRegistry.triggeredAbilities.length;
+      if (removedCount > 0) log(`[CLEANUP] Removed ${removedCount} expired delayed triggers.`);
   }
 
   private static createStackObject(state: GameState, trigger: TriggeredAbility, event: GameEvent, log: (msg: string) => void): any {

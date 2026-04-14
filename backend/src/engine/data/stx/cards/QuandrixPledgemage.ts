@@ -1,31 +1,19 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, TriggerEvent, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const QuandrixPledgemage: ImplementableCard = {
+export const QuandrixPledgemage: CardDefinition = {
     name: 'Quandrix Pledgemage',
-    manaCost: '{1}{GU}{GU}',
-    type_line: 'Creature — Merfolk Druid',
+    manaCost: '{1}{G/U}{G/U}',
+    colors: ['G', 'U'],
     types: ['Creature'],
-    subtypes: ['Merfolk', 'Druid'],
+    subtypes: ['Human', 'Wizard'],
     power: '2',
     toughness: '2',
-    keywords: [],
-    colors: ['green', 'blue'],
-    supertypes: [],
     oracleText: 'Magecraft — Whenever you cast or copy an instant or sorcery spell, put a +1/+1 counter on Quandrix Pledgemage.',
     abilities: [
         {
-            id: 'quandrix_pledgemage_magecraft',
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
-            triggerEvent: TriggerEvent.Magecraft,
-            effects: [
-                {
-                    type: EffectType.AddCounters,
-                    targetMapping: 'SELF',
-                    amount: 1,
-                    value: '+1/+1'
-                }
-            ]
+            eventMatch: TriggerEvent.Magecraft,
+            effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Self }]
         }
     ]
-};
+  };

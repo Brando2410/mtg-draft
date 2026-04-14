@@ -31,6 +31,12 @@ export class ContinuousEffectHandler {
             duration.type = DurationType.Static;
         } else if (dStr === 'PERMANENT') {
             duration.type = DurationType.Permanent;
+        } else if (dStr === 'UNTILYOURNEXTTURN' || dStr === 'UNTIL_YOUR_NEXT_TURN') {
+            duration.type = DurationType.UntilYourNextTurn;
+            duration.untilTurnOfPlayerId = controllerId;
+        } else if (dStr === 'UNTIL_END_OF_YOUR_NEXT_TURN' || dStr === 'UNTILENDOFYOURNEXTTURN') {
+            duration.type = DurationType.UntilEndOfYourNextTurn;
+            duration.untilTurnOfPlayerId = controllerId;
         } else {
             duration.type = DurationType.Static;
         }
@@ -104,6 +110,7 @@ export class ContinuousEffectHandler {
         colorsToAdd: (effect as any).colorsToAdd,
         colorSet: (effect as any).colorSet,
         removeAllAbilities: effect.removeAllAbilities,
+        playerModifier: (effect as any).playerModifier,
         restrictions: (effect as any).restrictions ? (effect as any).restrictions.map((r: any) => ({
             id: `rest_${effId}`,
             sourceId,

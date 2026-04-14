@@ -1,30 +1,29 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const LeechFanatic: ImplementableCard = {
+export const LeechFanatic: CardDefinition = {
     name: 'Leech Fanatic',
     manaCost: '{1}{B}',
-    type_line: 'Creature — Human Warlock',
+    colors: ['B'],
     types: ['Creature'],
     subtypes: ['Human', 'Warlock'],
-    power: '2',
-    toughness: '2',
-    keywords: [],
-    colors: ['black'],
-    supertypes: [],
-    oracleText: 'During your turn, Leech Fanatic has lifelink.',
+    power: "2",
+    toughness: "2",
+    oracleText: 'Whenever Leech Fanatic attacks, you may pay 2 life. If you do, it gains lifelink until end of turn.',
     abilities: [
         {
-            id: 'leech_fanatic_lifelink',
-            type: AbilityType.Static,
-            activeZone: ZoneRequirement.Battlefield,
-            effects: [
-                {
-                    type: EffectType.ApplyContinuousEffect,
-                    targetMapping: 'SELF',
-                    condition: 'IS_YOUR_TURN',
-                    abilitiesToAdd: ['Lifelink']
-                }
-            ]
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.Attack,
+            condition: 'SelfAttacking',
+            effects: [{
+                type: EffectType.Choice,
+                label: "Pay 2 life for lifelink?",
+                optional: true,
+                choices: [{
+                    label: "Pay 2 Life",
+                    costs: [{ type: 'Life', value: 2 }],
+                    effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Self, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Lifelink'] }]
+                }]
+            }]
         }
     ]
-};
+  };

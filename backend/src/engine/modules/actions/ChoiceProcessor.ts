@@ -81,6 +81,8 @@ export class ChoiceProcessor {
 
         // Resolve all effects in the batch
         if (allEffects.length > 0) {
+            const discardCount = allEffects.filter(e => e.type === 'MoveToZone' && e.isDiscard).length;
+            if (discardCount > 0) state.turnState.lastDiscardedCount = discardCount;
             EffectProcessor.resolveEffects(state, allEffects, sourceId as string, [], log, 0, action.data?.stackObj, action.data?.parentContext);
         }
 
@@ -488,20 +490,45 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         log(`[DISCARD-DEBUG] Is nextPlayerIds present? ${!!nextPlayerIds}. Length: ${nextPlayerIds.length}`);
         
         if (nextPlayerIds.length > 0) {
-            log(`[DISCARD-DEBUG] Advancing to next player: ${nextPlayerIds[0]}`);
+            log(`[CHOICE-SEQUENCE] Advancing to next player: ${nextPlayerIds[0]}`);
             const discardAmount = action.data?.discardAmount || action.data?.stackObj?.data?.discardAmount;
             const failureEffects = action.data?.onFailureEffects || action.data?.stackObj?.data?.onFailureEffects;
-            state.pendingAction = ChoiceGenerator.createDiscardChoice(
-                state, 
-                nextPlayerIds, 
-                sourceId as string, 
-                discardAmount, 
-                action.data.label, 
-                action.data.stackObj, 
-                action.data.parentContext, 
-                failureEffects,
-                log
-            );
+            
+            if (action.type === 'RESOLUTION_CHOICE' && action.data?.choices && !action.data.LookingCards) {
+                 // Sequenced Modal Choice
+                 state.pendingAction = ChoiceGenerator.createModalChoice(
+                    {
+                        label: action.data.label,
+                        playerId: nextPlayerIds[0],
+                        sourceId: sourceId as string,
+                        actionType: action.type,
+                        hideUndo: action.data.hideUndo,
+                        stackObj: action.data.stackObj,
+                        parentContext: action.data.parentContext
+                    },
+                    action.data.choices
+                 );
+                 if (state.pendingAction && state.pendingAction.data) {
+                    state.pendingAction.data.nextPlayerIds = nextPlayerIds.slice(1);
+                 }
+            } else if (action.data?.isSacrificeSequence) {
+                 // Sequenced Sacrifice Choice
+                 const { PermanentHandler } = require('../effects/handlers/PermanentHandler');
+                 PermanentHandler.handleSacrifice(state, nextPlayerIds, sourceId as string, log, action.data.stackObj, action.data.parentContext, { label: action.data.label });
+            } else {
+                 // Sequenced Discard Choice
+                 state.pendingAction = ChoiceGenerator.createDiscardChoice(
+                    state, 
+                    nextPlayerIds, 
+                    sourceId as string, 
+                    discardAmount, 
+                    action.data.label, 
+                    action.data.stackObj, 
+                    action.data.parentContext, 
+                    failureEffects,
+                    log
+                );
+            }
         }
     }
     
@@ -514,7 +541,9 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                    const types = card.definition.types.map(t => (t as string).toLowerCase());
                    const isPermanent = types.includes('creature') || types.includes('artifact') || types.includes('enchantment') || types.includes('planeswalker');
                    
-                   if (isPermanent) {
+                   if (card.zone !== Zone.Stack) {
+                       log(`[STACK] Spell card ${card.definition.name} already moved to ${card.zone}. Skipping cleanup.`);
+                   } else if (isPermanent) {
                        ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId, log);
                    } else {
                        ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId, log);
@@ -530,6 +559,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     } else {
        state.priorityPlayerId = (state as any).pendingAction.playerId || null;
     }
+
     return true;
   }
 

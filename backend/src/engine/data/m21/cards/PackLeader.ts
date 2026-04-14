@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, DurationType } from '@shared/engine_types';
 
 export const PackLeader: Record<string, ImplementableCard> = {
     "Pack Leader": {
@@ -37,7 +37,7 @@ export const PackLeader: Record<string, ImplementableCard> = {
                     damageType: 'CombatDamage',
                     targetMapping: 'MATCHING_PERMANENTS_YOU_CONTROL',
                     restrictions: ['Dog'],
-                    duration: 'UntilEndOfTurn'
+                    duration: DurationType.UntilEndOfTurn
                 }]
             }
         ]

@@ -1,50 +1,31 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, TriggerEvent, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const DuelingCoach: ImplementableCard = {
+export const DuelingCoach: CardDefinition = {
     name: 'Dueling Coach',
     manaCost: '{3}{W}',
-    type_line: 'Creature — Human Monk',
+    colors: ['W'],
     types: ['Creature'],
-    subtypes: ['Human', 'Monk'],
-    power: '2',
-    toughness: '2',
-    keywords: [],
-    colors: ['white'],
-    supertypes: [],
-    oracleText: 'When Dueling Coach enters, put a +1/+1 counter on target creature. {4}{W}, {T}: Put a +1/+1 counter on each creature you control with a +1/+1 counter on it.',
+    subtypes: ['Human', 'Wizard'],
+    power: "2",
+    toughness: "2",
+    oracleText: 'When Dueling Coach enters the battlefield, put a +1/+1 counter on target creature.\n{4}, {T}: Put a +1/+1 counter on each creature you control with a +1/+1 counter on it.',
     abilities: [
         {
-            id: 'dueling_coach_etb',
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
-            triggerEvent: TriggerEvent.EnterBattlefield,
-            effects: [
-                {
-                    type: EffectType.AddCounters,
-                    targetMapping: 'TARGET',
-                    amount: 1,
-                    value: '+1/+1'
-                }
-            ],
-            targetDefinition: {
-                type: 'Permanent',
-                count: 1,
-                restrictions: ['Creature']
-            }
+            eventMatch: TriggerEvent.EnterBattlefield,
+            targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
+            effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Target1 }]
         },
         {
-            id: 'dueling_coach_activated',
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
-            costs: [{ type: 'Mana', value: '{4}{W}' }, { type: 'Tap' }],
-            effects: [
-                {
-                    type: EffectType.AddCounters,
-                    targetMapping: 'CREATURES_YOU_CONTROL_WITH_COUNTER',
-                    amount: 1,
-                    value: '+1/+1'
-                }
-            ]
+            costs: [{ type: 'Mana', value: '{4}' }, { type: 'Tap' }],
+            effects: [{
+                type: EffectType.AddCounters,
+                counterType: 'P1P1',
+                amount: 1,
+                targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
+                restrictions: [{ type: 'HasCounter', value: 'P1P1' }]
+            }]
         }
     ]
-};
+  };

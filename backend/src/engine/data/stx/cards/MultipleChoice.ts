@@ -1,145 +1,50 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const MultipleChoice: ImplementableCard = {
+export const MultipleChoice: CardDefinition = {
     name: 'Multiple Choice',
     manaCost: '{X}{U}',
-    type_line: 'Sorcery',
+    colors: ['U'],
     types: ['Sorcery'],
-    subtypes: [],
-    power: undefined,
-    toughness: undefined,
-    keywords: [],
-    colors: ['blue'],
-    supertypes: [],
-    oracleText: 'Choose one —\n• If X is 1, scry 1.\n• If X is 2, return target creature to its owner’s hand.\n• If X is 3, create a 4/4 blue Elemental creature token.\n• If X is 4 or more, scry 1, then return target creature to its owner’s hand, then create a 4/4 blue Elemental creature token.',
+    oracleText: 'If X is 1, return target creature to its owner\'s hand. If X is 2, create a 2/2 blue Drake creature token with flying. If X is 3, create a 4/4 blue and red Elemental creature token. If X is 4 or more, do all of the above and draw three cards.',
     abilities: [
         {
-            id: 'multiple_choice_main',
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
-            effects: [
-                // X = 1 or X >= 4: Scry 1 then Draw
-                {
-                    type: EffectType.Scry,
-                    condition: 'X_EQUALS:1',
-                    fromTop: 1,
-                    targetMapping: 'CONTROLLER'
-                },
-                {
-                    type: EffectType.DrawCards,
-                    condition: 'X_EQUALS:1',
-                    amount: 1,
-                    targetMapping: 'CONTROLLER'
-                },
-                {
-                    type: EffectType.Scry,
-                    condition: 'X_GE:4',
-                    fromTop: 1,
-                    targetMapping: 'CONTROLLER'
-                },
-                {
-                    type: EffectType.DrawCards,
-                    condition: 'X_GE:4',
-                    amount: 1,
-                    targetMapping: 'CONTROLLER'
-                },
-
-                // X = 2 or X >= 4: May choose player, they return creature
-                {
-                    type: EffectType.Choice,
-                    condition: 'X_EQUALS:2',
-                    label: "May choose a player (X=2)",
-                    choices: [
-                        {
-                            label: "Opponent",
-                            effects: [{
+            effects: [{
+                type: EffectType.Choice,
+                choices: [
+                    {
+                        label: "X=1: Return Creature",
+                        condition: 'XIs1',
+                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
+                        effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
+                    },
+                    {
+                        label: "X=2: Create 2/2 Drake",
+                        condition: 'XIs2',
+                        effects: [{ type: EffectType.CreateToken, tokenBlueprint: { name: 'Drake', power: '2', toughness: '2', colors: ['U'], types: ['Creature', 'Token'], subtypes: ['Drake'], keywords: ['Flying'] }, amount: 1 }]
+                    },
+                    {
+                        label: "X=3: Create 4/4 Elemental",
+                        condition: 'XIs3',
+                        effects: [{ type: EffectType.CreateToken, tokenBlueprint: { name: 'Elemental', power: '4', toughness: '4', colors: ['U', 'R'], types: ['Creature', 'Token'], subtypes: ['Elemental'] }, amount: 1 }]
+                    },
+                    {
+                        label: "X>=4: All Above + Draw 3",
+                        condition: 'XIs4OrMore',
+                        effects: [
+                            {
                                 type: EffectType.Choice,
-                                targetMapping: 'OPPONENT_1',
-                                targetIdMapping: 'TARGET_1_BATTLEFIELD',
-                                label: "Opponent: Choose a creature you control to return to its owner's hand",
-                                restrictions: ['Creature'],
-                                effects: [{ type: EffectType.ReturnToHand, targetMapping: 'SELECTED_CARD' }]
-                            }]
-                        },
-                        {
-                            label: "Self",
-                            effects: [{
-                                type: EffectType.Choice,
-                                targetMapping: 'CONTROLLER',
-                                targetIdMapping: 'CONTROLLER_BATTLEFIELD',
-                                label: "Choose a creature you control to return to its owner's hand",
-                                restrictions: ['Creature'],
-                                effects: [{ type: EffectType.ReturnToHand, targetMapping: 'SELECTED_CARD' }]
-                            }]
-                        },
-                        {
-                            label: "None",
-                            effects: []
-                        }
-                    ]
-                } as any,
-                {
-                    type: EffectType.Choice,
-                    condition: 'X_GE:4',
-                    label: "May choose a player (X>=4)",
-                    choices: [
-                        {
-                            label: "Opponent",
-                            effects: [{
-                                type: EffectType.Choice,
-                                targetMapping: 'OPPONENT_1',
-                                targetIdMapping: 'TARGET_1_BATTLEFIELD',
-                                label: "Opponent: Choose a creature you control to return to its owner's hand",
-                                restrictions: ['Creature'],
-                                effects: [{ type: EffectType.ReturnToHand, targetMapping: 'SELECTED_CARD' }]
-                            }]
-                        },
-                        {
-                            label: "Self",
-                            effects: [{
-                                type: EffectType.Choice,
-                                targetMapping: 'CONTROLLER',
-                                targetIdMapping: 'CONTROLLER_BATTLEFIELD',
-                                label: "Choose a creature you control to return to its owner's hand",
-                                restrictions: ['Creature'],
-                                effects: [{ type: EffectType.ReturnToHand, targetMapping: 'SELECTED_CARD' }]
-                            }]
-                        },
-                        {
-                            label: "None",
-                            effects: []
-                        }
-                    ]
-                } as any,
-
-                // X = 3 or X >= 4: Create Elemental
-                {
-                    type: EffectType.CreateToken,
-                    condition: 'X_EQUALS:3',
-                    amount: 1,
-                    tokenBlueprint: {
-                        name: 'Elemental',
-                        colors: ['blue', 'red'],
-                        types: ['Creature'],
-                        subtypes: ['Elemental'],
-                        power: '4',
-                        toughness: '4'
+                                label: "Target creature to return hand (X>=4)",
+                                targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
+                                effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
+                            },
+                            { type: EffectType.CreateToken, tokenBlueprint: { name: 'Drake', power: '2', toughness: '2', colors: ['U'], types: ['Creature', 'Token'], subtypes: ['Drake'], keywords: ['Flying'] }, amount: 1 },
+                            { type: EffectType.CreateToken, tokenBlueprint: { name: 'Elemental', power: '4', toughness: '4', colors: ['U', 'R'], types: ['Creature', 'Token'], subtypes: ['Elemental'] }, amount: 1 },
+                            { type: EffectType.DrawCards, amount: 3, targetMapping: TargetMapping.Controller }
+                        ]
                     }
-                },
-                {
-                    type: EffectType.CreateToken,
-                    condition: 'X_GE:4',
-                    amount: 1,
-                    tokenBlueprint: {
-                        name: 'Elemental',
-                        colors: ['blue', 'red'],
-                        types: ['Creature'],
-                        subtypes: ['Elemental'],
-                        power: '4',
-                        toughness: '4'
-                    }
-                }
-            ]
+                ]
+            }]
         }
     ]
-};
+  };

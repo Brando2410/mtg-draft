@@ -151,20 +151,24 @@ export class ChoiceGenerator {
             return this.createDiscardChoice(state, nextPlayerIds, sourceId, amount, label, stackObj, parentContext, failureEffects, log);
         }
 
-        const discardAmount = Math.min(player.hand.length, (typeof amount === 'number' ? amount : 1));
+        const isAny = amount === 'ANY' || amount === 'Any';
+        const isAll = amount === 'ALL' || amount === 'All';
+        const discardAmount = isAll ? player.hand.length : (typeof amount === 'number' ? Math.min(player.hand.length, amount) : (isAny ? player.hand.length : 1));
+        const minChoices = isAny ? 0 : discardAmount;
+        const maxChoices = (isAny || isAll) ? player.hand.length : discardAmount;
 
         const finalAction = this.createCardChoice(state, player.hand, {
-            label: `${label} (${discardAmount})`,
+            label: isAny ? `${label} (Any number)` : `${label} (${discardAmount})`,
             playerId: currentPlayerId,
             sourceId,
-            optional: false,
+            optional: isAny,
             actionType: ActionType.ResolutionChoice,
             stackObj: {
                 ...stackObj,
                 data: {
                     ...(stackObj?.data || {}),
-                    minChoices: discardAmount,
-                    maxChoices: discardAmount,
+                    minChoices: minChoices,
+                    maxChoices: maxChoices,
                     onFailureEffects: onFailureEffects // Preserve for next steps
                 }
             },

@@ -1,33 +1,25 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType, TargetType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const Fracture: ImplementableCard = {
-    name: 'Fracture',
-    manaCost: '{W}{B}',
-    type_line: 'Instant',
-    types: ['Instant'],
-    subtypes: [],
-    power: '0',
-    toughness: '0',
-    keywords: [],
-    colors: ['white', 'black'],
-    supertypes: [],
-    oracleText: 'Destroy target artifact, enchantment, or planeswalker.',
-    abilities: [
-        {
-            id: 'fracture_spell',
-            type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Hand,
-            effects: [
-                {
-                    type: EffectType.Destroy,
-                    targetMapping: 'TARGET'
-                }
-            ],
-            targetDefinition: {
-                type: TargetType.Permanent,
-                count: 1,
-                restrictions: ['Artifact', 'Enchantment', 'Planeswalker']
+export const Fracture: CardDefinition = {
+        name: 'Fracture',
+        manaCost: '{W}{B}',
+        colors: ['W', 'B'],
+        types: ['Instant'],
+        oracleText: "Destroy target artifact, enchantment, or planeswalker.",
+        abilities: [
+            {
+                type: AbilityType.Spell,
+                targetDefinition: {
+                    type: TargetType.Permanent,
+                    count: 1,
+                    restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Artifact' }, { type: 'Type', value: 'Enchantment' }, { type: 'Type', value: 'Planeswalker' }] }]
+                },
+                effects: [
+                    {
+                        type: EffectType.Destroy,
+                        targetMapping: TargetMapping.Target1
+                    }
+                ]
             }
-        }
-    ]
-};
+        ]
+    };

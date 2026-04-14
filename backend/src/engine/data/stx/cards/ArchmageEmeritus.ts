@@ -1,30 +1,25 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, TriggerEvent, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const ArchmageEmeritus: ImplementableCard = {
+export const ArchmageEmeritus: CardDefinition = {
     name: 'Archmage Emeritus',
     manaCost: '{2}{U}{U}',
-    type_line: 'Creature — Human Wizard',
+    colors: ['U'],
     types: ['Creature'],
     subtypes: ['Human', 'Wizard'],
     power: '2',
     toughness: '2',
-    keywords: [],
-    colors: ['blue'],
-    supertypes: [],
-    oracleText: 'Magecraft — Whenever you cast or copy an instant or sorcery spell, draw a card.',
+    oracleText: "Magecraft — Whenever you cast or copy an instant or sorcery spell, draw a card.",
     abilities: [
         {
-            id: 'archmage_emeritus_magecraft',
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
-            triggerEvent: TriggerEvent.Magecraft,
+            eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.DrawCards,
-                    amount: 1,
-                    targetMapping: 'CONTROLLER'
+                    targetMapping: TargetMapping.Controller,
+                    amount: 1
                 }
             ]
         }
     ]
-};
+  };

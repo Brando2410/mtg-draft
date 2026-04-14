@@ -1,4 +1,4 @@
-import { GameState, GameObjectId, PlayerId, ActionType, ContinuousEffect, EffectDefinition, Zone, EffectType } from '@shared/engine_types';
+import { GameState, GameObjectId, PlayerId, ActionType, ContinuousEffect, EffectDefinition, Zone, EffectType, DurationType } from '@shared/engine_types';
 import { ActionProcessor } from '../../actions/ActionProcessor';
 import { TriggerProcessor } from '../TriggerProcessor';
 
@@ -69,6 +69,19 @@ export class ControlEffectHandler {
                 }
             }
 
+            if (effect.abilitiesToAdd && copy.card) {
+                copy.card.definition = {
+                    ...copy.card.definition,
+                    abilities: [...(copy.card.definition.abilities || []), ...effect.abilitiesToAdd]
+                };
+            }
+            if (effect.keywordsToAdd && copy.card) {
+                copy.card.definition = {
+                    ...copy.card.definition,
+                    keywords: [...(copy.card.definition.keywords || []), ...effect.keywordsToAdd]
+                };
+            }
+
             state.stack.push(copy);
             log(`[COPY] Created copy of ${stackObj.card?.definition.name || 'spell'}.`);
 
@@ -125,7 +138,7 @@ export class ControlEffectHandler {
             eventMatch: effect.eventMatch || effect.on,
             activeZone: 'Any',
             targetIds: targets, // Store targets for condition matching
-            duration: { type: (effect.duration || 'UNTIL_END_OF_TURN') as any },
+            duration: { type: (effect.duration || DurationType.UntilEndOfTurn) as any },
             ...effect
         });
         break;
@@ -138,7 +151,7 @@ export class ControlEffectHandler {
             controllerId,
             damageType: effect.damageType || 'CombatDamage',
             targetMapping: effect.targetMapping,
-            duration: effect.duration || 'UntilEndOfTurn'
+            duration: effect.duration || DurationType.UntilEndOfTurn
         });
         break;
 
@@ -157,7 +170,8 @@ export class ControlEffectHandler {
         targets.forEach(tid => {
             const p = state.players[tid as PlayerId];
             if (p) {
-                const res = MP.parseManaCost(`{${effect.value || effect.amount || 'C'}}`);
+                const manaStr = effect.value || effect.amount || 'C';
+                const res = MP.parseManaCost(manaStr.startsWith('{') ? manaStr : `{${manaStr}}`);
                 
                 if (effect.manaRestrictions) {
                     if (!p.restrictedMana) p.restrictedMana = [];

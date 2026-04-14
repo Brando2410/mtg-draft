@@ -1,0 +1,23 @@
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+
+export const RiseofExtus: CardDefinition = {
+    name: 'Rise of Extus',
+    manaCost: '{4}{B/G}{B/G}',
+    colors: ['B', 'G'],
+    types: ['Sorcery'],
+    oracleText: 'Exile target creature or planeswalker. Learn.',
+    abilities: [
+      {
+        type: AbilityType.Spell,
+        targetDefinition: {
+            count: 1,
+            type: TargetType.Permanent,
+            restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Type', value: 'Planeswalker' }] }]
+        },
+        effects: [
+            { type: EffectType.Exile, targetMapping: TargetMapping.Target1 },
+            { type: EffectType.Learn }
+        ]
+      }
+    ]
+  };

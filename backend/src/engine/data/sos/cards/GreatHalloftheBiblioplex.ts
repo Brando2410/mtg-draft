@@ -1,0 +1,13 @@
+import { CardDefinition } from '@shared/engine_types';
+
+export const GreatHalloftheBiblioplex: CardDefinition = {
+    "name": "Great Hall of the Biblioplex",
+    "manaCost": "",
+    "colors": [],
+    "types": [
+        "Land"
+    ],
+    "subtypes": [],
+    "oracleText": "{T}: Add {C}.\n{T}, Pay 1 life: Add one mana of any color. Spend this mana only to cast an instant or sorcery spell.\n{5}: If this land isn't a creature, it becomes a 2/4 Wizard creature with \"Whenever you cast an instant or sorcery spell, this creature gets +1/+0 until end of turn.\" It's still a land.",
+    "abilities": []
+};

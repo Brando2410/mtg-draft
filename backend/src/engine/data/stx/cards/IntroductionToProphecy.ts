@@ -1,34 +1,19 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const IntroductionToProphecy: ImplementableCard = {
+export const IntroductiontoProphecy: CardDefinition = {
     name: 'Introduction to Prophecy',
     manaCost: '{3}',
-    type_line: 'Sorcery — Lesson',
+    colors: [],
     types: ['Sorcery'],
     subtypes: ['Lesson'],
-    power: '0',
-    toughness: '0',
-    keywords: [],
-    colors: [],
-    supertypes: [],
     oracleText: 'Scry 2, then draw a card.',
     abilities: [
-        {
-            id: 'introduction_to_prophecy_spell',
-            type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
-            effects: [
-                {
-                    type: EffectType.Scry,
-                    targetMapping: 'CONTROLLER',
-                    amount: 2
-                },
-                {
-                    type: EffectType.DrawCards,
-                    targetMapping: 'CONTROLLER',
-                    amount: 1
-                }
-            ]
-        }
+      {
+        type: AbilityType.Spell,
+        effects: [
+          { type: EffectType.Scry, amount: 2 },
+          { type: EffectType.DrawCards, amount: 1 }
+        ]
+      }
     ]
-};
+  };

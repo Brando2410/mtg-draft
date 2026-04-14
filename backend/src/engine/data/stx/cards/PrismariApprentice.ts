@@ -1,38 +1,27 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, TriggerEvent, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const PrismariApprentice: ImplementableCard = {
-    name: 'Prismari Apprentice',
-    manaCost: '{U}{R}',
-    type_line: 'Creature — Human Shaman',
-    types: ['Creature'],
-    subtypes: ['Human', 'Shaman'],
-    power: '2',
-    toughness: '2',
-    keywords: [],
-    colors: ['blue', 'red'],
-    supertypes: [],
-    oracleText: 'Magecraft — Whenever you cast or copy an instant or sorcery spell, Prismari Apprentice can’t be blocked this turn. If that spell has mana value 5 or greater, put a +1/+1 counter on Prismari Apprentice.',
+export const PrismariApprentice: CardDefinition = {
+    name: "Prismari Apprentice",
+    manaCost: "{U}{R}",
+    colors: ["U", "R"],
+    types: ["Creature"],
+    subtypes: ["Human", "Shaman"], // Scryfall: Human Shaman
+    power: "2",
+    toughness: "2",
+    oracleText: "Magecraft — Whenever you cast or copy an instant or sorcery spell, Prismari Apprentice can't be blocked this turn. Then if that spell has mana value 5 or greater, put a +1/+1 counter on Prismari Apprentice.",
     abilities: [
         {
-            id: 'prismari_apprentice_magecraft',
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
-            triggerEvent: TriggerEvent.Magecraft,
+            eventMatch: TriggerEvent.Magecraft,
             effects: [
+                { type: EffectType.ApplyContinuousEffect, abilitiesToAdd: ['CannotBeBlocked'], duration: 'UNTIL_END_OF_TURN', targetMapping: TargetMapping.Self },
                 {
-                    type: EffectType.ApplyContinuousEffect,
-                    targetMapping: 'SELF',
-                    duration: 'UNTIL_END_OF_TURN',
-                    abilitiesToAdd: ['CannotBeBlocked']
-                },
-                {
-                    type: EffectType.AddCounters,
-                    targetMapping: 'SELF',
-                    amount: 1,
-                    value: '+1/+1',
-                    condition: 'EVENT_MANA_VALUE_GE:5'
+                    type: EffectType.Choice,
+                    label: "Add +1/+1 counter if MV >= 5",
+                    condition: "TRIGGER_EVENT_SOURCE_MV_GE_5",
+                    effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Self }]
                 }
             ]
         }
     ]
-};
+  };

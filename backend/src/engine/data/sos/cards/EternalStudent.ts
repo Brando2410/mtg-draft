@@ -1,0 +1,42 @@
+import { CardDefinition, AbilityType, EffectType, Zone } from '@shared/engine_types';
+
+export const EternalStudent: CardDefinition = {
+    "name": "Eternal Student",
+    "manaCost": "{3}{B}",
+    "colors": [
+        "B"
+    ],
+    "types": [
+        "Creature"
+    ],
+    "subtypes": [
+        "Zombie",
+        "Warlock"
+    ],
+    "oracleText": "{1}{B}, Exile this card from your graveyard: Create two 1/1 white and black Inkling creature tokens with flying.",
+    "abilities": [
+        {
+            type: AbilityType.Activated,
+            manaCost: "{1}{B}",
+            costs: [{ type: 'ExileSelf' }],
+            zone: Zone.Graveyard,
+            effects: [
+                {
+                    type: EffectType.CreateToken,
+                    amount: 2,
+                    tokenBlueprint: {
+                        name: "Inkling",
+                        colors: ["W", "B"],
+                        types: ["Creature"],
+                        subtypes: ["Inkling"],
+                        power: "1",
+                        toughness: "1",
+                        keywords: ["Flying"]
+                    }
+                }
+            ]
+        }
+    ],
+    "power": "4",
+    "toughness": "2"
+};

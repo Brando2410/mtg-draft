@@ -61,7 +61,15 @@ export class SpellProcessor {
                 else if (obj.zone === Zone.Exile) permissionType = EffectType.AllowPlayExiled;
                 else if (obj.zone === Zone.Library) permissionType = EffectType.AllowPlayFromTop;
 
-                if (permissionType) {
+                const { LayerProcessor } = require('./../state/LayerProcessor');
+                const stats = LayerProcessor.getEffectiveStats(obj, state);
+                const hasFlashback = obj.zone === Zone.Graveyard && stats.keywords?.includes('Flashback');
+                
+                if (hasFlashback) {
+                    cardToPlay = obj;
+                    (cardToPlay as any).isFlashbackCast = true;
+                    log(`[FLASHBACK] Casting ${obj.definition.name} via flashback.`);
+                } else if (permissionType) {
                     const hasPermission = PriorityProcessor.findPermissionEffect(state, playerId, permissionType, obj.id);
                     if (hasPermission) {
                         cardToPlay = obj;
@@ -75,6 +83,29 @@ export class SpellProcessor {
                 log(`[DEBUG] Player ${playerId} does not control object ${cardInstanceId} (controller: ${obj.controllerId}).`);
             } else {
                 log(`[DEBUG] Object ${cardInstanceId} not found in any zone.`);
+            }
+        }
+
+        if (!cardToPlay) {
+            // 3. Search for Prepared Creatures on Battlefield
+            const preparedObj = state.battlefield.find(o => o.id === cardInstanceId && o.controllerId === playerId && o.isPrepared);
+            if (preparedObj && preparedObj.definition.faces?.[1]) {
+                const face = preparedObj.definition.faces[1];
+                cardToPlay = {
+                    ...preparedObj,
+                    id: `copy_${preparedObj.id}_${Date.now()}`, // It's a copy (Rule 707.12)
+                    definition: face,
+                    zone: Zone.Hand, // Treat as though it's in hand for timing/costing logic
+                    isPreparedCopy: true,
+                    sourceCreatureId: preparedObj.id
+                };
+            }
+        }
+
+        if (!cardToPlay) {
+            // 4. Search for Paradigm Virtual Copies
+            if ((state as any).paradigmCopies && (state as any).paradigmCopies[cardInstanceId]) {
+                cardToPlay = (state as any).paradigmCopies[cardInstanceId];
             }
         }
 
@@ -164,9 +195,13 @@ export class SpellProcessor {
         const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices);
         const hasPreSelectedChoice = (state as any).lastChoiceIndex !== undefined;
 
-        // Step 0.5: Check for X in cost
+        // Step 0.5: Check for X in cost or inherent logic
         const costStr = currentDefinition.manaCost;
-        if (costStr.includes('{X}') && cardToPlay.xValue === undefined) {
+        const needsX = costStr.includes('{X}') || 
+                      (logic as any)?.abilities?.some((a: any) => a.costs?.some((c: any) => c.value === 'X')) ||
+                      (logic as any)?.effects?.some((e: any) => JSON.stringify(e).includes('"X"'));
+
+        if (needsX && cardToPlay.xValue === undefined) {
              const { ActionType } = require('@shared/engine_types');
              state.pendingAction = {
                  type: ActionType.ChooseX,
@@ -225,7 +260,7 @@ export class SpellProcessor {
                     type: 'TARGETING',
                     playerId: playerId,
                     sourceId: cardToPlay.id,
-                    data: { targetDefinition, targets: precalculatedTargets, isSpellCasting: true }
+                    data: { targetDefinition, targets: precalculatedTargets, isSpellCasting: true, xValue: cardToPlay.xValue }
                 };
                 log(`[TARGETING] ${state.players[playerId].name} is selecting targets for ${cardToPlay.definition.name}...`);
                 return true;
@@ -357,7 +392,9 @@ export class SpellProcessor {
             log(`[DEBUG] Playing Teferi, Master of Time: ${JSON.stringify(cardToPlay.definition, null, 2)}`);
         }
         log(`Paying ${totalMana} for ${cardToPlay.definition.name}...`);
-        ManaProcessor.deductManaCost(player, totalMana, state, cardToPlay);
+        const colorsSpent = ManaProcessor.deductManaCost(player, totalMana, state, cardToPlay);
+        (cardToPlay as any).colorsSpent = colorsSpent;
+        (cardToPlay as any).convergeAmount = colorsSpent.length;
 
         // Pay additional costs (CR 601.2h)
         additionalCosts.forEach(cost => {
@@ -378,7 +415,7 @@ export class SpellProcessor {
                     log(`Paid additional cost: Discarded ${obj.definition.name}.`);
                 }
             } else if (cost.type === 'PayLife') {
-                const lifeVal = parseInt(cost.value as string) || 0;
+                const lifeVal = cost.value === 'X' ? (cardToPlay.xValue || 0) : (parseInt(cost.value as string) || 0);
                 player.life -= lifeVal;
                 TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
                 log(`Paid additional cost: ${lifeVal} life.`);
@@ -391,10 +428,22 @@ export class SpellProcessor {
 
         // 5. Remove from current zone and move to stack
         const lastZone = cardToPlay.zone;
-        ActionProcessor.removeFromCurrentZone(state, cardToPlay);
+        if (!(cardToPlay as any).isPreparedCopy) {
+            ActionProcessor.removeFromCurrentZone(state, cardToPlay);
+        }
         cardToPlay.zone = Zone.Stack;
         cardToPlay.lastNonStackZone = lastZone;
         (cardToPlay as any).paidCost = totalMana;
+        (cardToPlay as any).paidManaValue = ManaProcessor.getManaValue(totalMana);
+
+        // --- SOS: UNPREPARE SOURCE ---
+        if ((cardToPlay as any).isPreparedCopy && (cardToPlay as any).sourceCreatureId) {
+            const source = state.battlefield.find(o => o.id === (cardToPlay as any).sourceCreatureId);
+            if (source) {
+                source.isPrepared = false;
+                log(`${source.definition.name} is now unprepared.`);
+            }
+        }
 
         const isInstantOrSorcery = cardToPlay.definition.types.some((t: string) => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery');
         const isFirstInstantOrSorcery = isInstantOrSorcery && !state.turnState.instantOrSorceryCastThisTurn[playerId];
@@ -407,10 +456,10 @@ export class SpellProcessor {
             TriggerProcessor.onEvent(state, { type: 'ON_SECOND_SPELL_CAST', playerId: playerId, data: {} }, log);
         }
 
-        const exileOnResolution = state.ruleRegistry.continuousEffects.some(e => 
+        const exileOnResolution = (state.ruleRegistry.continuousEffects.some(e => 
             e.exileOnMoveToGraveyard && 
             (e.targetIds?.includes(cardToPlay.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === playerId))
-        );
+        )) || (cardToPlay as any).isFlashbackCast;
         
         const stackObj = {
             id: `spell_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
@@ -422,6 +471,7 @@ export class SpellProcessor {
             definition: currentDefinition,
             xValue: cardToPlay.xValue,
             exileOnResolution: exileOnResolution,
+            isFlashbackCast: (cardToPlay as any).isFlashbackCast,
             data: {
                 effects: spellEffects,
                 targetDefinition: targetDefinition,
@@ -450,6 +500,7 @@ export class SpellProcessor {
         TriggerProcessor.onEvent(state, {
             type: 'ON_CAST_SPELL',
             playerId: playerId,
+            amount: (cardToPlay as any).paidManaValue || 0,
             data: {
                 card: cardToPlay,
                 sourceId: cardToPlay.id,
@@ -461,6 +512,7 @@ export class SpellProcessor {
             TriggerProcessor.onEvent(state, { 
                 type: 'ON_CAST_FIRST_INSTANT_SORCERY', 
                 playerId: playerId, 
+                amount: (cardToPlay as any).paidManaValue || 0,
                 data: { 
                     card: cardToPlay, 
                     sourceId: cardToPlay.id,
@@ -473,6 +525,7 @@ export class SpellProcessor {
             TriggerProcessor.onEvent(state, {
                 type: 'ON_CAST_INSTANT_SORCERY',
                 playerId: playerId,
+                amount: (cardToPlay as any).paidManaValue || 0,
                 data: {
                     card: cardToPlay,
                     sourceId: cardToPlay.id,
@@ -504,6 +557,13 @@ export class SpellProcessor {
     public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: any): { totalMana: string, additionalCosts: AbilityCost[] } {
         const currentDef = overrideDefinition || card.definition;
         let baseCost = currentDef.manaCost;
+        // CR 702.34a: Flashback cost applies if cast via Flashback.
+        // During playability checks (isPlayable), isFlashbackCast might not be set yet,
+        // so we infer it from the zone if the keyword is present.
+        const isFlashback = (card as any).isFlashbackCast || (card.zone === Zone.Graveyard && currentDef.keywords?.includes('Flashback'));
+        if (isFlashback && currentDef.flashbackCost) {
+            baseCost = currentDef.flashbackCost;
+        }
         
         // Handle X cost substitution (Rule 107.3)
         if (baseCost.includes('{X}') && card.xValue !== undefined) {

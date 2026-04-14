@@ -1,50 +1,28 @@
-import { ImplementableCard, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const DefendTheCampus: ImplementableCard = {
+export const DefendtheCampus: CardDefinition = {
     name: 'Defend the Campus',
-    manaCost: '{3}{W}',
-    type_line: 'Instant',
+    manaCost: '{1}{W}',
+    colors: ['W'],
     types: ['Instant'],
-    subtypes: [],
-    keywords: [],
-    colors: ['white'],
-    supertypes: [],
-    oracleText: 'Choose one — Creatures you control get +1/+1 until end of turn. or Destroy target creature with power 4 or greater.',
-    abilities: [],
-    effects: [
+    oracleText: 'Choose one —\n• Creatures you control get +1/+1 until end of turn.\n• Destroy target creature with power 4 or greater.',
+    abilities: [
         {
-            type: EffectType.Choice,
-            label: 'Choose one',
-            choices: [
-                {
-                    label: 'Creatures you control get +1/+1 until end of turn',
-                    effects: [
-                        {
-                            type: EffectType.ApplyContinuousEffect,
-                            targetMapping: 'ALL_CREATURES_YOU_CONTROL',
-                            duration: 'UNTIL_END_OF_TURN',
-                            powerModifier: 1,
-                            toughnessModifier: 1
-                        }
-                    ],
-                    costs: []
-                },
-                {
-                    label: 'Destroy target creature with power 4 or greater',
-                    effects: [
-                        {
-                            type: EffectType.Destroy,
-                            targetMapping: 'TARGET'
-                        }
-                    ],
-                    targetDefinition: {
-                        type: 'Permanent',
-                        count: 1,
-                        restrictions: ['Creature', { type: 'Power', value: 4, comparison: 'GreaterOrEqual' }]
+            type: AbilityType.Spell,
+            effects: [{
+                type: EffectType.Choice,
+                choices: [
+                    {
+                        label: "+1/+1 to your creatures",
+                        effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.AllCreaturesYouControl, duration: 'UNTIL_END_OF_TURN', powerModifier: 1, toughnessModifier: 1 }]
                     },
-                    costs: []
-                }
-            ]
+                    {
+                        label: "Destroy target creature P>=4",
+                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Power', comparison: 'GreaterOrEqual', value: 4 }] },
+                        effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
+                    }
+                ]
+            }]
         }
     ]
-} as any;
+  };

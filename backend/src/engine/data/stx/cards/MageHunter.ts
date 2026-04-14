@@ -1,30 +1,19 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType, TriggerEvent } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const MageHunter: ImplementableCard = {
+export const MageHunter: CardDefinition = {
     name: 'Mage Hunter',
     manaCost: '{3}{B}',
-    type_line: 'Creature — Horror',
+    colors: ['B'],
     types: ['Creature'],
     subtypes: ['Horror'],
-    power: '3',
-    toughness: '4',
-    keywords: [],
-    colors: ['black'],
-    supertypes: [],
+    power: "3",
+    toughness: "4",
     oracleText: 'Whenever an opponent casts or copies an instant or sorcery spell, they lose 1 life.',
     abilities: [
         {
-            id: 'mage_hunter_opponent_magecraft',
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
-            triggerEvent: TriggerEvent.MagecraftOpponent,
-            effects: [
-                {
-                    type: EffectType.LoseLife,
-                    targetMapping: 'EVENT_PLAYER', // The opponent who cast/copied the spell
-                    amount: 1
-                }
-            ]
+            eventMatch: TriggerEvent.MagecraftOpponent,
+            effects: [{ type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.TriggerController }]
         }
     ]
-};
+  };

@@ -1,29 +1,27 @@
-import { ImplementableCard, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const BeamingDefiance: ImplementableCard = {
+export const BeamingDefiance: CardDefinition = {
     name: 'Beaming Defiance',
     manaCost: '{1}{W}',
-    type_line: 'Instant',
+    colors: ['W'],
     types: ['Instant'],
-    subtypes: [],
-    keywords: [],
-    colors: ['white'],
-    supertypes: [],
     oracleText: 'Target creature you control gets +2/+2 and gains hexproof until end of turn.',
-    abilities: [],
-    effects: [
+    abilities: [
         {
-            type: EffectType.ApplyContinuousEffect,
-            targetMapping: 'TARGET',
-            duration: 'UNTIL_END_OF_TURN',
-            powerModifier: 2,
-            toughnessModifier: 2,
-            abilitiesToAdd: ['Hexproof']
+            type: AbilityType.Spell,
+            targetDefinition: {
+                count: 1,
+                type: TargetType.Permanent,
+                restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Source', value: 'CONTROLLER' }]
+            },
+            effects: [{
+                type: EffectType.ApplyContinuousEffect,
+                targetMapping: TargetMapping.Target1,
+                duration: 'UNTIL_END_OF_TURN',
+                powerModifier: 2,
+                toughnessModifier: 2,
+                abilitiesToAdd: ['Hexproof']
+            }]
         }
-    ],
-    targetDefinition: {
-        type: 'Permanent',
-        count: 1,
-        restrictions: ['Creature', 'YOU_CONTROL']
-    }
-} as any;
+    ]
+  };

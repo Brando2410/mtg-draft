@@ -77,6 +77,11 @@ export class DamageProcessor {
       log(`[DAMAGE] ${target.definition.name} loses ${amount} loyalty.`);
     } else {
       // Rule 120.3: Damage to creature marks damage
+      const { LayerProcessor } = require('../state/LayerProcessor');
+      const targetStats = LayerProcessor.getEffectiveStats(target, state);
+      const lethalNeeded = Math.max(0, targetStats.toughness - target.damageMarked);
+      state.turnState.lastExcessDamageAmount = Math.max(0, amount - lethalNeeded);
+
       target.damageMarked += amount;
       log(`[DAMAGE] ${target.definition.name} takes ${amount} damage (Total: ${target.damageMarked}).`);
 

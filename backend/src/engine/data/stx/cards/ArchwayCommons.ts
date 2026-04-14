@@ -1,40 +1,42 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, TriggerEvent, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const ArchwayCommons: ImplementableCard = {
+export const ArchwayCommons: CardDefinition = {
     name: 'Archway Commons',
     manaCost: '',
-    type_line: 'Land',
-    types: ['Land'],
-    subtypes: [],
-    keywords: [],
     colors: [],
-    supertypes: [],
-    oracleText: 'Archway Commons enters tapped.\nWhen Archway Commons enters, sacrifice it unless you pay {1}.\n{T}: Add one mana of any color.',
-    entersTapped: true,
+    types: ['Land'],
+    oracleText: 'Archway Commons enters the battlefield tapped.\nWhen Archway Commons enters the battlefield, sacrifice it unless you pay {1}.\n{T}: Add one mana of any color.',
     abilities: [
         {
-            id: 'archway_commons_etb_trigger',
-            type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
-            triggerEvent: TriggerEvent.EnterBattlefield,
-            effects: [
-                {
-                    type: EffectType.Choice,
-                    label: 'Pay {1} or sacrifice Archway Commons?',
-                    choices: [
-                        { label: 'Pay {1}', costs: [{ type: 'Mana', value: '{1}' }], effects: [] },
-                        { label: 'Sacrifice', costs: [], effects: [{ type: EffectType.Sacrifice, targetMapping: 'SELF' }] }
-                    ]
-                } as any
-            ]
+            type: AbilityType.Static,
+            effects: [{ type: EffectType.EntersTapped }]
         },
         {
-            id: 'archway_commons_mana',
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.EnterBattlefield,
+            effects: [{
+                type: EffectType.Choice,
+                label: "Pay {1} or sacrifice Archway Commons?",
+                choices: [
+                    { label: "Pay {1}", costs: [{ type: 'Mana', value: '{1}' }] },
+                    { label: "Sacrifice", effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Self }] }
+                ]
+            }]
+        },
+        {
             type: AbilityType.Activated,
-            isManaAbility: true,
-            activeZone: ZoneRequirement.Battlefield,
             costs: [{ type: 'Tap' }],
-            effects: [{ type: 'AddMana', amount: '{ANY}' }]
+            effects: [{
+                type: EffectType.Choice,
+                label: "Select color",
+                choices: [
+                    { label: "{W}", effects: [{ type: EffectType.AddMana, value: 'W' }] },
+                    { label: "{U}", effects: [{ type: EffectType.AddMana, value: 'U' }] },
+                    { label: "{B}", effects: [{ type: EffectType.AddMana, value: 'B' }] },
+                    { label: "{R}", effects: [{ type: EffectType.AddMana, value: 'R' }] },
+                    { label: "{G}", effects: [{ type: EffectType.AddMana, value: 'G' }] }
+                ]
+            }]
         }
     ]
-};
+  };

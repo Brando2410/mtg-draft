@@ -1,0 +1,32 @@
+import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
+
+export const ArchaicsAgony: CardDefinition = {
+    "name": "Archaic's Agony",
+    "manaCost": "{4}{R}",
+    "colors": [
+        "R"
+    ],
+    "types": [
+        "Sorcery"
+    ],
+    "subtypes": [],
+    "oracleText": "Converge — Archaic's Agony deals X damage to target creature, where X is the number of colors of mana spent to cast this spell. Exile cards from the top of your library equal to the excess damage dealt to that creature this way. You may play those cards until the end of your next turn.",
+    "abilities": [
+        {
+            type: AbilityType.Spell,
+            targetDefinition: { type: 'Creature' },
+            effects: [
+                {
+                    type: EffectType.DealDamage,
+                    amount: 'CONVERGE_AMOUNT',
+                    targetMapping: TargetMapping.Target1
+                },
+                {
+                    type: 'ExileTopCardsExcessDamage',
+                    targetMapping: TargetMapping.Target1,
+                    duration: DurationType.UntilEndOfYourNextTurn
+                }
+            ]
+        }
+    ]
+};

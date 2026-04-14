@@ -1,36 +1,22 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const StoneriseSpirit: ImplementableCard = {
+export const StoneriseSpirit: CardDefinition = {
     name: 'Stonerise Spirit',
     manaCost: '{1}{W}',
-    type_line: 'Creature — Spirit Bird',
+    colors: ['W'],
     types: ['Creature'],
     subtypes: ['Spirit', 'Bird'],
-    power: '1',
-    toughness: '2',
+    power: "1",
+    toughness: "2",
     keywords: ['Flying'],
-    colors: ['white'],
-    supertypes: [],
-    oracleText: 'Flying. {4}, Exile Stonerise Spirit from your graveyard: Target creature gains flying until end of turn.',
+    oracleText: 'Flying\n{4}, Exile Stonerise Spirit from your graveyard: Target creature gains flying until end of turn.',
     abilities: [
         {
-            id: 'stonerise_spirit_activated',
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Graveyard,
-            costs: [{ type: 'Mana', value: '{4}' }, { type: 'Sacrifice', restrictions: ['SELF'] }],
-            effects: [
-                {
-                    type: EffectType.ApplyContinuousEffect,
-                    targetMapping: 'TARGET',
-                    duration: 'UNTIL_END_OF_TURN',
-                    abilitiesToAdd: ['Flying']
-                }
-            ],
-            targetDefinition: {
-                type: 'Permanent',
-                count: 1,
-                restrictions: ['Creature']
-            }
+            activeZone: Zone.Graveyard,
+            costs: [{ type: 'Mana', value: '{4}' }, { type: 'Exile', targetMapping: TargetMapping.Self }],
+            targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
+            effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Flying'] }]
         }
     ]
-};
+  };

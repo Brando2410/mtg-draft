@@ -1,0 +1,16 @@
+import { CardDefinition } from '@shared/engine_types';
+
+export const WitherbloomCharm: CardDefinition = {
+    "name": "Witherbloom Charm",
+    "manaCost": "{B}{G}",
+    "colors": [
+        "B",
+        "G"
+    ],
+    "types": [
+        "Instant"
+    ],
+    "subtypes": [],
+    "oracleText": "Choose one —\n• You may sacrifice a permanent. If you do, draw two cards.\n• You gain 5 life.\n• Destroy target nonland permanent with mana value 2 or less.",
+    "abilities": []
+};

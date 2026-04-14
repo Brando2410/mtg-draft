@@ -23,38 +23,52 @@ export class PermanentHandler {
   }
 
   public static handleSacrifice(state: GameState, targets: string[], sourceId: string, log: (m: string) => void, stackObject?: any, parentContext?: any, effect?: any) {
-    targets.forEach(tid => {
-        const player = state.players[tid as PlayerId];
-        if (player) {
-            let creatures = state.battlefield.filter(o => o.controllerId === tid && o.definition.types.some(t => t.toLowerCase() === 'creature'));
-            
-            // Apply GreatestPower restriction (Professor Onyx)
-            if (effect?.restrictions?.includes('GreatestPower')) {
-                const powers = creatures.map(c => LayerProcessor.getEffectiveStats(c, state).power);
-                const maxPower = powers.length > 0 ? Math.max(...powers) : 0;
-                creatures = creatures.filter(c => LayerProcessor.getEffectiveStats(c, state).power === maxPower);
-            }
+    if (targets.length === 0) return;
 
-            if (creatures.length === 0) return;
-            if (creatures.length === 1) {
-                ActionProcessor.moveCard(state, creatures[0], Zone.Graveyard, tid, log);
-                return;
-            }
-            state.pendingAction = ChoiceGenerator.createCardChoice(state, creatures, {
-                label: effect?.label || "Choose a creature to sacrifice",
-                playerId: tid as PlayerId,
-                sourceId: sourceId,
-                optional: false,
-                actionType: ActionType.ResolutionChoice,
-                onSelected: (c) => [{ type: 'Sacrifice', targetId: c.id }],
-                stackObj: stackObject,
-                parentContext: parentContext
-            });
-        } else {
-            const obj = state.battlefield.find(o => o.id === tid);
-            if (obj) ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.controllerId, log);
+    const [tid, ...nextTargets] = targets;
+    const player = state.players[tid as PlayerId];
+    if (player) {
+        let creatures = state.battlefield.filter(o => o.controllerId === tid && o.definition.types.some(t => t.toLowerCase() === 'creature'));
+        
+        // Apply GreatestPower restriction (Professor Onyx)
+        if (effect?.restrictions?.includes('GreatestPower')) {
+            const powers = creatures.map(c => LayerProcessor.getEffectiveStats(c, state).power);
+            const maxPower = powers.length > 0 ? Math.max(...powers) : 0;
+            creatures = creatures.filter(c => LayerProcessor.getEffectiveStats(c, state).power === maxPower);
         }
-    });
+
+        if (creatures.length === 0) {
+            this.handleSacrifice(state, nextTargets, sourceId, log, stackObject, parentContext, effect);
+            return;
+        }
+        
+        if (creatures.length === 1) {
+            ActionProcessor.moveCard(state, creatures[0], Zone.Graveyard, tid as PlayerId, log);
+            this.handleSacrifice(state, nextTargets, sourceId, log, stackObject, parentContext, effect);
+            return;
+        }
+
+        state.pendingAction = ChoiceGenerator.createCardChoice(state, creatures, {
+            label: effect?.label || "Choose a creature to sacrifice",
+            playerId: tid as PlayerId,
+            sourceId: sourceId,
+            optional: false,
+            actionType: ActionType.ResolutionChoice,
+            onSelected: (c) => [{ type: 'Sacrifice', targetId: c.id }],
+            stackObj: stackObject,
+            parentContext: parentContext
+        });
+
+        // Store next targets in pendingAction to continue sequence
+        if (state.pendingAction && nextTargets.length > 0) {
+            state.pendingAction.data.nextPlayerIds = nextTargets;
+            state.pendingAction.data.isSacrificeSequence = true;
+        }
+    } else {
+        const obj = state.battlefield.find(o => o.id === tid);
+        if (obj) ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.controllerId, log);
+        this.handleSacrifice(state, nextTargets, sourceId, log, stackObject, parentContext, effect);
+    }
   }
 
   public static handleUntap(state: GameState, targets: string[], log: (m: string) => void) {
@@ -63,6 +77,27 @@ export class PermanentHandler {
           if (obj) {
               obj.isTapped = false;
               log(`${obj.definition.name} untapped.`);
+          }
+      });
+  }
+
+  public static handlePrepare(state: GameState, targets: string[], log: (m: string) => void) {
+      targets.forEach(tid => {
+          const obj = state.battlefield.find(o => o.id === tid);
+          if (obj) {
+              obj.isPrepared = true;
+              log(`${obj.definition.name} is now prepared.`);
+              TriggerProcessor.onEvent(state, { type: 'ON_PREPARE', targetId: obj.id, sourceId: obj.id, data: { object: obj } }, log);
+          }
+      });
+  }
+
+  public static handleUnprepare(state: GameState, targets: string[], log: (m: string) => void) {
+      targets.forEach(tid => {
+          const obj = state.battlefield.find(o => o.id === tid);
+          if (obj) {
+              obj.isPrepared = false;
+              log(`${obj.definition.name} is now unprepared.`);
           }
       });
   }
@@ -103,11 +138,30 @@ export class PermanentHandler {
     });
   }
 
+  public static handleMoveCounters(state: GameState, targets: string[], sourceId: string, log: (m: string) => void, effect?: any) {
+    const sourceObj = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId) || Object.values(state.players).flatMap(p => p.graveyard).find((o: any) => o.id === sourceId);
+    if (!sourceObj) return;
+
+    const counterType = effect.counterType || 'P1P1';
+    const amount = sourceObj.counters[counterType] || 0;
+    if (amount <= 0) return;
+
+    targets.forEach(tid => {
+        const targetObj = state.battlefield.find(o => o.id === tid);
+        if (targetObj) {
+            targetObj.counters[counterType] = (targetObj.counters[counterType] || 0) + amount;
+            log(`[MOVE-COUNTERS] Moved ${amount} ${counterType} counters from ${sourceObj.definition.name} to ${targetObj.definition.name}.`);
+        }
+    });
+    sourceObj.counters[counterType] = 0;
+  }
+
   public static handleCreateToken(state: GameState, targets: string[], amount: number, blueprint: any, log: (m: string) => void, pOverride?: number, tOverride?: number, effect?: any, stackObject?: any) {
     targets.forEach(pid => {
         if (!blueprint) return;
         for (let i = 0; i < amount; i++) {
-            const token = this.createToken(state, blueprint, pid as PlayerId, pOverride, tOverride);
+            const token = this.createToken(state, blueprint, pid as PlayerId, pOverride, tOverride, effect);
+            (state as any).lastCreatedTokenId = token.id;
             
             // Manage starting counters (e.g. Fractal tokens)
             if (effect?.startingCounters) {
@@ -130,7 +184,27 @@ export class PermanentHandler {
     });
   }
 
-  private static createToken(state: GameState, blueprint: any, controllerId: PlayerId, pOverride?: number, tOverride?: number): GameObject {
+  public static handleCreateTokenCopy(state: GameState, targets: string[], sourceObj: GameObject, controllerId: PlayerId, log: (m: string) => void, effect: any) {
+    targets.forEach(pid => {
+        const blueprint = {
+            ...sourceObj.definition,
+            types: [...(sourceObj.definition.types || []), ...(effect.typesToAdd || [])],
+            subtypes: [...(sourceObj.definition.subtypes || []), ...(effect.subtypesToAdd || [])],
+            abilities: [...(sourceObj.definition.abilities || []), ...(effect.abilitiesToAdd || [])],
+            image_url: sourceObj.definition.image_url
+        };
+        const token = this.createToken(state, blueprint, pid as PlayerId, effect.powerOverride, effect.toughnessOverride, effect);
+        
+        if (effect.storeLinkedId && (effect as any).originalCardId) {
+            if (!token.data) token.data = {};
+            token.data[effect.storeLinkedId] = (effect as any).originalCardId;
+        }
+        
+        log(`Created token copy of ${sourceObj.definition.name} for ${pid}.`);
+    });
+  }
+
+  private static createToken(state: GameState, blueprint: any, controllerId: PlayerId, pOverride?: any, tOverride?: any, effect?: any): GameObject {
       const token: GameObject = {
           id: `token_${Math.random().toString(36).substr(2, 9)}`,
           ownerId: controllerId,
@@ -145,8 +219,8 @@ export class PermanentHandler {
               supertypes: blueprint.supertypes || [],
               types: [...(blueprint.types || []), "Token"],
               subtypes: blueprint.subtypes || [],
-              power: pOverride !== undefined ? pOverride.toString() : (blueprint.power || "0"),
-              toughness: tOverride !== undefined ? tOverride.toString() : (blueprint.toughness || "0"),
+              power: pOverride !== undefined ? String(pOverride) : (blueprint.power || "0"),
+              toughness: tOverride !== undefined ? String(tOverride) : (blueprint.toughness || "0"),
               keywords: blueprint.keywords || [],
               abilities: blueprint.abilities || [],
               oracleText: blueprint.oracleText || "",
@@ -159,10 +233,12 @@ export class PermanentHandler {
           summoningSickness: true,
           abilitiesUsedThisTurn: 0,
           faceDown: false,
+          isPrepared: blueprint.entersPrepared || false,
           keywords: [],
           counters: {}
       };
       (token as any).isToken = true;
+      (state as any).lastCreatedTokenId = token.id;
       state.battlefield.push(token);
       const { RegistryProcessor } = require('../../core/RegistryProcessor');
       RegistryProcessor.registerAbilities(state, token);

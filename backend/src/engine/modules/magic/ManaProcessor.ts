@@ -58,13 +58,10 @@ export class ManaProcessor {
     const pool = this.getUsableMana(player, payingFor);
     const untappedLands: any[] = [];
 
-    const { m21: mLogic } = require('../../data/m21');
-    const { stx: stxLogic } = require('../../data/stx');
-    const combinedLogic = { ...mLogic, ...stxLogic };
-
+    const { oracle } = require('./../../OracleLogicMap');
     battlefield.forEach(obj => {
       if (obj.controllerId === player.id && !obj.isTapped) {
-        const logic = combinedLogic[obj.definition.name];
+        const logic = oracle.getCard(obj.definition.name);
         if (!logic) return;
 
         const manaAbilities = (logic.abilities || []).filter((a: any) => a.isManaAbility);
@@ -148,14 +145,18 @@ export class ManaProcessor {
     return combined;
   }
 
-  public static deductManaCost(player: PlayerState, costStr: string, state?: GameState, payingFor?: GameObject) {
-    if (!costStr || player.manaCheat) return;
+  public static deductManaCost(player: PlayerState, costStr: string, state?: GameState, payingFor?: GameObject): string[] {
+    if (!costStr || player.manaCheat) return [];
 
+    const colorsSpent = new Set<string>();
     const requirements = this.parseManaCost(costStr);
     const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some(e => e.type === 'AllowSpendManaAsAnyColor' && e.controllerId === player.id);
 
     // Helper to spend mana from pool OR restricted mana
     const spend = (color: string, amount: number) => {
+        if (amount <= 0) return;
+        if (color !== 'C') colorsSpent.add(color);
+        
         let left = amount;
         // Prioritize restricted mana (CR 601.2g equivalent for software: use most specific resource first)
         if (player.restrictedMana) {
@@ -194,7 +195,7 @@ export class ManaProcessor {
 
     if (canSpendAsAnyColor) {
         let genericLeft = this.getManaValue(costStr);
-        const priority: (keyof typeof player.manaPool)[] = ['C', 'W', 'U', 'B', 'R', 'G'];
+        const priority: (keyof typeof player.manaPool)[] = ['W', 'U', 'B', 'R', 'G', 'C']; // Prioritize colors for Converge
         for (const color of priority) {
             if (genericLeft <= 0) break;
             const pool = this.getUsableMana(player, payingFor);
@@ -202,7 +203,7 @@ export class ManaProcessor {
             spend(color, spendable);
             genericLeft -= spendable;
         }
-        return;
+        return Array.from(colorsSpent);
     }
 
     // Deduct colored/hybrid mana first
@@ -232,6 +233,7 @@ export class ManaProcessor {
       spend(color, spendable);
       genericLeft -= spendable;
     }
+    return Array.from(colorsSpent);
   }
 
   public static refundManaCost(player: PlayerState, costStr: string) {
@@ -322,8 +324,8 @@ export class ManaProcessor {
        const landToTap = state.battlefield.find((obj: any) => {
            if (obj.controllerId !== playerId || obj.isTapped) return false;
            
-           const { m21: mLogic } = require('../../data/m21');
-           const logic = mLogic[obj.definition.name];
+           const { oracle } = require('./../../OracleLogicMap');
+           const logic = oracle.getCard(obj.definition.name);
            if (!logic) return false;
 
            const manaAbilities = (logic.abilities || []).filter((a: any) => a.isManaAbility);

@@ -1,34 +1,20 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType, TargetType, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const Expel: ImplementableCard = {
+export const Expel: CardDefinition = {
     name: 'Expel',
     manaCost: '{2}{W}',
-    type_line: 'Instant',
+    colors: ['W'],
     types: ['Instant'],
-    subtypes: [],
-    power: undefined,
-    toughness: undefined,
-    keywords: [],
-    colors: ['white'],
-    supertypes: [],
     oracleText: 'Exile target tapped creature.',
     abilities: [
         {
-            id: 'expel_main',
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
             targetDefinition: {
-                type: TargetType.Permanent,
                 count: 1,
-                restrictions: ['Creature', 'tapped']
+                type: TargetType.Permanent,
+                restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Tapped' }]
             },
-            effects: [
-                {
-                    type: EffectType.MoveToZone,
-                    zone: Zone.Exile,
-                    targetMapping: 'TARGET_1'
-                }
-            ]
+            effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
         }
     ]
-};
+  };

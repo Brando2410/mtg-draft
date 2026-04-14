@@ -1,40 +1,34 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const QuandrixCultivator: ImplementableCard = {
+export const QuandrixCultivator: CardDefinition = {
     name: 'Quandrix Cultivator',
-    manaCost: '{1}{G/U}{G/U}{G}',
-    type_line: 'Creature — Turtle Shaman',
+    manaCost: '{G/U}{G}{G}{G/U}',
+    colors: ['G', 'U'],
     types: ['Creature'],
-    subtypes: ['Turtle', 'Shaman'],
+    subtypes: ['Turtle', 'Druid'],
     power: '3',
     toughness: '4',
-    keywords: [],
-    colors: ['green', 'blue'],
-    supertypes: [],
-    oracleText: 'When Quandrix Cultivator enters the battlefield, you may search your library for a basic Forest or Island card, put it onto the battlefield tapped, then shuffle.',
+    oracleText: "When Quandrix Cultivator enters the battlefield, you may search your library for a basic Forest or Island card, put it onto the battlefield tapped, then shuffle.",
     abilities: [
         {
-            id: 'quandrix_cultivator_etb',
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
-            triggerEvent: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
-                    type: EffectType.MoveToZone,
-                    targetMapping: 'CONTROLLER',
+                    type: EffectType.Choice,
+                    label: 'Search for Forest or Island?',
                     optional: true,
-                    selectionType: 'Search',
-                    sourceZones: [Zone.Library],
-                    zone: Zone.Battlefield,
-                    tapped: true,
-                    shuffle: true,
-                    // Basic Forest or Island
-                    restrictions: [
-                        { types: ['Land'], supertypes: ['Basic'], subtypes: ['Forest'] },
-                        { types: ['Land'], supertypes: ['Basic'], subtypes: ['Island'] }
+                    effects: [
+                        {
+                            type: EffectType.SearchLibrary,
+                            restrictions: [{ type: 'Subtype', value: 'Basic' }, { type: 'Any', restrictions: [{ type: 'Subtype', value: 'Forest' }, { type: 'Subtype', value: 'Island' }] }],
+                            destination: Zone.Battlefield,
+                            tapped: true,
+                            shuffle: true
+                        }
                     ]
                 }
             ]
         }
     ]
-};
+  };

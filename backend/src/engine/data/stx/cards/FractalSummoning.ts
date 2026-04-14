@@ -1,41 +1,33 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const FractalSummoning: ImplementableCard = {
+export const FractalSummoning: CardDefinition = {
     name: 'Fractal Summoning',
-    manaCost: '{X}{G/U}{G/U}',
-    type_line: 'Sorcery — Lesson',
+    manaCost: '{X}{G/U}',
+    colors: ['G', 'U'],
     types: ['Sorcery'],
     subtypes: ['Lesson'],
-    power: undefined,
-    toughness: undefined,
-    keywords: [],
-    colors: ['green', 'blue'],
-    supertypes: [],
     oracleText: 'Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it.',
     abilities: [
-        {
-            id: 'fractal_summoning_main',
-            type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
-            effects: [
-                {
-                    type: EffectType.CreateToken,
-                    amount: 1,
-                    targetMapping: 'CONTROLLER',
-                    tokenBlueprint: {
-                        name: 'Fractal',
-                        types: ['Creature'],
-                        subtypes: ['Fractal'],
-                        colors: ['G', 'U'],
-                        power: '0',
-                        toughness: '0'
-                    },
-                    startingCounters: {
-                        type: '+1/+1',
-                        amount: 'X'
-                    }
-                }
-            ]
-        }
+      {
+        type: AbilityType.Spell,
+        effects: [
+          {
+            type: EffectType.CreateToken,
+            tokenBlueprint: {
+              name: 'Fractal',
+              manaCost: '',
+              colors: ['G', 'U'],
+              types: ['Creature', 'Token'],
+              subtypes: ['Fractal'],
+              power: "0",
+              toughness: "0",
+              image_url: 'https://cards.scryfall.io/large/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.jpg?1682693894'
+            },
+            amount: 1,
+            startingCounters: { type: 'P1P1', amount: DynamicAmount.X },
+            targetMapping: TargetMapping.Controller
+          }
+        ]
+      }
     ]
-};
+  };

@@ -1,36 +1,22 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const Flunk: ImplementableCard = {
+export const Flunk: CardDefinition = {
     name: 'Flunk',
     manaCost: '{1}{B}',
-    type_line: 'Instant',
+    colors: ['B'],
     types: ['Instant'],
-    subtypes: [],
-    power: undefined,
-    toughness: undefined,
-    keywords: [],
-    colors: ['black'],
-    supertypes: [],
-    oracleText: 'Target creature gets -X/-X until end of turn, where X is 7 minus the number of cards in that creature’s controller’s hand.',
+    oracleText: 'Target creature gets -X/-X until end of turn, where X is 7 minus the number of cards in its controller\'s hand.',
     abilities: [
         {
-            id: 'flunk_main',
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
-            targetDefinition: {
-                type: TargetType.Permanent,
-                count: 1,
-                restrictions: ['Creature']
-            },
-            effects: [
-                {
-                    type: EffectType.ApplyContinuousEffect,
-                    duration: 'UNTIL_END_OF_TURN',
-                    powerModifier: 'TARGET_HAND_SIZE_7_MINUS',
-                    toughnessModifier: 'TARGET_HAND_SIZE_7_MINUS',
-                    targetMapping: 'TARGET_1'
-                }
-            ]
+            targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
+            effects: [{
+                type: EffectType.ApplyContinuousEffect,
+                targetMapping: TargetMapping.Target1,
+                duration: 'UNTIL_END_OF_TURN',
+                powerModifier: 'TARGET_HAND_SIZE_7_MINUS',
+                toughnessModifier: 'TARGET_HAND_SIZE_7_MINUS'
+            }]
         }
     ]
-};
+  };

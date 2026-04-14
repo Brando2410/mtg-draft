@@ -1,4 +1,4 @@
-import { GameState, PlayerId, GameObject, Zone, AbilityType, DurationType } from '@shared/engine_types';
+import { GameState, PlayerId, GameObject, Zone, AbilityType, DurationType, EffectType, ParsedAbility } from '@shared/engine_types';
 import { TriggerProcessor } from '../effects/TriggerProcessor';
 import { RegistryProcessor } from '../core/RegistryProcessor';
 
@@ -23,6 +23,12 @@ export class ActionProcessor {
         TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId: card.ownerId, data: { card: card } }, log || (() => {}));
     }
     
+    // --- FLASHBACK REPLACEMENT EFFECT (Rule 702.34a) ---
+    if (fromZone === Zone.Stack && to !== Zone.Exile && card.isFlashbackCast) {
+        if (log) log(`[FLASHBACK] ${card.definition.name} was cast via flashback and is being exiled instead of moving to ${to}.`);
+        to = Zone.Exile;
+    }
+
     // --- DRAW REPLACEMENT EFFECT HOOK (Rule 614/616/121.6) ---
     if (isDraw && fromZone === Zone.Library && to === Zone.Hand && !(state as any).isResolvingDrawReplacement) {
         const registry = state.ruleRegistry;
@@ -158,13 +164,17 @@ export class ActionProcessor {
 
     // Rule 113.7a: Abilities on the stack exist independently of their source.
     // We only remove the object from the stack if it IS the card (e.g. a Spell being countered/moved).
-    state.stack = state.stack.filter(s => s.id !== cid);
+    state.stack = state.stack.filter(s => s.id !== cid && s.card?.id !== cid);
     state.exile = state.exile.filter(c => c.id !== cid);
 
     for (const pid in state.players) {
         const p = state.players[pid as PlayerId];
         p.hand = p.hand.filter(c => c.id !== cid);
+        const isFromGrave = p.graveyard.some(c => c.id === cid);
         p.graveyard = p.graveyard.filter(c => c.id !== cid);
+        if (isFromGrave) {
+            TriggerProcessor.onEvent(state, { type: 'ON_LEAVE_GRAVEYARD', targetId: cid, sourceId: cid }, () => {});
+        }
         p.library = p.library.filter(c => c.id !== cid);
     }
   }
@@ -180,9 +190,18 @@ export class ActionProcessor {
       const hasHasteInDefinition = (card.definition.keywords || []).some(k => k.toLowerCase() === 'haste');
       const hasHasteOnCard = (card.keywords || []).some(k => k.toLowerCase() === 'haste');
       card.summoningSickness = isCreature && !hasHasteInDefinition && !hasHasteOnCard;
-      if (card.definition.entersTapped) {
+      
+      let entersTapped = card.definition.entersTapped || false;
+      if (card.definition.entersTappedCondition) {
+          const { ConditionProcessor } = require('./../core/ConditionProcessor');
+          if (ConditionProcessor.matchesCondition(state, card.definition.entersTappedCondition, card.id, targetPlayerId)) {
+              entersTapped = true;
+          }
+      }
+      if (entersTapped) {
         card.isTapped = true;
       }
+      card.isPrepared = card.definition.entersPrepared || false;
       (card as any).isRevealed = false; // Always clear when entering public zone
       RegistryProcessor.registerAbilities(state, card);
       
@@ -299,6 +318,22 @@ export class ActionProcessor {
         card.counters['+1/+1'] = (card.counters['+1/+1'] || 0) + card.xValue;
         if (log) log(`[X-COST] ${card.definition.name} enters with ${card.xValue} +1/+1 counters.`);
     }
+    
+    // Generic 'Enters with counters' support (Rule 614.1c)
+    const staticAbilities = (card.definition.abilities || []).filter(a => typeof a !== 'string' && a.type === AbilityType.Static) as ParsedAbility[];
+    staticAbilities.forEach(a => {
+        a.effects?.forEach((e: any) => {
+            if (e.type === 'EntersWithCounters' || e.type === EffectType.EntersWithCounters) {
+                const type = e.counterType || 'P1P1';
+                const amount = typeof e.amount === 'number' ? e.amount : 0;
+                if (amount > 0) {
+                    card.counters[type] = (card.counters[type] || 0) + amount;
+                    if (log) log(`[ETB-COUNTERS] ${card.definition.name} enters with ${amount} ${type} counters.`);
+                }
+            }
+        });
+    });
+
 
     // Rule 603.6a: Enters-the-battlefield triggers
     TriggerProcessor.onEvent(state, { type: 'ON_ETB', targetId: card.id, sourceId: card.id, sourceZone: fromZone, data: { object: card } }, log || (() => {}));

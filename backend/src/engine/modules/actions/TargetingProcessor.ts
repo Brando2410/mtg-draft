@@ -2,7 +2,6 @@ import { GameState, GameObject, Zone, PlayerId, GameObjectId, AbilityType, Durat
 import { LayerProcessor } from '../state/LayerProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { ActionProcessor } from './ActionProcessor';
-import { m21 } from '../../data/m21';
 
 /**
  * Rules Engine Module: Targeting (Rule 115)
@@ -16,23 +15,27 @@ export class TargetingProcessor {
      */
     public static findObjectInAnyZone(state: GameState, id: string): GameObject | null {
         // 1. Battlefield
-        const bf = state.battlefield.find(o => o.id === id);
+        const bf = state.battlefield.find((o: any) => o.id === id);
         if (bf) return bf;
 
         // 2. Exile
-        const ex = state.exile.find(o => o.id === id);
+        const ex = state.exile.find((o: any) => o.id === id);
         if (ex) return ex;
 
         // 3. Hands & Graveyards
-        for (const p of Object.values(state.players)) {
-            const h = p.hand.find(o => o.id === id);
+        for (const p of (Object.values(state.players) as any[])) {
+            const h = p.hand.find((o: any) => o.id === id);
             if (h) return h;
-            const g = p.graveyard.find(o => o.id === id);
+            const g = p.graveyard.find((o: any) => o.id === id);
             if (g) return g;
-            const l = p.library.find(o => o.id === id);
+            const l = p.library.find((o: any) => o.id === id);
             if (l) return l;
         }
 
+        // 4. Stack
+        const st = state.stack.find(s => s.id === id || s.card?.id === id);
+        if (st && st.card) return st.card;
+        
         return null;
     }
 
@@ -129,11 +132,11 @@ export class TargetingProcessor {
 
         const sourceStack = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
         const sourceBattlefield = state.battlefield.find(o => o.id === sourceId);
-        const sourceGraveyard = Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === sourceId);
+        const sourceGraveyard = (Object.values(state.players) as any[]).flatMap(p => p.graveyard).find((o: any) => o.id === sourceId);
 
         let source = sourceObjProvided || (sourceStack?.card) || sourceBattlefield || sourceGraveyard;
         if (!source && sourceStack) source = sourceStack;
-        
+
         let sourceControllerId = source?.controllerId || (sourceStack as any)?.controllerId;
 
         if (!sourceControllerId) {
@@ -179,13 +182,14 @@ export class TargetingProcessor {
         if (keywords.includes('Shroud')) return false;
 
         let targetDef = abilityTargetDef || sourceStack?.data?.targetDefinition || (sourceStack as any)?.targetDefinition;
-        
+
         // If no target definition provided (common in SBAs checking Auras), try to find the Enchant restriction
         if (!targetDef && source) {
             const types = source.definition.types.map((t: string) => t.toLowerCase());
             const subtypes = (source.definition.subtypes || []).map((s: string) => s.toLowerCase());
+            const { oracle } = require('./../../OracleLogicMap');
             if (types.includes('enchantment') && subtypes.includes('aura')) {
-                const logic = m21[source.definition.name];
+                const logic = oracle.getCard(source.definition.name);
                 targetDef = (logic as any)?.targetDefinition || (logic as any)?.enchant;
             }
         }
@@ -217,8 +221,8 @@ export class TargetingProcessor {
         // Collect all potential targetable IDs
         const allPotentialTargets = [
             ...Object.keys(state.players),
-            ...state.battlefield.map(o => o.id),
-            ...Object.values(state.players).flatMap(p => p.graveyard.map(o => o.id)),
+            ...state.battlefield.map((o: any) => o.id),
+            ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((o: any) => o.id)),
             ...state.exile.map(o => o.id),
             ...state.stack.map(o => o.id)
         ];
@@ -234,7 +238,7 @@ export class TargetingProcessor {
         // Heterogeneous targets (e.g. Primal Might: 1 you control, 1 you don't)
         // We need to find if there's a valid assignment of distinct targets to each slot.
         // For correctness with minCount, we check if we can satisfy at least the first 'minCount' slots.
-        
+
         const legalPerIndex: string[][] = [];
         for (let i = 0; i < count; i++) {
             const legal = allPotentialTargets.filter(tid => this.isLegalTarget(state, sourceId, tid, targetDef, i));
@@ -285,7 +289,7 @@ export class TargetingProcessor {
         ].map((t: string) => t.toLowerCase());
 
         const baseTypes = ['creature', 'planeswalker', 'land', 'artifact', 'enchantment', 'instant', 'sorcery', 'permanent', 'card'];
-        const isAlternative = (r: any) => typeof r === 'object' || (typeof r === 'string' && baseTypes.includes(r.toLowerCase()));
+        const isAlternative = (r: any) => typeof r === 'object' || (typeof r === 'string' && (baseTypes.includes(r.toLowerCase()) || r.toLowerCase().includes('_or_')));
 
         for (const r of restrictions) {
             if (typeof r !== 'string' || isAlternative(r)) continue;
@@ -296,6 +300,11 @@ export class TargetingProcessor {
             if (lr === 'nonartifact' && objTypes.includes('artifact')) return false;
             if (lr === 'nonenchantment' && objTypes.includes('enchantment')) return false;
             if (lr === 'nonplaneswalker' && objTypes.includes('planeswalker')) return false;
+
+            if (lr.startsWith('non')) {
+                const base = lr.substring(3);
+                if (objTypes.includes(base) || (targetObj.definition.subtypes || []).some((s: string) => s.toLowerCase() === base)) return false;
+            }
             if (lr === 'anytarget') {
                 const stats = LayerProcessor.getEffectiveStats(targetObj, state);
                 const isValidAnyTarget = stats.types.some((t: string) => {
@@ -379,7 +388,7 @@ export class TargetingProcessor {
                 const targetName = (definition?.name || targetObj.name || "").toLowerCase();
                 const objSubtypes = (definition?.subtypes || []).map((s: string) => s.toLowerCase());
                 const singularLr = lr.endsWith('s') ? lr.slice(0, -1) : lr;
-                
+
                 const isNameMatch = targetName === lr || targetName === singularLr;
                 const isSubtypeMatch = objSubtypes.includes(lr) || objSubtypes.includes(singularLr);
 
@@ -400,12 +409,15 @@ export class TargetingProcessor {
                         const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
                         return objTypes.some((t: string) => permTypes.includes(t.toLowerCase()));
                     }
+                    if (lr === 'artifact_or_creature') {
+                        return objTypes.includes('artifact') || objTypes.includes('creature');
+                    }
                     return objTypes.includes(lr);
                 } else {
                     let match = true;
                     const rTypes = r.types || (r.type ? [r.type] : []);
                     const rSubtypes = r.subtypes || (r.subtype ? [r.subtype] : []);
-                    
+
                     if (rTypes.length > 0 && !rTypes.some((t: string) => objTypes.includes(t.toLowerCase()))) match = false;
                     if (rSubtypes.length > 0 && !rSubtypes.some((s: string) => (definition.subtypes || []).some((ts: string) => ts.toLowerCase() === s.toLowerCase()))) match = false;
                     if (r.nameIncludes && definition.name && !definition.name.toLowerCase().includes(r.nameIncludes.toLowerCase())) match = false;
@@ -414,12 +426,23 @@ export class TargetingProcessor {
                         const filterName = r.nameEquals || r.name || "";
                         if (!targetName || targetName.toLowerCase() !== filterName.toLowerCase()) match = false;
                     }
-                    if (r.type === 'ManaValue') {
+                    if (r.type === 'ManaValue' || r.type === 'MV' || r.type === 'ManaValueLe') {
+                        const { ManaProcessor } = require('./../magic/ManaProcessor');
                         const mv = ManaProcessor.getManaValue(definition.manaCost || '');
-                        const val = r.value;
-                        if (r.comparison === 'LessOrEqual' && mv > val) match = false;
-                        if (r.comparison === 'GreaterOrEqual' && mv < val) match = false;
-                        if (r.comparison === 'Equal' && mv !== val) match = false;
+                        let val = r.value;
+                        if (val === 'X') {
+                            val = (state.stack.find(s => s.id === sourceId || s.sourceId === sourceId)?.xValue ||
+                                ((state.pendingAction as any)?.sourceId === sourceId ? (state.pendingAction as any)?.xValue : 0));
+                        } else if (val === 'GAINED_LIFE_AMOUNT') {
+                            val = state.turnState.lifeGainedThisTurn[controllerId || ''] || 0;
+                        }
+                        
+                        const comp = r.type === 'ManaValueLe' ? 'LessOrEqual' : (r.comparison || 'Equal');
+                        if (comp === 'LessOrEqual' && mv > val) match = false;
+                        if (comp === 'GreaterOrEqual' && mv < val) match = false;
+                        if (comp === 'Equal' && mv !== val) match = false;
+                        if (comp === 'LessThan' && mv >= val) match = false;
+                        if (comp === 'GreaterThan' && mv <= val) match = false;
                     }
                     return match;
                 }
@@ -452,7 +475,7 @@ export class TargetingProcessor {
         return qualities.some(q => {
             const lowerQ = q.toLowerCase();
             if (lowerQ === 'and' || lowerQ === 'from') return false;
-            
+
             // Multicolored check
             if (lowerQ === 'multicolored') return sourceColors.length > 1;
             if (lowerQ === 'monocolored') return sourceColors.length === 1;
@@ -486,7 +509,22 @@ export class TargetingProcessor {
         const isOptional = targetDef?.optional || targetDef?.minCount === 0;
         const isSkipping = targetId === 'skip' || targetId === 'none' || targetId === 'confirm';
         const isUndoing = targetId === 'undo' || targetId === 'back';
-        const targetCount = targetDef?.count || 1;
+
+        let targetCount = targetDef?.count;
+        if (targetCount === 'X') {
+            targetCount = actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0);
+        }
+        targetCount = targetCount || 1;
+
+        let maxCount = targetDef?.maxCount || targetCount;
+        if (maxCount === 'X') {
+            maxCount = actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0);
+        }
+
+        let minCount = targetDef?.minCount !== undefined ? targetDef.minCount : targetCount;
+        if (minCount === 'X') {
+            minCount = actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0);
+        }
 
         actionData.selectedTargets = actionData.selectedTargets || [];
 
@@ -541,8 +579,8 @@ export class TargetingProcessor {
         }
 
         if (isSkipping) {
-            if (!isOptional && actionData.selectedTargets.length === 0) {
-                log(`Targeting is required, cannot skip.`);
+            if (actionData.selectedTargets.length < minCount) {
+                log(`Targeting is required (minimum ${minCount}), cannot finalize yet.`);
                 return false;
             }
             return engine.finaliseTargeting(playerId, actionData.selectedTargets);
@@ -560,21 +598,21 @@ export class TargetingProcessor {
         }
 
         // Prevent adding more than the max allowed targets
-        if (actionData.selectedTargets.length >= targetCount) {
-            log(`Maximum targets (${targetCount}) reached. Please confirm your selection.`);
+        if (actionData.selectedTargets.length >= maxCount) {
+            log(`Maximum targets (${maxCount}) reached. Please confirm your selection.`);
             return false;
         }
 
         actionData.selectedTargets = [...actionData.selectedTargets, targetId];
-        log(`Target ${actionData.selectedTargets.length}/${targetCount} selected: ${targetId}`);
+        log(`Target ${actionData.selectedTargets.length}/${maxCount} selected: ${targetId}`);
 
         // Update legal targets for the next index if there are more targets to select
-        if (actionData.selectedTargets.length < targetCount) {
+        if (actionData.selectedTargets.length < maxCount) {
             const nextIndex = actionData.selectedTargets.length;
             const pool = [
                 ...Object.keys(state.players),
-                ...state.battlefield.map(o => o.id),
-                ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
+                ...state.battlefield.map((o: any) => o.id),
+                ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
             ];
             actionData.targets = pool.filter(tid => this.isLegalTarget(state, state.pendingAction!.sourceId, tid, targetDef, nextIndex));
         }
@@ -604,8 +642,8 @@ export class TargetingProcessor {
         if (actionData?.nextEffectIndex !== undefined) {
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
-            const finalTargets = (actionData.isCopyTargeting && resolvedTargets.length === 0) 
-                ? (actionData.originalTargets || []) 
+            const finalTargets = (actionData.isCopyTargeting && resolvedTargets.length === 0)
+                ? (actionData.originalTargets || [])
                 : resolvedTargets;
 
             const savedTargets = [...(actionData.targets || []), ...finalTargets];
@@ -692,21 +730,30 @@ export class TargetingProcessor {
         parentContext?: any
     ): string[] {
         const eventData = stackData?.eventData;
+        const { LayerProcessor } = require('../state/LayerProcessor');
 
         switch (mapping) {
             case 'SELF': return [sourceId];
-            case 'CONTROLLER': 
-                const ctrlIds = [controllerId];
-                // process.stdout.write(`[TARGET-DEBUG] Mapping CONTROLLER to ${ctrlIds}\n`);
-                return ctrlIds;
+            case 'CONTROLLER':
+                return [controllerId];
+            case 'LINKED_OBJECT':
+                const linkKey = effect.linkKey || 'linkedCardId';
+                const lSource = state.battlefield.find((o: any) => o.id === sourceId) ||
+                    (Object.values(state.players) as any[]).flatMap(p => p.graveyard).find((o: any) => o.id === sourceId) ||
+                    state.exile.find((o: any) => o.id === sourceId);
+                return lSource?.data?.[linkKey] ? [lSource.data[linkKey]] : [];
             case 'ENCHANTED_CREATURE':
             case 'ENCHANTED_PERMANENT': {
                 const aura = state.battlefield.find(o => o.id === sourceId);
                 return aura?.attachedTo ? [aura.attachedTo] : [];
             }
+            case 'LAST_CREATED_TOKEN':
+                return (state as any).lastCreatedTokenId ? [(state as any).lastCreatedTokenId] : [];
             case 'TARGET_1': return [targets[0]];
             case 'SELF_AND_TARGET_1': return [sourceId, targets[0]];
             case 'TARGET_2': return [targets[1]];
+            case 'TARGET_3': return [targets[2]];
+            case 'TARGET_4': return [targets[3]];
             case 'TARGET_ALL': return targets;
             case 'MATCHING_PERMANENTS_YOU_CONTROL':
                 if (!effect?.restrictions) return [];
@@ -727,15 +774,15 @@ export class TargetingProcessor {
             case 'EVENT_PLAYER':
                 return eventData?.playerId ? [eventData.playerId] : [];
             case 'TARGET_1_CONTROLLER': {
-                const obj = state.battlefield.find(o => o.id === targets[0]) || 
-                            Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === targets[0]) ||
-                            state.exile.find(o => o.id === targets[0]);
+                const obj = state.battlefield.find(o => o.id === targets[0]) ||
+                    Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === targets[0]) ||
+                    state.exile.find(o => o.id === targets[0]);
                 return obj ? [obj.controllerId] : [];
             }
             case 'TRIGGER_TARGET_CONTROLLER': {
                 const tId = eventData?.targetId || (stackData?.data?.eventData?.targetId);
-                const obj = state.battlefield.find(o => o.id === tId) || 
-                            Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === tId);
+                const obj = state.battlefield.find(o => o.id === tId) ||
+                    (Object.values(state.players) as any[]).flatMap(p => p.graveyard).find((o: any) => o.id === tId);
                 return obj ? [obj.controllerId] : [];
             }
             case 'ALL_CREATURES_YOU_CONTROL':
@@ -748,7 +795,7 @@ export class TargetingProcessor {
                     .map(o => o.id);
             case 'OTHER_SPIRITS_YOU_CONTROL':
                 return state.battlefield
-                    .filter(o => o.id !== sourceId && o.controllerId === controllerId && o.definition.subtypes.some(t => t.toLowerCase() === 'spirit'))
+                    .filter(o => o.id !== sourceId && o.controllerId === controllerId && o.definition.subtypes?.some(t => t.toLowerCase() === 'spirit'))
                     .map(o => o.id);
             case 'ALL_PERMANENTS_YOU_CONTROL':
                 return state.battlefield
@@ -767,21 +814,34 @@ export class TargetingProcessor {
                 return state.battlefield
                     .filter(o => o.definition.types.some(t => t.toLowerCase() === 'creature') && !LayerProcessor.hasKeyword(o, state, 'Flying'))
                     .map(o => o.id);
-            case 'OPPONENT_1':
-                return [Object.keys(state.players).filter(pid => pid !== controllerId)[0]];
+            case 'EACH_CREATURE_YOU_CONTROL':
+                return state.battlefield
+                    .filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature'))
+                    .map(o => o.id);
             case 'OPPONENT':
+            case 'OPPONENTS':
             case 'EACH_OPPONENT':
                 return Object.keys(state.players).filter(pid => pid !== controllerId);
+            case 'OPPONENT_1':
+                return [Object.keys(state.players).filter(pid => pid !== controllerId)[0]];
+            case 'EACH_OPPONENT_CREATURE':
+                return state.battlefield
+                    .filter(o => o.controllerId !== controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature'))
+                    .map(o => o.id);
             case 'EACH_PLAYER':
                 return Object.keys(state.players);
             case 'SELECTED_CARD':
                 return [targets[0]];
+            case 'LAST_CREATED_TOKEN':
+                return (state as any).lastCreatedTokenId ? [(state as any).lastCreatedTokenId] : [];
             case 'CONTROLLER_GRAVEYARD':
                 const cp = state.players[controllerId];
                 return cp ? cp.graveyard.map(c => c.id) : [];
             case 'CONTROLLER_GRAVEYARD_AND_LIBRARY':
                 const pc = state.players[controllerId];
                 return pc ? [...pc.graveyard.map(c => c.id), ...pc.library.map(c => c.id)] : [];
+            case 'LAST_EXILED_OBJECT':
+                return (state as any).lastExiledIds || [];
             case 'ALL_PLAYERS':
                 return Object.keys(state.players);
             case 'ANY_TARGET':
@@ -804,11 +864,34 @@ export class TargetingProcessor {
                 return state.battlefield
                     .filter(o => o.id !== sourceId && o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'planeswalker'))
                     .map(o => o.id);
+            case 'TARGET_1_HIGHEST_MV_CREATURE_PLANESWALKER': {
+                const targetPlayerId = targets[0];
+                const candidates = state.battlefield.filter(o =>
+                    o.controllerId === targetPlayerId &&
+                    (o.definition.types.some(t => t.toLowerCase() === 'creature') || o.definition.types.some(t => t.toLowerCase() === 'planeswalker'))
+                );
+                if (candidates.length === 0) return [];
+                const mvs = candidates.map(o => ManaProcessor.getManaValue(o.definition.manaCost || ''));
+                const maxMV = Math.max(...mvs);
+                return candidates.filter(o => ManaProcessor.getManaValue(o.definition.manaCost || '') === maxMV).map(o => o.id);
+            }
             case 'EVENT_OBJECT':
                 return eventData?.object?.id ? [eventData.object.id] : [];
             case 'EXILED_CARD': {
                 // Return the ID of the object that was just exiled by this effect chain
                 return parentContext?.exiledIds || [];
+            }
+            case 'MATCHING_CARDS': {
+                if (!effect?.restrictions) return [];
+                const pool = [
+                    ...state.battlefield.map((o: any) => o.id),
+                    ...state.exile.map((o: any) => o.id),
+                    ...(Object.values(state.players) as any[]).flatMap(p => [...p.hand, ...p.graveyard, ...p.library]).map((c: any) => c.id)
+                ];
+                return pool.filter(tid => {
+                    const obj = this.findObjectInAnyZone(state, tid);
+                    return obj && this.matchesRestrictions(state, obj, effect.restrictions, controllerId, sourceId);
+                });
             }
             default:
                 return [];

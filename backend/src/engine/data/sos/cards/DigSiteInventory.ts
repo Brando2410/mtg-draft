@@ -1,0 +1,38 @@
+import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
+
+export const DigSiteInventory: CardDefinition = {
+    "name": "Dig Site Inventory",
+    "manaCost": "{W}",
+    "colors": [
+        "W"
+    ],
+    "types": [
+        "Sorcery"
+    ],
+    "subtypes": [],
+    "keywords": [
+        "Flashback"
+    ],
+    "flashbackCost": "{W}",
+    "oracleText": "Put a +1/+1 counter on target creature you control. It gains vigilance until end of turn.\nFlashback {W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "abilities": [
+        {
+            type: AbilityType.Spell,
+            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'YouControl'] },
+            effects: [
+                { 
+                    type: EffectType.AddCounters, 
+                    amount: 1, 
+                    startingCounters: { type: '+1/+1', amount: 1 }, 
+                    targetMapping: TargetMapping.Target1 
+                },
+                { 
+                    type: EffectType.ApplyContinuousEffect, 
+                    duration: { type: DurationType.UntilEndOfTurn }, 
+                    abilitiesToAdd: ['Vigilance'], 
+                    targetMapping: TargetMapping.Target1 
+                }
+            ]
+        }
+    ]
+};

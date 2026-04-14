@@ -1,40 +1,23 @@
-import { AbilityType, ImplementableCard, ZoneRequirement, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const DivideByZero: ImplementableCard = {
+export const DividebyZero: CardDefinition = {
     name: 'Divide by Zero',
     manaCost: '{2}{U}',
-    type_line: 'Instant',
+    colors: ['U'],
     types: ['Instant'],
-    subtypes: [],
-    power: undefined,
-    toughness: undefined,
-    keywords: [],
-    colors: ['blue'],
-    supertypes: [],
-    oracleText: "Return target spell or permanent with mana value 4 or less to its owner's hand. Learn. (You may reveal a Lesson card you own from outside the game and put it into your hand, or discard a card to draw a card.)",
+    oracleText: 'Return target spell or permanent with mana value 1 or greater to its owner\'s hand.\nLearn.',
     abilities: [
         {
-            id: 'divide_by_zero_spell',
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
             targetDefinition: {
-                type: TargetType.AnyTarget,
                 count: 1,
-                restrictions: [
-                    { type: 'AnyOf', values: ['Spell', 'Permanent'] },
-                    { type: 'ManaValue', value: 4, comparison: 'LessOrEqual' }
-                ]
+                type: TargetType.Any,
+                restrictions: [{ type: 'ManaValue', comparison: 'GreaterOrEqual', value: 1 }]
             },
             effects: [
-                {
-                    type: EffectType.ReturnToHand,
-                    targetMapping: 'TARGET_1'
-                },
-                {
-                    type: EffectType.Learn,
-                    targetMapping: 'CONTROLLER'
-                }
+                { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 },
+                { type: EffectType.Learn }
             ]
         }
     ]
-};
+  };

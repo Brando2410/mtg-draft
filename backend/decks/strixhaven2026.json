@@ -1,0 +1,4209 @@
+{
+  "name": "STRIXHAVEN2026",
+  "cards": [
+    {
+      "scryfall_id": "797131cf-d80d-4050-bebd-2ce1d7fae5d0",
+      "name": "Aberrant Manawurm",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/9/797131cf-d80d-4050-bebd-2ce1d7fae5d0.jpg?1775937935",
+      "cmc": 4,
+      "type_line": "Creature — Wurm",
+      "mana_cost": "{3}{G}",
+      "power": "2",
+      "toughness": "5",
+      "keywords": [
+        "Trample"
+      ]
+    },
+    {
+      "scryfall_id": "ea008094-d995-4740-9b39-c61049356c55",
+      "name": "Abstract Paintmage",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/a/ea008094-d995-4740-9b39-c61049356c55.jpg?1775938173",
+      "cmc": 3,
+      "type_line": "Creature — Djinn Sorcerer",
+      "mana_cost": "{U}{U/R}{R}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b44ec684-d558-45eb-bcd6-8119428634c2",
+      "name": "Additive Evolution",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/4/b44ec684-d558-45eb-bcd6-8119428634c2.jpg?1775937943",
+      "cmc": 5,
+      "type_line": "Enchantment",
+      "mana_cost": "{3}{G}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "9cd1417a-badc-4abd-a8ca-5b31f85c1072",
+      "name": "Ajani's Response",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/c/9cd1417a-badc-4abd-a8ca-5b31f85c1072.jpg?1776047920",
+      "cmc": 5,
+      "type_line": "Instant",
+      "mana_cost": "{4}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "85629088-2007-4db5-9397-bac12a3d7498",
+      "name": "Ambitious Augmenter",
+      "rarity": "rare",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/8/5/85629088-2007-4db5-9397-bac12a3d7498.jpg?1775937950",
+      "cmc": 1,
+      "type_line": "Creature — Turtle Wizard",
+      "mana_cost": "{G}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Increment"
+      ]
+    },
+    {
+      "scryfall_id": "6c5a93d6-d4ab-4062-bb3c-1b5330bf15ad",
+      "name": "Ancestral Anger",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/c/6c5a93d6-d4ab-4062-bb3c-1b5330bf15ad.jpg?1775937666",
+      "cmc": 1,
+      "type_line": "Sorcery",
+      "mana_cost": "{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "68ee92cd-51af-4de5-bcc8-34d0bb2fd398",
+      "name": "Antiquities on the Loose",
+      "rarity": "rare",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/8/68ee92cd-51af-4de5-bcc8-34d0bb2fd398.jpg?1775936960",
+      "cmc": 3,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{W}{W}",
+      "keywords": [
+        "Flashback"
+      ]
+    },
+    {
+      "scryfall_id": "f109f2eb-895b-44a6-b6b5-81bf3831ccd5",
+      "name": "Applied Geometry",
+      "rarity": "rare",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/1/f109f2eb-895b-44a6-b6b5-81bf3831ccd5.jpg?1775938180",
+      "cmc": 4,
+      "type_line": "Sorcery",
+      "mana_cost": "{2}{G}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "d357d997-9d4e-4ade-81f2-37629853f13a",
+      "name": "Arcane Omens",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/3/d357d997-9d4e-4ade-81f2-37629853f13a.jpg?1775937419",
+      "cmc": 5,
+      "type_line": "Sorcery",
+      "mana_cost": "{4}{B}",
+      "keywords": [
+        "Converge"
+      ]
+    },
+    {
+      "scryfall_id": "8d99f8b2-5c1c-4059-bf68-c6b2e9e5b275",
+      "name": "Archaic's Agony",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/8/d/8d99f8b2-5c1c-4059-bf68-c6b2e9e5b275.jpg?1775937675",
+      "cmc": 5,
+      "type_line": "Sorcery",
+      "mana_cost": "{4}{R}",
+      "keywords": [
+        "Converge"
+      ]
+    },
+    {
+      "scryfall_id": "79d01c19-162b-4a12-9e27-18366d95eaa0",
+      "name": "Ark of Hunger",
+      "rarity": "rare",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/9/79d01c19-162b-4a12-9e27-18366d95eaa0.jpg?1775938187",
+      "cmc": 4,
+      "type_line": "Artifact",
+      "mana_cost": "{2}{R}{W}",
+      "keywords": [
+        "Mill"
+      ]
+    },
+    {
+      "scryfall_id": "6168b472-0930-4db5-9920-407340b99050",
+      "name": "Arnyn, Deathbloom Botanist",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/1/6168b472-0930-4db5-9920-407340b99050.jpg?1775937426",
+      "cmc": 3,
+      "type_line": "Legendary Creature — Vampire Druid",
+      "mana_cost": "{2}{B}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Deathtouch"
+      ]
+    },
+    {
+      "scryfall_id": "bce9d933-be58-4301-beb4-07b04d0b69f0",
+      "name": "Artistic Process",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/c/bce9d933-be58-4301-beb4-07b04d0b69f0.jpg?1775937683",
+      "cmc": 5,
+      "type_line": "Sorcery",
+      "mana_cost": "{3}{R}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "de3de40b-a7ac-455e-add2-4e451b602d17",
+      "name": "Ascendant Dustspeaker",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/e/de3de40b-a7ac-455e-add2-4e451b602d17.jpg?1776000359",
+      "cmc": 5,
+      "type_line": "Creature — Orc Cleric",
+      "mana_cost": "{4}{W}",
+      "power": "3",
+      "toughness": "4",
+      "keywords": [
+        "Flying"
+      ]
+    },
+    {
+      "scryfall_id": "6261e89a-dbf1-481a-823e-6bb00be57195",
+      "name": "Aziza, Mage Tower Captain",
+      "rarity": "rare",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/6261e89a-dbf1-481a-823e-6bb00be57195.jpg?1775938194",
+      "cmc": 2,
+      "type_line": "Legendary Creature — Djinn Sorcerer",
+      "mana_cost": "{R}{W}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "1ae9d2f3-7a9f-433a-aa1f-14337ae6f9d4",
+      "name": "Banishing Betrayal",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/a/1ae9d2f3-7a9f-433a-aa1f-14337ae6f9d4.jpg?1775937176",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{U}",
+      "keywords": [
+        "Surveil"
+      ]
+    },
+    {
+      "scryfall_id": "75f89c36-c81d-4580-9a5c-218fed0c5c9a",
+      "name": "Berta, Wise Extrapolator",
+      "rarity": "rare",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/5/75f89c36-c81d-4580-9a5c-218fed0c5c9a.jpg?1775938201",
+      "cmc": 4,
+      "type_line": "Legendary Creature — Frog Druid",
+      "mana_cost": "{2}{G}{U}",
+      "power": "1",
+      "toughness": "4",
+      "keywords": [
+        "Increment"
+      ]
+    },
+    {
+      "scryfall_id": "bf2efdd9-d2b4-4bea-a5b9-dbb2eee4dfba",
+      "name": "Biblioplex Tomekeeper",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/f/bf2efdd9-d2b4-4bea-a5b9-dbb2eee4dfba.jpg?1775938724",
+      "cmc": 4,
+      "type_line": "Artifact Creature — Construct",
+      "mana_cost": "{4}",
+      "power": "3",
+      "toughness": "4",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "f588fa50-7cc5-41ba-90df-2d252eb5c785",
+      "name": "Blech, Loafing Pest",
+      "rarity": "rare",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/5/f588fa50-7cc5-41ba-90df-2d252eb5c785.jpg?1775938208",
+      "cmc": 3,
+      "type_line": "Legendary Creature — Pest",
+      "mana_cost": "{1}{B}{G}",
+      "power": "3",
+      "toughness": "4",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "7a42f51a-3377-47bb-b6fb-c0515bf1dcfb",
+      "name": "Bogwater Lumaret",
+      "rarity": "common",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/a/7a42f51a-3377-47bb-b6fb-c0515bf1dcfb.jpg?1775938216",
+      "cmc": 2,
+      "type_line": "Creature — Spirit Frog",
+      "mana_cost": "{B}{G}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "a3226e14-554d-47c9-b8b6-dfeb53cc41ba",
+      "name": "Borrowed Knowledge",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/3/a3226e14-554d-47c9-b8b6-dfeb53cc41ba.jpg?1775938224",
+      "cmc": 4,
+      "type_line": "Sorcery",
+      "mana_cost": "{2}{R}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "151eab82-d20f-433b-b3bb-1d44e2871d5c",
+      "name": "Brush Off",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/5/151eab82-d20f-433b-b3bb-1d44e2871d5c.jpg?1775937183",
+      "cmc": 4,
+      "type_line": "Instant",
+      "mana_cost": "{2}{U}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "3e4f9d23-1a17-4188-ac91-f8ddea46a1c4",
+      "name": "Burrog Banemaker",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/e/3e4f9d23-1a17-4188-ac91-f8ddea46a1c4.jpg?1775937433",
+      "cmc": 1,
+      "type_line": "Creature — Frog Warlock",
+      "mana_cost": "{B}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Deathtouch"
+      ]
+    },
+    {
+      "scryfall_id": "95d5b0a8-2b66-418e-9e5e-ecf7b304c31e",
+      "name": "Burrog Barrage",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/5/95d5b0a8-2b66-418e-9e5e-ecf7b304c31e.jpg?1775937957",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b7091740-e70c-4cf2-8d3d-b8e1ac1fbbdd",
+      "name": "Cauldron of Essence",
+      "rarity": "rare",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/7/b7091740-e70c-4cf2-8d3d-b8e1ac1fbbdd.jpg?1775938230",
+      "cmc": 3,
+      "type_line": "Artifact",
+      "mana_cost": "{1}{B}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "9940d992-1ba1-40ec-9b93-17d773452c4b",
+      "name": "Charging Strifeknight",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/9/9940d992-1ba1-40ec-9b93-17d773452c4b.jpg?1775937699",
+      "cmc": 3,
+      "type_line": "Creature — Spirit Knight",
+      "mana_cost": "{2}{R}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Haste"
+      ]
+    },
+    {
+      "scryfall_id": "06f9f257-c7ef-44b7-8b2b-f038fba900af",
+      "name": "Chase Inspiration",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/6/06f9f257-c7ef-44b7-8b2b-f038fba900af.jpg?1775937195",
+      "cmc": 1,
+      "type_line": "Instant",
+      "mana_cost": "{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "a82a4d8c-4105-4923-85a2-ef58241f725c",
+      "name": "Chelonian Tackle",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/8/a82a4d8c-4105-4923-85a2-ef58241f725c.jpg?1775937964",
+      "cmc": 3,
+      "type_line": "Sorcery",
+      "mana_cost": "{2}{G}",
+      "keywords": [
+        "Fight"
+      ]
+    },
+    {
+      "scryfall_id": "0cda4235-4dce-48fe-a8a5-2a952dedbe25",
+      "name": "Choreographed Sparks",
+      "rarity": "rare",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/c/0cda4235-4dce-48fe-a8a5-2a952dedbe25.jpg?1775937707",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{R}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "f5b54d46-2caf-4d1b-8be1-dbd9e9dce058",
+      "name": "Colorstorm Stallion",
+      "rarity": "rare",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/5/f5b54d46-2caf-4d1b-8be1-dbd9e9dce058.jpg?1775938240",
+      "cmc": 3,
+      "type_line": "Creature — Elemental Horse",
+      "mana_cost": "{1}{U}{R}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Haste",
+        "Ward",
+        "Opus"
+      ]
+    },
+    {
+      "scryfall_id": "bfa7f0a4-6b65-4e53-ba00-848df260d8e3",
+      "name": "Colossus of the Blood Age",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/f/bfa7f0a4-6b65-4e53-ba00-848df260d8e3.jpg?1775938248",
+      "cmc": 6,
+      "type_line": "Artifact Creature — Construct",
+      "mana_cost": "{4}{R}{W}",
+      "power": "6",
+      "toughness": "6",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "5223a04f-6b47-4379-80ce-8489c4a91734",
+      "name": "Comforting Counsel",
+      "rarity": "rare",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/2/5223a04f-6b47-4379-80ce-8489c4a91734.jpg?1775937970",
+      "cmc": 2,
+      "type_line": "Enchantment",
+      "mana_cost": "{1}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "e225929b-6197-4550-969e-3c4a97206a68",
+      "name": "Conciliator's Duelist",
+      "rarity": "rare",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/2/e225929b-6197-4550-969e-3c4a97206a68.jpg?1775938257",
+      "cmc": 4,
+      "type_line": "Creature — Kor Warlock",
+      "mana_cost": "{W}{W}{B}{B}",
+      "power": "4",
+      "toughness": "3",
+      "keywords": [
+        "Repartee"
+      ]
+    },
+    {
+      "scryfall_id": "3a46816b-9f75-4c72-9ec6-cded6a4a0d01",
+      "name": "Cost of Brilliance",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/a/3a46816b-9f75-4c72-9ec6-cded6a4a0d01.jpg?1775937447",
+      "cmc": 3,
+      "type_line": "Sorcery",
+      "mana_cost": "{2}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "6384d135-7780-4d75-9e95-71bce506948e",
+      "name": "Cuboid Colony",
+      "rarity": "uncommon",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/3/6384d135-7780-4d75-9e95-71bce506948e.jpg?1775938265",
+      "cmc": 2,
+      "type_line": "Creature — Insect",
+      "mana_cost": "{G}{U}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Flying",
+        "Trample",
+        "Flash",
+        "Increment"
+      ]
+    },
+    {
+      "scryfall_id": "e2b16cb2-b8b2-45df-9695-3c16e9d89e28",
+      "name": "Daydream",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/2/e2b16cb2-b8b2-45df-9695-3c16e9d89e28.jpg?1775936973",
+      "cmc": 1,
+      "type_line": "Sorcery",
+      "mana_cost": "{W}",
+      "keywords": [
+        "Flashback"
+      ]
+    },
+    {
+      "scryfall_id": "78897104-80e1-4d8a-9958-145b40f679e8",
+      "name": "Deathcap Glade",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/7/8/78897104-80e1-4d8a-9958-145b40f679e8.jpg?1775938766",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "f4ab2d9b-c73d-478d-aac7-4d3bb24296d2",
+      "name": "Decorum Dissertation",
+      "rarity": "mythic",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/4/f4ab2d9b-c73d-478d-aac7-4d3bb24296d2.jpg?1775937454",
+      "cmc": 5,
+      "type_line": "Sorcery — Lesson",
+      "mana_cost": "{3}{B}{B}",
+      "keywords": [
+        "Paradigm"
+      ]
+    },
+    {
+      "scryfall_id": "2e3b16ed-8727-48fd-8b1f-c0cbd329385e",
+      "name": "Deluge Virtuoso",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/e/2e3b16ed-8727-48fd-8b1f-c0cbd329385e.jpg?1775937202",
+      "cmc": 3,
+      "type_line": "Creature — Human Wizard",
+      "mana_cost": "{2}{U}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Opus"
+      ]
+    },
+    {
+      "scryfall_id": "ee1e0a96-af80-444e-a456-5b256cf60625",
+      "name": "Diary of Dreams",
+      "rarity": "uncommon",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/e/e/ee1e0a96-af80-444e-a456-5b256cf60625.jpg?1775938731",
+      "cmc": 2,
+      "type_line": "Artifact — Book",
+      "mana_cost": "{2}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "e52464ee-df8b-41ec-af93-4b0eb004383e",
+      "name": "Dig Site Inventory",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/5/e52464ee-df8b-41ec-af93-4b0eb004383e.jpg?1775936980",
+      "cmc": 1,
+      "type_line": "Sorcery",
+      "mana_cost": "{W}",
+      "keywords": [
+        "Flashback"
+      ]
+    },
+    {
+      "scryfall_id": "775c1e50-08a4-413f-ab0f-f1c2a79cfe94",
+      "name": "Dina's Guidance",
+      "rarity": "rare",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/7/775c1e50-08a4-413f-ab0f-f1c2a79cfe94.jpg?1775938273",
+      "cmc": 3,
+      "type_line": "Instant",
+      "mana_cost": "{1}{B}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "ddbf1242-6832-475e-9a77-65dd9b4bb32a",
+      "name": "Dissection Practice",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/d/ddbf1242-6832-475e-9a77-65dd9b4bb32a.jpg?1775937462",
+      "cmc": 1,
+      "type_line": "Instant",
+      "mana_cost": "{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "26295e25-f1bf-4665-ba00-dad35c49bbc2",
+      "name": "Divergent Equation",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/6/26295e25-f1bf-4665-ba00-dad35c49bbc2.jpg?1775937210",
+      "cmc": 1,
+      "type_line": "Instant",
+      "mana_cost": "{X}{X}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "ef662b92-5a7f-48c9-bcc1-14b55e091aef",
+      "name": "Dreamroot Cascade",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/e/f/ef662b92-5a7f-48c9-bcc1-14b55e091aef.jpg?1775938773",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "8f3a1675-0cc7-4dfd-a12e-4740a2cf81e8",
+      "name": "Duel Tactics",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/8/f/8f3a1675-0cc7-4dfd-a12e-4740a2cf81e8.jpg?1775937718",
+      "cmc": 1,
+      "type_line": "Sorcery",
+      "mana_cost": "{R}",
+      "keywords": [
+        "Flashback"
+      ]
+    },
+    {
+      "scryfall_id": "bf736de9-9bc4-49df-ae60-672ed4f83f32",
+      "name": "Eager Glyphmage",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/f/bf736de9-9bc4-49df-ae60-672ed4f83f32.jpg?1775936986",
+      "cmc": 4,
+      "type_line": "Creature — Cat Cleric",
+      "mana_cost": "{3}{W}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "5d7086a7-dc42-468a-a2cf-a6f89030f947",
+      "name": "Echocasting Symposium",
+      "rarity": "mythic",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/d/5d7086a7-dc42-468a-a2cf-a6f89030f947.jpg?1775937216",
+      "cmc": 6,
+      "type_line": "Sorcery — Lesson",
+      "mana_cost": "{4}{U}{U}",
+      "keywords": [
+        "Paradigm"
+      ]
+    },
+    {
+      "scryfall_id": "79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515",
+      "name": "Efflorescence",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/9/79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515.jpg?1775937979",
+      "cmc": 3,
+      "type_line": "Instant",
+      "mana_cost": "{2}{G}",
+      "keywords": [
+        "Infusion"
+      ]
+    },
+    {
+      "scryfall_id": "c507eb1c-48e9-4d28-bb2d-71f2a9df9ab0",
+      "name": "Elemental Mascot",
+      "rarity": "common",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/5/c507eb1c-48e9-4d28-bb2d-71f2a9df9ab0.jpg?1775938280",
+      "cmc": 3,
+      "type_line": "Creature — Elemental Bird",
+      "mana_cost": "{1}{U}{R}",
+      "power": "1",
+      "toughness": "4",
+      "keywords": [
+        "Flying",
+        "Vigilance",
+        "Opus"
+      ]
+    },
+    {
+      "scryfall_id": "c0cf5e0f-3668-46f2-850d-d91a538e8ead",
+      "name": "Embrace the Paradox",
+      "rarity": "common",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/0/c0cf5e0f-3668-46f2-850d-d91a538e8ead.jpg?1775938288",
+      "cmc": 5,
+      "type_line": "Instant",
+      "mana_cost": "{3}{G}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "3654416d-8558-4af2-9e10-18dbc8f2b376",
+      "name": "Emil, Vastlands Roamer",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/6/3654416d-8558-4af2-9e10-18dbc8f2b376.jpg?1775937993",
+      "cmc": 3,
+      "type_line": "Legendary Creature — Elf Druid",
+      "mana_cost": "{2}{G}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "0809b51a-6a05-4f18-9bf4-1b8382da648f",
+      "name": "End of the Hunt",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/0809b51a-6a05-4f18-9bf4-1b8382da648f.jpg?1775937476",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "d2ef31b4-24fa-4443-9f05-c8e99c3522e5",
+      "name": "Ennis, Debate Moderator",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/2/d2ef31b4-24fa-4443-9f05-c8e99c3522e5.jpg?1775937005",
+      "cmc": 2,
+      "type_line": "Legendary Creature — Human Cleric",
+      "mana_cost": "{1}{W}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "f2bf6b36-43e4-49d9-98b2-cbb4304c248b",
+      "name": "Environmental Scientist",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/2/f2bf6b36-43e4-49d9-98b2-cbb4304c248b.jpg?1775938001",
+      "cmc": 2,
+      "type_line": "Creature — Human Druid",
+      "mana_cost": "{1}{G}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "32e670da-7563-4f6a-a7db-4c126a440eb8",
+      "name": "Erode",
+      "rarity": "rare",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/2/32e670da-7563-4f6a-a7db-4c126a440eb8.jpg?1775937013",
+      "cmc": 1,
+      "type_line": "Instant",
+      "mana_cost": "{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "2a3cba55-3fae-4d45-ae03-4d662ec13718",
+      "name": "Essenceknit Scholar",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/a/2a3cba55-3fae-4d45-ae03-4d662ec13718.jpg?1775938295",
+      "cmc": 3,
+      "type_line": "Creature — Dryad Warlock",
+      "mana_cost": "{B}{B/G}{G}",
+      "power": "3",
+      "toughness": "1",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "32840097-0531-4c43-b6a8-e76c17420b04",
+      "name": "Essence Scatter",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/2/32840097-0531-4c43-b6a8-e76c17420b04.jpg?1775937236",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "f97fac69-3e77-4150-9702-cc726daa6d21",
+      "name": "Eternal Student",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/9/f97fac69-3e77-4150-9702-cc726daa6d21.jpg?1775937483",
+      "cmc": 4,
+      "type_line": "Creature — Zombie Warlock",
+      "mana_cost": "{3}{B}",
+      "power": "4",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "a58c364e-d0c5-41b9-8c8b-2e5a99468cc7",
+      "name": "Exhibition Tidecaller",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/5/a58c364e-d0c5-41b9-8c8b-2e5a99468cc7.jpg?1775937242",
+      "cmc": 1,
+      "type_line": "Creature — Djinn Wizard",
+      "mana_cost": "{U}",
+      "power": "0",
+      "toughness": "2",
+      "keywords": [
+        "Mill",
+        "Opus"
+      ]
+    },
+    {
+      "scryfall_id": "259b8c45-6241-4206-a34e-34c7f401f47b",
+      "name": "Expressive Firedancer",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/5/259b8c45-6241-4206-a34e-34c7f401f47b.jpg?1775937734",
+      "cmc": 2,
+      "type_line": "Creature — Human Sorcerer",
+      "mana_cost": "{1}{R}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Opus"
+      ]
+    },
+    {
+      "scryfall_id": "3dc7a4c3-c356-4fba-bea0-e8788da3eb57",
+      "name": "Fields of Strife",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/3/d/3dc7a4c3-c356-4fba-bea0-e8788da3eb57.jpg?1775938780",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": [
+        "Surveil"
+      ]
+    },
+    {
+      "scryfall_id": "c0cd1d71-8e4a-4e00-80cd-83aec231fa57",
+      "name": "Fix What's Broken",
+      "rarity": "rare",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/0/c0cd1d71-8e4a-4e00-80cd-83aec231fa57.jpg?1775938304",
+      "cmc": 4,
+      "type_line": "Sorcery",
+      "mana_cost": "{2}{W}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "1b832fda-d7c4-4566-884c-2a8b6da15488",
+      "name": "Flashback",
+      "rarity": "rare",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/b/1b832fda-d7c4-4566-884c-2a8b6da15488.jpg?1775937742",
+      "cmc": 1,
+      "type_line": "Instant",
+      "mana_cost": "{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "47d6093b-b1b6-4956-8bfd-02cce899f832",
+      "name": "Flow State",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/7/47d6093b-b1b6-4956-8bfd-02cce899f832.jpg?1775937249",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "f9488480-2b6c-40bc-a93e-29fb1292a2e4",
+      "name": "Follow the Lumarets",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/9/f9488480-2b6c-40bc-a93e-29fb1292a2e4.jpg?1775938009",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{G}",
+      "keywords": [
+        "Infusion"
+      ]
+    },
+    {
+      "scryfall_id": "d278f4c9-d20b-4a76-8c5c-4d3e985948b9",
+      "name": "Foolish Fate",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/2/d278f4c9-d20b-4a76-8c5c-4d3e985948b9.jpg?1775937489",
+      "cmc": 3,
+      "type_line": "Instant",
+      "mana_cost": "{2}{B}",
+      "keywords": [
+        "Infusion"
+      ]
+    },
+    {
+      "scryfall_id": "f169dfb2-e4c8-46e9-8591-e51bb82da082",
+      "name": "Forest",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/f/1/f169dfb2-e4c8-46e9-8591-e51bb82da082.jpg?1775938964",
+      "cmc": 0,
+      "type_line": "Basic Land — Forest",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "67504a12-7414-4209-bf1c-624b4db19d52",
+      "name": "Forum Necroscribe",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/7/67504a12-7414-4209-bf1c-624b4db19d52.jpg?1775937497",
+      "cmc": 6,
+      "type_line": "Creature — Troll Warlock",
+      "mana_cost": "{5}{B}",
+      "power": "5",
+      "toughness": "4",
+      "keywords": [
+        "Ward",
+        "Repartee"
+      ]
+    },
+    {
+      "scryfall_id": "1de6c6cc-0c55-4997-8623-d7f796bd9ab8",
+      "name": "Forum of Amity",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/1/d/1de6c6cc-0c55-4997-8623-d7f796bd9ab8.jpg?1775938787",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": [
+        "Surveil"
+      ]
+    },
+    {
+      "scryfall_id": "e1975a61-aef0-49a6-a6d6-c3a37e2e2b22",
+      "name": "Fractal Anomaly",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/1/e1975a61-aef0-49a6-a6d6-c3a37e2e2b22.jpg?1775937257",
+      "cmc": 1,
+      "type_line": "Instant",
+      "mana_cost": "{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "e3c3b19b-01b6-4f5a-b428-513b778c5d89",
+      "name": "Fractalize",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/3/e3c3b19b-01b6-4f5a-b428-513b778c5d89.jpg?1775937264",
+      "cmc": 1,
+      "type_line": "Instant",
+      "mana_cost": "{X}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "cf5b19e3-eed1-4b36-9756-660ffb3baa08",
+      "name": "Fractal Mascot",
+      "rarity": "common",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/f/cf5b19e3-eed1-4b36-9756-660ffb3baa08.jpg?1775938311",
+      "cmc": 6,
+      "type_line": "Creature — Fractal Elk",
+      "mana_cost": "{4}{G}{U}",
+      "power": "6",
+      "toughness": "6",
+      "keywords": [
+        "Trample"
+      ]
+    },
+    {
+      "scryfall_id": "ea7f5262-4ddb-410a-be72-4bac6af9b4ec",
+      "name": "Fractal Tender",
+      "rarity": "uncommon",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/a/ea7f5262-4ddb-410a-be72-4bac6af9b4ec.jpg?1775938318",
+      "cmc": 5,
+      "type_line": "Creature — Elf Wizard",
+      "mana_cost": "{3}{G}{U}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Ward",
+        "Increment"
+      ]
+    },
+    {
+      "scryfall_id": "f11d2846-f181-4751-82ac-1e1ced6f46c7",
+      "name": "Garrison Excavator",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/1/f11d2846-f181-4751-82ac-1e1ced6f46c7.jpg?1775937750",
+      "cmc": 4,
+      "type_line": "Creature — Orc Sorcerer",
+      "mana_cost": "{3}{R}",
+      "power": "3",
+      "toughness": "4",
+      "keywords": [
+        "Menace"
+      ]
+    },
+    {
+      "scryfall_id": "ec0f3613-1edc-40e8-8f26-2e5ef13be55e",
+      "name": "Geometer's Arthropod",
+      "rarity": "rare",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/c/ec0f3613-1edc-40e8-8f26-2e5ef13be55e.jpg?1775938325",
+      "cmc": 2,
+      "type_line": "Creature — Fractal Crab",
+      "mana_cost": "{G}{U}",
+      "power": "1",
+      "toughness": "4",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "abe8332f-c76e-44e2-9427-d1228453abec",
+      "name": "Germination Practicum",
+      "rarity": "mythic",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/b/abe8332f-c76e-44e2-9427-d1228453abec.jpg?1775938016",
+      "cmc": 5,
+      "type_line": "Sorcery — Lesson",
+      "mana_cost": "{3}{G}{G}",
+      "keywords": [
+        "Paradigm"
+      ]
+    },
+    {
+      "scryfall_id": "a335f396-1004-4fee-842a-a35ff6ba17f2",
+      "name": "Glorious Decay",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/3/a335f396-1004-4fee-842a-a35ff6ba17f2.jpg?1775938023",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "db1cea01-123e-4b23-8b98-f94cabce3912",
+      "name": "Graduation Day",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/b/db1cea01-123e-4b23-8b98-f94cabce3912.jpg?1775937020",
+      "cmc": 1,
+      "type_line": "Enchantment",
+      "mana_cost": "{W}",
+      "keywords": [
+        "Repartee"
+      ]
+    },
+    {
+      "scryfall_id": "62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a",
+      "name": "Grapple with Death",
+      "rarity": "common",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a.jpg?1775938332",
+      "cmc": 3,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{B}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "42d92674-2664-411c-b9c5-b04da7c845f4",
+      "name": "Great Hall of the Biblioplex",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/2/42d92674-2664-411c-b9c5-b04da7c845f4.jpg?1775938794",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "e8abc1eb-6225-4b18-8502-b5324b818aed",
+      "name": "Group Project",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/8/e8abc1eb-6225-4b18-8502-b5324b818aed.jpg?1775937026",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{W}",
+      "keywords": [
+        "Flashback"
+      ]
+    },
+    {
+      "scryfall_id": "1675a445-86ae-413b-b95a-a1c254a7f252",
+      "name": "Growth Curve",
+      "rarity": "uncommon",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/6/1675a445-86ae-413b-b95a-a1c254a7f252.jpg?1775938339",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{G}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "06c9e8a7-2840-4cff-90af-c6636e598f78",
+      "name": "Hardened Academic",
+      "rarity": "rare",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/6/06c9e8a7-2840-4cff-90af-c6636e598f78.jpg?1775938346",
+      "cmc": 2,
+      "type_line": "Creature — Bird Cleric",
+      "mana_cost": "{R}{W}",
+      "power": "2",
+      "toughness": "1",
+      "keywords": [
+        "Flying",
+        "Haste"
+      ]
+    },
+    {
+      "scryfall_id": "e07a8fc7-c11c-4469-a31d-0abf40e57bbf",
+      "name": "Harsh Annotation",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/0/e07a8fc7-c11c-4469-a31d-0abf40e57bbf.jpg?1775937033",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "0038d212-3d95-4f98-8c2e-7b2404d0ced7",
+      "name": "Heated Argument",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/0/0038d212-3d95-4f98-8c2e-7b2404d0ced7.jpg?1775937767",
+      "cmc": 5,
+      "type_line": "Instant",
+      "mana_cost": "{4}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "6e4a1f82-b0b1-4608-91f8-130bee731435",
+      "name": "Homesickness",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/e/6e4a1f82-b0b1-4608-91f8-130bee731435.jpg?1775937280",
+      "cmc": 6,
+      "type_line": "Instant",
+      "mana_cost": "{4}{U}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "030b1272-5990-4bc9-8fc1-82cc05602060",
+      "name": "Hungry Graffalon",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/3/030b1272-5990-4bc9-8fc1-82cc05602060.jpg?1775938030",
+      "cmc": 4,
+      "type_line": "Creature — Giraffe",
+      "mana_cost": "{3}{G}",
+      "power": "3",
+      "toughness": "4",
+      "keywords": [
+        "Reach",
+        "Increment"
+      ]
+    },
+    {
+      "scryfall_id": "099f8400-d70a-48ef-8ff6-645eae97e072",
+      "name": "Hydro-Channeler",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/9/099f8400-d70a-48ef-8ff6-645eae97e072.jpg?1775937286",
+      "cmc": 2,
+      "type_line": "Creature — Merfolk Wizard",
+      "mana_cost": "{1}{U}",
+      "power": "1",
+      "toughness": "3",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "d5df1c3f-2536-4476-b8cd-34b026c38366",
+      "name": "Imperious Inkmage",
+      "rarity": "common",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/5/d5df1c3f-2536-4476-b8cd-34b026c38366.jpg?1775938353",
+      "cmc": 3,
+      "type_line": "Creature — Orc Warlock",
+      "mana_cost": "{1}{W}{B}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Surveil",
+        "Vigilance"
+      ]
+    },
+    {
+      "scryfall_id": "39a816b4-39b8-421c-b828-68db901d34b7",
+      "name": "Impractical Joke",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/9/39a816b4-39b8-421c-b828-68db901d34b7.jpg?1775937777",
+      "cmc": 1,
+      "type_line": "Sorcery",
+      "mana_cost": "{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "d01fe6e9-49ee-4708-833e-75cd5a9f167c",
+      "name": "Improvisation Capstone",
+      "rarity": "mythic",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/0/d01fe6e9-49ee-4708-833e-75cd5a9f167c.jpg?1775937787",
+      "cmc": 7,
+      "type_line": "Sorcery — Lesson",
+      "mana_cost": "{5}{R}{R}",
+      "keywords": [
+        "Paradigm"
+      ]
+    },
+    {
+      "scryfall_id": "5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6",
+      "name": "Informed Inkwright",
+      "rarity": "rare",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/d/5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6.jpg?1775937046",
+      "cmc": 2,
+      "type_line": "Creature — Human Wizard",
+      "mana_cost": "{1}{W}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Vigilance",
+        "Repartee"
+      ]
+    },
+    {
+      "scryfall_id": "6d4a2f39-0e1e-4076-815a-2676a09a1aab",
+      "name": "Inkling Mascot",
+      "rarity": "common",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/d/6d4a2f39-0e1e-4076-815a-2676a09a1aab.jpg?1775938360",
+      "cmc": 2,
+      "type_line": "Creature — Inkling Cat",
+      "mana_cost": "{W}{B}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Surveil",
+        "Repartee"
+      ]
+    },
+    {
+      "scryfall_id": "bcfac992-9984-4529-b9ff-a42d58832b34",
+      "name": "Inkshape Demonstrator",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/c/bcfac992-9984-4529-b9ff-a42d58832b34.jpg?1775937053",
+      "cmc": 4,
+      "type_line": "Creature — Elephant Cleric",
+      "mana_cost": "{3}{W}",
+      "power": "3",
+      "toughness": "4",
+      "keywords": [
+        "Ward",
+        "Repartee"
+      ]
+    },
+    {
+      "scryfall_id": "0534cff6-299c-4155-b318-eb7581989e8a",
+      "name": "Interjection",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/5/0534cff6-299c-4155-b318-eb7581989e8a.jpg?1775937061",
+      "cmc": 1,
+      "type_line": "Instant",
+      "mana_cost": "{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "77b88bb8-6bd9-4632-b937-89468fcb5e6a",
+      "name": "Island",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/7/7/77b88bb8-6bd9-4632-b937-89468fcb5e6a.jpg?1775938923",
+      "cmc": 0,
+      "type_line": "Basic Land — Island",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "55ff776a-fc3b-4338-8864-d57a85b3f123",
+      "name": "Killian's Confidence",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/5/55ff776a-fc3b-4338-8864-d57a85b3f123.jpg?1775938369",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{W}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "da5f3729-6ec7-4482-90cb-83b973edeae4",
+      "name": "Last Gasp",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/a/da5f3729-6ec7-4482-90cb-83b973edeae4.jpg?1775937510",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "ad07091e-8c24-43af-8ce8-031847bcaf30",
+      "name": "Lecturing Scornmage",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/d/ad07091e-8c24-43af-8ce8-031847bcaf30.jpg?1775937516",
+      "cmc": 1,
+      "type_line": "Creature — Human Warlock",
+      "mana_cost": "{B}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Repartee"
+      ]
+    },
+    {
+      "scryfall_id": "2028792c-fd60-40d4-bff7-3b82dbe1ffb5",
+      "name": "Living History",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/0/2028792c-fd60-40d4-bff7-3b82dbe1ffb5.jpg?1775937797",
+      "cmc": 2,
+      "type_line": "Enchantment",
+      "mana_cost": "{1}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "5fe70295-e550-4577-a341-dab6c25aabfd",
+      "name": "Lorehold Charm",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/f/5fe70295-e550-4577-a341-dab6c25aabfd.jpg?1775938389",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{R}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "71a6701f-40f1-43ef-bff5-a5907fd67cd6",
+      "name": "Lorehold, the Historian",
+      "rarity": "mythic",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/1/71a6701f-40f1-43ef-bff5-a5907fd67cd6.jpg?1775938396",
+      "cmc": 5,
+      "type_line": "Legendary Creature — Elder Dragon",
+      "mana_cost": "{3}{R}{W}",
+      "power": "5",
+      "toughness": "5",
+      "keywords": [
+        "Flying",
+        "Haste"
+      ]
+    },
+    {
+      "scryfall_id": "c5e7c856-8b71-44e6-8998-0b0b3ff0ef99",
+      "name": "Lumaret's Favor",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/5/c5e7c856-8b71-44e6-8998-0b0b3ff0ef99.jpg?1775938045",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{G}",
+      "keywords": [
+        "Infusion"
+      ]
+    },
+    {
+      "scryfall_id": "1ceb704a-97a8-49f9-b799-30f001404144",
+      "name": "Mage Tower Referee",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/1/c/1ceb704a-97a8-49f9-b799-30f001404144.jpg?1775938737",
+      "cmc": 2,
+      "type_line": "Artifact Creature — Construct",
+      "mana_cost": "{2}",
+      "power": "2",
+      "toughness": "1",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4d611278-9948-4345-b4dd-aa6eaf21b233",
+      "name": "Magmablood Archaic",
+      "rarity": "rare",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/d/4d611278-9948-4345-b4dd-aa6eaf21b233.jpg?1775937816",
+      "cmc": 6,
+      "type_line": "Creature — Avatar",
+      "mana_cost": "{2/R}{2/R}{2/R}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Reach",
+        "Converge",
+        "Trample"
+      ]
+    },
+    {
+      "scryfall_id": "200c8e3d-c53b-40c7-a29a-fccc1281bfc6",
+      "name": "Mana Sculpt",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/0/200c8e3d-c53b-40c7-a29a-fccc1281bfc6.jpg?1775937307",
+      "cmc": 3,
+      "type_line": "Instant",
+      "mana_cost": "{1}{U}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "8d93d14d-7760-4af2-a237-2df326dd28d3",
+      "name": "Masterful Flourish",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/8/d/8d93d14d-7760-4af2-a237-2df326dd28d3.jpg?1775937531",
+      "cmc": 1,
+      "type_line": "Instant",
+      "mana_cost": "{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "cd3cc172-5609-4bc8-9d84-50680fed6df9",
+      "name": "Mathemagics",
+      "rarity": "mythic",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/d/cd3cc172-5609-4bc8-9d84-50680fed6df9.jpg?1775937314",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{X}{X}{U}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "460c6afd-cddf-4fea-925f-b27517ff250a",
+      "name": "Matterbending Mage",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321",
+      "cmc": 3,
+      "type_line": "Creature — Human Wizard",
+      "mana_cost": "{2}{U}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "d8309815-7035-47a5-acf2-2b2ac1e65037",
+      "name": "Melancholic Poet",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/8/d8309815-7035-47a5-acf2-2b2ac1e65037.jpg?1775937538",
+      "cmc": 2,
+      "type_line": "Creature — Elf Bard",
+      "mana_cost": "{1}{B}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Repartee"
+      ]
+    },
+    {
+      "scryfall_id": "949ad3ff-9e80-493c-a3ae-146b919bfcd7",
+      "name": "Mica, Reader of Ruins",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/4/949ad3ff-9e80-493c-a3ae-146b919bfcd7.jpg?1775937824",
+      "cmc": 4,
+      "type_line": "Legendary Creature — Human Artificer",
+      "mana_cost": "{3}{R}",
+      "power": "4",
+      "toughness": "4",
+      "keywords": [
+        "Ward"
+      ]
+    },
+    {
+      "scryfall_id": "2c3a6eb8-ce0c-4dc8-9ed6-d2a9223eef53",
+      "name": "Mindful Biomancer",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/c/2c3a6eb8-ce0c-4dc8-9ed6-d2a9223eef53.jpg?1775938052",
+      "cmc": 2,
+      "type_line": "Creature — Dryad Druid",
+      "mana_cost": "{1}{G}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "0a7f0fdf-1d4b-4458-a19c-274611e8a59a",
+      "name": "Mind into Matter",
+      "rarity": "rare",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/a/0a7f0fdf-1d4b-4458-a19c-274611e8a59a.jpg?1775938403",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{X}{G}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "9d5fdbda-ebbe-45d6-a668-5ddee057a063",
+      "name": "Mind Roots",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/d/9d5fdbda-ebbe-45d6-a668-5ddee057a063.jpg?1775938410",
+      "cmc": 3,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{B}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "326dfe32-3674-4a11-acd8-5ba62371235a",
+      "name": "Molten-Core Maestro",
+      "rarity": "rare",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/2/326dfe32-3674-4a11-acd8-5ba62371235a.jpg?1775937832",
+      "cmc": 2,
+      "type_line": "Creature — Goblin Bard",
+      "mana_cost": "{1}{R}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Menace",
+        "Opus"
+      ]
+    },
+    {
+      "scryfall_id": "506f69aa-7dc4-4dd7-990a-7371fc1762c0",
+      "name": "Molten Note",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/0/506f69aa-7dc4-4dd7-990a-7371fc1762c0.jpg?1775938416",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{X}{R}{W}",
+      "keywords": [
+        "Flashback"
+      ]
+    },
+    {
+      "scryfall_id": "577d9dc8-7720-4dc9-b650-64b4729b309b",
+      "name": "Moment of Reckoning",
+      "rarity": "rare",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/7/577d9dc8-7720-4dc9-b650-64b4729b309b.jpg?1775938423",
+      "cmc": 7,
+      "type_line": "Sorcery",
+      "mana_cost": "{3}{W}{W}{B}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "6877180c-22a1-4c4d-9178-316f4c34661b",
+      "name": "Moseo, Vein's New Dean",
+      "rarity": "rare",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/8/6877180c-22a1-4c4d-9178-316f4c34661b.jpg?1775937545",
+      "cmc": 3,
+      "type_line": "Legendary Creature — Bird Skeleton Warlock",
+      "mana_cost": "{2}{B}",
+      "power": "2",
+      "toughness": "1",
+      "keywords": [
+        "Infusion",
+        "Flying"
+      ]
+    },
+    {
+      "scryfall_id": "a642c7b1-d4d1-4125-a66d-560438e5ee51",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/a/6/a642c7b1-d4d1-4125-a66d-560438e5ee51.jpg?1775938951",
+      "cmc": 0,
+      "type_line": "Basic Land — Mountain",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "71cb4a6b-b500-4b28-bcdb-ec4188242f39",
+      "name": "Muse Seeker",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/1/71cb4a6b-b500-4b28-bcdb-ec4188242f39.jpg?1775937328",
+      "cmc": 2,
+      "type_line": "Creature — Elf Wizard",
+      "mana_cost": "{1}{U}",
+      "power": "1",
+      "toughness": "2",
+      "keywords": [
+        "Opus"
+      ]
+    },
+    {
+      "scryfall_id": "c59e0004-1d6a-42a1-8ce4-31da2af2e1bf",
+      "name": "Muse's Encouragement",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/5/c59e0004-1d6a-42a1-8ce4-31da2af2e1bf.jpg?1775937336",
+      "cmc": 5,
+      "type_line": "Instant",
+      "mana_cost": "{4}{U}",
+      "keywords": [
+        "Surveil"
+      ]
+    },
+    {
+      "scryfall_id": "fd80a87d-35d3-4ad1-8172-c85e93032d1d",
+      "name": "Nita, Forum Conciliator",
+      "rarity": "rare",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/d/fd80a87d-35d3-4ad1-8172-c85e93032d1d.jpg?1775938431",
+      "cmc": 3,
+      "type_line": "Legendary Creature — Human Advisor",
+      "mana_cost": "{1}{W}{B}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "3a028306-c5d7-4f8f-b6f4-0d103fd47000",
+      "name": "Noxious Newt",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/a/3a028306-c5d7-4f8f-b6f4-0d103fd47000.jpg?1775938060",
+      "cmc": 2,
+      "type_line": "Creature — Salamander",
+      "mana_cost": "{1}{G}",
+      "power": "1",
+      "toughness": "2",
+      "keywords": [
+        "Deathtouch"
+      ]
+    },
+    {
+      "scryfall_id": "eb7e858a-9b85-49b2-a379-ee656b64935a",
+      "name": "Old-Growth Educator",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/b/eb7e858a-9b85-49b2-a379-ee656b64935a.jpg?1775938438",
+      "cmc": 4,
+      "type_line": "Creature — Treefolk Druid",
+      "mana_cost": "{2}{B}{G}",
+      "power": "4",
+      "toughness": "4",
+      "keywords": [
+        "Infusion",
+        "Reach",
+        "Vigilance"
+      ]
+    },
+    {
+      "scryfall_id": "0863a19d-4511-4a78-98dd-d194afd1c39b",
+      "name": "Oracle's Restoration",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/8/0863a19d-4511-4a78-98dd-d194afd1c39b.jpg?1775938067",
+      "cmc": 1,
+      "type_line": "Sorcery",
+      "mana_cost": "{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "010ed379-63f5-452c-9cd4-00d51647c0e3",
+      "name": "Orysa, Tide Choreographer",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/1/010ed379-63f5-452c-9cd4-00d51647c0e3.jpg?1775937343",
+      "cmc": 5,
+      "type_line": "Legendary Creature — Merfolk Bard",
+      "mana_cost": "{4}{U}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "5fe99be0-e1ec-485e-82f8-02eba7b82441",
+      "name": "Owlin Historian",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/f/5fe99be0-e1ec-485e-82f8-02eba7b82441.jpg?1775937078",
+      "cmc": 3,
+      "type_line": "Creature — Bird Cleric",
+      "mana_cost": "{2}{W}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": [
+        "Flying",
+        "Surveil"
+      ]
+    },
+    {
+      "scryfall_id": "8c6fecfd-8241-4cf0-b1eb-19472b99e0ed",
+      "name": "Page, Loose Leaf",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/c/8c6fecfd-8241-4cf0-b1eb-19472b99e0ed.jpg?1775938744",
+      "cmc": 2,
+      "type_line": "Legendary Artifact Creature — Construct",
+      "mana_cost": "{2}",
+      "power": "0",
+      "toughness": "2",
+      "keywords": [
+        "Grandeur"
+      ]
+    },
+    {
+      "scryfall_id": "dbc3447e-1329-4ea1-b4ca-b321b0ffec8f",
+      "name": "Paradox Gardens",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/d/b/dbc3447e-1329-4ea1-b4ca-b321b0ffec8f.jpg?1775938801",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": [
+        "Surveil"
+      ]
+    },
+    {
+      "scryfall_id": "d7cb1af2-0302-46ff-8303-ae9d07541a01",
+      "name": "Paradox Surveyor",
+      "rarity": "uncommon",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/7/d7cb1af2-0302-46ff-8303-ae9d07541a01.jpg?1775938445",
+      "cmc": 3,
+      "type_line": "Creature — Elf Druid",
+      "mana_cost": "{G}{G/U}{U}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Reach"
+      ]
+    },
+    {
+      "scryfall_id": "66d47940-84f9-4479-8562-45e5148435d4",
+      "name": "Pensive Professor",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/6/66d47940-84f9-4479-8562-45e5148435d4.jpg?1775937349",
+      "cmc": 3,
+      "type_line": "Creature — Human Wizard",
+      "mana_cost": "{1}{U}{U}",
+      "power": "0",
+      "toughness": "2",
+      "keywords": [
+        "Increment"
+      ]
+    },
+    {
+      "scryfall_id": "c1251ae6-2f19-4f84-ab02-6a6cc7ce6056",
+      "name": "Pestbrood Sloth",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/1/c1251ae6-2f19-4f84-ab02-6a6cc7ce6056.jpg?1775938073",
+      "cmc": 4,
+      "type_line": "Creature — Plant Sloth",
+      "mana_cost": "{3}{G}",
+      "power": "4",
+      "toughness": "4",
+      "keywords": [
+        "Reach"
+      ]
+    },
+    {
+      "scryfall_id": "d882beb9-6766-4818-afbb-f6fd7a2d5b70",
+      "name": "Pest Mascot",
+      "rarity": "common",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/8/d882beb9-6766-4818-afbb-f6fd7a2d5b70.jpg?1775938452",
+      "cmc": 3,
+      "type_line": "Creature — Pest Ape",
+      "mana_cost": "{1}{B}{G}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": [
+        "Trample"
+      ]
+    },
+    {
+      "scryfall_id": "355dd460-b0e9-41f2-a058-b7f7e39ac387",
+      "name": "Petrified Hamlet",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/3/5/355dd460-b0e9-41f2-a058-b7f7e39ac387.jpg?1775938807",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "d85d0f25-a24a-4de0-9b8b-93fb5017bce9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/d/8/d85d0f25-a24a-4de0-9b8b-93fb5017bce9.jpg?1775938910",
+      "cmc": 0,
+      "type_line": "Basic Land — Plains",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "c83b96a3-ddfd-4d11-8a85-5bf62087cbb9",
+      "name": "Planar Engineering",
+      "rarity": "rare",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/8/c83b96a3-ddfd-4d11-8a85-5bf62087cbb9.jpg?1775938080",
+      "cmc": 4,
+      "type_line": "Sorcery",
+      "mana_cost": "{3}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "3755a2e9-af55-4625-a006-2a86c7893a96",
+      "name": "Poisoner's Apprentice",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/7/3755a2e9-af55-4625-a006-2a86c7893a96.jpg?1775937552",
+      "cmc": 3,
+      "type_line": "Creature — Orc Warlock",
+      "mana_cost": "{2}{B}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Infusion"
+      ]
+    },
+    {
+      "scryfall_id": "174f5d7e-5d36-4d13-96bf-9b12cd644716",
+      "name": "Postmortem Professor",
+      "rarity": "rare",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/7/174f5d7e-5d36-4d13-96bf-9b12cd644716.jpg?1775937558",
+      "cmc": 2,
+      "type_line": "Creature — Zombie Warlock",
+      "mana_cost": "{1}{B}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "2123b349-4649-4a15-a8b5-b54414d2b1b7",
+      "name": "Potioner's Trove",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/2/1/2123b349-4649-4a15-a8b5-b54414d2b1b7.jpg?1775938752",
+      "cmc": 3,
+      "type_line": "Artifact",
+      "mana_cost": "{3}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "9c99c17b-ad3a-4859-97e8-469718b81cd9",
+      "name": "Pox Plague",
+      "rarity": "rare",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/c/9c99c17b-ad3a-4859-97e8-469718b81cd9.jpg?1775937566",
+      "cmc": 5,
+      "type_line": "Sorcery",
+      "mana_cost": "{B}{B}{B}{B}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "79c7cf94-c0a1-432d-90d7-7f0599c2e7a8",
+      "name": "Practiced Offense",
+      "rarity": "rare",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/9/79c7cf94-c0a1-432d-90d7-7f0599c2e7a8.jpg?1775937087",
+      "cmc": 3,
+      "type_line": "Sorcery",
+      "mana_cost": "{2}{W}",
+      "keywords": [
+        "Flashback"
+      ]
+    },
+    {
+      "scryfall_id": "40075e3f-58b3-47fd-8fbe-4b301e9ce7a1",
+      "name": "Practiced Scrollsmith",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/0/40075e3f-58b3-47fd-8fbe-4b301e9ce7a1.jpg?1775938459",
+      "cmc": 3,
+      "type_line": "Creature — Dwarf Cleric",
+      "mana_cost": "{R}{R/W}{W}",
+      "power": "3",
+      "toughness": "2",
+      "keywords": [
+        "First strike"
+      ]
+    },
+    {
+      "scryfall_id": "f6fdb814-45c6-4d14-afff-7f5bd1bd10a1",
+      "name": "Primary Research",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/6/f6fdb814-45c6-4d14-afff-7f5bd1bd10a1.jpg?1775937094",
+      "cmc": 5,
+      "type_line": "Enchantment",
+      "mana_cost": "{4}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "8f6c2a5e-fe13-407c-aadd-c9caf2884ff1",
+      "name": "Prismari Charm",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/8/f/8f6c2a5e-fe13-407c-aadd-c9caf2884ff1.jpg?1775938465",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{U}{R}",
+      "keywords": [
+        "Surveil"
+      ]
+    },
+    {
+      "scryfall_id": "767ff9fa-4e7f-421a-b911-45186b520ae1",
+      "name": "Prismari, the Inspiration",
+      "rarity": "mythic",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/6/767ff9fa-4e7f-421a-b911-45186b520ae1.jpg?1775938472",
+      "cmc": 7,
+      "type_line": "Legendary Creature — Elder Dragon",
+      "mana_cost": "{5}{U}{R}",
+      "power": "7",
+      "toughness": "7",
+      "keywords": [
+        "Flying",
+        "Ward"
+      ]
+    },
+    {
+      "scryfall_id": "1edb449d-620f-4e21-9d76-2c840635eb9d",
+      "name": "Procrastinate",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/e/1edb449d-620f-4e21-9d76-2c840635eb9d.jpg?1775937356",
+      "cmc": 1,
+      "type_line": "Sorcery",
+      "mana_cost": "{X}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b127d543-0a90-4af6-9410-94d5cd30389e",
+      "name": "Proctor's Gaze",
+      "rarity": "uncommon",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/1/b127d543-0a90-4af6-9410-94d5cd30389e.jpg?1775938479",
+      "cmc": 4,
+      "type_line": "Instant",
+      "mana_cost": "{2}{G}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "6ff3b4d8-1271-4c5d-8834-7662244f173d",
+      "name": "Professor Dellian Fel",
+      "rarity": "mythic",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/f/6ff3b4d8-1271-4c5d-8834-7662244f173d.jpg?1775938486",
+      "cmc": 4,
+      "type_line": "Legendary Planeswalker — Dellian",
+      "mana_cost": "{2}{B}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "ecd33152-e290-4505-addd-a8d08cefdddd",
+      "name": "Pterafractyl",
+      "rarity": "common",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/c/ecd33152-e290-4505-addd-a8d08cefdddd.jpg?1775938495",
+      "cmc": 2,
+      "type_line": "Creature — Dinosaur Fractal",
+      "mana_cost": "{X}{G}{U}",
+      "power": "1",
+      "toughness": "0",
+      "keywords": [
+        "Flying"
+      ]
+    },
+    {
+      "scryfall_id": "d73612fe-8992-4650-a7e3-c7b662da6a03",
+      "name": "Pull from the Grave",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/7/d73612fe-8992-4650-a7e3-c7b662da6a03.jpg?1775937572",
+      "cmc": 3,
+      "type_line": "Sorcery",
+      "mana_cost": "{2}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4584d5f7-b1f1-4c8e-80c5-ad35e44a968e",
+      "name": "Pursue the Past",
+      "rarity": "common",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/5/4584d5f7-b1f1-4c8e-80c5-ad35e44a968e.jpg?1775938502",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{R}{W}",
+      "keywords": [
+        "Flashback"
+      ]
+    },
+    {
+      "scryfall_id": "318486e0-f255-40f5-8150-dc272eec9d7d",
+      "name": "Quandrix Charm",
+      "rarity": "uncommon",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/1/318486e0-f255-40f5-8150-dc272eec9d7d.jpg?1775938509",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{G}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "015afe31-af3c-4c9b-9997-d7c33b915a33",
+      "name": "Quandrix, the Proof",
+      "rarity": "mythic",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/1/015afe31-af3c-4c9b-9997-d7c33b915a33.jpg?1775938517",
+      "cmc": 6,
+      "type_line": "Legendary Creature — Elder Dragon",
+      "mana_cost": "{4}{G}{U}",
+      "power": "6",
+      "toughness": "6",
+      "keywords": [
+        "Cascade",
+        "Flying",
+        "Trample"
+      ]
+    },
+    {
+      "scryfall_id": "2d4f0bc7-da7c-4749-a24c-b01f3eb5860c",
+      "name": "Quick Study",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/d/2d4f0bc7-da7c-4749-a24c-b01f3eb5860c.jpg?1775937363",
+      "cmc": 3,
+      "type_line": "Instant",
+      "mana_cost": "{2}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "f5e67560-3135-4b27-a344-5859edf8bcd9",
+      "name": "Rabid Attack",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/5/f5e67560-3135-4b27-a344-5859edf8bcd9.jpg?1775937579",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "8fbad757-4081-42f7-a460-68ac03e77510",
+      "name": "Ral Zarek, Guest Lecturer",
+      "rarity": "mythic",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/8/f/8fbad757-4081-42f7-a460-68ac03e77510.jpg?1775937587",
+      "cmc": 3,
+      "type_line": "Legendary Planeswalker — Ral",
+      "mana_cost": "{1}{B}{B}",
+      "keywords": [
+        "Surveil"
+      ]
+    },
+    {
+      "scryfall_id": "2565e16a-ed31-4867-adb8-f1633d580397",
+      "name": "Rancorous Archaic",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/2/5/2565e16a-ed31-4867-adb8-f1633d580397.jpg?1775936927",
+      "cmc": 5,
+      "type_line": "Creature — Avatar",
+      "mana_cost": "{5}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Reach",
+        "Converge",
+        "Trample"
+      ]
+    },
+    {
+      "scryfall_id": "97b50521-5a0f-4dbd-8e15-f0f0d059c258",
+      "name": "Rapier Wit",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/7/97b50521-5a0f-4dbd-8e15-f0f0d059c258.jpg?1775937109",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{1}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "21afe19d-881a-48cb-863e-22942bea5ebe",
+      "name": "Rapturous Moment",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/1/21afe19d-881a-48cb-863e-22942bea5ebe.jpg?1775938524",
+      "cmc": 6,
+      "type_line": "Sorcery",
+      "mana_cost": "{4}{U}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "06dd56bd-de92-4202-af31-7e881c34d799",
+      "name": "Rearing Embermare",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/6/06dd56bd-de92-4202-af31-7e881c34d799.jpg?1775937851",
+      "cmc": 5,
+      "type_line": "Creature — Horse Beast",
+      "mana_cost": "{4}{R}",
+      "power": "4",
+      "toughness": "5",
+      "keywords": [
+        "Reach",
+        "Haste"
+      ]
+    },
+    {
+      "scryfall_id": "fc6a1425-6733-42a2-94d9-605966398092",
+      "name": "Rehearsed Debater",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc6a1425-6733-42a2-94d9-605966398092.jpg?1775937116",
+      "cmc": 3,
+      "type_line": "Creature — Djinn Bard",
+      "mana_cost": "{2}{W}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Vigilance",
+        "Repartee"
+      ]
+    },
+    {
+      "scryfall_id": "25bbb1c7-14e8-444f-ab98-e95f50927460",
+      "name": "Render Speechless",
+      "rarity": "common",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/5/25bbb1c7-14e8-444f-ab98-e95f50927460.jpg?1775938531",
+      "cmc": 4,
+      "type_line": "Sorcery",
+      "mana_cost": "{2}{W}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "6ef168d6-28f2-4c24-9bfa-82c35663b729",
+      "name": "Resonating Lute",
+      "rarity": "rare",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/e/6ef168d6-28f2-4c24-9bfa-82c35663b729.jpg?1775938538",
+      "cmc": 4,
+      "type_line": "Artifact",
+      "mana_cost": "{2}{U}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "9ebc4ecf-2fa2-4ab8-afde-3b91cf5eadb6",
+      "name": "Restoration Seminar",
+      "rarity": "mythic",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/e/9ebc4ecf-2fa2-4ab8-afde-3b91cf5eadb6.jpg?1775937123",
+      "cmc": 7,
+      "type_line": "Sorcery — Lesson",
+      "mana_cost": "{5}{W}{W}",
+      "keywords": [
+        "Paradigm"
+      ]
+    },
+    {
+      "scryfall_id": "5390a79c-bc4b-4edb-a845-0d3514986401",
+      "name": "Root Manipulation",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/3/5390a79c-bc4b-4edb-a845-0d3514986401.jpg?1775938546",
+      "cmc": 5,
+      "type_line": "Sorcery",
+      "mana_cost": "{3}{B}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "afe61957-a9bb-42b0-98e8-b5fa418cbaff",
+      "name": "Rubble Rouser",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/f/afe61957-a9bb-42b0-98e8-b5fa418cbaff.jpg?1775937860",
+      "cmc": 3,
+      "type_line": "Creature — Dwarf Sorcerer",
+      "mana_cost": "{2}{R}",
+      "power": "1",
+      "toughness": "4",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "40ecc34b-4cd0-4998-bbf4-7faa6fd3d7e0",
+      "name": "Run Behind",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/0/40ecc34b-4cd0-4998-bbf4-7faa6fd3d7e0.jpg?1775937369",
+      "cmc": 4,
+      "type_line": "Instant",
+      "mana_cost": "{3}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "69757177-aefa-44a6-81db-5ae9b5d2f117",
+      "name": "Scolding Administrator",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/9/69757177-aefa-44a6-81db-5ae9b5d2f117.jpg?1775938562",
+      "cmc": 2,
+      "type_line": "Creature — Dwarf Cleric",
+      "mana_cost": "{W}{B}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Menace",
+        "Repartee"
+      ]
+    },
+    {
+      "scryfall_id": "4ddf4e34-a1f9-4636-942d-0a08e9f94320",
+      "name": "Seize the Spoils",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/d/4ddf4e34-a1f9-4636-942d-0a08e9f94320.jpg?1775937868",
+      "cmc": 3,
+      "type_line": "Sorcery",
+      "mana_cost": "{2}{R}",
+      "keywords": [
+        "Treasure"
+      ]
+    },
+    {
+      "scryfall_id": "283b508b-89f0-4c23-9686-b049e402b73c",
+      "name": "Send in the Pest",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/8/283b508b-89f0-4c23-9686-b049e402b73c.jpg?1775937607",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "dc0517ca-b271-49a1-a286-c20f4e5b9309",
+      "name": "Shattered Acolyte",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/c/dc0517ca-b271-49a1-a286-c20f4e5b9309.jpg?1775937130",
+      "cmc": 2,
+      "type_line": "Creature — Dwarf Warlock",
+      "mana_cost": "{1}{W}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Lifelink"
+      ]
+    },
+    {
+      "scryfall_id": "5aa0c810-3b7d-4661-979e-e84fb327742d",
+      "name": "Shattered Sanctum",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/5/a/5aa0c810-3b7d-4661-979e-e84fb327742d.jpg?1775938816",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "97f7fbb9-228c-4a74-975b-38d3b6cecb32",
+      "name": "Shopkeeper's Bane",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/7/97f7fbb9-228c-4a74-975b-38d3b6cecb32.jpg?1775938087",
+      "cmc": 3,
+      "type_line": "Creature — Badger Pest",
+      "mana_cost": "{2}{G}",
+      "power": "4",
+      "toughness": "2",
+      "keywords": [
+        "Trample"
+      ]
+    },
+    {
+      "scryfall_id": "3eb73579-f1c6-4762-81d2-9568ab501fac",
+      "name": "Silverquill Charm",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/e/3eb73579-f1c6-4762-81d2-9568ab501fac.jpg?1775938570",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{W}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "1742c9cd-5ba0-4335-9999-acc7f9d4f73c",
+      "name": "Silverquill, the Disputant",
+      "rarity": "mythic",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/7/1742c9cd-5ba0-4335-9999-acc7f9d4f73c.jpg?1775938577",
+      "cmc": 4,
+      "type_line": "Legendary Creature — Elder Dragon",
+      "mana_cost": "{2}{W}{B}",
+      "power": "4",
+      "toughness": "4",
+      "keywords": [
+        "Flying",
+        "Vigilance"
+      ]
+    },
+    {
+      "scryfall_id": "6747657b-5ce4-4dbd-b924-ca1f7119faf7",
+      "name": "Skycoach Waypoint",
+      "rarity": "uncommon",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/6/7/6747657b-5ce4-4dbd-b924-ca1f7119faf7.jpg?1775938823",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "3a925370-58ac-4181-9acc-db7b0e0abf17",
+      "name": "Slumbering Trudge",
+      "rarity": "rare",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/a/3a925370-58ac-4181-9acc-db7b0e0abf17.jpg?1775938094",
+      "cmc": 1,
+      "type_line": "Creature — Plant Beast",
+      "mana_cost": "{X}{G}",
+      "power": "6",
+      "toughness": "6",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "fc4c7fa2-aebb-4636-9afd-f1010c923316",
+      "name": "Snarl Song",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/c/fc4c7fa2-aebb-4636-9afd-f1010c923316.jpg?1775938101",
+      "cmc": 6,
+      "type_line": "Sorcery",
+      "mana_cost": "{5}{G}",
+      "keywords": [
+        "Converge"
+      ]
+    },
+    {
+      "scryfall_id": "4b4c120e-abe9-4f11-a7e4-bc3f723da4b2",
+      "name": "Sneering Shadewriter",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4b4c120e-abe9-4f11-a7e4-bc3f723da4b2.jpg?1775937615",
+      "cmc": 5,
+      "type_line": "Creature — Vampire Warlock",
+      "mana_cost": "{4}{B}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Flying"
+      ]
+    },
+    {
+      "scryfall_id": "73d06987-8686-461b-b260-9a4fee6a3b32",
+      "name": "Snooping Page",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/3/73d06987-8686-461b-b260-9a4fee6a3b32.jpg?1775938584",
+      "cmc": 3,
+      "type_line": "Creature — Human Cleric",
+      "mana_cost": "{1}{W}{B}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": [
+        "Repartee"
+      ]
+    },
+    {
+      "scryfall_id": "2fbe446b-60fd-43da-8358-985392293af8",
+      "name": "Soaring Stoneglider",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/f/2fbe446b-60fd-43da-8358-985392293af8.jpg?1775937136",
+      "cmc": 3,
+      "type_line": "Creature — Elephant Cleric",
+      "mana_cost": "{2}{W}",
+      "power": "4",
+      "toughness": "3",
+      "keywords": [
+        "Flying",
+        "Vigilance"
+      ]
+    },
+    {
+      "scryfall_id": "a04b6900-0436-4920-a0d4-c0186d605ae3",
+      "name": "Social Snub",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/0/a04b6900-0436-4920-a0d4-c0186d605ae3.jpg?1775938590",
+      "cmc": 3,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{W}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "a0a66f7b-eab4-45da-8895-c2c2c7eb05f8",
+      "name": "Spectacle Summit",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/a/0/a0a66f7b-eab4-45da-8895-c2c2c7eb05f8.jpg?1775938830",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": [
+        "Surveil"
+      ]
+    },
+    {
+      "scryfall_id": "c90366d5-b4ba-4772-a3c5-f138bbe7f305",
+      "name": "Spectacular Skywhale",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/9/c90366d5-b4ba-4772-a3c5-f138bbe7f305.jpg?1775938597",
+      "cmc": 4,
+      "type_line": "Creature — Elemental Whale",
+      "mana_cost": "{2}{U}{R}",
+      "power": "1",
+      "toughness": "4",
+      "keywords": [
+        "Flying",
+        "Opus"
+      ]
+    },
+    {
+      "scryfall_id": "123f1fde-d8de-4640-baa1-bb3781713168",
+      "name": "Spirit Mascot",
+      "rarity": "common",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/2/123f1fde-d8de-4640-baa1-bb3781713168.jpg?1775938605",
+      "cmc": 2,
+      "type_line": "Creature — Spirit Ox",
+      "mana_cost": "{R}{W}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "969b6657-c3b9-47e1-a42e-95bbcccf452d",
+      "name": "Splatter Technique",
+      "rarity": "rare",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/6/969b6657-c3b9-47e1-a42e-95bbcccf452d.jpg?1775938612",
+      "cmc": 5,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{U}{U}{R}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "a689289e-7141-4950-8a87-82e9bd6846fe",
+      "name": "Stadium Tidalmage",
+      "rarity": "common",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/6/a689289e-7141-4950-8a87-82e9bd6846fe.jpg?1775938619",
+      "cmc": 4,
+      "type_line": "Creature — Djinn Sorcerer",
+      "mana_cost": "{2}{U}{R}",
+      "power": "4",
+      "toughness": "4",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b756ca13-b904-4510-9bbb-5bc2864abfbd",
+      "name": "Stand Up for Yourself",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/7/b756ca13-b904-4510-9bbb-5bc2864abfbd.jpg?1775937151",
+      "cmc": 3,
+      "type_line": "Instant",
+      "mana_cost": "{2}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "f143fd41-58c3-45a0-bef8-e9e4b4a502a5",
+      "name": "Startled Relic Sloth",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/1/f143fd41-58c3-45a0-bef8-e9e4b4a502a5.jpg?1775938628",
+      "cmc": 4,
+      "type_line": "Creature — Sloth Beast",
+      "mana_cost": "{2}{R}{W}",
+      "power": "4",
+      "toughness": "4",
+      "keywords": [
+        "Lifelink",
+        "Trample"
+      ]
+    },
+    {
+      "scryfall_id": "7ac6649f-980e-4404-9c05-458c30578ecc",
+      "name": "Steal the Show",
+      "rarity": "rare",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/a/7ac6649f-980e-4404-9c05-458c30578ecc.jpg?1775937875",
+      "cmc": 3,
+      "type_line": "Sorcery",
+      "mana_cost": "{2}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "ee84b04d-78fc-416f-9166-72e5417c3e17",
+      "name": "Stirring Honormancer",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/e/ee84b04d-78fc-416f-9166-72e5417c3e17.jpg?1775938634",
+      "cmc": 5,
+      "type_line": "Creature — Rhino Bard",
+      "mana_cost": "{2}{W}{W/B}{B}",
+      "power": "4",
+      "toughness": "5",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "21375667-b318-47f8-a482-9c8c2b5b14c0",
+      "name": "Stirring Hopesinger",
+      "rarity": "rare",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/1/21375667-b318-47f8-a482-9c8c2b5b14c0.jpg?1775937157",
+      "cmc": 3,
+      "type_line": "Creature — Bird Bard",
+      "mana_cost": "{2}{W}",
+      "power": "1",
+      "toughness": "3",
+      "keywords": [
+        "Flying",
+        "Lifelink",
+        "Repartee"
+      ]
+    },
+    {
+      "scryfall_id": "c2abfffb-bf36-44af-9a27-6e109e4d77dd",
+      "name": "Stone Docent",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/2/c2abfffb-bf36-44af-9a27-6e109e4d77dd.jpg?1775937164",
+      "cmc": 2,
+      "type_line": "Creature — Spirit Chimera",
+      "mana_cost": "{1}{W}",
+      "power": "3",
+      "toughness": "1",
+      "keywords": [
+        "Surveil"
+      ]
+    },
+    {
+      "scryfall_id": "bd3ae4fa-4c97-410a-8c0a-bd203342595d",
+      "name": "Stormcarved Coast",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/d/bd3ae4fa-4c97-410a-8c0a-bd203342595d.jpg?1775938837",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "1ec40a1b-51e7-4a35-966c-ab2a10f21a80",
+      "name": "Stress Dream",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/e/1ec40a1b-51e7-4a35-966c-ab2a10f21a80.jpg?1775938641",
+      "cmc": 5,
+      "type_line": "Instant",
+      "mana_cost": "{3}{U}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "87741fbb-b426-4f83-a358-587b0907f081",
+      "name": "Strixhaven Skycoach",
+      "rarity": "uncommon",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/8/7/87741fbb-b426-4f83-a358-587b0907f081.jpg?1775938759",
+      "cmc": 3,
+      "type_line": "Artifact — Vehicle",
+      "mana_cost": "{3}",
+      "power": "3",
+      "toughness": "2",
+      "keywords": [
+        "Flying",
+        "Crew"
+      ]
+    },
+    {
+      "scryfall_id": "44d0277c-ca82-4334-a15a-cd67a9db0d02",
+      "name": "Summoned Dromedary",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/4/44d0277c-ca82-4334-a15a-cd67a9db0d02.jpg?1775937170",
+      "cmc": 4,
+      "type_line": "Creature — Spirit Camel",
+      "mana_cost": "{3}{W}",
+      "power": "4",
+      "toughness": "3",
+      "keywords": [
+        "Vigilance"
+      ]
+    },
+    {
+      "scryfall_id": "c35b57e4-2358-46c0-8f09-cd27c10eaf2d",
+      "name": "Sundering Archaic",
+      "rarity": "uncommon",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/c/3/c35b57e4-2358-46c0-8f09-cd27c10eaf2d.jpg?1775936933",
+      "cmc": 6,
+      "type_line": "Creature — Avatar",
+      "mana_cost": "{6}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Converge"
+      ]
+    },
+    {
+      "scryfall_id": "b34000e9-ff20-4fb4-9d0b-03a172a92457",
+      "name": "Sundown Pass",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/3/b34000e9-ff20-4fb4-9d0b-03a172a92457.jpg?1775938845",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "135c0696-d86d-4e48-988c-5c218de451fc",
+      "name": "Suspend Aggression",
+      "rarity": "rare",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/3/135c0696-d86d-4e48-988c-5c218de451fc.jpg?1775938648",
+      "cmc": 3,
+      "type_line": "Instant",
+      "mana_cost": "{1}{R}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "51fe930f-2b5a-4b1e-9007-6ee74fb44715",
+      "name": "Swamp",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/5/1/51fe930f-2b5a-4b1e-9007-6ee74fb44715.jpg?1775938936",
+      "cmc": 0,
+      "type_line": "Basic Land — Swamp",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "13059664-a940-4a66-8100-0c90b884bab4",
+      "name": "Tablet of Discovery",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/3/13059664-a940-4a66-8100-0c90b884bab4.jpg?1775937891",
+      "cmc": 3,
+      "type_line": "Artifact",
+      "mana_cost": "{2}{R}",
+      "keywords": [
+        "Mill"
+      ]
+    },
+    {
+      "scryfall_id": "b87e2474-98c1-4c1a-91ed-340b72d31653",
+      "name": "Tackle Artist",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/8/b87e2474-98c1-4c1a-91ed-340b72d31653.jpg?1775937898",
+      "cmc": 4,
+      "type_line": "Creature — Orc Sorcerer",
+      "mana_cost": "{3}{R}",
+      "power": "4",
+      "toughness": "3",
+      "keywords": [
+        "Trample",
+        "Opus"
+      ]
+    },
+    {
+      "scryfall_id": "eaa358ac-761d-4507-aa15-3d4684027207",
+      "name": "Teacher's Pest",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/a/eaa358ac-761d-4507-aa15-3d4684027207.jpg?1775938661",
+      "cmc": 2,
+      "type_line": "Creature — Skeleton Pest",
+      "mana_cost": "{B}{G}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Menace"
+      ]
+    },
+    {
+      "scryfall_id": "376c8b7d-1c90-47e1-bd01-e4c67f3fc4fc",
+      "name": "Tenured Concocter",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/7/376c8b7d-1c90-47e1-bd01-e4c67f3fc4fc.jpg?1775938116",
+      "cmc": 5,
+      "type_line": "Creature — Troll Druid",
+      "mana_cost": "{4}{G}",
+      "power": "4",
+      "toughness": "5",
+      "keywords": [
+        "Infusion",
+        "Vigilance"
+      ]
+    },
+    {
+      "scryfall_id": "9a4c5629-fadd-42b9-850f-9f8586a2ca50",
+      "name": "Terramorphic Expanse",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/9/a/9a4c5629-fadd-42b9-850f-9f8586a2ca50.jpg?1775938853",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "bbd708ec-eef4-4f45-99dd-60e1cec4b991",
+      "name": "Tester of the Tangential",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/b/bbd708ec-eef4-4f45-99dd-60e1cec4b991.jpg?1775937389",
+      "cmc": 2,
+      "type_line": "Creature — Djinn Wizard",
+      "mana_cost": "{1}{U}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Increment"
+      ]
+    },
+    {
+      "scryfall_id": "56f54fee-b48d-4582-8982-ca4c7b8ef553",
+      "name": "Textbook Tabulator",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/6/56f54fee-b48d-4582-8982-ca4c7b8ef553.jpg?1776000387",
+      "cmc": 3,
+      "type_line": "Creature — Frog Wizard",
+      "mana_cost": "{2}{U}",
+      "power": "0",
+      "toughness": "3",
+      "keywords": [
+        "Surveil",
+        "Increment"
+      ]
+    },
+    {
+      "scryfall_id": "7a451985-37e1-44d8-839b-dc1e88df5c96",
+      "name": "The Dawning Archaic",
+      "rarity": "mythic",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/7/a/7a451985-37e1-44d8-839b-dc1e88df5c96.jpg?1775936921",
+      "cmc": 10,
+      "type_line": "Legendary Creature — Avatar",
+      "mana_cost": "{10}",
+      "power": "7",
+      "toughness": "7",
+      "keywords": [
+        "Reach"
+      ]
+    },
+    {
+      "scryfall_id": "f6cb838e-a06a-46ae-a30f-e5192178c1cc",
+      "name": "Thornfist Striker",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/6/f6cb838e-a06a-46ae-a30f-e5192178c1cc.jpg?1775938123",
+      "cmc": 3,
+      "type_line": "Creature — Elf Druid",
+      "mana_cost": "{2}{G}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Infusion",
+        "Ward"
+      ]
+    },
+    {
+      "scryfall_id": "590d1d95-ed13-4121-899f-f5a2d8a6617a",
+      "name": "Thunderdrum Soloist",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/9/590d1d95-ed13-4121-899f-f5a2d8a6617a.jpg?1775937905",
+      "cmc": 2,
+      "type_line": "Creature — Dwarf Bard",
+      "mana_cost": "{1}{R}",
+      "power": "1",
+      "toughness": "3",
+      "keywords": [
+        "Reach",
+        "Opus"
+      ]
+    },
+    {
+      "scryfall_id": "a9ab41c8-3ee2-4676-9b8b-20c34d9f5f21",
+      "name": "Titan's Grave",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/a/9/a9ab41c8-3ee2-4676-9b8b-20c34d9f5f21.jpg?1775938861",
+      "cmc": 0,
+      "type_line": "Land",
+      "mana_cost": "",
+      "keywords": [
+        "Surveil"
+      ]
+    },
+    {
+      "scryfall_id": "ac2a8a66-e38c-42ab-83e1-d2d99ee48861",
+      "name": "Together as One",
+      "rarity": "rare",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/a/c/ac2a8a66-e38c-42ab-83e1-d2d99ee48861.jpg?1775936940",
+      "cmc": 6,
+      "type_line": "Sorcery",
+      "mana_cost": "{6}",
+      "keywords": [
+        "Converge"
+      ]
+    },
+    {
+      "scryfall_id": "72a3b17d-1e00-48e9-8402-c81bacd595a7",
+      "name": "Tome Blast",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/2/72a3b17d-1e00-48e9-8402-c81bacd595a7.jpg?1775937914",
+      "cmc": 2,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{R}",
+      "keywords": [
+        "Flashback"
+      ]
+    },
+    {
+      "scryfall_id": "4f16a1c2-0a80-45e4-b025-3aa0c0b03812",
+      "name": "Topiary Lecturer",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/f/4f16a1c2-0a80-45e4-b025-3aa0c0b03812.jpg?1776000370",
+      "cmc": 3,
+      "type_line": "Creature — Elf Druid",
+      "mana_cost": "{2}{G}",
+      "power": "1",
+      "toughness": "2",
+      "keywords": [
+        "Increment"
+      ]
+    },
+    {
+      "scryfall_id": "b93cbaad-8ed8-4a1d-b95a-20a616dfedc9",
+      "name": "Tragedy Feaster",
+      "rarity": "rare",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b93cbaad-8ed8-4a1d-b95a-20a616dfedc9.jpg?1775937623",
+      "cmc": 4,
+      "type_line": "Creature — Demon",
+      "mana_cost": "{2}{B}{B}",
+      "power": "7",
+      "toughness": "6",
+      "keywords": [
+        "Infusion",
+        "Trample",
+        "Ward"
+      ]
+    },
+    {
+      "scryfall_id": "1624c680-502b-474a-b9b2-888fe3ca008c",
+      "name": "Transcendent Archaic",
+      "rarity": "uncommon",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/1/6/1624c680-502b-474a-b9b2-888fe3ca008c.jpg?1775936948",
+      "cmc": 7,
+      "type_line": "Creature — Avatar",
+      "mana_cost": "{7}",
+      "power": "6",
+      "toughness": "6",
+      "keywords": [
+        "Vigilance",
+        "Converge"
+      ]
+    },
+    {
+      "scryfall_id": "2a812fa7-4599-4e25-97db-20ffc6bc0b26",
+      "name": "Traumatic Critique",
+      "rarity": "rare",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/a/2a812fa7-4599-4e25-97db-20ffc6bc0b26.jpg?1775938668",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{X}{U}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "c25e1ae5-f17c-4eee-98f1-5681981af31c",
+      "name": "Ulna Alley Shopkeep",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/2/c25e1ae5-f17c-4eee-98f1-5681981af31c.jpg?1775937633",
+      "cmc": 3,
+      "type_line": "Creature — Goblin Warlock",
+      "mana_cost": "{2}{B}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": [
+        "Infusion",
+        "Menace"
+      ]
+    },
+    {
+      "scryfall_id": "2b7cb1a3-761e-470e-a164-6e29dd9448cd",
+      "name": "Unsubtle Mockery",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/b/2b7cb1a3-761e-470e-a164-6e29dd9448cd.jpg?1775937921",
+      "cmc": 3,
+      "type_line": "Instant",
+      "mana_cost": "{2}{R}",
+      "keywords": [
+        "Surveil"
+      ]
+    },
+    {
+      "scryfall_id": "f9ba68ef-6efc-4249-8b74-e33f47173902",
+      "name": "Vibrant Outburst",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/9/f9ba68ef-6efc-4249-8b74-e33f47173902.jpg?1775938674",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{U}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "6fa9cd18-3181-4373-ab65-49bf9de9487f",
+      "name": "Vicious Rivalry",
+      "rarity": "rare",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/f/6fa9cd18-3181-4373-ab65-49bf9de9487f.jpg?1775938681",
+      "cmc": 4,
+      "type_line": "Sorcery",
+      "mana_cost": "{2}{B}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "846a0e79-a530-429e-8f7f-4b87f1b0156e",
+      "name": "Visionary's Dance",
+      "rarity": "common",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/8/4/846a0e79-a530-429e-8f7f-4b87f1b0156e.jpg?1776000377",
+      "cmc": 7,
+      "type_line": "Sorcery",
+      "mana_cost": "{5}{U}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "3d409512-50b9-4a38-91b0-19ba25227992",
+      "name": "Wander Off",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/d/3d409512-50b9-4a38-91b0-19ba25227992.jpg?1775937643",
+      "cmc": 4,
+      "type_line": "Instant",
+      "mana_cost": "{3}{B}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "0e6e2188-7203-4d10-a838-27233f283cd5",
+      "name": "Wildgrowth Archaic",
+      "rarity": "rare",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/e/0e6e2188-7203-4d10-a838-27233f283cd5.jpg?1775938149",
+      "cmc": 4,
+      "type_line": "Creature — Avatar",
+      "mana_cost": "{2/G}{2/G}",
+      "power": "0",
+      "toughness": "0",
+      "keywords": [
+        "Reach",
+        "Converge",
+        "Trample"
+      ]
+    },
+    {
+      "scryfall_id": "04fdfabc-c247-4384-a5bb-f49035f8aae0",
+      "name": "Wild Hypothesis",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/4/04fdfabc-c247-4384-a5bb-f49035f8aae0.jpg?1775938142",
+      "cmc": 1,
+      "type_line": "Sorcery",
+      "mana_cost": "{X}{G}",
+      "keywords": [
+        "Surveil"
+      ]
+    },
+    {
+      "scryfall_id": "f63f7209-fc0f-400c-8076-125f3131cb32",
+      "name": "Wilt in the Heat",
+      "rarity": "common",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/6/f63f7209-fc0f-400c-8076-125f3131cb32.jpg?1775938697",
+      "cmc": 4,
+      "type_line": "Instant",
+      "mana_cost": "{2}{R}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b227ef04-33e4-44e8-a357-0ea3dfe5d49b",
+      "name": "Wisdom of Ages",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/2/b227ef04-33e4-44e8-a357-0ea3dfe5d49b.jpg?1775937405",
+      "cmc": 7,
+      "type_line": "Sorcery",
+      "mana_cost": "{4}{U}{U}{U}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "254437f7-7a8a-4b11-9cea-e8e7ea23c59e",
+      "name": "Witherbloom Charm",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/5/254437f7-7a8a-4b11-9cea-e8e7ea23c59e.jpg?1775938703",
+      "cmc": 2,
+      "type_line": "Instant",
+      "mana_cost": "{B}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "ed7b2361-97c6-49e2-bf0b-4770f4ffe2f0",
+      "name": "Witherbloom, the Balancer",
+      "rarity": "mythic",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/d/ed7b2361-97c6-49e2-bf0b-4770f4ffe2f0.jpg?1775938710",
+      "cmc": 8,
+      "type_line": "Legendary Creature — Elder Dragon",
+      "mana_cost": "{6}{B}{G}",
+      "power": "5",
+      "toughness": "5",
+      "keywords": [
+        "Deathtouch",
+        "Flying",
+        "Affinity"
+      ]
+    },
+    {
+      "scryfall_id": "50aaf618-dddb-4cbe-8231-d634b4498563",
+      "name": "Withering Curse",
+      "rarity": "mythic",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/0/50aaf618-dddb-4cbe-8231-d634b4498563.jpg?1775937655",
+      "cmc": 3,
+      "type_line": "Sorcery",
+      "mana_cost": "{1}{B}{B}",
+      "keywords": [
+        "Infusion"
+      ]
+    },
+    {
+      "scryfall_id": "5bdbf507-6fd7-49f6-b437-8f2ce2d0eb0f",
+      "name": "Zaffai and the Tempests",
+      "rarity": "rare",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/b/5bdbf507-6fd7-49f6-b437-8f2ce2d0eb0f.jpg?1775938717",
+      "cmc": 7,
+      "type_line": "Legendary Creature — Human Bard Sorcerer",
+      "mana_cost": "{5}{U}{R}",
+      "power": "5",
+      "toughness": "7",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "36ab2130-9f21-4d30-873a-aa72d3d15fa8",
+      "name": "Zealous Lorecaster",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/6/36ab2130-9f21-4d30-873a-aa72d3d15fa8.jpg?1775937928",
+      "cmc": 6,
+      "type_line": "Creature — Giant Sorcerer",
+      "mana_cost": "{5}{R}",
+      "power": "4",
+      "toughness": "4",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "a6597852-4267-4ea6-a391-f927e4833be2",
+      "name": "Zimone's Experiment",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/6/a6597852-4267-4ea6-a391-f927e4833be2.jpg?1775938156",
+      "cmc": 4,
+      "type_line": "Sorcery",
+      "mana_cost": "{3}{G}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "77285d12-e658-4eb3-ba13-ff202afab9c8",
+      "name": "Abigale, Poet Laureate // Heroic Stanza",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.jpg?1775938164",
+      "cmc": 3,
+      "type_line": "Legendary Creature — Bird Bard // Sorcery",
+      "mana_cost": "{1}{W}{B} // {1}{W/B}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": [
+        "Flying",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "d40cc7da-c731-418e-8547-7033d1939450",
+      "name": "Adventurous Eater // Have a Bite",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.jpg?1775937412",
+      "cmc": 3,
+      "type_line": "Creature — Human Warlock // Sorcery",
+      "mana_cost": "{2}{B} // {B}",
+      "power": "3",
+      "toughness": "2",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "3ba971e7-0b7a-4750-896f-7cf063e66b2a",
+      "name": "Blazing Firesinger // Seething Song",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/b/3ba971e7-0b7a-4750-896f-7cf063e66b2a.jpg?1775937691",
+      "cmc": 3,
+      "type_line": "Creature — Dwarf Bard // Instant",
+      "mana_cost": "{2}{R} // {2}{R}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "fac8ac39-ecb4-4142-bf37-131c65660a9b",
+      "name": "Campus Composer // Aqueous Aria",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/a/fac8ac39-ecb4-4142-bf37-131c65660a9b.jpg?1775937189",
+      "cmc": 4,
+      "type_line": "Creature — Merfolk Bard // Sorcery",
+      "mana_cost": "{3}{U} // {4}{U}",
+      "power": "3",
+      "toughness": "4",
+      "keywords": [
+        "Prepared",
+        "Ward"
+      ]
+    },
+    {
+      "scryfall_id": "3c34660c-25e3-4ff5-9b2b-5554ded2bcc3",
+      "name": "Cheerful Osteomancer // Raise Dead",
+      "rarity": "common",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/3/c/3c34660c-25e3-4ff5-9b2b-5554ded2bcc3.jpg?1775937441",
+      "cmc": 4,
+      "type_line": "Creature — Orc Warlock // Sorcery",
+      "mana_cost": "{3}{B} // {B}",
+      "power": "4",
+      "toughness": "2",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "2970683e-e69c-42cb-a067-34abd56fb42b",
+      "name": "Elite Interceptor // Rejoinder",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.jpg?1775936992",
+      "cmc": 1,
+      "type_line": "Creature — Human Wizard // Sorcery",
+      "mana_cost": "{W} // {1}{W}",
+      "power": "1",
+      "toughness": "2",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "ac095763-6f4e-4d4e-9c99-414646368f8d",
+      "name": "Emeritus of Abundance // Regrowth",
+      "rarity": "mythic",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/c/ac095763-6f4e-4d4e-9c99-414646368f8d.jpg?1775937986",
+      "cmc": 3,
+      "type_line": "Creature — Elf Druid // Sorcery",
+      "mana_cost": "{2}{G} // {1}{G}",
+      "power": "3",
+      "toughness": "4",
+      "keywords": [
+        "Vigilance",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "f58dba4f-1abb-47a3-a684-29c32bab95c0",
+      "name": "Emeritus of Conflict // Lightning Bolt",
+      "rarity": "mythic",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/5/f58dba4f-1abb-47a3-a684-29c32bab95c0.jpg?1775937726",
+      "cmc": 2,
+      "type_line": "Creature — Human Wizard // Instant",
+      "mana_cost": "{1}{R} // {R}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "First strike",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "75961d36-acf6-425f-9698-0bf52af74f31",
+      "name": "Emeritus of Ideation // Ancestral Recall",
+      "rarity": "mythic",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223",
+      "cmc": 5,
+      "type_line": "Creature — Human Wizard // Instant",
+      "mana_cost": "{3}{U}{U} // {U}",
+      "power": "5",
+      "toughness": "5",
+      "keywords": [
+        "Flying",
+        "Prepared",
+        "Ward"
+      ]
+    },
+    {
+      "scryfall_id": "9869a753-5e41-4098-ab41-e75b4396ec50",
+      "name": "Emeritus of Truce // Swords to Plowshares",
+      "rarity": "mythic",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999",
+      "cmc": 3,
+      "type_line": "Creature — Cat Cleric // Instant",
+      "mana_cost": "{1}{W}{W} // {W}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "7eb9e83d-515d-4911-a06b-9982200277b2",
+      "name": "Emeritus of Woe // Demonic Tutor",
+      "rarity": "mythic",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/e/7eb9e83d-515d-4911-a06b-9982200277b2.jpg?1775937469",
+      "cmc": 4,
+      "type_line": "Creature — Vampire Warlock // Sorcery",
+      "mana_cost": "{3}{B} // {1}{B}",
+      "power": "5",
+      "toughness": "4",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "72654b84-9902-41db-92ab-a3499c31221c",
+      "name": "Encouraging Aviator // Jump",
+      "rarity": "uncommon",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/2/72654b84-9902-41db-92ab-a3499c31221c.jpg?1775937230",
+      "cmc": 3,
+      "type_line": "Creature — Bird Wizard // Instant",
+      "mana_cost": "{2}{U} // {U}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": [
+        "Flying",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "c85c5f06-dd31-4e2c-97be-2f64d65069ea",
+      "name": "Goblin Glasswright // Craft with Pride",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/8/c85c5f06-dd31-4e2c-97be-2f64d65069ea.jpg?1775937759",
+      "cmc": 2,
+      "type_line": "Creature — Goblin Sorcerer // Sorcery",
+      "mana_cost": "{1}{R} // {R}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Treasure",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "8b1e10e8-ea14-4761-910b-4072e2a18456",
+      "name": "Grave Researcher // Reanimate",
+      "rarity": "rare",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/8/b/8b1e10e8-ea14-4761-910b-4072e2a18456.jpg?1775937504",
+      "cmc": 3,
+      "type_line": "Creature — Troll Warlock // Sorcery",
+      "mana_cost": "{2}{B} // {B}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Surveil",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "617208ff-dd9b-44fd-a740-d3188081e5cc",
+      "name": "Harmonized Trio // Brainstorm",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/1/617208ff-dd9b-44fd-a740-d3188081e5cc.jpg?1775937273",
+      "cmc": 1,
+      "type_line": "Creature — Merfolk Bard Wizard // Instant",
+      "mana_cost": "{U} // {U}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "79a70863-860f-4a7b-9cb2-d3546b689d44",
+      "name": "Honorbound Page // Forum's Favor",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/9/79a70863-860f-4a7b-9cb2-d3546b689d44.jpg?1775937039",
+      "cmc": 4,
+      "type_line": "Creature — Cat Cleric // Sorcery",
+      "mana_cost": "{3}{W} // {W}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "First strike",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "911442e3-3003-4683-a766-e791e9553667",
+      "name": "Infirmary Healer // Stream of Life",
+      "rarity": "uncommon",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/9/1/911442e3-3003-4683-a766-e791e9553667.jpg?1775938036",
+      "cmc": 2,
+      "type_line": "Creature — Cat Cleric // Sorcery",
+      "mana_cost": "{1}{G} // {X}{G}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "a95b6baf-01e6-49c3-9a26-394b127d53c3",
+      "name": "Jadzi, Steward of Fate // Oracle's Gift",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.jpg?1775937293",
+      "cmc": 3,
+      "type_line": "Legendary Creature — Human Wizard // Sorcery",
+      "mana_cost": "{2}{U} // {X}{X}{U}",
+      "power": "2",
+      "toughness": "4",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "1ebaafe0-3a9a-424c-8698-d26e7be45343",
+      "name": "Joined Researchers // Secret Rendezvous",
+      "rarity": "rare",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/e/1ebaafe0-3a9a-424c-8698-d26e7be45343.jpg?1775937069",
+      "cmc": 2,
+      "type_line": "Creature — Human Cleric Wizard // Sorcery",
+      "mana_cost": "{1}{W} // {1}{W}{W}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "First strike",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "676ba521-66e4-42cf-a315-70d03cb7334e",
+      "name": "Kirol, History Buff // Pack a Punch",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.jpg?1775938375",
+      "cmc": 2,
+      "type_line": "Legendary Creature — Vampire Cleric // Sorcery",
+      "mana_cost": "{R}{W} // {1}{R}{W}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": [
+        "Prepared",
+        "Mill"
+      ]
+    },
+    {
+      "scryfall_id": "c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf",
+      "name": "Landscape Painter // Vibrant Idea",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/0/c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf.jpg?1775937300",
+      "cmc": 2,
+      "type_line": "Creature — Merfolk Wizard // Sorcery",
+      "mana_cost": "{1}{U} // {4}{U}",
+      "power": "2",
+      "toughness": "1",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "c715fe4c-c0e7-4342-811f-b74687851097",
+      "name": "Leech Collector // Bloodletting",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/7/c715fe4c-c0e7-4342-811f-b74687851097.jpg?1775937525",
+      "cmc": 2,
+      "type_line": "Creature — Human Warlock // Sorcery",
+      "mana_cost": "{1}{B} // {B}",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "a0bcb638-c3c8-4973-9537-5c471f43f34f",
+      "name": "Lluwen, Exchange Student // Pest Friend",
+      "rarity": "uncommon",
+      "color": [
+        "B",
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/0/a0bcb638-c3c8-4973-9537-5c471f43f34f.jpg?1775938382",
+      "cmc": 4,
+      "type_line": "Legendary Creature — Elf Druid // Sorcery",
+      "mana_cost": "{2}{B}{G} // {B/G}",
+      "power": "3",
+      "toughness": "4",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "5c88391d-271f-4021-a5d9-158ebc1e6357",
+      "name": "Maelstrom Artisan // Rocket Volley",
+      "rarity": "rare",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/c/5c88391d-271f-4021-a5d9-158ebc1e6357.jpg?1775937805",
+      "cmc": 3,
+      "type_line": "Creature — Minotaur Sorcerer // Sorcery",
+      "mana_cost": "{1}{R}{R} // {1}{R}",
+      "power": "3",
+      "toughness": "2",
+      "keywords": [
+        "Haste",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "c2faf4cf-c4b6-4721-ac06-0e045dd9704a",
+      "name": "Pigment Wrangler // Striking Palette",
+      "rarity": "uncommon",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/2/c2faf4cf-c4b6-4721-ac06-0e045dd9704a.jpg?1775937841",
+      "cmc": 5,
+      "type_line": "Creature — Orc Sorcerer // Sorcery",
+      "mana_cost": "{4}{R} // {R}",
+      "power": "4",
+      "toughness": "4",
+      "keywords": [
+        "Flying",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "62a47835-5719-48c4-a740-a0c5f00dce11",
+      "name": "Quill-Blade Laureate // Twofold Intent",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/2/62a47835-5719-48c4-a740-a0c5f00dce11.jpg?1775937102",
+      "cmc": 2,
+      "type_line": "Creature — Human Cleric // Sorcery",
+      "mana_cost": "{1}{W} // {1}{W}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Prepared",
+        "Double strike"
+      ]
+    },
+    {
+      "scryfall_id": "173157aa-712d-44f2-89ba-dd2511a07f26",
+      "name": "Sanar, Unfinished Genius // Wild Idea",
+      "rarity": "uncommon",
+      "color": [
+        "R",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/7/173157aa-712d-44f2-89ba-dd2511a07f26.jpg?1775938553",
+      "cmc": 2,
+      "type_line": "Legendary Creature — Goblin Sorcerer // Sorcery",
+      "mana_cost": "{U}{R} // {3}{U}{R}",
+      "power": "0",
+      "toughness": "4",
+      "keywords": [
+        "Treasure",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "03e664cd-c3a6-4263-b2d8-dd99058fb8ec",
+      "name": "Scathing Shadelock // Venomous Words",
+      "rarity": "uncommon",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/0/3/03e664cd-c3a6-4263-b2d8-dd99058fb8ec.jpg?1775937593",
+      "cmc": 5,
+      "type_line": "Creature — Snake Warlock // Sorcery",
+      "mana_cost": "{4}{B} // {B}",
+      "power": "4",
+      "toughness": "6",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "fe85a124-0d8b-4a29-8df1-65888a39147f",
+      "name": "Scheming Silvertongue // Sign in Blood",
+      "rarity": "rare",
+      "color": [
+        "B"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/e/fe85a124-0d8b-4a29-8df1-65888a39147f.jpg?1775937600",
+      "cmc": 2,
+      "type_line": "Creature — Vampire Warlock // Sorcery",
+      "mana_cost": "{1}{B} // {B}{B}",
+      "power": "1",
+      "toughness": "3",
+      "keywords": [
+        "Flying",
+        "Lifelink",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "4ecbca71-9a1d-44c5-b709-d6f565941d5e",
+      "name": "Skycoach Conductor // All Aboard",
+      "rarity": "rare",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/e/4ecbca71-9a1d-44c5-b709-d6f565941d5e.jpg?1775937376",
+      "cmc": 3,
+      "type_line": "Creature — Bird Pilot // Instant",
+      "mana_cost": "{2}{U} // {U}",
+      "power": "2",
+      "toughness": "3",
+      "keywords": [
+        "Flying",
+        "Vigilance",
+        "Prepared",
+        "Flash"
+      ]
+    },
+    {
+      "scryfall_id": "cc44eaa4-59a4-419e-b1d1-d92f354ff588",
+      "name": "Spellbook Seeker // Careful Study",
+      "rarity": "common",
+      "color": [
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/c/cc44eaa4-59a4-419e-b1d1-d92f354ff588.jpg?1775937383",
+      "cmc": 4,
+      "type_line": "Creature — Bird Wizard // Sorcery",
+      "mana_cost": "{3}{U} // {U}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Flying",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "c0b85569-2cb3-4b64-b0fe-418195c4dab0",
+      "name": "Spiritcall Enthusiast // Scrollboost",
+      "rarity": "uncommon",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/c/0/c0b85569-2cb3-4b64-b0fe-418195c4dab0.jpg?1775937144",
+      "cmc": 3,
+      "type_line": "Creature — Cat Cleric // Sorcery",
+      "mana_cost": "{2}{W} // {1}{W}",
+      "power": "3",
+      "toughness": "3",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "8de79312-2046-425e-9919-49afe19be81b",
+      "name": "Strife Scholar // Awaken the Ages",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/8/d/8de79312-2046-425e-9919-49afe19be81b.jpg?1775937883",
+      "cmc": 3,
+      "type_line": "Creature — Orc Sorcerer // Sorcery",
+      "mana_cost": "{2}{R} // {5}{R}",
+      "power": "3",
+      "toughness": "2",
+      "keywords": [
+        "Prepared",
+        "Ward"
+      ]
+    },
+    {
+      "scryfall_id": "24f888dd-785c-4089-a89c-03f9080130ed",
+      "name": "Studious First-Year // Rampant Growth",
+      "rarity": "common",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/4/24f888dd-785c-4089-a89c-03f9080130ed.jpg?1775938109",
+      "cmc": 1,
+      "type_line": "Creature — Bear Wizard // Sorcery",
+      "mana_cost": "{G} // {1}{G}",
+      "power": "1",
+      "toughness": "1",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "7120e71b-2976-451b-89a7-a1665dc6fb6b",
+      "name": "Tam, Observant Sequencer // Deep Sight",
+      "rarity": "uncommon",
+      "color": [
+        "G",
+        "U"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/1/7120e71b-2976-451b-89a7-a1665dc6fb6b.jpg?1775938655",
+      "cmc": 4,
+      "type_line": "Legendary Creature — Gorgon Wizard // Sorcery",
+      "mana_cost": "{2}{G}{U} // {G}{U}",
+      "power": "4",
+      "toughness": "3",
+      "keywords": [
+        "Prepared",
+        "Landfall"
+      ]
+    },
+    {
+      "scryfall_id": "476b6a4d-cc05-4e98-8a45-a5c6582ec514",
+      "name": "Vastlands Scavenger // Bind to Life",
+      "rarity": "rare",
+      "color": [
+        "G"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/4/7/476b6a4d-cc05-4e98-8a45-a5c6582ec514.jpg?1775938136",
+      "cmc": 3,
+      "type_line": "Creature — Bear Druid // Instant",
+      "mana_cost": "{1}{G}{G} // {4}{G}",
+      "power": "4",
+      "toughness": "4",
+      "keywords": [
+        "Prepared",
+        "Mill",
+        "Deathtouch"
+      ]
+    }
+  ],
+  "cardCount": 271,
+  "lastUpdated": "2026-04-13T22:23:45.468Z"
+}

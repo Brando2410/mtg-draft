@@ -64,7 +64,8 @@ export class CostProcessor {
         return true;
 
       case 'Mana':
-        return ManaProcessor.canPayWithTotal(player, state.battlefield, cost.value);
+        const effectiveMana = this.getEffectiveManaCost(state, cost, source);
+        return ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveMana);
 
       case 'Loyalty':
         const val = parseInt(cost.value);
@@ -92,6 +93,17 @@ export class CostProcessor {
         }
         return state.battlefield.some(c => c.controllerId === playerId);
 
+      case 'Crew': {
+        const amount = Number(cost.amount || cost.value || 0);
+        const candidates = state.battlefield.filter(o => 
+            o.controllerId === playerId && 
+            o.definition.types.some(t => t.toLowerCase() === 'creature') && 
+            !o.isTapped
+        );
+        const totalPowerAvailable = candidates.reduce((sum, c) => sum + LayerProcessor.getEffectiveStats(c, state).power, 0);
+        return totalPowerAvailable >= amount;
+      }
+
       default:
         return false;
     }
@@ -110,7 +122,8 @@ export class CostProcessor {
       case 'Mana':
         // Auto-tap logic is usually handled before calling pay() or inside playCard/activateAbility
         // If we reach here, we assume mana is in the pool or we deduct it directly
-        ManaProcessor.deductManaCost(player, cost.value);
+        const effectiveManaStr = this.getEffectiveManaCost(state, cost, source);
+        ManaProcessor.deductManaCost(player, effectiveManaStr);
         break;
 
       case 'Loyalty':
@@ -189,11 +202,56 @@ export class CostProcessor {
          }
          delete (state as any).lastChosenExileId;
          break;
+
+       case 'Crew': {
+         const crewIds = (state as any).lastChosenCrewIds || [];
+         crewIds.forEach((cid: string) => {
+             const c = state.battlefield.find(o => o.id === cid);
+             if (c) {
+                 c.isTapped = true;
+                 TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, data: { object: c } }, log);
+             }
+         });
+         delete (state as any).lastChosenCrewIds;
+         break;
+       }
+       default:
+        return true;
     }
+  }
+
+  public static getEffectiveManaCost(state: GameState, cost: AbilityCost, source: GameObject): string {
+    if (cost.type !== 'Mana') return cost.value;
+
+    let costStr = cost.value;
+    if (cost.costModifiers) {
+        let reduction = 0;
+        for (const mod of cost.costModifiers) {
+            if (mod.type === 'REDUCE_GENERIC_PER_COUNTER') {
+                reduction += (source.counters[mod.counterType] || 0);
+            }
+        }
+        
+        if (reduction > 0) {
+            const parsed = ManaProcessor.parseManaCost(costStr);
+            parsed.generic = Math.max(0, parsed.generic - reduction);
+            
+            // Reconstruct mana string
+            let newCost = "";
+            if (parsed.generic > 0) newCost += `{${parsed.generic}}`;
+            Object.entries(parsed.colored).forEach(([symbol, amount]) => {
+                for (let i = 0; i < (amount as number); i++) newCost += `{${symbol}}`;
+            });
+            costStr = newCost || "{0}";
+        }
+    }
+    return costStr;
   }
 
   private static findObject(state: GameState, id: GameObjectId): GameObject | undefined {
     return state.battlefield.find(o => o.id === id) || 
-           state.exile.find(o => o.id === id);
+           state.exile.find(o => o.id === id) ||
+           state.stack.find(o => o.id === id)?.card ||
+           Object.values(state.players).flatMap(p => [...p.hand, ...p.graveyard, ...p.library]).find(o => o.id === id);
   }
 }
