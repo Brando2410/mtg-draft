@@ -192,13 +192,16 @@ export class TriggerProcessor {
         // --- SYSTEM RECOGNIZED KEYWORDS: CASCADE & STORM ---
         if (event.type === 'ON_CAST_SPELL' && event.data?.card) {
             const card = event.data.card;
-            const stats = LayerProcessor.getEffectiveStats(card, state);
+            const stats = LayerProcessor.getEffectiveStats(card, state, log);
             const keywords = stats.keywords;
+            log(`[DEBUG] Cast spell: ${card.definition.name}, Keywords identified: ${keywords.join(', ')}`);
+
 
             // 1. Cascade (Rule 702.85)
-            if (keywords.includes('Cascade')) {
+            const cascadeInstances = keywords.filter((k: string) => k.toLowerCase() === 'cascade');
+            for (let i = 0; i < cascadeInstances.length; i++) {
                 matchingTriggers.push({
-                    id: `cascade_system_${card.id}_${Date.now()}`,
+                    id: `cascade_system_${card.id}_${Date.now()}_${i}`,
                     sourceId: card.id,
                     controllerId: event.playerId,
                     eventMatch: 'ON_CAST_SPELL',
@@ -221,7 +224,15 @@ export class TriggerProcessor {
                                         isFreeCast: true
                                     }]
                                 },
-                                { label: 'No', effects: [] }
+                                {
+                                    label: 'No',
+                                    effects: [{
+                                        type: 'MoveToZone',
+                                        zone: Zone.Library,
+                                        destination: 'bottom',
+                                        targetMapping: 'TARGET_1'
+                                    }]
+                                }
                             ]
                         }
                     }]
@@ -467,6 +478,7 @@ export class TriggerProcessor {
         const sourceObj = (eventObj && eventObj.id === trigger.sourceId) ? eventObj : (
             state.battlefield.find(o => o.id === trigger.sourceId) ||
             state.exile.find(o => o.id === trigger.sourceId) ||
+            state.stack.find(s => s.id === trigger.sourceId || s.sourceId === trigger.sourceId)?.card ||
             Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === trigger.sourceId)
         );
 

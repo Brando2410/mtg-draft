@@ -20,12 +20,14 @@ export const QuandrixtheProof: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Static,
+            activeZone: Zone.Battlefield,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
                     layer: 6,
                     targetMapping: TargetMapping.MatchingCards,
-                    restrictions: [Restriction.Instant, Restriction.Sorcery, Restriction.FromHand, Restriction.YouControl],
+                    // Restoring FromHand now that base logic is fixed
+                    restrictions: ['instant_or_sorcery', Restriction.FromHand],
                     abilitiesToAdd: ['Cascade']
                 }
             ]

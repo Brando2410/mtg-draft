@@ -327,6 +327,10 @@ export class EffectProcessor {
         const isFree = (effect as any).isFreeCast;
         let targetId = (effect as any).targetId || validTargetIds[0];
 
+        log(`[DEBUG] EffectProcessor: CastSpell for ${targetId} (Free: ${isFree})`);
+
+        log(`[DEBUG] EffectProcessor: CastSpell for ${targetId} (Free: ${isFree})`);
+
         if (spellName && !targetId) {
             const { oracle } = require('../../OracleLogicMap');
             const cardDef = oracle.getCard(spellName);
@@ -364,6 +368,10 @@ export class EffectProcessor {
         }
 
         if (targetId) {
+            const castObj = this.findObject(state, targetId, stackObject, parentContext);
+            if (castObj && isFree) {
+                (castObj as any).isFreeCast = true;
+            }
             const oldPriority = state.priorityPlayerId;
             state.priorityPlayerId = controllerId;
             SpellProcessor.playCard(state, controllerId, targetId, [], log, (state as any).gameEngine || {

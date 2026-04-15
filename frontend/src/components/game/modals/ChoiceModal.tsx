@@ -161,57 +161,62 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                             {pendingAction.type === ActionType.Surveil && (
                                 <div className="flex flex-col items-center gap-3 flex-1 min-w-[200px]" data-zone="graveyard">
                                     <h4 className="text-sm font-black italic uppercase tracking-widest text-red-500/80">Graveyard</h4>
-                                    <div className="w-full aspect-[4/3] rounded-2xl border border-white/10 bg-white/5 flex flex-wrap justify-center items-center gap-1 p-2 relative group/zone overflow-hidden">
-                                        {scryState.graveyard.map((card: any) => (
-                                            <motion.div 
-                                                layoutId={card.id}
-                                                key={card.id} 
-                                                className="scale-[0.7] -m-10 relative z-10 cursor-grab active:cursor-grabbing"
-                                                drag
-                                                dragSnapToOrigin
-                                                whileDrag={{ pointerEvents: 'none', zIndex: 100, scale: 0.6 }}
-                                                onDragEnd={(_, info) => {
-                                                    const el = document.elementFromPoint(info.point.x, info.point.y);
-                                                    const zone = el?.closest('[data-zone]');
-                                                    const targetZone = zone?.getAttribute('data-zone');
-                                                    if (targetZone && targetZone !== 'graveyard') {
-                                                        moveCard(card, 'graveyard', targetZone as any);
-                                                    }
-                                                }}
-                                            >
-                                                <GameCard 
-                                                    obj={card} 
-                                                    variant="battlefield" 
-                                                    onHoverStart={() => onHoverStart?.(card)}
-                                                    onHoverEnd={onHoverEnd}
-                                                />
-                                                <button 
+                                    <div className="w-full aspect-[4/3] rounded-2xl border border-white/10 bg-white/5 flex flex-col items-center justify-center p-2 relative overflow-x-auto custom-scrollbar">
+                                        <Reorder.Group 
+                                            axis="x" 
+                                            values={scryState.graveyard} 
+                                            onReorder={(vals) => setScryState(p => ({ ...p, graveyard: vals }))}
+                                            className="flex flex-row justify-center items-center w-full gap-2 px-4"
+                                        >
+                                            {scryState.graveyard.map((card: any) => (
+                                                <Reorder.Item 
+                                                    key={card.id} 
+                                                    value={card}
+                                                    className="relative scale-[0.8] cursor-grab active:cursor-grabbing shrink-0"
+                                                    drag="y"
+                                                    whileDrag={{ pointerEvents: 'none', zIndex: 100, scale: 0.6 }}
+                                                    onDragEnd={(_, info) => {
+                                                        if (Math.abs(info.offset.y) > 50) {
+                                                            const el = document.elementFromPoint(info.point.x, info.point.y);
+                                                            const zone = el?.closest('[data-zone]');
+                                                            const targetZone = zone?.getAttribute('data-zone');
+                                                            if (targetZone && targetZone !== 'graveyard') {
+                                                                moveCard(card, 'graveyard', targetZone as any);
+                                                            }
+                                                        }
+                                                    }}
                                                     onClick={() => moveCard(card, 'graveyard', 'top')}
-                                                    className="absolute -top-10 left-1/2 -translate-x-1/2 bg-cyan-600 hover:bg-cyan-500 text-[8px] font-black px-3 py-1.5 rounded-lg border border-white/20 shadow-2xl opacity-0 group-hover/zone:opacity-100 transition-all uppercase tracking-widest z-50 whitespace-nowrap"
                                                 >
-                                                    TO TOP
-                                                </button>
-                                            </motion.div>
-                                        ))}
+                                                    <GameCard 
+                                                        obj={card} 
+                                                        variant="battlefield" 
+                                                        onHoverStart={() => onHoverStart?.(card)}
+                                                        onHoverEnd={onHoverEnd}
+                                                    />
+                                                </Reorder.Item>
+                                            ))}
+                                        </Reorder.Group>
                                     </div>
                                 </div>
                             )}
 
                             {/* TOP ZONE (Center) */}
                             <div className="flex flex-col items-center gap-3 flex-1 min-w-[200px]" data-zone="top">
-                                <h4 className="text-sm font-black italic uppercase tracking-widest text-cyan-400">Top</h4>
-                                <div className="w-full aspect-[4/3] rounded-2xl border border-white/10 bg-white/5 shadow-xl flex flex-col items-center justify-center p-2 relative overflow-hidden">
+                                <h4 className="text-sm font-black italic uppercase tracking-widest text-cyan-400 flex items-center gap-2">
+                                    Top 
+                                </h4>
+                                <div className="w-full aspect-[4/3] rounded-2xl border border-white/10 bg-white/5 shadow-xl flex flex-col items-center justify-center p-2 relative overflow-x-auto custom-scrollbar">
                                     <Reorder.Group 
                                         axis="x" 
                                         values={scryState.top} 
                                         onReorder={(vals) => setScryState(p => ({ ...p, top: vals }))}
-                                        className="flex flex-row justify-center items-center w-full"
+                                        className="flex flex-row justify-center items-center w-full gap-2 px-4"
                                     >
                                         {scryState.top.map((card: any) => (
                                             <Reorder.Item 
                                                 key={card.id} 
                                                 value={card}
-                                                className="relative scale-[0.7] -mx-10 cursor-grab active:cursor-grabbing transform"
+                                                className="relative scale-[0.8] cursor-grab active:cursor-grabbing shrink-0"
                                                 drag="y" // Allow y dragging to pull out of the x-reorder group
                                                 whileDrag={{ pointerEvents: 'none', zIndex: 100, scale: 0.6 }}
                                                 onDragEnd={(_, info) => {
@@ -225,6 +230,10 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                                                         }
                                                     }
                                                 }}
+                                                onClick={() => {
+                                                    const target = pendingAction.type === ActionType.Surveil ? 'graveyard' : 'bottom';
+                                                    moveCard(card, 'top', target);
+                                                }}
                                             >
                                                 <div className="relative group/card shadow-2xl">
                                                     <GameCard 
@@ -232,22 +241,13 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                                                         onHoverStart={() => onHoverStart?.(card)}
                                                         onHoverEnd={onHoverEnd}
                                                     />
-                                                    <div className="absolute inset-x-0 -bottom-12 flex justify-center gap-1 opacity-0 group-hover/card:opacity-100 transition-all z-50">
-                                                        <button 
-                                                            onClick={(e) => { e.stopPropagation(); moveCard(card, 'top', 'bottom'); }}
-                                                            className="bg-amber-600 hover:bg-amber-500 text-[8px] font-black px-3 py-1.5 rounded-lg border border-white/20 shadow-2xl uppercase tracking-widest"
-                                                        >
-                                                            BOTTOM
-                                                        </button>
-                                                        {pendingAction.type === ActionType.Surveil && (
-                                                            <button 
-                                                                onClick={(e) => { e.stopPropagation(); moveCard(card, 'top', 'graveyard'); }}
-                                                                className="bg-red-600 hover:bg-red-500 text-[8px] font-black px-3 py-1.5 rounded-lg border border-white/20 shadow-2xl uppercase tracking-widest"
-                                                            >
-                                                                GY
-                                                            </button>
-                                                        )}
-                                                    </div>
+
+                                                    {/* ORDER INDICATOR */}
+                                                    {scryState.top.length > 1 && (
+                                                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-emerald-600 border-2 border-[#0b0f1a] flex items-center justify-center text-[10px] font-black text-white shadow-2xl z-50">
+                                                            {scryState.top.indexOf(card) + 1}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </Reorder.Item>
                                         ))}
@@ -255,43 +255,59 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                                 </div>
                             </div>
 
-                            {/* BOTTOM ZONE (Right) */}
+                            {/* BOTTOM ZONE (Right) - Scry Only */}
+                            {pendingAction.type === ActionType.Scry && (
                                 <div className="flex flex-col items-center gap-3 flex-1 min-w-[200px]" data-zone="bottom">
-                                    <h4 className="text-sm font-black italic uppercase tracking-widest text-amber-500/80">Bottom</h4>
-                                    <div className="w-full aspect-[4/3] rounded-2xl border border-white/10 bg-white/5 shadow-xl flex flex-wrap justify-center items-center gap-1 p-2 group/zone overflow-hidden">
-                                        {scryState.bottom.map((card: any) => (
-                                        <motion.div 
-                                            layoutId={card.id}
-                                            key={card.id} 
-                                            className="scale-[0.7] -m-10 relative z-10 cursor-grab active:cursor-grabbing"
-                                            drag
-                                            dragSnapToOrigin
-                                            whileDrag={{ pointerEvents: 'none', zIndex: 100, scale: 0.6 }}
-                                            onDragEnd={(_, info) => {
-                                                const el = document.elementFromPoint(info.point.x, info.point.y);
-                                                const zone = el?.closest('[data-zone]');
-                                                const targetZone = zone?.getAttribute('data-zone');
-                                                if (targetZone && targetZone !== 'bottom') {
-                                                    moveCard(card, 'bottom', targetZone as any);
-                                                }
-                                            }}
+                                    <h4 className="text-sm font-black italic uppercase tracking-widest text-amber-500/80 flex items-center gap-2">
+                                        Bottom
+                                    </h4>
+                                    <div className="w-full aspect-[4/3] rounded-2xl border border-white/10 bg-white/5 shadow-xl flex flex-col items-center justify-center p-2 relative overflow-x-auto custom-scrollbar">
+                                        <Reorder.Group 
+                                            axis="x" 
+                                            values={scryState.bottom} 
+                                            onReorder={(vals) => setScryState(p => ({ ...p, bottom: vals }))}
+                                            className="flex flex-row justify-center items-center w-full gap-2 px-4"
                                         >
-                                            <GameCard 
-                                                obj={card} 
-                                                variant="battlefield" 
-                                                onHoverStart={() => onHoverStart?.(card)}
-                                                onHoverEnd={onHoverEnd}
-                                            />
-                                            <button 
-                                                onClick={() => moveCard(card, 'bottom', 'top')}
-                                                className="absolute -top-10 left-1/2 -translate-x-1/2 bg-cyan-600 hover:bg-cyan-500 text-[8px] font-black px-3 py-1.5 rounded-lg border border-white/20 shadow-2xl opacity-0 group-hover/zone:opacity-100 transition-all uppercase tracking-widest z-50 whitespace-nowrap"
-                                            >
-                                                TO TOP
-                                            </button>
-                                        </motion.div>
-                                    ))}
+                                            {scryState.bottom.map((card: any) => (
+                                                <Reorder.Item 
+                                                    key={card.id} 
+                                                    value={card}
+                                                    className="relative scale-[0.8] cursor-grab active:cursor-grabbing shrink-0"
+                                                    drag="y"
+                                                    whileDrag={{ pointerEvents: 'none', zIndex: 100, scale: 0.6 }}
+                                                    onDragEnd={(_, info) => {
+                                                        if (Math.abs(info.offset.y) > 50) {
+                                                            const el = document.elementFromPoint(info.point.x, info.point.y);
+                                                            const zone = el?.closest('[data-zone]');
+                                                            const targetZone = zone?.getAttribute('data-zone');
+                                                            if (targetZone && targetZone !== 'bottom') {
+                                                                moveCard(card, 'bottom', targetZone as any);
+                                                            }
+                                                        }
+                                                    }}
+                                                    onClick={() => moveCard(card, 'bottom', 'top')}
+                                                >
+                                                    <div className="relative group/card shadow-2xl">
+                                                        <GameCard 
+                                                            obj={card} 
+                                                            variant="battlefield" 
+                                                            onHoverStart={() => onHoverStart?.(card)}
+                                                            onHoverEnd={onHoverEnd}
+                                                        />
+
+                                                        {/* ORDER INDICATOR */}
+                                                        {scryState.bottom.length > 1 && (
+                                                            <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-amber-600 border-2 border-[#0b0f1a] flex items-center justify-center text-[10px] font-black text-white shadow-2xl z-50">
+                                                                {scryState.bottom.indexOf(card) + 1}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </Reorder.Item>
+                                            ))}
+                                        </Reorder.Group>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                         </div>
                     </div>

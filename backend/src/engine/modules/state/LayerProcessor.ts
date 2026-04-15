@@ -13,163 +13,164 @@ export class LayerProcessor {
    * CR 613: Interaction of Continuous Effects
    * Returns a copy of the object's stats after applying all relevant layers.
    */
-  public static getEffectiveStats(obj: GameObject, state: GameState) {
+  public static getEffectiveStats(obj: GameObject, state: GameState, log?: (m: string) => void) {
     // RECURSION GUARD: Prevent infinite loops where conditions depend on effective stats
     if (this.calculationStack.has(obj.id)) {
-        return {
-            power: parseInt(obj.definition.power || '0'),
-            toughness: parseInt(obj.definition.toughness || '0'),
-            keywords: [],
-            types: obj.definition.types,
-            subtypes: obj.definition.subtypes || [],
-            isPlayable: false,
-            supertypes: obj.definition.supertypes || []
-        } as any;
+      return {
+        power: parseInt(obj.definition.power || '0'),
+        toughness: parseInt(obj.definition.toughness || '0'),
+        keywords: [],
+        types: obj.definition.types,
+        subtypes: obj.definition.subtypes || [],
+        isPlayable: false,
+        supertypes: obj.definition.supertypes || []
+      } as any;
     }
 
     this.calculationStack.add(obj.id);
 
     try {
-        const effects = state.ruleRegistry.continuousEffects || [];
+      const effects = state.ruleRegistry.continuousEffects || [];
 
-        // 1. FILTER RELEVANT EFFECTS (Rule 613.1)
-        // An effect applies to an object if its condition (if any) is met 
-        // AND the source is in an active zone (for static abilities).
-        const activeEffects = effects.filter(e => {
-          // Rule 611.2a: Floating effects do not depend on source zone
-          if (e.id?.startsWith('floating_') || e.sourceId === 'global') return true;
+      // 1. FILTER RELEVANT EFFECTS (Rule 613.1)
+      // An effect applies to an object if its condition (if any) is met 
+      // AND the source is in an active zone (for static abilities).
+      const activeEffects = effects.filter(e => {
+        // Rule 611.2a: Floating effects do not depend on source zone
+        if (e.id?.startsWith('floating_') || e.sourceId === 'global') return true;
 
-          const source = state.battlefield.find(o => o.id === e.sourceId);
-          if (!source || !e.activeZones.includes(source.zone)) return false;
+        const source = state.battlefield.find(o => o.id === e.sourceId);
+        if (!source || !e.activeZones.includes(source.zone)) return false;
 
-          if (e.condition) {
-            return ConditionProcessor.matchesCondition(state, e.condition, e.sourceId, e.controllerId);
-          }
-          return true;
-        });
+        if (e.condition) {
+          return ConditionProcessor.matchesCondition(state, e.condition, e.sourceId, e.controllerId);
+        }
+        return true;
+      });
 
-    // 2. LAYER 1: Copiable Values (Rule 707)
-    let currentDefinition = { ...obj.definition };
-    const supertypes = new Set<string>(currentDefinition.supertypes || []);
+      // 2. LAYER 1: Copiable Values (Rule 707)
+      let currentDefinition = { ...obj.definition };
+      const supertypes = new Set<string>(currentDefinition.supertypes || []);
 
-    const copyEffects = activeEffects.filter(e => e.layer === 1);
-    for (const effect of copyEffects) {
-      if (this.isTarget(state, effect, obj.id) && effect.copyFromId) {
-        const sourceObj = state.battlefield.find(o => o.id === effect.copyFromId) || 
-                          TargetingProcessor.findObjectInAnyZone(state, effect.copyFromId);
-        if (sourceObj) {
-          currentDefinition = { ...sourceObj.definition };
-          supertypes.clear();
-          (currentDefinition.supertypes || []).forEach(s => supertypes.add(s));
+      const copyEffects = activeEffects.filter(e => e.layer === 1);
+      for (const effect of copyEffects) {
+        if (this.isTarget(state, effect, obj.id, log) && effect.copyFromId) {
+          const sourceObj = state.battlefield.find(o => o.id === effect.copyFromId) ||
+            TargetingProcessor.findObjectInAnyZone(state, effect.copyFromId);
+          if (sourceObj) {
+            currentDefinition = { ...sourceObj.definition };
+            supertypes.clear();
+            (currentDefinition.supertypes || []).forEach(s => supertypes.add(s));
 
-          if ((effect as any).isNotLegendary) {
+            if ((effect as any).isNotLegendary) {
               supertypes.delete('Legendary');
+            }
           }
         }
       }
-    }
 
-    // 3. Initialize working stats
-    let power = parseInt(currentDefinition.power || '0');
-    let toughness = parseInt(currentDefinition.toughness || '0');
-    const keywords = new Set<string>(currentDefinition.keywords || []);
-    const colors = new Set<string>(currentDefinition.colors || []);
-    const types = new Set<string>(currentDefinition.types || []);
-    const subtypes = new Set<string>(currentDefinition.subtypes || []);
+      // 3. Initialize working stats
+      let power = parseInt(currentDefinition.power || '0');
+      let toughness = parseInt(currentDefinition.toughness || '0');
+      const keywords = new Set<string>(currentDefinition.keywords || []);
+      const colors = new Set<string>(currentDefinition.colors || []);
+      const types = new Set<string>(currentDefinition.types || []);
+      const subtypes = new Set<string>(currentDefinition.subtypes || []);
 
-    // 4. APPLY REMAINING LAYERS (2-7)
-    for (const effect of activeEffects) {
-      if (effect.layer === 1) continue;
-      if (!this.isTarget(state, effect, obj.id)) continue;
+      // 4. APPLY REMAINING LAYERS (2-7)
+      for (const effect of activeEffects) {
+        if (effect.layer === 1) continue;
+        if (!this.isTarget(state, effect, obj.id, log)) continue;
 
-      // Layer 4: Type-changing effects
-      effect.typesToAdd?.forEach(t => types.add(t));
-      if (effect.typesSet) {
-        types.clear();
-        effect.typesSet.forEach(t => types.add(t));
-      }
-      effect.subtypesToAdd?.forEach(s => subtypes.add(s));
-      if (effect.subtypesSet) {
-        subtypes.clear();
-        effect.subtypesSet.forEach(s => subtypes.add(s));
-      }
-
-      // Layer 5: Color-changing effects
-      effect.colorsToAdd?.forEach(c => colors.add(c));
-      if (effect.colorSet) {
-        colors.clear();
-        effect.colorSet.forEach(c => colors.add(c));
-      }
-
-      // Layer 6: Ability Adding/Removing
-      // We process Layer 6 if the effect explicitly targets layer 6 OR has ability-related properties
-      if (effect.layer === 6 || effect.abilitiesToAdd || effect.abilitiesToRemove || effect.removeAllAbilities) {
-        if (effect.removeAllAbilities) {
-          keywords.clear();
+        // Layer 4: Type-changing effects
+        effect.typesToAdd?.forEach(t => types.add(t));
+        if (effect.typesSet) {
+          types.clear();
+          effect.typesSet.forEach(t => types.add(t));
         }
-        effect.abilitiesToAdd?.forEach((k: any) => {
-          keywords.add(typeof k === 'string' ? k : (k as any).name || 'Unknown');
-          console.log(`[LAYER 6] Added keyword ${k} to ${obj.id}`);
-        });
-        effect.abilitiesToRemove?.forEach(k => keywords.delete(k));
-      }
-
-      // Layer 7a, 7b: Power/Toughness Set/Dynamic
-      if (effect.layer === 7 || effect.powerSet !== undefined || effect.toughnessSet !== undefined || effect.powerDynamic || effect.toughnessDynamic) {
-        this.applyLayer7(state, effect, obj, (p, t) => {
-          power = p !== undefined ? p : power;
-          toughness = t !== undefined ? t : toughness;
-          console.log(`[LAYER 7] Updated PT of ${obj.id} to ${power}/${toughness}`);
-        });
-      }
-    }
-
-    // 5. LAYER 7c: Power/Toughness Modifiers (CR 613.4c)
-    for (const effect of activeEffects) {
-      if (!this.isTarget(state, effect, obj.id)) continue;
-      if (effect.layer === 7 || effect.powerModifier !== undefined || effect.toughnessModifier !== undefined) {
-        let pMod = effect.powerModifier !== undefined ? Number(effect.powerModifier) : 0;
-        let tMod = effect.toughnessModifier !== undefined ? Number(effect.toughnessModifier) : 0;
-
-        if (effect.powerDynamic === 'attacking_dogs_count') {
-          pMod += state.combat?.attackers.filter(a => {
-            const attacker = state.battlefield.find(o => o.id === a.attackerId);
-            return attacker && attacker.id !== obj.id && attacker.definition.subtypes?.some(s => s.toLowerCase() === 'dog');
-          }).length || 0;
+        effect.subtypesToAdd?.forEach(s => subtypes.add(s));
+        if (effect.subtypesSet) {
+          subtypes.clear();
+          effect.subtypesSet.forEach(s => subtypes.add(s));
         }
 
-        power += pMod;
-        toughness += tMod;
+        // Layer 5: Color-changing effects
+        effect.colorsToAdd?.forEach(c => colors.add(c));
+        if (effect.colorSet) {
+          colors.clear();
+          effect.colorSet.forEach(c => colors.add(c));
+        }
+
+        // Layer 6: Ability Adding/Removing
+        // We process Layer 6 if the effect explicitly targets layer 6 OR has ability-related properties
+        if (effect.layer === 6 || effect.abilitiesToAdd || effect.abilitiesToRemove || effect.removeAllAbilities) {
+          if (effect.removeAllAbilities) {
+            keywords.clear();
+          }
+          effect.abilitiesToAdd?.forEach((k: any) => {
+            const keyword = typeof k === 'string' ? k : (k as any).name || 'Unknown';
+            keywords.add(keyword);
+            if (log) log(`[DEBUG] Layer 6: Added keyword ${keyword} to ${obj.definition?.name || 'Unknown'}`);
+          });
+          effect.abilitiesToRemove?.forEach(k => keywords.delete(k));
+        }
+
+        // Layer 7a, 7b: Power/Toughness Set/Dynamic
+        if (effect.layer === 7 || effect.powerSet !== undefined || effect.toughnessSet !== undefined || effect.powerDynamic || effect.toughnessDynamic) {
+          this.applyLayer7(state, effect, obj, (p, t) => {
+            power = p !== undefined ? p : power;
+            toughness = t !== undefined ? t : toughness;
+            console.log(`[LAYER 7] Updated PT of ${obj.id} to ${power}/${toughness}`);
+          });
+        }
       }
-    }
 
-    // 6. LAYER 7d: Counters (Rule 613.4c)
-    const plus1 = (obj.counters?.['p1p1'] || 0) + (obj.counters?.['p1p1_counter'] || 0) + (obj.counters?.['+1/+1'] || 0) + (obj.counters?.['+1/+1_counter'] || 0) + (obj.counters?.['plus1plus1'] || 0) + (obj.counters?.['plus1plus1_counter'] || 0);
-    const minus1 = (obj.counters?.['-1/-1'] || 0) + (obj.counters?.['-1/-1_counter'] || 0);
-    const counterBonus = plus1 - minus1;
-    power += counterBonus;
-    toughness += counterBonus;
+      // 5. LAYER 7c: Power/Toughness Modifiers (CR 613.4c)
+      for (const effect of activeEffects) {
+        if (!this.isTarget(state, effect, obj.id)) continue;
+        if (effect.layer === 7 || effect.powerModifier !== undefined || effect.toughnessModifier !== undefined) {
+          let pMod = effect.powerModifier !== undefined ? Number(effect.powerModifier) : 0;
+          let tMod = effect.toughnessModifier !== undefined ? Number(effect.toughnessModifier) : 0;
 
-    // 7. Collect restrictions from active effects that target this object
-    const restrictionTypes = activeEffects
+          if (effect.powerDynamic === 'attacking_dogs_count') {
+            pMod += state.combat?.attackers.filter(a => {
+              const attacker = state.battlefield.find(o => o.id === a.attackerId);
+              return attacker && attacker.id !== obj.id && attacker.definition.subtypes?.some(s => s.toLowerCase() === 'dog');
+            }).length || 0;
+          }
+
+          power += pMod;
+          toughness += tMod;
+        }
+      }
+
+      // 6. LAYER 7d: Counters (Rule 613.4c)
+      const plus1 = (obj.counters?.['p1p1'] || 0) + (obj.counters?.['p1p1_counter'] || 0) + (obj.counters?.['+1/+1'] || 0) + (obj.counters?.['+1/+1_counter'] || 0) + (obj.counters?.['plus1plus1'] || 0) + (obj.counters?.['plus1plus1_counter'] || 0);
+      const minus1 = (obj.counters?.['-1/-1'] || 0) + (obj.counters?.['-1/-1_counter'] || 0);
+      const counterBonus = plus1 - minus1;
+      power += counterBonus;
+      toughness += counterBonus;
+
+      // 7. Collect restrictions from active effects that target this object
+      const restrictionTypes = activeEffects
         .filter(e => this.isTarget(state, e, obj.id))
         .flatMap(e => e.restrictions || [])
         .map((r: any) => typeof r === 'string' ? r : r.type);
 
-    return {
-      power,
-      toughness,
-      keywords: Array.from(keywords),
-      colors: Array.from(colors),
-      types: Array.from(types),
-      subtypes: Array.from(subtypes),
-      restrictions: Array.from(new Set(restrictionTypes)),
-      flashbackCostOverride: activeEffects.find(e => this.isTarget(state, e, obj.id) && (e as any).flashbackCostOverride)?.flashbackCostOverride,
-      isPlayable: false,
-      supertypes: Array.from(supertypes)
-    };
+      return {
+        power,
+        toughness,
+        keywords: Array.from(keywords),
+        colors: Array.from(colors),
+        types: Array.from(types),
+        subtypes: Array.from(subtypes),
+        restrictions: Array.from(new Set(restrictionTypes)),
+        flashbackCostOverride: activeEffects.find(e => this.isTarget(state, e, obj.id) && (e as any).flashbackCostOverride)?.flashbackCostOverride,
+        isPlayable: false,
+        supertypes: Array.from(supertypes)
+      };
     } finally {
-        this.calculationStack.delete(obj.id);
+      this.calculationStack.delete(obj.id);
     }
   }
 
@@ -195,14 +196,14 @@ export class LayerProcessor {
     }
 
     if (effect.powerDynamic === 'SOURCE_POWER' || effect.toughnessDynamic === 'SOURCE_TOUGHNESS') {
-        const source = state.battlefield.find(o => o.id === effect.sourceId);
-        if (source) {
-            const stats = this.getEffectiveStats(source, state);
-            update(
-                effect.powerDynamic === 'SOURCE_POWER' ? stats.power : undefined,
-                effect.toughnessDynamic === 'SOURCE_TOUGHNESS' ? stats.toughness : undefined
-            );
-        }
+      const source = state.battlefield.find(o => o.id === effect.sourceId);
+      if (source) {
+        const stats = this.getEffectiveStats(source, state);
+        update(
+          effect.powerDynamic === 'SOURCE_POWER' ? stats.power : undefined,
+          effect.toughnessDynamic === 'SOURCE_TOUGHNESS' ? stats.toughness : undefined
+        );
+      }
     }
 
     // Sublayer 7b: Effects that set power and/or toughness
@@ -214,7 +215,7 @@ export class LayerProcessor {
     }
   }
 
-  public static isTarget(state: GameState, effect: ContinuousEffect, objId: string): boolean {
+  public static isTarget(state: GameState, effect: ContinuousEffect, objId: string, log?: (m: string) => void): boolean {
     // 1. Explicit target list (snapshotted spells)
     if (Array.isArray(effect.targetIds)) return effect.targetIds.includes(objId);
 
@@ -233,9 +234,9 @@ export class LayerProcessor {
         case 'OTHER_CREATURES_YOU_CONTROL':
           return obj.id !== effect.sourceId && obj.controllerId === effect.controllerId && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
         case 'MATCHING_PERMANENTS_YOU_CONTROL':
-          return obj.controllerId === effect.controllerId && TargetingProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId);
+          return obj.controllerId === effect.controllerId && TargetingProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId, log);
         case 'MATCHING_PERMANENTS':
-          return TargetingProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId);
+          return TargetingProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId, log);
         case 'ALL_CREATURES_OPPONENTS_CONTROL':
         case 'OPPONENTS_CREATURES':
           return obj.controllerId !== effect.controllerId && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
@@ -245,7 +246,7 @@ export class LayerProcessor {
         case 'ALL_OTHER_CREATURES':
           return obj.id !== effect.sourceId && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
         case 'MATCHING_CARDS':
-          return TargetingProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId);
+          return TargetingProcessor.matchesRestrictions(state, obj, effect.restrictions || [], effect.controllerId, effect.sourceId, log);
         case 'ENCHANTED_CREATURE':
         case 'ENCHANTED_PERMANENT': {
           const source = state.battlefield.find(o => o.id === effect.sourceId);
@@ -284,21 +285,21 @@ export class LayerProcessor {
   public static updateDerivedStats(state: GameState, PriorityProcessor: any) {
     // 1. Update Player stats (maxHandSize, etc)
     Object.values(state.players).forEach(player => {
-        // Reset to base
-        player.maxHandSize = 7;
-        
-        // Apply modifiers from rule registry
-        const relevantEffects = state.ruleRegistry.continuousEffects.filter(e => 
-            e.playerModifier && 
-            this.isTarget(state, e, player.id) &&
-            (!e.condition || ConditionProcessor.matchesCondition(state, e.condition, e.sourceId, e.controllerId))
-        );
+      // Reset to base
+      player.maxHandSize = 7;
 
-        relevantEffects.forEach(e => {
-            if (e.playerModifier?.maxHandSize !== undefined) {
-                player.maxHandSize = Math.max(player.maxHandSize, e.playerModifier.maxHandSize);
-            }
-        });
+      // Apply modifiers from rule registry
+      const relevantEffects = state.ruleRegistry.continuousEffects.filter(e =>
+        e.playerModifier &&
+        this.isTarget(state, e, player.id) &&
+        (!e.condition || ConditionProcessor.matchesCondition(state, e.condition, e.sourceId, e.controllerId))
+      );
+
+      relevantEffects.forEach(e => {
+        if (e.playerModifier?.maxHandSize !== undefined) {
+          player.maxHandSize = Math.max(player.maxHandSize, e.playerModifier.maxHandSize);
+        }
+      });
     });
 
     // 2. Update Battlefield objects
@@ -356,16 +357,16 @@ export class LayerProcessor {
 
     // 3. Update effective stats for all objects in all zones (to set isPlayable correctly)
     const { SpellProcessor } = require('../actions/SpellProcessor');
-    [...state.battlefield, ...(Object.values(state.players) as any[]).flatMap(p => [...p.hand, ...p.graveyard, ...p.library, ...p.virtualHand]), ...state.exile].forEach(obj => {
+    [...state.stack.map(s => s.card).filter(Boolean), ...state.battlefield, ...(Object.values(state.players) as any[]).flatMap(p => [...p.hand, ...p.graveyard, ...p.library, ...p.virtualHand]), ...state.exile].forEach(obj => {
       const stats = this.getEffectiveStats(obj, state);
       const isPlayable = state.priorityPlayerId === obj.controllerId && PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id);
-      
+
       // Calculate effective mana cost for display
       let displayCost = obj.definition.manaCost;
       try {
-          const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj);
-          displayCost = totalMana;
-      } catch (e) {}
+        const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj);
+        displayCost = totalMana;
+      } catch (e) { }
 
       obj.effectiveStats = { ...stats, isPlayable, manaCost: displayCost };
     });

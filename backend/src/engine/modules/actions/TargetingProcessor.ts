@@ -295,11 +295,12 @@ export class TargetingProcessor {
     /**
      * Evaluates a set of restrictions against a target object or player.
      */
-    public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], controllerId: string | null, sourceId: string): boolean {
+    public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], controllerId: string | null, sourceId: string, log?: (msg: string) => void): boolean {
         if (!targetObj) return false;
+        const definition = targetObj.definition || targetObj.card?.definition;
+        if (log) log(`[DEBUG] matchesRestrictions for ${definition?.name || targetObj.name}: [${restrictions.join(', ')}]`);
 
         // Extract definition: either direct (GameObject) or from card property (Stack Spell)
-        const definition = targetObj.definition || targetObj.card?.definition;
 
         // If no definition and not a player, this object cannot match most restrictions
         if (!definition) {
@@ -316,11 +317,15 @@ export class TargetingProcessor {
         ].map((t: string) => t.toLowerCase());
 
         const baseTypes = ['creature', 'planeswalker', 'land', 'artifact', 'enchantment', 'instant', 'sorcery', 'permanent', 'card'];
-        const isAlternative = (r: any) => typeof r === 'object' || (typeof r === 'string' && (baseTypes.includes(r.toLowerCase()) || r.toLowerCase().includes('_or_')));
+        const isAlternative = (r: any) => typeof r === 'object' || (typeof r === 'string' && r.toLowerCase().includes('_or_'));
 
         for (const r of restrictions) {
             if (typeof r !== 'string' || isAlternative(r)) continue;
             const lr = r.toLowerCase();
+            // Silence most frequent logs, but for debugging Quandrix we need to see why it fails
+            if (log && (lr.includes('hand') || lr.includes('instant') || lr.includes('sorcery'))) {
+                log(`[DEBUG] Checking standard restriction: ${definition?.name || targetObj.name} against ${lr}`);
+            }
 
             if (lr === 'nonland' && objTypes.includes('land')) return false;
             if (lr === 'noncreature' && objTypes.includes('creature')) return false;
@@ -355,7 +360,10 @@ export class TargetingProcessor {
             if (lr === 'fromhand' || lr === 'castfromhand') {
                 const zone = targetObj.zone || targetObj.card?.zone;
                 const lastZone = targetObj.lastNonStackZone || targetObj.card?.lastNonStackZone;
-                if (zone !== Zone.Hand && lastZone !== Zone.Hand) return false;
+                const match = zone === Zone.Hand || lastZone === Zone.Hand;
+                if (log) log(`[DEBUG] fromhand check for ${definition?.name || targetObj.name}: Zone=${zone}, LastZone=${lastZone} -> ${match}`);
+                if (!match) return false;
+                continue;
             }
 
             if (lr === 'mv_le_power' && sourceId) {
@@ -417,11 +425,17 @@ export class TargetingProcessor {
                 'graveyard', 'other', 'another', 'notcontrolled', 'opponentcontrol', 'youcontrol', 'self', 'legendary',
                 'tapped', 'untapped', 'yours', 'opponents', 'attackingorblocking', 'basic',
                 'instantorsorcerycastthisturn', 'player', 'anytarget', 'creature', 'artifact', 'land', 'enchantment', 'planeswalker',
-                'instant', 'sorcery', 'hasxinmanacost', 'monocolored', 'multicolored', 'colorless'
+                'instant', 'sorcery', 'hasxinmanacost', 'monocolored', 'multicolored', 'colorless',
+                'fromhand', 'castfromhand', 'nontoken', 'token', 'mv_le_power'
             ].includes(lr) || lr.startsWith('cmc') || lr.startsWith('mv') || lr.startsWith('power') || lr.startsWith('toughness') || lr.startsWith('hascounter');
 
             if (['monocolored', 'multicolored', 'colorless'].includes(lr)) {
                 if (!this.sourceHasQualities(targetObj, [lr], state)) return false;
+                continue;
+            }
+
+            if (baseTypes.includes(lr)) {
+                if (!objTypes.includes(lr)) return false;
                 continue;
             }
 
@@ -436,11 +450,15 @@ export class TargetingProcessor {
                 if (!isNameMatch && !isSubtypeMatch) return false;
             }
         }
+        if (log) log(`[DEBUG] Loop finished for ${definition?.name || targetObj.name}, alternatives count: ${restrictions.filter(r => isAlternative(r)).length}`);
 
         const alternatives = restrictions.filter(r => isAlternative(r));
+        if (log && alternatives.length > 0) log(`[DEBUG] Processing ${alternatives.length} alternatives for ${definition?.name || targetObj.name}: ${alternatives.join(', ')}`);
         if (alternatives.length > 0) {
-            return alternatives.some(r => {
-                if (typeof r === 'string') {
+            return alternatives.every(r => {
+                const lr = typeof r === 'string' ? r.toLowerCase() : JSON.stringify(r);
+                const isMatch = (() => {
+                    if (typeof r === 'string') {
                     const lr = r.toLowerCase();
                     if (lr === 'card') return true;
                     if (lr === 'instant_or_sorcery') {
@@ -483,8 +501,10 @@ export class TargetingProcessor {
                     const rTypes = r.types || (r.type ? [r.type] : []);
                     const rSubtypes = r.subtypes || (r.subtype ? [r.subtype] : []);
 
+                    const functionalTypes = ['manavalue', 'mv', 'manavaluele', 'manavalueless', 'mvless', 'power', 'toughness', 'cmc'];
                     if (rTypes.length > 0 && !rTypes.some((t: string) => {
                         const lt = t.toLowerCase();
+                        if (functionalTypes.includes(lt)) return true; // Skip type check for functional restrictions
                         if (lt.startsWith('non')) {
                             const base = lt.substring(3);
                             return !objTypes.includes(base);
@@ -499,7 +519,7 @@ export class TargetingProcessor {
                         if (!targetName || targetName.toLowerCase() !== filterName.toLowerCase()) match = false;
                     }
                     if (r.hasxinmanacost && !definition.manaCost?.includes('X')) match = false;
-                    if (r.type === 'ManaValue' || r.type === 'MV' || r.type === 'ManaValueLe') {
+                    if (r.type === 'ManaValue' || r.type === 'MV' || r.type === 'ManaValueLe' || r.type === 'ManaValueLess' || r.type === 'MVLess') {
                         const mv = ManaProcessor.getManaValue(definition.manaCost || '');
                         let val = r.value;
                         if (val === 'X') {
@@ -524,8 +544,12 @@ export class TargetingProcessor {
                     }
                     return match;
                 }
+                })();
+                if (log) log(`[DEBUG] Alternative check: ${definition?.name || targetObj.name} against ${lr} -> ${isMatch}`);
+                return isMatch;
             });
         }
+        if (log) log(`[DEBUG] matchesRestrictions final result for ${definition?.name || targetObj.name}: true`);
         return true;
     }
 

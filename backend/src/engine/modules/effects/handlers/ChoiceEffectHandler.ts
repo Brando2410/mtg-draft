@@ -169,6 +169,10 @@ export class ChoiceEffectHandler {
     const firstPlayerId = playerTargets.length > 0 ? playerTargets[0] as PlayerId : controllerId;
     const nextPlayers = playerTargets.length > 1 ? playerTargets.slice(1) as PlayerId[] : [];
 
+    const cardTargets = targets.filter(tid => !state.players[tid as PlayerId]);
+    const { TargetingProcessor } = require('./../../actions/TargetingProcessor');
+    const lookingCards = cardTargets.map(tid => TargetingProcessor.findObjectInAnyZone(state, tid)).filter(Boolean) as GameObject[];
+
     state.pendingAction = ChoiceGenerator.createModalChoice(
         { 
             label: effect.label || 'Choose an option', 
@@ -176,6 +180,7 @@ export class ChoiceEffectHandler {
             sourceId: sourceId, 
             actionType: effect.optional ? ActionType.OptionalAction : ActionType.ResolutionChoice,
             hideUndo: true,
+            lookingCards,
             minChoices: effect.minChoices,
             maxChoices: effect.maxChoices,
             stackObj: stackObject,

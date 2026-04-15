@@ -14,19 +14,20 @@ export const BanishingBetrayal: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Spell,
-            targetDefinition: { 
-                type: 'Permanent', 
-                restrictions: [{ type: 'Nonland' }] 
+            targetDefinition: {
+                type: 'Permanent',
+                restrictions: [{ type: 'Nonland' }]
             },
             effects: [
-                { 
-                    type: EffectType.MoveToZone, 
-                    zone: Zone.Hand, 
-                    targetMapping: TargetMapping.Target1 
+                {
+                    type: EffectType.MoveToZone,
+                    zone: Zone.Hand,
+                    targetMapping: TargetMapping.Target1
                 },
-                { 
-                    type: 'Surveil', 
-                    amount: 1 
+                {
+                    type: EffectType.Surveil,
+                    targetMapping: TargetMapping.Controller,
+                    amount: 1
                 }
             ]
         }

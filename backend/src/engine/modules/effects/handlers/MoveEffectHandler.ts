@@ -173,42 +173,71 @@ export class MoveEffectHandler {
     const player = state.players[controllerId];
     if (!player) return;
 
-    const revealed: GameObject[] = [];
-    let found = false;
+    const revealed: any[] = [];
+    let targetCard: any = null;
 
-    while (player.library.length > 0 && !found) {
+    while (player.library.length > 0) {
         const card = player.library.pop()!;
+        ActionProcessor.moveCard(state, card, Zone.Exile, controllerId, log);
+
+        (card as any).isRevealed = true;
         revealed.push(card);
+
         if (TargetingProcessor.matchesRestrictions(state, card, effect.restrictions || [], controllerId, (stackObject as any)?.sourceId || '')) {
-            found = true;
+            targetCard = card;
+            break;
         }
     }
 
-    log(`[REVEAL-UNTIL] Revealed ${revealed.length} cards. Found match: ${found}`);
+    const found = !!targetCard;
+    if (log && revealed.length > 0) log(`[REVEAL-UNTIL] Exiled ${revealed.length} cards from library. Found match: ${found}`);
 
     if (found) {
-        const targetCard = revealed.pop()!;
-        const destination = effect.zone || effect.destination || Zone.Hand;
-        ActionProcessor.moveCard(state, targetCard, destination, controllerId, log);
-        
+        // The card is already in Exile now.
         if (effect.next) {
+            const nextEffect = { ...effect.next } as any;
+            if (nextEffect.type === 'Choice' && (nextEffect.choices || nextEffect.choice)) {
+                const { ChoiceGenerator } = require('../ChoiceGenerator');
+                const choicesArr = nextEffect.choices || nextEffect.choice?.choices || [];
+                
+                state.pendingAction = ChoiceGenerator.createCardChoice(state, [targetCard], {
+                    label: nextEffect.label || (nextEffect.choice?.label) || `Cast ${targetCard.definition.name}?`,
+                    playerId: controllerId,
+                    sourceId: targetCard.id,
+                    optional: true,
+                    onSelected: (c: any) => {
+                        const yesChoice = choicesArr.find((ch: any) => ch.label === 'Yes' || ch.value === 'yes');
+                        return (yesChoice?.effects || []).map((eff: any) => ({ ...eff, targetId: targetCard.id }));
+                    },
+                    onNone: () => {
+                        const noChoice = choicesArr.find((ch: any) => ch.label === 'No' || ch.value === 'no');
+                        return (noChoice?.effects || []).map((eff: any) => ({ ...eff, targetId: targetCard.id }));
+                    },
+                    stackObj: stackObject,
+                    parentContext: parentContext
+                });
+                return;
+            }
             const { EffectProcessor } = require('../EffectProcessor');
-            EffectProcessor.executeEffect(state, effect.next, (stackObject as any)?.sourceId || '', [targetCard.id], log, stackObject, parentContext);
+            EffectProcessor.executeEffect(state, nextEffect, targetCard.id, [targetCard.id], log, stackObject, parentContext);
+            if (state.pendingAction) return;
         }
     }
 
-    if (revealed.length > 0) {
+    // Move non-matching cards (and the match if it wasn't handled) from Exile to bottom
+    const remaining = revealed.filter(c => c !== targetCard);
+    if (remaining.length > 0) {
         const remainderZone = (effect as any).remainderZone || Zone.Library;
         const remainderPos = (effect as any).remainderPosition || 'bottom';
         const shuffle = (effect as any).shuffleRemainder;
 
         if (shuffle) {
-            ActionProcessor.shuffle(revealed);
+            ActionProcessor.shuffle(remaining);
         }
 
-        revealed.forEach(c => {
-            ActionProcessor.moveCard(state, c, remainderZone, controllerId, log, remainderPos);
-        });
+        for (const c of remaining) {
+            ActionProcessor.moveCard(state, c, (effect as any).remainderZone || Zone.Library, c.ownerId, log, 'bottom');
+        }
     }
   }
 

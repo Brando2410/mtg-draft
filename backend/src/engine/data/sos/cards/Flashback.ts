@@ -17,7 +17,7 @@ export const Flashback: CardDefinition = {
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
-                restrictions: [Restriction.Instant, Restriction.Sorcery]
+                restrictions: ['instant_or_sorcery']
             },
             effects: [
                 {

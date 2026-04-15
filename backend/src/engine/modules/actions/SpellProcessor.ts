@@ -24,6 +24,7 @@ export class SpellProcessor {
         },
         bypassTargeting = false
     ): boolean {
+        log(`[DEBUG] SpellProcessor.playCard: Card ${cardInstanceId} by ${playerId} (BypassTargeting: ${bypassTargeting})`);
         const activeId = String(state.activePlayerId).trim();
         const callerId = String(playerId).trim();
 
@@ -69,8 +70,8 @@ export class SpellProcessor {
                     cardToPlay = obj;
                     (cardToPlay as any).isFlashbackCast = true;
                     log(`[FLASHBACK] Casting ${obj.definition.name} via flashback.`);
-                } else if (permissionType) {
-                    const hasPermission = PriorityProcessor.findPermissionEffect(state, playerId, permissionType, obj.id);
+                } else if (permissionType || bypassTargeting) {
+                    const hasPermission = bypassTargeting || PriorityProcessor.findPermissionEffect(state, playerId, permissionType!, obj.id);
                     if (hasPermission) {
                         cardToPlay = obj;
                     } else {
@@ -150,7 +151,7 @@ export class SpellProcessor {
         }
 
         // 2. Timing/Speed (Rule 305/307)
-        if (!isInstantOrFlash) {
+        if (!isInstantOrFlash && !bypassTargeting) {
             if (activeId !== callerId || (state.currentPhase !== Phase.PreCombatMain && state.currentPhase !== Phase.PostCombatMain) || state.stack.length > 0) {
                 log(`Illegal Play: Cannot cast sorcery speed spell/land right now.`);
                 return false;
@@ -517,10 +518,12 @@ export class SpellProcessor {
         // 5. Remove from current zone and move to stack
         const lastZone = cardToPlay.zone;
         if (!(cardToPlay as any).isPreparedCopy) {
-            ActionProcessor.removeFromCurrentZone(state, cardToPlay);
+            ActionProcessor.moveCard(state, cardToPlay, Zone.Stack, playerId, log);
+        } else {
+            cardToPlay.zone = Zone.Stack;
+            cardToPlay.lastNonStackZone = lastZone;
         }
-        cardToPlay.zone = Zone.Stack;
-        cardToPlay.lastNonStackZone = lastZone;
+
         (cardToPlay as any).paidCost = totalMana;
         (cardToPlay as any).paidManaValue = ManaProcessor.getManaValue(totalMana);
 

@@ -508,7 +508,8 @@ export class GameEngine {
     return {
       log: (m: string) => this.log(m),
       getPlayerName: (id: PlayerId) => this.getPlayerName(id),
-      resetPriorityToActivePlayer: () => this.resetPriorityToActivePlayer()
+      resetPriorityToActivePlayer: () => this.resetPriorityToActivePlayer(),
+      advanceStep: () => this.advanceStep()
     };
   }
 

@@ -7,6 +7,7 @@ export interface CombatCallbacks {
     log: (m: string) => void;
     getPlayerName: (id: PlayerId) => string;
     resetPriorityToActivePlayer: () => void;
+    advanceStep: () => void;
 }
 
 /**
@@ -154,7 +155,14 @@ export class CombatProcessor {
     }
 
     state.pendingAction = undefined;
-    callbacks.resetPriorityToActivePlayer();
+
+    const attackerCount = (state.combat?.attackers || []).length;
+    if (attackerCount === 0) {
+        callbacks.log("No attackers declared. Speeding to next phase.");
+        callbacks.advanceStep();
+    } else {
+        callbacks.resetPriorityToActivePlayer();
+    }
   }
 
   public static clearAttackers(state: GameState, playerId: PlayerId, callbacks: CombatCallbacks) {
