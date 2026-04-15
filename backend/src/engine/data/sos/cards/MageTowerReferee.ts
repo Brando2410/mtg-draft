@@ -16,10 +16,12 @@ export const MageTowerReferee: CardDefinition = {
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastSpell,
-            condition: (state, event) => {
+            condition: (state, event, ability) => {
+                if (event.playerId !== ability.controllerId) return false;
                 const card = event.data?.card;
                 if (!card) return false;
-                return (card.definition.colors || []).length >= 2;
+                const uniqueColors = new Set(card.definition.colors || []);
+                return uniqueColors.size >= 2;
             },
             effects: [
                 {

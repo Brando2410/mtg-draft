@@ -88,8 +88,9 @@ export class CostProcessor {
         return player.life > (parseInt(cost.value) || 0);
 
       case 'Exile':
-        if (cost.targetMapping === 'SELF') {
-           return state.battlefield.some(c => c.id === source.id);
+      case 'ExileSelf':
+        if (cost.targetMapping === 'SELF' || cost.type === 'ExileSelf') {
+           return !!this.findObject(state, source.id);
         }
         const zones = cost.sourceZones || (cost.sourceZone ? [cost.sourceZone] : [Zone.Battlefield]);
         const pool = zones.flatMap(z => {
@@ -198,6 +199,7 @@ export class CostProcessor {
          break;
 
        case 'Exile':
+       case 'ExileSelf':
          let exiles: GameObject[] = [];
          if (cost.targetMapping === 'SELF') {
              exiles = [source];

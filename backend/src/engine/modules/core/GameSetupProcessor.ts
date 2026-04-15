@@ -70,6 +70,8 @@ export class GameSetupProcessor {
         toughness: (cardRef as any).toughness || logicData?.toughness,
         loyalty: (cardRef as any).loyalty || logicData?.loyalty,
         keywords: baseKeywords,
+        abilities: logicData?.abilities || [],
+        flashbackCost: logicData?.flashbackCost || (cardRef as any).flashbackCost || (cardRef as any).flashback_cost,
         entersWithXCounters: (logicData as any)?.entersWithXCounters,
         entersTapped: (logicData as any)?.entersTapped,
         entersTappedCondition: (logicData as any)?.entersTappedCondition,

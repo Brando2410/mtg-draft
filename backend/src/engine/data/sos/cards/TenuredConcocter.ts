@@ -21,7 +21,7 @@ export const TenuredConcocter: CardDefinition = {
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.BecomeTarget,
-            condition: 'OPPONENT_CONTROLS_SOURCE',
+            condition: (state, event, ability) => event.playerId !== ability.controllerId,
             effects: [
                 {
                     type: EffectType.DrawCards,

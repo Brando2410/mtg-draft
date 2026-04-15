@@ -265,7 +265,8 @@ export class PriorityProcessor {
             if (graveCard) {
                 const hasAllowEffect = this.findPermissionEffect(state, playerId, EffectType.AllowCastFromGraveyard, graveCard.id);
                 const hasFlashback = graveCard.definition.keywords?.includes('Flashback');
-                if (hasAllowEffect || hasFlashback) cardToPlay = graveCard;
+                const hasGraveAbility = graveCard.definition.abilities?.some((a: any, idx: number) => this.canAbilityBeActivated(state, playerId, graveCard.id, idx, false));
+                if (hasAllowEffect || hasFlashback || hasGraveAbility) cardToPlay = graveCard;
             }
         }
 
@@ -381,7 +382,8 @@ export class PriorityProcessor {
    */
   public static canAbilityBeActivated(state: GameState, playerId: string, objId: string, abilityIndex: number, checkPriority = true): boolean {
     const player = state.players[playerId];
-    const obj = state.battlefield.find(o => o.id === objId);
+    const { TargetingProcessor } = require('../actions/TargetingProcessor');
+    const obj = TargetingProcessor.findObjectInAnyZone(state, objId);
     if (!player || !obj) return false;
 
     if (state.pendingAction) return false;
@@ -436,6 +438,14 @@ export class PriorityProcessor {
     if (isRestricted && !ability.isManaAbility) {
         console.log(`Illegal Activation: ${obj.definition.name}'s non-mana abilities are restricted.`);
         return false;
+    }
+
+    // Timing Check (Rule 602.1: Sorcery-speed abilities)
+    if (ability.activatedOnlyAsSorcery) {
+        const isOurTurn = state.activePlayerId === playerId;
+        const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
+        const stackEmpty = state.stack.length === 0;
+        if (!isOurTurn || !isMain || !stackEmpty) return false;
     }
 
     // Timing Check (Rule 606.3: Planeswalkers)

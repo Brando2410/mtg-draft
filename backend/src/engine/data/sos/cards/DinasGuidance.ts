@@ -20,20 +20,30 @@ export const DinasGuidance: CardDefinition = {
                     type: EffectType.SearchLibrary,
                     targetDefinition: { type: 'Card', count: 1, restrictions: ['Creature'] },
                     reveal: true,
-                    destination: Zone.Hand, // Put in hand first by default (revealed)
+                    destination: Zone.Library, 
+                    libraryPosition: 'top',
                     effects: [
                         {
                             type: EffectType.Choice,
-                            label: "Move to graveyard?",
+                            label: "Put card into hand or graveyard?",
                             choices: [
-                                { label: "Keep in Hand", effects: [] },
                                 { 
-                                    label: "Put in Graveyard", 
+                                    label: "Into Hand", 
+                                    effects: [
+                                        { 
+                                            type: EffectType.MoveToZone, 
+                                            destination: Zone.Hand, 
+                                            targetMapping: TargetMapping.Target1 
+                                        }
+                                    ] 
+                                },
+                                { 
+                                    label: "Into Graveyard", 
                                     effects: [
                                         { 
                                             type: EffectType.MoveToZone, 
                                             destination: Zone.Graveyard, 
-                                            targetMapping: TargetMapping.Target1 // Target1 here refers to the card being processed by the search sub-effects
+                                            targetMapping: TargetMapping.Target1 
                                         }
                                     ] 
                                 }

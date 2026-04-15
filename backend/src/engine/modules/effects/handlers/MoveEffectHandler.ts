@@ -492,6 +492,7 @@ export class MoveEffectHandler {
                     targetPlayerId: controllerId,
                     zone: destination,
                     tapped: effect.tapped,
+                    libraryPosition: effect.libraryPosition,
                     reveal: effect.reveal,
                     effects: effect.effects // Pass through nested effects (Fabled Passage)
                 });
@@ -573,9 +574,10 @@ export class MoveEffectHandler {
             }
 
             // --- CHAINING ---
-            if (effect.next) {
+            const subEffects = effect.next ? [effect.next] : (effect as any).effects;
+            if (subEffects && subEffects.length > 0) {
                 const { EffectProcessor } = require('../EffectProcessor');
-                EffectProcessor.executeEffect(state, effect.next, (stackObject as any)?.sourceId || '', targetIds, log, stackObject, parentContext);
+                EffectProcessor.resolveEffects(state, subEffects, (stackObject as any)?.sourceId || '', targetIds, log, 0, stackObject, parentContext);
             }
         });
     }

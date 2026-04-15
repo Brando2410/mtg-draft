@@ -16,6 +16,7 @@ export const PracticedOffense: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Spell,
+            flashbackCost: "{1}{W}",
             targetDefinition: [
                 {
                     type: TargetType.Player,

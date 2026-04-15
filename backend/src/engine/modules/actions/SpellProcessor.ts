@@ -1,4 +1,4 @@
-import { GameState, PlayerId, Zone, Phase, GameObject, AbilityType, AbilityCost, EffectType } from '@shared/engine_types';
+import { GameState, PlayerId, Zone, Phase, GameObject, AbilityType, AbilityCost, EffectType, ZoneRequirement } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
@@ -70,15 +70,24 @@ export class SpellProcessor {
                     cardToPlay = obj;
                     (cardToPlay as any).isFlashbackCast = true;
                     log(`[FLASHBACK] Casting ${obj.definition.name} via flashback.`);
-                } else if (permissionType || bypassTargeting) {
-                    const hasPermission = bypassTargeting || PriorityProcessor.findPermissionEffect(state, playerId, permissionType!, obj.id);
-                    if (hasPermission) {
-                        cardToPlay = obj;
-                    } else {
-                        log(`[DEBUG] No ${permissionType} permission found for ${obj.definition.name} in ${obj.zone}.`);
-                    }
                 } else {
-                    log(`[DEBUG] No permission type for zone ${obj.zone}.`);
+                     const hasGraveAbility = obj.zone === Zone.Graveyard && obj.definition.abilities?.some((a: any) => 
+                        (a.type === AbilityType.Activated || a.type === 'Activated') && 
+                        (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === ZoneRequirement.Graveyard)
+                    );
+
+                    if (hasGraveAbility) {
+                        cardToPlay = obj;
+                    } else if (permissionType || bypassTargeting) {
+                        const hasPermission = bypassTargeting || PriorityProcessor.findPermissionEffect(state, playerId, permissionType!, obj.id);
+                        if (hasPermission) {
+                            cardToPlay = obj;
+                        } else {
+                            log(`[DEBUG] No ${permissionType} permission found for ${obj.definition.name} in ${obj.zone}.`);
+                        }
+                    } else {
+                        log(`[DEBUG] No permission type for zone ${obj.zone}.`);
+                    }
                 }
             } else if (obj) {
                 log(`[DEBUG] Player ${playerId} does not control object ${cardInstanceId} (controller: ${obj.controllerId}).`);
@@ -113,6 +122,26 @@ export class SpellProcessor {
         if (!cardToPlay) {
             log(`Card not found in hand or current zone is restricted.`);
             return false;
+        }
+
+        // --- ACTIVATED ABILITY REDIRECTION (Graveyard) ---
+        // If the card is in the graveyard and we're trying to "play" it, check if it's actually an activated ability card
+        if (cardToPlay.zone === Zone.Graveyard && !cardInHand) {
+            const { LayerProcessor } = require('./../state/LayerProcessor');
+            const stats = LayerProcessor.getEffectiveStats(cardToPlay, state);
+            const hasFlashback = stats.keywords?.includes('Flashback') || cardToPlay.definition.keywords?.includes('Flashback');
+
+            if (!hasFlashback) {
+                const graveAbilityIndex = cardToPlay.definition.abilities?.findIndex((a: any) => 
+                   (a.type === AbilityType.Activated || a.type === 'Activated') && 
+                   (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === ZoneRequirement.Graveyard)
+                );
+                
+                if (graveAbilityIndex !== undefined && graveAbilityIndex !== -1) {
+                    log(`[DEBUG] Converting playCard to activateAbility for ${cardToPlay.definition.name}`);
+                    return this.activateAbility(state, playerId, cardInstanceId, graveAbilityIndex, declaredTargets, log, engine, bypassTargeting);
+                }
+            }
         }
 
         // --- MDFC FACE SELECTION (CR 711.1) ---
@@ -687,16 +716,35 @@ export class SpellProcessor {
         return true;
     }
 
-    public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: any): { totalMana: string, additionalCosts: AbilityCost[] } {
+    public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: any, forceFlashback?: boolean, overrideStats?: any): { totalMana: string, additionalCosts: AbilityCost[] } {
         const currentDef = overrideDefinition || card.definition;
         let baseCost = currentDef.manaCost;
+
+        // Flashback cost override (Rule 702.34)
+        // If explicitly forced or if it's a Flashback card in the graveyard, use the alternative cost
         const { LayerProcessor } = require('./../state/LayerProcessor');
-        const stats = LayerProcessor.getEffectiveStats(card, state);
-        const isFlashback = (card as any).isFlashbackCast || (card.zone === Zone.Graveyard && stats.keywords?.includes('Flashback'));
+        const stats = overrideStats || LayerProcessor.getEffectiveStats(card, state);
+        
+        const hasFlashbackKeyword = stats.keywords?.some((k: string) => k.toLowerCase() === 'flashback') || 
+                                   card.definition.keywords?.some((k: string) => k.toLowerCase() === 'flashback');
+        
+        const isFlashback = forceFlashback || 
+                          (card as any).isFlashbackCast || 
+                          (card.zone === Zone.Graveyard && hasFlashbackKeyword);
+
         if (isFlashback) {
             let override = stats.flashbackCostOverride;
             if (override === 'SOURCE_MANA_COST') override = currentDef.manaCost;
-            baseCost = currentDef.flashbackCost || override || baseCost;
+            baseCost = currentDef.flashbackCost || (currentDef as any).flashback_cost || override || baseCost;
+        } else if (card.zone === Zone.Graveyard || (Object.values(state.players) as any[]).some(p => p.virtualHand.some((v: any) => v.id === card.id))) {
+            // Support for graveyard-activated abilities (e.g. Stone Docent)
+            const graveyardAbility = currentDef.abilities?.find((a: any) => 
+                (a.type === AbilityType.Activated || a.type === 'Activated') && 
+                (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === ZoneRequirement.Graveyard)
+            );
+            if (graveyardAbility) {
+                baseCost = (graveyardAbility as any).manaCost || (graveyardAbility as any).costs?.find((c: any) => c.type === 'Mana')?.value || baseCost;
+            }
         }
 
         // Handle X cost substitution (Rule 107.3)
@@ -849,7 +897,8 @@ export class SpellProcessor {
         },
         bypassTargeting = false
     ): boolean {
-        const obj = state.battlefield.find(o => o.id === cardId);
+        const { TargetingProcessor } = require('./TargetingProcessor');
+        const obj = TargetingProcessor.findObjectInAnyZone(state, cardId);
         if (!obj) return false;
 
         const player = state.players[playerId];

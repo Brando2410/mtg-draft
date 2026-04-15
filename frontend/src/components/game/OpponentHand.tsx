@@ -40,11 +40,17 @@ export const OpponentHand = ({ hand, onHoverStart, onHoverEnd }: OpponentHandPro
     <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-32 flex items-start justify-center z-[600] pointer-events-none">
       <div className="relative w-full h-full flex items-start justify-center">
         <AnimatePresence>
-          {hand.map((card, index) => {
+          {(hand || []).map((card, index) => {
             const rotation = getCardRotation(index);
             const xBase = getCardX(index);
             const yBase = getCardY(index);
             const isRevealed = (card as any).isRevealed;
+
+            // Determine if this is a virtual card (from graveyard/exile)
+            // We can check if it's already flagged or if it's not in the 'hand' array
+            // But usually the GameView passes both. Let's make it explicit.
+            const isVirtual = (card as any).isVirtual || card.zone === 'Graveyard' || card.zone === 'Exile';
+            const cardWithFlags = { ...card, isVirtual };
             
             return (
               <motion.div
@@ -65,12 +71,12 @@ export const OpponentHand = ({ hand, onHoverStart, onHoverEnd }: OpponentHandPro
                     transition: { type: 'spring', stiffness: 400, damping: 25 }
                 } : {}}
                 className="absolute w-20 h-28 origin-center pointer-events-auto cursor-help"
-                onMouseEnter={() => isRevealed && onHoverStart?.(card)}
+                onMouseEnter={() => isRevealed && onHoverStart?.(cardWithFlags)}
                 onMouseLeave={() => isRevealed && onHoverEnd?.()}
               >
                 {isRevealed ? (
                     <div className="w-full h-full scale-[0.65] origin-center -translate-y-5">
-                         <GameCard obj={card} variant="hand" isOpponent />
+                         <GameCard obj={cardWithFlags} variant="hand" isOpponent />
                     </div>
                 ) : (
                     /* MTG CARD BACK */

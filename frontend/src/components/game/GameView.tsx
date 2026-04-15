@@ -249,7 +249,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
       </div>
 
       <OpponentHand 
-          hand={opponent?.hand || []} 
+          hand={[...(opponent?.hand || []), ...(opponent?.virtualHand || [])]} 
           onHoverStart={startZoom}
           onHoverEnd={stopZoom}
       />

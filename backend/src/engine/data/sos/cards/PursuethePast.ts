@@ -44,6 +44,10 @@ export const PursuethePast: CardDefinition = {
                                     targetMapping: TargetMapping.Controller
                                 }
                             ]
+                        },
+                        {
+                            label: "Do not discard",
+                            effects: []
                         }
                     ]
                 }

@@ -1,4 +1,4 @@
-import { GameState, GameObject, ContinuousEffect, PlayerId, GameObjectId, Zone } from '@shared/engine_types';
+import { GameState, GameObject, ContinuousEffect, PlayerId, GameObjectId, Zone, AbilityType, ZoneRequirement } from '@shared/engine_types';
 import { ConditionProcessor } from '../core/ConditionProcessor';
 import { TargetingProcessor } from '../actions/TargetingProcessor';
 
@@ -330,8 +330,15 @@ export class LayerProcessor {
       player.graveyard.forEach((card: GameObject) => {
         const stats = this.getEffectiveStats(card, state);
         const hasPermission = PriorityProcessor.findPermissionEffect(state, player.id, 'AllowCastFromGraveyard', card.id);
-        const hasFlashback = stats.keywords?.includes('Flashback');
-        if (hasPermission || hasFlashback) {
+        const hasFlashback = (stats.keywords || []).some((k: string) => k.toLowerCase() === 'flashback') || 
+                            (card.definition.keywords || []).some((k: string) => k.toLowerCase() === 'flashback');
+        
+        const hasGraveyardAbility = card.definition.abilities?.some((a: any) => 
+            (a.type === AbilityType.Activated || a.type === 'Activated') && 
+            (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === ZoneRequirement.Graveyard)
+        );
+
+        if (hasPermission || hasFlashback || hasGraveyardAbility) {
           player.virtualHand.push(card);
         }
       });
@@ -343,6 +350,11 @@ export class LayerProcessor {
             player.virtualHand.push(card);
           }
         }
+      });
+
+      // Revealed status for public information
+      player.virtualHand.forEach((card: GameObject) => {
+          card.isRevealed = true;
       });
 
       // Top of library
@@ -361,14 +373,40 @@ export class LayerProcessor {
       const stats = this.getEffectiveStats(obj, state);
       const isPlayable = state.priorityPlayerId === obj.controllerId && PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id);
 
+      // Determine if this object is currently a Flashback candidate for cost display
+      const isVirtual = (Object.values(state.players) as any[]).some(p => p.virtualHand.some((v: any) => v.id === obj.id));
+      const inGraveyard = obj.zone === Zone.Graveyard || (Object.values(state.players) as any[]).some(p => p.graveyard.some((g: any) => g.id === obj.id));
+      
+      const hasFlashbackKeyword = (stats.keywords || []).some((k: string) => k.toLowerCase() === 'flashback') || 
+                                 (obj.definition.keywords || []).some((k: string) => k.toLowerCase() === 'flashback') ||
+                                 obj.definition.oracleText?.toLowerCase().includes("flashback");
+
+      const graveyardAbility = obj.definition.abilities?.find((a: any) => 
+          (a.type === AbilityType.Activated || a.type === 'Activated') && 
+          (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === ZoneRequirement.Graveyard)
+      );
+
+      const isFlashback = hasFlashbackKeyword && (inGraveyard || isVirtual);
+      const isActivation = !!graveyardAbility && (inGraveyard || isVirtual);
+
       // Calculate effective mana cost for display
       let displayCost = obj.definition.manaCost;
+      if (isFlashback) {
+        displayCost = obj.definition.flashbackCost || (obj.definition as any).flashback_cost || obj.definition.manaCost;
+      } else if (isActivation && graveyardAbility) {
+        displayCost = (graveyardAbility as any).manaCost || (graveyardAbility as any).costs?.find((c: any) => c.type === 'Mana')?.value || obj.definition.manaCost;
+      }
+      
+      // Try to get more accurate cost from SpellProcessor if available
       try {
-        const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj);
+        const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], undefined, isFlashback, stats);
         displayCost = totalMana;
-      } catch (e) { }
+      } catch (e) { 
+        // fallback to base displayCost calculated above
+      }
 
       obj.effectiveStats = { ...stats, isPlayable, manaCost: displayCost };
+      (obj as any).isVirtual = isVirtual;
     });
   }
 }

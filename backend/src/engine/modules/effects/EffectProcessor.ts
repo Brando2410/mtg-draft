@@ -130,7 +130,13 @@ export class EffectProcessor {
         return ids;
     };
 
-    const validTargetIds = resolveMapping((effect as any).targetMapping, 0);
+    let validTargetIds = resolveMapping((effect as any).targetMapping, 0);
+    // CR 608.2c: If an effect has no target mapping specified, it defaults to the controller for player-centric actions
+    if (!(effect as any).targetMapping && validTargetIds.length === 0) {
+        if (['CreateToken', 'DrawCards', 'Scry', 'Surveil', 'AddMana', 'Learn', 'Mill'].includes(effect.type)) {
+            validTargetIds = [controllerId];
+        }
+    }
     const validTarget2Ids = (effect as any).target2Mapping ? resolveMapping((effect as any).target2Mapping, 1) : [];
 
     if (((effect as any).targetMapping && validTargetIds.length === 0 && !(effect as any).targetId && !effect.targetDefinition) || 

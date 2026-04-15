@@ -19,10 +19,10 @@ export const ChargingStrifeknight: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [
-                { type: 'Tap' },
-                { type: 'Discard', value: 1 }
+                { type: 'Tap' }
             ],
             effects: [
+                { type: EffectType.DiscardCards, amount: 1, targetMapping: TargetMapping.Controller },
                 { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }
             ]
         }

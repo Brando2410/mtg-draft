@@ -105,7 +105,7 @@ export const GameCard = memo(({
         {symbols.map((s, i) => (
           <img 
             key={i}
-            src={`https://svgs.scryfall.io/card-symbols/${s.toUpperCase().replace(/\//g, '_')}.svg`}
+            src={`https://svgs.scryfall.io/card-symbols/${s.toUpperCase().replace(/\//g, '')}.svg`}
             alt={s}
             style={{ width: `${finalSize}px`, height: `${finalSize}px` }}
             className="drop-shadow-sm select-none shrink-0"
@@ -140,20 +140,21 @@ export const GameCard = memo(({
   };
 
   const getColorConfig = (color: string) => {
-    const config: Record<string, { bg: string, from: string, to: string, border: string, text: string }> = {
-      white: { bg: 'bg-stone-100/95', from: 'from-stone-100/95', to: 'to-stone-100/95', border: 'border-stone-400', text: 'text-stone-900' },
-      blue: { bg: 'bg-blue-900/95', from: 'from-blue-900/95', to: 'to-blue-900/95', border: 'border-blue-400', text: 'text-white' },
-      black: { bg: 'bg-slate-900/95', from: 'from-slate-900/95', to: 'to-slate-900/95', border: 'border-slate-700', text: 'text-white' },
-      red: { bg: 'bg-red-900/95', from: 'from-red-900/95', to: 'to-red-900/95', border: 'border-red-500', text: 'text-white' },
-      green: { bg: 'bg-emerald-900/95', from: 'from-emerald-900/95', to: 'to-emerald-900/95', border: 'border-emerald-500', text: 'text-white' },
-      colorless: { bg: 'bg-slate-800/95', from: 'from-slate-800/95', to: 'to-slate-800/95', border: 'border-slate-600', text: 'text-white' },
-      multicolor: { bg: 'bg-amber-700/95', from: 'from-amber-700/95', to: 'to-amber-900/95', border: 'border-amber-400', text: 'text-white' },
+    const config: Record<string, { bg: string, from: string, to: string, border: string, text: string, hex: string }> = {
+      white: { bg: 'bg-stone-100/95', from: 'from-stone-100/95', to: 'to-stone-100/95', border: 'border-stone-400', text: 'text-stone-900', hex: '#f5f5f4' },
+      blue: { bg: 'bg-blue-900/95', from: 'from-blue-900/95', to: 'to-blue-900/95', border: 'border-blue-400', text: 'text-white', hex: '#1e3a8a' },
+      black: { bg: 'bg-slate-900/95', from: 'from-slate-900/95', to: 'to-slate-900/95', border: 'border-slate-700', text: 'text-white', hex: '#0f172a' },
+      red: { bg: 'bg-red-900/95', from: 'from-red-900/95', to: 'to-red-900/95', border: 'border-red-500', text: 'text-white', hex: '#7f1d1d' },
+      green: { bg: 'bg-emerald-900/95', from: 'from-emerald-900/95', to: 'to-emerald-900/95', border: 'border-emerald-500', text: 'text-white', hex: '#064e3b' },
+      colorless: { bg: 'bg-slate-800/95', from: 'from-slate-800/95', to: 'to-slate-800/95', border: 'border-slate-600', text: 'text-white', hex: '#1e293b' },
+      multicolor: { bg: 'bg-amber-700/95', from: 'from-amber-700/95', to: 'to-amber-900/95', border: 'border-amber-400', text: 'text-white', hex: '#b45309' },
     };
     return config[color.toLowerCase()] || config.colorless;
   };
 
   const colors = (definition.colors || []).map(c => c.toLowerCase());
   let headerClass = "";
+  let borderStyle: any = {};
 
   if (colors.length === 0) {
     const conf = getColorConfig('colorless');
@@ -161,14 +162,27 @@ export const GameCard = memo(({
   } else if (colors.length === 1) {
     const conf = getColorConfig(colors[0]);
     headerClass = `${conf.bg} ${conf.border} ${conf.text}`;
-  } else if (colors.length === 2) {
-    const conf1 = getColorConfig(colors[0]);
-    const conf2 = getColorConfig(colors[1]);
-    const hasWhite = colors.includes('white');
-    headerClass = `bg-gradient-to-r ${conf1.from} ${conf2.to} border-amber-400/50 ${hasWhite ? 'text-stone-900' : 'text-white'}`;
   } else {
-    const conf = getColorConfig('multicolor');
-    headerClass = `bg-gradient-to-r ${conf.from} ${conf.to} ${conf.border} ${conf.text}`;
+    // MULTICOLOR GRADIENT LOGIC
+    const configs = colors.map(c => getColorConfig(c));
+    const gradientStops = configs.map(c => c.hex).join(', ');
+    const headerGradient = `linear-gradient(to right, ${configs.map((c, i) => `${c.hex} ${(i / (configs.length - 1)) * 100}%`).join(', ')})`;
+    
+    // Readability check: If any dark colors exist, prioritize white text
+    const hasDark = colors.some(c => ['black', 'blue', 'red', 'green'].includes(c));
+    const textColor = (colors.includes('white') && !hasDark) ? 'text-stone-900' : 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]';
+    
+    headerClass = `${textColor} border-amber-400/50`;
+    
+    if (variant !== 'zoom') {
+      borderStyle = {
+        background: `linear-gradient(#0f172a, #0f172a) padding-box, linear-gradient(to bottom right, ${gradientStops}) border-box`,
+        border: '1.5px solid transparent'
+      };
+    }
+    
+    // Overlap the header's background with the gradient
+    (borderStyle as any).headerBackground = headerGradient;
   }
 
   return (
@@ -183,7 +197,8 @@ export const GameCard = memo(({
       }}
       style={{
         minWidth: variant === 'battlefield' ? '8rem' : 'auto',
-        minHeight: variant === 'battlefield' ? '6rem' : 'auto'
+        minHeight: variant === 'battlefield' ? '6rem' : 'auto',
+        ...borderStyle
       }}
       whileHover={{ 
         y: variant === 'hand' ? 0 : (verticalShift - 5),
@@ -196,7 +211,7 @@ export const GameCard = memo(({
         flex flex-col
         ${dimensions.w} ${dimensions.h} ${dimensions.rounded} ${variant !== 'zoom' ? `border-[1.5px] ${borderClass} shadow-xl` : ''}
         ${isTargetable ? 'ring-4 ring-red-500 ring-offset-2 ring-offset-slate-900 shadow-[0_0_20px_rgba(239,68,68,0.8)]' : ''} 
-        ${(isPlayable && !isOpponent) ? 'ring-2 ring-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)]' : ''} 
+        ${(isPlayable && !isOpponent) ? ((obj as any).isVirtual ? 'ring-2 ring-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.6)]' : 'ring-2 ring-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)]') : ''} 
         ${isSelected ? 'ring-2 ring-yellow-400' : ''}
         ${isCurrentlyDeclaringAttack ? 'ring-4 ring-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.9)] !border-orange-400' : ''}`}
     >
@@ -214,7 +229,9 @@ export const GameCard = memo(({
 
       {/* BATTLEFIELD HEADER (Attached above) - Outside filter to stay colored */}
       {variant === 'battlefield' && (
-        <div className={`flex-none h-4 flex items-center px-2 border-b overflow-hidden rounded-t-sm z-30 transition-colors
+        <div 
+            style={colors.length > 1 ? { background: (borderStyle as any).headerBackground } : {}}
+            className={`flex-none h-4 flex items-center px-2 border-b overflow-hidden rounded-t-sm z-30 transition-colors
             ${isCurrentlyDeclaringAttack ? 'bg-orange-600 border-orange-400/50 text-white' : headerClass}
         `}>
             <h3 className={`font-black tracking-tighter truncate w-full whitespace-nowrap
@@ -293,7 +310,9 @@ export const GameCard = memo(({
               `}>
                   {/* NAME OVERLAY (Only if not battlefield/zoom) */}
                   {variant !== 'battlefield' && (
-                      <div className={`absolute top-0 inset-x-0 flex items-center justify-between gap-1 p-1 shadow-sm border-b
+                      <div 
+                        style={colors.length > 1 ? { background: (borderStyle as any).headerBackground } : {}}
+                        className={`absolute top-0 inset-x-0 flex items-center justify-between gap-1 p-1 shadow-sm border-b
                           ${headerClass}
                       `}>
                           <h3 className={`font-black leading-tight tracking-tighter drop-shadow-md truncate flex-1 min-w-0
