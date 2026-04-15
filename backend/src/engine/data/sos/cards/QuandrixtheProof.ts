@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone, TargetMapping } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, Zone, TargetMapping, Restriction } from '@shared/engine_types';
 
 export const QuandrixtheProof: CardDefinition = {
     "name": "Quandrix, the Proof",
@@ -24,10 +24,9 @@ export const QuandrixtheProof: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     layer: 6,
-                    targetMapping: 'MATCHING_CARDS',
-                    activeZones: [Zone.Stack],
-                    restrictions: ['Instant or Sorcery', 'fromhand', 'youcontrol'],
-                    keywordsToAdd: ['Cascade']
+                    targetMapping: TargetMapping.MatchingCards,
+                    restrictions: [Restriction.Instant, Restriction.Sorcery, Restriction.FromHand, Restriction.YouControl],
+                    abilitiesToAdd: ['Cascade']
                 }
             ]
         }

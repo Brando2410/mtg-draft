@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone, TargetType } from '@shared/engine_types';
 
 export const RenderSpeechless: CardDefinition = {
     "name": "Render Speechless",
@@ -15,33 +15,29 @@ export const RenderSpeechless: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Player', count: 1, restrictions: ['Opponent'] },
             effects: [
                 {
                     type: EffectType.Choice,
                     label: 'Choose a nonland card',
-                    targetMapping: TargetMapping.Target1,
-                    targetIdMapping: 'TARGET_1_HAND',
+                    targetMapping: TargetMapping.Controller,
+                    targetIdMapping: 'OPPONENT_HAND_REVEAL_PICK',
                     restrictions: ['Nonland'],
                     effects: [{ type: EffectType.MoveToZone, destination: Zone.Graveyard, targetMapping: 'SELECTED_CARD', isDiscard: true }]
                 },
                 {
-                    type: EffectType.Choice,
-                    label: "Put two +1/+1 counters on up to one target creature?",
-                    choices: [
-                        {
-                            label: "Yes",
-                            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
-                            effects: [
-                                { type: EffectType.AddCounters, amount: 2, counterType: 'p1p1', targetMapping: TargetMapping.Target2 }
-                            ]
-                        },
-                        { label: "No", effects: [] }
-                    ]
+                    type: EffectType.AddCounters,
+                    targetDefinition: {
+                        type: TargetType.Permanent,
+                        count: 1,
+                        minCount: 0,
+                        restrictions: ['Creature']
+                    },
+
+                    amount: 2,
+                    counterType: 'p1p1',
+
                 }
             ]
         }
     ]
 };
-
-

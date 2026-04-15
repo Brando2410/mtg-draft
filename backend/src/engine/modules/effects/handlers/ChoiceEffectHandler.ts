@@ -59,12 +59,14 @@ export class ChoiceEffectHandler {
 
     // --- HAND-PICKING OR GRAVEYARD-PICKING ---
     const targetZoneMapping = (effect as any).targetIdMapping;
-    if (['TARGET_1_HAND', 'TARGET_1_HAND_REVEAL_PICK', 'TARGET_1_GRAVEYARD', 'TARGET_1_BATTLEFIELD', 'ALL_BATTLEFIELD', 'CONTROLLER_HAND', 'CONTROLLER_GRAVEYARD', 'CONTROLLER_BATTLEFIELD', 'CONTROLLER_SIDEBOARD', 'NAME_A_CARD'].includes(targetZoneMapping)) {
+    if (['TARGET_1_HAND', 'TARGET_1_HAND_REVEAL_PICK', 'TARGET_1_GRAVEYARD', 'TARGET_1_BATTLEFIELD', 'ALL_BATTLEFIELD', 'CONTROLLER_HAND', 'CONTROLLER_GRAVEYARD', 'CONTROLLER_BATTLEFIELD', 'CONTROLLER_SIDEBOARD', 'NAME_A_CARD', 'OPPONENT_HAND_REVEAL_PICK'].includes(targetZoneMapping)) {
         let targetPlayerId: string | undefined;
         let mappingPlayerId: string | undefined; // Player who chooses
 
         if (targetZoneMapping.startsWith('TARGET_1_')) {
             mappingPlayerId = targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK' ? controllerId : targets[0];
+        } else if (targetZoneMapping === 'OPPONENT_HAND_REVEAL_PICK') {
+            mappingPlayerId = controllerId;
         } else {
             mappingPlayerId = controllerId;
         }
@@ -82,9 +84,11 @@ export class ChoiceEffectHandler {
                 sourceCards = state.players[controllerId].library;
             } else if (isBattlefield) {
                 sourceCards = targetZoneMapping === 'ALL_BATTLEFIELD' ? state.battlefield : state.battlefield.filter(o => o.controllerId === mappingPlayerId);
-            } else if (targetPlayer || targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK') {
-                if (targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK') {
-                    const targetOppId = targets[0] as PlayerId;
+            } else if (targetPlayer || targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK' || targetZoneMapping === 'OPPONENT_HAND_REVEAL_PICK') {
+                if (targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK' || targetZoneMapping === 'OPPONENT_HAND_REVEAL_PICK') {
+                    const targetOppId = targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK' 
+                        ? targets[0] as PlayerId 
+                        : Object.keys(state.players).find(pid => pid !== controllerId) as PlayerId;
                     const targetOpp = state.players[targetOppId];
                     if (targetOpp) {
                         sourceCards = targetOpp.hand;

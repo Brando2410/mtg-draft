@@ -149,6 +149,7 @@ export interface CardDefinition {
   entersTappedCondition?: string; // e.g. "CONTROL_OTHER_LANDS_LE:1"
   entersWithXCounters?: boolean; // Rule 122.6: Entry with counters based on X
   entersPrepared?: boolean;      // SOS: Mechanic "Prepare"
+  preparedFace?: CardDefinition; // SOS: The spell face accessible when prepared
   faces?: CardDefinition[]; // CR 711.1: Double-faced cards
   flashbackCost?: string;   // Alternative cost for casting from graveyard
   abilities?: (ParsedAbility | string)[];
@@ -178,6 +179,7 @@ export interface GameObject {
   lastNonStackZone?: Zone; // Track where a spell was cast from
   xValue?: number;         // Rule 107.3: Snapshot of X during casting
   isFlashbackCast?: boolean; // Rule 702.34a: Exile if leaving stack
+  isRevealed?: boolean;      // For hidden zones (Hand/Library)
 
   // Modifiers (Layer system targets)
   counters: Record<string, number>;

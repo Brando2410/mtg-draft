@@ -72,6 +72,7 @@ export class ChoiceGenerator {
         return this.wrap(playerId, sourceId, {
             label: config.label,
             choices: options,
+            reveal: config.reveal,
             hideUndo: config.hideUndo,
             lookingCards: cards, // Preserve for UI/Context
             stackObj: config.stackObj,

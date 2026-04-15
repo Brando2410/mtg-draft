@@ -1,4 +1,4 @@
-import { CardDefinition, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, TargetType, RestrictionType, EffectType, DurationType, TargetMapping, Restriction } from '@shared/engine_types';
 
 export const Flashback: CardDefinition = {
     "name": "Flashback",
@@ -13,17 +13,17 @@ export const Flashback: CardDefinition = {
     "oracleText": "Target instant or sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost. (You may cast that card from your graveyard for its flashback cost. Then exile it.)",
     "abilities": [
         {
-            type: 'Spell',
+            type: AbilityType.Spell,
             targetDefinition: {
-                type: 'CardInGraveyard',
+                type: TargetType.CardInGraveyard,
                 count: 1,
-                restrictions: ['InstantOrSorcery']
+                restrictions: [Restriction.Instant, Restriction.Sorcery]
             },
             effects: [
                 {
-                    type: 'ApplyContinuousEffect',
-                    targetMapping: 'TARGET_1',
-                    duration: 'UNTIL_END_OF_TURN',
+                    type: EffectType.ApplyContinuousEffect,
+                    targetMapping: TargetMapping.Target1,
+                    duration: DurationType.UntilEndOfTurn,
                     abilitiesToAdd: ['Flashback'],
                     flashbackCostOverride: 'SOURCE_MANA_COST'
                 }

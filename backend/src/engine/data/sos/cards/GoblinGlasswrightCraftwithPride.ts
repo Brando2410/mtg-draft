@@ -1,74 +1,52 @@
 import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const GoblinGlasswrightCraftwithPride: CardDefinition = {
-    "name": "Goblin Glasswright // Craft with Pride",
-    "manaCost": "{1}{R} // {R}",
-    "colors": [
-        "R"
-    ],
-    "types": [
-        "Creature"
-    ],
-    "subtypes": [
-        "Goblin",
-        "Sorcerer"
-    ],
-    "oracleText": "This creature enters prepared.\n//\nCreate a Treasure token.",
-    "entersPrepared": true,
-    "abilities": [],
-    "power": "2",
-    "toughness": "2",
-    "faces": [
-        {
-            "name": "Goblin Glasswright",
-            "manaCost": "{1}{R}",
-            "colors": ["R"],
-            "types": [
-                "Creature"
-            ],
-            "subtypes": [
-                "Goblin",
-                "Sorcerer"
-            ],
-            "oracleText": "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
-            "entersPrepared": true,
-            "power": "2",
-            "toughness": "2"
-        },
-        {
-            "name": "Craft with Pride",
-            "manaCost": "{R}",
-            "colors": ["R"],
-            "types": [
-                "Sorcery"
-            ],
-            "subtypes": [],
-            "oracleText": "Create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
-            "abilities": [
-                {
-                    type: AbilityType.Spell,
-                    effects: [
-                        {
-                            type: EffectType.CreateToken,
-                            blueprint: {
-                                name: "Treasure",
-                                types: ["Artifact"],
-                                subtypes: ["Treasure"],
-                                oracleText: "{T}, Sacrifice this artifact: Add one mana of any color.",
-                                abilities: [
-                                    {
-                                        type: AbilityType.Activated,
-                                        costs: [{ type: 'TapSelf' }, { type: 'SacrificeSelf' }],
-                                        effects: [{ type: EffectType.AddMana, value: '{ANY}' }]
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                }
-            ]
-        }
-    ]
+    name: "Goblin Glasswright",
+    manaCost: "{1}{R}",
+    colors: ["R"],
+    types: ["Creature"],
+    subtypes: ["Goblin", "Sorcerer"],
+    power: "2",
+    toughness: "2",
+    keywords: ["Prepared"],
+    oracleText: "This creature enters prepared.",
+    entersPrepared: true,
+
+    preparedFace: {
+        name: "Craft with Pride",
+        manaCost: "{R}",
+        colors: ["R"],
+        types: ["Sorcery"],
+        oracleText: "Create a Treasure token.",
+        abilities: [
+            {
+                type: AbilityType.Spell,
+                effects: [
+                    {
+                        type: EffectType.CreateToken,
+                        tokenBlueprint: {
+                            name: "Treasure",
+                            colors: [],
+                            types: ["Artifact", "Token"],
+                            subtypes: ["Treasure"],
+                            oracleText: "{T}, Sacrifice this token: Add one mana of any color.",
+                            abilities: [
+                                {
+                                    type: AbilityType.Activated,
+                                    id: 'Treasure_Mana_Ability',
+                                    costs: [
+                                        { type: 'Tap', targetMapping: TargetMapping.Self },
+                                        { type: 'Sacrifice', targetMapping: TargetMapping.Self }
+                                    ],
+                                    isManaAbility: true
+                                }
+                            ]
+                        },
+                        amount: 1,
+                        targetMapping: TargetMapping.Controller
+                    }
+                ]
+            }
+        ]
+    }
 };
-
-

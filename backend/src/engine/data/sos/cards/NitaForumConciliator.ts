@@ -32,6 +32,7 @@ export const NitaForumConciliator: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
+            activatedOnlyAsSorcery: true,
             costs: [
                 { type: 'Mana', value: '{2}' },
                 {
@@ -66,7 +67,7 @@ export const NitaForumConciliator: CardDefinition = {
                     }
                 }
             ],
-            restriction: 'SORCERY_SPEED'
+
         }
     ],
     "power": "2",

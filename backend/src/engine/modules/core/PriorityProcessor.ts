@@ -208,8 +208,8 @@ export class PriorityProcessor {
       if (obj.controllerId !== playerId) return false;
 
       // SOS: Prepare check
-      if (obj.isPrepared && obj.definition.faces?.[1]) {
-          const face = obj.definition.faces[1];
+      if (obj.isPrepared && (obj.definition.preparedFace || obj.definition.faces?.[1])) {
+          const face = obj.definition.preparedFace || obj.definition.faces![1];
           const isInstant = face.types.some((t: string) => t.toLowerCase() === 'instant');
           const isSorcery = face.types.some((t: string) => t.toLowerCase() === 'sorcery');
           
@@ -342,15 +342,35 @@ export class PriorityProcessor {
        return canPlay;
     }
 
-    // Check battlefield (for activating abilities)
+    // Check battlefield (for activating abilities OR Casting Prepared face)
     const objOnField = state.battlefield.find(o => o.id === objId);
     if (objOnField && objOnField.controllerId === playerId) {
+        if (state.pendingAction) return false;
+        const hasPriority = state.priorityPlayerId === playerId;
+        if (checkPriority && !hasPriority) return false;
+
+        // --- SOS: Prepared Casting Check ---
+        if (objOnField.isPrepared && (objOnField.definition.preparedFace || objOnField.definition.faces?.[1])) {
+            const face = objOnField.definition.preparedFace || objOnField.definition.faces![1];
+            const isInstant = face.types.some((t: string) => t.toLowerCase() === 'instant');
+            const isSorcery = face.types.some((t: string) => t.toLowerCase() === 'sorcery');
+            const stackEmpty = state.stack.length === 0;
+            const isYourTurn = state.activePlayerId === playerId;
+            const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
+
+            let timingOk = isInstant;
+            if (isSorcery && isYourTurn && stackEmpty && isMain) timingOk = true;
+
+            if (timingOk) {
+                const { totalMana } = SpellProcessor.getEffectiveCosts(state, objOnField, [], face);
+                if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, objOnField)) return true;
+            }
+        }
+
         const logic = oracle.getCard(objOnField.definition.name);
         if (!logic || (!logic.abilities && !state.ruleRegistry.continuousEffects.some(e => e.type === EffectType.AddTriggeredAbility))) return false;
 
-
         return logic.abilities.some((ability: any, index: number) => this.canAbilityBeActivated(state, playerId, objId, index, checkPriority));
-
     }
 
     return false;

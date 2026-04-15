@@ -8,7 +8,7 @@ export const SedgemoorWitch: CardDefinition = {
         subtypes: ['Human', 'Warlock'],
         power: "3",
         toughness: "2",
-        keywords: ['Menace', 'Ward:Pay3Life'],
+        keywords: ['Menace', 'Ward—Pay 3 life'],
         oracleText: 'Menace\nWard — Pay 3 life.\nMagecraft — Whenever you cast or copy an instant or sorcery spell, create a 1/1 black and green Pest creature token with "When this creature dies, you gain 1 life."',
         abilities: [
             {

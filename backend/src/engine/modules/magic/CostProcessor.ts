@@ -102,7 +102,9 @@ export class CostProcessor {
         return pool.some(c => !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, playerId, source.id));
 
       case 'Crew': {
-        const amount = Number(cost.amount || cost.value || 0);
+        const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
+        const amountStr = String(cost.amount || cost.value || 0);
+        const amount = amountStr === 'X' ? xValue : Number(amountStr);
         const candidates = state.battlefield.filter(o => 
             o.controllerId === playerId && 
             o.definition.types.some(t => t.toLowerCase() === 'creature') && 
@@ -232,10 +234,17 @@ export class CostProcessor {
     }
   }
 
-  public static getEffectiveManaCost(state: GameState, cost: AbilityCost, source: GameObject): string {
+  public static getEffectiveManaCost(state: GameState, cost: AbilityCost, source: GameObject, stackObject?: any): string {
     if (cost.type !== 'Mana') return cost.value;
 
     let costStr = cost.value;
+    
+    // Rule 107.3: Handle X cost substitution
+    const xValue = (source as any).xValue !== undefined ? (source as any).xValue : (stackObject?.xValue || 0);
+    if (costStr.includes('{X}')) {
+        costStr = costStr.replace(/\{X\}/g, `{${xValue}}`);
+    }
+
     if (cost.costModifiers) {
         let reduction = 0;
         for (const mod of cost.costModifiers) {

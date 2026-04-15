@@ -190,6 +190,11 @@ export class MoveEffectHandler {
         const targetCard = revealed.pop()!;
         const destination = effect.zone || effect.destination || Zone.Hand;
         ActionProcessor.moveCard(state, targetCard, destination, controllerId, log);
+        
+        if (effect.next) {
+            const { EffectProcessor } = require('../EffectProcessor');
+            EffectProcessor.executeEffect(state, effect.next, (stackObject as any)?.sourceId || '', [targetCard.id], log, stackObject, parentContext);
+        }
     }
 
     if (revealed.length > 0) {
@@ -231,6 +236,9 @@ export class MoveEffectHandler {
             const from = obj.zone;
             const destPlayerId = effect.ownerControl ? obj.ownerId : controllerId;
             ActionProcessor.moveCard(state, obj, destination, destPlayerId, log, effect.libraryPosition, false, isDiscard);
+            if (effect.reveal || (effect as any).revealed) {
+                obj.isRevealed = true;
+            }
             if (destination === Zone.Exile) {
                 (state as any).lastExiledIds = [tid];
                 if (parentContext) {
@@ -451,6 +459,10 @@ export class MoveEffectHandler {
         const destPlayerId = effect.ownerControl ? obj.ownerId : controllerId;
         ActionProcessor.moveCard(state, obj, destination, destPlayerId, log, effect.libraryPosition, false, isDiscard);
         
+        if (effect.reveal || (effect as any).revealed) {
+            obj.isRevealed = true;
+        }
+
         if (effect.tapped && destination === Zone.Battlefield) obj.isTapped = true;
         if (destination === Zone.Exile) {
             if (parentContext) {

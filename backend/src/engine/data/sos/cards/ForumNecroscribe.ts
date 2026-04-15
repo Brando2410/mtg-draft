@@ -14,6 +14,7 @@ import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Z
          "Warlock"
      ],
      "oracleText": "Ward—Discard a card.\nRepartee — Whenever you cast an instant or sorcery spell that targets a creature, return target creature card from your graveyard to the battlefield.",
+     "keywords": ["Ward—Discard a card"],
      "abilities": [
          {
              type: AbilityType.Triggered,

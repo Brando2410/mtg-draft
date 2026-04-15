@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone, TargetType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, Restriction, EffectType, TargetMapping, TriggerEvent, Zone, TargetType } from '@shared/engine_types';
 
 export const StrixhavenSkycoach: CardDefinition = {
     "name": "Strixhaven Skycoach",
@@ -11,16 +11,16 @@ export const StrixhavenSkycoach: CardDefinition = {
         "Vehicle"
     ],
     "oracleText": "Flying\nWhen this Vehicle enters, you may search your library for a basic land card, reveal it, put it into your hand, then shuffle.\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
-    "keywords": ["Flying"],
+    "keywords": ["Flying", "Crew 2"],
     "abilities": [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
-            optional: true,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    restrictions: ['BasicLand'],
+                    restrictions: [Restriction.Land, Restriction.Basic],
+                    optional: true,
                     reveal: true,
                     destination: Zone.Hand,
                     shuffle: true,

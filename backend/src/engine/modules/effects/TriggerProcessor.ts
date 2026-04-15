@@ -146,7 +146,8 @@ export class TriggerProcessor {
                 const sourceControllerId = event.playerId; // Player who cast the targeting spell
                 if (sourceControllerId && sourceControllerId !== targetObj.controllerId) {
                     wards.forEach((wardStr: string) => {
-                        const match = wardStr.match(/Ward(?:\s+|—\s*(?:Pay\s+)?)(.+)/i);
+                        // Support for Ward {2}, Ward-Discard a card, Ward:Pay 3 life, etc.
+                        const match = wardStr.match(/Ward(?:\s+|—\s*|:\s*)(?:Pay\s+)?(.+)/i);
                         if (!match) return;
 
                         const costStr = match[1].trim();
@@ -154,12 +155,17 @@ export class TriggerProcessor {
                         let labelStr = costStr;
 
                         if (costStr.toLowerCase().includes('life')) {
-                            const amount = parseInt(costStr) || 0;
-                            choiceEffects.push({ type: 'LoseLife', amount: amount, targetMapping: 'CONTROLLER' });
+                            const amount = parseInt(costStr.replace(/\D/g, '')) || 0;
+                            choiceEffects.push({ type: 'LoseLife', amount: amount, targetMapping: 'TARGET_1' });
                             labelStr = `Pay ${amount} life`;
-                        } else if (costStr.startsWith('{') && costStr.endsWith('}')) {
-                            choiceEffects.push({ type: 'PayMana', value: costStr }); // Hypothetical mana effect in Choice modal
-                            labelStr = `Pay ${costStr}`;
+                        } else if (costStr.toLowerCase().includes('discard')) {
+                            const amount = parseInt(costStr.replace(/\D/g, '')) || 1;
+                            choiceEffects.push({ type: 'DiscardCards', amount: amount, targetMapping: 'TARGET_1' });
+                            labelStr = `Discard ${amount} card${amount > 1 ? 's' : ''}`;
+                        } else if (costStr.includes('{') || !isNaN(parseInt(costStr))) {
+                            const manaVal = costStr.startsWith('{') ? costStr : `{${costStr}}`;
+                            choiceEffects.push({ type: 'PayMana', value: manaVal, targetMapping: 'TARGET_1' });
+                            labelStr = `Pay ${manaVal}`;
                         }
 
                         matchingTriggers.push({
@@ -174,7 +180,7 @@ export class TriggerProcessor {
                                 targetId: sourceControllerId,
                                 choices: [
                                     { label: labelStr, effects: choiceEffects },
-                                    { label: "Don't Pay (Counter Spell)", effects: [{ type: 'CounterSpell', targetMapping: 'TRIGGER_SOURCE' }] }
+                                    { label: "Don't Pay (Counter)", effects: [{ type: 'CounterSpell', targetMapping: 'TRIGGER_SOURCE' }] }
                                 ]
                             }]
                         } as any);
@@ -186,7 +192,8 @@ export class TriggerProcessor {
         // --- SYSTEM RECOGNIZED KEYWORDS: CASCADE & STORM ---
         if (event.type === 'ON_CAST_SPELL' && event.data?.card) {
             const card = event.data.card;
-            const keywords = [...(card.definition.keywords || []), ...(card.keywords || [])];
+            const stats = LayerProcessor.getEffectiveStats(card, state);
+            const keywords = stats.keywords;
 
             // 1. Cascade (Rule 702.85)
             if (keywords.includes('Cascade')) {
@@ -196,32 +203,27 @@ export class TriggerProcessor {
                     controllerId: event.playerId,
                     eventMatch: 'ON_CAST_SPELL',
                     effects: [{
-                        type: 'SearchLibrary',
-                        selectionType: 'TopN',
-                        amount: 1,
-                        sourceZones: [Zone.Library],
-                        restrictions: [{ type: 'ManaValueLess', value: 'SOURCE_MV' }, { type: 'Nonland' }],
+                        type: 'RevealUntilCondition',
+                        restrictions: ['Nonland', { type: 'ManaValueLess', value: 'SOURCE_MV' }],
                         destination: Zone.Exile,
                         remainderZone: Zone.Library,
                         remainderPosition: 'bottom',
                         shuffleRemainder: true,
-                        effects: [{
+                        next: {
                             type: 'Choice',
                             label: 'Cast the revealed card?',
                             choices: [
                                 {
                                     label: 'Yes',
                                     effects: [{
-                                        type: 'MoveToZone',
-                                        zone: Zone.Stack,
-                                        targetMapping: 'SELECTED_CARD',
-                                        isFreeCast: true,
-                                        enforceMVCheck: 'SOURCE_MV'
+                                        type: 'CastSpell',
+                                        targetMapping: 'TARGET_1',
+                                        isFreeCast: true
                                     }]
                                 },
                                 { label: 'No', effects: [] }
                             ]
-                        }]
+                        }
                     }]
                 } as any);
             }

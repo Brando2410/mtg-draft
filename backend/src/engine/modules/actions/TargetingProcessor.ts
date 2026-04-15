@@ -35,7 +35,7 @@ export class TargetingProcessor {
         // 4. Stack
         const st = state.stack.find(s => s.id === id || s.card?.id === id);
         if (st && st.card) return st.card;
-        
+
         return null;
     }
 
@@ -110,18 +110,18 @@ export class TargetingProcessor {
         if (isPlayerTargetOnly) return false;
 
         const coreTypes = [
-            'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 'permanent', 
-            'instant', 'sorcery', 'instant_or_sorcery', 'artifact_or_creature', 
+            'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 'permanent',
+            'instant', 'sorcery', 'instant_or_sorcery', 'artifact_or_creature',
             'artifact_or_enchantment', 'creature_or_planeswalker', 'nonland_permanent'
         ];
-        
+
         if (typeLineCheck === 'anytarget' || coreTypes.includes(typeLineCheck)) {
             const stats = LayerProcessor.getEffectiveStats(targetObj, state);
             const combinedTypes = [
                 ...(stats.types || []),
                 ...(stats.supertypes || [])
             ].map(t => t.toLowerCase());
-            
+
             if (typeLineCheck === 'anytarget') {
                 const isValidAnyTarget = combinedTypes.some((t: string) => t === 'creature' || t === 'planeswalker');
                 if (!isValidAnyTarget) return false;
@@ -416,7 +416,7 @@ export class TargetingProcessor {
                 'nonland', 'noncreature', 'nonartifact', 'nonenchantment', 'nonplaneswalker',
                 'graveyard', 'other', 'another', 'notcontrolled', 'opponentcontrol', 'youcontrol', 'self', 'legendary',
                 'tapped', 'untapped', 'yours', 'opponents', 'attackingorblocking', 'basic',
-                'instantorsorcerycastthisturn', 'player', 'anytarget', 'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 
+                'instantorsorcerycastthisturn', 'player', 'anytarget', 'creature', 'artifact', 'land', 'enchantment', 'planeswalker',
                 'instant', 'sorcery', 'hasxinmanacost', 'monocolored', 'multicolored', 'colorless'
             ].includes(lr) || lr.startsWith('cmc') || lr.startsWith('mv') || lr.startsWith('power') || lr.startsWith('toughness') || lr.startsWith('hascounter');
 
@@ -469,21 +469,28 @@ export class TargetingProcessor {
                         return parts.some(p => {
                             const lp = p.trim();
                             const singular = lp.endsWith('s') ? lp.slice(0, -1) : lp;
-                            return objTypes.includes(lp) || 
-                                   (definition.subtypes || []).some((s: string) => s.toLowerCase() === lp || s.toLowerCase() === singular);
+                            return objTypes.includes(lp) ||
+                                (definition.subtypes || []).some((s: string) => s.toLowerCase() === lp || s.toLowerCase() === singular);
                         });
                     }
 
                     const singularLr = lr.endsWith('s') ? lr.slice(0, -1) : lr;
-                    return objTypes.includes(lr) || 
-                           (definition.subtypes || []).some((s: string) => s.toLowerCase() === lr || s.toLowerCase() === singularLr) ||
-                           (definition.name || "").toLowerCase() === lr;
+                    return objTypes.includes(lr) ||
+                        (definition.subtypes || []).some((s: string) => s.toLowerCase() === lr || s.toLowerCase() === singularLr) ||
+                        (definition.name || "").toLowerCase() === lr;
                 } else {
                     let match = true;
                     const rTypes = r.types || (r.type ? [r.type] : []);
                     const rSubtypes = r.subtypes || (r.subtype ? [r.subtype] : []);
 
-                    if (rTypes.length > 0 && !rTypes.some((t: string) => objTypes.includes(t.toLowerCase()))) match = false;
+                    if (rTypes.length > 0 && !rTypes.some((t: string) => {
+                        const lt = t.toLowerCase();
+                        if (lt.startsWith('non')) {
+                            const base = lt.substring(3);
+                            return !objTypes.includes(base);
+                        }
+                        return objTypes.includes(lt);
+                    })) match = false;
                     if (rSubtypes.length > 0 && !rSubtypes.some((s: string) => (definition.subtypes || []).some((ts: string) => ts.toLowerCase() === s.toLowerCase()))) match = false;
                     if (r.nameIncludes && definition.name && !definition.name.toLowerCase().includes(r.nameIncludes.toLowerCase())) match = false;
                     if (r.nameEquals || r.name) {
@@ -503,9 +510,12 @@ export class TargetingProcessor {
                         } else if (val === 'CONVERGE_AMOUNT') {
                             const sourceObj = this.findObjectInAnyZone(state, sourceId);
                             val = (sourceObj as any)?.convergeAmount || 0;
+                        } else if (val === 'SOURCE_MV') {
+                            const source = this.findObjectInAnyZone(state, sourceId);
+                            val = source ? ManaProcessor.getManaValue(source.definition.manaCost || '') : 0;
                         }
-                        
-                        const comp = r.type === 'ManaValueLe' ? 'LessOrEqual' : (r.comparison || 'Equal');
+
+                        const comp = (r.type === 'ManaValueLe' ? 'LessOrEqual' : (r.type === 'ManaValueLess' ? 'LessThan' : (r.comparison || 'Equal')));
                         if (comp === 'LessOrEqual' && mv > val) match = false;
                         if (comp === 'GreaterOrEqual' && mv < val) match = false;
                         if (comp === 'Equal' && mv !== val) match = false;

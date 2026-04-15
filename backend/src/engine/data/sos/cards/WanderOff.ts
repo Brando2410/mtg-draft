@@ -15,9 +15,8 @@ export const WanderOff: CardDefinition = {
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: TargetType.Creature,
                 count: 1,
-                restrictions: [{ type: 'Type', value: 'Creature' }]
             },
             effects: [
                 {
