@@ -34,7 +34,7 @@ export const FractalTender: CardDefinition = {
                     },
                     amount: 1,
                     startingCounters: {
-                        type: 'P1P1',
+                        type: '+1/+1',
                         amount: 3
                     }
                 }

@@ -19,7 +19,8 @@ export const MicaReaderofRuins: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastInstantOrSorcery,
+            eventMatch: TriggerEvent.CastInstantOrSorcery, //we need to ensure that you casted it
+            condition: "CONTROLLER_HAS_ARTIFACT && TRIGGER_EVENT_SOURCE.controllerId === CONTROLLER_ID",
             effects: [
                 {
                     type: EffectType.Choice,

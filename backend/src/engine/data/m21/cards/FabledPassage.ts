@@ -24,6 +24,7 @@ export const FabledPassage: Record<string, ImplementableCard> = {
                 effects: [
                     {
                         type: EffectType.SearchLibrary,
+
                         restrictions: ['Basic', 'Land'],
                         destination: Zone.Battlefield,
                         tapped: true,

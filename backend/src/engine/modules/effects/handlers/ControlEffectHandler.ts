@@ -204,10 +204,12 @@ export class ControlEffectHandler {
 
       case 'AddMana':
         const { ManaProcessor: MP } = require('../../magic/ManaProcessor');
-        targets.forEach(tid => {
+        const effectiveTargets = (targets && targets.length > 0) ? targets : [controllerId];
+        
+        effectiveTargets.forEach(tid => {
             const p = state.players[tid as PlayerId];
             if (p) {
-                const manaStr = effect.value || effect.amount || 'C';
+                const manaStr = effect.value || effect.amount || effect.manaType || 'C';
                 const res = MP.parseManaCost(manaStr.startsWith('{') ? manaStr : `{${manaStr}}`);
                 
                 if (effect.manaRestrictions) {

@@ -116,12 +116,20 @@ export class PlayerActionProcessor {
             return false;
         }
 
-        const nonMana = allActivated.filter((a: any) => !a.isManaAbility);
+        if (allActivated.length === 1) {
+            const ability = allActivated[0];
+            const abilityIdx = logic.abilities.indexOf(ability);
+            
+            if (ability.isManaAbility) {
+                // Determine if this mana ability requires choices (like Add {B} or {G})
+                const hasChoices = ability.effects.some((e: any) => e.type === 'AddMana' && e.choices);
+                
+                // If it has no choices and only costs Tap, we just fire it immediate
+                // Rules 605.3a: Mana abilities don't use the stack and are resolved immediately.
+                return actionHandlers.activateAbility(playerId, cardId, abilityIdx);
+            }
 
-        // Safety Step: If only one non-mana ability, show a confirmation modal instead of immediate activation
-        // This prevents misclicks on utility creatures like Portcullis Vine.
-        if (allActivated.length === 1 && nonMana.length === 1) {
-            const ability = nonMana[0];
+            // Safety Step: For single non-mana utility abilities, show a confirmation modal 
             state.pendingAction = {
                 type: ActionType.ModalSelection,
                 playerId: playerId,
@@ -129,14 +137,8 @@ export class PlayerActionProcessor {
                 data: {
                     isContextual: true,
                     choices: [
-                        {
-                            label: 'Activate Ability',
-                            value: logic.abilities.indexOf(ability)
-                        },
-                        {
-                            label: 'Cancel',
-                            value: 'none'
-                        }
+                        { label: 'Activate Ability', value: abilityIdx },
+                        { label: 'Cancel', value: 'none' }
                     ]
                 }
             };

@@ -8,6 +8,90 @@ import { ActionProcessor } from './ActionProcessor';
  * Centralizes all targeting validation, mapping, and interactive flow.
  */
 export class TargetingProcessor {
+    
+    public static calculateTotalCounts(targetDef: any, xValue: number = 0): { maxCount: number, minCount: number, count: number } {
+        let maxCount = 0;
+        let minCount = 0;
+        let targetCount = 0;
+        const defs = Array.isArray(targetDef) ? targetDef : [targetDef];
+        
+        defs.forEach(d => {
+            if (!d) return;
+            let count = d.count;
+            if (count === 'X') count = xValue;
+            count = count || 1;
+            
+            let dMax = d.maxCount || count;
+            if (dMax === 'X') dMax = xValue;
+            
+            let dMin = d.minCount !== undefined ? d.minCount : count;
+            if (dMin === 'X') dMin = xValue;
+            
+            maxCount += dMax;
+            minCount += dMin;
+            targetCount += count;
+        });
+        
+        return { maxCount, minCount, count: targetCount };
+    }
+
+    public static generateTargetPrompt(targetDef: any, selectedCount: number, xValue: number = 0, isSpellCasting: boolean = false): string {
+        const def = this.getDefinitionForIndex(targetDef, selectedCount);
+        if (!def) return "Select targets";
+        
+        const counts = this.calculateTotalCounts(targetDef, xValue);
+        // A target is optional if it's explicitly marked optional OR has minCount 0.
+        // We also check if we've already fulfilled the mandatory part of a multi-target sequence.
+        // TRICKY: Spells being cast are "cancelable" (interface optional) but might be mandatory (rules mandatory).
+        // If it's a spell casting and it's mandatory, we DON'T want "You may" even if UI allows cancel.
+        const isRulesOptional = def.optional || def.minCount === 0;
+        const isSequenceOptional = counts.minCount <= selectedCount;
+        
+        const isOptional = isRulesOptional || isSequenceOptional;
+        
+        let type = def.type || "target";
+        const restrictions = (def.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
+        
+        let typeStr = type.toLowerCase();
+        if (restrictions.includes('opponent')) typeStr = "an opponent";
+        else if (restrictions.includes('you')) typeStr = "yourself";
+        else if (type === 'Player') typeStr = "a player";
+        else if (type === 'Creature') typeStr = "a creature";
+        else if (type === 'Permanent') typeStr = "a permanent";
+        else if (type === 'CardInGraveyard') typeStr = "a card from graveyard";
+        else if (type === 'SpellOnStack') typeStr = "a spell on stack";
+        else if (type === 'AnyTarget' || typeStr === 'anytarget') typeStr = "any target";
+
+        // If the definition specifies a label, use it! 
+        // We prepend "You may " if it's optional for the RULES (not just because it's a cancelable spell).
+        if (def.label) {
+            let label = def.label;
+            if (label.toLowerCase().trim().endsWith('to') || label.toLowerCase().trim().endsWith('select')) {
+                label = `${label.trim()} ${typeStr}`;
+            }
+
+            if (isRulesOptional && !label.toLowerCase().includes('may') && !label.toLowerCase().includes('optional')) {
+                return `You may ${label.toLowerCase().startsWith('select') ? label : `select ${label.toLowerCase()}`}`;
+            }
+            return label;
+        }
+
+        const prefix = (isRulesOptional || (isSequenceOptional && !isSpellCasting)) ? "You may select" : "Select";
+        
+        // Handle "Up to" phrasing for targets with minCount 0
+        if (def.minCount === 0 && def.count > 0 && !isSequenceOptional) {
+            const countStr = def.count === 1 ? "one" : def.count;
+            const plural = def.count > 1 ? "s" : "";
+            // Special case for type strings that already include "a " or "an "
+            let cleanType = typeStr;
+            if (cleanType.startsWith('a ')) cleanType = cleanType.substring(2);
+            if (cleanType.startsWith('an ')) cleanType = cleanType.substring(3);
+            
+            return `Select up to ${countStr} ${cleanType}${plural}`;
+        }
+
+        return `${prefix} ${typeStr}`;
+    }
 
     /**
      * CR 608.2b: Checks if a target is still legal as a spell or ability attempts to resolve.
@@ -47,10 +131,12 @@ export class TargetingProcessor {
         const sourceId = typeof sourceOrId === 'string' ? sourceOrId : (sourceOrId as any).sourceId || (sourceOrId as any).id;
         const sourceObjProvided = typeof sourceOrId === 'string' ? null : sourceOrId;
 
+        const targetDefForIndex = this.getDefinitionForIndex(abilityTargetDef, targetIndex);
+
         // 1. If target is a player
         if (state.players[targetId]) {
-            const type = (abilityTargetDef?.type || '').toLowerCase();
-            const restrictions = (abilityTargetDef?.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
+            const type = (targetDefForIndex?.type || '').toLowerCase();
+            const restrictions = (targetDefForIndex?.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
 
             if (type === 'player' || type === 'anytarget' || restrictions.includes('player') || restrictions.includes('anytarget')) {
                 let sourceControllerId = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId)?.controllerId ||
@@ -105,7 +191,7 @@ export class TargetingProcessor {
 
         if (targetObj.isPhasedOut) return false;
 
-        const typeLineCheck = (abilityTargetDef?.type || '').toLowerCase();
+        const typeLineCheck = (targetDefForIndex?.type || '').toLowerCase();
         const isPlayerTargetOnly = typeLineCheck === 'player';
         if (isPlayerTargetOnly) return false;
 
@@ -144,12 +230,13 @@ export class TargetingProcessor {
             }
         }
 
-        let expectedZone = abilityTargetDef?.zone;
+        let expectedZone = targetDefForIndex?.zone;
         if (!expectedZone) {
             if (targetZone === Zone.Stack) expectedZone = Zone.Stack;
             else if (['instant', 'sorcery', 'instant_or_sorcery'].includes(typeLineCheck)) expectedZone = Zone.Stack;
-            else if (abilityTargetDef?.type === 'CardInGraveyard' || String(abilityTargetDef?.type).toLowerCase() === 'cardingraveyard') expectedZone = Zone.Graveyard;
-            else if (abilityTargetDef?.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'graveyard')) expectedZone = Zone.Graveyard;
+            else if (targetDefForIndex?.type === 'CardInGraveyard' || String(targetDefForIndex?.type).toLowerCase() === 'cardingraveyard') expectedZone = Zone.Graveyard;
+            else if (targetDefForIndex?.type === 'CardInHand' || String(targetDefForIndex?.type).toLowerCase() === 'cardinhand') expectedZone = Zone.Hand;
+            else if (targetDefForIndex?.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'graveyard')) expectedZone = Zone.Graveyard;
             else expectedZone = Zone.Battlefield;
         }
 
@@ -208,26 +295,13 @@ export class TargetingProcessor {
         // Shroud (Rule 702.18)
         if (keywords.includes('Shroud')) return false;
 
-        let targetDef = abilityTargetDef || sourceStack?.data?.targetDefinition || (sourceStack as any)?.targetDefinition;
-
-        // If no target definition provided (common in SBAs checking Auras), try to find the Enchant restriction
-        if (!targetDef && source) {
-            const types = source.definition.types.map((t: string) => t.toLowerCase());
-            const subtypes = (source.definition.subtypes || []).map((s: string) => s.toLowerCase());
-            const { oracle } = require('./../../OracleLogicMap');
-            if (types.includes('enchantment') && subtypes.includes('aura')) {
-                const logic = oracle.getCard(source.definition.name);
-                targetDef = (logic as any)?.targetDefinition || (logic as any)?.enchant;
-            }
-        }
-
-        let restrictions = targetDef?.restrictions;
-        if (targetDef?.perTargetRestrictions && targetDef.perTargetRestrictions[targetIndex]) {
-            restrictions = targetDef.perTargetRestrictions[targetIndex];
+        let restrictions = targetDefForIndex?.restrictions;
+        if (targetDefForIndex?.perTargetRestrictions && targetDefForIndex.perTargetRestrictions[targetIndex]) {
+            restrictions = targetDefForIndex.perTargetRestrictions[targetIndex];
         }
 
         if (restrictions) {
-            return this.matchesRestrictions(state, targetObj, restrictions, sourceControllerId, sourceId);
+            return this.matchesRestrictions(state, targetObj, restrictions, sourceControllerId, sourceId, undefined, (targetDefForIndex as any)?.stackObj);
         }
 
         return true;
@@ -237,13 +311,22 @@ export class TargetingProcessor {
      * Evaluates a set of restrictions against a target object or player.
      */
     public static hasLegalTargets(state: GameState, sourceId: string, targetDef: any, controllerId: string): boolean {
-        if (!targetDef || targetDef.optional) return true;
+        if (!targetDef || (Array.isArray(targetDef) ? targetDef.every(d => d.optional) : targetDef.optional)) return true;
 
-        const count = targetDef.count || 1;
-        const minCount = targetDef.minCount !== undefined ? targetDef.minCount : count;
+        let count = 0;
+        let minCount = 0;
+        
+        if (Array.isArray(targetDef)) {
+            targetDef.forEach(d => {
+                count += (typeof d.count === 'number' ? d.count : 1);
+                minCount += (d.minCount !== undefined ? d.minCount : (typeof d.count === 'number' ? d.count : 1));
+            });
+        } else {
+            count = targetDef.count || 1;
+            minCount = targetDef.minCount !== undefined ? targetDef.minCount : count;
+        }
+
         if (minCount === 0) return true;
-
-        const perTarget = targetDef.perTargetRestrictions;
 
         // Collect all potential targetable IDs
         const allPotentialTargets = [
@@ -254,18 +337,6 @@ export class TargetingProcessor {
             ...state.stack.map(o => o.id)
         ];
 
-        if (!perTarget) {
-            const legalTargets = allPotentialTargets.filter(tid => this.isLegalTarget(state, sourceId, tid, targetDef, 0));
-            if (legalTargets.length < minCount) {
-                console.log(`[TARGET-DEBUG] hasLegalTargets FAILED for ${sourceId}. Found: ${legalTargets.length}, Required: ${minCount}. DEF:`, JSON.stringify(targetDef));
-            }
-            return legalTargets.length >= minCount;
-        }
-
-        // Heterogeneous targets (e.g. Primal Might: 1 you control, 1 you don't)
-        // We need to find if there's a valid assignment of distinct targets to each slot.
-        // For correctness with minCount, we check if we can satisfy at least the first 'minCount' slots.
-
         const legalPerIndex: string[][] = [];
         for (let i = 0; i < count; i++) {
             const legal = allPotentialTargets.filter(tid => this.isLegalTarget(state, sourceId, tid, targetDef, i));
@@ -274,7 +345,6 @@ export class TargetingProcessor {
         }
 
         // Distinctness check (Simulating a simple bipartite matching)
-        // For efficiency in common MTG cases (minCount=1, count=2), we just need to ensure slot 0 is filled.
         if (minCount === 1 && count >= 2) {
             return legalPerIndex[0].length > 0;
         }
@@ -295,7 +365,7 @@ export class TargetingProcessor {
     /**
      * Evaluates a set of restrictions against a target object or player.
      */
-    public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], controllerId: string | null, sourceId: string, log?: (msg: string) => void): boolean {
+    public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], controllerId: string | null, sourceId: string, log?: (msg: string) => void, stackObject?: any): boolean {
         if (!targetObj) return false;
         const definition = targetObj.definition || targetObj.card?.definition;
         if (log) log(`[DEBUG] matchesRestrictions for ${definition?.name || targetObj.name}: [${restrictions.join(', ')}]`);
@@ -434,6 +504,16 @@ export class TargetingProcessor {
                 continue;
             }
 
+            if (lr === 'permanent') {
+                const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
+                if (!objTypes.some((t: string) => permTypes.includes(t.toLowerCase()))) return false;
+                continue;
+            }
+
+            if (lr === 'card') {
+                continue; // Everything is a card usually
+            }
+
             if (baseTypes.includes(lr)) {
                 if (!objTypes.includes(lr)) return false;
                 continue;
@@ -523,8 +603,15 @@ export class TargetingProcessor {
                         const mv = ManaProcessor.getManaValue(definition.manaCost || '');
                         let val = r.value;
                         if (val === 'X') {
-                            val = (state.stack.find(s => s.id === sourceId || s.sourceId === sourceId)?.xValue ||
-                                ((state.pendingAction as any)?.sourceId === sourceId ? (state.pendingAction as any)?.xValue : 0));
+                            const stackObj = stackObject || state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
+                            if (stackObj) {
+                                val = stackObj.xValue || 0;
+                            } else {
+                                // Fallback to pending action metadata
+                                val = (state.pendingAction as any)?.xValue || 
+                                      (state.pendingAction as any)?.data?.xValue ||
+                                      (state.pendingAction as any)?.data?.stackObj?.xValue || 0;
+                            }
                         } else if (val === 'GAINED_LIFE_AMOUNT') {
                             val = state.turnState.lifeGainedThisTurn[controllerId || ''] || 0;
                         } else if (val === 'CONVERGE_AMOUNT') {
@@ -612,27 +699,30 @@ export class TargetingProcessor {
         const isSkipping = targetId === 'skip' || targetId === 'none' || targetId === 'confirm';
         const isUndoing = targetId === 'undo' || targetId === 'back';
 
-        let targetCount = targetDef?.count;
-        if (targetCount === 'X') {
-            targetCount = actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0);
-        }
-        targetCount = targetCount || 1;
-
-        let maxCount = targetDef?.maxCount || targetCount;
-        if (maxCount === 'X') {
-            maxCount = actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0);
-        }
-
-        let minCount = targetDef?.minCount !== undefined ? targetDef.minCount : targetCount;
-        if (minCount === 'X') {
-            minCount = actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0);
-        }
-
+        const counts = TargetingProcessor.calculateTotalCounts(targetDef, (actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0)));
+        const { maxCount, minCount, count } = counts;
+        
         actionData.selectedTargets = actionData.selectedTargets || [];
+        actionData.maxCount = maxCount;
+        actionData.minCount = minCount;
+        actionData.count = count;
+        
+        // Helper to refresh prompt based on CURRENT selection state
+        const updatePrompt = () => {
+             actionData.prompt = TargetingProcessor.generateTargetPrompt(
+                targetDef, 
+                actionData.selectedTargets.length, 
+                (actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0)),
+                actionData.isSpellCasting
+             );
+        };
+
+        updatePrompt();
 
         if (isUndoing) {
             if (actionData.selectedTargets.length > 0) {
                 const removed = actionData.selectedTargets.pop();
+                updatePrompt();
                 log(`Removed last target: ${removed}`);
                 return true;
             } else {
@@ -676,6 +766,7 @@ export class TargetingProcessor {
 
         if (targetId === 'clear') {
             actionData.selectedTargets = [];
+            updatePrompt();
             log(`Targeting selection cleared.`);
             return true;
         }
@@ -706,11 +797,16 @@ export class TargetingProcessor {
         }
 
         actionData.selectedTargets = [...actionData.selectedTargets, targetId];
+        updatePrompt();
         log(`Target ${actionData.selectedTargets.length}/${maxCount} selected: ${targetId}`);
 
         // Update legal targets for the next index if there are more targets to select
         if (actionData.selectedTargets.length < maxCount) {
             const nextIndex = actionData.selectedTargets.length;
+            const currentDef = this.getDefinitionForIndex(targetDef, nextIndex);
+            if (currentDef?.label) {
+                state.pendingAction!.data.label = currentDef.label;
+            }
             const pool = [
                 ...Object.keys(state.players),
                 ...state.battlefield.map((o: any) => o.id),
@@ -758,6 +854,12 @@ export class TargetingProcessor {
                 const existingObject = state.stack.find(s => s.id === actionData.stackId);
                 if (existingObject) {
                     existingObject.targets = finalTargets;
+                    // Persist target controller IDs
+                    if (!existingObject.data) existingObject.data = {};
+                    existingObject.data.targetsControllers = finalTargets.map((tid: string) => {
+                        const obj = this.findObjectInAnyZone(state, tid);
+                        return obj ? obj.controllerId : null;
+                    });
                     engine.log(`[TARGETING] Targets confirmed for ${existingObject.type === 'TriggeredAbility' ? 'Trigger' : 'Spell'}: ${finalTargets.join(', ')}`);
                 }
             }
@@ -895,8 +997,13 @@ export class TargetingProcessor {
                 return eventData?.playerId ? [eventData.playerId] : [];
             case 'TARGET_1_CONTROLLER': {
                 const targetId = targets[0];
+                // Check if we have persisted controller information first
+                if (stackData?.targetsControllers && stackData.targetsControllers[0]) {
+                    return [stackData.targetsControllers[0]];
+                }
+                if (state.players[targetId as PlayerId]) return [targetId];
                 const obj = state.battlefield.find(o => o.id === targetId) ||
-                    state.stack.find(s => s.id === targetId || s.card?.id === targetId) ||
+                    state.stack.find(s => s.id === targetId || s.card?.id === targetId || (s as any).targetId === targetId) ||
                     Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === targetId) ||
                     state.exile.find(o => o.id === targetId);
                 return obj ? [obj.controllerId] : [];
@@ -957,6 +1064,13 @@ export class TargetingProcessor {
                     .map(o => o.id);
             case 'EACH_PLAYER':
                 return Object.keys(state.players);
+            case 'ALL_CREATURES_CONTROLLED_BY_TARGET_1': {
+                const targetPlayerId = targets[0] as PlayerId;
+                if (!targetPlayerId) return [];
+                return state.battlefield
+                    .filter(o => o.controllerId === targetPlayerId && o.definition.types.some(t => t.toLowerCase() === 'creature'))
+                    .map(o => o.id);
+            }
             case 'SELECTED_CARD':
                 return [targets[0]];
             case 'LAST_CREATED_TOKEN':
@@ -1029,5 +1143,18 @@ export class TargetingProcessor {
             default:
                 return [];
         }
+    }
+
+    public static getDefinitionForIndex(targetDef: any, targetIndex: number): any {
+        if (!Array.isArray(targetDef)) return targetDef;
+        let cumulative = 0;
+        for (const def of targetDef) {
+            const count = typeof def.count === 'number' ? def.count : 1;
+            if (targetIndex >= cumulative && targetIndex < cumulative + count) {
+                return def;
+            }
+            cumulative += count;
+        }
+        return targetDef[targetDef.length - 1];
     }
 }

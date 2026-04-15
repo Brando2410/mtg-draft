@@ -6,6 +6,7 @@ import { AnimatePresence } from 'framer-motion';
 import { GameCard } from './GameCard';
 import { CombatArrows } from './CombatArrows';
 import { StackView } from './StackView';
+import { TargetingArrows } from './TargetingArrows';
 import { ChoiceModal } from './modals/ChoiceModal';
 import { ZoneInspector } from './modals/ZoneInspector';
 import { XSelectionModal } from './modals/XSelectionModal';
@@ -188,6 +189,7 @@ interface BattlefieldProps {
   currentStep: string;
   onTapCard: (id: string) => void;
   onChoiceResolve: (payload: any) => void;
+  hoveredCardId?: string;
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: () => void;
   pendingAction?: any;
@@ -196,6 +198,7 @@ interface BattlefieldProps {
 export const Battlefield = ({ 
   me, opponent, battlefield, stack, combat, exile, currentStep, pendingAction, onTapCard,
   onChoiceResolve,
+  hoveredCardId,
   onHoverStart,
   onHoverEnd 
 }: BattlefieldProps) => {
@@ -280,6 +283,7 @@ export const Battlefield = ({
         onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
       >
         <CombatArrows battlefield={battlefield} combat={combat} planningArrow={planningArrow} />
+        <TargetingArrows stack={stack} battlefield={battlefield} pendingAction={pendingAction} hoveredCardId={hoveredCardId} />
         
         {/* OPPONENT SIDE */}
         <div className="w-full h-1/2 flex flex-col-reverse relative border-b border-white/5">
@@ -306,8 +310,9 @@ export const Battlefield = ({
         {/* STACK OVERLAY */}
         <div className="absolute right-10 top-1/2 -translate-y-1/2 z-50">
             <StackView 
-                stack={stack} pendingAction={pendingAction} me={me} exile={exile}
+                stack={stack} pendingAction={pendingAction} me={me} exile={exile} battlefield={battlefield}
                 onTapCard={onTapCard} onInspect={setInspectingZone} targetableIds={targetableIds}
+                onHoverStart={onHoverStart} onHoverEnd={onHoverEnd}
             />
         </div>
       </div>

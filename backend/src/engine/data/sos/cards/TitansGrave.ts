@@ -13,6 +13,7 @@ export const TitansGrave: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Activated,
+            id: "Add {B} or {G}",
             costs: [{ type: 'Tap' }],
             isManaAbility: true,
             effects: [
@@ -27,6 +28,7 @@ export const TitansGrave: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
+            id: "Surveil 1",
             costs: [
                 { type: 'Mana', value: '{2}{B}{G}' },
                 { type: 'Tap' }

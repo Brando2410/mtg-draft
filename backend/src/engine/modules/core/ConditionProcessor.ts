@@ -132,14 +132,6 @@ export class ConditionProcessor {
           const count = state.battlefield.filter(o => o.id !== sourceId && o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'land')).length;
           return count <= threshold;
         }
-        case 'SPENT_MANA_GT_POWER_OR_TOUGHNESS': {
-          const spent = (event as any)?.amount || (event as any)?.data?.card?.paidManaValue || 0;
-          const obj = state.battlefield.find(o => o.id === sourceId);
-          if (!obj) return false;
-          const { LayerProcessor } = require('./../state/LayerProcessor');
-          const stats = LayerProcessor.getEffectiveStats(obj, state);
-          return spent > stats.power || spent > stats.toughness;
-        }
         case 'ARTIFACT_COUNT_GE':
         case 'LAND_COUNT_GE': {
           const threshold = parseInt(restrictions[0]);
@@ -186,8 +178,10 @@ export class ConditionProcessor {
             return (state.turnState.creaturesDiedThisTurn.length || 0) >= threshold;
         }
         case 'EVENT_COUNTER_TYPE_MATCHES': {
-            const expectedType = restrictions[0];
-            return (event as any)?.counterType === expectedType || (event as any)?.data?.counterType === expectedType;
+            const expectedType = restrictions[0] === 'p1p1' ? '+1/+1' : restrictions[0];
+            const actualType = (event as any)?.counterType || (event as any)?.data?.counterType;
+            const normalizedActualType = actualType === 'p1p1' ? '+1/+1' : actualType;
+            return normalizedActualType === expectedType;
         }
       }
     }
@@ -299,6 +293,18 @@ export class ConditionProcessor {
         const { LayerProcessor } = require('./../state/LayerProcessor');
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         return spent > stats.power || spent > stats.toughness;
+      }
+      case 'SPENT_MANA_GT_POWER_OR_TOUGHNESS': {
+        const spent = (event as any)?.data?.card?.paidManaValue ?? (event as any)?.amount ?? 0;
+        const obj = state.battlefield.find(o => o.id === sourceId);
+        if (!obj) return false;
+        const { LayerProcessor } = require('./../state/LayerProcessor');
+        const stats = LayerProcessor.getEffectiveStats(obj, state);
+        const met = spent > stats.power || spent > stats.toughness;
+        const basePower = parseInt(obj.definition.power || '0');
+        const baseToughness = parseInt(obj.definition.toughness || '0');
+        if (spent > 0) process.stdout.write(`[DEBUG] Increment check for ${obj.definition.name}: spent ${spent} > power ${stats.power} (base ${basePower}) or toughness ${stats.toughness} (base ${baseToughness})? ${met}\n`);
+        return met;
       }
       case 'TOP_CARD_IS_GOBLIN': {
         const player = state.players[controllerId];

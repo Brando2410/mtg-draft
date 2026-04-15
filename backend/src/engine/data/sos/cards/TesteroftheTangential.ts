@@ -48,7 +48,7 @@ export const TesteroftheTangential: CardDefinition = {
                                     effects: [
                                         {
                                             type: EffectType.MoveCounters,
-                                            counterType: 'P1P1',
+                                            counterType: '+1/+1',
                                             amount: DynamicAmount.X,
                                             targetMapping: TargetMapping.Target1
                                         }

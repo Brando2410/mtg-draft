@@ -10,6 +10,7 @@ export interface ChoiceConfig {
     actionType?: ActionType;
     stackObj?: any;
     parentContext?: any;
+    targets?: string[];
 }
 
 export interface CardChoiceConfig extends ChoiceConfig {
@@ -37,10 +38,10 @@ export class ChoiceGenerator {
         config: CardChoiceConfig
     ) {
         const { playerId, sourceId, restrictions = [], onSelected, onNone } = config;
-
         const { TargetingProcessor } = require('../actions/TargetingProcessor');
+        
         let options = cards.map(c => {
-            const isMatch = TargetingProcessor.matchesRestrictions(state, c, restrictions, playerId, sourceId);
+            const isMatch = TargetingProcessor.matchesRestrictions(state, c, restrictions, playerId, sourceId, undefined, config.stackObj);
             
             return {
                 label: isMatch ? `Select ${c.definition.name}` : `[Invalid] ${c.definition.name}`,
@@ -77,6 +78,7 @@ export class ChoiceGenerator {
             lookingCards: cards, // Preserve for UI/Context
             stackObj: config.stackObj,
             parentContext: pruneContext(config.parentContext),
+            targets: config.targets,
             minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.data?.minChoices || 1),
             maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.data?.maxChoices || 1),
         }, config.actionType);
@@ -99,6 +101,7 @@ export class ChoiceGenerator {
             lookingCards: config.lookingCards,
             stackObj: config.stackObj,
             parentContext: pruneContext(config.parentContext),
+            targets: config.targets,
             minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.data?.minChoices || 1),
             maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.data?.maxChoices || 1),
         }, config.actionType);
@@ -113,7 +116,8 @@ export class ChoiceGenerator {
             lookingCards: cards,
             destinations: ['top', 'bottom'],
             stackObj: config.stackObj,
-            parentContext: pruneContext(config.parentContext)
+            parentContext: pruneContext(config.parentContext),
+            targets: config.targets
         }, ActionType.Scry);
     }
 
@@ -126,7 +130,8 @@ export class ChoiceGenerator {
             lookingCards: cards,
             destinations: ['top', 'graveyard'],
             stackObj: config.stackObj,
-            parentContext: pruneContext(config.parentContext)
+            parentContext: pruneContext(config.parentContext),
+            targets: config.targets
         }, ActionType.Surveil);
     }
 
@@ -177,6 +182,7 @@ export class ChoiceGenerator {
                 }
             },
             parentContext: pruneContext(parentContext),
+            targets: [currentPlayerId],
             onSelected: (card: GameObject) => {
                 // This is now called for each card in the batch by ChoiceProcessor
                 return [{ type: 'MoveToZone', targetId: card.id, zone: Zone.Graveyard, isDiscard: true }];

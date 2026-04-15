@@ -113,17 +113,17 @@ export const ActionButton = memo(({
 
   const [isHovered, setIsHovered] = useState(false);
 
-  const { buttonText, subLabel, isOrange, isDisabled } = useMemo(() => {
+  const { buttonText, subLabel, isOrange, isDisabled, isCancel } = useMemo(() => {
     let text = isMyTurn ? "Next" : "Pass";
     let sub = "";
     let orange = true;
     let disabled = !hasPriority;
+    let cancel = false;
 
     if (!isMyTurn && !hasPriority) {
-        return { buttonText: "Opponent's Turn", subLabel: "", isOrange: false, isDisabled: true };
+        return { buttonText: "Opponent's Turn", subLabel: "", isOrange: false, isDisabled: true, isCancel: false };
     }
 
-    // --- SUB LABEL CALCULATION (Arena Style) ---
     if (pendingAction) {
         const isActionForMe = pendingAction.playerId === effectivePlayerId;
         
@@ -132,7 +132,8 @@ export const ActionButton = memo(({
                 buttonText: "Waiting", 
                 subLabel: "Opponent's Action", 
                 isOrange: false, 
-                isDisabled: true 
+                isDisabled: true,
+                isCancel: false
             };
         }
 
@@ -159,59 +160,40 @@ export const ActionButton = memo(({
             const selected = pendingAction.data?.selectedTargets || [];
             const targetDef = pendingAction.data?.targetDefinition;
             const isOptional = targetDef?.optional || targetDef?.minCount === 0;
-            const min = targetDef?.minCount ?? (isOptional ? 0 : (targetDef?.count ?? 1));
+            const minCount = pendingAction.data?.minCount ?? (targetDef?.minCount ?? (isOptional ? 0 : (targetDef?.count ?? 1)));
+            const totalCount = pendingAction.data?.count ?? (targetDef?.count ?? 1);
             const isSpellCasting = pendingAction.data?.isSpellCasting;
             
-            const canConfirm = selected.length >= min;
+            const canConfirm = selected.length >= minCount;
             
             if (canConfirm) {
                 text = "Confirm";
                 orange = true;
                 disabled = false;
             } else {
-                // If it's a spell casting phase, we can 'Cancel' (Undo)
-                // Otherwise (mandatory trigger), we must wait for targets
                 text = isSpellCasting ? "Cancel" : "Waiting";
-                sub = isSpellCasting ? "Undo Action" : "Target Required";
                 orange = false;
                 disabled = !isSpellCasting;
+                if (isSpellCasting) {
+                    cancel = true;
+                }
             }
             
-            if (!sub) sub = `Targets: ${selected.length} / ${targetDef?.count || 1}`;
+            sub = `SELECT TARGETS: ${selected.length} / ${totalCount}`;
         }
     } else {
         // We calculate sub regardless of priority to let the player know what's coming
         switch(currentStep) {
-            case Step.Upkeep: 
-              sub = "To Draw"; 
-              break;
-            case Step.Draw: 
-              sub = "To Main 1"; 
-              break;
-            case Step.Main: 
-              sub = currentPhase === Phase.PreCombatMain ? "To Combat" : "End Turn"; 
-              break;
-            case Step.BeginningOfCombat: 
-              sub = "To Attackers"; 
-              break;
-            case Step.DeclareAttackers: 
-              sub = "To Blockers"; 
-              break;
-            case Step.DeclareBlockers: 
-              sub = "To Damage"; 
-              break;
-            case Step.FirstStrikeDamage: 
-              sub = "To Damage"; 
-              break;
-            case Step.CombatDamage: 
-              sub = "To End of Combat"; 
-              break;
-            case Step.EndOfCombat: 
-              sub = "To Main 2"; 
-              break;
-            case Step.End: 
-              sub = "End Turn"; 
-              break;
+            case Step.Upkeep: sub = "To Draw"; break;
+            case Step.Draw: sub = "To Main 1"; break;
+            case Step.Main: sub = currentPhase === Phase.PreCombatMain ? "To Combat" : "End Turn"; break;
+            case Step.BeginningOfCombat: sub = "To Attackers"; break;
+            case Step.DeclareAttackers: sub = "To Blockers"; break;
+            case Step.DeclareBlockers: sub = "To Damage"; break;
+            case Step.FirstStrikeDamage: sub = "To Damage"; break;
+            case Step.CombatDamage: sub = "To End of Combat"; break;
+            case Step.EndOfCombat: sub = "To Main 2"; break;
+            case Step.End: sub = "End Turn"; break;
         }
 
         if (stackLength > 0 && hasPriority) {
@@ -221,13 +203,12 @@ export const ActionButton = memo(({
             text = "Waiting";
             orange = false;
         } else if (currentStep === Step.End || (currentStep === Step.Main && currentPhase === Phase.PostCombatMain)) {
-            // "End Turn" for active player, "My Turn" for responding player
             text = isMyTurn ? "End Turn" : "My Turn";
             sub = isMyTurn ? "" : "End Turn";
         }
     }
 
-    return { buttonText: text, subLabel: sub, isOrange: orange, isDisabled: disabled };
+    return { buttonText: text, subLabel: sub, isOrange: orange, isDisabled: disabled, isCancel: cancel };
   }, [hasPriority, pendingAction, currentStep, currentPhase, stackLength, isMyTurn, effectivePlayerId, attackerCount, blockerCount, isHovered, JSON.stringify(pendingAction?.data?.selectedTargets)]);
 
   const isCombat = currentPhase === Phase.Combat;
@@ -297,13 +278,15 @@ export const ActionButton = memo(({
                         relative px-10 py-3 rounded-full font-serif text-2xl font-bold tracking-tight transition-all duration-300 w-full
                         ${isOrange 
                             ? 'bg-gradient-to-b from-[#ff9a44] to-[#ff4b2b] text-white shadow-[0_0_30px_rgba(255,75,43,0.4)] border-t border-white/30' 
-                            : 'bg-slate-800 text-slate-500 border border-white/10 shadow-inner'}
+                            : isCancel
+                                ? 'bg-slate-700 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] border border-white/20'
+                                : 'bg-slate-800 text-slate-500 border border-white/10 shadow-inner'}
                         ${isDisabled ? 'opacity-50 cursor-not-allowed saturate-50' : 'hover:scale-105 active:scale-95 cursor-pointer ring-4 ring-orange-500/10'}
                         group
                     `}
                 >
-                    {isOrange && !isDisabled && (
-                        <div className="absolute inset-0 rounded-full bg-orange-500/20 blur-xl animate-pulse -z-10" />
+                    {(isOrange || isCancel) && !isDisabled && (
+                        <div className={`absolute inset-0 rounded-full blur-xl animate-pulse -z-10 ${isOrange ? 'bg-orange-500/20' : 'bg-white/10'}`} />
                     )}
                     <span className="drop-shadow-md">{buttonText}</span>
                 </button>

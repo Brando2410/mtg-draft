@@ -39,11 +39,12 @@ export class EffectProcessor {
     log: (m: string) => void,
     startIndex: number = 0,
     stackObject?: any,
-    parentContext: any = {}
+    parentContext: any = {},
+    controllerIdOverride?: PlayerId
   ): boolean {
     for (let i = startIndex; i < effects.length; i++) {
         const effect = effects[i];
-        this.executeEffect(state, effect, sourceId, targets, log, stackObject, parentContext);
+        this.executeEffect(state, effect, sourceId, targets, log, stackObject, parentContext, i, controllerIdOverride);
         
         if (state.pendingAction) {
             // Rule 603.3: Prune the stored objects to avoid recursion depth and circular references in sockets.
@@ -89,11 +90,12 @@ export class EffectProcessor {
     targets: string[], 
     log: (msg: string) => void,
     stackObject?: any,
-    parentContext?: any
+    parentContext?: any,
+    index: number = 0,
+    controllerIdOverride?: PlayerId
   ) {
-    process.stdout.write(`[EFFECT-DEBUG] Executing ${effect.type} from ${sourceId}\n`);
     const sourceObj = this.findObject(state, sourceId, stackObject, parentContext) || (stackObject?.card ? stackObject.card : stackObject);
-    const controllerId = sourceObj?.controllerId || state.activePlayerId;
+    const controllerId = controllerIdOverride || sourceObj?.controllerId || state.activePlayerId;
     const { TargetingProcessor } = require('../actions/TargetingProcessor');
 
     // Rule 608.2: Evaluate conditions
@@ -106,26 +108,35 @@ export class EffectProcessor {
 
     // Resolve Target Mappings
     const resolveMapping = (m: string, index: number) => {
-        let ids = TargetingProcessor.resolveTargetMapping(state, m || "", targets, sourceId, controllerId, stackObject?.data, effect, parentContext);
+        const ids = TargetingProcessor.resolveTargetMapping(state, m || "", targets, sourceId, controllerId, stackObject?.data, effect, parentContext);
         
         // If Choice effect has no explicit mapping, it should receive all parent targets to pass them down
-        if (effect.type === 'Choice' && !m && ids.length === 0) {
-            ids = [...targets];
+        if (effect.type === 'Choice' && (!m || m === "") && ids.length === 0) {
+            return ids.length > 0 ? ids : [...targets];
         }
 
-        return this.getValidTargetIds(state, effect, ids, sourceId, sourceObj, stackObject, parentContext, index);
+        const mStr = (m || "").toUpperCase();
+        const isDirectTargetMapping = mStr.startsWith('TARGET_') && !isNaN(parseInt(mStr.substring(7))) && mStr.split('_').length === 2;
+        
+        let validationIndex = index;
+        if (isDirectTargetMapping) {
+            validationIndex = parseInt(mStr.substring(7)) - 1;
+        }
+
+        if (isDirectTargetMapping || ['TARGET_OPPONENT', 'TARGET_PLAYER', 'TARGET_CREATURE', 'TARGET_PERMANENT'].includes(mStr)) {
+            return this.getValidTargetIds(state, effect, ids, sourceId, sourceObj, stackObject, parentContext, validationIndex);
+        }
+        
+        return ids;
     };
 
     const validTargetIds = resolveMapping((effect as any).targetMapping, 0);
     const validTarget2Ids = (effect as any).target2Mapping ? resolveMapping((effect as any).target2Mapping, 1) : [];
 
-    if (((effect as any).targetMapping && validTargetIds.length === 0) || 
-        ((effect as any).target2Mapping && validTarget2Ids.length === 0)) {
-        // Rule 608.2b: If ALL targets are illegal, effect does nothing.
-        // Wait, MTG says if at least one target is still legal, it does as much as it can.
-        // But for Fight, if one is gone, it cannot fight.
+    if (((effect as any).targetMapping && validTargetIds.length === 0 && !(effect as any).targetId && !effect.targetDefinition) || 
+        ((effect as any).target2Mapping && validTarget2Ids.length === 0 && !effect.targetDefinition)) {
         if (effect.type === 'Fight') return;
-        if (validTargetIds.length === 0) return;
+        return;
     }
     
     const amount = (effect as any).amount !== undefined ? this.resolveAmount(state, (effect as any).amount, sourceId, controllerId, stackObject, validTargetIds, parentContext) : 1;
@@ -150,7 +161,8 @@ export class EffectProcessor {
       case 'RevealUntilCondition': {
           log(`[DEBUG] EffectProcessor: Dispatching ${effect.type} for targets: ${validTargetIds}`);
           const { MoveEffectHandler } = require('./handlers/MoveEffectHandler');
-          return MoveEffectHandler.handle(state, effect, validTargetIds, log, controllerId, stackObject, parentContext);
+          const searchingPlayerId = validTargetIds.find((tid: string) => state.players[tid as PlayerId]) as PlayerId || controllerId;
+          return MoveEffectHandler.handle(state, effect, validTargetIds, log, searchingPlayerId, stackObject, parentContext);
       }
       case 'DealDamage': {
           const sourceMappingIds = (effect as any).damageSourceMapping ? TargetingProcessor.resolveTargetMapping(state, (effect as any).damageSourceMapping, targets, sourceId, controllerId, stackObject?.data, effect) : [];
@@ -229,7 +241,8 @@ export class EffectProcessor {
       }
       case 'Choice': {
           const { ChoiceEffectHandler } = require('./handlers/ChoiceEffectHandler');
-          return ChoiceEffectHandler.handleChoice(state, effect, sourceId, validTargetIds, log, controllerId, stackObject, parentContext, this.findObject);
+          const searchingPlayerId = validTargetIds.find((tid: string) => state.players[tid as PlayerId]) as PlayerId || controllerId;
+          return ChoiceEffectHandler.handleChoice(state, effect, sourceId, validTargetIds, log, searchingPlayerId, stackObject, parentContext, this.findObject);
       }
       case 'Necromentia': {
           const { ChoiceEffectHandler } = require('./handlers/ChoiceEffectHandler');
@@ -441,6 +454,11 @@ export class EffectProcessor {
       case 'AddPreventionEffect':
       case 'PhasedOut':
       case 'AddMana': {
+          if ((effect as any).choices) {
+              const { ChoiceEffectHandler } = require('./handlers/ChoiceEffectHandler');
+              const searchingPlayerId = validTargetIds.find((tid: string) => state.players[tid as PlayerId]) as PlayerId || controllerId;
+              return ChoiceEffectHandler.handleChoice(state, effect, sourceId, validTargetIds, log, searchingPlayerId, stackObject, parentContext, this.findObject);
+          }
           const { ControlEffectHandler } = require('./handlers/ControlEffectHandler');
           return ControlEffectHandler.handle(state, effect, sourceId, validTargetIds, log, controllerId, stackObject, parentContext, this.findObject);
       }
@@ -521,6 +539,10 @@ export class EffectProcessor {
         const obj = this.findObject(state, tid, stackObject, parentContext);
         if (!obj) return false;
         if (tid === sourceId) return true; // Source is always a legal part of its own mapping (Rule 608.2b)
+        
+        // Choice and SearchLibrary often use mappings to players/zones that shouldn't be matched against the main target definition
+        if (['Choice', 'SearchLibrary', 'Scry', 'Surveil', 'MoveToZone'].includes(effect.type)) return true;
+        
         if (['SELECTED_CARD', 'EVENT_TARGET'].includes(effect.targetMapping)) return true;
         const targetDef = effect.targetDefinition || (stackObject || parentContext?.stackObj)?.data?.targetDefinition;
         if (!targetDef) return true;
@@ -554,6 +576,7 @@ export class EffectProcessor {
           break;
       case 'X': 
           result = stackObject?.xValue || 0;
+          if (state.logs) state.logs.push(`[DEBUG] EffectProcessor: Resolved X = ${result}`);
           break;
       case 'X_PLUS_1':
           result = (stackObject?.xValue || 0) + 1;

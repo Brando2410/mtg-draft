@@ -139,17 +139,37 @@ export const GameCard = memo(({
     );
   };
 
-  const headerColorMap: Record<string, string> = {
-    white: 'bg-stone-200/95 border-stone-400 text-stone-900',
-    blue: 'bg-blue-900/95 border-blue-400 text-white',
-    black: 'bg-slate-900/95 border-slate-700 text-white',
-    red: 'bg-red-900/95 border-red-500 text-white',
-    green: 'bg-emerald-900/95 border-emerald-500 text-white',
-    multicolor: 'bg-amber-700/95 border-amber-400 text-white', 
-    colorless: 'bg-slate-800/95 border-slate-600 text-white',
+  const getColorConfig = (color: string) => {
+    const config: Record<string, { bg: string, from: string, to: string, border: string, text: string }> = {
+      white: { bg: 'bg-stone-100/95', from: 'from-stone-100/95', to: 'to-stone-100/95', border: 'border-stone-400', text: 'text-stone-900' },
+      blue: { bg: 'bg-blue-900/95', from: 'from-blue-900/95', to: 'to-blue-900/95', border: 'border-blue-400', text: 'text-white' },
+      black: { bg: 'bg-slate-900/95', from: 'from-slate-900/95', to: 'to-slate-900/95', border: 'border-slate-700', text: 'text-white' },
+      red: { bg: 'bg-red-900/95', from: 'from-red-900/95', to: 'to-red-900/95', border: 'border-red-500', text: 'text-white' },
+      green: { bg: 'bg-emerald-900/95', from: 'from-emerald-900/95', to: 'to-emerald-900/95', border: 'border-emerald-500', text: 'text-white' },
+      colorless: { bg: 'bg-slate-800/95', from: 'from-slate-800/95', to: 'to-slate-800/95', border: 'border-slate-600', text: 'text-white' },
+      multicolor: { bg: 'bg-amber-700/95', from: 'from-amber-700/95', to: 'to-amber-900/95', border: 'border-amber-400', text: 'text-white' },
+    };
+    return config[color.toLowerCase()] || config.colorless;
   };
 
-  const headerClass = headerColorMap[cardColor] || headerColorMap.C;
+  const colors = (definition.colors || []).map(c => c.toLowerCase());
+  let headerClass = "";
+
+  if (colors.length === 0) {
+    const conf = getColorConfig('colorless');
+    headerClass = `${conf.bg} ${conf.border} ${conf.text}`;
+  } else if (colors.length === 1) {
+    const conf = getColorConfig(colors[0]);
+    headerClass = `${conf.bg} ${conf.border} ${conf.text}`;
+  } else if (colors.length === 2) {
+    const conf1 = getColorConfig(colors[0]);
+    const conf2 = getColorConfig(colors[1]);
+    const hasWhite = colors.includes('white');
+    headerClass = `bg-gradient-to-r ${conf1.from} ${conf2.to} border-amber-400/50 ${hasWhite ? 'text-stone-900' : 'text-white'}`;
+  } else {
+    const conf = getColorConfig('multicolor');
+    headerClass = `bg-gradient-to-r ${conf.from} ${conf.to} ${conf.border} ${conf.text}`;
+  }
 
   return (
     <motion.div

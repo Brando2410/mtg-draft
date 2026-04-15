@@ -22,7 +22,7 @@ export const RancorousArchaic: CardDefinition = {
             effects: [
                 {
                     type: EffectType.EntersWithCounters,
-                    counterType: 'P1P1',
+                    counterType: '+1/+1',
                     amount: 'CONVERGE_AMOUNT'
                 }
             ]

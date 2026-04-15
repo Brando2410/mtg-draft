@@ -37,7 +37,7 @@ export const AmbitiousAugmenter: CardDefinition = {
                     type: 'MoveCounters',
                     targetMapping: 'LAST_CREATED_TOKEN',
                     sourceMapping: 'SELF',
-                    counterType: 'P1P1'
+                    counterType: '+1/+1'
                 }
             ]
         }

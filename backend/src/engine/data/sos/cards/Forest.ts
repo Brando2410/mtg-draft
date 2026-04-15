@@ -1,4 +1,4 @@
-import { CardDefinition } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, Zone } from '@shared/engine_types';
 
 export const Forest: CardDefinition = {
     "name": "Forest",
@@ -12,7 +12,16 @@ export const Forest: CardDefinition = {
         "Forest"
     ],
     "oracleText": "({T}: Add {G}.)",
-    "abilities": []
+    "abilities": [
+        {
+            id: "forest_mana",
+            type: AbilityType.Activated,
+            activeZone: Zone.Battlefield,
+            isManaAbility: true,
+            costs: [{ type: 'Tap', targetMapping: 'SELF' }],
+            effects: [{ type: EffectType.AddMana, value: '{G}' }]
+        }
+    ]
 };
 
 

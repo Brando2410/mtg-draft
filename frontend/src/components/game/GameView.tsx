@@ -116,7 +116,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
       const alreadyAttacking = gameState.combat?.attackers?.some(a => a.attackerId === obj.id);
       
       // Rule 302.6: Haste bypasses summoning sickness. Power check is not strictly required but good for Arena feel.
-      const hasHaste = obj.definition.keywords.includes('Haste') || (obj.effectiveStats?.keywords || []).includes('Haste');
+      const hasHaste = (obj.definition.keywords || []).includes('Haste') || (obj.effectiveStats?.keywords || []).includes('Haste');
       const canAttack = !obj.isTapped && (!obj.summoningSickness || hasHaste);
       
       return isMyCreature && !alreadyAttacking && canAttack;
@@ -302,7 +302,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
                         <div className="flex flex-col items-center">
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/60 to-transparent h-12 top-1/2 -translate-y-1/2 blur-md" />
                             <h2 className="relative text-3xl font-black text-white/40 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] tracking-tight italic uppercase">
-                                Opponent is making a choice...
+                                {gameState.pendingAction.type === ActionType.Discard ? 'Opponent is discarding...' : 'Opponent is making a choice...'}
                             </h2>
                             {gameState.pendingAction.data?.label && (
                                 <span className="relative text-sm text-indigo-400 font-bold uppercase tracking-widest mt-2">{gameState.pendingAction.data.label}</span>
@@ -318,7 +318,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
                                      gameState.pendingAction.type === ActionType.DeclareBlockers ? 'Declare Blockers' :
                                      gameState.pendingAction.type === ActionType.OrderAttackers ? 'Order Blockers' :
                                      gameState.pendingAction.type === ActionType.Discard ? `Discard ${gameState.pendingAction.count || 1} card${(gameState.pendingAction.count || 1) > 1 ? 's' : ''}` :
-                                     gameState.pendingAction.type === ActionType.Targeting ? 'Select targets' :
+                                     gameState.pendingAction.type === ActionType.Targeting ? (gameState.pendingAction.data?.prompt || 'Select targets') :
                                      (gameState.pendingAction.data?.label || 'Make a choice')}
                                 </h2>
                             </div>
@@ -355,6 +355,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           onChoiceResolve={(payload) => {
             socket.emit('resolve_choice', { roomId: room.id, playerId: effectivePlayerId, choiceIndex: payload });
           }}
+          hoveredCardId={hoveredCard?.id}
           onHoverStart={startZoom}
           onHoverEnd={stopZoom}
         />

@@ -1,6 +1,5 @@
 import { GameState, PlayerId, Zone, GameObject } from '@shared/engine_types';
 import { Card } from '@shared/types';
-import { m21 } from '../../data/m21';
 
 export class GameSetupProcessor {
   public static initializePlayers(
@@ -37,7 +36,8 @@ export class GameSetupProcessor {
   }
 
   public static createGameObject(ownerId: PlayerId, cardRef: Card, index: number): GameObject {
-    const logicData = m21[cardRef.name];
+    const { oracle } = require('../../OracleLogicMap');
+    const logicData = oracle.getCard(cardRef.name);
     let typeLine = cardRef.typeLine || cardRef.type_line || logicData?.type_line || '';
     
     // Normalize legacy "Enchant Creature" to "Enchantment — Aura"
@@ -60,17 +60,20 @@ export class GameSetupProcessor {
         manaCost: cardRef.manaCost || (cardRef as any).mana_cost || logicData?.manaCost || '',
         colors: normalizedColors,
         supertypes: logicData?.supertypes || [],
-        types: typeLine.split(/[-—]/)[0].trim().split(/\s+/).filter(Boolean),
-        subtypes: typeLine.includes('—') ? typeLine.split(/[-—]/)[1].trim().split(/\s+/).filter(Boolean) : [],
+        types: typeLine ? typeLine.split(/[-—]/)[0].trim().split(/\s+/).filter(Boolean) : (logicData?.types || []),
+        subtypes: typeLine ? (typeLine.includes('—') ? typeLine.split(/[-—]/)[1].trim().split(/\s+/).filter(Boolean) : []) : (logicData?.subtypes || []),
         oracleText: cardRef.oracleText || logicData?.oracleText || '',
         type_line: typeLine,
         image_url: cardRef.image_url || cardRef.image_uris?.normal || cardRef.image_uris?.large || logicData?.image_url,
         scryfall_id: (cardRef as any).scryfall_id || (cardRef as any).id || logicData?.scryfall_id,
         power: (cardRef as any).power || logicData?.power,
         toughness: (cardRef as any).toughness || logicData?.toughness,
+        loyalty: (cardRef as any).loyalty || logicData?.loyalty,
         keywords: baseKeywords,
         entersWithXCounters: (logicData as any)?.entersWithXCounters,
-        entersTapped: (logicData as any)?.entersTapped
+        entersTapped: (logicData as any)?.entersTapped,
+        entersTappedCondition: (logicData as any)?.entersTappedCondition,
+        entersPrepared: (logicData as any)?.entersPrepared
       },
       isTapped: false,
       damageMarked: 0,

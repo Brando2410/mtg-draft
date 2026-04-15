@@ -124,10 +124,12 @@ export class TriggerProcessor {
                             sourceId: obj.id,
                             controllerId: obj.controllerId,
                             eventMatch: TriggerEvent.CastSpell,
+                            // Ensure Rule 603.4 (intervening-if) is satisfied by re-checking at resolution
+                            condition: 'SPENT_MANA_GT_POWER_OR_TOUGHNESS',
                             effects: [{
                                 type: EffectType.AddCounters,
                                 amount: 1,
-                                counterType: 'P1P1',
+                                counterType: '+1/+1',
                                 targetMapping: TargetMapping.Self
                             }]
                         } as any);
@@ -258,35 +260,7 @@ export class TriggerProcessor {
             }
         }
 
-        // --- SYSTEM RECOGNIZED KEYWORDS: INCREMENT ---
-        if (event.type === 'ON_CAST_SPELL' && event.playerId) {
-            state.battlefield.forEach(obj => {
-                if (obj.controllerId !== event.playerId) return;
-                const keywords = [...(obj.definition.keywords || []), ...(obj.keywords || [])];
-                if (keywords.includes('Increment')) {
-                    const manaSpent = (event.data?.card?.paidManaValue) || 0;
-                    const stats = LayerProcessor.getEffectiveStats(obj, state);
 
-                    // Trigger Check: spent > P or spent > T
-                    if (manaSpent > stats.power || manaSpent > stats.toughness) {
-                        matchingTriggers.push({
-                            id: `increment_gen_${obj.id}_${Date.now()}`,
-                            sourceId: obj.id,
-                            controllerId: obj.controllerId,
-                            eventMatch: 'ON_CAST_SPELL',
-                            condition: (s: any, ev: any, t: any) => {
-                                const o = s.battlefield.find((p: any) => p.id === t.sourceId);
-                                if (!o) return false;
-                                const currentStats = LayerProcessor.getEffectiveStats(o, s);
-                                const spent = (ev.data?.card?.paidManaValue) || 0;
-                                return spent > currentStats.power || spent > currentStats.toughness;
-                            },
-                            effects: [{ type: 'AddCounters', amount: 1, counterType: 'P1P1', targetMapping: 'SELF' }]
-                        } as any);
-                    }
-                }
-            });
-        }
 
         // --- SYSTEM RECOGNIZED KEYWORDS: REPARTEE ---
         if (event.type === 'ON_CAST_INSTANT_SORCERY' && event.playerId) {

@@ -324,10 +324,11 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
            ...state.exile.map(o => o.id),
            ...state.stack.map(o => o.id)
         ];
+        const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDef, (obj as any).xValue || 0);
+        const prompt = TargetingProcessor.generateTargetPrompt(targetDef, 0, (obj as any).xValue || 0);
         const legalTargetIds = pool.filter(tid => TargetingProcessor.isLegalTarget(state, obj.id, tid, targetDef));
-           
-       const minCount = targetDef.minCount !== undefined ? targetDef.minCount : (targetDef.count || 1);
-       if (legalTargetIds.length === 0 && minCount === 0) {
+        
+        if (legalTargetIds.length === 0 && minCount === 0) {
             log(`No targets found, auto-skipping target selection for ${obj.definition.name} (+1 ability).`);
             state.priorityPlayerId = playerId;
             state.pendingAction = undefined;
@@ -354,7 +355,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
            
            const action = ChoiceGenerator.createCardChoice(
                state,
-               legalTargetIds.map(id => TargetingProcessor.findObjectInAnyZone(state, id)!),
+               legalTargetIds.map((id: string) => TargetingProcessor.findObjectInAnyZone(state, id)!),
                {
                    label: "Select a card from graveyard",
                    playerId,
@@ -377,12 +378,20 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
            return true;
        }
        
-       state.pendingAction = {
-          type: 'TARGETING',
-          playerId,
-          sourceId: obj.id,
-          data: { abilityIndex, targets: legalTargetIds, optional: targetDef.optional, targetDefinition: targetDef }
-       };
+        state.pendingAction = {
+           type: 'TARGETING',
+           playerId,
+           sourceId: obj.id,
+           data: { 
+               abilityIndex, 
+               targets: legalTargetIds, 
+               optional: targetDef.optional, 
+               targetDefinition: targetDef,
+               maxCount,
+               minCount,
+               count
+           }
+        };
        state.priorityPlayerId = playerId;
        log(`Select target for ${obj.definition.name}'s ability.`);
        return true;
@@ -461,7 +470,11 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     log(`Option selected: ${choice.label}`);
     const savedActionData = action.data;
     const stackObj = savedActionData?.stackObj;
-    const targetsForResolution = choice.value ? [choice.value] : (savedActionData?.targets || []);
+    const parentTargets = (action.data?.targets || savedActionData?.targets || action.data?.parentContext?.targets || savedActionData?.parentContext?.targets || []);
+    let targetsForResolution = parentTargets;
+    if (choice.value && typeof choice.value === 'string' && choice.value.length > 20) {
+        targetsForResolution = [choice.value, ...parentTargets];
+    }
     
     state.pendingAction = undefined; 
     
@@ -474,7 +487,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     }
 
     if (choice.effects && choice.effects.length > 0) {
-        EffectProcessor.resolveEffects(state, choice.effects, sourceId, targetsForResolution, log, 0, stackObj, savedActionData);
+        EffectProcessor.resolveEffects(state, choice.effects, sourceId, targetsForResolution, log, 0, stackObj, savedActionData, action.playerId);
     }
 
     // Cleanup block removed from here and moved to the end
@@ -486,7 +499,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         log(`[RESOLVING] Resuming parent resolution context for ${sourceId}...`);
         const nextIdx = currentCtx.nextEffectIndex;
         const effs = currentCtx.effects;
-        const parentTargets = currentCtx.targets || [];
+        const parentTargets = currentCtx.targets || currentCtx.parentContext?.targets || [];
         const parentCtx = currentCtx.parentContext;
         
         currentCtx = parentCtx; 

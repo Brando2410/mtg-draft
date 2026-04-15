@@ -17,26 +17,24 @@ export const FractalAnomaly: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CreateToken,
+                    targetMapping: TargetMapping.Controller,
                     amount: 1,
                     tokenBlueprint: {
-                        name: 'Fractal',
-                        colors: ['green', 'blue'],
-                        types: ['Creature'],
-                        subtypes: ['Fractal'],
+                        name: "Fractal",
+                        colors: ["G", "U"],
+                        types: ["Creature"],
+                        subtypes: ["Fractal"],
                         power: 0,
-                        toughness: 0,
-                        oracleText: ''
+                        toughness: 0
                     },
-                    next: {
-                        type: EffectType.AddCounters,
-                        counterType: 'p1p1',
-                        amount: DynamicAmount.CardsDrawnThisTurn,
-                        targetMapping: TargetMapping.LastCreatedToken
+                    startingCounters: {
+                        type: 'p1p1',
+                        amount: DynamicAmount.CardsDrawnThisTurn
                     }
                 }
             ]
         }
-    ],
+    ]
 };
 
 

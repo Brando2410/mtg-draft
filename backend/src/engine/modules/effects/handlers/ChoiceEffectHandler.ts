@@ -139,7 +139,8 @@ export class ChoiceEffectHandler {
                 onSelected: (c) => (effect.effects || []).map((sub: any) => ({ ...sub, targetId: c.id })),
                 hideUndo: true,
                 stackObj: stackObject,
-                parentContext: parentContext
+                parentContext: parentContext,
+                targets: targets
             });
             return;
         }
@@ -184,7 +185,8 @@ export class ChoiceEffectHandler {
             minChoices: effect.minChoices,
             maxChoices: effect.maxChoices,
             stackObj: stackObject,
-            parentContext: parentContext
+            parentContext: parentContext,
+            targets: targets
         },
         dynamicChoices || []
     );

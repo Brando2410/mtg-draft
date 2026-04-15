@@ -1,6 +1,7 @@
 import { memo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { type PlayerState, Step, Phase } from '@shared/engine_types';
+import { ManaPoolView } from './ManaPoolView';
 
 interface AvatarProps {
   player: PlayerState;
@@ -75,6 +76,7 @@ const Stopper = memo(({ id, label, isOpponent, stops, onToggleStop, isActive, cu
   );
 });
 
+
 export const Avatar = memo(({ 
   player, 
   isOpponent = false, 
@@ -101,6 +103,11 @@ export const Avatar = memo(({
 
   return (
     <div className={`flex flex-col items-center gap-0 relative z-[200]`}>
+      <AnimatePresence>
+        {player.manaPool && Object.values(player.manaPool).some(c => c > 0) && (
+          <ManaPoolView pool={player.manaPool} isOpponent={isOpponent} />
+        )}
+      </AnimatePresence>
       <div className="flex items-center gap-6 relative h-12">
           <div className="flex gap-4 items-center">
               <Stopper {...commonProps} id="beginning" label="Beginning" />
@@ -110,6 +117,7 @@ export const Avatar = memo(({
 
           <div className="relative group/avatar">
               <motion.div 
+                id={`player-avatar-${player.id}`}
                 onClick={onClick}
                 animate={{ 
                   scale: isActive ? 1.05 : 1,

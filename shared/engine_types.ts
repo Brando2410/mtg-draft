@@ -965,7 +965,8 @@ export const TargetType = {
   ArtifactOrCreature: 'Artifact_or_Creature',
   ArtifactOrEnchantment: 'Artifact_or_Enchantment',
   CreatureOrPlaneswalker: 'Creature_or_Planeswalker',
-  NonlandPermanent: 'Nonland_Permanent'
+  NonlandPermanent: 'Nonland_Permanent',
+  CardInHand: 'CardInHand'
 } as const;
 export type TargetType = (typeof TargetType)[keyof typeof TargetType];
 

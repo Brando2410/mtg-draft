@@ -138,32 +138,34 @@ export class PermanentHandler {
         targets.forEach(tid => {
             const obj = state.battlefield.find(o => o.id === tid);
             if (obj) {
-                obj.counters[type] = (obj.counters[type] || 0) + amount;
+                const finalType = type === 'p1p1' ? '+1/+1' : type;
+                obj.counters[finalType] = (obj.counters[finalType] || 0) + amount;
                 if (amount > 0) {
                     if (!state.turnState.countersAddedThisTurnIds) state.turnState.countersAddedThisTurnIds = [];
                     if (!state.turnState.countersAddedThisTurnIds.includes(obj.id)) {
                         state.turnState.countersAddedThisTurnIds.push(obj.id);
                     }
                 }
-                TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: obj.id, amount, counterType: type, data: { object: obj } }, log);
+                TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: obj.id, amount, counterType: finalType, data: { object: obj } }, log);
             }
         });
     }
 
     public static handleDoubleCounters(state: GameState, targets: string[], type: string, log: (m: string) => void) {
+        const finalType = type === 'p1p1' ? '+1/+1' : type;
         targets.forEach(tid => {
             const obj = state.battlefield.find(o => o.id === tid);
             if (obj) {
-                const amount = obj.counters[type] || 0;
+                const amount = obj.counters[finalType] || 0;
                 if (amount > 0) {
-                    obj.counters[type] = amount * 2;
-                    log(`Doubled ${type} counters on ${obj.definition.name} (+${amount}).`);
+                    obj.counters[finalType] = amount * 2;
+                    log(`Doubled ${finalType} counters on ${obj.definition.name} (+${amount}).`);
                     if (!state.turnState.countersAddedThisTurnIds) state.turnState.countersAddedThisTurnIds = [];
                     if (!state.turnState.countersAddedThisTurnIds.includes(obj.id)) {
                         state.turnState.countersAddedThisTurnIds.push(obj.id);
                     }
                     const { TriggerProcessor } = require('../TriggerProcessor');
-                    TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: obj.id, amount, counterType: type, data: { object: obj } }, log);
+                    TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: obj.id, amount, counterType: finalType, data: { object: obj } }, log);
                 }
             }
         });
@@ -173,7 +175,9 @@ export class PermanentHandler {
         const sourceObj = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId) || Object.values(state.players).flatMap(p => p.graveyard).find((o: any) => o.id === sourceId);
         if (!sourceObj || !sourceObj.counters) return;
 
-        const counterTypes = effect?.counterType ? [effect.counterType] : Object.keys(sourceObj.counters);
+        let inputType = effect?.counterType;
+        if (inputType === 'p1p1') inputType = '+1/+1';
+        const counterTypes = inputType ? [inputType] : Object.keys(sourceObj.counters);
 
         counterTypes.forEach(ctype => {
             const amount = sourceObj.counters[ctype] || 0;
@@ -202,14 +206,17 @@ export class PermanentHandler {
 
                 // Manage starting counters (e.g. Fractal tokens)
                 if (effect?.startingCounters) {
-                    const { type, amount: cAmount } = effect.startingCounters;
+                    const { type, countersType, amount: cAmount } = effect.startingCounters;
+                    const finalType = type || countersType;
+                    
                     let resolvedAmount = typeof cAmount === 'string' ? 0 : cAmount;
                     if (typeof cAmount === 'string') {
-                        const { EffectProcessor } = require('../effects/EffectProcessor');
+                        const { EffectProcessor } = require('../EffectProcessor');
                         resolvedAmount = EffectProcessor.resolveAmount(state, cAmount, token.id, pid as PlayerId, stackObject);
                     }
-                    if (resolvedAmount > 0) {
-                        token.counters[type] = (token.counters[type] || 0) + resolvedAmount;
+                    if (resolvedAmount > 0 && finalType) {
+                        const counterKey = finalType === 'p1p1' ? '+1/+1' : finalType;
+                        token.counters[counterKey] = (token.counters[counterKey] || 0) + resolvedAmount;
                     }
                 }
 
@@ -258,6 +265,7 @@ export class PermanentHandler {
                 subtypes: blueprint.subtypes || [],
                 power: pOverride !== undefined ? String(pOverride) : (blueprint.power || "0"),
                 toughness: tOverride !== undefined ? String(tOverride) : (blueprint.toughness || "0"),
+                loyalty: blueprint.loyalty,
                 keywords: blueprint.keywords || [],
                 abilities: blueprint.abilities || [],
                 oracleText: blueprint.oracleText || "",
@@ -272,7 +280,9 @@ export class PermanentHandler {
             faceDown: false,
             isPrepared: blueprint.entersPrepared || false,
             keywords: [],
-            counters: {}
+            counters: (blueprint.types || []).some((t: string) => t.toLowerCase() === 'planeswalker') && blueprint.loyalty
+                ? { loyalty: parseInt(blueprint.loyalty, 10) }
+                : {}
         };
         (token as any).isToken = true;
         (state as any).lastCreatedTokenId = token.id;

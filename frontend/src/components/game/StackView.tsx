@@ -8,8 +8,11 @@ interface StackViewProps {
   pendingAction?: any;
   me: PlayerState | undefined;
   exile: GameObject[];
+  battlefield: GameObject[];
   onTapCard: (id: string) => void;
   onInspect: (zone: { cards: GameObject[], label: string }) => void;
+  onHoverStart?: (obj: GameObject) => void;
+  onHoverEnd?: () => void;
   targetableIds: Set<string>;
 }
 
@@ -17,7 +20,7 @@ interface StackViewProps {
  * Arena-style StackView. 
  * Shows spells and abilities currently waiting to resolve.
  */
-export const StackView = ({ stack, pendingAction, me }: StackViewProps) => {
+export const StackView = ({ stack, pendingAction, me, battlefield, onInspect, onTapCard, onHoverStart, onHoverEnd }: StackViewProps) => {
   const effectiveStack = [...stack];
   if (pendingAction?.playerId === me?.id && pendingAction?.data?.stackObj) {
     effectiveStack.push(pendingAction.data.stackObj);
@@ -36,9 +39,30 @@ export const StackView = ({ stack, pendingAction, me }: StackViewProps) => {
         <AnimatePresence>
           {effectiveStack.map((sobj, index) => {
             const isPending = pendingAction?.data?.stackObj?.id === sobj.id;
+            
+            // Try to resolve a display object for the ability
+            // 1. If it's a spell, it already has .card
+            // 2. If it's an ability, try to find the source in battlefield
+            // 3. If still nothing, use a dummy object for the UI to render something
+            const displayObj = sobj.card || (sobj.sourceId ? (battlefield || []).find((o: any) => o.id === sobj.sourceId) : null) || {
+                id: sobj.id,
+                definition: {
+                    name: sobj.name || 'Ability',
+                    image_url: sobj.image_url || '/back.png',
+                    types: [],
+                    colors: [],
+                    manaCost: '',
+                    oracleText: ''
+                },
+                counters: {},
+                keywords: [],
+                zone: 'Stack' as any
+            };
+
             return (
               <motion.div 
                 key={sobj.id} 
+                id={`stack-obj-${sobj.id}`}
                 initial={{ scale: 0.5, opacity: 0, y: 20 }} 
                 animate={{ 
                     scale: 1, 
@@ -50,31 +74,28 @@ export const StackView = ({ stack, pendingAction, me }: StackViewProps) => {
                 whileHover={{ scale: 1.1, zIndex: 100 }}
                 className={`relative flex justify-center ${isPending ? 'grayscale-[0.5] contrast-[0.8]' : ''}`}
               >
-                {sobj.card ? (
-                  <div className="relative">
-                    <GameCard 
-                        obj={sobj.card} 
-                        variant="tiny" 
-                        onHoverStart={() => {}} // We could pass zoom if needed
-                    />
-                    
-                    {/* TYPE INDICATOR */}
-                    <div className={`absolute -bottom-1 -right-1 ${sobj.type === AbilityType.Triggered ? 'bg-emerald-500' : sobj.type === AbilityType.Activated ? 'bg-amber-500' : 'bg-indigo-500'} rounded-full p-1 border border-white/20 shadow-lg z-30`}>
-                      {sobj.type === AbilityType.Triggered ? (
-                        <RefreshCw className="w-2 h-2 text-white" />
-                      ) : (
-                        <Zap className="w-2 h-2 text-white" />
-                      )}
-                    </div>
+                <div className="relative group/stack-item">
+                  <GameCard 
+                      obj={displayObj as any} 
+                      variant="tiny" 
+                      onClick={() => onTapCard(sobj.id)}
+                      onHoverStart={() => {
+                        onHoverStart?.(displayObj as any);
+                      }}
+                      onHoverEnd={() => {
+                        onHoverEnd?.();
+                      }}
+                  />
+                  
+                  {/* TYPE INDICATOR */}
+                  <div className={`absolute -bottom-1 -right-1 ${sobj.type === AbilityType.Triggered ? 'bg-emerald-500' : sobj.type === AbilityType.Activated ? 'bg-amber-500' : 'bg-indigo-500'} rounded-full p-1 border border-white/20 shadow-lg z-30 transition-transform group-hover/stack-item:scale-125`}>
+                    {sobj.type === AbilityType.Triggered ? (
+                      <RefreshCw className="w-2 h-2 text-white" />
+                    ) : (
+                      <Zap className="w-2 h-2 text-white" />
+                    )}
                   </div>
-                ) : (
-                   <div className="w-12 h-16 bg-slate-900 rounded border border-white/20 flex flex-col items-center justify-center p-1 shadow-lg">
-                       <Zap className={`w-4 h-4 ${sobj.type === AbilityType.Triggered ? 'text-emerald-400' : 'text-amber-400'} mb-1`} />
-                       <span className="text-[5px] font-black uppercase text-white tracking-widest text-center truncate w-full">
-                           {sobj.name || 'Ability'}
-                       </span>
-                   </div>
-                )}
+                </div>
               </motion.div>
             );
           })}

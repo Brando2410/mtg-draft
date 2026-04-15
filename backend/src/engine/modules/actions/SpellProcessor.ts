@@ -140,7 +140,8 @@ export class SpellProcessor {
         }
 
         const typeLine = (currentDefinition.type_line || '').toLowerCase();
-        const isLand = typeLine.includes('land');
+        const types = (currentDefinition.types || []).map((t: string) => t.toLowerCase());
+        const isLand = typeLine.includes('land') || types.includes('land');
         const isInstantOrFlash = typeLine.includes('instant') || (currentDefinition.oracleText || '').includes('Flash');
 
         // Timing/Restriction Check (Rule 101.2: "Cannot" wins)
@@ -193,7 +194,7 @@ export class SpellProcessor {
         }
         const targetDefinition = (logic as any)?.targetDefinition || (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition;
         const spellEffects = (logic as any)?.effects || (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.effects || [];
-        const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices);
+        const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices && !e.targetMapping);
         const hasPreSelectedChoice = (state as any).lastChoiceIndex !== undefined;
 
         // Step 0.5: Check for X in cost or inherent logic
@@ -222,7 +223,7 @@ export class SpellProcessor {
 
         // --- SETUP SEQUENCE: TARGETING -> CHOICE -> FINALIZATION ---
 
-        // Step 1: Check Targeting
+            // Step 1: Check Targeting
         if (targetDefinition && (!declaredTargets || declaredTargets.length === 0)) {
             if (!ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana)) {
                 log(`Illegal Play: Not enough mana available to even start casting ${cardToPlay.definition.name}.`);
@@ -230,7 +231,6 @@ export class SpellProcessor {
                 return false;
             }
 
-            const { TargetingProcessor } = require('./TargetingProcessor');
             const precalculatedTargets = [
                 ...Object.keys(state.players),
                 ...state.battlefield.map(o => o.id),
@@ -257,11 +257,22 @@ export class SpellProcessor {
                     }
                 }
 
+                const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDefinition, cardToPlay.xValue || 0);
+                const prompt = TargetingProcessor.generateTargetPrompt(targetDefinition, 0, cardToPlay.xValue || 0, true);
                 state.pendingAction = {
                     type: 'TARGETING',
                     playerId: playerId,
                     sourceId: cardToPlay.id,
-                    data: { targetDefinition, targets: precalculatedTargets, isSpellCasting: true, xValue: cardToPlay.xValue }
+                    data: { 
+                        targetDefinition, 
+                        targets: precalculatedTargets, 
+                        isSpellCasting: true, 
+                        xValue: cardToPlay.xValue,
+                        maxCount,
+                        minCount,
+                        count,
+                        prompt
+                    }
                 };
                 log(`[TARGETING] ${state.players[playerId].name} is selecting targets for ${cardToPlay.definition.name}...`);
                 return true;
@@ -304,7 +315,6 @@ export class SpellProcessor {
         const hasChosenExile = (state as any).lastChosenExileIds !== undefined;
 
         if (costRequiresTarget && !hasChosenSacrifice) {
-            const { TargetingProcessor } = require('./TargetingProcessor');
             const legalSacrificeIds = state.battlefield
                 .filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, costRequiresTarget.restrictions || [], playerId, cardToPlay.id))
                 .map(o => o.id);
@@ -341,7 +351,6 @@ export class SpellProcessor {
         }
 
         if (discardCost && !hasChosenDiscard) {
-            const { TargetingProcessor } = require('./TargetingProcessor');
             const legalDiscardIds = player.hand
                 .filter(c => c.id !== cardInstanceId && TargetingProcessor.matchesRestrictions(state, c, discardCost.restrictions || [], playerId, cardToPlay.id))
                 .map(c => c.id);
@@ -380,7 +389,6 @@ export class SpellProcessor {
         }
 
         if (exileCost && !hasChosenExile) {
-            const { TargetingProcessor } = require('./TargetingProcessor');
             const zones = exileCost.sourceZones || (exileCost.sourceZone ? [exileCost.sourceZone] : [Zone.Battlefield]);
             const pool = zones.flatMap(z => {
                 if (z === Zone.Battlefield) return state.battlefield.filter(o => o.controllerId === playerId);
@@ -555,6 +563,11 @@ export class SpellProcessor {
             (e.targetIds?.includes(cardToPlay.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === playerId))
         )) || (cardToPlay as any).isFlashbackCast || currentDefinition?.exileOnResolution;
 
+        const targetsControllers = (declaredTargets || []).map(tid => {
+            const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
+            return obj ? obj.controllerId : null;
+        });
+
         const stackObj = {
             id: `spell_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
             controllerId: playerId,
@@ -569,7 +582,8 @@ export class SpellProcessor {
             data: {
                 effects: spellEffects,
                 targetDefinition: targetDefinition,
-                preSelectedChoice
+                preSelectedChoice,
+                targetsControllers // NEW: Persist controller IDs for resolution
             }
         };
 
@@ -807,6 +821,9 @@ export class SpellProcessor {
         }
 
         let costStr = '';
+        const { xCount } = parsed;
+        for (let i = 0; i < xCount; i++) costStr += '{X}';
+
         Object.entries(parsed.colored).forEach(([symbol, count]) => {
             for (let i = 0; i < count; i++) costStr += `{${symbol}}`;
         });
@@ -1065,6 +1082,9 @@ export class SpellProcessor {
                 return this.activateAbility(state, playerId, cardId, abilityIndex, precalculatedTargets, log, engine, true);
             }
 
+            const { TargetingProcessor } = require('./TargetingProcessor');
+            const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(ability.targetDefinition, (obj as any).xValue || 0);
+            const prompt = TargetingProcessor.generateTargetPrompt(ability.targetDefinition, 0, (obj as any).xValue || 0, true);
             state.pendingAction = {
                 type: 'TARGETING',
                 playerId: playerId,
@@ -1072,7 +1092,11 @@ export class SpellProcessor {
                 data: {
                     abilityIndex: abilityIndex,
                     targetDefinition: ability.targetDefinition,
-                    targets: precalculatedTargets
+                    targets: precalculatedTargets,
+                    maxCount,
+                    minCount,
+                    count,
+                    prompt
                 }
             };
             log(`[TARGETING] Player must choose targets for ${obj.definition.name}'s ability.`);

@@ -23,7 +23,7 @@ export const SpiritMascot: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    counterType: 'P1P1',
+                    counterType: '+1/+1',
                     amount: 1,
                     targetMapping: TargetMapping.Self
                 }

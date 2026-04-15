@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
+import { CardDefinition, DurationType, AbilityType, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
 
 export const LastGasp: CardDefinition = {
     "name": "Last Gasp",
@@ -15,14 +15,13 @@ export const LastGasp: CardDefinition = {
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: TargetType.Creature,
                 count: 1,
-                restrictions: [{ type: 'Type', value: 'Creature' }]
             },
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    duration: 'UNTIL_END_OF_TURN',
+                    duration: DurationType.UntilEndOfTurn,
                     powerModifier: -3,
                     toughnessModifier: -3,
                     targetMapping: TargetMapping.Target1

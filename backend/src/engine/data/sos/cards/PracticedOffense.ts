@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
 
 export const PracticedOffense: CardDefinition = {
     "name": "Practiced Offense",
@@ -38,14 +38,15 @@ export const PracticedOffense: CardDefinition = {
                 {
                     type: EffectType.Choice,
                     label: "Choose a keyword",
+                    targetMapping: 'CONTROLLER',
                     choices: [
                         {
                             label: "Double Strike",
                             effects: [
                                 {
                                     type: EffectType.ApplyContinuousEffect,
-                                    duration: 'UNTIL_END_OF_TURN',
-                                    abilitiesToAdd: ['Double Strike'],
+                                    duration: DurationType.UntilEndOfTurn,
+                                    abilitiesToAdd: ['double strike'],
                                     targetMapping: TargetMapping.Target2
                                 }
                             ]
@@ -55,8 +56,8 @@ export const PracticedOffense: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.ApplyContinuousEffect,
-                                    duration: 'UNTIL_END_OF_TURN',
-                                    abilitiesToAdd: ['Lifelink'],
+                                    duration: DurationType.UntilEndOfTurn,
+                                    abilitiesToAdd: ['lifelink'],
                                     targetMapping: TargetMapping.Target2
                                 }
                             ]

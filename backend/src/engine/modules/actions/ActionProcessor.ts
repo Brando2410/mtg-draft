@@ -107,6 +107,11 @@ export class ActionProcessor {
     card.zone = to;
     const isToken = (card as any).isToken || card.id.startsWith('token_');
 
+    // Clear reveal status on ANY zone change (Rule 400.7)
+    // Moving out of a hidden zone (like Hand) should always hide the card again unless the next zone is public
+    (card as any).isRevealed = false;
+    (card as any).revealed = false; 
+
     // Rule 400.7: Objects leaving the battlefield lose memory of their state
     if (to !== Zone.Battlefield) {
         this.resetObjectState(state, card, fromZone, to);
@@ -327,8 +332,6 @@ export class ActionProcessor {
   }
 
   private static handleEnteringBattlefield(state: GameState, card: GameObject, fromZone: Zone, log?: (m: string) => void) {
-    const { m21 } = require('../../data/m21');
-
     // Replacement-style entry counters for X costs (Rule 122.6)
     if (card.xValue && (card.definition as any).entersWithXCounters) {
         card.counters['+1/+1'] = (card.counters['+1/+1'] || 0) + card.xValue;
@@ -366,9 +369,29 @@ export class ActionProcessor {
     TriggerProcessor.onEvent(state, { type: 'ON_ETB', targetId: card.id, sourceId: card.id, sourceZone: fromZone, data: { object: card } }, log || (() => {}));
 
     // Rule 306.5b: Planeswalkers enter with loyalty counters
-    if (card.definition.types.some(t => t.toLowerCase() === 'planeswalker')) {
-        const logic = m21[card.definition.name];
-        const startingLoyalty = parseInt((card.definition as any).loyalty || (logic as any)?.loyalty || "0", 10);
+    if (card.definition.types.some(t => {
+        const type = String(t).toLowerCase();
+        return type === 'planeswalker';
+    })) {
+        const def = card.definition as any;
+        let loyaltyValue = def.loyalty;
+
+        // Fallback to Oracle if missing
+        if (loyaltyValue === undefined || loyaltyValue === null) {
+            const { oracle } = require('../../OracleLogicMap');
+            const logic = oracle.getCard(card.definition.name);
+            if (logic) {
+                loyaltyValue = logic.loyalty;
+            }
+        }
+
+        const startingLoyalty = parseInt(String(loyaltyValue || "0"), 10);
+        
+        if (log) {
+            log(`[DEBUG-LOYALTY] ${card.definition.name} - Found loyalty: ${loyaltyValue} (Source: ${def.loyalty ? 'Definition' : 'Oracle Fallback'})`);
+            log(`[DEBUG-DEF] Keys: ${Object.keys(def).join(', ')}`);
+        }
+
         card.counters['loyalty'] = startingLoyalty;
         if (log) log(`[ETB] ${card.definition.name} enters with ${startingLoyalty} loyalty.`);
     }

@@ -64,12 +64,13 @@ export class StackResolver {
     if (!stackObj.targets || stackObj.targets.length === 0) return false;
 
     // A spell/ability is countered if ALL its targets are illegal.
-    return stackObj.targets.every(targetId => {
+    return stackObj.targets.every((targetId, index) => {
         return !TargetingProcessor.isLegalTarget(
             this.state, 
             stackObj.card || stackObj.sourceId, 
             targetId, 
-            stackObj.data?.targetDefinition
+            stackObj.data?.targetDefinition,
+            index
         );
     });
   }

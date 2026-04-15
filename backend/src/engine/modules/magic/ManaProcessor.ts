@@ -261,15 +261,18 @@ export class ManaProcessor {
   }
 
 
-  public static parseManaCost(costStr: string): { colored: Record<string, number>, generic: number } {
+  public static parseManaCost(costStr: string): { colored: Record<string, number>, generic: number, xCount: number } {
     const colored: Record<string, number> = {};
     let generic = 0;
+    let xCount = 0;
     
     // Rule 107.4: Mana symbols are enclosed in braces
     const matches = costStr.match(/\{([^}]+)\}/g) || [];
     for (const m of matches) {
-      let symbol = m.replace(/\{|\}/g, '').toUpperCase();
-      if (['W', 'U', 'B', 'R', 'G', 'C'].includes(symbol)) {
+      let symbol = m.replace(/\{|\}/g, '').toUpperCase().trim();
+      if (symbol === 'X') {
+        xCount++;
+      } else if (['W', 'U', 'B', 'R', 'G', 'C'].includes(symbol)) {
         colored[symbol] = (colored[symbol] || 0) + 1;
       } else if (symbol.includes('/')) {
         // Hybrid mana
@@ -279,12 +282,12 @@ export class ManaProcessor {
       }
     }
     
-    return { colored, generic };
+    return { colored, generic, xCount };
   }
 
   public static getManaValue(costStr: string): number {
     if (!costStr) return 0;
-    const { colored, generic } = this.parseManaCost(costStr);
+    const { colored, generic, xCount } = this.parseManaCost(costStr);
     
     let coloredTotal = 0;
     for (const [symbol, count] of Object.entries(colored)) {
