@@ -52,8 +52,4 @@ export const GarruksHarbinger: CardDefinition = {
             ]
         }
     ]
-}
-
-
-
-
+};

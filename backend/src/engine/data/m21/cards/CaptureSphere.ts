@@ -1,4 +1,4 @@
-import { AbilityType, Zone, TriggerEvent, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import {AbilityType, Zone, TriggerEvent, CardDefinition, EffectType, GameEvent, GameObject, TargetType} from "@shared/engine_types";
 
 export const CaptureSphere: CardDefinition = {
         name: "Capture Sphere",

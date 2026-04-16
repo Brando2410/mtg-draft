@@ -21,7 +21,6 @@ export const TriggerEvent = {
     NoncombatDamageOpponent: 'ON_NONCOMBAT_DAMAGE_OPPONENT',
     CountersAdded: 'ON_COUNTERS_ADDED',
     CountersAddedOther: 'ON_COUNTERS_ADDED_OTHER',
-    CounterAdded: 'ON_COUNTER_ADDED',
     CastInstantOrSorcery: 'ON_CAST_INSTANT_SORCERY',
     CastFirstInstantOrSorcery: 'ON_CAST_FIRST_INSTANT_SORCERY',
     CastNonCreature: 'ON_CAST_NON_CREATURE',
@@ -48,7 +47,9 @@ export const TriggerEvent = {
     Cleanup: 'ON_CLEANUP_STEP',
     LeaveGraveyard: 'ON_LEAVE_GRAVEYARD',
     ValentinReplacementSuccess: 'ON_VALENTIN_REPLACEMENT_SUCCESS',
-    ActivateLoyalty: 'ON_ACTIVATE_LOYALTY'
+    ActivateLoyalty: 'ON_ACTIVATE_LOYALTY',
+    TriggerQueued: 'ON_TRIGGER_QUEUED',
+    DamageDealt: 'ON_DAMAGE_DEALT'
 } as const;
 export type TriggerEvent = (typeof TriggerEvent)[keyof typeof TriggerEvent];
 

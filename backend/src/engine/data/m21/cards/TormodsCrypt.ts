@@ -14,14 +14,14 @@ export const TormodsCrypt: CardDefinition = {
                 { type: EffectType.Tap },
                 { type: EffectType.Sacrifice, targetMapping: TargetMapping.Self }
             ],
-            targetDefinition: { 
-                type: TargetType.Player, 
-                count: 1 
+            targetDefinition: {
+                type: TargetType.Player,
+                count: 1
             },
             effects: [
-                { 
-                    type: EffectType.ExileAllCards, 
-                    targetMapping: TargetMapping.Target1 
+                {
+                    type: EffectType.ExileAllCards,
+                    targetMapping: TargetMapping.Target1
                 }
             ]
         }

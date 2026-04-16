@@ -27,7 +27,8 @@ export const CostType = {
     RemoveCounter: 'RemoveCounter',
     TapSelection: 'TapSelection',
     ExileSelf: 'ExileSelf',
-    Choice: 'Choice'
+    Choice: 'Choice',
+    SacrificeSelf: 'SacrificeSelf'
 } as const;
 export type CostType = (typeof CostType)[keyof typeof CostType];
 
@@ -59,6 +60,8 @@ export const ConditionType = {
     EventCounterTypeMatches: 'EVENT_COUNTER_TYPE_MATCHES',
     CardsLeftYourGraveyardThisTurn: 'CARDS_LEFT_YOUR_GRAVEYARD_THIS_TURN',
     OpponentHasMoreCards: 'OPPONENT_HAS_MORE_CARDS',
+    CastInstantSorceryThisTurn: 'CAST_INSTANT_SORCERY_THIS_TURN',
+    OwnCreatureDies: 'OWN_CREATURE_DIES'
 } as const;
 export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType] | string;
 
@@ -75,6 +78,10 @@ export interface AbilityCost {
     label?: string;
     choices?: { label: string, costs: AbilityCost[] }[];
     zone?: Zone;
+    optional?: boolean;
+    restriction?: any;
+    selectionType?: string;
+    targetDefinition?: TargetDefinition;
 }
 
 export interface ActivatedAbility {
@@ -100,6 +107,7 @@ export interface TriggeredAbility {
 
 export interface ParsedAbility {
     id?: string;
+    name?: string;
     type: AbilityType;
     multiMode?: { type: string };
     multiTargetMapping?: boolean;
@@ -123,6 +131,7 @@ export interface ParsedAbility {
     maxChoices?: number;
     optional?: boolean;
     limitPerTurn?: number;
+    maxTriggersPerTurn?: number;
     oracleText?: string;
     replacesEvent?: string;
     exileOnResolution?: boolean;

@@ -4,11 +4,10 @@ export const PestilentHaze: CardDefinition = {
     name: "Pestilent Haze",
     manaCost: "{1}{B}{B}",
     oracleText: "Choose one —\n• All creatures get -2/-2 until end of turn.\n• Remove two loyalty counters from each planeswalker.",
-    colors: ["black"],
+    colors: ["B"],
     types: ["Sorcery"],
     abilities: [
         {
-            id: "pestilent_haze_spell",
             type: AbilityType.Spell,
             effects: [
                 {

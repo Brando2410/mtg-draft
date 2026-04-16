@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const Revitalize: CardDefinition = {
     name: "Revitalize",
@@ -11,7 +11,6 @@ export const Revitalize: CardDefinition = {
     keywords: [],
     abilities: [
         {
-            id: "revitalize_spell",
             type: AbilityType.Spell,
             effects: [
                 { type: EffectType.GainLife, amount: 3, targetMapping: TargetMapping.Controller },

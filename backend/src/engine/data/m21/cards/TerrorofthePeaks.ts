@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const TerrorofthePeaks: CardDefinition = {
     name: "Terror of the Peaks",
@@ -15,8 +15,8 @@ export const TerrorofthePeaks: CardDefinition = {
             type: AbilityType.Static,
             effects: [
                 {
-                    type: EffectType.AdditionalCost,
-                    targetDefinition: { type: TargetType.Opponent },
+                    type: 'AdditionalCost',
+                    targetMapping: TargetMapping.EachOpponent,
                     condition: 'SPELL_TARGETS_SOURCE',
                     additionalCosts: [{ type: CostType.PayLife, value: 3 }]
                 }
@@ -25,8 +25,9 @@ export const TerrorofthePeaks: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefieldOther,
+            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => {
-                const object = state.battlefield.find((o: any) => o.id === event.sourceId);
+                const object = event.data?.object || state.battlefield.find((o: any) => o.id === event.sourceId);
                 return object && object.controllerId === source.controllerId && object.definition.types.some((t: string) => t.toLowerCase() === 'creature');
             },
             targetDefinition: {
@@ -36,14 +37,7 @@ export const TerrorofthePeaks: CardDefinition = {
             effects: [
                 {
                     type: EffectType.DealDamage,
-                    // Functional amount from entering creature's power
-                    amount: (state: any, source: any, targets: any, context: any) => {
-                        const enteringObj = context?.data?.eventData?.data?.object;
-                        if (!enteringObj) return 0;
-                        const { LayerProcessor } = require('./../state/LayerProcessor');
-                        const stats = LayerProcessor.getEffectiveStats(enteringObj, state);
-                        return stats.power;
-                    },
+                    amount: 'EVENT_OBJECT_POWER',
                     targetMapping: TargetMapping.Target1
                 }
             ]

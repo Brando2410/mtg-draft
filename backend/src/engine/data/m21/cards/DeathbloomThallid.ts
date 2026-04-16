@@ -1,4 +1,4 @@
-import { AbilityType, TriggerEvent, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import {AbilityType, TriggerEvent, Zone, CardDefinition, EffectType, GameEvent, GameObject, TargetType} from "@shared/engine_types";
 
 export const DeathbloomThallid: CardDefinition = {
         name: "Deathbloom Thallid",

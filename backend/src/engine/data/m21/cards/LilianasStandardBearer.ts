@@ -1,4 +1,4 @@
-import { AbilityType, Zone, EffectType, CardDefinition, TargetMapping, TriggerEvent } from "@shared/engine_types";
+import { AbilityType, EffectType, CardDefinition, TargetMapping, TriggerEvent } from "@shared/engine_types";
 
 export const LilianasStandardBearer: CardDefinition = {
 
@@ -15,7 +15,6 @@ export const LilianasStandardBearer: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            activeZone: Zone.Battlefield,
             eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {

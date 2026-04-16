@@ -11,7 +11,6 @@ export const Opt: CardDefinition = {
     keywords: [],
     abilities: [
         {
-            id: "opt_spell",
             type: AbilityType.Spell,
             effects: [
                 { type: EffectType.Scry, amount: 1, targetMapping: TargetMapping.Controller },

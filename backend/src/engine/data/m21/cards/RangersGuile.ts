@@ -1,4 +1,4 @@
-import { AbilityType, Zone, CardDefinition, EffectType, TargetType, DurationType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetType, DurationType, TargetMapping } from "@shared/engine_types";
 
 export const RangersGuile: CardDefinition = {
     name: "Ranger's Guile",
@@ -11,9 +11,7 @@ export const RangersGuile: CardDefinition = {
     keywords: [],
     abilities: [
         {
-            id: "rangers_guile_spell",
             type: AbilityType.Spell,
-            activeZone: Zone.Hand,
             targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
             effects: [
                 {

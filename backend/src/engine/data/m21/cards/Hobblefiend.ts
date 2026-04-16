@@ -19,7 +19,7 @@ export const Hobblefiend: CardDefinition = {
                 { type: CostType.Mana, value: '{1}' },
                 {
                     type: CostType.Sacrifice,
-                    restrictions: ['Another']
+                    restrictions: ['Other']
                 }
             ],
             effects: [{

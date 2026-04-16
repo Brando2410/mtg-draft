@@ -1,4 +1,4 @@
-import { AbilityType, Zone, CardDefinition, EffectType, DurationType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, DurationType, TargetMapping, CostType } from "@shared/engine_types";
 
 export const RadhaHeartofKeld: CardDefinition = {
 
@@ -15,7 +15,6 @@ export const RadhaHeartofKeld: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Static,
-            activeZone: Zone.Battlefield,
             condition: 'IS_YOUR_TURN',
             effects: [
                 {
@@ -28,7 +27,6 @@ export const RadhaHeartofKeld: CardDefinition = {
         },
         {
             type: AbilityType.Static,
-            activeZone: Zone.Battlefield,
             effects: [
                 {
                     type: EffectType.AllowLookAtTop,
@@ -38,7 +36,6 @@ export const RadhaHeartofKeld: CardDefinition = {
         },
         {
             type: AbilityType.Static,
-            activeZone: Zone.Battlefield,
             effects: [
                 {
                     type: EffectType.AllowPlayFromTop,
@@ -49,9 +46,8 @@ export const RadhaHeartofKeld: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             costs: [
-                { type: 'Mana', value: '{4}{R}{G}' }
+                { type: CostType.Mana, value: '{4}{R}{G}' }
             ],
             effects: [
                 {

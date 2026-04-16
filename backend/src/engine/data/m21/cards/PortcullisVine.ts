@@ -1,4 +1,4 @@
-import { AbilityType, Zone, CardDefinition, EffectType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, CostType, CardDefinition, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const PortcullisVine: CardDefinition = {
 
@@ -15,12 +15,11 @@ export const PortcullisVine: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             costs: [
-                { type: 'Mana', value: '{2}' },
-                { type: 'Tap' },
+                { type: CostType.Mana, value: '{2}' },
+                { type: CostType.Tap },
                 {
-                    type: 'Sacrifice',
+                    type: CostType.Sacrifice,
                     restrictions: ['Creature', 'Defender']
                 }
             ],

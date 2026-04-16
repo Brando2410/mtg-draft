@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const HoodedBlightfang: CardDefinition = {
     name: "Hooded Blightfang",
@@ -14,12 +14,11 @@ export const HoodedBlightfang: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Attack,
-            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => {
                 const attacker = state.battlefield.find((o: any) => o.id === event.sourceId);
-                return attacker && 
-                       attacker.controllerId === source.controllerId && 
-                       attacker.effectiveStats?.keywords?.includes('Deathtouch');
+                return attacker &&
+                    attacker.controllerId === source.controllerId &&
+                    attacker.effectiveStats?.keywords?.includes('Deathtouch');
             },
             effects: [
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.EachOpponent },
@@ -29,15 +28,14 @@ export const HoodedBlightfang: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.DamageDealt,
-            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => {
                 const targetObj = state.battlefield.find((o: any) => o.id === event.targetId);
                 if (!targetObj?.definition.types.some((t: string) => t.toLowerCase() === 'planeswalker')) return false;
 
                 const sourceObj = state.battlefield.find((o: any) => o.id === event.sourceId);
-                return sourceObj && 
-                       sourceObj.controllerId === source.controllerId && 
-                       sourceObj.effectiveStats?.keywords?.includes('Deathtouch');
+                return sourceObj &&
+                    sourceObj.controllerId === source.controllerId &&
+                    sourceObj.effectiveStats?.keywords?.includes('Deathtouch');
             },
             effects: [{
                 type: EffectType.Destroy,

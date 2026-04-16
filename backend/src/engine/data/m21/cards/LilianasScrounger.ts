@@ -13,12 +13,12 @@ export const LilianasScrounger: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            activeZone: Zone.Battlefield,
             condition: 'CREATURE_DIED_THIS_TURN',
             optional: true,
             targetDefinition: {
                 type: TargetType.Planeswalker,
                 count: 1,
+                minCount: 0,
                 restrictions: ['Liliana', 'YouControl']
             },
             effects: [

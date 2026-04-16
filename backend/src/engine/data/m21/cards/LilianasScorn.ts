@@ -20,6 +20,7 @@ export const LilianasScorn: CardDefinition = {
                 },
                 {
                     type: EffectType.SearchLibrary,
+                    label: "Search for Liliana, Death Mage",
                     optional: true,
                     reveal: true,
                     zone: Zone.Hand,
@@ -27,9 +28,9 @@ export const LilianasScorn: CardDefinition = {
                     targetDefinition: {
                         type: TargetType.Card,
                         restrictions: [{ type: 'Name', value: 'Liliana, Death Mage' }],
-                        count: 1
+                        count: 1,
+                        minCount: 0
                     },
-                    label: "Search for Liliana, Death Mage"
                 }
             ]
         }

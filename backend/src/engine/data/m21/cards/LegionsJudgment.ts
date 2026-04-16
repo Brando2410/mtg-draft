@@ -13,7 +13,6 @@ export const LegionsJudgment: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            activeZone: Zone.Hand,
             targetDefinition: {
                 type: TargetType.Creature,
                 count: 1,

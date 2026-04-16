@@ -176,6 +176,8 @@ export class EffectProcessor {
       case 'Exile':
       case 'ExileTopCard':
       case 'ExileAllCards':
+      case 'ExileUntilLeaves':
+      case 'Attach':
       case 'ReturnToHand':
       case 'SearchLibrary':
       case 'Scry':
@@ -239,6 +241,10 @@ export class EffectProcessor {
         case 'MoveCounters': {
             const { PermanentHandler } = require('./handlers/PermanentHandler');
             return PermanentHandler.handleMoveCounters(state, validTargetIds, sourceId, log, effect);
+        }
+        case 'Attach': {
+            const { PermanentHandler } = require('./handlers/PermanentHandler');
+            return PermanentHandler.handleAttach(state, validTargetIds, sourceId, log);
         }
         case 'DiscardCards': {
             const { ChoiceGenerator } = require('./ChoiceGenerator');
@@ -612,6 +618,14 @@ export class EffectProcessor {
     if (typeof amount === 'number') return amount === -1 ? state.turnState.lastDamageAmount || 0 : amount;
     if (typeof amount === 'string' && !isNaN(Number(amount))) return Number(amount);
     if (typeof amount === 'string' && ['ANY', 'ALL', 'Any', 'All'].includes(amount)) return amount as any;
+    
+    if (typeof amount === 'string' && amount.startsWith('SOURCE_COUNTERS:')) {
+        const counterType = amount.split(':')[1];
+        const source = state.battlefield.find(o => o.id === sourceId);
+        if (!source) return 0;
+        return source.counters[counterType] || 0;
+    }
+
     if (typeof amount === 'function') return amount(state, this.findObject(state, sourceId, stackObject) || { id: sourceId, controllerId }, targetIds, stackObject);
 
 
@@ -637,6 +651,15 @@ export class EffectProcessor {
           break;
       case 'GRAVEYARD_SIZE':
           result = state.players[controllerId]?.graveyard.length || 0;
+          break;
+      case 'GRAVEYARD_SIZE_NEGATIVE':
+          result = -(state.players[controllerId]?.graveyard.length || 0);
+          break;
+      case 'HAND_SIZE':
+          result = state.players[controllerId]?.hand.length || 0;
+          break;
+      case 'OTHER_ATTACKING_CREATURES_COUNT':
+          result = state.battlefield.filter((p: any) => p.isAttacking && p.id !== sourceId).length;
           break;
       case 'EVENT_OBJECT_POWER':
       case 'EVENT_OBJECT_TOUGHNESS': {

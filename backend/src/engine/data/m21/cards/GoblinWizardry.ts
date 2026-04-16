@@ -1,38 +1,35 @@
-import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const GoblinWizardry: CardDefinition = {
-        name: "Goblin Wizardry",
-        manaCost: "{3}{R}",
-        oracleText: "Create two 1/1 red Goblin Wizard creature tokens with prowess. (Whenever you cast a noncreature spell, they get +1/+1 until end of turn.)",
-        colors: ["red"],
-        supertypes: [],
-        types: ["Instant"],
-        subtypes: [],
-        power: "",
-        toughness: "",
-        keywords: [],
-        abilities: [
-            {
-                id: "goblin_wizardry_spell",
-                type: AbilityType.Spell,
-                activeZone: Zone.Hand,
-                effects: [{
-                    type: EffectType.CreateToken,
-                    amount: 2,
-                    targetMapping: "CONTROLLER",
-                    tokenBlueprint: {
-                        name: "Goblin Wizard",
-                        power: "1",
-                        toughness: "1",
-                        colors: ["red"],
-                        types: ["Creature"],
-                        subtypes: ["Goblin", "Wizard"],
-                        keywords: ["Prowess"],
-                        oracleText: "Prowess"
-                    }
-                }],
-                oracleText: "Create two 1/1 red Goblin Wizard creature tokens with prowess."
-            }
-        ]
-    };
+    name: "Goblin Wizardry",
+    manaCost: "{3}{R}",
+    oracleText: "Create two 1/1 red Goblin Wizard creature tokens with prowess. (Whenever you cast a noncreature spell, they get +1/+1 until end of turn.)",
+    colors: ["R"],
+    supertypes: [],
+    types: ["Instant"],
+    subtypes: [],
+    power: "",
+    toughness: "",
+    keywords: [],
+    abilities: [
+        {
+            type: AbilityType.Spell,
+            effects: [{
+                type: EffectType.CreateToken,
+                amount: 2,
+                targetMapping: TargetMapping.Controller,
+                tokenBlueprint: {
+                    name: "Goblin Wizard",
+                    power: "1",
+                    toughness: "1",
+                    colors: ["red"],
+                    types: ["Creature"],
+                    subtypes: ["Goblin", "Wizard"],
+                    keywords: ["Prowess"],
+                    oracleText: "Prowess"
+                }
+            }],
+        }
+    ]
+};
 

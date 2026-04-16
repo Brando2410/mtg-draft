@@ -20,7 +20,7 @@ export class StackProcessor {
           // Priority: Oracle Logic -> Definition Abilities -> Definition Effects
           const spellAbility = logic?.abilities?.find((a: any) => a.type === AbilityType.Spell) || 
                              objectToResolve.definition?.abilities?.find((a: any) => a.type === AbilityType.Spell);
-          effects = logic?.effects || spellAbility?.effects || objectToResolve.definition?.effects || [];
+          effects = logic?.effects || (spellAbility as any)?.effects || [];
         } 
         else if (objectToResolve.type === AbilityType.Activated) {
             const sourceObj = state.battlefield.find(o => o.id === objectToResolve.sourceId) || 

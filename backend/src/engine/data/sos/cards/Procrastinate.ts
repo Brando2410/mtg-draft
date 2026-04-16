@@ -20,7 +20,7 @@ export const Procrastinate: CardDefinition = {
         {
           type: EffectType.AddCounters,
           value: 'stun',
-          amount: (state, source) => (source.xValue || 0) * 2,
+          amount: (state: any, source: any) => (source.xValue || 0) * 2,
           targetMapping: TargetMapping.Target1
         }
       ]

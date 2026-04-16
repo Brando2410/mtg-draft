@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, CostType } from '@shared/engine_types';
 
 export const TempleOfTriumph: CardDefinition = {
 
@@ -15,15 +15,11 @@ export const TempleOfTriumph: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) => {
-                return event.data?.object?.id === source.sourceId;
-            },
             effects: [{ type: EffectType.Scry, amount: 1, targetMapping: TargetMapping.Controller }]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [
                 {

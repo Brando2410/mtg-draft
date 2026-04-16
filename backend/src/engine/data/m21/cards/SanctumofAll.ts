@@ -14,7 +14,7 @@ export const SanctumofAll: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Upkeep,
             activeZone: Zone.Battlefield,
-            condition: (state, event, ability) => event.playerId === ability.controllerId,
+            condition: (state: any, event: any, ability: any) => event.playerId === ability.controllerId,
             effects: [
                 {
                     type: EffectType.Choice,
@@ -45,8 +45,8 @@ export const SanctumofAll: CardDefinition = {
             // Note: Trigger doubling support requires engine-level integration with TriggerProcessor.
             // This remains a structured placeholder for future engine updates.
             replacesEvent: 'ON_SHRINE_TRIGGER',
-            condition: (state, event, ability) =>
-                state.battlefield.filter(o => o.controllerId === ability.controllerId && (o.definition.subtypes || []).includes('Shrine')).length >= 5,
+            condition: (state: any, event: any, ability: any) =>
+                state.battlefield.filter((o: any) => o.controllerId === ability.controllerId && (o.definition.subtypes || []).includes('Shrine')).length >= 5,
             effects: [{ type: 'AddAdditionalTrigger' as any, targetMapping: TargetMapping.TriggerSource }]
         }
     ]

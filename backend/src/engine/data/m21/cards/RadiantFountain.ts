@@ -1,4 +1,4 @@
-import { AbilityType, Zone, CardDefinition, EffectType, TargetMapping, TriggerEvent } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, CostType } from "@shared/engine_types";
 
 export const RadiantFountain: CardDefinition = {
 
@@ -13,7 +13,6 @@ export const RadiantFountain: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            activeZone: Zone.Battlefield,
             eventMatch: TriggerEvent.EnterBattlefield,
             effects: [{
                 type: EffectType.GainLife,
@@ -23,8 +22,7 @@ export const RadiantFountain: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [{
                 type: EffectType.AddMana,

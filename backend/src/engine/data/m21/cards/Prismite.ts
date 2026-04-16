@@ -1,4 +1,4 @@
-import { AbilityType, Zone, CardDefinition, EffectType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, CostType, CardDefinition, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const Prismite: CardDefinition = {
 
@@ -15,8 +15,7 @@ export const Prismite: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
-            costs: [{ type: 'Mana', value: '{2}' }],
+            costs: [{ type: CostType.Mana, value: '{2}' }],
             isManaAbility: true,
             effects: [{
                 type: EffectType.AddMana,

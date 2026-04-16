@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const MassacreWurm: CardDefinition = {
     name: "Massacre Wurm",
@@ -13,7 +13,6 @@ export const MassacreWurm: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: Zone.Battlefield,
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 duration: { type: DurationType.UntilEndOfTurn },
@@ -26,7 +25,6 @@ export const MassacreWurm: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.DeathOther,
-            activeZone: Zone.Battlefield,
             condition: 'EVENT_OBJECT_MATCHES:creature,opponentcontrol',
             effects: [{
                 type: EffectType.LoseLife,

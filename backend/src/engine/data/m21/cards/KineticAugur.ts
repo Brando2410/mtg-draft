@@ -15,7 +15,6 @@ export const KineticAugur: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Static,
-            activeZone: Zone.Battlefield,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -28,10 +27,6 @@ export const KineticAugur: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) => {
-                return event.data?.object?.id === source.sourceId;
-            },
             effects: [
                 {
                     type: EffectType.Choice,

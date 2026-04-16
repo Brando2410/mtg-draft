@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, Zone, EffectType, TargetMapping } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const VrynWingmare: CardDefinition = {
     name: "Vryn Wingmare",
@@ -13,7 +13,6 @@ export const VrynWingmare: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Static,
-            activeZone: Zone.Battlefield,
             effects: [
                 {
                     type: EffectType.SpellTax,

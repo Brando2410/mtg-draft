@@ -41,6 +41,11 @@ export const TargetMapping = {
     Target1: 'TARGET_1',
     Target2: 'TARGET_2',
     Target3: 'TARGET_3',
+    Target4: 'TARGET_4',
+    Target5: 'TARGET_5',
+    Target6: 'TARGET_6',
+    Target7: 'TARGET_7',
+    Target8: 'TARGET_8',
     TargetAll: 'TARGET_ALL',
     Controller: 'CONTROLLER',
     EachOpponent: 'EACH_OPPONENT',
@@ -83,8 +88,11 @@ export const TargetMapping = {
     TargetCreature: 'TARGET_CREATURE',
     TargetPermanent: 'TARGET_PERMANENT',
     EnchantedCreature: 'ENCHANTED_CREATURE',
+    EnchantedPermanent: 'ENCHANTED_PERMANENT',
     AllCreatures: 'ALL_CREATURES',
-    AllPlaneswalkers: 'ALL_PLANESWALKERS'
+    AllPlaneswalkers: 'ALL_PLANESWALKERS',
+    AllMatchingCards: 'ALL_MATCHING_CARDS',
+    ChoiceFromExiled: 'CHOICE_FROM_EXILED'
 } as const;
 export type TargetMapping = (typeof TargetMapping)[keyof typeof TargetMapping];
 
@@ -108,7 +116,11 @@ export const DynamicAmount = {
     DifferentlyNamedLandsCount: 'DIFFERENTLY_NAMED_LANDS_COUNT',
     CreaturesYouControl: 'CREATURES_YOU_CONTROL',
     MagecraftSpent: 'MAGECRAFT_SPENT',
-    Target1GraveyardCreatureCountX2: 'TARGET_1_GRAVEYARD_CREATURE_COUNT_X2'
+    Target1GraveyardCreatureCountX2: 'TARGET_1_GRAVEYARD_CREATURE_COUNT_X2',
+    GraveyardSize: 'GRAVEYARD_SIZE',
+    GraveyardSizeNegative: 'GRAVEYARD_SIZE_NEGATIVE',
+    HandSize: 'HAND_SIZE',
+    OtherAttackingCreaturesCount: 'OTHER_ATTACKING_CREATURES_COUNT'
 } as const;
 export type DynamicAmount = (typeof DynamicAmount)[keyof typeof DynamicAmount];
 

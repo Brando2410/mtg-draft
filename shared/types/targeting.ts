@@ -21,13 +21,17 @@ export const TargetType = {
     Opponent: 'OPPONENT',
     Self: 'SELF',
     PlayerOrPlaneswalker: 'PLAYER_OR_PLANESWALKER',
-    Card: 'CARD'
+    Card: 'CARD',
+    ArtifactOrEnchantment: 'ARTIFACT_OR_ENCHANTMENT',
+    InstantOrSorcery: 'INSTANT_OR_SORCERY',
+    Any: 'ANY'
 } as const;
 export type TargetType = (typeof TargetType)[keyof typeof TargetType];
 
 export interface TargetDefinition {
-    type: TargetType;
-    count?: number;
+    type?: TargetType | string;
+    maxTargets?: number;
+    count?: number | any;
     minCount?: number;
     optional?: boolean;
     restrictions?: (string | any)[];

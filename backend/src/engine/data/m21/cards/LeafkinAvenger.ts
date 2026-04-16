@@ -31,9 +31,8 @@ export const LeafkinAvenger: CardDefinition = {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Mana, value: '{7}{R}' }],
             targetDefinition: {
-                type: TargetType.AnyTarget,
+                type: TargetType.PlayerOrPlaneswalker,
                 count: 1,
-                restrictions: ['Player', 'Planeswalker']
             },
             effects: [{
                 type: EffectType.DealDamage,

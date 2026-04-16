@@ -1,4 +1,4 @@
-import { AbilityType, Zone, CardDefinition, EffectType, TargetMapping, TriggerEvent } from "@shared/engine_types";
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from "@shared/engine_types";
 
 export const LlanowarVisionary: CardDefinition = {
 
@@ -16,16 +16,14 @@ export const LlanowarVisionary: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }],
 
         },
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             isManaAbility: true,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             effects: [{ type: EffectType.AddMana, value: 'G' }],
 
         }

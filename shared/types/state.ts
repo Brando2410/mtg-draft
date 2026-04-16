@@ -30,6 +30,7 @@ export interface CardDefinition {
     faces?: CardDefinition[];
     flashbackCost?: string;
     abilities?: (ParsedAbility | string)[];
+    exileOnResolution?: boolean;
 }
 
 export interface GameObject {

@@ -1,37 +1,33 @@
-import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
 
-export const IndulgentAristocrat: Record<string, CardDefinition> = {
-    "Indulgent Aristocrat": {
-        name: "Indulgent Aristocrat",
-        manaCost: "{B}",
-        oracleText: "Lifelink\n{2}, Sacrifice a creature: Put a +1/+1 counter on each Vampire you control.",
-        colors: ["black"],
-        supertypes: [],
-        types: ["Creature"],
-        subtypes: ["Vampire"],
-        power: "1",
-        toughness: "1",
-        keywords: ["Lifelink"],
-        set: "SOI",
-        abilities: [
-            {
-                id: "indulgent_aristocrat_sacrifice",
-                type: AbilityType.Activated,
-                activeZone: Zone.Battlefield,
-                costs: [
-                    { type: 'Mana', value: '{2}' },
-                    { type: 'Sacrifice', restrictions: ['Creature'] }
-                ],
-                effects: [{
-                    type: 'AddCounters',
-                    amount: 1,
-                    value: '+1/+1',
-                    targetMapping: 'MATCHING_PERMANENTS_YOU_CONTROL',
-                    restrictions: ['Vampire']
-                }]
-            }
-        ]
-    }
+export const IndulgentAristocrat: CardDefinition = {
+    name: "Indulgent Aristocrat",
+    manaCost: "{B}",
+    oracleText: "Lifelink\n{2}, Sacrifice a creature: Put a +1/+1 counter on each Vampire you control.",
+    colors: ["B"],
+    supertypes: [],
+    types: ["Creature"],
+    subtypes: ["Vampire"],
+    power: "1",
+    toughness: "1",
+    keywords: ["Lifelink"],
+    set: "SOI",
+    abilities: [
+        {
+            type: AbilityType.Activated,
+            costs: [
+                { type: CostType.Mana, value: '{2}' },
+                { type: CostType.Sacrifice, restrictions: ['Creature'] }
+            ],
+            effects: [{
+                type: EffectType.AddCounters,
+                amount: 1,
+                counterType: '+1/+1',
+                targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
+                restrictions: ['Vampire']
+            }]
+        }
+    ]
 };
 
 

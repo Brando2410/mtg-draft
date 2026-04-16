@@ -1,4 +1,4 @@
-import { AbilityType, Zone, EffectType, TargetMapping, CardDefinition } from "@shared/engine_types";
+import { AbilityType, EffectType, TargetMapping, CardDefinition } from "@shared/engine_types";
 
 export const LibraryLarcenist: CardDefinition = {
 
@@ -15,7 +15,6 @@ export const LibraryLarcenist: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            activeZone: Zone.Battlefield,
             eventMatch: ["ON_ATTACK", "ON_BLOCK"],
             condition: (state: any, event: any, source: any) => {
                 return event.sourceId === source.sourceId;

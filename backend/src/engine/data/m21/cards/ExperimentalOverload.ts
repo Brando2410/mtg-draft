@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ExperimentalOverload: CardDefinition = {
     name: "Experimental Overload",
@@ -21,40 +21,23 @@ export const ExperimentalOverload: CardDefinition = {
                         power: 0,
                         toughness: 0
                     },
-                    powerOverride: (state: any, source: any) => {
-                        const graveyard = state.players[source.controllerId].graveyard;
-                        return graveyard.filter((c: any) =>
-                            c.definition.types.includes('Instant') || c.definition.types.includes('Sorcery')
-                        ).length;
-                    },
-                    toughnessOverride: (state: any, source: any) => {
-                        const graveyard = state.players[source.controllerId].graveyard;
-                        return graveyard.filter((c: any) =>
-                            c.definition.types.includes('Instant') || c.definition.types.includes('Sorcery')
-                        ).length;
-                    },
+                    powerOverride: 'INSTANT_SORCERY_IN_GRAVEYARD_COUNT',
+                    toughnessOverride: 'INSTANT_SORCERY_IN_GRAVEYARD_COUNT',
                     targetMapping: TargetMapping.Controller
                 },
                 {
                     type: EffectType.Choice,
-                    label: "You may return an instant or sorcery card from your graveyard to your hand",
+                    label: "Return an instant or sorcery card from your graveyard to your hand?",
                     optional: true,
-                    targetDefinition: {
-                        type: TargetType.CardInGraveyard,
-                        count: 1,
-                        restrictions: [
-                            { type: 'Any', restrictions: ['Instant', 'Sorcery'] },
-                            'YouControl'
-                        ]
-                    },
+                    minChoices: 0,
+                    maxChoices: 1,
+                    targetIdMapping: 'CONTROLLER_GRAVEYARD',
+                    restrictions: ['InstantOrSorcery'],
                     effects: [
-                        { type: EffectType.ReturnToHand, targetMapping: TargetMapping.Target1 }
-                    ],
-                    targetMapping: TargetMapping.Controller
+                        { type: EffectType.ReturnToHand }
+                    ]
                 }
             ]
         }
     ]
 };
-
-

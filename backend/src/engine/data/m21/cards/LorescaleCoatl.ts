@@ -16,8 +16,7 @@ export const LorescaleCoatl: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Draw,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+            condition: 'EVENT_PLAYER_IS_YOU',
             effects: [{
                 type: EffectType.AddCounters,
                 counterType: 'p1p1',

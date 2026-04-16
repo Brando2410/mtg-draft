@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const TranquilCove: CardDefinition = {
 
@@ -16,15 +16,11 @@ export const TranquilCove: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) => {
-                return event.data?.object?.id === source.sourceId;
-            },
             effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [
                 {

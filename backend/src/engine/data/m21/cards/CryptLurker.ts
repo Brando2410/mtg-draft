@@ -1,4 +1,4 @@
-import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from "@shared/engine_types";
+import {AbilityType, Zone, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Restriction} from "@shared/engine_types";
 
 export const CryptLurker: CardDefinition = {
         name: "Crypt Lurker",

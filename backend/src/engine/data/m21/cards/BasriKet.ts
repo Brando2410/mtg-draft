@@ -39,7 +39,7 @@ export const BasriKet: CardDefinition = {
                 targetMapping: TargetMapping.Controller,
                 delayedTriggers: [
                     {
-                        eventMatch: TriggerEvent.OnAttackersDeclared,
+                        eventMatch: TriggerEvent.AttackersDeclared,
                         // Only trigger if at least one nontoken creature attacked
                         condition: (state: any, event: any, trigger: any) => {
                             if (state.activePlayerId !== trigger.controllerId) return false;

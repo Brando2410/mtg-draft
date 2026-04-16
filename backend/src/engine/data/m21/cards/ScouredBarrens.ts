@@ -15,9 +15,6 @@ export const ScouredBarrens: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            condition: (state: any, event: any, source: any) => {
-                return event.data?.object?.id === source.sourceId;
-            },
             effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
         },
         {

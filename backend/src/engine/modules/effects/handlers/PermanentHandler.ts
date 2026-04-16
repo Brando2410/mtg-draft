@@ -248,6 +248,22 @@ export class PermanentHandler {
         });
     }
 
+    public static handleAttach(state: GameState, targets: string[], sourceId: string, log: (m: string) => void) {
+        const source = state.battlefield.find(o => o.id === sourceId);
+        if (!source) return;
+
+        targets.forEach(tid => {
+            const target = state.battlefield.find(o => o.id === tid);
+            if (target) {
+                (source as any).attachedTo = tid;
+                log(`[ATTACH] ${source.definition.name} attached to ${target.definition.name}.`);
+            } else {
+                // If targeting player or something invalid, detach? (Rule 301.5c/704.5p)
+                (source as any).attachedTo = undefined;
+            }
+        });
+    }
+
     private static createToken(state: GameState, blueprint: any, controllerId: PlayerId, pOverride?: any, tOverride?: any, effect?: any): GameObject {
         const token: GameObject = {
             id: `token_${Math.random().toString(36).substr(2, 9)}`,

@@ -14,7 +14,7 @@ export const VitoThornoftheDuskRose: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.LifeGain,
-            condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+            condition: 'EVENT_PLAYER_IS_YOU',
             targetDefinition: {
                 type: TargetType.Opponent,
                 count: 1

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const BasrisAcolyte: CardDefinition = {
     name: "Basri's Acolyte",
@@ -13,13 +13,8 @@ export const BasrisAcolyte: CardDefinition = {
     keywords: ["Lifelink"],
     abilities: [
         {
-            id: "basri_acolyte_etb",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) => {
-                return event.data?.object?.id === source.sourceId;
-            },
             targetDefinition: { type: TargetType.Creature, count: 2, minCount: 0, optional: true, restrictions: ['Other', 'YouControl'] },
             effects: [{ type: EffectType.AddCounters, amount: 1, counterType: 'p1p1', targetMapping: TargetMapping.Target1 }],
         }

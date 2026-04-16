@@ -9,8 +9,6 @@ export const Island: CardDefinition = {
     supertypes: ["Basic"],
     types: ["Land"],
     subtypes: ["Island"],
-    power: undefined,
-    toughness: undefined,
     keywords: [],
     abilities: [
         {

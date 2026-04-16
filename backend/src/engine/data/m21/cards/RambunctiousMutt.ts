@@ -1,4 +1,4 @@
-import { AbilityType, Zone, CardDefinition, EffectType, TargetType, TargetMapping, TriggerEvent } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetType, TargetMapping, TriggerEvent } from "@shared/engine_types";
 
 export const RambunctiousMutt: CardDefinition = {
 
@@ -15,7 +15,6 @@ export const RambunctiousMutt: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            activeZone: Zone.Battlefield,
             eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: { type: TargetType.ArtifactOrEnchantment, count: 1, restrictions: ['OpponentControl'] },
             effects: [{

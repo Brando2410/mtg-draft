@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const BurlfistOak: CardDefinition = {
 
@@ -14,11 +14,9 @@ export const BurlfistOak: CardDefinition = {
     keywords: [],
     abilities: [
         {
-            id: "burlfist_oak_trigger",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Draw,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+            condition: 'EVENT_PLAYER_IS_YOU',
             effects: [{ type: EffectType.ApplyContinuousEffect, duration: { type: DurationType.UntilEndOfTurn }, powerModifier: 2, toughnessModifier: 2, layer: 7, targetMapping: TargetMapping.Self }]
         }
     ]

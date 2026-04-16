@@ -93,7 +93,17 @@ export const EffectType = {
     SkipTurns: 'SkipTurns',
     PayMana: 'PayMana',
     LoseMana: 'LoseMana',
-    PhaseOut: 'PhaseOut'
+    PhaseOut: 'PhaseOut',
+    DoublePowerXTimes: 'DoublePowerXTimes',
+    Freeze: 'Freeze',
+    GainKeyword: 'GainKeyword',
+    GainControl: 'GainControl',
+    CantCastNamedCard: 'CantCastNamedCard',
+    CantAttackOrBlockNamedCard: 'CantAttackOrBlockNamedCard',
+    MustBlockThisTurn: 'MustBlockThisTurn',
+    EntersTapped: 'EntersTapped',
+    ExileUntilLeaves: 'ExileUntilLeaves',
+    Attach: 'Attach'
 } as const;
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
 
@@ -224,7 +234,14 @@ export interface EffectDefinition {
     returnDuration?: DurationType;
 
     // --- SELECTION & INTERACTIVE ---
-    choices?: { label: string; effects: EffectDefinition[] }[];
+    choices?: { 
+        label: string; 
+        effects?: EffectDefinition[]; 
+        costs?: any[]; 
+        targetDefinition?: any; 
+        value?: string | number;
+        condition?: string;
+    }[];
     selectionType?: string;
     optional?: boolean;
     reveal?: boolean;

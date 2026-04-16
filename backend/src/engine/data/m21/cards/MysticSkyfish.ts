@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const MysticSkyfish: CardDefinition = {
 
@@ -14,11 +14,9 @@ export const MysticSkyfish: CardDefinition = {
     keywords: [],
     abilities: [
         {
-            id: "mystic_skyfish_draw_trigger",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.SecondDraw,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+            condition: 'EVENT_PLAYER_IS_YOU',
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 duration: { type: DurationType.UntilEndOfTurn },

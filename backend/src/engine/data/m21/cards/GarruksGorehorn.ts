@@ -1,4 +1,4 @@
-import { AbilityType, Zone, CardDefinition, Zone, EffectType } from "@shared/engine_types";
+import {AbilityType, Zone, CardDefinition, EffectType} from "@shared/engine_types";
 
 export const GarruksGorehorn: CardDefinition = {
         name: "Garruk's Gorehorn",

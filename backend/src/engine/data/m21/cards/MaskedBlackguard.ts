@@ -1,4 +1,4 @@
-import { AbilityType, Zone, EffectType, CardDefinition, TargetMapping, DurationType } from "@shared/engine_types";
+import { AbilityType, CostType, EffectType, CardDefinition, TargetMapping, DurationType } from "@shared/engine_types";
 
 export const MaskedBlackguard: CardDefinition = {
 
@@ -16,9 +16,8 @@ export const MaskedBlackguard: CardDefinition = {
         {
 
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             costs: [
-                { type: 'Mana', value: '{2}{B}' }
+                { type: CostType.Mana, value: '{2}{B}' }
             ],
             effects: [
                 {

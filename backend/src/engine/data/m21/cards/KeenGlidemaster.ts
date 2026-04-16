@@ -1,4 +1,4 @@
-import { AbilityType, DurationType, Zone, EffectType, TargetType, CardDefinition, TargetMapping } from "@shared/engine_types";
+import { AbilityType, DurationType, EffectType, TargetType, CardDefinition, TargetMapping, CostType } from "@shared/engine_types";
 
 export const KeenGlidemaster: CardDefinition = {
 
@@ -15,8 +15,7 @@ export const KeenGlidemaster: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
-            costs: [{ type: 'Mana', value: '{2}{U}' }],
+            costs: [{ type: CostType.Mana, value: '{2}{U}' }],
             targetDefinition: {
                 type: TargetType.Creature,
                 count: 1

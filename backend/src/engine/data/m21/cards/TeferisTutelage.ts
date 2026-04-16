@@ -18,7 +18,7 @@ export const TeferisTutelage: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Draw,
-            condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+            condition: 'EVENT_PLAYER_IS_YOU',
             effects: [
                 { type: EffectType.Mill, amount: 2, targetDefinition: { type: TargetType.Opponent } }
             ]

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, Zone, EffectType } from "@shared/engine_types";
+import { AbilityType, CardDefinition, CostType, EffectType } from "@shared/engine_types";
 
 export const Plains: CardDefinition = {
 
@@ -13,9 +13,8 @@ export const Plains: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             isManaAbility: true,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             effects: [{ type: EffectType.AddMana, value: 'W' }]
         }
     ]

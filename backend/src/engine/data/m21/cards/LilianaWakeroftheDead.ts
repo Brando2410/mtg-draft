@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const LilianaWakeroftheDead: CardDefinition = {
     name: "Liliana, Waker of the Dead",
@@ -8,11 +8,11 @@ export const LilianaWakeroftheDead: CardDefinition = {
     supertypes: ["Legendary"],
     types: ["Planeswalker"],
     subtypes: ["Liliana"],
-    loyalty: "4",
+    loyalty: 4,
     abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '+1' }],
+            costs: [{ type: CostType.Loyalty, value: 1 }],
             effects: [
                 {
                     type: EffectType.DiscardCards,
@@ -22,7 +22,7 @@ export const LilianaWakeroftheDead: CardDefinition = {
                         {
                             type: EffectType.LoseLife,
                             amount: 3,
-                            condition: 'TARGET_IS_OPPONENT',
+                            condition: 'EVENT_PLAYER_IS_OPPONENT',
                             targetMapping: TargetMapping.Target1
                         }
                     ]
@@ -31,7 +31,7 @@ export const LilianaWakeroftheDead: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '-3' }],
+            costs: [{ type: CostType.Loyalty, value: -3 }],
             targetDefinition: {
                 type: TargetType.Creature,
                 count: 1,
@@ -39,8 +39,8 @@ export const LilianaWakeroftheDead: CardDefinition = {
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 duration: { type: DurationType.UntilEndOfTurn },
-                powerModifier: (state: any, source: any) => -(state.players[source.controllerId]?.graveyard.length || 0),
-                toughnessModifier: (state: any, source: any) => -(state.players[source.controllerId]?.graveyard.length || 0),
+                powerModifier: DynamicAmount.GraveyardSizeNegative,
+                toughnessModifier: DynamicAmount.GraveyardSizeNegative,
                 targetMapping: TargetMapping.Target1
             }]
         },

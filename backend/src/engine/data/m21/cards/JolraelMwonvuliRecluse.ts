@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const JolraelMwonvuliRecluse: CardDefinition = {
     name: "Jolrael, Mwonvuli Recluse",
@@ -14,8 +14,7 @@ export const JolraelMwonvuliRecluse: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.SecondDraw,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+            condition: 'PLAYER_IS_CONTROLLER',
             effects: [{
                 type: EffectType.CreateToken,
                 tokenBlueprint: {
@@ -31,13 +30,12 @@ export const JolraelMwonvuliRecluse: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             costs: [{ type: CostType.Mana, value: '{4}{G}{G}' }],
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 duration: { type: DurationType.UntilEndOfTurn },
-                powerSet: (state: any, source: any) => state.players[source.controllerId].hand.length,
-                toughnessSet: (state: any, source: any) => state.players[source.controllerId].hand.length,
+                powerSet: DynamicAmount.HandSize,
+                toughnessSet: DynamicAmount.HandSize,
                 targetMapping: TargetMapping.AllCreaturesYouControl
             }]
         }
