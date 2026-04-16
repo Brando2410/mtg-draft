@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType, TargetType } from '@shared/engine_types';
 
 export const ChelonianTackle: CardDefinition = {
     "name": "Chelonian Tackle",
@@ -14,7 +14,7 @@ export const ChelonianTackle: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'YouControl'] },
+            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -29,7 +29,7 @@ export const ChelonianTackle: CardDefinition = {
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'OpponentControl'] },
+                            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['OpponentControl'] },
                             effects: [
                                 {
                                     type: EffectType.Fight,
