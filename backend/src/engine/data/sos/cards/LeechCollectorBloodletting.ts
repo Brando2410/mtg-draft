@@ -1,15 +1,14 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const LeechCollectorBloodletting: CardDefinition = {
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const LeechCollectorBloodletting: CardDefinition = {
     name: "Leech Collector // Bloodletting",
     manaCost: "{1}{B}",
     colors: ["B"],
     types: ["Creature"],
     subtypes: ["Human", "Warlock"],
-    power: "2",
-    toughness: "2",
     keywords: ["Prepared"],
     oracleText: "Whenever you gain life for the first time each turn, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    power: "2",
+    toughness: "2",
     image_url: "https://cards.scryfall.io/png/front/c/7/c715fe4c-c0e7-4342-811f-b74687851097.png?1775937525",
     abilities: [
         {
@@ -22,12 +21,11 @@ export const LeechCollectorBloodletting: CardDefinition = {
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-
     preparedFace: {
         name: "Bloodletting",
         image_url: "https://cards.scryfall.io/png/front/c/7/c715fe4c-c0e7-4342-811f-b74687851097.png?1775937525",
@@ -49,4 +47,4 @@ export const LeechCollectorBloodletting: CardDefinition = {
         ]
     }
 };
-
+    

@@ -1,17 +1,17 @@
-import { AbilityType, CardDefinition, EffectType, Zone } from '@shared/engine_types';
-
-export const FlowState: CardDefinition = {
-    "name": "Flow State",
-    "manaCost": "{1}{U}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, EffectType, Zone } from '@shared/engine_types';
+    export const FlowState: CardDefinition = {
+    name: "Flow State",
+    manaCost: "{1}{U}",
+    colors: [
         "U"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Look at the top three cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order. If there is an instant card and a sorcery card in your graveyard, instead put two of them into your hand and the rest on the bottom of your library in any order.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Look at the top three cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order. If there is an instant card and a sorcery card in your graveyard, instead put two of them into your hand and the rest on the bottom of your library in any order.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
@@ -19,7 +19,7 @@ export const FlowState: CardDefinition = {
                     type: EffectType.ConditionalEffect,
                     effects: [
                         {
-                            condition: 'HAS_INSTANT_AND_SORCERY_IN_GY',
+                            condition: ConditionType.HasInstantAndSorceryInGy,
                             type: EffectType.LookAtTopAndPick,
                             fromTop: 3,
                             amount: 2,
@@ -42,5 +42,4 @@ export const FlowState: CardDefinition = {
         }
     ]
 }
-
-
+    

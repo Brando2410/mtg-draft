@@ -1,21 +1,20 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const LecturingScornmage: CardDefinition = {
-    "name": "Lecturing Scornmage",
-    "manaCost": "{B}",
-    "colors": [
+import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const LecturingScornmage: CardDefinition = {
+    name: "Lecturing Scornmage",
+    manaCost: "{B}",
+    colors: [
         "B"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Human",
         "Warlock"
     ],
-    "oracleText": "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, put a +1/+1 counter on this creature.",
-    "keywords": ["Repartee"],
-    "abilities": [
+    keywords: ["Repartee"],
+    oracleText: "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, put a +1/+1 counter on this creature.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastSpell,
@@ -23,19 +22,14 @@ export const LecturingScornmage: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    counterType: 'p1p1',
+                    counterType: '+1/+1',
                     amount: 1,
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-    "power": "1",
-    "toughness": "1"
+    power: "1",
+    toughness: "1"
 };
-
-
-
-
-
-
+    

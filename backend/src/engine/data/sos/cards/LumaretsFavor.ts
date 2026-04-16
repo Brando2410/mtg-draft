@@ -1,6 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-
-export const LumaretsFavor: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const LumaretsFavor: CardDefinition = {
     name: "Lumaret's Favor",
     manaCost: "{1}{G}",
     colors: [
@@ -10,16 +9,17 @@ export const LumaretsFavor: CardDefinition = {
         "Instant"
     ],
     subtypes: [],
+    keywords: [],
     oracleText: "Infusion — When you cast this spell, copy it if you gained life this turn. You may choose new targets for the copy.\nTarget creature gets +2/+4 until end of turn.",
     abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
-            condition: 'GAINED_LIFE_THIS_TURN',
+            condition: ConditionType.GainedLifeThisTurn,
             effects: [
                 {
                     type: EffectType.CopySpellOnStack,
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         },
@@ -41,9 +41,4 @@ export const LumaretsFavor: CardDefinition = {
         }
     ]
 };
-
-
-
-
-
-
+    

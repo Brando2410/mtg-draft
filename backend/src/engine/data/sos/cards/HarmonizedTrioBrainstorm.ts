@@ -1,32 +1,30 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-
-export const HarmonizedTrioBrainstorm: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, SelectionType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+    export const HarmonizedTrioBrainstorm: CardDefinition = {
     name: "Harmonized Trio // Brainstorm",
     manaCost: "{U}",
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Merfolk", "Bard", "Wizard"],
-    power: "1",
-    toughness: "1",
-    image_url: "https://cards.scryfall.io/png/front/6/1/617208ff-dd9b-44fd-a740-d3188081e5cc.png",
     keywords: ["Prepared"],
     oracleText: "{T}, Tap two untapped creatures you control: This creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    power: "1",
+    toughness: "1",
+    image_url: "https://cards.scryfall.io/png/front/6/1/617208ff-dd9b-44fd-a740-d3188081e5cc.png",
     abilities: [
         {
             type: AbilityType.Activated,
             costs: [
-                { type: 'TapSelection', value: 2, restrictions: ['Creature', 'Untapped', 'YouControl', 'Other'] },
-                { type: 'Tap' }
+                { type: CostType.TapSelection, value: 2, restrictions: ['Creature', 'Untapped', 'YouControl', 'Other'] },
+                { type: CostType.Tap }
             ],
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-
     preparedFace: {
         name: "Brainstorm",
         manaCost: "{U}",
@@ -49,7 +47,7 @@ export const HarmonizedTrioBrainstorm: CardDefinition = {
                         label: "Put two cards from hand on top of library (2nd selected goes on top of 1st)",
                         zone: Zone.Library,
                         libraryPosition: 'top',
-                        selectionType: 'Target',
+                        selectionType: SelectionType.Target,
                         targetDefinition: {
                             type: TargetType.CardInHand,
                             count: 2,
@@ -62,6 +60,4 @@ export const HarmonizedTrioBrainstorm: CardDefinition = {
         ]
     }
 };
-
-
-
+    

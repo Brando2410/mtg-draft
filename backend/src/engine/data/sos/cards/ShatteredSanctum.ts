@@ -1,19 +1,19 @@
-import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
-
-export const ShatteredSanctum: CardDefinition = {
-    "name": "Shattered Sanctum",
-    "manaCost": "",
-    "colors": [],
-    "types": [
+import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engine_types';
+    export const ShatteredSanctum: CardDefinition = {
+    name: "Shattered Sanctum",
+    manaCost: "",
+    colors: [],
+    types: [
         "Land"
     ],
-    "subtypes": [],
-    "oracleText": "This land enters tapped unless you control two or more other lands.\n{T}: Add {W} or {B}.",
-    "entersTappedCondition": "OTHER_LANDS_LE:1",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "This land enters tapped unless you control two or more other lands.\n{T}: Add {W} or {B}.",
+    entersTappedCondition: "OTHER_LANDS_LE:1",
+    abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [
                 {
@@ -27,6 +27,4 @@ export const ShatteredSanctum: CardDefinition = {
         }
     ]
 };
-
-
-
+    

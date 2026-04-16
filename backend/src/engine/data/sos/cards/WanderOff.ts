@@ -1,17 +1,17 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const WanderOff: CardDefinition = {
-    "name": "Wander Off",
-    "manaCost": "{3}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const WanderOff: CardDefinition = {
+    name: "Wander Off",
+    manaCost: "{3}{B}",
+    colors: [
         "B"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Exile target creature.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Exile target creature.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
@@ -20,13 +20,11 @@ export const WanderOff: CardDefinition = {
             },
             effects: [
                 {
-                    type: EffectType.Exile,
+                    type: CostType.Exile,
                     targetMapping: TargetMapping.Target1
                 }
             ]
         }
     ]
 };
-
-
-
+    

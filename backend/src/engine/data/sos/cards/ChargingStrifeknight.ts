@@ -1,25 +1,24 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const ChargingStrifeknight: CardDefinition = {
-    "name": "Charging Strifeknight",
-    "manaCost": "{2}{R}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const ChargingStrifeknight: CardDefinition = {
+    name: "Charging Strifeknight",
+    manaCost: "{2}{R}",
+    colors: [
         "R"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Spirit",
         "Knight"
     ],
-    "keywords": ["Haste"],
-    "oracleText": "Haste\n{T}, Discard a card: Draw a card.",
-    "abilities": [
+    keywords: ["Haste"],
+    oracleText: "Haste\n{T}, Discard a card: Draw a card.",
+    abilities: [
         {
             type: AbilityType.Activated,
             costs: [
-                { type: 'Tap' }
+                { type: CostType.Tap }
             ],
             effects: [
                 { type: EffectType.DiscardCards, amount: 1, targetMapping: TargetMapping.Controller },
@@ -27,9 +26,7 @@ export const ChargingStrifeknight: CardDefinition = {
             ]
         }
     ],
-    "power": "3",
-    "toughness": "3"
+    power: "3",
+    toughness: "3"
 };
-
-
-
+    

@@ -1,21 +1,21 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-
-export const FixWhatsBroken: CardDefinition = {
-    "name": "Fix What's Broken",
-    "manaCost": "{2}{W}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+    export const FixWhatsBroken: CardDefinition = {
+    name: "Fix What's Broken",
+    manaCost: "{2}{W}{B}",
+    colors: [
         "B",
         "W"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "As an additional cost to cast this spell, pay X life.\nReturn each artifact and creature card with mana value X from your graveyard to the battlefield.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "As an additional cost to cast this spell, pay X life.\nReturn each artifact and creature card with mana value X from your graveyard to the battlefield.",
+    abilities: [
         {
             type: AbilityType.Spell,
-            costs: [{ type: 'PayLife', value: 'X' }],
+            costs: [{ type: CostType.PayLife, value: DynamicAmount.X }],
             effects: [
                 { 
                     type: EffectType.MoveToZone, 
@@ -25,13 +25,11 @@ export const FixWhatsBroken: CardDefinition = {
                         'Artifact_Or_Creature',
                         'Graveyard',
                         'YouControl',
-                        { type: 'ManaValue', comparison: 'Equal', value: 'X' }
+                        { type: 'ManaValue', comparison: 'Equal', value: DynamicAmount.X }
                     ]
                 }
             ]
         }
     ]
 };
-
-
-
+    

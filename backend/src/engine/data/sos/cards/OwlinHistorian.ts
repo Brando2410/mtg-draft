@@ -1,21 +1,20 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const OwlinHistorian: CardDefinition = {
-    "name": "Owlin Historian",
-    "manaCost": "{2}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const OwlinHistorian: CardDefinition = {
+    name: "Owlin Historian",
+    manaCost: "{2}{W}",
+    colors: [
         "W"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Bird",
         "Cleric"
     ],
-    "keywords": ["Flying"],
-    "oracleText": "Flying\nWhen this creature enters, surveil 1. (Look at the top card of your library. You may put it into your graveyard.)\nWhenever one or more cards leave your graveyard, this creature gets +1/+1 until end of turn.",
-    "abilities": [
+    keywords: ["Flying"],
+    oracleText: "Flying\nWhen this creature enters, surveil 1. (Look at the top card of your library. You may put it into your graveyard.)\nWhenever one or more cards leave your graveyard, this creature gets +1/+1 until end of turn.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
@@ -30,20 +29,19 @@ export const OwlinHistorian: CardDefinition = {
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.LeaveGraveyard,
-            condition: 'PLAYER_IS_CONTROLLER',
+            condition: ConditionType.PlayerIsController,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 1,
                     toughnessModifier: 1,
                     duration: 'UntilEndOfTurn',
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-    "power": "2",
-    "toughness": "3"
+    power: "2",
+    toughness: "3"
 };
-
-
+    

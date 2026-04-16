@@ -1,19 +1,19 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-
-export const ForumofAmity: CardDefinition = {
-    "name": "Forum of Amity",
-    "manaCost": "",
-    "colors": [],
-    "types": [
+import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engine_types';
+    export const ForumofAmity: CardDefinition = {
+    name: "Forum of Amity",
+    manaCost: "",
+    colors: [],
+    types: [
         "Land"
     ],
-    "subtypes": [],
-    "oracleText": "This land enters tapped.\n{T}: Add {W} or {B}.\n{2}{W}{B}, {T}: Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
-    "entersTapped": true,
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "This land enters tapped.\n{T}: Add {W} or {B}.\n{2}{W}{B}, {T}: Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    entersTapped: true,
+    abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             effects: [
                 {
                     type: EffectType.AddMana,
@@ -27,8 +27,8 @@ export const ForumofAmity: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [
-                { type: 'Mana', value: '{2}{W}{B}' },
-                { type: 'Tap' }
+                { type: CostType.Mana, value: '{2}{W}{B}' },
+                { type: CostType.Tap }
             ],
             effects: [
                 {
@@ -39,6 +39,4 @@ export const ForumofAmity: CardDefinition = {
         }
     ]
 };
-
-
-
+    

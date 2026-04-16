@@ -1,24 +1,24 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-
-export const PullfromtheGrave: CardDefinition = {
-    "name": "Pull from the Grave",
-    "manaCost": "{2}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
+    export const PullfromtheGrave: CardDefinition = {
+    name: "Pull from the Grave",
+    manaCost: "{2}{B}",
+    colors: [
         "B"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Return up to two target creature cards from your graveyard to your hand. You gain 2 life.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Return up to two target creature cards from your graveyard to your hand. You gain 2 life.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 2,
                 minCount: 0,
-                restrictions: ['creature', 'your_graveyard']
+                restrictions: [Restriction.Creature, 'your_graveyard']
             },
             effects: [
                 {
@@ -34,6 +34,4 @@ export const PullfromtheGrave: CardDefinition = {
         }
     ]
 };
-
-
-
+    

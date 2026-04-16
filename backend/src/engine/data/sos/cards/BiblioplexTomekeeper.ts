@@ -1,24 +1,24 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-
-export const BiblioplexTomekeeper: CardDefinition = {
-    "name": "Biblioplex Tomekeeper",
-    "manaCost": "{4}",
-    "colors": [],
-    "types": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const BiblioplexTomekeeper: CardDefinition = {
+    name: "Biblioplex Tomekeeper",
+    manaCost: "{4}",
+    colors: [],
+    types: [
         "Artifact",
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Construct"
     ],
-    "oracleText": "When this creature enters, choose up to one —\n• Target creature becomes prepared. (Only creatures with prepare spells can become prepared.)\n• Target creature becomes unprepared.",
-    "abilities": [
+    keywords: [],
+    oracleText: "When this creature enters, choose up to one —\n• Target creature becomes prepared. (Only creatures with prepare spells can become prepared.)\n• Target creature becomes unprepared.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     optional: true,
                     choices: [
                         { 
@@ -36,10 +36,7 @@ export const BiblioplexTomekeeper: CardDefinition = {
             ]
         }
     ],
-    "power": "3",
-    "toughness": "4"
+    power: "3",
+    toughness: "4"
 };
-
-
-
-
+    

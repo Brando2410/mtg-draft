@@ -1,28 +1,28 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const MindintoMatter: CardDefinition = {
-    "name": "Mind into Matter",
-    "manaCost": "{X}{G}{U}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const MindintoMatter: CardDefinition = {
+    name: "Mind into Matter",
+    manaCost: "{X}{G}{U}",
+    colors: [
         "G",
         "U"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Draw X cards. Then you may put a permanent card with mana value X or less from your hand onto the battlefield tapped.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Draw X cards. Then you may put a permanent card with mana value X or less from your hand onto the battlefield tapped.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
                 {
                     type: EffectType.DrawCards,
-                    amount: 'X',
+                    amount: DynamicAmount.X,
                     targetMapping: TargetMapping.Controller
                 },
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Put a permanent card from hand onto battlefield?",
                     optional: true,
                     targetMapping: TargetMapping.Controller,
@@ -40,7 +40,7 @@ export const MindintoMatter: CardDefinition = {
                                             'Permanent',
                                             {
                                                 type: 'ManaValueLe',
-                                                value: 'X'
+                                                value: DynamicAmount.X
                                             }
                                         ]
                                     },
@@ -57,7 +57,4 @@ export const MindintoMatter: CardDefinition = {
         }
     ]
 };
-
-
-
-
+    

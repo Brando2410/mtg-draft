@@ -1,28 +1,28 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const GloriousDecay: CardDefinition = {
-    "name": "Glorious Decay",
-    "manaCost": "{1}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const GloriousDecay: CardDefinition = {
+    name: "Glorious Decay",
+    manaCost: "{1}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Choose one —\n• Destroy target artifact.\n• Glorious Decay deals 4 damage to target creature with flying.\n• Exile target card from a graveyard. Draw a card.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Choose one —\n• Destroy target artifact.\n• Glorious Decay deals 4 damage to target creature with flying.\n• Exile target card from a graveyard. Draw a card.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Choose a mode",
                     choices: [
                         {
                             label: "Destroy target artifact",
                             targetDefinition: {
-                                type: TargetType.Permanent,
+                                type: DurationType.Permanent,
                                 count: 1,
                                 restrictions: ["Artifact"]
                             },
@@ -36,7 +36,7 @@ export const GloriousDecay: CardDefinition = {
                         {
                             label: "Deals 4 damage to target creature with flying",
                             targetDefinition: {
-                                type: TargetType.Permanent,
+                                type: DurationType.Permanent,
                                 count: 1,
                                 restrictions: ["Creature", "Flying"]
                             },
@@ -56,7 +56,7 @@ export const GloriousDecay: CardDefinition = {
                             },
                             effects: [
                                 {
-                                    type: EffectType.Exile,
+                                    type: CostType.Exile,
                                     targetMapping: TargetMapping.Target1
                                 },
                                 {
@@ -72,6 +72,4 @@ export const GloriousDecay: CardDefinition = {
         }
     ]
 };
-
-
-
+    

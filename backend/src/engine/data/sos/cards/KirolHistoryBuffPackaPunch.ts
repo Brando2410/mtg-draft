@@ -1,15 +1,14 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-
-export const KirolHistoryBuffPackaPunch: CardDefinition = {
+    export const KirolHistoryBuffPackaPunch: CardDefinition = {
     name: "Kirol, History Buff // Pack a Punch",
     manaCost: "{R}{W}",
     colors: ["R", "W"],
     types: ["Legendary", "Creature"],
     subtypes: ["Vampire", "Cleric"],
-    power: "2",
-    toughness: "3",
     keywords: ["Prepared"],
     oracleText: "Whenever one or more cards leave your graveyard, Kirol becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    power: "2",
+    toughness: "3",
     image_url: "https://cards.scryfall.io/png/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.png?1775938375",
     abilities: [
         {
@@ -21,12 +20,11 @@ export const KirolHistoryBuffPackaPunch: CardDefinition = {
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-
     preparedFace: {
         name: "Pack a Punch",
         image_url: "https://cards.scryfall.io/png/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.png?1775938375",
@@ -43,7 +41,7 @@ export const KirolHistoryBuffPackaPunch: CardDefinition = {
                 },
                 effects: [
                     { type: EffectType.Mill, amount: 1, targetMapping: TargetMapping.Controller },
-                    { type: EffectType.AddCounters, counterType: 'p1p1', amount: 2, targetMapping: TargetMapping.Target1 },
+                    { type: EffectType.AddCounters, counterType: '+1/+1', amount: 2, targetMapping: TargetMapping.Target1 },
                     {
                         type: EffectType.ApplyContinuousEffect,
                         abilitiesToAdd: ["Trample"],
@@ -55,4 +53,4 @@ export const KirolHistoryBuffPackaPunch: CardDefinition = {
         ]
     }
 };
-
+    

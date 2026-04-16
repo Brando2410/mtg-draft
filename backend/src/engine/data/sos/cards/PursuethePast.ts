@@ -1,22 +1,21 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const PursuethePast: CardDefinition = {
-    "name": "Pursue the Past",
-    "manaCost": "{R}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const PursuethePast: CardDefinition = {
+    name: "Pursue the Past",
+    manaCost: "{R}{W}",
+    colors: [
         "R",
         "W"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "keywords": [
+    subtypes: [],
+    keywords: [
         "Flashback"
     ],
-    "flashbackCost": "{2}{R}{W}",
-    "oracleText": "You gain 2 life. You may discard a card. If you do, draw two cards.\nFlashback {2}{R}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
-    "abilities": [
+    oracleText: "You gain 2 life. You may discard a card. If you do, draw two cards.\nFlashback {2}{R}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    flashbackCost: "{2}{R}{W}",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
@@ -26,7 +25,7 @@ export const PursuethePast: CardDefinition = {
                     targetMapping: TargetMapping.Controller
                 },
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Discard a card to draw two?",
                     optional: true,
                     choices: [
@@ -55,6 +54,4 @@ export const PursuethePast: CardDefinition = {
         }
     ]
 };
-
-
-
+    

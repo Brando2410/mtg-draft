@@ -1,29 +1,29 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const LoreholdCharm: CardDefinition = {
-    "name": "Lorehold Charm",
-    "manaCost": "{R}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const LoreholdCharm: CardDefinition = {
+    name: "Lorehold Charm",
+    manaCost: "{R}{W}",
+    colors: [
         "R",
         "W"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Choose one —\n• Each opponent sacrifices a nontoken artifact.\n• Return target artifact or creature card with mana value 2 or less from your graveyard to the battlefield.\n• Creatures you control get +1/+1 and gain trample until end of turn.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Choose one —\n• Each opponent sacrifices a nontoken artifact.\n• Return target artifact or creature card with mana value 2 or less from your graveyard to the battlefield.\n• Creatures you control get +1/+1 and gain trample until end of turn.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     choices: [
                         {
                             label: "Each opponent sacrifices a nontoken artifact",
                             effects: [
                                 {
-                                    type: EffectType.Sacrifice,
+                                    type: CostType.Sacrifice,
                                     targetMapping: TargetMapping.EachOpponent,
                                     restrictions: ['Artifact', 'NonToken']
                                 }
@@ -67,6 +67,4 @@ export const LoreholdCharm: CardDefinition = {
         }
     ]
 };
-
-
-
+    

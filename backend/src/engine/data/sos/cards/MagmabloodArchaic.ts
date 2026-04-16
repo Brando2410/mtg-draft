@@ -1,6 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const MagmabloodArchaic: CardDefinition = {
+import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const MagmabloodArchaic: CardDefinition = {
     name: "Magmablood Archaic",
     manaCost: "{2/R}{2/R}{2/R}",
     colors: [
@@ -13,18 +12,18 @@ export const MagmabloodArchaic: CardDefinition = {
         "Avatar"
     ],
     keywords: ["Trample", "Reach"],
-    power: "2",
-    toughness: "2",
     oracleText: "Trample, reach\nConverge — This creature enters with a +1/+1 counter on it for each color of mana spent to cast it.\nWhenever you cast an instant or sorcery spell, creatures you control get +1/+0 until end of turn for each color of mana spent to cast that spell.",
+    power: "2",
+    toughness: "2",
     abilities: [
         {
             type: AbilityType.Static,
             effects: [
                 {
                     type: EffectType.EntersWithCounters,
-                    amount: 'CONVERGE_AMOUNT',
-                    counterType: 'p1p1',
-                    targetMapping: TargetMapping.Self
+                    amount: DynamicAmount.ConvergeAmount,
+                    counterType: '+1/+1',
+                    targetMapping: TargetType.Self
                 }
             ]
         },
@@ -39,7 +38,7 @@ export const MagmabloodArchaic: CardDefinition = {
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    powerModifier: 'CONVERGE_AMOUNT', // The engine needs to know this refers to the TRIGGERING spell's converge
+                    powerModifier: DynamicAmount.ConvergeAmount, // The engine needs to know this refers to the TRIGGERING spell's converge
                     duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.AllCreaturesYouControl
                 }
@@ -47,8 +46,4 @@ export const MagmabloodArchaic: CardDefinition = {
         }
     ],
 };
-
-
-
-
-
+    

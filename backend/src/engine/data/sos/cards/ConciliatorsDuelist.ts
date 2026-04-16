@@ -1,21 +1,21 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const ConciliatorsDuelist: CardDefinition = {
-    "name": "Conciliator's Duelist",
-    "manaCost": "{W}{W}{B}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+    export const ConciliatorsDuelist: CardDefinition = {
+    name: "Conciliator's Duelist",
+    manaCost: "{W}{W}{B}{B}",
+    colors: [
         "B",
         "W"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Kor",
         "Warlock"
     ],
-    "oracleText": "When this creature enters, draw a card. Each player loses 1 life.\nRepartee — Whenever you cast an instant or sorcery spell that targets a creature, exile up to one target creature. Return that card to the battlefield under its owner's control at the beginning of the next end step.",
-    "abilities": [
+    keywords: [],
+    oracleText: "When this creature enters, draw a card. Each player loses 1 life.\nRepartee — Whenever you cast an instant or sorcery spell that targets a creature, exile up to one target creature. Return that card to the battlefield under its owner's control at the beginning of the next end step.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
@@ -30,7 +30,7 @@ export const ConciliatorsDuelist: CardDefinition = {
             condition: 'PLAYER_IS_CONTROLLER && SPELL_TARGETS_CREATURE',
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Exile up to one target creature?",
                     choices: [
                         {
@@ -38,7 +38,7 @@ export const ConciliatorsDuelist: CardDefinition = {
                             targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
                             effects: [
                                 {
-                                    type: EffectType.Exile,
+                                    type: CostType.Exile,
                                     targetMapping: TargetMapping.Target1,
                                     next: {
                                         type: EffectType.AddTriggeredAbility,
@@ -55,11 +55,7 @@ export const ConciliatorsDuelist: CardDefinition = {
             ]
         }
     ],
-    "power": "4",
-    "toughness": "3"
+    power: "4",
+    toughness: "3"
 };
-
-
-
-
-
+    

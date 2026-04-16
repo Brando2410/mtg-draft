@@ -1,15 +1,14 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const EmeritusofAbundanceRegrowth: CardDefinition = {
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+    export const EmeritusofAbundanceRegrowth: CardDefinition = {
     name: "Emeritus of Abundance // Regrowth",
     manaCost: "{2}{G}",
     colors: ["G"],
     types: ["Creature"],
     subtypes: ["Elf", "Druid"],
-    power: "3",
-    toughness: "4",
     keywords: ["Vigilance", "Prepared"],
     oracleText: "Vigilance\nThis creature enters prepared. Whenever this creature attacks, if you control eight or more lands, this creature becomes prepared.",
+    power: "3",
+    toughness: "4",
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/a/c/ac095763-6f4e-4d4e-9c99-414646368f8d.png?1775937986",
     abilities: [
@@ -20,12 +19,11 @@ export const EmeritusofAbundanceRegrowth: CardDefinition = {
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-
     preparedFace: {
         name: "Regrowth",
         image_url: "https://cards.scryfall.io/png/front/d/7/d771fc5d-b9a1-4637-8241-3f54616b64af.png?1562202155",
@@ -52,4 +50,4 @@ export const EmeritusofAbundanceRegrowth: CardDefinition = {
         ]
     }
 };
-
+    

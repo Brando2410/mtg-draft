@@ -1,18 +1,18 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const RapturousMoment: CardDefinition = {
-    "name": "Rapturous Moment",
-    "manaCost": "{4}{U}{R}",
-    "colors": [
+    export const RapturousMoment: CardDefinition = {
+    name: "Rapturous Moment",
+    manaCost: "{4}{U}{R}",
+    colors: [
         "R",
         "U"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Draw three cards, then discard two cards. Add {U}{U}{R}{R}{R}.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Draw three cards, then discard two cards. Add {U}{U}{R}{R}{R}.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
@@ -34,6 +34,4 @@ export const RapturousMoment: CardDefinition = {
         }
     ]
 };
-
-
-
+    

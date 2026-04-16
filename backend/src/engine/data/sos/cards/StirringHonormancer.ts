@@ -1,27 +1,27 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const StirringHonormancer: CardDefinition = {
-    "name": "Stirring Honormancer",
-    "manaCost": "{2}{W}{W/B}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+    export const StirringHonormancer: CardDefinition = {
+    name: "Stirring Honormancer",
+    manaCost: "{2}{W}{W/B}{B}",
+    colors: [
         "B",
         "W"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Rhino",
         "Bard"
     ],
-    "oracleText": "When this creature enters, look at the top X cards of your library, where X is the number of creatures you control. Put one of those cards into your hand and the rest into your graveyard.",
-    "abilities": [
+    keywords: [],
+    oracleText: "When this creature enters, look at the top X cards of your library, where X is the number of creatures you control. Put one of those cards into your hand and the rest into your graveyard.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Choose a card to put into your hand",
                     choices: [
                         {
@@ -42,11 +42,7 @@ export const StirringHonormancer: CardDefinition = {
             ]
         }
     ],
-    "power": "4",
-    "toughness": "5"
+    power: "4",
+    toughness: "5"
 };
-
-
-
-
-
+    

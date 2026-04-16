@@ -1,17 +1,17 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const DissectionPractice: CardDefinition = {
-    "name": "Dissection Practice",
-    "manaCost": "{B}",
-    "colors": [
+    export const DissectionPractice: CardDefinition = {
+    name: "Dissection Practice",
+    manaCost: "{B}",
+    colors: [
         "B"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Target opponent loses 1 life and you gain 1 life.\nUp to one target creature gets +1/+1 until end of turn.\nUp to one target creature gets -1/-1 until end of turn.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Target opponent loses 1 life and you gain 1 life.\nUp to one target creature gets +1/+1 until end of turn.\nUp to one target creature gets -1/-1 until end of turn.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: [
@@ -40,6 +40,4 @@ export const DissectionPractice: CardDefinition = {
         }
     ]
 };
-
-
-
+    

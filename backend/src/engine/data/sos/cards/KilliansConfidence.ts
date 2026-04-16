@@ -1,6 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const KilliansConfidence: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+    export const KilliansConfidence: CardDefinition = {
     name: "Killian's Confidence",
     manaCost: "{W}{B}",
     colors: [
@@ -11,6 +10,7 @@ export const KilliansConfidence: CardDefinition = {
         "Sorcery"
     ],
     subtypes: [],
+    keywords: [],
     oracleText: "Target creature gets +1/+1 until end of turn. Draw a card.\nWhenever one or more creatures you control deal combat damage to a player, you may pay {W/B}. If you do, return this card from your graveyard to your hand.",
     abilities: [
         {
@@ -36,7 +36,7 @@ export const KilliansConfidence: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: 'ON_DAMAGE_PLAYER',
+            eventMatch: TriggerEvent.DamageDealtToPlayer,
             activeZone: Zone.Graveyard,
             condition: (state: any, event: any, trigger: any) => {
                 const source = state.battlefield.find((o: any) => o.id === event.sourceId);
@@ -44,14 +44,14 @@ export const KilliansConfidence: CardDefinition = {
             },
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Return Killian's Confidence to hand?",
                     choices: [
                         {
                             label: "Pay {W/B}",
                             effects: [
-                                { type: 'PayMana', value: '{W/B}' } as any,
-                                { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Self }
+                                { type: EffectType.PayMana, value: '{W/B}' } as any,
+                                { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetType.Self }
                             ]
                         },
                         { label: "Decline", effects: [] }
@@ -61,9 +61,4 @@ export const KilliansConfidence: CardDefinition = {
         }
     ]
 };
-
-
-
-
-
-
+    

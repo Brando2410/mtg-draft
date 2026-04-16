@@ -1,20 +1,20 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const MindfulBiomancer: CardDefinition = {
-    "name": "Mindful Biomancer",
-    "manaCost": "{1}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const MindfulBiomancer: CardDefinition = {
+    name: "Mindful Biomancer",
+    manaCost: "{1}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Dryad",
         "Druid"
     ],
-    "oracleText": "When this creature enters, you gain 1 life.\n{2}{G}: This creature gets +2/+2 until end of turn. Activate only once each turn.",
-    "abilities": [
+    keywords: [],
+    oracleText: "When this creature enters, you gain 1 life.\n{2}{G}: This creature gets +2/+2 until end of turn. Activate only once each turn.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
@@ -28,7 +28,7 @@ export const MindfulBiomancer: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Mana', value: '{2}{G}' } as any],
+            costs: [{ type: CostType.Mana, value: '{2}{G}' } as any],
             limitPerTurn: 1,
             effects: [
                 {
@@ -36,16 +36,12 @@ export const MindfulBiomancer: CardDefinition = {
                     powerModifier: 2,
                     toughnessModifier: 2,
                     duration: { type: DurationType.UntilEndOfTurn },
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-    "power": "2",
-    "toughness": "2"
+    power: "2",
+    toughness: "2"
 };
-
-
-
-
-
+    

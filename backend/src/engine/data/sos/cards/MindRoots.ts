@@ -1,20 +1,20 @@
-import { CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const MindRoots: CardDefinition = {
-    "name": "Mind Roots",
-    "manaCost": "{1}{B}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const MindRoots: CardDefinition = {
+    name: "Mind Roots",
+    manaCost: "{1}{B}{G}",
+    colors: [
         "B",
         "G"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Target player discards two cards. Put up to one land card discarded this way onto the battlefield tapped under your control.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Target player discards two cards. Put up to one land card discarded this way onto the battlefield tapped under your control.",
+    abilities: [
         {
-            type: 'Spell',
+            type: AbilityType.Spell,
             targetDefinition: {
                 type: TargetType.Player,
                 count: 1
@@ -41,7 +41,4 @@ export const MindRoots: CardDefinition = {
         }
     ]
 };
-
-
-
-
+    

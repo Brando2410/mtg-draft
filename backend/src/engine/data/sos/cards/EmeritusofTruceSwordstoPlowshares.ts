@@ -1,15 +1,15 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
     name: "Emeritus of Truce // Swords to Plowshares",
     manaCost: "{1}{W}{W}",
     colors: ["W"],
     types: ["Creature"],
     subtypes: ["Cat", "Cleric"],
+    keywords: ['Flying'],
+    oracleText: "When this creature enters, target player creates a 1/1 white and black Inkling creature token with flying. Then if an opponent controls more creatures than you, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "3",
     toughness: "3",
-    image_url: "https://cards.scryfall.io/png/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.png?1775936999",
-    oracleText: "When this creature enters, target player creates a 1/1 white and black Inkling creature token with flying. Then if an opponent controls more creatures than you, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    image_url: "https://cards.scryfall.io/png/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.png?1775936999",
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -28,8 +28,7 @@ export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
                         types: ['Creature'],
                         subtypes: ['Inkling'],
                         power: 1,
-                        toughness: 1,
-                        keywords: ['Flying'],
+                        toughness: 1,
                         image_url: 'https://cards.scryfall.io/png/front/c/9/c9deae5c-80d4-4701-b425-91853b7ee03b.png?1682693898'
                     }
                 },
@@ -39,14 +38,13 @@ export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
                     effects: [
                         {
                             type: EffectType.Prepare,
-                            targetMapping: TargetMapping.Self
+                            targetMapping: TargetType.Self
                         }
                     ]
                 }
             ]
         }
     ],
-
     preparedFace: {
         name: "Swords to Plowshares",
         image_url: "https://cards.scryfall.io/png/front/c/c/cc9ece2f-7eda-4fc5-a562-3e16e71560e9.png?1623592209",
@@ -63,17 +61,17 @@ export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
                 },
                 effects: [
                     {
-                        type: EffectType.Exile,
+                        type: CostType.Exile,
                         targetMapping: TargetMapping.Target1
                     },
                     {
                         type: EffectType.GainLife,
-                        amount: 'TARGET_1_POWER',
-                        targetMapping: 'TARGET_1_CONTROLLER'
+                        amount: DynamicAmount.Target1Power,
+                        targetMapping: TargetMapping.Target1Controller
                     }
                 ]
             }
         ]
     }
 };
-
+    

@@ -1,20 +1,20 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const BrushOff: CardDefinition = {
-    "name": "Brush Off",
-    "manaCost": "{2}{U}{U}",
-    "colors": [
+    export const BrushOff: CardDefinition = {
+    name: "Brush Off",
+    manaCost: "{2}{U}{U}",
+    colors: [
         "U"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "This spell costs {1}{U} less to cast if it targets an instant or sorcery spell.\nCounter target spell.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "This spell costs {1}{U} less to cast if it targets an instant or sorcery spell.\nCounter target spell.",
+    abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Spell', count: 1 },
+            targetDefinition: { type: AbilityType.Spell, count: 1 },
             costReduction: {
                 type: EffectType.CostReduction,
                 manaReduction: '{1}{U}',
@@ -26,6 +26,4 @@ export const BrushOff: CardDefinition = {
         }
     ]
 };
-
-
-
+    

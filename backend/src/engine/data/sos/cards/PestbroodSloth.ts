@@ -1,21 +1,20 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const PestbroodSloth: CardDefinition = {
-    "name": "Pestbrood Sloth",
-    "manaCost": "{3}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+    export const PestbroodSloth: CardDefinition = {
+    name: "Pestbrood Sloth",
+    manaCost: "{3}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Plant",
         "Sloth"
     ],
-    "oracleText": "Reach\nWhen this creature dies, create two 1/1 black and green Pest creature tokens with \"Whenever this token attacks, you gain 1 life.\"",
-    "keywords": ["Reach"],
-    "abilities": [
+    keywords: ["Reach"],
+    oracleText: "Reach\nWhen this creature dies, create two 1/1 black and green Pest creature tokens with \"Whenever this token attacks, you gain 1 life.\"",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.Death,
@@ -52,10 +51,7 @@ export const PestbroodSloth: CardDefinition = {
             ]
         }
     ],
-    "power": "4",
-    "toughness": "4"
+    power: "4",
+    toughness: "4"
 };
-
-
-
-
+    

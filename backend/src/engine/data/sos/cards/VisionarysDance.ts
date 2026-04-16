@@ -1,18 +1,20 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-
-export const VisionarysDance: CardDefinition = {
-    "name": "Visionary's Dance",
-    "manaCost": "{5}{U}{R}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+export const VisionarysDance = {
+    name: "Visionary's Dance",
+    manaCost: "{5}{U}{R}",
+    colors: [
         "R",
         "U"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Create two 3/3 blue and red Elemental creature tokens with flying.\n{2}, Discard this card: Look at the top two cards of your library. Put one of them into your hand and the other into your graveyard.",
-    "abilities": [
+    subtypes: [],
+    keywords: [
+        'Flying'
+    ],
+    oracleText: "Create two 3/3 blue and red Elemental creature tokens with flying.\n{2}, Discard this card: Look at the top two cards of your library. Put one of them into your hand and the other into your graveyard.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
@@ -33,9 +35,7 @@ export const VisionarysDance: CardDefinition = {
                         ],
                         power: 3,
                         toughness: 3,
-                        keywords: [
-                            'Flying'
-                        ],
+
                         image_url: 'https://cards.scryfall.io/png/front/3/d/3d0b9b88-705e-4df0-8a93-3e240b81355b.png?1682693891'
                     }
                 }
@@ -43,15 +43,14 @@ export const VisionarysDance: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Hand,
             costs: [
                 {
-                    type: 'Mana',
+                    type: CostType.Mana,
                     value: '{2}'
                 },
                 {
-                    type: 'Discard',
-                    targetMapping: TargetMapping.Self
+                    type: CostType.Discard,
+                    targetMapping: TargetType.Self
                 }
             ],
             effects: [
@@ -67,7 +66,3 @@ export const VisionarysDance: CardDefinition = {
         }
     ]
 };
-
-
-
-

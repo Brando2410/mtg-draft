@@ -1,6 +1,5 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const RapierWit: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const RapierWit: CardDefinition = {
     name: "Rapier Wit",
     manaCost: "{1}{W}",
     colors: [
@@ -10,6 +9,7 @@ export const RapierWit: CardDefinition = {
         "Instant"
     ],
     subtypes: [],
+    keywords: [],
     oracleText: "Tap target creature. If it's your turn, put a stun counter on it. (If a permanent with a stun counter would become untapped, remove one from it instead.)\nDraw a card.",
     abilities: [
         {
@@ -20,7 +20,7 @@ export const RapierWit: CardDefinition = {
             },
             effects: [
                 {
-                    type: EffectType.Tap,
+                    type: CostType.Tap,
                     targetMapping: TargetMapping.Target1
                 },
                 {
@@ -44,6 +44,4 @@ export const RapierWit: CardDefinition = {
         }
     ]
 };
-
-
-
+    

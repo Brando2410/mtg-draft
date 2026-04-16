@@ -1,33 +1,32 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-
-export const FractalMascot: CardDefinition = {
-    "name": "Fractal Mascot",
-    "manaCost": "{4}{G}{U}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+    export const FractalMascot: CardDefinition = {
+    name: "Fractal Mascot",
+    manaCost: "{4}{G}{U}",
+    colors: [
         "G",
         "U"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Fractal",
         "Elk"
     ],
-    "oracleText": "Trample\nWhen this creature enters, tap target creature an opponent controls. Put a stun counter on it. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
-    "keywords": ["Trample"],
-    "abilities": [
+    keywords: ["Trample"],
+    oracleText: "Trample\nWhen this creature enters, tap target creature an opponent controls. Put a stun counter on it. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: DurationType.Permanent,
                 count: 1,
                 restrictions: ["Creature", "OpponentControls"]
             },
             effects: [
                 {
-                    type: EffectType.Tap,
+                    type: CostType.Tap,
                     targetMapping: TargetMapping.Target1
                 },
                 {
@@ -39,10 +38,7 @@ export const FractalMascot: CardDefinition = {
             ]
         }
     ],
-    "power": "6",
-    "toughness": "6"
+    power: "6",
+    toughness: "6"
 };
-
-
-
-
+    

@@ -1,29 +1,29 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const FieldsofStrife: CardDefinition = {
-    "name": "Fields of Strife",
-    "manaCost": "",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engine_types';
+    export const FieldsofStrife: CardDefinition = {
+    name: "Fields of Strife",
+    manaCost: "",
+    colors: [
         "R",
         "W"
     ],
-    "types": [
+    types: [
         "Land"
     ],
-    "subtypes": [],
-    "entersTapped": true,
-    "oracleText": "Fields of Strife enters the battlefield tapped.\n{T}: Add {R} or {W}.\n{2}{R}{W}, {T}: Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Fields of Strife enters the battlefield tapped.\n{T}: Add {R} or {W}.\n{2}{R}{W}, {T}: Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    entersTapped: true,
+    abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Choose a color",
                     choices: [
-                        { label: "{R}", effects: [{ type: 'AddMana', value: 'R' }] },
-                        { label: "{W}", effects: [{ type: 'AddMana', value: 'W' }] }
+                        { label: "{R}", effects: [{ type: EffectType.AddMana, value: 'R' }] },
+                        { label: "{W}", effects: [{ type: EffectType.AddMana, value: 'W' }] }
                     ]
                 }
             ]
@@ -31,13 +31,11 @@ export const FieldsofStrife: CardDefinition = {
         {
             type: AbilityType.Activated,
             manaCost: "{2}{R}{W}",
-            costs: [{ type: 'TapSelection' }],
+            costs: [{ type: CostType.TapSelection }],
             effects: [
                 { type: EffectType.Surveil, amount: 1 }
             ]
         }
     ]
 };
-
-
-
+    

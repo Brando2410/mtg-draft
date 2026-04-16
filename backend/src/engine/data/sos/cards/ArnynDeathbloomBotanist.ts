@@ -1,22 +1,21 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const ArnynDeathbloomBotanist: CardDefinition = {
-    "name": "Arnyn, Deathbloom Botanist",
-    "manaCost": "{2}{B}",
-    "colors": [
+    export const ArnynDeathbloomBotanist: CardDefinition = {
+    name: "Arnyn, Deathbloom Botanist",
+    manaCost: "{2}{B}",
+    colors: [
         "B"
     ],
-    "types": [
+    types: [
         "Legendary",
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Vampire",
         "Druid"
     ],
-    "keywords": ["Deathtouch"],
-    "oracleText": "Deathtouch\nWhenever a creature you control with power or toughness 1 or less dies, target opponent loses 2 life and you gain 2 life.",
-    "abilities": [
+    keywords: ["Deathtouch"],
+    oracleText: "Deathtouch\nWhenever a creature you control with power or toughness 1 or less dies, target opponent loses 2 life and you gain 2 life.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.DeathOther,
@@ -35,11 +34,7 @@ export const ArnynDeathbloomBotanist: CardDefinition = {
             ]
         }
     ],
-    "power": "2",
-    "toughness": "2"
+    power: "2",
+    toughness: "2"
 };
-
-
-
-
-
+    

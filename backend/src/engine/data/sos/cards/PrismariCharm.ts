@@ -1,17 +1,18 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-
-export const PrismariCharm: CardDefinition = {
-  name: 'Prismari Charm',
-  manaCost: '{U}{R}',
-  colors: ['U', 'R'],
-  types: ['Instant'],
-  oracleText: 'Choose one —\n• Surveil 2, then draw a card.\n• Prismari Charm deals 1 damage to each of one or two targets.\n• Return target nonland permanent to its owner\'s hand.',
-  abilities: [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
+    export const PrismariCharm: CardDefinition = {
+    name: 'Prismari Charm',
+    manaCost: '{U}{R}',
+    colors: ['U', 'R'],
+    types: ['Instant'],
+    subtypes: [],
+    keywords: [],
+    oracleText: 'Choose one —\n• Surveil 2, then draw a card.\n• Prismari Charm deals 1 damage to each of one or two targets.\n• Return target nonland permanent to its owner\'s hand.',
+    abilities: [
     {
       type: AbilityType.Spell,
       effects: [
         {
-          type: EffectType.Choice,
+          type: CostType.Choice,
           label: 'Choose a mode:',
           choices: [
             {
@@ -39,8 +40,8 @@ export const PrismariCharm: CardDefinition = {
             {
               label: 'Return target nonland permanent to its owner\'s hand',
               targetDefinition: {
-                type: TargetType.Permanent,
-                restrictions: ['nonland'],
+                type: DurationType.Permanent,
+                restrictions: [Restriction.NonLand],
               },
               effects: [
                 {
@@ -55,6 +56,4 @@ export const PrismariCharm: CardDefinition = {
     }
   ]
 };
-
-
-
+    

@@ -1,23 +1,23 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const GreatHalloftheBiblioplex: CardDefinition = {
-    "name": "Great Hall of the Biblioplex",
-    "manaCost": "",
-    "colors": [],
-    "types": ["Land"],
-    "subtypes": [],
-    "oracleText": "{T}: Add {C}.\n{T}, Pay 1 life: Add one mana of any color. Spend this mana only to cast an instant or sorcery spell.\n{5}: If this land isn't a creature, it becomes a 2/4 Wizard creature with \"Whenever you cast an instant or sorcery spell, this creature gets +1/+0 until end of turn.\" It's still a land.",
-    "abilities": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const GreatHalloftheBiblioplex: CardDefinition = {
+    name: "Great Hall of the Biblioplex",
+    manaCost: "",
+    colors: [],
+    types: ["Land"],
+    subtypes: [],
+    keywords: [],
+    oracleText: "{T}: Add {C}.\n{T}, Pay 1 life: Add one mana of any color. Spend this mana only to cast an instant or sorcery spell.\n{5}: If this land isn't a creature, it becomes a 2/4 Wizard creature with \"Whenever you cast an instant or sorcery spell, this creature gets +1/+0 until end of turn.\" It's still a land.",
+    abilities: [
         {
             type: AbilityType.Activated,
             isManaAbility: true,
-            costs: [{ type: 'Tap', targetMapping: TargetMapping.Self }],
+            costs: [{ type: CostType.Tap, targetMapping: TargetType.Self }],
             effects: [{ type: EffectType.AddMana, value: '{C}' }]
         },
         {
             type: AbilityType.Activated,
             isManaAbility: true,
-            costs: [{ type: 'Tap', targetMapping: TargetMapping.Self }, { type: 'PayLife', amount: 1 }],
+            costs: [{ type: CostType.Tap, targetMapping: TargetType.Self }, { type: CostType.PayLife, amount: 1 }],
             effects: [{
                 type: EffectType.AddMana,
                 value: '{ANY}',
@@ -26,7 +26,7 @@ export const GreatHalloftheBiblioplex: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Mana', value: '{5}' }],
+            costs: [{ type: CostType.Mana, value: '{5}' }],
             effects: [
                 {
                     type: EffectType.ConditionalEffect,
@@ -48,7 +48,7 @@ export const GreatHalloftheBiblioplex: CardDefinition = {
                                             type: EffectType.ApplyContinuousEffect,
                                             duration: { type: DurationType.UntilEndOfTurn },
                                             powerModifier: 1,
-                                            targetMapping: TargetMapping.Self
+                                            targetMapping: TargetType.Self
                                         }
                                     ]
                                 }
@@ -60,7 +60,4 @@ export const GreatHalloftheBiblioplex: CardDefinition = {
         }
     ]
 };
-
-
-
-
+    

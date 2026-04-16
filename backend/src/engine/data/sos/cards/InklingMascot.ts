@@ -1,21 +1,21 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const InklingMascot: CardDefinition = {
-    "name": "Inkling Mascot",
-    "manaCost": "{W}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const InklingMascot: CardDefinition = {
+    name: "Inkling Mascot",
+    manaCost: "{W}{B}",
+    colors: [
         "B",
         "W"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Inkling",
         "Cat"
     ],
-    "oracleText": "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, this creature gains flying until end of turn. Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
-    "abilities": [
+    keywords: [],
+    oracleText: "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, this creature gains flying until end of turn. Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
@@ -25,7 +25,7 @@ export const InklingMascot: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     abilitiesToAdd: ['Flying'],
                     duration: { type: DurationType.UntilEndOfTurn },
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 },
                 {
                     type: EffectType.Surveil,
@@ -34,8 +34,7 @@ export const InklingMascot: CardDefinition = {
             ]
         }
     ],
-    "power": "2",
-    "toughness": "2"
+    power: "2",
+    toughness: "2"
 };
-
-
+    

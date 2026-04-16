@@ -1,19 +1,18 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const GroupProject: CardDefinition = {
-    "name": "Group Project",
-    "manaCost": "{1}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+    export const GroupProject: CardDefinition = {
+    name: "Group Project",
+    manaCost: "{1}{W}",
+    colors: [
         "W"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Create a 2/2 red and white Spirit creature token.\nFlashback—Tap three untapped creatures you control. (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
-    "keywords": ["Flashback"],
-    "flashbackCost": "{0}",
-    "abilities": [
+    subtypes: [],
+    keywords: ["Flashback"],
+    oracleText: "Create a 2/2 red and white Spirit creature token.\nFlashback—Tap three untapped creatures you control. (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    flashbackCost: "{0}",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
@@ -38,15 +37,13 @@ export const GroupProject: CardDefinition = {
             activeZone: Zone.Graveyard,
             effects: [
                 {
-                    type: 'AdditionalCost',
+                    type: EffectType.AdditionalCost,
                     condition: 'IS_FLASHBACK_CAST',
-                    targetMapping: 'SELF',
-                    additionalCosts: [{ type: 'TapSelection', value: 3, restrictions: ['Creature', 'Untapped'] }]
+                    targetMapping: TargetType.Self,
+                    additionalCosts: [{ type: CostType.TapSelection, value: 3, restrictions: ['Creature', 'Untapped'] }]
                 }
             ]
         }
     ]
 };
-
-
-
+    

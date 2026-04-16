@@ -1,25 +1,25 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const BogwaterLumaret: CardDefinition = {
-    "name": "Bogwater Lumaret",
-    "manaCost": "{B}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+    export const BogwaterLumaret: CardDefinition = {
+    name: "Bogwater Lumaret",
+    manaCost: "{B}{G}",
+    colors: [
         "B",
         "G"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Spirit",
         "Frog"
     ],
-    "oracleText": "Whenever this creature or another creature you control enters, you gain 1 life.",
-    "abilities": [
+    keywords: [],
+    oracleText: "Whenever this creature or another creature you control enters, you gain 1 life.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
-            condition: 'OWN_CREATURE_ENTERS',
+            condition: ConditionType.OwnCreatureEnters,
             effects: [
                 {
                     type: EffectType.GainLife,
@@ -29,11 +29,7 @@ export const BogwaterLumaret: CardDefinition = {
             ]
         }
     ],
-    "power": "2",
-    "toughness": "2"
+    power: "2",
+    toughness: "2"
 };
-
-
-
-
-
+    

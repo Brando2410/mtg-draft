@@ -1,20 +1,20 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const ExhibitionTidecaller: CardDefinition = {
-    "name": "Exhibition Tidecaller",
-    "manaCost": "{U}",
-    "colors": [
+    export const ExhibitionTidecaller: CardDefinition = {
+    name: "Exhibition Tidecaller",
+    manaCost: "{U}",
+    colors: [
         "U"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Djinn",
         "Wizard"
     ],
-    "oracleText": "Opus — Whenever you cast an instant or sorcery spell, target player mills three cards. If five or more mana was spent to cast that spell, that player mills ten cards instead.",
-    "abilities": [
+    keywords: [],
+    oracleText: "Opus — Whenever you cast an instant or sorcery spell, target player mills three cards. If five or more mana was spent to cast that spell, that player mills ten cards instead.",
+    abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
@@ -36,10 +36,7 @@ export const ExhibitionTidecaller: CardDefinition = {
             ]
         }
     ],
-    "power": "0",
-    "toughness": "2"
+    power: "0",
+    toughness: "2"
 };
-
-
-
-
+    

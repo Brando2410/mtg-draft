@@ -110,7 +110,7 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
                     type: EffectType.SearchLibrary,
                     fromTop: 7,
                     optional: true,
-                    restrictions: ['Instant_OR_Sorcery', 'MV_LE_SOURCE_POWER'],
+                    restrictions: ['InstantOrSorcery', 'MV_LE_SOURCE_POWER'],
                     zone: Zone.Stack,
                     isFreeCast: true,
                     remainderZone: Zone.Library,

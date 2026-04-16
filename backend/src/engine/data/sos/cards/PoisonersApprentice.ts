@@ -1,20 +1,20 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-
-export const PoisonersApprentice: CardDefinition = {
-    "name": "Poisoner's Apprentice",
-    "manaCost": "{2}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+    export const PoisonersApprentice: CardDefinition = {
+    name: "Poisoner's Apprentice",
+    manaCost: "{2}{B}",
+    colors: [
         "B"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Orc",
         "Warlock"
     ],
-    "oracleText": "Infusion — When this creature enters, target creature an opponent controls gets -4/-4 until end of turn if you gained life this turn.",
-    "abilities": [
+    keywords: [],
+    oracleText: "Infusion — When this creature enters, target creature an opponent controls gets -4/-4 until end of turn if you gained life this turn.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
@@ -25,7 +25,7 @@ export const PoisonersApprentice: CardDefinition = {
                     effects: [
                         {
                             type: EffectType.ApplyContinuousEffect,
-                            duration: 'UNTIL_END_OF_TURN',
+                            duration: DurationType.UntilEndOfTurn,
                             powerModifier: -4,
                             toughnessModifier: -4,
                             targetMapping: TargetMapping.EachOpponentCreature
@@ -35,10 +35,7 @@ export const PoisonersApprentice: CardDefinition = {
             ]
         }
     ],
-    "power": "2",
-    "toughness": "2"
+    power: "2",
+    toughness: "2"
 };
-
-
-
-
+    

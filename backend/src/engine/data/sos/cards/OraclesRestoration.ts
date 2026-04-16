@@ -1,21 +1,21 @@
-import { CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const OraclesRestoration: CardDefinition = {
-    "name": "Oracle's Restoration",
-    "manaCost": "{G}",
-    "colors": [
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const OraclesRestoration: CardDefinition = {
+    name: "Oracle's Restoration",
+    manaCost: "{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Target creature you control gets +1/+1 until end of turn. You draw a card and gain 1 life.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Target creature you control gets +1/+1 until end of turn. You draw a card and gain 1 life.",
+    abilities: [
         {
-            type: 'Spell',
+            type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: DurationType.Permanent,
                 count: 1,
                 restrictions: ['Creature', 'YouControl']
             },
@@ -42,7 +42,4 @@ export const OraclesRestoration: CardDefinition = {
         }
     ]
 };
-
-
-
-
+    

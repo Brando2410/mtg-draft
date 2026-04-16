@@ -1,27 +1,27 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const StadiumTidalmage: CardDefinition = {
-    "name": "Stadium Tidalmage",
-    "manaCost": "{2}{U}{R}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const StadiumTidalmage: CardDefinition = {
+    name: "Stadium Tidalmage",
+    manaCost: "{2}{U}{R}",
+    colors: [
         "R",
         "U"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Djinn",
         "Sorcerer"
     ],
-    "oracleText": "Whenever this creature enters or attacks, you may draw a card. If you do, discard a card.",
-    "abilities": [
+    keywords: [],
+    oracleText: "Whenever this creature enters or attacks, you may draw a card. If you do, discard a card.",
+    abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: [TriggerEvent.EnterBattlefield, TriggerEvent.Attack],
+            eventMatch: ['ON_ETB', 'ON_ATTACK'],
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Stadium Tidalmage: Draw and discard?",
                     optional: true,
                     choices: [
@@ -45,10 +45,7 @@ export const StadiumTidalmage: CardDefinition = {
             ]
         }
     ],
-    "power": "4",
-    "toughness": "4"
+    power: "4",
+    toughness: "4"
 };
-
-
-
-
+    

@@ -1,25 +1,24 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const AmbitiousAugmenter: CardDefinition = {
-    "name": "Ambitious Augmenter",
-    "manaCost": "{G}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const AmbitiousAugmenter: CardDefinition = {
+    name: "Ambitious Augmenter",
+    manaCost: "{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Turtle",
         "Wizard"
     ],
-    "keywords": ["Increment"],
-    "oracleText": "Increment (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.)\nWhen this creature dies, if it had one or more counters on it, create a 0/0 green and blue Fractal creature token, then put this creature's counters on that token.",
-    "abilities": [
+    keywords: ["Increment"],
+    oracleText: "Increment (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.)\nWhen this creature dies, if it had one or more counters on it, create a 0/0 green and blue Fractal creature token, then put this creature's counters on that token.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.Death,
-            condition: 'HAS_COUNTERS',
+            condition: ConditionType.HasCounters,
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -35,18 +34,15 @@ export const AmbitiousAugmenter: CardDefinition = {
                     amount: 1
                 },
                 {
-                    type: 'MoveCounters',
-                    targetMapping: 'LAST_CREATED_TOKEN',
-                    sourceMapping: 'SELF',
+                    type: EffectType.MoveCounters,
+                    targetMapping: TargetMapping.LastCreatedToken,
+                    sourceMapping: TargetType.Self,
                     counterType: '+1/+1'
                 }
             ]
         }
     ],
-    "power": "1",
-    "toughness": "1"
+    power: "1",
+    toughness: "1"
 };
-
-
-
-
+    

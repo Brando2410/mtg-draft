@@ -1,17 +1,17 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const Efflorescence: CardDefinition = {
-    "name": "Efflorescence",
-    "manaCost": "{2}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const Efflorescence: CardDefinition = {
+    name: "Efflorescence",
+    manaCost: "{2}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Put two +1/+1 counters on target creature.\nInfusion — If you gained life this turn, that creature also gains trample and indestructible until end of turn.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Put two +1/+1 counters on target creature.\nInfusion — If you gained life this turn, that creature also gains trample and indestructible until end of turn.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
@@ -19,12 +19,12 @@ export const Efflorescence: CardDefinition = {
                 { 
                     type: EffectType.AddCounters, 
                     amount: 2, 
-                    value: 'p1p1', 
+                    counterType: '+1/+1', 
                     targetMapping: TargetMapping.Target1 
                 },
                 { 
                     type: EffectType.ApplyContinuousEffect, 
-                    condition: 'GAINED_LIFE_THIS_TURN',
+                    condition: ConditionType.GainedLifeThisTurn,
                     duration: { type: DurationType.UntilEndOfTurn }, 
                     abilitiesToAdd: ['Trample', 'Indestructible'], 
                     targetMapping: TargetMapping.Target1 
@@ -33,6 +33,4 @@ export const Efflorescence: CardDefinition = {
         }
     ]
 };
-
-
-
+    

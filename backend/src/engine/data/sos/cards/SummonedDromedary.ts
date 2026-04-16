@@ -1,38 +1,35 @@
-import { AbilityType, CardDefinition, EffectType, SelectionType, TargetMapping, Zone } from '@shared/engine_types';
-
-export const SummonedDromedary: CardDefinition = {
-    "name": "Summoned Dromedary",
-    "manaCost": "{3}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetType, Zone } from '@shared/engine_types';
+    export const SummonedDromedary: CardDefinition = {
+    name: "Summoned Dromedary",
+    manaCost: "{3}{W}",
+    colors: [
         "W"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Spirit",
         "Camel"
     ],
-    "oracleText": "Vigilance\n{1}{W}: Return this card from your graveyard to your hand. Activate only as a sorcery.",
-    "keywords": ["Vigilance"],
-    "abilities": [
+    keywords: ["Vigilance"],
+    oracleText: "Vigilance\n{1}{W}: Return this card from your graveyard to your hand. Activate only as a sorcery.",
+    abilities: [
         {
             type: AbilityType.Activated,
             activeZone: Zone.Graveyard,
-            costs: [{ type: 'Mana', value: '{1}{W}' }],
+            costs: [{ type: CostType.Mana, value: '{1}{W}' }],
             activatedOnlyAsSorcery: true,
             effects: [
                 {
                     type: EffectType.MoveToZone,
                     zone: Zone.Hand,
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-    "power": "4",
-    "toughness": "3"
+    power: "4",
+    toughness: "3"
 };
-
-
-
+    

@@ -1,26 +1,25 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const MuseSeeker: CardDefinition = {
-    "name": "Muse Seeker",
-    "manaCost": "{1}{U}",
-    "colors": [
+    export const MuseSeeker: CardDefinition = {
+    name: "Muse Seeker",
+    manaCost: "{1}{U}",
+    colors: [
         "U"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Elf",
         "Wizard"
     ],
-    "oracleText": "Opus — Whenever you cast an instant or sorcery spell, draw a card. Then discard a card unless five or more mana was spent to cast that spell.",
-    "keywords": ["Opus"],
-    "abilities": [
+    keywords: ["Opus"],
+    oracleText: "Opus — Whenever you cast an instant or sorcery spell, draw a card. Then discard a card unless five or more mana was spent to cast that spell.",
+    abilities: [
         {
             type: AbilityType.Triggered,
             name: "Opus",
                     eventMatch: TriggerEvent.CastSpell,
-            condition: 'ON_CAST_INSTANT_SORCERY',
+            condition: TriggerEvent.CastInstantOrSorcery,
             effects: [
                 {
                     type: EffectType.DrawCards,
@@ -42,12 +41,7 @@ export const MuseSeeker: CardDefinition = {
             ]
         }
     ],
-    "power": "1",
-    "toughness": "2"
+    power: "1",
+    toughness: "2"
 };
-
-
-
-
-
-
+    

@@ -1,20 +1,20 @@
-import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
-
-export const TitansGrave: CardDefinition = {
-    "name": "Titan's Grave",
-    "manaCost": "",
-    "colors": [],
-    "types": [
+import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engine_types';
+    export const TitansGrave: CardDefinition = {
+    name: "Titan's Grave",
+    manaCost: "",
+    colors: [],
+    types: [
         "Land"
     ],
-    "subtypes": [],
-    "oracleText": "This land enters tapped.\n{T}: Add {B} or {G}.\n{2}{B}{G}, {T}: Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
-    "entersTapped": true,
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "This land enters tapped.\n{T}: Add {B} or {G}.\n{2}{B}{G}, {T}: Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    entersTapped: true,
+    abilities: [
         {
             type: AbilityType.Activated,
             id: "Add {B} or {G}",
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [
                 {
@@ -30,8 +30,8 @@ export const TitansGrave: CardDefinition = {
             type: AbilityType.Activated,
             id: "Surveil 1",
             costs: [
-                { type: 'Mana', value: '{2}{B}{G}' },
-                { type: 'Tap' }
+                { type: CostType.Mana, value: '{2}{B}{G}' },
+                { type: CostType.Tap }
             ],
             effects: [
                 {
@@ -42,6 +42,4 @@ export const TitansGrave: CardDefinition = {
         }
     ]
 };
-
-
-
+    

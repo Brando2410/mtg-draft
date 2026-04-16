@@ -1,28 +1,28 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const StormcarvedCoast: CardDefinition = {
-    "name": "Stormcarved Coast",
-    "manaCost": "",
-    "colors": [],
-    "types": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const StormcarvedCoast: CardDefinition = {
+    name: "Stormcarved Coast",
+    manaCost: "",
+    colors: [],
+    types: [
         "Land"
     ],
-    "subtypes": [],
-    "oracleText": "This land enters tapped unless you control two or more other lands.\n{T}: Add {U} or {R}.",
-    "abilities": [{
+    subtypes: [],
+    keywords: [],
+    oracleText: "This land enters tapped unless you control two or more other lands.\n{T}: Add {U} or {R}.",
+    abilities: [{
         type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
         effects: [
             {
-                type: EffectType.Tap,
+                type: CostType.Tap,
                 condition: 'LAND_COUNT_GE:2', 
-                targetMapping: TargetMapping.Self
+                targetMapping: TargetType.Self
             }
         ]
     },
     {
         type: AbilityType.Activated,
-        costs: [{ type: 'Tap', targetMapping: TargetMapping.Self }],
+        costs: [{ type: CostType.Tap, targetMapping: TargetType.Self }],
         isManaAbility: true,
         effects: [
             {
@@ -36,7 +36,4 @@ export const StormcarvedCoast: CardDefinition = {
     }
     ]
 };
-
-
-
-
+    

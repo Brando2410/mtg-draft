@@ -1,17 +1,17 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
- 
- export const FoolishFate: CardDefinition = {
-     "name": "Foolish Fate",
-     "manaCost": "{2}{B}",
-     "colors": [
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const FoolishFate: CardDefinition = {
+    name: "Foolish Fate",
+    manaCost: "{2}{B}",
+    colors: [
          "B"
      ],
-     "types": [
+    types: [
          "Instant"
      ],
-     "subtypes": [],
-     "oracleText": "Destroy target creature.\nInfusion — If you gained life this turn, that creature's controller loses 3 life.",
-     "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Destroy target creature.\nInfusion — If you gained life this turn, that creature's controller loses 3 life.",
+    abilities: [
          {
              type: AbilityType.Spell,
              targetDefinition: { type: 'Creature' },
@@ -21,7 +21,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
                      targetMapping: TargetMapping.Target1
                  },
                  {
-                     condition: 'INFUSION',
+                     condition: ConditionType.Infusion,
                      type: EffectType.LoseLife,
                      amount: 3,
                      targetMapping: TargetMapping.Target1Controller
@@ -30,6 +30,4 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
          }
      ]
  };
-
-
-
+    

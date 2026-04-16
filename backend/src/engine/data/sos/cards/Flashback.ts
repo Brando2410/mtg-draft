@@ -1,25 +1,25 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, RestrictionType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const Flashback: CardDefinition = {
-    "name": "Flashback",
-    "manaCost": "{R}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const Flashback: CardDefinition = {
+    name: "Flashback",
+    manaCost: "{R}",
+    colors: [
         "R"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Target instant or sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost. (You may cast that card from your graveyard for its flashback cost. Then exile it.)",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Target instant or sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost. (You may cast that card from your graveyard for its flashback cost. Then exile it.)",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Choose an instant or sorcery card in your graveyard",
                     targetIdMapping: 'CONTROLLER_GRAVEYARD',
-                    restrictions: ['instant_or_sorcery'],
+                    restrictions: ['InstantOrSorcery'],
                     optional: false,
                     effects: [
                         {
@@ -35,6 +35,4 @@ export const Flashback: CardDefinition = {
         }
     ]
 };
-
-
-
+    

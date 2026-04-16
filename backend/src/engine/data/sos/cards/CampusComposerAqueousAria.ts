@@ -1,18 +1,16 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const CampusComposerAqueousAria: CardDefinition = {
+    export const CampusComposerAqueousAria: CardDefinition = {
     name: "Campus Composer",
     manaCost: "{3}{U}",
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Merfolk", "Bard"],
-    power: "3",
-    toughness: "4",
     keywords: ["Ward {2}", "Prepared"],
     oracleText: "Ward {2}\nThis creature enters prepared.",
+    power: "3",
+    toughness: "4",
     image_url: "https://cards.scryfall.io/png/front/f/a/fac8ac39-ecb4-4142-bf37-131c65660a9b.png?1775937189",
     entersPrepared: true,
-
     preparedFace: {
         name: "Aqueous Aria",
         image_url: "https://cards.scryfall.io/png/front/f/a/fac8ac39-ecb4-4142-bf37-131c65660a9b.png?1775937189",
@@ -44,4 +42,4 @@ export const CampusComposerAqueousAria: CardDefinition = {
         ]
     }
 };
-
+    

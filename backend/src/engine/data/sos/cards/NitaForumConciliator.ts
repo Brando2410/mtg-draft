@@ -1,22 +1,22 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const NitaForumConciliator: CardDefinition = {
-    "name": "Nita, Forum Conciliator",
-    "manaCost": "{1}{W}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+    export const NitaForumConciliator: CardDefinition = {
+    name: "Nita, Forum Conciliator",
+    manaCost: "{1}{W}{B}",
+    colors: [
         "B",
         "W"
     ],
-    "types": [
+    types: [
         "Legendary",
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Human",
         "Advisor"
     ],
-    "oracleText": "Whenever you cast a spell you don't own, put a +1/+1 counter on each creature you control.\n{2}, Sacrifice another creature: Exile target instant or sorcery card from an opponent's graveyard. You may cast it this turn, and mana of any type can be spent to cast that spell. If that spell would be put into a graveyard, exile it instead. Activate only as a sorcery.",
-    "abilities": [
+    keywords: [],
+    oracleText: "Whenever you cast a spell you don't own, put a +1/+1 counter on each creature you control.\n{2}, Sacrifice another creature: Exile target instant or sorcery card from an opponent's graveyard. You may cast it this turn, and mana of any type can be spent to cast that spell. If that spell would be put into a graveyard, exile it instead. Activate only as a sorcery.",
+    abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
@@ -34,9 +34,9 @@ export const NitaForumConciliator: CardDefinition = {
             type: AbilityType.Activated,
             activatedOnlyAsSorcery: true,
             costs: [
-                { type: 'Mana', value: '{2}' },
+                { type: CostType.Mana, value: '{2}' },
                 {
-                    type: 'Sacrifice',
+                    type: CostType.Sacrifice,
                     targetMapping: TargetMapping.OtherCreaturesYouControl
                 }
             ],
@@ -45,12 +45,12 @@ export const NitaForumConciliator: CardDefinition = {
                 count: 1,
                 restrictions: [
                     'OpponentControl',
-                    'Instant_OR_Sorcery'
+                    'InstantOrSorcery'
                 ]
             },
             effects: [
                 {
-                    type: EffectType.Exile,
+                    type: CostType.Exile,
                     targetMapping: TargetMapping.Target1
                 },
                 {
@@ -60,14 +60,12 @@ export const NitaForumConciliator: CardDefinition = {
                     canPlayExiled: true,
                     spendAnyMana: true,
                     exileOnMoveToGraveyard: true,
-                    redirectConditions: { zone: Zone.Graveyard, onLeaveZone: Zone.Exile }
+                    redirectConditions: { zone: Zone.Graveyard, onLeaveZone: CostType.Exile }
                 }
             ],
-
-        }
+    }
     ],
-    "power": "2",
-    "toughness": "3"
+    power: "2",
+    toughness: "3"
 };
-
-
+    

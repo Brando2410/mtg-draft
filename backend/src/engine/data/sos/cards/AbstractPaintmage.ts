@@ -1,6 +1,5 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const AbstractPaintmage: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } from '@shared/engine_types';
+    export const AbstractPaintmage: CardDefinition = {
     name: "Abstract Paintmage",
     manaCost: "{U}{U/R}{R}",
     colors: [
@@ -14,9 +13,10 @@ export const AbstractPaintmage: CardDefinition = {
         "Djinn",
         "Sorcerer"
     ],
-    power: "2",
-    toughness: "2",
+    keywords: [],
     oracleText: "At the beginning of your first main phase, add {U}{R}. Spend this mana only to cast instant and sorcery spells.",
+    power: "2",
+    toughness: "2",
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -32,7 +32,4 @@ export const AbstractPaintmage: CardDefinition = {
         }
     ],
 };
-
-
-
-
+    

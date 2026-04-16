@@ -1,22 +1,22 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const GrapplewithDeath: CardDefinition = {
-    "name": "Grapple with Death",
-    "manaCost": "{1}{B}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const GrapplewithDeath: CardDefinition = {
+    name: "Grapple with Death",
+    manaCost: "{1}{B}{G}",
+    colors: [
         "B",
         "G"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Destroy target artifact or creature. You gain 1 life.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Destroy target artifact or creature. You gain 1 life.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: DurationType.Permanent,
                 count: 1,
                 restrictions: ["Artifact or Creature"]
             },
@@ -34,6 +34,4 @@ export const GrapplewithDeath: CardDefinition = {
         }
     ]
 };
-
-
-
+    

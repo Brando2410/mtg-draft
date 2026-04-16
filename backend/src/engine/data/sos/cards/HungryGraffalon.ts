@@ -1,23 +1,20 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const HungryGraffalon: CardDefinition = {
-    "name": "Hungry Graffalon",
-    "manaCost": "{3}{G}",
-    "colors": [
+import { CardDefinition } from '@shared/engine_types';
+    export const HungryGraffalon: CardDefinition = {
+    name: "Hungry Graffalon",
+    manaCost: "{3}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Giraffe"
     ],
-    "oracleText": "Reach\nIncrement (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.)",
-    "keywords": ["Reach", "Increment"],
-    "abilities": [],
-    "power": "3",
-    "toughness": "4"
+    keywords: ["Reach", "Increment"],
+    oracleText: "Reach\nIncrement (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.)",
+    abilities: [],
+    power: "3",
+    toughness: "4"
 };
-
-
-
+    

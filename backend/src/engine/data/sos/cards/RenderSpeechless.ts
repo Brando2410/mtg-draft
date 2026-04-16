@@ -1,23 +1,23 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-
-export const RenderSpeechless: CardDefinition = {
-    "name": "Render Speechless",
-    "manaCost": "{2}{W}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+    export const RenderSpeechless: CardDefinition = {
+    name: "Render Speechless",
+    manaCost: "{2}{W}{B}",
+    colors: [
         "B",
         "W"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Target opponent reveals their hand. You choose a nonland card from it. That player discards that card.\nPut two +1/+1 counters on up to one target creature.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Target opponent reveals their hand. You choose a nonland card from it. That player discards that card.\nPut two +1/+1 counters on up to one target creature.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: 'Choose a nonland card',
                     targetMapping: TargetMapping.Controller,
                     targetIdMapping: 'OPPONENT_HAND_REVEAL_PICK',
@@ -32,13 +32,11 @@ export const RenderSpeechless: CardDefinition = {
                         minCount: 0,
                         restrictions: ['Creature']
                     },
-
-                    amount: 2,
-                    counterType: 'p1p1',
-
-                }
+    amount: 2,
+                    counterType: '+1/+1',
+    }
             ]
         }
     ]
 };
-
+    

@@ -1,24 +1,23 @@
-import { CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const MoltenNote: CardDefinition = {
-    "name": "Molten Note",
-    "manaCost": "{X}{R}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const MoltenNote: CardDefinition = {
+    name: "Molten Note",
+    manaCost: "{X}{R}{W}",
+    colors: [
         "R",
         "W"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Molten Note deals damage to target creature equal to the amount of mana spent to cast this spell. Untap all creatures you control.\nFlashback {6}{R}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
-    "keywords": ["Flashback"],
-    "flashbackCost": "{6}{R}{W}",
-    "abilities": [
+    subtypes: [],
+    keywords: ["Flashback"],
+    oracleText: "Molten Note deals damage to target creature equal to the amount of mana spent to cast this spell. Untap all creatures you control.\nFlashback {6}{R}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    flashbackCost: "{6}{R}{W}",
+    abilities: [
         {
-            type: 'Spell',
+            type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: DurationType.Permanent,
                 restrictions: ['Creature'],
                 count: 1
             },
@@ -36,7 +35,4 @@ export const MoltenNote: CardDefinition = {
         }
     ]
 };
-
-
-
-
+    

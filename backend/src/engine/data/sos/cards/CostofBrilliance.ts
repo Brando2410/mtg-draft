@@ -1,17 +1,17 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const CostofBrilliance: CardDefinition = {
-    "name": "Cost of Brilliance",
-    "manaCost": "{2}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const CostofBrilliance: CardDefinition = {
+    name: "Cost of Brilliance",
+    manaCost: "{2}{B}",
+    colors: [
         "B"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Target player draws two cards and loses 2 life. Put a +1/+1 counter on up to one target creature.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Target player draws two cards and loses 2 life. Put a +1/+1 counter on up to one target creature.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: { type: 'Player', count: 1 },
@@ -19,7 +19,7 @@ export const CostofBrilliance: CardDefinition = {
                 { type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Target1 },
                 { type: EffectType.LoseLife, amount: 2, targetMapping: TargetMapping.Target1 },
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Put a +1/+1 counter on up to one target creature?",
                     choices: [
                         {
@@ -36,6 +36,4 @@ export const CostofBrilliance: CardDefinition = {
         }
     ]
 };
-
-
-
+    

@@ -1,18 +1,16 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const GoblinGlasswrightCraftwithPride: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const GoblinGlasswrightCraftwithPride: CardDefinition = {
     name: "Goblin Glasswright",
     manaCost: "{1}{R}",
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Goblin", "Sorcerer"],
-    power: "2",
-    toughness: "2",
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared.",
+    power: "2",
+    toughness: "2",
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/c/8/c85c5f06-dd31-4e2c-97be-2f64d65069ea.png?1775937759",
-
     preparedFace: {
         name: "Craft with Pride",
         image_url: "https://cards.scryfall.io/png/front/c/8/c85c5f06-dd31-4e2c-97be-2f64d65069ea.png?1775937759",
@@ -38,8 +36,8 @@ export const GoblinGlasswrightCraftwithPride: CardDefinition = {
                                     type: AbilityType.Activated,
                                     id: 'Treasure_Mana_Ability',
                                     costs: [
-                                        { type: 'Tap', targetMapping: TargetMapping.Self },
-                                        { type: 'Sacrifice', targetMapping: TargetMapping.Self }
+                                        { type: CostType.Tap, targetMapping: TargetType.Self },
+                                        { type: CostType.Sacrifice, targetMapping: TargetType.Self }
                                     ],
                                     isManaAbility: true
                                 }
@@ -53,4 +51,4 @@ export const GoblinGlasswrightCraftwithPride: CardDefinition = {
         ]
     }
 };
-
+    

@@ -1,25 +1,24 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-
-export const StartledRelicSloth: CardDefinition = {
-    "name": "Startled Relic Sloth",
-    "manaCost": "{2}{R}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, CostType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const StartledRelicSloth: CardDefinition = {
+    name: "Startled Relic Sloth",
+    manaCost: "{2}{R}{W}",
+    colors: [
         "R",
         "W"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Sloth",
         "Beast"
     ],
-    "oracleText": "Trample, lifelink\nAt the beginning of combat on your turn, exile up to one target card from a graveyard.",
-    "keywords": [
+    keywords: [
         "Trample",
         "Lifelink"
     ],
-    "abilities": [
+    oracleText: "Trample, lifelink\nAt the beginning of combat on your turn, exile up to one target card from a graveyard.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.BeginningOfCombatStep,
@@ -31,17 +30,13 @@ export const StartledRelicSloth: CardDefinition = {
             },
             effects: [
                 {
-                    type: EffectType.Exile,
+                    type: CostType.Exile,
                     targetMapping: TargetMapping.Target1
                 }
             ]
         }
     ],
-    "power": "4",
-    "toughness": "4"
+    power: "4",
+    toughness: "4"
 };
-
-
-
-
-
+    

@@ -1,18 +1,18 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, Zone } from '@shared/engine_types';
-
-export const EmbracetheParadox: CardDefinition = {
-    "name": "Embrace the Paradox",
-    "manaCost": "{3}{G}{U}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+    export const EmbracetheParadox: CardDefinition = {
+    name: "Embrace the Paradox",
+    manaCost: "{3}{G}{U}",
+    colors: [
         "G",
         "U"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Draw three cards. You may put a land card from your hand onto the battlefield tapped.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Draw three cards. You may put a land card from your hand onto the battlefield tapped.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
@@ -21,7 +21,7 @@ export const EmbracetheParadox: CardDefinition = {
                     amount: 3
                 },
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: 'Put a land card from hand onto battlefield tapped?',
                     optional: true,
                     choices: [
@@ -36,7 +36,7 @@ export const EmbracetheParadox: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.PutOnBattlefield,
-                                    targetMapping: 'TARGET_1',
+                                    targetMapping: TargetMapping.Target1,
                                     tapped: true
                                 }
                             ]
@@ -47,6 +47,4 @@ export const EmbracetheParadox: CardDefinition = {
         }
     ]
 };
-
-
-
+    

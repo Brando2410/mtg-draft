@@ -1,21 +1,21 @@
-import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const EmilVastlandsRoamer: CardDefinition = {
-    "name": "Emil, Vastlands Roamer",
-    "manaCost": "{2}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, CostType, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const EmilVastlandsRoamer: CardDefinition = {
+    name: "Emil, Vastlands Roamer",
+    manaCost: "{2}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Legendary",
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Elf",
         "Druid"
     ],
-    "oracleText": "Creatures you control with +1/+1 counters on them have trample.\n{4}{G}, {T}: Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it, where X is the number of differently named lands you control.",
-    "abilities": [
+    keywords: [],
+    oracleText: "Creatures you control with +1/+1 counters on them have trample.\n{4}{G}, {T}: Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it, where X is the number of differently named lands you control.",
+    abilities: [
         {
             type: AbilityType.Static,
             effects: [
@@ -24,15 +24,15 @@ export const EmilVastlandsRoamer: CardDefinition = {
                     sublayer: 'AbilityAdding',
                     abilitiesToAdd: ['Trample'],
                     targetMapping: TargetMapping.AllCreaturesYouControl,
-                    condition: 'HAS_COUNTERS'
+                    condition: ConditionType.HasCounters
                 }
             ]
         },
         {
             type: AbilityType.Activated,
             costs: [
-                { type: 'Mana', value: '{4}{G}' },
-                { type: 'Tap', targetMapping: TargetMapping.Self }
+                { type: CostType.Mana, value: '{4}{G}' },
+                { type: CostType.Tap, targetMapping: TargetType.Self }
             ],
             effects: [
                 {
@@ -49,16 +49,14 @@ export const EmilVastlandsRoamer: CardDefinition = {
                 },
                 {
                     type: EffectType.AddCounters,
-                    targetMapping: 'LAST_CREATED_TOKEN',
+                    targetMapping: TargetMapping.LastCreatedToken,
                     amount: DynamicAmount.DifferentlyNamedLandsCount,
-                    value: 'p1p1'
+                    counterType: '+1/+1'
                 }
             ]
         }
     ],
-    "power": "3",
-    "toughness": "3"
+    power: "3",
+    toughness: "3"
 };
-
-
-
+    

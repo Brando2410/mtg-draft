@@ -1,22 +1,21 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const SpectacularSkywhale: CardDefinition = {
-    "name": "Spectacular Skywhale",
-    "manaCost": "{2}{U}{R}",
-    "colors": [
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const SpectacularSkywhale: CardDefinition = {
+    name: "Spectacular Skywhale",
+    manaCost: "{2}{U}{R}",
+    colors: [
         "R",
         "U"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Elemental",
         "Whale"
     ],
-    "oracleText": "Flying\nOpus — Whenever you cast an instant or sorcery spell, this creature gets +3/+0 until end of turn. If five or more mana was spent to cast that spell, put three +1/+1 counters on this creature instead.",
-    "keywords": ["Flying"],
-    "abilities": [
+    keywords: ["Flying"],
+    oracleText: "Flying\nOpus — Whenever you cast an instant or sorcery spell, this creature gets +3/+0 until end of turn. If five or more mana was spent to cast that spell, put three +1/+1 counters on this creature instead.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastSpell,
@@ -25,9 +24,9 @@ export const SpectacularSkywhale: CardDefinition = {
                 {
                     type: EffectType.AddCounters,
                     amount: 3,
-                    counterType: 'p1p1',
+                    counterType: '+1/+1',
                     condition: 'SPENT_MANA_GE:5',
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -35,15 +34,12 @@ export const SpectacularSkywhale: CardDefinition = {
                     duration: { type: DurationType.UntilEndOfTurn },
                     powerModifier: 3,
                     toughnessModifier: 0,
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-    "power": "1",
-    "toughness": "4"
+    power: "1",
+    toughness: "4"
 };
-
-
-
-
+    

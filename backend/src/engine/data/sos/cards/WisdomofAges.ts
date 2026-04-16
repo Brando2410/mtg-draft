@@ -1,5 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const WisdomofAges: CardDefinition = {
     name: "Wisdom of Ages",
     manaCost: "{4}{U}{U}{U}",
@@ -10,6 +9,7 @@ export const WisdomofAges: CardDefinition = {
         "Sorcery"
     ],
     subtypes: [],
+    keywords: [],
     oracleText: "Return all instant and sorcery cards from your graveyard to your hand. You have no maximum hand size for the rest of the game.\nExile Wisdom of Ages.",
     abilities: [
         {
@@ -18,8 +18,8 @@ export const WisdomofAges: CardDefinition = {
                 {
                     type: EffectType.MoveToZone,
                     zone: Zone.Hand,
-                    sourceZones: [Zone.Graveyard],
-                    restrictions: ['Instant_OR_Sorcery'],
+                    sourceZones: ['Graveyard'],
+                    restrictions: ['InstantOrSorcery'],
                     targetMapping: TargetMapping.TargetAll
                 },
                 {
@@ -29,13 +29,10 @@ export const WisdomofAges: CardDefinition = {
                     targetMapping: TargetMapping.Controller
                 },
                 {
-                    type: EffectType.Exile,
-                    targetMapping: TargetMapping.Self
+                    type: CostType.Exile,
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ]
 };
-
-
-

@@ -1,37 +1,34 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-
-export const SilverquilltheDisputant: CardDefinition = {
-    "name": "Silverquill, the Disputant",
-    "manaCost": "{2}{W}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const SilverquilltheDisputant: CardDefinition = {
+    name: "Silverquill, the Disputant",
+    manaCost: "{2}{W}{B}",
+    colors: [
         "B",
         "W"
     ],
-    "types": [
+    types: [
         "Legendary",
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Elder",
         "Dragon"
     ],
-    "keywords": [
+    keywords: [
         "Flying",
         "Vigilance"
     ],
-    "oracleText": "Flying, vigilance\nEach instant and sorcery spell you cast has casualty 1. (As you cast that spell, you may sacrifice a creature with power 1 or greater. When you do, copy the spell and you may choose new targets for the copy.)",
-    "abilities": [
+    oracleText: "Flying, vigilance\nEach instant and sorcery spell you cast has casualty 1. (As you cast that spell, you may sacrifice a creature with power 1 or greater. When you do, copy the spell and you may choose new targets for the copy.)",
+    abilities: [
         {
-            type: AbilityType.Static,
-            activeZone: Zone.Battlefield,
-            effects: [
+            type: AbilityType.Static,            effects: [
                 {
                     type: EffectType.AdditionalCost,
                     targetMapping: TargetMapping.Controller,
                     restrictions: ['InstantOrSorcery'],
                     additionalCosts: [
                         {
-                            type: 'Sacrifice',
+                            type: CostType.Sacrifice,
                             restrictions: ['power>=1'],
                             isCasualty: true,
                             optional: true,
@@ -42,9 +39,7 @@ export const SilverquilltheDisputant: CardDefinition = {
             ]
         }
     ],
-    "power": "4",
-    "toughness": "4"
+    power: "4",
+    toughness: "4"
 };
-
-
-
+    

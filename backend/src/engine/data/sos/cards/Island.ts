@@ -1,19 +1,17 @@
 import { CardDefinition } from '@shared/engine_types';
-
-export const Island: CardDefinition = {
-    "name": "Island",
-    "manaCost": "",
-    "colors": [],
-    "types": [
+    export const Island: CardDefinition = {
+    name: "Island",
+    manaCost: "",
+    colors: [],
+    types: [
         "Basic",
         "Land"
     ],
-    "subtypes": [
+    subtypes: [
         "Island"
     ],
-    "oracleText": "({T}: Add {U}.)",
-    "abilities": []
+    keywords: [],
+    oracleText: "({T}: Add {U}.)",
+    abilities: []
 };
-
-
-
+    

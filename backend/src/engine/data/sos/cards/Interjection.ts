@@ -1,17 +1,17 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const Interjection: CardDefinition = {
-    "name": "Interjection",
-    "manaCost": "{W}",
-    "colors": [
+    export const Interjection: CardDefinition = {
+    name: "Interjection",
+    manaCost: "{W}",
+    colors: [
         "W"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Target creature gets +2/+2 and gains first strike until end of turn.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Target creature gets +2/+2 and gains first strike until end of turn.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
@@ -31,6 +31,4 @@ export const Interjection: CardDefinition = {
         }
     ]
 };
-
-
-
+    

@@ -1,21 +1,20 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const DigSiteInventory: CardDefinition = {
-    "name": "Dig Site Inventory",
-    "manaCost": "{W}",
-    "colors": [
+    export const DigSiteInventory: CardDefinition = {
+    name: "Dig Site Inventory",
+    manaCost: "{W}",
+    colors: [
         "W"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "keywords": [
+    subtypes: [],
+    keywords: [
         "Flashback"
     ],
-    "flashbackCost": "{W}",
-    "oracleText": "Put a +1/+1 counter on target creature you control. It gains vigilance until end of turn.\nFlashback {W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
-    "abilities": [
+    oracleText: "Put a +1/+1 counter on target creature you control. It gains vigilance until end of turn.\nFlashback {W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    flashbackCost: "{W}",
+    abilities: [
         {
             type: AbilityType.Spell,
             flashbackCost: "{W}",
@@ -37,6 +36,4 @@ export const DigSiteInventory: CardDefinition = {
         }
     ]
 };
-
-
-
+    

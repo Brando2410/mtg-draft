@@ -1,24 +1,24 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const WiltintheHeat: CardDefinition = {
-    "name": "Wilt in the Heat",
-    "manaCost": "{2}{R}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const WiltintheHeat: CardDefinition = {
+    name: "Wilt in the Heat",
+    manaCost: "{2}{R}{W}",
+    colors: [
         "R",
         "W"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "This spell costs {2} less to cast if one or more cards left your graveyard this turn.\nWilt in the Heat deals 5 damage to target creature. If that creature would die this turn, exile it instead.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "This spell costs {2} less to cast if one or more cards left your graveyard this turn.\nWilt in the Heat deals 5 damage to target creature. If that creature would die this turn, exile it instead.",
+    abilities: [
         {
             type: AbilityType.Spell,
             costReduction: {
                 type: EffectType.CostReduction,
                 manaReduction: '{2}',
-                condition: 'CARDS_LEFT_YOUR_GRAVEYARD_THIS_TURN'
+                condition: ConditionType.CardsLeftYourGraveyardThisTurn
             } as any,
             targetDefinition: {
                 type: TargetType.Creature,
@@ -40,8 +40,4 @@ export const WiltintheHeat: CardDefinition = {
         }
     ]
 };
-
-
-
-
-
+    

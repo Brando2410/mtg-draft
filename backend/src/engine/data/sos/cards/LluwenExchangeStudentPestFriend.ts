@@ -1,15 +1,14 @@
-import { AbilityType, CardDefinition, EffectType, SelectionType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const LluwenExchangeStudentPestFriend: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+    export const LluwenExchangeStudentPestFriend: CardDefinition = {
     name: "Lluwen, Exchange Student // Pest Friend",
     manaCost: "{2}{B}{G}",
     colors: ["B", "G"],
     types: ["Legendary", "Creature"],
     subtypes: ["Elf", "Druid"],
-    power: "3",
-    toughness: "4",
     keywords: ["Prepared"],
     oracleText: "Lluwen enters prepared.\nExile a creature card from your graveyard: Lluwen becomes prepared. Activate only as a sorcery.",
+    power: "3",
+    toughness: "4",
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/a/0/a0bcb638-c3c8-4973-9537-5c471f43f34f.png?1775938382",
     abilities: [
@@ -18,16 +17,15 @@ export const LluwenExchangeStudentPestFriend: CardDefinition = {
             activatedOnlyAsSorcery: true,
             costs: [
                 {
-                    type: 'Exile',
+                    type: CostType.Exile,
                     zone: Zone.Graveyard,
                     amount: 1,
                     restrictions: ['Creature']
                 }
             ],
-            effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
+            effects: [{ type: EffectType.Prepare, targetMapping: TargetType.Self }]
         }
     ],
-
     preparedFace: {
         name: "Pest Friend",
         image_url: "https://cards.scryfall.io/png/front/a/0/a0bcb638-c3c8-4973-9537-5c471f43f34f.png?1775938382",
@@ -66,4 +64,4 @@ export const LluwenExchangeStudentPestFriend: CardDefinition = {
         ]
     }
 };
-
+    

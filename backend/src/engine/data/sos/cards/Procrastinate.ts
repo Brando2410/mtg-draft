@@ -1,12 +1,13 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const Procrastinate: CardDefinition = {
-  name: 'Procrastinate',
-  manaCost: '{X}{U}',
-  colors: ['U'],
-  types: ['Instant'],
-  oracleText: 'Tap target creature. Put twice X stun counters on it.',
-  abilities: [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const Procrastinate: CardDefinition = {
+    name: 'Procrastinate',
+    manaCost: '{X}{U}',
+    colors: ['U'],
+    types: ['Instant'],
+    subtypes: [],
+    keywords: [],
+    oracleText: 'Tap target creature. Put twice X stun counters on it.',
+    abilities: [
     {
       type: AbilityType.Spell,
       targetDefinition: {
@@ -14,7 +15,7 @@ export const Procrastinate: CardDefinition = {
       },
       effects: [
         {
-          type: EffectType.Tap,
+          type: CostType.Tap,
           targetMapping: TargetMapping.Target1
         },
         {
@@ -27,6 +28,4 @@ export const Procrastinate: CardDefinition = {
     }
   ]
 };
-
-
-
+    

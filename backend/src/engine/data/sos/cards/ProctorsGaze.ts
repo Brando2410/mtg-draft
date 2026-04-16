@@ -1,22 +1,22 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-
-export const ProctorsGaze: CardDefinition = {
-    "name": "Proctor's Gaze",
-    "manaCost": "{2}{G}{U}",
-    "colors": [
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+    export const ProctorsGaze: CardDefinition = {
+    name: "Proctor's Gaze",
+    manaCost: "{2}{G}{U}",
+    colors: [
         "G",
         "U"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Return up to one target nonland permanent to its owner's hand. Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Return up to one target nonland permanent to its owner's hand. Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: DurationType.Permanent,
                 count: 1,
                 minCount: 0,
                 restrictions: ['NonLand']
@@ -41,6 +41,4 @@ export const ProctorsGaze: CardDefinition = {
         }
     ]
 };
-
-
-
+    

@@ -1,17 +1,17 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const UnsubtleMockery: CardDefinition = {
-    "name": "Unsubtle Mockery",
-    "manaCost": "{2}{R}",
-    "colors": [
+    export const UnsubtleMockery: CardDefinition = {
+    name: "Unsubtle Mockery",
+    manaCost: "{2}{R}",
+    colors: [
         "R"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Unsubtle Mockery deals 4 damage to target creature. Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Unsubtle Mockery deals 4 damage to target creature. Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
@@ -33,6 +33,4 @@ export const UnsubtleMockery: CardDefinition = {
         }
     ]
 };
-
-
-
+    

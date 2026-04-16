@@ -1,48 +1,46 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const AdventurousEaterHaveaBite: CardDefinition = {
-    "name": "Adventurous Eater // Have a Bite",
-    "manaCost": "{2}{B} // {B}",
-    "colors": [
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const AdventurousEaterHaveaBite: CardDefinition = {
+    name: "Adventurous Eater // Have a Bite",
+    manaCost: "{2}{B} // {B}",
+    colors: [
         "B"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Human",
         "Warlock"
     ],
-    "power": "3",
-    "toughness": "2",
-    "image_url": "https://cards.scryfall.io/png/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.png?1775937412",
-    "keywords": ["Prepared"],
-    "oracleText": "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
-    "abilities": [
+    keywords: ["Prepared"],
+    oracleText: "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    power: "3",
+    toughness: "2",
+    image_url: "https://cards.scryfall.io/png/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.png?1775937412",
+    abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
+            effects: [{ type: EffectType.Prepare, targetMapping: TargetType.Self }]
         }
     ],
-
-    "preparedFace": {
-        "name": "Have a Bite",
-        "image_url": "https://cards.scryfall.io/png/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.png?1775937412",
-        "manaCost": "{B}",
-        "colors": ["B"],
-        "types": ["Sorcery"],
-        "oracleText": "Put a +1/+1 counter on target creature. You gain 1 life.",
-        "abilities": [
+    preparedFace: {
+        name: "Have a Bite",
+        image_url: "https://cards.scryfall.io/png/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.png?1775937412",
+        manaCost: "{B}",
+        colors: ["B"],
+        types: ["Sorcery"],
+        oracleText: "Put a +1/+1 counter on target creature. You gain 1 life.",
+        abilities: [
             {
                 type: AbilityType.Spell,
                 targetDefinition: { type: 'Creature' },
                 effects: [
-                    { type: EffectType.AddCounters, amount: 1, value: 'p1p1', targetMapping: TargetMapping.Target1 },
+                    { type: EffectType.AddCounters, amount: 1, counterType: '+1/+1', targetMapping: TargetMapping.Target1 },
                     { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }
                 ]
             }
         ]
     }
 };
-
+    

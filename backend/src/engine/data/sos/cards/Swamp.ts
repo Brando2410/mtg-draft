@@ -1,19 +1,17 @@
 import { CardDefinition } from '@shared/engine_types';
-
-export const Swamp: CardDefinition = {
-    "name": "Swamp",
-    "manaCost": "",
-    "colors": [],
-    "types": [
+    export const Swamp: CardDefinition = {
+    name: "Swamp",
+    manaCost: "",
+    colors: [],
+    types: [
         "Basic",
         "Land"
     ],
-    "subtypes": [
+    subtypes: [
         "Swamp"
     ],
-    "oracleText": "({T}: Add {B}.)",
-    "abilities": []
+    keywords: [],
+    oracleText: "({T}: Add {B}.)",
+    abilities: []
 };
-
-
-
+    

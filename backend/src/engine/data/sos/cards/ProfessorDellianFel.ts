@@ -1,17 +1,17 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-
-export const ProfessorDellianFel: CardDefinition = {
-  name: 'Professor Dellian Fel',
-  manaCost: '{2}{W}{B}',
-  colors: ['W', 'B'],
-  types: ['Legendary', 'Planeswalker'],
-  subtypes: ['Dellian'],
-  oracleText: '+2: You gain 3 life.\n0: Draw a card and you lose 1 life.\n−3: Destroy target creature.\n−6: You get an emblem with "Whenever you gain life, target opponent loses that much life."',
-  loyalty: '5',
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const ProfessorDellianFel: CardDefinition = {
+    name: 'Professor Dellian Fel',
+    manaCost: '{2}{W}{B}',
+    colors: ['W', 'B'],
+    types: ['Legendary', 'Planeswalker'],
+    subtypes: ['Dellian'],
+    keywords: [],
+    oracleText: '+2: You gain 3 life.\n0: Draw a card and you lose 1 life.\n−3: Destroy target creature.\n−6: You get an emblem with "Whenever you gain life, target opponent loses that much life."',
+    loyalty: '5',
   abilities: [
     {
       type: AbilityType.Activated,
-      costs: [{ type: 'Loyalty', value: '+2' }],
+      costs: [{ type: CostType.Loyalty, value: '+2' }],
       effects: [
         {
           type: EffectType.GainLife,
@@ -22,7 +22,7 @@ export const ProfessorDellianFel: CardDefinition = {
     },
     {
       type: AbilityType.Activated,
-      costs: [{ type: 'Loyalty', value: '0' }],
+      costs: [{ type: CostType.Loyalty, value: '0' }],
       effects: [
         {
           type: EffectType.DrawCards,
@@ -38,7 +38,7 @@ export const ProfessorDellianFel: CardDefinition = {
     },
     {
       type: AbilityType.Activated,
-      costs: [{ type: 'Loyalty', value: '-3' }],
+      costs: [{ type: CostType.Loyalty, value: '-3' }],
       targetDefinition: {
         type: TargetType.Creature,
       },
@@ -51,7 +51,7 @@ export const ProfessorDellianFel: CardDefinition = {
     },
     {
       type: AbilityType.Activated,
-      costs: [{ type: 'Loyalty', value: '-6' }],
+      costs: [{ type: CostType.Loyalty, value: '-6' }],
       effects: [
         {
           type: EffectType.CreateEmblem,
@@ -65,7 +65,7 @@ export const ProfessorDellianFel: CardDefinition = {
                 condition: ConditionType.PlayerIsController,
                 targetDefinition: {
                   type: TargetType.Player,
-                  restrictions: ['opponent'],
+                  restrictions: [Restriction.Opponent],
                   mapping: TargetMapping.Target1
                 },
                 effects: [
@@ -83,7 +83,4 @@ export const ProfessorDellianFel: CardDefinition = {
     }
   ]
 };
-
-
-
-
+    

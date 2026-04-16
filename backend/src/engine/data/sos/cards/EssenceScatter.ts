@@ -1,17 +1,17 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const EssenceScatter: CardDefinition = {
-    "name": "Essence Scatter",
-    "manaCost": "{1}{U}",
-    "colors": [
+    export const EssenceScatter: CardDefinition = {
+    name: "Essence Scatter",
+    manaCost: "{1}{U}",
+    colors: [
         "U"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Counter target creature spell.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Counter target creature spell.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
@@ -28,6 +28,4 @@ export const EssenceScatter: CardDefinition = {
         }
     ]
 };
-
-
-
+    

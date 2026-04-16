@@ -1,23 +1,22 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const TragedyFeaster: CardDefinition = {
-    "name": "Tragedy Feaster",
-    "manaCost": "{2}{B}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+    export const TragedyFeaster: CardDefinition = {
+    name: "Tragedy Feaster",
+    manaCost: "{2}{B}{B}",
+    colors: [
         "B"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Demon"
     ],
-    "oracleText": "Trample\nWard—Discard a card.\nInfusion — At the beginning of your end step, sacrifice a permanent unless you gained life this turn.",
-    "keywords": [
+    keywords: [
         "Trample",
         "Ward—Discard a card"
     ],
-    "abilities": [
+    oracleText: "Trample\nWard—Discard a card.\nInfusion — At the beginning of your end step, sacrifice a permanent unless you gained life this turn.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EndStep,
@@ -28,7 +27,7 @@ export const TragedyFeaster: CardDefinition = {
                     effects: [],
                     onFailureEffects: [
                         {
-                            type: EffectType.Sacrifice,
+                            type: CostType.Sacrifice,
                             targetMapping: TargetMapping.Controller
                         }
                     ]
@@ -36,10 +35,7 @@ export const TragedyFeaster: CardDefinition = {
             ]
         }
     ],
-    "power": "7",
-    "toughness": "6"
+    power: "7",
+    toughness: "6"
 };
-
-
-
-
+    

@@ -1,21 +1,21 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-
-export const HeatedArgument: CardDefinition = {
-    "name": "Heated Argument",
-    "manaCost": "{4}{R}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, SelectionType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const HeatedArgument: CardDefinition = {
+    name: "Heated Argument",
+    manaCost: "{4}{R}",
+    colors: [
         "R"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Heated Argument deals 6 damage to target creature. You may exile a card from your graveyard. If you do, Heated Argument also deals 2 damage to that creature's controller.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Heated Argument deals 6 damage to target creature. You may exile a card from your graveyard. If you do, Heated Argument also deals 2 damage to that creature's controller.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: DurationType.Permanent,
                 count: 1,
                 restrictions: ["Creature"]
             },
@@ -31,8 +31,8 @@ export const HeatedArgument: CardDefinition = {
                     optional: true,
                     effects: [
                         {
-                            type: EffectType.Exile,
-                            selectionType: 'Target',
+                            type: CostType.Exile,
+                            selectionType: SelectionType.Target,
                             targetDefinition: {
                                 type: TargetType.CardInGraveyard,
                                 count: 1,
@@ -51,6 +51,4 @@ export const HeatedArgument: CardDefinition = {
         }
     ]
 };
-
-
-
+    

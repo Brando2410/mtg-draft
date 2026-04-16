@@ -1,18 +1,17 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const StrixhavenSkycoach: CardDefinition = {
-    "name": "Strixhaven Skycoach",
-    "manaCost": "{3}",
-    "colors": [],
-    "types": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+    export const StrixhavenSkycoach: CardDefinition = {
+    name: "Strixhaven Skycoach",
+    manaCost: "{3}",
+    colors: [],
+    types: [
         "Artifact"
     ],
-    "subtypes": [
+    subtypes: [
         "Vehicle"
     ],
-    "oracleText": "Flying\nWhen this Vehicle enters, you may search your library for a basic land card, reveal it, put it into your hand, then shuffle.\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
-    "keywords": ["Flying", "Crew 2"],
-    "abilities": [
+    keywords: ["Flying", "Crew 2"],
+    oracleText: "Flying\nWhen this Vehicle enters, you may search your library for a basic land card, reveal it, put it into your hand, then shuffle.\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
@@ -33,21 +32,18 @@ export const StrixhavenSkycoach: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Crew', value: 2 }],
+            costs: [{ type: CostType.Crew, value: 2 }],
             effects: [
                 {
                     type: EffectType.CREW,
-                    targetMapping: TargetMapping.Self,
+                    targetMapping: TargetType.Self,
                     powerOverride: 3,
                     toughnessOverride: 2
                 }
             ]
         }
     ],
-    "power": "3",
-    "toughness": "2"
+    power: "3",
+    toughness: "2"
 };
-
-
-
-
+    

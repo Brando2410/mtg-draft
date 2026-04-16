@@ -1,21 +1,20 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const MelancholicPoet: CardDefinition = {
-    "name": "Melancholic Poet",
-    "manaCost": "{1}{B}",
-    "colors": [
+    export const MelancholicPoet: CardDefinition = {
+    name: "Melancholic Poet",
+    manaCost: "{1}{B}",
+    colors: [
         "B"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Elf",
         "Bard"
     ],
-    "oracleText": "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, each opponent loses 1 life and you gain 1 life.",
-    "keywords": ["Repartee"],
-    "abilities": [
+    keywords: ["Repartee"],
+    oracleText: "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, each opponent loses 1 life and you gain 1 life.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastSpell,
@@ -34,12 +33,7 @@ export const MelancholicPoet: CardDefinition = {
             ]
         }
     ],
-    "power": "2",
-    "toughness": "2"
+    power: "2",
+    toughness: "2"
 };
-
-
-
-
-
-
+    

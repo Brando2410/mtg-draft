@@ -1,42 +1,40 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
-    "name": "Abigale, Poet Laureate // Heroic Stanza",
-    "manaCost": "{1}{W}{B} // {1}{W/B}",
-    "colors": [
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
+    name: "Abigale, Poet Laureate // Heroic Stanza",
+    manaCost: "{1}{W}{B} // {1}{W/B}",
+    colors: [
         "B",
         "W"
     ],
-    "types": [
+    types: [
         "Legendary",
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Bird",
         "Bard"
     ],
-    "power": "2",
-    "toughness": "3",
-    "image_url": "https://cards.scryfall.io/png/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.png?1775938164",
-    "keywords": ["Flying", "Prepared"],
-    "oracleText": "Flying\nWhenever you cast a creature spell, Abigale becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
-    "abilities": [
+    keywords: ["Flying", "Prepared"],
+    oracleText: "Flying\nWhenever you cast a creature spell, Abigale becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    power: "2",
+    toughness: "3",
+    image_url: "https://cards.scryfall.io/png/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.png?1775938164",
+    abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
             condition: 'SPELL_IS_CREATURE',
-            effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
+            effects: [{ type: EffectType.Prepare, targetMapping: TargetType.Self }]
         }
     ],
-
-    "preparedFace": {
-        "name": "Heroic Stanza",
-        "image_url": "https://cards.scryfall.io/png/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.png?1775938164",
-        "manaCost": "{1}{W/B}",
-        "colors": ["B", "W"],
-        "types": ["Sorcery"],
-        "oracleText": "Put a +1/+1 counter on target creature.",
-        "abilities": [
+    preparedFace: {
+        name: "Heroic Stanza",
+        image_url: "https://cards.scryfall.io/png/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.png?1775938164",
+        manaCost: "{1}{W/B}",
+        colors: ["B", "W"],
+        types: ["Sorcery"],
+        oracleText: "Put a +1/+1 counter on target creature.",
+        abilities: [
             {
                 type: AbilityType.Spell,
                 targetDefinition: { type: 'Creature' },
@@ -44,7 +42,7 @@ export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
                     {
                         type: EffectType.AddCounters,
                         amount: 1,
-                        value: 'p1p1',
+                        counterType: '+1/+1',
                         targetMapping: TargetMapping.Target1
                     }
                 ]
@@ -52,7 +50,4 @@ export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
         ]
     }
 };
-
-
-
-
+    

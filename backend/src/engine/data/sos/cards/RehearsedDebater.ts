@@ -1,21 +1,20 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const RehearsedDebater: CardDefinition = {
-    "name": "Rehearsed Debater",
-    "manaCost": "{2}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const RehearsedDebater: CardDefinition = {
+    name: "Rehearsed Debater",
+    manaCost: "{2}{W}",
+    colors: [
         "W"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Djinn",
         "Bard"
     ],
-    "oracleText": "Vigilance\nRepartee — Whenever you cast an instant or sorcery spell that targets a creature, this creature gets +1/+1 until end of turn.",
-    "keywords": ["Vigilance"],
-    "abilities": [
+    keywords: ["Vigilance"],
+    oracleText: "Vigilance\nRepartee — Whenever you cast an instant or sorcery spell that targets a creature, this creature gets +1/+1 until end of turn.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastInstantOrSorcery,
@@ -23,7 +22,7 @@ export const RehearsedDebater: CardDefinition = {
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    targetMapping: TargetMapping.Self,
+                    targetMapping: TargetType.Self,
                     duration: { type: DurationType.UntilEndOfTurn },
                     powerModifier: 1,
                     toughnessModifier: 1
@@ -31,11 +30,7 @@ export const RehearsedDebater: CardDefinition = {
             ]
         }
     ],
-    "power": "3",
-    "toughness": "3"
+    power: "3",
+    toughness: "3"
 };
-
-
-
-
-
+    

@@ -1,18 +1,18 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const VibrantOutburst: CardDefinition = {
-    "name": "Vibrant Outburst",
-    "manaCost": "{U}{R}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const VibrantOutburst: CardDefinition = {
+    name: "Vibrant Outburst",
+    manaCost: "{U}{R}",
+    colors: [
         "R",
         "U"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Vibrant Outburst deals 3 damage to any target. Tap up to one target creature.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Vibrant Outburst deals 3 damage to any target. Tap up to one target creature.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: [
@@ -35,13 +35,11 @@ export const VibrantOutburst: CardDefinition = {
                     targetMapping: TargetMapping.Target1
                 },
                 {
-                    type: EffectType.Tap,
+                    type: CostType.Tap,
                     targetMapping: TargetMapping.Target2
                 }
             ]
         }
     ]
 };
-
-
-
+    

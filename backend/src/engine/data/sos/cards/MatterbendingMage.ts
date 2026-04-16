@@ -1,25 +1,25 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-
-export const MatterbendingMage: CardDefinition = {
-    "name": "Matterbending Mage",
-    "manaCost": "{2}{U}",
-    "colors": [
+    export const MatterbendingMage: CardDefinition = {
+    name: "Matterbending Mage",
+    manaCost: "{2}{U}",
+    colors: [
         "U"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Human",
         "Wizard"
     ],
-    "oracleText": "When this creature enters, return up to one other target creature to its owner's hand.\nWhenever you cast a spell with {X} in its mana cost, this creature can't be blocked this turn.",
-    "abilities": [
+    keywords: [],
+    oracleText: "When this creature enters, return up to one other target creature to its owner's hand.\nWhenever you cast a spell with {X} in its mana cost, this creature can't be blocked this turn.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: DurationType.Permanent,
                 count: [0, 1],
                 restrictions: ["Creature", "OtherThanSource"]
             },
@@ -43,17 +43,12 @@ export const MatterbendingMage: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     abilitiesToAdd: ["Unblockable"],
                     duration: { type: DurationType.UntilEndOfTurn },
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-    "power": "2",
-    "toughness": "2"
+    power: "2",
+    toughness: "2"
 };
-
-
-
-
-
-
+    

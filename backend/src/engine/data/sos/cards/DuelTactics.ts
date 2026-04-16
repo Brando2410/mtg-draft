@@ -1,21 +1,20 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const DuelTactics: CardDefinition = {
-    "name": "Duel Tactics",
-    "manaCost": "{R}",
-    "colors": [
+    export const DuelTactics: CardDefinition = {
+    name: "Duel Tactics",
+    manaCost: "{R}",
+    colors: [
         "R"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "keywords": [
+    subtypes: [],
+    keywords: [
         "Flashback"
     ],
-    "flashbackCost": "{1}{R}",
-    "oracleText": "Duel Tactics deals 1 damage to target creature. It can't block this turn.\nFlashback {1}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
-    "abilities": [
+    oracleText: "Duel Tactics deals 1 damage to target creature. It can't block this turn.\nFlashback {1}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    flashbackCost: "{1}{R}",
+    abilities: [
         {
             type: AbilityType.Spell,
             flashbackCost: "{1}{R}",
@@ -32,6 +31,4 @@ export const DuelTactics: CardDefinition = {
         }
     ]
 };
-
-
-
+    

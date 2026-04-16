@@ -1,23 +1,23 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const PrimaryResearch: CardDefinition = {
-  "name": "Primary Research",
-  "manaCost": "{4}{W}",
-  "colors": [
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+    export const PrimaryResearch: CardDefinition = {
+    name: "Primary Research",
+    manaCost: "{4}{W}",
+    colors: [
     "W"
   ],
-  "types": [
+    types: [
     "Enchantment"
   ],
-  "subtypes": [],
-  "oracleText": "When this enchantment enters, return target nonland permanent card with mana value 3 or less from your graveyard to the battlefield.\nAt the beginning of your end step, if a card left your graveyard this turn, draw a card.",
-  "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "When this enchantment enters, return target nonland permanent card with mana value 3 or less from your graveyard to the battlefield.\nAt the beginning of your end step, if a card left your graveyard this turn, draw a card.",
+    abilities: [
     {
       type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
       targetDefinition: {
         type: TargetType.CardInGraveyard,
-        restrictions: ['nonland', 'permanent', 'mv <= 3', 'youcontrol'],
+        restrictions: [Restriction.NonLand, Restriction.Permanent, 'mv <= 3', Restriction.YouControl],
         count: 1
       },
       effects: [
@@ -41,7 +41,4 @@ export const PrimaryResearch: CardDefinition = {
     }
   ]
 };
-
-
-
-
+    

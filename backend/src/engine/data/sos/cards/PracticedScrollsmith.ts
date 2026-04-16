@@ -1,35 +1,34 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-
-export const PracticedScrollsmith: CardDefinition = {
-    "name": "Practiced Scrollsmith",
-    "manaCost": "{R}{R/W}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const PracticedScrollsmith: CardDefinition = {
+    name: "Practiced Scrollsmith",
+    manaCost: "{R}{R/W}{W}",
+    colors: [
         "R",
         "W"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Dwarf",
         "Cleric"
     ],
-    "oracleText": "First strike\nWhen this creature enters, exile target noncreature, nonland card from your graveyard. Until the end of your next turn, you may cast that card.",
-    "keywords": [
+    keywords: [
         "First strike"
     ],
-    "abilities": [
+    oracleText: "First strike\nWhen this creature enters, exile target noncreature, nonland card from your graveyard. Until the end of your next turn, you may cast that card.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
-                restrictions: ['Noncreature', 'Nonland', 'youcontrol']
+                restrictions: ['Noncreature', 'Nonland', Restriction.YouControl]
             },
             effects: [
                 {
-                    type: EffectType.Exile,
+                    type: CostType.Exile,
                     targetMapping: TargetMapping.Target1
                 },
                 {
@@ -41,10 +40,7 @@ export const PracticedScrollsmith: CardDefinition = {
             ]
         }
     ],
-    "power": "3",
-    "toughness": "2"
+    power: "3",
+    toughness: "2"
 };
-
-
-
-
+    

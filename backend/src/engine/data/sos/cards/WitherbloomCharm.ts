@@ -1,36 +1,36 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const WitherbloomCharm: CardDefinition = {
-    "name": "Witherbloom Charm",
-    "manaCost": "{B}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const WitherbloomCharm: CardDefinition = {
+    name: "Witherbloom Charm",
+    manaCost: "{B}{G}",
+    colors: [
         "B",
         "G"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Choose one —\n• You may sacrifice a permanent. If you do, draw two cards.\n• You gain 5 life.\n• Destroy target nonland permanent with mana value 2 or less.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Choose one —\n• You may sacrifice a permanent. If you do, draw two cards.\n• You gain 5 life.\n• Destroy target nonland permanent with mana value 2 or less.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     choices: [
                         {
                             label: "You may sacrifice a permanent. If you do, draw two cards.",
                             effects: [
                                 {
-                                    type: EffectType.Choice,
+                                    type: CostType.Choice,
                                     label: "Sacrifice a permanent?",
                                     choices: [
                                         {
                                             label: "Yes",
                                             costs: [
                                                 {
-                                                    type: 'Sacrifice',
+                                                    type: CostType.Sacrifice,
                                                     restrictions: [
                                                         'Permanent'
                                                     ],
@@ -66,7 +66,7 @@ export const WitherbloomCharm: CardDefinition = {
                         {
                             label: "Destroy target nonland permanent with mana value 2 or less",
                             targetDefinition: {
-                                type: TargetType.Permanent,
+                                type: DurationType.Permanent,
                                 count: 1,
                                 restrictions: [
                                     'Nonland',
@@ -90,6 +90,4 @@ export const WitherbloomCharm: CardDefinition = {
         }
     ]
 };
-
-
-
+    

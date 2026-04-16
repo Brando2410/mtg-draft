@@ -1,17 +1,17 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const QuickStudy: CardDefinition = {
-    "name": "Quick Study",
-    "manaCost": "{2}{U}",
-    "colors": [
+    export const QuickStudy: CardDefinition = {
+    name: "Quick Study",
+    manaCost: "{2}{U}",
+    colors: [
         "U"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Draw two cards.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Draw two cards.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
@@ -24,6 +24,4 @@ export const QuickStudy: CardDefinition = {
         }
     ]
 };
-
-
-
+    

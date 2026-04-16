@@ -1,25 +1,25 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const EnnisDebateModerator: CardDefinition = {
-    "name": "Ennis, Debate Moderator",
-    "manaCost": "{1}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+    export const EnnisDebateModerator: CardDefinition = {
+    name: "Ennis, Debate Moderator",
+    manaCost: "{1}{W}",
+    colors: [
         "W"
     ],
-    "types": [
+    types: [
         "Legendary",
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Human",
         "Cleric"
     ],
-    "oracleText": "When Ennis enters, exile up to one other target creature you control. Return that card to the battlefield under its owner's control at the beginning of the next end step.\nAt the beginning of your end step, if one or more cards were put into exile this turn, put a +1/+1 counter on Ennis.",
-    "abilities": [
+    keywords: [],
+    oracleText: "When Ennis enters, exile up to one other target creature you control. Return that card to the battlefield under its owner's control at the beginning of the next end step.\nAt the beginning of your end step, if one or more cards were put into exile this turn, put a +1/+1 counter on Ennis.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
-            condition: 'OBJECT_IS_SELF',
+            condition: ConditionType.ObjectIsSelf,
             targetDefinition: {
                 type: 'Creature',
                 restrictions: ['YouControl', 'Other'],
@@ -29,7 +29,7 @@ export const EnnisDebateModerator: CardDefinition = {
             },
             effects: [
                 {
-                    type: EffectType.Exile,
+                    type: CostType.Exile,
                     targetMapping: TargetMapping.Target1,
                     returnToBattlefield: true,
                     returnduration: { type: DurationType.NextEndStep }
@@ -43,18 +43,14 @@ export const EnnisDebateModerator: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    targetMapping: TargetMapping.Self,
+                    targetMapping: TargetType.Self,
                     amount: 1,
-                    value: 'p1p1'
+                    counterType: '+1/+1'
                 }
             ]
         }
     ],
-    "power": "1",
-    "toughness": "1"
+    power: "1",
+    toughness: "1"
 };
-
-
-
-
-
+    

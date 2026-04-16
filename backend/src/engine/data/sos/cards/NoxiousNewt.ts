@@ -1,23 +1,22 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const NoxiousNewt: CardDefinition = {
-    "name": "Noxious Newt",
-    "manaCost": "{1}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const NoxiousNewt: CardDefinition = {
+    name: "Noxious Newt",
+    manaCost: "{1}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Salamander"
     ],
-    "oracleText": "Deathtouch\n{T}: Add {G}.",
-    "keywords": ["Deathtouch"],
-    "abilities": [
+    keywords: ["Deathtouch"],
+    oracleText: "Deathtouch\n{T}: Add {G}.",
+    abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap', value: true }],
+            costs: [{ type: CostType.Tap, value: true }],
             isManaAbility: true,
             effects: [
                 {
@@ -28,10 +27,7 @@ export const NoxiousNewt: CardDefinition = {
             ]
         }
     ],
-    "power": "1",
-    "toughness": "2"
+    power: "1",
+    toughness: "2"
 };
-
-
-
-
+    

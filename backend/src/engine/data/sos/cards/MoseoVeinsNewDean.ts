@@ -1,14 +1,13 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const MoseoVeinsNewDean: CardDefinition = {
-    "name": "Moseo, Vein's New Dean",
-    "manaCost": "{2}{B}",
-    "colors": ["B"],
-    "types": ["Legendary", "Creature"],
-    "subtypes": ["Bird", "Skeleton", "Warlock"],
-    "oracleText": "Flying\nWhen Moseo enters, create a 1/1 black and green Pest creature token with \"Whenever this token attacks, you gain 1 life.\"\nInfusion — At the beginning of your end step, if you gained life this turn, return up to one target creature card with mana value X or less from your graveyard to the battlefield, where X is the amount of life you gained this turn.",
-    "keywords": ["Flying"],
-    "abilities": [
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+    export const MoseoVeinsNewDean: CardDefinition = {
+    name: "Moseo, Vein's New Dean",
+    manaCost: "{2}{B}",
+    colors: ["B"],
+    types: ["Legendary", "Creature"],
+    subtypes: ["Bird", "Skeleton", "Warlock"],
+    keywords: ["Flying"],
+    oracleText: "Flying\nWhen Moseo enters, create a 1/1 black and green Pest creature token with \"Whenever this token attacks, you gain 1 life.\"\nInfusion — At the beginning of your end step, if you gained life this turn, return up to one target creature card with mana value X or less from your graveyard to the battlefield, where X is the amount of life you gained this turn.",
+    abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
@@ -58,11 +57,7 @@ export const MoseoVeinsNewDean: CardDefinition = {
             ]
         }
     ],
-    "power": "2",
-    "toughness": "1"
+    power: "2",
+    toughness: "1"
 };
-
-
-
-
-
+    

@@ -1,6 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const ResonatingLute: CardDefinition = {
+    export const ResonatingLute: CardDefinition = {
     name: "Resonating Lute",
     manaCost: "{2}{U}{R}",
     colors: [
@@ -11,6 +10,7 @@ export const ResonatingLute: CardDefinition = {
         "Artifact"
     ],
     subtypes: [],
+    keywords: [],
     oracleText: "Lands you control have \"{T}: Add two mana of any one color. Spend this mana only to cast instant and sorcery spells.\"\n{T}: Draw a card. Activate only if you have seven or more cards in your hand.",
     abilities: [
         {
@@ -50,6 +50,4 @@ export const ResonatingLute: CardDefinition = {
         }
     ]
 };
-
-
-
+    

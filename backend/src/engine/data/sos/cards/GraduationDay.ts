@@ -1,17 +1,17 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
-
-export const GraduationDay: CardDefinition = {
-    "name": "Graduation Day",
-    "manaCost": "{1}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const GraduationDay: CardDefinition = {
+    name: "Graduation Day",
+    manaCost: "{1}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Enchantment"
     ],
-    "subtypes": [],
-    "oracleText": "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, put a +1/+1 counter on target creature you control.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, put a +1/+1 counter on target creature you control.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastInstantOrSorcery,
@@ -19,21 +19,17 @@ export const GraduationDay: CardDefinition = {
             targetDefinition: {
                 type: TargetType.AnyTarget,
                 count: 1,
-                restrictions: ['creature', 'youcontrol']
+                restrictions: [Restriction.Creature, Restriction.YouControl]
             },
             effects: [
                 {
                     type: EffectType.AddCounters,
                     amount: 1,
-                    value: 'p1p1',
-                    targetMapping: 'TARGET_1'
+                    counterType: '+1/+1',
+                    targetMapping: TargetMapping.Target1
                 }
             ]
         }
     ]
 };
-
-
-
-
-
+    

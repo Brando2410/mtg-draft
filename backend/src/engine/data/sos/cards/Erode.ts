@@ -1,10 +1,11 @@
-import { AbilityType, CardDefinition, TargetMapping, EffectType, TargetType, Zone } from "@shared/engine_types";
-
-export const Erode: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+    export const Erode: CardDefinition = {
     name: "Erode",
     manaCost: "{W}",
     colors: ["W"],
     types: ["Instant"],
+    subtypes: [],
+    keywords: [],
     oracleText: "Destroy target creature or planeswalker. Its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle.",
     abilities: [
         {
@@ -19,7 +20,7 @@ export const Erode: CardDefinition = {
                     targetMapping: TargetMapping.Target1,
                 },
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: 'Search for a basic land?',
                     targetMapping: TargetMapping.Target1Controller, // The player who makes the choice
                     choices: [
@@ -49,5 +50,4 @@ export const Erode: CardDefinition = {
         }
     ]
 };
-
-
+    

@@ -1,21 +1,20 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const TackleArtist: CardDefinition = {
-    "name": "Tackle Artist",
-    "manaCost": "{3}{R}",
-    "colors": [
+import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const TackleArtist: CardDefinition = {
+    name: "Tackle Artist",
+    manaCost: "{3}{R}",
+    colors: [
         "R"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Orc",
         "Sorcerer"
     ],
-    "oracleText": "Trample\nOpus — Whenever you cast an instant or sorcery spell, put a +1/+1 counter on this creature. If five or more mana was spent to cast that spell, put two +1/+1 counters on this creature instead.",
-    "keywords": ["Trample"],
-    "abilities": [
+    keywords: ["Trample"],
+    oracleText: "Trample\nOpus — Whenever you cast an instant or sorcery spell, put a +1/+1 counter on this creature. If five or more mana was spent to cast that spell, put two +1/+1 counters on this creature instead.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastSpell,
@@ -24,24 +23,21 @@ export const TackleArtist: CardDefinition = {
                 {
                     type: EffectType.AddCounters,
                     amount: 2,
-                    counterType: 'p1p1',
+                    counterType: '+1/+1',
                     condition: 'SPENT_MANA_GE:5',
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 },
                 {
                     type: EffectType.AddCounters,
                     amount: 1,
-                    counterType: 'p1p1',
+                    counterType: '+1/+1',
                     condition: 'SPENT_MANA_LT:5',
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-    "power": "4",
-    "toughness": "3"
+    power: "4",
+    toughness: "3"
 };
-
-
-
-
+    

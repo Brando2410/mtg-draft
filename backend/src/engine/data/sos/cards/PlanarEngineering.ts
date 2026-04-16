@@ -1,21 +1,21 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-
-export const PlanarEngineering: CardDefinition = {
-    "name": "Planar Engineering",
-    "manaCost": "{3}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetType, Zone } from '@shared/engine_types';
+    export const PlanarEngineering: CardDefinition = {
+    name: "Planar Engineering",
+    manaCost: "{3}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Sacrifice two lands. Search your library for four basic land cards, put them onto the battlefield tapped, then shuffle.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Sacrifice two lands. Search your library for four basic land cards, put them onto the battlefield tapped, then shuffle.",
+    abilities: [
         {
             type: AbilityType.Spell,
             costs: [
-                { type: "Sacrifice", restrictions: [Restriction.Land], amount: 2 }
+                { type: CostType.Sacrifice, restrictions: [Restriction.Land], amount: 2 }
             ],
             effects: [
                 {
@@ -33,7 +33,4 @@ export const PlanarEngineering: CardDefinition = {
         }
     ]
 };
-
-
-
-
+    

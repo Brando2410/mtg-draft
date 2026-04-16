@@ -1,21 +1,21 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const ColossusoftheBloodAge: CardDefinition = {
-    "name": "Colossus of the Blood Age",
-    "manaCost": "{4}{R}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const ColossusoftheBloodAge: CardDefinition = {
+    name: "Colossus of the Blood Age",
+    manaCost: "{4}{R}{W}",
+    colors: [
         "R",
         "W"
     ],
-    "types": [
+    types: [
         "Artifact",
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Construct"
     ],
-    "oracleText": "When this creature enters, it deals 3 damage to each opponent and you gain 3 life.\nWhen this creature dies, discard any number of cards, then draw that many cards plus one.",
-    "abilities": [
+    keywords: [],
+    oracleText: "When this creature enters, it deals 3 damage to each opponent and you gain 3 life.\nWhen this creature dies, discard any number of cards, then draw that many cards plus one.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
@@ -30,21 +30,18 @@ export const ColossusoftheBloodAge: CardDefinition = {
             effects: [
                 {
                     type: EffectType.DiscardCards,
-                    amount: 'ANY',
+                    amount: TargetType.Any,
                     targetMapping: TargetMapping.Controller,
                     next: {
                         type: EffectType.DrawCards,
-                        amount: 'DISCARDED_COUNT_PLUS_1',
+                        amount: DynamicAmount.DiscardedCountPlus1,
                         targetMapping: TargetMapping.Controller
                     }
                 }
             ]
         }
     ],
-    "power": "6",
-    "toughness": "6"
+    power: "6",
+    toughness: "6"
 };
-
-
-
-
+    

@@ -1,17 +1,17 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const ChelonianTackle: CardDefinition = {
-    "name": "Chelonian Tackle",
-    "manaCost": "{2}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const ChelonianTackle: CardDefinition = {
+    name: "Chelonian Tackle",
+    manaCost: "{2}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Target creature you control gets +0/+10 until end of turn. Then it fights up to one target creature an opponent controls. (Each deals damage equal to its power to the other.)",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Target creature you control gets +0/+10 until end of turn. Then it fights up to one target creature an opponent controls. (Each deals damage equal to its power to the other.)",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
@@ -24,7 +24,7 @@ export const ChelonianTackle: CardDefinition = {
                     targetMapping: TargetMapping.Target1
                 },
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Fight up to one target creature an opponent controls?",
                     choices: [
                         {
@@ -45,6 +45,4 @@ export const ChelonianTackle: CardDefinition = {
         }
     ]
 };
-
-
-
+    

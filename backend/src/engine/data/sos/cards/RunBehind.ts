@@ -1,17 +1,17 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const RunBehind: CardDefinition = {
-    "name": "Run Behind",
-    "manaCost": "{3}{U}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+    export const RunBehind: CardDefinition = {
+    name: "Run Behind",
+    manaCost: "{3}{U}",
+    colors: [
         "U"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "This spell costs {1} less to cast if it targets an attacking creature.\nTarget creature's owner puts it on their choice of the top or bottom of their library.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "This spell costs {1} less to cast if it targets an attacking creature.\nTarget creature's owner puts it on their choice of the top or bottom of their library.",
+    abilities: [
         {
             type: AbilityType.Static,
             activeZone: Zone.Hand,
@@ -19,17 +19,17 @@ export const RunBehind: CardDefinition = {
                 {
                     type: EffectType.CostReduction,
                     amount: 1,
-                    targetMapping: TargetMapping.Self,
+                    targetMapping: TargetType.Self,
                     condition: 'TARGET_1_MATCHES:attacking'
                 }
             ]
         },
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Permanent, restrictions: ['Creature'] },
+            targetDefinition: { type: DurationType.Permanent, restrictions: ['Creature'] },
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     targetMapping: TargetMapping.Target1Owner,
                     choices: [
                         {
@@ -60,6 +60,4 @@ export const RunBehind: CardDefinition = {
         }
     ]
 };
-
-
-
+    

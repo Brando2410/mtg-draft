@@ -1,17 +1,17 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const WitheringCurse: CardDefinition = {
-    "name": "Withering Curse",
-    "manaCost": "{1}{B}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const WitheringCurse: CardDefinition = {
+    name: "Withering Curse",
+    manaCost: "{1}{B}{B}",
+    colors: [
         "B"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "All creatures get -2/-2 until end of turn.\nInfusion — If you gained life this turn, destroy all creatures instead.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "All creatures get -2/-2 until end of turn.\nInfusion — If you gained life this turn, destroy all creatures instead.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
@@ -19,7 +19,7 @@ export const WitheringCurse: CardDefinition = {
                     type: EffectType.ConditionalEffect,
                     effects: [
                         {
-                            condition: 'INFUSION',
+                            condition: ConditionType.Infusion,
                             type: EffectType.Destroy,
                             targetMapping: TargetMapping.AllMatchingPermanents,
                             restrictions: [{ type: 'Type', value: 'Creature' }]
@@ -27,7 +27,7 @@ export const WitheringCurse: CardDefinition = {
                         {
                             condition: '!INFUSION',
                             type: EffectType.ApplyContinuousEffect,
-                            duration: 'UNTIL_END_OF_TURN',
+                            duration: DurationType.UntilEndOfTurn,
                             powerModifier: -2,
                             toughnessModifier: -2,
                             targetMapping: TargetMapping.AllMatchingPermanents,
@@ -39,6 +39,4 @@ export const WitheringCurse: CardDefinition = {
         }
     ]
 };
-
-
-
+    

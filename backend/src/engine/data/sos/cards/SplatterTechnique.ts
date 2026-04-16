@@ -1,23 +1,23 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const SplatterTechnique: CardDefinition = {
-    "name": "Splatter Technique",
-    "manaCost": "{1}{U}{U}{R}{R}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const SplatterTechnique: CardDefinition = {
+    name: "Splatter Technique",
+    manaCost: "{1}{U}{U}{R}{R}",
+    colors: [
         "R",
         "U"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Choose one —\n• Draw four cards.\n• Splatter Technique deals 4 damage to each creature and planeswalker.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Choose one —\n• Draw four cards.\n• Splatter Technique deals 4 damage to each creature and planeswalker.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Choose one",
                     choices: [
                         {
@@ -46,6 +46,4 @@ export const SplatterTechnique: CardDefinition = {
         }
     ]
 };
-
-
-
+    

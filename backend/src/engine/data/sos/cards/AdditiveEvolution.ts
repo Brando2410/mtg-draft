@@ -1,17 +1,17 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const AdditiveEvolution: CardDefinition = {
-    "name": "Additive Evolution",
-    "manaCost": "{3}{G}{G}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
+    export const AdditiveEvolution: CardDefinition = {
+    name: "Additive Evolution",
+    manaCost: "{3}{G}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Enchantment"
     ],
-    "subtypes": [],
-    "oracleText": "When this enchantment enters, create a 0/0 green and blue Fractal creature token. Put three +1/+1 counters on it.\nAt the beginning of combat on your turn, put a +1/+1 counter on target creature you control. It gains vigilance until end of turn.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "When this enchantment enters, create a 0/0 green and blue Fractal creature token. Put three +1/+1 counters on it.\nAt the beginning of combat on your turn, put a +1/+1 counter on target creature you control. It gains vigilance until end of turn.",
+    abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
@@ -31,19 +31,19 @@ export const AdditiveEvolution: CardDefinition = {
                 },
                 {
                     type: EffectType.AddCounters,
-                    targetMapping: 'LAST_CREATED_TOKEN',
+                    targetMapping: TargetMapping.LastCreatedToken,
                     amount: 3,
-                    value: 'p1p1'
+                    counterType: '+1/+1'
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.BeginningOfCombatStep,
-            condition: 'IS_YOUR_TURN',
-            targetDefinition: { type: 'Creature', controller: 'player' },
+            condition: ConditionType.IsYourTurn,
+            targetDefinition: { type: 'Creature', restrictions: [Restriction.YouControl] },
             effects: [
-                { type: EffectType.AddCounters, amount: 1, value: 'p1p1', targetMapping: TargetMapping.Target1 },
+                { type: EffectType.AddCounters, amount: 1, counterType: '+1/+1', targetMapping: TargetMapping.Target1 },
                 {
                     type: EffectType.ApplyContinuousEffect,
                     targetMapping: TargetMapping.Target1,
@@ -54,7 +54,4 @@ export const AdditiveEvolution: CardDefinition = {
         }
     ]
 };
-
-
-
-
+    

@@ -1,15 +1,14 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const JadziStewardofFateOraclesGift: CardDefinition = {
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+    export const JadziStewardofFateOraclesGift: CardDefinition = {
     name: "Jadzi, Steward of Fate // Oracle's Gift",
     manaCost: "{2}{U}",
     colors: ["U"],
     types: ["Legendary", "Creature"],
     subtypes: ["Human", "Wizard"],
-    power: "2",
-    toughness: "4",
     keywords: ["Prepared"],
     oracleText: "Jadzi enters prepared.\nWhen Jadzi enters, draw two cards, then discard two cards.",
+    power: "2",
+    toughness: "4",
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.png?1775937293",
     abilities: [
@@ -22,7 +21,6 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
             ]
         }
     ],
-
     preparedFace: {
         name: "Oracle's Gift",
         image_url: "https://cards.scryfall.io/png/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.png?1775937293",
@@ -45,13 +43,13 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
                             toughness: "0",
                             image_url: "https://cards.scryfall.io/png/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.png?1682693894"
                         },
-                        amount: "X",
+                        amount: DynamicAmount.X,
                         targetMapping: TargetMapping.Controller
                     },
                     {
                         type: EffectType.AddCounters,
-                        counterType: 'p1p1',
-                        amount: "X",
+                        counterType: '+1/+1',
+                        amount: DynamicAmount.X,
                         targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
                         restrictions: ['Fractal']
                     }
@@ -60,4 +58,4 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
         ]
     }
 };
-
+    

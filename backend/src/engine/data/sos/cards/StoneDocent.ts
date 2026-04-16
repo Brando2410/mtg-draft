@@ -1,26 +1,26 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-
-export const StoneDocent: CardDefinition = {
-    "name": "Stone Docent",
-    "manaCost": "{1}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+    export const StoneDocent: CardDefinition = {
+    name: "Stone Docent",
+    manaCost: "{1}{W}",
+    colors: [
         "W"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Spirit",
         "Chimera"
     ],
-    "oracleText": "{W}, Exile this card from your graveyard: You gain 2 life. Surveil 1. Activate only as a sorcery. (Look at the top card of your library. You may put it into your graveyard.)",
-    "abilities": [
+    keywords: [],
+    oracleText: "{W}, Exile this card from your graveyard: You gain 2 life. Surveil 1. Activate only as a sorcery. (Look at the top card of your library. You may put it into your graveyard.)",
+    abilities: [
         {
             type: AbilityType.Activated,
             activatedOnlyAsSorcery: true,
             costs: [
-                { type: 'Mana', value: '{W}' },
-                { type: 'ExileSelf' }
+                { type: CostType.Mana, value: '{W}' },
+                { type: CostType.ExileSelf }
             ],
             activeZone: Zone.Graveyard,
             effects: [
@@ -37,10 +37,7 @@ export const StoneDocent: CardDefinition = {
             ],
         }
     ],
-    "power": "3",
-    "toughness": "1"
+    power: "3",
+    toughness: "1"
 };
-
-
-
-
+    

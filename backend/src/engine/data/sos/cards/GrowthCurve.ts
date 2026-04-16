@@ -1,41 +1,39 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const GrowthCurve: CardDefinition = {
-    "name": "Growth Curve",
-    "manaCost": "{G}{U}",
-    "colors": [
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const GrowthCurve: CardDefinition = {
+    name: "Growth Curve",
+    manaCost: "{G}{U}",
+    colors: [
         "G",
         "U"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Put a +1/+1 counter on target creature you control, then double the number of +1/+1 counters on that creature.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Put a +1/+1 counter on target creature you control, then double the number of +1/+1 counters on that creature.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: DurationType.Permanent,
                 count: 1,
                 restrictions: ["Creature", "YouControl"]
             },
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    counterType: 'p1p1',
+                    counterType: '+1/+1',
                     amount: 1,
                     targetMapping: TargetMapping.Target1
                 },
                 {
                     type: EffectType.DoubleCounters,
-                    counterType: 'p1p1',
+                    counterType: '+1/+1',
                     targetMapping: TargetMapping.Target1
                 }
             ]
         }
     ]
 };
-
-
-
+    

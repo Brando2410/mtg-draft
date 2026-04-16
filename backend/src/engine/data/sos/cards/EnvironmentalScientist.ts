@@ -1,20 +1,20 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const EnvironmentalScientist: CardDefinition = {
-    "name": "Environmental Scientist",
-    "manaCost": "{1}{G}",
-    "colors": [
+    export const EnvironmentalScientist: CardDefinition = {
+    name: "Environmental Scientist",
+    manaCost: "{1}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Human",
         "Druid"
     ],
-    "oracleText": "When this creature enters, you may search your library for a basic land card, reveal it, put it into your hand, then shuffle.",
-    "abilities": [
+    keywords: [],
+    oracleText: "When this creature enters, you may search your library for a basic land card, reveal it, put it into your hand, then shuffle.",
+    abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
@@ -35,10 +35,7 @@ export const EnvironmentalScientist: CardDefinition = {
             ]
         }
     ],
-    "power": "2",
-    "toughness": "2"
+    power: "2",
+    toughness: "2"
 };
-
-
-
-
+    

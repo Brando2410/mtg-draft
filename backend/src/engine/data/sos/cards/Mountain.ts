@@ -1,19 +1,17 @@
 import { CardDefinition } from '@shared/engine_types';
-
-export const Mountain: CardDefinition = {
-    "name": "Mountain",
-    "manaCost": "",
-    "colors": [],
-    "types": [
+    export const Mountain: CardDefinition = {
+    name: "Mountain",
+    manaCost: "",
+    colors: [],
+    types: [
         "Basic",
         "Land"
     ],
-    "subtypes": [
+    subtypes: [
         "Mountain"
     ],
-    "oracleText": "({T}: Add {R}.)",
-    "abilities": []
+    keywords: [],
+    oracleText: "({T}: Add {R}.)",
+    abilities: []
 };
-
-
-
+    

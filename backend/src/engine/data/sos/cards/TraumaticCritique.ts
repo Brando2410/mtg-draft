@@ -1,18 +1,18 @@
 import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const TraumaticCritique: CardDefinition = {
-    "name": "Traumatic Critique",
-    "manaCost": "{X}{U}{R}",
-    "colors": [
+    export const TraumaticCritique: CardDefinition = {
+    name: "Traumatic Critique",
+    manaCost: "{X}{U}{R}",
+    colors: [
         "R",
         "U"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Traumatic Critique deals X damage to any target. Draw two cards, then discard a card.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Traumatic Critique deals X damage to any target. Draw two cards, then discard a card.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
@@ -39,6 +39,4 @@ export const TraumaticCritique: CardDefinition = {
         }
     ]
 };
-
-
-
+    

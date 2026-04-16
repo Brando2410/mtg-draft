@@ -1,17 +1,17 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const ChaseInspiration: CardDefinition = {
-    "name": "Chase Inspiration",
-    "manaCost": "{U}",
-    "colors": [
+    export const ChaseInspiration: CardDefinition = {
+    name: "Chase Inspiration",
+    manaCost: "{U}",
+    colors: [
         "U"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Target creature you control gets +0/+3 and gains hexproof until end of turn. (It can't be the target of spells or abilities your opponents control.)",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Target creature you control gets +0/+3 and gains hexproof until end of turn. (It can't be the target of spells or abilities your opponents control.)",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
@@ -34,6 +34,4 @@ export const ChaseInspiration: CardDefinition = {
         }
     ]
 };
-
-
-
+    

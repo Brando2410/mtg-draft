@@ -1,23 +1,23 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const QuandrixCharm: CardDefinition = {
-    "name": "Quandrix Charm",
-    "manaCost": "{G}{U}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const QuandrixCharm: CardDefinition = {
+    name: "Quandrix Charm",
+    manaCost: "{G}{U}",
+    colors: [
         "G",
         "U"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Choose one —\n• Counter target spell unless its controller pays {2}.\n• Destroy target enchantment.\n• Target creature has base power and toughness 5/5 until end of turn.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Choose one —\n• Counter target spell unless its controller pays {2}.\n• Destroy target enchantment.\n• Target creature has base power and toughness 5/5 until end of turn.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Choose one",
                     choices: [
                         {
@@ -25,13 +25,13 @@ export const QuandrixCharm: CardDefinition = {
                             targetDefinition: { count: 1, type: TargetType.Spell },
                             effects: [
                                 {
-                                    type: EffectType.Choice,
+                                    type: CostType.Choice,
                                     label: "Pay {2} or counter?",
                                     targetMapping: TargetMapping.Target1Controller,
                                     choices: [
                                         {
                                             label: "Pay {2}",
-                                            costs: [{ type: 'Mana', value: '{2}' }]
+                                            costs: [{ type: CostType.Mana, value: '{2}' }]
                                         },
                                         {
                                             label: "Don't Pay",
@@ -43,7 +43,7 @@ export const QuandrixCharm: CardDefinition = {
                         },
                         {
                             label: 'Destroy target enchantment',
-                            targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: ['Enchantment'] },
+                            targetDefinition: { count: 1, type: DurationType.Permanent, restrictions: ['Enchantment'] },
                             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
                         },
                         {
@@ -63,6 +63,4 @@ export const QuandrixCharm: CardDefinition = {
         }
     ]
 };
-
-
-
+    

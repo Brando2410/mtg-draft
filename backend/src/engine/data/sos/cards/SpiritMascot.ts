@@ -1,21 +1,21 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const SpiritMascot: CardDefinition = {
-    "name": "Spirit Mascot",
-    "manaCost": "{R}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const SpiritMascot: CardDefinition = {
+    name: "Spirit Mascot",
+    manaCost: "{R}{W}",
+    colors: [
         "R",
         "W"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Spirit",
         "Ox"
     ],
-    "oracleText": "Whenever one or more cards leave your graveyard, put a +1/+1 counter on this creature.",
-    "abilities": [
+    keywords: [],
+    oracleText: "Whenever one or more cards leave your graveyard, put a +1/+1 counter on this creature.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.LeaveGraveyard,
@@ -25,16 +25,12 @@ export const SpiritMascot: CardDefinition = {
                     type: EffectType.AddCounters,
                     counterType: '+1/+1',
                     amount: 1,
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-    "power": "2",
-    "toughness": "2"
+    power: "2",
+    toughness: "2"
 };
-
-
-
-
-
+    

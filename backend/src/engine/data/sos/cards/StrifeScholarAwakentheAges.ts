@@ -1,6 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-/**
+    /**
  * SOS Prepared Card: Strife Scholar // Awaken the Ages
  * Using the new streamlined preparedFace schema.
  */
@@ -10,13 +9,12 @@ export const StrifeScholarAwakentheAges: CardDefinition = {
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Orc", "Sorcerer"],
-    power: "3",
-    toughness: "2",
     keywords: ["Ward—Pay 2 life", "Prepared"],
     oracleText: "Ward—Pay 2 life.\nThis creature enters prepared.",
+    power: "3",
+    toughness: "2",
     image_url: "https://cards.scryfall.io/png/front/8/d/8de79312-2046-425e-9919-49afe19be81b.png?1775937883",
     entersPrepared: true,
-
     // The new streamlined field for SOS Prepared cards
     preparedFace: {
         name: "Awaken the Ages",
@@ -46,4 +44,4 @@ export const StrifeScholarAwakentheAges: CardDefinition = {
         }]
     }
 };
-
+    

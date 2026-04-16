@@ -1,21 +1,21 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const OrysaTideChoreographer: CardDefinition = {
-    "name": "Orysa, Tide Choreographer",
-    "manaCost": "{4}{U}",
-    "colors": [
+    export const OrysaTideChoreographer: CardDefinition = {
+    name: "Orysa, Tide Choreographer",
+    manaCost: "{4}{U}",
+    colors: [
         "U"
     ],
-    "types": [
+    types: [
         "Legendary",
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Merfolk",
         "Bard"
     ],
-    "oracleText": "This spell costs {3} less to cast if creatures you control have total toughness 10 or greater.\nWhen Orysa enters, draw two cards.",
-    "abilities": [
+    keywords: [],
+    oracleText: "This spell costs {3} less to cast if creatures you control have total toughness 10 or greater.\nWhen Orysa enters, draw two cards.",
+    abilities: [
         {
             type: AbilityType.Static,
             costReduction: {
@@ -35,11 +35,7 @@ export const OrysaTideChoreographer: CardDefinition = {
             ]
         }
     ],
-    "power": "2",
-    "toughness": "2"
+    power: "2",
+    toughness: "2"
 };
-
-
-
-
-
+    

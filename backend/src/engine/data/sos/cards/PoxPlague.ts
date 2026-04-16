@@ -1,22 +1,22 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const PoxPlague: CardDefinition = {
-    "name": "Pox Plague",
-    "manaCost": "{B}{B}{B}{B}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const PoxPlague: CardDefinition = {
+    name: "Pox Plague",
+    manaCost: "{B}{B}{B}{B}{B}",
+    colors: [
         "B"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Each player loses half their life, then discards half the cards in their hand, then sacrifices half the permanents they control of their choice. Round down each time.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Each player loses half their life, then discards half the cards in their hand, then sacrifices half the permanents they control of their choice. Round down each time.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     targetMapping: TargetMapping.EachPlayer,
                     choices: [
                         {
@@ -39,7 +39,7 @@ export const PoxPlague: CardDefinition = {
                                     }
                                 },
                                 {
-                                    type: EffectType.Sacrifice,
+                                    type: CostType.Sacrifice,
                                     targetMapping: TargetMapping.Target1,
                                     restrictions: ['Permanent'],
                                     amount: (state: any, source: any, targets: string[]) => {
@@ -56,6 +56,4 @@ export const PoxPlague: CardDefinition = {
         }
     ]
 };
-
-
-
+    

@@ -1,23 +1,22 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const ThornfistStriker: CardDefinition = {
-    "name": "Thornfist Striker",
-    "manaCost": "{2}{G}",
-    "colors": [
+    export const ThornfistStriker: CardDefinition = {
+    name: "Thornfist Striker",
+    manaCost: "{2}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Elf",
         "Druid"
     ],
-    "oracleText": "Ward {1} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)\nInfusion — Creatures you control get +1/+0 and have trample as long as you gained life this turn.",
-    "keywords": [
+    keywords: [
         "Ward {1}"
     ],
-    "abilities": [
+    oracleText: "Ward {1} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)\nInfusion — Creatures you control get +1/+0 and have trample as long as you gained life this turn.",
+    abilities: [
         {
             type: AbilityType.Static,
             effects: [
@@ -35,9 +34,7 @@ export const ThornfistStriker: CardDefinition = {
             ]
         }
     ],
-    "power": "3",
-    "toughness": "3"
+    power: "3",
+    toughness: "3"
 };
-
-
-
+    

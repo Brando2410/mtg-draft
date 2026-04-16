@@ -1,15 +1,15 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const TamObservantSequencerDeepSight: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const TamObservantSequencerDeepSight: CardDefinition = {
     name: "Tam, Observant Sequencer // Deep Sight",
     manaCost: "{2}{G}{U}",
     colors: ["G", "U"],
-    supertypes: ["Legendary"],
     types: ["Creature"],
     subtypes: ["Gorgon", "Wizard"],
-    power: "4",
-    toughness: "3",
+    keywords: [],
     oracleText: "Landfall — Whenever a land you control enters, Tam becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    supertypes: ["Legendary"],
+    power: "4",
+    toughness: "3",
     entersPrepared: false,
     image_url: "https://cards.scryfall.io/png/front/7/1/7120e71b-2976-451b-89a7-a1665dc6fb6b.png?1775938655",
     abilities: [
@@ -23,16 +23,15 @@ export const TamObservantSequencerDeepSight: CardDefinition = {
                     value: 'Land'
                 }
             ],
-            condition: 'PLAYER_IS_CONTROLLER',
+            condition: ConditionType.PlayerIsController,
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-
     preparedFace: {
         name: "Deep Sight",
         image_url: "https://cards.scryfall.io/png/front/7/1/7120e71b-2976-451b-89a7-a1665dc6fb6b.png?1775938655",
@@ -59,4 +58,4 @@ export const TamObservantSequencerDeepSight: CardDefinition = {
         ]
     }
 };
-
+    

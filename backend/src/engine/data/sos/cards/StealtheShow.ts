@@ -1,22 +1,22 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const StealtheShow: CardDefinition = {
-    "name": "Steal the Show",
-    "manaCost": "{2}{R}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const StealtheShow: CardDefinition = {
+    name: "Steal the Show",
+    manaCost: "{2}{R}",
+    colors: [
         "R"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Choose one or both —\n• Target player discards any number of cards, then draws that many cards.\n• Steal the Show deals damage equal to the number of instant and sorcery cards in your graveyard to target creature or planeswalker.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Choose one or both —\n• Target player discards any number of cards, then draws that many cards.\n• Steal the Show deals damage equal to the number of instant and sorcery cards in your graveyard to target creature or planeswalker.",
+    abilities: [
         {
             type: AbilityType.Spell,
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     minChoices: 1,
                     maxChoices: 2,
                     choices: [
@@ -29,12 +29,12 @@ export const StealtheShow: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.DiscardCards,
-                                    amount: 'ANY',
+                                    amount: TargetType.Any,
                                     targetMapping: TargetMapping.Target1
                                 },
                                 {
                                     type: EffectType.DrawCards,
-                                    amount: 'DISCARDED_COUNT',
+                                    amount: DynamicAmount.DiscardedCount,
                                     targetMapping: TargetMapping.Target1
                                 }
                             ]
@@ -42,7 +42,7 @@ export const StealtheShow: CardDefinition = {
                         {
                             label: "Steal the Show deals damage equal to instant/sorcery in your graveyard to target creature or planeswalker.",
                             targetDefinition: {
-                                type: TargetType.Permanent,
+                                type: DurationType.Permanent,
                                 count: 1,
                                 restrictions: [
                                     { type: 'Type', value: 'Creature' },
@@ -63,6 +63,4 @@ export const StealtheShow: CardDefinition = {
         }
     ]
 };
-
-
-
+    

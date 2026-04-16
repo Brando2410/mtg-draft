@@ -1,23 +1,22 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const TheDawningArchaic: CardDefinition = {
-    "name": "The Dawning Archaic",
-    "manaCost": "{10}",
-    "colors": [],
-    "supertypes": [
-        "Legendary"
-    ],
-    "types": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+    export const TheDawningArchaic: CardDefinition = {
+    name: "The Dawning Archaic",
+    manaCost: "{10}",
+    colors: [],
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Avatar"
     ],
-    "oracleText": "This spell costs {1} less to cast for each instant and sorcery card in your graveyard.\nReach\nWhenever The Dawning Archaic attacks, you may cast target instant or sorcery card from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead.",
-    "keywords": [
+    keywords: [
         "Reach"
     ],
-    "abilities": [
+    oracleText: "This spell costs {1} less to cast for each instant and sorcery card in your graveyard.\nReach\nWhenever The Dawning Archaic attacks, you may cast target instant or sorcery card from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead.",
+    supertypes: [
+        "Legendary"
+    ],
+    abilities: [
         {
             type: AbilityType.Static,
             activeZone: Zone.Hand,
@@ -25,7 +24,7 @@ export const TheDawningArchaic: CardDefinition = {
                 {
                     type: EffectType.CostReduction,
                     amount: 'INSTANTS_AND_SORCERIES_IN_GRAVEYARD',
-                    targetMapping: 'SELF'
+                    targetMapping: TargetType.Self
                 }
             ]
         },
@@ -35,13 +34,13 @@ export const TheDawningArchaic: CardDefinition = {
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 restrictions: [
-                    'Instant_or_Sorcery'
+                    'InstantOrSorcery'
                 ],
                 count: 1
             },
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Cast target instant or sorcery from graveyard?",
                     choices: [
                         {
@@ -63,11 +62,7 @@ export const TheDawningArchaic: CardDefinition = {
             ]
         }
     ],
-    "power": "7",
-    "toughness": "7"
+    power: "7",
+    toughness: "7"
 };
-
-
-
-
-
+    

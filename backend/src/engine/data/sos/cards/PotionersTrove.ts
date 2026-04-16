@@ -1,22 +1,22 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const PotionersTrove: CardDefinition = {
-    "name": "Potioner's Trove",
-    "manaCost": "{3}",
-    "colors": [],
-    "types": [
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const PotionersTrove: CardDefinition = {
+    name: "Potioner's Trove",
+    manaCost: "{3}",
+    colors: [],
+    types: [
         "Artifact"
     ],
-    "subtypes": [],
-    "oracleText": "{T}: Add one mana of any color.\n{T}: You gain 2 life. Activate only if you've cast an instant or sorcery spell this turn.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "{T}: Add one mana of any color.\n{T}: You gain 2 life. Activate only if you've cast an instant or sorcery spell this turn.",
+    abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Select color",
                     choices: [
                         { label: "{W}", effects: [{ type: EffectType.AddMana, value: 'W' }] },
@@ -30,7 +30,7 @@ export const PotionersTrove: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             condition: ConditionType.CastInstantSorceryThisTurn,
             effects: [
                 {
@@ -42,6 +42,4 @@ export const PotionersTrove: CardDefinition = {
         }
     ]
 };
-
-
-
+    

@@ -1,27 +1,25 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const ZaffaiandtheTempests: CardDefinition = {
-    "name": "Zaffai and the Tempests",
-    "manaCost": "{5}{U}{R}",
-    "colors": [
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+    export const ZaffaiandtheTempests: CardDefinition = {
+    name: "Zaffai and the Tempests",
+    manaCost: "{5}{U}{R}",
+    colors: [
         "U",
         "R"
     ],
-    "types": [
+    types: [
         "Legendary",
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Human",
         "Bard",
         "Sorcerer"
     ],
-    "oracleText": "Once during each of your turns, you may cast an instant or sorcery spell from your hand without paying its mana cost.",
-    "abilities": [
+    keywords: [],
+    oracleText: "Once during each of your turns, you may cast an instant or sorcery spell from your hand without paying its mana cost.",
+    abilities: [
         {
-            type: AbilityType.Static,
-            activeZone: Zone.Battlefield,
-            effects: [
+            type: AbilityType.Static,            effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
                     isFreeCast: true,
@@ -32,9 +30,7 @@ export const ZaffaiandtheTempests: CardDefinition = {
             ]
         }
     ],
-    "power": "5",
-    "toughness": "7"
+    power: "5",
+    toughness: "7"
 };
-
-
-
+    

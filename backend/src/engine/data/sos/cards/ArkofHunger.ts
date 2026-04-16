@@ -1,21 +1,21 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const ArkofHunger: CardDefinition = {
-    "name": "Ark of Hunger",
-    "manaCost": "{2}{R}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const ArkofHunger: CardDefinition = {
+    name: "Ark of Hunger",
+    manaCost: "{2}{R}{W}",
+    colors: [
         "R",
         "W"
     ],
-    "types": [
+    types: [
         "Artifact"
     ],
-    "subtypes": [],
-    "oracleText": "Whenever one or more cards leave your graveyard, this artifact deals 1 damage to each opponent and you gain 1 life.\n{T}: Mill a card. You may play that card this turn.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Whenever one or more cards leave your graveyard, this artifact deals 1 damage to each opponent and you gain 1 life.\n{T}: Mill a card. You may play that card this turn.",
+    abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: 'ON_LEAVE_GRAVEYARD',
+                    eventMatch: TriggerEvent.LeaveGraveyard,
             effects: [
                 {
                     type: EffectType.DealDamage,
@@ -31,15 +31,12 @@ export const ArkofHunger: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap', targetMapping: 'SELF' }],
+            costs: [{ type: CostType.Tap, targetMapping: TargetType.Self }],
             effects: [
-                { type: 'Mill', amount: 1 },
-                { type: 'AllowPlayMilledCard', duration: { type: DurationType.UntilEndOfTurn } }
+                { type: EffectType.Mill, amount: 1 },
+                { type: EffectType.AllowPlayMilledCard, duration: { type: DurationType.UntilEndOfTurn } }
             ]
         }
     ]
 };
-
-
-
-
+    

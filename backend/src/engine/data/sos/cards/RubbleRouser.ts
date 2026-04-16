@@ -1,26 +1,26 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, SelectionType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
-
-export const RubbleRouser: CardDefinition = {
-    "name": "Rubble Rouser",
-    "manaCost": "{2}{R}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+    export const RubbleRouser: CardDefinition = {
+    name: "Rubble Rouser",
+    manaCost: "{2}{R}",
+    colors: [
         "R"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Dwarf",
         "Sorcerer"
     ],
-    "oracleText": "When this creature enters, you may discard a card. If you do, draw a card.\n{T}, Exile a card from your graveyard: Add {R}. When you do, this creature deals 1 damage to each opponent.",
-    "abilities": [
+    keywords: [],
+    oracleText: "When this creature enters, you may discard a card. If you do, draw a card.\n{T}, Exile a card from your graveyard: Add {R}. When you do, this creature deals 1 damage to each opponent.",
+    abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: 'Discard a card to draw a card?',
                     choices: [
                         {
@@ -41,8 +41,8 @@ export const RubbleRouser: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [
-                { type: 'Tap' },
-                { type: 'Exile', value: 1, sourceZone: Zone.Graveyard, restrictions: [Restriction.Card] }
+                { type: CostType.Tap },
+                { type: CostType.Exile, value: 1, sourceZone: Zone.Graveyard, restrictions: [Restriction.Card] }
             ],
             effects: [
                 { type: EffectType.AddMana, value: '{R}' },
@@ -50,10 +50,7 @@ export const RubbleRouser: CardDefinition = {
             ]
         }
     ],
-    "power": "1",
-    "toughness": "4"
+    power: "1",
+    toughness: "4"
 };
-
-
-
-
+    

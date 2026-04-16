@@ -1,20 +1,20 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const ExpressiveFiredancer: CardDefinition = {
-    "name": "Expressive Firedancer",
-    "manaCost": "{1}{R}",
-    "colors": [
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const ExpressiveFiredancer: CardDefinition = {
+    name: "Expressive Firedancer",
+    manaCost: "{1}{R}",
+    colors: [
         "R"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Human",
         "Sorcerer"
     ],
-    "oracleText": "Opus — Whenever you cast an instant or sorcery spell, this creature gets +1/+1 until end of turn. If five or more mana was spent to cast that spell, this creature also gains double strike until end of turn.",
-    "abilities": [
+    keywords: [],
+    oracleText: "Opus — Whenever you cast an instant or sorcery spell, this creature gets +1/+1 until end of turn. If five or more mana was spent to cast that spell, this creature also gains double strike until end of turn.",
+    abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
@@ -24,22 +24,19 @@ export const ExpressiveFiredancer: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     duration: { type: DurationType.UntilEndOfTurn },
                     stats: { powerModifier: 1, toughnessModifier: 1 },
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
                     condition: 'SPENT_MANA_GE:5',
                     duration: { type: DurationType.UntilEndOfTurn },
                     abilitiesToAdd: ['Double Strike'],
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-    "power": "2",
-    "toughness": "2"
+    power: "2",
+    toughness: "2"
 };
-
-
-
-
+    

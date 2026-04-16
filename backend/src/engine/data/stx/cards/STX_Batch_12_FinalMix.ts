@@ -137,7 +137,7 @@ export const STX_Batch_12_FinalMix: CardDefinition[] = [
                         targetDefinition: {
                             type: TargetType.Card,
                             count: 1,
-                            restrictions: ['Instant_OR_Sorcery']
+                            restrictions: ['InstantOrSorcery']
                         },
                         zone: Zone.Hand,
                         reveal: true,

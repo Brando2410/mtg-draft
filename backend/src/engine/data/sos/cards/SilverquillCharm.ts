@@ -1,18 +1,18 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const SilverquillCharm: CardDefinition = {
-    "name": "Silverquill Charm",
-    "manaCost": "{W}{B}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const SilverquillCharm: CardDefinition = {
+    name: "Silverquill Charm",
+    manaCost: "{W}{B}",
+    colors: [
         "B",
         "W"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Choose one —\n• Put two +1/+1 counters on target creature.\n• Exile target creature with power 2 or less.\n• Each opponent loses 3 life and you gain 3 life.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Choose one —\n• Put two +1/+1 counters on target creature.\n• Exile target creature with power 2 or less.\n• Each opponent loses 3 life and you gain 3 life.",
+    abilities: [
         {
             type: AbilityType.Spell,
             isModal: true,
@@ -21,14 +21,14 @@ export const SilverquillCharm: CardDefinition = {
                     label: "Put two +1/+1 counters on target creature",
                     targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
                     effects: [
-                        { type: EffectType.AddCounters, amount: 2, counterType: 'p1p1', targetMapping: TargetMapping.Target1 }
+                        { type: EffectType.AddCounters, amount: 2, counterType: '+1/+1', targetMapping: TargetMapping.Target1 }
                     ]
                 },
                 {
                     label: "Exile target creature with power 2 or less",
                     targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', { type: 'Power', comparison: 'LessOrEqual', value: 2 }] },
                     effects: [
-                        { type: EffectType.Exile, targetMapping: TargetMapping.Target1 }
+                        { type: CostType.Exile, targetMapping: TargetMapping.Target1 }
                     ]
                 },
                 {
@@ -42,6 +42,4 @@ export const SilverquillCharm: CardDefinition = {
         }
     ]
 };
-
-
-
+    

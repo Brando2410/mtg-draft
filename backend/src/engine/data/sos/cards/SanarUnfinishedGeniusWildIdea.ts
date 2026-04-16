@@ -1,21 +1,20 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, SelectionType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-
-export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+    export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
     name: "Sanar, Unfinished Genius // Wild Idea",
     manaCost: "{U}{R}",
     colors: ["U", "R"],
     types: ["Legendary", "Creature"],
     subtypes: ["Goblin", "Sorcerer"],
-    power: "0",
-    toughness: "4",
     keywords: ["Prepared"],
     oracleText: "Sanar enters prepared.\n{T}: Create a Treasure token. Activate only if you've cast an instant or sorcery spell this turn.",
+    power: "0",
+    toughness: "4",
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/1/7/173157aa-712d-44f2-89ba-dd2511a07f26.png?1775938553",
     abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             condition: ConditionType.CastInstantSorceryThisTurn,
             effects: [
                 {
@@ -32,8 +31,8 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
                                 type: AbilityType.Activated,
                                 id: 'Treasure_Mana_Ability',
                                 costs: [
-                                    { type: 'Tap', targetMapping: TargetMapping.Self },
-                                    { type: 'Sacrifice', targetMapping: TargetMapping.Self }
+                                    { type: CostType.Tap, targetMapping: TargetType.Self },
+                                    { type: CostType.Sacrifice, targetMapping: TargetType.Self }
                                 ],
                                 isManaAbility: true
                             }
@@ -43,7 +42,6 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
             ]
         }
     ],
-
     preparedFace: {
         name: "Wild Idea",
         image_url: "https://cards.scryfall.io/png/front/1/7/173157aa-712d-44f2-89ba-dd2511a07f26.png?1775938553",
@@ -60,7 +58,7 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
                         targetDefinition: {
                             type: TargetType.Card,
                             count: 1,
-                            restrictions: ['Instant_OR_Sorcery']
+                            restrictions: ['InstantOrSorcery']
                         },
                         zone: Zone.Hand,
                         reveal: true,
@@ -71,4 +69,4 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
         ]
     }
 };
-
+    

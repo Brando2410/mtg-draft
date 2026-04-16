@@ -1,17 +1,17 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const AncestralAnger: CardDefinition = {
-    "name": "Ancestral Anger",
-    "manaCost": "{R}",
-    "colors": [
+    export const AncestralAnger: CardDefinition = {
+    name: "Ancestral Anger",
+    manaCost: "{R}",
+    colors: [
         "R"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Target creature gains trample and gets +X/+0 until end of turn, where X is 1 plus the number of cards named Ancestral Anger in your graveyard.\nDraw a card.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Target creature gains trample and gets +X/+0 until end of turn, where X is 1 plus the number of cards named Ancestral Anger in your graveyard.\nDraw a card.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: { type: 'Creature' },
@@ -32,6 +32,4 @@ export const AncestralAnger: CardDefinition = {
         }
     ]
 };
-
-
-
+    

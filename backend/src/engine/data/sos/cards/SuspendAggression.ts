@@ -1,32 +1,33 @@
-import { AbilityType, CardDefinition, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-
-export const SuspendAggression: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
+    export const SuspendAggression: CardDefinition = {
     name: "Suspend Aggression",
     manaCost: "{1}{W}",
     colors: ["W"],
-    type_line: "Instant",
     types: ["Instant"],
+    subtypes: [],
+    keywords: [],
     oracleText: "Exile target nonland permanent. Exile the top card of that card's owner's library. Until the end of that player's next turn, its owner may play those cards.",
+    type_line: "Instant",
     abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: DurationType.Permanent,
                 restrictions: [Restriction.NonLand],
                 count: 1,
                 zone: Zone.Battlefield
             },
             effects: [
                 {
-                    type: 'Exile',
+                    type: CostType.Exile,
                     targetMapping: TargetMapping.Target1,
                     next: {
-                        type: 'Exile', // Exile top card of owner's library
-                        targetMapping: 'TARGET_1_OWNER',
+                        type: CostType.Exile, // Exile top card of owner's library
+                        targetMapping: TargetMapping.Target1Owner,
                         fromTop: 1,
-                        sourceZones: [Zone.Library],
+                        sourceZones: ['Library'],
                         next: {
-                            type: 'ApplyContinuousEffect',
+                            type: EffectType.ApplyContinuousEffect,
                             targetMapping: 'PARENT_CONTEXT_EXILED_IDS',
                             duration: 'UntilEndOfYourNextTurn',
                             targetControllerMapping: 'PARENT_CONTEXT_EXILED_IDS_OWNERS', // Custom mapping for untilTurnOfPlayerId
@@ -38,6 +39,4 @@ export const SuspendAggression: CardDefinition = {
         }
     ]
 };
-
-
-
+    

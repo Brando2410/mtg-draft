@@ -1,22 +1,21 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const ParadoxSurveyor: CardDefinition = {
-    "name": "Paradox Surveyor",
-    "manaCost": "{G}{G/U}{U}",
-    "colors": [
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
+    export const ParadoxSurveyor: CardDefinition = {
+    name: "Paradox Surveyor",
+    manaCost: "{G}{G/U}{U}",
+    colors: [
         "G",
         "U"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Elf",
         "Druid"
     ],
-    "keywords": ["Reach"],
-    "oracleText": "Reach\nWhen this creature enters, look at the top five cards of your library. You may reveal a land card or a card with {X} in its mana cost from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
-    "abilities": [
+    keywords: ["Reach"],
+    oracleText: "Reach\nWhen this creature enters, look at the top five cards of your library. You may reveal a land card or a card with {X} in its mana cost from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.EnterBattlefield,
@@ -26,7 +25,7 @@ export const ParadoxSurveyor: CardDefinition = {
                     amount: 5,
                     optional: true,
                     restrictions: [
-                        { types: ['land'] },
+                        { types: [Restriction.Land] },
                         { hasxinmanacost: true }
                     ],
                     remainderPosition: 'bottom',
@@ -36,10 +35,7 @@ export const ParadoxSurveyor: CardDefinition = {
             ]
         }
     ],
-    "power": "3",
-    "toughness": "3"
+    power: "3",
+    toughness: "3"
 };
-
-
-
-
+    

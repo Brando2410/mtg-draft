@@ -1,19 +1,18 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const PracticedOffense: CardDefinition = {
-    "name": "Practiced Offense",
-    "manaCost": "{2}{W}",
-    "colors": [
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+    export const PracticedOffense: CardDefinition = {
+    name: "Practiced Offense",
+    manaCost: "{2}{W}",
+    colors: [
         "W"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "keywords": ["Flashback"],
-    "flashbackCost": "{1}{W}",
-    "oracleText": "Put a +1/+1 counter on each creature target player controls. Target creature gains your choice of double strike or lifelink until end of turn.\nFlashback {1}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
-    "abilities": [
+    subtypes: [],
+    keywords: ["Flashback"],
+    oracleText: "Put a +1/+1 counter on each creature target player controls. Target creature gains your choice of double strike or lifelink until end of turn.\nFlashback {1}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    flashbackCost: "{1}{W}",
+    abilities: [
         {
             type: AbilityType.Spell,
             flashbackCost: "{1}{W}",
@@ -32,14 +31,14 @@ export const PracticedOffense: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    counterType: 'p1p1',
+                    counterType: '+1/+1',
                     amount: 1,
                     targetMapping: 'ALL_CREATURES_CONTROLLED_BY_TARGET_1'
                 },
                 {
-                    type: EffectType.Choice,
+                    type: CostType.Choice,
                     label: "Choose a keyword",
-                    targetMapping: 'CONTROLLER',
+                    targetMapping: TargetMapping.Controller,
                     choices: [
                         {
                             label: "Double Strike",
@@ -69,6 +68,4 @@ export const PracticedOffense: CardDefinition = {
         }
     ],
 };
-
-
-
+    

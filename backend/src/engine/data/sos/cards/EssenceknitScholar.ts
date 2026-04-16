@@ -1,21 +1,21 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const EssenceknitScholar: CardDefinition = {
-    "name": "Essenceknit Scholar",
-    "manaCost": "{B}{B/G}{G}",
-    "colors": [
+    export const EssenceknitScholar: CardDefinition = {
+    name: "Essenceknit Scholar",
+    manaCost: "{B}{B/G}{G}",
+    colors: [
         "B",
         "G"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Dryad",
         "Warlock"
     ],
-    "oracleText": "When this creature enters, create a 1/1 black and green Pest creature token with \"Whenever this token attacks, you gain 1 life.\"\nAt the beginning of your end step, if a creature died under your control this turn, draw a card.",
-    "abilities": [
+    keywords: [],
+    oracleText: "When this creature enters, create a 1/1 black and green Pest creature token with \"Whenever this token attacks, you gain 1 life.\"\nAt the beginning of your end step, if a creature died under your control this turn, draw a card.",
+    abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
@@ -50,11 +50,7 @@ export const EssenceknitScholar: CardDefinition = {
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }
     ],
-    "power": "3",
-    "toughness": "1"
+    power: "3",
+    toughness: "1"
 };
-
-
-
-
-
+    

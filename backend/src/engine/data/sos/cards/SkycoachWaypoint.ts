@@ -1,26 +1,26 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const SkycoachWaypoint: CardDefinition = {
-    "name": "Skycoach Waypoint",
-    "manaCost": "",
-    "colors": [],
-    "types": [
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+    export const SkycoachWaypoint: CardDefinition = {
+    name: "Skycoach Waypoint",
+    manaCost: "",
+    colors: [],
+    types: [
         "Land"
     ],
-    "subtypes": [],
-    "oracleText": "{T}: Add {C}.\n{3}, {T}: Target creature becomes prepared. (Only creatures with prepare spells can become prepared.)",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "{T}: Add {C}.\n{3}, {T}: Target creature becomes prepared. (Only creatures with prepare spells can become prepared.)",
+    abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [{ type: EffectType.AddMana, manaType: 'C' }]
         },
         {
             type: AbilityType.Activated,
             costs: [
-                { type: 'Mana', value: '{3}' },
-                { type: 'Tap' }
+                { type: CostType.Mana, value: '{3}' },
+                { type: CostType.Tap }
             ],
             targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
             effects: [
@@ -32,6 +32,4 @@ export const SkycoachWaypoint: CardDefinition = {
         }
     ]
 };
-
-
-
+    

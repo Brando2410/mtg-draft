@@ -1,21 +1,20 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
- 
- export const ForumNecroscribe: CardDefinition = {
-     "name": "Forum Necroscribe",
-     "manaCost": "{5}{B}",
-     "colors": [
+    export const ForumNecroscribe: CardDefinition = {
+    name: "Forum Necroscribe",
+    manaCost: "{5}{B}",
+    colors: [
          "B"
      ],
-     "types": [
+    types: [
          "Creature"
      ],
-     "subtypes": [
+    subtypes: [
          "Troll",
          "Warlock"
      ],
-     "oracleText": "Ward—Discard a card.\nRepartee — Whenever you cast an instant or sorcery spell that targets a creature, return target creature card from your graveyard to the battlefield.",
-     "keywords": ["Ward—Discard a card"],
-     "abilities": [
+    keywords: ["Ward—Discard a card"],
+    oracleText: "Ward—Discard a card.\nRepartee — Whenever you cast an instant or sorcery spell that targets a creature, return target creature card from your graveyard to the battlefield.",
+    abilities: [
          {
              type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastSpell,
@@ -30,10 +29,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Z
              ]
          }
      ],
-     "power": "5",
-     "toughness": "4"
+     power: "5",
+     toughness: "4"
  };
-
-
-
-
+    

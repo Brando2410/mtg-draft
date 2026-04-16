@@ -1,36 +1,35 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const ElementalMascot: CardDefinition = {
-    "name": "Elemental Mascot",
-    "manaCost": "{1}{U}{R}",
-    "colors": [
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const ElementalMascot: CardDefinition = {
+    name: "Elemental Mascot",
+    manaCost: "{1}{U}{R}",
+    colors: [
         "R",
         "U"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Elemental",
         "Bird"
     ],
-    "keywords": [
+    keywords: [
         "Flying",
         "Vigilance"
     ],
-    "oracleText": "Flying, vigilance\nOpus — Whenever you cast an instant or sorcery spell, this creature gets +1/+0 until end of turn. If five or more mana was spent to cast that spell, exile the top card of your library. You may play that card until the end of your next turn.",
-    "abilities": [
+    oracleText: "Flying, vigilance\nOpus — Whenever you cast an instant or sorcery spell, this creature gets +1/+0 until end of turn. If five or more mana was spent to cast that spell, exile the top card of your library. You may play that card until the end of your next turn.",
+    abilities: [
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: 'PLAYER_IS_CONTROLLER',
+            condition: ConditionType.PlayerIsController,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
                     sublayer: 'Stats',
                     powerModifier: 1,
                     duration: { type: DurationType.UntilEndOfTurn },
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 },
                 {
                     type: EffectType.ExileTopCard,
@@ -41,11 +40,7 @@ export const ElementalMascot: CardDefinition = {
             ]
         }
     ],
-    "power": "1",
-    "toughness": "4"
+    power: "1",
+    toughness: "4"
 };
-
-
-
-
-
+    

@@ -1,19 +1,19 @@
-import { CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-
-export const MusesEncouragement: CardDefinition = {
-    "name": "Muse's Encouragement",
-    "manaCost": "{4}{U}",
-    "colors": [
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+    export const MusesEncouragement: CardDefinition = {
+    name: "Muse's Encouragement",
+    manaCost: "{4}{U}",
+    colors: [
         "U"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Create a 3/3 blue and red Elemental creature token with flying.\nSurveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Create a 3/3 blue and red Elemental creature token with flying.\nSurveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    abilities: [
         {
-            type: 'Spell',
+            type: AbilityType.Spell,
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -27,7 +27,7 @@ export const MusesEncouragement: CardDefinition = {
                         image_url: "https://cards.scryfall.io/png/front/3/d/3d0b9b88-705e-4df0-8a93-3e240b81355b.png?1682693891",
                         abilities: [
                             {
-                                type: 'Static',
+                                type: AbilityType.Static,
                                 keyword: 'Flying'
                             }
                         ]
@@ -43,5 +43,4 @@ export const MusesEncouragement: CardDefinition = {
         }
     ]
 };
-
-
+    

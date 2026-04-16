@@ -1,30 +1,28 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-
-export const JoinedResearchersSecretRendezvous: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+    export const JoinedResearchersSecretRendezvous: CardDefinition = {
     name: "Joined Researchers // Secret Rendezvous",
     manaCost: "{1}{W}",
     colors: ["W"],
     types: ["Creature"],
     subtypes: ["Human", "Cleric", "Wizard"],
-    power: "2",
-    toughness: "2",
     keywords: ["First strike", "Prepared"],
     oracleText: "First strike\nAt the beginning of each end step, if an opponent has more cards in hand than you, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    power: "2",
+    toughness: "2",
     image_url: "https://cards.scryfall.io/png/front/1/e/1ebaafe0-3a9a-424c-8698-d26e7be45343.png?1775937069",
     abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: 'OPPONENT_HAS_MORE_CARDS',
+            condition: ConditionType.OpponentHasMoreCards,
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetMapping.Self
+                    targetMapping: TargetType.Self
                 }
             ]
         }
     ],
-
     preparedFace: {
         name: "Secret Rendezvous",
         image_url: "https://cards.scryfall.io/png/front/9/b/9be712b3-14ed-4a73-b3d3-5b76b2c5db64.png?1775940773",
@@ -56,4 +54,4 @@ export const JoinedResearchersSecretRendezvous: CardDefinition = {
         ]
     }
 };
-
+    

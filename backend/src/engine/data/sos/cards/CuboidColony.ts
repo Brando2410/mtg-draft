@@ -1,24 +1,21 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-
-export const CuboidColony: CardDefinition = {
-    "name": "Cuboid Colony",
-    "manaCost": "{G}{U}",
-    "colors": [
+import { CardDefinition } from '@shared/engine_types';
+    export const CuboidColony: CardDefinition = {
+    name: "Cuboid Colony",
+    manaCost: "{G}{U}",
+    colors: [
         "G",
         "U"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Insect"
     ],
-    "keywords": ["Flash", "Flying", "Trample", "Increment"],
-    "oracleText": "Flash\nFlying, trample\nIncrement (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.)",
-    "abilities": [],
-    "power": "1",
-    "toughness": "1"
+    keywords: ["Flash", "Flying", "Trample", "Increment"],
+    oracleText: "Flash\nFlying, trample\nIncrement (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.)",
+    abilities: [],
+    power: "1",
+    toughness: "1"
 };
-
-
-
+    

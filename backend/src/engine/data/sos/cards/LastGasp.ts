@@ -1,17 +1,17 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-
-export const LastGasp: CardDefinition = {
-    "name": "Last Gasp",
-    "manaCost": "{1}{B}",
-    "colors": [
+    export const LastGasp: CardDefinition = {
+    name: "Last Gasp",
+    manaCost: "{1}{B}",
+    colors: [
         "B"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Target creature gets -3/-3 until end of turn.",
-    "abilities": [
+    subtypes: [],
+    keywords: [],
+    oracleText: "Target creature gets -3/-3 until end of turn.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
@@ -30,6 +30,4 @@ export const LastGasp: CardDefinition = {
         }
     ]
 };
-
-
-
+    
