@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ActionType, type PlayerState } from '@shared/engine_types';
-import { Hash, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface XSelectionModalProps {
   pendingAction: any;
@@ -14,6 +14,13 @@ export const XSelectionModal = ({ pendingAction, me, onResolve }: XSelectionModa
   const [minimized, setMinimized] = useState(false);
 
   const isActive = pendingAction?.type === ActionType.ChooseX && pendingAction.playerId === me?.id;
+
+  useEffect(() => {
+    if (isActive) {
+      setValue(0);
+      setMinimized(false);
+    }
+  }, [isActive]);
 
   if (!isActive) return null;
 
@@ -43,7 +50,7 @@ export const XSelectionModal = ({ pendingAction, me, onResolve }: XSelectionModa
               </button>
 
               <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center shadow-lg ring-4 ring-indigo-500/20 rotate-3">
-                 <Hash className="w-10 h-10 text-white" />
+                 <span className="text-4xl font-black text-white">X</span>
               </div>
 
               <div className="flex flex-col gap-2">

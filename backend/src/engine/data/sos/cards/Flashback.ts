@@ -14,18 +14,22 @@ export const Flashback: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
-                type: TargetType.CardInGraveyard,
-                count: 1,
-                restrictions: ['instant_or_sorcery']
-            },
             effects: [
                 {
-                    type: EffectType.ApplyContinuousEffect,
-                    targetMapping: TargetMapping.Target1,
-                    duration: DurationType.UntilEndOfTurn,
-                    abilitiesToAdd: ['Flashback'],
-                    flashbackCostOverride: 'SOURCE_MANA_COST'
+                    type: EffectType.Choice,
+                    label: "Choose an instant or sorcery card in your graveyard",
+                    targetIdMapping: 'CONTROLLER_GRAVEYARD',
+                    restrictions: ['instant_or_sorcery'],
+                    optional: false,
+                    effects: [
+                        {
+                            type: EffectType.ApplyContinuousEffect,
+                            targetMapping: TargetMapping.Target1,
+                            duration: DurationType.UntilEndOfTurn,
+                            abilitiesToAdd: ['Flashback'],
+                            flashbackCostOverride: 'SOURCE_MANA_COST'
+                        }
+                    ]
                 }
             ]
         }

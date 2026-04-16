@@ -7,20 +7,20 @@ interface StackViewProps {
   stack: StackObject[];
   pendingAction?: any;
   me: PlayerState | undefined;
-  exile: GameObject[];
+  exile?: GameObject[];
   battlefield: GameObject[];
   onTapCard: (id: string) => void;
-  onInspect: (zone: { cards: GameObject[], label: string }) => void;
+  onInspect?: (zone: { cards: GameObject[], label: string }) => void;
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: () => void;
-  targetableIds: Set<string>;
+  targetableIds?: Set<string>;
 }
 
 /**
  * Arena-style StackView. 
  * Shows spells and abilities currently waiting to resolve.
  */
-export const StackView = ({ stack, pendingAction, me, battlefield, onInspect, onTapCard, onHoverStart, onHoverEnd }: StackViewProps) => {
+export const StackView = ({ stack, pendingAction, me, battlefield, onTapCard, onHoverStart, onHoverEnd }: StackViewProps) => {
   const effectiveStack = [...stack];
   if (pendingAction?.playerId === me?.id && pendingAction?.data?.stackObj) {
     effectiveStack.push(pendingAction.data.stackObj);
@@ -29,21 +29,21 @@ export const StackView = ({ stack, pendingAction, me, battlefield, onInspect, on
   if (effectiveStack.length === 0) return null;
 
   return (
-    <div className="flex flex-col items-center gap-3 p-4 bg-black/40 backdrop-blur-md rounded-[2rem] border border-white/5 shadow-2xl overflow-visible">
+    <div className="flex flex-col items-center gap-4 p-5 bg-slate-950/60 backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.8)] overflow-visible ring-1 ring-white/5">
       {/* HEADER */}
-      <div className="text-[8px] font-black uppercase tracking-[0.3em] text-indigo-400 mb-2 px-4 py-1 bg-indigo-500/10 rounded-full border border-indigo-500/20">
-        Stack
+      <div className="flex items-center gap-2 mb-1">
+        <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
+        <div className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-300 px-4 py-1.5 bg-indigo-500/10 rounded-full border border-indigo-500/20 shadow-inner">
+          Stack
+        </div>
       </div>
       
-      <div className="flex flex-col-reverse items-center justify-center gap-2 max-h-[60vh] overflow-y-auto custom-scrollbar px-2 py-1">
-        <AnimatePresence>
+      <div className="flex flex-col-reverse items-center justify-center -space-y-12 max-h-[75vh] overflow-y-visible px-4 py-2">
+        <AnimatePresence mode="popLayout">
           {effectiveStack.map((sobj, index) => {
             const isPending = pendingAction?.data?.stackObj?.id === sobj.id;
+            const isTop = index === effectiveStack.length - 1;
             
-            // Try to resolve a display object for the ability
-            // 1. If it's a spell, it already has .card
-            // 2. If it's an ability, try to find the source in battlefield
-            // 3. If still nothing, use a dummy object for the UI to render something
             const displayObj = sobj.card || (sobj.sourceId ? (battlefield || []).find((o: any) => o.id === sobj.sourceId) : null) || {
                 id: sobj.id,
                 definition: {
@@ -62,22 +62,28 @@ export const StackView = ({ stack, pendingAction, me, battlefield, onInspect, on
             return (
               <motion.div 
                 key={sobj.id} 
+                layout
                 id={`stack-obj-${sobj.id}`}
-                initial={{ scale: 0.5, opacity: 0, y: 20 }} 
+                initial={{ opacity: 0, y: 30 }} 
                 animate={{ 
-                    scale: 1, 
-                    opacity: isPending ? 0.6 : 1, 
+                    opacity: isPending ? 0.7 : 1, 
                     y: 0,
-                    zIndex: index 
+                    zIndex: index + 10,
+                    marginTop: index === 0 ? 0 : -50 // Create overlap
                 }} 
-                exit={{ scale: 1.5, opacity: 0 }} 
-                whileHover={{ scale: 1.1, zIndex: 100 }}
-                className={`relative flex justify-center ${isPending ? 'grayscale-[0.5] contrast-[0.8]' : ''}`}
+                exit={{ opacity: 0, scale: 0.95 }} 
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                className={`relative flex justify-center transition-opacity duration-300 ${isPending ? 'grayscale-[0.4] brightness-75' : ''}`}
               >
-                <div className="relative group/stack-item">
+                <div className="relative group/stack-item perspective-1000">
+                  {/* GLOW EFFECT FOR NEWEST ITEM */}
+                  {isTop && (
+                    <div className="absolute inset-0 bg-indigo-500/20 blur-2xl rounded-lg animate-pulse z-0" />
+                  )}
+
                   <GameCard 
                       obj={displayObj as any} 
-                      variant="tiny" 
+                      variant="small" 
                       onClick={() => onTapCard(sobj.id)}
                       onHoverStart={() => {
                         onHoverStart?.(displayObj as any);
@@ -87,14 +93,25 @@ export const StackView = ({ stack, pendingAction, me, battlefield, onInspect, on
                       }}
                   />
                   
-                  {/* TYPE INDICATOR */}
-                  <div className={`absolute -bottom-1 -right-1 ${sobj.type === AbilityType.Triggered ? 'bg-emerald-500' : sobj.type === AbilityType.Activated ? 'bg-amber-500' : 'bg-indigo-500'} rounded-full p-1 border border-white/20 shadow-lg z-30 transition-transform group-hover/stack-item:scale-125`}>
+                  {/* TYPE INDICATOR - SLIGHTLY SMALLER */}
+                  <div className={`absolute -bottom-1.5 -right-1.5 ${sobj.type === AbilityType.Triggered ? 'bg-emerald-500 shadow-emerald-500/50' : sobj.type === AbilityType.Activated ? 'bg-amber-500 shadow-amber-500/50' : 'bg-indigo-600 shadow-indigo-500/50'} rounded-full p-1 border border-white/40 shadow-xl z-50 transition-all group-hover/stack-item:scale-110`}>
                     {sobj.type === AbilityType.Triggered ? (
-                      <RefreshCw className="w-2 h-2 text-white" />
+                      <RefreshCw className="w-3 h-3 text-white" />
                     ) : (
-                      <Zap className="w-2 h-2 text-white" />
+                      <Zap className="w-3 h-3 text-white fill-white" />
                     )}
                   </div>
+
+                  {/* ABILITY LABEL OVERLAY */}
+                  {(!sobj.card && sobj.name) && (
+                    <div className="absolute inset-x-0 bottom-2 px-1 z-40">
+                      <div className="bg-black/80 backdrop-blur-sm border border-white/20 rounded py-0.5 px-1 flex items-center justify-center">
+                        <span className="text-[7px] font-black text-white whitespace-nowrap overflow-hidden text-ellipsis uppercase">
+                          {sobj.name}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             );
@@ -104,8 +121,10 @@ export const StackView = ({ stack, pendingAction, me, battlefield, onInspect, on
 
       {/* STACK DEPTH HINT */}
       {effectiveStack.length > 1 && (
-          <div className="text-[7px] font-bold text-slate-500 italic mt-1 leading-none">
-              {effectiveStack.length} Items on Stack
+          <div className="flex items-center gap-2 py-1 px-3 bg-white/5 rounded-full border border-white/5">
+              <div className="text-[8px] font-black text-slate-400 tracking-tighter uppercase italic">
+                {effectiveStack.length} Resolving
+              </div>
           </div>
       )}
     </div>

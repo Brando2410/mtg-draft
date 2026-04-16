@@ -27,7 +27,7 @@ export const RenderSpeechless: CardDefinition = {
                 {
                     type: EffectType.AddCounters,
                     targetDefinition: {
-                        type: TargetType.Permanent,
+                        type: TargetType.Creature,
                         count: 1,
                         minCount: 0,
                         restrictions: ['Creature']

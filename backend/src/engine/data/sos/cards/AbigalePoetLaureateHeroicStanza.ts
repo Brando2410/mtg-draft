@@ -15,61 +15,42 @@ export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
         "Bird",
         "Bard"
     ],
-    "oracleText": "",
-    "abilities": [],
     "power": "2",
     "toughness": "3",
-    "faces": [
+    "image_url": "https://cards.scryfall.io/png/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.png?1775938164",
+    "keywords": ["Flying", "Prepared"],
+    "oracleText": "Flying\nWhenever you cast a creature spell, Abigale becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    "abilities": [
         {
-            "name": "Abigale, Poet Laureate",
-            "manaCost": "{1}{W}{B}",
-            "colors": ["B", "W"],
-            "types": [
-                "Legendary",
-                "Creature"
-            ],
-            "subtypes": [
-                "Bird",
-                "Bard"
-            ],
-            "keywords": ["Flying"],
-            "oracleText": "Flying\nWhenever you cast a creature spell, Abigale becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
-            "abilities": [
-                {
-                    type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
-                    condition: 'SPELL_IS_CREATURE',
-                    effects: [{ type: 'Prepare', targetMapping: TargetMapping.Self }]
-                }
-            ],
-            "power": "2",
-            "toughness": "3"
-        },
-        {
-            "name": "Heroic Stanza",
-            "manaCost": "{1}{W/B}",
-            "colors": ["B", "W"],
-            "types": [
-                "Sorcery"
-            ],
-            "subtypes": [],
-            "oracleText": "Put a +1/+1 counter on target creature.",
-            "abilities": [
-                {
-                    type: AbilityType.Spell,
-                    targetDefinition: { type: 'Creature' },
-                    effects: [
-                        {
-                            type: EffectType.AddCounters,
-                            amount: 1,
-                            value: 'p1p1',
-                            targetMapping: TargetMapping.Target1
-                        }
-                    ]
-                }
-            ]
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.CastSpell,
+            condition: 'SPELL_IS_CREATURE',
+            effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
         }
-    ]
+    ],
+
+    "preparedFace": {
+        "name": "Heroic Stanza",
+        "image_url": "https://cards.scryfall.io/png/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.png?1775938164",
+        "manaCost": "{1}{W/B}",
+        "colors": ["B", "W"],
+        "types": ["Sorcery"],
+        "oracleText": "Put a +1/+1 counter on target creature.",
+        "abilities": [
+            {
+                type: AbilityType.Spell,
+                targetDefinition: { type: 'Creature' },
+                effects: [
+                    {
+                        type: EffectType.AddCounters,
+                        amount: 1,
+                        value: 'p1p1',
+                        targetMapping: TargetMapping.Target1
+                    }
+                ]
+            }
+        ]
+    }
 };
 
 

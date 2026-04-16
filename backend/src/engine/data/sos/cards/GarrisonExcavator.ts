@@ -30,7 +30,8 @@ export const GarrisonExcavator: CardDefinition = {
                         subtypes: ['Spirit'],
                         power: 2,
                         toughness: 2,
-                        keywords: ['Flying']
+                        keywords: ['Flying'],
+                        image_url: 'https://cards.scryfall.io/png/front/f/9/f98c0167-7434-4607-87c4-315fa8b6972e.png?1682693862'
                     }
                 }
             ]

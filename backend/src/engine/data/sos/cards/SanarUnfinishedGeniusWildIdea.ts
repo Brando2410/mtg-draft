@@ -1,7 +1,7 @@
 import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone, SelectionType, ConditionType } from '@shared/engine_types';
 
 export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
-    name: "Sanar, Unfinished Genius",
+    name: "Sanar, Unfinished Genius // Wild Idea",
     manaCost: "{U}{R}",
     colors: ["U", "R"],
     types: ["Legendary", "Creature"],
@@ -11,6 +11,7 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
     keywords: ["Prepared"],
     oracleText: "Sanar enters prepared.\n{T}: Create a Treasure token. Activate only if you've cast an instant or sorcery spell this turn.",
     entersPrepared: true,
+    image_url: "https://cards.scryfall.io/png/front/1/7/173157aa-712d-44f2-89ba-dd2511a07f26.png?1775938553",
     abilities: [
         {
             type: AbilityType.Activated,
@@ -22,15 +23,19 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
                     tokenBlueprint: {
                         name: "Treasure",
                         colors: [],
-                        types: ["Artifact"],
+                        types: ["Artifact", "Token"],
                         subtypes: ["Treasure"],
-                        oracleText: "{T}, Sacrifice this artifact: Add one mana of any color.",
+                        oracleText: "{T}, Sacrifice this token: Add one mana of any color.",
+                        image_url: "https://cards.scryfall.io/png/front/1/a/1a2d027f-8996-4761-a776-47cd428f6779.png?1641306162",
                         abilities: [
                             {
                                 type: AbilityType.Activated,
-                                isManaAbility: true,
-                                costs: [{ type: 'TapSelection' }, { type: 'Sacrifice', targetMapping: TargetMapping.Self }],
-                                effects: [{ type: EffectType.AddMana, value: '{ANY}' }]
+                                id: 'Treasure_Mana_Ability',
+                                costs: [
+                                    { type: 'Tap', targetMapping: TargetMapping.Self },
+                                    { type: 'Sacrifice', targetMapping: TargetMapping.Self }
+                                ],
+                                isManaAbility: true
                             }
                         ]
                     }
@@ -41,6 +46,7 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
 
     preparedFace: {
         name: "Wild Idea",
+        image_url: "https://cards.scryfall.io/png/front/1/7/173157aa-712d-44f2-89ba-dd2511a07f26.png?1775938553",
         manaCost: "{3}{U}{R}",
         colors: ["U", "R"],
         types: ["Sorcery"],

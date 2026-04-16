@@ -1,7 +1,7 @@
 import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone, SelectionType } from '@shared/engine_types';
 
 export const EmeritusofWoeDemonicTutor: CardDefinition = {
-    name: "Emeritus of Woe",
+    name: "Emeritus of Woe // Demonic Tutor",
     manaCost: "{3}{B}",
     colors: ["B"],
     types: ["Creature"],
@@ -11,6 +11,7 @@ export const EmeritusofWoeDemonicTutor: CardDefinition = {
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared. At the beginning of your end step, if two or more creatures died this turn, this creature becomes prepared.",
     entersPrepared: true,
+    image_url: "https://cards.scryfall.io/png/front/7/e/7eb9e83d-515d-4911-a06b-9982200277b2.png?1776269683",
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -27,6 +28,7 @@ export const EmeritusofWoeDemonicTutor: CardDefinition = {
 
     preparedFace: {
         name: "Demonic Tutor",
+        image_url: "https://cards.scryfall.io/png/front/a/2/a24b4cb6-cebb-428b-8654-74347a6a8d63.png?1690004294",
         manaCost: "{1}{B}",
         colors: ["B"],
         types: ["Sorcery"],

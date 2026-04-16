@@ -115,6 +115,17 @@ export class CostProcessor {
         return totalPowerAvailable >= amount;
       }
 
+      case 'TapSelection': {
+        const amount = Number(cost.value || cost.amount || 1);
+        const candidates = state.battlefield.filter(o => 
+            o.controllerId === playerId && 
+            !o.isTapped &&
+            (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, playerId, source.id))
+        );
+        // console.log(`[DEBUG] TapSelection canPay: amount=${amount}, candidates=${candidates.length}, sourceId=${source.id}`);
+        return candidates.length >= amount;
+      }
+
       default:
         return false;
     }
@@ -229,6 +240,19 @@ export class CostProcessor {
              }
          });
          delete (state as any).lastChosenCrewIds;
+         break;
+       }
+
+       case 'TapSelection': {
+         const chosenIds = (state as any).lastChosenTapSelectionIds || [];
+         chosenIds.forEach((cid: string) => {
+             const c = state.battlefield.find(o => o.id === cid);
+             if (c) {
+                 c.isTapped = true;
+                 TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, data: { object: c } }, log);
+             }
+         });
+         delete (state as any).lastChosenTapSelectionIds;
          break;
        }
        default:

@@ -365,6 +365,28 @@ export class LayerProcessor {
           player.virtualHand.push(topCard);
         }
       }
+
+      // 3. Search for Prepared Creatures on Battlefield (Virtual Hand support)
+      state.battlefield.forEach(o => {
+          if (o.controllerId === player.id && o.isPrepared && (o.definition.preparedFace || o.definition.faces?.[1])) {
+              const face = o.definition.preparedFace || o.definition.faces![1];
+              // Create a virtual spell copy in the hand
+              const virtualSpell = {
+                  ...o,
+                  id: `virtual_prepared_${o.id}`,
+                  definition: {
+                      ...face,
+                      image_url: face.image_url || o.definition.image_url 
+                  },
+                  zone: Zone.Hand,
+                  isVirtual: true,
+                  isRevealed: true,
+                  sourceCreatureId: o.id
+              };
+              player.virtualHand.push(virtualSpell as any);
+              console.log(`[DEBUG] LayerProcessor: Push virtual_prepared_${o.id} to ${player.id}'s hand. face: ${face.name}`);
+          }
+      });
     });
 
     // 3. Update effective stats for all objects in all zones (to set isPlayable correctly)
@@ -405,7 +427,7 @@ export class LayerProcessor {
         // fallback to base displayCost calculated above
       }
 
-      obj.effectiveStats = { ...stats, isPlayable, manaCost: displayCost };
+      obj.effectiveStats = { ...stats, isPlayable, manaCost: displayCost, isFlashback, isActivation, isVirtual };
       (obj as any).isVirtual = isVirtual;
     });
   }

@@ -17,14 +17,14 @@ export const EnvironmentalScientist: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
-            optional: true,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.SearchLibrary,
                     targetMapping: TargetMapping.Controller,
-                    restrictions: [{ type: 'Type', value: 'Land' }, { type: 'Subtype', value: 'Basic' }],
+                    restrictions: ['Basic', 'Land'],
                     destination: Zone.Hand,
+                    optional: true,
                     reveal: true,
                     shuffle: true
                 }

@@ -11,9 +11,11 @@ export const GoblinGlasswrightCraftwithPride: CardDefinition = {
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared.",
     entersPrepared: true,
+    image_url: "https://cards.scryfall.io/png/front/c/8/c85c5f06-dd31-4e2c-97be-2f64d65069ea.png?1775937759",
 
     preparedFace: {
         name: "Craft with Pride",
+        image_url: "https://cards.scryfall.io/png/front/c/8/c85c5f06-dd31-4e2c-97be-2f64d65069ea.png?1775937759",
         manaCost: "{R}",
         colors: ["R"],
         types: ["Sorcery"],
@@ -30,6 +32,7 @@ export const GoblinGlasswrightCraftwithPride: CardDefinition = {
                             types: ["Artifact", "Token"],
                             subtypes: ["Treasure"],
                             oracleText: "{T}, Sacrifice this token: Add one mana of any color.",
+                            image_url: "https://cards.scryfall.io/png/front/1/a/1a2d027f-8996-4761-a776-47cd428f6779.png?1641306162",
                             abilities: [
                                 {
                                     type: AbilityType.Activated,

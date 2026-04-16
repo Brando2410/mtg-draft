@@ -1,7 +1,7 @@
 import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const SpellbookSeekerCarefulStudy: CardDefinition = {
-    name: "Spellbook Seeker",
+    name: "Spellbook Seeker // Careful Study",
     manaCost: "{3}{U}",
     colors: ["U"],
     types: ["Creature"],
@@ -11,9 +11,11 @@ export const SpellbookSeekerCarefulStudy: CardDefinition = {
     keywords: ["Flying", "Prepared"],
     oracleText: "Flying\nThis creature enters prepared.",
     entersPrepared: true,
+    image_url: "https://cards.scryfall.io/png/front/3/4/34949019-2f88-4447-b648-5226bedf569a.png?1775937905",
 
     preparedFace: {
         name: "Careful Study",
+        image_url: "https://cards.scryfall.io/png/front/d/e/dea15b53-2940-40e7-8d48-8ec11341da83.png?1562936545",
         manaCost: "{U}",
         colors: ["U"],
         types: ["Sorcery"],

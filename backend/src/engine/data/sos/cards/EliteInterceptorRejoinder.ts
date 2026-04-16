@@ -10,10 +10,12 @@ export const EliteInterceptorRejoinder: CardDefinition = {
     toughness: "2",
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared.",
+    image_url: "https://cards.scryfall.io/png/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.png?1775936992",
     entersPrepared: true,
 
     preparedFace: {
         name: "Rejoinder",
+        image_url: "https://cards.scryfall.io/png/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.png?1775936992",
         manaCost: "{1}{W}",
         colors: ["W"],
         types: ["Sorcery"],

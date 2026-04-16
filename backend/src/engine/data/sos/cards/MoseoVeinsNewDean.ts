@@ -11,7 +11,7 @@ export const MoseoVeinsNewDean: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -24,10 +24,11 @@ export const MoseoVeinsNewDean: CardDefinition = {
                         power: 1,
                         toughness: 1,
                         oracleText: "Whenever this token attacks, you gain 1 life.",
+                        image_url: 'https://cards.scryfall.io/png/front/d/0/d0ddbe3e-4a66-494d-9304-7471232549bf.png?1682693901',
                         abilities: [
                             {
                                 type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Attack,
+                                eventMatch: TriggerEvent.Attack,
                                 effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
                             }
                         ]
@@ -37,15 +38,14 @@ export const MoseoVeinsNewDean: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EndStep,
-            condition: 'GAINED_LIFE_THIS_TURN',
-            condition: 'PLAYER_IS_CONTROLLER', // Only in your end step
+            eventMatch: TriggerEvent.EndStep,
+            condition: 'INFUSION && OUR_TURN', // Only in your end step if you gained life
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 optional: true,
                 restrictions: [
-                    'Creature', 
+                    'Creature',
                     { type: 'ManaValueLe', value: 'GAINED_LIFE_AMOUNT' }
                 ]
             },

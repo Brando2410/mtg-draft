@@ -13,15 +13,23 @@ export class StackProcessor {
     // Priority 1: Effects already stored in stack object data during casting/activation
     let effects: EffectDefinition[] = (objectToResolve.data as any)?.effects || [];
     if (effects.length === 0) {
-        if (objectToResolve.type === AbilityType.Spell && objectToResolve.card) {
-          const logic = m21[objectToResolve.card.definition.name];
-          effects = logic?.abilities?.find((a: any) => a.type === AbilityType.Spell)?.effects || [];
+        const { oracle } = require('../../OracleLogicMap');
+        const logic = oracle.getCard(objectToResolve.definition?.name || objectToResolve.card?.definition?.name || "");
+
+        if (objectToResolve.type === AbilityType.Spell) {
+          // Priority: Oracle Logic -> Definition Abilities -> Definition Effects
+          const spellAbility = logic?.abilities?.find((a: any) => a.type === AbilityType.Spell) || 
+                             objectToResolve.definition?.abilities?.find((a: any) => a.type === AbilityType.Spell);
+          effects = logic?.effects || spellAbility?.effects || objectToResolve.definition?.effects || [];
         } 
         else if (objectToResolve.type === AbilityType.Activated) {
-            const sourceObj = state.battlefield.find(o => o.id === objectToResolve.sourceId);
+            const sourceObj = state.battlefield.find(o => o.id === objectToResolve.sourceId) || 
+                             (Object.values(state.players) as any[]).flatMap(p => p.graveyard).find((o: any) => o.id === objectToResolve.sourceId);
+            
             if (sourceObj) {
-              const cardLogic = m21[sourceObj.definition.name];
-              const ability = cardLogic?.abilities?.[objectToResolve.abilityIndex ?? -1];
+              const cardLogic = oracle.getCard(sourceObj.definition.name);
+              const ability = cardLogic?.abilities?.[objectToResolve.abilityIndex ?? -1] || 
+                             sourceObj.definition.abilities?.[objectToResolve.abilityIndex ?? -1];
               if (ability) {
                   effects = ability.effects || [];
               }

@@ -24,6 +24,7 @@ export const MusesEncouragement: CardDefinition = {
                         subtypes: ["Elemental"],
                         power: "3",
                         toughness: "3",
+                        image_url: "https://cards.scryfall.io/png/front/3/d/3d0b9b88-705e-4df0-8a93-3e240b81355b.png?1682693891",
                         abilities: [
                             {
                                 type: 'Static',

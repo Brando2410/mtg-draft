@@ -106,7 +106,7 @@ export class TargetingProcessor {
         const ex = state.exile.find((o: any) => o.id === id);
         if (ex) return ex;
 
-        // 3. Hands & Graveyards
+        // 3. Hands, Graveyards, and Virtual Hands
         for (const p of (Object.values(state.players) as any[])) {
             const h = p.hand.find((o: any) => o.id === id);
             if (h) return h;
@@ -114,6 +114,8 @@ export class TargetingProcessor {
             if (g) return g;
             const l = p.library.find((o: any) => o.id === id);
             if (l) return l;
+            const v = p.virtualHand?.find((o: any) => o.id === id);
+            if (v) return v;
         }
 
         // 4. Stack
@@ -197,8 +199,8 @@ export class TargetingProcessor {
 
         const coreTypes = [
             'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 'permanent',
-            'instant', 'sorcery', 'instant_or_sorcery', 'artifact_or_creature',
-            'artifact_or_enchantment', 'creature_or_planeswalker', 'nonland_permanent'
+            'instant', 'sorcery', 'instant_or_sorcery', 'instantorsorcery', 'artifact_or_creature', 'artifactorcreature',
+            'artifact_or_enchantment', 'artifactorenchantment', 'creature_or_planeswalker', 'creatureorplaneswalker', 'nonland_permanent', 'nonlandpermanent'
         ];
 
         if (typeLineCheck === 'anytarget' || coreTypes.includes(typeLineCheck)) {
@@ -214,15 +216,15 @@ export class TargetingProcessor {
             } else if (typeLineCheck === 'permanent') {
                 const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
                 if (!combinedTypes.some(t => permTypes.includes(t))) return false;
-            } else if (typeLineCheck === 'instant_or_sorcery') {
+            } else if (typeLineCheck === 'instant_or_sorcery' || typeLineCheck === 'instantorsorcery') {
                 if (!combinedTypes.includes('instant') && !combinedTypes.includes('sorcery')) return false;
-            } else if (typeLineCheck === 'artifact_or_creature') {
+            } else if (typeLineCheck === 'artifact_or_creature' || typeLineCheck === 'artifactorcreature') {
                 if (!combinedTypes.includes('artifact') && !combinedTypes.includes('creature')) return false;
-            } else if (typeLineCheck === 'artifact_or_enchantment') {
+            } else if (typeLineCheck === 'artifact_or_enchantment' || typeLineCheck === 'artifactorenchantment') {
                 if (!combinedTypes.includes('artifact') && !combinedTypes.includes('enchantment')) return false;
-            } else if (typeLineCheck === 'creature_or_planeswalker') {
+            } else if (typeLineCheck === 'creature_or_planeswalker' || typeLineCheck === 'creatureorplaneswalker') {
                 if (!combinedTypes.includes('creature') && !combinedTypes.includes('planeswalker')) return false;
-            } else if (typeLineCheck === 'nonland_permanent') {
+            } else if (typeLineCheck === 'nonland_permanent' || typeLineCheck === 'nonlandpermanent') {
                 const permTypes = ['artifact', 'creature', 'enchantment', 'planeswalker'];
                 if (!combinedTypes.some(t => permTypes.includes(t))) return false;
             } else {
@@ -387,7 +389,14 @@ export class TargetingProcessor {
         ].map((t: string) => t.toLowerCase());
 
         const baseTypes = ['creature', 'planeswalker', 'land', 'artifact', 'enchantment', 'instant', 'sorcery', 'permanent', 'card'];
-        const isAlternative = (r: any) => typeof r === 'object' || (typeof r === 'string' && r.toLowerCase().includes('_or_'));
+        const isAlternative = (r: any) => typeof r === 'object' || 
+            (typeof r === 'string' && (
+                r.toLowerCase().includes('_or_') || 
+                r.toLowerCase().includes('orsorcery') || 
+                r.toLowerCase().includes('orplaneswalker') || 
+                r.toLowerCase().includes('orcreature') || 
+                r.toLowerCase().includes('orenchantment')
+            ));
 
         for (const r of restrictions) {
             if (typeof r !== 'string' || isAlternative(r)) continue;
@@ -466,6 +475,14 @@ export class TargetingProcessor {
                 const isBlocking = (state.combat?.blockers || []).some(b => b.blockerId === targetObj.id);
                 if (!isAttacking && !isBlocking) return false;
             }
+            if (lr === 'attacking') {
+                const isAttacking = (state.combat?.attackers || []).some(a => a.attackerId === targetObj.id);
+                if (!isAttacking) return false;
+            }
+            if (lr === 'blocking') {
+                const isBlocking = (state.combat?.blockers || []).some(b => b.blockerId === targetObj.id);
+                if (!isBlocking) return false;
+            }
             if (lr === 'instantorsorcerycastthisturn') {
                 if (controllerId && !state.turnState.instantOrSorceryCastThisTurn[controllerId]) return false;
             }
@@ -541,23 +558,23 @@ export class TargetingProcessor {
                     if (typeof r === 'string') {
                     const lr = r.toLowerCase();
                     if (lr === 'card') return true;
-                    if (lr === 'instant_or_sorcery') {
+                    if (lr === 'instant_or_sorcery' || lr === 'instantorsorcery') {
                         return objTypes.includes('instant') || objTypes.includes('sorcery');
                     }
                     if (lr === 'permanent') {
                         const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
                         return objTypes.some((t: string) => permTypes.includes(t.toLowerCase()));
                     }
-                    if (lr === 'artifact_or_creature') {
+                    if (lr === 'artifact_or_creature' || lr === 'artifactorcreature') {
                         return objTypes.includes('artifact') || objTypes.includes('creature');
                     }
-                    if (lr === 'artifact_or_enchantment') {
+                    if (lr === 'artifact_or_enchantment' || lr === 'artifactorenchantment') {
                         return objTypes.includes('artifact') || objTypes.includes('enchantment');
                     }
-                    if (lr === 'creature_or_planeswalker') {
+                    if (lr === 'creature_or_planeswalker' || lr === 'creatureorplaneswalker') {
                         return objTypes.includes('creature') || objTypes.includes('planeswalker');
                     }
-                    if (lr === 'nonland_permanent') {
+                    if (lr === 'nonland_permanent' || lr === 'nonlandpermanent') {
                         const permTypes = ['artifact', 'creature', 'enchantment', 'planeswalker'];
                         return objTypes.some((t: string) => permTypes.includes(t.toLowerCase()));
                     }

@@ -1,78 +1,51 @@
 import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const EmeritusofConflictLightningBolt: CardDefinition = {
-    "name": "Emeritus of Conflict // Lightning Bolt",
-    "manaCost": "{1}{R} // {R}",
-    "colors": [
-        "R"
-    ],
-    "types": [
-        "Creature"
-    ],
-    "subtypes": [
-        "Human",
-        "Wizard"
-    ],
-    "oracleText": "First strike; Prepare on 3rd spell cast // deals 3 damage to any target.",
-    "abilities": [],
-    "power": "2",
-    "toughness": "2",
-    "faces": [
+    name: "Emeritus of Conflict // Lightning Bolt",
+    manaCost: "{1}{R}",
+    colors: ["R"],
+    types: ["Creature"],
+    subtypes: ["Human", "Wizard"],
+    power: "2",
+    toughness: "2",
+    image_url: "https://cards.scryfall.io/png/front/f/5/f58dba4f-1abb-47a3-a684-29c32bab95c0.png?1775937222",
+    keywords: ["First strike", "Prepared"],
+    oracleText: "First strike\nWhenever you cast your third spell each turn, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    abilities: [
         {
-            "name": "Emeritus of Conflict",
-            "manaCost": "{1}{R}",
-            "colors": ["R"],
-            "types": [
-                "Creature"
-            ],
-            "subtypes": [
-                "Human",
-                "Wizard"
-            ],
-            "oracleText": "First strike\nWhenever you cast your third spell each turn, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
-            "power": "2",
-            "toughness": "2",
-            "keywords": ["First strike"],
-            "abilities": [
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.ThirdSpellCast,
+            effects: [
                 {
-                    type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.ThirdSpellCast,
-                    effects: [
-                        {
-                            type: EffectType.Prepare,
-                            targetMapping: TargetMapping.Self
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "Lightning Bolt",
-            "manaCost": "{R}",
-            "colors": ["R"],
-            "types": [
-                "Instant"
-            ],
-            "subtypes": [],
-            "oracleText": "Lightning Bolt deals 3 damage to any target.",
-            "abilities": [
-                {
-                    type: AbilityType.Spell,
-                    targetDefinition: {
-                        type: 'AnyTarget',
-                        count: 1
-                    },
-                    effects: [
-                        {
-                            type: EffectType.DealDamage,
-                            amount: 3,
-                            targetMapping: TargetMapping.Target1
-                        }
-                    ]
+                    type: EffectType.Prepare,
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
-    ]
+    ],
+
+    preparedFace: {
+        name: "Lightning Bolt",
+        image_url: "https://cards.scryfall.io/png/front/7/7/77c6fa74-5543-42ac-9ead-0e890b188e99.png?1706239968",
+        manaCost: "{R}",
+        colors: ["R"],
+        types: ["Instant"],
+        oracleText: "Lightning Bolt deals 3 damage to any target.",
+        abilities: [
+            {
+                type: AbilityType.Spell,
+                targetDefinition: {
+                    type: 'AnyTarget',
+                    count: 1
+                },
+                effects: [
+                    {
+                        type: EffectType.DealDamage,
+                        amount: 3,
+                        targetMapping: TargetMapping.Target1
+                    }
+                ]
+            }
+        ]
+    }
 };
-
-

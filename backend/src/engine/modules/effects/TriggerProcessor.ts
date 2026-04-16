@@ -331,13 +331,28 @@ export class TriggerProcessor {
                 }
             });
         }
-
+        
         if (matchingTriggers.length === 0) return;
+
+        // --- DEDUPLICATION (Fix for Issue #2: prevents multiple triggers for the same ability instance) ---
+        // We use a composite key of sourceId + ability name (or type) to ensure we don't fire the same thing twice for one card.
+        const uniqueTriggersMap = new Map<string, any>();
+        matchingTriggers.forEach(t => {
+           const key = `${t.sourceId}_${(t as any).name || (t as any).type || (t as any).label || (t as any).eventMatch || 'trigger'}`;
+           if (!uniqueTriggersMap.has(key)) {
+               uniqueTriggersMap.set(key, t);
+           }
+        });
+        const uniqueTriggers = Array.from(uniqueTriggersMap.values());
+        
+        if (uniqueTriggers.length < matchingTriggers.length) {
+            log(`[DEBUG] Deduplicated ${matchingTriggers.length} triggers down to ${uniqueTriggers.length} for event ${event.type}.`);
+        }
 
         // 2. Queue all triggers in pending state
         if (!state.pendingTriggers) state.pendingTriggers = [];
 
-        for (const trigger of matchingTriggers) {
+        for (const trigger of uniqueTriggers) {
             // Increment usage
             if (trigger.limitPerTurn) {
                 state.turnState.triggeredAbilitiesUsedThisTurn[trigger.id] = (state.turnState.triggeredAbilitiesUsedThisTurn[trigger.id] || 0) + 1;
@@ -505,7 +520,10 @@ export class TriggerProcessor {
     ) {
         const { TargetingProcessor } = require('../actions/TargetingProcessor');
         const legalTargetIds = [
-            ...state.battlefield.map(o => o.id),
+            ...state.battlefield.map((o: any) => o.id),
+            ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id)),
+            ...state.exile.map((o: any) => o.id),
+            ...state.stack.map((o: any) => o.id),
             ...Object.keys(state.players)
         ].filter(tid => TargetingProcessor.isLegalTarget(state, stackObj.sourceId, tid, targetDef));
 

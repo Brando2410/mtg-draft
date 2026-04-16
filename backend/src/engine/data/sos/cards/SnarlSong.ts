@@ -24,7 +24,8 @@ export const SnarlSong: CardDefinition = {
                         subtypes: ["Fractal"],
                         colors: ["G", "U"],
                         power: "0",
-                        toughness: "0"
+                        toughness: "0",
+                        image_url: "https://cards.scryfall.io/png/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.png?1682693894"
                     },
                     startingCounters: { type: 'p1p1', amount: 'CONVERGE_AMOUNT' },
                     targetMapping: TargetMapping.Controller

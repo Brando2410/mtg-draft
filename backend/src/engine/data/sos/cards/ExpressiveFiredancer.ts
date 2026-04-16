@@ -17,14 +17,14 @@ export const ExpressiveFiredancer: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
+            eventMatch: TriggerEvent.CastSpell,
             condition: 'PLAYER_IS_CONTROLLER && (EVENT_OBJECT_MATCHES:Instant || EVENT_OBJECT_MATCHES:Sorcery)',
             effects: [
-                { 
-                    type: EffectType.ApplyContinuousEffect, 
-                    duration: { type: DurationType.UntilEndOfTurn }, 
-                    stats: { power: 1, toughness: 1 }, 
-                    targetMapping: TargetMapping.Self 
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    duration: { type: DurationType.UntilEndOfTurn },
+                    stats: { powerModifier: 1, toughnessModifier: 1 },
+                    targetMapping: TargetMapping.Self
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,

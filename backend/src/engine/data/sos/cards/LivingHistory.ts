@@ -18,7 +18,15 @@ export const LivingHistory: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CreateToken,
-                    tokenBlueprint: "Spirit",
+                    tokenBlueprint: {
+                        name: "Spirit",
+                        colors: ["R", "W"],
+                        types: ["Creature"],
+                        subtypes: ["Spirit"],
+                        power: 2,
+                        toughness: 2,
+                        image_url: "https://cards.scryfall.io/png/front/f/9/f98c0167-7434-4607-87c4-315fa8b6972e.png?1682693862"
+                    },
                     amount: 1,
                     targetMapping: TargetMapping.Controller
                 }

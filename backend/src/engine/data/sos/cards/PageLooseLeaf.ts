@@ -22,7 +22,6 @@ export const PageLooseLeaf: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            label: "Grandeur",
             costs: [
                 { 
                     type: 'Discard', 

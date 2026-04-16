@@ -5,7 +5,7 @@ import { Zap, Eye } from 'lucide-react';
 
 export interface GameCardProps {
   obj: GameObject;
-  variant?: 'battlefield' | 'hand' | 'stack' | 'zoom' | 'tiny';
+  variant?: 'battlefield' | 'hand' | 'stack' | 'zoom' | 'tiny' | 'small';
   onClick?: (id: string) => void;
   isTargetable?: boolean;
   isSelected?: boolean;
@@ -40,10 +40,38 @@ export const GameCard = memo(({
   isOpponent = false,
   pendingAction
 }: GameCardProps) => {
-  const { definition, effectiveStats, counters, isTapped, isPhasedOut, damageMarked, summoningSickness } = obj;
+  const { definition, effectiveStats, counters, isTapped, isPhasedOut, damageMarked, summoningSickness, isPrepared } = obj;
   const stats = effectiveStats;
   const isCreature = definition.types.includes('Creature');
   const isPlaneswalker = definition.types.includes('Planeswalker');
+
+  // SOS: Image logic for Prepared spells and DFCs
+  let displayImageUrl = definition.image_url;
+  let displayName = definition.name;
+  let displayManaCost = stats?.manaCost || definition.manaCost;
+
+  // Split name for DFCs: "Creature // Spell" -> "Creature"
+  if (displayName.includes(' // ')) {
+    const parts = displayName.split(' // ');
+    displayName = parts[0];
+  }
+
+  if (isPrepared && definition.preparedFace) {
+    // PREPARED STATE LOGIC
+    // Use the spell face artwork if available
+    displayImageUrl = definition.preparedFace.image_url || displayImageUrl;
+    
+    // Only use the spell name and stats if we are NOT on the battlefield
+    // On the battlefield, the object is still the permanent (the creature)
+    if (variant !== 'battlefield' && variant !== 'zoom') {
+      displayName = definition.preparedFace.name;
+      displayManaCost = definition.preparedFace.manaCost;
+    }
+  } else if (definition.faces && definition.faces.length > 0) {
+    // DFC FRONT FACE FALLBACK
+    displayImageUrl = definition.image_url || definition.faces[0].image_url;
+  }
+
 
   const formatName = (name: string) => {
     return name
@@ -68,6 +96,7 @@ export const GameCard = memo(({
     battlefield: { w: 'w-32', h: 'h-24', rounded: 'rounded-sm' },
     hand: { w: 'w-32', h: 'h-44', rounded: 'rounded-lg' },
     stack: { w: 'w-28', h: 'h-40', rounded: 'rounded-lg' },
+    small: { w: 'w-20', h: 'h-28', rounded: 'rounded-md' },
     tiny: { w: 'w-12', h: 'h-16', rounded: 'rounded-sm' },
     zoom: { 
       w: (definition.faces && definition.faces.length > 1) ? 'w-[640px]' : 'w-[340px]', 
@@ -200,7 +229,7 @@ export const GameCard = memo(({
         minHeight: variant === 'battlefield' ? '6rem' : 'auto',
         ...borderStyle
       }}
-      whileHover={{ 
+      whileHover={variant === 'small' ? {} : { 
         y: variant === 'hand' ? 0 : (verticalShift - 5),
         scale: 1.02,
       }}
@@ -237,7 +266,8 @@ export const GameCard = memo(({
             <h3 className={`font-black tracking-tighter truncate w-full whitespace-nowrap
                 ${definition.name.length > 25 ? 'text-[8.5px]' : definition.name.length > 18 ? 'text-[10px]' : 'text-[11.5px]'}
             `}>
-                {formatName(definition.name)}
+                {formatName(displayName)}
+
             </h3>
         </div>
       )}
@@ -252,11 +282,12 @@ export const GameCard = memo(({
           {variant !== 'zoom' && (
               <div className={`absolute inset-0 w-full h-full overflow-hidden z-0 bg-slate-900`}>
                   <img 
-                      src={definition.image_url} 
-                      alt={definition.name}
+                      src={displayImageUrl} 
+                      alt={displayName}
                       className={`w-full h-full object-cover select-none pointer-events-none transition-opacity duration-300
                           ${variant === 'battlefield' ? 'opacity-100' : 'opacity-95'}
                       `}
+
                       style={{ 
                           objectPosition: variant === 'battlefield' ? 'center 22%' : 'center 20%',
                           transform: variant === 'battlefield' ? 'scale(1.35)' : 'none'
@@ -318,11 +349,13 @@ export const GameCard = memo(({
                           <h3 className={`font-black leading-tight tracking-tighter drop-shadow-md truncate flex-1 min-w-0
                               ${definition.name.length > 20 ? 'text-[8.5px]' : definition.name.length > 15 ? 'text-[9.5px]' : 'text-[11px]'}
                           `}>
-                              {formatName(definition.name)}
+                              {formatName(displayName)}
+
                           </h3>
                           {variant !== 'tiny' && (
                               <div className="shrink-0">
-                                  <ManaSymbols cost={stats?.manaCost || definition.manaCost} variant={variant} />
+                                  <ManaSymbols cost={displayManaCost} variant={variant} />
+
                               </div>
                           )}
                       </div>

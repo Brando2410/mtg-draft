@@ -18,13 +18,14 @@ export const AdditiveEvolution: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CreateToken,
-                    blueprint: {
+                    tokenBlueprint: {
                         name: 'Fractal',
                         types: ['Creature'],
                         subtypes: ['Fractal'],
                         colors: ['G', 'U'],
                         power: '0',
-                        toughness: '0'
+                        toughness: '0',
+                        image_url: 'https://cards.scryfall.io/png/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.png?1682693894'
                     },
                     amount: 1
                 },

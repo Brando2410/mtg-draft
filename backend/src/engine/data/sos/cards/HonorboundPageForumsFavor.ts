@@ -1,7 +1,7 @@
 import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping, DurationType } from '@shared/engine_types';
 
 export const HonorboundPageForumsFavor: CardDefinition = {
-    name: "Honorbound Page",
+    name: "Honorbound Page // Forum's Favor",
     manaCost: "{3}{W}",
     colors: ["W"],
     types: ["Creature"],
@@ -11,9 +11,11 @@ export const HonorboundPageForumsFavor: CardDefinition = {
     keywords: ["First strike", "Prepared"],
     oracleText: "First strike\nThis creature enters prepared.",
     entersPrepared: true,
+    image_url: "https://cards.scryfall.io/png/front/7/9/79a70863-860f-4a7b-9cb2-d3546b689d44.png?1775937039",
 
     preparedFace: {
         name: "Forum's Favor",
+        image_url: "https://cards.scryfall.io/png/front/7/9/79a70863-860f-4a7b-9cb2-d3546b689d44.png?1775937039",
         manaCost: "{W}",
         colors: ["W"],
         types: ["Sorcery"],

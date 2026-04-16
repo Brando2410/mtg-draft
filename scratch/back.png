@@ -1,0 +1,6 @@
+{
+  "object": "error",
+  "code": "validation_error",
+  "status": 422,
+  "details": "This card does not have a second face"
+}

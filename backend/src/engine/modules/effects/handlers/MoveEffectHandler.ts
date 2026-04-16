@@ -118,6 +118,16 @@ export class MoveEffectHandler {
         else return;
 
         const sourceId = (stackObject as any)?.sourceId || '';
+        
+        const { TargetingProcessor } = require('../../actions/TargetingProcessor');
+        const validCandidates = pool.filter(c => 
+            TargetingProcessor.matchesRestrictions(state, c, targetDef.restrictions || [], controllerId, sourceId, undefined, stackObject)
+        );
+
+        if (validCandidates.length === 0) {
+            log(`[INFO] MoveEffectHandler: No valid objects found for "${effect.label || 'Choice'}". Auto-skipping.`);
+            return;
+        }
 
         state.pendingAction = ChoiceGenerator.createCardChoice(state, pool, {
             label: effect.label || `Select a card to move`,
@@ -313,6 +323,14 @@ export class MoveEffectHandler {
         const isDiscard = effect.type === EffectType.DiscardCards || (effect as any).isDiscard;
 
         targetIds.forEach((tid: string) => {
+            if (state.players[tid as PlayerId]) {
+                // If the target is a player and we have a selection definition, open the card picker
+                if (effect.targetDefinition) {
+                    this.resolveInteractiveMovementSelection(state, effect, tid as PlayerId, log, stackObject, parentContext);
+                }
+                return;
+            }
+
             const obj = this.findObject(state, tid, stackObject, parentContext);
             if (obj) {
                 const from = obj.zone;
@@ -472,10 +490,24 @@ export class MoveEffectHandler {
             if (z === Zone.Hand) pool.push(...player.hand);
         });
 
+        const sourceId = stackObject?.sourceId || '';
+        const { TargetingProcessor: TP } = require('../../actions/TargetingProcessor');
+        const validCandidates = pool.filter(c => 
+            TP.matchesRestrictions(state, c, effect.restrictions || [], controllerId, sourceId, undefined, stackObject)
+        );
+
+        if (validCandidates.length === 0) {
+            log(`[INFO] MoveEffectHandler: No valid objects in registry for "${effect.label || 'Search'}". Auto-skipping search.`);
+            if (effect.shuffle && parentContext && parentContext.effects) {
+                parentContext.effects.splice(parentContext.nextEffectIndex + 1, 0, { type: 'Shuffle', targetMapping: 'CONTROLLER' } as any);
+            }
+            return;
+        }
+
         state.pendingAction = ChoiceGenerator.createCardChoice(state, pool, {
             label: `${effect.label || "Search your library"}`,
             playerId: controllerId,
-            sourceId: stackObject?.sourceId || '',
+            sourceId: sourceId,
             restrictions: effect.restrictions,
             reveal: effect.reveal,
             optional: effect.optional || effect.selectionType === 'AnyNumber',

@@ -43,7 +43,8 @@ export const EmilVastlandsRoamer: CardDefinition = {
                         types: ['Creature'],
                         subtypes: ['Fractal'],
                         power: 0,
-                        toughness: 0
+                        toughness: 0,
+                        image_url: 'https://cards.scryfall.io/png/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.png?1682693894'
                     }
                 },
                 {

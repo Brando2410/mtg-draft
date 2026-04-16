@@ -20,13 +20,14 @@ export const AntiquitiesontheLoose: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CreateToken,
-                    blueprint: {
+                    tokenBlueprint: {
                         name: 'Spirit',
                         types: ['Creature'],
                         subtypes: ['Spirit'],
                         colors: ['W', 'R'],
                         power: '2',
-                        toughness: '2'
+                        toughness: '2',
+                        image_url: 'https://cards.scryfall.io/png/front/f/9/f98c0167-7434-4607-87c4-315fa8b6972e.png?1682693862'
                     },
                     amount: 2
                 },

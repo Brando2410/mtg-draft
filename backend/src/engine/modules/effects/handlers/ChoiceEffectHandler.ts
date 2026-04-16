@@ -126,6 +126,16 @@ export class ChoiceEffectHandler {
                 targetPlayer!.hand.forEach((c: any) => (c as any).isRevealed = true);
             }
 
+            const { TargetingProcessor } = require('../../actions/TargetingProcessor');
+            const validCandidates = sourceCards.filter(c => 
+                TargetingProcessor.matchesRestrictions(state, c, effect.restrictions || [], mappingPlayerId as PlayerId, sourceId, undefined, stackObject)
+            );
+
+            if (validCandidates.length === 0) {
+                log(`[INFO] ChoiceEffectHandler: No valid targets in zone for "${effect.label || 'Choice'}". Auto-skipping.`);
+                return;
+            }
+
             state.pendingAction = ChoiceGenerator.createCardChoice(state, sourceCards, {
                 label: effect.label || (isGraveyard ? 'Choose a card from Graveyard' : (isSideboard ? 'Choose a Lesson from Sideboard' : (isBattlefield ? 'Choose a permanent to return' : 'Choose a card from Hand'))),
                 playerId: mappingPlayerId as PlayerId, // The player who makes the choice

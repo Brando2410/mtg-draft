@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, Zone, SelectionType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, Zone, SelectionType, Restriction } from '@shared/engine_types';
 
 export const RubbleRouser: CardDefinition = {
     "name": "Rubble Rouser",
@@ -17,19 +17,22 @@ export const RubbleRouser: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.Choice,
-                    optional: true,
                     label: 'Discard a card to draw a card?',
                     choices: [
                         {
-                            label: 'Discard and draw',
+                            label: 'Discard 1 then draw 1',
                             effects: [
                                 { type: EffectType.DiscardCards, amount: 1, targetMapping: TargetMapping.Controller },
                                 { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }
                             ]
+                        },
+                        {
+                            label: 'Decline',
+                            effects: []
                         }
                     ]
                 }
@@ -39,7 +42,7 @@ export const RubbleRouser: CardDefinition = {
             type: AbilityType.Activated,
             costs: [
                 { type: 'Tap' },
-                { type: 'Exile', value: 1, sourceZone: Zone.Graveyard, restrictions: ['Any'] }
+                { type: 'Exile', value: 1, sourceZone: Zone.Graveyard, restrictions: [Restriction.Card] }
             ],
             effects: [
                 { type: EffectType.AddMana, value: '{R}' },

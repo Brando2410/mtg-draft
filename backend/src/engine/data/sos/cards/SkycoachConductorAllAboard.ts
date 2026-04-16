@@ -1,7 +1,7 @@
 import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const SkycoachConductorAllAboard: CardDefinition = {
-    name: "Skycoach Conductor",
+    name: "Skycoach Conductor // All Aboard",
     manaCost: "{2}{U}",
     colors: ["U"],
     types: ["Creature"],
@@ -11,9 +11,11 @@ export const SkycoachConductorAllAboard: CardDefinition = {
     keywords: ["Flash", "Flying", "Vigilance", "Prepared"],
     oracleText: "Flash\nFlying, vigilance\nThis creature enters prepared.",
     entersPrepared: true,
+    image_url: "https://cards.scryfall.io/png/front/4/e/4ecbca71-9a1d-44c5-b709-d6f565941d5e.png?1775937376",
 
     preparedFace: {
         name: "All Aboard",
+        image_url: "https://cards.scryfall.io/png/front/4/e/4ecbca71-9a1d-44c5-b709-d6f565941d5e.png?1775937376",
         manaCost: "{U}",
         colors: ["U"],
         types: ["Instant"],

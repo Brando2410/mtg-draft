@@ -401,7 +401,14 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                                         isSelected={isSelected}
                                     />
                                     {isSelected && (
-                                        <div className="absolute inset-x-[-8px] inset-y-[-8px] border-[4px] border-yellow-400 rounded-[1.4rem] shadow-[0_0_30px_rgba(250,204,21,0.5)] pointer-events-none z-10" />
+                                        <>
+                                            <div className="absolute inset-x-[-8px] inset-y-[-8px] border-[4px] border-yellow-400 rounded-[1.4rem] shadow-[0_0_30px_rgba(250,204,21,0.5)] pointer-events-none z-10" />
+                                            {maxChoices > 1 && (
+                                                <div className="absolute -top-3 -right-3 w-8 h-8 bg-yellow-400 text-slate-950 font-black rounded-full flex items-center justify-center border-4 border-[#0b0f1a] shadow-2xl z-30 text-xs italic">
+                                                    {selectedIndices.indexOf(originalIdx) + 1}
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </motion.div>
                             );

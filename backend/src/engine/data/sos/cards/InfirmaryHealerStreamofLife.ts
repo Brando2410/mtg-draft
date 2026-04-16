@@ -1,7 +1,7 @@
 import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
 
 export const InfirmaryHealerStreamofLife: CardDefinition = {
-    name: "Infirmary Healer",
+    name: "Infirmary Healer // Stream of Life",
     manaCost: "{1}{G}",
     colors: ["G"],
     types: ["Creature"],
@@ -11,9 +11,11 @@ export const InfirmaryHealerStreamofLife: CardDefinition = {
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared.",
     entersPrepared: true,
+    image_url: "https://cards.scryfall.io/png/front/9/1/911442e3-3003-4683-a766-e791e9553667.png?1775938036",
 
     preparedFace: {
         name: "Stream of Life",
+        image_url: "https://cards.scryfall.io/png/front/3/4/341aa1b2-e600-4580-b0cd-e1582b75dc81.png?1562733506",
         manaCost: "{X}{G}",
         colors: ["G"],
         types: ["Sorcery"],

@@ -35,7 +35,8 @@ export const VisionarysDance: CardDefinition = {
                         toughness: 3,
                         keywords: [
                             'Flying'
-                        ]
+                        ],
+                        image_url: 'https://cards.scryfall.io/png/front/3/d/3d0b9b88-705e-4df0-8a93-3e240b81355b.png?1682693891'
                     }
                 }
             ]

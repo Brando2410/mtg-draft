@@ -269,7 +269,9 @@ export class PermanentHandler {
                 keywords: blueprint.keywords || [],
                 abilities: blueprint.abilities || [],
                 oracleText: blueprint.oracleText || "",
-                image_url: blueprint.image_url || ""
+                image_url: blueprint.image_url || "",
+                preparedFace: blueprint.preparedFace,
+                faces: blueprint.faces
             },
             zone: Zone.Battlefield,
             isTapped: false,

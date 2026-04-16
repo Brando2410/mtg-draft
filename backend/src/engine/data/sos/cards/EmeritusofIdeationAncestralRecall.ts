@@ -1,7 +1,7 @@
 import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const EmeritusofIdeationAncestralRecall: CardDefinition = {
-    name: "Emeritus of Ideation",
+    name: "Emeritus of Ideation // Ancestral Recall",
     manaCost: "{3}{U}{U}",
     colors: ["U"],
     types: ["Creature"],
@@ -11,6 +11,7 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
     keywords: ["Flying", "Ward {2}", "Prepared"],
     oracleText: "Flying, ward {2}\nThis creature enters prepared.\nWhenever this creature attacks, you may exile eight cards from your graveyard. If you do, this creature becomes prepared.",
     entersPrepared: true,
+    image_url: "https://cards.scryfall.io/png/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.png?1775937223",
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -52,6 +53,7 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
 
     preparedFace: {
         name: "Ancestral Recall",
+        image_url: "https://cards.scryfall.io/png/front/2/3/2398892d-28e9-4009-81ec-0d544af79d2b.png?1614638829",
         manaCost: "{U}",
         colors: ["U"],
         types: ["Instant"],

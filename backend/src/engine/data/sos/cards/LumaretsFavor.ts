@@ -14,7 +14,7 @@ export const LumaretsFavor: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
+            eventMatch: TriggerEvent.CastSpell,
             condition: 'GAINED_LIFE_THIS_TURN',
             effects: [
                 {
@@ -26,9 +26,8 @@ export const LumaretsFavor: CardDefinition = {
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: TargetType.Creature,
                 count: 1,
-                restrictions: ["Creature"]
             },
             effects: [
                 {

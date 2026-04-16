@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType, TargetType } from '@shared/engine_types';
 
 export const ChaseInspiration: CardDefinition = {
     "name": "Chase Inspiration",
@@ -14,7 +14,7 @@ export const ChaseInspiration: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'YouControl'] },
+            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

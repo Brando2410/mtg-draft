@@ -98,7 +98,8 @@ export class SpellProcessor {
 
         if (!cardToPlay) {
             // 3. Search for Prepared Creatures on Battlefield
-            const preparedObj = state.battlefield.find(o => o.id === cardInstanceId && o.controllerId === playerId && o.isPrepared);
+            const realId = cardInstanceId.startsWith('virtual_prepared_') ? cardInstanceId.replace('virtual_prepared_', '') : cardInstanceId;
+            const preparedObj = state.battlefield.find(o => o.id === realId && o.controllerId === playerId && o.isPrepared);
             if (preparedObj && (preparedObj.definition.preparedFace || preparedObj.definition.faces?.[1])) {
                 const face = preparedObj.definition.preparedFace || preparedObj.definition.faces![1];
                 cardToPlay = {
@@ -171,7 +172,7 @@ export class SpellProcessor {
         const typeLine = (currentDefinition.type_line || '').toLowerCase();
         const types = (currentDefinition.types || []).map((t: string) => t.toLowerCase());
         const isLand = typeLine.includes('land') || types.includes('land');
-        const isInstantOrFlash = typeLine.includes('instant') || (currentDefinition.oracleText || '').includes('Flash');
+        const isInstantOrFlash = typeLine.includes('instant') || types.includes('instant') || (currentDefinition.oracleText || '').includes('Flash');
 
         // Timing/Restriction Check (Rule 101.2: "Cannot" wins)
         const { RestrictionProcessor } = require('./RestrictionProcessor');
@@ -221,8 +222,18 @@ export class SpellProcessor {
         if (!logic && !isLand) {
             log(`[WARNING] No logic definition found for ${currentDefinition.name}.`);
         }
-        const targetDefinition = (logic as any)?.targetDefinition || (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition;
-        const spellEffects = (logic as any)?.effects || (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.effects || [];
+        
+        // Priority: Oracle -> Current Definition on Object (for virtual spells/MDFCs)
+        const targetDefinition = (logic as any)?.targetDefinition || 
+                                (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition ||
+                                currentDefinition.targetDefinition ||
+                                currentDefinition.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition;
+
+        const spellEffects = (logic as any)?.effects || 
+                            (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.effects || 
+                            currentDefinition.effects ||
+                            currentDefinition.abilities?.find((a: any) => a.type === 'Spell')?.effects || [];
+        
         const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices && !e.targetMapping);
         const hasPreSelectedChoice = (state as any).lastChoiceIndex !== undefined;
 
@@ -930,6 +941,8 @@ export class SpellProcessor {
         const hasChosenSacrifice = (state as any).lastChosenSacrificeId !== undefined;
         const discardCost = additionalCosts.find((cost: AbilityCost) => (cost.type as string).toLowerCase() === 'discard');
         const hasChosenDiscard = (state as any).lastChosenDiscardId !== undefined;
+        const tapSelectionCost = additionalCosts.find((cost: AbilityCost) => cost.type === 'TapSelection');
+        const hasChosenTapSelection = (state as any).lastChosenTapSelectionIds !== undefined;
 
         // Step 1: Preliminary Cost & Rule Check (including Summoning Sickness via CostProcessor)
         if (!CostProcessor.canPay(state, ability.costs || [], obj.id, playerId)) {
@@ -1099,6 +1112,49 @@ export class SpellProcessor {
                 }
             };
             log(`[DISCARD] ${player.name} must choose a card to discard to activate ${obj.definition.name}.`);
+            return true;
+        }
+
+        if (tapSelectionCost && !hasChosenTapSelection) {
+            const { TargetingProcessor } = require('./TargetingProcessor');
+            const legalTapIds = state.battlefield
+                .filter(o => o.controllerId === playerId && !o.isTapped && 
+                    TargetingProcessor.matchesRestrictions(state, o, tapSelectionCost.restrictions || [], playerId, obj.id))
+                .map(o => o.id);
+
+            const amount = Number(tapSelectionCost.value || tapSelectionCost.amount || 1);
+            
+            if (legalTapIds.length < amount) {
+                log(`Illegal Activation: Not enough valid permanents to tap for ${obj.definition.name}.`);
+                return false;
+            }
+
+            const { ActionType } = require('@shared/engine_types');
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: obj.id,
+                data: {
+                    label: `Tap ${amount} creatures to activate ` + obj.definition.name,
+                    hideUndo: false,
+                    isCostChoice: true,
+                    costType: 'TapSelection',
+                    abilityIndex: abilityIndex,
+                    minChoices: amount,
+                    maxChoices: amount,
+                    declaredTargets: declaredTargets || [],
+                    choices: legalTapIds.map(id => {
+                        const sObj = state.battlefield.find(o => o.id === id);
+                        return {
+                            label: `Tap ${sObj?.definition.name || id}`,
+                            value: id,
+                            cardData: sObj,
+                            selectable: true
+                        }
+                    })
+                }
+            };
+            log(`[TAP] ${player.name} must choose ${amount} objects to tap to activate ${obj.definition.name}.`);
             return true;
         }
 

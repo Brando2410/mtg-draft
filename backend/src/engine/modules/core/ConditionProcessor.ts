@@ -183,6 +183,20 @@ export class ConditionProcessor {
             const normalizedActualType = actualType === 'p1p1' ? '+1/+1' : actualType;
             return normalizedActualType === expectedType;
         }
+        case 'EVENT_OBJECT_HAS_X': {
+            const obj = event?.data?.object || event?.data?.card || (event as any)?.gameObject;
+            if (!obj) return false;
+            return (obj.definition.manaCost || '').includes('X');
+        }
+        case 'EVENT_OBJECT_IS_TARGET_1': {
+            const objId = event?.data?.object?.id || (event as any)?.gameObject?.id || event?.targetId;
+            const targetId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0];
+            return objId === targetId;
+        }
+        case 'EVENT_OBJECT_IS_TRIGGER_SOURCE': {
+            const objId = event?.data?.object?.id || (event as any)?.gameObject?.id;
+            return objId === sourceId;
+        }
       }
     }
 
@@ -213,6 +227,8 @@ export class ConditionProcessor {
         return state.activePlayerId !== controllerId && state.currentStep === 'Upkeep';
       case 'PLAYER_GAINED_LIFE_THIS_TURN':
       case 'LIFE_GAINED_THIS_TURN':
+      case 'GAINED_LIFE_THIS_TURN':
+      case 'INFUSION':
         return (state.turnState.lifeGainedThisTurn[controllerId] || 0) > 0;
       case 'CARDS_EXILED_THIS_TURN':
         return state.turnState.cardsExiledThisTurn[controllerId] || false;
@@ -320,8 +336,6 @@ export class ConditionProcessor {
       }
       case 'CREATURE_DIED_THIS_TURN':
         return state.turnState.creaturesDiedThisTurn.length > 0;
-      case 'INFUSION':
-        return (state.turnState.lifeGainedThisTurn[controllerId] || 0) > 0;
       case 'TARGET_IS_OPPONENT': {
         const tId = (event as any)?.targets?.[0] || (event as any)?.targetId;
         if (!tId) return false;
@@ -331,6 +345,11 @@ export class ConditionProcessor {
         const obj = event?.data?.object || (event as any)?.gameObject;
         if (!obj) return false;
         return obj.controllerId === controllerId && obj.definition.types.map((t: string) => t.toLowerCase()).includes('creature');
+      }
+      case 'OWN_TOKEN_ENTERS': {
+        const obj = event?.data?.object || (event as any)?.gameObject;
+        if (!obj) return false;
+        return obj.controllerId === controllerId && !!obj.isToken;
       }
       case 'TARGET_IS_INSTANT_OR_SORCERY': {
         const tId = (event as any)?.targets?.[0] || (event as any)?.targetId;
@@ -390,6 +409,22 @@ export class ConditionProcessor {
         if (!obj) return false;
         return obj.controllerId === controllerId && obj.definition.types.map((t: string) => t.toLowerCase()).includes('creature');
       }
+      case 'YOUR_CARD_LEAVES_GRAVEYARD':
+        return event?.playerId === controllerId;
+      case 'SELF_ATTACKS':
+      case 'SELFATTACKS':
+        return (event as any)?.sourceId === sourceId;
+      case 'CONTROLLER_HAS_ARTIFACT':
+        return state.battlefield.some(o => o.controllerId === controllerId && (o.definition.types || []).some(t => t.toLowerCase() === 'artifact'));
+      case 'ON_CAST_INSTANT_SORCERY': {
+        if (event?.playerId !== controllerId) return false;
+        const card = event?.data?.card || event?.data?.object;
+        if (!card) return false;
+        const types = card.definition.types.map((t: string) => t.toLowerCase());
+        return types.includes('instant') || types.includes('sorcery');
+      }
+      case 'TRIGGER_EVENT_SOURCE.CONTROLLERID === CONTROLLER_ID':
+        return event?.playerId === controllerId;
       default:
         // Assume true if unknown (safer for gameplay)
         return true;

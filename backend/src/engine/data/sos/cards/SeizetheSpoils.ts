@@ -29,11 +29,12 @@ export const SeizetheSpoils: CardDefinition = {
                 {
                     type: EffectType.CreateToken,
                     tokenBlueprint: {
-                        name: 'Treasure',
+                        name: "Treasure",
                         colors: [],
-                        types: ['Artifact', 'Token'],
-                        subtypes: ['Treasure'],
+                        types: ["Artifact", "Token"],
+                        subtypes: ["Treasure"],
                         oracleText: "{T}, Sacrifice this token: Add one mana of any color.",
+                        image_url: "https://cards.scryfall.io/png/front/1/a/1a2d027f-8996-4761-a776-47cd428f6779.png?1641306162",
                         abilities: [
                             {
                                 type: AbilityType.Activated,

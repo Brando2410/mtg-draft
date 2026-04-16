@@ -29,7 +29,7 @@ export const EagerGlyphmage: CardDefinition = {
                         power: 1,
                         toughness: 1,
                         keywords: ['Flying'],
-                        image_url: 'https://cards.scryfall.io/art_crop/front/b/d/bd73bc23-28f0-4fa0-8260-26210f9aa0a0.jpg?1624589254'
+                        image_url: 'https://cards.scryfall.io/png/front/c/9/c9deae5c-80d4-4701-b425-91853b7ee03b.png?1682693898'
                     }
                 }
             ]

@@ -21,12 +21,9 @@ export const Homesickness: CardDefinition = {
                     label: "Target player to draw cards"
                 },
                 {
-                    type: TargetType.Permanent,
+                    type: TargetType.Creature,
                     count: 2,
-                    restrictions: ["Creature"],
-                    optional: true,
-                    minChoices: 0,
-                    maxChoices: 2,
+                    minCount: 0,
                     label: "Up to two target creatures to stun"
                 }
             ],

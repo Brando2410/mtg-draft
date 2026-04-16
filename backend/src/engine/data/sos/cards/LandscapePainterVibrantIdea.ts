@@ -11,9 +11,11 @@ export const LandscapePainterVibrantIdea: CardDefinition = {
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared.",
     entersPrepared: true,
+    image_url: "https://cards.scryfall.io/png/front/c/0/c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf.png?1775937300",
 
     preparedFace: {
         name: "Vibrant Idea",
+        image_url: "https://cards.scryfall.io/png/front/c/0/c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf.png?1775937300",
         manaCost: "{4}{U}",
         colors: ["U"],
         types: ["Sorcery"],

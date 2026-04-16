@@ -231,6 +231,7 @@ export interface StackObject {
   xValue?: number; // Rule 107.3: The value of X
   exileOnResolution?: boolean;
   isFlashbackCast?: boolean;
+  definition?: CardDefinition;
 }
 
 // Player's isolated state within a game
@@ -619,6 +620,7 @@ export const TriggerEvent = {
   StartOfCombat: 'ON_START_OF_COMBAT',
   BeginningOfCombatStep: 'ON_BEGINNING_OF_COMBAT_STEP',
   PreCombatMainPhaseStart: 'ON_PRE_COMBAT_MAIN_PHASE_START',
+  PostCombatMainPhaseStart: 'ON_POST_COMBAT_MAIN_PHASE_START',
   Upkeep: 'ON_UPKEEP_STEP',
   Cleanup: 'ON_CLEANUP_STEP',
   LeaveGraveyard: 'ON_LEAVE_GRAVEYARD',

@@ -264,7 +264,7 @@ export class PriorityProcessor {
             const graveCard = player.graveyard.find(c => c.id === objId);
             if (graveCard) {
                 const hasAllowEffect = this.findPermissionEffect(state, playerId, EffectType.AllowCastFromGraveyard, graveCard.id);
-                const hasFlashback = graveCard.definition.keywords?.includes('Flashback');
+                const hasFlashback = LayerProcessor.getEffectiveKeywords(graveCard, state).some(k => k.toLowerCase() === 'flashback');
                 const hasGraveAbility = graveCard.definition.abilities?.some((a: any, idx: number) => this.canAbilityBeActivated(state, playerId, graveCard.id, idx, false));
                 if (hasAllowEffect || hasFlashback || hasGraveAbility) cardToPlay = graveCard;
             }

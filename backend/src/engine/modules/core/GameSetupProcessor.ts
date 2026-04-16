@@ -75,7 +75,9 @@ export class GameSetupProcessor {
         entersWithXCounters: (logicData as any)?.entersWithXCounters,
         entersTapped: (logicData as any)?.entersTapped,
         entersTappedCondition: (logicData as any)?.entersTappedCondition,
-        entersPrepared: (logicData as any)?.entersPrepared
+        entersPrepared: (logicData as any)?.entersPrepared,
+        preparedFace: (logicData as any)?.preparedFace,
+        faces: (logicData as any)?.faces
       },
       isTapped: false,
       damageMarked: 0,
