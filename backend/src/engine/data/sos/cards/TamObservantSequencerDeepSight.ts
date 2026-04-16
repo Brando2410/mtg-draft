@@ -18,10 +18,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
             id: 'Landfall',
             eventMatch: TriggerEvent.EnterBattlefieldOther,
             restrictions: [
-                {
-                    type: 'Type',
-                    value: 'Land'
-                }
+                'Land'
             ],
             condition: ConditionType.PlayerIsController,
             effects: [

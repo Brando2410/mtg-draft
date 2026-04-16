@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const WitherbloomCharm: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const WitherbloomCharm: CardDefinition = {
     name: "Witherbloom Charm",
     manaCost: "{B}{G}",
     colors: [
@@ -34,7 +34,6 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                                                     restrictions: [
                                                         'Permanent'
                                                     ],
-                                                    targetMapping: 'SELF_PERMANENT'
                                                 }
                                             ],
                                             effects: [
@@ -66,10 +65,10 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                         {
                             label: "Destroy target nonland permanent with mana value 2 or less",
                             targetDefinition: {
-                                type: DurationType.Permanent,
+                                type: TargetType.NonlandPermanent,
                                 count: 1,
                                 restrictions: [
-                                    'Nonland',
+
                                     {
                                         type: 'ManaValue',
                                         comparison: 'LessOrEqual',
@@ -90,4 +89,3 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         }
     ]
 };
-    

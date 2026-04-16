@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-    export const ZaffaiandtheTempests: CardDefinition = {
+export const ZaffaiandtheTempests: CardDefinition = {
     name: "Zaffai and the Tempests",
     manaCost: "{5}{U}{R}",
     colors: [
@@ -19,12 +19,13 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     oracleText: "Once during each of your turns, you may cast an instant or sorcery spell from your hand without paying its mana cost.",
     abilities: [
         {
-            type: AbilityType.Static,            effects: [
+            type: AbilityType.Static,
+            effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
                     isFreeCast: true,
                     targetMapping: TargetMapping.Controller,
-                    restrictions: ['Instant', 'Sorcery', 'FromHand'],
+                    restrictions: ['InstantOrSorcery', 'FromHand'],
                     limitPerTurn: 1
                 }
             ]
@@ -33,4 +34,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     power: "5",
     toughness: "7"
 };
-    

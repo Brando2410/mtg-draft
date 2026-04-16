@@ -161,6 +161,8 @@ export interface ContinuousEffect {
     canPlayExiled?: boolean;
     spendAnyMana?: boolean;
     isFreeCast?: boolean;
+    limitPerTurn?: number;
+    value?: any;
     restrictions?: AbilityRestriction[];
     flashbackCostOverride?: string;
     playerModifier?: {

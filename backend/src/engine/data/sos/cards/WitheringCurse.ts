@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const WitheringCurse: CardDefinition = {
+export const WitheringCurse: CardDefinition = {
     name: "Withering Curse",
     manaCost: "{1}{B}{B}",
     colors: [
@@ -22,16 +22,16 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
                             condition: ConditionType.Infusion,
                             type: EffectType.Destroy,
                             targetMapping: TargetMapping.AllMatchingPermanents,
-                            restrictions: [{ type: 'Type', value: 'Creature' }]
+                            restrictions: ['Creature']
                         },
                         {
-                            condition: '!INFUSION',
+                            condition: 'INFUSION',
                             type: EffectType.ApplyContinuousEffect,
                             duration: DurationType.UntilEndOfTurn,
                             powerModifier: -2,
                             toughnessModifier: -2,
                             targetMapping: TargetMapping.AllMatchingPermanents,
-                            restrictions: [{ type: 'Type', value: 'Creature' }]
+                            restrictions: ['Creature']
                         }
                     ]
                 }
@@ -39,4 +39,3 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
         }
     ]
 };
-    

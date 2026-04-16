@@ -28,7 +28,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastSpell,
-            restrictions: [{ type: 'Type', value: 'Creature' }],
+            restrictions: ['Creature'],
             condition: ConditionType.PlayerIsController,
             effects: [
                 {

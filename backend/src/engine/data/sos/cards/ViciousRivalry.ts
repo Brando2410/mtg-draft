@@ -24,8 +24,7 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType } from
                     selectionType: 'All' as any,
                     restrictions: [
                         { type: 'ManaValueLessOrEqual', amount: DynamicAmount.X },
-                        { type: 'Type', value: 'Artifact' },
-                        { type: 'Type', value: 'Creature', isOr: true }
+                        'ArtifactOrCreature'
                     ],
                     targetMapping: 'MATCHING_PERMANENTS'
                 }

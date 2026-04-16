@@ -105,6 +105,8 @@ export class ContinuousEffectHandler {
         toughnessSet: effect.toughnessSet !== undefined ? amountResolver(effect.toughnessSet) : undefined,
         canPlayExiled: effect.canPlayExiled,
         isFreeCast: effect.isFreeCast,
+        limitPerTurn: effect.limitPerTurn,
+        value: effect.value,
         condition: effect.condition,
         typesToAdd: (effect as any).typesToAdd,
         subtypesToAdd: effect.subtypesToAdd,

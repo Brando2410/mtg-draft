@@ -261,7 +261,8 @@ export class SpellProcessor {
         }
 
         // CR 601.2f: Determine total cost
-        const { totalMana, additionalCosts } = this.getEffectiveCosts(state, cardToPlay, declaredTargets, currentDefinition);
+        const { totalMana, additionalCosts, usedAlternativeCostId } = this.getEffectiveCosts(state, cardToPlay, declaredTargets, currentDefinition);
+        (cardToPlay as any).usedAlternativeCostId = usedAlternativeCostId;
 
         // --- SETUP SEQUENCE: TARGETING -> CHOICE -> FINALIZATION ---
 
@@ -578,6 +579,12 @@ export class SpellProcessor {
         (cardToPlay as any).paidCost = totalMana;
         (cardToPlay as any).paidManaValue = ManaProcessor.getManaValue(totalMana);
 
+        if ((cardToPlay as any).paidCost === "{0}" && (cardToPlay as any).usedAlternativeCostId) {
+            const effectId = (cardToPlay as any).usedAlternativeCostId;
+            state.turnState.triggeredAbilitiesUsedThisTurn[effectId] = (state.turnState.triggeredAbilitiesUsedThisTurn[effectId] || 0) + 1;
+            log(`[LIMIT] Consumed usage of free cast effect ${effectId}.`);
+        }
+
         // --- SOS: UNPREPARE SOURCE ---
         if ((cardToPlay as any).isPreparedCopy && (cardToPlay as any).sourceCreatureId) {
             const source = state.battlefield.find(o => o.id === (cardToPlay as any).sourceCreatureId);
@@ -730,7 +737,7 @@ export class SpellProcessor {
         return true;
     }
 
-    public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: any, forceFlashback?: boolean, overrideStats?: any): { totalMana: string, additionalCosts: AbilityCost[] } {
+    public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: any, forceFlashback?: boolean, overrideStats?: any): { totalMana: string, additionalCosts: AbilityCost[], usedAlternativeCostId?: string } {
         const currentDef = overrideDefinition || card.definition;
         let baseCost = currentDef.manaCost;
 
@@ -775,10 +782,24 @@ export class SpellProcessor {
         let effectiveCost: string | null = null;
 
         // 0. Check for Free Cast permissions (Alternative Costs)
-        const isFree = state.ruleRegistry.continuousEffects.find(e =>
-            (e.isFreeCast || (e as any).value === "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING") &&
-            (e.targetIds?.includes(card.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === card.controllerId))
-        );
+        const isFree = state.ruleRegistry.continuousEffects.find(e => {
+            const matchesBasic = (e.isFreeCast || (e as any).value === "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING");
+            if (!matchesBasic) return false;
+
+            const isPlayerTarget = (e.targetMapping === 'CONTROLLER' && e.controllerId === card.controllerId);
+            const isSpecificTarget = e.targetIds?.includes(card.id);
+            if (!isPlayerTarget && !isSpecificTarget) return false;
+
+            // Rule: Check limitPerTurn if defined
+            if (e.limitPerTurn) {
+                const used = state.turnState.triggeredAbilitiesUsedThisTurn[e.id] || 0;
+                if (used >= e.limitPerTurn) return false;
+            }
+
+            // Use LayerProcessor to verify the card is actually a target (checking restrictions)
+            const { LayerProcessor } = require('./../state/LayerProcessor');
+            return LayerProcessor.isTarget(state, e, card.id);
+        });
 
         if (isFree) {
             if ((isFree as any).value === "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING" && card.zone !== Zone.Hand) {
@@ -788,7 +809,7 @@ export class SpellProcessor {
             }
         }
 
-        if (effectiveCost !== null) return { totalMana: effectiveCost, additionalCosts };
+        if (effectiveCost !== null) return { totalMana: effectiveCost, additionalCosts, usedAlternativeCostId: isFree?.id };
 
         // 1. Gather global modifiers
         const { TargetingProcessor } = require('./TargetingProcessor');
@@ -990,6 +1011,15 @@ export class SpellProcessor {
         if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) {
             log(`Illegal Activation: Activation requirements for ${obj.definition.name} are not met.`);
             return false;
+        }
+
+        // Limit Check
+        if (ability.limitPerTurn) {
+            const usedCount = state.turnState.triggeredAbilitiesUsedThisTurn[`ability_${obj.id}_${abilityIndex}`] || 0;
+            if (usedCount >= ability.limitPerTurn) {
+                log(`Illegal Activation: This ability has already been used ${usedCount} times this turn.`);
+                return false;
+            }
         }
 
         // --- STEP 1.5: CHOOSE X (Rule 601.2b) ---
@@ -1320,6 +1350,10 @@ export class SpellProcessor {
         delete (state as any).lastChosenDiscardId;
 
         obj.abilitiesUsedThisTurn++;
+        if (ability.limitPerTurn) {
+            const usageKey = `ability_${obj.id}_${abilityIndex}`;
+            state.turnState.triggeredAbilitiesUsedThisTurn[usageKey] = (state.turnState.triggeredAbilitiesUsedThisTurn[usageKey] || 0) + 1;
+        }
 
         if (ability.isManaAbility) {
             const { EffectProcessor } = require('../effects/EffectProcessor');

@@ -17,7 +17,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
             targetDefinition: {
                 type: TargetType.Spell,
                 count: 1,
-                restrictions: [{ type: 'Type', value: 'Creature' }]
+                restrictions: ['Creature']
             },
             effects: [
                 {

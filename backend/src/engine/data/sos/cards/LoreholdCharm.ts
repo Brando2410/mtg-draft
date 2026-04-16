@@ -35,8 +35,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                                 type: TargetType.CardInGraveyard,
                                 count: 1,
                                 restrictions: [
-                                    { type: 'Type', value: 'Artifact' },
-                                    { type: 'Type', value: 'Creature', isOr: true },
+                                    'ArtifactOrCreature',
                                     { type: 'ManaValue', comparison: 'LessOrEqual', value: 2 }
                                 ]
                             },

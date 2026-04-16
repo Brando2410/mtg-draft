@@ -464,6 +464,12 @@ export class PriorityProcessor {
         return false;
     }
 
+    // Limit Check
+    if (ability.limitPerTurn) {
+        const usedCount = state.turnState.triggeredAbilitiesUsedThisTurn[`ability_${obj.id}_${abilityIndex}`] || 0;
+        if (usedCount >= ability.limitPerTurn) return false;
+    }
+
     // Skip purely mana-producing abilities for auto-pass
     if (!checkPriority && ability.isManaAbility) return false;
 
