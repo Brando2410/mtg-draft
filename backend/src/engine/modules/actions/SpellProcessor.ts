@@ -45,90 +45,12 @@ export class SpellProcessor {
             return false;
         }
 
-        let cardToPlay: any;
-        const { PriorityProcessor } = require('./../core/PriorityProcessor');
-        const { TargetingProcessor } = require('./TargetingProcessor');
-
-        // 1. Search in Hand
-        const cardInHand = player.hand.find((c: any) => c.id === cardInstanceId);
-        if (cardInHand) {
-            cardToPlay = cardInHand;
-        } else {
-            // 2. Search in Non-hand zones with Permission Check
-            const obj = TargetingProcessor.findObjectInAnyZone(state, cardInstanceId);
-            if (obj && obj.controllerId === playerId) {
-                let permissionType: string | undefined;
-                if (obj.zone === Zone.Graveyard) permissionType = EffectType.AllowCastFromGraveyard;
-                else if (obj.zone === Zone.Exile) permissionType = EffectType.AllowPlayExiled;
-                else if (obj.zone === Zone.Library) permissionType = EffectType.AllowPlayFromTop;
-
-                const { LayerProcessor } = require('./../state/LayerProcessor');
-                const stats = LayerProcessor.getEffectiveStats(obj, state);
-                const hasFlashback = obj.zone === Zone.Graveyard && stats.keywords?.includes('Flashback');
-
-                if (hasFlashback) {
-                    cardToPlay = obj;
-                    (cardToPlay as any).isFlashbackCast = true;
-                    log(`[FLASHBACK] Casting ${obj.definition.name} via flashback.`);
-                } else {
-                    const hasGraveAbility = obj.zone === Zone.Graveyard && obj.definition.abilities?.some((a: any) =>
-                        a.type === AbilityType.Activated &&
-                        (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
-                    );
-
-
-                    if (hasGraveAbility) {
-                        cardToPlay = obj;
-                    } else if (permissionType || bypassTargeting) {
-                        const hasPermission = bypassTargeting || PriorityProcessor.findPermissionEffect(state, playerId, permissionType!, obj.id);
-                        if (hasPermission) {
-                            cardToPlay = obj;
-                        } else {
-                            log(`[DEBUG] No ${permissionType} permission found for ${obj.definition.name} in ${obj.zone}.`);
-                        }
-                    } else {
-                        log(`[DEBUG] No permission type for zone ${obj.zone}.`);
-                    }
-                }
-            } else if (obj) {
-                log(`[DEBUG] Player ${playerId} does not control object ${cardInstanceId} (controller: ${obj.controllerId}).`);
-            } else {
-                log(`[DEBUG] Object ${cardInstanceId} not found in any zone.`);
-            }
-        }
-
-        if (!cardToPlay) {
-            // 3. Search for Prepared Creatures on Battlefield
-            const realId = cardInstanceId.startsWith('virtual_prepared_') ? cardInstanceId.replace('virtual_prepared_', '') : cardInstanceId;
-            const preparedObj = state.battlefield.find(o => o.id === realId && o.controllerId === playerId && o.isPrepared);
-            if (preparedObj && (preparedObj.definition.preparedFace || preparedObj.definition.faces?.[1])) {
-                const face = preparedObj.definition.preparedFace || preparedObj.definition.faces![1];
-                cardToPlay = {
-                    ...preparedObj,
-                    id: `copy_${preparedObj.id}_${Date.now()}`, // It's a copy (Rule 707.12)
-                    definition: face,
-                    zone: Zone.Battlefield, // Cast from battlefield according to CR 707.12
-                    isPreparedCopy: true,
-                    sourceCreatureId: preparedObj.id
-                };
-            }
-        }
-
-        if (!cardToPlay) {
-            // 4. Search for Paradigm Virtual Copies
-            if ((state as any).paradigmCopies && (state as any).paradigmCopies[cardInstanceId]) {
-                cardToPlay = (state as any).paradigmCopies[cardInstanceId];
-            }
-        }
-
-        if (!cardToPlay) {
-            log(`Card not found in hand or current zone is restricted.`);
-            return false;
-        }
+        const cardToPlay = this.resolveCardToPlay(state, playerId, cardInstanceId, log);
+        if (!cardToPlay) return false;
 
         // --- ACTIVATED ABILITY REDIRECTION (Graveyard) ---
         // If the card is in the graveyard and we're trying to "play" it, check if it's actually an activated ability card
-        if (cardToPlay.zone === Zone.Graveyard && !cardInHand) {
+        if (cardToPlay.zone === Zone.Graveyard && (state.players[playerId].hand.find((c: any) => c.id === cardInstanceId) === undefined)) {
             const { LayerProcessor } = require('./../state/LayerProcessor');
             const stats = LayerProcessor.getEffectiveStats(cardToPlay, state);
             const hasFlashback = stats.keywords?.includes('Flashback') || cardToPlay.definition.keywords?.includes('Flashback');
@@ -138,7 +60,6 @@ export class SpellProcessor {
                     a.type === AbilityType.Activated &&
                     (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
                 );
-
 
                 if (graveAbilityIndex !== undefined && graveAbilityIndex !== -1) {
                     log(`[DEBUG] Converting playCard to activateAbility for ${cardToPlay.definition.name}`);
@@ -166,6 +87,11 @@ export class SpellProcessor {
 
         const currentDefinition = (cardToPlay as any).selectedFaceDefinition || cardToPlay.definition;
 
+        // Persist face choice into the object definition for Zones (Stack/Battlefield)
+        if ((cardToPlay as any).selectedFaceDefinition) {
+            cardToPlay.definition = (cardToPlay as any).selectedFaceDefinition;
+        }
+
         // --- X-VALUE RESET FAIL-SAFE ---
         if (!bypassTargeting && cardToPlay.xValue !== undefined) {
             cardToPlay.xValue = undefined;
@@ -176,47 +102,17 @@ export class SpellProcessor {
         const isLand = typeLine.includes('land') || types.includes('land');
         const isInstantOrFlash = typeLine.includes('instant') || types.includes('instant') || (currentDefinition.oracleText || '').includes('Flash');
 
-        // Timing/Restriction Check (Rule 101.2: "Cannot" wins)
-        const { RestrictionProcessor } = require('./RestrictionProcessor');
-        if (!RestrictionProcessor.isCastAllowed(state, playerId, cardToPlay)) {
-            log(`Illegal Action: Casting ${cardToPlay.definition.name} is currently restricted.`);
-            return false;
-        }
+        // Timing/Restriction check
+        const isInstantOrSorcery = typeLine.includes('instant') || types.includes('instant') || typeLine.includes('sorcery') || types.includes('sorcery');
+        const isFirstInstantOrSorcery = isInstantOrSorcery && !state.turnState.instantOrSorceryCastThisTurn[playerId];
 
-        // 2. Timing/Speed (Rule 305/307)
-        if (!isInstantOrFlash && !bypassTargeting) {
-            if (activeId !== callerId || (state.currentPhase !== Phase.PreCombatMain && state.currentPhase !== Phase.PostCombatMain) || state.stack.length > 0) {
-                log(`Illegal Play: Cannot cast sorcery speed spell/land right now.`);
-                return false;
-            }
+        if (!this.validateCardTiming(state, playerId, cardToPlay, isInstantOrFlash, bypassTargeting, log)) {
+            return false;
         }
 
         // 3. Land Handling (Rule 305)
         if (isLand) {
-            let maxLands = 1;
-            // Support for cards like Azusa that add additional land plays
-            state.ruleRegistry.continuousEffects.forEach(effect => {
-                if ((effect as any).type === 'AdditionalLandPlays' && effect.targetMapping === 'CONTROLLER' && effect.controllerId === playerId) {
-                    maxLands += ((effect as any).amount as number) || 0;
-                }
-            });
-
-            const currentLandsPlayed = state.turnState.landsPlayedThisTurn[playerId] || 0;
-
-            if (currentLandsPlayed >= maxLands) {
-                log(`Illegal Play: Already reached land play limit of ${maxLands} this turn.`);
-                return false;
-            }
-
-            // Rule 305: Playing a land is a special action, not a spell.
-            // ActionProcessor.moveCard handles entersTapped, registerAbilities, and ON_ETB triggers.
-            ActionProcessor.moveCard(state, cardToPlay, Zone.Battlefield, playerId, log);
-
-            state.turnState.landsPlayedThisTurn[playerId] = currentLandsPlayed + 1;
-            player.hasPlayedLandThisTurn = true; // Kept for legacy compatibility if needed
-            log(`Played Land: ${cardToPlay.definition.name} (${currentLandsPlayed + 1}/${maxLands})`);
-            engine.checkStateBasedActions();
-            return true;
+            return this.handleLandPlay(state, playerId, cardToPlay, engine, log);
         }
 
         // 4. Extract logic and effects
@@ -241,23 +137,13 @@ export class SpellProcessor {
 
         // Step 0.5: Check for X in cost or inherent logic
         const costStr = currentDefinition.manaCost;
+        // X-Value Selection
         const needsX = costStr.includes('{X}') ||
             (logic as any)?.abilities?.some((a: any) => a.costs?.some((c: any) => c.value === 'X')) ||
             (logic as any)?.effects?.some((e: any) => JSON.stringify(e).includes('"X"'));
 
         if (needsX && cardToPlay.xValue === undefined) {
-            const { ActionType } = require('@shared/engine_types');
-            state.pendingAction = {
-                type: ActionType.ChooseX,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    label: `Choose a value for X for ${cardToPlay.definition.name}`,
-                    declaredTargets: declaredTargets || [],
-                }
-            };
-            log(`[CHOOSE_X] ${state.players[playerId].name} is choosing X for ${cardToPlay.definition.name}...`);
-            return true;
+            return this.handleXValueChoice(state, playerId, cardToPlay, declaredTargets, log);
         }
 
         // CR 601.2f: Determine total cost
@@ -268,214 +154,13 @@ export class SpellProcessor {
 
         // Step 1: Check Targeting
         if (targetDefinition && (!declaredTargets || declaredTargets.length === 0)) {
-            if (!ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana)) {
-                log(`Illegal Play: Not enough mana available to even start casting ${cardToPlay.definition.name}.`);
-                cardToPlay.xValue = undefined; // Cleanup for next attempt
-                return false;
-            }
-
-            const precalculatedTargets = [
-                ...Object.keys(state.players),
-                ...state.battlefield.map(o => o.id),
-                ...state.exile.map(o => o.id),
-                ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
-            ].filter(tid => TargetingProcessor.isLegalTarget(state, cardToPlay.id, tid, targetDefinition));
-
-            const isSingleOpponentTarget = targetDefinition.type === 'Player' &&
-                targetDefinition.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'opponent') &&
-                precalculatedTargets.length === 1 &&
-                state.playerOrder.length === 2;
-
-            if (isSingleOpponentTarget) {
-                declaredTargets = precalculatedTargets;
-                log(`[AUTO-TARGET] Automatically targeting the only opponent for ${cardToPlay.definition.name}.`);
-            } else {
-                if (precalculatedTargets.length === 0) {
-                    if (targetDefinition.optional) {
-                        log(`No legal targets found, auto-skipping optional target selection.`);
-                        return this.playCard(state, playerId, cardInstanceId, [], log, engine, true);
-                    } else {
-                        log(`Illegal Play: No valid targets available for ${cardToPlay.definition.name}.`);
-                        return false;
-                    }
-                }
-
-                const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDefinition, cardToPlay.xValue || 0);
-                const prompt = TargetingProcessor.generateTargetPrompt(targetDefinition, 0, cardToPlay.xValue || 0, true);
-                state.pendingAction = {
-                    type: 'TARGETING',
-                    playerId: playerId,
-                    sourceId: cardToPlay.id,
-                    data: {
-                        targetDefinition,
-                        targets: precalculatedTargets,
-                        isSpellCasting: true,
-                        xValue: cardToPlay.xValue,
-                        maxCount,
-                        minCount,
-                        count,
-                        prompt
-                    }
-                };
-                log(`[TARGETING] ${state.players[playerId].name} is selecting targets for ${cardToPlay.definition.name}...`);
-                return true;
-            }
+            const result = this.handleTargetingChoice(state, playerId, cardToPlay, targetDefinition, totalMana, cardInstanceId, log, engine);
+            if (result === true || result === false) return result;
+            declaredTargets = result;
         }
 
         // Step 1.5: Check Additional Costs (e.g. Goremand's sacrifice)
-        log(`[DEBUG] Additional costs found: ${additionalCosts.length} -> ${JSON.stringify(additionalCosts)}`);
-        const choiceCost = additionalCosts.find(c => (c.type as string) === 'Choice');
-        const hasChosenCostChoice = (state as any).lastChosenCostChoiceIndex !== undefined;
-
-        if (choiceCost && !hasChosenCostChoice) {
-            const { ActionType } = require('@shared/engine_types');
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    label: choiceCost.label || "Choose an additional cost",
-                    hideUndo: false,
-                    isCostChoice: true,
-                    costType: 'Choice',
-                    declaredTargets: declaredTargets || [],
-                    choices: choiceCost.choices?.map((c, idx) => ({
-                        label: c.label,
-                        value: `COST_CHOICE_${idx}`,
-                        selectable: true
-                    }))
-                }
-            };
-            log(`[COST_CHOICE] ${state.players[playerId].name} must choose an additional cost for ${cardToPlay.definition.name}.`);
-            return true;
-        }
-
-        const costRequiresTarget = additionalCosts.find(c => c.type === 'Sacrifice' && !c.targetMapping);
-        const hasChosenSacrifice = (state as any).lastChosenSacrificeId !== undefined;
-        const discardCost = additionalCosts.find(c => c.type === CostType.Discard);
-
-        const hasChosenDiscard = (state as any).lastChosenDiscardId !== undefined;
-        const exileCost = additionalCosts.find(c => c.type === 'Exile' && !c.targetMapping);
-        const hasChosenExile = (state as any).lastChosenExileIds !== undefined;
-
-        if (costRequiresTarget && !hasChosenSacrifice) {
-            const legalSacrificeIds = state.battlefield
-                .filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, costRequiresTarget.restrictions || [], playerId, cardToPlay.id))
-                .map(o => o.id);
-
-            if (legalSacrificeIds.length === 0) {
-                log(`Illegal Play: No valid objects to pay the additional cost for ${cardToPlay.definition.name}.`);
-                return false;
-            }
-
-            const { ActionType } = require('@shared/engine_types');
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    label: "Sacrifice a creature to cast " + cardToPlay.definition.name,
-                    hideUndo: false,
-                    isCostChoice: true,
-                    costType: 'Sacrifice',
-                    declaredTargets: declaredTargets || [],
-                    choices: legalSacrificeIds.map(id => {
-                        const obj = state.battlefield.find(o => o.id === id);
-                        return {
-                            label: `Sacrifice ${obj?.definition.name || id}`,
-                            value: id,
-                            cardData: obj,
-                            selectable: true
-                        }
-                    })
-                }
-            };
-            log(`[SACRIFICE] ${state.players[playerId].name} must choose an object to sacrifice to cast ${cardToPlay.definition.name}.`);
-            return true;
-        }
-
-        if (discardCost && !hasChosenDiscard) {
-            const legalDiscardIds = player.hand
-                .filter(c => c.id !== cardInstanceId && TargetingProcessor.matchesRestrictions(state, c, discardCost.restrictions || [], playerId, cardToPlay.id))
-                .map(c => c.id);
-
-            if (legalDiscardIds.length === 0) {
-                log(`Illegal Play: No valid cards to discard for ${cardToPlay.definition.name}.`);
-                return false;
-            }
-
-            const { ActionType } = require('@shared/engine_types');
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    label: "Discard a card to cast " + cardToPlay.definition.name,
-                    hideUndo: false,
-                    isCostChoice: true,
-                    costType: 'Discard',
-                    minChoices: 1,
-                    maxChoices: 1,
-                    declaredTargets: declaredTargets || [],
-                    choices: legalDiscardIds.map(id => {
-                        const c = player.hand.find(o => o.id === id)!;
-                        return {
-                            label: `Discard ${c.definition.name}`,
-                            value: c.id,
-                            cardData: c,
-                            selectable: true
-                        }
-                    })
-                }
-            };
-            log(`[DISCARD] ${state.players[playerId].name} must choose a card to discard to cast ${cardToPlay.definition.name}.`);
-            return true;
-        }
-
-        if (exileCost && !hasChosenExile) {
-            const zones = exileCost.sourceZones || (exileCost.sourceZone ? [exileCost.sourceZone] : [Zone.Battlefield]);
-            const pool = zones.flatMap(z => {
-                if (z === Zone.Battlefield) return state.battlefield.filter(o => o.controllerId === playerId);
-                if (z === Zone.Graveyard) return player.graveyard;
-                if (z === Zone.Hand) return player.hand;
-                return [];
-            });
-
-            const legalExileIds = pool
-                .filter(c => TargetingProcessor.matchesRestrictions(state, c, exileCost.restrictions || [], playerId, cardToPlay.id))
-                .map(c => c.id);
-
-            const count = exileCost.amount || 1;
-            if (legalExileIds.length < count) {
-                log(`Illegal Play: Not enough valid objects to exile for ${cardToPlay.definition.name}.`);
-                return false;
-            }
-
-            const { ActionType } = require('@shared/engine_types');
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    label: `Exile ${count} card(s) to cast ` + cardToPlay.definition.name,
-                    hideUndo: false,
-                    isCostChoice: true,
-                    costType: 'Exile',
-                    minChoices: count,
-                    maxChoices: count,
-                    declaredTargets: declaredTargets || [],
-                    choices: legalExileIds.map(id => {
-                        const obj = pool.find(o => o.id === id);
-                        return {
-                            label: `Exile ${obj?.definition?.name || id}`,
-                            value: id,
-                            cardData: obj,
-                            selectable: true
-                        }
-                    })
-                }
-            };
-            log(`[EXILE] ${state.players[playerId].name} must choose objects to exile to cast ${cardToPlay.definition.name}.`);
+        if (this.handleInteractiveCosts(state, playerId, cardToPlay, additionalCosts, declaredTargets, cardInstanceId, log)) {
             return true;
         }
 
@@ -502,239 +187,7 @@ export class SpellProcessor {
         }
 
         // Step 3: Finalization
-        const preSelectedChoice = (state as any).lastChoiceIndex;
-        delete (state as any).lastChoiceIndex;
-
-        if (!ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
-            if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, cardToPlay)) {
-                log(`Auto-tapping lands to pay ${totalMana}...`);
-                ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, log, engine.tapForMana, cardToPlay);
-            } else {
-                log(`Illegal Play: Not enough mana for ${cardToPlay.definition.name} (Effective Cost: ${totalMana})`);
-                return false;
-            }
-        }
-
-        if (cardToPlay.definition.name === "Teferi, Master of Time") {
-            log(`[DEBUG] Playing Teferi, Master of Time: ${JSON.stringify(cardToPlay.definition, null, 2)}`);
-        }
-        log(`Paying ${totalMana} for ${cardToPlay.definition.name}...`);
-        const colorsSpent = ManaProcessor.deductManaCost(player, totalMana, state, cardToPlay);
-        (cardToPlay as any).colorsSpent = colorsSpent;
-        (cardToPlay as any).convergeAmount = colorsSpent.length;
-
-        // Pay additional costs (CR 601.2h)
-        additionalCosts.forEach(cost => {
-            if (cost.type === 'Sacrifice') {
-                const chosenId = (state as any).lastChosenSacrificeId;
-                const obj = state.battlefield.find(o => o.id === (chosenId || cardToPlay.id));
-                if (obj) {
-                    TriggerProcessor.onEvent(state, { type: 'ON_SACRIFICE', playerId, sourceId: obj.id, data: { object: obj } }, log);
-                    ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId, log);
-                    log(`Paid additional cost: Sacrificed ${obj.definition.name}.`);
-                    if ((cost as any).isCasualty) {
-                        (state as any).paidCasualtyFor = cardToPlay.id;
-                    }
-                }
-            } else if (cost.type === 'Discard') {
-                const chosenId = (state as any).lastChosenDiscardId;
-                const obj = player.hand.find(o => o.id === chosenId);
-                if (obj) {
-                    TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card: obj, sourceId: cardToPlay.id } }, log);
-                    ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId, log);
-                    log(`Paid additional cost: Discarded ${obj.definition.name}.`);
-                }
-            } else if (cost.type === 'PayLife') {
-                const lifeVal = cost.value === 'X' ? (cardToPlay.xValue || 0) : (parseInt(cost.value as string) || 0);
-                player.life -= lifeVal;
-                TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
-                log(`Paid additional cost: ${lifeVal} life.`);
-            } else if (cost.type === 'Exile') {
-                const chosenIds = (state as any).lastChosenExileIds || [];
-                chosenIds.forEach((cid: string) => {
-                    const obj = TargetingProcessor.findObjectInAnyZone(state, cid);
-                    if (obj) {
-                        ActionProcessor.moveCard(state, obj, Zone.Exile, playerId, log);
-                        log(`Paid additional cost: Exiled ${obj.definition?.name || cid}.`);
-                    }
-                });
-            }
-        });
-
-        // Cleanup temporary selection
-        delete (state as any).lastChosenSacrificeId;
-        delete (state as any).lastChosenDiscardId;
-        delete (state as any).lastChosenExileIds;
-        delete (state as any).lastChosenCostChoiceIndex;
-
-        // 5. Remove from current zone and move to stack
-        const lastZone = cardToPlay.zone;
-        if (!(cardToPlay as any).isPreparedCopy) {
-            ActionProcessor.moveCard(state, cardToPlay, Zone.Stack, playerId, log);
-        } else {
-            cardToPlay.zone = Zone.Stack;
-            cardToPlay.lastNonStackZone = lastZone;
-        }
-
-        (cardToPlay as any).paidCost = totalMana;
-        (cardToPlay as any).paidManaValue = ManaProcessor.getManaValue(totalMana);
-
-        if ((cardToPlay as any).paidCost === "{0}" && (cardToPlay as any).usedAlternativeCostId) {
-            const effectId = (cardToPlay as any).usedAlternativeCostId;
-            state.turnState.triggeredAbilitiesUsedThisTurn[effectId] = (state.turnState.triggeredAbilitiesUsedThisTurn[effectId] || 0) + 1;
-            log(`[LIMIT] Consumed usage of free cast effect ${effectId}.`);
-        }
-
-        // --- SOS: UNPREPARE SOURCE ---
-        if ((cardToPlay as any).isPreparedCopy && (cardToPlay as any).sourceCreatureId) {
-            const source = state.battlefield.find(o => o.id === (cardToPlay as any).sourceCreatureId);
-            if (source) {
-                source.isPrepared = false;
-                log(`${source.definition.name} is now unprepared.`);
-            }
-        }
-
-        const isInstantOrSorcery = cardToPlay.definition.types.some((t: string) => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery');
-        const isFirstInstantOrSorcery = isInstantOrSorcery && !state.turnState.instantOrSorceryCastThisTurn[playerId];
-        if (isInstantOrSorcery) {
-            state.turnState.instantOrSorceryCastThisTurn[playerId] = true;
-        }
-
-        state.turnState.spellsCastThisTurn[playerId] = (state.turnState.spellsCastThisTurn[playerId] || 0) + 1;
-        if (state.turnState.spellsCastThisTurn[playerId] === 2) {
-            TriggerProcessor.onEvent(state, { type: 'ON_SECOND_SPELL_CAST', playerId: playerId, data: {} }, log);
-        }
-        if (state.turnState.spellsCastThisTurn[playerId] === 3) {
-            TriggerProcessor.onEvent(state, { type: 'ON_THIRD_SPELL_CAST', playerId: playerId, data: {} }, log);
-        }
-
-        const exileOnResolution = (state.ruleRegistry.continuousEffects.some(e =>
-            e.exileOnMoveToGraveyard &&
-            (e.targetIds?.includes(cardToPlay.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === playerId))
-        )) || (cardToPlay as any).isFlashbackCast || currentDefinition?.exileOnResolution;
-
-        const targetsControllers = (declaredTargets || []).map(tid => {
-            const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
-            return obj ? obj.controllerId : null;
-        });
-
-        const stackObj = {
-            id: `spell_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-            controllerId: playerId,
-            sourceId: cardToPlay.id,
-            type: 'Spell' as const,
-            targets: declaredTargets || [],
-            card: cardToPlay,
-            definition: currentDefinition,
-            xValue: cardToPlay.xValue,
-            exileOnResolution: exileOnResolution,
-            isFlashbackCast: (cardToPlay as any).isFlashbackCast,
-            data: {
-                effects: spellEffects,
-                targetDefinition: targetDefinition,
-                preSelectedChoice,
-                targetsControllers // NEW: Persist controller IDs for resolution
-            }
-        };
-
-        state.stack.push(stackObj);
-
-        // --- CASUALTY COPY (CR 702.152) ---
-        if ((state as any).paidCasualtyFor === cardToPlay.id) {
-            delete (state as any).paidCasualtyFor;
-            const copyStackObj = {
-                id: `casualty_trigger_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-                controllerId: playerId,
-                sourceId: stackObj.id,
-                type: AbilityType.Triggered as any,
-                name: `Casualty Copy (${stackObj.definition.name})`,
-                image_url: stackObj.definition.image_url,
-                targets: [],
-                data: {
-                    effects: [
-                        {
-                            type: 'CopySpellOnStack' as const,
-                            targetMapping: 'SOURCE_OBJECT',
-                            chooseNewTargets: true
-                        }
-                    ]
-                }
-            };
-            state.stack.push(copyStackObj);
-            log(`[CASUALTY] Copy trigger for ${stackObj.definition.name} placed on stack.`);
-        }
-
-        // CR 601.2i: Fire Targeting Triggers
-        (declaredTargets || []).forEach(tid => {
-            TriggerProcessor.onEvent(state, {
-                type: 'ON_BECOME_TARGET',
-                playerId: playerId,
-                targetId: tid,
-                data: {
-                    sourceId: stackObj.id,
-                    sourceCard: cardToPlay
-                }
-            }, log);
-        });
-
-        state.consecutivePasses = 0;
-
-        // CR 601.2i: Fire cast triggers
-        TriggerProcessor.onEvent(state, {
-            type: 'ON_CAST_SPELL',
-            playerId: playerId,
-            amount: (cardToPlay as any).paidManaValue || 0,
-            data: {
-                card: cardToPlay,
-                sourceId: cardToPlay.id,
-                stackSnapshot: JSON.parse(JSON.stringify(stackObj))
-            }
-        }, log);
-
-        if (isFirstInstantOrSorcery) {
-            TriggerProcessor.onEvent(state, {
-                type: 'ON_CAST_FIRST_INSTANT_SORCERY',
-                playerId: playerId,
-                amount: (cardToPlay as any).paidManaValue || 0,
-                data: {
-                    card: cardToPlay,
-                    sourceId: cardToPlay.id,
-                    stackSnapshot: JSON.parse(JSON.stringify(stackObj))
-                }
-            }, log);
-        }
-
-        if (isInstantOrSorcery) {
-            TriggerProcessor.onEvent(state, {
-                type: 'ON_CAST_INSTANT_SORCERY',
-                playerId: playerId,
-                amount: (cardToPlay as any).paidManaValue || 0,
-                data: {
-                    card: cardToPlay,
-                    sourceId: cardToPlay.id,
-                    stackSnapshot: JSON.parse(JSON.stringify(stackObj))
-                }
-            }, log);
-        }
-
-        const isNonCreature = !cardToPlay.definition.types.some((t: string) => t.toLowerCase() === 'creature');
-        if (isNonCreature) {
-            TriggerProcessor.onEvent(state, {
-                type: 'ON_CAST_NON_CREATURE',
-                playerId: playerId,
-                data: {
-                    card: cardToPlay,
-                    sourceId: cardToPlay.id
-                }
-            }, log);
-        }
-
-        log(`--------------------------------------------------`);
-        log(`[STACK] + ${state.players[playerId].name} cast ${cardToPlay.definition.name}${declaredTargets?.length ? ' targeting ' + declaredTargets.join(', ') : ''}`);
-        log(`--------------------------------------------------`);
-
-        engine.checkAutoPass(playerId);
-        return true;
+        return this.finalizeSpellCast(state, playerId, cardToPlay, totalMana, additionalCosts, declaredTargets, spellEffects, targetDefinition, isFirstInstantOrSorcery, isInstantOrSorcery, engine, log);
     }
 
     public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: any, forceFlashback?: boolean, overrideStats?: any): { totalMana: string, additionalCosts: AbilityCost[], usedAlternativeCostId?: string } {
@@ -960,60 +413,607 @@ export class SpellProcessor {
         const ability = cardLogic.abilities[abilityIndex];
         if (ability.type !== AbilityType.Activated) return false;
 
-        // Step 0.5: Check for X in cost or effects
-        const needsX = ability.costs?.some((c: any) => String(c.value).includes('{X}') || c.amount === 'X' || c.value === 'X' || c.value === '-X') ||
-            ability.effects?.some((e: any) => JSON.stringify(e).includes('"X"'));
+        // Step 1: Preliminary Validation (Zone, Costs, Requirements, Limits)
+        if (!this.validateAbilityActivation(state, playerId, obj, ability, abilityIndex, log)) {
+            return false;
+        }
 
-        if (needsX && (obj as any).xValue === undefined) {
-            const { ActionType } = require('@shared/engine_types');
-            state.pendingAction = {
-                type: ActionType.ChooseX,
-                playerId: playerId,
-                sourceId: obj.id,
-                data: {
-                    label: `Choose a value for X for ${obj.definition.name}`,
-                    abilityIndex: abilityIndex,
-                    declaredTargets: declaredTargets || [],
-                }
-            };
-            log(`[CHOOSE_X] ${player.name} is choosing X for ${obj.definition.name}...`);
+        // Step 1.5: Choose X
+        if (this.handleAbilityXChoice(state, playerId, obj, abilityIndex, declaredTargets, log)) {
             return true;
         }
 
-        // PRE-CALCULATE COST VARIABLES (Available for both steps)
-        const additionalCosts = ability.costs || [];
-        const sacrificeCost = additionalCosts.find((cost: AbilityCost) => cost.type === 'Sacrifice');
+        // Step 1.6: Speed/Timing Check
+        if (!this.validateAbilitySpeed(state, playerId, obj, ability, cardLogic, log)) {
+            return false;
+        }
+
+        // Step 2: Interactive Cost Selection
+        const costResult = this.handleAbilityInteractiveCosts(state, playerId, obj, ability, abilityIndex, declaredTargets, log);
+        if (costResult === true) return true;
+        if (costResult === false) return false;
+
+        // Step 3: Targeting (Rule 602.2b)
+        if (ability.targetDefinition && (declaredTargets === undefined || declaredTargets.length === 0) && !bypassTargeting) {
+            const targetingResult = this.handleAbilityTargeting(state, playerId, cardId, obj, ability, abilityIndex, log, engine);
+            if (targetingResult) return true; // Handled pending action or single target recursion
+        }
+
+        // Step 4: Finalization (Rule 602.2h)
+        return this.finalizeAbilityActivation(state, playerId, obj, ability, abilityIndex, declaredTargets || [], log, engine);
+    }
+
+    private static handleLandPlay(state: GameState, playerId: PlayerId, cardToPlay: GameObject, engine: any, log: (m: string) => void): boolean {
+        const player = state.players[playerId];
+        let maxLands = 1;
+        // Support for cards like Azusa that add additional land plays
+        state.ruleRegistry.continuousEffects.forEach(effect => {
+            if ((effect as any).type === 'AdditionalLandPlays' && effect.targetMapping === 'CONTROLLER' && effect.controllerId === playerId) {
+                maxLands += ((effect as any).amount as number) || 0;
+            }
+        });
+
+        const currentLandsPlayed = state.turnState.landsPlayedThisTurn[playerId] || 0;
+
+        if (currentLandsPlayed >= maxLands) {
+            log(`Illegal Play: Already reached land play limit of ${maxLands} this turn.`);
+            return false;
+        }
+
+        // Rule 305: Playing a land is a special action, not a spell.
+        const { ActionProcessor } = require('./ActionProcessor');
+        ActionProcessor.moveCard(state, cardToPlay, Zone.Battlefield, playerId, log);
+
+        state.turnState.landsPlayedThisTurn[playerId] = currentLandsPlayed + 1;
+        player.hasPlayedLandThisTurn = true;
+        log(`Played Land: ${cardToPlay.definition.name} (${currentLandsPlayed + 1}/${maxLands})`);
+        engine.checkStateBasedActions();
+        return true;
+    }
+
+    private static resolveCardToPlay(state: GameState, playerId: PlayerId, cardInstanceId: string, log: (m: string) => void): GameObject | null {
+        const player = state.players[playerId];
+        const { PriorityProcessor } = require('./../core/PriorityProcessor');
+        const { TargetingProcessor } = require('./TargetingProcessor');
+
+        // 1. Search in Hand
+        const cardInHand = player.hand.find((c: any) => c.id === cardInstanceId);
+        if (cardInHand) return cardInHand;
+
+        // 2. Search in Non-hand zones with Permission Check
+        const obj = TargetingProcessor.findObjectInAnyZone(state, cardInstanceId);
+        if (obj && obj.controllerId === playerId) {
+            let permissionType: string | undefined;
+            if (obj.zone === Zone.Graveyard) permissionType = EffectType.AllowCastFromGraveyard;
+            else if (obj.zone === Zone.Exile) permissionType = EffectType.AllowPlayExiled;
+            else if (obj.zone === Zone.Library) permissionType = EffectType.AllowPlayFromTop;
+
+            const { LayerProcessor } = require('./../state/LayerProcessor');
+            const stats = LayerProcessor.getEffectiveStats(obj, state);
+            const hasFlashback = obj.zone === Zone.Graveyard && (stats.keywords?.includes('Flashback') || obj.definition.keywords?.includes('Flashback'));
+
+            if (hasFlashback) {
+                (obj as any).isFlashbackCast = true;
+                log(`[FLASHBACK] Casting ${obj.definition.name} via flashback.`);
+                return obj;
+            }
+
+            const hasGraveAbility = obj.zone === Zone.Graveyard && obj.definition.abilities?.some((a: any) =>
+                a.type === AbilityType.Activated &&
+                (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
+            );
+
+            if (hasGraveAbility) return obj;
+
+            if (permissionType) {
+                const hasPermission = PriorityProcessor.findPermissionEffect(state, playerId, permissionType, obj.id);
+                if (hasPermission) return obj;
+                log(`[DEBUG] No ${permissionType} permission found for ${obj.definition.name} in ${obj.zone}.`);
+            }
+        }
+
+        // 3. Search for Prepared Creatures on Battlefield
+        const realId = cardInstanceId.startsWith('virtual_prepared_') ? cardInstanceId.replace('virtual_prepared_', '') : cardInstanceId;
+        const preparedObj = state.battlefield.find(o => o.id === realId && o.controllerId === playerId && o.isPrepared);
+        if (preparedObj && (preparedObj.definition.preparedFace || preparedObj.definition.faces?.[1])) {
+            const face = preparedObj.definition.preparedFace || preparedObj.definition.faces![1];
+            return {
+                ...preparedObj,
+                id: `copy_${preparedObj.id}_${Date.now()}`,
+                definition: face,
+                zone: Zone.Battlefield,
+                isPreparedCopy: true,
+                sourceCreatureId: preparedObj.id
+            } as any;
+        }
+
+        // 4. Search for Paradigm Virtual Copies
+        if ((state as any).paradigmCopies && (state as any).paradigmCopies[cardInstanceId]) {
+            return (state as any).paradigmCopies[cardInstanceId];
+        }
+
+        return null;
+    }
+    private static validateCardTiming(state: GameState, playerId: PlayerId, cardToPlay: GameObject, isInstantOrFlash: boolean, bypassTargeting: boolean, log: (m: string) => void): boolean {
+        const { RestrictionProcessor } = require('./RestrictionProcessor');
+
+        // Rule 101.2: "Cannot" wins
+        if (!RestrictionProcessor.isCastAllowed(state, playerId, cardToPlay)) {
+            log(`Illegal Action: Casting ${cardToPlay.definition.name} is currently restricted.`);
+            return false;
+        }
+
+        // Rule 305/307: Timing
+        if (!isInstantOrFlash && !bypassTargeting) {
+            const activeId = String(state.activePlayerId).trim();
+            const callerId = String(playerId).trim();
+            if (activeId !== callerId || (state.currentPhase !== Phase.PreCombatMain && state.currentPhase !== Phase.PostCombatMain) || state.stack.length > 0) {
+                log(`Illegal Play: Cannot cast sorcery speed spell/land right now.`);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static handleXValueChoice(state: GameState, playerId: PlayerId, cardToPlay: GameObject, declaredTargets: string[], log: (m: string) => void): boolean {
+        const { ActionType } = require('@shared/engine_types');
+        state.pendingAction = {
+            type: ActionType.ChooseX,
+            playerId: playerId,
+            sourceId: cardToPlay.id,
+            data: {
+                label: `Choose a value for X for ${cardToPlay.definition.name}`,
+                declaredTargets: declaredTargets || [],
+            }
+        };
+        log(`[CHOOSE_X] ${state.players[playerId].name} is choosing X for ${cardToPlay.definition.name}...`);
+        return true;
+    }
+
+    private static handleTargetingChoice(
+        state: GameState,
+        playerId: PlayerId,
+        cardToPlay: GameObject,
+        targetDefinition: any,
+        totalMana: string,
+        cardInstanceId: string,
+        log: (m: string) => void,
+        engine: any
+    ): boolean | string[] {
+        const { TargetingProcessor } = require('./TargetingProcessor');
+        const player = state.players[playerId];
+
+        if (!ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana)) {
+            log(`Illegal Play: Not enough mana available to even start casting ${cardToPlay.definition.name}.`);
+            cardToPlay.xValue = undefined; // Cleanup for next attempt
+            return false;
+        }
+
+        const precalculatedTargets = [
+            ...Object.keys(state.players),
+            ...state.battlefield.map(o => o.id),
+            ...state.exile.map(o => o.id),
+            ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
+        ].filter(tid => TargetingProcessor.isLegalTarget(state, cardToPlay.id, tid, targetDefinition));
+
+        const isSingleOpponentTarget = targetDefinition.type === 'Player' &&
+            targetDefinition.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'opponent') &&
+            precalculatedTargets.length === 1 &&
+            state.playerOrder.length === 2;
+
+        if (isSingleOpponentTarget) {
+            log(`[AUTO-TARGET] Automatically targeting the only opponent for ${cardToPlay.definition.name}.`);
+            return precalculatedTargets;
+        }
+
+        if (precalculatedTargets.length === 0) {
+            if (targetDefinition.optional) {
+                log(`No legal targets found, auto-skipping optional target selection.`);
+                return []; // Represents empty targets for an optional trigger-like choice during spell casting
+            } else {
+                log(`Illegal Play: No valid targets available for ${cardToPlay.definition.name}.`);
+                return false;
+            }
+        }
+
+        const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDefinition, cardToPlay.xValue || 0);
+        const prompt = TargetingProcessor.generateTargetPrompt(targetDefinition, 0, cardToPlay.xValue || 0, true);
+        state.pendingAction = {
+            type: 'TARGETING',
+            playerId: playerId,
+            sourceId: cardToPlay.id,
+            data: {
+                targetDefinition,
+                targets: precalculatedTargets,
+                isSpellCasting: true,
+                xValue: cardToPlay.xValue,
+                maxCount,
+                minCount,
+                count,
+                prompt
+            }
+        };
+        log(`[TARGETING] ${state.players[playerId].name} is selecting targets for ${cardToPlay.definition.name}...`);
+        return true;
+    }
+
+    private static handleInteractiveCosts(
+        state: GameState,
+        playerId: PlayerId,
+        cardToPlay: GameObject,
+        additionalCosts: AbilityCost[],
+        declaredTargets: string[],
+        cardInstanceId: string,
+        log: (m: string) => void
+    ): boolean {
+        const { TargetingProcessor } = require('./TargetingProcessor');
+        const { ActionType, CostType } = require('@shared/engine_types');
+        const player = state.players[playerId];
+
+        log(`[DEBUG] Additional costs found: ${additionalCosts.length} -> ${JSON.stringify(additionalCosts)}`);
+        
+        // 1. Choice Cost
+        const choiceCost = additionalCosts.find(c => (c.type as string) === 'Choice');
+        const hasChosenCostChoice = (state as any).lastChosenCostChoiceIndex !== undefined;
+
+        if (choiceCost && !hasChosenCostChoice) {
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: cardToPlay.id,
+                data: {
+                    label: choiceCost.label || "Choose an additional cost",
+                    hideUndo: false,
+                    isCostChoice: true,
+                    costType: 'Choice',
+                    declaredTargets: declaredTargets || [],
+                    choices: choiceCost.choices?.map((c, idx) => ({
+                        label: c.label,
+                        value: `COST_CHOICE_${idx}`,
+                        selectable: true
+                    }))
+                }
+            };
+            log(`[COST_CHOICE] ${state.players[playerId].name} must choose an additional cost for ${cardToPlay.definition.name}.`);
+            return true;
+        }
+
+        // 2. Sacrifice Cost
+        const sacrificeCost = additionalCosts.find(c => c.type === 'Sacrifice' && !c.targetMapping);
         const hasChosenSacrifice = (state as any).lastChosenSacrificeId !== undefined;
-        const discardCost = additionalCosts.find((cost: AbilityCost) => (cost.type as string).toLowerCase() === 'discard');
+
+        if (sacrificeCost && !hasChosenSacrifice) {
+            const legalSacrificeIds = state.battlefield
+                .filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, sacrificeCost.restrictions || [], playerId, cardToPlay.id))
+                .map(o => o.id);
+
+            if (legalSacrificeIds.length === 0) {
+                log(`Illegal Play: No valid objects to sacrifice for ${cardToPlay.definition.name}.`);
+                return false;
+            }
+
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: cardToPlay.id,
+                data: {
+                    label: "Sacrifice a creature to cast " + cardToPlay.definition.name,
+                    hideUndo: false,
+                    isCostChoice: true,
+                    costType: 'Sacrifice',
+                    declaredTargets: declaredTargets || [],
+                    choices: legalSacrificeIds.map(id => {
+                        const obj = state.battlefield.find(o => o.id === id);
+                        return { label: `Sacrifice ${obj?.definition.name || id}`, value: id, cardData: obj, selectable: true }
+                    })
+                }
+            };
+            log(`[SACRIFICE] ${state.players[playerId].name} must choose an object to sacrifice.`);
+            return true;
+        }
+
+        // 3. Discard Cost
+        const discardCost = additionalCosts.find(c => c.type === CostType.Discard);
         const hasChosenDiscard = (state as any).lastChosenDiscardId !== undefined;
-        const tapSelectionCost = additionalCosts.find((cost: AbilityCost) => cost.type === 'TapSelection');
-        const hasChosenTapSelection = (state as any).lastChosenTapSelectionIds !== undefined;
-        const exileCost = additionalCosts.find((cost: AbilityCost) => cost.type === 'Exile');
+
+        if (discardCost && !hasChosenDiscard) {
+            const legalDiscardIds = player.hand
+                .filter(c => c.id !== cardInstanceId && TargetingProcessor.matchesRestrictions(state, c, discardCost.restrictions || [], playerId, cardToPlay.id))
+                .map(c => c.id);
+
+            if (legalDiscardIds.length === 0) {
+                log(`Illegal Play: No valid cards to discard for ${cardToPlay.definition.name}.`);
+                return false;
+            }
+
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: cardToPlay.id,
+                data: {
+                    label: "Discard a card to cast " + cardToPlay.definition.name,
+                    hideUndo: false,
+                    isCostChoice: true,
+                    costType: 'Discard',
+                    minChoices: 1,
+                    maxChoices: 1,
+                    declaredTargets: declaredTargets || [],
+                    choices: legalDiscardIds.map(id => {
+                        const c = player.hand.find(o => o.id === id)!;
+                        return { label: `Discard ${c.definition.name}`, value: id, cardData: c, selectable: true }
+                    })
+                }
+            };
+            log(`[DISCARD] ${state.players[playerId].name} must choose a card to discard.`);
+            return true;
+        }
+
+        // 4. Exile Cost
+        const exileCost = additionalCosts.find(c => c.type === 'Exile' && !c.targetMapping);
         const hasChosenExile = (state as any).lastChosenExileIds !== undefined;
 
-        if (exileCost) log(`[FLOW-DEBUG] Starting activation for ${obj.definition.name}. hasChosenExile=${hasChosenExile}, ids=${JSON.stringify((state as any).lastChosenExileIds)}`);
+        if (exileCost && !hasChosenExile) {
+            const zones = exileCost.sourceZones || (exileCost.sourceZone ? [exileCost.sourceZone] : [Zone.Battlefield]);
+            const pool = zones.flatMap(z => {
+                if (z === Zone.Battlefield) return state.battlefield.filter(o => o.controllerId === playerId);
+                if (z === Zone.Graveyard) return player.graveyard;
+                if (z === Zone.Hand) return player.hand;
+                return [];
+            });
 
+            const legalExileIds = pool
+                .filter(c => TargetingProcessor.matchesRestrictions(state, c, exileCost.restrictions || [], playerId, cardToPlay.id))
+                .map(c => c.id);
 
-        // Zone check (CR 113.6)
+            const amount = exileCost.amount || 1;
+            if (legalExileIds.length < amount) {
+                log(`Illegal Play: Not enough valid objects to exile for ${cardToPlay.definition.name}.`);
+                return false;
+            }
+
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: cardToPlay.id,
+                data: {
+                    label: `Exile ${amount} card(s) to cast ` + cardToPlay.definition.name,
+                    hideUndo: false,
+                    isCostChoice: true,
+                    costType: 'Exile',
+                    minChoices: amount,
+                    maxChoices: amount,
+                    declaredTargets: declaredTargets || [],
+                    choices: legalExileIds.map(id => {
+                        const obj = pool.find(o => o.id === id);
+                        return { label: `Exile ${obj?.definition?.name || id}`, value: id, cardData: obj, selectable: true }
+                    })
+                }
+            };
+            log(`[EXILE] ${state.players[playerId].name} must choose objects to exile.`);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static finalizeSpellCast(
+        state: GameState,
+        playerId: PlayerId,
+        cardToPlay: GameObject,
+        totalMana: string,
+        additionalCosts: AbilityCost[],
+        declaredTargets: string[],
+        spellEffects: any[],
+        targetDefinition: any,
+        isFirstInstantOrSorcery: boolean,
+        isInstantOrSorcery: boolean,
+        engine: any,
+        log: (m: string) => void
+    ): boolean {
+        const player = state.players[playerId];
+        const { ActionProcessor } = require('./ActionProcessor');
+        const { TargetingProcessor } = require('./TargetingProcessor');
+        const { TriggerProcessor } = require('./../effects/TriggerProcessor');
+        const { AbilityType, Zone, CostType } = require('@shared/engine_types');
+
+        // Modal Choice check (modes like "Choose one")
+        const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices && !e.targetMapping);
+        const hasPreSelectedChoice = (state as any).lastChoiceIndex !== undefined;
+
+        if (choiceEffectIndex !== -1 && !hasPreSelectedChoice) {
+            const choiceEffect = spellEffects[choiceEffectIndex];
+            const { ActionType } = require('@shared/engine_types');
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: cardToPlay.id,
+                data: {
+                    label: choiceEffect.label || 'Choose an option',
+                    choices: choiceEffect.choices,
+                    minChoices: choiceEffect.minChoices || 1,
+                    maxChoices: choiceEffect.maxChoices || 1,
+                    isSpellCasting: true,
+                    declaredTargets: declaredTargets || []
+                }
+            };
+            log(`[CHOICE] Selecting mode for ${cardToPlay.definition.name}...`);
+            return true;
+        }
+
+        const preSelectedChoice = (state as any).lastChoiceIndex;
+        delete (state as any).lastChoiceIndex;
+
+        // Pay Mana
+        if (!ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
+            if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, cardToPlay)) {
+                log(`Auto-tapping lands to pay ${totalMana}...`);
+                ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, log, engine.tapForMana, cardToPlay);
+            } else {
+                log(`Illegal Play: Not enough mana for ${cardToPlay.definition.name} (Effective Cost: ${totalMana})`);
+                return false;
+            }
+        }
+
+        log(`Paying ${totalMana} for ${cardToPlay.definition.name}...`);
+        const colorsSpent = ManaProcessor.deductManaCost(player, totalMana, state, cardToPlay);
+        (cardToPlay as any).colorsSpent = colorsSpent;
+        (cardToPlay as any).convergeAmount = colorsSpent.length;
+
+        // Pay Additional Costs
+        additionalCosts.forEach(cost => {
+            if (cost.type === 'Sacrifice') {
+                const chosenId = (state as any).lastChosenSacrificeId;
+                const obj = state.battlefield.find(o => o.id === (chosenId || cardToPlay.id));
+                if (obj) {
+                    TriggerProcessor.onEvent(state, { type: 'ON_SACRIFICE', playerId, sourceId: obj.id, data: { object: obj } }, log);
+                    ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId, log);
+                    log(`Paid additional cost: Sacrificed ${obj.definition.name}.`);
+                    if ((cost as any).isCasualty) (state as any).paidCasualtyFor = cardToPlay.id;
+                }
+            } else if (cost.type === 'Discard') {
+                const chosenId = (state as any).lastChosenDiscardId;
+                const obj = player.hand.find(o => o.id === chosenId);
+                if (obj) {
+                    TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card: obj, sourceId: cardToPlay.id } }, log);
+                    ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId, log);
+                    log(`Paid additional cost: Discarded ${obj.definition.name}.`);
+                }
+            } else if (cost.type === 'PayLife') {
+                const lifeVal = cost.value === 'X' ? (cardToPlay.xValue || 0) : (parseInt(cost.value as string) || 0);
+                player.life -= lifeVal;
+                TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
+                log(`Paid additional cost: ${lifeVal} life.`);
+            } else if (cost.type === 'Exile') {
+                const chosenIds = (state as any).lastChosenExileIds || [];
+                chosenIds.forEach((cid: string) => {
+                    const obj = TargetingProcessor.findObjectInAnyZone(state, cid);
+                    if (obj) {
+                        ActionProcessor.moveCard(state, obj, Zone.Exile, playerId, log);
+                        log(`Paid additional cost: Exiled ${obj.definition?.name || cid}.`);
+                    }
+                });
+            }
+        });
+
+        // Cleanup temporary selection state
+        delete (state as any).lastChosenSacrificeId;
+        delete (state as any).lastChosenDiscardId;
+        delete (state as any).lastChosenExileIds;
+        delete (state as any).lastChosenCostChoiceIndex;
+
+        // Move to Stack
+        const lastZone = cardToPlay.zone;
+        if (!(cardToPlay as any).isPreparedCopy) {
+            ActionProcessor.moveCard(state, cardToPlay, Zone.Stack, playerId, log);
+        } else {
+            cardToPlay.zone = Zone.Stack;
+            cardToPlay.lastNonStackZone = lastZone;
+        }
+
+        (cardToPlay as any).paidCost = totalMana;
+        (cardToPlay as any).paidManaValue = ManaProcessor.getManaValue(totalMana);
+
+        // Limit tracking
+        if ((cardToPlay as any).paidCost === "{0}" && (cardToPlay as any).usedAlternativeCostId) {
+            const effectId = (cardToPlay as any).usedAlternativeCostId;
+            state.turnState.triggeredAbilitiesUsedThisTurn[effectId] = (state.turnState.triggeredAbilitiesUsedThisTurn[effectId] || 0) + 1;
+        }
+
+        // Unprepare source if MDFC/SOS
+        if ((cardToPlay as any).isPreparedCopy && (cardToPlay as any).sourceCreatureId) {
+            const source = state.battlefield.find(o => o.id === (cardToPlay as any).sourceCreatureId);
+            if (source) source.isPrepared = false;
+        }
+
+        if (isInstantOrSorcery) state.turnState.instantOrSorceryCastThisTurn[playerId] = true;
+        state.turnState.spellsCastThisTurn[playerId] = (state.turnState.spellsCastThisTurn[playerId] || 0) + 1;
+
+        // Triggers: ON_SECOND_SPELL_CAST, etc.
+        if (state.turnState.spellsCastThisTurn[playerId] === 2) TriggerProcessor.onEvent(state, { type: 'ON_SECOND_SPELL_CAST', playerId, data: {} }, log);
+        if (state.turnState.spellsCastThisTurn[playerId] === 3) TriggerProcessor.onEvent(state, { type: 'ON_THIRD_SPELL_CAST', playerId, data: {} }, log);
+
+        const exileOnResolution = (state.ruleRegistry.continuousEffects.some(e =>
+            e.exileOnMoveToGraveyard && (e.targetIds?.includes(cardToPlay.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === playerId))
+        )) || (cardToPlay as any).isFlashbackCast || cardToPlay.definition?.exileOnResolution;
+
+        const targetsControllers = (declaredTargets || []).map(tid => {
+            const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
+            return obj ? obj.controllerId : null;
+        });
+
+        const stackObj = {
+            id: `spell_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+            controllerId: playerId,
+            sourceId: cardToPlay.id,
+            type: 'Spell' as const,
+            targets: declaredTargets || [],
+            card: cardToPlay,
+            definition: cardToPlay.definition,
+            xValue: cardToPlay.xValue,
+            exileOnResolution: exileOnResolution,
+            isFlashbackCast: (cardToPlay as any).isFlashbackCast,
+            data: { effects: spellEffects, targetDefinition, preSelectedChoice, targetsControllers }
+        };
+
+        state.stack.push(stackObj);
+
+        // Casualty
+        if ((state as any).paidCasualtyFor === cardToPlay.id) {
+            delete (state as any).paidCasualtyFor;
+            state.stack.push({
+                id: `casualty_trigger_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                controllerId: playerId,
+                sourceId: stackObj.id,
+                type: AbilityType.Triggered as any,
+                name: `Casualty Copy (${stackObj.definition.name})`,
+                image_url: stackObj.definition.image_url,
+                targets: [],
+                data: { effects: [{ type: 'CopySpellOnStack', targetMapping: 'SOURCE_OBJECT', chooseNewTargets: true }] }
+            });
+            log(`[CASUALTY] Copy trigger for ${stackObj.definition.name} placed on stack.`);
+        }
+
+        // Fire targeting triggers
+        (declaredTargets || []).forEach(tid => {
+            TriggerProcessor.onEvent(state, { type: 'ON_BECOME_TARGET', playerId, targetId: tid, data: { sourceId: stackObj.id, sourceCard: cardToPlay } }, log);
+        });
+
+        state.consecutivePasses = 0;
+        TriggerProcessor.onEvent(state, { type: 'ON_CAST_SPELL', playerId, amount: (cardToPlay as any).paidManaValue || 0, data: { card: cardToPlay, sourceId: cardToPlay.id, stackSnapshot: JSON.parse(JSON.stringify(stackObj)) } }, log);
+        
+        if (isFirstInstantOrSorcery) TriggerProcessor.onEvent(state, { type: 'ON_CAST_FIRST_INSTANT_SORCERY', playerId, amount: (cardToPlay as any).paidManaValue || 0, data: { card: cardToPlay, sourceId: cardToPlay.id, stackSnapshot: JSON.parse(JSON.stringify(stackObj)) } }, log);
+        if (isInstantOrSorcery) TriggerProcessor.onEvent(state, { type: 'ON_CAST_INSTANT_SORCERY', playerId, amount: (cardToPlay as any).paidManaValue || 0, data: { card: cardToPlay, sourceId: cardToPlay.id, stackSnapshot: JSON.parse(JSON.stringify(stackObj)) } }, log);
+        
+        if (!cardToPlay.definition.types.some((t: string) => t.toLowerCase() === 'creature')) {
+            TriggerProcessor.onEvent(state, { type: 'ON_CAST_NON_CREATURE', playerId, data: { card: cardToPlay, sourceId: cardToPlay.id } }, log);
+        }
+
+        log(`--------------------------------------------------`);
+        log(`[STACK] + ${state.players[playerId].name} cast ${cardToPlay.definition.name}${declaredTargets?.length ? ' targeting ' + declaredTargets.join(', ') : ''}`);
+        log(`--------------------------------------------------`);
+
+        engine.checkAutoPass(playerId);
+        return true;
+    }
+
+    private static validateAbilityActivation(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, abilityIndex: number, log: (m: string) => void): boolean {
+        const { Zone } = require('@shared/engine_types');
         const activeZone = ability.activeZone || Zone.Battlefield;
         if (activeZone !== Zone.Any && activeZone !== (obj.zone as any)) {
             log(`Illegal Activation: ${obj.definition.name}'s ability cannot be activated from ${obj.zone}.`);
             return false;
         }
 
-        // Step 1: Preliminary Cost & Rule Check (including Summoning Sickness via CostProcessor)
         if (!CostProcessor.canPay(state, ability.costs || [], obj.id, playerId)) {
             log(`Illegal Activation: Cannot pay costs for ${obj.definition.name}'s ability.`);
             return false;
         }
 
-        // Requirement Check (Rule 602.5b)
         if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) {
             log(`Illegal Activation: Activation requirements for ${obj.definition.name} are not met.`);
             return false;
         }
 
-        // Limit Check
         if (ability.limitPerTurn) {
             const usedCount = state.turnState.triggeredAbilitiesUsedThisTurn[`ability_${obj.id}_${abilityIndex}`] || 0;
             if (usedCount >= ability.limitPerTurn) {
@@ -1021,13 +1021,17 @@ export class SpellProcessor {
                 return false;
             }
         }
+        return true;
+    }
 
-        // --- STEP 1.5: CHOOSE X (Rule 601.2b) ---
-        // (needsX already calculated above)
+    private static handleAbilityXChoice(state: GameState, playerId: PlayerId, obj: GameObject, abilityIndex: number, declaredTargets: string[] | undefined, log: (m: string) => void): boolean {
+        const { ActionType } = require('@shared/engine_types');
+        const ability = (obj.definition.abilities as any)?.[abilityIndex];
+        if (!ability) return false;
+        const needsX = (ability.effects as any[])?.some((e: any) => e.value === 'X' || e.amount === 'X' || (e.costs && e.costs.some((c: any) => c.value === 'X')));
         const xValue = (state as any).lastChoiceX;
 
         if (needsX && xValue === undefined) {
-            const { ActionType } = require('@shared/engine_types');
             state.pendingAction = {
                 type: ActionType.ChooseX,
                 playerId: playerId,
@@ -1042,12 +1046,15 @@ export class SpellProcessor {
             return true;
         }
 
-        // Apply X to the source object temporary state for cost calculation
         if (xValue !== undefined) {
             (obj as any).xValue = xValue;
             delete (state as any).lastChoiceX;
         }
+        return false;
+    }
 
+    private static validateAbilitySpeed(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, cardLogic: any, log: (m: string) => void): boolean {
+        const { Phase, EffectType, TargetMapping } = require('@shared/engine_types');
         const isPlaneswalker = obj.definition.types.includes('Planeswalker');
         const isSorceryOnly = ability.activatedOnlyAsSorcery || (ability as any).isSorcerySpeed;
 
@@ -1072,49 +1079,32 @@ export class SpellProcessor {
                 return false;
             }
         }
+        return true;
+    }
 
-        let precalculatedTargets: string[] | undefined;
-        if (ability.targetDefinition && (declaredTargets === undefined || declaredTargets.length === 0) && !bypassTargeting) {
-            const { TargetingProcessor } = require('./TargetingProcessor');
-            const pool = [
-                ...Object.keys(state.players),
-                ...state.battlefield.map(o => o.id),
-                ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id)),
-                ...state.exile.map(o => o.id),
-                ...state.stack.map(o => o.id)
-            ];
-            precalculatedTargets = pool.filter(tid => TargetingProcessor.isLegalTarget(state, obj.id, tid, ability.targetDefinition));
+    private static handleAbilityInteractiveCosts(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, abilityIndex: number, declaredTargets: string[] | undefined, log: (m: string) => void): boolean | null {
+        const { ActionType, Zone } = require('@shared/engine_types');
+        const { TargetingProcessor } = require('./TargetingProcessor');
+        const player = state.players[playerId];
+        const additionalCosts = ability.costs || [];
 
-            const minCount = ability.targetDefinition.minCount !== undefined ? ability.targetDefinition.minCount : (ability.targetDefinition.count || 1);
-            if (precalculatedTargets.length < minCount) {
-                log(`Illegal Activation: Not enough valid targets available for ${obj.definition.name}'s ability. Found ${precalculatedTargets.length}, need ${minCount}.`);
-                return false;
-            }
-        }
-
-        // Step 1.6: Check Additional Costs for Ability (e.g. Sacrifice or Discard)
+        // Sacrifice Cost
+        const sacrificeCost = additionalCosts.find((cost: AbilityCost) => cost.type === 'Sacrifice');
+        const hasChosenSacrifice = (state as any).lastChosenSacrificeId !== undefined;
         if (sacrificeCost && !hasChosenSacrifice) {
-            const { TargetingProcessor } = require('./TargetingProcessor');
-            // Check for explicit SELF mapping OR keyword restrictions
-            const isSelfSac = sacrificeCost.targetMapping === 'SELF' ||
-                (sacrificeCost.restrictions || []).some((r: any) => typeof r === 'string' && r.toLowerCase() === 'self');
-
-            const legalSacrificeIds = state.battlefield
-                .filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, sacrificeCost.restrictions || [], playerId, obj.id))
-                .map(o => o.id);
+            const isSelfSac = sacrificeCost.targetMapping === 'SELF' || (sacrificeCost.restrictions || []).some((r: any) => typeof r === 'string' && r.toLowerCase() === 'self');
+            const legalSacrificeIds = state.battlefield.filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, sacrificeCost.restrictions || [], playerId, obj.id)).map(o => o.id);
 
             if (legalSacrificeIds.length === 0 && !isSelfSac) {
                 log(`Illegal Activation: No valid objects to sacrifice for ${obj.definition.name}.`);
                 return false;
             }
 
-            // AUTO-SKIP if there's only one choice and it's a SELF sacrifice
             if (isSelfSac) {
                 (state as any).lastChosenSacrificeId = obj.id;
             } else if (legalSacrificeIds.length === 1) {
                 (state as any).lastChosenSacrificeId = legalSacrificeIds[0];
             } else {
-                const { ActionType } = require('@shared/engine_types');
                 state.pendingAction = {
                     type: ActionType.ModalSelection,
                     playerId: playerId,
@@ -1128,12 +1118,7 @@ export class SpellProcessor {
                         declaredTargets: declaredTargets || [],
                         choices: legalSacrificeIds.map(id => {
                             const sObj = state.battlefield.find(o => o.id === id);
-                            return {
-                                label: `Sacrifice ${sObj?.definition.name || id}`,
-                                value: id,
-                                cardData: sObj,
-                                selectable: true
-                            }
+                            return { label: `Sacrifice ${sObj?.definition.name || id}`, value: id, cardData: sObj, selectable: true }
                         })
                     }
                 };
@@ -1142,20 +1127,15 @@ export class SpellProcessor {
             }
         }
 
-        if (discardCost) log(`[DEBUG] activateAbility: discardCost present. hasChosenDiscard: ${hasChosenDiscard} (${(state as any).lastChosenDiscardId})`);
-
+        // Discard Cost
+        const discardCost = additionalCosts.find((cost: AbilityCost) => (cost.type as string).toLowerCase() === 'discard');
+        const hasChosenDiscard = (state as any).lastChosenDiscardId !== undefined;
         if (discardCost && !hasChosenDiscard) {
-            const { TargetingProcessor } = require('./TargetingProcessor');
-            const legalDiscardIds = player.hand
-                .filter(c => TargetingProcessor.matchesRestrictions(state, c, discardCost.restrictions || [], playerId, obj.id))
-                .map(c => c.id);
-
+            const legalDiscardIds = player.hand.filter(c => TargetingProcessor.matchesRestrictions(state, c, discardCost.restrictions || [], playerId, obj.id)).map(c => c.id);
             if (legalDiscardIds.length === 0) {
                 log(`Illegal Activation: No valid cards to discard for ${obj.definition.name}.`);
                 return false;
             }
-
-            const { ActionType } = require('@shared/engine_types');
             state.pendingAction = {
                 type: ActionType.ModalSelection,
                 playerId: playerId,
@@ -1171,12 +1151,7 @@ export class SpellProcessor {
                     declaredTargets: declaredTargets || [],
                     choices: legalDiscardIds.map(id => {
                         const c = player.hand.find(o => o.id === id)!;
-                        return {
-                            label: `Discard ${c.definition.name}`,
-                            value: id,
-                            cardData: c,
-                            selectable: true
-                        }
+                        return { label: `Discard ${c.definition.name}`, value: id, cardData: c, selectable: true }
                     })
                 }
             };
@@ -1184,21 +1159,16 @@ export class SpellProcessor {
             return true;
         }
 
+        // TapSelection Cost
+        const tapSelectionCost = additionalCosts.find((cost: AbilityCost) => cost.type === 'TapSelection');
+        const hasChosenTapSelection = (state as any).lastChosenTapSelectionIds !== undefined;
         if (tapSelectionCost && !hasChosenTapSelection) {
-            const { TargetingProcessor } = require('./TargetingProcessor');
-            const legalTapIds = state.battlefield
-                .filter(o => o.controllerId === playerId && !o.isTapped &&
-                    TargetingProcessor.matchesRestrictions(state, o, tapSelectionCost.restrictions || [], playerId, obj.id))
-                .map(o => o.id);
-
+            const legalTapIds = state.battlefield.filter(o => o.controllerId === playerId && !o.isTapped && TargetingProcessor.matchesRestrictions(state, o, tapSelectionCost.restrictions || [], playerId, obj.id)).map(o => o.id);
             const amount = Number(tapSelectionCost.value || tapSelectionCost.amount || 1);
-
             if (legalTapIds.length < amount) {
                 log(`Illegal Activation: Not enough valid permanents to tap for ${obj.definition.name}.`);
                 return false;
             }
-
-            const { ActionType } = require('@shared/engine_types');
             state.pendingAction = {
                 type: ActionType.ModalSelection,
                 playerId: playerId,
@@ -1214,12 +1184,7 @@ export class SpellProcessor {
                     declaredTargets: declaredTargets || [],
                     choices: legalTapIds.map(id => {
                         const sObj = state.battlefield.find(o => o.id === id);
-                        return {
-                            label: `Tap ${sObj?.definition.name || id}`,
-                            value: id,
-                            cardData: sObj,
-                            selectable: true
-                        }
+                        return { label: `Tap ${sObj?.definition.name || id}`, value: id, cardData: sObj, selectable: true }
                     })
                 }
             };
@@ -1227,8 +1192,10 @@ export class SpellProcessor {
             return true;
         }
 
+        // Exile Cost
+        const exileCost = additionalCosts.find((cost: AbilityCost) => cost.type === 'Exile');
+        const hasChosenExile = (state as any).lastChosenExileIds !== undefined;
         if (exileCost && !hasChosenExile) {
-            const { TargetingProcessor } = require('./TargetingProcessor');
             const zones = exileCost.sourceZones || (exileCost.sourceZone ? [exileCost.sourceZone] : [Zone.Battlefield]);
             const pool = zones.flatMap((z: any) => {
                 if (z === Zone.Battlefield) return state.battlefield.filter((o: GameObject) => o.controllerId === playerId);
@@ -1239,13 +1206,10 @@ export class SpellProcessor {
                 return [];
             });
             const legalExileIds = pool.filter((o: GameObject) => TargetingProcessor.matchesRestrictions(state, o, exileCost.restrictions || [], playerId, obj.id)).map((o: GameObject) => o.id);
-
             if (legalExileIds.length === 0) {
                 log(`Illegal Activation: No valid cards to exile for ${obj.definition.name}.`);
                 return false;
             }
-
-            const { ActionType } = require('@shared/engine_types');
             state.pendingAction = {
                 type: ActionType.ModalSelection,
                 playerId: playerId,
@@ -1261,18 +1225,68 @@ export class SpellProcessor {
                     declaredTargets: declaredTargets || [],
                     choices: legalExileIds.map((id: string) => {
                         const c = pool.find((o: GameObject) => o.id === id)!;
-                        return {
-                            label: `Exile ${c.definition.name}`,
-                            value: id,
-                            cardData: c,
-                            selectable: true
-                        }
+                        return { label: `Exile ${c.definition.name}`, value: id, cardData: c, selectable: true }
                     })
                 }
             };
             log(`[EXILE] ${player.name} must choose a card to exile to activate ${obj.definition.name}.`);
             return true;
         }
+
+        return null;
+    }
+
+    private static handleAbilityTargeting(state: GameState, playerId: PlayerId, cardId: string, obj: GameObject, ability: any, abilityIndex: number, log: (m: string) => void, engine: any): boolean {
+        const { TargetingProcessor } = require('./TargetingProcessor');
+        const pool = [
+            ...Object.keys(state.players),
+            ...state.battlefield.map(o => o.id),
+            ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id)),
+            ...state.exile.map(o => o.id),
+            ...state.stack.map(o => o.id)
+        ];
+        const precalculatedTargets = pool.filter(tid => TargetingProcessor.isLegalTarget(state, obj.id, tid, ability.targetDefinition));
+        const minCount = ability.targetDefinition!.minCount !== undefined ? ability.targetDefinition!.minCount : (ability.targetDefinition!.count || 1);
+
+        if (precalculatedTargets.length < minCount) {
+            log(`Illegal Activation: Not enough valid targets available for ${obj.definition.name}'s ability. Found ${precalculatedTargets.length}, need ${minCount}.`);
+            return false;
+        }
+
+        const isSingleOpponentTarget = ability.targetDefinition?.type === 'Player' &&
+            ability.targetDefinition?.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'opponent') &&
+            precalculatedTargets.length === 1 &&
+            state.playerOrder.length === 2;
+
+        if (isSingleOpponentTarget) {
+            this.activateAbility(state, playerId, cardId, abilityIndex, precalculatedTargets, log, engine, true);
+            return true;
+        }
+
+        const { maxCount, minCount: calculatedMin, count } = TargetingProcessor.calculateTotalCounts(ability.targetDefinition, (obj as any).xValue || 0);
+        const prompt = TargetingProcessor.generateTargetPrompt(ability.targetDefinition, 0, (obj as any).xValue || 0, true);
+        state.pendingAction = {
+            type: 'TARGETING',
+            playerId: playerId,
+            sourceId: obj.id,
+            data: {
+                abilityIndex: abilityIndex,
+                targetDefinition: ability.targetDefinition,
+                targets: precalculatedTargets,
+                maxCount,
+                minCount: calculatedMin,
+                count,
+                prompt
+            }
+        };
+        log(`[TARGETING] Player must choose targets for ${obj.definition.name}'s ability.`);
+        return true;
+    }
+
+    private static finalizeAbilityActivation(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, abilityIndex: number, declaredTargets: string[], log: (m: string) => void, engine: any): boolean {
+        const { AbilityType } = require('@shared/engine_types');
+        const { TriggerProcessor } = require('./../effects/TriggerProcessor');
+        const playerObj = state.players[playerId];
 
         const stackId = `ability_${Date.now()}`;
         const stackObj = {
@@ -1282,7 +1296,7 @@ export class SpellProcessor {
             type: AbilityType.Activated,
             name: `${obj.definition.name} Ability`,
             image_url: obj.definition.image_url,
-            targets: declaredTargets || [],
+            targets: declaredTargets,
             abilityIndex: abilityIndex,
             xValue: (obj as any).xValue,
             card: obj,
@@ -1293,44 +1307,7 @@ export class SpellProcessor {
             }
         };
 
-        // --- STEP 2: TARGETING (Interactive or Automatic) ---
-        // CR 602.2b: Choice of targets must happen BEFORE cost payment.
-        if (ability.targetDefinition && (declaredTargets === undefined || declaredTargets.length === 0) && precalculatedTargets && !bypassTargeting) {
-            const isSingleOpponentTarget = ability.targetDefinition?.type === 'Player' &&
-                ability.targetDefinition?.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'opponent') &&
-                precalculatedTargets.length === 1 &&
-                state.playerOrder.length === 2;
-
-            if (isSingleOpponentTarget) {
-                return this.activateAbility(state, playerId, cardId, abilityIndex, precalculatedTargets, log, engine, true);
-            }
-
-            const { TargetingProcessor } = require('./TargetingProcessor');
-            const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(ability.targetDefinition, (obj as any).xValue || 0);
-            const prompt = TargetingProcessor.generateTargetPrompt(ability.targetDefinition, 0, (obj as any).xValue || 0, true);
-            state.pendingAction = {
-                type: 'TARGETING',
-                playerId: playerId,
-                sourceId: obj.id,
-                data: {
-                    abilityIndex: abilityIndex,
-                    targetDefinition: ability.targetDefinition,
-                    targets: precalculatedTargets,
-                    maxCount,
-                    minCount,
-                    count,
-                    prompt
-                }
-            };
-            log(`[TARGETING] Player must choose targets for ${obj.definition.name}'s ability.`);
-            return true;
-        }
-
-        // --- STEP 3: COST PAYMENT ---
-        // CR 602.2h: Total cost is paid after targets and choices are finalized.
-        if (log) log(`[FLOW-DEBUG] Starting Step 3: Cost Payment for ${obj.definition.name}...`);
-
-        const playerObj = state.players[playerId];
+        // Mana Payment
         const manaCost = (ability.costs || []).find((cost: AbilityCost) => cost.type === 'Mana');
         if (manaCost) {
             const effectiveMana = CostProcessor.getEffectiveManaCost(state, manaCost, obj, stackObj);
@@ -1342,7 +1319,6 @@ export class SpellProcessor {
             }
         }
 
-        if (log) log(`[FLOW-DEBUG] Calling CostProcessor.pay for ${obj.id} with ${ability.costs?.length || 0} costs.`);
         CostProcessor.pay(state, ability.costs || [], obj.id, playerId, (m) => log(m));
 
         // Clean up choice flags
@@ -1367,17 +1343,8 @@ export class SpellProcessor {
         state.stack.push(stackObj);
         log(`Activated ability of ${obj.definition.name}: ${ability.id}`);
 
-        // CR 601.2i: Fire Targeting Triggers
-        (declaredTargets || []).forEach(tid => {
-            TriggerProcessor.onEvent(state, {
-                type: 'ON_BECOME_TARGET',
-                playerId: playerId,
-                targetId: tid,
-                data: {
-                    sourceId: stackId,
-                    sourceCard: obj
-                }
-            }, log);
+        declaredTargets.forEach(tid => {
+            TriggerProcessor.onEvent(state, { type: 'ON_BECOME_TARGET', playerId, targetId: tid, data: { sourceId: stackId, sourceCard: obj } }, log);
         });
 
         state.consecutivePasses = 0;
@@ -1385,5 +1352,3 @@ export class SpellProcessor {
         return true;
     }
 }
-
-
