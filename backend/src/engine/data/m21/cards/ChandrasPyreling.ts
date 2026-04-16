@@ -13,7 +13,6 @@ export const ChandrasPyreling: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.DamageDealtToPlayer,
-            activeZone: Zone.Battlefield,
             condition: 'EVENT_PLAYER_IS_OPPONENT && EVENT_IS_NONCOMBAT',
             effects: [
                 {

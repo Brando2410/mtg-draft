@@ -12,7 +12,6 @@ export const LilianaDeathMage: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             costs: [{ type: CostType.Loyalty, value: '1' }],
 
             targetDefinition: {
@@ -28,7 +27,6 @@ export const LilianaDeathMage: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             costs: [{ type: CostType.Loyalty, value: '-3' }],
 
             targetDefinition: {
@@ -49,7 +47,6 @@ export const LilianaDeathMage: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             costs: [{ type: CostType.Loyalty, value: '-7' }],
 
             targetDefinition: {

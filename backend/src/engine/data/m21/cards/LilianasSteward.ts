@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const LilianasSteward: CardDefinition = {
     name: "Liliana's Steward",
@@ -12,11 +12,10 @@ export const LilianasSteward: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             activatedOnlyAsSorcery: true,
             costs: [
-                { type: EffectType.Tap },
-                { type: EffectType.Sacrifice, targetMapping: TargetMapping.Self }
+                { type: CostType.Tap },
+                { type: CostType.Sacrifice, targetMapping: TargetMapping.Self }
             ],
             targetDefinition: {
                 type: TargetType.Opponent,

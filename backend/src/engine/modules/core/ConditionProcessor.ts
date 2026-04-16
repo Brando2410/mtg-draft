@@ -301,7 +301,7 @@ export class ConditionProcessor {
         return state.battlefield.some(obj =>
           obj.controllerId === controllerId &&
           obj.definition.types.some(t => t.toLowerCase() === 'creature') &&
-          (parseInt(obj.definition.power || '0') >= 4 || (obj.effectiveStats?.power || 0) >= 4)
+          (Number(obj.definition.power || 0) >= 4 || (obj.effectiveStats?.power || 0) >= 4)
         );
       case 'PLAYER_IS_CONTROLLER':
         return event?.playerId === controllerId;
@@ -329,8 +329,8 @@ export class ConditionProcessor {
         const { LayerProcessor } = require('./../state/LayerProcessor');
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         const met = spent > stats.power || spent > stats.toughness;
-        const basePower = parseInt(obj.definition.power || '0');
-        const baseToughness = parseInt(obj.definition.toughness || '0');
+        const basePower = Number(obj.definition.power || 0);
+        const baseToughness = Number(obj.definition.toughness || 0);
         if (spent > 0) process.stdout.write(`[DEBUG] Increment check for ${obj.definition.name}: spent ${spent} > power ${stats.power} (base ${basePower}) or toughness ${stats.toughness} (base ${baseToughness})? ${met}\n`);
         return met;
       }

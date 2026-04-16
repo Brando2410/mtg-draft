@@ -30,7 +30,7 @@ export const GreatHalloftheBiblioplex: CardDefinition = {
             effects: [
                 {
                     type: EffectType.ConditionalEffect,
-                    condition: 'NOT_CREATURE' as any,
+                    condition: 'NOT_CREATURE',
                     effects: [
                         {
                             type: EffectType.ApplyContinuousEffect,

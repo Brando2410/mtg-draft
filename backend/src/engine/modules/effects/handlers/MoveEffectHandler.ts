@@ -348,7 +348,7 @@ export class MoveEffectHandler {
             if (obj) {
                 const from = obj.zone;
                 const destPlayerId = effect.ownerControl ? obj.ownerId : controllerId;
-                ActionProcessor.moveCard(state, obj, zone, destPlayerId, log, effect.libraryPosition, false, isDiscard);
+                ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId, log, (effect.libraryPosition as any), false, isDiscard);
                 if (zone === Zone.Hand || zone === Zone.Library) {
                     obj.isRevealed = true;
                 }
@@ -484,7 +484,7 @@ export class MoveEffectHandler {
         }
         cards.forEach(c => {
             const from = c.zone;
-            ActionProcessor.moveCard(state, c, zone, controllerId, log, 'top', effect.type === 'DrawCards');
+            ActionProcessor.moveCard(state, c, zone as Zone, controllerId, log, 'top', effect.type === 'DrawCards');
             if (zone === Zone.Battlefield) {
                 if (effect.tapped) c.isTapped = true;
             }
@@ -575,7 +575,7 @@ export class MoveEffectHandler {
         targetPlayerIds.forEach((tid: string) => {
             const player = state.players[tid as PlayerId];
             if (player) {
-                let pool = sources.flatMap(z => {
+                let pool = (sources as Zone[]).flatMap((z: Zone) => {
                     if (z === Zone.Graveyard) return [...player.graveyard];
                     if (z === Zone.Hand) return [...player.hand];
                     if (z === Zone.Library) return [...player.library];
@@ -584,12 +584,12 @@ export class MoveEffectHandler {
                 });
 
                 if (effect.restrictions) {
-                    pool = pool.filter(o => TargetingProcessor.matchesRestrictions(state, o, effect.restrictions!, controllerId, (stackObject as any)?.sourceId || ''));
+                    pool = pool.filter((o: GameObject) => TargetingProcessor.matchesRestrictions(state, o, effect.restrictions!, controllerId, (stackObject as any)?.sourceId || ''));
                 }
 
-                pool.forEach(c => {
+                pool.forEach((c: GameObject) => {
                     const from = c.zone;
-                    ActionProcessor.moveCard(state, c, zone, c.ownerId, log, 'top', false, isDiscard);
+                    ActionProcessor.moveCard(state, c, zone as Zone, c.ownerId, log, 'top', false, isDiscard);
                     if (zone === Zone.Exile) {
                         TriggerProcessor.onEvent(state, { type: 'ON_EXILE', targetId: c.id, sourceId: (stackObject as any)?.sourceId || '', sourceZone: from }, log);
                     }
@@ -614,7 +614,7 @@ export class MoveEffectHandler {
 
             const from = obj.zone;
             const destPlayerId = effect.ownerControl ? obj.ownerId : controllerId;
-            ActionProcessor.moveCard(state, obj, zone, destPlayerId, log, effect.libraryPosition, false, isDiscard);
+            ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId, log, (effect.libraryPosition as any), false, isDiscard);
 
             if ((effect.reveal || (effect as any).revealed) && zone !== Zone.Battlefield) {
                 obj.isRevealed = true;

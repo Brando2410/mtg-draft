@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const LilianasDevotee: CardDefinition = {
     name: "Liliana's Devotee",
@@ -12,7 +12,6 @@ export const LilianasDevotee: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Static,
-            activeZone: Zone.Battlefield,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -25,7 +24,6 @@ export const LilianasDevotee: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) =>
                 state.activePlayerId === source.controllerId &&
                 state.turnState.creaturesDiedThisTurn.length > 0,
@@ -36,10 +34,10 @@ export const LilianasDevotee: CardDefinition = {
                     choices: [
                         {
                             label: 'Pay {1}{B}',
-                            costs: [{ type: 'Mana', value: '{1}{B}' }],
                             effects: [
                                 {
                                     type: EffectType.CreateToken,
+                                    costs: [{ type: CostType.Mana, value: '{1}{B}' }],
                                     tokenBlueprint: {
                                         name: 'Zombie',
                                         power: 2,

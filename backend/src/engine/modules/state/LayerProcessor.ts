@@ -17,8 +17,8 @@ export class LayerProcessor {
     // RECURSION GUARD: Prevent infinite loops where conditions depend on effective stats
     if (this.calculationStack.has(obj.id)) {
       return {
-        power: parseInt(obj.definition.power || '0'),
-        toughness: parseInt(obj.definition.toughness || '0'),
+        power: Number(obj.definition.power || 0),
+        toughness: Number(obj.definition.toughness || 0),
         keywords: [],
         types: obj.definition.types,
         subtypes: obj.definition.subtypes || [],
@@ -70,8 +70,8 @@ export class LayerProcessor {
       }
 
       // 3. Initialize working stats
-      let power = parseInt(currentDefinition.power || '0');
-      let toughness = parseInt(currentDefinition.toughness || '0');
+      let power = Number(currentDefinition.power || 0);
+      let toughness = Number(currentDefinition.toughness || 0);
       const keywords = new Set<string>(currentDefinition.keywords || []);
       const colors = new Set<string>(currentDefinition.colors || []);
       const types = new Set<string>(currentDefinition.types || []);
@@ -205,7 +205,7 @@ export class LayerProcessor {
       if (player) {
         const powers = player.graveyard
           .filter(c => c.definition.types.some(t => t.toLowerCase() === 'creature'))
-          .map(c => parseInt(c.definition.power || '0'));
+          .map(c => Number(c.definition.power || 0));
         const maxPower = powers.length > 0 ? Math.max(...powers) : 0;
         update(maxPower, undefined);
       }

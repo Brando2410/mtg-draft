@@ -9,14 +9,11 @@ export const DemonicEmbrace: CardDefinition = {
     subtypes: ["Aura"],
     abilities: [
         {
-            id: "demonic_embrace_spell",
             type: AbilityType.Spell,
             targetDefinition: { type: TargetType.Creature, count: 1 }
         },
         {
-            id: "demonic_embrace_aura",
             type: AbilityType.Static,
-            activeZone: Zone.Battlefield,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -40,16 +37,15 @@ export const DemonicEmbrace: CardDefinition = {
             ]
         },
         {
-            id: "demonic_embrace_graveyard_cast",
             type: AbilityType.Static,
             activeZone: Zone.Graveyard,
-            effects: [{ 
-                type: EffectType.AllowCastFromGraveyard, 
+            effects: [{
+                type: EffectType.AllowCastFromGraveyard,
                 additionalCosts: [
-                    { type: CostType.PayLife, value: 3 }, 
+                    { type: CostType.PayLife, value: 3 },
                     { type: CostType.Discard, amount: 1 }
-                ], 
-                targetMapping: TargetMapping.Self 
+                ],
+                targetMapping: TargetMapping.Self
             }]
         }
     ]

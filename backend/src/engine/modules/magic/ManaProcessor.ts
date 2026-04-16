@@ -134,6 +134,7 @@ export class ManaProcessor {
                 } else {
                     const typeLine = (payingFor.definition.type_line || '').toLowerCase();
                     const oracleText = (payingFor.definition.oracleText || '').toLowerCase();
+                    const types = (payingFor.definition.types || []).map(t => t.toLowerCase());
                     matches = m.restrictions.every(r => {
                         const lowR = r.toLowerCase();
                         // Handle common STX restrictions like "Instant or Sorcery"

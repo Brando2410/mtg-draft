@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, Zone, EffectType, TargetMapping, TriggerEvent, TargetType } from '@shared/engine_types';
 
 export const TeferisTutelage: CardDefinition = {
     name: "Teferi's Tutelage",
@@ -10,24 +10,21 @@ export const TeferisTutelage: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: Zone.Battlefield,
             effects: [
-                { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }, 
+                { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller },
                 { type: EffectType.DiscardCards, amount: 1, targetMapping: TargetMapping.Controller }
             ]
         },
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Draw,
-            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
             effects: [
-                { type: EffectType.Mill, amount: 2, targetMapping: TargetMapping.Opponent }
+                { type: EffectType.Mill, amount: 2, targetDefinition: { type: TargetType.Opponent } }
             ]
         }
     ]
 };
-
 
 
 

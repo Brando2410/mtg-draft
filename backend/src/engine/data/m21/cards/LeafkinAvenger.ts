@@ -12,7 +12,6 @@ export const LeafkinAvenger: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [{
@@ -30,7 +29,6 @@ export const LeafkinAvenger: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             costs: [{ type: CostType.Mana, value: '{7}{R}' }],
             targetDefinition: {
                 type: TargetType.AnyTarget,

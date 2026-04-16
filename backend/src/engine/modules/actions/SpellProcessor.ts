@@ -1,4 +1,4 @@
-import { AbilityCost, AbilityType, EffectType, GameObject, GameState, Phase, PlayerId, Zone } from '@shared/engine_types';
+import { AbilityCost, AbilityType, EffectType, GameObject, GameState, Phase, PlayerId, Zone, CostType, TargetMapping } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
@@ -71,8 +71,8 @@ export class SpellProcessor {
                     (cardToPlay as any).isFlashbackCast = true;
                     log(`[FLASHBACK] Casting ${obj.definition.name} via flashback.`);
                 } else {
-                     const hasGraveAbility = obj.zone === Zone.Graveyard && obj.definition.abilities?.some((a: any) => 
-                        a.type === AbilityType.Activated && 
+                    const hasGraveAbility = obj.zone === Zone.Graveyard && obj.definition.abilities?.some((a: any) =>
+                        a.type === AbilityType.Activated &&
                         (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
                     );
 
@@ -134,12 +134,12 @@ export class SpellProcessor {
             const hasFlashback = stats.keywords?.includes('Flashback') || cardToPlay.definition.keywords?.includes('Flashback');
 
             if (!hasFlashback) {
-                const graveAbilityIndex = cardToPlay.definition.abilities?.findIndex((a: any) => 
-                   a.type === AbilityType.Activated && 
-                   (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
+                const graveAbilityIndex = cardToPlay.definition.abilities?.findIndex((a: any) =>
+                    a.type === AbilityType.Activated &&
+                    (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
                 );
 
-                
+
                 if (graveAbilityIndex !== undefined && graveAbilityIndex !== -1) {
                     log(`[DEBUG] Converting playCard to activateAbility for ${cardToPlay.definition.name}`);
                     return this.activateAbility(state, playerId, cardInstanceId, graveAbilityIndex, declaredTargets, log, engine, bypassTargeting);
@@ -224,18 +224,18 @@ export class SpellProcessor {
         if (!logic && !isLand) {
             log(`[WARNING] No logic definition found for ${currentDefinition.name}.`);
         }
-        
-        // Priority: Oracle -> Current Definition on Object (for virtual spells/MDFCs)
-        const targetDefinition = (logic as any)?.targetDefinition || 
-                                (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition ||
-                                currentDefinition.targetDefinition ||
-                                currentDefinition.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition;
 
-        const spellEffects = (logic as any)?.effects || 
-                            (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.effects || 
-                            currentDefinition.effects ||
-                            currentDefinition.abilities?.find((a: any) => a.type === 'Spell')?.effects || [];
-        
+        // Priority: Oracle -> Current Definition on Object (for virtual spells/MDFCs)
+        const targetDefinition = (logic as any)?.targetDefinition ||
+            (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition ||
+            currentDefinition.targetDefinition ||
+            currentDefinition.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition;
+
+        const spellEffects = (logic as any)?.effects ||
+            (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.effects ||
+            currentDefinition.effects ||
+            currentDefinition.abilities?.find((a: any) => a.type === 'Spell')?.effects || [];
+
         const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices && !e.targetMapping);
         const hasPreSelectedChoice = (state as any).lastChoiceIndex !== undefined;
 
@@ -265,7 +265,7 @@ export class SpellProcessor {
 
         // --- SETUP SEQUENCE: TARGETING -> CHOICE -> FINALIZATION ---
 
-            // Step 1: Check Targeting
+        // Step 1: Check Targeting
         if (targetDefinition && (!declaredTargets || declaredTargets.length === 0)) {
             if (!ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana)) {
                 log(`Illegal Play: Not enough mana available to even start casting ${cardToPlay.definition.name}.`);
@@ -305,10 +305,10 @@ export class SpellProcessor {
                     type: 'TARGETING',
                     playerId: playerId,
                     sourceId: cardToPlay.id,
-                    data: { 
-                        targetDefinition, 
-                        targets: precalculatedTargets, 
-                        isSpellCasting: true, 
+                    data: {
+                        targetDefinition,
+                        targets: precalculatedTargets,
+                        isSpellCasting: true,
                         xValue: cardToPlay.xValue,
                         maxCount,
                         minCount,
@@ -738,13 +738,13 @@ export class SpellProcessor {
         // If explicitly forced or if it's a Flashback card in the graveyard, use the alternative cost
         const { LayerProcessor } = require('./../state/LayerProcessor');
         const stats = overrideStats || LayerProcessor.getEffectiveStats(card, state);
-        
-        const hasFlashbackKeyword = stats.keywords?.some((k: string) => k.toLowerCase() === 'flashback') || 
-                                   card.definition.keywords?.some((k: string) => k.toLowerCase() === 'flashback');
-        
-        const isFlashback = forceFlashback || 
-                          (card as any).isFlashbackCast || 
-                          (card.zone === Zone.Graveyard && hasFlashbackKeyword);
+
+        const hasFlashbackKeyword = stats.keywords?.some((k: string) => k.toLowerCase() === 'flashback') ||
+            card.definition.keywords?.some((k: string) => k.toLowerCase() === 'flashback');
+
+        const isFlashback = forceFlashback ||
+            (card as any).isFlashbackCast ||
+            (card.zone === Zone.Graveyard && hasFlashbackKeyword);
 
         if (isFlashback) {
             let override = stats.flashbackCostOverride;
@@ -752,8 +752,8 @@ export class SpellProcessor {
             baseCost = currentDef.flashbackCost || (currentDef as any).flashback_cost || override || baseCost;
         } else if (card.zone === Zone.Graveyard || (Object.values(state.players) as any[]).some(p => p.virtualHand.some((v: any) => v.id === card.id))) {
             // Support for graveyard-activated abilities (e.g. Stone Docent)
-            const graveyardAbility = currentDef.abilities?.find((a: any) => 
-                a.type === AbilityType.Activated && 
+            const graveyardAbility = currentDef.abilities?.find((a: any) =>
+                a.type === AbilityType.Activated &&
                 (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
             );
             if (graveyardAbility) {
@@ -940,23 +940,23 @@ export class SpellProcessor {
         if (ability.type !== AbilityType.Activated) return false;
 
         // Step 0.5: Check for X in cost or effects
-        const needsX = ability.costs?.some((c: any) => c.value === 'X' || c.value === '-X') ||
-                      ability.effects?.some((e: any) => JSON.stringify(e).includes('"X"'));
+        const needsX = ability.costs?.some((c: any) => String(c.value).includes('{X}') || c.amount === 'X' || c.value === 'X' || c.value === '-X') ||
+            ability.effects?.some((e: any) => JSON.stringify(e).includes('"X"'));
 
         if (needsX && (obj as any).xValue === undefined) {
-             const { ActionType } = require('@shared/engine_types');
-             state.pendingAction = {
-                 type: ActionType.ChooseX,
-                 playerId: playerId,
-                 sourceId: obj.id,
-                 data: {
-                     label: `Choose a value for X for ${obj.definition.name}`,
-                     abilityIndex: abilityIndex,
-                     declaredTargets: declaredTargets || [],
-                 }
-             };
-             log(`[CHOOSE_X] ${player.name} is choosing X for ${obj.definition.name}...`);
-             return true;
+            const { ActionType } = require('@shared/engine_types');
+            state.pendingAction = {
+                type: ActionType.ChooseX,
+                playerId: playerId,
+                sourceId: obj.id,
+                data: {
+                    label: `Choose a value for X for ${obj.definition.name}`,
+                    abilityIndex: abilityIndex,
+                    declaredTargets: declaredTargets || [],
+                }
+            };
+            log(`[CHOOSE_X] ${player.name} is choosing X for ${obj.definition.name}...`);
+            return true;
         }
 
         // PRE-CALCULATE COST VARIABLES (Available for both steps)
@@ -969,7 +969,7 @@ export class SpellProcessor {
         const hasChosenTapSelection = (state as any).lastChosenTapSelectionIds !== undefined;
         const exileCost = additionalCosts.find((cost: AbilityCost) => cost.type === 'Exile');
         const hasChosenExile = (state as any).lastChosenExileIds !== undefined;
-        
+
         if (exileCost) log(`[FLOW-DEBUG] Starting activation for ${obj.definition.name}. hasChosenExile=${hasChosenExile}, ids=${JSON.stringify((state as any).lastChosenExileIds)}`);
 
 
@@ -993,8 +993,7 @@ export class SpellProcessor {
         }
 
         // --- STEP 1.5: CHOOSE X (Rule 601.2b) ---
-        const needsX = ability.costs?.some((c: any) => String(c.value).includes('{X}') || c.amount === 'X' || c.value === 'X') ||
-            ability.effects?.some((e: any) => JSON.stringify(e).includes('"X"'));
+        // (needsX already calculated above)
         const xValue = (state as any).lastChoiceX;
 
         if (needsX && xValue === undefined) {
@@ -1028,8 +1027,8 @@ export class SpellProcessor {
             const stackEmpty = state.stack.length === 0;
             const isSorcerySpeed = String(playerId) === activeId && isMainPhase && stackEmpty;
             const canActivateAnyTime = (cardLogic.abilities || []).some((a: any) => a.type === 'Static' && String(a.id).includes('any_turn')) ||
-                state.ruleRegistry.continuousEffects.some(e => 
-                    e.type === EffectType.AllowOutOfTurnActivation && 
+                state.ruleRegistry.continuousEffects.some(e =>
+                    e.type === EffectType.AllowOutOfTurnActivation &&
                     (e.targetIds?.includes(obj.id) || (e.targetMapping === TargetMapping.Self && e.sourceId === obj.id))
                 );
 
@@ -1158,12 +1157,12 @@ export class SpellProcessor {
         if (tapSelectionCost && !hasChosenTapSelection) {
             const { TargetingProcessor } = require('./TargetingProcessor');
             const legalTapIds = state.battlefield
-                .filter(o => o.controllerId === playerId && !o.isTapped && 
+                .filter(o => o.controllerId === playerId && !o.isTapped &&
                     TargetingProcessor.matchesRestrictions(state, o, tapSelectionCost.restrictions || [], playerId, obj.id))
                 .map(o => o.id);
 
             const amount = Number(tapSelectionCost.value || tapSelectionCost.amount || 1);
-            
+
             if (legalTapIds.length < amount) {
                 log(`Illegal Activation: Not enough valid permanents to tap for ${obj.definition.name}.`);
                 return false;

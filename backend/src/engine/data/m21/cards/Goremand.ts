@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const Goremand: CardDefinition = {
     name: "Goremand",
@@ -10,20 +10,21 @@ export const Goremand: CardDefinition = {
     power: "5",
     toughness: "5",
     keywords: ["Flying", "Trample"],
-    additionalCosts: [
-        {
-            type: EffectType.Sacrifice,
-            targetDefinition: {
-                type: TargetType.Creature,
-                count: 1,
-            }
-        }
-    ],
     abilities: [
+        {
+            type: AbilityType.Static,
+            activeZone: Zone.Hand,
+            effects: [
+                {
+                    type: EffectType.AdditionalCost,
+                    targetMapping: TargetMapping.Self,
+                    additionalCosts: [{ type: CostType.Sacrifice, restrictions: ['Creature'] }]
+                }
+            ]
+        },
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: Zone.Battlefield,
             effects: [
                 {
                     type: EffectType.Sacrifice,
@@ -34,6 +35,3 @@ export const Goremand: CardDefinition = {
         }
     ]
 };
-
-
-

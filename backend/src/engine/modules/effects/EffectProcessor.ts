@@ -145,7 +145,7 @@ export class EffectProcessor {
             validationIndex = parseInt(mStr.substring(7)) - 1;
         }
 
-        if (isDirectTargetMapping || [TargetMapping.TargetOpponent, TargetMapping.TargetPlayer, TargetMapping.TargetCreature, TargetMapping.TargetPermanent].includes(mStr as TargetMapping)) {
+        if (isDirectTargetMapping || (([TargetMapping.TargetOpponent, TargetMapping.TargetPlayer, TargetMapping.TargetCreature, TargetMapping.TargetPermanent] as string[]).includes(mStr))) {
             return this.getValidTargetIds(state, effect, ids, sourceId, sourceObj, stackObject, parentContext, validationIndex);
         }
         
@@ -620,10 +620,10 @@ export class EffectProcessor {
     
     switch (amount) {
       case 'POWER': 
-          result = obj?.effectiveStats?.power || parseInt(obj?.definition.power || '0') || 0;
+          result = obj?.effectiveStats?.power || Number(obj?.definition.power || 0);
           break;
       case 'TOUGHNESS': 
-          result = obj?.effectiveStats?.toughness || parseInt(obj?.definition.toughness || '0') || 0;
+          result = obj?.effectiveStats?.toughness || Number(obj?.definition.toughness || 0);
           break;
       case 'X': 
           result = stackObject?.xValue || 
@@ -715,7 +715,7 @@ export class EffectProcessor {
           break;
       case 'SACRIFICED_OBJECT_POWER':
           const lastSac = (state.turnState as any).lastSacrificedObject;
-          result = lastSac?.effectiveStats?.power || parseInt(lastSac?.definition.power || '0') || 0;
+          result = lastSac?.effectiveStats?.power || Number(lastSac?.definition.power || 0);
           break;
       case 'TARGET_1_POWER':
       case 'TARGET_1_TOUGHNESS': {

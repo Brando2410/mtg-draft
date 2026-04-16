@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, Zone, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const VrynWingmare: CardDefinition = {
     name: "Vryn Wingmare",
@@ -25,5 +25,4 @@ export const VrynWingmare: CardDefinition = {
         }
     ]
 };
-
 

@@ -1,4 +1,4 @@
-import { AbilityType, DurationType, GameObject, GameObjectId, GameState, PlayerId, Zone } from '@shared/engine_types';
+import { GameObject, GameObjectId, GameState, PlayerId, Zone, TargetType, TargetMapping } from '@shared/engine_types';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { ActionProcessor } from './ActionProcessor';
@@ -8,37 +8,37 @@ import { ActionProcessor } from './ActionProcessor';
  * Centralizes all targeting validation, mapping, and interactive flow.
  */
 export class TargetingProcessor {
-    
+
     public static calculateTotalCounts(targetDef: any, xValue: number = 0): { maxCount: number, minCount: number, count: number } {
         let maxCount = 0;
         let minCount = 0;
         let targetCount = 0;
         const defs = Array.isArray(targetDef) ? targetDef : [targetDef];
-        
+
         defs.forEach(d => {
             if (!d) return;
             let count = d.count;
             if (count === 'X') count = xValue;
             count = count || 1;
-            
+
             let dMax = d.maxCount || count;
             if (dMax === 'X') dMax = xValue;
-            
+
             let dMin = d.minCount !== undefined ? d.minCount : count;
             if (dMin === 'X') dMin = xValue;
-            
+
             maxCount += dMax;
             minCount += dMin;
             targetCount += count;
         });
-        
+
         return { maxCount, minCount, count: targetCount };
     }
 
     public static generateTargetPrompt(targetDef: any, selectedCount: number, xValue: number = 0, isSpellCasting: boolean = false): string {
         const def = this.getDefinitionForIndex(targetDef, selectedCount);
         if (!def) return "Select targets";
-        
+
         const counts = this.calculateTotalCounts(targetDef, xValue);
         // A target is optional if it's explicitly marked optional OR has minCount 0.
         // We also check if we've already fulfilled the mandatory part of a multi-target sequence.
@@ -46,12 +46,12 @@ export class TargetingProcessor {
         // If it's a spell casting and it's mandatory, we DON'T want "You may" even if UI allows cancel.
         const isRulesOptional = def.optional || def.minCount === 0;
         const isSequenceOptional = counts.minCount <= selectedCount;
-        
+
         const isOptional = isRulesOptional || isSequenceOptional;
-        
+
         let type = def.type || "target";
         const restrictions = (def.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
-        
+
         let typeStr = type.toLowerCase();
         if (restrictions.includes('opponent') || typeStr === 'opponent') typeStr = "an opponent";
         else if (restrictions.includes('you')) typeStr = "yourself";
@@ -78,7 +78,7 @@ export class TargetingProcessor {
         }
 
         const prefix = (isRulesOptional || (isSequenceOptional && !isSpellCasting)) ? "You may select" : "Select";
-        
+
         // Handle "Up to" phrasing for targets with minCount 0
         if (def.minCount === 0 && def.count > 0 && !isSequenceOptional) {
             const countStr = def.count === 1 ? "one" : def.count;
@@ -87,7 +87,7 @@ export class TargetingProcessor {
             let cleanType = typeStr;
             if (cleanType.startsWith('a ')) cleanType = cleanType.substring(2);
             if (cleanType.startsWith('an ')) cleanType = cleanType.substring(3);
-            
+
             return `Select up to ${countStr} ${cleanType}${plural}`;
         }
 
@@ -141,7 +141,7 @@ export class TargetingProcessor {
             const type = (targetDefForIndex?.type || '').toLowerCase();
             const restrictions = (targetDefForIndex?.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
 
-            if (type === TargetType.Player.toLowerCase() || type === TargetType.Opponent.toLowerCase() || type === TargetType.AnyTarget.toLowerCase() || restrictions.includes('player') || restrictions.includes('anytarget')) {
+            if (type === TargetType.Player.toLowerCase() || type === TargetType.Opponent.toLowerCase() || type === TargetType.AnyTarget.toLowerCase() || type === TargetType.PlayerOrPlaneswalker.toLowerCase() || restrictions.includes('player') || restrictions.includes('anytarget')) {
 
                 let sourceControllerId = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId)?.controllerId ||
                     state.battlefield.find(o => o.id === sourceId)?.controllerId;
@@ -211,7 +211,7 @@ export class TargetingProcessor {
         const coreTypes = [
             'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 'permanent',
             'instant', 'sorcery', 'instant_or_sorcery', 'instantorsorcery', 'artifact_or_creature', 'artifactorcreature',
-            'artifact_or_enchantment', 'artifactorenchantment', 'creature_or_planeswalker', 'creatureorplaneswalker', 'nonland_permanent', 'nonlandpermanent'
+            'artifact_or_enchantment', 'artifactorenchantment', 'creature_or_planeswalker', 'creatureorplaneswalker', 'nonland_permanent', 'nonlandpermanent', 'non_land_permanent', 'player_or_planeswalker'
         ];
 
         if (typeLineCheck === 'spell' || typeLineCheck === 'triggeredability' || typeLineCheck === 'activatedability') {
@@ -238,9 +238,11 @@ export class TargetingProcessor {
                 if (!combinedTypes.includes('artifact') && !combinedTypes.includes('enchantment')) return false;
             } else if (typeLineCheck === 'creature_or_planeswalker' || typeLineCheck === 'creatureorplaneswalker') {
                 if (!combinedTypes.includes('creature') && !combinedTypes.includes('planeswalker')) return false;
-            } else if (typeLineCheck === 'nonland_permanent' || typeLineCheck === 'nonlandpermanent') {
+            } else if (typeLineCheck === 'nonland_permanent' || typeLineCheck === 'nonlandpermanent' || typeLineCheck === 'non_land_permanent') {
                 const permTypes = ['artifact', 'creature', 'enchantment', 'planeswalker'];
                 if (!combinedTypes.some(t => permTypes.includes(t))) return false;
+            } else if (typeLineCheck === 'player_or_planeswalker') {
+                if (!combinedTypes.includes('planeswalker')) return false;
             } else {
                 if (!combinedTypes.includes(typeLineCheck)) return false;
             }
@@ -338,7 +340,7 @@ export class TargetingProcessor {
 
         let count = 0;
         let minCount = 0;
-        
+
         if (Array.isArray(targetDef)) {
             targetDef.forEach(d => {
                 count += (typeof d.count === 'number' ? d.count : 1);
@@ -410,12 +412,12 @@ export class TargetingProcessor {
         ].map((t: string) => t.toLowerCase());
 
         const baseTypes = ['creature', 'planeswalker', 'land', 'artifact', 'enchantment', 'instant', 'sorcery', 'permanent', 'card'];
-        const isAlternative = (r: any) => typeof r === 'object' || 
+        const isAlternative = (r: any) => typeof r === 'object' ||
             (typeof r === 'string' && (
-                r.toLowerCase().includes('_or_') || 
-                r.toLowerCase().includes('orsorcery') || 
-                r.toLowerCase().includes('orplaneswalker') || 
-                r.toLowerCase().includes('orcreature') || 
+                r.toLowerCase().includes('_or_') ||
+                r.toLowerCase().includes('orsorcery') ||
+                r.toLowerCase().includes('orplaneswalker') ||
+                r.toLowerCase().includes('orcreature') ||
                 r.toLowerCase().includes('orenchantment') ||
                 r.toLowerCase() === 'oneormorecolors' ||
                 r.toLowerCase() === 'mv_le_x'
@@ -536,7 +538,7 @@ export class TargetingProcessor {
             }
 
             if (lr === 'mv_le_x') {
-                const xValue = stackData?.xValue || (state.pendingAction as any)?.data?.xValue || (state.pendingAction as any)?.xValue || 0;
+                const xValue = stackObject?.xValue || (state.pendingAction as any)?.data?.xValue || (state.pendingAction as any)?.xValue || 0;
                 const { ManaProcessor } = require('../magic/ManaProcessor');
                 const mv = ManaProcessor.getManaValue(definition.manaCost || '');
                 if (mv > xValue) return false;
@@ -593,107 +595,115 @@ export class TargetingProcessor {
                 const lr = typeof r === 'string' ? r.toLowerCase() : JSON.stringify(r);
                 const isMatch = (() => {
                     if (typeof r === 'string') {
-                    const lr = r.toLowerCase();
-                    if (lr === 'card') return true;
-                    if (lr === 'instant_or_sorcery' || lr === 'instantorsorcery') {
-                        return objTypes.includes('instant') || objTypes.includes('sorcery');
-                    }
-                    if (lr === 'permanent') {
-                        const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
-                        return objTypes.some((t: string) => permTypes.includes(t.toLowerCase()));
-                    }
-                    if (lr === 'artifact_or_creature' || lr === 'artifactorcreature') {
-                        return objTypes.includes('artifact') || objTypes.includes('creature');
-                    }
-                    if (lr === 'artifact_or_enchantment' || lr === 'artifactorenchantment') {
-                        return objTypes.includes('artifact') || objTypes.includes('enchantment');
-                    }
-                    if (lr === 'creature_or_planeswalker' || lr === 'creatureorplaneswalker') {
-                        return objTypes.includes('creature') || objTypes.includes('planeswalker');
-                    }
-                    if (lr === 'nonland_permanent' || lr === 'nonlandpermanent') {
-                        const permTypes = ['artifact', 'creature', 'enchantment', 'planeswalker'];
-                        return objTypes.some((t: string) => permTypes.includes(t.toLowerCase()));
-                    }
-                    if (lr === 'oneormorecolors') {
-                        return this.sourceHasQualities(targetObj, ['oneormorecolors'], state);
-                    }
-                    if (lr === 'mv_le_x') {
-                        const xValue = (state.pendingAction as any)?.data?.xValue || (state.pendingAction as any)?.xValue || (targetObj as any).xValue || 0;
-                        const mv = ManaProcessor.getManaValue(definition.manaCost || '');
-                        return mv <= xValue;
-                    }
-
-
-                    if (lr.includes('_or_')) {
-                        const parts = lr.split('_or_');
-                        return parts.some(p => {
-                            const lp = p.trim();
-                            const singular = lp.endsWith('s') ? lp.slice(0, -1) : lp;
-                            return objTypes.includes(lp) ||
-                                (definition.subtypes || []).some((s: string) => s.toLowerCase() === lp || s.toLowerCase() === singular);
-                        });
-                    }
-
-                    const singularLr = lr.endsWith('s') ? lr.slice(0, -1) : lr;
-                    return objTypes.includes(lr) ||
-                        (definition.subtypes || []).some((s: string) => s.toLowerCase() === lr || s.toLowerCase() === singularLr) ||
-                        (definition.name || "").toLowerCase() === lr;
-                } else {
-                    let match = true;
-                    const rTypes = r.types || (r.type ? [r.type] : []);
-                    const rSubtypes = r.subtypes || (r.subtype ? [r.subtype] : []);
-
-                    const functionalTypes = ['manavalue', 'mv', 'manavaluele', 'manavalueless', 'mvless', 'power', 'toughness', 'cmc'];
-                    if (rTypes.length > 0 && !rTypes.some((t: string) => {
-                        const lt = t.toLowerCase();
-                        if (functionalTypes.includes(lt)) return true; // Skip type check for functional restrictions
-                        if (lt.startsWith('non')) {
-                            const base = lt.substring(3);
-                            return !objTypes.includes(base);
+                        const lr = r.toLowerCase();
+                        if (lr === 'card') return true;
+                        if (lr === 'instant_or_sorcery' || lr === 'instantorsorcery') {
+                            return objTypes.includes('instant') || objTypes.includes('sorcery');
                         }
-                        return objTypes.includes(lt);
-                    })) match = false;
-                    if (rSubtypes.length > 0 && !rSubtypes.some((s: string) => (definition.subtypes || []).some((ts: string) => ts.toLowerCase() === s.toLowerCase()))) match = false;
-                    if (r.nameIncludes && definition.name && !definition.name.toLowerCase().includes(r.nameIncludes.toLowerCase())) match = false;
-                    if (r.nameEquals || r.name) {
-                        const targetName = definition?.name || targetObj.name;
-                        const filterName = r.nameEquals || r.name || "";
-                        if (!targetName || targetName.toLowerCase() !== filterName.toLowerCase()) match = false;
-                    }
-                    if (r.hasxinmanacost && !definition.manaCost?.includes('X')) match = false;
-                    if (r.type === 'ManaValue' || r.type === 'MV' || r.type === 'ManaValueLe' || r.type === 'ManaValueLess' || r.type === 'MVLess') {
-                        const mv = ManaProcessor.getManaValue(definition.manaCost || '');
-                        let val = r.value;
-                        if (val === 'X') {
-                            const stackObj = stackObject || state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
-                            if (stackObj) {
-                                val = stackObj.xValue || 0;
-                            } else {
-                                // Fallback to pending action metadata
-                                val = (state.pendingAction as any)?.xValue || 
-                                      (state.pendingAction as any)?.data?.xValue ||
-                                      (state.pendingAction as any)?.data?.stackObj?.xValue || 0;
+                        if (lr === 'permanent') {
+                            const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
+                            return objTypes.some((t: string) => permTypes.includes(t.toLowerCase()));
+                        }
+                        if (lr === 'artifact_or_creature' || lr === 'artifactorcreature') {
+                            return objTypes.includes('artifact') || objTypes.includes('creature');
+                        }
+                        if (lr === 'artifact_or_enchantment' || lr === 'artifactorenchantment') {
+                            return objTypes.includes('artifact') || objTypes.includes('enchantment');
+                        }
+                        if (lr === 'creature_or_planeswalker' || lr === 'creatureorplaneswalker') {
+                            return objTypes.includes('creature') || objTypes.includes('planeswalker');
+                        }
+                        if (lr === 'nonland_permanent' || lr === 'nonlandpermanent' || lr === 'non_land_permanent') {
+                            const permTypes = ['artifact', 'creature', 'enchantment', 'planeswalker'];
+                            return objTypes.some((t: string) => permTypes.includes(t.toLowerCase()));
+                        }
+                        if (lr === 'oneormorecolors') {
+                            return this.sourceHasQualities(targetObj, ['oneormorecolors'], state);
+                        }
+                        if (lr === 'mv_le_x') {
+                            const xValue = (state.pendingAction as any)?.data?.xValue || (state.pendingAction as any)?.xValue || (targetObj as any).xValue || 0;
+                            const mv = ManaProcessor.getManaValue(definition.manaCost || '');
+                            return mv <= xValue;
+                        }
+
+
+                        if (lr.includes('_or_')) {
+                            const parts = lr.split('_or_');
+                            return parts.some(p => {
+                                const lp = p.trim();
+                                const singular = lp.endsWith('s') ? lp.slice(0, -1) : lp;
+                                return objTypes.includes(lp) ||
+                                    (definition.subtypes || []).some((s: string) => s.toLowerCase() === lp || s.toLowerCase() === singular);
+                            });
+                        }
+
+                        const singularLr = lr.endsWith('s') ? lr.slice(0, -1) : lr;
+                        return objTypes.includes(lr) ||
+                            (definition.subtypes || []).some((s: string) => s.toLowerCase() === lr || s.toLowerCase() === singularLr) ||
+                            (definition.name || "").toLowerCase() === lr;
+                    } else {
+                        // Recursion for Any/All blocks
+                        if (r.type === 'Any' || r.type === 'any') {
+                            return r.restrictions.some((subR: any) => this.matchesRestrictions(state, targetObj, [subR], controllerId, sourceId, log, stackObject));
+                        }
+                        if (r.type === 'All' || r.type === 'all') {
+                            return r.restrictions.every((subR: any) => this.matchesRestrictions(state, targetObj, [subR], controllerId, sourceId, log, stackObject));
+                        }
+
+                        let match = true;
+                        const rTypes = r.types || (r.type ? [r.type] : []);
+                        const rSubtypes = r.subtypes || (r.subtype ? [r.subtype] : []);
+
+                        const functionalTypes = ['manavalue', 'mv', 'manavaluele', 'manavalueless', 'mvless', 'power', 'toughness', 'cmc'];
+                        if (rTypes.length > 0 && !rTypes.some((t: string) => {
+                            const lt = t.toLowerCase();
+                            if (functionalTypes.includes(lt)) return true; // Skip type check for functional restrictions
+                            if (lt.startsWith('non')) {
+                                const base = lt.substring(3);
+                                return !objTypes.includes(base);
                             }
-                        } else if (val === 'GAINED_LIFE_AMOUNT') {
-                            val = state.turnState.lifeGainedThisTurn[controllerId || ''] || 0;
-                        } else if (val === 'CONVERGE_AMOUNT') {
-                            const sourceObj = this.findObjectInAnyZone(state, sourceId);
-                            val = (sourceObj as any)?.convergeAmount || 0;
-                        } else if (val === 'SOURCE_MV') {
-                            const source = this.findObjectInAnyZone(state, sourceId);
-                            val = source ? ManaProcessor.getManaValue(source.definition.manaCost || '') : 0;
+                            return objTypes.includes(lt);
+                        })) match = false;
+                        if (rSubtypes.length > 0 && !rSubtypes.some((s: string) => (definition.subtypes || []).some((ts: string) => ts.toLowerCase() === s.toLowerCase()))) match = false;
+                        if (r.nameIncludes && definition.name && !definition.name.toLowerCase().includes(r.nameIncludes.toLowerCase())) match = false;
+                        if (r.nameEquals || r.name) {
+                            const targetName = definition?.name || targetObj.name;
+                            const filterName = r.nameEquals || r.name || "";
+                            if (!targetName || targetName.toLowerCase() !== filterName.toLowerCase()) match = false;
                         }
+                        if (r.hasxinmanacost && !definition.manaCost?.includes('X')) match = false;
+                        if (r.type === 'ManaValue' || r.type === 'MV' || r.type === 'ManaValueLe' || r.type === 'ManaValueLess' || r.type === 'MVLess') {
+                            const mv = ManaProcessor.getManaValue(definition.manaCost || '');
+                            let val = r.value;
+                            if (val === 'X') {
+                                const stackObj = stackObject || state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
+                                if (stackObj) {
+                                    val = stackObj.xValue || 0;
+                                } else {
+                                    // Fallback to pending action metadata
+                                    val = (state.pendingAction as any)?.xValue ||
+                                        (state.pendingAction as any)?.data?.xValue ||
+                                        (state.pendingAction as any)?.data?.stackObj?.xValue || 0;
+                                }
+                            } else if (val === 'GAINED_LIFE_AMOUNT') {
+                                val = state.turnState.lifeGainedThisTurn[controllerId || ''] || 0;
+                            } else if (val === 'CONVERGE_AMOUNT') {
+                                const sourceObj = this.findObjectInAnyZone(state, sourceId);
+                                val = (sourceObj as any)?.convergeAmount || 0;
+                            } else if (val === 'SOURCE_MV') {
+                                const source = this.findObjectInAnyZone(state, sourceId);
+                                val = source ? ManaProcessor.getManaValue(source.definition.manaCost || '') : 0;
+                            }
 
-                        const comp = (r.type === 'ManaValueLe' ? 'LessOrEqual' : (r.type === 'ManaValueLess' ? 'LessThan' : (r.comparison || 'Equal')));
-                        if (comp === 'LessOrEqual' && mv > val) match = false;
-                        if (comp === 'GreaterOrEqual' && mv < val) match = false;
-                        if (comp === 'Equal' && mv !== val) match = false;
-                        if (comp === 'LessThan' && mv >= val) match = false;
-                        if (comp === 'GreaterThan' && mv <= val) match = false;
+                            const comp = (r.type === 'ManaValueLe' ? 'LessOrEqual' : (r.type === 'ManaValueLess' ? 'LessThan' : (r.comparison || 'Equal')));
+                            if (comp === 'LessOrEqual' && mv > val) match = false;
+                            if (comp === 'GreaterOrEqual' && mv < val) match = false;
+                            if (comp === 'Equal' && mv !== val) match = false;
+                            if (comp === 'LessThan' && mv >= val) match = false;
+                            if (comp === 'GreaterThan' && mv <= val) match = false;
+                        }
+                        return match;
                     }
-                    return match;
-                }
                 })();
                 if (log) log(`[DEBUG] Alternative check: ${definition?.name || targetObj.name} against ${lr} -> ${isMatch}`);
                 return isMatch;
@@ -766,20 +776,20 @@ export class TargetingProcessor {
 
         const counts = TargetingProcessor.calculateTotalCounts(targetDef, (actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0)));
         const { maxCount, minCount, count } = counts;
-        
+
         actionData.selectedTargets = actionData.selectedTargets || [];
         actionData.maxCount = maxCount;
         actionData.minCount = minCount;
         actionData.count = count;
-        
+
         // Helper to refresh prompt based on CURRENT selection state
         const updatePrompt = () => {
-             actionData.prompt = TargetingProcessor.generateTargetPrompt(
-                targetDef, 
-                actionData.selectedTargets.length, 
+            actionData.prompt = TargetingProcessor.generateTargetPrompt(
+                targetDef,
+                actionData.selectedTargets.length,
                 (actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0)),
                 actionData.isSpellCasting
-             );
+            );
         };
 
         updatePrompt();

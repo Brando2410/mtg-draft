@@ -13,13 +13,11 @@ export const ChandrasMagmutt: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             costs: [{ type: CostType.Tap }],
 
             targetDefinition: {
-                type: TargetType.AnyTarget,
+                type: TargetType.PlayerOrPlaneswalker,
                 count: 1,
-                restrictions: ['Player', 'Planeswalker']
             },
 
 

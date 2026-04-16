@@ -13,12 +13,15 @@ export const GarruksHarbinger: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.DamageDealtToPlayer,
+            eventMatch: [TriggerEvent.DamageDealtToPlayer, TriggerEvent.DamageTaken],
             activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => {
                 if (event.sourceId !== source.id || !event.data?.isCombat) return false;
-                const target = state.players[event.targetId] || state.battlefield.find((o: any) => o.id === event.targetId);
-                return target && (state.players[event.targetId] || target.definition.types.some((t: string) => t.toLowerCase() === 'planeswalker'));
+                // Target must be a player OR a planeswalker
+                const targetObj = state.battlefield.find((o: any) => o.id === event.targetId);
+                const isPlayer = !!state.players[event.targetId];
+                const isPlaneswalker = targetObj && targetObj.definition.types.some((t: string) => t.toLowerCase() === 'planeswalker');
+                return isPlayer || isPlaneswalker;
             },
             effects: [
                 {
@@ -31,19 +34,25 @@ export const GarruksHarbinger: CardDefinition = {
                         type: TargetType.Card,
                         count: 1,
                         restrictions: [
-                            { type: 'Any', restrictions: ['Creature', { type: 'Name', value: 'Garruk' }, 'Planeswalker'] }
+                            {
+                                type: 'Any',
+                                restrictions: [
+                                    'Creature',
+                                    { type: 'All', restrictions: ['Planeswalker', 'Garruk'] }
+                                ]
+                            }
                         ]
                     },
                     zone: Zone.Hand,
                     remainderZone: Zone.Library,
                     remainderPosition: 'bottom',
-                    randomRemainder: true,
+                    shuffleRemainder: true,
                     targetMapping: TargetMapping.Controller
                 }
             ]
         }
     ]
-};
+}
 
 
 
