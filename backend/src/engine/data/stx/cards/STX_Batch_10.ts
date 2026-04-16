@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone, TriggerEvent, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, Zone, TriggerEvent, TargetType, DurationType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
 export const STX_Batch_10: CardDefinition[] = [
     {
@@ -12,14 +12,14 @@ export const STX_Batch_10: CardDefinition[] = [
             {
                 type: AbilityType.Spell,
                 effects: [
-                    { 
+                    {
                         type: EffectType.Choice,
                         label: "Name a nonland card",
                         targetIdMapping: TargetMapping.NameACard,
-                        restrictions: [{ type: 'Not', restriction: { type: 'Type', value: 'Land' } }],
+                        targetDefinition: { type: TargetType.NonlandPermanent, count: 1 },
                         effects: [{
                             type: EffectType.ApplyContinuousEffect,
-                            duration: 'UNTIL_YOUR_NEXT_TURN',
+                            duration: DurationType.UntilYourNextTurn,
                             // The engine interprets these based on the chosen name in NameACard mapping
                             effects: [{ type: 'CantCastNamedCard' }, { type: 'CantAttackOrBlockNamedCard' }]
                         }]
@@ -46,7 +46,7 @@ export const STX_Batch_10: CardDefinition[] = [
                 effects: [{
                     type: EffectType.CopySpellOnStack,
                     targetMapping: TargetMapping.Target1,
-                    isLegendary: false 
+                    isLegendary: false
                 }]
             }
         ]
@@ -67,8 +67,8 @@ export const STX_Batch_10: CardDefinition[] = [
                         zone: Zone.Hand, // Temporary zone for choice
                         amount: 4,
                         restrictions: [
-                            { type: 'Type', value: 'Creature' }, 
-                            { type: 'DifferentNames' }, 
+                            { type: 'Type', value: 'Creature' },
+                            { type: 'DifferentNames' },
                             { type: 'Attribute', attribute: 'ManaValue', value: DynamicAmount.X, comparison: 'LE' }
                         ],
                         reveal: true,
@@ -99,10 +99,10 @@ export const STX_Batch_10: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: { type: TargetType.Permanent, count: 1, restrictions: [{ type: 'Type', value: 'Creature' }] },
+                targetDefinition: { type: TargetType.Creature, count: 1 },
                 effects: [{
                     type: EffectType.ApplyContinuousEffect,
-                    duration: 'UNTIL_END_OF_TURN',
+                    duration: DurationType.UntilEndOfTurn,
                     // The engine would need a custom handler for 2^X
                     effects: [{ type: 'DoublePowerXTimes', amount: DynamicAmount.X }],
                     targetMapping: TargetMapping.Target1
@@ -123,7 +123,7 @@ export const STX_Batch_10: CardDefinition[] = [
         abilities: [
             {
                 type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+                eventMatch: TriggerEvent.EnterBattlefield,
                 effects: [{ type: EffectType.Learn }]
             }
         ]

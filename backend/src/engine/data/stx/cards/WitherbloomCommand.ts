@@ -19,7 +19,7 @@ export const WitherbloomCommand: CardDefinition = {
                         targetDefinition: { count: 1, type: TargetType.Player },
                         effects: [
                             { type: EffectType.Mill, amount: 3, targetMapping: TargetMapping.Target1 }, 
-                            { type: EffectType.LookAtTopAndPick, fromZone: Zone.Graveyard, restrictions: [Restriction.Land], destination: Zone.Hand }
+                            { type: EffectType.LookAtTopAndPick, fromZone: Zone.Graveyard, restrictions: [Restriction.Land], zone: Zone.Hand }
                         ] 
                     },
                     { 

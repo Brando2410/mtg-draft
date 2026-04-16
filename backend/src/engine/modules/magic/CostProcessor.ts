@@ -275,7 +275,7 @@ export class CostProcessor {
         let reduction = 0;
         for (const mod of cost.costModifiers) {
             if (mod.type === 'REDUCE_GENERIC_PER_COUNTER') {
-                reduction += (source.counters[mod.counterType] || 0);
+                reduction += (source.counters[mod.counterType] || 0) * (mod.amount || 1);
             }
         }
         

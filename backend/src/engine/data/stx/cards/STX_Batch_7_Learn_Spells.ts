@@ -14,7 +14,7 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
     abilities: [
       {
         type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Death,
+        eventMatch: TriggerEvent.Death,
         effects: [{ type: EffectType.Learn }]
       }
     ]
@@ -41,9 +41,9 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
               toughness: "1",
               oracleText: 'When this creature dies, you gain 1 life.',
               abilities: [{
-                  type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Death,
-                  effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
+                type: AbilityType.Triggered,
+                eventMatch: TriggerEvent.Death,
+                effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
               }]
             },
             amount: 1
@@ -81,10 +81,14 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
         effects: [
           {
             type: EffectType.SearchLibrary,
-            restrictions: [{ type: 'Type', value: 'Land' }, { type: 'Subtype', value: 'Basic' }, { type: 'Subtype', value: 'Forest' }],
-            destination: Zone.Hand,
+            targetDefinition: {
+              type: TargetType.Land,
+              count: 1,
+              restrictions: ['Basic', 'Forest']
+            },
+            zone: Zone.Hand,
             reveal: true,
-            shuffle: true
+            targetMapping: TargetMapping.Controller
           },
           { type: EffectType.Learn }
         ]
@@ -101,9 +105,9 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
       {
         type: AbilityType.Spell,
         targetDefinition: {
-            count: 1,
-            type: TargetType.Permanent,
-            restrictions: [{ type: 'Type', value: 'Creature' }]
+          count: 1,
+          type: TargetType.Permanent,
+          restrictions: [{ type: 'Type', value: 'Creature' }]
         },
         effects: [
           { type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Target1 },
@@ -129,71 +133,71 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
     ]
   },
   {
-      name: 'Professor of Symbology',
-      manaCost: '{1}{W}',
-      colors: ['W'],
-      types: ['Creature'],
-      subtypes: ['Kor', 'Cleric'],
-      power: "2",
-      toughness: "1",
-      oracleText: "When Professor of Symbology enters the battlefield, learn.",
-      abilities: [
-          {
-              type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
-              effects: [{ type: EffectType.Learn }]
-          }
-      ]
+    name: 'Professor of Symbology',
+    manaCost: '{1}{W}',
+    colors: ['W'],
+    types: ['Creature'],
+    subtypes: ['Kor', 'Cleric'],
+    power: "2",
+    toughness: "1",
+    oracleText: "When Professor of Symbology enters the battlefield, learn.",
+    abilities: [
+      {
+        type: AbilityType.Triggered,
+        eventMatch: TriggerEvent.EnterBattlefield,
+        effects: [{ type: EffectType.Learn }]
+      }
+    ]
   },
   {
-      name: 'Study Break',
-      manaCost: '{1}{W}',
-      colors: ['W'],
-      types: ['Instant'],
-      oracleText: "Tap up to two target creatures. Learn.",
-      abilities: [
-          {
-              type: AbilityType.Spell,
-              targetDefinition: {
-                  count: 2,
-                  type: TargetType.Permanent,
-                  restrictions: [{ type: 'Type', value: 'Creature' }],
-                  minCount: 0
-              },
-              effects: [
-                  { type: EffectType.Tap, targetMapping: TargetMapping.TargetAll },
-                  { type: EffectType.Learn }
-              ]
-          }
-      ]
+    name: 'Study Break',
+    manaCost: '{1}{W}',
+    colors: ['W'],
+    types: ['Instant'],
+    oracleText: "Tap up to two target creatures. Learn.",
+    abilities: [
+      {
+        type: AbilityType.Spell,
+        targetDefinition: {
+          count: 2,
+          type: TargetType.Permanent,
+          restrictions: [{ type: 'Type', value: 'Creature' }],
+          minCount: 0
+        },
+        effects: [
+          { type: EffectType.Tap, targetMapping: TargetMapping.TargetAll },
+          { type: EffectType.Learn }
+        ]
+      }
+    ]
   },
   {
-      name: 'Enthusiastic Study',
-      manaCost: '{1}{R}',
-      colors: ['R'],
-      types: ['Instant'],
-      oracleText: "Target creature gets +3/+1 and gains trample until end of turn. Learn.",
-      abilities: [
+    name: 'Enthusiastic Study',
+    manaCost: '{1}{R}',
+    colors: ['R'],
+    types: ['Instant'],
+    oracleText: "Target creature gets +3/+1 and gains trample until end of turn. Learn.",
+    abilities: [
+      {
+        type: AbilityType.Spell,
+        targetDefinition: {
+          count: 1,
+          type: TargetType.Permanent,
+          restrictions: [{ type: 'Type', value: 'Creature' }]
+        },
+        effects: [
           {
-              type: AbilityType.Spell,
-              targetDefinition: {
-                  count: 1,
-                  type: TargetType.Permanent,
-                  restrictions: [{ type: 'Type', value: 'Creature' }]
-              },
-              effects: [
-                  {
-                      type: EffectType.ApplyContinuousEffect,
-                      duration: 'UNTIL_END_OF_TURN',
-                      powerModifier: 3,
-                      toughnessModifier: 1,
-                      abilitiesToAdd: ['Trample'],
-                      targetMapping: TargetMapping.Target1
-                  },
-                  { type: EffectType.Learn }
-              ]
-          }
-      ]
+            type: EffectType.ApplyContinuousEffect,
+            duration: 'UNTIL_END_OF_TURN',
+            powerModifier: 3,
+            toughnessModifier: 1,
+            abilitiesToAdd: ['Trample'],
+            targetMapping: TargetMapping.Target1
+          },
+          { type: EffectType.Learn }
+        ]
+      }
+    ]
   },
   {
     name: 'Containment Breach',
@@ -206,12 +210,12 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
       {
         type: AbilityType.Spell,
         targetDefinition: {
-            count: 1,
-            type: TargetType.Permanent,
-            restrictions: [
-                { type: 'Any', restrictions: [{ type: 'Type', value: 'Artifact' }, { type: 'Type', value: 'Enchantment' }] },
-                { type: 'Attribute', attribute: 'ManaValue', value: 2, comparison: 'LE' }
-            ]
+          count: 1,
+          type: TargetType.Permanent,
+          restrictions: [
+            { type: 'Any', restrictions: [{ type: 'Type', value: 'Artifact' }, { type: 'Type', value: 'Enchantment' }] },
+            { type: 'Attribute', attribute: 'ManaValue', value: 2, comparison: 'LE' }
+          ]
         },
         effects: [
           { type: EffectType.Exile, targetMapping: TargetMapping.Target1 },
@@ -227,9 +231,9 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
               toughness: "1",
               oracleText: 'When this creature dies, you gain 1 life.',
               abilities: [{
-                  type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Death,
-                  effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
+                type: AbilityType.Triggered,
+                eventMatch: TriggerEvent.Death,
+                effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
               }]
             },
             amount: 1
@@ -247,19 +251,19 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
     oracleText: 'As an additional cost to cast this spell, exile a creature you control.\nExile target creature or planeswalker.',
     abilities: [
       {
-          type: AbilityType.Spell,
-          additionalCosts: [
-              {
-                  type: 'Exile', 
-                  restriction: { type: 'Type', value: 'Creature', source: 'CONTROLLER' }
-              }
-          ],
-          targetDefinition: {
-              count: 1,
-              type: TargetType.Permanent,
-              restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Type', value: 'Planeswalker' }] }]
-          },
-          effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
+        type: AbilityType.Spell,
+        additionalCosts: [
+          {
+            type: 'Exile',
+            targetMapping: TargetMapping.AllCreaturesYouControl,
+          }
+        ],
+        targetDefinition: {
+          count: 1,
+          type: TargetType.Permanent,
+          restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Type', value: 'Planeswalker' }] }]
+        },
+        effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
       }
     ]
   }

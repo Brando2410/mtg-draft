@@ -39,15 +39,14 @@ export const BlexVexingPest: CardDefinition = {
             colors: ["B"],
             types: ["Sorcery"],
             oracleText: "Look at the top five cards of your library. You may put any number of them into your hand and the rest into your graveyard. You lose 3 life for each card put into your hand this way.",
-            abilities: [{
+                abilities: [{
                 type: AbilityType.Spell,
                 effects: [{
                     type: EffectType.LookAtTopAndPick,
                     fromTop: 5,
-                    // selectionType: SelectionType.AnyNumber,
-                    destination: Zone.Hand,
+                    zone: Zone.Hand,
                     remainderZone: Zone.Graveyard,
-                    // additionalEffectPerCard: { type: EffectType.LoseLife, amount: 3, targetMapping: TargetMapping.Controller }
+                    amount: 'ANY' as any
                 }]
             }]
         }

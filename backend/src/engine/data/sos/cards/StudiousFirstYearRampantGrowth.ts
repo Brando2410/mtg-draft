@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const StudiousFirstYearRampantGrowth: CardDefinition = {
     name: "Studious First-Year // Rampant Growth",
@@ -29,17 +29,10 @@ export const StudiousFirstYearRampantGrowth: CardDefinition = {
                         targetDefinition: {
                             type: TargetType.Land,
                             count: 1,
-                            restrictions: ['Basic', 'Land']
-                        }
-                    },
-                    {
-                        type: EffectType.PutOnBattlefield,
-                        targetMapping: TargetMapping.Target1,
+                            restrictions: ['Basic']
+                        },
+                        zone: Zone.Battlefield,
                         tapped: true
-                    },
-                    {
-                        type: EffectType.ShuffleLibrary,
-                        targetMapping: TargetMapping.Controller
                     }
                 ]
             }

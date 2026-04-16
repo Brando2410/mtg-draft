@@ -108,7 +108,9 @@ export class PlayerActionProcessor {
     const typeLine = (obj.definition.types?.join(' ') + ' ' + (obj.definition.type_line || '')).toLowerCase();
     const isLand = typeLine.includes('land');
 
-    const allActivated = logic?.abilities?.filter((a: any) => a.type === AbilityType.Activated) || [];
+    const allActivated = (logic?.abilities || [])
+        .map((a: any, index: number) => ({ ability: a, index }))
+        .filter((entry: any) => entry.ability.type === AbilityType.Activated && PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, false));
 
     if (allActivated.length > 0) {
         if (state.priorityPlayerId !== playerId) {
@@ -117,8 +119,7 @@ export class PlayerActionProcessor {
         }
 
         if (allActivated.length === 1) {
-            const ability = allActivated[0];
-            const abilityIdx = logic.abilities.indexOf(ability);
+            const { ability, index: abilityIdx } = allActivated[0];
             
             if (ability.isManaAbility) {
                 // Determine if this mana ability requires choices (like Add {B} or {G})
@@ -153,9 +154,9 @@ export class PlayerActionProcessor {
                 playerId: playerId,
                 sourceId: cardId,
                 data: {
-                    choices: allActivated.map((a: any) => ({
-                        label: a.oracleText || a.id || 'Activate Ability',
-                        value: logic.abilities.indexOf(a)
+                    choices: allActivated.map((entry: any) => ({
+                        label: entry.ability.oracleText || entry.ability.id || 'Activate Ability',
+                        value: entry.index
                     }))
                 }
             };

@@ -1,34 +1,34 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
 
-export const Duress: Record<string, ImplementableCard> = {
-    "Duress": {
-        name: "Duress",
-        manaCost: "{B}",
-        oracleText: "Target opponent reveals their hand. You choose a noncreature, nonland card from it. That player discards that card.",
-        colors: ["black"],
-        supertypes: [],
-        types: ["Sorcery"],
-        subtypes: [],
-        power: undefined,
-        toughness: undefined,
-        keywords: [],
-        abilities: [
-            {
-                id: "duress_spell",
-                type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Stack,
-                targetDefinition: { type: 'Player', count: 1, restrictions: ['Opponent'] },
-                effects: [
-                    {
-                        type: 'Choice',
-                        label: 'Choose a noncreature, nonland card',
-                        targetMapping: 'TARGET_1',
-                        targetIdMapping: 'TARGET_1_HAND',
-                        restrictions: ['Noncreature', 'Nonland'],
-                        effects: [{ type: 'MoveToZone', destination: Zone.Graveyard, targetMapping: 'SELECTED_CARD', isDiscard: true }]
-                    }
-                ]
-            }
-        ]
-    }
+export const Duress: CardDefinition = {
+    name: 'Duress',
+    manaCost: '{B}',
+    colors: ['B'],
+    types: ['Sorcery'],
+    oracleText: 'Target opponent reveals their hand. You choose a noncreature, nonland card from it. That player discards that card.',
+    abilities: [
+        {
+            type: AbilityType.Spell,
+            activeZone: Zone.Stack,
+            targetDefinition: {
+                count: 1,
+                type: TargetType.Player,
+                restrictions: [{ type: 'Opponent' }]
+            },
+            effects: [
+                {
+                    type: EffectType.Choice,
+                    label: "Choose a noncreature, nonland card to discard",
+                    targetIdMapping: TargetMapping.Target1HandRevealPick,
+                    restrictions: [
+                        {
+                            type: 'Not',
+                            restriction: { type: 'Any', restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Type', value: 'Land' }] }
+                        }
+                    ],
+                    effects: [{ type: EffectType.MoveToZone, zone: Zone.Graveyard, isDiscard: true }]
+                }
+            ]
+        }
+    ]
 };

@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, TargetMapping } from "@shared/engine_types";
 
 export const FabledPassage: Record<string, ImplementableCard> = {
     "Fabled Passage": {
@@ -18,17 +18,19 @@ export const FabledPassage: Record<string, ImplementableCard> = {
                 type: AbilityType.Activated,
                 activeZone: ZoneRequirement.Battlefield,
                 costs: [
-                    { type: 'Tap', targetMapping: 'SELF' },
-                    { type: 'Sacrifice', targetMapping: 'SELF' }
+                    { type: 'Tap', targetMapping: TargetMapping.Self },
+                    { type: 'Sacrifice', targetMapping: TargetMapping.Self }
                 ],
                 effects: [
                     {
                         type: EffectType.SearchLibrary,
-
-                        restrictions: ['Basic', 'Land'],
-                        destination: Zone.Battlefield,
+                        targetDefinition: {
+                            type: TargetType.Land,
+                            count: 1,
+                            restrictions: ['Basic']
+                        },
+                        zone: Zone.Battlefield,
                         tapped: true,
-                        shuffle: true,
                         effects: [
                             {
                                 type: EffectType.Untap,

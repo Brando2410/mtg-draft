@@ -30,7 +30,7 @@ export const STX_Rares_Mythics_Batch_3: CardDefinition[] = [
                             type: EffectType.SearchLibrary,
                             fromTop: -1, // Search until found
                             restrictions: [{ type: 'Type', value: 'Instant' }, { type: 'Type', value: 'Sorcery' }, { type: 'ManaValueLessThanSource' }],
-                            destination: Zone.Exile,
+                            zone: Zone.Exile,
                             remainderZone: Zone.Library,
                             remainderPosition: 'bottom',
                             shuffleRemainder: true,
@@ -40,7 +40,7 @@ export const STX_Rares_Mythics_Batch_3: CardDefinition[] = [
                                 optional: true,
                                 choices: [{
                                     label: 'Cast',
-                                    effects: [{ type: EffectType.CastSpell, targetMapping: 'SELECTED_CARD', isFreeCast: true }]
+                                    effects: [{ type: EffectType.CastSpell, targetMapping: TargetMapping.SelectedCard, isFreeCast: true }]
                                 }]
                             }]
                         }]

@@ -88,7 +88,7 @@ export const STX_Rares_Mythics_Batch_1: CardDefinition[] = [
                         type: EffectType.LookAtTopAndPick,
                         fromTop: 3,
                         amount: 1,
-                        destination: Zone.Hand,
+                        zone: Zone.Hand,
                         remainderZone: Zone.Graveyard
                     }
                 ]

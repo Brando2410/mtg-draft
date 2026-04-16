@@ -45,7 +45,7 @@ const CardStack = memo(({
                     key={stack[i].id + i}
                     className="absolute inset-0"
                     style={{ 
-                        transform: `translate(${i * 6}px, ${-i * 6}px)`,
+                        transform: `translate(${i * 12}px, ${-i * 12}px)`,
                         zIndex: i
                     }}
                 >
@@ -65,7 +65,7 @@ const CardStack = memo(({
             {stack.length > 1 && (
                 <div 
                     className="absolute -top-4 -left-4 z-[10] bg-black/80 border-2 border-white/40 px-2.5 py-1 rounded-lg shadow-2xl skew-x-[-12deg]"
-                    style={{ transform: `translate(${(visibleDepth-1) * 6}px, ${-(visibleDepth-1) * 6}px)` }}
+                    style={{ transform: `translate(${(visibleDepth-1) * 12}px, ${-(visibleDepth-1) * 12}px)` }}
                 >
                     <span className="text-xs font-black text-white italic tracking-tighter">x{stack.length}</span>
                 </div>
@@ -75,7 +75,7 @@ const CardStack = memo(({
   };
 
   return (
-    <div className="flex gap-12">
+    <div className="flex gap-16">
         {renderPile(untaped, false)}
         {renderPile(tapped, true)}
     </div>
@@ -165,7 +165,7 @@ const SubZone = memo(({
 
   return (
     <div className="flex-1 flex flex-col gap-1 w-full h-full min-w-[100px]">
-      <div className={`flex flex-wrap items-center justify-${align} gap-4 p-4 h-full content-center`}>
+      <div className={`flex flex-wrap items-center justify-${align} gap-8 p-6 h-full content-center`}>
         <AnimatePresence>
           {content}
         </AnimatePresence>

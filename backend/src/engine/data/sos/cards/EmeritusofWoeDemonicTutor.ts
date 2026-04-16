@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone, SelectionType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone, SelectionType, TargetType } from '@shared/engine_types';
 
 export const EmeritusofWoeDemonicTutor: CardDefinition = {
     name: "Emeritus of Woe // Demonic Tutor",
@@ -38,13 +38,14 @@ export const EmeritusofWoeDemonicTutor: CardDefinition = {
                 type: AbilityType.Spell,
                 effects: [
                     {
-                        type: EffectType.MoveToZone,
-                        selectionType: SelectionType.Search,
-                        sourceZones: [Zone.Library],
-                        destination: Zone.Hand,
+                        type: EffectType.SearchLibrary,
+                        targetDefinition: {
+                            type: TargetType.Card,
+                            count: 1
+                        },
+                        zone: Zone.Hand,
                         reveal: true,
-                        shuffle: true,
-                        amount: 1
+                        targetMapping: TargetMapping.Controller
                     }
                 ]
             }

@@ -18,12 +18,13 @@ export const QuandrixApprentice: CardDefinition = {
                     type: EffectType.LookAtTopAndPick,
                     fromTop: 3,
                     optional: true,
-                    restrictions: [{ type: 'Type', value: 'Land' }],
+                    restrictions: ['Land'],
                     reveal: true,
-                    destination: Zone.Hand,
+                    zone: Zone.Hand,
                     remainderZone: Zone.Library,
                     remainderPosition: 'bottom',
-                    shuffleRemainder: true
+                    shuffleRemainder: true,
+                    targetMapping: TargetMapping.Controller
                 }
             ]
         }

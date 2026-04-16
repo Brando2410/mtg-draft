@@ -14,10 +14,14 @@ export const STX_Batch_6_Lessons: CardDefinition[] = [
         effects: [
           {
             type: EffectType.SearchLibrary,
-            restrictions: [{ type: 'Type', value: 'Land' }, { type: 'Subtype', value: 'Basic' }],
-            destination: Zone.Hand,
+            targetDefinition: {
+              type: TargetType.Land,
+              count: 1,
+              restrictions: ['Basic']
+            },
+            zone: Zone.Hand,
             reveal: true,
-            shuffle: true
+            targetMapping: TargetMapping.Controller
           },
           { type: EffectType.GainLife, amount: 2 }
         ]
@@ -52,11 +56,8 @@ export const STX_Batch_6_Lessons: CardDefinition[] = [
       {
         type: AbilityType.Spell,
         targetDefinition: {
-            count: 1,
-            type: TargetType.Permanent,
-            restrictions: [
-                { type: 'Not', restriction: { type: 'Type', value: 'Land' } }
-            ]
+          count: 1,
+          type: TargetType.NonlandPermanent,
         },
         effects: [
           { type: EffectType.Exile, targetMapping: TargetMapping.Target1 },
@@ -76,9 +77,8 @@ export const STX_Batch_6_Lessons: CardDefinition[] = [
       {
         type: AbilityType.Spell,
         targetDefinition: {
-            count: 1,
-            type: TargetType.Permanent,
-            restrictions: [{ type: 'Type', value: 'Creature' }]
+          count: 1,
+          type: TargetType.Creature,
         },
         effects: [
           { type: EffectType.AddCounters, counterType: 'P1P1', amount: 2, targetMapping: TargetMapping.Target1 },
@@ -203,9 +203,9 @@ export const STX_Batch_6_Lessons: CardDefinition[] = [
               image_url: 'https://cards.scryfall.io/large/front/d/0/d0ddbe3e-4a66-494d-9304-7471232549bf.jpg?1682693901',
               oracleText: 'When this creature dies, you gain 1 life.',
               abilities: [{
-                  type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Death,
-                  effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
+                type: AbilityType.Triggered,
+                eventMatch: TriggerEvent.Death,
+                effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
               }]
             },
             amount: 2,

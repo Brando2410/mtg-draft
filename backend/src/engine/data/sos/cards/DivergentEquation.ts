@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone, TargetType } from '@shared/engine_types';
 
 export const DivergentEquation: CardDefinition = {
     "name": "Divergent Equation",
@@ -15,17 +15,15 @@ export const DivergentEquation: CardDefinition = {
         {
             type: AbilityType.Spell,
             targetDefinition: { 
-                type: 'CardInGraveyard', 
+                type: TargetType.CardInGraveyard, 
                 minCount: 0, 
-                maxCount: 'X', 
-                restrictions: ['InstantOrSorcery', 'YouControl'] 
+                count: 'X' as any, 
+                restrictions: ['Instant_OR_Sorcery', 'YouControl'] 
             },
             effects: [
-                { type: EffectType.MoveToZone, destination: Zone.Hand, targetMapping: TargetMapping.TargetAll },
+                { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.TargetAll },
                 { type: EffectType.Exile, targetMapping: TargetMapping.Self }
             ]
         }
     ]
 };
-
-

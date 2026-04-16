@@ -44,7 +44,8 @@ export class EffectProcessor {
   ): boolean {
     for (let i = startIndex; i < effects.length; i++) {
         const effect = effects[i];
-        this.executeEffect(state, effect, sourceId, targets, log, stackObject, parentContext, i, controllerIdOverride);
+        const resolutionContext = { ...parentContext, effects, nextEffectIndex: i };
+        this.executeEffect(state, effect, sourceId, targets, log, stackObject, resolutionContext, i, controllerIdOverride);
         
         if (state.pendingAction) {
             // Rule 603.3: Prune the stored objects to avoid recursion depth and circular references in sockets.
@@ -625,7 +626,13 @@ export class EffectProcessor {
           result = obj?.effectiveStats?.toughness || parseInt(obj?.definition.toughness || '0') || 0;
           break;
       case 'X': 
-          result = stackObject?.xValue || 0;
+          result = stackObject?.xValue || 
+                   stackObject?.data?.eventData?.data?.stackSnapshot?.xValue || 
+                   stackObject?.data?.eventData?.data?.object?.xValue ||
+                   stackObject?.data?.eventData?.xValue || 
+                   parentContext?.eventData?.data?.stackSnapshot?.xValue ||
+                   parentContext?.eventData?.data?.object?.xValue ||
+                   stackObject?.data?.xValue || 0;
           if (state.logs) state.logs.push(`[DEBUG] EffectProcessor: Resolved X = ${result}`);
           break;
       case 'X_PLUS_1':

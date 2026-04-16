@@ -174,7 +174,14 @@ export class TargetingProcessor {
                 if (targetObj) { targetZone = Zone.Graveyard; break; }
                 targetObj = p.hand.find((c: any) => c.id === targetId);
                 if (targetObj) { targetZone = Zone.Hand; break; }
+                targetObj = p.library.find((c: any) => c.id === targetId);
+                if (targetObj) { targetZone = Zone.Library; break; }
             }
+        }
+
+        if (!targetObj) {
+            targetObj = state.exile.find(o => o.id === targetId);
+            if (targetObj) targetZone = Zone.Exile;
         }
 
         if (!targetObj) {
@@ -246,7 +253,14 @@ export class TargetingProcessor {
         }
 
         if (expectedZone !== 'Any' && targetZone !== expectedZone) {
-            return false;
+            // Special Case: If no specific definition was provided, allow matching cards in Library/Graveyard/Hand 
+            // This is common for MoveEffectHandler searches where we only pass restrictions.
+            const isManualSearch = !targetDefForIndex;
+            if (isManualSearch && (targetZone === Zone.Library || targetZone === Zone.Graveyard || targetZone === Zone.Hand)) {
+                // Proceed
+            } else {
+                return false;
+            }
         }
 
         const sourceStack = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
@@ -1171,6 +1185,13 @@ export class TargetingProcessor {
                     const obj = this.findObjectInAnyZone(state, tid);
                     return obj && this.matchesRestrictions(state, obj, effect.restrictions, controllerId, sourceId);
                 });
+            }
+            case 'REMAINDER_OF_POOL':
+            case 'REMAINDER_OF_LOOKING_CARDS': {
+                const pool = (parentContext?.lookingCards || stackData?.lookingCards || state.pendingAction?.data?.lookingCards || []) as GameObject[];
+                // A card is part of the 'remainder' if it is still in the library (or exile if that's where we look from)
+                // whereas selected cards will have been moved to Hand/Battlefield by now.
+                return pool.filter(c => c.zone === Zone.Library || c.zone === Zone.Exile).map(c => c.id);
             }
             default:
                 return [];

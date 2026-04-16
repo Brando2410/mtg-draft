@@ -12,7 +12,7 @@ export const QuandrixCultivator: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.Choice,
@@ -21,15 +21,18 @@ export const QuandrixCultivator: CardDefinition = {
                     effects: [
                         {
                             type: EffectType.SearchLibrary,
-                            restrictions: [{ type: 'Subtype', value: 'Basic' }, { type: 'Any', restrictions: [{ type: 'Subtype', value: 'Forest' }, { type: 'Subtype', value: 'Island' }] }],
-                            destination: Zone.Battlefield,
+                            targetDefinition: {
+                                type: TargetType.Card,
+                                count: 1,
+                                restrictions: ['Basic', 'Forest_OR_Island']
+                            },
+                            zone: Zone.Battlefield,
                             tapped: true,
-                            shuffle: true
                         }
                     ]
                 }
             ]
         }
     ]
-  };
+};
 

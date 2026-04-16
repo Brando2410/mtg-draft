@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const CheerfulOsteomancerRaiseDead: CardDefinition = {
     name: "Cheerful Osteomancer",
@@ -23,8 +23,8 @@ export const CheerfulOsteomancerRaiseDead: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: { type: 'CardInGraveyard', count: 1, restrictions: ['Creature', 'Yours'] },
-                effects: [{ type: EffectType.ReturnToHand, targetMapping: TargetMapping.Target1 }]
+                targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: ['Creature', 'YouControl'] },
+                effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
             }
         ]
     }

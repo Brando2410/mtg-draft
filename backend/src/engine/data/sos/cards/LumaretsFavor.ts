@@ -1,17 +1,17 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
 
 export const LumaretsFavor: CardDefinition = {
-    "name": "Lumaret's Favor",
-    "manaCost": "{1}{G}",
-    "colors": [
+    name: "Lumaret's Favor",
+    manaCost: "{1}{G}",
+    colors: [
         "G"
     ],
-    "types": [
+    types: [
         "Instant"
     ],
-    "subtypes": [],
-    "oracleText": "Infusion — When you cast this spell, copy it if you gained life this turn. You may choose new targets for the copy.\nTarget creature gets +2/+4 until end of turn.",
-    "abilities": [
+    subtypes: [],
+    oracleText: "Infusion — When you cast this spell, copy it if you gained life this turn. You may choose new targets for the copy.\nTarget creature gets +2/+4 until end of turn.",
+    abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
@@ -34,7 +34,7 @@ export const LumaretsFavor: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 2,
                     toughnessModifier: 4,
-                    duration: "UNTIL_END_OF_TURN",
+                    duration: DurationType.UntilEndOfTurn,
                     targetMapping: TargetMapping.Target1
                 }
             ]

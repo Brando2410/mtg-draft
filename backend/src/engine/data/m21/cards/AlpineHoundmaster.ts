@@ -1,56 +1,43 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
 
-export const AlpineHoundmaster: Record<string, ImplementableCard> = {
-    "Alpine Houndmaster": {
-        name: "Alpine Houndmaster",
-        manaCost: "{R}{W}",
-        oracleText: "When this creature enters, you may search your library for a card named Alpine Watchdog and/or a card named Igneous Cur, reveal them, put them into your hand, then shuffle.\nWhenever this creature attacks, it gets +X/+0 until end of turn, where X is the number of other attacking creatures.",
-        colors: ["red","white"],
-        supertypes: [],
-        types: ["Creature"],
-        subtypes: ["Human","Warrior"],
-        power: "2",
-        toughness: "2",
-        keywords: [],
-        abilities: [
-            {
-                id: "alpine_houndmaster_etb",
-                type: AbilityType.Triggered,
-                    eventMatch: 'ON_ETB',
-                activeZone: ZoneRequirement.Battlefield,
-                effects: [
-                    {
-                        type: EffectType.SearchLibrary,
-                        amount: 2,
-                        destination: Zone.Hand,
-                        reveal: true,
-                        shuffle: true,
-                        optional: true,
-                        restrictions: [
-                            { name: 'Alpine Watchdog' },
-                            { name: 'Igneous Cur' }
-                        ],
-                        targetMapping: 'CONTROLLER'
-                    }
-                ]
-            },
-            {
-                id: "alpine_houndmaster_attack",
-                type: AbilityType.Triggered,
-                    eventMatch: 'ON_ATTACK',
-                activeZone: ZoneRequirement.Battlefield,
-                condition: (state: any, event: any, source: any) => event.sourceId === source.sourceId,
-                effects: [{
-                    type: EffectType.ApplyContinuousEffect,
-                    powerModifier: 'COUNT_OTHER_ATTACKING',
-                    toughnessModifier: 0,
-                    duration: 'UNTIL_END_OF_TURN',
-                    layer: 7,
-                    targetMapping: 'SELF'
-                }]
-            }
-        ]
-    }
+export const AlpineHoundmaster: CardDefinition = {
+    name: "Alpine Houndmaster",
+    manaCost: "{R}{W}",
+    oracleText: "When this creature enters, you may search your library for a card named Alpine Watchdog and/or a card named Igneous Cur, reveal them, put them into your hand, then shuffle.\nWhenever this creature attacks, it gets +X/+0 until end of turn, where X is the number of other attacking creatures.",
+    colors: ["R", "W"],
+    types: ["Creature"],
+    subtypes: ["Human", "Warrior"],
+    power: "2",
+    toughness: "2",
+    abilities: [
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.EnterBattlefield,
+            effects: [
+                {
+                    type: EffectType.SearchLibrary,
+                    targetDefinition: {
+                        type: TargetType.Card,
+                        count: 2,
+                        restrictions: [{ type: 'Any', restrictions: [{ type: 'Name', value: 'Alpine Watchdog' }, { type: 'Name', value: 'Igneous Cur' }] }]
+                    },
+                    zone: Zone.Hand,
+                    reveal: true,
+                    optional: true,
+                    targetMapping: TargetMapping.Controller
+                }
+            ]
+        },
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.Attack,
+            condition: 'SelfIsAttacking',
+            effects: [{
+                type: EffectType.ApplyContinuousEffect,
+                powerModifier: { type: 'Dynamic', value: 'OtherAttackingCreaturesCount' },
+                duration: DurationType.UntilEndOfTurn,
+                targetMapping: TargetMapping.Self
+            }]
+        }
+    ]
 };
-
-

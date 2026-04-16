@@ -123,8 +123,9 @@ export const STX_Batch_8_Mystical_Archive: CardDefinition[] = [
             type: EffectType.LookAtTopAndPick,
             fromTop: 3,
             amount: 1,
-            destination: Zone.Hand,
-            remainderZone: Zone.Graveyard
+            zone: Zone.Hand,
+            remainderZone: Zone.Graveyard,
+            targetMapping: TargetMapping.Controller
           }
         ]
       }

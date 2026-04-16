@@ -31,12 +31,13 @@ export const STX_Rares_Mythics_Batch_5: CardDefinition[] = [
                             type: EffectType.ApplyContinuousEffect,
                             layer: 6,
                             targetMapping: TargetMapping.MatchingCards,
-                            restrictions: [{ type: 'OpponentControl' }, { type: 'Type', value: 'Creature' }, { type: 'Not', restriction: { type: 'Token' } }]
+                            restrictions: [{ type: 'OpponentControl' }, { type: 'Type', value: 'Creature' }, { type: 'Not', restriction: { type: 'Token' } }],
+                            exileOnMoveToGraveyard: true,
                         }]
                     },
                     {
                         type: AbilityType.Triggered,
-                    eventMatch: 'ON_VALENTIN_REPLACEMENT_SUCCESS', 
+                        eventMatch: 'ON_VALENTIN_REPLACEMENT_SUCCESS',
                         oracleText: "When you do, you may pay {2}. If you do, create a 1/1 black and green Pest creature token with \"When this creature dies, you gain 1 life.\"",
                         effects: [{
                             type: EffectType.Choice,
@@ -57,7 +58,7 @@ export const STX_Rares_Mythics_Batch_5: CardDefinition[] = [
                                         oracleText: "When this creature dies, you gain 1 life.",
                                         abilities: [{
                                             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Death,
+                                            eventMatch: TriggerEvent.Death,
                                             effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
                                         }]
                                     }
@@ -234,14 +235,14 @@ export const STX_Rares_Mythics_Batch_5: CardDefinition[] = [
                             type: EffectType.SearchLibrary,
                             fromTop: -1,
                             restrictions: [{ type: 'Not', restriction: { type: 'Type', value: 'Land' } }, { type: 'Attribute', attribute: 'ManaValue', value: 3, comparison: 'LE' }],
-                            destination: Zone.Exile,
+                            zone: Zone.Exile,
                             effects: [{
                                 type: EffectType.Choice,
                                 label: 'Cast revealed spell?',
                                 optional: true,
                                 choices: [{
                                     label: 'Cast',
-                                    effects: [{ type: EffectType.CastSpell, targetMapping: 'SELECTED_CARD', isFreeCast: true }]
+                                    effects: [{ type: EffectType.CastSpell, targetMapping: TargetMapping.SelectedCard, isFreeCast: true }]
                                 }]
                             }]
                         }]
@@ -270,7 +271,7 @@ export const STX_Rares_Mythics_Batch_5: CardDefinition[] = [
                     },
                     {
                         type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Attack,
+                        eventMatch: TriggerEvent.Attack,
                         condition: "OnYourAttack",
                         effects: [{ type: EffectType.Untap, targetMapping: 'ALL_CREATURES_YOU_CONTROL' }]
                     }

@@ -74,6 +74,13 @@ export class TriggerProcessor {
                 }
             }
 
+            // Special Logic for Attack/Block (Default to Self if no condition provided)
+            if (event.type === TriggerEvent.Attack || event.type === TriggerEvent.Block) {
+                if ((tEvent === TriggerEvent.Attack || tEvent === TriggerEvent.Block) && !t.condition) {
+                    if (event.sourceId !== t.sourceId) return false;
+                }
+            }
+
             // Rule 603.4: "Intervening If" clauses and dynamic conditions
             const condition = t.condition;
             if (condition) {
@@ -211,7 +218,7 @@ export class TriggerProcessor {
                     effects: [{
                         type: 'RevealUntilCondition',
                         restrictions: ['Nonland', { type: 'ManaValueLess', value: 'SOURCE_MV' }],
-                        destination: Zone.Exile,
+                        zone: Zone.Exile,
                         remainderZone: Zone.Library,
                         remainderPosition: 'bottom',
                         shuffleRemainder: true,
@@ -232,7 +239,7 @@ export class TriggerProcessor {
                                     effects: [{
                                         type: 'MoveToZone',
                                         zone: Zone.Library,
-                                        destination: 'bottom',
+                                        libraryPosition: 'bottom',
                                         targetMapping: 'TARGET_1'
                                     }]
                                 }

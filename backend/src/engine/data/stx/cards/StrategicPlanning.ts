@@ -14,8 +14,9 @@ export const StrategicPlanning: CardDefinition = {
             type: EffectType.LookAtTopAndPick,
             fromTop: 3,
             amount: 1,
-            destination: Zone.Hand,
-            remainderZone: Zone.Graveyard
+            zone: Zone.Hand,
+            remainderZone: Zone.Graveyard,
+            targetMapping: TargetMapping.Controller
           }
         ]
       }

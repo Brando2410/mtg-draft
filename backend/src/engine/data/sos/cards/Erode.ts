@@ -28,8 +28,12 @@ export const Erode: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.SearchLibrary,
-                                    restrictions: ['Basic', 'Land'],
-                                    destination: Zone.Battlefield,
+                                    targetDefinition: {
+                                        type: TargetType.Land,
+                                        count: 1,
+                                        restrictions: ['Basic']
+                                    },
+                                    zone: Zone.Battlefield,
                                     targetMapping: TargetMapping.Target1Controller, // The player whose library is searched
                                     tapped: true,
                                     shuffle: true,

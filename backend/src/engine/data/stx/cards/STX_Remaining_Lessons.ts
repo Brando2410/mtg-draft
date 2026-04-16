@@ -52,7 +52,7 @@ export const STX_Remaining_Lessons: CardDefinition[] = [
                         optional: true,
                         restrictions: [Restriction.Creature],
                         reveal: true,
-                        destination: Zone.Hand,
+                        zone: Zone.Hand,
                         targetMapping: TargetMapping.Controller,
                         remainderZone: Zone.Library,
                         remainderPosition: 'bottom',
@@ -158,9 +158,9 @@ export const STX_Remaining_Lessons: CardDefinition[] = [
                             {
                                 label: "Return from Graveyard",
                                 targetDefinition: {
+                                    type: TargetType.CardInGraveyard,
                                     count: 1,
-                                    type: TargetType.Planeswalker,
-                                    restrictions: [Restriction.Graveyard, { type: 'ManaValueLessEqualX' }]
+                                    restrictions: ['Planeswalker', { type: 'ManaValueLessEqualX' }]
                                 },
                                 effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 }]
                             },

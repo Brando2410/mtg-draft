@@ -1,47 +1,49 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, Zone, EffectType, TriggerEvent, TargetType, TargetMapping } from '@shared/engine_types';
 
-export const IdolofEndurance: Record<string, ImplementableCard> = {
-    "Idol of Endurance": {
-        name: "Idol of Endurance",
-        manaCost: "{2}{W}",
-        oracleText: "When this artifact enters, exile all creature cards with mana value 3 or less from your graveyard until this artifact leaves the battlefield.\n{1}{W}, {T}: Until end of turn, you may cast a creature spell from among cards exiled with this artifact without paying its mana cost.",
-        colors: ["white"],
-        supertypes: [],
-        types: ["Artifact"],
-        subtypes: [],
-        power: undefined,
-        toughness: undefined,
-        keywords: [],
-        abilities: [
-            {
-                id: "idol_endurance_etb",
-                type: AbilityType.Triggered,
-                    eventMatch: 'ON_ETB',
-                activeZone: ZoneRequirement.Battlefield,
-                condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
-                effects: [{
-                    type: EffectType.MoveToZone,
-                    selectionType: 'All',
-                    sourceZones: [Zone.Graveyard],
-                    destination: Zone.Exile,
-                    restrictions: ['Creature', 'CMC <= 3', 'YouControl'],
-                    targetMapping: 'CONTROLLER'
-                }]
-            },
-            {
-                id: "idol_endurance_active",
-                type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
-                costs: [{ type: 'Mana', value: '{1}{W}' }, { type: 'Tap', value: null }],
-                effects: [{
+export const IdolofEndurance: CardDefinition = {
+    name: "Idol of Endurance",
+    manaCost: "{2}{W}",
+    oracleText: "When this artifact enters, exile all creature cards with mana value 3 or less from your graveyard until this artifact leaves the battlefield.\n{1}{W}, {T}: Until end of turn, you may cast a creature spell from among cards exiled with this artifact without paying its mana cost.",
+    colors: ["W"],
+    types: ["Artifact"],
+    abilities: [
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.EnterBattlefield,
+            effects: [
+                {
+                    type: EffectType.ExileUntilLeaves,
+                    sourceZone: Zone.Graveyard,
+                    returnZone: Zone.Graveyard,
+                    targetMapping: TargetMapping.AllMatchingCards,
+                    restrictions: [
+                        { type: 'Type', value: 'Creature' },
+                        { type: 'Attribute', attribute: 'ManaValue', value: 3, comparison: 'LE' },
+                        { type: 'Source', value: 'CONTROLLER' }
+                    ],
+                    storeLinkedId: 'IDOL_EXILED'
+                }
+            ]
+        },
+        {
+            type: AbilityType.Activated,
+            costs: [{ type: 'Mana', value: '{1}{W}' }, { type: 'Tap', targetMapping: TargetMapping.Self }],
+            effects: [
+                {
                     type: EffectType.ApplyContinuousEffect,
                     duration: 'UNTIL_END_OF_TURN',
-                    isFreeCast: true,
-                    targetMapping: 'CHOICE_FROM_EXILED'
-                }]
-            }
-        ]
-    }
+                    effects: [
+                        {
+                            type: EffectType.CastSpell,
+                            targetMapping: TargetMapping.ChoiceFromExiled,
+                            linkKey: 'IDOL_EXILED',
+                            isFreeCast: true
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
 };
 
 

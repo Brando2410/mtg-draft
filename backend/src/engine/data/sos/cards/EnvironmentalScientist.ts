@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetMapping } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const EnvironmentalScientist: CardDefinition = {
     "name": "Environmental Scientist",
@@ -22,8 +22,12 @@ export const EnvironmentalScientist: CardDefinition = {
                 {
                     type: EffectType.SearchLibrary,
                     targetMapping: TargetMapping.Controller,
-                    restrictions: ['Basic', 'Land'],
-                    destination: Zone.Hand,
+                    targetDefinition: {
+                        type: TargetType.Land,
+                        count: 1,
+                        restrictions: ['Basic']
+                    },
+                    zone: Zone.Hand,
                     optional: true,
                     reveal: true,
                     shuffle: true

@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, TriggerEvent, TargetMapping } from '@shared/engine_types';
 
 export const FierceEmpath: Record<string, ImplementableCard> = {
     "Fierce Empath": {
@@ -16,22 +16,19 @@ export const FierceEmpath: Record<string, ImplementableCard> = {
             {
                 id: "fierce_empath_etb",
                 type: AbilityType.Triggered,
-                    eventMatch: 'ON_ETB',
-                activeZone: ZoneRequirement.Battlefield,
-                condition: (state: any, event: any, source: any) => {
-                    return event.data?.object?.id === source.sourceId;
-                },
+                eventMatch: TriggerEvent.EnterBattlefield,
                 effects: [
                     {
-                        type: 'MoveToZone',
-                        selectionType: 'Search',
-                        sourceZones: [Zone.Library],
-                        destination: Zone.Hand,
+                        type: EffectType.SearchLibrary,
+                        targetDefinition: {
+                            type: TargetType.Creature,
+                            count: 1,
+                            restrictions: ['MV_GE:6']
+                        },
+                        zone: Zone.Hand,
                         reveal: true,
-                        shuffle: true,
                         optional: true,
-                        restrictions: ['Creature', 'CMC >= 6'],
-                        targetMapping: 'CONTROLLER'
+                        targetMapping: TargetMapping.Controller
                     }
                 ]
             }

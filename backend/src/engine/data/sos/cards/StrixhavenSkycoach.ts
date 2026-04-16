@@ -19,11 +19,14 @@ export const StrixhavenSkycoach: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    restrictions: [Restriction.Land, Restriction.Basic],
+                    targetDefinition: {
+                        type: TargetType.Land,
+                        count: 1,
+                        restrictions: ['Basic']
+                    },
                     optional: true,
                     reveal: true,
-                    destination: Zone.Hand,
-                    shuffle: true,
+                    zone: Zone.Hand,
                     targetMapping: TargetMapping.Controller
                 }
             ]

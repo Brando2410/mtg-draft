@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone, TargetMapping } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, Zone, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const TerramorphicExpanse: CardDefinition = {
     "name": "Terramorphic Expanse",
@@ -14,15 +14,18 @@ export const TerramorphicExpanse: CardDefinition = {
             type: AbilityType.Activated,
             costs: [
                 { type: 'Tap' },
-                { type: 'Sacrifice' }
+                { type: 'Sacrifice', targetMapping: TargetMapping.Self }
             ],
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    restrictions: ['Basic', 'Land'],
-                    destination: Zone.Battlefield,
+                    targetDefinition: {
+                        type: TargetType.Land,
+                        count: 1,
+                        restrictions: ['Basic']
+                    },
+                    zone: Zone.Battlefield,
                     tapped: true,
-                    shuffle: true
                 }
             ]
         }

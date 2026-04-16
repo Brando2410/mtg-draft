@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping, DurationType } from '@shared/engine_types';
 
 export const InklingMascot: CardDefinition = {
     "name": "Inkling Mascot",
@@ -18,20 +18,18 @@ export const InklingMascot: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
+            eventMatch: TriggerEvent.CastSpell,
             condition: 'REPARTEE_TRIGGER',
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    abilitiesToAdd: ["Flying"],
-                    duration: "UNTIL_END_OF_TURN",
+                    abilitiesToAdd: ['Flying'],
+                    duration: DurationType.UntilEndOfTurn,
                     targetMapping: TargetMapping.Self
                 },
                 {
-                    type: EffectType.Scry,
-                    amount: 1,
-                    destination: "Graveyard",
-                    targetMapping: TargetMapping.Controller
+                    type: EffectType.Surveil,
+                    amount: 1
                 }
             ]
         }

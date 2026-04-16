@@ -943,6 +943,18 @@ export class SpellProcessor {
         const hasChosenDiscard = (state as any).lastChosenDiscardId !== undefined;
         const tapSelectionCost = additionalCosts.find((cost: AbilityCost) => cost.type === 'TapSelection');
         const hasChosenTapSelection = (state as any).lastChosenTapSelectionIds !== undefined;
+        const exileCost = additionalCosts.find((cost: AbilityCost) => cost.type === 'Exile');
+        const hasChosenExile = (state as any).lastChosenExileIds !== undefined;
+        
+        if (exileCost) log(`[FLOW-DEBUG] Starting activation for ${obj.definition.name}. hasChosenExile=${hasChosenExile}, ids=${JSON.stringify((state as any).lastChosenExileIds)}`);
+
+
+        // Zone check (CR 113.6)
+        const activeZone = ability.activeZone || ZoneRequirement.Battlefield;
+        if (activeZone !== ZoneRequirement.Any && activeZone !== (obj.zone as any)) {
+            log(`Illegal Activation: ${obj.definition.name}'s ability cannot be activated from ${obj.zone}.`);
+            return false;
+        }
 
         // Step 1: Preliminary Cost & Rule Check (including Summoning Sickness via CostProcessor)
         if (!CostProcessor.canPay(state, ability.costs || [], obj.id, playerId)) {
@@ -1158,6 +1170,53 @@ export class SpellProcessor {
             return true;
         }
 
+        if (exileCost && !hasChosenExile) {
+            const { TargetingProcessor } = require('./TargetingProcessor');
+            const zones = exileCost.sourceZones || (exileCost.sourceZone ? [exileCost.sourceZone] : [Zone.Battlefield]);
+            const pool = zones.flatMap((z: any) => {
+                if (z === Zone.Battlefield) return state.battlefield.filter((o: GameObject) => o.controllerId === playerId);
+                if (z === Zone.Graveyard) return player.graveyard;
+                if (z === Zone.Hand) return player.hand;
+                if (z === Zone.Exile) return state.exile;
+                if (z === Zone.Library) return player.library;
+                return [];
+            });
+            const legalExileIds = pool.filter((o: GameObject) => TargetingProcessor.matchesRestrictions(state, o, exileCost.restrictions || [], playerId, obj.id)).map((o: GameObject) => o.id);
+
+            if (legalExileIds.length === 0) {
+                log(`Illegal Activation: No valid cards to exile for ${obj.definition.name}.`);
+                return false;
+            }
+
+            const { ActionType } = require('@shared/engine_types');
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: obj.id,
+                data: {
+                    label: "Exile a card to activate " + obj.definition.name,
+                    hideUndo: false,
+                    isCostChoice: true,
+                    costType: 'Exile',
+                    abilityIndex: abilityIndex,
+                    minChoices: 1,
+                    maxChoices: 1,
+                    declaredTargets: declaredTargets || [],
+                    choices: legalExileIds.map((id: string) => {
+                        const c = pool.find((o: GameObject) => o.id === id)!;
+                        return {
+                            label: `Exile ${c.definition.name}`,
+                            value: id,
+                            cardData: c,
+                            selectable: true
+                        }
+                    })
+                }
+            };
+            log(`[EXILE] ${player.name} must choose a card to exile to activate ${obj.definition.name}.`);
+            return true;
+        }
+
         const stackId = `ability_${Date.now()}`;
         const stackObj = {
             id: stackId,
@@ -1169,6 +1228,8 @@ export class SpellProcessor {
             targets: declaredTargets || [],
             abilityIndex: abilityIndex,
             xValue: (obj as any).xValue,
+            card: obj,
+            definition: obj.definition,
             data: {
                 effects: (ability as any).effects || [],
                 targetDefinition: ability.targetDefinition

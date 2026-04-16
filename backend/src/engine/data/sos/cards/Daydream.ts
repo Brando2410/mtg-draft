@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType, TriggerEvent, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, DurationType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const Daydream: CardDefinition = {
     "name": "Daydream",
@@ -17,7 +17,7 @@ export const Daydream: CardDefinition = {
         {
             type: AbilityType.Spell,
             flashbackCost: "{2}{W}",
-            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'YouControl'] },
+            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
             effects: [
                 {
                     type: EffectType.Exile,
@@ -25,7 +25,7 @@ export const Daydream: CardDefinition = {
                     next: {
                         type: EffectType.PutOnBattlefield,
                         targetMapping: TargetMapping.Target1,
-                        startingCounters: { type: 'p1p1', amount: 1 }
+                        startingCounters: { counterType: 'P1P1', amount: 1 }
                     }
                 }
             ]

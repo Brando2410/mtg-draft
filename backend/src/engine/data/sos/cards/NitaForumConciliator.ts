@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, TargetType, Zone, DurationType } from '@shared/engine_types';
 
 export const NitaForumConciliator: CardDefinition = {
     "name": "Nita, Forum Conciliator",
@@ -24,7 +24,7 @@ export const NitaForumConciliator: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    counterType: 'p1p1',
+                    counterType: 'P1P1',
                     amount: 1,
                     targetMapping: TargetMapping.AllCreaturesYouControl
                 }
@@ -37,16 +37,15 @@ export const NitaForumConciliator: CardDefinition = {
                 { type: 'Mana', value: '{2}' },
                 {
                     type: 'Sacrifice',
-                    restrictions: ['Creature', 'Other']
+                    targetMapping: TargetMapping.OtherCreaturesYouControl
                 }
             ],
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 restrictions: [
-                    'Opponent',
-                    { type: 'Type', value: 'Instant' },
-                    { type: 'Type', value: 'Sorcery', isOr: true }
+                    'OpponentControl',
+                    'Instant_OR_Sorcery'
                 ]
             },
             effects: [
@@ -56,15 +55,12 @@ export const NitaForumConciliator: CardDefinition = {
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    duration: { type: 'UNTIL_END_OF_TURN' as any },
+                    duration: DurationType.UntilEndOfTurn,
                     targetMapping: TargetMapping.LastExiledObject,
-                    sublayer: 'RulesChange',
                     canPlayExiled: true,
                     spendAnyMana: true,
-                    redirectConditions: {
-                        zone: Zone.Exile,
-                        onLeaveZone: Zone.Graveyard
-                    }
+                    exileOnMoveToGraveyard: true,
+                    redirectConditions: { zone: Zone.Graveyard, onLeaveZone: Zone.Exile }
                 }
             ],
 

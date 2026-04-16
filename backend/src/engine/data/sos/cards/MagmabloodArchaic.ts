@@ -1,20 +1,22 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, DurationType } from '@shared/engine_types';
 
 export const MagmabloodArchaic: CardDefinition = {
-    "name": "Magmablood Archaic",
-    "manaCost": "{2/R}{2/R}{2/R}",
-    "colors": [
+    name: "Magmablood Archaic",
+    manaCost: "{2/R}{2/R}{2/R}",
+    colors: [
         "R"
     ],
-    "types": [
+    types: [
         "Creature"
     ],
-    "subtypes": [
+    subtypes: [
         "Avatar"
     ],
-    "keywords": ["Trample", "Reach"],
-    "oracleText": "Trample, reach\nConverge — This creature enters with a +1/+1 counter on it for each color of mana spent to cast it.\nWhenever you cast an instant or sorcery spell, creatures you control get +1/+0 until end of turn for each color of mana spent to cast that spell.",
-    "abilities": [
+    keywords: ["Trample", "Reach"],
+    power: "2",
+    toughness: "2",
+    oracleText: "Trample, reach\nConverge — This creature enters with a +1/+1 counter on it for each color of mana spent to cast it.\nWhenever you cast an instant or sorcery spell, creatures you control get +1/+0 until end of turn for each color of mana spent to cast that spell.",
+    abilities: [
         {
             type: AbilityType.Static,
             effects: [
@@ -28,7 +30,7 @@ export const MagmabloodArchaic: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
+            eventMatch: TriggerEvent.CastSpell,
             condition: (state, event, trigger) => {
                 if (event.playerId !== trigger.controllerId) return false;
                 const card = event.data?.card || event.data?.object;
@@ -38,14 +40,12 @@ export const MagmabloodArchaic: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 'CONVERGE_AMOUNT', // The engine needs to know this refers to the TRIGGERING spell's converge
-                    duration: "UNTIL_END_OF_TURN",
-                    targetMapping: "ALL_CREATURES_YOU_CONTROL"
+                    duration: DurationType.UntilEndOfTurn,
+                    targetMapping: TargetMapping.AllCreaturesYouControl
                 }
             ]
         }
     ],
-    "power": "2",
-    "toughness": "2"
 };
 
 

@@ -409,6 +409,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
   private static handleModalSelection(state: GameState, playerId: string, sourceId: string, choice: any, choiceIndex: any, action: any, log: (m: string) => void, engine: any): boolean {
     const savedTargets = action.data.declaredTargets || [];
     const costType = action.data.costType;
+    if (log) log(`[DEBUG] handleModalSelection: costType=${costType}, choiceIndex=${choiceIndex}, choiceValue=${choice?.value}`);
 
     // Robustly resolve 'choice' if it's null (e.g. from batch selects)
     if (!choice && choiceIndex !== undefined) {
@@ -416,6 +417,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         if (idxStr.includes('|')) idxStr = idxStr.split('|')[0];
         const idx = parseInt(idxStr.startsWith('CHOICE_') ? idxStr.substring(7) : idxStr);
         choice = action.data.choices[idx];
+        if (log) log(`[DEBUG] handleModalSelection: resolved choice from idx ${idx}: ${choice?.label} (${choice?.value})`);
     }
     
     state.pendingAction = undefined; 
@@ -425,7 +427,8 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     } else if (costType === 'Discard') {
         (state as any).lastChosenDiscardId = choice?.value;
         log(`[DEBUG] ChoiceProcessor: Set lastChosenDiscardId to ${choice?.value}`);
-    } else if (costType === 'TapSelection') {
+    } else if (costType === 'TapSelection' || costType === 'Exile') {
+        if (log) log(`[DEBUG] handleModalSelection: Processing ${costType} cost...`);
         // Multi-select might have been passed as choiceIndex batch or single
         if (action.data.maxChoices > 1) {
              const batchIds = typeof choiceIndex === 'string' && choiceIndex.includes('|') 
@@ -434,9 +437,12 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                     return action.data.choices[i]?.value;
                 }).filter(v => v)
                 : [choice?.value].filter(v => v);
-             (state as any).lastChosenTapSelectionIds = batchIds;
+             
+             if (costType === 'TapSelection') (state as any).lastChosenTapSelectionIds = batchIds;
+             else (state as any).lastChosenExileIds = batchIds;
         } else {
-             (state as any).lastChosenTapSelectionIds = [choice?.value].filter(v => v);
+             if (costType === 'TapSelection') (state as any).lastChosenTapSelectionIds = [choice?.value].filter(v => v);
+             else (state as any).lastChosenExileIds = [choice?.value].filter(v => v);
         }
     } else if (choice && String(choice.value).startsWith('FACE_SELECTION_')) {
         const faceIdx = parseInt(String(choice.value).substring(15));

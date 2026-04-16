@@ -134,10 +134,15 @@ export const STX_Batch_12_FinalMix: CardDefinition[] = [
                 effects: [
                     {
                         type: EffectType.SearchLibrary,
-                        restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Instant' }, { type: 'Type', value: 'Sorcery' }] }],
-                        destination: Zone.Hand,
+                        targetDefinition: {
+                            type: TargetType.Card,
+                            count: 1,
+                            restrictions: ['Instant_OR_Sorcery']
+                        },
+                        zone: Zone.Hand,
                         reveal: true,
-                        shuffle: true
+                        shuffle: true,
+                        targetMapping: TargetMapping.Controller
                     }
                 ]
             }

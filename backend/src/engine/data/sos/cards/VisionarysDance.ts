@@ -58,8 +58,8 @@ export const VisionarysDance: CardDefinition = {
                 {
                     type: EffectType.LookAtTopAndPick,
                     fromTop: 2,
-                    maxChoices: 1,
-                    destination: Zone.Hand,
+                    amount: 1,
+                    zone: Zone.Hand,
                     remainderZone: Zone.Graveyard,
                     targetMapping: TargetMapping.Controller
                 }

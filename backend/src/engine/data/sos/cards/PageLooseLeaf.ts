@@ -23,16 +23,16 @@ export const PageLooseLeaf: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [
-                { 
-                    type: 'Discard', 
-                    restrictions: ['another', 'Page, Loose Leaf'] 
+                {
+                    type: 'Discard',
+                    restrictions: ['another', 'Page, Loose Leaf'] //legal restriction?
                 }
             ],
             effects: [
                 {
-                    type: 'RevealUntilCondition',
-                    restrictions: ['instant_or_sorcery'],
-                    destination: Zone.Hand,
+                    type: EffectType.RevealUntilCondition,
+                    restrictions: ['Instant_OR_Sorcery'],
+                    zone: Zone.Hand,
                     remainderZone: Zone.Library,
                     remainderPosition: 'bottom',
                     shuffleRemainder: true,

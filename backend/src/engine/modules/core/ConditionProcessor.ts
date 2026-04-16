@@ -183,11 +183,7 @@ export class ConditionProcessor {
             const normalizedActualType = actualType === 'p1p1' ? '+1/+1' : actualType;
             return normalizedActualType === expectedType;
         }
-        case 'EVENT_OBJECT_HAS_X': {
-            const obj = event?.data?.object || event?.data?.card || (event as any)?.gameObject;
-            if (!obj) return false;
-            return (obj.definition.manaCost || '').includes('X');
-        }
+
         case 'EVENT_OBJECT_IS_TARGET_1': {
             const objId = event?.data?.object?.id || (event as any)?.gameObject?.id || event?.targetId;
             const targetId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0];
@@ -300,6 +296,13 @@ export class ConditionProcessor {
         );
       case 'PLAYER_IS_CONTROLLER':
         return event?.playerId === controllerId;
+      case 'EVENT_OBJECT_HAS_X': {
+          const obj = event?.data?.object || event?.data?.card || (event as any)?.gameObject;
+          if (!obj) return false;
+          const hasX = (obj.definition.manaCost || '').includes('X');
+          // if (state.logs) state.logs.push(`[DEBUG] Condition check: EVENT_OBJECT_HAS_X for ${obj.definition.name} = ${hasX}`);
+          return hasX;
+      }
       case 'OBJECT_IS_SELF':
         return true;
       case 'INCREMENT_CHECK': {

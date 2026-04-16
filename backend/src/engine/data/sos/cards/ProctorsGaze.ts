@@ -29,13 +29,13 @@ export const ProctorsGaze: CardDefinition = {
                 {
                     type: EffectType.SearchLibrary,
                     targetMapping: TargetMapping.Controller,
-                    restrictions: ['Basic', 'Land'],
-                    destination: Zone.Battlefield,
+                    targetDefinition: {
+                        type: TargetType.Land,
+                        count: 1,
+                        restrictions: ['Basic']
+                    },
+                    zone: Zone.Battlefield,
                     tapped: true
-                },
-                {
-                    type: EffectType.ShuffleLibrary,
-                    targetMapping: TargetMapping.Controller
                 }
             ]
         }

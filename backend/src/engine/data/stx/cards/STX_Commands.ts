@@ -27,7 +27,7 @@ export const STX_Commands: CardDefinition[] = [
                     },
                     { 
                         label: 'Create a Treasure token', 
-                        effects: [{ type: EffectType.CreateToken, tokenBlueprint: { name: 'Treasure', types: ['Artifact', 'Token'], subtypes: ['Treasure'], oracleText: '{T}, Sacrifice this artifact: Add one mana of any color.' } }] 
+                        effects: [{ type: EffectType.CreateToken, tokenBlueprint: { name: 'Treasure', colors: [], types: ['Artifact', 'Token'], subtypes: ['Treasure'], oracleText: '{T}, Sacrifice this artifact: Add one mana of any color.' } }] 
                     },
                     { 
                         label: 'Destroy target artifact', 
@@ -55,7 +55,7 @@ export const STX_Commands: CardDefinition[] = [
                     { 
                         label: 'Mill 3, return land', 
                         targetDefinition: { count: 1, type: TargetType.Player },
-                        effects: [{ type: EffectType.Mill, amount: 3, targetMapping: TargetMapping.Target1 }, { type: EffectType.LookAtTopAndPick, fromZone: Zone.Graveyard, restrictions: [{ type: 'Type', value: 'Land' }], destination: Zone.Hand }] 
+                        effects: [{ type: EffectType.Mill, amount: 3, targetMapping: TargetMapping.Target1 }, { type: EffectType.LookAtTopAndPick, fromZone: Zone.Graveyard, restrictions: ['Land'], zone: Zone.Hand }] 
                     },
                     { 
                         label: 'Destroy permanent (MV <= 2)', 
@@ -69,7 +69,7 @@ export const STX_Commands: CardDefinition[] = [
                     },
                     { 
                         label: 'Opponent loses 2, you gain 2', 
-                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: [{ type: 'Opponent' }] },
+                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: ['Opponent'] },
                         effects: [{ type: EffectType.LoseLife, amount: 2, targetMapping: TargetMapping.Target1 }, { type: EffectType.GainLife, amount: 2, targetMapping: TargetMapping.Controller }] 
                     }
                 ]
@@ -97,7 +97,7 @@ export const STX_Commands: CardDefinition[] = [
                     },
                     { 
                         label: 'Return creature (MV <= 2)', 
-                        targetDefinition: { count: 1, type: TargetType.Card, restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Source', value: 'GRAVEYARD' }, { type: 'Attribute', attribute: 'ManaValue', value: 2, comparison: 'LE' }] },
+                        targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: ['Creature', 'mv<=2'] },
                         effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 }] 
                     },
                     { 
@@ -107,8 +107,8 @@ export const STX_Commands: CardDefinition[] = [
                     },
                     { 
                         label: 'Opponent sacrifices a creature', 
-                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: [{ type: 'Opponent' }] },
-                        effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Target1, restriction: { type: 'Type', value: 'Creature' } }] 
+                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: ['Opponent'] },
+                        effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Target1, restriction: 'Creature' }] 
                     }
                 ]
             }]
@@ -145,7 +145,7 @@ export const STX_Commands: CardDefinition[] = [
                     },
                     { 
                         label: 'Shuffle cards into library', 
-                        targetDefinition: { count: 3, type: TargetType.Card, optional: true, restrictions: [{ type: 'Source', value: 'GRAVEYARD' }] },
+                        targetDefinition: { type: TargetType.CardInGraveyard, count: 3, optional: true },
                         effects: [{ type: EffectType.MoveToZone, zone: Zone.Library, libraryPosition: 'top', shuffle: true, targetMapping: TargetMapping.TargetAll }] 
                     }
                 ]
@@ -182,7 +182,7 @@ export const STX_Commands: CardDefinition[] = [
                     { 
                         label: 'Player sacrifices permanent, draws 2', 
                         targetDefinition: { count: 1, type: TargetType.Player },
-                        effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Target1, restriction: { type: 'Type', value: 'Permanent' } }, { type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Target1 }] 
+                        effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Target1, restriction: 'Permanent' }, { type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Target1 }] 
                     }
                 ]
             }]

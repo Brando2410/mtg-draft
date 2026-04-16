@@ -1,31 +1,30 @@
-import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping, TriggerEvent, Zone, DurationType } from '@shared/engine_types';
 
 export const KilliansConfidence: CardDefinition = {
-    "name": "Killian's Confidence",
-    "manaCost": "{W}{B}",
-    "colors": [
+    name: "Killian's Confidence",
+    manaCost: "{W}{B}",
+    colors: [
         "B",
         "W"
     ],
-    "types": [
+    types: [
         "Sorcery"
     ],
-    "subtypes": [],
-    "oracleText": "Target creature gets +1/+1 until end of turn. Draw a card.\nWhenever one or more creatures you control deal combat damage to a player, you may pay {W/B}. If you do, return this card from your graveyard to your hand.",
-    "abilities": [
+    subtypes: [],
+    oracleText: "Target creature gets +1/+1 until end of turn. Draw a card.\nWhenever one or more creatures you control deal combat damage to a player, you may pay {W/B}. If you do, return this card from your graveyard to your hand.",
+    abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: TargetType.Creature,
                 count: 1,
-                restrictions: ["Creature"]
             },
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 1,
                     toughnessModifier: 1,
-                    duration: "UNTIL_END_OF_TURN",
+                    duration: DurationType.UntilEndOfTurn,
                     targetMapping: TargetMapping.Target1
                 },
                 {
@@ -37,7 +36,7 @@ export const KilliansConfidence: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: 'ON_DAMAGE_PLAYER',
+            eventMatch: 'ON_DAMAGE_PLAYER',
             activeZone: Zone.Graveyard,
             condition: (state: any, event: any, trigger: any) => {
                 const source = state.battlefield.find((o: any) => o.id === event.sourceId);

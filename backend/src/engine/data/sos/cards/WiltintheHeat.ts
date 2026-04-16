@@ -21,9 +21,8 @@ export const WiltintheHeat: CardDefinition = {
                 condition: 'CARDS_LEFT_YOUR_GRAVEYARD_THIS_TURN'
             } as any,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: TargetType.Creature,
                 count: 1,
-                restrictions: [{ type: 'Type', value: 'Creature' }]
             },
             effects: [
                 {
@@ -34,11 +33,7 @@ export const WiltintheHeat: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     duration: DurationType.UntilEndOfTurn,
-                    replacementEffect: {
-                    eventMatch: 'ON_DEATH',
-                        condition: 'EVENT_OBJECT_IS_TARGET_1',
-                        effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.EventTarget }]
-                    },
+                    exileOnMoveToGraveyard: true,
                     targetMapping: TargetMapping.Target1
                 }
             ]

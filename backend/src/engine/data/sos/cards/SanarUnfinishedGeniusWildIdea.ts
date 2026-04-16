@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone, SelectionType, ConditionType } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone, SelectionType, ConditionType, TargetType } from '@shared/engine_types';
 
 export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
     name: "Sanar, Unfinished Genius // Wild Idea",
@@ -56,14 +56,15 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
                 type: AbilityType.Spell,
                 effects: [
                     {
-                        type: EffectType.MoveToZone,
-                        selectionType: SelectionType.Search,
-                        sourceZones: [Zone.Library],
-                        destination: Zone.Hand,
-                        restrictions: [{ types: ['Instant', 'Sorcery'] }],
+                        type: EffectType.SearchLibrary,
+                        targetDefinition: {
+                            type: TargetType.Card,
+                            count: 1,
+                            restrictions: ['Instant_OR_Sorcery']
+                        },
+                        zone: Zone.Hand,
                         reveal: true,
-                        shuffle: true,
-                        amount: 1
+                        targetMapping: TargetMapping.Controller
                     }
                 ]
             }

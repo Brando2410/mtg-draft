@@ -22,10 +22,8 @@ export const ImperiousInkmage: CardDefinition = {
                     eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
-                    type: EffectType.Scry, // engine uses Scry for both scry and surveil if zone is graveyard
-                    amount: 2,
-                    destination: 'graveyard' as any, // In this engine, Scry is modal or we have a Surveil type
-                    targetMapping: TargetMapping.Controller
+                    type: EffectType.Surveil,
+                    amount: 2
                 }
             ]
         }

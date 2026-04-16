@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone, TargetType } from '@shared/engine_types';
 
 export const DinasGuidance: CardDefinition = {
     "name": "Dina's Guidance",
@@ -18,34 +18,33 @@ export const DinasGuidance: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: { type: 'Card', count: 1, restrictions: ['Creature'] },
+                    targetDefinition: { type: TargetType.Creature, count: 1 },
                     reveal: true,
-                    destination: Zone.Library, 
-                    libraryPosition: 'top',
+                    zone: Zone.Exile,
                     effects: [
                         {
                             type: EffectType.Choice,
                             label: "Put card into hand or graveyard?",
                             choices: [
-                                { 
-                                    label: "Into Hand", 
+                                {
+                                    label: "Into Hand",
                                     effects: [
-                                        { 
-                                            type: EffectType.MoveToZone, 
-                                            destination: Zone.Hand, 
-                                            targetMapping: TargetMapping.Target1 
+                                        {
+                                            type: EffectType.MoveToZone,
+                                            zone: Zone.Hand,
+                                            targetMapping: TargetMapping.Target1
                                         }
-                                    ] 
+                                    ]
                                 },
-                                { 
-                                    label: "Into Graveyard", 
+                                {
+                                    label: "Into Graveyard",
                                     effects: [
-                                        { 
-                                            type: EffectType.MoveToZone, 
-                                            destination: Zone.Graveyard, 
-                                            targetMapping: TargetMapping.Target1 
+                                        {
+                                            type: EffectType.MoveToZone,
+                                            zone: Zone.Graveyard,
+                                            targetMapping: TargetMapping.Target1
                                         }
-                                    ] 
+                                    ]
                                 }
                             ]
                         }

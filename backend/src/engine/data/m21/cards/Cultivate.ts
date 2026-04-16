@@ -1,11 +1,11 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, TargetMapping } from '@shared/engine_types';
 
 export const Cultivate: Record<string, ImplementableCard> = {
     "Cultivate": {
         name: "Cultivate",
         manaCost: "{2}{G}",
         oracleText: "Search your library for up to two basic land cards, reveal those cards, put one onto the battlefield tapped and the other into your hand, then shuffle.",
-        colors: ["green"],
+        colors: ["G"],
         supertypes: [],
         types: ["Sorcery"],
         subtypes: [],
@@ -20,23 +20,28 @@ export const Cultivate: Record<string, ImplementableCard> = {
                 effects: [
                     {
                         type: EffectType.SearchLibrary,
-                        amount: 1,
-                        destination: Zone.Battlefield,
+                        targetDefinition: {
+                            type: TargetType.Land,
+                            count: 1,
+                            minCount: 0,
+                            restrictions: ['Basic']
+                        },
+                        zone: Zone.Battlefield,
                         tapped: true,
-                        restrictions: ['BasicLand'],
                         reveal: true,
-                        optional: true,
-                        targetMapping: 'CONTROLLER'
+                        targetMapping: TargetMapping.Controller
                     },
                     {
                         type: EffectType.SearchLibrary,
-                        amount: 1,
-                        destination: Zone.Hand,
-                        restrictions: ['BasicLand'],
+                        targetDefinition: {
+                            type: TargetType.Land,
+                            count: 1,
+                            minCount: 0,
+                            restrictions: ['Basic']
+                        },
+                        zone: Zone.Hand,
                         reveal: true,
-                        optional: true,
-                        shuffle: true,
-                        targetMapping: 'CONTROLLER'
+                        targetMapping: TargetMapping.Controller
                     }
                 ]
             }

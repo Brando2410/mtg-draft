@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetMapping } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const STX_SchoolUncommons: CardDefinition[] = [
   {
@@ -22,8 +22,12 @@ export const STX_SchoolUncommons: CardDefinition[] = [
                     effects: [
                         {
                             type: EffectType.SearchLibrary,
-                            restrictions: ['Basic', 'Forest_or_Island'],
-                            destination: Zone.Battlefield,
+                            targetDefinition: {
+                                type: TargetType.Card,
+                                count: 1,
+                                restrictions: ['Basic', 'Forest_or_Island']
+                            },
+                            zone: Zone.Battlefield,
                             tapped: true,
                             shuffle: true
                         }

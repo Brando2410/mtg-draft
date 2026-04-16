@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping } from '@shared/engine_types';
+import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping, DurationType } from '@shared/engine_types';
 
 export const InkshapeDemonstrator: CardDefinition = {
     "name": "Inkshape Demonstrator",
@@ -18,14 +18,14 @@ export const InkshapeDemonstrator: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
+            eventMatch: TriggerEvent.CastSpell,
             condition: 'REPARTEE_TRIGGER',
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 1,
                     abilitiesToAdd: ["Lifelink"],
-                    duration: "UNTIL_END_OF_TURN",
+                    duration: DurationType.UntilEndOfTurn,
                     targetMapping: TargetMapping.Self
                 }
             ]

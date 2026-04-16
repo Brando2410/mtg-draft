@@ -22,7 +22,7 @@ export const RenderSpeechless: CardDefinition = {
                     targetMapping: TargetMapping.Controller,
                     targetIdMapping: 'OPPONENT_HAND_REVEAL_PICK',
                     restrictions: ['Nonland'],
-                    effects: [{ type: EffectType.MoveToZone, destination: Zone.Graveyard, targetMapping: 'SELECTED_CARD', isDiscard: true }]
+                    effects: [{ type: EffectType.MoveToZone, zone: Zone.Graveyard, targetMapping: TargetMapping.SelectedCard, isDiscard: true }]
                 },
                 {
                     type: EffectType.AddCounters,

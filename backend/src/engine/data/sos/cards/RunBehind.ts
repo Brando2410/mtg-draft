@@ -19,7 +19,7 @@ export const RunBehind: CardDefinition = {
                 {
                     type: EffectType.CostReduction,
                     amount: 1,
-                    targetMapping: 'SELF',
+                    targetMapping: TargetMapping.Self,
                     condition: 'TARGET_1_MATCHES:attacking'
                 }
             ]
@@ -37,7 +37,7 @@ export const RunBehind: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.MoveToZone,
-                                    destination: Zone.Library,
+                                    zone: Zone.Library,
                                     libraryPosition: 'top',
                                     targetMapping: TargetMapping.Target1
                                 }
@@ -48,7 +48,7 @@ export const RunBehind: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.MoveToZone,
-                                    destination: Zone.Library,
+                                    zone: Zone.Library,
                                     libraryPosition: 'bottom',
                                     targetMapping: TargetMapping.Target1
                                 }

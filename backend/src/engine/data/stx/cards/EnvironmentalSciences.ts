@@ -13,10 +13,14 @@ export const EnvironmentalSciences: CardDefinition = {
       effects: [
         {
           type: EffectType.SearchLibrary,
-          restrictions: ['Basic', 'Land'],
-          destination: Zone.Hand,
+          targetDefinition: {
+            type: TargetType.Land,
+            count: 1,
+            restrictions: ['Basic']
+          },
+          zone: Zone.Hand,
           reveal: true,
-          shuffle: true
+          targetMapping: TargetMapping.Controller
         },
         { type: EffectType.GainLife, amount: 2 }
       ]

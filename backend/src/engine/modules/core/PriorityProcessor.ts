@@ -1,4 +1,4 @@
-import { GameState, PlayerId, Phase, Step, Zone, AbilityType } from '@shared/engine_types';
+import { GameState, PlayerId, Phase, Step, Zone, AbilityType, ZoneRequirement } from '@shared/engine_types';
 import { TurnProcessor } from './TurnProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
@@ -451,6 +451,12 @@ export class PriorityProcessor {
     const ability = abilities[abilityIndex];
 
     if (ability.type !== AbilityType.Activated) return false;
+
+    // Zone check (CR 113.6)
+    const activeZone = ability.activeZone || Zone.Battlefield;
+    if (activeZone !== (ZoneRequirement.Any as any) && activeZone !== (obj.zone as any)) {
+        return false;
+    }
 
     // Requirement Check (Rule 602.5b)
     if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) {

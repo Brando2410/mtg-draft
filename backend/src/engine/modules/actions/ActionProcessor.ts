@@ -25,6 +25,18 @@ export class ActionProcessor {
         state.turnState.lastDiscardedIds.push(card.id);
     }
     
+    // --- EXILE REPLACEMENT EFFECT (Rule 614) ---
+    if (to === Zone.Graveyard) {
+        const hasExileReplacement = state.ruleRegistry.continuousEffects.some(e => 
+            e.exileOnMoveToGraveyard && 
+            (e.targetIds?.includes(card.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === card.controllerId))
+        );
+        if (hasExileReplacement) {
+            if (log) log(`[REPLACED] ${card.definition.name} is exiled instead of graveyard due to continuous effect.`);
+            to = Zone.Exile;
+        }
+    }
+
     // --- FLASHBACK REPLACEMENT EFFECT (Rule 702.34a) ---
     if (fromZone === Zone.Stack && to !== Zone.Exile && card.isFlashbackCast) {
         if (log) log(`[FLASHBACK] ${card.definition.name} was cast via flashback and is being exiled instead of moving to ${to}.`);
