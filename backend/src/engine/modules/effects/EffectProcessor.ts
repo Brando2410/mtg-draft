@@ -241,6 +241,7 @@ export class EffectProcessor {
         }
         case 'DiscardCards': {
             const { ChoiceGenerator } = require('./ChoiceGenerator');
+            state.turnState.lastDiscardedIds = []; // Clear for new discard sequence
             state.pendingAction = ChoiceGenerator.createDiscardChoice(state, validTargetIds as PlayerId[], sourceId, amount, effect.label || "Discard Cards", stackObject, parentContext, (effect as any).onFailureEffects, log);
             return;
         }
@@ -249,6 +250,10 @@ export class EffectProcessor {
           let p = (effect as any).powerOverride !== undefined ? this.resolveAmount(state, (effect as any).powerOverride, sourceId, controllerId, stackObject, [], parentContext) : undefined;
           let t = (effect as any).toughnessOverride !== undefined ? this.resolveAmount(state, (effect as any).toughnessOverride, sourceId, controllerId, stackObject, [], parentContext) : undefined;
           return PermanentHandler.handleCreateToken(state, validTargetIds, amount, (effect as any).tokenBlueprint, log, p, t, effect, stackObject);
+      }
+      case 'CreateEmblem': {
+          const { PermanentHandler } = require('./handlers/PermanentHandler');
+          return PermanentHandler.handleCreateEmblem(state, effect, controllerId, this.findObject(state, sourceId, stackObject), log);
       }
       case 'CreateTokenCopy': {
           const { PermanentHandler } = require('./handlers/PermanentHandler');
@@ -473,6 +478,24 @@ export class EffectProcessor {
             return;
         }
 
+        case 'CounterSpell':
+        case 'CounterAbility': {
+            validTargetIds.forEach((tid: string) => {
+                const stackObj = state.stack.find(s => s.id === tid);
+                if (stackObj) {
+                    if (stackObj.card) {
+                        if (log) log(`[COUNTER] Countering spell: ${stackObj.card.definition.name} (${tid}).`);
+                        ActionProcessor.moveCard(state, stackObj.card, Zone.Graveyard, stackObj.card.ownerId, log);
+                    } else {
+                        if (log) log(`[COUNTER] Removing ability from stack: ${stackObj.name || tid}.`);
+                        state.stack = state.stack.filter(s => s.id !== stackObj.id);
+                    }
+                } else {
+                    if (log) log(`[WARNING] Counter: Could not find object ${tid} on stack.`);
+                }
+            });
+            return;
+        }
       case 'EndTurn':
       case 'Shuffle':
       case 'Log':

@@ -170,6 +170,7 @@ export class TriggerProcessor {
                             labelStr = `Pay ${manaVal}`;
                         }
 
+                        if (log) log(`[DEBUG] TriggerProcessor: Ward triggering for ${targetObj.definition.name}. Cost: ${labelStr}`);
                         matchingTriggers.push({
                             id: `ward_gen_${targetObj.id}_${Date.now()}`,
                             sourceId: targetObj.id,
@@ -179,7 +180,7 @@ export class TriggerProcessor {
                             effects: [{
                                 type: 'Choice',
                                 label: `Ward Trigger: ${labelStr} or spell will be countered.`,
-                                targetId: sourceControllerId,
+                                targetMapping: 'EVENT_PLAYER',
                                 choices: [
                                     { label: labelStr, effects: choiceEffects },
                                     { label: "Don't Pay (Counter)", effects: [{ type: 'CounterSpell', targetMapping: 'TRIGGER_SOURCE' }] }
@@ -445,6 +446,8 @@ export class TriggerProcessor {
             condition: effect.condition,
             data: effect.data,
             isDelayed: true,
+            oneShot: effect.oneShot,
+            firesOnce: effect.firesOnce,
             activeZone: 'Battlefield', // Virtual zone for registry
             type: AbilityType.Triggered
         };

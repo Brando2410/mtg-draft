@@ -14,7 +14,7 @@ export const AdditiveEvolution: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -39,16 +39,16 @@ export const AdditiveEvolution: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.BeginningOfCombatStep,
+            eventMatch: TriggerEvent.BeginningOfCombatStep,
             condition: 'IS_YOUR_TURN',
             targetDefinition: { type: 'Creature', controller: 'player' },
             effects: [
                 { type: EffectType.AddCounters, amount: 1, value: 'p1p1', targetMapping: TargetMapping.Target1 },
-                { 
-                    type: EffectType.ApplyContinuousEffect, 
-                    targetMapping: TargetMapping.Target1, 
-                    abilitiesToAdd: ['Vigilance'], 
-                    duration: DurationType.UntilEndOfTurn 
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    targetMapping: TargetMapping.Target1,
+                    abilitiesToAdd: ['Vigilance'],
+                    duration: DurationType.UntilEndOfTurn
                 }
             ]
         }

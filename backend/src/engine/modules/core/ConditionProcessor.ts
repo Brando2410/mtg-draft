@@ -423,6 +423,42 @@ export class ConditionProcessor {
         const types = card.definition.types.map((t: string) => t.toLowerCase());
         return types.includes('instant') || types.includes('sorcery');
       }
+      case 'OPPONENT_ATTACKS_YOUR_PLANESWALKER': {
+          const opponentId = event?.playerId;
+          if (!opponentId || opponentId === controllerId) return false;
+          
+          const attackers = state.combat?.attackers || [];
+          return attackers.some(a => {
+              const defender = state.battlefield.find(o => o.id === a.targetId);
+              return defender && 
+                     defender.controllerId === controllerId && 
+                     defender.definition.types.some(t => t.toLowerCase() === 'planeswalker');
+          });
+      }
+      case 'OPPONENT_TARGETS_YOUR_PERMANENT': {
+          // targetId is in event for BecomeTarget
+          const tId = (event as any)?.targetId || (event as any)?.data?.targetId;
+          const target = state.battlefield.find(o => o.id === tId);
+          if (!target || target.controllerId !== controllerId) return false;
+          
+          // sourceId is the thing that did the targeting
+          const sId = (event as any)?.sourceId || (event as any)?.data?.sourceId;
+          const { TargetingProcessor } = require('./../actions/TargetingProcessor');
+          const source = TargetingProcessor.findObjectInAnyZone(state, sId);
+          // If source is null (e.g. game event), or source controller is you, it's not an opponent targeting
+          if (!source || source.controllerId === controllerId) return false;
+          
+          return true;
+      }
+      case 'LAST_DISCARDED_HAS_TYPE_CREATURE': {
+          const lastIds = state.turnState.lastDiscardedIds || [];
+          if (lastIds.length === 0) return false;
+          const { TargetingProcessor } = require('./../actions/TargetingProcessor');
+          return lastIds.some(id => {
+              const obj = TargetingProcessor.findObjectInAnyZone(state, id);
+              return obj && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
+          });
+      }
       case 'TRIGGER_EVENT_SOURCE.CONTROLLERID === CONTROLLER_ID':
         return event?.playerId === controllerId;
       default:

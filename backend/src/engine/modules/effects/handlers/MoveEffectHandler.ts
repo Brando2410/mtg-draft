@@ -45,19 +45,19 @@ export class MoveEffectHandler {
             return this.resolveDrawCards(state, effect, controllerId, log, stackObject, parentContext, finalTargetIds);
         }
         if (effect.type === 'Mill') {
-            return this.resolveMill(state, effect, controllerId, log, stackObject, parentContext);
+            return this.resolveMill(state, effect, controllerId, log, stackObject, parentContext, finalTargetIds);
         }
         if (effect.type === 'SearchLibrary') {
             return this.resolveLibrarySearch(state, { ...effect, selectionType: 'Search', sourceZones: effect.sourceZones || [Zone.Library], shuffle: true, reveal: true }, controllerId, log, stackObject, parentContext, targets);
         }
         if (effect.type === 'Scry') {
-            return this.resolveScry(state, effect, controllerId, log, stackObject, parentContext);
+            return this.resolveScry(state, effect, controllerId, log, stackObject, parentContext, finalTargetIds);
         }
         if (effect.type === 'Surveil') {
-            return this.resolveSurveil(state, effect, controllerId, log, stackObject, parentContext);
+            return this.resolveSurveil(state, effect, controllerId, log, stackObject, parentContext, finalTargetIds);
         }
         if (effect.type === EffectType.LookAtTopAndPick) {
-            return this.resolveLookAtTopAndPick(state, effect, controllerId, log, stackObject, parentContext);
+            return this.resolveLookAtTopAndPick(state, effect, controllerId, log, stackObject, parentContext, finalTargetIds);
         }
         if (effect.type === 'RevealUntilCondition') {
             return this.resolveRevealUntilCondition(state, effect, controllerId, log, stackObject, parentContext);
@@ -206,30 +206,42 @@ export class MoveEffectHandler {
     private static resolveDrawCards(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any, targets: string[] = []) {
         const { EffectProcessor } = require('../EffectProcessor');
         const amount = EffectProcessor.resolveAmount(state, effect.amount, (stackObject as any)?.sourceId || '', controllerId, stackObject);
+        const playerIds = targets.filter(tid => state.players[tid as PlayerId]) as PlayerId[];
+        if (playerIds.length === 0) playerIds.push(controllerId);
+
+        playerIds.forEach(pid => {
+            this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], destination: Zone.Hand, fromTop: amount, isDraw: true }, pid, log, stackObject, parentContext);
+        });
+    }
+
+    private static resolveMill(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any, targets: string[] = []) {
+        const { EffectProcessor } = require('../EffectProcessor');
+        const amount = EffectProcessor.resolveAmount(state, effect.amount, (stackObject as any)?.sourceId || '', controllerId, stackObject);
+        const playerIds = targets.filter(tid => state.players[tid as PlayerId]) as PlayerId[];
+        if (playerIds.length === 0) playerIds.push(controllerId);
+
+        playerIds.forEach(pid => {
+            this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], destination: Zone.Graveyard, fromTop: amount }, pid, log, stackObject, parentContext);
+        });
+    }
+
+    private static resolveScry(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any, targets: string[] = []) {
+        const { EffectProcessor } = require('../EffectProcessor');
+        const amount = EffectProcessor.resolveAmount(state, effect.amount, (stackObject as any)?.sourceId || '', controllerId, stackObject);
         const affectedPlayerId = targets.find(tid => state.players[tid as PlayerId]) as PlayerId || controllerId;
-        return this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], destination: Zone.Hand, fromTop: amount, isDraw: true }, affectedPlayerId, log, stackObject, parentContext);
+        return this.resolveLibraryTopMoves(state, { ...effect, type: 'Scry', selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: amount }, affectedPlayerId, log, stackObject, parentContext);
     }
 
-    private static resolveMill(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any) {
-        const { EffectProcessor } = require('../EffectProcessor');
-        const amount = EffectProcessor.resolveAmount(state, effect.amount, (stackObject as any)?.sourceId || '', controllerId, stackObject);
-        return this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], destination: Zone.Graveyard, fromTop: amount }, controllerId, log, stackObject, parentContext);
-    }
-
-    private static resolveScry(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any) {
-        const { EffectProcessor } = require('../EffectProcessor');
-        const amount = EffectProcessor.resolveAmount(state, effect.amount, (stackObject as any)?.sourceId || '', controllerId, stackObject);
-        return this.resolveLibraryTopMoves(state, { ...effect, type: 'Scry', selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: amount }, controllerId, log, stackObject, parentContext);
-    }
-
-    private static resolveSurveil(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any) {
+    private static resolveSurveil(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any, targets: string[] = []) {
         const amount = typeof effect.amount === 'number' ? effect.amount : 1;
-        return this.resolveLibraryTopMoves(state, { ...effect, type: 'Surveil', selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: amount }, controllerId, log, stackObject, parentContext);
+        const affectedPlayerId = targets.find(tid => state.players[tid as PlayerId]) as PlayerId || controllerId;
+        return this.resolveLibraryTopMoves(state, { ...effect, type: 'Surveil', selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: amount }, affectedPlayerId, log, stackObject, parentContext);
     }
 
-    private static resolveLookAtTopAndPick(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any) {
+    private static resolveLookAtTopAndPick(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any, targets: string[] = []) {
         const amount = typeof effect.fromTop === 'number' ? effect.fromTop : 1;
-        return this.resolveLibraryTopMoves(state, { ...effect, type: EffectType.LookAtTopAndPick, selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: amount }, controllerId, log, stackObject, parentContext);
+        const affectedPlayerId = targets.find(tid => state.players[tid as PlayerId]) as PlayerId || controllerId;
+        return this.resolveLibraryTopMoves(state, { ...effect, type: EffectType.LookAtTopAndPick, selectionType: 'TopN', sourceZones: [Zone.Library], fromTop: amount }, affectedPlayerId, log, stackObject, parentContext);
     }
 
     private static resolveRevealUntilCondition(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any) {

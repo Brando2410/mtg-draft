@@ -203,7 +203,10 @@ export class TargetingProcessor {
             'artifact_or_enchantment', 'artifactorenchantment', 'creature_or_planeswalker', 'creatureorplaneswalker', 'nonland_permanent', 'nonlandpermanent'
         ];
 
-        if (typeLineCheck === 'anytarget' || coreTypes.includes(typeLineCheck)) {
+        if (typeLineCheck === 'spell' || typeLineCheck === 'triggeredability' || typeLineCheck === 'activatedability') {
+            if (targetZone !== Zone.Stack) return false;
+            if (targetObj.type.toLowerCase() !== typeLineCheck) return false;
+        } else if (typeLineCheck === 'anytarget' || coreTypes.includes(typeLineCheck)) {
             const stats = LayerProcessor.getEffectiveStats(targetObj, state);
             const combinedTypes = [
                 ...(stats.types || []),
@@ -999,19 +1002,31 @@ export class TargetingProcessor {
                 return state.battlefield
                     .filter(o => o.controllerId === controllerId && this.matchesRestrictions(state, o, effect.restrictions, controllerId, sourceId))
                     .map(o => o.id);
+            case 'ALL_PLANESWALKERS_YOU_CONTROL':
+                return state.battlefield
+                    .filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'planeswalker'))
+                    .map(o => o.id);
             case 'MATCHING_PERMANENTS':
                 if (!effect?.restrictions) return [];
                 return state.battlefield
                     .filter(o => this.matchesRestrictions(state, o, effect.restrictions, controllerId, sourceId))
                     .map(o => o.id);
-            case 'TRIGGER_SOURCE':
-                return eventData?.sourceId ? [eventData.sourceId] : (stackData?.sourceId ? [stackData.sourceId] : []);
-            case 'TRIGGER_TARGET':
-                return eventData?.targetId ? [eventData.targetId] : (stackData?.targetId ? [stackData.targetId] : []);
-            case 'EVENT_TARGET':
-                return eventData?.object?.id ? [eventData.object.id] : (eventData?.targetId ? [eventData.targetId] : []);
-            case 'EVENT_PLAYER':
-                return eventData?.playerId ? [eventData.playerId] : [];
+            case 'TRIGGER_SOURCE': {
+                const eData = eventData || parentContext?.eventData || (stackData as any)?.eventData;
+                return eData?.sourceId ? [eData.sourceId] : (stackData?.sourceId ? [stackData.sourceId] : []);
+            }
+            case 'TRIGGER_TARGET': {
+                const eData = eventData || parentContext?.eventData || (stackData as any)?.eventData;
+                return eData?.targetId ? [eData.targetId] : (stackData?.targetId ? [stackData.targetId] : []);
+            }
+            case 'EVENT_TARGET': {
+                const eData = eventData || parentContext?.eventData || (stackData as any)?.eventData;
+                return eData?.object?.id ? [eData.object.id] : (eData?.targetId ? [eData.targetId] : []);
+            }
+            case 'EVENT_PLAYER': {
+                const eData = eventData || parentContext?.eventData || (stackData as any)?.eventData;
+                return eData?.playerId ? [eData.playerId] : [];
+            }
             case 'TARGET_1_CONTROLLER': {
                 const targetId = targets[0];
                 // Check if we have persisted controller information first

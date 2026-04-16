@@ -21,6 +21,8 @@ export class ActionProcessor {
     // CR 701.8: To discard a card, move it from hand to graveyard.
     if ((isDiscard || (fromZone === Zone.Hand && to === Zone.Graveyard)) && !isDraw) {
         TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId: card.ownerId, data: { card: card } }, log || (() => {}));
+        if (!state.turnState.lastDiscardedIds) state.turnState.lastDiscardedIds = [];
+        state.turnState.lastDiscardedIds.push(card.id);
     }
     
     // --- FLASHBACK REPLACEMENT EFFECT (Rule 702.34a) ---
