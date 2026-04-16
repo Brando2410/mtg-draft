@@ -394,6 +394,7 @@ export class GameEngine {
 
     if (this.state.pendingAction) {
       this.log(`[WAITING] Pending Action: ${this.state.pendingAction.type} for ${this.getPlayerName(this.state.pendingAction.playerId)}`);
+      this.checkAutoPass(this.state.pendingAction.playerId);
       return;
     }
 

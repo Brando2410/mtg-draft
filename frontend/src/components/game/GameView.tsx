@@ -15,6 +15,7 @@ import { useDraftStore } from '../../store/useDraftStore';
 import { GameCard } from './GameCard';
 import battlefieldBg from '../../assets/syd-roberts-portfolio-dsk-battlefield-lightsoff.jpg';
 import { ZoneInspector } from './modals/ZoneInspector';
+import { OrderingModal } from './modals/OrderingModal';
 
 interface GameViewProps {
   room: Room;
@@ -103,6 +104,12 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
   }
 
   const hasPriority = gameState.priorityPlayerId === effectivePlayerId || gameState.pendingAction?.playerId === effectivePlayerId;
+
+  const handleOrderClick = (type: string, list?: string[]) => {
+    if (type === 'CONFIRM' && list) {
+        socket.emit('resolve_combat_ordering', { roomId: room.id, playerId: effectivePlayerId, order: list });
+    }
+  };
 
   const handleToggleStop = (step: string) => {
     socket.emit('toggle_stop', { roomId: room.id, playerId: effectivePlayerId, step });
@@ -620,6 +627,13 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           />
         )}
       </AnimatePresence>
+
+      <OrderingModal 
+        pendingAction={gameState.pendingAction} 
+        me={me} 
+        battlefield={gameState.battlefield} 
+        onOrderClick={handleOrderClick}
+      />
     </div>
   );
 };

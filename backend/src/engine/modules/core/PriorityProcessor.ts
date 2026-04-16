@@ -1,4 +1,5 @@
 import { GameState, PlayerId, Phase, Step, Zone, AbilityType } from '@shared/engine_types';
+import { TurnProcessor } from './TurnProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
 import { SpellProcessor } from '../actions/SpellProcessor';
@@ -129,9 +130,36 @@ export class PriorityProcessor {
     playerId: PlayerId, 
     callbacks: PriorityCallbacks
   ) {
-    if (!state.priorityPlayerId || String(state.priorityPlayerId) !== String(playerId)) return;
+    const isPriority = state.priorityPlayerId && String(state.priorityPlayerId) === String(playerId);
+    const isPending = state.pendingAction && String(state.pendingAction.playerId) === String(playerId);
+    
+    if (!isPriority && !isPending) return;
 
     const player = state.players[playerId];
+    if (!player) return;
+
+    // --- COMBAT DECLARATION AUTO-CONFIRMS ---
+    // These steps (Attackers/Blockers) often have null priority while selecting.
+    if (isPending && !player.fullControl) {
+      const isOurTurn = state.activePlayerId === playerId;
+      const currentStepId = state.currentStep.toLowerCase();
+      const stopKey = isOurTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
+      const hasManualStop = player?.stops?.[stopKey];
+
+      if (!hasManualStop) {
+        if (state.pendingAction?.type === 'DECLARE_ATTACKERS' && !TurnProcessor.hasPotentialAttackers(state, playerId)) {
+          callbacks.confirmAttackers(playerId);
+          return;
+        }
+        if (state.pendingAction?.type === 'DECLARE_BLOCKERS' && !TurnProcessor.hasPotentialBlockers(state, playerId)) {
+          callbacks.confirmBlockers(playerId);
+          return;
+        }
+      }
+    }
+
+    if (!isPriority) return; // Priority logic below
+
     const canAct = this.canPlayerTakeAnyAction(state, playerId);
 
     const isOurTurn = state.activePlayerId === playerId;
@@ -189,9 +217,11 @@ export class PriorityProcessor {
     // Auto-pass Upkeep, Draw, AND End steps if the stack is empty 
     // UNLESS a manual stop is set for this phase.
     const isBeginning = state.currentPhase === Phase.Beginning && (state.currentStep === Step.Upkeep || state.currentStep === Step.Draw);
+    const isCombatBeginningOrEnd = state.currentPhase === Phase.Combat && (state.currentStep === Step.BeginningOfCombat || state.currentStep === Step.EndOfCombat);
+    const isDamageStep = state.currentStep === Step.CombatDamage || state.currentStep === Step.FirstStrikeDamage;
     const isEndStep = state.currentStep === Step.End;
 
-    if ((isBeginning || isEndStep) && stackEmpty) {
+    if ((isBeginning || isCombatBeginningOrEnd || isDamageStep || isEndStep) && stackEmpty) {
         if (hasManualStop) return true;
         return false;
     }

@@ -18,6 +18,7 @@ export interface GameCardProps {
   isBlocking?: boolean;
   isOpponent?: boolean;
   pendingAction?: any;
+  disableHoverAnim?: boolean;
 }
 
 /**
@@ -38,7 +39,8 @@ export const GameCard = memo(({
   isDeclaringAttacks = false,
   isBlocking = false,
   isOpponent = false,
-  pendingAction
+  pendingAction,
+  disableHoverAnim = false
 }: GameCardProps) => {
   const { definition, effectiveStats, counters, isTapped, isPhasedOut, damageMarked, summoningSickness, isPrepared } = obj;
   const stats = effectiveStats;
@@ -121,7 +123,8 @@ export const GameCard = memo(({
 
   // MANA SYMBOLS (Official Scryfall SVGs)
   const ManaSymbols = ({ cost, variant }: { cost: string, variant: string }) => {
-    if (!cost) return null;
+    const isLand = (definition.types || []).includes('Land') || (definition.type_line || '').toLowerCase().includes('land');
+    if (!cost || isLand) return null;
     const symbols = cost.match(/\{([^}]+)\}/g)?.map(s => s.slice(1, -1)) || [];
     
     // Scale down if many symbols
@@ -229,7 +232,7 @@ export const GameCard = memo(({
         minHeight: variant === 'battlefield' ? '6rem' : 'auto',
         ...borderStyle
       }}
-      whileHover={variant === 'small' ? {} : { 
+      whileHover={ (variant === 'small' || disableHoverAnim) ? {} : { 
         y: variant === 'hand' ? 0 : (verticalShift - 5),
         scale: 1.02,
       }}

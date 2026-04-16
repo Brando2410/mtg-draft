@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { Eye, EyeOff } from 'lucide-react';
 import { GameCard } from '../GameCard';
 import { type GameObject, type PlayerState } from '@shared/engine_types';
 
@@ -8,15 +8,27 @@ interface OrderingModalProps {
   pendingAction: any;
   me: PlayerState | undefined;
   battlefield: GameObject[];
-  orderingList: string[];
-  onOrderClick: (id: string) => void;
+  onOrderClick: (id: string, fullOrder?: string[]) => void;
 }
 
-export const OrderingModal = ({ pendingAction, me, battlefield, orderingList, onOrderClick }: OrderingModalProps) => {
+export const OrderingModal = ({ pendingAction, me, battlefield, onOrderClick }: OrderingModalProps) => {
   const [minimized, setMinimized] = useState(false);
+  const [items, setItems] = useState<string[]>([]);
+  
   const isOrdering = pendingAction?.type === 'ORDER_BLOCKERS' || pendingAction?.type === 'ORDER_ATTACKERS';
   
+  // Sync items when pendingAction changes
+  useEffect(() => {
+    if (pendingAction?.data?.ids) {
+      setItems(pendingAction.data.ids);
+    }
+  }, [pendingAction?.data?.ids]);
+
   if (!isOrdering || pendingAction.playerId !== me?.id) return null;
+
+  const handleConfirm = () => {
+    onOrderClick('CONFIRM', items);
+  };
 
   return (
     <>
@@ -31,7 +43,7 @@ export const OrderingModal = ({ pendingAction, me, battlefield, orderingList, on
             <motion.div 
               initial={{ scale: 0.9, y: 20 }} 
               animate={{ scale: 1, y: 0 }}
-              className="bg-slate-900 border border-white/10 p-10 rounded-[3rem] shadow-2xl max-w-4xl w-full flex flex-col items-center gap-8 text-center relative"
+              className="bg-slate-900 border border-white/10 p-10 rounded-[3rem] shadow-2xl max-w-5xl w-full flex flex-col items-center gap-10 text-center relative"
             >
               {/* MINIMIZE BUTTON */}
               <button 
@@ -43,51 +55,64 @@ export const OrderingModal = ({ pendingAction, me, battlefield, orderingList, on
               </button>
 
               <div className="flex flex-col items-center gap-2">
-                <div className="w-16 h-16 bg-amber-600 rounded-2xl flex items-center justify-center mb-2 shadow-lg ring-4 ring-amber-500/20">
-                  <RefreshCw className="w-8 h-8 text-white animate-spin-slow" />
-                </div>
-                <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white">
-                  {pendingAction.type === 'ORDER_BLOCKERS' ? "Order Blockers" : "Order Attackers"}
+                <h3 className="text-4xl font-black italic uppercase tracking-tighter text-white">
+                  {pendingAction.type === 'ORDER_BLOCKERS' ? "Assign Damage Order" : "Order Attackers"}
                 </h3>
                 <p className="text-slate-400 text-sm font-medium max-w-sm">
-                  Select creatures in the order you want to assign damage (the first one receives damage first).
+                  Drag and slide cards to reorder. Damage will be assigned from left to right.
                 </p>
               </div>
 
-              <div className="flex flex-wrap justify-center gap-6 p-6 bg-black/40 rounded-3xl border border-white/5">
-                {pendingAction.data?.ids?.map((id: string) => {
-                  const obj = battlefield.find(o => o.id === id);
-                  const orderIdx = orderingList.indexOf(id);
-                  return (
-                    <div key={id} className="relative group cursor-pointer" onClick={() => onOrderClick(id)}>
-                      <div className={`transition-all duration-300 ${orderIdx !== -1 ? 'opacity-40 grayscale scale-95' : 'hover:scale-105'}`}>
-                        {obj && <GameCard obj={obj} variant="battlefield" />}
-                      </div>
-                      {orderIdx !== -1 && (
-                        <div className="absolute inset-x-0 top-0 flex items-center justify-center">
-                          <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center border-4 border-white shadow-2xl text-2xl font-black italic text-white -translate-y-1/2">
-                            {orderIdx + 1}
-                          </div>
+              {/* REORDER GROUP */}
+              <div className="w-full overflow-x-auto pb-4 pt-4 scrollbar-hide">
+                <Reorder.Group 
+                  axis="x" 
+                  values={items} 
+                  onReorder={setItems}
+                  className="flex justify-center gap-6 min-w-max px-10"
+                >
+                  {items.map((id, index) => {
+                    const obj = battlefield.find(o => o.id === id);
+                    return (
+                      <Reorder.Item 
+                        key={id} 
+                        value={id}
+                        className="relative group cursor-grab active:cursor-grabbing"
+                      >
+                        {/* ORDER NUMBER BADGE - Smaller, focused, and high z-index */}
+                        <div className="absolute top-1 left-1 z-[100] pointer-events-none">
+                            <div className="w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-lg text-xs font-black italic text-white ring-2 ring-emerald-500/30">
+                                {index + 1}
+                            </div>
                         </div>
-                      )}
-                      {orderIdx === -1 && (
-                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-indigo-500 text-[10px] font-black px-3 py-1 rounded-full shadow-xl text-white">
-                          Select Next
+
+                        <div className="transition-transform duration-200 hover:scale-[1.02] pointer-events-none">
+                          {obj && <GameCard obj={obj} variant="battlefield" />}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+                      </Reorder.Item>
+                    );
+                  })}
+                </Reorder.Group>
               </div>
 
-              {orderingList.length > 0 && (
-                <button 
-                  onClick={() => onOrderClick?.('RESET')}
-                  className="px-6 py-2 bg-white/5 hover:bg-white/10 text-slate-400 text-[10px] font-black uppercase rounded-lg border border-white/5"
-                >
-                  Reset Order
-                </button>
-              )}
+              <div className="flex flex-col items-center gap-6 w-full">
+                  <div className="h-px w-full max-w-md bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                  
+                  <button 
+                    onClick={handleConfirm}
+                    className="group relative px-16 py-5 bg-indigo-600 hover:bg-indigo-500 rounded-2xl transition-all shadow-2xl shadow-indigo-600/20 active:scale-95"
+                  >
+                    <div className="absolute inset-x-0 -bottom-2 h-4 bg-indigo-900/50 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span className="text-xl font-black italic uppercase tracking-widest text-white">Confirm Order</span>
+                  </button>
+
+                  <button 
+                    onClick={() => setItems(pendingAction.data.ids)}
+                    className="text-[10px] font-black text-slate-500 hover:text-white uppercase tracking-[0.2em] transition-colors"
+                  >
+                    Reset to Default
+                  </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

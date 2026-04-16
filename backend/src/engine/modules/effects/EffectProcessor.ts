@@ -48,15 +48,7 @@ export class EffectProcessor {
         
         if (state.pendingAction) {
             // Rule 603.3: Prune the stored objects to avoid recursion depth and circular references in sockets.
-            const slimStackObj = stackObject ? { 
-                id: stackObject.id, 
-                sourceId: stackObject.sourceId, 
-                controllerId: stackObject.controllerId,
-                targets: stackObject.targets,
-                xValue: stackObject.xValue,
-                data: stackObject.data,
-                type: stackObject.type
-            } : undefined;
+            const slimStackObj = this.slimStackObj(state, stackObject);
 
             if (state.pendingAction.data?.stackObj && state.pendingAction.data?.effects) {
                 return false;
@@ -69,7 +61,7 @@ export class EffectProcessor {
 
             state.pendingAction.data = {
                 ...(state.pendingAction.data || {}),
-                effects: effects.map(e => ({ type: e.type, amount: e.amount, targetMapping: e.targetMapping, label: e.label, restrictions: e.restrictions } as any)),
+                effects: effects.map(e => ({ ...e } as any)),
                 nextEffectIndex: i + 1,
                 targets: targets,
                 stackObj: slimStackObj,
@@ -81,6 +73,35 @@ export class EffectProcessor {
     }
     if (stackObject && stackObject.data) stackObject.data.nextEffectIndex = effects.length;
     return true;
+  }
+
+  private static slimStackObj(state: GameState, stackObject: any): any {
+    if (stackObject) {
+        // Recover name/image if missing (triggers often lose metadata in engine internals)
+        let name = stackObject.name;
+        let imageUrl = stackObject.image_url;
+
+        const { TargetingProcessor } = require('./../actions/TargetingProcessor');
+        const source = TargetingProcessor.findObjectInAnyZone(state, stackObject.sourceId);
+
+        if (!name || !imageUrl) {
+            if (source) {
+                if (!name) name = `${source.definition.name}'s Trigger`;
+                if (!imageUrl) imageUrl = source.definition.image_url || source.definition.image_uris?.normal;
+            }
+        }
+
+        return { 
+            id: stackObject.id, 
+            name: name || 'Ability', 
+            image_url: imageUrl,
+            sourceId: stackObject.sourceId,
+            type: stackObject.type,
+            definition: source?.definition, // Pass the definition for clean rendering
+            targets: stackObject.targets || []
+        };
+    }
+    return null;
   }
 
   private static executeEffect(

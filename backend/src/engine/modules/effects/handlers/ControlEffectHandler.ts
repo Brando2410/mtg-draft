@@ -204,12 +204,44 @@ export class ControlEffectHandler {
 
       case 'AddMana':
         const { ManaProcessor: MP } = require('../../magic/ManaProcessor');
+        const { ChoiceGenerator: CG } = require('../ChoiceGenerator');
         const effectiveTargets = (targets && targets.length > 0) ? targets : [controllerId];
         
+        let manaStr = effect.value || effect.amount || effect.manaType || effect.mana || 'C';
+        const isFlexible = String(manaStr).toUpperCase() === 'ANY' || String(manaStr).toUpperCase() === '{ANY}';
+
+        if (isFlexible) {
+            // CR 605: If mana of any color is added, the player chooses which color.
+            const tid = effectiveTargets[0];
+            const p = state.players[tid as PlayerId];
+            if (p) {
+                const colors = ['W', 'U', 'B', 'R', 'G'];
+                const choices = colors.map(c => ({
+                    label: `{${c}}`,
+                    value: c,
+                    effects: [{ 
+                        ...effect, 
+                        manaType: c, 
+                        value: c, 
+                        mana: c, 
+                        amount: effect.amount || 1 // Ensure we keep the amount if it was like "Add two mana of any one color"
+                    }]
+                }));
+
+                state.pendingAction = CG.createModalChoice({
+                    label: "Choose a color of mana to add",
+                    playerId: tid,
+                    sourceId: sourceId,
+                    stackObj: stackObject,
+                    parentContext: parentContext
+                }, choices);
+            }
+            return;
+        }
+
         effectiveTargets.forEach(tid => {
             const p = state.players[tid as PlayerId];
             if (p) {
-                const manaStr = effect.value || effect.amount || effect.manaType || 'C';
                 const res = MP.parseManaCost(manaStr.startsWith('{') ? manaStr : `{${manaStr}}`);
                 
                 if (effect.manaRestrictions) {

@@ -368,6 +368,9 @@ export class PlayerActionProcessor {
 
     if (player.pendingDiscardCount > 0) {
       player.pendingDiscardCount--;
+      if (state.pendingAction && (state.pendingAction as any).count) {
+          (state.pendingAction as any).count--;
+      }
       log(`${player.name} discarded ${card.definition.name} (${player.pendingDiscardCount} more to go).`);
       
       if (player.pendingDiscardCount === 0) {

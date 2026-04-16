@@ -500,6 +500,7 @@ export const RestrictionType = {
   CannotUntap: 'CannotUntap',
   CannotAttack: 'CannotAttack',
   CannotBlock: 'CannotBlock',
+  CannotBlockThisTurn: 'CannotBlockThisTurn',
   CannotCastType: 'CannotCastType',
   CannotActivateNonManaAbilities: 'CannotActivateNonManaAbilities',
   CannotCastNamedCard: 'CannotCastNamedCard',

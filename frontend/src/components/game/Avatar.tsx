@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type PlayerState, Step, Phase } from '@shared/engine_types';
 import { ManaPoolView } from './ManaPoolView';
@@ -31,7 +31,6 @@ const Stopper = memo(({ id, label, isOpponent, stops, onToggleStop, isActive, cu
   const internalId = isOpponent ? `opp_${id.toLowerCase()}` : `my_${id.toLowerCase()}`;
   const isSet = stops[internalId];
 
-  // Determine if this is the CURRENT step AND this player is the active player
   const isBeginningGroup = id === 'beginning' && (currentStep === Step.Upkeep || currentStep === Step.Draw);
   const isMain1 = id === 'main1' && currentStep === Step.Main && currentPhase === Phase.PreCombatMain;
   const isMain2 = id === 'main2' && currentStep === Step.Main && currentPhase === Phase.PostCombatMain;
@@ -90,7 +89,31 @@ export const Avatar = memo(({
   currentPhase
 }: AvatarProps) => {
   
+  const [impacts, setImpacts] = useState<{ id: string, amount: number, rotation: number }[]>([]);
+  const [showPulse, setShowPulse] = useState<'gain' | 'loss' | null>(null);
+  const prevLife = useRef(player.life);
   const stops = viewerStops || player.stops || {};
+
+  useEffect(() => {
+    if (player.life !== prevLife.current) {
+        const diff = player.life - prevLife.current;
+        const newImpact = { 
+            id: Math.random().toString(), 
+            amount: diff,
+            rotation: (Math.random() - 0.5) * 20
+        };
+        
+        setImpacts(prev => [...prev.slice(-3), newImpact]);
+        setShowPulse(diff > 0 ? 'gain' : 'loss');
+        prevLife.current = player.life;
+
+        setTimeout(() => {
+            setImpacts(prev => prev.filter(i => i.id !== newImpact.id));
+        }, 1200);
+
+        setTimeout(() => setShowPulse(null), 600);
+    }
+  }, [player.life]);
 
   const commonProps = {
     isOpponent,
@@ -101,6 +124,8 @@ export const Avatar = memo(({
     currentPhase
   };
 
+  const isLosingLife = impacts.some(i => i.amount < 0);
+
   return (
     <div className={`flex flex-col items-center gap-0 relative z-[200]`}>
       <AnimatePresence>
@@ -108,6 +133,7 @@ export const Avatar = memo(({
           <ManaPoolView pool={player.manaPool} isOpponent={isOpponent} />
         )}
       </AnimatePresence>
+
       <div className="flex items-center gap-6 relative h-12">
           <div className="flex gap-4 items-center">
               <Stopper {...commonProps} id="beginning" label="Beginning" />
@@ -116,16 +142,70 @@ export const Avatar = memo(({
           </div>
 
           <div className="relative group/avatar">
+              {/* PREMIUM SHOCKWAVE PULSE */}
+              <AnimatePresence>
+                {showPulse && (
+                    <motion.div 
+                        initial={{ opacity: 0.8, scale: 0.8 }}
+                        animate={{ opacity: 0, scale: 1.6 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        className={`absolute inset-0 rounded-full border-4 z-0 pointer-events-none
+                            ${showPulse === 'gain' ? 'border-emerald-400 shadow-[0_0_30px_rgba(52,211,153,0.5)]' : 'border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]'}
+                        `}
+                    />
+                )}
+                {showPulse && (
+                   <motion.div 
+                        initial={{ opacity: 0.5, scale: 1 }}
+                        animate={{ opacity: 0, scale: 2.2 }}
+                        transition={{ duration: 0.8 }}
+                        className={`absolute inset-0 rounded-full blur-2xl z-0 pointer-events-none
+                            ${showPulse === 'gain' ? 'bg-emerald-500/20' : 'bg-red-500/20'}
+                        `}
+                    />
+                )}
+              </AnimatePresence>
+
+              {/* FLOATING LIFE IMPACTS */}
+              <AnimatePresence>
+                {impacts.map((impact) => (
+                    <motion.div
+                        key={impact.id}
+                        initial={{ opacity: 0, y: isOpponent ? 20 : -20, scale: 0.2, rotate: 0 }}
+                        animate={{ 
+                            opacity: [0, 1, 1, 0], 
+                            y: isOpponent ? 70 : -70, 
+                            scale: 1.3, 
+                            rotate: impact.rotation 
+                        }}
+                        transition={{ duration: 1, ease: "circOut" }}
+                        className={`absolute left-1/2 -translate-x-1/2 font-black italic text-3xl z-[300] pointer-events-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]
+                            ${impact.amount > 0 ? 'text-emerald-400' : 'text-red-500'}
+                        `}
+                    >
+                        {impact.amount > 0 ? `+${impact.amount}` : impact.amount}
+                        {/* GLOW LAYER */}
+                        <div className={`absolute inset-0 blur-lg opacity-50 -z-10 text-white`}>
+                           {impact.amount > 0 ? `+${impact.amount}` : impact.amount}
+                        </div>
+                    </motion.div>
+                ))}
+              </AnimatePresence>
+
               <motion.div 
                 id={`player-avatar-${player.id}`}
                 onClick={onClick}
                 animate={{ 
                   scale: isActive ? 1.05 : 1,
+                  x: isLosingLife ? [-2, 2, -2, 2, 0] : 0,
+                  filter: isLosingLife ? 'contrast(1.2) brightness(1.1)' : 'contrast(1) brightness(1)',
                   boxShadow: isPriority ? '0 0 40px rgba(99, 102, 241, 0.4)' : '0 0 20px rgba(0,0,0,0.5)'
                 }}
+                transition={{ duration: 0.1 }}
                 className={`w-20 h-20 rounded-full border-2 overflow-hidden transition-all cursor-pointer relative
                   ${isPriority ? 'border-indigo-400 shadow-lg' : 'border-white/20'}
-                  ${targetable ? 'ring-4 ring-red-500 animate-pulse border-red-500' : ''}
+                  ${targetable ? 'ring-4 ring-red-500 animate-pulse border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : ''}
                   bg-slate-950 flex items-center justify-center`}
               >
                   <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center relative bg-slate-900">
@@ -134,14 +214,30 @@ export const Avatar = memo(({
                         alt={player.name}
                         className="w-full h-full object-cover scale-110"
                       />
+                      {/* CHROMATIC RED FLASH */}
+                      <AnimatePresence>
+                        {isLosingLife && (
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: [0, 0.6, 0.2, 0.8, 0] }}
+                                transition={{ duration: 0.3 }}
+                                className="absolute inset-0 bg-red-600/40 mix-blend-color-dodge z-10"
+                            />
+                        )}
+                      </AnimatePresence>
                       <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent pointer-events-none" />
                   </div>
 
-                  <div className="absolute inset-x-0 bottom-0 bg-black/80 backdrop-blur-sm py-1 flex items-center justify-center border-t border-white/10 z-20">
-                      <span className="text-xl font-black text-white italic drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] leading-none">
+                  <motion.div 
+                    animate={showPulse ? { scale: 1.05, backgroundColor: 'rgba(255,255,255,0.1)' } : { scale: 1, backgroundColor: 'rgba(0,0,0,0.8)' }}
+                    className="absolute inset-x-0 bottom-0 py-1 flex items-center justify-center border-t border-white/10 z-20 backdrop-blur-sm transition-all"
+                  >
+                      <span className={`text-xl font-black italic drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] leading-none transition-colors
+                        ${showPulse === 'gain' ? 'text-emerald-400' : showPulse === 'loss' ? 'text-red-400' : 'text-white'}
+                      `}>
                           {player.life}
                       </span>
-                  </div>
+                  </motion.div>
 
                   {isActive && (
                       <div className={`absolute ${isOpponent ? 'top-1' : 'bottom-11'} left-1/2 -translate-x-1/2 w-1.5 h-3.5 bg-indigo-500 rounded-full shadow-[0_0_12px_rgba(99,102,241,1)] z-30`} />

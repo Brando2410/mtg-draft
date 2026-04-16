@@ -398,11 +398,12 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                                         obj={choice.cardData} 
                                         onHoverStart={onHoverStart} 
                                         onHoverEnd={onHoverEnd}
-                                        isSelected={isSelected}
+                                        isSelected={false}
+                                        disableHoverAnim={true}
                                     />
                                     {isSelected && (
                                         <>
-                                            <div className="absolute inset-x-[-8px] inset-y-[-8px] border-[4px] border-yellow-400 rounded-[1.4rem] shadow-[0_0_30px_rgba(250,204,21,0.5)] pointer-events-none z-10" />
+                                            <div className="absolute inset-x-[-2px] inset-y-[-2px] border-[3px] border-yellow-400 rounded-lg shadow-[0_0_20px_rgba(250,204,21,0.6)] pointer-events-none z-10" />
                                             {maxChoices > 1 && (
                                                 <div className="absolute -top-3 -right-3 w-8 h-8 bg-yellow-400 text-slate-950 font-black rounded-full flex items-center justify-center border-4 border-[#0b0f1a] shadow-2xl z-30 text-xs italic">
                                                     {selectedIndices.indexOf(originalIdx) + 1}
@@ -442,12 +443,22 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
 
               <div className="flex flex-row items-center justify-center gap-4 w-full max-w-xl mt-2 relative z-20">
                 {/* UNDO/CANCEL BUTTON */}
-                {!pendingAction.data?.hideUndo && !isOrderTriggers && !isScrySurveil && (
+                {(!isOrderTriggers && !isScrySurveil && pendingAction?.type !== ActionType.ResolutionChoice && !pendingAction?.data?.hideUndo) && (
                   <button 
                     onClick={() => onTapCard?.(`CHOICE_undo`)}
                     className="flex-1 max-w-[120px] p-2 bg-red-500/5 hover:bg-red-500/10 rounded-xl border border-red-500/10 text-[9px] font-black uppercase italic tracking-widest transition-all text-red-500/60 hover:text-red-500"
                   >
                     CANCEL
+                  </button>
+                )}
+
+                {/* NONE/SKIP BUTTON */}
+                {noneChoice && !isOrderTriggers && (
+                  <button 
+                    onClick={() => onTapCard?.(`CHOICE_${noneChoiceIdx}`)}
+                    className="flex-1 max-w-[120px] p-2 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 text-[9px] font-black uppercase italic tracking-widest transition-all text-white/70 hover:text-white"
+                  >
+                    SKIP
                   </button>
                 )}
 
@@ -466,16 +477,6 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                 >
                   {isOrderTriggers ? "Stack" : isScrySurveil ? "Done" : `Confirm ${selectedIndices.length > 0 ? `(${selectedIndices.length})` : ''}`}
                 </button>
-
-                {/* NONE/SKIP BUTTON */}
-                {noneChoice && !isOrderTriggers && (
-                  <button 
-                    onClick={() => onTapCard?.(`CHOICE_${noneChoiceIdx}`)}
-                    className="flex-1 max-w-[120px] p-2 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 text-[9px] font-black uppercase italic tracking-widest transition-all text-white/70 hover:text-white"
-                  >
-                    {noneChoice.label}
-                  </button>
-                )}
               </div>
             </motion.div>
           </motion.div>

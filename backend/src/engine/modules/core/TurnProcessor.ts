@@ -8,10 +8,8 @@ export class TurnProcessor {
   public static getNextStep(state: GameState): { phase: Phase, step: Step, turnEnded: boolean } {
     let next = this.calculateNextStep(state.currentPhase, state.currentStep);
     
-    // 1. Skip Combat Phase if no potential attackers (Rule 500.4)
-    if (next.phase === Phase.Combat && next.step === Step.BeginningOfCombat && !this.hasPotentialAttackers(state, state.activePlayerId)) {
-      next = { phase: Phase.PostCombatMain, step: Step.Main, turnEnded: false };
-    }
+    // Skip Combat logic moved to PriorityProcessor auto-pass for better UX
+    // (We now always enter combat steps so triggers can fire)
 
     // 2. Skip Declare Blockers if no potential blockers (Rule 509)
     if (next.step === Step.DeclareBlockers) {
@@ -63,14 +61,22 @@ export class TurnProcessor {
       
       const types = (obj.definition.types || []).map(t => t.toLowerCase());
       const typeLine = (obj.definition.type_line || '').toLowerCase();
-      const isCreature = types.includes('creature') || typeLine.includes('creature');
+      const isCreature = types.includes('creature') || typeLine.includes('creature') || (obj.definition.types || []).includes('Creature');
       if (!isCreature) return false;
 
       // Rule 302.6: Haste bypasses summoning sickness for attacking
       const keywords = [...(obj.definition.keywords || []), ...(obj.effectiveStats?.keywords || [])];
       const hasHaste = keywords.some(k => k.toLowerCase() === 'haste');
+      if (obj.summoningSickness && !hasHaste) return false;
 
-      return !obj.summoningSickness || hasHaste;
+      // Rule 702.3: Defender
+      if (keywords.some(k => k.toLowerCase() === 'defender')) return false;
+
+      // Registry Restrictions
+      const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === obj.id && r.type === 'CannotAttack');
+      if (cannotAttack) return false;
+
+      return true;
     });
   }
 
@@ -80,9 +86,14 @@ export class TurnProcessor {
 
       const types = (obj.definition.types || []).map(t => t.toLowerCase());
       const typeLine = (obj.definition.type_line || '').toLowerCase();
-      const isCreature = types.includes('creature') || typeLine.includes('creature');
+      const isCreature = types.includes('creature') || typeLine.includes('creature') || (obj.definition.types || []).includes('Creature');
+      if (!isCreature) return false;
+
+      // Registry Restrictions
+      const cannotBlock = state.ruleRegistry.restrictions.some(r => r.targetId === obj.id && (r.type === 'CannotBlock' || r.type === 'CannotBlockThisTurn'));
+      if (cannotBlock) return false;
       
-      return isCreature;
+      return true;
     });
   }
 }
