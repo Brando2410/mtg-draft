@@ -1,26 +1,22 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, CardDefinition, Zone, EffectType } from "@shared/engine_types";
 
-export const Plains: Record<string, ImplementableCard> = {
-    "Plains": {
-        name: "Plains",
-        manaCost: "",
-        oracleText: "({T}: Add {W}.)",
-        colors: [],
-        supertypes: ["Basic"],
-        types: ["Land"],
-        subtypes: ["Plains"],
-        power: undefined,
-        toughness: undefined,
-        keywords: [],
-        abilities: [
-            {
-                id: "plains_mana",
-                type: AbilityType.Activated,
-                activeZone: Zone.Battlefield,
-                isManaAbility: true,
-                costs: [{ type: 'Tap', targetMapping: 'SELF' }],
-                effects: [{ type: EffectType.AddMana, value: '{W}' }]
-            }
-        ]
-    }
+export const Plains: CardDefinition = {
+
+    name: "Plains",
+    manaCost: "",
+    oracleText: "({T}: Add {W}.)",
+    colors: [],
+    supertypes: ["Basic"],
+    types: ["Land"],
+    subtypes: ["Plains"],
+    keywords: [],
+    abilities: [
+        {
+            type: AbilityType.Activated,
+            activeZone: Zone.Battlefield,
+            isManaAbility: true,
+            costs: [{ type: 'Tap' }],
+            effects: [{ type: EffectType.AddMana, value: 'W' }]
+        }
+    ]
 };

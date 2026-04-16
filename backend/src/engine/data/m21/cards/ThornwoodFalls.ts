@@ -1,48 +1,44 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, ZoneRequirement, EffectType, CardDefinition, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
-export const ThornwoodFalls: Record<string, ImplementableCard> = {
-    "Thornwood Falls": {
-        name: "Thornwood Falls",
-        manaCost: "",
-        oracleText: "Thornwood Falls enters the battlefield tapped.\nWhen Thornwood Falls enters the battlefield, you gain 1 life.\n{T}: Add {G} or {U}.",
-        colors: [],
-        supertypes: [],
-        types: ["Land"],
-        subtypes: [],
-        power: undefined,
-        toughness: undefined,
-        keywords: [],
-        entersTapped: true,
-        abilities: [
-            
-            {
-                id: "thornwood_falls_etb_life",
-                type: AbilityType.Triggered,
-                    eventMatch: 'ON_ETB',
-                activeZone: ZoneRequirement.Battlefield,
-                condition: (state: any, event: any, source: any) => {
-                    return event.data?.object?.id === source.sourceId;
-                },
-                effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: 'CONTROLLER' }]
+export const ThornwoodFalls: CardDefinition = {
+
+    name: "Thornwood Falls",
+    manaCost: "",
+    oracleText: "Thornwood Falls enters the battlefield tapped.\nWhen Thornwood Falls enters the battlefield, you gain 1 life.\n{T}: Add {G} or {U}.",
+    colors: [],
+    supertypes: [],
+    types: ["Land"],
+    subtypes: [],
+    keywords: [],
+    entersTapped: true,
+    abilities: [
+
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.EnterBattlefield,
+            activeZone: ZoneRequirement.Battlefield,
+            condition: (state: any, event: any, source: any) => {
+                return event.data?.object?.id === source.sourceId;
             },
-            {
-                id: "thornwood_falls_mana_g",
-                type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
-                isManaAbility: true,
-                costs: [{ type: 'Tap', targetMapping: 'SELF' }],
-                effects: [{ type: EffectType.AddMana, value: 'G', amount: 1, targetMapping: 'CONTROLLER' }]
-            },
-            {
-                id: "thornwood_falls_mana_u",
-                type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
-                isManaAbility: true,
-                costs: [{ type: 'Tap', targetMapping: 'SELF' }],
-                effects: [{ type: EffectType.AddMana, value: 'U', amount: 1, targetMapping: 'CONTROLLER' }]
-            }
-        ]
-    }
+            effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
+        },
+        {
+            type: AbilityType.Activated,
+            costs: [{ type: 'Tap' }],
+            isManaAbility: true,
+            effects: [
+                {
+                    type: EffectType.AddMana,
+                    choices: [
+                        { label: '{G}', effects: [{ type: EffectType.AddMana, manaType: 'G' }] },
+                        { label: '{U}', effects: [{ type: EffectType.AddMana, manaType: 'U' }] }
+                    ]
+                }
+            ]
+        },
+
+    ]
+
 };
 
 

@@ -1,4 +1,4 @@
-import { ImplementableCard } from '@shared/engine_types';
+import { CardDefinition, ImplementableCard } from '@shared/engine_types';
 import { AdherentofHope } from './cards/AdherentofHope';
 import { AlchemistsGift } from './cards/AlchemistsGift';
 import { AngelicAscension } from './cards/AngelicAscension';
@@ -216,7 +216,7 @@ import { RadiantFountain } from './cards/RadiantFountain';
 import { RambunctiousMutt } from './cards/RambunctiousMutt';
 import { RangersGuile } from './cards/RangersGuile';
 
-export const m21: Record<string, ImplementableCard | Partial<ImplementableCard>> = {
+export const m21: CardDefinition = {
     ...AdherentofHope,
     ...AlchemistsGift,
     ...AngelicAscension,

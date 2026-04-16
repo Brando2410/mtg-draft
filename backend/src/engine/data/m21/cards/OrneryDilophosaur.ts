@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, DurationType, TargetMapping, CardDefinition } from "@shared/engine_types";
+import { AbilityType, ZoneRequirement, EffectType, DurationType, TargetMapping, CardDefinition, TriggerEvent } from "@shared/engine_types";
 
 export const OrneryDilophosaur: CardDefinition = {
 
@@ -14,9 +14,8 @@ export const OrneryDilophosaur: CardDefinition = {
     keywords: ["Deathtouch"],
     abilities: [
         {
-            id: "ornery_dilophosaur_attack_trigger",
             type: AbilityType.Triggered,
-            eventMatch: "ON_ATTACK",
+            eventMatch: TriggerEvent.Attack,
             condition: "HAS_PERMANENT:creature,power>=4",
             effects: [
                 {

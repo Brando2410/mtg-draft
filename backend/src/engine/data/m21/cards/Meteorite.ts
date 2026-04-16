@@ -1,45 +1,42 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, ZoneRequirement, EffectType, CardDefinition, TargetMapping, TriggerEvent, TargetType } from "@shared/engine_types";
 
-export const Meteorite: Record<string, ImplementableCard> = {
-    "Meteorite": {
-        name: "Meteorite",
-        manaCost: "{5}",
-        oracleText: "When this artifact enters, it deals 2 damage to any target.\n{T}: Add one mana of any color.",
-        colors: [],
-        supertypes: [],
-        types: ["Artifact"],
-        subtypes: [],
-        power: "",
-        toughness: "",
-        keywords: [],
-        abilities: [
-            {
-                id: "meteorite_etb",
-                type: AbilityType.Triggered,
-                activeZone: ZoneRequirement.Battlefield,
-                    eventMatch: 'ON_ETB',
-                targetDefinition: { type: 'AnyTarget', count: 1 },
-                effects: [{
-                    type: EffectType.DealDamage,
-                    amount: 2,
-                    targetMapping: 'TARGET_1'
-                }]
-            },
-            {
-                id: "meteorite_mana",
-                type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
-                costs: [{ type: 'Tap', value: null }],
-                isManaAbility: true,
-                effects: [{
-                    type: EffectType.AddMana,
-                    value: 'any',
-                    amount: 1,
-                    targetMapping: 'CONTROLLER'
-                }]
-            }
-        ]
-    }
+export const Meteorite: CardDefinition = {
+
+    name: "Meteorite",
+    manaCost: "{5}",
+    oracleText: "When this artifact enters, it deals 2 damage to any target.\n{T}: Add one mana of any color.",
+    colors: [],
+    supertypes: [],
+    types: ["Artifact"],
+    subtypes: [],
+    keywords: [],
+    abilities: [
+        {
+            type: AbilityType.Triggered,
+            activeZone: ZoneRequirement.Battlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
+            targetDefinition: { type: TargetType.AnyTarget, count: 1 },
+            effects: [{
+                type: EffectType.DealDamage,
+                amount: 2,
+                targetMapping: TargetMapping.Target1
+            }]
+        },
+        {
+
+            type: AbilityType.Activated,
+            activeZone: ZoneRequirement.Battlefield,
+            costs: [{ type: 'Tap' }],
+            isManaAbility: true,
+            effects: [{
+                type: EffectType.AddMana,
+                value: '{ANY}',
+                amount: 1,
+                targetMapping: TargetMapping.Controller
+            }]
+        }
+    ]
+
 };
 
 

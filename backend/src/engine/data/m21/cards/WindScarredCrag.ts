@@ -1,47 +1,42 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, ZoneRequirement, EffectType, CardDefinition, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
-export const WindScarredCrag: Record<string, ImplementableCard> = {
-    "Wind-Scarred Crag": {
-        name: "Wind-Scarred Crag",
-        manaCost: "",
-        oracleText: "Wind-Scarred Crag enters the battlefield tapped.\nWhen Wind-Scarred Crag enters the battlefield, you gain 1 life.\n{T}: Add {R} or {W}.",
-        colors: [],
-        supertypes: [],
-        types: ["Land"],
-        subtypes: [],
-        power: undefined,
-        toughness: undefined,
-        keywords: [],
-        entersTapped: true,
-        abilities: [
-            {
-                id: "wind_scarred_crag_etb_life",
-                type: AbilityType.Triggered,
-                    eventMatch: 'ON_ETB',
-                activeZone: ZoneRequirement.Battlefield,
-                condition: (state: any, event: any, source: any) => {
-                    return event.data?.object?.id === source.sourceId;
-                },
-                effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: 'CONTROLLER' }]
+export const WindScarredCrag: CardDefinition = {
+
+    name: "Wind-Scarred Crag",
+    manaCost: "",
+    oracleText: "Wind-Scarred Crag enters the battlefield tapped.\nWhen Wind-Scarred Crag enters the battlefield, you gain 1 life.\n{T}: Add {R} or {W}.",
+    colors: [],
+    supertypes: [],
+    types: ["Land"],
+    subtypes: [],
+    keywords: [],
+    entersTapped: true,
+    abilities: [
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.EnterBattlefield,
+            activeZone: ZoneRequirement.Battlefield,
+            condition: (state: any, event: any, source: any) => {
+                return event.data?.object?.id === source.sourceId;
             },
-            {
-                id: "wind_scarred_crag_mana_r",
-                type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
-                isManaAbility: true,
-                costs: [{ type: 'Tap', targetMapping: 'SELF' }],
-                effects: [{ type: EffectType.AddMana, value: 'R', amount: 1, targetMapping: 'CONTROLLER' }]
-            },
-            {
-                id: "wind_scarred_crag_mana_w",
-                type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
-                isManaAbility: true,
-                costs: [{ type: 'Tap', targetMapping: 'SELF' }],
-                effects: [{ type: EffectType.AddMana, value: 'W', amount: 1, targetMapping: 'CONTROLLER' }]
-            }
-        ]
-    }
+            effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
+        },
+        {
+            type: AbilityType.Activated,
+            costs: [{ type: 'Tap' }],
+            isManaAbility: true,
+            effects: [
+                {
+                    type: EffectType.AddMana,
+                    choices: [
+                        { label: '{R}', effects: [{ type: EffectType.AddMana, manaType: 'R' }] },
+                        { label: '{W}', effects: [{ type: EffectType.AddMana, manaType: 'W' }] }
+                    ]
+                }
+            ]
+        },
+
+    ]
 };
 
 
