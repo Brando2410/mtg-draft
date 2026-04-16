@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone, ActionType } from '@shared/engine_types';
+import { AbilityType, ActionType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const ZimonesExperiment: CardDefinition = {
     "name": "Zimone's Experiment",
@@ -42,5 +42,6 @@ export const ZimonesExperiment: CardDefinition = {
         }
     ]
 };
+
 
 

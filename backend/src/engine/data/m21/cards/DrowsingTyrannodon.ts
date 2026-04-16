@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, TargetType, TargetMapping, CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const DrowsingTyrannodon: CardDefinition = {
 
@@ -16,7 +16,7 @@ export const DrowsingTyrannodon: CardDefinition = {
         {
             id: "drowsing_tyrannodon_defender",
             type: AbilityType.Static,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 layer: 6,
@@ -28,3 +28,5 @@ export const DrowsingTyrannodon: CardDefinition = {
     ]
 
 };
+
+

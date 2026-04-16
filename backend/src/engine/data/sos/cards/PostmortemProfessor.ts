@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone, ZoneRequirement } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const PostmortemProfessor: CardDefinition = {
     "name": "Postmortem Professor",
@@ -27,7 +27,7 @@ export const PostmortemProfessor: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Graveyard,
+            activeZone: Zone.Graveyard,
             costs: [
                 { type: 'Mana', value: '{1}{B}' },
                 {
@@ -48,6 +48,8 @@ export const PostmortemProfessor: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
+
 
 
 

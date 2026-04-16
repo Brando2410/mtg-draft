@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const GriffinAerie: Record<string, ImplementableCard> = {
-    "Griffin Aerie": {
+export const GriffinAerie: CardDefinition = {
         name: "Griffin Aerie",
         manaCost: "{1}{W}",
         oracleText: "At the beginning of your end step, if you gained 3 or more life this turn, create a 2/2 white Griffin creature token with flying.",
@@ -17,7 +16,7 @@ export const GriffinAerie: Record<string, ImplementableCard> = {
                 id: "griffin_aerie_trigger",
                 type: AbilityType.Triggered,
                     eventMatch: 'ON_END_STEP',
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId && (state.turnState.lifeGainedThisTurn || 0) >= 3,
                 effects: [{
                     type: 'CreateToken',
@@ -26,7 +25,8 @@ export const GriffinAerie: Record<string, ImplementableCard> = {
                 }]
             }
         ]
-    }
-};
+    };
+
+
 
 

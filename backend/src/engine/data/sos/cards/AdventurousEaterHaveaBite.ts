@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const AdventurousEaterHaveaBite: CardDefinition = {
     "name": "Adventurous Eater // Have a Bite",
@@ -45,3 +45,4 @@ export const AdventurousEaterHaveaBite: CardDefinition = {
         ]
     }
 };
+

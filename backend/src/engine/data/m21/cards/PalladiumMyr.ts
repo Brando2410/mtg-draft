@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const PalladiumMyr: CardDefinition = {
 
@@ -15,7 +15,7 @@ export const PalladiumMyr: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             costs: [{ type: 'Tap' }],
             isManaAbility: true,
             effects: [{
@@ -27,3 +27,4 @@ export const PalladiumMyr: CardDefinition = {
         }
     ]
 };
+

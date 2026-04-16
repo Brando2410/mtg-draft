@@ -1,36 +1,55 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameObject, GameState, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
-export const SanctumofAll: Record<string, ImplementableCard> = {
-    "Sanctum of All": {
-        name: "Sanctum of All",
-        manaCost: "{W}{U}{B}{R}{G}",
-        oracleText: "At the beginning of your upkeep, you may search your library and/or graveyard for a Shrine card and put it onto the battlefield. If you search your library this way, shuffle.\nIf an ability of a Shrine you control triggers, if you control five or more Shrines, that ability triggers an additional time.",
-        colors: ["white","blue","black","red","green"],
-        supertypes: ["Legendary"],
-        types: ["Enchantment"],
-        subtypes: ["Shrine"],
-        power: undefined,
-        toughness: undefined,
-        keywords: [],
-        abilities: [
-            {
-                id: "sanctum_all_etb",
-                type: AbilityType.Triggered,
-                    eventMatch: 'ON_ETB',
-                activeZone: ZoneRequirement.Battlefield,
-                condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
-                effects: [{ type: 'SearchLibrary', value: 'Shrine', targetMapping: 'CONTROLLER' }, { type: 'PutOnBattlefield', targetMapping: 'TARGET_1' }]
-            },
-            {
-                id: "sanctum_all_trigger_double",
-                type: AbilityType.Replacement,
-                activeZone: ZoneRequirement.Battlefield,
-                replacesEvent: 'ON_SHRINE_TRIGGER',
-                condition: (state: any) => state.battlefield.filter((o: any) => o.definition.subtypes.includes('Shrine')).length >= 5,
-                effects: [{ type: 'AddAdditionalTrigger', targetMapping: 'TRIGGER_SOURCE' }]
-            }
-        ]
-    }
+export const SanctumofAll: CardDefinition = {
+    name: "Sanctum of All",
+    manaCost: "{W}{U}{B}{R}{G}",
+    oracleText: "At the beginning of your upkeep, you may search your library and/or graveyard for a Shrine card and put it onto the battlefield. If you search your library this way, shuffle.\nIf an ability of a Shrine you control triggers, if you control five or more Shrines, that ability triggers an additional time.",
+    colors: ["W", "U", "B", "R", "G"],
+    supertypes: ["Legendary"],
+    types: ["Enchantment"],
+    subtypes: ["Shrine"],
+    abilities: [
+        {
+            id: "sanctum_all_upkeep_trigger",
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.Upkeep,
+            activeZone: Zone.Battlefield,
+            condition: (state, event, ability) => event.playerId === ability.controllerId,
+            effects: [
+                {
+                    type: EffectType.Choice,
+                    label: "Search for a Shrine card?",
+                    choices: [
+                        {
+                            label: "Yes",
+                            effects: [
+                                {
+                                    type: EffectType.SearchLibrary,
+                                    sourceZones: [Zone.Library, Zone.Graveyard],
+                                    zone: Zone.Battlefield,
+                                    restrictions: ["Shrine"],
+                                    reveal: true,
+                                    shuffle: true
+                                }
+                            ]
+                        },
+                        { label: "No", effects: [] }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "sanctum_all_trigger_double",
+            type: AbilityType.Replacement,
+            activeZone: Zone.Battlefield,
+            // Note: Trigger doubling support requires engine-level integration with TriggerProcessor.
+            // This remains a structured placeholder for future engine updates.
+            replacesEvent: 'ON_SHRINE_TRIGGER',
+            condition: (state, event, ability) =>
+                state.battlefield.filter(o => o.controllerId === ability.controllerId && (o.definition.subtypes || []).includes('Shrine')).length >= 5,
+            effects: [{ type: 'AddAdditionalTrigger' as any, targetMapping: TargetMapping.TriggerSource }]
+        }
+    ]
 };
 
 

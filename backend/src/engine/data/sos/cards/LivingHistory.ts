@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const LivingHistory: CardDefinition = {
     name: "Living History",
@@ -46,13 +46,14 @@ export const LivingHistory: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 2,
                     toughnessModifier: 0,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Target1
                 }
             ]
         }
     ]
 };
+
 
 
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ChoreographedSparks: CardDefinition = {
     "name": "Choreographed Sparks",
@@ -47,6 +47,7 @@ export const ChoreographedSparks: CardDefinition = {
         }
     ]
 };
+
 
 
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const Eyetwitch: CardDefinition = {
     name: 'Eyetwitch',
@@ -18,4 +18,5 @@ export const Eyetwitch: CardDefinition = {
       }
     ]
   };
+
 

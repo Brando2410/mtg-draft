@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const SpectacularSkywhale: CardDefinition = {
     "name": "Spectacular Skywhale",
@@ -43,6 +43,7 @@ export const SpectacularSkywhale: CardDefinition = {
     "power": "1",
     "toughness": "4"
 };
+
 
 
 

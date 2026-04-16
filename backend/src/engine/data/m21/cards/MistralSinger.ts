@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const MistralSinger: Record<string, ImplementableCard> = {
-    "Mistral Singer": {
+export const MistralSinger: CardDefinition = {
         name: "Mistral Singer",
         manaCost: "{2}{U}",
         oracleText: "Flying\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
@@ -13,5 +12,6 @@ export const MistralSinger: Record<string, ImplementableCard> = {
         toughness: "2",
         keywords: ["Flying", "Prowess"],
         abilities: []
-    }
-};
+    };
+
+

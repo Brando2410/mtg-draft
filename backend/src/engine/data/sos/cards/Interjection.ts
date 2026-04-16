@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const Interjection: CardDefinition = {
     "name": "Interjection",
@@ -24,12 +24,13 @@ export const Interjection: CardDefinition = {
                     powerModifier: 2,
                     toughnessModifier: 2,
                     abilitiesToAdd: ["First Strike"],
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Target1
                 }
             ]
         }
     ]
 };
+
 
 

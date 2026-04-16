@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const TerramorphicExpanse: CardDefinition = {
     "name": "Terramorphic Expanse",
@@ -31,5 +31,6 @@ export const TerramorphicExpanse: CardDefinition = {
         }
     ]
 };
+
 
 

@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, CardDefinition, TargetMapping, DurationType } from "@shared/engine_types";
+import { AbilityType, Zone, EffectType, CardDefinition, TargetMapping, DurationType } from "@shared/engine_types";
 
 export const MaleficScythe: CardDefinition = {
 
@@ -15,3 +15,4 @@ export const MaleficScythe: CardDefinition = {
     abilities: []
 
 };
+

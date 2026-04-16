@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TargetType, RestrictionType, EffectType, DurationType, TargetMapping, Restriction } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, RestrictionType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const Flashback: CardDefinition = {
     "name": "Flashback",
@@ -25,7 +25,7 @@ export const Flashback: CardDefinition = {
                         {
                             type: EffectType.ApplyContinuousEffect,
                             targetMapping: TargetMapping.Target1,
-                            duration: DurationType.UntilEndOfTurn,
+                            duration: { type: DurationType.UntilEndOfTurn },
                             abilitiesToAdd: ['Flashback'],
                             flashbackCostOverride: 'SOURCE_MANA_COST'
                         }
@@ -35,5 +35,6 @@ export const Flashback: CardDefinition = {
         }
     ]
 };
+
 
 

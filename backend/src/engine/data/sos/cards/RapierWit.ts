@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, ConditionType, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const RapierWit: CardDefinition = {
     name: "Rapier Wit",
@@ -44,5 +44,6 @@ export const RapierWit: CardDefinition = {
         }
     ]
 };
+
 
 

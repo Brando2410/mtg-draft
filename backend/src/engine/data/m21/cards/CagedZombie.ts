@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, CardDefinition, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const CagedZombie: CardDefinition = {
 
@@ -16,7 +16,7 @@ export const CagedZombie: CardDefinition = {
         {
             id: "caged_zombie_lose_life",
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             costs: [{ type: 'Mana', value: '{1}{B}' }, { type: 'Tap' }],
             condition: (state: any) => state.turnState.creaturesDiedThisTurn.length > 0,
             effects: [{ type: EffectType.LoseLife, amount: 2, targetMapping: TargetMapping.EachOpponent }]
@@ -24,4 +24,6 @@ export const CagedZombie: CardDefinition = {
     ]
 
 };
+
+
 

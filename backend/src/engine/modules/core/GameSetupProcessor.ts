@@ -1,4 +1,4 @@
-import { GameState, PlayerId, Zone, GameObject } from '@shared/engine_types';
+import { GameObject, GameState, PlayerId, Zone } from '@shared/engine_types';
 import { Card } from '@shared/types';
 
 export class GameSetupProcessor {
@@ -104,3 +104,4 @@ export class GameSetupProcessor {
   }
 
 }
+

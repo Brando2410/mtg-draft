@@ -1,4 +1,4 @@
-import { GameState, PlayerId, Zone, Phase, GameObject, AbilityType, AbilityCost, EffectType, ZoneRequirement } from '@shared/engine_types';
+import { AbilityCost, AbilityType, EffectType, GameObject, GameState, Phase, PlayerId, Zone } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
@@ -72,9 +72,10 @@ export class SpellProcessor {
                     log(`[FLASHBACK] Casting ${obj.definition.name} via flashback.`);
                 } else {
                      const hasGraveAbility = obj.zone === Zone.Graveyard && obj.definition.abilities?.some((a: any) => 
-                        (a.type === AbilityType.Activated || a.type === 'Activated') && 
-                        (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === ZoneRequirement.Graveyard)
+                        a.type === AbilityType.Activated && 
+                        (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
                     );
+
 
                     if (hasGraveAbility) {
                         cardToPlay = obj;
@@ -134,9 +135,10 @@ export class SpellProcessor {
 
             if (!hasFlashback) {
                 const graveAbilityIndex = cardToPlay.definition.abilities?.findIndex((a: any) => 
-                   (a.type === AbilityType.Activated || a.type === 'Activated') && 
-                   (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === ZoneRequirement.Graveyard)
+                   a.type === AbilityType.Activated && 
+                   (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
                 );
+
                 
                 if (graveAbilityIndex !== undefined && graveAbilityIndex !== -1) {
                     log(`[DEBUG] Converting playCard to activateAbility for ${cardToPlay.definition.name}`);
@@ -349,7 +351,8 @@ export class SpellProcessor {
 
         const costRequiresTarget = additionalCosts.find(c => c.type === 'Sacrifice' && !c.targetMapping);
         const hasChosenSacrifice = (state as any).lastChosenSacrificeId !== undefined;
-        const discardCost = additionalCosts.find(c => (c.type as string).toLowerCase() === 'discard');
+        const discardCost = additionalCosts.find(c => c.type === CostType.Discard);
+
         const hasChosenDiscard = (state as any).lastChosenDiscardId !== undefined;
         const exileCost = additionalCosts.find(c => c.type === 'Exile' && !c.targetMapping);
         const hasChosenExile = (state as any).lastChosenExileIds !== undefined;
@@ -750,12 +753,13 @@ export class SpellProcessor {
         } else if (card.zone === Zone.Graveyard || (Object.values(state.players) as any[]).some(p => p.virtualHand.some((v: any) => v.id === card.id))) {
             // Support for graveyard-activated abilities (e.g. Stone Docent)
             const graveyardAbility = currentDef.abilities?.find((a: any) => 
-                (a.type === AbilityType.Activated || a.type === 'Activated') && 
-                (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === ZoneRequirement.Graveyard)
+                a.type === AbilityType.Activated && 
+                (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
             );
             if (graveyardAbility) {
-                baseCost = (graveyardAbility as any).manaCost || (graveyardAbility as any).costs?.find((c: any) => c.type === 'Mana')?.value || baseCost;
+                baseCost = (graveyardAbility as any).manaCost || (graveyardAbility as any).costs?.find((c: any) => c.type === CostType.Mana)?.value || baseCost;
             }
+
         }
 
         // Handle X cost substitution (Rule 107.3)
@@ -935,6 +939,26 @@ export class SpellProcessor {
         const ability = cardLogic.abilities[abilityIndex];
         if (ability.type !== AbilityType.Activated) return false;
 
+        // Step 0.5: Check for X in cost or effects
+        const needsX = ability.costs?.some((c: any) => c.value === 'X' || c.value === '-X') ||
+                      ability.effects?.some((e: any) => JSON.stringify(e).includes('"X"'));
+
+        if (needsX && (obj as any).xValue === undefined) {
+             const { ActionType } = require('@shared/engine_types');
+             state.pendingAction = {
+                 type: ActionType.ChooseX,
+                 playerId: playerId,
+                 sourceId: obj.id,
+                 data: {
+                     label: `Choose a value for X for ${obj.definition.name}`,
+                     abilityIndex: abilityIndex,
+                     declaredTargets: declaredTargets || [],
+                 }
+             };
+             log(`[CHOOSE_X] ${player.name} is choosing X for ${obj.definition.name}...`);
+             return true;
+        }
+
         // PRE-CALCULATE COST VARIABLES (Available for both steps)
         const additionalCosts = ability.costs || [];
         const sacrificeCost = additionalCosts.find((cost: AbilityCost) => cost.type === 'Sacrifice');
@@ -950,8 +974,8 @@ export class SpellProcessor {
 
 
         // Zone check (CR 113.6)
-        const activeZone = ability.activeZone || ZoneRequirement.Battlefield;
-        if (activeZone !== ZoneRequirement.Any && activeZone !== (obj.zone as any)) {
+        const activeZone = ability.activeZone || Zone.Battlefield;
+        if (activeZone !== Zone.Any && activeZone !== (obj.zone as any)) {
             log(`Illegal Activation: ${obj.definition.name}'s ability cannot be activated from ${obj.zone}.`);
             return false;
         }
@@ -1003,7 +1027,11 @@ export class SpellProcessor {
             const isMainPhase = (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain);
             const stackEmpty = state.stack.length === 0;
             const isSorcerySpeed = String(playerId) === activeId && isMainPhase && stackEmpty;
-            const canActivateAnyTime = (cardLogic.abilities || []).some((a: any) => a.type === 'Static' && a.id.includes('any_turn'));
+            const canActivateAnyTime = (cardLogic.abilities || []).some((a: any) => a.type === 'Static' && String(a.id).includes('any_turn')) ||
+                state.ruleRegistry.continuousEffects.some(e => 
+                    e.type === EffectType.AllowOutOfTurnActivation && 
+                    (e.targetIds?.includes(obj.id) || (e.targetMapping === TargetMapping.Self && e.sourceId === obj.id))
+                );
 
             if (!canActivateAnyTime && !isSorcerySpeed) {
                 log(`Illegal Activation: This ability can only be activated at sorcery speed.`);
@@ -1324,3 +1352,5 @@ export class SpellProcessor {
         return true;
     }
 }
+
+

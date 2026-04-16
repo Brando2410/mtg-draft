@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, CardDefinition, TargetType, TriggerEvent, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const FierceEmpath: CardDefinition = {
     name: "Fierce Empath",
@@ -32,5 +32,7 @@ export const FierceEmpath: CardDefinition = {
         }
     ]
 };
+
+
 
 

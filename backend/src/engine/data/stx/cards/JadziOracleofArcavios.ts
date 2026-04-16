@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const JadziOracleofArcavios: CardDefinition = {
         name: "Jadzi, Oracle of Arcavios",
@@ -69,4 +69,5 @@ export const JadziOracleofArcavios: CardDefinition = {
             }
         ]
     };
+
 

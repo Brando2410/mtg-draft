@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone, ZoneRequirement } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const VisionarysDance: CardDefinition = {
     "name": "Visionary's Dance",
@@ -43,7 +43,7 @@ export const VisionarysDance: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Hand,
+            activeZone: Zone.Hand,
             costs: [
                 {
                     type: 'Mana',
@@ -67,5 +67,7 @@ export const VisionarysDance: CardDefinition = {
         }
     ]
 };
+
+
 
 

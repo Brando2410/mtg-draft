@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const BadDeal: CardDefinition = {
 
@@ -12,9 +12,7 @@ export const BadDeal: CardDefinition = {
     keywords: [],
     abilities: [
         {
-            id: "bad_deal_spell",
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
             effects: [
                 { type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Controller },
                 { type: EffectType.DiscardCards, amount: 2, targetMapping: TargetMapping.AllOpponents },
@@ -24,3 +22,4 @@ export const BadDeal: CardDefinition = {
     ]
 
 };
+

@@ -1,45 +1,38 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from "@shared/engine_types";
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
-export const HuntersEdge: Record<string, ImplementableCard> = {
-    "Hunter's Edge": {
-        name: "Hunter's Edge",
-        manaCost: "{3}{G}",
-        oracleText: "Put a +1/+1 counter on target creature you control. Then that creature deals damage equal to its power to target creature you don't control.",
-        colors: ["green"],
-        supertypes: [],
-        types: ["Sorcery"],
-        subtypes: [],
-        power: "",
-        toughness: "",
-        keywords: [],
-        abilities: [
-            {
-                id: "hunters_edge_spell",
-                type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Hand,
-                targetDefinition: {
-                    type: TargetType.Creature,
-                    count: 2,
-                    perTargetRestrictions: [
-                        [Restriction.YouControl],
-                        [Restriction.OpponentControl]
-                    ]
-                },
-                effects: [
-                    {
-                        type: EffectType.AddCounters,
-                        amount: 1,
-                        counterType: 'p1p1',
-                        targetMapping: 'TARGET_1'
-                    },
-                    {
-                        type: EffectType.DealDamage,
-                        amount: 'TARGET_1_POWER',
-                        sourceMapping: 'TARGET_1',
-                        targetMapping: 'TARGET_2'
-                    }
+export const HuntersEdge: CardDefinition = {
+    name: "Hunter's Edge",
+    manaCost: "{3}{G}",
+    oracleText: "Put a +1/+1 counter on target creature you control. Then that creature deals damage equal to its power to target creature you don't control.",
+    colors: ["G"],
+    types: ["Sorcery"],
+    abilities: [
+        {
+            type: AbilityType.Spell,
+            targetDefinition: {
+                type: TargetType.Creature,
+                count: 2,
+                perTargetRestrictions: [
+                    ['YouControl'],
+                    ['OpponentControl']
                 ]
-            }
-        ]
-    }
+            },
+            effects: [
+                {
+                    type: EffectType.AddCounters,
+                    amount: 1,
+                    counterType: '+1/+1',
+                    targetMapping: TargetMapping.Target1
+                },
+                {
+                    type: EffectType.DealDamage,
+                    amount: DynamicAmount.Target1Power,
+                    sourceMapping: TargetMapping.Target1,
+                    targetMapping: TargetMapping.Target2
+                }
+            ]
+        }
+    ]
 };
+
+

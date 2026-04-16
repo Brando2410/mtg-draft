@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const PrismaritheInspiration: CardDefinition = {
     "name": "Prismari, the Inspiration",
@@ -35,5 +35,6 @@ export const PrismaritheInspiration: CardDefinition = {
     "power": "7",
     "toughness": "7"
 };
+
 
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const ChaseInspiration: CardDefinition = {
     "name": "Chase Inspiration",
@@ -34,5 +34,6 @@ export const ChaseInspiration: CardDefinition = {
         }
     ]
 };
+
 
 

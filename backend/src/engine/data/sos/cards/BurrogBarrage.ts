@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const BurrogBarrage: CardDefinition = {
     "name": "Burrog Barrage",
@@ -47,5 +47,6 @@ export const BurrogBarrage: CardDefinition = {
         }
     ]
 };
+
 
 

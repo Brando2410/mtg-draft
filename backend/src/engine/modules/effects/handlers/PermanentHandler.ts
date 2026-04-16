@@ -1,4 +1,4 @@
-import { GameState, GameObject, Zone, PlayerId, ActionType, GameObjectId, EmblemDefinition } from '@shared/engine_types';
+import { ActionType, EmblemDefinition, GameObject, GameObjectId, GameState, PlayerId, Zone } from '@shared/engine_types';
 import { ActionProcessor } from '../../actions/ActionProcessor';
 import { TriggerProcessor } from '../TriggerProcessor';
 import { ChoiceGenerator } from '../ChoiceGenerator';
@@ -316,3 +316,4 @@ export class PermanentHandler {
     }
 
 }
+

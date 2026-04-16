@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone, TargetType, Restriction } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const HarmonizedTrioBrainstorm: CardDefinition = {
     name: "Harmonized Trio // Brainstorm",
@@ -62,5 +62,6 @@ export const HarmonizedTrioBrainstorm: CardDefinition = {
         ]
     }
 };
+
 
 

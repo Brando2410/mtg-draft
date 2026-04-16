@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const SunderingArchaic: CardDefinition = {
     "name": "Sundering Archaic",
@@ -50,6 +50,7 @@ export const SunderingArchaic: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
 
 
 

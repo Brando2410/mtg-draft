@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const SendinthePest: CardDefinition = {
     "name": "Send in the Pest",
@@ -47,6 +47,7 @@ export const SendinthePest: CardDefinition = {
         }
     ]
 };
+
 
 
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const RancorousArchaic: CardDefinition = {
     "name": "Rancorous Archaic",
@@ -31,6 +31,7 @@ export const RancorousArchaic: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 
 
 

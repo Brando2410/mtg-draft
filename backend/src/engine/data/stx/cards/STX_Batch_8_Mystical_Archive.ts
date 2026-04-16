@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone, TargetType, TriggerEvent, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const STX_Batch_8_Mystical_Archive: CardDefinition[] = [
   {
@@ -202,4 +202,5 @@ export const STX_Batch_8_Mystical_Archive: CardDefinition[] = [
     ]
   }
 ];
+
 

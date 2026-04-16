@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, CardDefinition, TargetMapping, TriggerEvent, TargetType } from "@shared/engine_types";
+import { AbilityType, Zone, EffectType, CardDefinition, TargetMapping, TriggerEvent, TargetType } from "@shared/engine_types";
 
 export const Meteorite: CardDefinition = {
 
@@ -13,7 +13,7 @@ export const Meteorite: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: { type: TargetType.AnyTarget, count: 1 },
             effects: [{
@@ -25,7 +25,7 @@ export const Meteorite: CardDefinition = {
         {
 
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             costs: [{ type: 'Tap' }],
             isManaAbility: true,
             effects: [{
@@ -38,5 +38,6 @@ export const Meteorite: CardDefinition = {
     ]
 
 };
+
 
 

@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, TargetMapping, TriggerEvent, EffectType, CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const AdherentofHope: CardDefinition = {
     name: "Adherent of Hope",
@@ -15,7 +15,7 @@ export const AdherentofHope: CardDefinition = {
         {
             id: "adherent_hope_combat",
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             eventMatch: TriggerEvent.BeginningOfCombatStep,
             condition: 'IS_YOUR_TURN && HAS_PERMANENT:Basri,youcontrol',
             effects: [{ type: EffectType.AddCounters, amount: 1, counterType: 'p1p1', targetMapping: TargetMapping.Self }]
@@ -23,5 +23,6 @@ export const AdherentofHope: CardDefinition = {
     ]
 
 };
+
 
 

@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, TargetType, DurationType, CardDefinition } from "@shared/engine_types";
+import { AbilityType, Zone, EffectType, TargetType, DurationType, CardDefinition } from "@shared/engine_types";
 
 export const ChandraFlamesCatalyst: CardDefinition = {
 
@@ -17,7 +17,7 @@ export const ChandraFlamesCatalyst: CardDefinition = {
         {
             id: "chandra_flames_catalyst_plus_1",
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             costs: [{ type: 'Loyalty', value: 1 }],
             oracleText: "+1: Chandra deals 3 damage to each opponent.",
             effects: [
@@ -31,7 +31,7 @@ export const ChandraFlamesCatalyst: CardDefinition = {
         {
             id: "chandra_flames_catalyst_minus_2",
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             costs: [{ type: 'Loyalty', value: -2 }],
             oracleText: "−2: You may cast target red instant or sorcery card from your graveyard this turn without paying its mana cost. If that spell would be put into your graveyard this turn, exile it instead.",
             targetDefinition: {
@@ -46,7 +46,7 @@ export const ChandraFlamesCatalyst: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     targetMapping: "TARGET_1",
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     isFreeCast: true,
                     abilitiesToAdd: [EffectType.AllowCastFromGraveyard],
                     exileOnMoveToGraveyard: true
@@ -56,7 +56,7 @@ export const ChandraFlamesCatalyst: CardDefinition = {
         {
             id: "chandra_flames_catalyst_minus_8",
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             costs: [{ type: 'Loyalty', value: -8 }],
             oracleText: "−8: Discard your hand, then draw seven cards. Until end of turn, you may cast spells from your hand without paying their mana costs.",
             effects: [
@@ -76,7 +76,7 @@ export const ChandraFlamesCatalyst: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     targetMapping: "CONTROLLER",
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     value: "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING"
                 }
             ]
@@ -84,3 +84,4 @@ export const ChandraFlamesCatalyst: CardDefinition = {
     ]
 
 };
+

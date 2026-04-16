@@ -1,4 +1,4 @@
-import { CardDefinition, Zone, AbilityType, EffectType, TriggerEvent, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const STX_Rares_Mythics_Batch_5: CardDefinition[] = [
     {
@@ -280,5 +280,6 @@ export const STX_Rares_Mythics_Batch_5: CardDefinition[] = [
         ]
     }
 ];
+
 
 

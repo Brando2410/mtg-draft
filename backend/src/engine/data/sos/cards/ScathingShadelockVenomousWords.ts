@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, Zone, Restriction, TargetType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ScathingShadelockVenomousWords: CardDefinition = {
     name: "Scathing Shadelock // Venomous Words",
@@ -42,7 +42,7 @@ export const ScathingShadelockVenomousWords: CardDefinition = {
                 effects: [
                     {
                         type: EffectType.ApplyContinuousEffect,
-                        duration: DurationType.UntilEndOfTurn,
+                        duration: { type: DurationType.UntilEndOfTurn },
                         powerModifier: 2,
                         abilitiesToAdd: ["Deathtouch"],
                         targetMapping: TargetMapping.Target1
@@ -53,5 +53,6 @@ export const ScathingShadelockVenomousWords: CardDefinition = {
     }
 
 };
+
 
 

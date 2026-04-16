@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const EnvironmentalScientist: CardDefinition = {
     "name": "Environmental Scientist",
@@ -38,6 +38,7 @@ export const EnvironmentalScientist: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 
 
 

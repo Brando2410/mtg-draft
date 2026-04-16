@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const DiaryofDreams: CardDefinition = {
     "name": "Diary of Dreams",
@@ -41,6 +41,7 @@ export const DiaryofDreams: CardDefinition = {
         }
     ]
 };
+
 
 
 

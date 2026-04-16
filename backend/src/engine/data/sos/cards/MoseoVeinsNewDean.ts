@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone, TargetType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const MoseoVeinsNewDean: CardDefinition = {
     "name": "Moseo, Vein's New Dean",
@@ -61,6 +61,7 @@ export const MoseoVeinsNewDean: CardDefinition = {
     "power": "2",
     "toughness": "1"
 };
+
 
 
 

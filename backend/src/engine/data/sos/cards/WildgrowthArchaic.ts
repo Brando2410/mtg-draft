@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const WildgrowthArchaic: CardDefinition = {
     "name": "Wildgrowth Archaic",
@@ -54,6 +54,7 @@ export const WildgrowthArchaic: CardDefinition = {
     "power": "0",
     "toughness": "0"
 };
+
 
 
 

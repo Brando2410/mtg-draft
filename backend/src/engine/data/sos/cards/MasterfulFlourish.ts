@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const MasterfulFlourish: CardDefinition = {
     name: "Masterful Flourish",
@@ -19,18 +19,19 @@ export const MasterfulFlourish: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 1,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Target1
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
                     abilitiesToAdd: ["Indestructible"],
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Target1
                 }
             ]
         }
     ]
 };
+
 
 

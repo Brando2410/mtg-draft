@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, TriggerEvent, DurationType, TargetMapping, CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const MysticSkyfish: CardDefinition = {
 
@@ -17,11 +17,11 @@ export const MysticSkyfish: CardDefinition = {
             id: "mystic_skyfish_draw_trigger",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.SecondDraw,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
-                duration: DurationType.UntilEndOfTurn,
+                duration: { type: DurationType.UntilEndOfTurn },
                 abilitiesToAdd: ['Flying'],
                 layer: 6,
                 targetMapping: TargetMapping.Self
@@ -30,5 +30,7 @@ export const MysticSkyfish: CardDefinition = {
     ]
 
 };
+
+
 
 

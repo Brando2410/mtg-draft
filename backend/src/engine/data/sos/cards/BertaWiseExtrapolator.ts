@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const BertaWiseExtrapolator: CardDefinition = {
     "name": "Berta, Wise Extrapolator",
@@ -62,6 +62,7 @@ export const BertaWiseExtrapolator: CardDefinition = {
     "power": "1",
     "toughness": "4"
 };
+
 
 
 

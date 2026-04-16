@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
-export const GnarledSage: Record<string, ImplementableCard> = {
-    "Gnarled Sage": {
+export const GnarledSage: CardDefinition = {
         name: "Gnarled Sage",
         manaCost: "{3}{G}{G}",
         oracleText: "Reach (This creature can block creatures with flying.)\nAs long as you've drawn two or more cards this turn, this creature gets +0/+2 and has vigilance. (Attacking doesn't cause it to tap.)",
@@ -16,7 +15,7 @@ export const GnarledSage: Record<string, ImplementableCard> = {
             {
                 id: "gnarled_sage_buff",
                 type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 effects: [
                     {
                         type: EffectType.ApplyContinuousEffect,
@@ -36,5 +35,5 @@ export const GnarledSage: Record<string, ImplementableCard> = {
                 oracleText: "As long as you've drawn two or more cards this turn, Gnarled Sage gets +0/+2 and has vigilance."
             }
         ]
-    }
-};
+    };
+

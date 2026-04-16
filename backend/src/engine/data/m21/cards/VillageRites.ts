@@ -1,4 +1,5 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+
 
 export const VillageRites: CardDefinition = {
     name: "Village Rites",
@@ -13,10 +14,11 @@ export const VillageRites: CardDefinition = {
         {
             id: "village_rites_spell",
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
-            costs: [{ type: 'Sacrifice', restrictions: ['Creature'] }],
+            costs: [{ type: CostType.Sacrifice, restrictions: ['Creature'] }],
+
             effects: [{ type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Controller }]
         }
     ]
 
 };
+

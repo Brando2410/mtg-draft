@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const HonorboundPageForumsFavor: CardDefinition = {
     name: "Honorbound Page // Forum's Favor",
@@ -41,3 +41,4 @@ export const HonorboundPageForumsFavor: CardDefinition = {
         ]
     }
 };
+

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const GraduationDay: CardDefinition = {
     "name": "Graduation Day",
@@ -32,6 +32,7 @@ export const GraduationDay: CardDefinition = {
         }
     ]
 };
+
 
 
 

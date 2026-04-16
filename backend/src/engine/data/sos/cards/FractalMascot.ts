@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const FractalMascot: CardDefinition = {
     "name": "Fractal Mascot",
@@ -42,6 +42,7 @@ export const FractalMascot: CardDefinition = {
     "power": "6",
     "toughness": "6"
 };
+
 
 
 

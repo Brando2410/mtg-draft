@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const AzusaLostButSeeking: CardDefinition = {
 
@@ -16,7 +16,7 @@ export const AzusaLostButSeeking: CardDefinition = {
         {
             id: "azusa_extra_lands",
             type: AbilityType.Static,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             effects: [{
                 type: EffectType.AdditionalLandPlays,
                 amount: 2,

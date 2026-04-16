@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, RestrictionType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType, RestrictionType } from "@shared/engine_types";
 
-export const CarrionGrub: Record<string, ImplementableCard> = {
-    "Carrion Grub": {
+export const CarrionGrub: CardDefinition = {
         name: "Carrion Grub",
         manaCost: "{3}{B}",
         oracleText: "Carrion Grub's power is equal to the greatest power among creature cards in your graveyard.\nWhen Carrion Grub enters the battlefield, mill four cards.",
@@ -16,7 +15,7 @@ export const CarrionGrub: Record<string, ImplementableCard> = {
             {
                 id: "carrion_grub_cda",
                 type: AbilityType.Static,
-                activeZone: ZoneRequirement.Any, // CDAs function in all zones
+                activeZone: Zone.Any, // CDAs function in all zones
                 effects: [
                     {
                         type: EffectType.ApplyContinuousEffect,
@@ -31,7 +30,7 @@ export const CarrionGrub: Record<string, ImplementableCard> = {
             {
                 id: "carrion_grub_etb",
                 type: AbilityType.Triggered,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                     eventMatch: "ON_ETB",
                 effects: [
                     {
@@ -42,7 +41,7 @@ export const CarrionGrub: Record<string, ImplementableCard> = {
                 ]
             }
         ]
-    }
-};
+    };
+
 
 

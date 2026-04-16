@@ -1,4 +1,4 @@
-import { GameState, GameObject, PlayerId } from '@shared/engine_types';
+import { GameObject, GameState, PlayerId } from '@shared/engine_types';
 
 /**
  * Rules Engine Module: Restrictions (CR 101.2: "Cannot" always wins)
@@ -50,3 +50,4 @@ export class RestrictionProcessor {
         return true;
     }
 }
+

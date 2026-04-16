@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const GarrisonExcavator: CardDefinition = {
     "name": "Garrison Excavator",
@@ -40,6 +40,7 @@ export const GarrisonExcavator: CardDefinition = {
     "power": "3",
     "toughness": "4"
 };
+
 
 
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const InklingMascot: CardDefinition = {
     "name": "Inkling Mascot",
@@ -24,7 +24,7 @@ export const InklingMascot: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     abilitiesToAdd: ['Flying'],
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Self
                 },
                 {
@@ -37,4 +37,5 @@ export const InklingMascot: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 

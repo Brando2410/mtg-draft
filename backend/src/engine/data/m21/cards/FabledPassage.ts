@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType, TargetMapping } from "@shared/engine_types";
 
-export const FabledPassage: Record<string, ImplementableCard> = {
-    "Fabled Passage": {
+export const FabledPassage: CardDefinition = {
         name: "Fabled Passage",
         manaCost: "",
         oracleText: "{T}, Sacrifice this land: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. Then if you control four or more lands, untap that land.",
@@ -16,7 +15,7 @@ export const FabledPassage: Record<string, ImplementableCard> = {
             {
                 id: "fabled_passage_activated",
                 type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 costs: [
                     { type: 'Tap', targetMapping: TargetMapping.Self },
                     { type: 'Sacrifice', targetMapping: TargetMapping.Self }
@@ -41,5 +40,5 @@ export const FabledPassage: Record<string, ImplementableCard> = {
                 ]
             }
         ]
-    }
-};
+    };
+

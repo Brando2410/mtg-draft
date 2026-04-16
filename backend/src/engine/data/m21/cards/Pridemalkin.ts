@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from "@shared/engine_types";
 
 export const Pridemalkin: CardDefinition = {
 
@@ -15,7 +15,7 @@ export const Pridemalkin: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
             effects: [{
@@ -27,7 +27,7 @@ export const Pridemalkin: CardDefinition = {
         },
         {
             type: AbilityType.Static,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 layer: 6,
@@ -38,5 +38,6 @@ export const Pridemalkin: CardDefinition = {
         }
     ]
 };
+
 
 

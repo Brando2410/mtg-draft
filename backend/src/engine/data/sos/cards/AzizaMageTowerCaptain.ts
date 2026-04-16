@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, TriggerEvent } from '@shared/engine_types';
 
 export const AzizaMageTowerCaptain: CardDefinition = {
     "name": "Aziza, Mage Tower Captain",
@@ -45,6 +45,7 @@ export const AzizaMageTowerCaptain: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 
 
 

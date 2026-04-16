@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const QuandrixCharm: CardDefinition = {
     "name": "Quandrix Charm",
@@ -63,5 +63,6 @@ export const QuandrixCharm: CardDefinition = {
         }
     ]
 };
+
 
 

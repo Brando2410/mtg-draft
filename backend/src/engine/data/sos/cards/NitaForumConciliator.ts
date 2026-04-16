@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, TargetType, Zone, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const NitaForumConciliator: CardDefinition = {
     "name": "Nita, Forum Conciliator",
@@ -55,7 +55,7 @@ export const NitaForumConciliator: CardDefinition = {
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.LastExiledObject,
                     canPlayExiled: true,
                     spendAnyMana: true,
@@ -69,4 +69,5 @@ export const NitaForumConciliator: CardDefinition = {
     "power": "2",
     "toughness": "3"
 };
+
 

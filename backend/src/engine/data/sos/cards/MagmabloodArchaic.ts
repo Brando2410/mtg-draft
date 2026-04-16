@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const MagmabloodArchaic: CardDefinition = {
     name: "Magmablood Archaic",
@@ -40,13 +40,14 @@ export const MagmabloodArchaic: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 'CONVERGE_AMOUNT', // The engine needs to know this refers to the TRIGGERING spell's converge
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.AllCreaturesYouControl
                 }
             ]
         }
     ],
 };
+
 
 
 

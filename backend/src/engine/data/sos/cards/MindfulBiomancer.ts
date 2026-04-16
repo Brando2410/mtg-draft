@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const MindfulBiomancer: CardDefinition = {
     "name": "Mindful Biomancer",
@@ -35,7 +35,7 @@ export const MindfulBiomancer: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 2,
                     toughnessModifier: 2,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Self
                 }
             ]
@@ -44,6 +44,7 @@ export const MindfulBiomancer: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 
 
 

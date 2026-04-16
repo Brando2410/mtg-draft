@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const KirolHistoryBuffPackaPunch: CardDefinition = {
     name: "Kirol, History Buff // Pack a Punch",
@@ -47,7 +47,7 @@ export const KirolHistoryBuffPackaPunch: CardDefinition = {
                     {
                         type: EffectType.ApplyContinuousEffect,
                         abilitiesToAdd: ["Trample"],
-                        duration: DurationType.UntilEndOfTurn,
+                        duration: { type: DurationType.UntilEndOfTurn },
                         targetMapping: TargetMapping.Target1
                     }
                 ]
@@ -55,3 +55,4 @@ export const KirolHistoryBuffPackaPunch: CardDefinition = {
         ]
     }
 };
+

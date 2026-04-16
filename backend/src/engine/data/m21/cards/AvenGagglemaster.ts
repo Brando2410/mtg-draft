@@ -1,11 +1,11 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const AvenGagglemaster: CardDefinition = {
 
     name: "Aven Gagglemaster",
     manaCost: "{3}{W}{W}",
     oracleText: "Flying\nWhen this creature enters, you gain 2 life for each creature you control with flying.",
-    colors: ["white"],
+    colors: ["W"],
     supertypes: [],
     types: ["Creature"],
     subtypes: ["Bird", "Warrior"],
@@ -17,7 +17,7 @@ export const AvenGagglemaster: CardDefinition = {
             id: "aven_gagglemaster_etb",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
             effects: [{
                 type: EffectType.GainLife,
@@ -35,5 +35,6 @@ export const AvenGagglemaster: CardDefinition = {
     ]
 
 };
+
 
 

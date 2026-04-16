@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, DurationType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType, DurationType } from "@shared/engine_types";
 
-export const DireFleetWarmonger: Record<string, ImplementableCard> = {
-    "Dire Fleet Warmonger": {
+export const DireFleetWarmonger: CardDefinition = {
         name: "Dire Fleet Warmonger",
         manaCost: "{1}{B}{R}",
         oracleText: "At the beginning of combat on your turn, you may sacrifice another creature. If you do, this creature gets +2/+2 and gains trample until end of turn. (It can deal excess combat damage to the player or planeswalker it's attacking.)",
@@ -16,7 +15,7 @@ export const DireFleetWarmonger: Record<string, ImplementableCard> = {
             {
                 id: "dire_fleet_warmonger_trigger",
                 type: AbilityType.Triggered,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                     eventMatch: "ON_BEGINNING_OF_COMBAT_STEP",
                 condition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId,
                 effects: [
@@ -55,7 +54,7 @@ export const DireFleetWarmonger: Record<string, ImplementableCard> = {
                 oracleText: "At the beginning of combat on your turn, you may sacrifice another creature. If you do, Dire Fleet Warmonger gets +2/+2 and gains trample until end of turn."
             }
         ]
-    }
-};
+    };
+
 
 

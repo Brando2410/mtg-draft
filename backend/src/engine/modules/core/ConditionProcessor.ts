@@ -1,4 +1,4 @@
-import { GameState, GameObjectId, PlayerId, GameObject, Zone, GameEvent, ConditionType } from '@shared/engine_types';
+import { ConditionType, GameEvent, GameObject, GameObjectId, GameState, PlayerId, Zone } from '@shared/engine_types';
 
 /**
  * Rules Engine Module: Condition Evaluation
@@ -50,10 +50,11 @@ export class ConditionProcessor {
           const oppLife = parseInt(restrictions[0]);
           const opponent = Object.keys(state.players).find(pid => pid !== controllerId);
           return opponent ? (state.players[opponent as PlayerId]?.life || 0) <= oppLife : false;
-        case 'EVENT_OBJECT_MATCHES':
-          const eventObj = event?.data?.object || (event as any)?.gameObject;
-          if (!eventObj) return false;
-          return TargetingProcessor.matchesRestrictions(state, eventObj, restrictions, controllerId, sourceId);
+        case 'EVENT_OBJECT_MATCHES': {
+          const obj = event?.data?.object || (event as any)?.gameObject || event?.object || (state.battlefield.find((o: any) => o.id === event?.sourceId));
+          if (!obj) return false;
+          return TargetingProcessor.matchesRestrictions(state, obj, restrictions, controllerId, sourceId);
+        }
         case 'TARGET_1_MATCHES':
         case 'TARGET_2_MATCHES':
           const targetIdx = type === 'TARGET_1_MATCHES' ? 0 : 1;
@@ -241,6 +242,10 @@ export class ConditionProcessor {
       }
       case 'LIFE_GAINED_2_OR_MORE_THIS_TURN':
         return (state.turnState.lifeGainedThisTurn[controllerId] || 0) >= 2;
+      case 'LIFE_GAINED_3_OR_MORE_THIS_TURN':
+        return (state.turnState.lifeGainedThisTurn[controllerId] || 0) >= 3;
+      case 'PLAYER_LIFE_GE_STARTING_PLUS_7':
+        return (state.players[controllerId]?.life || 0) >= 27;
       case 'HAS_COUNTERS': {
         const obj = state.battlefield.find(o => o.id === sourceId) || event?.data?.object;
         return obj ? Object.values(obj.counters || {}).some(v => (v as number) > 0) : false;
@@ -270,6 +275,10 @@ export class ConditionProcessor {
       case 'EVENT_PLAYER_IS_CONTROLLER':
       case 'EVENT_PLAYER_IS_YOU':
         return event?.playerId === controllerId;
+      case 'EVENT_OBJECT_CONTROLLER_IS_YOU': {
+          const eObj = event?.data?.object || (event as any)?.gameObject;
+          return eObj?.controllerId === controllerId;
+      }
       case 'TRIGGER_SOURCE_POW_OR_TOUGH_LE_1': {
         const tid = event?.data?.object?.id || event?.targetId;
         const obj = state.battlefield.find(o => o.id === tid);
@@ -464,9 +473,20 @@ export class ConditionProcessor {
       }
       case 'TRIGGER_EVENT_SOURCE.CONTROLLERID === CONTROLLER_ID':
         return event?.playerId === controllerId;
+      case 'EVENT_IS_NONCOMBAT':
+        return !(event as any)?.data?.isCombat;
+      case 'EVENT_IS_COMBAT':
+        return !!(event as any)?.data?.isCombat;
+      case 'EVENT_PLAYER_IS_YOU':
+        return event?.playerId === controllerId;
+      case 'EVENT_OBJECT_CONTROLLER_IS_YOU': {
+        const obj = event?.data?.object || (event as any)?.gameObject || event?.object || (state.battlefield.find((o: any) => o.id === event?.sourceId));
+        return obj?.controllerId === controllerId;
+      }
       default:
         // Assume true if unknown (safer for gameplay)
         return true;
     }
   }
 }
+

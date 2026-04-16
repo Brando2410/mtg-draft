@@ -8,7 +8,9 @@ export const Zone = {
     Graveyard: 'Graveyard',
     Stack: 'Stack',
     Exile: 'Exile',
-    Command: 'Command' // CR 408: The Command Zone (Emblems live here forever)
+    Command: 'Command',
+    Any: 'Any',
+    None: 'None'
 } as const;
 export type Zone = (typeof Zone)[keyof typeof Zone];
 
@@ -66,8 +68,17 @@ export const TargetMapping = {
     LastMilledIds: 'LAST_MILLED_IDS',
     AllCreaturesAndPlaneswalkers: 'ALL_CREATURES_AND_PLANESWALKERS',
     EachCreature: 'EACH_CREATURE',
-    SelectedTargets: 'SELECTED_TARGETS'
+    SelectedTargets: 'SELECTED_TARGETS',
+    TargetPlayer: 'TARGET_PLAYER',
+    TargetCreature: 'TARGET_CREATURE',
+    TargetPermanent: 'TARGET_PERMANENT',
+    EnchantedCreature: 'ENCHANTED_CREATURE',
+    AllCreatures: 'ALL_CREATURES',
+    AllPlaneswalkers: 'ALL_PLANESWALKERS'
+
 } as const;
+
+
 export type TargetMapping = (typeof TargetMapping)[keyof typeof TargetMapping];
 
 export const DynamicAmount = {
@@ -89,7 +100,8 @@ export const DynamicAmount = {
     DiscardedCountPlus1: 'DISCARDED_COUNT_PLUS_1',
     DifferentlyNamedLandsCount: 'DIFFERENTLY_NAMED_LANDS_COUNT',
     CreaturesYouControl: 'CREATURES_YOU_CONTROL',
-    MagecraftSpent: 'MAGECRAFT_SPENT'
+    MagecraftSpent: 'MAGECRAFT_SPENT',
+    Target1GraveyardCreatureCountX2: 'TARGET_1_GRAVEYARD_CREATURE_COUNT_X2'
 } as const;
 export type DynamicAmount = (typeof DynamicAmount)[keyof typeof DynamicAmount];
 
@@ -136,10 +148,10 @@ export interface CardDefinition {
     supertypes?: string[]; // e.g. "Legendary", "Basic", "Snow"
     types: string[];      // e.g. "Creature", "Instant", "Land"
     subtypes?: string[];   // e.g. "Goblin", "Warrior", "Aura"
-    power?: string;       // string to allow "*" or "1+*"
-    toughness?: string;
+    power?: string | number;       // string to allow "*" or "1+*", number for convenience
+    toughness?: string | number;
     keywords?: string[];   // Static keywords: ["Flying", "Trample", "Haste"]
-    loyalty?: string;
+    loyalty?: string | number;
     oracleText: string;
     type_line?: string;
     image_url?: string;
@@ -293,7 +305,7 @@ export interface CombatState {
 export interface TurnState {
     permanentReturnedToHandThisTurn: boolean;
     playersWithPermanentReturnedThisTurn: Record<PlayerId, boolean>;
-    noncombatDamageDealtToOpponents: number;
+    noncombatDamageDealtToOpponents: Record<PlayerId, number>;
     creaturesAttackedThisTurn: number;
     creaturesDiedThisTurn: any[];
     lastDamageAmount: number;
@@ -472,7 +484,8 @@ export interface ContinuousEffect {
 }
 
 export interface AbilityCost {
-    type: 'Tap' | 'Mana' | 'PayLife' | 'Discard' | 'Sacrifice' | 'Loyalty' | 'Exile' | 'Crew' | 'Life' | 'RemoveCounter' | 'TapSelection' | 'ExileSelf' | 'Choice';
+    type: CostType;
+
     value?: any; // e.g. "{G}" or 3 life
     amount?: number; // For Crew power
     restrictions?: (string | any)[]; // e.g. ["Creature"] or [{ type: "Creature" }]
@@ -537,7 +550,7 @@ export interface TriggeredAbility {
     sourceId: GameObjectId;
     controllerId: PlayerId;
     eventMatch: GameEvent['type'] | GameEvent['type'][];
-    activeZone?: ZoneRequirement;
+    activeZone?: Zone;
     condition?: (state: GameState, event: GameEvent, ability: TriggeredAbility) => boolean;
     limitPerTurn?: number;
     duration?: EffectDuration;
@@ -572,15 +585,7 @@ export const AbilityType = {
 } as const;
 export type AbilityType = (typeof AbilityType)[keyof typeof AbilityType];
 
-export const ZoneRequirement = {
-    Battlefield: 'Battlefield',
-    Graveyard: 'Graveyard',
-    Hand: 'Hand',
-    Stack: 'Stack',
-    Command: 'Command',
-    Any: 'Any'
-} as const;
-export type ZoneRequirement = (typeof ZoneRequirement)[keyof typeof ZoneRequirement];
+// ZoneRequirement was consolidated into Zone.
 
 export const TriggerEvent = {
     EnterBattlefield: 'ON_ETB',
@@ -625,7 +630,8 @@ export const TriggerEvent = {
     Upkeep: 'ON_UPKEEP_STEP',
     Cleanup: 'ON_CLEANUP_STEP',
     LeaveGraveyard: 'ON_LEAVE_GRAVEYARD',
-    ValentinReplacementSuccess: 'ON_VALENTIN_REPLACEMENT_SUCCESS'
+    ValentinReplacementSuccess: 'ON_VALENTIN_REPLACEMENT_SUCCESS',
+    ActivateLoyalty: 'ON_ACTIVATE_LOYALTY'
 } as const;
 
 export type TriggerEvent = (typeof TriggerEvent)[keyof typeof TriggerEvent];
@@ -752,10 +758,29 @@ export const EffectType = {
     SkipTurns: 'SkipTurns',
     PayMana: 'PayMana',
     LoseMana: 'LoseMana',
+    PhaseOut: 'PhaseOut'
 } as const;
 
 
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
+
+export const CostType = {
+    Tap: 'Tap',
+    Mana: 'Mana',
+    PayLife: 'PayLife',
+    Discard: 'Discard',
+    Sacrifice: 'Sacrifice',
+    Loyalty: 'Loyalty',
+    Exile: 'Exile',
+    Crew: 'Crew',
+    RemoveCounter: 'RemoveCounter',
+    TapSelection: 'TapSelection',
+    ExileSelf: 'ExileSelf',
+    Choice: 'Choice'
+} as const;
+
+export type CostType = (typeof CostType)[keyof typeof CostType];
+
 
 export const ConditionType = {
     IsYourTurn: 'IS_YOUR_TURN',
@@ -809,7 +834,7 @@ export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType] |
 
 export interface EffectDefinition {
     type: EffectType;
-    amount?: number | string | DynamicAmount | ((state: any, source: any, targets?: string[]) => number);
+    amount?: number | string | DynamicAmount | ((state: any, source: any, targets: string[], context?: any) => number);
     targetMapping?: TargetMapping | string;
     value?: any;
     tapped?: boolean;
@@ -953,6 +978,7 @@ export interface EffectDefinition {
 
 export const TargetType = {
     Player: 'Player',
+    Opponent: 'Opponent',
     Permanent: 'Permanent',
     Spell: 'Spell',
     CardInGraveyard: 'CardInGraveyard',
@@ -972,6 +998,7 @@ export const TargetType = {
     NonlandPermanent: 'Nonland_Permanent',
     CardInHand: 'CardInHand'
 } as const;
+
 export type TargetType = (typeof TargetType)[keyof typeof TargetType];
 
 export interface TargetDefinition {
@@ -994,7 +1021,7 @@ export interface ParsedAbility {
     multiMode?: { type: string };
     multiTargetMapping?: boolean; // Support for complex multi-target structures (e.g. Sublime Epiphany)
     modes?: any[];
-    activeZone?: ZoneRequirement;
+    activeZone?: Zone;
     costs?: AbilityCost[];
     additionalCosts?: AbilityCost[];
     isManaAbility?: boolean;
@@ -1023,9 +1050,6 @@ export interface ParsedAbility {
     effects?: EffectDefinition[];
 }
 
-export interface ImplementableCard extends CardDefinition {
-    abilities?: any[];
-}
 
 export const Restriction = {
     // Types
@@ -1079,7 +1103,14 @@ export const Restriction = {
     Player: 'player',
     Opponent: 'opponent',
     You: 'you',
-    NonLegendary: 'nonlegendary'
+    NonLegendary: 'nonlegendary',
+    NonLandPermanent: 'nonlandpermanent',
+    ArtifactCreature: 'artifactcreature',
+    Token: 'token',
+    NonToken: 'nontoken',
+    OpponentControls: 'opponentcontrols',
+    YouOwn: 'youown',
+    OpponentOwns: 'opponentowns'
 } as const;
 
 export const TargetKeyword = {

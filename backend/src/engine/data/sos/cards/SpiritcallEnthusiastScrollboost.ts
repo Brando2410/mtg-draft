@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetType, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const SpiritcallEnthusiastScrollboost: CardDefinition = {
     name: "Spiritcall Enthusiast",
@@ -52,3 +52,4 @@ export const SpiritcallEnthusiastScrollboost: CardDefinition = {
         ]
     }
 };
+

@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
-export const HistorianofZhalfir: Record<string, ImplementableCard> = {
-    "Historian of Zhalfir": {
+export const HistorianofZhalfir: CardDefinition = {
         name: "Historian of Zhalfir",
         manaCost: "{2}{U}{U}",
         oracleText: "Whenever Historian of Zhalfir attacks, if you control a Teferi planeswalker, draw a card.",
@@ -17,7 +16,7 @@ export const HistorianofZhalfir: Record<string, ImplementableCard> = {
                 id: "historian_of_zhalfir_attack_trigger",
                 type: AbilityType.Triggered,
                     eventMatch: "ON_ATTACK",
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => {
                     if (event.sourceId !== source.sourceId) return false;
                     // Rule 102.1: Teferi planeswalker means a planeswalker with the "Teferi" subtype.
@@ -35,7 +34,7 @@ export const HistorianofZhalfir: Record<string, ImplementableCard> = {
                 oracleText: "Whenever Historian of Zhalfir attacks, if you control a Teferi planeswalker, draw a card."
             }
         ]
-    }
-};
+    };
+
 
 

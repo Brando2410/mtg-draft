@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const AncestralAnger: CardDefinition = {
     "name": "Ancestral Anger",
@@ -21,7 +21,7 @@ export const AncestralAnger: CardDefinition = {
                     targetMapping: TargetMapping.Target1,
                     abilitiesToAdd: ['Trample'],
                     powerModifier: 'GRAVEYARD_NAME_COUNT_PLUS_1',
-                    duration: DurationType.UntilEndOfTurn
+                    duration: { type: DurationType.UntilEndOfTurn }
                 },
                 {
                     type: EffectType.DrawCards,
@@ -32,5 +32,6 @@ export const AncestralAnger: CardDefinition = {
         }
     ]
 };
+
 
 

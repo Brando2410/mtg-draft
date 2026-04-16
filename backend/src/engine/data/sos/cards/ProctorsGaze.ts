@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const ProctorsGaze: CardDefinition = {
     "name": "Proctor's Gaze",
@@ -41,5 +41,6 @@ export const ProctorsGaze: CardDefinition = {
         }
     ]
 };
+
 
 

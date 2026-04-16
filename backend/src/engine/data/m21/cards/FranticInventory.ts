@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
-export const FranticInventory: Record<string, ImplementableCard> = {
-    "Frantic Inventory": {
+export const FranticInventory: CardDefinition = {
         name: "Frantic Inventory",
         manaCost: "{1}{U}",
         oracleText: "Draw a card, then draw cards equal to the number of cards named Frantic Inventory in your graveyard.",
@@ -16,7 +15,7 @@ export const FranticInventory: Record<string, ImplementableCard> = {
             {
                 id: "frantic_inventory_spell",
                 type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Hand,
+                activeZone: Zone.Hand,
                 effects: [
                     {
                         type: EffectType.DrawCards,
@@ -32,5 +31,5 @@ export const FranticInventory: Record<string, ImplementableCard> = {
                 oracleText: "Draw a card, then draw cards equal to the number of cards named Frantic Inventory in your graveyard."
             }
         ]
-    }
-};
+    };
+

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TriggerEvent, TargetMapping, Zone, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ZealousLorecaster: CardDefinition = {
     "name": "Zealous Lorecaster",
@@ -39,6 +39,7 @@ export const ZealousLorecaster: CardDefinition = {
     "power": "4",
     "toughness": "4"
 };
+
 
 
 

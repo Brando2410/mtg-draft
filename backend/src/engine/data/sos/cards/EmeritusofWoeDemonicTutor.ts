@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone, SelectionType, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, SelectionType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const EmeritusofWoeDemonicTutor: CardDefinition = {
     name: "Emeritus of Woe // Demonic Tutor",
@@ -52,3 +52,4 @@ export const EmeritusofWoeDemonicTutor: CardDefinition = {
         ]
     }
 };
+

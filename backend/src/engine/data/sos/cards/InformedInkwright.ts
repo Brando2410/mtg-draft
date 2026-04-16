@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const InformedInkwright: CardDefinition = {
     "name": "Informed Inkwright",
@@ -42,6 +42,7 @@ export const InformedInkwright: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 
 
 

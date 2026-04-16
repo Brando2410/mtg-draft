@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const STX_Batch_11_UncommonMix: CardDefinition[] = [
     {
@@ -103,3 +103,4 @@ export const STX_Batch_11_UncommonMix: CardDefinition[] = [
         ]
     }
 ];
+

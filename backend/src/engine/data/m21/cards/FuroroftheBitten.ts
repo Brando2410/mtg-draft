@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from "@shared/engine_types";
 
-export const FuroroftheBitten: Record<string, ImplementableCard> = {
-    "Furor of the Bitten": {
+export const FuroroftheBitten: CardDefinition = {
         name: "Furor of the Bitten",
         manaCost: "{R}",
         oracleText: "Enchant creature\nEnchanted creature gets +2/+2 and attacks each combat if able.",
@@ -16,7 +15,7 @@ export const FuroroftheBitten: Record<string, ImplementableCard> = {
             {
                 id: "furor_of_the_bitten_aura",
                 type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Hand,
+                activeZone: Zone.Hand,
                 targetDefinition: {
                     type: TargetType.Creature,
                     count: 1
@@ -26,7 +25,7 @@ export const FuroroftheBitten: Record<string, ImplementableCard> = {
             {
                 id: "furor_of_the_bitten_stat_buff",
                 type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 effects: [
                     {
                         type: EffectType.ApplyContinuousEffect,
@@ -45,5 +44,5 @@ export const FuroroftheBitten: Record<string, ImplementableCard> = {
                 oracleText: "Enchanted creature gets +2/+2 and attacks each combat if able."
             }
         ]
-    }
-};
+    };
+

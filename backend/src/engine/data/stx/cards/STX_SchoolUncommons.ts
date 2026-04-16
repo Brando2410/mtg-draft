@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const STX_SchoolUncommons: CardDefinition[] = [
   {
@@ -79,4 +79,5 @@ export const STX_SchoolUncommons: CardDefinition[] = [
     ]
   }
 ];
+
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const AlpineHoundmaster: CardDefinition = {
     name: "Alpine Houndmaster",
@@ -35,9 +35,10 @@ export const AlpineHoundmaster: CardDefinition = {
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 powerModifier: { type: 'Dynamic', value: 'OtherAttackingCreaturesCount' },
-                duration: DurationType.UntilEndOfTurn,
+                duration: { type: DurationType.UntilEndOfTurn },
                 targetMapping: TargetMapping.Self
             }]
         }
     ]
 };
+

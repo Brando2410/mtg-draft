@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const Procrastinate: CardDefinition = {
   name: 'Procrastinate',
@@ -27,5 +27,6 @@ export const Procrastinate: CardDefinition = {
     }
   ]
 };
+
 
 

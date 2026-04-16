@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const StormcarvedCoast: CardDefinition = {
     "name": "Stormcarved Coast",
@@ -36,6 +36,7 @@ export const StormcarvedCoast: CardDefinition = {
     }
     ]
 };
+
 
 
 

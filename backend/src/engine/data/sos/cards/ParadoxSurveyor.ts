@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ParadoxSurveyor: CardDefinition = {
     "name": "Paradox Surveyor",
@@ -39,6 +39,7 @@ export const ParadoxSurveyor: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
 
 
 

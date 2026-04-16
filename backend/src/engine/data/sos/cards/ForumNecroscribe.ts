@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
  
  export const ForumNecroscribe: CardDefinition = {
      "name": "Forum Necroscribe",
@@ -33,6 +33,7 @@ import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Z
      "power": "5",
      "toughness": "4"
  };
+
 
 
 

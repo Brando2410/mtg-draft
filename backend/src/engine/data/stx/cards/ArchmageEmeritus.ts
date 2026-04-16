@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ArchmageEmeritus: CardDefinition = {
     name: 'Archmage Emeritus',
@@ -23,4 +23,5 @@ export const ArchmageEmeritus: CardDefinition = {
         }
     ]
   };
+
 

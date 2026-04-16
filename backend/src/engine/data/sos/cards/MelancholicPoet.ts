@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const MelancholicPoet: CardDefinition = {
     "name": "Melancholic Poet",
@@ -37,6 +37,7 @@ export const MelancholicPoet: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 
 
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const EliteInterceptorRejoinder: CardDefinition = {
     name: "Elite Interceptor",
@@ -39,3 +39,4 @@ export const EliteInterceptorRejoinder: CardDefinition = {
         ]
     }
 };
+

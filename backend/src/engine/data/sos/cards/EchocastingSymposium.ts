@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const EchocastingSymposium: CardDefinition = {
     "name": "Echocasting Symposium",
@@ -31,5 +31,6 @@ export const EchocastingSymposium: CardDefinition = {
         }
     ]
 };
+
 
 

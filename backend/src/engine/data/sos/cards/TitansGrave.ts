@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
 
 export const TitansGrave: CardDefinition = {
     "name": "Titan's Grave",
@@ -42,5 +42,6 @@ export const TitansGrave: CardDefinition = {
         }
     ]
 };
+
 
 

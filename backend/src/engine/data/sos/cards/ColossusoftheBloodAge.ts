@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ColossusoftheBloodAge: CardDefinition = {
     "name": "Colossus of the Blood Age",
@@ -44,6 +44,7 @@ export const ColossusoftheBloodAge: CardDefinition = {
     "power": "6",
     "toughness": "6"
 };
+
 
 
 

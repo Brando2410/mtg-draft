@@ -1,4 +1,4 @@
-import { AbilityType, Zone, EffectType, CardDefinition, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const JungleHollow: CardDefinition = {
 
@@ -39,5 +39,6 @@ export const JungleHollow: CardDefinition = {
         },
     ]
 };
+
 
 

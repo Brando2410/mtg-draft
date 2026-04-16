@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, DurationType, Zone, TargetType, TargetMapping, DynamicAmount, Restriction } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const STX_Remaining_Lessons: CardDefinition[] = [
     {
@@ -110,7 +110,7 @@ export const STX_Remaining_Lessons: CardDefinition[] = [
                                 label: 'Frog (1/1)',
                                 effects: [{
                                     type: EffectType.ApplyContinuousEffect,
-                                    duration: DurationType.UntilEndOfTurn,
+                                    duration: { type: DurationType.UntilEndOfTurn },
                                     removeAllAbilities: true,
                                     colorSet: ['U'],
                                     typesSet: ['Creature'],
@@ -124,7 +124,7 @@ export const STX_Remaining_Lessons: CardDefinition[] = [
                                 label: 'Elemental (4/4)',
                                 effects: [{
                                     type: EffectType.ApplyContinuousEffect,
-                                    duration: DurationType.UntilEndOfTurn,
+                                    duration: { type: DurationType.UntilEndOfTurn },
                                     removeAllAbilities: true,
                                     colorSet: ['U'],
                                     typesSet: ['Creature'],
@@ -213,3 +213,4 @@ export const STX_Remaining_Lessons: CardDefinition[] = [
         ]
     }
 ];
+

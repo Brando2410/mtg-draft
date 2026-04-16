@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const QuillBladeLaureateTwofoldIntent: CardDefinition = {
     name: "Quill-Blade Laureate // Twofold Intent",
@@ -41,3 +41,4 @@ export const QuillBladeLaureateTwofoldIntent: CardDefinition = {
         ]
     }
 };
+

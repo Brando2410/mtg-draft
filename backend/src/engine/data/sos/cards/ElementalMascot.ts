@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ElementalMascot: CardDefinition = {
     "name": "Elemental Mascot",
@@ -44,6 +44,7 @@ export const ElementalMascot: CardDefinition = {
     "power": "1",
     "toughness": "4"
 };
+
 
 
 

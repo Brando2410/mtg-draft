@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const HofriGhostforge: CardDefinition = {
         name: "Hofri Ghostforge",
@@ -60,5 +60,6 @@ export const HofriGhostforge: CardDefinition = {
             }
         ]
     };
+
 
 

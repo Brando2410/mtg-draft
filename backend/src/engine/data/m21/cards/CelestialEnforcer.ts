@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, CardDefinition, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const CelestialEnforcer: CardDefinition = {
 
@@ -16,7 +16,7 @@ export const CelestialEnforcer: CardDefinition = {
         {
             id: "celestial_enforcer_tap",
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             costs: [{ type: 'Mana', value: '{1}{W}' }, { type: 'Tap' }],
             condition: (state: any, event: any, source: any) => {
                 // Rule 602.2: Activated abilities can have activation requirements
@@ -27,4 +27,6 @@ export const CelestialEnforcer: CardDefinition = {
         }
     ]
 };
+
+
 

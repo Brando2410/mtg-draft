@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, ConditionType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const TenuredConcocter: CardDefinition = {
     "name": "Tenured Concocter",
@@ -48,6 +48,7 @@ export const TenuredConcocter: CardDefinition = {
     "power": "4",
     "toughness": "5"
 };
+
 
 
 

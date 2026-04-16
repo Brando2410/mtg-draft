@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const TraumaticCritique: CardDefinition = {
     "name": "Traumatic Critique",
@@ -39,5 +39,6 @@ export const TraumaticCritique: CardDefinition = {
         }
     ]
 };
+
 
 

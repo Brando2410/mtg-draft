@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
-export const ForgottenSentinel: Record<string, ImplementableCard> = {
-    "Forgotten Sentinel": {
+export const ForgottenSentinel: CardDefinition = {
         name: "Forgotten Sentinel",
         manaCost: "{4}",
         oracleText: "This creature enters tapped.",
@@ -14,5 +13,5 @@ export const ForgottenSentinel: Record<string, ImplementableCard> = {
         keywords: [],
         entersTapped: true,
         abilities: []
-    }
-};
+    };
+

@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
-export const Forest: Record<string, ImplementableCard> = {
-    "Forest": {
+export const Forest: CardDefinition = {
         name: "Forest",
         manaCost: "",
         oracleText: "({T}: Add {G}.)",
@@ -22,5 +21,5 @@ export const Forest: Record<string, ImplementableCard> = {
                 effects: [{ type: EffectType.AddMana, value: '{G}' }]
             }
         ]
-    }
-};
+    };
+

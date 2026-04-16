@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const FalconerAdept: Record<string, ImplementableCard> = {
-    "Falconer Adept": {
+export const FalconerAdept: CardDefinition = {
         name: "Falconer Adept",
         manaCost: "{3}{W}",
         oracleText: "Whenever this creature attacks, create a 1/1 white Bird creature token with flying that's tapped and attacking.",
@@ -17,7 +16,7 @@ export const FalconerAdept: Record<string, ImplementableCard> = {
                 id: "falconer_adept_trigger",
                 type: AbilityType.Triggered,
                     eventMatch: 'ON_ATTACK',
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => event.playerId === source.controllerId && event.targetId === source.sourceId,
                 effects: [{
                     type: 'CreateToken',
@@ -27,7 +26,8 @@ export const FalconerAdept: Record<string, ImplementableCard> = {
                 }]
             }
         ]
-    }
-};
+    };
+
+
 
 

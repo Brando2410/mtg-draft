@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const RuggedHighlands: CardDefinition = {
 
@@ -16,7 +16,7 @@ export const RuggedHighlands: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => {
                 return event.data?.object?.id === source.sourceId;
             },
@@ -39,5 +39,7 @@ export const RuggedHighlands: CardDefinition = {
     ]
 
 };
+
+
 
 

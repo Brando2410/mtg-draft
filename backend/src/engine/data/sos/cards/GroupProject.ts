@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const GroupProject: CardDefinition = {
     "name": "Group Project",
@@ -47,5 +47,6 @@ export const GroupProject: CardDefinition = {
         }
     ]
 };
+
 
 

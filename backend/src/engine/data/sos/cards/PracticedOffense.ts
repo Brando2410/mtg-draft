@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const PracticedOffense: CardDefinition = {
     "name": "Practiced Offense",
@@ -46,7 +46,7 @@ export const PracticedOffense: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.ApplyContinuousEffect,
-                                    duration: DurationType.UntilEndOfTurn,
+                                    duration: { type: DurationType.UntilEndOfTurn },
                                     abilitiesToAdd: ['double strike'],
                                     targetMapping: TargetMapping.Target2
                                 }
@@ -57,7 +57,7 @@ export const PracticedOffense: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.ApplyContinuousEffect,
-                                    duration: DurationType.UntilEndOfTurn,
+                                    duration: { type: DurationType.UntilEndOfTurn },
                                     abilitiesToAdd: ['lifelink'],
                                     targetMapping: TargetMapping.Target2
                                 }
@@ -69,5 +69,6 @@ export const PracticedOffense: CardDefinition = {
         }
     ],
 };
+
 
 

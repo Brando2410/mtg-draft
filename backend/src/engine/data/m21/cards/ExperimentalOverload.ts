@@ -1,20 +1,15 @@
-import { AbilityType, ZoneRequirement, EffectType, CardDefinition, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const ExperimentalOverload: CardDefinition = {
-
     name: "Experimental Overload",
     manaCost: "{2}{U}{R}",
     oracleText: "Create an X/X blue and red Weird creature token, where X is the number of instant and sorcery cards in your graveyard. Then you may return an instant or sorcery card from your graveyard to your hand. Exile Experimental Overload.",
-    colors: ["R", "U"],
-    supertypes: [],
+    colors: ["U", "R"],
     types: ["Sorcery"],
-    subtypes: [],
-    keywords: [],
+    exileOnResolution: true,
     abilities: [
         {
             type: AbilityType.Spell,
-            exileOnResolution: true,
-            activeZone: ZoneRequirement.Stack,
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -23,25 +18,43 @@ export const ExperimentalOverload: CardDefinition = {
                         colors: ['U', 'R'],
                         types: ['Creature'],
                         subtypes: ['Weird'],
-                        image_url: 'https://cards.scryfall.io/large/front/d/1/d1fded7b-c97e-43ed-babf-db17d0a6c24a.jpg'
+                        power: 0,
+                        toughness: 0
                     },
-                    amount: 1,
-                    powerOverride: 'INSTANT_SORCERY_IN_GRAVEYARD_COUNT',
-                    toughnessOverride: 'INSTANT_SORCERY_IN_GRAVEYARD_COUNT',
+                    powerOverride: (state: any, source: any) => {
+                        const graveyard = state.players[source.controllerId].graveyard;
+                        return graveyard.filter((c: any) =>
+                            c.definition.types.includes('Instant') || c.definition.types.includes('Sorcery')
+                        ).length;
+                    },
+                    toughnessOverride: (state: any, source: any) => {
+                        const graveyard = state.players[source.controllerId].graveyard;
+                        return graveyard.filter((c: any) =>
+                            c.definition.types.includes('Instant') || c.definition.types.includes('Sorcery')
+                        ).length;
+                    },
                     targetMapping: TargetMapping.Controller
                 },
                 {
                     type: EffectType.Choice,
-                    label: 'Choose an instant or sorcery card from your graveyard to return to your hand',
-                    targetIdMapping: 'ControllerGraveyard',
-                    restrictions: ['InstantOrSorcery'],
+                    label: "You may return an instant or sorcery card from your graveyard to your hand",
                     optional: true,
+                    targetDefinition: {
+                        type: TargetType.CardInGraveyard,
+                        count: 1,
+                        restrictions: [
+                            { type: 'Any', restrictions: ['Instant', 'Sorcery'] },
+                            'YouControl'
+                        ]
+                    },
                     effects: [
-                        { type: EffectType.ReturnToHand, targetMapping: TargetMapping.SelectedCard }
-                    ]
+                        { type: EffectType.ReturnToHand, targetMapping: TargetMapping.Target1 }
+                    ],
+                    targetMapping: TargetMapping.Controller
                 }
             ]
         }
     ]
-
 };
+
+

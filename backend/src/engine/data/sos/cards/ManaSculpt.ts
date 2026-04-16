@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const ManaSculpt: CardDefinition = {
     "name": "Mana Sculpt",
@@ -44,6 +44,7 @@ export const ManaSculpt: CardDefinition = {
         }
     ]
 };
+
 
 
 

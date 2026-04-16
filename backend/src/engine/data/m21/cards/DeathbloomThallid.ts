@@ -1,7 +1,6 @@
-import { AbilityType, TriggerEvent, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, TriggerEvent, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
-export const DeathbloomThallid: Record<string, ImplementableCard> = {
-    "Deathbloom Thallid": {
+export const DeathbloomThallid: CardDefinition = {
         name: "Deathbloom Thallid",
         manaCost: "{2}{B}",
         oracleText: "When Deathbloom Thallid dies, create a 1/1 green Saproling creature token.",
@@ -16,7 +15,7 @@ export const DeathbloomThallid: Record<string, ImplementableCard> = {
             {
                 id: "deathbloom_thallid_death",
                 type: AbilityType.Triggered,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                     eventMatch: TriggerEvent.Death,
                 effects: [
                     {
@@ -35,7 +34,7 @@ export const DeathbloomThallid: Record<string, ImplementableCard> = {
                 ]
             }
         ]
-    }
-};
+    };
+
 
 

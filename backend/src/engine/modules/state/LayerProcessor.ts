@@ -1,4 +1,4 @@
-import { GameState, GameObject, ContinuousEffect, PlayerId, GameObjectId, Zone, AbilityType, ZoneRequirement } from '@shared/engine_types';
+import { AbilityType, ContinuousEffect, GameObject, GameObjectId, GameState, PlayerId, Zone } from '@shared/engine_types';
 import { ConditionProcessor } from '../core/ConditionProcessor';
 import { TargetingProcessor } from '../actions/TargetingProcessor';
 
@@ -129,8 +129,24 @@ export class LayerProcessor {
       for (const effect of activeEffects) {
         if (!this.isTarget(state, effect, obj.id)) continue;
         if (effect.layer === 7 || effect.powerModifier !== undefined || effect.toughnessModifier !== undefined) {
-          let pMod = effect.powerModifier !== undefined ? Number(effect.powerModifier) : 0;
-          let tMod = effect.toughnessModifier !== undefined ? Number(effect.toughnessModifier) : 0;
+          const { EffectProcessor } = require('./../effects/EffectProcessor');
+          
+          let pModVal = effect.powerModifier;
+          let tModVal = effect.toughnessModifier;
+          
+          let pMod = 0;
+          let tMod = 0;
+
+          if (pModVal !== undefined) {
+              pMod = EffectProcessor.resolveAmount(state, pModVal, effect.sourceId, effect.controllerId, undefined, effect.targetIds || [obj.id]);
+          }
+          if (tModVal !== undefined) {
+              tMod = EffectProcessor.resolveAmount(state, tModVal, effect.sourceId, effect.controllerId, undefined, effect.targetIds || [obj.id]);
+          }
+
+          const multiplier = (effect as any).multiplier !== undefined ? (effect as any).multiplier : 1;
+          pMod *= multiplier;
+          tMod *= multiplier;
 
           if (effect.powerDynamic === 'attacking_dogs_count') {
             pMod += state.combat?.attackers.filter(a => {
@@ -335,7 +351,7 @@ export class LayerProcessor {
         
         const hasGraveyardAbility = card.definition.abilities?.some((a: any) => 
             (a.type === AbilityType.Activated || a.type === 'Activated') && 
-            (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === ZoneRequirement.Graveyard)
+            (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
         );
 
         if (hasPermission || hasFlashback || hasGraveyardAbility) {
@@ -405,7 +421,7 @@ export class LayerProcessor {
 
       const graveyardAbility = obj.definition.abilities?.find((a: any) => 
           (a.type === AbilityType.Activated || a.type === 'Activated') && 
-          (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === ZoneRequirement.Graveyard)
+          (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
       );
 
       const isFlashback = hasFlashbackKeyword && (inGraveyard || isVirtual);
@@ -432,3 +448,5 @@ export class LayerProcessor {
     });
   }
 }
+
+

@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const GadraktheCrownScourge: Record<string, ImplementableCard> = {
-    "Gadrak, the Crown-Scourge": {
+export const GadraktheCrownScourge: CardDefinition = {
         name: "Gadrak, the Crown-Scourge",
         manaCost: "{2}{R}",
         oracleText: "Flying\nGadrak can't attack unless you control four or more artifacts.\nAt the beginning of your end step, create a Treasure token for each nontoken creature that died this turn. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
@@ -16,7 +15,7 @@ export const GadraktheCrownScourge: Record<string, ImplementableCard> = {
             {
                 id: "gaddrak_attack_constraint",
                 type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 effects: [{
                     type: 'CombatConstraint',
                     value: 'CANNOT_ATTACK',
@@ -28,7 +27,7 @@ export const GadraktheCrownScourge: Record<string, ImplementableCard> = {
                 id: "gaddrak_end_step_treasure",
                 type: AbilityType.Triggered,
                     eventMatch: 'ON_END_STEP',
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId,
                 effects: [{
                     type: 'CreateToken',
@@ -38,7 +37,8 @@ export const GadraktheCrownScourge: Record<string, ImplementableCard> = {
                 }]
             }
         ]
-    }
-};
+    };
+
+
 
 

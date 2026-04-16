@@ -1,4 +1,5 @@
-import { GameState, GameObject, PlayerId, GameObjectId, AbilityCost, RestrictionType, Zone } from '@shared/engine_types';
+import { AbilityCost, CostType, GameObject, GameObjectId, GameState, PlayerId, RestrictionType, Zone } from '@shared/engine_types';
+
 import { ManaProcessor } from './ManaProcessor';
 import { ActionProcessor } from '../actions/ActionProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
@@ -45,8 +46,9 @@ export class CostProcessor {
     if (!player) return false;
 
     switch (cost.type) {
-      case 'Tap':
+      case CostType.Tap:
         if (source.isTapped) return false;
+
         
         // Rule 302.6: Summoning Sickness applies to tap abilities of creatures
         if (source.definition.types.includes('Creature') && source.summoningSickness) {
@@ -63,16 +65,19 @@ export class CostProcessor {
         if (hasRestriction) return false;
         return true;
 
-      case 'Mana':
+      case CostType.Mana:
         const effectiveMana = this.getEffectiveManaCost(state, cost, source);
         return ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveMana);
 
-      case 'Loyalty':
-        const val = parseInt(cost.value);
+      case CostType.Loyalty: {
+        const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
+        const valStr = String(cost.value);
+        const val = (valStr === 'X' || valStr === '-X') ? -Math.abs(xValue) : parseInt(valStr);
         const current = source.counters.loyalty || 0;
         return val >= 0 || current >= Math.abs(val);
+      }
 
-      case 'Sacrifice':
+      case CostType.Sacrifice:
         if (cost.targetMapping === 'SELF') {
            return state.battlefield.some(c => c.id === source.id);
         }
@@ -81,15 +86,15 @@ export class CostProcessor {
         }
         return state.battlefield.some(c => c.controllerId === playerId);
 
-      case 'Discard':
+      case CostType.Discard:
         return player.hand.some(c => !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, playerId, source.id));
 
-      case 'PayLife':
+      case CostType.PayLife:
         return player.life > (parseInt(cost.value) || 0);
 
-      case 'Exile':
-      case 'ExileSelf':
-        if (cost.targetMapping === 'SELF' || cost.type === 'ExileSelf') {
+      case CostType.Exile:
+      case CostType.ExileSelf:
+        if (cost.targetMapping === 'SELF' || cost.type === CostType.ExileSelf) {
            return !!this.findObject(state, source.id);
         }
         const zones = cost.sourceZones || (cost.sourceZone ? [cost.sourceZone] : [Zone.Battlefield]);
@@ -102,7 +107,7 @@ export class CostProcessor {
         });
         return pool.some(c => !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, playerId, source.id));
 
-      case 'Crew': {
+      case CostType.Crew: {
         const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
         const amountStr = String(cost.amount || cost.value || 0);
         const amount = amountStr === 'X' ? xValue : Number(amountStr);
@@ -115,7 +120,7 @@ export class CostProcessor {
         return totalPowerAvailable >= amount;
       }
 
-      case 'TapSelection': {
+      case CostType.TapSelection: {
         const amount = Number(cost.value || cost.amount || 1);
         const candidates = state.battlefield.filter(o => 
             o.controllerId === playerId && 
@@ -125,6 +130,7 @@ export class CostProcessor {
         // console.log(`[DEBUG] TapSelection canPay: amount=${amount}, candidates=${candidates.length}, sourceId=${source.id}`);
         return candidates.length >= amount;
       }
+
 
       default:
         return false;
@@ -136,26 +142,32 @@ export class CostProcessor {
     if (!player) return;
 
     switch (cost.type) {
-      case 'Tap':
+      case CostType.Tap:
         source.isTapped = true;
         TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: source.id, data: { object: source } }, log);
         break;
 
-      case 'Mana':
+      case CostType.Mana:
         // Auto-tap logic is usually handled before calling pay() or inside playCard/activateAbility
         // If we reach here, we assume mana is in the pool or we deduct it directly
         const effectiveManaStr = this.getEffectiveManaCost(state, cost, source);
         ManaProcessor.deductManaCost(player, effectiveManaStr);
         break;
 
-      case 'Loyalty':
-        const lVal = parseInt(cost.value);
+      case CostType.Loyalty: {
+        const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
+        const valStr = String(cost.value);
+        const lVal = (valStr === 'X' || valStr === '-X') ? -Math.abs(xValue) : parseInt(valStr);
         const oldL = source.counters.loyalty || 0;
         source.counters.loyalty = oldL + lVal;
         log(`${source.definition.name} loyalty: ${oldL} -> ${source.counters.loyalty}`);
+        
+        const { TriggerProcessor } = require('./../effects/TriggerProcessor');
+        TriggerProcessor.onEvent(state, { type: 'ON_ACTIVATE_LOYALTY', playerId, sourceId: source.id, data: { object: source } }, log);
         break;
+      }
 
-      case 'Sacrifice':
+      case CostType.Sacrifice:
         // CR 701.17: To sacrifice a permanent, move it to its owner's graveyard.
         let toSac;
         if (cost.targetMapping === 'SELF') {
@@ -188,7 +200,7 @@ export class CostProcessor {
         delete (state as any).lastChosenSacrificeId;
         break;
 
-      case 'Discard':
+      case CostType.Discard:
         // CR 701.8: To discard a card, move it from hand to graveyard.
         // If it's a cost, we typically expect a pre-selected cardId in state.lastChosenDiscardId
         // or we need to trigger a choice if it's not present.
@@ -202,15 +214,15 @@ export class CostProcessor {
         delete (state as any).lastChosenDiscardId;
         break;
 
-       case 'PayLife':
+       case CostType.PayLife:
          const lifeVal = parseInt(cost.value) || 0;
          player.life -= lifeVal;
          TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
          log(`${player.name} pays ${lifeVal} life (${player.life + lifeVal} -> ${player.life})`);
          break;
 
-       case 'Exile':
-       case 'ExileSelf':
+       case CostType.Exile:
+       case CostType.ExileSelf:
          let exiles: GameObject[] = [];
          if (cost.targetMapping === 'SELF') {
              exiles = [source];
@@ -230,7 +242,7 @@ export class CostProcessor {
          delete (state as any).lastChosenExileIds;
          break;
 
-       case 'Crew': {
+       case CostType.Crew: {
          const crewIds = (state as any).lastChosenCrewIds || [];
          crewIds.forEach((cid: string) => {
              const c = state.battlefield.find(o => o.id === cid);
@@ -243,7 +255,7 @@ export class CostProcessor {
          break;
        }
 
-       case 'TapSelection': {
+       case CostType.TapSelection: {
          const chosenIds = (state as any).lastChosenTapSelectionIds || [];
          chosenIds.forEach((cid: string) => {
              const c = state.battlefield.find(o => o.id === cid);
@@ -255,13 +267,15 @@ export class CostProcessor {
          delete (state as any).lastChosenTapSelectionIds;
          break;
        }
+
        default:
         return true;
     }
   }
 
   public static getEffectiveManaCost(state: GameState, cost: AbilityCost, source: GameObject, stackObject?: any): string {
-    if (cost.type !== 'Mana') return cost.value;
+    if (cost.type !== CostType.Mana) return cost.value;
+
 
     let costStr = cost.value;
     
@@ -302,3 +316,4 @@ export class CostProcessor {
            Object.values(state.players).flatMap(p => [...p.hand, ...p.graveyard, ...p.library]).find(o => o.id === id);
   }
 }
+

@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType } from "@shared/engine_types";
 
-export const GarruksGorehorn: Record<string, ImplementableCard> = {
-    "Garruk's Gorehorn": {
+export const GarruksGorehorn: CardDefinition = {
         name: "Garruk's Gorehorn",
         manaCost: "{3}{G}",
         oracleText: "",
@@ -13,5 +12,5 @@ export const GarruksGorehorn: Record<string, ImplementableCard> = {
         toughness: "3",
         keywords: [],
         abilities: []
-    }
-};
+    };
+

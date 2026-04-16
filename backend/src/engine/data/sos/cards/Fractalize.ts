@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const Fractalize: CardDefinition = {
     name: "Fractalize",
@@ -22,7 +22,7 @@ export const Fractalize: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     targetMapping: TargetMapping.Target1,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     powerSet: 'X_PLUS_1',
                     toughnessSet: 'X_PLUS_1',
                     colorSet: ['G', 'U'],
@@ -32,5 +32,6 @@ export const Fractalize: CardDefinition = {
         }
     ]
 };
+
 
 

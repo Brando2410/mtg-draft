@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetType, Zone } from '@shared/engine_types';
 
 export const EmbracetheParadox: CardDefinition = {
     "name": "Embrace the Paradox",
@@ -47,5 +47,6 @@ export const EmbracetheParadox: CardDefinition = {
         }
     ]
 };
+
 
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const EmilVastlandsRoamer: CardDefinition = {
     "name": "Emil, Vastlands Roamer",
@@ -59,5 +59,6 @@ export const EmilVastlandsRoamer: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
 
 

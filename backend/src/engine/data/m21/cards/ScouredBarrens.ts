@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ScouredBarrens: CardDefinition = {
 
@@ -15,7 +15,6 @@ export const ScouredBarrens: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: ZoneRequirement.Battlefield,
             condition: (state: any, event: any, source: any) => {
                 return event.data?.object?.id === source.sourceId;
             },
@@ -23,7 +22,7 @@ export const ScouredBarrens: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [
                 {
@@ -37,5 +36,6 @@ export const ScouredBarrens: CardDefinition = {
         },
     ]
 };
+
 
 

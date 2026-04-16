@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const ThornfistStriker: CardDefinition = {
     "name": "Thornfist Striker",
@@ -38,5 +38,6 @@ export const ThornfistStriker: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
 
 

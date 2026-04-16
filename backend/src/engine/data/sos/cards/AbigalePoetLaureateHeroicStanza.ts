@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
     "name": "Abigale, Poet Laureate // Heroic Stanza",
@@ -52,6 +52,7 @@ export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
         ]
     }
 };
+
 
 
 

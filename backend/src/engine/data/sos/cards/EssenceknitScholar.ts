@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const EssenceknitScholar: CardDefinition = {
     "name": "Essenceknit Scholar",
@@ -53,6 +53,7 @@ export const EssenceknitScholar: CardDefinition = {
     "power": "3",
     "toughness": "1"
 };
+
 
 
 

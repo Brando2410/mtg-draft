@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone, ZoneRequirement } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const TeachersPest: CardDefinition = {
     "name": "Teacher's Pest",
@@ -20,7 +20,7 @@ export const TeachersPest: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Graveyard,
+            activeZone: Zone.Graveyard,
             costs: [
                 { type: 'Mana', value: '{B}{G}' }
             ],
@@ -35,6 +35,8 @@ export const TeachersPest: CardDefinition = {
         }
     ]
 };
+
+
 
 
 

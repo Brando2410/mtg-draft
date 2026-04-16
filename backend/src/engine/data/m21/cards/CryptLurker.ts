@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from "@shared/engine_types";
 
-export const CryptLurker: Record<string, ImplementableCard> = {
-    "Crypt Lurker": {
+export const CryptLurker: CardDefinition = {
         name: "Crypt Lurker",
         manaCost: "{3}{B}",
         oracleText: "When Crypt Lurker enters the battlefield, you may sacrifice a creature or discard a creature card. If you do, draw a card.",
@@ -16,7 +15,7 @@ export const CryptLurker: Record<string, ImplementableCard> = {
             {
                 id: "crypt_lurker_etb",
                 type: AbilityType.Triggered,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                     eventMatch: "ON_ETB",
                 effects: [
                     {
@@ -68,7 +67,7 @@ export const CryptLurker: Record<string, ImplementableCard> = {
                 ]
             }
         ]
-    }
-};
+    };
+
 
 

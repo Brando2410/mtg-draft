@@ -1,7 +1,6 @@
-import { AbilityType, TriggerEvent, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
-export const ConclaveMentor: Record<string, ImplementableCard> = {
-    "Conclave Mentor": {
+export const ConclaveMentor: CardDefinition = {
         name: "Conclave Mentor",
         manaCost: "{G}{W}",
         oracleText: "If one or more +1/+1 counters would be put on a creature you control, that many plus one +1/+1 counters are put on that creature instead.\nWhen this creature dies, you gain life equal to its power.",
@@ -16,7 +15,7 @@ export const ConclaveMentor: Record<string, ImplementableCard> = {
             {
                 id: "conclave_mentor_replacement",
                 type: AbilityType.Replacement,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 replacesEvent: 'ON_ADD_COUNTERS',
                 condition: (state: any, event: any, source: any) => event.counterType === 'p1p1' && event.target.controllerId === source.controllerId,
                 effects: [{ type: 'ModifyCountersAmount', amount: 1, targetMapping: 'TRIGGER_EVENT' }]
@@ -25,10 +24,11 @@ export const ConclaveMentor: Record<string, ImplementableCard> = {
                 id: "conclave_mentor_death_life",
                 type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.Death,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 effects: [{ type: 'GainLife', amount: 'POWER', targetMapping: 'CONTROLLER' }]
             }
         ]
-    }
-};
+    };
+
+
 

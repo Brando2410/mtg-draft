@@ -1,4 +1,4 @@
-import { GameState, EffectDefinition, GameObjectId, PlayerId, GameObject, ContinuousEffect, DurationType, EffectDuration, Zone } from '@shared/engine_types';
+import { ContinuousEffect, DurationType, EffectDefinition, EffectDuration, GameObject, GameObjectId, GameState, PlayerId, Zone } from '@shared/engine_types';
 import { TargetingProcessor } from '../../actions/TargetingProcessor';
 
 /**
@@ -149,3 +149,4 @@ export class ContinuousEffectHandler {
     log(`[DEBUG] Registry size: ${state.ruleRegistry.continuousEffects.length}`);
   }
 }
+

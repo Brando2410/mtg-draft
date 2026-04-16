@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const HardenedAcademic: CardDefinition = {
     "name": "Hardened Academic",
@@ -50,6 +50,7 @@ export const HardenedAcademic: CardDefinition = {
     "power": "2",
     "toughness": "1"
 };
+
 
 
 

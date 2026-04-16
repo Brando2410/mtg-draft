@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const AberrantManawurm: CardDefinition = {
     "name": "Aberrant Manawurm",
@@ -23,7 +23,7 @@ export const AberrantManawurm: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     targetMapping: TargetMapping.Self,
                     powerModifier: 'EVENT_AMOUNT',
-                    duration: DurationType.UntilEndOfTurn
+                    duration: { type: DurationType.UntilEndOfTurn }
                 }
             ]
         }
@@ -31,6 +31,7 @@ export const AberrantManawurm: CardDefinition = {
     "power": "2",
     "toughness": "5"
 };
+
 
 
 

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TriggerEvent, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const TranscendentArchaic: CardDefinition = {
     "name": "Transcendent Archaic",
@@ -54,6 +54,7 @@ export const TranscendentArchaic: CardDefinition = {
     "power": "6",
     "toughness": "6"
 };
+
 
 
 

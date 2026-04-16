@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const EmeritusofIdeationAncestralRecall: CardDefinition = {
     name: "Emeritus of Ideation // Ancestral Recall",
@@ -76,3 +76,4 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
         ]
     }
 };
+

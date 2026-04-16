@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount, Restriction } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const WitherbloomCommand: CardDefinition = {
         name: 'Witherbloom Command',
@@ -45,3 +45,4 @@ export const WitherbloomCommand: CardDefinition = {
             }]
         }]
     };
+

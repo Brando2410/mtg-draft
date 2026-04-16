@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const DuelTactics: CardDefinition = {
     "name": "Duel Tactics",
@@ -32,5 +32,6 @@ export const DuelTactics: CardDefinition = {
         }
     ]
 };
+
 
 

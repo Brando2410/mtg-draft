@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const SilverquilltheDisputant: CardDefinition = {
     "name": "Silverquill, the Disputant",
@@ -45,5 +45,6 @@ export const SilverquilltheDisputant: CardDefinition = {
     "power": "4",
     "toughness": "4"
 };
+
 
 

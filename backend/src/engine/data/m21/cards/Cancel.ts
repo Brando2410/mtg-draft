@@ -1,17 +1,19 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from "@shared/engine_types";
 
-export const Cancel: Record<string, ImplementableCard> = {
-    "Cancel": {
-        name: "Cancel",
-        manaCost: "{1}{U}{U}",
-        oracleText: "Counter target spell.",
-        colors: [],
-        supertypes: [],
-        types: [],
-        subtypes: [],
-        power: "",
-        toughness: "",
-        keywords: [],
-        abilities: []
-    }
+export const Cancel: CardDefinition = {
+    name: "Cancel",
+    manaCost: "{1}{U}{U}",
+    oracleText: "Counter target spell.",
+    colors: ["U"],
+    supertypes: [],
+    types: ["Instant"],
+    subtypes: [],
+    keywords: [],
+    abilities: [
+        {
+            type: AbilityType.Spell,
+            targetDefinition: { type: TargetType.Spell, count: 1 },
+            effects: [{ type: EffectType.CounterSpell, targetMapping: TargetMapping.Target1 }]
+        }
+    ]
 };

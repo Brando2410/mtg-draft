@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
-export const GarrukSavageHerald: Record<string, ImplementableCard> = {
-    "Garruk, Savage Herald": {
+export const GarrukSavageHerald: CardDefinition = {
         name: "Garruk, Savage Herald",
         manaCost: "{4}{G}{G}",
         oracleText: "+1: Reveal the top card of your library. If it's a creature card, put it into your hand. Otherwise, put it on the bottom of your library.\n-2: Target creature you control deals damage equal to its power to another target creature.\n-7: Until end of turn, creatures you control gain \"You may have this creature assign its combat damage as though it weren't blocked.\"",
@@ -17,7 +16,7 @@ export const GarrukSavageHerald: Record<string, ImplementableCard> = {
             {
                 id: "garruk_savage_herald_plus_1",
                 type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 costs: [{ type: 'Mana', value: '+1' }],
                 effects: [{
                     type: EffectType.LookAtTopAndPick,
@@ -33,7 +32,7 @@ export const GarrukSavageHerald: Record<string, ImplementableCard> = {
             {
                 id: "garruk_savage_herald_minus_2",
                 type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 costs: [{ type: 'Mana', value: '-2' }],
                 targetDefinition: { 
                     type: 'Permanent', 
@@ -53,7 +52,7 @@ export const GarrukSavageHerald: Record<string, ImplementableCard> = {
             {
                 id: "garruk_savage_herald_minus_7",
                 type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 costs: [{ type: 'Mana', value: '-7' }],
                 effects: [{
                     type: EffectType.ApplyContinuousEffect,
@@ -64,5 +63,5 @@ export const GarrukSavageHerald: Record<string, ImplementableCard> = {
                 }]
             }
         ]
-    }
-};
+    };
+

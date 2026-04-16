@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, TargetType, CardDefinition, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const AnimalSanctuary: CardDefinition = {
 
@@ -14,14 +14,14 @@ export const AnimalSanctuary: CardDefinition = {
         {
             id: "animal_sanctuary_mana",
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
-            costs: [{ type: 'Tap', value: null }],
+            activeZone: Zone.Battlefield,
+            costs: [{ type: 'Tap' }],
             effects: [{ type: EffectType.AddMana, amount: '{C}', targetMapping: TargetMapping.Controller }]
         },
         {
             id: "animal_sanctuary_counter",
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             costs: [{ type: 'Mana', value: '{2}' }, { type: 'Tap' }],
             targetDefinition: {
                 type: TargetType.Creature, count: 1,
@@ -34,3 +34,4 @@ export const AnimalSanctuary: CardDefinition = {
     ]
 
 };
+

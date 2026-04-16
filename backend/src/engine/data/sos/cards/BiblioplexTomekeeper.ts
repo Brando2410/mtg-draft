@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const BiblioplexTomekeeper: CardDefinition = {
     "name": "Biblioplex Tomekeeper",
@@ -39,6 +39,7 @@ export const BiblioplexTomekeeper: CardDefinition = {
     "power": "3",
     "toughness": "4"
 };
+
 
 
 

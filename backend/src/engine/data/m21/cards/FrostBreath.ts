@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, TargetType, DurationType, TargetMapping, CardDefinition } from "@shared/engine_types";
+import { AbilityType, Zone, EffectType, TargetType, DurationType, TargetMapping, CardDefinition } from "@shared/engine_types";
 
 export const FrostBreath: CardDefinition = {
 
@@ -14,7 +14,7 @@ export const FrostBreath: CardDefinition = {
         {
             id: "frost_breath_spell",
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Hand,
+            activeZone: Zone.Hand,
             targetDefinition: {
                 type: TargetType.Creature,
                 count: 2,
@@ -38,3 +38,4 @@ export const FrostBreath: CardDefinition = {
     ]
 
 };
+

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const DoubleMajor: CardDefinition = {
         name: "Double Major",
@@ -12,3 +12,4 @@ export const DoubleMajor: CardDefinition = {
             effects: [{ type: EffectType.CopySpellOnStack, targetMapping: TargetMapping.Target1, removeLegendary: true }]
         }]
     };
+

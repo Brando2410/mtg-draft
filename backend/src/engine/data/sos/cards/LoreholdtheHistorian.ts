@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const LoreholdtheHistorian: CardDefinition = {
     "name": "Lorehold, the Historian",
@@ -64,6 +64,7 @@ export const LoreholdtheHistorian: CardDefinition = {
     "power": "5",
     "toughness": "5"
 };
+
 
 
 

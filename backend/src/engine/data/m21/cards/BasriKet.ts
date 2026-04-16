@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, EffectType, TargetMapping, TargetType, DurationType, CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const BasriKet: CardDefinition = {
-
     name: "Basri Ket",
     manaCost: "{1}{W}{W}",
     oracleText: "+1: Put a +1/+1 counter on up to one target creature. It gains indestructible until end of turn.\n−2: Whenever one or more nontoken creatures attack this turn, create that many 1/1 white Soldier creature tokens that are tapped and attacking.\n−6: You get an emblem with \"At the beginning of combat on your turn, create a 1/1 white Soldier creature token, then put a +1/+1 counter on each creature you control.\"",
@@ -9,42 +8,73 @@ export const BasriKet: CardDefinition = {
     supertypes: ["Legendary"],
     types: ["Planeswalker"],
     subtypes: ["Basri"],
-    keywords: [],
     loyalty: "3",
     abilities: [
         {
-            id: "basri_ket_plus_1",
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
-            costs: [{ type: 'Loyalty', value: '+1' }],
-            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0, optional: true, restrictions: [] },
+            costs: [{ type: CostType.Loyalty, value: '+1' }],
+            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0, optional: true },
             effects: [
-                { type: EffectType.AddCounters, amount: 1, counterType: 'p1p1', targetMapping: TargetMapping.Target1 },
-                { type: EffectType.ApplyContinuousEffect, duration: DurationType.UntilEndOfTurn, abilitiesToAdd: ['Indestructible'], layer: 6, targetMapping: TargetMapping.Target1 }
+                {
+                    type: EffectType.AddCounters,
+                    amount: 1,
+                    counterType: '+1/+1',
+                    targetMapping: TargetMapping.Target1
+                },
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    duration: { type: DurationType.UntilEndOfTurn },
+                    abilitiesToAdd: ['Indestructible'],
+                    layer: 6,
+                    targetMapping: TargetMapping.Target1
+                }
             ]
         },
         {
-            id: "basri_ket_minus_2",
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
-            costs: [{ type: 'Loyalty', value: '-2' }],
+            costs: [{ type: CostType.Loyalty, value: '-2' }],
             effects: [{
-                type: EffectType.CreateToken,
-                tokenBlueprint: {
-                    name: 'Soldier', power: '1', toughness: '1', colors: ['W'],
-                    types: ['Creature'], subtypes: ['Soldier'], keywords: [],
-                    image_url: 'https://cards.scryfall.io/large/front/b/7/b7b55dcf-ae63-4b84-8d39-80b5a6de3c1a.jpg'
-                },
-                amount: 1,
-                isAttacking: true,
-                targetMapping: TargetMapping.Controller
+                type: EffectType.ApplyContinuousEffect,
+                duration: { type: DurationType.UntilEndOfTurn },
+                targetMapping: TargetMapping.Controller,
+                delayedTriggers: [
+                    {
+                        eventMatch: TriggerEvent.OnAttackersDeclared,
+                        // Only trigger if at least one nontoken creature attacked
+                        condition: (state: any, event: any, trigger: any) => {
+                            if (state.activePlayerId !== trigger.controllerId) return false;
+                            const attackers = event.data.attackers || [];
+                            return attackers.some((a: any) => {
+                                const obj = state.battlefield.find((o: any) => o.id === a.attackerId);
+                                return obj && !obj.isToken && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
+                            });
+                        },
+                        effects: [{
+                            type: EffectType.CreateToken,
+                            // "create THAT MANY" -> count of nontoken attackers
+                            amount: (state: any, source: any, targets: any, context: any) => {
+                                const event = context?.data?.eventData;
+                                const attackers = event?.data?.attackers || [];
+                                return attackers.filter((a: any) => {
+                                    const obj = state.battlefield.find((o: any) => o.id === a.attackerId);
+                                    return obj && !obj.isToken && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
+                                }).length;
+                            },
+                            tokenBlueprint: {
+                                name: 'Soldier', power: '1', toughness: '1', colors: ['W'],
+                                types: ['Creature'], subtypes: ['Soldier'],
+                                image_url: 'https://cards.scryfall.io/large/front/b/7/b7b55dcf-ae63-4b84-8d39-80b5a6de3c1a.jpg'
+                            },
+                            isAttacking: true,
+                            targetMapping: TargetMapping.Controller
+                        }]
+                    }
+                ]
             }]
         },
         {
-            id: "basri_ket_minus_6",
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
-            costs: [{ type: 'Loyalty', value: '-6' }],
+            costs: [{ type: CostType.Loyalty, value: '-6' }],
             effects: [{
                 type: EffectType.CreateEmblem,
                 emblemBlueprint: {
@@ -52,28 +82,25 @@ export const BasriKet: CardDefinition = {
                     oracleText: "At the beginning of combat on your turn, create a 1/1 white Soldier creature token, then put a +1/+1 counter on each creature you control.",
                     abilities: [
                         {
-                            eventMatch: 'ON_BEGINNING_OF_COMBAT_STEP',
-                            // Condition: only trigger on the emblem controller's turn
+                            eventMatch: TriggerEvent.BeginningOfCombatStep,
                             condition: (state: any, event: any, trigger: any) => {
                                 return state.activePlayerId === trigger.controllerId;
                             },
                             effects: [
-                                // 1. Create a 1/1 Soldier token for the controller
                                 {
                                     type: EffectType.CreateToken,
                                     amount: 1,
                                     targetMapping: TargetMapping.Controller,
                                     tokenBlueprint: {
                                         name: 'Soldier', power: '1', toughness: '1', colors: ['W'],
-                                        types: ['Creature'], subtypes: ['Soldier'], keywords: [],
+                                        types: ['Creature'], subtypes: ['Soldier'],
                                         image_url: 'https://cards.scryfall.io/large/front/b/7/b7b55dcf-ae63-4b84-8d39-80b5a6de3c1a.jpg'
                                     }
                                 },
-                                // 2. Put a +1/+1 counter on each creature the controller controls
                                 {
                                     type: EffectType.AddCounters,
                                     amount: 1,
-                                    counterType: 'p1p1',
+                                    counterType: '+1/+1',
                                     targetMapping: TargetMapping.AllCreaturesYouControl
                                 }
                             ]
@@ -83,7 +110,8 @@ export const BasriKet: CardDefinition = {
             }]
         }
     ]
-
 };
+
+
 
 

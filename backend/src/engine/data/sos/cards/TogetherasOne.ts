@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const TogetherasOne: CardDefinition = {
     "name": "Together as One",
@@ -36,5 +36,6 @@ export const TogetherasOne: CardDefinition = {
         }
     ]
 };
+
 
 

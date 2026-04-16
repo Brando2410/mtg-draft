@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, TriggerEvent, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from "@shared/engine_types";
+import { AbilityType, Zone, TriggerEvent, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from "@shared/engine_types";
 
-export const InfernalScarring: Record<string, ImplementableCard> = {
-    "Infernal Scarring": {
+export const InfernalScarring: CardDefinition = {
         name: "Infernal Scarring",
         manaCost: "{1}{B}",
         oracleText: "Enchant creature\nEnchanted creature gets +2/+0.\nWhen enchanted creature dies, draw a card.",
@@ -16,7 +15,7 @@ export const InfernalScarring: Record<string, ImplementableCard> = {
             {
                 id: "infernal_scarring_spell",
                 type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Hand,
+                activeZone: Zone.Hand,
                 targetDefinition: {
                     type: TargetType.Creature,
                     count: 1
@@ -26,7 +25,7 @@ export const InfernalScarring: Record<string, ImplementableCard> = {
             {
                 id: "infernal_scarring_stats",
                 type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 effects: [{
                     type: EffectType.ApplyContinuousEffect,
                     layer: 7,
@@ -39,7 +38,7 @@ export const InfernalScarring: Record<string, ImplementableCard> = {
             {
                 id: "infernal_scarring_death_trigger",
                 type: AbilityType.Triggered,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                     eventMatch: TriggerEvent.DeathOther,
                 condition: (state: any, event: any, source: any) => {
                     const aura = state.battlefield.find((o: any) => o.id === source.sourceId);
@@ -53,7 +52,7 @@ export const InfernalScarring: Record<string, ImplementableCard> = {
                 oracleText: "When enchanted creature dies, draw a card."
             }
         ]
-    }
-};
+    };
+
 
 

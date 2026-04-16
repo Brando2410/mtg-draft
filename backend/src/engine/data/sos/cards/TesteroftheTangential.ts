@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, ConditionType, DynamicAmount, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const TesteroftheTangential: CardDefinition = {
     "name": "Tester of the Tangential",
@@ -68,6 +68,7 @@ export const TesteroftheTangential: CardDefinition = {
     "power": "1",
     "toughness": "1"
 };
+
 
 
 

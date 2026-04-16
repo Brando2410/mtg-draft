@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const BloodAgeGeneral: CardDefinition = {
     name: 'Blood-Age General',
@@ -23,4 +23,5 @@ export const BloodAgeGeneral: CardDefinition = {
       }
     ]
   };
+
 

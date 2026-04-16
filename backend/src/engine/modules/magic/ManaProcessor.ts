@@ -1,4 +1,4 @@
-import { PlayerState, GameState, GameObject } from '@shared/engine_types';
+import { GameObject, GameState, PlayerState } from '@shared/engine_types';
 
 /**
  * Handle Mana Pool, Cost Analysis, and Payments (Chapters 106 & 117)
@@ -136,8 +136,11 @@ export class ManaProcessor {
                     const oracleText = (payingFor.definition.oracleText || '').toLowerCase();
                     matches = m.restrictions.every(r => {
                         const lowR = r.toLowerCase();
-                        // Handle common STX restrictions like "Instant", "Sorcery"
-                        return typeLine.includes(lowR) || oracleText.includes(lowR);
+                        // Handle common STX restrictions like "Instant or Sorcery"
+                        if (lowR === 'instantorsorcery' || lowR === 'instant_or_sorcery') {
+                            return typeLine.includes('instant') || typeLine.includes('sorcery') || types.includes('instant') || types.includes('sorcery');
+                        }
+                        return typeLine.includes(lowR) || oracleText.includes(lowR) || types.includes(lowR);
                     });
                 }
             }
@@ -181,6 +184,9 @@ export class ManaProcessor {
                     const types = (payingFor.definition.types || []).map(t => t.toLowerCase());
                     matches = rm.restrictions.every(r => {
                         const lowR = r.toLowerCase();
+                        if (lowR === 'instantorsorcery' || lowR === 'instant_or_sorcery') {
+                            return typeLine.includes('instant') || typeLine.includes('sorcery') || types.includes('instant') || types.includes('sorcery');
+                        }
                         return typeLine.includes(lowR) || types.includes(lowR);
                     });
                         }
@@ -376,4 +382,5 @@ export class ManaProcessor {
     }
   }
 }
+
 

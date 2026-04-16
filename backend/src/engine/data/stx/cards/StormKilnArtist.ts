@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const StormKilnArtist: CardDefinition = {
     name: 'Storm-Kiln Artist',
@@ -46,4 +46,5 @@ export const StormKilnArtist: CardDefinition = {
         }
     ]
   };
+
 

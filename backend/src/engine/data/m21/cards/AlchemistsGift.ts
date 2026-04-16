@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, TargetType, CardDefinition, DurationType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const AlchemistsGift: CardDefinition = {
     name: "Alchemist's Gift",
@@ -13,7 +13,6 @@ export const AlchemistsGift: CardDefinition = {
         {
             id: "alchemist_gift_spell",
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
             targetDefinition: { type: TargetType.Creature, count: 1 },
             effects: [
                 {
@@ -24,13 +23,13 @@ export const AlchemistsGift: CardDefinition = {
                         {
                             label: 'Deathtouch',
                             effects: [
-                                { type: EffectType.ApplyContinuousEffect, powerModifier: 1, toughnessModifier: 1, duration: DurationType.UntilEndOfTurn, abilitiesToAdd: ['Deathtouch'], layer: 7, targetMapping: TargetMapping.Target1 }
+                                { type: EffectType.ApplyContinuousEffect, powerModifier: 1, toughnessModifier: 1, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToAdd: ['Deathtouch'], layer: 7, targetMapping: TargetMapping.Target1 }
                             ]
                         },
                         {
                             label: 'Lifelink',
                             effects: [
-                                { type: EffectType.ApplyContinuousEffect, powerModifier: 1, toughnessModifier: 1, duration: DurationType.UntilEndOfTurn, abilitiesToAdd: ['Lifelink'], layer: 7, targetMapping: TargetMapping.Target1 }
+                                { type: EffectType.ApplyContinuousEffect, powerModifier: 1, toughnessModifier: 1, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToAdd: ['Lifelink'], layer: 7, targetMapping: TargetMapping.Target1 }
                             ]
                         }
                     ]
@@ -39,3 +38,4 @@ export const AlchemistsGift: CardDefinition = {
         }
     ]
 };
+

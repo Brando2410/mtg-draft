@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, Zone, EffectType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const Swamp: CardDefinition = {
 
@@ -20,3 +20,4 @@ export const Swamp: CardDefinition = {
         }
     ]
 };
+

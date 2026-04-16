@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TargetType, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const EnthrallingHold: CardDefinition = {
 
@@ -13,14 +13,15 @@ export const EnthrallingHold: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
             targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['Tapped'] }
         },
         {
             type: AbilityType.Static,
-            activeZone: ZoneRequirement.Battlefield,
-            effects: [{ type: EffectType.ApplyContinuousEffect, layer: 2, duration: DurationType.Static, targetMapping: 'ENCHANTED_CREATURE', targetControllerId: TargetMapping.Controller }]
+            activeZone: Zone.Battlefield,
+            effects: [{ type: EffectType.ApplyContinuousEffect, layer: 2, duration: { type: DurationType.Static }, targetMapping: 'ENCHANTED_CREATURE', targetControllerId: TargetMapping.Controller }]
         }
     ]
 
 };
+
+

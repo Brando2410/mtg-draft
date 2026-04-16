@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const MuseSeeker: CardDefinition = {
     "name": "Muse Seeker",
@@ -45,6 +45,7 @@ export const MuseSeeker: CardDefinition = {
     "power": "1",
     "toughness": "2"
 };
+
 
 
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const LumaretsFavor: CardDefinition = {
     name: "Lumaret's Favor",
@@ -34,13 +34,14 @@ export const LumaretsFavor: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 2,
                     toughnessModifier: 4,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Target1
                 }
             ]
         }
     ]
 };
+
 
 
 

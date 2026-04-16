@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const LoreholdCharm: CardDefinition = {
     "name": "Lorehold Charm",
@@ -67,5 +67,6 @@ export const LoreholdCharm: CardDefinition = {
         }
     ]
 };
+
 
 

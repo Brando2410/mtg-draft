@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const PensiveProfessor: CardDefinition = {
     "name": "Pensive Professor",
@@ -32,6 +32,7 @@ export const PensiveProfessor: CardDefinition = {
     "power": "0",
     "toughness": "2"
 };
+
 
 
 

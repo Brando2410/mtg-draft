@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const PullfromtheGrave: CardDefinition = {
     "name": "Pull from the Grave",
@@ -34,5 +34,6 @@ export const PullfromtheGrave: CardDefinition = {
         }
     ]
 };
+
 
 

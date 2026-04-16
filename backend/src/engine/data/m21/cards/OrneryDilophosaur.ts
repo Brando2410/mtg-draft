@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, DurationType, TargetMapping, CardDefinition, TriggerEvent } from "@shared/engine_types";
+import { AbilityType, Zone, EffectType, DurationType, TargetMapping, CardDefinition, TriggerEvent } from "@shared/engine_types";
 
 export const OrneryDilophosaur: CardDefinition = {
 
@@ -22,14 +22,15 @@ export const OrneryDilophosaur: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 2,
                     toughnessModifier: 2,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Self
                 }
             ],
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
         }
     ]
 
 };
+
 
 

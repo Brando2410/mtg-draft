@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, Zone, EffectType, TargetType, TargetMapping, CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const Revitalize: CardDefinition = {
     name: "Revitalize",
@@ -13,7 +13,6 @@ export const Revitalize: CardDefinition = {
         {
             id: "revitalize_spell",
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
             effects: [
                 { type: EffectType.GainLife, amount: 3, targetMapping: TargetMapping.Controller },
                 { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }
@@ -22,3 +21,5 @@ export const Revitalize: CardDefinition = {
     ]
 
 };
+
+

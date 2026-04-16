@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const MicaReaderofRuins: CardDefinition = {
     "name": "Mica, Reader of Ruins",
@@ -50,6 +50,7 @@ export const MicaReaderofRuins: CardDefinition = {
     "power": "4",
     "toughness": "4"
 };
+
 
 
 

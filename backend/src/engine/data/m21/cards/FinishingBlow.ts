@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
-export const FinishingBlow: Record<string, ImplementableCard> = {
-    "Finishing Blow": {
+export const FinishingBlow: CardDefinition = {
         name: "Finishing Blow",
         manaCost: "{4}{B}",
         oracleText: "Destroy target creature or planeswalker.",
@@ -16,7 +15,7 @@ export const FinishingBlow: Record<string, ImplementableCard> = {
             {
                 id: "finishing_blow_spell",
                 type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Hand,
+                activeZone: Zone.Hand,
                 targetDefinition: {
                     type: TargetType.Permanent,
                     count: 1,
@@ -31,5 +30,5 @@ export const FinishingBlow: Record<string, ImplementableCard> = {
                 oracleText: "Destroy target creature or planeswalker."
             }
         ]
-    }
-};
+    };
+

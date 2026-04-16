@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const NiambiEsteemedSpeaker: Record<string, ImplementableCard> = {
-    "Niambi, Esteemed Speaker": {
+export const NiambiEsteemedSpeaker: CardDefinition = {
         name: "Niambi, Esteemed Speaker",
         manaCost: "{W}{U}",
         oracleText: "Flash\nWhen Niambi enters, you may return another target creature you control to its owner's hand. If you do, you gain life equal to that creature's mana value.\n{1}{W}{U}, {T}, Discard a legendary card: Draw two cards.",
@@ -17,7 +16,7 @@ export const NiambiEsteemedSpeaker: Record<string, ImplementableCard> = {
                 id: "niambi_etb_bounce",
                 type: AbilityType.Triggered,
                     eventMatch: 'ON_ETB',
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => {
                     return event.data?.object?.id === source.sourceId;
                 },
@@ -27,12 +26,13 @@ export const NiambiEsteemedSpeaker: Record<string, ImplementableCard> = {
             {
                 id: "niambi_discard_draw",
                 type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 costs: [{ type: 'Mana', value: '{1}{W}{U}' }, { type: 'Tap', value: null }, { type: 'Discard', restrictions: ['Legendary', 'Card'] }],
                 effects: [{ type: 'DrawCards', amount: 2, targetMapping: 'CONTROLLER' }]
             }
         ]
-    }
-};
+    };
+
+
 
 

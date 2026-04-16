@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone, SelectionType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, SelectionType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const SummonedDromedary: CardDefinition = {
     "name": "Summoned Dromedary",
@@ -33,5 +33,6 @@ export const SummonedDromedary: CardDefinition = {
     "power": "4",
     "toughness": "3"
 };
+
 
 

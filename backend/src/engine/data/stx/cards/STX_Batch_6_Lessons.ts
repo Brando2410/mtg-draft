@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone, TargetType, TriggerEvent, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const STX_Batch_6_Lessons: CardDefinition[] = [
   {
@@ -246,4 +246,5 @@ export const STX_Batch_6_Lessons: CardDefinition[] = [
     ]
   }
 ];
+
 

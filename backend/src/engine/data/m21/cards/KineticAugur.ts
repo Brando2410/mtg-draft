@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, Zone, EffectType, TargetMapping, TriggerEvent, CardDefinition } from "@shared/engine_types";
+import { AbilityType, Zone, EffectType, TargetMapping, TriggerEvent, CardDefinition } from "@shared/engine_types";
 
 export const KineticAugur: CardDefinition = {
 
@@ -15,7 +15,7 @@ export const KineticAugur: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Static,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -62,5 +62,6 @@ export const KineticAugur: CardDefinition = {
     ]
 
 };
+
 
 

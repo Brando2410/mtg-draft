@@ -25,7 +25,7 @@ export const OraclesRestoration: CardDefinition = {
                     sublayer: 'Stats',
                     powerModifier: 1,
                     toughnessModifier: 1,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Target1
                 },
                 {
@@ -42,6 +42,7 @@ export const OraclesRestoration: CardDefinition = {
         }
     ]
 };
+
 
 
 

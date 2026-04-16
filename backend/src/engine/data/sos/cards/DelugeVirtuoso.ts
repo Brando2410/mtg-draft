@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const DelugeVirtuoso: CardDefinition = {
     "name": "Deluge Virtuoso",
@@ -32,6 +32,7 @@ export const DelugeVirtuoso: CardDefinition = {
     "power": "2",
     "toughness": "3"
 };
+
 
 
 

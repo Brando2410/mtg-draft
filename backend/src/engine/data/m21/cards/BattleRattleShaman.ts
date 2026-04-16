@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, TargetType, TriggerEvent, DurationType, CardDefinition, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const BattleRattleShaman: CardDefinition = {
 
@@ -17,13 +17,14 @@ export const BattleRattleShaman: CardDefinition = {
             id: "battle_rattle_shaman_trigger",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.StartOfCombat,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId,
             targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0, optional: true },
-            effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 2, toughnessModifier: 0, duration: DurationType.UntilEndOfTurn, layer: 7, targetMapping: TargetMapping.Target1 }]
+            effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 2, toughnessModifier: 0, duration: { type: DurationType.UntilEndOfTurn }, layer: 7, targetMapping: TargetMapping.Target1 }]
         }
     ]
 
 };
+
 
 

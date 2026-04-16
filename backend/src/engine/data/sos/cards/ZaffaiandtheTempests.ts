@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ZaffaiandtheTempests: CardDefinition = {
     "name": "Zaffai and the Tempests",
@@ -35,5 +35,6 @@ export const ZaffaiandtheTempests: CardDefinition = {
     "power": "5",
     "toughness": "7"
 };
+
 
 

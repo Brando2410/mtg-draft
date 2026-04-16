@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
-export const FuriousRise: Record<string, ImplementableCard> = {
-    "Furious Rise": {
+export const FuriousRise: CardDefinition = {
         name: "Furious Rise",
         manaCost: "{2}{R}",
         oracleText: "At the beginning of your end step, if you control a creature with power 4 or greater, exile the top card of your library. You may play that card until you exile another card with this enchantment.",
@@ -13,5 +12,5 @@ export const FuriousRise: Record<string, ImplementableCard> = {
         toughness: "",
         keywords: [],
         abilities: []
-    }
-};
+    };
+

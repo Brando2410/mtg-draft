@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TriggerEvent, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const BrashTaunter: CardDefinition = {
 
@@ -16,14 +16,14 @@ export const BrashTaunter: CardDefinition = {
         {
             id: "brash_taunter_indestructible",
             type: AbilityType.Static,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             effects: [{ type: EffectType.ApplyContinuousEffect, abilitiesToAdd: ['Indestructible'], layer: 6, targetMapping: TargetMapping.Self }]
         },
         {
             id: "brash_taunter_damage_trigger",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.DamageDealtToCreature,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => event.targetId === source.sourceId,
             targetDefinition: { type: TargetType.Player, count: 1, restrictions: ['Opponent'] },
             effects: [{ type: EffectType.DealDamage, amount: 'EVENT_AMOUNT', targetMapping: TargetMapping.Target1 }]
@@ -31,7 +31,7 @@ export const BrashTaunter: CardDefinition = {
         {
             id: "brash_taunter_fight",
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             costs: [{ type: 'Mana', value: '{2}{R}' }, { type: 'Tap' }],
             targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['Other'] },
             effects: [{ type: EffectType.Fight, targetMapping: TargetMapping.Target1, target2Mapping: TargetMapping.Target2 }]
@@ -39,5 +39,7 @@ export const BrashTaunter: CardDefinition = {
     ]
 
 };
+
+
 
 

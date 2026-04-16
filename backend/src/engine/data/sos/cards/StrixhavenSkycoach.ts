@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, Restriction, EffectType, TargetMapping, TriggerEvent, Zone, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const StrixhavenSkycoach: CardDefinition = {
     "name": "Strixhaven Skycoach",
@@ -47,6 +47,7 @@ export const StrixhavenSkycoach: CardDefinition = {
     "power": "3",
     "toughness": "2"
 };
+
 
 
 

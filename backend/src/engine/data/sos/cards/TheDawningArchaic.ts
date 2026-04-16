@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, TargetType, ZoneRequirement } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const TheDawningArchaic: CardDefinition = {
     "name": "The Dawning Archaic",
@@ -20,7 +20,7 @@ export const TheDawningArchaic: CardDefinition = {
     "abilities": [
         {
             type: AbilityType.Static,
-            activeZone: ZoneRequirement.Hand,
+            activeZone: Zone.Hand,
             effects: [
                 {
                     type: EffectType.CostReduction,
@@ -66,6 +66,8 @@ export const TheDawningArchaic: CardDefinition = {
     "power": "7",
     "toughness": "7"
 };
+
+
 
 
 

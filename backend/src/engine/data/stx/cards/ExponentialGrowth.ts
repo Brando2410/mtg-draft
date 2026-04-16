@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, DurationType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ExponentialGrowth: CardDefinition = {
     name: "Exponential Growth",
@@ -12,7 +12,7 @@ export const ExponentialGrowth: CardDefinition = {
             targetDefinition: { type: TargetType.Permanent, count: 1, restrictions: [{ type: 'Type', value: 'Creature' }] },
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
-                duration: DurationType.UntilEndOfTurn,
+                duration: { type: DurationType.UntilEndOfTurn },
                 // The engine would need a custom handler for 2^X
                 effects: [{ type: 'DoublePowerXTimes', amount: DynamicAmount.X }],
                 targetMapping: TargetMapping.Target1
@@ -20,3 +20,4 @@ export const ExponentialGrowth: CardDefinition = {
         }
     ]
 };
+

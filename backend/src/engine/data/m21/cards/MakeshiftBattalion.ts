@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, CardDefinition, TargetMapping, TriggerEvent } from "@shared/engine_types";
+import { AbilityType, Zone, EffectType, CardDefinition, TargetMapping, TriggerEvent } from "@shared/engine_types";
 
 export const MakeshiftBattalion: CardDefinition = {
 
@@ -16,7 +16,7 @@ export const MakeshiftBattalion: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Attack,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => {
                 return event.sourceId === source.sourceId &&
                     (state.combat?.attackers?.length || 0) >= 3;
@@ -31,5 +31,6 @@ export const MakeshiftBattalion: CardDefinition = {
     ]
 
 };
+
 
 

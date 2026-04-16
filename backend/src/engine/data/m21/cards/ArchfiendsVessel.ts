@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ArchfiendsVessel: CardDefinition = {
 
@@ -14,10 +14,9 @@ export const ArchfiendsVessel: CardDefinition = {
     keywords: ["Lifelink"],
     abilities: [
         {
-            id: "archfiend_vessel_etb",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => {
                 const obj = event.data?.object;
                 return event.sourceZone === 'Graveyard' || (event.sourceZone === 'Stack' && obj?.lastNonStackZone === 'Graveyard');
@@ -38,5 +37,6 @@ export const ArchfiendsVessel: CardDefinition = {
     ]
 
 };
+
 
 

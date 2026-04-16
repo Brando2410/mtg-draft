@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const LeechCollectorBloodletting: CardDefinition = {
     name: "Leech Collector // Bloodletting",
@@ -49,3 +49,4 @@ export const LeechCollectorBloodletting: CardDefinition = {
         ]
     }
 };
+

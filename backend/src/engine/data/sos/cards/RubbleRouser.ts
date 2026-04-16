@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, Zone, SelectionType, Restriction } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, SelectionType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const RubbleRouser: CardDefinition = {
     "name": "Rubble Rouser",
@@ -53,6 +53,7 @@ export const RubbleRouser: CardDefinition = {
     "power": "1",
     "toughness": "4"
 };
+
 
 
 

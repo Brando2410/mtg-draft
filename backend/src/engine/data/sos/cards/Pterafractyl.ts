@@ -1,4 +1,4 @@
-import { CardDefinition, TriggerEvent, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const Pterafractyl: CardDefinition = {
     "name": "Pterafractyl",
@@ -33,6 +33,7 @@ export const Pterafractyl: CardDefinition = {
     "toughness": "0",
     "entersWithXCounters": true //specificare +1/+1 counters?
 };
+
 
 
 

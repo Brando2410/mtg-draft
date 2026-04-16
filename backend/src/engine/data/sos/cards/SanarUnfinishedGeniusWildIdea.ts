@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone, SelectionType, ConditionType, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, SelectionType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
     name: "Sanar, Unfinished Genius // Wild Idea",
@@ -71,3 +71,4 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
         ]
     }
 };
+

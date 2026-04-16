@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount, Restriction } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const RipApart: CardDefinition = {
         name: 'Rip Apart',
@@ -49,3 +49,4 @@ export const RipApart: CardDefinition = {
             }
         ]
     };
+

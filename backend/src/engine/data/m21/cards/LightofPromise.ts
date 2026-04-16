@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const LightofPromise: Record<string, ImplementableCard> = {
-    "Light of Promise": {
+export const LightofPromise: CardDefinition = {
         name: "Light of Promise",
         manaCost: "{2}{W}",
         oracleText: "Enchant creature\nEnchanted creature has \"Whenever you gain life, put that many +1/+1 counters on this creature.\"",
@@ -16,7 +15,6 @@ export const LightofPromise: Record<string, ImplementableCard> = {
             {
                 id: "light_promise_spell",
                 type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Stack,
                 targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
                 effects: []
             },
@@ -24,7 +22,7 @@ export const LightofPromise: Record<string, ImplementableCard> = {
                 id: "light_promise_trigger",
                 type: AbilityType.Triggered,
                     eventMatch: 'ON_LIFE_GAIN',
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => {
                     const hostId = (source as any).attachedTo;
                     if (!hostId) return false;
@@ -34,7 +32,8 @@ export const LightofPromise: Record<string, ImplementableCard> = {
                 effects: [{ type: 'AddCounters', amount: 'EVENT_AMOUNT', value: '+1/+1', targetMapping: 'ENCHANTED_CREATURE' }]
             }
         ]
-    }
-};
+    };
+
+
 
 

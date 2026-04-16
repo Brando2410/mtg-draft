@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ExpressiveFiredancer: CardDefinition = {
     "name": "Expressive Firedancer",
@@ -39,6 +39,7 @@ export const ExpressiveFiredancer: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 
 
 

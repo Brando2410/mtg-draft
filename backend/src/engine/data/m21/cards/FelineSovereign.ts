@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const FelineSovereign: Record<string, ImplementableCard> = {
-    "Feline Sovereign": {
+export const FelineSovereign: CardDefinition = {
         name: "Feline Sovereign",
         manaCost: "{2}{G}",
         oracleText: "Other Cats you control get +1/+1 and have protection from Dogs.\nWhenever one or more Cats you control deal combat damage to a player, destroy up to one target artifact or enchantment that player controls.",
@@ -16,7 +15,7 @@ export const FelineSovereign: Record<string, ImplementableCard> = {
             {
                 id: "feline_sovereign_lord",
                 type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 effects: [
                     { type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 1, targetMapping: 'MATCHING_PERMANENTS_YOU_CONTROL', restrictions: ['Other', 'Cat'], layer: 7 },
                     { type: 'ApplyContinuousEffect', abilitiesToAdd: ['Protection from Dogs'], targetMapping: 'MATCHING_PERMANENTS_YOU_CONTROL', restrictions: ['Other', 'Cat'], layer: 6 }
@@ -26,7 +25,7 @@ export const FelineSovereign: Record<string, ImplementableCard> = {
                 id: "feline_sovereign_trigger",
                 type: AbilityType.Triggered,
                     eventMatch: 'ON_DAMAGE_PLAYER',
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => {
                     if (!event.data?.isCombat) return false;
                     const attacker = state.battlefield.find((o: any) => o.id === event.sourceId);
@@ -36,7 +35,8 @@ export const FelineSovereign: Record<string, ImplementableCard> = {
                 effects: [{ type: 'Destroy', targetMapping: 'TARGET_1' }]
             }
         ]
-    }
-};
+    };
+
+
 
 

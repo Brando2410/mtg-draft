@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const OrysaTideChoreographer: CardDefinition = {
     "name": "Orysa, Tide Choreographer",
@@ -38,6 +38,7 @@ export const OrysaTideChoreographer: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 
 
 

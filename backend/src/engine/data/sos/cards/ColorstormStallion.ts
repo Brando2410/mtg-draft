@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ColorstormStallion: CardDefinition = {
     "name": "Colorstorm Stallion",
@@ -41,6 +41,7 @@ export const ColorstormStallion: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
 
 
 

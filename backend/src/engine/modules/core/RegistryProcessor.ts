@@ -1,4 +1,4 @@
-import { GameState, GameObject, ContinuousEffect, TriggeredAbility, ActivatedAbility, AbilityRestriction, Zone, DurationType } from '@shared/engine_types';
+import { AbilityRestriction, ActivatedAbility, ContinuousEffect, DurationType, GameObject, GameState, TriggeredAbility, Zone } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
 
 /**
@@ -19,7 +19,9 @@ export class RegistryProcessor {
 
     abilities.forEach((ability: any, index: number) => {
         const id = `${card.id}_ability_${index}`;
-        const activeZone = ability.activeZone || Zone.Battlefield;
+        const isSpellCard = card.definition.types.some(t => ['Instant', 'Sorcery'].includes(t));
+        const defaultZone = (ability.type === 'Spell' || isSpellCard) ? Zone.Stack : Zone.Battlefield;
+        const activeZone = ability.activeZone || defaultZone;
 
         // Rule 113.6: Abilities only function if the card is in the correct zone.
         if (activeZone !== 'Any' && activeZone !== card.zone) {
@@ -135,3 +137,4 @@ export class RegistryProcessor {
     state.ruleRegistry.replacementEffects.push({ id, sourceId: card.id, ...ability } as any);
   }
 }
+

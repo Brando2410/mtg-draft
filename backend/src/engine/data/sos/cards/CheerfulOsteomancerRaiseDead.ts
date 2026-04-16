@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const CheerfulOsteomancerRaiseDead: CardDefinition = {
     name: "Cheerful Osteomancer",
@@ -29,3 +29,4 @@ export const CheerfulOsteomancerRaiseDead: CardDefinition = {
         ]
     }
 };
+

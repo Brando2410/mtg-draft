@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const TackleArtist: CardDefinition = {
     "name": "Tackle Artist",
@@ -41,6 +41,7 @@ export const TackleArtist: CardDefinition = {
     "power": "4",
     "toughness": "3"
 };
+
 
 
 

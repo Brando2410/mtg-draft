@@ -1,36 +1,33 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
-export const TeferisTutelage: Record<string, ImplementableCard> = {
-    "Teferi's Tutelage": {
-        name: "Teferi's Tutelage",
-        manaCost: "{2}{U}",
-        oracleText: "When this enchantment enters, draw a card, then discard a card.\nWhenever you draw a card, target opponent mills two cards.",
-        colors: ["blue"],
-        supertypes: [],
-        types: ["Enchantment"],
-        subtypes: [],
-        power: undefined,
-        toughness: undefined,
-        keywords: [],
-        abilities: [
-            {
-                id: "teferi_tutelage_etb",
-                type: AbilityType.Triggered,
-                    eventMatch: 'ON_ETB',
-                activeZone: ZoneRequirement.Battlefield,
-                condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
-                effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }, { type: 'DiscardCards', amount: 1, targetMapping: 'CONTROLLER' }]
-            },
-            {
-                id: "teferi_tutelage_draw_trigger",
-                type: AbilityType.Triggered,
-                    eventMatch: 'ON_DRAW',
-                activeZone: ZoneRequirement.Battlefield,
-                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
-                effects: [{ type: 'Mill', amount: 2, targetMapping: 'OPPONENT' }]
-            }
-        ]
-    }
+export const TeferisTutelage: CardDefinition = {
+    name: "Teferi's Tutelage",
+    manaCost: "{2}{U}",
+    oracleText: "When this enchantment enters, draw a card, then discard a card.\nWhenever you draw a card, target opponent mills two cards.",
+    colors: ["U"],
+    types: ["Enchantment"],
+    abilities: [
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.EnterBattlefield,
+            activeZone: Zone.Battlefield,
+            effects: [
+                { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }, 
+                { type: EffectType.DiscardCards, amount: 1, targetMapping: TargetMapping.Controller }
+            ]
+        },
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.Draw,
+            activeZone: Zone.Battlefield,
+            condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+            effects: [
+                { type: EffectType.Mill, amount: 2, targetMapping: TargetMapping.Opponent }
+            ]
+        }
+    ]
 };
+
+
 
 

@@ -1,4 +1,4 @@
-import { GameState, PlayerId, Zone, ActionType } from '@shared/engine_types';
+import { ActionType, GameState, PlayerId, Zone } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
 import { EffectProcessor } from '../effects/EffectProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
@@ -684,3 +684,4 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     return success;
   }
 }
+

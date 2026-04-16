@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const PracticedScrollsmith: CardDefinition = {
     "name": "Practiced Scrollsmith",
@@ -44,6 +44,7 @@ export const PracticedScrollsmith: CardDefinition = {
     "power": "3",
     "toughness": "2"
 };
+
 
 
 

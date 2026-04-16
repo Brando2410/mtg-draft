@@ -1,6 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const ChandrasOutrage: Record<string, ImplementableCard> = {
+export const ChandrasOutrage: Record<string, CardDefinition> = {
     "Chandra's Outrage": {
         name: "Chandra's Outrage",
         manaCost: "{2}{R}{R}",
@@ -17,7 +17,7 @@ export const ChandrasOutrage: Record<string, ImplementableCard> = {
             {
                 id: "chandra_outrage_spell",
                 type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Stack,
+                activeZone: Zone.Stack,
                 targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
                 effects: [
                     { type: 'DealDamage', amount: 4, targetMapping: 'TARGET_1' },
@@ -27,3 +27,5 @@ export const ChandrasOutrage: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const MoltenCoreMaestro: CardDefinition = {
     "name": "Molten-Core Maestro",
@@ -39,6 +39,7 @@ export const MoltenCoreMaestro: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 
 
 

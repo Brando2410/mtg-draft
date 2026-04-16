@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TargetType, DurationType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, EffectType, TargetType, DurationType, TargetMapping } from "@shared/engine_types";
 
 export const RangersGuile: CardDefinition = {
     name: "Ranger's Guile",
@@ -13,7 +13,7 @@ export const RangersGuile: CardDefinition = {
         {
             id: "rangers_guile_spell",
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Hand,
+            activeZone: Zone.Hand,
             targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
             effects: [
                 {
@@ -21,17 +21,18 @@ export const RangersGuile: CardDefinition = {
                     layer: 7,
                     powerModifier: 1,
                     toughnessModifier: 1,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Target1
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
                     layer: 6,
                     abilitiesToAdd: ['Hexproof'],
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Target1
                 }
             ]
         }
     ]
 };
+

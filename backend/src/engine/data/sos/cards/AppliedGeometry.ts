@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const AppliedGeometry: CardDefinition = {
     "name": "Applied Geometry",
@@ -39,5 +39,6 @@ export const AppliedGeometry: CardDefinition = {
         }
     ]
 };
+
 
 

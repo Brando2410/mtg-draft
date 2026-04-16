@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType } from "@shared/engine_types";
 
-export const MangaraTheDiplomat: Record<string, ImplementableCard> = {
-    "Mangara, the Diplomat": {
+export const MangaraTheDiplomat: CardDefinition = {
         name: "Mangara, the Diplomat",
         manaCost: "{3}{W}",
         oracleText: "Lifelink\nWhenever an opponent attacks with creatures, if two or more of those creatures are attacking you and/or planeswalkers you control, draw a card.\nWhenever an opponent casts their second spell each turn, draw a card.",
@@ -17,7 +16,7 @@ export const MangaraTheDiplomat: Record<string, ImplementableCard> = {
                 id: "mangara_attack_draw",
                 type: AbilityType.Triggered,
                     eventMatch: 'ON_ATTACKERS_DECLARED',
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => {
                     // Must be an opponent attacking
                     const isOpponent = event.playerId !== source.controllerId;
@@ -42,14 +41,14 @@ export const MangaraTheDiplomat: Record<string, ImplementableCard> = {
                 id: "mangara_second_spell_draw",
                 type: AbilityType.Triggered,
                     eventMatch: 'ON_SECOND_SPELL_CAST',
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => {
                     return event.playerId !== source.controllerId;
                 },
                 effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: 'CONTROLLER' }]
             }
         ]
-    }
-};
+    };
+
 
 

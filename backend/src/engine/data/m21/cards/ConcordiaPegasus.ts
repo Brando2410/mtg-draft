@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
-export const ConcordiaPegasus: Record<string, ImplementableCard> = {
-    "Concordia Pegasus": {
+export const ConcordiaPegasus: CardDefinition = {
         name: "Concordia Pegasus",
         manaCost: "{1}{W}",
         oracleText: "Flying",
@@ -13,5 +12,5 @@ export const ConcordiaPegasus: Record<string, ImplementableCard> = {
         toughness: "3",
         keywords: ["Flying"],
         abilities: []
-    }
-};
+    };
+

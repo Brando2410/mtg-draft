@@ -23,7 +23,7 @@ export const KeenGlidemaster: CardDefinition = {
             },
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
-                duration: DurationType.UntilEndOfTurn,
+                duration: { type: DurationType.UntilEndOfTurn },
                 abilitiesToAdd: ['Flying'],
                 targetMapping: TargetMapping.Target1
             }],

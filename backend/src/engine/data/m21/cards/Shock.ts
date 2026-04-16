@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, Zone, EffectType, TargetType, TargetMapping, CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const Shock: CardDefinition = {
     name: "Shock",
@@ -13,10 +13,11 @@ export const Shock: CardDefinition = {
         {
             id: "shock_spell",
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
             targetDefinition: { type: TargetType.AnyTarget, count: 1 },
             effects: [{ type: EffectType.DealDamage, amount: 2, targetMapping: TargetMapping.Target1 }]
         }
     ]
 
 };
+
+

@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const RinandSeriInseparable: Record<string, ImplementableCard> = {
-    "Rin and Seri, Inseparable": {
+export const RinandSeriInseparable: CardDefinition = {
         name: "Rin and Seri, Inseparable",
         manaCost: "{1}{G}{W}{R}",
         oracleText: "Whenever you cast a Dog spell, create a 1/1 green Cat creature token.\nWhenever you cast a Cat spell, create a 1/1 white Dog creature token.\n{R}{G}{W}, {T}: Rin and Seri, Inseparable deals damage to any target equal to the number of Dogs you control. You gain life equal to the number of Cats you control.",
@@ -17,7 +16,7 @@ export const RinandSeriInseparable: Record<string, ImplementableCard> = {
                 id: "rin_seri_cast_dog",
                 type: AbilityType.Triggered,
                     eventMatch: 'ON_CAST_SPELL',
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => event.playerId === source.controllerId && event.data?.card?.definition?.subtypes?.includes('Dog'),
                 effects: [{ type: 'CreateToken', tokenBlueprint: { name: 'Cat', power: '1', toughness: '1', colors: ['G'], types: ['Creature'], subtypes: ['Cat'] }, targetMapping: 'CONTROLLER' }]
             },
@@ -25,14 +24,14 @@ export const RinandSeriInseparable: Record<string, ImplementableCard> = {
                 id: "rin_seri_cast_cat",
                 type: AbilityType.Triggered,
                     eventMatch: 'ON_CAST_SPELL',
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => event.playerId === source.controllerId && event.data?.card?.definition?.subtypes?.includes('Cat'),
                 effects: [{ type: 'CreateToken', tokenBlueprint: { name: 'Dog', power: '1', toughness: '1', colors: ['W'], types: ['Creature'], subtypes: ['Dog'] }, targetMapping: 'CONTROLLER' }]
             },
             {
                 id: "rin_seri_activated",
                 type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 costs: [{ type: 'Mana', value: '{R}{G}{W}' }, { type: 'Tap' }],
                 targetDefinition: { type: 'AnyTarget', count: 1 },
                 effects: [
@@ -41,7 +40,8 @@ export const RinandSeriInseparable: Record<string, ImplementableCard> = {
                 ]
             }
         ]
-    }
-};
+    };
+
+
 
 

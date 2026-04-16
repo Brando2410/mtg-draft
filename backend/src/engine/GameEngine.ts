@@ -1,4 +1,4 @@
-import { GameState, Phase, Step, PlayerId, Zone, GameObject, PlayerState, DurationType, TriggeredAbility } from '@shared/engine_types';
+import { DurationType, GameObject, GameState, Phase, PlayerId, PlayerState, Step, TriggeredAbility, Zone } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { StackResolver } from './modules';
 import { m21 } from './data/m21';
@@ -57,7 +57,7 @@ export class GameEngine {
       turnState: {
         permanentReturnedToHandThisTurn: false,
         playersWithPermanentReturnedThisTurn: {},
-        noncombatDamageDealtToOpponents: 0,
+        noncombatDamageDealtToOpponents: {},
         creaturesAttackedThisTurn: 0,
         creaturesDiedThisTurn: [],
         lastDamageAmount: 0,
@@ -448,7 +448,7 @@ export class GameEngine {
     this.state.turnState = {
       permanentReturnedToHandThisTurn: false,
       playersWithPermanentReturnedThisTurn: {},
-      noncombatDamageDealtToOpponents: 0,
+      noncombatDamageDealtToOpponents: {},
       creaturesAttackedThisTurn: 0,
       creaturesDiedThisTurn: [],
       lastDamageAmount: 0,
@@ -677,3 +677,4 @@ export class GameEngine {
     this.resolver = new StackResolver(this.state);
   }
 }
+

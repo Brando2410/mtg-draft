@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, Zone, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const SeetheTruth: CardDefinition = {
     name: "See the Truth",
@@ -32,3 +32,4 @@ export const SeetheTruth: CardDefinition = {
         }
     ]
 };
+

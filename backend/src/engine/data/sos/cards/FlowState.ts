@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Zone } from '@shared/engine_types';
 
 export const FlowState: CardDefinition = {
     "name": "Flow State",
@@ -42,4 +42,5 @@ export const FlowState: CardDefinition = {
         }
     ]
 }
+
 

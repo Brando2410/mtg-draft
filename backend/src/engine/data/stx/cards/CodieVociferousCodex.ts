@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const CodieVociferousCodex: CardDefinition = {
     name: "Codie, Vociferous Codex",
@@ -23,7 +23,7 @@ export const CodieVociferousCodex: CardDefinition = {
                 {
                     type: EffectType.CreateDelayedTrigger,
                     eventMatch: TriggerEvent.CastSpell,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     condition: "NextSpellThisTurn",
                     effects: [{
                         type: EffectType.SearchLibrary,
@@ -48,5 +48,6 @@ export const CodieVociferousCodex: CardDefinition = {
         }
     ]
 };
+
 
 

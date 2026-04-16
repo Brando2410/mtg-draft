@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const Duress: CardDefinition = {
     name: 'Duress',
@@ -9,7 +9,6 @@ export const Duress: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            activeZone: Zone.Stack,
             targetDefinition: {
                 count: 1,
                 type: TargetType.Player,
@@ -32,3 +31,4 @@ export const Duress: CardDefinition = {
         }
     ]
 };
+

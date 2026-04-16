@@ -1,36 +1,49 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, Restriction, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
-export const VitoThornoftheDuskRose: Record<string, ImplementableCard> = {
-    "Vito, Thorn of the Dusk Rose": {
-        name: "Vito, Thorn of the Dusk Rose",
-        manaCost: "{2}{B}",
-        oracleText: "Whenever you gain life, target opponent loses that much life.\n{3}{B}{B}: Creatures you control gain lifelink until end of turn.",
-        colors: ["black"],
-        supertypes: ["Legendary"],
-        types: ["Creature"],
-        subtypes: ["Vampire", "Cleric"],
-        power: "1",
-        toughness: "3",
-        keywords: [],
-        abilities: [
-            {
-                id: "vito_life_gain_trigger",
-                type: AbilityType.Triggered,
-                    eventMatch: 'ON_LIFE_GAIN',
-                activeZone: ZoneRequirement.Battlefield,
-                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
-                targetDefinition: { type: TargetType.Player, count: 1, restrictions: [Restriction.Opponents] },
-                effects: [{ type: EffectType.LoseLife, amount: 'EVENT_AMOUNT', targetMapping: 'TARGET_1' }]
+export const VitoThornoftheDuskRose: CardDefinition = {
+    name: "Vito, Thorn of the Dusk Rose",
+    manaCost: "{2}{B}",
+    oracleText: "Whenever you gain life, target opponent loses that much life.\n{3}{B}{B}: Creatures you control gain lifelink until end of turn.",
+    colors: ["B"],
+    supertypes: ["Legendary"],
+    types: ["Creature"],
+    subtypes: ["Vampire", "Cleric"],
+    power: "1",
+    toughness: "3",
+    abilities: [
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.LifeGain,
+            condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
+            targetDefinition: {
+                type: TargetType.Opponent,
+                count: 1
             },
-            {
-                id: "vito_activated_lifelink",
-                type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
-                costs: [{ type: 'Mana', value: '{3}{B}{B}' }],
-                effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', layer: 6, abilitiesToAdd: ['Lifelink'], targetMapping: 'ALL_CREATURES_YOU_CONTROL' }]
-            }
-        ]
-    }
+            effects: [
+                {
+                    type: EffectType.LoseLife,
+                    // Functional amount from life gain event
+                    amount: (state: any, source: any, targets: any, context: any) => context?.data?.eventAmount || 0,
+                    targetMapping: TargetMapping.Target1
+                }
+            ]
+        },
+        {
+            type: AbilityType.Activated,
+            costs: [{ type: CostType.Mana, value: '{3}{B}{B}' }],
+            effects: [
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    duration: { type: DurationType.UntilEndOfTurn },
+                    abilitiesToAdd: ['Lifelink'],
+                    targetMapping: TargetMapping.AllCreaturesYouControl
+                }
+            ]
+        }
+    ]
 };
+
+
+
 
 

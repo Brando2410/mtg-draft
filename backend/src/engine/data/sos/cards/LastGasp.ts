@@ -1,4 +1,4 @@
-import { CardDefinition, DurationType, AbilityType, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const LastGasp: CardDefinition = {
     "name": "Last Gasp",
@@ -21,7 +21,7 @@ export const LastGasp: CardDefinition = {
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     powerModifier: -3,
                     toughnessModifier: -3,
                     targetMapping: TargetMapping.Target1
@@ -30,5 +30,6 @@ export const LastGasp: CardDefinition = {
         }
     ]
 };
+
 
 

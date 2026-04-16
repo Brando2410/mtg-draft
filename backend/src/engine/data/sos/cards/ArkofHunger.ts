@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const ArkofHunger: CardDefinition = {
     "name": "Ark of Hunger",
@@ -34,11 +34,12 @@ export const ArkofHunger: CardDefinition = {
             costs: [{ type: 'Tap', targetMapping: 'SELF' }],
             effects: [
                 { type: 'Mill', amount: 1 },
-                { type: 'AllowPlayMilledCard', duration: DurationType.UntilEndOfTurn }
+                { type: 'AllowPlayMilledCard', duration: { type: DurationType.UntilEndOfTurn } }
             ]
         }
     ]
 };
+
 
 
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, DurationType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const Daydream: CardDefinition = {
     "name": "Daydream",
@@ -32,5 +32,6 @@ export const Daydream: CardDefinition = {
         }
     ]
 };
+
 
 

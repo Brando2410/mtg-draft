@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone, TargetMapping, Restriction } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
 
 export const QuandrixtheProof: CardDefinition = {
     "name": "Quandrix, the Proof",
@@ -36,5 +36,6 @@ export const QuandrixtheProof: CardDefinition = {
     "power": "6",
     "toughness": "6"
 };
+
 
 

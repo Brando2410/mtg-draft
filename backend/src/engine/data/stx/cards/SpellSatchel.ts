@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const SpellSatchel: CardDefinition = {
     name: 'Spell Satchel',
@@ -24,4 +24,5 @@ export const SpellSatchel: CardDefinition = {
         }
     ]
   };
+
 

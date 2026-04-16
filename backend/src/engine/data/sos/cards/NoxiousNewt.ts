@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const NoxiousNewt: CardDefinition = {
     "name": "Noxious Newt",
@@ -31,6 +31,7 @@ export const NoxiousNewt: CardDefinition = {
     "power": "1",
     "toughness": "2"
 };
+
 
 
 

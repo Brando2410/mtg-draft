@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const BrushOff: CardDefinition = {
     "name": "Brush Off",
@@ -26,5 +26,6 @@ export const BrushOff: CardDefinition = {
         }
     ]
 };
+
 
 

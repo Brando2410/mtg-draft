@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping, TriggerEvent, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const ProfessorDellianFel: CardDefinition = {
   name: 'Professor Dellian Fel',
@@ -83,6 +83,7 @@ export const ProfessorDellianFel: CardDefinition = {
     }
   ]
 };
+
 
 
 

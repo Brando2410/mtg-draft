@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const WiltintheHeat: CardDefinition = {
     "name": "Wilt in the Heat",
@@ -32,7 +32,7 @@ export const WiltintheHeat: CardDefinition = {
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     exileOnMoveToGraveyard: true,
                     targetMapping: TargetMapping.Target1
                 }
@@ -40,6 +40,7 @@ export const WiltintheHeat: CardDefinition = {
         }
     ]
 };
+
 
 
 

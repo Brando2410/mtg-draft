@@ -1,6 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const DeathlessKnight: Record<string, ImplementableCard> = {
+export const DeathlessKnight: Record<string, CardDefinition> = {
     "Deathless Knight": {
         name: "Deathless Knight",
         manaCost: "{B/G}{B/G}{B/G}{B/G}",
@@ -19,11 +19,13 @@ export const DeathlessKnight: Record<string, ImplementableCard> = {
 
                 type: AbilityType.Triggered,
                     eventMatch: 'ON_LIFE_GAIN',
-                activeZone: ZoneRequirement.Graveyard,
+                activeZone: Zone.Graveyard,
                 condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
                 effects: [{ type: 'ReturnToHand', targetMapping: 'SELF' }]
             }
         ]
     }
 };
+
+
 

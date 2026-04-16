@@ -1,4 +1,4 @@
-import { AbilityType, EffectType, ZoneRequirement, TargetMapping, TriggerEvent, CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const PursuedWhale: CardDefinition = {
 
@@ -16,7 +16,7 @@ export const PursuedWhale: CardDefinition = {
         {
 
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             eventMatch: TriggerEvent.EnterBattlefield,
             effects: [{
                 type: EffectType.CreateToken,
@@ -45,7 +45,7 @@ export const PursuedWhale: CardDefinition = {
         {
 
             type: AbilityType.Static,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             effects: [{
                 type: EffectType.SpellTax,
                 amount: 3,
@@ -55,5 +55,7 @@ export const PursuedWhale: CardDefinition = {
         }
     ]
 };
+
+
 
 

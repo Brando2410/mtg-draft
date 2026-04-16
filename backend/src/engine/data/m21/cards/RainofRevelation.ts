@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const RainofRevelation: Record<string, ImplementableCard> = {
-    "Rain of Revelation": {
+export const RainofRevelation: CardDefinition = {
         name: "Rain of Revelation",
         manaCost: "{3}{U}",
         oracleText: "Draw three cards, then discard a card.",
@@ -16,12 +15,12 @@ export const RainofRevelation: Record<string, ImplementableCard> = {
             {
                 id: "rain_revelation_spell",
                 type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Stack,
                 effects: [
                     { type: 'DrawCards', amount: 3, targetMapping: 'CONTROLLER' },
                     { type: 'DiscardCards', amount: 1, targetMapping: 'CONTROLLER' }
                 ]
             }
         ]
-    }
-};
+    };
+
+

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const Mathemagics: CardDefinition = {
     "name": "Mathemagics",
@@ -25,5 +25,6 @@ export const Mathemagics: CardDefinition = {
         }
     ]
 };
+
 
 

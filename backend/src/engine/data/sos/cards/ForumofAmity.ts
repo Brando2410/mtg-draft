@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const ForumofAmity: CardDefinition = {
     "name": "Forum of Amity",
@@ -39,5 +39,6 @@ export const ForumofAmity: CardDefinition = {
         }
     ]
 };
+
 
 

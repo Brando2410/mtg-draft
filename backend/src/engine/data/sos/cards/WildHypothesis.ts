@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const WildHypothesis: CardDefinition = {
     "name": "Wild Hypothesis",
@@ -39,3 +39,4 @@ export const WildHypothesis: CardDefinition = {
         }
     ]
 };
+

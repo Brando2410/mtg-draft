@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const StressDream: CardDefinition = {
     "name": "Stress Dream",
@@ -39,6 +39,7 @@ export const StressDream: CardDefinition = {
         }
     ]
 };
+
 
 
 

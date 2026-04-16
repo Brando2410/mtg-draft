@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, DurationType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const SnoopingPage: CardDefinition = {
     "name": "Snooping Page",
@@ -24,7 +24,7 @@ export const SnoopingPage: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     abilitiesToAdd: ["CannotBeBlocked"],
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Self
                 }
             ]
@@ -49,6 +49,7 @@ export const SnoopingPage: CardDefinition = {
     "power": "2",
     "toughness": "3"
 };
+
 
 
 

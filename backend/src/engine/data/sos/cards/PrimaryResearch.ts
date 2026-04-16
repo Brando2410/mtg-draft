@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, Zone, TargetMapping, EffectType, TargetType, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const PrimaryResearch: CardDefinition = {
   "name": "Primary Research",
@@ -41,6 +41,7 @@ export const PrimaryResearch: CardDefinition = {
     }
   ]
 };
+
 
 
 

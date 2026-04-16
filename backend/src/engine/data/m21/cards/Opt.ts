@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, Zone, EffectType, TargetType, TargetMapping, CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const Opt: CardDefinition = {
     name: "Opt",
@@ -13,7 +13,6 @@ export const Opt: CardDefinition = {
         {
             id: "opt_spell",
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
             effects: [
                 { type: EffectType.Scry, amount: 1, targetMapping: TargetMapping.Controller },
                 { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }
@@ -21,3 +20,5 @@ export const Opt: CardDefinition = {
         }
     ]
 };
+
+

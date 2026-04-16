@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TriggerEvent, TargetMapping } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, EffectType, TriggerEvent, TargetMapping } from "@shared/engine_types";
 
 export const QuirionDryad: CardDefinition = {
 
@@ -16,7 +16,7 @@ export const QuirionDryad: CardDefinition = {
         {
             id: "quirion_dryad_trigger",
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             eventMatch: TriggerEvent.CastSpell,
             condition: (state: any, event: any, triggerDef: any) => {
                 const card = event.data?.card;
@@ -36,5 +36,6 @@ export const QuirionDryad: CardDefinition = {
     ]
 
 };
+
 
 

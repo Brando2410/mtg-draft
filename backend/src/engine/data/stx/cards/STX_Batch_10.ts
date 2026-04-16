@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone, TriggerEvent, TargetType, DurationType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const STX_Batch_10: CardDefinition[] = [
     {
@@ -19,7 +19,7 @@ export const STX_Batch_10: CardDefinition[] = [
                         targetDefinition: { type: TargetType.NonlandPermanent, count: 1 },
                         effects: [{
                             type: EffectType.ApplyContinuousEffect,
-                            duration: DurationType.UntilYourNextTurn,
+                            duration: { type: DurationType.UntilYourNextTurn },
                             // The engine interprets these based on the chosen name in NameACard mapping
                             effects: [{ type: 'CantCastNamedCard' }, { type: 'CantAttackOrBlockNamedCard' }]
                         }]
@@ -102,7 +102,7 @@ export const STX_Batch_10: CardDefinition[] = [
                 targetDefinition: { type: TargetType.Creature, count: 1 },
                 effects: [{
                     type: EffectType.ApplyContinuousEffect,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     // The engine would need a custom handler for 2^X
                     effects: [{ type: 'DoublePowerXTimes', amount: DynamicAmount.X }],
                     targetMapping: TargetMapping.Target1
@@ -145,4 +145,5 @@ export const STX_Batch_10: CardDefinition[] = [
         ]
     }
 ];
+
 

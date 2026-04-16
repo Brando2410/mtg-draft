@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, CardDefinition, TargetMapping, DurationType } from "@shared/engine_types";
+import { AbilityType, Zone, EffectType, CardDefinition, TargetMapping, DurationType } from "@shared/engine_types";
 
 export const MaskedBlackguard: CardDefinition = {
 
@@ -16,7 +16,7 @@ export const MaskedBlackguard: CardDefinition = {
         {
 
             type: AbilityType.Activated,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             costs: [
                 { type: 'Mana', value: '{2}{B}' }
             ],
@@ -25,7 +25,7 @@ export const MaskedBlackguard: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 1,
                     toughnessModifier: 1,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Self
                 }
             ],
@@ -33,3 +33,4 @@ export const MaskedBlackguard: CardDefinition = {
     ]
 
 };
+

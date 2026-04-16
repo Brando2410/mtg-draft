@@ -15,3 +15,4 @@ export const BloodGlutton: CardDefinition = {
     abilities: []
 
 };
+

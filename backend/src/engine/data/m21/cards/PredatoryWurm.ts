@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const PredatoryWurm: CardDefinition = {
 
@@ -15,7 +15,7 @@ export const PredatoryWurm: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Static,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             condition: 'HAS_PERMANENT:Planeswalker,Garruk',
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
@@ -27,3 +27,4 @@ export const PredatoryWurm: CardDefinition = {
         }
     ]
 };
+

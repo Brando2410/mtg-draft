@@ -1,4 +1,4 @@
-import { GameState, EffectDefinition, GameObjectId, PlayerId, Zone, GameObject, ContinuousEffect, DurationType, EmblemDefinition, TriggeredAbility, ActionType, Phase, Step, EffectType, AbilityType, ConditionType } from '@shared/engine_types';
+import { AbilityType, ActionType, ConditionType, ContinuousEffect, DurationType, EffectDefinition, EffectType, EmblemDefinition, GameObject, GameObjectId, GameState, Phase, PlayerId, Step, TargetMapping, TriggeredAbility, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { ActionProcessor } from '../actions/ActionProcessor';
 
@@ -145,7 +145,7 @@ export class EffectProcessor {
             validationIndex = parseInt(mStr.substring(7)) - 1;
         }
 
-        if (isDirectTargetMapping || ['TARGET_OPPONENT', 'TARGET_PLAYER', 'TARGET_CREATURE', 'TARGET_PERMANENT'].includes(mStr)) {
+        if (isDirectTargetMapping || [TargetMapping.TargetOpponent, TargetMapping.TargetPlayer, TargetMapping.TargetCreature, TargetMapping.TargetPermanent].includes(mStr as TargetMapping)) {
             return this.getValidTargetIds(state, effect, ids, sourceId, sourceObj, stackObject, parentContext, validationIndex);
         }
         
@@ -612,7 +612,7 @@ export class EffectProcessor {
     if (typeof amount === 'number') return amount === -1 ? state.turnState.lastDamageAmount || 0 : amount;
     if (typeof amount === 'string' && !isNaN(Number(amount))) return Number(amount);
     if (typeof amount === 'string' && ['ANY', 'ALL', 'Any', 'All'].includes(amount)) return amount as any;
-    if (typeof amount === 'function') return amount(state, this.findObject(state, sourceId, stackObject) || { id: sourceId, controllerId }, targetIds);
+    if (typeof amount === 'function') return amount(state, this.findObject(state, sourceId, stackObject) || { id: sourceId, controllerId }, targetIds, stackObject);
 
 
     const obj = this.findObject(state, sourceId, stackObject);
@@ -635,6 +635,19 @@ export class EffectProcessor {
                    stackObject?.data?.xValue || 0;
           if (state.logs) state.logs.push(`[DEBUG] EffectProcessor: Resolved X = ${result}`);
           break;
+      case 'GRAVEYARD_SIZE':
+          result = state.players[controllerId]?.graveyard.length || 0;
+          break;
+      case 'EVENT_OBJECT_POWER':
+      case 'EVENT_OBJECT_TOUGHNESS': {
+          const eObj = stackObject?.data?.eventData?.data?.object || parentContext?.eventData?.data?.object;
+          if (eObj) {
+              const { LayerProcessor } = require('./../state/LayerProcessor');
+              const stats = LayerProcessor.getEffectiveStats(eObj, state);
+              result = amount === 'EVENT_OBJECT_POWER' ? stats.power : stats.toughness;
+          }
+          break;
+      }
       case 'X_PLUS_1':
           result = (stackObject?.xValue || 0) + 1;
           break;
@@ -655,6 +668,9 @@ export class EffectProcessor {
           break;
       case 'GAINED_LIFE_AMOUNT':
           result = state.turnState.lifeGainedThisTurn?.[controllerId] || 0;
+          break;
+      case 'NONCOMBAT_DAMAGE_DEALT_OPPONENTS_THIS_TURN':
+          result = state.turnState.noncombatDamageDealtToOpponents?.[controllerId] || 0;
           break;
       case 'CONVERGE_AMOUNT':
           result = (stackObject as any)?.convergeAmount || (stackObject as any)?.card?.convergeAmount;
@@ -749,6 +765,16 @@ export class EffectProcessor {
           result = Math.pow(2, x);
           break;
       }
+      case 'TARGET_1_GRAVEYARD_CREATURE_COUNT_X2': {
+          const pid = targetIds[0] as PlayerId;
+          const player = state.players[pid];
+          if (!player) return 0;
+          const creatureCount = player.graveyard.filter(c => 
+              (c.definition.types || []).some(t => t.toLowerCase() === 'creature')
+          ).length;
+          result = creatureCount * 2;
+          break;
+      }
       case 'CONVERGE_AMOUNT': {
           result = stackObject?.convergeAmount || stackObject?.card?.convergeAmount || 0;
           break;
@@ -788,3 +814,4 @@ export class EffectProcessor {
            (stackObject?.data?.lookingCards as GameObject[])?.find(o => o.id === id);
   }
 }
+

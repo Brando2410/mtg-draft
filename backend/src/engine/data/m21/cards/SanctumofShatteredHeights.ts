@@ -1,30 +1,49 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameObject, GameState, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
-export const SanctumofShatteredHeights: Record<string, ImplementableCard> = {
-    "Sanctum of Shattered Heights": {
-        name: "Sanctum of Shattered Heights",
-        manaCost: "{2}{R}",
-        oracleText: "At the beginning of your precombat main phase, you may pay {1}. If you do, Sanctum of Shattered Heights deals X damage to target creature or planeswalker an opponent controls, where X is the number of Shrines you control.",
-        colors: ["red"],
-        supertypes: ["Legendary"],
-        types: ["Enchantment"],
-        subtypes: ["Shrine"],
-        power: undefined,
-        toughness: undefined,
-        keywords: [],
-        abilities: [
-            {
-                id: "sanctum_shattered_heights_trigger",
-                type: AbilityType.Triggered,
-                    eventMatch: 'ON_PRE_COMBAT_MAIN_PHASE_START',
-                activeZone: ZoneRequirement.Battlefield,
-                condition: (state: any, event: any, source: any) => event.playerId === source.controllerId,
-                costs: [{ type: 'Mana', value: '{1}' }, { type: 'Discard', targetMapping: 'SELF' }], // Wait, Shattered Heights cost is discard card
-                effects: [{ type: 'DealDamage', amount: 'COUNT_Shrine', targetMapping: 'TARGET_1' }],
-                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'Planeswalker'] }
-            }
-        ]
-    }
+const countShrines = (state: GameState, source: GameObject) =>
+    state.battlefield.filter(o => o.controllerId === source.controllerId && (o.definition.subtypes || []).includes('Shrine')).length;
+
+export const SanctumofShatteredHeights: CardDefinition = {
+    name: "Sanctum of Shattered Heights",
+    manaCost: "{2}{R}",
+    oracleText: "At the beginning of your precombat main phase, you may pay {1} and discard a land or Shrine card. If you do, Sanctum of Shattered Heights deals X damage to target creature or planeswalker, where X is the number of Shrines you control.",
+    colors: ["R"],
+    supertypes: ["Legendary"],
+    types: ["Enchantment"],
+    subtypes: ["Shrine"],
+    abilities: [
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.PreCombatMainPhaseStart,
+            activeZone: Zone.Battlefield,
+            condition: (state, event, ability) => event.playerId === ability.controllerId,
+            targetDefinition: {
+                type: TargetType.CreatureOrPlaneswalker,
+                count: 1,
+            },
+            effects: [
+                {
+                    type: EffectType.Choice,
+                    label: "Pay {1} and discard a land or Shrine card?",
+                    choices: [
+                        {
+                            label: "Yes",
+                            effects: [
+                                { type: EffectType.PayMana, value: "{1}" },
+                                { type: EffectType.DiscardCards, amount: 1, restrictions: ["Land", "Shrine"] },
+                                {
+                                    type: EffectType.DealDamage,
+                                    amount: countShrines,
+                                    targetMapping: TargetMapping.Target1
+                                }
+                            ]
+                        },
+                        { label: "No", effects: [] }
+                    ]
+                }
+            ]
+        }
+    ]
 };
 
 

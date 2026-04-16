@@ -1,4 +1,4 @@
-import { GameState, GameEvent, EffectType, TargetMapping, TriggeredAbility, PlayerId, GameObjectId, Zone, ZoneRequirement, AbilityType, ActionType, ConditionType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, ActionType, ConditionType, EffectType, GameEvent, GameObjectId, GameState, PlayerId, TargetMapping, TriggeredAbility, TriggerEvent, Zone } from '@shared/engine_types';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { oracle } from '../../OracleLogicMap';
 
@@ -39,7 +39,7 @@ export class TriggerProcessor {
             if (!matchesPrimary) return false;
 
             // Rule 603.2: Triggered abilities only function in their active zone (usually Battlefield)
-            if (!this.checkZoneRequirement(state, t, event.type)) {
+            if (!this.checkZone(state, t, event.type)) {
                 return false;
             }
 
@@ -564,7 +564,7 @@ export class TriggerProcessor {
         log(`[TARGETING] ${state.players[stackObj.controllerId]?.name} choosing targets for ${sourceName}.`);
     }
 
-    private static checkZoneRequirement(state: GameState, trigger: TriggeredAbility, eventType: string): boolean {
+    private static checkZone(state: GameState, trigger: TriggeredAbility, eventType: string): boolean {
         // Rule 603.10: "Leaves-the-battlefield" abilities look back in time.
         if (eventType === 'ON_DEATH' || eventType === 'ON_LEAVE_BATTLEFIELD') return true;
 
@@ -588,6 +588,9 @@ export class TriggerProcessor {
         const isInHand = Object.values(state.players).some(p => p.hand.some(o => o.id === sourceId));
         if (activeZone === Zone.Hand) return isInHand;
 
+        const isInStack = state.stack.some(o => o.id === sourceId);
+        if (activeZone === Zone.Stack) return isInStack;
+
         return false;
     }
 
@@ -605,3 +608,5 @@ export class TriggerProcessor {
         });
     }
 }
+
+

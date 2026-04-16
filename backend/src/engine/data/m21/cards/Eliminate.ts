@@ -1,29 +1,24 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, Restriction } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
-export const Eliminate: Record<string, ImplementableCard> = {
-    "Eliminate": {
-        name: "Eliminate",
-        manaCost: "{1}{B}",
-        oracleText: "Destroy target creature or planeswalker with mana value 3 or less.",
-        colors: ["black"],
-        supertypes: [],
-        types: ["Instant"],
-        subtypes: [],
-        power: undefined,
-        toughness: undefined,
-        keywords: [],
-        abilities: [
-            {
-                id: "eliminate_spell",
-                type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Stack,
-                targetDefinition: { 
-                    type: TargetType.CreatureOrPlaneswalker, 
-                    count: 1, 
-                    restrictions: ['mv <= 3'] 
-                },
-                effects: [{ type: EffectType.Destroy, targetMapping: 'TARGET_1' }]
-            }
-        ]
-    }
+export const Eliminate: CardDefinition = {
+    name: "Eliminate",
+    manaCost: "{1}{B}",
+    oracleText: "Destroy target creature or planeswalker with mana value 3 or less.",
+    colors: ["B"],
+    types: ["Instant"],
+    abilities: [
+        {
+            type: AbilityType.Spell,
+            targetDefinition: {
+                type: TargetType.CreatureOrPlaneswalker,
+                count: 1,
+                restrictions: [
+                    { type: 'Attribute', attribute: 'ManaValue', value: 3, comparison: 'LE' }
+                ]
+            },
+            effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
+        }
+    ]
 };
+
+

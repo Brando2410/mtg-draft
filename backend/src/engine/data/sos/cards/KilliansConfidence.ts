@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping, TriggerEvent, Zone, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const KilliansConfidence: CardDefinition = {
     name: "Killian's Confidence",
@@ -24,7 +24,7 @@ export const KilliansConfidence: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 1,
                     toughnessModifier: 1,
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Target1
                 },
                 {
@@ -61,6 +61,7 @@ export const KilliansConfidence: CardDefinition = {
         }
     ]
 };
+
 
 
 

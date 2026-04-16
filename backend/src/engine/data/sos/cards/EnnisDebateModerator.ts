@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping, Zone, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const EnnisDebateModerator: CardDefinition = {
     "name": "Ennis, Debate Moderator",
@@ -32,7 +32,7 @@ export const EnnisDebateModerator: CardDefinition = {
                     type: EffectType.Exile,
                     targetMapping: TargetMapping.Target1,
                     returnToBattlefield: true,
-                    returnDuration: DurationType.NextEndStep
+                    returnduration: { type: DurationType.NextEndStep }
                 }
             ]
         },
@@ -53,6 +53,7 @@ export const EnnisDebateModerator: CardDefinition = {
     "power": "1",
     "toughness": "1"
 };
+
 
 
 

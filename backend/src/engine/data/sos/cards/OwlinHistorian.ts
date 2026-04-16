@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const OwlinHistorian: CardDefinition = {
     "name": "Owlin Historian",
@@ -45,4 +45,5 @@ export const OwlinHistorian: CardDefinition = {
     "power": "2",
     "toughness": "3"
 };
+
 

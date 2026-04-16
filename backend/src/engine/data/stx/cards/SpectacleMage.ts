@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const SpectacleMage: CardDefinition = {
     name: 'Spectacle Mage',
@@ -21,3 +21,4 @@ export const SpectacleMage: CardDefinition = {
       }
     ]
   };
+

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const RootManipulation: CardDefinition = {
     "name": "Root Manipulation",
@@ -35,6 +35,7 @@ export const RootManipulation: CardDefinition = {
         }
     ]
 };
+
 
 
 

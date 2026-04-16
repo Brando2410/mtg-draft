@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TriggerEvent, DurationType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const BonePitBrute: CardDefinition = {
 
@@ -14,16 +14,17 @@ export const BonePitBrute: CardDefinition = {
     keywords: ["Menace"],
     abilities: [
         {
-            id: "bone_pit_brute_etb",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: ZoneRequirement.Battlefield,
-            condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
+            activeZone: Zone.Battlefield,
+            condition: 'EVENT_SOURCE_IS_SELF',
             targetDefinition: { type: TargetType.Creature, count: 1 },
-            effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 4, toughnessModifier: 0, duration: DurationType.UntilEndOfTurn, layer: 7, targetMapping: TargetMapping.Target1 }]
+            effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 4, toughnessModifier: 0, duration: { type: DurationType.UntilEndOfTurn }, layer: 7, targetMapping: TargetMapping.Target1 }]
         }
     ]
 
 };
+
+
 
 

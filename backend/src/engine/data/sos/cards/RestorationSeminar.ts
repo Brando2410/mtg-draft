@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const RestorationSeminar: CardDefinition = {
     "name": "Restoration Seminar",
@@ -34,5 +34,6 @@ export const RestorationSeminar: CardDefinition = {
         }
     ]
 };
+
 
 

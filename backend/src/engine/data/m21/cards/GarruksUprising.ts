@@ -1,42 +1,48 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
-export const GarruksUprising: Record<string, ImplementableCard> = {
-    "Garruk's Uprising": {
-        name: "Garruk's Uprising",
-        manaCost: "{2}{G}",
-        oracleText: "When this enchantment enters, if you control a creature with power 4 or greater, draw a card.\nCreatures you control have trample. (Each of those creatures can deal excess combat damage to the player or planeswalker it's attacking.)\nWhenever a creature you control with power 4 or greater enters, draw a card.",
-        colors: ["green"],
-        supertypes: [],
-        types: ["Enchantment"],
-        subtypes: [],
-        power: undefined,
-        toughness: undefined,
-        keywords: [],
-        abilities: [
-            {
-                id: "garruk_uprising_etb_draw",
-                type: AbilityType.Triggered,
-                    eventMatch: 'ON_ETB',
-                activeZone: ZoneRequirement.Battlefield,
-                condition: (state: any, event: any, source: any) => state.battlefield.some((o: any) => o.controllerId === source.controllerId && (o.effectiveStats?.power || 0) >= 4),
-                effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }]
+export const GarruksUprising: CardDefinition = {
+    name: "Garruk's Uprising",
+    manaCost: "{2}{G}",
+    oracleText: "When this enchantment enters, if you control a creature with power 4 or greater, draw a card.\nCreatures you control have trample. (Each of those creatures can deal excess combat damage to the player or planeswalker it's attacking.)\nWhenever a creature you control with power 4 or greater enters, draw a card.",
+    colors: ["G"],
+    types: ["Enchantment"],
+    subtypes: [],
+    abilities: [
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.EnterBattlefield,
+            activeZone: Zone.Battlefield,
+            condition: (state: any, event: any, source: any) => 
+                event.sourceId === source.id && 
+                state.battlefield.some((o: any) => o.controllerId === source.controllerId && (o.effectiveStats?.power || 0) >= 4),
+            effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
+        },
+        {
+            type: AbilityType.Static,
+            activeZone: Zone.Battlefield,
+            effects: [{ 
+                type: EffectType.ApplyContinuousEffect, 
+                abilitiesToAdd: ['Trample'], 
+                targetMapping: TargetMapping.AllCreaturesYouControl 
+            }]
+        },
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.EnterBattlefield,
+            activeZone: Zone.Battlefield,
+            condition: (state: any, event: any, source: any) => {
+                const entered = state.battlefield.find((o: any) => o.id === event.sourceId);
+                return entered && 
+                       entered.controllerId === source.controllerId && 
+                       entered.definition.types.includes('Creature') &&
+                       (entered.effectiveStats?.power || 0) >= 4 && 
+                       entered.id !== source.id;
             },
-            {
-                id: "garruk_uprising_trample_static",
-                type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
-                effects: [{ type: 'ApplyContinuousEffect', layer: 6, abilitiesToAdd: ['Trample'], targetMapping: 'ALL_CREATURES_YOU_CONTROL' }]
-            },
-            {
-                id: "garruk_uprising_creature_etb_trigger",
-                type: AbilityType.Triggered,
-                    eventMatch: 'ON_ETB_OTHER',
-                activeZone: ZoneRequirement.Battlefield,
-                condition: (state: any, event: any, source: any) => event.target.controllerId === source.controllerId && (event.target.effectiveStats?.power || 0) >= 4 && event.target.id !== source.sourceId,
-                effects: [{ type: 'DrawCards', amount: 1, targetMapping: 'CONTROLLER' }]
-            }
-        ]
-    }
+            effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
+        }
+    ]
 };
+
+
 
 

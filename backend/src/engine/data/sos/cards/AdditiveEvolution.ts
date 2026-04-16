@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const AdditiveEvolution: CardDefinition = {
     "name": "Additive Evolution",
@@ -48,12 +48,13 @@ export const AdditiveEvolution: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     targetMapping: TargetMapping.Target1,
                     abilitiesToAdd: ['Vigilance'],
-                    duration: DurationType.UntilEndOfTurn
+                    duration: { type: DurationType.UntilEndOfTurn }
                 }
             ]
         }
     ]
 };
+
 
 
 

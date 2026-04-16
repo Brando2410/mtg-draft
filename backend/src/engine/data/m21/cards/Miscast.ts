@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, CardDefinition } from "@shared/engine_types";
+import { AbilityType, Zone, EffectType, CardDefinition } from "@shared/engine_types";
 
 export const Miscast: CardDefinition = {
 
@@ -15,3 +15,4 @@ export const Miscast: CardDefinition = {
     abilities: []
 
 };
+

@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const BlossomingSands: Record<string, ImplementableCard> = {
-    "Blossoming Sands": {
+export const BlossomingSands: CardDefinition = {
         name: "Blossoming Sands",
         manaCost: "",
         oracleText: "Blossoming Sands enters the battlefield tapped.\nWhen Blossoming Sands enters the battlefield, you gain 1 life.\n{T}: Add {G} or {W}.",
@@ -19,7 +18,7 @@ export const BlossomingSands: Record<string, ImplementableCard> = {
                 id: "blossoming_sands_etb_life",
                 type: AbilityType.Triggered,
                     eventMatch: 'ON_ETB',
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => {
                     return event.data?.object?.id === source.sourceId;
                 },
@@ -28,7 +27,7 @@ export const BlossomingSands: Record<string, ImplementableCard> = {
             {
                 id: "blossoming_sands_mana_g",
                 type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 isManaAbility: true,
                 costs: [{ type: 'Tap', targetMapping: 'SELF' }],
                 effects: [{ type: EffectType.AddMana, value: 'G', amount: 1, targetMapping: 'CONTROLLER' }]
@@ -36,13 +35,14 @@ export const BlossomingSands: Record<string, ImplementableCard> = {
             {
                 id: "blossoming_sands_mana_w",
                 type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 isManaAbility: true,
                 costs: [{ type: 'Tap', targetMapping: 'SELF' }],
                 effects: [{ type: EffectType.AddMana, value: 'W', amount: 1, targetMapping: 'CONTROLLER' }]
             }
         ]
-    }
-};
+    };
+
+
 
 

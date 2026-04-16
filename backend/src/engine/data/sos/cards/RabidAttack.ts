@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, DurationType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const RabidAttack: CardDefinition = {
     "name": "Rabid Attack",
@@ -44,6 +44,7 @@ export const RabidAttack: CardDefinition = {
         }
     ]
 };
+
 
 
 

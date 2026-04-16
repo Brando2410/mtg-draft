@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, DynamicAmount, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const TopiaryLecturer: CardDefinition = {
     "name": "Topiary Lecturer",
@@ -36,5 +36,6 @@ export const TopiaryLecturer: CardDefinition = {
     "power": "1",
     "toughness": "2"
 };
+
 
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone, TriggerEvent, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
   {
@@ -268,4 +268,5 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
     ]
   }
 ];
+
 

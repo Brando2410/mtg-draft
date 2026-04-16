@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
-export const GloomSower: Record<string, ImplementableCard> = {
-    "Gloom Sower": {
+export const GloomSower: CardDefinition = {
         name: "Gloom Sower",
         manaCost: "{5}{B}{B}",
         oracleText: "Whenever this creature becomes blocked by a creature, that creature's controller loses 2 life and you gain 2 life.",
@@ -17,7 +16,7 @@ export const GloomSower: Record<string, ImplementableCard> = {
                 id: "gloom_sower_blocked_trigger",
                 type: AbilityType.Triggered,
                     eventMatch: "ON_BECAME_BLOCKED",
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => event.sourceId === source.sourceId,
                 effects: [
                     {
@@ -34,7 +33,7 @@ export const GloomSower: Record<string, ImplementableCard> = {
                 oracleText: "Whenever Gloom Sower becomes blocked by a creature, that creature's controller loses 2 life and you gain 2 life."
             }
         ]
-    }
-};
+    };
+
 
 

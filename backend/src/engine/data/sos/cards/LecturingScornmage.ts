@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const LecturingScornmage: CardDefinition = {
     "name": "Lecturing Scornmage",
@@ -33,6 +33,7 @@ export const LecturingScornmage: CardDefinition = {
     "power": "1",
     "toughness": "1"
 };
+
 
 
 

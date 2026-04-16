@@ -1,4 +1,4 @@
-import { EffectType, AbilityType, EffectDefinition, ImplementableCard, ZoneRequirement, TargetType } from '../../../../shared/engine_types';
+import { EffectType, AbilityType, EffectDefinition, CardDefinition, Zone, TargetType } from '../../../../shared/engine_types';
 
 /**
  * ReverseOracle Utility
@@ -354,3 +354,4 @@ export class ReverseOracle {
         return `${subject}${parts.length > 0 ? " " + parts.join(" and ") : ""}`;
     }
 }
+

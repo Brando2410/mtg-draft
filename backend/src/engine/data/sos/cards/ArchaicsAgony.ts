@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const ArchaicsAgony: CardDefinition = {
     "name": "Archaic's Agony",
@@ -24,11 +24,12 @@ export const ArchaicsAgony: CardDefinition = {
                 {
                     type: 'ExileTopCardsExcessDamage',
                     targetMapping: TargetMapping.Target1,
-                    duration: DurationType.UntilEndOfYourNextTurn
+                    duration: { type: DurationType.UntilEndOfYourNextTurn }
                 }
             ]
         }
     ]
 };
+
 
 

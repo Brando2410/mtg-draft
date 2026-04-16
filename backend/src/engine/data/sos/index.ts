@@ -1,4 +1,4 @@
-import { ImplementableCard } from '@shared/engine_types';
+import { CardDefinition } from '@shared/engine_types';
 import { AberrantManawurm } from './cards/AberrantManawurm';
 import { AbigalePoetLaureateHeroicStanza } from './cards/AbigalePoetLaureateHeroicStanza';
 import { AbstractPaintmage } from './cards/AbstractPaintmage';
@@ -271,7 +271,7 @@ import { ZaffaiandtheTempests } from './cards/ZaffaiandtheTempests'; //commander
 import { ZealousLorecaster } from './cards/ZealousLorecaster';
 import { ZimonesExperiment } from './cards/ZimonesExperiment';
 
-export const sos: Record<string, ImplementableCard> = {
+export const sos: Record<string, CardDefinition> = {
     'Aberrant Manawurm': AberrantManawurm,
     'Abigale, Poet Laureate // Heroic Stanza': AbigalePoetLaureateHeroicStanza,
     'Abigale, Poet Laureate': AbigalePoetLaureateHeroicStanza,
@@ -618,3 +618,5 @@ export const sos: Record<string, ImplementableCard> = {
     'Zealous Lorecaster': ZealousLorecaster,
     'Zimone\'s Experiment': ZimonesExperiment,
 };
+
+

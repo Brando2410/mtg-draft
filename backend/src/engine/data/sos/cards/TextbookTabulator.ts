@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const TextbookTabulator: CardDefinition = {
     "name": "Textbook Tabulator",
@@ -31,6 +31,7 @@ export const TextbookTabulator: CardDefinition = {
     "power": "0",
     "toughness": "3"
 };
+
 
 
 

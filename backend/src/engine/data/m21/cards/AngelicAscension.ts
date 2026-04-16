@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, TargetType, CardDefinition, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const AngelicAscension: CardDefinition = {
     name: "Angelic Ascension",
@@ -11,9 +11,7 @@ export const AngelicAscension: CardDefinition = {
     keywords: [],
     abilities: [
         {
-            id: "angelic_ascension_spell",
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
             targetDefinition: { type: TargetType.CreatureOrPlaneswalker, count: 1 },
             effects: [
                 { type: EffectType.Exile, targetMapping: TargetMapping.Target1 },
@@ -22,3 +20,4 @@ export const AngelicAscension: CardDefinition = {
         }
     ]
 };
+

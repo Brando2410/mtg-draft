@@ -61,7 +61,7 @@ import { Humiliate } from './cards/Humiliate';
 import { HuntforSpecimens } from './cards/HuntforSpecimens';
 import { IgneousInspiration } from './cards/IgneousInspiration';
 import { IlluminateHistory } from './cards/IlluminateHistory';
-import { ImplementableCard, CardDefinition } from '@shared/engine_types';
+import { CardDefinition } from '@shared/engine_types';
 import { InfusewithVitality } from './cards/InfusewithVitality';
 import { InklingSummoning } from './cards/InklingSummoning';
 import { IntroductiontoAnnihilation } from './cards/IntroductiontoAnnihilation';
@@ -138,7 +138,7 @@ import { WitherbloomApprentice } from './cards/WitherbloomApprentice';
 import { WitherbloomCommand } from './cards/WitherbloomCommand';
 import { WitherbloomPledgemage } from './cards/WitherbloomPledgemage';
 
-export const stx: Record<string, ImplementableCard> = {
+export const stx: Record<string, CardDefinition> = {
     'Academic Dispute': AcademicDispute,
     'Academic Probation': AcademicProbation,
     'Ageless Guardian': AgelessGuardian,
@@ -287,3 +287,5 @@ export const stx: Record<string, ImplementableCard> = {
     'Witherbloom Command': WitherbloomCommand,
     'Witherbloom Pledgemage': WitherbloomPledgemage,
 };
+
+

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const HungryGraffalon: CardDefinition = {
     "name": "Hungry Graffalon",
@@ -18,5 +18,6 @@ export const HungryGraffalon: CardDefinition = {
     "power": "3",
     "toughness": "4"
 };
+
 
 

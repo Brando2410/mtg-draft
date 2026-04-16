@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/engine_types';
 
 export const EagerGlyphmage: CardDefinition = {
     "name": "Eager Glyphmage",
@@ -38,6 +38,7 @@ export const EagerGlyphmage: CardDefinition = {
     "power": "3",
     "toughness": "3"
 };
+
 
 
 

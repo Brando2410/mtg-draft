@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const AscendantDustspeaker: CardDefinition = {
     "name": "Ascendant Dustspeaker",
@@ -54,6 +54,7 @@ export const AscendantDustspeaker: CardDefinition = {
     "power": "3",
     "toughness": "4"
 };
+
 
 
 

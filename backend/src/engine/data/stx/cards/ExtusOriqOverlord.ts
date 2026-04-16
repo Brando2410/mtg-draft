@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ExtusOriqOverlord: CardDefinition = {
     name: "Extus, Oriq Overlord",
@@ -76,5 +76,6 @@ export const ExtusOriqOverlord: CardDefinition = {
         }
     ]
 };
+
 
 

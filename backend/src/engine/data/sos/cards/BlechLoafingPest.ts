@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const BlechLoafingPest: CardDefinition = {
     "name": "Blech, Loafing Pest",
@@ -35,6 +35,7 @@ export const BlechLoafingPest: CardDefinition = {
     "power": "3",
     "toughness": "4"
 };
+
 
 
 

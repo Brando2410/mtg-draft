@@ -1,4 +1,4 @@
-import { GameState, Step, Phase, PlayerId, GameObjectId, GameObject } from '@shared/engine_types';
+import { GameObject, GameObjectId, GameState, Phase, PlayerId, Step } from '@shared/engine_types';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { DamageProcessor } from '../combat/DamageProcessor';
 import { TriggerProcessor } from '../effects/TriggerProcessor';
@@ -601,3 +601,4 @@ export class CombatProcessor {
     return { isValid: true };
   }
 }
+

@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const PrimalMight: Record<string, ImplementableCard> = {
-    "Primal Might": {
+export const PrimalMight: CardDefinition = {
         name: "Primal Might",
         manaCost: "{X}{G}",
         oracleText: "Target creature you control gets +X/+X until end of turn. Then it fights up to one target creature you don't control. (Each deals damage equal to its power to the other.)",
@@ -16,7 +15,6 @@ export const PrimalMight: Record<string, ImplementableCard> = {
             {
                 id: "primal_might_spell",
                 type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Stack,
                 costs: [{ type: 'Mana', value: '{X}{G}' }],
                 targetDefinition: { 
                     type: 'Permanent', 
@@ -33,5 +31,6 @@ export const PrimalMight: Record<string, ImplementableCard> = {
                 ]
             }
         ]
-    }
-};
+    };
+
+

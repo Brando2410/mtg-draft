@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
-export const GoblinArsonist: Record<string, ImplementableCard> = {
-    "Goblin Arsonist": {
+export const GoblinArsonist: CardDefinition = {
         name: "Goblin Arsonist",
         manaCost: "{R}",
         oracleText: "When this creature dies, you may have it deal 1 damage to any target.",
@@ -17,7 +16,7 @@ export const GoblinArsonist: Record<string, ImplementableCard> = {
                 id: "goblin_arsonist_death_trigger",
                 type: AbilityType.Triggered,
                     eventMatch: "ON_DEATH",
-                activeZone: ZoneRequirement.Graveyard, // Dies trigger fires from graveyard (Rule 603.10a)
+                activeZone: Zone.Graveyard, // Dies trigger fires from graveyard (Rule 603.10a)
                 targetDefinition: {
                     type: TargetType.AnyTarget,
                     count: 1,
@@ -31,7 +30,7 @@ export const GoblinArsonist: Record<string, ImplementableCard> = {
                 oracleText: "When Goblin Arsonist dies, you may have it deal 1 damage to any target."
             }
         ]
-    }
-};
+    };
+
 
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const SilverquillCharm: CardDefinition = {
     "name": "Silverquill Charm",
@@ -42,5 +42,6 @@ export const SilverquillCharm: CardDefinition = {
         }
     ]
 };
+
 
 

@@ -1,26 +1,34 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
-export const SelflessSavior: Record<string, ImplementableCard> = {
-    "Selfless Savior": {
-        name: "Selfless Savior",
-        manaCost: "{W}",
-        oracleText: "Sacrifice Selfless Savior: Another target creature you control gains indestructible until end of turn.",
-        colors: ["white"],
-        supertypes: [],
-        types: ["Creature"],
-        subtypes: ["Dog"],
-        power: "1",
-        toughness: "1",
-        keywords: [],
-        abilities: [
-            {
-                id: "selfless_savior_sac",
-                type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
-                costs: [{ type: 'Sacrifice', targetMapping: 'SELF' }],
-                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'Another', 'YouControl'] },
-                effects: [{ type: 'ApplyContinuousEffect', abilitiesToAdd: ['Indestructible'], duration: 'UNTIL_END_OF_TURN', layer: 6, targetMapping: 'TARGET_1' }]
-            }
-        ]
-    }
+
+export const SelflessSavior: CardDefinition = {
+    name: "Selfless Savior",
+    manaCost: "{W}",
+    oracleText: "Sacrifice Selfless Savior: Another target creature you control gains indestructible until end of turn.",
+    colors: ["W"],
+    types: ["Creature"],
+    subtypes: ["Dog"],
+    power: "1",
+    toughness: "1",
+    abilities: [
+        {
+            type: AbilityType.Activated,
+            activeZone: Zone.Battlefield,
+            costs: [{ type: CostType.Sacrifice, targetMapping: TargetMapping.Self }],
+            targetDefinition: {
+                type: TargetType.Creature,
+                count: 1,
+                restrictions: ['Another', 'YouControl']
+            },
+            effects: [
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    abilitiesToAdd: ['Indestructible'],
+                    duration: { type: DurationType.UntilEndOfTurn },
+                    targetMapping: TargetMapping.Target1
+                }
+            ]
+        }
+    ]
 };
+

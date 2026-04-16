@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const CuboidColony: CardDefinition = {
     "name": "Cuboid Colony",
@@ -19,5 +19,6 @@ export const CuboidColony: CardDefinition = {
     "power": "1",
     "toughness": "1"
 };
+
 
 

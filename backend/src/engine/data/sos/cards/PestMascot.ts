@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const PestMascot: CardDefinition = {
     "name": "Pest Mascot",
@@ -34,4 +34,5 @@ export const PestMascot: CardDefinition = {
     "power": "2",
     "toughness": "3"
 };
+
 

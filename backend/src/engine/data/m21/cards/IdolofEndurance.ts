@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, Zone, EffectType, TriggerEvent, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const IdolofEndurance: CardDefinition = {
     name: "Idol of Endurance",
@@ -27,11 +27,15 @@ export const IdolofEndurance: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Mana', value: '{1}{W}' }, { type: 'Tap', targetMapping: TargetMapping.Self }],
+            activeZone: Zone.Battlefield,
+            costs: [
+                { type: CostType.Mana, value: '{1}{W}' }, 
+                { type: CostType.Tap, targetMapping: TargetMapping.Self }
+            ],
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    duration: 'UNTIL_END_OF_TURN',
+                    duration: { type: DurationType.UntilEndOfTurn },
                     effects: [
                         {
                             type: EffectType.CastSpell,
@@ -45,5 +49,7 @@ export const IdolofEndurance: CardDefinition = {
         }
     ]
 };
+
+
 
 

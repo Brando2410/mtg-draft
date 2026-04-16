@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const ArcaneOmens: CardDefinition = {
     "name": "Arcane Omens",
@@ -25,5 +25,6 @@ export const ArcaneOmens: CardDefinition = {
         }
     ]
 };
+
 
 

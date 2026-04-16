@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const InkshapeDemonstrator: CardDefinition = {
     "name": "Inkshape Demonstrator",
@@ -25,7 +25,7 @@ export const InkshapeDemonstrator: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 1,
                     abilitiesToAdd: ["Lifelink"],
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Self
                 }
             ]
@@ -34,6 +34,7 @@ export const InkshapeDemonstrator: CardDefinition = {
     "power": "3",
     "toughness": "4"
 };
+
 
 
 

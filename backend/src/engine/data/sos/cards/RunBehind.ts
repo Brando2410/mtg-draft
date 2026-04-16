@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType, Zone, DurationType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const RunBehind: CardDefinition = {
     "name": "Run Behind",
@@ -60,5 +60,6 @@ export const RunBehind: CardDefinition = {
         }
     ]
 };
+
 
 

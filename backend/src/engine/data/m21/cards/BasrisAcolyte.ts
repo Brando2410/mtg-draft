@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, TargetType, CardDefinition, TriggerEvent, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const BasrisAcolyte: CardDefinition = {
     name: "Basri's Acolyte",
@@ -16,7 +16,7 @@ export const BasrisAcolyte: CardDefinition = {
             id: "basri_acolyte_etb",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => {
                 return event.data?.object?.id === source.sourceId;
             },
@@ -25,5 +25,6 @@ export const BasrisAcolyte: CardDefinition = {
         }
     ]
 };
+
 
 

@@ -1,4 +1,4 @@
-import { GameState, GameObjectId, PlayerId, Zone, StackObject, GameObject, EffectDefinition } from '@shared/engine_types';
+import { EffectDefinition, GameObject, GameObjectId, GameState, PlayerId, StackObject, Zone } from '@shared/engine_types';
 import { ActionProcessor } from '../actions/ActionProcessor';
 import { EffectProcessor } from '../effects/EffectProcessor';
 import { TargetingProcessor } from '../actions/TargetingProcessor';
@@ -135,3 +135,4 @@ export class StackResolver {
       return source ? source.definition.name : 'Ability';
   }
 }
+

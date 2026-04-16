@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const STX_MagecraftPowerhouses: CardDefinition[] = [
   {
@@ -132,4 +132,5 @@ export const STX_MagecraftPowerhouses: CardDefinition[] = [
     ]
   }
 ];
+
 

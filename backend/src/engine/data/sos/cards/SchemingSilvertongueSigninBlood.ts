@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const SchemingSilvertongueSigninBlood: CardDefinition = {
     name: "Scheming Silvertongue // Sign in Blood",
@@ -54,3 +54,4 @@ export const SchemingSilvertongueSigninBlood: CardDefinition = {
         ]
     }
 };
+

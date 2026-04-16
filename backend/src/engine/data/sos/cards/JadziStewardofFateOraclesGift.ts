@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const JadziStewardofFateOraclesGift: CardDefinition = {
     name: "Jadzi, Steward of Fate // Oracle's Gift",
@@ -60,3 +60,4 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
         ]
     }
 };
+

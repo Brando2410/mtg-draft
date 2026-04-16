@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const ArtisticProcess: CardDefinition = {
     "name": "Artistic Process",
@@ -47,7 +47,7 @@ export const ArtisticProcess: CardDefinition = {
                                     type: EffectType.ApplyContinuousEffect,
                                     targetMapping: 'LAST_CREATED_TOKEN',
                                     abilitiesToAdd: ['Haste'],
-                                    duration: DurationType.UntilEndOfTurn
+                                    duration: { type: DurationType.UntilEndOfTurn }
                                 }
                             ]
                         }
@@ -57,5 +57,6 @@ export const ArtisticProcess: CardDefinition = {
         }
     ]
 };
+
 
 

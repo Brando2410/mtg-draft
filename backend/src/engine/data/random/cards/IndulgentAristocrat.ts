@@ -1,6 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const IndulgentAristocrat: Record<string, ImplementableCard> = {
+export const IndulgentAristocrat: Record<string, CardDefinition> = {
     "Indulgent Aristocrat": {
         name: "Indulgent Aristocrat",
         manaCost: "{B}",
@@ -17,7 +17,7 @@ export const IndulgentAristocrat: Record<string, ImplementableCard> = {
             {
                 id: "indulgent_aristocrat_sacrifice",
                 type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 costs: [
                     { type: 'Mana', value: '{2}' },
                     { type: 'Sacrifice', restrictions: ['Creature'] }
@@ -33,3 +33,5 @@ export const IndulgentAristocrat: Record<string, ImplementableCard> = {
         ]
     }
 };
+
+

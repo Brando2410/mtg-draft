@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const MatterbendingMage: CardDefinition = {
     "name": "Matterbending Mage",
@@ -42,7 +42,7 @@ export const MatterbendingMage: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     abilitiesToAdd: ["Unblockable"],
-                    duration: DurationType.UntilEndOfTurn,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Self
                 }
             ]
@@ -51,6 +51,7 @@ export const MatterbendingMage: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 
 
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ThunderdrumSoloist: CardDefinition = {
     "name": "Thunderdrum Soloist",
@@ -41,6 +41,7 @@ export const ThunderdrumSoloist: CardDefinition = {
     "power": "1",
     "toughness": "3"
 };
+
 
 
 

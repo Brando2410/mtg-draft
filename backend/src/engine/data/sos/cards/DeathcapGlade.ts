@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
 
 export const DeathcapGlade: CardDefinition = {
     "name": "Deathcap Glade",
@@ -25,5 +25,6 @@ export const DeathcapGlade: CardDefinition = {
         }
     ]
 };
+
 
 

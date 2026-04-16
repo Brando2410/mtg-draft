@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, Zone } from '@shared/engine_types';
 
 export const SoaringStoneglider: CardDefinition = {
     "name": "Soaring Stoneglider",
@@ -42,5 +42,6 @@ export const SoaringStoneglider: CardDefinition = {
     "power": "4",
     "toughness": "3"
 };
+
 
 

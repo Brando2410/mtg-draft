@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, CardDefinition, DurationType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const BurnBright: CardDefinition = {
 
@@ -14,9 +14,10 @@ export const BurnBright: CardDefinition = {
         {
             id: "burn_bright_spell",
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
-            effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 2, toughnessModifier: 0, duration: DurationType.UntilEndOfTurn, layer: 7, targetMapping: TargetMapping.AllCreaturesYouControl }]
+            effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 2, toughnessModifier: 0, duration: { type: DurationType.UntilEndOfTurn }, layer: 7, targetMapping: TargetMapping.AllCreaturesYouControl }]
         }
     ]
 
 };
+
+

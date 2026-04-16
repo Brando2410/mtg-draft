@@ -1,4 +1,4 @@
-import { GameState, EffectDefinition, TargetType, TargetDefinition, GameObjectId, PlayerId, Zone, GameObject, ActionType, EffectType, TargetMapping } from '@shared/engine_types';
+import { ActionType, EffectDefinition, EffectType, GameObject, GameObjectId, GameState, PlayerId, TargetDefinition, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 import { ActionProcessor } from '../../actions/ActionProcessor';
 import { TriggerProcessor } from '../TriggerProcessor';
 import { ChoiceGenerator } from '../ChoiceGenerator';
@@ -602,8 +602,8 @@ export class MoveEffectHandler {
         const idsToMove = (effect as any).targetId ? [(effect as any).targetId] : targetIds;
         let zone = effect.zone;
         if (!zone) {
-            if (effect.type === 'Exile' || effect.type === EffectType.Exile) zone = Zone.Exile;
-            else if (effect.type === 'PutOnBattlefield' || effect.type === EffectType.PutOnBattlefield) zone = Zone.Battlefield;
+            if (effect.type === EffectType.Exile) zone = Zone.Exile;
+            else if (effect.type === EffectType.PutOnBattlefield) zone = Zone.Battlefield;
             else zone = Zone.Hand;
         }
         const isDiscard = effect.type === EffectType.DiscardCards || (effect as any).isDiscard;
@@ -652,3 +652,4 @@ export class MoveEffectHandler {
         return TargetingProcessor.findObjectInAnyZone(state, id) || undefined;
     }
 }
+

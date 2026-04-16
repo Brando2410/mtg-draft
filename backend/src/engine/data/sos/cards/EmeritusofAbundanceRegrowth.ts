@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const EmeritusofAbundanceRegrowth: CardDefinition = {
     name: "Emeritus of Abundance // Regrowth",
@@ -52,3 +52,4 @@ export const EmeritusofAbundanceRegrowth: CardDefinition = {
         ]
     }
 };
+

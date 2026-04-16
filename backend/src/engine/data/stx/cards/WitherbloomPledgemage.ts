@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const WitherbloomPledgemage: CardDefinition = {
     name: 'Witherbloom Pledgemage',
@@ -25,4 +25,5 @@ export const WitherbloomPledgemage: CardDefinition = {
         }
     ]
   };
+
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const BloodResearcher: CardDefinition = {
     name: 'Blood Researcher',
@@ -19,4 +19,5 @@ export const BloodResearcher: CardDefinition = {
         }
     ]
   };
+
 

@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const ChelonianTackle: CardDefinition = {
     "name": "Chelonian Tackle",
@@ -45,5 +45,6 @@ export const ChelonianTackle: CardDefinition = {
         }
     ]
 };
+
 
 

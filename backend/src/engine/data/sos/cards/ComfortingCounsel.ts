@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ComfortingCounsel: CardDefinition = {
     "name": "Comforting Counsel",
@@ -35,6 +35,7 @@ export const ComfortingCounsel: CardDefinition = {
         }
     ]
 };
+
 
 
 

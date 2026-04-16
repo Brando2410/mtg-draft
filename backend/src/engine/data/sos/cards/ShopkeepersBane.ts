@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ShopkeepersBane: CardDefinition = {
     "name": "Shopkeeper's Bane",
@@ -27,6 +27,7 @@ export const ShopkeepersBane: CardDefinition = {
     "power": "4",
     "toughness": "2"
 };
+
 
 
 

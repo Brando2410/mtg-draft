@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ConciliatorsDuelist: CardDefinition = {
     "name": "Conciliator's Duelist",
@@ -58,6 +58,7 @@ export const ConciliatorsDuelist: CardDefinition = {
     "power": "4",
     "toughness": "3"
 };
+
 
 
 

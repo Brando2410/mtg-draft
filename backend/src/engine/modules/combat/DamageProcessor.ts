@@ -1,4 +1,4 @@
-import { GameState, GameObjectId, PlayerId, GameObject, Zone } from '@shared/engine_types';
+import { GameObject, GameObjectId, GameState, PlayerId, Zone } from '@shared/engine_types';
 import { TriggerProcessor } from '../effects/TriggerProcessor';
 
 /**
@@ -102,7 +102,8 @@ export class DamageProcessor {
     // Rule 120.3a: Damage dealt to opponent results in loss of life
     const sourceControllerId = sourceObj?.controllerId || state.activePlayerId;
     if (!isCombat && sourceControllerId !== player.id) {
-      state.turnState.noncombatDamageDealtToOpponents += amount;
+      if (!state.turnState.noncombatDamageDealtToOpponents) state.turnState.noncombatDamageDealtToOpponents = {};
+      state.turnState.noncombatDamageDealtToOpponents[sourceControllerId] = (state.turnState.noncombatDamageDealtToOpponents[sourceControllerId] || 0) + amount;
       TriggerProcessor.onEvent(state, { type: 'ON_NONCOMBAT_DAMAGE_OPPONENT', targetId: player.id, sourceId: sourceObj?.id, amount }, log);
     }
 
@@ -159,3 +160,4 @@ export class DamageProcessor {
     return false;
   }
 }
+

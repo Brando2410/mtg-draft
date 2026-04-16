@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const EncouragingAviatorJump: CardDefinition = {
     "name": "Encouraging Aviator // Jump",
@@ -57,3 +57,4 @@ export const EncouragingAviatorJump: CardDefinition = {
         ]
     }
 };
+

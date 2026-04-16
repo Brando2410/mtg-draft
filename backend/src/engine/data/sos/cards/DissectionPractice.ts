@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const DissectionPractice: CardDefinition = {
     "name": "Dissection Practice",
@@ -40,5 +40,6 @@ export const DissectionPractice: CardDefinition = {
         }
     ]
 };
+
 
 

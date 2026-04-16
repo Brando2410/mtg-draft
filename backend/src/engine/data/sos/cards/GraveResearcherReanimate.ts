@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const GraveResearcherReanimate: CardDefinition = {
     "name": "Grave Researcher // Reanimate",
@@ -64,3 +64,4 @@ export const GraveResearcherReanimate: CardDefinition = {
         ]
     }
 };
+

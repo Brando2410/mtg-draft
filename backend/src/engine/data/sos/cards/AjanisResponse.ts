@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const AjanisResponse: CardDefinition = {
     "name": "Ajani's Response",
@@ -36,5 +36,6 @@ export const AjanisResponse: CardDefinition = {
         }
     ]
 };
+
 
 

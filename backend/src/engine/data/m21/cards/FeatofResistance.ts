@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const FeatofResistance: Record<string, ImplementableCard> = {
-    "Feat of Resistance": {
+export const FeatofResistance: CardDefinition = {
         name: "Feat of Resistance",
         manaCost: "{1}{W}",
         oracleText: "Put a +1/+1 counter on target creature you control. It gains protection from the color of your choice until end of turn. (It can't be blocked, targeted, dealt damage, enchanted, or equipped by anything of that color.)",
@@ -16,7 +15,6 @@ export const FeatofResistance: Record<string, ImplementableCard> = {
             {
                 id: "feat_resistance_spell",
                 type: AbilityType.Spell,
-                activeZone: ZoneRequirement.Stack,
                 targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'YouControl'] },
                 effects: [
                     { type: 'AddCounters', amount: 1, counterType: 'p1p1', targetMapping: 'TARGET_1' },
@@ -32,5 +30,6 @@ export const FeatofResistance: Record<string, ImplementableCard> = {
                 ]
             }
         ]
-    }
-};
+    };
+
+

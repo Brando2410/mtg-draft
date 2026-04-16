@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, CardDefinition, EffectType, TargetType, TriggerEvent, TargetMapping } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, EffectType, TargetType, TriggerEvent, TargetMapping } from "@shared/engine_types";
 
 export const PitchburnDevils: CardDefinition = {
 
@@ -15,7 +15,7 @@ export const PitchburnDevils: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             eventMatch: TriggerEvent.Death,
             targetDefinition: {
                 type: TargetType.AnyTarget,
@@ -31,5 +31,6 @@ export const PitchburnDevils: CardDefinition = {
         }
     ]
 };
+
 
 

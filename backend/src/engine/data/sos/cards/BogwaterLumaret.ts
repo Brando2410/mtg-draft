@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const BogwaterLumaret: CardDefinition = {
     "name": "Bogwater Lumaret",
@@ -32,6 +32,7 @@ export const BogwaterLumaret: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 
 
 

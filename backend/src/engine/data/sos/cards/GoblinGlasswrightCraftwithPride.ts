@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const GoblinGlasswrightCraftwithPride: CardDefinition = {
     name: "Goblin Glasswright",
@@ -53,3 +53,4 @@ export const GoblinGlasswrightCraftwithPride: CardDefinition = {
         ]
     }
 };
+

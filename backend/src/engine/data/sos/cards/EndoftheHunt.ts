@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetType } from '@shared/engine_types';
 
 export const EndoftheHunt: CardDefinition = {
     "name": "End of the Hunt",
@@ -28,5 +28,6 @@ export const EndoftheHunt: CardDefinition = {
         }
     ]
 };
+
 
 

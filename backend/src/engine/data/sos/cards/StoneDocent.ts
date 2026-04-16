@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone, ZoneRequirement } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const StoneDocent: CardDefinition = {
     "name": "Stone Docent",
@@ -22,7 +22,7 @@ export const StoneDocent: CardDefinition = {
                 { type: 'Mana', value: '{W}' },
                 { type: 'ExileSelf' }
             ],
-            activeZone: ZoneRequirement.Graveyard,
+            activeZone: Zone.Graveyard,
             effects: [
                 {
                     type: EffectType.GainLife,
@@ -40,5 +40,7 @@ export const StoneDocent: CardDefinition = {
     "power": "3",
     "toughness": "1"
 };
+
+
 
 

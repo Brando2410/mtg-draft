@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const TabletofDiscovery: CardDefinition = {
     "name": "Tablet of Discovery",
@@ -64,6 +64,7 @@ export const TabletofDiscovery: CardDefinition = {
         }
     ]
 };
+
 
 
 

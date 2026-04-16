@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const STX_Batch_5_Pledgemages: CardDefinition[] = [
   {
@@ -228,4 +228,5 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
     ]
   }
 ];
+
 

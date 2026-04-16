@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const PotionersTrove: CardDefinition = {
     "name": "Potioner's Trove",
@@ -42,5 +42,6 @@ export const PotionersTrove: CardDefinition = {
         }
     ]
 };
+
 
 

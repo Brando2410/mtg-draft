@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const DigSiteInventory: CardDefinition = {
     "name": "Dig Site Inventory",
@@ -37,5 +37,6 @@ export const DigSiteInventory: CardDefinition = {
         }
     ]
 };
+
 
 

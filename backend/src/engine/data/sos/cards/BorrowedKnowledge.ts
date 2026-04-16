@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const BorrowedKnowledge: CardDefinition = {
     "name": "Borrowed Knowledge",
@@ -36,5 +36,6 @@ export const BorrowedKnowledge: CardDefinition = {
         }
     ]
 };
+
 
 

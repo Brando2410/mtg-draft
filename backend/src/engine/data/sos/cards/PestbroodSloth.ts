@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const PestbroodSloth: CardDefinition = {
     "name": "Pestbrood Sloth",
@@ -55,6 +55,7 @@ export const PestbroodSloth: CardDefinition = {
     "power": "4",
     "toughness": "4"
 };
+
 
 
 

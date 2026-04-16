@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
 
 export const SpectacleSummit: CardDefinition = {
     name: "Spectacle Summit",
@@ -40,5 +40,6 @@ export const SpectacleSummit: CardDefinition = {
         }
     ]
 };
+
 
 

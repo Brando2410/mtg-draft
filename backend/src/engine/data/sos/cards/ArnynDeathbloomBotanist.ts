@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ArnynDeathbloomBotanist: CardDefinition = {
     "name": "Arnyn, Deathbloom Botanist",
@@ -38,6 +38,7 @@ export const ArnynDeathbloomBotanist: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 
 
 

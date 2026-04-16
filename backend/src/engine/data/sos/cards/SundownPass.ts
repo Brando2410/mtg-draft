@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
 
 export const SundownPass: CardDefinition = {
     "name": "Sundown Pass",
@@ -27,5 +27,6 @@ export const SundownPass: CardDefinition = {
         }
     ]
 };
+
 
 

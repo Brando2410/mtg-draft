@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, TargetType, TargetMapping, TriggerEvent, CardDefinition } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const BasrisLieutenant: CardDefinition = {
 
@@ -14,20 +14,18 @@ export const BasrisLieutenant: CardDefinition = {
     keywords: ["Vigilance", "Protection from multicolored"],
     abilities: [
         {
-            id: "basri_lieutenant_etb",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
             effects: [
                 { type: EffectType.AddCounters, amount: 1, counterType: 'p1p1', targetMapping: TargetMapping.Target1 }
             ]
         },
         {
-            id: "basri_lieutenant_death_trigger",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Death,
-            activeZone: ZoneRequirement.Battlefield,
+            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => {
                 const diedObj = event.data?.object;
                 if (!diedObj) return false;
@@ -54,5 +52,6 @@ export const BasrisLieutenant: CardDefinition = {
     ]
 
 };
+
 
 

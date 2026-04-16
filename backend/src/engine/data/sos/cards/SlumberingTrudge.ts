@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
 
 export const SlumberingTrudge: CardDefinition = {
     "name": "Slumbering Trudge",
@@ -30,5 +30,6 @@ export const SlumberingTrudge: CardDefinition = {
     "power": "6",
     "toughness": "6"
 };
+
 
 

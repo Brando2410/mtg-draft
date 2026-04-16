@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const SpellbookSeekerCarefulStudy: CardDefinition = {
     name: "Spellbook Seeker // Careful Study",
@@ -39,3 +39,4 @@ export const SpellbookSeekerCarefulStudy: CardDefinition = {
         ]
     }
 };
+

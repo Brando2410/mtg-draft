@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, ZoneRequirement, Zone, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const GrimTutor: CardDefinition = {
     name: 'Grim Tutor',
@@ -20,3 +20,5 @@ export const GrimTutor: CardDefinition = {
         }
     ]
 };
+
+

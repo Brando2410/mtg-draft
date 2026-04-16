@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Zone } from '@shared/engine_types';
 
 export const FollowtheLumarets: CardDefinition = {
     "name": "Follow the Lumarets",
@@ -50,3 +50,4 @@ export const FollowtheLumarets: CardDefinition = {
         }
     ]
 };
+

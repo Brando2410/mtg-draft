@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType, RestrictionType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType, RestrictionType } from "@shared/engine_types";
 
-export const CanopyStalker: Record<string, ImplementableCard> = {
-    "Canopy Stalker": {
+export const CanopyStalker: CardDefinition = {
         name: "Canopy Stalker",
         manaCost: "{3}{G}",
         oracleText: "Canopy Stalker must be blocked if able.\nWhen Canopy Stalker dies, you gain 1 life for each creature that died this turn.",
@@ -16,7 +15,7 @@ export const CanopyStalker: Record<string, ImplementableCard> = {
             {
                 id: "canopy_stalker_must_be_blocked",
                 type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 restrictions: [
                     {
                         type: RestrictionType.MustBeBlocked,
@@ -27,7 +26,7 @@ export const CanopyStalker: Record<string, ImplementableCard> = {
             {
                 id: "canopy_stalker_death",
                 type: AbilityType.Triggered,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                     eventMatch: "ON_DEATH",
                 effects: [
                     {
@@ -40,7 +39,7 @@ export const CanopyStalker: Record<string, ImplementableCard> = {
                 ]
             }
         ]
-    }
-};
+    };
+
 
 

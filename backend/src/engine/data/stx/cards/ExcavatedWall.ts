@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ExcavatedWall: CardDefinition = {
     name: 'Excavated Wall',
@@ -12,3 +12,4 @@ export const ExcavatedWall: CardDefinition = {
     oracleText: 'Defender',
     abilities: []
   };
+

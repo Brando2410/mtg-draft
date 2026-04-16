@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetType, TargetMapping, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const PoisonersApprentice: CardDefinition = {
     "name": "Poisoner's Apprentice",
@@ -38,6 +38,7 @@ export const PoisonersApprentice: CardDefinition = {
     "power": "2",
     "toughness": "2"
 };
+
 
 
 

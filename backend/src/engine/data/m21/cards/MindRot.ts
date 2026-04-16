@@ -1,4 +1,4 @@
-import { AbilityType, ZoneRequirement, EffectType, CardDefinition, TargetType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, Zone, EffectType, CardDefinition, TargetType, TargetMapping } from "@shared/engine_types";
 
 export const MindRot: CardDefinition = {
 
@@ -14,7 +14,6 @@ export const MindRot: CardDefinition = {
         {
 
             type: AbilityType.Spell,
-            activeZone: ZoneRequirement.Stack,
             targetDefinition: { type: TargetType.Player, count: 1 },
             effects: [
                 {
@@ -26,3 +25,4 @@ export const MindRot: CardDefinition = {
         }
     ]
 };
+

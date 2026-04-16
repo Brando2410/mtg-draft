@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const GrapplewithDeath: CardDefinition = {
     "name": "Grapple with Death",
@@ -34,5 +34,6 @@ export const GrapplewithDeath: CardDefinition = {
         }
     ]
 };
+
 
 

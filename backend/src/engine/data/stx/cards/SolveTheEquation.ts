@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, Zone, TargetType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const SolvetheEquation: CardDefinition = {
     name: 'Solve the Equation',
@@ -24,3 +24,4 @@ export const SolvetheEquation: CardDefinition = {
         }
     ]
 };
+

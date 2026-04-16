@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const StealtheShow: CardDefinition = {
     "name": "Steal the Show",
@@ -63,5 +63,6 @@ export const StealtheShow: CardDefinition = {
         }
     ]
 };
+
 
 

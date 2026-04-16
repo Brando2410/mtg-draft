@@ -1,27 +1,30 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
-export const LilianasSteward: Record<string, ImplementableCard> = {
-    "Liliana's Steward": {
-        name: "Liliana's Steward",
-        manaCost: "{B}",
-        oracleText: "{T}, Sacrifice this creature: Target opponent discards a card. Activate only as a sorcery.",
-        colors: ["black"],
-        supertypes: [],
-        types: ["Creature"],
-        subtypes: ["Zombie"],
-        power: "1",
-        toughness: "2",
-        keywords: [],
-        abilities: [
-            {
-                id: "liliana_steward_sacrifice",
-                type: AbilityType.Activated,
-                activeZone: ZoneRequirement.Battlefield,
-                activatedOnlyAsSorcery: true,
-                costs: [{ type: 'Tap', value: null }, { type: 'Sacrifice', targetMapping: 'SELF' }],
-                targetDefinition: { type: 'Player', count: 1, restrictions: ['Opponent'] },
-                effects: [{ type: 'DiscardCards', amount: 1, targetMapping: 'TARGET_1' }]
-            }
-        ]
-    }
+export const LilianasSteward: CardDefinition = {
+    name: "Liliana's Steward",
+    manaCost: "{B}",
+    oracleText: "{T}, Sacrifice this creature: Target opponent discards a card. Activate only as a sorcery.",
+    colors: ["B"],
+    types: ["Creature"],
+    subtypes: ["Zombie"],
+    power: "1",
+    toughness: "2",
+    abilities: [
+        {
+            type: AbilityType.Activated,
+            activeZone: Zone.Battlefield,
+            activatedOnlyAsSorcery: true,
+            costs: [
+                { type: EffectType.Tap },
+                { type: EffectType.Sacrifice, targetMapping: TargetMapping.Self }
+            ],
+            targetDefinition: {
+                type: TargetType.Opponent,
+                count: 1,
+            },
+            effects: [{ type: EffectType.DiscardCards, amount: 1, targetMapping: TargetMapping.Target1 }]
+        }
+    ]
 };
+
+

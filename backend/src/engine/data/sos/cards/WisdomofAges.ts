@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const WisdomofAges: CardDefinition = {
     name: "Wisdom of Ages",
@@ -24,7 +24,7 @@ export const WisdomofAges: CardDefinition = {
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    duration: DurationType.Permanent,
+                    duration: { type: DurationType.Permanent },
                     playerModifier: { maxHandSize: 999 },
                     targetMapping: TargetMapping.Controller
                 },
@@ -36,5 +36,6 @@ export const WisdomofAges: CardDefinition = {
         }
     ]
 };
+
 
 

@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
 
-export const GloriousAnthem: Record<string, ImplementableCard> = {
-    "Glorious Anthem": {
+export const GloriousAnthem: CardDefinition = {
         name: "Glorious Anthem",
         manaCost: "{1}{W}{W}",
         oracleText: "Creatures you control get +1/+1.",
@@ -16,9 +15,10 @@ export const GloriousAnthem: Record<string, ImplementableCard> = {
             {
                 id: "glorious_anthem_static",
                 type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 effects: [{ type: 'ApplyContinuousEffect', powerModifier: 1, toughnessModifier: 1, layer: 7, targetMapping: 'ALL_CREATURES_YOU_CONTROL' }]
             }
         ]
-    }
-};
+    };
+
+

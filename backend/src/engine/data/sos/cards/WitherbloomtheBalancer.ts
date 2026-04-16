@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const WitherbloomtheBalancer: CardDefinition = {
     "name": "Witherbloom, the Balancer",
@@ -47,5 +47,6 @@ export const WitherbloomtheBalancer: CardDefinition = {
     "power": "5",
     "toughness": "5"
 };
+
 
 

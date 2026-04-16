@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TriggerEvent, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const StadiumTidalmage: CardDefinition = {
     "name": "Stadium Tidalmage",
@@ -48,6 +48,7 @@ export const StadiumTidalmage: CardDefinition = {
     "power": "4",
     "toughness": "4"
 };
+
 
 
 

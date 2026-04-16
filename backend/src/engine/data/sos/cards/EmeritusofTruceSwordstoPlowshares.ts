@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
     name: "Emeritus of Truce // Swords to Plowshares",
@@ -76,3 +76,4 @@ export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
         ]
     }
 };
+

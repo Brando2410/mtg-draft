@@ -1,7 +1,6 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
+import { AbilityType, Zone, CardDefinition, Zone, EffectType, GameEvent, GameObject, TargetType } from "@shared/engine_types";
 
-export const KaervektheSpiteful: Record<string, ImplementableCard> = {
-    "Kaervek, the Spiteful": {
+export const KaervektheSpiteful: CardDefinition = {
         name: "Kaervek, the Spiteful",
         manaCost: "{2}{B}{B}",
         oracleText: "Other creatures get -1/-1.",
@@ -16,7 +15,7 @@ export const KaervektheSpiteful: Record<string, ImplementableCard> = {
             {
                 id: "kaervek_static",
                 type: AbilityType.Static,
-                activeZone: ZoneRequirement.Battlefield,
+                activeZone: Zone.Battlefield,
                 effects: [{
                     type: EffectType.ApplyContinuousEffect,
                     layer: 7,
@@ -26,5 +25,5 @@ export const KaervektheSpiteful: Record<string, ImplementableCard> = {
                 }]
             }
         ]
-    }
-};
+    };
+

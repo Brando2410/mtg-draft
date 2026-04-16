@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, TriggerEvent, EffectType, TargetMapping, Zone, SelectionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, SelectionType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const LluwenExchangeStudentPestFriend: CardDefinition = {
     name: "Lluwen, Exchange Student // Pest Friend",
@@ -66,3 +66,4 @@ export const LluwenExchangeStudentPestFriend: CardDefinition = {
         ]
     }
 };
+

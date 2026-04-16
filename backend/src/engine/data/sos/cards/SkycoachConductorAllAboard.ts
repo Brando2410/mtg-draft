@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const SkycoachConductorAllAboard: CardDefinition = {
     name: "Skycoach Conductor // All Aboard",
@@ -36,3 +36,4 @@ export const SkycoachConductorAllAboard: CardDefinition = {
         ]
     }
 };
+

@@ -1,40 +1,37 @@
-import { AbilityType, ZoneRequirement, ImplementableCard, Zone, EffectType, GameEvent, GameObject, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
-export const StormwingEntity: Record<string, ImplementableCard> = {
-    "Stormwing Entity": {
-        name: "Stormwing Entity",
-        manaCost: "{3}{U}{U}",
-        oracleText: "This spell costs {2}{U} to cast if you've cast an instant or sorcery spell this turn.\nFlying\nWhen this creature enters, scry 2.\nProwess",
-        colors: ["blue"],
-        supertypes: [],
-        types: ["Creature"],
-        subtypes: ["Elemental","Siren"],
-        power: "3",
-        toughness: "3",
-        keywords: ["Flying"],
-        abilities: [
-            {
-                id: "stormwing_cost_reduction",
-                type: AbilityType.Static,
-                activeZone: Zone.Hand,
-                effects: [
-                    {
-                        type: 'CostReduction',
-                        targetMapping: 'SELF',
-                        manaReduction: '{3}{U}',
-                        restrictions: ['instantorsorcerycastthisturn']
-                    }
-                ]
-            },
-            {
-                id: "stormwing_etb_scry",
-                type: AbilityType.Triggered,
-                    eventMatch: 'ON_ETB',
-                activeZone: ZoneRequirement.Battlefield,
-                effects: [{ type: 'Scry', amount: 2, targetMapping: 'CONTROLLER' }]
-            }
-        ]
-    }
+export const StormwingEntity: CardDefinition = {
+    name: "Stormwing Entity",
+    manaCost: "{3}{U}{U}",
+    oracleText: "This spell costs {2}{U} to cast if you've cast an instant or sorcery spell this turn.\nFlying\nWhen this creature enters, scry 2.\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+    colors: ["U"],
+    types: ["Creature"],
+    subtypes: ["Elemental", "Siren"],
+    power: "3",
+    toughness: "3",
+    keywords: ["Flying", "Prowess"],
+    abilities: [
+        {
+            type: AbilityType.Static,
+            activeZone: Zone.Hand,
+            effects: [
+                {
+                    type: EffectType.CostReduction,
+                    targetMapping: TargetMapping.Self,
+                    manaReduction: '{1}{U}',
+                    condition: 'CAST_INSTANT_SORCERY_THIS_TURN'
+                }
+            ]
+        },
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.EnterBattlefield,
+            activeZone: Zone.Battlefield,
+            effects: [{ type: EffectType.Scry, amount: 2, targetMapping: TargetMapping.Controller }]
+        }
+    ]
 };
+
+
 
 
