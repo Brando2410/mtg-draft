@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent, Zone, CostType } from '@shared/engine_types';
 
 export const LoreholdExcavation: CardDefinition = {
     name: 'Lorehold Excavation',
@@ -9,18 +9,18 @@ export const LoreholdExcavation: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EndStep,
-            condition: 'YourTurn',
+            eventMatch: TriggerEvent.EndStep,
+            condition: ConditionType.IsYourTurn,
             effects: [{ type: EffectType.Mill, amount: 1 }]
         },
         {
             type: AbilityType.Activated,
             costs: [
-                { type: 'Mana', value: '{5}' },
-                { 
-                    type: 'Exile', 
-                    zone: Zone.Graveyard, 
-                    restriction: { type: 'Type', value: 'Creature' }
+                { type: CostType.Mana, value: '{5}' },
+                {
+                    type: CostType.Exile,
+                    zone: Zone.Graveyard,
+                    restrictions: ['creature']
                 }
             ],
             effects: [
@@ -40,6 +40,6 @@ export const LoreholdExcavation: CardDefinition = {
             ]
         }
     ]
-  };
+};
 
 

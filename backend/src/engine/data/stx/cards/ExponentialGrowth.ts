@@ -9,7 +9,7 @@ export const ExponentialGrowth: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Permanent, count: 1, restrictions: [{ type: 'Type', value: 'Creature' }] },
+            targetDefinition: { type: TargetType.Creature, count: 1 },
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 duration: { type: DurationType.UntilEndOfTurn },

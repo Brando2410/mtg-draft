@@ -17,7 +17,7 @@ export const BiblioplexAssistant: CardDefinition = {
             targetDefinition: {
                 count: 1,
                 type: TargetType.CardInGraveyard,
-                restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Instant' }, { type: 'Type', value: 'Sorcery' }] }, { type: 'Source', value: 'CONTROLLER' }]
+                restrictions: ['yours', 'instant_or_sorcery']
             },
             effects: [{
                 type: EffectType.Choice,

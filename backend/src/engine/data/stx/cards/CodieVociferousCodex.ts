@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, CostType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const CodieVociferousCodex: CardDefinition = {
     name: "Codie, Vociferous Codex",
@@ -13,13 +13,13 @@ export const CodieVociferousCodex: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Static,
-            effects: [{ type: EffectType.CombatConstraint, restrictions: [{ type: 'CannotCastPermanentSpells' }] }]
+            effects: [{ type: EffectType.CombatConstraint, restrictions: ['CannotCastPermanentSpells'] }]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Mana', value: '{4}' }, { type: 'Tap', targetMapping: TargetMapping.Self }],
+            costs: [{ type: CostType.Mana, value: '{4}' }, { type: CostType.Tap }],
             effects: [
-                { type: EffectType.AddMana, manaType: 'WUBRG', amount: 5 },
+                { type: EffectType.AddMana, manaType: 'WUBRG' },
                 {
                     type: EffectType.CreateDelayedTrigger,
                     eventMatch: TriggerEvent.CastSpell,
@@ -28,7 +28,7 @@ export const CodieVociferousCodex: CardDefinition = {
                     effects: [{
                         type: EffectType.SearchLibrary,
                         fromTop: -1, // Search until found
-                        restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Instant' }, { type: 'Type', value: 'Sorcery' }] }, { type: 'ManaValueLessThanSource' }],
+                        restrictions: ['instant_or_sorcery', 'mv < source_mv'],
                         zone: Zone.Exile,
                         remainderZone: Zone.Library,
                         remainderPosition: 'bottom',

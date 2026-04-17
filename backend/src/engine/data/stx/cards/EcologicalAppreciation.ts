@@ -16,9 +16,9 @@ export const EcologicalAppreciation: CardDefinition = {
                         zone: Zone.Hand, // Temporary zone for choice
                         amount: 4,
                         restrictions: [
-                            { type: 'Type', value: 'Creature' }, 
-                            { type: 'DifferentNames' }, 
-                            { type: 'Attribute', attribute: 'ManaValue', value: DynamicAmount.X, comparison: 'LE' }
+                            'Creature', 
+                            'DifferentNames', 
+                            'mv_le_x'
                         ],
                         reveal: true,
                         next: {

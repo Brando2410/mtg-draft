@@ -1,20 +1,13 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const ShatteredAcolyte: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const ShatteredAcolyte: CardDefinition = {
     name: "Shattered Acolyte",
     manaCost: "{1}{W}",
-    colors: [
-        "W"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Dwarf",
-        "Warlock"
-    ],
-    keywords: [
-        "Lifelink"
-    ],
+    colors: ["W"],
+    types: ["Creature"],
+    subtypes: ["Dwarf", "Warlock"],
+    keywords: ["Lifelink"],
+    power: "2",
+    toughness: "2",
     oracleText: "Lifelink\n{1}, Sacrifice this creature: Destroy target artifact or enchantment.",
     abilities: [
         {
@@ -30,12 +23,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
                 }
             ],
             targetDefinition: {
-                maxTargets: 1,
-                restrictions: ["Artifact_or_Enchantment"]
+                count: 1,
+                type: TargetType.ArtifactOrEnchantment
             }
         }
-    ],
-    power: "2",
-    toughness: "2"
+    ]
 };
-    

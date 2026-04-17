@@ -24,6 +24,8 @@ export const TargetType = {
     Card: 'CARD',
     ArtifactOrEnchantment: 'ARTIFACT_OR_ENCHANTMENT',
     InstantOrSorcery: 'INSTANT_OR_SORCERY',
+    ArtifactEnchantmentOrPlaneswalker: 'ARTIFACT_ENCHANTMENT_OR_PLANESWALKER',
+    SpellOrPermanent: 'SPELL_OR_PERMANENT',
     Any: 'ANY'
 } as const;
 export type TargetType = (typeof TargetType)[keyof typeof TargetType];

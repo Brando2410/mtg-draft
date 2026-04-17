@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
 
 export const HallMonitor: CardDefinition = {
     name: 'Hall Monitor',
@@ -13,10 +13,9 @@ export const HallMonitor: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Mana', value: '{1}{R}' }, { type: 'Tap' }],
-            targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
-            effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: 'UNTIL_END_OF_TURN', cannotBlock: true }]
+            costs: [{ type: CostType.Mana, value: '{1}{R}' }, { type: CostType.Tap }],
+            targetDefinition: { count: 1, type: TargetType.Creature },
+            effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: { type: DurationType.UntilEndOfTurn }, cannotBlock: true }]
         }
     ]
-  };
-
+};

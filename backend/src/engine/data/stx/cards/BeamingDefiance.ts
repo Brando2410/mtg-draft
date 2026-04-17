@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
 
 export const BeamingDefiance: CardDefinition = {
     name: 'Beaming Defiance',
@@ -11,13 +11,13 @@ export const BeamingDefiance: CardDefinition = {
             type: AbilityType.Spell,
             targetDefinition: {
                 count: 1,
-                type: TargetType.Permanent,
-                restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Source', value: 'CONTROLLER' }]
+                type: TargetType.Creature,
+                restrictions: ['youcontrol']
             },
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 targetMapping: TargetMapping.Target1,
-                duration: 'UNTIL_END_OF_TURN',
+                duration: { type: DurationType.UntilEndOfTurn },
                 powerModifier: 2,
                 toughnessModifier: 2,
                 abilitiesToAdd: ['Hexproof']
@@ -25,4 +25,3 @@ export const BeamingDefiance: CardDefinition = {
         }
     ]
   };
-

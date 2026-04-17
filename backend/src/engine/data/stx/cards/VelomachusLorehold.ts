@@ -21,8 +21,8 @@ export const VelomachusLorehold: CardDefinition = {
                 fromTop: 7,
                 optional: true,
                 restrictions: [
-                    { type: 'Type', value: 'InstantOrSorcery' },
-                    { type: 'ManaValue', comparison: 'LessOrEqual', value: 'SOURCE_POWER' }
+                    'InstantOrSorcery',
+                    'mv_le_power'
                 ],
                 zone: Zone.Stack,
                 isFreeCast: true,

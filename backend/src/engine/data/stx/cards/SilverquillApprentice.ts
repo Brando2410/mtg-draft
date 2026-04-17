@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const SilverquillApprentice: CardDefinition = {
     name: "Silverquill Apprentice",
@@ -12,15 +12,14 @@ export const SilverquillApprentice: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Magecraft,
+            eventMatch: TriggerEvent.Magecraft,
             targetDefinition: {
-                type: TargetType.Permanent,
+                type: TargetType.Creature,
                 count: 1,
-                restrictions: [{ type: 'Type', value: 'Creature' }]
             },
-            effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 1, duration: 'UNTIL_END_OF_TURN', targetMapping: TargetMapping.Target1 }]
+            effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 1, duration: { type: DurationType.UntilEndOfTurn }, targetMapping: TargetMapping.Target1 }]
         }
     ]
-  };
+};
 
 

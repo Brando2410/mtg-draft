@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
 
 export const IntroductiontoProphecy: CardDefinition = {
     name: 'Introduction to Prophecy',
@@ -8,13 +8,13 @@ export const IntroductiontoProphecy: CardDefinition = {
     subtypes: ['Lesson'],
     oracleText: 'Scry 2, then draw a card.',
     abilities: [
-      {
-        type: AbilityType.Spell,
-        effects: [
-          { type: EffectType.Scry, amount: 2 },
-          { type: EffectType.DrawCards, amount: 1 }
-        ]
-      }
+        {
+            type: AbilityType.Spell,
+            effects: [
+                { type: EffectType.Scry, amount: 2 },
+                { type: EffectType.DrawCards, amount: 1 }
+            ]
+        }
     ]
-  };
+};
 

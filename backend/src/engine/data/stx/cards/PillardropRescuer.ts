@@ -17,7 +17,7 @@ export const PillardropRescuer: CardDefinition = {
             targetDefinition: {
                 count: 1,
                 type: TargetType.CardInGraveyard,
-                restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'ManaValue', comparison: 'LessOrEqual', value: 3 }, { type: 'Source', value: 'CONTROLLER' }]
+                restrictions: ['Creature', 'mv <= 3', 'yours']
             },
             effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
         }

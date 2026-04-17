@@ -43,7 +43,7 @@ export const ShadrixSilverquill: CardDefinition = {
                             counterType: 'P1P1',
                             amount: 1,
                             targetMapping: TargetMapping.AllMatchingPermanents,
-                            restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Controller', targetMapping: TargetMapping.Target1 }]
+                            restrictions: ['Creature', 'controlled_by_target_1']
                         }]
                     }
                 ]

@@ -2,13 +2,8 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
 export const FixWhatsBroken: CardDefinition = {
     name: "Fix What's Broken",
     manaCost: "{2}{W}{B}",
-    colors: [
-        "B",
-        "W"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["B", "W"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "As an additional cost to cast this spell, pay X life.\nReturn each artifact and creature card with mana value X from your graveyard to the battlefield.",
@@ -25,11 +20,7 @@ export const FixWhatsBroken: CardDefinition = {
                         "ArtifactOrCreature",
                         "graveyard",
                         "youcontrol",
-                        {
-                            type: 'ManaValue',
-                            comparison: 'Equal',
-                            value: DynamicAmount.X
-                        }
+                        "mv == x"
                     ]
                 }
             ]

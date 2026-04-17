@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const GuidingVoice: CardDefinition = {
     name: 'Guiding Voice',
@@ -11,8 +11,7 @@ export const GuidingVoice: CardDefinition = {
         type: AbilityType.Spell,
         targetDefinition: {
             count: 1,
-            type: TargetType.Permanent,
-            restrictions: [{ type: 'Type', value: 'Creature' }]
+            type: TargetType.Creature
         },
         effects: [
           { type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Target1 },
@@ -21,4 +20,3 @@ export const GuidingVoice: CardDefinition = {
       }
     ]
   };
-

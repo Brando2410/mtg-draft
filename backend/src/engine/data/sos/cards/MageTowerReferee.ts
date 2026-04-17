@@ -1,15 +1,12 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 export const MageTowerReferee: CardDefinition = {
     name: "Mage Tower Referee",
     manaCost: "{2}",
     colors: [],
-    types: [
-        "Artifact",
-        "Creature"
-    ],
-    subtypes: [
-        "Construct"
-    ],
+    types: ["Artifact", "Creature"],
+    subtypes: ["Construct"],
+    power: "2",
+    toughness: "1",
     keywords: [],
     oracleText: "Whenever you cast a multicolored spell, put a +1/+1 counter on this creature.",
     abilities: [
@@ -32,8 +29,6 @@ export const MageTowerReferee: CardDefinition = {
                 }
             ]
         }
-    ],
-    power: "2",
-    toughness: "1"
+    ]
 };
 

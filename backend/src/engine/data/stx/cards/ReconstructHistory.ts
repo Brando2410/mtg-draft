@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const ReconstructHistory: CardDefinition = {
     name: 'Reconstruct History',
@@ -15,18 +15,25 @@ export const ReconstructHistory: CardDefinition = {
                 optional: true,
                 type: TargetType.CardInGraveyard,
                 perTargetRestrictions: [
-                    [{ type: 'Type', value: 'Artifact' }],
-                    [{ type: 'Type', value: 'Enchantment' }],
-                    [{ type: 'Type', value: 'Instant' }],
-                    [{ type: 'Type', value: 'Sorcery' }],
-                    [{ type: 'Type', value: 'Planeswalker' }]
+                    ['artifact'],
+                    ['enchantment'],
+                    ['instant'],
+                    ['sorcery'],
+                    ['planeswalker']
                 ]
             },
             effects: [
-                { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.TargetAll },
-                { type: EffectType.Exile, targetMapping: TargetMapping.Self }
+                {
+                    type: EffectType.MoveToZone,
+                    zone: Zone.Hand,
+                    targetMapping: TargetMapping.TargetAll
+                },
+                {
+                    type: EffectType.Exile,
+                    targetMapping: TargetMapping.Self
+                }
             ]
         }
     ]
-  };
+};
 

@@ -12,7 +12,7 @@ export const DoubleMajor: CardDefinition = {
             targetDefinition: {
                 type: TargetType.Creature,
                 count: 1,
-                restrictions: [{ type: 'Source', value: 'CONTROLLER' }]
+                restrictions: ['youcontrol']
             },
             effects: [{
                 type: EffectType.CopySpellOnStack,

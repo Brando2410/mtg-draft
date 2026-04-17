@@ -19,8 +19,7 @@ export const BuryinBooks: CardDefinition = {
             type: AbilityType.Spell,
             targetDefinition: {
                 count: 1,
-                type: TargetType.Permanent,
-                restrictions: [{ type: 'Type', value: 'Creature' }]
+                type: TargetType.Creature
             },
             effects: [{ type: EffectType.MoveToZone, zone: Zone.Library, libraryPosition: 'top', fromTop: 1, targetMapping: TargetMapping.Target1 }]
         }

@@ -30,7 +30,7 @@ export const ValentinDeanoftheVein: CardDefinition = {
                         type: EffectType.ApplyContinuousEffect,
                         layer: 6,
                         targetMapping: TargetMapping.EachOpponentCreature,
-                        restrictions: [{ type: 'Not', restriction: { type: 'Token' } }],
+                        restrictions: ['nontoken'],
                         exileOnMoveToGraveyard: true,
                     }]
                 },

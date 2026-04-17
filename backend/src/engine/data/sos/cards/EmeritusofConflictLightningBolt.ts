@@ -34,7 +34,7 @@ export const EmeritusofConflictLightningBolt: CardDefinition = {
             {
                 type: AbilityType.Spell,
                 targetDefinition: {
-                    type: 'AnyTarget',
+                    type: TargetType.AnyTarget,
                     count: 1
                 },
                 effects: [

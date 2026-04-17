@@ -254,8 +254,17 @@ export class ConditionProcessor {
         const targets = (event?.data as any)?.targets || [];
         return targets.includes(sourceId);
       }
+      case 'SPELL_TARGETS_PERMANENT':
+      case 'TARGETS_PERMANENT': {
+        const targets = (event as any)?.targets || (event as any)?.data?.targets || (event as any)?.targetIds || [];
+        if (targets.length === 0) return false;
+        return targets.some((tid: string) => {
+          const obj = state.battlefield.find(o => o.id === tid);
+          return obj && ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'].some(t => obj.definition.types.some((ot: string) => ot.toLowerCase() === t));
+        });
+      }
       case 'SPELL_TARGETS_CREATURE': {
-        const targets = (event as any)?.targets || (event as any)?.data?.targets || [];
+        const targets = (event as any)?.targets || (event as any)?.data?.targets || (event as any)?.targetIds || [];
         if (targets.length === 0) return false;
         return targets.some((tid: string) => {
           const obj = state.battlefield.find(o => o.id === tid);
@@ -387,6 +396,10 @@ export class ConditionProcessor {
         const baseToughness = Number(obj.definition.toughness || 0);
         if (spent > 0) process.stdout.write(`[DEBUG] Increment check for ${obj.definition.name}: spent ${spent} > power ${stats.power} (base ${basePower}) or toughness ${stats.toughness} (base ${baseToughness})? ${met}\n`);
         return met;
+      }
+      case 'GRAVEYARD_CREATURE_COUNT_GE_3': {
+        const creatures = state.players[controllerId].graveyard.filter(c => c.definition.types.some(t => t.toLowerCase() === 'creature'));
+        return creatures.length >= 3;
       }
       case 'TOP_CARD_IS_GOBLIN': {
         const player = state.players[controllerId];

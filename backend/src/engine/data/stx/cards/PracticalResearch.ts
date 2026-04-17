@@ -15,7 +15,7 @@ export const PracticalResearch: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Discard option",
                     choices: [
-                        { label: "Discard 1 Instant/Sorcery", effects: [{ type: EffectType.DiscardCards, amount: 1, restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Instant' }, { type: 'Type', value: 'Sorcery' }] }] }] },
+                        { label: "Discard 1 Instant/Sorcery", effects: [{ type: EffectType.DiscardCards, amount: 1, restrictions: ['instant_or_sorcery'] }] },
                         { label: "Discard 2 cards", effects: [{ type: EffectType.DiscardCards, amount: 2 }] }
                     ]
                 }

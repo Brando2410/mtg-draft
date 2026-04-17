@@ -1,13 +1,9 @@
 import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const LivingHistory: CardDefinition = {
+export const LivingHistory: CardDefinition = {
     name: "Living History",
     manaCost: "{1}{R}",
-    colors: [
-        "R"
-    ],
-    types: [
-        "Enchantment"
-    ],
+    colors: ["R"],
+    types: ["Enchantment"],
     subtypes: [],
     keywords: [],
     oracleText: "When this enchantment enters, create a 2/2 red and white Spirit creature token.\nWhenever you attack, if a card left your graveyard this turn, target attacking creature gets +2/+0 until end of turn.",
@@ -40,8 +36,8 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [
-                "attacking"
-            ]
+                    "attacking"
+                ]
             },
             effects: [
                 {
@@ -55,4 +51,4 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
         }
     ]
 };
-    
+

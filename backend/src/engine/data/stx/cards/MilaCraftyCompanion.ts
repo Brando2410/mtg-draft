@@ -1,14 +1,4 @@
-import {
-    CardDefinition,
-    AbilityType,
-    TriggerEvent,
-    TargetMapping,
-    EffectType,
-    DynamicAmount,
-    TargetType,
-    DurationType,
-    Zone
-} from '@shared/engine_types';
+import { CardDefinition, AbilityType, CostType, TriggerEvent, TargetMapping, EffectType, DynamicAmount, TargetType, DurationType, Zone, ConditionType } from '@shared/engine_types';
 
 export const MilaCraftyCompanion: CardDefinition = {
     name: "Mila, Crafty Companion",
@@ -36,11 +26,11 @@ export const MilaCraftyCompanion: CardDefinition = {
                     type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.AttackersDeclared,
                     condition: 'OpponentAttacksYourPlaneswalker',
-                    effects: [{ 
-                        type: EffectType.AddCounters, 
-                        counterType: 'loyalty', 
-                        amount: 1, 
-                        targetMapping: TargetMapping.AllPlaneswalkersYouControl 
+                    effects: [{
+                        type: EffectType.AddCounters,
+                        counterType: 'loyalty',
+                        amount: 1,
+                        targetMapping: TargetMapping.AllPlaneswalkersYouControl
                     }]
                 },
                 {
@@ -94,11 +84,11 @@ export const MilaCraftyCompanion: CardDefinition = {
                 },
                 {
                     type: AbilityType.Activated,
-                    costs: [{ type: 'Loyalty', value: -2 }],
+                    costs: [{ type: CostType.Loyalty, value: -2 }],
                     targetDefinition: {
                         type: TargetType.CardInGraveyard,
                         count: 1,
-                        restrictions: [{ type: 'Type', value: 'Creature' }]
+                        restrictions: ['creature']
                     },
                     effects: [
                         { type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 },
@@ -112,14 +102,14 @@ export const MilaCraftyCompanion: CardDefinition = {
                             type: EffectType.CreateDelayedTrigger,
                             eventMatch: TriggerEvent.Upkeep,
                             duration: { type: DurationType.UntilEndOfTurn },
-                            condition: 'IsYourTurn',
+                            condition: ConditionType.IsYourTurn,
                             effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
                         }
                     ]
                 },
                 {
                     type: AbilityType.Activated,
-                    costs: [{ type: 'Loyalty', value: -7 }],
+                    costs: [{ type: CostType.Loyalty, value: -7 }],
                     effects: [{
                         type: EffectType.CreateEmblem,
                         emblemBlueprint: {
@@ -127,8 +117,7 @@ export const MilaCraftyCompanion: CardDefinition = {
                             oracleText: "Whenever a creature enters the battlefield under your control, it deals damage equal to its power to any target.",
                             abilities: [{
                                 type: AbilityType.Triggered,
-                                eventMatch: TriggerEvent.EnterBattlefieldOther,
-                                condition: 'OwnCreatureEnters',
+                                eventMatch: TriggerEvent.EnterBattlefield,
                                 targetDefinition: { type: TargetType.AnyTarget, count: 1 },
                                 effects: [{
                                     type: EffectType.DealDamage,

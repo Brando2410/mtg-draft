@@ -2,13 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
 export const CauldronofEssence: CardDefinition = {
     name: "Cauldron of Essence",
     manaCost: "{1}{B}{G}",
-    colors: [
-        "B",
-        "G"
-    ],
-    types: [
-        "Artifact"
-    ],
+    colors: ["B", "G"],
+    types: ["Artifact"],
     subtypes: [],
     keywords: [],
     oracleText: "Whenever a creature you control dies, each opponent loses 1 life and you gain 1 life.\n{1}{B}{G}, {T}, Sacrifice a creature: Return target creature card from your graveyard to the battlefield. Activate only as a sorcery.",
@@ -27,17 +22,10 @@ export const CauldronofEssence: CardDefinition = {
             costs: [
                 { type: CostType.Mana, value: '{1}{B}{G}' },
                 { type: CostType.Tap },
-                {
-                    type: CostType.Sacrifice, restrictions: [
-                        "Creature"
-                    ]
-                }
+                { type: CostType.Sacrifice, restrictions: ["Creature"] }
             ],
             targetDefinition: {
-                type: TargetType.CardInGraveyard, count: 1, restrictions: [
-                    "Creature",
-                    "youcontrol"
-                ]
+                type: TargetType.CardInGraveyard, count: 1, restrictions: ["Creature", "youcontrol"]
             },
             activatedOnlyAsSorcery: true,
             effects: [

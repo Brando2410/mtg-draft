@@ -29,14 +29,7 @@ export const BlexVexingPest: CardDefinition = {
                     toughnessModifier: 1,
                     layer: 7,
                     targetMapping: TargetMapping.OtherCreaturesYouControl,
-                    restrictions: [
-                { type: 'SubtypeIn',
-                value: ['Pest',
-                { type: 'Type', value: 'Bat' },
-                { type: 'Type', value: 'Insect' },
-                { type: 'Type', value: 'Snake' },
-                { type: 'Type', value: 'Spider' }
-            ] }]
+                    restrictions: ['pest_or_bat_or_insect_or_snake_or_spider']
                 }]
             }]
         },
@@ -46,7 +39,7 @@ export const BlexVexingPest: CardDefinition = {
             colors: ["B"],
             types: ["Sorcery"],
             oracleText: "Look at the top five cards of your library. You may put any number of them into your hand and the rest into your graveyard. You lose 3 life for each card put into your hand this way.",
-                abilities: [{
+            abilities: [{
                 type: AbilityType.Spell,
                 effects: [{
                     type: EffectType.LookAtTopAndPick,

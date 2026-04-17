@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const DividebyZero: CardDefinition = {
     name: 'Divide by Zero',
@@ -11,7 +11,7 @@ export const DividebyZero: CardDefinition = {
             type: AbilityType.Spell,
             targetDefinition: {
                 count: 1,
-                type: TargetType.NonlandPermanent,
+                type: TargetType.SpellOrPermanent,
                 restrictions: ["mv >= 1"]
             },
             effects: [

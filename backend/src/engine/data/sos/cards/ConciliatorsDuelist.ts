@@ -2,17 +2,9 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 export const ConciliatorsDuelist: CardDefinition = {
     name: "Conciliator's Duelist",
     manaCost: "{W}{W}{B}{B}",
-    colors: [
-        "B",
-        "W"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Kor",
-        "Warlock"
-    ],
+    colors: ["B", "W"],
+    types: ["Creature"],
+    subtypes: ["Kor", "Warlock"],
     keywords: [],
     oracleText: "When this creature enters, draw a card. Each player loses 1 life.\nRepartee — Whenever you cast an instant or sorcery spell that targets a creature, exile up to one target creature. Return that card to the battlefield under its owner's control at the beginning of the next end step.",
     abilities: [

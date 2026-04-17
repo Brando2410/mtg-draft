@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const NecroticFumes: CardDefinition = {
     name: 'Necrotic Fumes',
@@ -8,21 +8,28 @@ export const NecroticFumes: CardDefinition = {
     subtypes: ['Lesson'],
     oracleText: 'As an additional cost to cast this spell, exile a creature you control.\nExile target creature or planeswalker.',
     abilities: [
-      {
-          type: AbilityType.Spell,
-          additionalCosts: [
-              {
-                  type: 'Exile', 
-                  restriction: { type: 'Type', value: 'Creature', source: 'CONTROLLER' }
-              }
-          ],
-          targetDefinition: {
-              count: 1,
-              type: TargetType.Permanent,
-              restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Type', value: 'Planeswalker' }] }]
-          },
-          effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
-      }
+        {
+            type: AbilityType.Static,
+            activeZone: Zone.Hand,
+            effects: [
+                {
+                    type: EffectType.AdditionalCost,
+                    targetMapping: TargetMapping.Controller,
+                    additionalCost: {
+                        type: CostType.Exile,
+                        restrictions: ['Creature', 'youcontrol']
+                    }
+                }
+            ]
+        },
+        {
+            type: AbilityType.Spell,
+            targetDefinition: {
+                count: 1,
+                type: TargetType.CreatureOrPlaneswalker,
+            },
+            effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
+        }
     ]
-  };
+};
 

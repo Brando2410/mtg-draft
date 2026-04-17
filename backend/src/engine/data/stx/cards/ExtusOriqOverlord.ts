@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone, ConditionType } from '@shared/engine_types';
 
 export const ExtusOriqOverlord: CardDefinition = {
     name: "Extus, Oriq Overlord",
@@ -25,9 +25,17 @@ export const ExtusOriqOverlord: CardDefinition = {
             oracleText: "Double strike\nMagecraft — Whenever you cast or copy an instant or sorcery spell, return target creature card from your graveyard to your hand.",
             abilities: [{
                 type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Magecraft,
-                targetDefinition: { count: 1, type: TargetType.Card, restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Source', value: 'GRAVEYARD' }, { type: 'Source', value: 'CONTROLLER' }] },
-                effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
+                eventMatch: TriggerEvent.Magecraft,
+                targetDefinition: {
+                    count: 1,
+                    type: TargetType.CardInGraveyard,
+                    restrictions: ['creature', 'yours']
+                },
+                effects: [{
+                    type: EffectType.MoveToZone,
+                    zone: Zone.Hand,
+                    targetMapping: TargetMapping.Target1
+                }]
             }]
         },
         {
@@ -38,18 +46,13 @@ export const ExtusOriqOverlord: CardDefinition = {
             oracleText: "As an additional cost to cast this spell, you may sacrifice any number of creatures. This spell costs {2} less to cast for each creature sacrificed this way. Each opponent sacrifices a creature. Create a 3/6 black and red Avatar creature token with haste and 'Whenever this creature attacks, it deals 3 damage to each opponent.'",
             abilities: [
                 {
-                    type: AbilityType.Static,
-                    effects: [{
-                        type: EffectType.CostReduction,
-                        amount: '{2}',
-                        //   selectionType: SelectionType.AnyNumber,
-                        //   costToPay: { type: 'Sacrifice', restrictions: [{ type: 'Type', value: 'Creature' }] }
-                    }]
-                },
-                {
                     type: AbilityType.Spell,
                     effects: [
-                        // { type: EffectType.Sacrifice, targetMapping: TargetMapping.EachOpponent, restriction: { type: 'Type', value: 'Creature' } },
+                        {
+                            type: EffectType.Sacrifice,
+                            targetMapping: TargetMapping.EachOpponent,
+                            restrictions: ['creature']
+                        },
                         {
                             type: EffectType.CreateToken,
                             tokenBlueprint: {
@@ -64,9 +67,13 @@ export const ExtusOriqOverlord: CardDefinition = {
                                 oracleText: "Whenever this creature attacks, it deals 3 damage to each opponent.",
                                 abilities: [{
                                     type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Attack,
-                                    condition: "SelfAttacks",
-                                    effects: [{ type: EffectType.LoseLife, amount: 3, targetMapping: TargetMapping.EachOpponent }]
+                                    eventMatch: TriggerEvent.Attack,
+                                    condition: ConditionType.SelfAttacks,
+                                    effects: [{
+                                        type: EffectType.LoseLife,
+                                        amount: 3,
+                                        targetMapping: TargetMapping.EachOpponent
+                                    }]
                                 }]
                             }
                         }

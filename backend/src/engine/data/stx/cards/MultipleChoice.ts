@@ -15,7 +15,7 @@ export const MultipleChoice: CardDefinition = {
                     {
                         label: "X=1: Return Creature",
                         condition: 'XIs1',
-                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
+                        targetDefinition: { count: 1, type: TargetType.Creature },
                         effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
                     },
                     {
@@ -35,7 +35,7 @@ export const MultipleChoice: CardDefinition = {
                             {
                                 type: EffectType.Choice,
                                 label: "Target creature to return hand (X>=4)",
-                                targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
+                                targetDefinition: { count: 1, type: TargetType.Creature },
                                 effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
                             },
                             { type: EffectType.CreateToken, tokenBlueprint: { name: 'Drake', power: '2', toughness: '2', colors: ['U'], types: ['Creature', 'Token'], subtypes: ['Drake'], keywords: ['Flying'] }, amount: 1 },
@@ -47,5 +47,5 @@ export const MultipleChoice: CardDefinition = {
             }]
         }
     ]
-  };
+};
 

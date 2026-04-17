@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const QuandrixApprentice: CardDefinition = {
     name: "Quandrix Apprentice",
@@ -12,25 +12,22 @@ export const QuandrixApprentice: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Magecraft,
+            eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.LookAtTopAndPick,
                     fromTop: 3,
                     optional: true,
-                    restrictions: [
-                { type: 'Type', value: 'Land' }
-            ],
+                    restrictions: ['land'],
                     reveal: true,
                     zone: Zone.Hand,
                     remainderZone: Zone.Library,
                     remainderPosition: 'bottom',
-                    shuffleRemainder: true,
-                    targetMapping: TargetMapping.Controller
+                    shuffleRemainder: true
                 }
             ]
         }
     ]
-  };
+};
 
 

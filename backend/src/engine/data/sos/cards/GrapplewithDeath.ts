@@ -2,13 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const GrapplewithDeath: CardDefinition = {
     name: "Grapple with Death",
     manaCost: "{1}{B}{G}",
-    colors: [
-        "B",
-        "G"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["B", "G"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "Destroy target artifact or creature. You gain 1 life.",
@@ -18,9 +13,7 @@ export const GrapplewithDeath: CardDefinition = {
             targetDefinition: {
                 type: TargetType.Permanent,
                 count: 1,
-                restrictions: [
-                    "ArtifactOrCreature"
-                ]
+                restrictions: ["ArtifactOrCreature"]
             },
             effects: [
                 {

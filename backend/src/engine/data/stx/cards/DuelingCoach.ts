@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, CostType } from '@shared/engine_types';
 
 export const DuelingCoach: CardDefinition = {
     name: 'Dueling Coach',
@@ -8,26 +8,26 @@ export const DuelingCoach: CardDefinition = {
     subtypes: ['Human', 'Wizard'],
     power: "2",
     toughness: "2",
-    oracleText: 'When Dueling Coach enters the battlefield, put a +1/+1 counter on target creature.\n{4}, {T}: Put a +1/+1 counter on each creature you control with a +1/+1 counter on it.',
+    oracleText: 'When Dueling Coach enters the battlefield, put a+1/+1 counter on target creature.\n{4}, {T}: Put a +1/+1 counter on each creature you control with a +1/+1 counter on it.',
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
+            eventMatch: TriggerEvent.EnterBattlefield,
+            targetDefinition: { count: 1, type: TargetType.Creature },
             effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Target1 }]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Mana', value: '{4}' }, { type: 'Tap' }],
+            costs: [{ type: CostType.Mana, value: '{4}' }, { type: CostType.Tap }],
             effects: [{
                 type: EffectType.AddCounters,
                 counterType: 'P1P1',
                 amount: 1,
                 targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                restrictions: [{ type: 'HasCounter', value: 'P1P1' }]
+                restrictions: ['Creature', 'hascounter_P1P1']
             }]
         }
     ]
-  };
+};
 
 

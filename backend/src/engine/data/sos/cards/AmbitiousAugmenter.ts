@@ -1,23 +1,18 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const AmbitiousAugmenter: CardDefinition = {
+export const AmbitiousAugmenter: CardDefinition = {
     name: "Ambitious Augmenter",
     manaCost: "{G}",
-    colors: [
-        "G"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Turtle",
-        "Wizard"
-    ],
+    colors: ["G"],
+    types: ["Creature"],
+    subtypes: ["Turtle", "Wizard"],
     keywords: ["Increment"],
+    power: "1",
+    toughness: "1",
     oracleText: "Increment (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.)\nWhen this creature dies, if it had one or more counters on it, create a 0/0 green and blue Fractal creature token, then put this creature's counters on that token.",
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Death,
+            eventMatch: TriggerEvent.Death,
             condition: ConditionType.HasCounters,
             effects: [
                 {
@@ -36,13 +31,10 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
                 {
                     type: EffectType.MoveCounters,
                     targetMapping: TargetMapping.LastCreatedToken,
-                    sourceMapping: TargetType.Self,
                     counterType: '+1/+1'
                 }
             ]
         }
-    ],
-    power: "1",
-    toughness: "1"
+    ]
 };
-    
+

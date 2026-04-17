@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, CostType, Zone, DurationType } from '@shared/engine_types';
 
 export const StoneriseSpirit: CardDefinition = {
     name: 'Stonerise Spirit',
@@ -14,10 +14,18 @@ export const StoneriseSpirit: CardDefinition = {
         {
             type: AbilityType.Activated,
             activeZone: Zone.Graveyard,
-            costs: [{ type: 'Mana', value: '{4}' }, { type: 'Exile', targetMapping: TargetMapping.Self }],
-            targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
-            effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Flying'] }]
+            costs: [
+                { type: CostType.Mana, value: '{4}' },
+                { type: CostType.Exile, targetMapping: TargetMapping.Self }
+            ],
+            targetDefinition: { count: 1, type: TargetType.Creature },
+            effects: [{
+                type: EffectType.ApplyContinuousEffect,
+                targetMapping: TargetMapping.Target1,
+                duration: { type: DurationType.UntilEndOfTurn },
+                abilitiesToAdd: ['Flying']
+            }]
         }
     ]
-  };
+};
 

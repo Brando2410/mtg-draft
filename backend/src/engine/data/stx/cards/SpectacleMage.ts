@@ -16,7 +16,7 @@ export const SpectacleMage: CardDefinition = {
         effects: [{
             type: EffectType.CostReduction,
             amount: '{1}',
-            restriction: { type: 'Attribute', attribute: 'ManaValue', value: 5, comparison: 'GE' }
+            restrictions: ["mv >= 5"]
         }]
       }
     ]

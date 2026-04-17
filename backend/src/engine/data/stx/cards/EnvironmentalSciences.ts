@@ -1,32 +1,28 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Zone } from '@shared/engine_types';
 
 export const EnvironmentalSciences: CardDefinition = {
-  name: 'Environmental Sciences',
-  manaCost: '{2}',
-  colors: [],
-  types: ['Sorcery'],
-  subtypes: ['Lesson'],
-  oracleText: 'Search your library for a basic land card, reveal it, put it into your hand, then shuffle. You gain 2 life.',
-  abilities: [
-    {
-      type: AbilityType.Spell,
-      effects: [
+    name: 'Environmental Sciences',
+    manaCost: '{2}',
+    colors: [],
+    types: ['Sorcery'],
+    subtypes: ['Lesson'],
+    oracleText: 'Search your library for a basic land card, reveal it, put it into your hand, then shuffle. You gain 2 life.',
+    abilities: [
         {
-          type: EffectType.SearchLibrary,
-          targetDefinition: {
-            type: TargetType.Land,
-            count: 1,
-            restrictions: [
-                { type: 'Type', value: 'Basic' }
+            type: AbilityType.Spell,
+            effects: [
+                {
+                    type: EffectType.SearchLibrary,
+                    targetDefinition: {
+                        count: 1,
+                        restrictions: ['basic', 'land']
+                    },
+                    zone: Zone.Hand,
+                    reveal: true
+                },
+                { type: EffectType.GainLife, amount: 2 }
             ]
-          },
-          zone: Zone.Hand,
-          reveal: true,
-          targetMapping: TargetMapping.Controller
-        },
-        { type: EffectType.GainLife, amount: 2 }
-      ]
-    }
-  ]
+        }
+    ]
 };
 

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const Expel: CardDefinition = {
     name: 'Expel',
@@ -11,11 +11,10 @@ export const Expel: CardDefinition = {
             type: AbilityType.Spell,
             targetDefinition: {
                 count: 1,
-                type: TargetType.Permanent,
-                restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Tapped' }]
+                type: TargetType.Creature,
+                restrictions: ['tapped']
             },
             effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
         }
     ]
-  };
-
+};

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, CostType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ProfessorOnyx: CardDefinition = {
     name: "Professor Onyx",
@@ -20,7 +20,7 @@ export const ProfessorOnyx: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Loyalty', value: '1' }],
+            costs: [{ type: CostType.Loyalty, value: '1' }],
             effects: [
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.Controller },
                 {
@@ -34,23 +34,23 @@ export const ProfessorOnyx: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Loyalty', value: '-3' }],
+            costs: [{ type: CostType.Loyalty, value: '-3' }],
             effects: [{
                 type: EffectType.Sacrifice,
                 targetMapping: TargetMapping.EachOpponent,
-                restrictions: [{ type: 'GreatestPower' }]
+                restrictions: ['greatestpower', 'creature']
             }]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Loyalty', value: '-8' }],
+            costs: [{ type: CostType.Loyalty, value: '-8' }],
             effects: Array(7).fill({
                 type: EffectType.Choice,
                 label: "Each opponent: Discard or lose 3 life?",
                 targetMapping: TargetMapping.EachOpponent,
                 choices: [
-                    { label: "Discard", effects: [{ type: EffectType.DiscardCards, amount: 1, targetMapping: TargetMapping.Self }] },
-                    { label: "Lose 3 Life", effects: [{ type: EffectType.LoseLife, amount: 3, targetMapping: TargetMapping.Self }] }
+                    { label: "Discard", effects: [{ type: EffectType.DiscardCards, amount: 1, targetMapping: TargetMapping.SelectedTargets }] },
+                    { label: "Lose 3 Life", effects: [{ type: EffectType.LoseLife, amount: 3, targetMapping: TargetMapping.SelectedTargets }] }
                 ]
             })
         }

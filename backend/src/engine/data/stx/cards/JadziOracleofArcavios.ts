@@ -78,7 +78,7 @@ export const JadziOracleofArcavios: CardDefinition = {
                             type: TargetType.Card,
                             count: 99, // "Any number"
                             minCount: 0,
-                            restrictions: [{ type: 'Type', value: 'Land' }]
+                            restrictions: ['land']
                         },
                         targetMapping: TargetMapping.TargetAll
                     },
@@ -89,7 +89,7 @@ export const JadziOracleofArcavios: CardDefinition = {
                         optional: true,
                         choices: [{
                             label: "Discard & Return",
-                            costs: [{ type: 'Discard', value: 1 }],
+                            costs: [{ type: CostType.Discard, value: 1 }],
                             effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Self }]
                         }]
                     }

@@ -19,8 +19,8 @@ export const StarPupil: CardDefinition = {
             eventMatch: TriggerEvent.Death,
             targetDefinition: {
                 count: 1,
-                type: TargetType.Permanent,
-                restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Source', value: 'CONTROLLER' }]
+                type: TargetType.Creature,
+                restrictions: ['youcontrol']
             },
             effects: [{ type: EffectType.MoveCounters, targetMapping: TargetMapping.Target1 }]
         }

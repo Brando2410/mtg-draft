@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
 
 export const EssenceInfusion: CardDefinition = {
     name: 'Essence Infusion',
@@ -9,12 +9,11 @@ export const EssenceInfusion: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
+            targetDefinition: { count: 1, type: TargetType.Creature },
             effects: [
                 { type: EffectType.AddCounters, counterType: 'P1P1', amount: 2, targetMapping: TargetMapping.Target1 },
-                { type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Lifelink'] }
+                { type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToAdd: ['Lifelink'] }
             ]
         }
     ]
   };
-

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 
 export const EurekaMoment: CardDefinition = {
     name: 'Eureka Moment',
@@ -17,11 +17,16 @@ export const EurekaMoment: CardDefinition = {
                     optional: true,
                     choices: [{
                         label: "Put Land",
-                        effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: 'CONTROLLER_HAND', restrictions: [{ type: 'Type', value: 'Land' }] }]
+                        effects: [{
+                            type: EffectType.MoveToZone,
+                            zone: Zone.Battlefield,
+                            sourceZones: [Zone.Hand],
+                            targetMapping: TargetMapping.Controller,
+                            restrictions: ['Land']
+                        }]
                     }]
                 }
             ]
         }
     ]
-  };
-
+};

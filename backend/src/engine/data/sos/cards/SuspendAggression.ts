@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-    export const SuspendAggression: CardDefinition = {
+export const SuspendAggression: CardDefinition = {
     name: "Suspend Aggression",
     manaCost: "{1}{W}",
     colors: ["W"],
@@ -30,7 +30,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restri
                         next: {
                             type: EffectType.ApplyContinuousEffect,
                             targetMapping: 'PARENT_CONTEXT_EXILED_IDS',
-                            duration: 'UntilEndOfYourNextTurn',
+                            duration: { type: DurationType.UntilEndOfTurn, targetMapping: TargetMapping.Target1Owner },
                             targetControllerMapping: 'PARENT_CONTEXT_EXILED_IDS_OWNERS', // Custom mapping for untilTurnOfPlayerId
                             canPlayExiled: true
                         }
@@ -40,4 +40,4 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restri
         }
     ]
 };
-    
+

@@ -20,11 +20,7 @@ export const SunderingArchaic: CardDefinition = {
                 type: TargetType.NonlandPermanent,
                 restrictions: [
                     "opponentcontrol",
-                    {
-                        type: 'ManaValue',
-                        comparison: 'LessOrEqual',
-                        value: DynamicAmount.ConvergeAmount
-                    }
+                    "mv <= converge_amount"
                 ]
             },
             effects: [

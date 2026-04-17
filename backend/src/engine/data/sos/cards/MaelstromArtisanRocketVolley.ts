@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const MaelstromArtisanRocketVolley: CardDefinition = {
+export const MaelstromArtisanRocketVolley: CardDefinition = {
     name: "Maelstrom Artisan // Rocket Volley",
     manaCost: "{1}{R}{R}",
     colors: ["R"],
@@ -23,16 +23,12 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
             {
                 type: AbilityType.Spell,
                 targetDefinition: {
-                    type: TargetType.Creature,
+                    type: TargetType.Land,
                     count: 1,
-                    restrictions: [
-                "Land",
-                "nonbasic"
-            ]
+                    restrictions: ["nonbasic"]
                 },
                 effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
             }
         ]
     }
 };
-    

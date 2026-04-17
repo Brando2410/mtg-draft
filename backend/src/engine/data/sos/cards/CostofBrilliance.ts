@@ -2,12 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
 export const CostofBrilliance: CardDefinition = {
     name: "Cost of Brilliance",
     manaCost: "{2}{B}",
-    colors: [
-        "B"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["B"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "Target player draws two cards and loses 2 life. Put a +1/+1 counter on up to one target creature.",

@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const GraveResearcherReanimate: CardDefinition = {
+export const GraveResearcherReanimate: CardDefinition = {
     name: "Grave Researcher // Reanimate",
     manaCost: "{2}{B} // {B}",
     colors: [
@@ -23,13 +23,14 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Upkeep,
             effects: [
-                { type: EffectType.Surveil, amount: 1, targetMapping: TargetMapping.Controller },
+                {
+                    type: EffectType.Surveil,
+                    amount: 1,
+                    targetMapping: TargetMapping.Controller
+                },
                 {
                     type: EffectType.ConditionalEffect,
-                    condition: 'GRAVEYARD_CREATURE_COUNT_GE' as any,
-                    restrictions: [
-                { type: 'Type', value: '3' }
-            ],
+                    condition: 'GRAVEYARD_CREATURE_COUNT_GE_3',
                     effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
                 }
             ]
@@ -48,9 +49,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
                 targetDefinition: {
                     type: TargetType.CardInGraveyard,
                     count: 1,
-                    restrictions: [
-                "Creature"
-            ]
+                    restrictions: ["creature"]
                 },
                 effects: [
                     {
@@ -60,11 +59,11 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
                     {
                         type: EffectType.LoseLife,
                         targetMapping: TargetMapping.Controller,
-                        amount: 'TARGET_1_MANA_VALUE' as any
+                        amount: 'TARGET_1_MV'
                     }
                 ]
             }
         ]
     }
 };
-    
+

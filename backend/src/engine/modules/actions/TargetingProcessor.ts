@@ -222,7 +222,8 @@ export class TargetingProcessor {
         const coreTypes = [
             'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 'permanent',
             'instant', 'sorcery', 'instant_or_sorcery', 'instantorsorcery', 'artifact_or_creature', 'artifactorcreature',
-            'artifact_or_enchantment', 'artifactorenchantment', 'creature_or_planeswalker', 'creatureorplaneswalker', 'nonland_permanent', 'nonlandpermanent', 'non_land_permanent', 'player_or_planeswalker'
+            'artifact_or_enchantment', 'artifactorenchantment', 'creature_or_planeswalker', 'creatureorplaneswalker', 'nonland_permanent', 'nonlandpermanent', 'non_land_permanent', 'player_or_planeswalker',
+            'artifact_enchantment_or_planeswalker', 'artifactenchantmentorplaneswalker'
         ];
 
         if (typeLineCheck === 'spell' || typeLineCheck === 'triggeredability' || typeLineCheck === 'activatedability') {
@@ -247,6 +248,8 @@ export class TargetingProcessor {
                 if (!combinedTypes.includes('artifact') && !combinedTypes.includes('creature')) return false;
             } else if (typeLineCheck === 'artifact_or_enchantment' || typeLineCheck === 'artifactorenchantment') {
                 if (!combinedTypes.includes('artifact') && !combinedTypes.includes('enchantment')) return false;
+            } else if (typeLineCheck === 'artifact_enchantment_or_planeswalker' || typeLineCheck === 'artifactenchantmentorplaneswalker') {
+                if (!combinedTypes.includes('artifact') && !combinedTypes.includes('enchantment') && !combinedTypes.includes('planeswalker')) return false;
             } else if (typeLineCheck === 'creature_or_planeswalker' || typeLineCheck === 'creatureorplaneswalker') {
                 if (!combinedTypes.includes('creature') && !combinedTypes.includes('planeswalker')) return false;
             } else if (typeLineCheck === 'nonland_permanent' || typeLineCheck === 'nonlandpermanent' || typeLineCheck === 'non_land_permanent') {
@@ -466,7 +469,9 @@ export class TargetingProcessor {
             if (lr.startsWith('non')) {
                 const base = lr.substring(3);
                 if (objTypes.includes(base) || (targetObj.definition.subtypes || []).some((s: string) => s.toLowerCase() === base)) return false;
+                if (base === 'token' && targetObj.isToken) return false;
             }
+            if (lr === 'token' && !targetObj.isToken) return false;
             if (lr === 'anytarget') {
                 const stats = LayerProcessor.getEffectiveStats(targetObj, state);
                 const isValidAnyTarget = stats.types.some((t: string) => {
@@ -480,7 +485,15 @@ export class TargetingProcessor {
             if (lr === 'notcontrolled' || lr === 'opponentcontrol') {
                 if (controllerId && targetObj.controllerId === controllerId) return false;
             }
-            if (lr === 'youcontrol' && controllerId && targetObj.controllerId !== controllerId) return false;
+            if (lr === 'youcontrol' || lr === 'yours') {
+                if (controllerId && (targetObj.controllerId || targetObj.ownerId) !== controllerId) return false;
+            }
+            if (lr.startsWith('controlled_by_target_')) {
+                const targetIdx = parseInt(lr.substring(21)) - 1;
+                const targetList = stackObject?.targets || [];
+                const targetId = targetList[targetIdx];
+                if (targetId && targetObj.controllerId !== targetId) return false;
+            }
             if (lr === 'opponentcontrol' && controllerId && (targetObj.controllerId || targetObj.ownerId) === controllerId) return false;
             if (lr === 'legendary' && !objTypes.includes('legendary')) return false;
             if (lr === 'basic' && !objTypes.includes('basic')) return false;
@@ -508,10 +521,25 @@ export class TargetingProcessor {
             }
 
 
-            const numericMatch = lr.match(/^(cmc|mv|power|toughness)\s*(<=|>=|==|=|<|>)\s*(\d+)$/);
+            const numericMatch = lr.match(/^(cmc|mv|power|toughness)\s*(<=|>=|==|=|<|>)\s*(\d+|x|power|source_power|source_mv|source_cmc|converge_amount)$/);
             if (numericMatch) {
-                const [, field, op, valStr] = numericMatch;
-                const val = parseInt(valStr);
+                const [, field, op, valPart] = numericMatch;
+                let val = 0;
+                if (valPart.match(/^\d+$/)) {
+                    val = parseInt(valPart);
+                } else if (valPart === 'x') {
+                    val = stackObject?.xValue || (state.pendingAction as any)?.data?.xValue || (state.pendingAction as any)?.xValue || 0;
+                } else if (valPart === 'power' || valPart === 'source_power') {
+                    const source = this.findObjectInAnyZone(state, sourceId);
+                    val = source ? LayerProcessor.getEffectiveStats(source, state).power : 0;
+                } else if (valPart === 'source_mv' || valPart === 'source_cmc') {
+                    const source = this.findObjectInAnyZone(state, sourceId);
+                    val = source ? ManaProcessor.getManaValue(source.definition.manaCost || '') : 0;
+                } else if (valPart === 'converge_amount') {
+                    const source = this.findObjectInAnyZone(state, sourceId);
+                    val = (source as any)?.convergeAmount || 0;
+                }
+
                 let currentVal = 0;
                 if (field === 'cmc' || field === 'mv') currentVal = ManaProcessor.getManaValue(targetObj.definition.manaCost || '');
                 else if (field === 'power') currentVal = LayerProcessor.getEffectiveStats(targetObj, state).power;
@@ -575,13 +603,23 @@ export class TargetingProcessor {
                 continue;
             }
 
+            if (lr === 'shares_color_with_source') {
+                const source = this.findObjectInAnyZone(state, sourceId);
+                if (source) {
+                    const sourceColors = source.definition.colors || [];
+                    const targetColors = targetObj.definition.colors || [];
+                    if (!sourceColors.some(c => targetColors.includes(c))) return false;
+                }
+                continue;
+            }
+
             const isKnownFilter = [
                 'nonland', 'noncreature', 'nonartifact', 'nonenchantment', 'nonplaneswalker',
                 'graveyard', 'other', 'another', 'notcontrolled', 'opponentcontrol', 'youcontrol', 'self', 'legendary',
                 'tapped', 'untapped', 'yours', 'opponents', 'attackingorblocking', 'basic',
                 'instantorsorcerycastthisturn', 'player', 'anytarget', 'creature', 'artifact', 'land', 'enchantment', 'planeswalker',
                 'instant', 'sorcery', 'hasxinmanacost', 'monocolored', 'multicolored', 'colorless', 'oneormorecolors',
-                'fromhand', 'castfromhand', 'nontoken', 'token', 'mv_le_power', 'mv_le_x'
+                'fromhand', 'castfromhand', 'nontoken', 'token', 'mv_le_power', 'mv_le_x', 'shares_color_with_source', 'spell_or_permanent'
             ].includes(lr) || lr.startsWith('cmc') || lr.startsWith('mv') || lr.startsWith('power') || lr.startsWith('toughness') || lr.startsWith('hascounter');
 
 
@@ -646,6 +684,12 @@ export class TargetingProcessor {
                         if (lr === 'nonland_permanent' || lr === 'nonlandpermanent' || lr === 'non_land_permanent') {
                             const permTypes = ['artifact', 'creature', 'enchantment', 'planeswalker'];
                             return objTypes.some((t: string) => permTypes.includes(t.toLowerCase()));
+                        }
+                        if (lr === 'spell_or_permanent' || lr === 'spellorpermanent') {
+                            const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
+                            const isSpell = objTypes.includes('instant') || objTypes.includes('sorcery') || (targetObj as any).isOnStack;
+                            const isPermanent = objTypes.some((t: string) => permTypes.includes(t.toLowerCase())) && targetObj.zone === Zone.Battlefield;
+                            return isSpell || isPermanent;
                         }
                         if (lr === 'oneormorecolors') {
                             return this.sourceHasQualities(targetObj, ['oneormorecolors'], state);
@@ -784,6 +828,7 @@ export class TargetingProcessor {
 
         const sourceTypes = (definition.types || []).map((t: string) => t.toLowerCase());
         const sourceSubtypes = (definition.subtypes || []).map((t: string) => t.toLowerCase());
+        const sourceSupertypes = (definition.supertypes || []).map((t: string) => t.toLowerCase());
 
         return qualities.some(q => {
             const lowerQ = q.toLowerCase();
@@ -799,8 +844,9 @@ export class TargetingProcessor {
             const singularQ = lowerQ.endsWith('s') ? lowerQ.slice(0, -1) : lowerQ;
             const matchesType = sourceTypes.includes(lowerQ) || sourceTypes.includes(singularQ);
             const matchesSubtype = sourceSubtypes.includes(lowerQ) || sourceSubtypes.includes(singularQ);
+            const matchesSupertype = sourceSupertypes.includes(lowerQ) || sourceSupertypes.includes(singularQ);
             const matchesColor = sourceColors.includes(lowerQ) || sourceColors.includes(singularQ);
-            return matchesType || matchesSubtype || matchesColor;
+            return matchesType || matchesSubtype || matchesSupertype || matchesColor;
         });
     }
 
