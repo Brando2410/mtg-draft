@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
 export const ExpressiveFiredancer: CardDefinition = {
     name: "Expressive Firedancer",
     manaCost: "{1}{R}",
@@ -24,14 +24,14 @@ export const ExpressiveFiredancer: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     duration: { type: DurationType.UntilEndOfTurn },
                     stats: { powerModifier: 1, toughnessModifier: 1 },
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
                     condition: 'SPENT_MANA_GE:5',
                     duration: { type: DurationType.UntilEndOfTurn },
                     abilitiesToAdd: ['Double Strike'],
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -39,3 +39,4 @@ export const ExpressiveFiredancer: CardDefinition = {
     power: "2",
     toughness: "2"
 };
+

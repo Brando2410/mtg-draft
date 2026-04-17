@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
-    export const PullfromtheGrave: CardDefinition = {
+export const PullfromtheGrave: CardDefinition = {
     name: "Pull from the Grave",
     manaCost: "{2}{B}",
     colors: [
@@ -19,9 +19,9 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
                 count: 2,
                 minCount: 0,
                 restrictions: [
-                Restriction.Creature,
-                { type: 'Type', value: 'your_graveyard' }
-            ]
+                    Restriction.Creature,
+                    "youcontrol"
+                ]
             },
             effects: [
                 {
@@ -37,4 +37,3 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
         }
     ]
 };
-    

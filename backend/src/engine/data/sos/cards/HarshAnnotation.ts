@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const HarshAnnotation: CardDefinition = {
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const HarshAnnotation: CardDefinition = {
     name: "Harsh Annotation",
     manaCost: "{1}{W}",
     colors: [
@@ -15,11 +15,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: DurationType.Permanent,
-                count: 1,
-                restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ]
+                type: TargetType.Creature,
+                count: 1
             },
             effects: [
                 {
@@ -35,7 +32,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
                         types: ["Creature"],
                         subtypes: ["Inkling"],
                         power: "1",
-                        toughness: "1",
+                        toughness: "1",
+
                         image_url: "https://cards.scryfall.io/png/front/c/9/c9deae5c-80d4-4701-b425-91853b7ee03b.png?1682693898"
                     },
                     targetMapping: TargetMapping.Target1Controller
@@ -44,4 +42,3 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         }
     ]
 };
-    

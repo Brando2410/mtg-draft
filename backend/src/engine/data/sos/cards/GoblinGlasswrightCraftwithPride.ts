@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared.",
     power: "2",
-    toughness: "2",
+    toughness: "2",
+
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/c/8/c85c5f06-dd31-4e2c-97be-2f64d65069ea.png?1775937759",
     preparedFace: {
@@ -36,8 +37,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                                     type: AbilityType.Activated,
                                     id: 'Treasure_Mana_Ability',
                                     costs: [
-                                        { type: CostType.Tap, targetMapping: TargetType.Self },
-                                        { type: CostType.Sacrifice, targetMapping: TargetType.Self }
+                                        { type: CostType.Tap, targetMapping: TargetMapping.Self },
+                                        { type: CostType.Sacrifice, targetMapping: TargetMapping.Self }
                                     ],
                                     isManaAbility: true
                                 }

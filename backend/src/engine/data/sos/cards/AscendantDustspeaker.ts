@@ -1,5 +1,6 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
-    export const AscendantDustspeaker: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+
+export const AscendantDustspeaker: CardDefinition = {
     name: "Ascendant Dustspeaker",
     manaCost: "{4}{W}",
     colors: [
@@ -17,35 +18,34 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restr
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: { 
-                type: 'Creature', 
-                restrictions: [{ type: 'NotSelf' }, { type: 'Controller', value: Restriction.Player }] 
+            eventMatch: TriggerEvent.EnterBattlefield,
+            targetDefinition: {
+                type: TargetType.Creature,
+                restrictions: ["other", "youcontrol"]
             },
             effects: [
-                { 
-                    type: EffectType.AddCounters, 
-                    amount: 1, 
-                    counterType: '+1/+1', 
-                    targetMapping: TargetMapping.Target1 
+                {
+                    type: EffectType.AddCounters,
+                    amount: 1,
+                    counterType: '+1/+1',
+                    targetMapping: TargetMapping.Target1
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.BeginningOfCombatStep,
+            eventMatch: TriggerEvent.BeginningOfCombatStep,
             condition: ConditionType.IsYourTurn,
-            targetDefinition: { 
-                type: 'Card', 
-                zone: Zone.Graveyard, 
+            targetDefinition: {
+                type: TargetType.CardInGraveyard,
                 optional: true,
-                maxSelections: 1,
-                restrictions: []
+                count: 1,
+                minCount: 0
             },
             effects: [
-                { 
-                    type: CostType.Exile, 
-                    targetMapping: TargetMapping.Target1 
+                {
+                    type: EffectType.Exile,
+                    targetMapping: TargetMapping.Target1
                 }
             ]
         }
@@ -53,4 +53,3 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restr
     power: "3",
     toughness: "4"
 };
-    

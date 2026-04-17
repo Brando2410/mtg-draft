@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from "@shared/engine_types";
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TargetType } from "@shared/engine_types";
 
 export const LoftyDenial: CardDefinition = {
     name: "Lofty Denial",
@@ -20,12 +20,12 @@ export const LoftyDenial: CardDefinition = {
                     choices: [
                         {
                             label: "Pay {4}",
-                            condition: "HAS_PERMANENT:creature,flying",
+                            condition: `${ConditionType.HasPermanent}:creature,flying`,
                             costs: [{ type: CostType.Mana, value: '{4}' }]
                         },
                         {
                             label: "Pay {1}",
-                            condition: "NOT_HAS_PERMANENT:creature,flying",
+                            condition: `${ConditionType.NotHasPermanent}:creature,flying`,
                             costs: [{ type: CostType.Mana, value: '{1}' }]
                         },
                         {

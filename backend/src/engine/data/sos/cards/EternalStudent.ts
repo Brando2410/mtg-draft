@@ -30,7 +30,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, Zone } from '@shared
                         types: ["Creature"],
                         subtypes: ["Inkling"],
                         power: "1",
-                        toughness: "1",
+                        toughness: "1",
+
                         image_url: "https://cards.scryfall.io/png/front/c/9/c9deae5c-80d4-4701-b425-91853b7ee03b.png?1682693898"
                     }
                 }

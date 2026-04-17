@@ -39,7 +39,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
                     powerModifier: 2,
                     toughnessModifier: 0,
                     condition: ConditionType.GainedLifeThisTurn,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }

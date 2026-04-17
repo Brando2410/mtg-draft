@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
     export const GreatHalloftheBiblioplex: CardDefinition = {
     name: "Great Hall of the Biblioplex",
     manaCost: "",
@@ -11,13 +11,13 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         {
             type: AbilityType.Activated,
             isManaAbility: true,
-            costs: [{ type: CostType.Tap, targetMapping: TargetType.Self }],
+            costs: [{ type: CostType.Tap, targetMapping: TargetMapping.Self }],
             effects: [{ type: EffectType.AddMana, value: '{C}' }]
         },
         {
             type: AbilityType.Activated,
             isManaAbility: true,
-            costs: [{ type: CostType.Tap, targetMapping: TargetType.Self }, { type: CostType.PayLife, amount: 1 }],
+            costs: [{ type: CostType.Tap, targetMapping: TargetMapping.Self }, { type: CostType.PayLife, amount: 1 }],
             effects: [{
                 type: EffectType.AddMana,
                 value: '{ANY}',
@@ -48,7 +48,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                                             type: EffectType.ApplyContinuousEffect,
                                             duration: { type: DurationType.UntilEndOfTurn },
                                             powerModifier: 1,
-                                            targetMapping: TargetType.Self
+                                            targetMapping: TargetMapping.Self
                                         }
                                     ]
                                 }
@@ -61,3 +61,4 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     ]
 };
     
+

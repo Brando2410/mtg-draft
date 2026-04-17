@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const TanazirQuandrix: CardDefinition = {
     name: "Tanazir Quandrix",
@@ -14,14 +14,14 @@ export const TanazirQuandrix: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: { count: 1, type: TargetType.Creature, restrictions: [Restriction.YouControl] },
             effects: [{ type: EffectType.AddCounters, counterType: 'p1p1', amount: DynamicAmount.SourcePower, targetMapping: TargetMapping.Target1 }]
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Attack,
-            condition: "SelfAttacks",
+            eventMatch: TriggerEvent.Attack,
+            condition: ConditionType.SelfAttacks,
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 duration: { type: DurationType.UntilEndOfTurn },
@@ -33,6 +33,3 @@ export const TanazirQuandrix: CardDefinition = {
         }
     ]
 };
-
-
-

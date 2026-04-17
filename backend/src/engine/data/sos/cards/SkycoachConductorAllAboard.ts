@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone 
     keywords: ["Flash", "Flying", "Vigilance", "Prepared"],
     oracleText: "Flash\nFlying, vigilance\nThis creature enters prepared.",
     power: "2",
-    toughness: "3",
+    toughness: "3",
+
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/4/e/4ecbca71-9a1d-44c5-b709-d6f565941d5e.png?1775937376",
     preparedFace: {
@@ -25,7 +26,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone 
                     type: 'Creature',
                     count: 1,
                     restrictions: [
-                { type: 'Control', value: 'YouControl' },
+                "youcontrol",
                 { not: { subtype: 'Pilot' } }
             ]
                 },

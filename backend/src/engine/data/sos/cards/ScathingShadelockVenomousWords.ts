@@ -17,7 +17,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, R
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }

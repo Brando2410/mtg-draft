@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-    export const Erode: CardDefinition = {
+export const Erode: CardDefinition = {
     name: "Erode",
     manaCost: "{W}",
     colors: ["W"],
@@ -33,8 +33,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                                         type: TargetType.Land,
                                         count: 1,
                                         restrictions: [
-                { type: 'Type', value: 'Basic' }
-            ]
+                                            "Basic"
+                                        ]
                                     },
                                     zone: Zone.Battlefield,
                                     targetMapping: TargetMapping.Target1Controller, // The player whose library is searched
@@ -52,4 +52,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
         }
     ]
 };
-    

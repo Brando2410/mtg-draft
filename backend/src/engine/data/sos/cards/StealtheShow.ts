@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const StealtheShow: CardDefinition = {
+export const StealtheShow: CardDefinition = {
     name: "Steal the Show",
     manaCost: "{2}{R}",
     colors: [
@@ -42,11 +42,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, Eff
                         {
                             label: "Steal the Show deals damage equal to instant/sorcery in your graveyard to target creature or planeswalker.",
                             targetDefinition: {
-                                type: DurationType.Permanent,
-                                count: 1,
-                                restrictions: [
-                { type: 'Type', value: 'CreatureOrPlaneswalker' }
-            ]
+                                type: TargetType.CreatureOrPlaneswalker,
+                                count: 1
                             },
                             effects: [
                                 {
@@ -62,4 +59,3 @@ import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, Eff
         }
     ]
 };
-    

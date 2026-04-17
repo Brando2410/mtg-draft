@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const MoltenNote: CardDefinition = {
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const MoltenNote: CardDefinition = {
     name: "Molten Note",
     manaCost: "{X}{R}{W}",
     colors: [
@@ -17,10 +17,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: DurationType.Permanent,
-                restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ],
+                type: TargetType.Creature,
                 count: 1
             },
             effects: [
@@ -37,4 +34,3 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         }
     ]
 };
-    

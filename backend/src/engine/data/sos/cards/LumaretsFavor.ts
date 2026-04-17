@@ -19,7 +19,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
             effects: [
                 {
                     type: EffectType.CopySpellOnStack,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         },

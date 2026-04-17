@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DurationType, EffectType, SelectionType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const HeatedArgument: CardDefinition = {
+export const HeatedArgument: CardDefinition = {
     name: "Heated Argument",
     manaCost: "{4}{R}",
     colors: [
@@ -15,11 +15,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Select
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: DurationType.Permanent,
-                count: 1,
-                restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ]
+                type: TargetType.Creature,
+                count: 1
             },
             effects: [
                 {
@@ -39,8 +36,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Select
                                 type: TargetType.CardInGraveyard,
                                 count: 1,
                                 restrictions: [
-                { type: 'Control', value: 'YouControl' }
-            ]
+                                    "youcontrol"
+                                ]
                             }
                         },
                         {
@@ -55,4 +52,3 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Select
         }
     ]
 };
-    

@@ -1,5 +1,6 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const FoolishFate: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+
+export const FoolishFate: CardDefinition = {
     name: "Foolish Fate",
     manaCost: "{2}{B}",
     colors: [
@@ -14,7 +15,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping }
     abilities: [
          {
              type: AbilityType.Spell,
-             targetDefinition: { type: 'Creature' },
+             targetDefinition: { type: TargetType.Creature },
              effects: [
                  {
                      type: EffectType.Destroy,
@@ -30,4 +31,3 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping }
          }
      ]
  };
-    

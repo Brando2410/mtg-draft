@@ -17,7 +17,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
                     eventMatch: TriggerEvent.LifeGain,
             condition: ConditionType.PlayerIsController,
             effects: [
-                { type: EffectType.AddCounters, amount: 1, startingCounters: { type: 'growth', amount: 1 }, targetMapping: TargetType.Self }
+                { type: EffectType.AddCounters, amount: 1, startingCounters: { type: 'growth', amount: 1 }, targetMapping: TargetMapping.Self }
             ]
         },
         {

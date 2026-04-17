@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const BorrowedKnowledge: CardDefinition = {
+export const BorrowedKnowledge: CardDefinition = {
     name: "Borrowed Knowledge",
     manaCost: "{2}{R}{W}",
     colors: [
@@ -19,9 +19,7 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
             modes: [
                 {
                     label: "Discard hand, draw cards equal to opponent's hand size",
-                    targetDefinition: { type: TargetType.Player, count: 1, restrictions: [
-                { type: 'Control', value: 'Opponent' }
-            ] },
+                    targetDefinition: { type: TargetType.Opponent, count: 1 },
                     effects: [
                         { type: EffectType.DiscardCards, amount: 'ALL', targetMapping: TargetMapping.Controller },
                         { type: EffectType.DrawCards, amount: DynamicAmount.Target1HandSize, targetMapping: TargetMapping.Controller }
@@ -38,4 +36,3 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
         }
     ]
 };
-    

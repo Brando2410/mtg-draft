@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const Flashback: CardDefinition = {
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const Flashback: CardDefinition = {
     name: "Flashback",
     manaCost: "{R}",
     colors: [
@@ -14,27 +14,23 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     abilities: [
         {
             type: AbilityType.Spell,
+            targetDefinition: {
+                type: TargetType.CardInGraveyard,
+                count: 1,
+                restrictions: [
+                    "InstantOrSorcery",
+                    "Yours"
+                ]
+            },
             effects: [
                 {
-                    type: CostType.Choice,
-                    label: "Choose an instant or sorcery card in your graveyard",
-                    targetIdMapping: 'CONTROLLER_GRAVEYARD',
-                    restrictions: [
-                { type: 'Type', value: 'InstantOrSorcery' }
-            ],
-                    optional: false,
-                    effects: [
-                        {
-                            type: EffectType.ApplyContinuousEffect,
-                            targetMapping: TargetMapping.Target1,
-                            duration: { type: DurationType.UntilEndOfTurn },
-                            abilitiesToAdd: ['Flashback'],
-                            flashbackCostOverride: 'SOURCE_MANA_COST'
-                        }
-                    ]
+                    type: EffectType.ApplyContinuousEffect,
+                    targetMapping: TargetMapping.Target1,
+                    duration: { type: DurationType.UntilEndOfTurn },
+                    abilitiesToAdd: ['Flashback'],
+                    flashbackCostOverride: 'SOURCE_MANA_COST'
                 }
             ]
         }
     ]
 };
-    

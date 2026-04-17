@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, ConditionType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
     export const PestMascot: CardDefinition = {
     name: "Pest Mascot",
     manaCost: "{1}{B}{G}",
@@ -25,7 +25,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType, Tri
                     type: EffectType.AddCounters,
                     counterType: '+1/+1',
                     amount: 1,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -34,3 +34,4 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType, Tri
     toughness: "3"
 };
     
+

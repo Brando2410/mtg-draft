@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
     export const InkshapeDemonstrator: CardDefinition = {
     name: "Inkshape Demonstrator",
     manaCost: "{3}{W}",
@@ -25,7 +25,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, Trig
                     powerModifier: 1,
                     abilitiesToAdd: ["Lifelink"],
                     duration: { type: DurationType.UntilEndOfTurn },
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -34,3 +34,4 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, Trig
     toughness: "4"
 };
     
+

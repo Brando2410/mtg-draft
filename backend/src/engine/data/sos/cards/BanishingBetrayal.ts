@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-    export const BanishingBetrayal: CardDefinition = {
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone, TargetType } from '@shared/engine_types';
+export const BanishingBetrayal: CardDefinition = {
     name: "Banishing Betrayal",
     manaCost: "{1}{U}",
     colors: [
@@ -15,8 +15,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@s
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: 'Permanent',
-                restrictions: [{ type: 'Nonland' }]
+                type: TargetType.NonlandPermanent,
+                count: 1
             },
             effects: [
                 {
@@ -33,4 +33,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@s
         }
     ]
 };
-    

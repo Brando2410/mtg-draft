@@ -15,7 +15,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         {
             type: AbilityType.Spell,
             targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
-                { type: 'Control', value: 'YouControl' }
+                "youcontrol"
             ] },
             effects: [
                 {

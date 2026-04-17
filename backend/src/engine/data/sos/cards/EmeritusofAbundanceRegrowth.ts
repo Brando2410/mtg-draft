@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     keywords: ["Vigilance", "Prepared"],
     oracleText: "Vigilance\nThis creature enters prepared. Whenever this creature attacks, if you control eight or more lands, this creature becomes prepared.",
     power: "3",
-    toughness: "4",
+    toughness: "4",
+
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/a/c/ac095763-6f4e-4d4e-9c99-414646368f8d.png?1775937986",
     abilities: [
@@ -19,7 +20,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }

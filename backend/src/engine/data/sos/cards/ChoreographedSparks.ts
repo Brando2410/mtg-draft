@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const ChoreographedSparks: CardDefinition = {
+export const ChoreographedSparks: CardDefinition = {
     name: "Choreographed Sparks",
     manaCost: "{R}{R}",
     colors: [
@@ -20,30 +20,34 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
             modes: [
                 {
                     label: "Copy target instant or sorcery spell you control",
-                    targetDefinition: { type: AbilityType.Spell, count: 1, restrictions: [
-                { type: 'Type', value: 'InstantOrSorcery' },
-                { type: 'Control', value: 'YouControl' }
-            ] },
+                    targetDefinition: {
+                        type: AbilityType.Spell, count: 1, restrictions: [
+                            "InstantOrSorcery",
+                            "youcontrol"
+                        ]
+                    },
                     effects: [
                         { type: EffectType.CopySpellOnStack, chooseNewTargets: true, targetMapping: TargetMapping.Target1 }
                     ]
                 },
                 {
                     label: "Copy target creature spell you control",
-                    targetDefinition: { type: AbilityType.Spell, count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Control', value: 'YouControl' }
-            ] },
+                    targetDefinition: {
+                        type: TargetType.Creature, count: 1, restrictions: [
+
+                            "youcontrol"
+                        ]
+                    },
                     effects: [
-                        { 
-                            type: EffectType.CopySpellOnStack, 
+                        {
+                            type: EffectType.CopySpellOnStack,
                             targetMapping: TargetMapping.Target1,
                             keywordsToAdd: ['Haste'],
                             abilitiesToAdd: [
                                 {
                                     type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EndStep,
-                                    effects: [{ type: CostType.Sacrifice, targetMapping: TargetType.Self }]
+                                    eventMatch: TriggerEvent.EndStep,
+                                    effects: [{ type: CostType.Sacrifice, targetMapping: TargetMapping.Self }]
                                 }
                             ]
                         }
@@ -53,4 +57,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
         }
     ]
 };
-    

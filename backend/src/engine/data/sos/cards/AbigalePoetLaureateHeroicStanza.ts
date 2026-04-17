@@ -18,13 +18,14 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     oracleText: "Flying\nWhenever you cast a creature spell, Abigale becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "2",
     toughness: "3",
-    image_url: "https://cards.scryfall.io/png/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.png?1775938164",
+    image_url: "https://cards.scryfall.io/png/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.png?1775938164",
+
     abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
             condition: 'SPELL_IS_CREATURE',
-            effects: [{ type: EffectType.Prepare, targetMapping: TargetType.Self }]
+            effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
         }
     ],
     preparedFace: {
@@ -37,7 +38,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: { type: 'Creature' },
+                targetDefinition: { type: TargetType.Creature },
                 effects: [
                     {
                         type: EffectType.AddCounters,

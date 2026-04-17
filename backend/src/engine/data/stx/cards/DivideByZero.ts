@@ -11,8 +11,8 @@ export const DividebyZero: CardDefinition = {
             type: AbilityType.Spell,
             targetDefinition: {
                 count: 1,
-                type: TargetType.Any,
-                restrictions: [{ type: 'ManaValue', comparison: 'GreaterOrEqual', value: 1 }]
+                type: TargetType.NonlandPermanent,
+                restrictions: ["mv >= 1"]
             },
             effects: [
                 { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 },
@@ -20,5 +20,5 @@ export const DividebyZero: CardDefinition = {
             ]
         }
     ]
-  };
+};
 

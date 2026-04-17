@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const EmeritusofConflictLightningBolt: CardDefinition = {
+export const EmeritusofConflictLightningBolt: CardDefinition = {
     name: "Emeritus of Conflict // Lightning Bolt",
     manaCost: "{1}{R}",
     colors: ["R"],
@@ -9,7 +9,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     oracleText: "First strike\nWhenever you cast your third spell each turn, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "2",
     toughness: "2",
-    image_url: "https://cards.scryfall.io/png/front/f/5/f58dba4f-1abb-47a3-a684-29c32bab95c0.png?1775937222",
+    image_url: "https://cards.scryfall.io/png/front/f/5/f58dba4f-1abb-47a3-a684-29c32bab95c0.png?1775937222",
+
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -17,7 +18,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -47,4 +48,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
         ]
     }
 };
-    

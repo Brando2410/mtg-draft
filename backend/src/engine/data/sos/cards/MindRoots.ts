@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const MindRoots: CardDefinition = {
+export const MindRoots: CardDefinition = {
     name: "Mind Roots",
     manaCost: "{1}{B}{G}",
     colors: [
@@ -31,10 +31,11 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
                     entersTapped: true,
                     targetDefinition: {
                         type: TargetType.CardInGraveyard,
-                        count: [0, 1],
+                        count: 1,
+                        minCount: 0,
                         restrictions: [
-                { type: 'Type', value: 'Land' }
-            ]
+                            "Land"
+                        ]
                     },
                     // Use a special mapping that filters cards discarded by current spell
                     targetMapping: TargetMapping.LastDiscardedCards
@@ -43,4 +44,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
         }
     ]
 };
-    

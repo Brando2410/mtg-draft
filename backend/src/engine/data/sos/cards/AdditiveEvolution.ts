@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
     export const AdditiveEvolution: CardDefinition = {
     name: "Additive Evolution",
     manaCost: "{3}{G}{G}",
@@ -41,7 +41,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, R
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.BeginningOfCombatStep,
             condition: ConditionType.IsYourTurn,
-            targetDefinition: { type: 'Creature', restrictions: [Restriction.YouControl] },
+            targetDefinition: { type: TargetType.Creature, restrictions: [Restriction.YouControl] },
             effects: [
                 { type: EffectType.AddCounters, amount: 1, counterType: '+1/+1', targetMapping: TargetMapping.Target1 },
                 {

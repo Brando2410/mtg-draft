@@ -16,12 +16,13 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     oracleText: "This creature enters prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "3",
     toughness: "2",
-    image_url: "https://cards.scryfall.io/png/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.png?1775937412",
+    image_url: "https://cards.scryfall.io/png/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.png?1775937412",
+
     abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            effects: [{ type: EffectType.Prepare, targetMapping: TargetType.Self }]
+            effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
         }
     ],
     preparedFace: {
@@ -34,7 +35,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: { type: 'Creature' },
+                targetDefinition: { type: TargetType.Creature },
                 effects: [
                     { type: EffectType.AddCounters, amount: 1, counterType: '+1/+1', targetMapping: TargetMapping.Target1 },
                     { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }

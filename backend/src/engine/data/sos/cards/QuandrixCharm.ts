@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const QuandrixCharm: CardDefinition = {
+export const QuandrixCharm: CardDefinition = {
     name: "Quandrix Charm",
     manaCost: "{G}{U}",
     colors: [
@@ -43,9 +43,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                         },
                         {
                             label: 'Destroy target enchantment',
-                            targetDefinition: { count: 1, type: DurationType.Permanent, restrictions: [
-                { type: 'Type', value: 'Enchantment' }
-            ] },
+                            targetDefinition: { count: 1, type: TargetType.Enchantment },
                             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
                         },
                         {
@@ -65,4 +63,3 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         }
     ]
 };
-    

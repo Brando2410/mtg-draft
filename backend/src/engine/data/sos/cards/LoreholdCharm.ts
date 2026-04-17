@@ -1,14 +1,9 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const LoreholdCharm: CardDefinition = {
+export const LoreholdCharm: CardDefinition = {
     name: "Lorehold Charm",
     manaCost: "{R}{W}",
-    colors: [
-        "R",
-        "W"
-    ],
-    types: [
-        "Instant"
-    ],
+    colors: ["R", "W"],
+    types: ["Instant"],
     subtypes: [],
     keywords: [],
     oracleText: "Choose one —\n• Each opponent sacrifices a nontoken artifact.\n• Return target artifact or creature card with mana value 2 or less from your graveyard to the battlefield.\n• Creatures you control get +1/+1 and gain trample until end of turn.",
@@ -26,9 +21,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                                     type: CostType.Sacrifice,
                                     targetMapping: TargetMapping.EachOpponent,
                                     restrictions: [
-                { type: 'Type', value: 'Artifact' },
-                { type: 'Type', value: 'NonToken' }
-            ]
+                                        "Artifact",
+                                        "nontoken"
+                                    ]
                                 }
                             ]
                         },
@@ -38,11 +33,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                                 type: TargetType.CardInGraveyard,
                                 count: 1,
                                 restrictions: [
-                { type: 'Type', value: 'ArtifactOrCreature' },
-                { type: 'ManaValue',
-                comparison: 'LessOrEqual',
-                value: 2 }
-            ]
+                                    "ArtifactOrCreature",
+                                    "mv <= 2"
+                                ]
                             },
                             effects: [
                                 {
@@ -71,4 +64,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
         }
     ]
 };
-    

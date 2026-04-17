@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, CostType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
     export const StormcarvedCoast: CardDefinition = {
     name: "Stormcarved Coast",
     manaCost: "",
@@ -16,13 +16,13 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetType, TriggerE
             {
                 type: CostType.Tap,
                 condition: 'LAND_COUNT_GE:2', 
-                targetMapping: TargetType.Self
+                targetMapping: TargetMapping.Self
             }
         ]
     },
     {
         type: AbilityType.Activated,
-        costs: [{ type: CostType.Tap, targetMapping: TargetType.Self }],
+        costs: [{ type: CostType.Tap, targetMapping: TargetMapping.Self }],
         isManaAbility: true,
         effects: [
             {
@@ -37,3 +37,4 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetType, TriggerE
     ]
 };
     
+

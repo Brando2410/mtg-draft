@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const PracticedScrollsmith: CardDefinition = {
+export const PracticedScrollsmith: CardDefinition = {
     name: "Practiced Scrollsmith",
     manaCost: "{R}{R/W}{W}",
     colors: [
@@ -20,15 +20,15 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restri
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 restrictions: [
-                { type: 'Type', value: 'Noncreature' },
-                { type: 'Type', value: 'Nonland' },
-                Restriction.YouControl
-            ]
+                    "noncreature",
+                    "nonland",
+                    Restriction.YouControl
+                ]
             },
             effects: [
                 {
@@ -47,4 +47,3 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restri
     power: "3",
     toughness: "2"
 };
-    

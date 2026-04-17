@@ -130,18 +130,18 @@ export class LayerProcessor {
         if (!this.isTarget(state, effect, obj.id)) continue;
         if (effect.layer === 7 || effect.powerModifier !== undefined || effect.toughnessModifier !== undefined) {
           const { EffectProcessor } = require('./../effects/EffectProcessor');
-          
+
           let pModVal = effect.powerModifier;
           let tModVal = effect.toughnessModifier;
-          
+
           let pMod = 0;
           let tMod = 0;
 
           if (pModVal !== undefined) {
-              pMod = EffectProcessor.resolveAmount(state, pModVal, effect.sourceId, effect.controllerId, undefined, effect.targetIds || [obj.id]);
+            pMod = EffectProcessor.resolveAmount(state, pModVal, effect.sourceId, effect.controllerId, undefined, effect.targetIds || [obj.id]);
           }
           if (tModVal !== undefined) {
-              tMod = EffectProcessor.resolveAmount(state, tModVal, effect.sourceId, effect.controllerId, undefined, effect.targetIds || [obj.id]);
+            tMod = EffectProcessor.resolveAmount(state, tModVal, effect.sourceId, effect.controllerId, undefined, effect.targetIds || [obj.id]);
           }
 
           const multiplier = (effect as any).multiplier !== undefined ? (effect as any).multiplier : 1;
@@ -346,12 +346,12 @@ export class LayerProcessor {
       player.graveyard.forEach((card: GameObject) => {
         const stats = this.getEffectiveStats(card, state);
         const hasPermission = PriorityProcessor.findPermissionEffect(state, player.id, 'AllowCastFromGraveyard', card.id);
-        const hasFlashback = (stats.keywords || []).some((k: string) => k.toLowerCase() === 'flashback') || 
-                            (card.definition.keywords || []).some((k: string) => k.toLowerCase() === 'flashback');
-        
-        const hasGraveyardAbility = card.definition.abilities?.some((a: any) => 
-            (a.type === AbilityType.Activated || a.type === 'Activated') && 
-            (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
+        const hasFlashback = (stats.keywords || []).some((k: string) => k.toLowerCase() === 'flashback') ||
+          (card.definition.keywords || []).some((k: string) => k.toLowerCase() === 'flashback');
+
+        const hasGraveyardAbility = card.definition.abilities?.some((a: any) =>
+          (a.type === AbilityType.Activated || a.type === 'Activated') &&
+          (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
         );
 
         if (hasPermission || hasFlashback || hasGraveyardAbility) {
@@ -370,7 +370,7 @@ export class LayerProcessor {
 
       // Revealed status for public information
       player.virtualHand.forEach((card: GameObject) => {
-          card.isRevealed = true;
+        card.isRevealed = true;
       });
 
       // Top of library
@@ -382,27 +382,29 @@ export class LayerProcessor {
         }
       }
 
-      // 3. Search for Prepared Creatures on Battlefield (Virtual Hand support)
+      // 3. Search for Prepared Creatures on Battlefield
+      // If a creature is prepared, we add its prepared face to the virtual hand to allow casting it from the battlefield.
       state.battlefield.forEach(o => {
-          if (o.controllerId === player.id && o.isPrepared && (o.definition.preparedFace || o.definition.faces?.[1])) {
-              const face = o.definition.preparedFace || o.definition.faces![1];
-              // Create a virtual spell copy in the hand
-              const virtualSpell = {
-                  ...o,
-                  id: `virtual_prepared_${o.id}`,
-                  definition: {
-                      ...face,
-                      image_url: face.image_url || o.definition.image_url 
-                  },
-                  zone: Zone.Hand,
-                  isVirtual: true,
-                  isRevealed: true,
-                  sourceCreatureId: o.id
-              };
-              player.virtualHand.push(virtualSpell as any);
-              console.log(`[DEBUG] LayerProcessor: Push virtual_prepared_${o.id} to ${player.id}'s hand. face: ${face.name}`);
-          }
+        if (o.controllerId === player.id && o.isPrepared && (o.definition.preparedFace || o.definition.faces?.[1])) {
+          const face = o.definition.preparedFace || o.definition.faces![1];
+          // Create a virtual spell copy in the hand
+          const virtualSpell = {
+            ...o,
+            id: `virtual_prepared_${o.id}`,
+            definition: {
+              ...face,
+              image_url: face.image_url || o.definition.image_url
+            },
+            zone: Zone.Hand,
+            isVirtual: true,
+            isRevealed: true,
+            sourceCreatureId: o.id
+          };
+          player.virtualHand.push(virtualSpell as any);
+          console.log(`[DEBUG] LayerProcessor: Push virtual_prepared_${o.id} to ${player.id}'s hand. face: ${face.name}`);
+        }
       });
+
     });
 
     // 3. Update effective stats for all objects in all zones (to set isPlayable correctly)
@@ -414,14 +416,14 @@ export class LayerProcessor {
       // Determine if this object is currently a Flashback candidate for cost display
       const isVirtual = (Object.values(state.players) as any[]).some(p => p.virtualHand.some((v: any) => v.id === obj.id));
       const inGraveyard = obj.zone === Zone.Graveyard || (Object.values(state.players) as any[]).some(p => p.graveyard.some((g: any) => g.id === obj.id));
-      
-      const hasFlashbackKeyword = (stats.keywords || []).some((k: string) => k.toLowerCase() === 'flashback') || 
-                                 (obj.definition.keywords || []).some((k: string) => k.toLowerCase() === 'flashback') ||
-                                 obj.definition.oracleText?.toLowerCase().includes("flashback");
 
-      const graveyardAbility = obj.definition.abilities?.find((a: any) => 
-          (a.type === AbilityType.Activated || a.type === 'Activated') && 
-          (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
+      const hasFlashbackKeyword = (stats.keywords || []).some((k: string) => k.toLowerCase() === 'flashback') ||
+        (obj.definition.keywords || []).some((k: string) => k.toLowerCase() === 'flashback') ||
+        obj.definition.oracleText?.toLowerCase().includes("flashback");
+
+      const graveyardAbility = obj.definition.abilities?.find((a: any) =>
+        (a.type === AbilityType.Activated || a.type === 'Activated') &&
+        (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
       );
 
       const isFlashback = hasFlashbackKeyword && (inGraveyard || isVirtual);
@@ -434,12 +436,12 @@ export class LayerProcessor {
       } else if (isActivation && graveyardAbility) {
         displayCost = (graveyardAbility as any).manaCost || (graveyardAbility as any).costs?.find((c: any) => c.type === 'Mana')?.value || obj.definition.manaCost;
       }
-      
+
       // Try to get more accurate cost from SpellProcessor if available
       try {
         const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], undefined, isFlashback, stats);
         displayCost = totalMana;
-      } catch (e) { 
+      } catch (e) {
         // fallback to base displayCost calculated above
       }
 

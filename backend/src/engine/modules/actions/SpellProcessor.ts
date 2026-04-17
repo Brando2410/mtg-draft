@@ -97,8 +97,13 @@ export class SpellProcessor {
             cardToPlay.xValue = undefined;
         }
 
-        const typeLine = (currentDefinition.type_line || '').toLowerCase();
-        const types = (currentDefinition.types || []).map((t: string) => t.toLowerCase());
+        const rawTypeLine = (currentDefinition.type_line || '').toLowerCase();
+        const typeLine = (cardToPlay as any).isVirtual ? rawTypeLine : rawTypeLine.split('//')[0].trim();
+        const types = ((cardToPlay as any).isVirtual ? 
+            (currentDefinition.types || []) : 
+            rawTypeLine.split('//')[0].split(/[-—]/)[0].trim().split(/\s+/).filter(Boolean)
+        ).map((t: string) => t.toLowerCase());
+        
         const isLand = typeLine.includes('land') || types.includes('land');
         const isInstantOrFlash = typeLine.includes('instant') || types.includes('instant') || (currentDefinition.oracleText || '').includes('Flash');
 
@@ -136,7 +141,7 @@ export class SpellProcessor {
         const hasPreSelectedChoice = (state as any).lastChoiceIndex !== undefined;
 
         // Step 0.5: Check for X in cost or inherent logic
-        const costStr = currentDefinition.manaCost;
+        const costStr = (currentDefinition.manaCost || '').split('//')[0].trim();
         // X-Value Selection
         const needsX = costStr.includes('{X}') ||
             (logic as any)?.abilities?.some((a: any) => a.costs?.some((c: any) => c.value === 'X')) ||
@@ -582,6 +587,7 @@ export class SpellProcessor {
     ): boolean | string[] {
         const { TargetingProcessor } = require('./TargetingProcessor');
         const player = state.players[playerId];
+        cardToPlay.controllerId = cardToPlay.controllerId || playerId;
 
         if (!ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana)) {
             log(`Illegal Play: Not enough mana available to even start casting ${cardToPlay.definition.name}.`);
@@ -605,8 +611,7 @@ export class SpellProcessor {
         const isOpponentTarget = firstType === 'opponent' || (firstType === 'player' && firstRestrictions.includes('opponent'));
 
         const isSingleOpponentTarget = isOpponentTarget &&
-            legalForFirst.length === 1 &&
-            state.playerOrder.length === 2;
+            legalForFirst.length === 1;
 
         if (isSingleOpponentTarget) {
             const opponentId = legalForFirst[0];
@@ -1295,8 +1300,7 @@ export class SpellProcessor {
         const isOpponentTarget = firstType === 'opponent' || (firstType === 'player' && firstRestrictions.includes('opponent'));
 
         const isSingleOpponentTarget = isOpponentTarget &&
-            legalForFirst.length === 1 &&
-            state.playerOrder.length === 2;
+            legalForFirst.length === 1;
 
         const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(ability.targetDefinition, (obj as any).xValue || 0);
 

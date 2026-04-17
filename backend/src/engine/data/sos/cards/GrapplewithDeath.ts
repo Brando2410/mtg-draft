@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const GrapplewithDeath: CardDefinition = {
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const GrapplewithDeath: CardDefinition = {
     name: "Grapple with Death",
     manaCost: "{1}{B}{G}",
     colors: [
@@ -16,11 +16,11 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: DurationType.Permanent,
+                type: TargetType.Permanent,
                 count: 1,
                 restrictions: [
-                { type: 'Type', value: 'Artifact or Creature' }
-            ]
+                    "ArtifactOrCreature"
+                ]
             },
             effects: [
                 {
@@ -36,4 +36,3 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         }
     ]
 };
-    

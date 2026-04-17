@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-    export const ProctorsGaze: CardDefinition = {
+export const ProctorsGaze: CardDefinition = {
     name: "Proctor's Gaze",
     manaCost: "{2}{G}{U}",
     colors: [
@@ -16,12 +16,9 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: DurationType.Permanent,
+                type: TargetType.NonlandPermanent,
                 count: 1,
-                minCount: 0,
-                restrictions: [
-                { type: 'Type', value: 'NonLand' }
-            ]
+                minCount: 0
             },
             effects: [
                 {
@@ -35,8 +32,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
                         type: TargetType.Land,
                         count: 1,
                         restrictions: [
-                { type: 'Type', value: 'Basic' }
-            ]
+                            "Basic"
+                        ]
                     },
                     zone: Zone.Battlefield,
                     tapped: true
@@ -45,4 +42,3 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         }
     ]
 };
-    

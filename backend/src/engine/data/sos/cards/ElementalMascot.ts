@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
     export const ElementalMascot: CardDefinition = {
     name: "Elemental Mascot",
     manaCost: "{1}{U}{R}",
@@ -29,7 +29,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
                     sublayer: 'Stats',
                     powerModifier: 1,
                     duration: { type: DurationType.UntilEndOfTurn },
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 },
                 {
                     type: EffectType.ExileTopCard,
@@ -44,3 +44,4 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
     toughness: "4"
 };
     
+

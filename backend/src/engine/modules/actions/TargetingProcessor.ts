@@ -143,14 +143,25 @@ export class TargetingProcessor {
 
             if (type === TargetType.Player.toLowerCase() || type === TargetType.Opponent.toLowerCase() || type === TargetType.AnyTarget.toLowerCase() || type === TargetType.PlayerOrPlaneswalker.toLowerCase() || restrictions.includes('player') || restrictions.includes('anytarget')) {
 
-                let sourceControllerId = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId)?.controllerId ||
+                let sourceControllerId = (sourceOrId as any)?.controllerId || 
+                    state.stack.find(s => s.id === sourceId || s.sourceId === sourceId)?.controllerId ||
                     state.battlefield.find(o => o.id === sourceId)?.controllerId;
 
                 if (!sourceControllerId) {
                     for (const pId in state.players) {
-                        if (state.players[pId as PlayerId].hand.some(c => c.id === sourceId)) {
+                        const player = state.players[pId as PlayerId];
+                        const isInZone = player.hand.some(c => c.id === sourceId) || 
+                                       player.graveyard.some(c => c.id === sourceId) || 
+                                       player.library.some(c => c.id === sourceId);
+                        if (isInZone) {
                             sourceControllerId = pId;
                             break;
+                        }
+                    }
+                    if (!sourceControllerId) {
+                        const exiled = state.exile.find(o => o.id === sourceId);
+                        if (exiled) {
+                            sourceControllerId = exiled.controllerId || exiled.ownerId;
                         }
                     }
                 }
@@ -470,12 +481,16 @@ export class TargetingProcessor {
                 if (controllerId && targetObj.controllerId === controllerId) return false;
             }
             if (lr === 'youcontrol' && controllerId && targetObj.controllerId !== controllerId) return false;
+            if (lr === 'opponentcontrol' && controllerId && (targetObj.controllerId || targetObj.ownerId) === controllerId) return false;
             if (lr === 'legendary' && !objTypes.includes('legendary')) return false;
             if (lr === 'basic' && !objTypes.includes('basic')) return false;
             if (lr === 'self' && targetObj.id !== sourceId) return false;
             if (lr === 'tapped' && !targetObj.isTapped) return false;
             if (lr === 'untapped' && targetObj.isTapped) return false;
-            if (lr === 'opponents' && (targetObj.controllerId || targetObj.ownerId) === controllerId) return false;
+            if (lr === 'opponents' || lr === 'opponentcontrol') {
+                if (controllerId && (targetObj.controllerId || targetObj.ownerId) === controllerId) return false;
+            }
+
             if (lr === 'fromhand' || lr === 'castfromhand') {
                 const zone = targetObj.zone || targetObj.card?.zone;
                 const lastZone = targetObj.lastNonStackZone || targetObj.card?.lastNonStackZone;
@@ -694,6 +709,17 @@ export class TargetingProcessor {
                             if (!targetName || targetName.toLowerCase() !== filterName.toLowerCase()) match = false;
                         }
                         if (r.hasxinmanacost && !definition.manaCost?.includes('X')) match = false;
+                        
+                        // --- SOS: Handle Control Restriction Objects ---
+                        if (restrictionType === 'control' && restrictionValue) {
+                            const lValue = restrictionValue.toLowerCase();
+                            if (lValue === 'youcontrol' && controllerId && targetObj.controllerId !== controllerId) match = false;
+                            if (lValue === 'opponentcontrol' && controllerId && (targetObj.controllerId || targetObj.ownerId) === controllerId) match = false;
+                            if (lValue === 'notcontrolled' && controllerId && targetObj.controllerId === controllerId) match = false;
+                            if (lValue === 'yours' && controllerId && targetObj.controllerId !== controllerId) match = false;
+                            if (lValue === 'opponents' && controllerId && (targetObj.controllerId || targetObj.ownerId) === controllerId) match = false;
+                        }
+
                         if (r.type === 'ManaValue' || r.type === 'MV' || r.type === 'ManaValueLe' || r.type === 'ManaValueLess' || r.type === 'MVLess') {
                             const mv = ManaProcessor.getManaValue(definition.manaCost || '');
                             let val = r.value;
@@ -1084,15 +1110,15 @@ export class TargetingProcessor {
             }
             case 'LAST_MILLED_IDS':
                 return (state as any).lastMilledIds || [];
-            case 'TARGET_1': return [targets[0]];
-            case 'SELF_AND_TARGET_1': return [sourceId, targets[0]];
-            case 'TARGET_2': return [targets[1]];
-            case 'TARGET_3': return [targets[2]];
-            case 'TARGET_4': return [targets[3]];
-            case 'TARGET_5': return [targets[4]];
-            case 'TARGET_6': return [targets[5]];
-            case 'TARGET_7': return [targets[6]];
-            case 'TARGET_8': return [targets[7]];
+            case 'TARGET_1': return targets[0] ? [targets[0]] : [];
+            case 'SELF_AND_TARGET_1': return targets[0] ? [sourceId, targets[0]] : [sourceId];
+            case 'TARGET_2': return targets[1] ? [targets[1]] : [];
+            case 'TARGET_3': return targets[2] ? [targets[2]] : [];
+            case 'TARGET_4': return targets[3] ? [targets[3]] : [];
+            case 'TARGET_5': return targets[4] ? [targets[4]] : [];
+            case 'TARGET_6': return targets[5] ? [targets[5]] : [];
+            case 'TARGET_7': return targets[6] ? [targets[6]] : [];
+            case 'TARGET_8': return targets[7] ? [targets[7]] : [];
             case 'TARGET_ALL': return targets;
             case 'MATCHING_PERMANENTS_YOU_CONTROL':
                 if (!effect?.restrictions) return [];

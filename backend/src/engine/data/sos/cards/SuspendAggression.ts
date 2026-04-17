@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
     export const SuspendAggression: CardDefinition = {
     name: "Suspend Aggression",
     manaCost: "{1}{W}",
@@ -7,12 +7,13 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restri
     subtypes: [],
     keywords: [],
     oracleText: "Exile target nonland permanent. Exile the top card of that card's owner's library. Until the end of that player's next turn, its owner may play those cards.",
-    type_line: "Instant",
+    type_line: "Instant",
+
     abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: DurationType.Permanent,
+                type: TargetType.Creature,
                 restrictions: [Restriction.NonLand],
                 count: 1,
                 zone: Zone.Battlefield

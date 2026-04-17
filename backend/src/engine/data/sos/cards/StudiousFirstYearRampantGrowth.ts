@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, TargetType, Zone } from '@shared/engine_types';
-    export const StudiousFirstYearRampantGrowth: CardDefinition = {
+export const StudiousFirstYearRampantGrowth: CardDefinition = {
     name: "Studious First-Year // Rampant Growth",
     manaCost: "{G}",
     colors: ["G"],
@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, EffectType, TargetType, Zone } from '@shar
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared.",
     power: "1",
-    toughness: "1",
+    toughness: "1",
+
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/2/4/24f888dd-785c-4089-a89c-03f9080130ed.png?1775938109",
     preparedFace: {
@@ -27,9 +28,7 @@ import { AbilityType, CardDefinition, EffectType, TargetType, Zone } from '@shar
                         targetDefinition: {
                             type: TargetType.Land,
                             count: 1,
-                            restrictions: [
-                { type: 'Type', value: 'Basic' }
-            ]
+                            restrictions: ["Basic"]
                         },
                         zone: Zone.Battlefield,
                         tapped: true
@@ -39,4 +38,3 @@ import { AbilityType, CardDefinition, EffectType, TargetType, Zone } from '@shar
         ]
     }
 };
-    

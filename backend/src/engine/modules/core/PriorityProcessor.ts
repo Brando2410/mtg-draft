@@ -542,7 +542,9 @@ export class PriorityProcessor {
 
   public static validateTiming(state: GameState, playerId: string, objOrAbility: any, isActivatedAbility = false): boolean {
     const def = objOrAbility?.definition || objOrAbility;
-    const typeLine = (def.type_line || '').toLowerCase();
+    // For dual-faced or prepared cards, we only consider the first face's types for timing unless it's a virtual spell
+    const rawTypeLine = (def.type_line || '').toLowerCase();
+    const typeLine = objOrAbility.isVirtual ? rawTypeLine : rawTypeLine.split('//')[0];
     const types = (def.types || []).map((t: string) => t.toLowerCase());
 
     const isInstantOrFlash = typeLine.includes('instant') ||

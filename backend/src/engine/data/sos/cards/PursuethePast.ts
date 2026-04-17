@@ -14,7 +14,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
         "Flashback"
     ],
     oracleText: "You gain 2 life. You may discard a card. If you do, draw two cards.\nFlashback {2}{R}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
-    flashbackCost: "{2}{R}{W}",
+    flashbackCost: "{2}{R}{W}",
+
     abilities: [
         {
             type: AbilityType.Spell,

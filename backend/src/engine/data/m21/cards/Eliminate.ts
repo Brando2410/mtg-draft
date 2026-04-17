@@ -12,9 +12,7 @@ export const Eliminate: CardDefinition = {
             targetDefinition: {
                 type: TargetType.CreatureOrPlaneswalker,
                 count: 1,
-                restrictions: [
-                    { type: 'Attribute', attribute: 'ManaValue', value: 3, comparison: 'LE' }
-                ]
+                restrictions: ["mv <= 3"]
             },
             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
         }

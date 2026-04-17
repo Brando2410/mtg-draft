@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const GloriousDecay: CardDefinition = {
+export const GloriousDecay: CardDefinition = {
     name: "Glorious Decay",
     manaCost: "{1}{G}",
     colors: [
@@ -22,11 +22,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                         {
                             label: "Destroy target artifact",
                             targetDefinition: {
-                                type: DurationType.Permanent,
+                                type: TargetType.Artifact,
                                 count: 1,
-                                restrictions: [
-                { type: 'Type', value: 'Artifact' }
-            ]
                             },
                             effects: [
                                 {
@@ -38,12 +35,9 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                         {
                             label: "Deals 4 damage to target creature with flying",
                             targetDefinition: {
-                                type: DurationType.Permanent,
+                                type: TargetType.Creature,
                                 count: 1,
-                                restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Type', value: 'Flying' }
-            ]
+                                restrictions: ["flying"]
                             },
                             effects: [
                                 {
@@ -77,4 +71,3 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         }
     ]
 };
-    

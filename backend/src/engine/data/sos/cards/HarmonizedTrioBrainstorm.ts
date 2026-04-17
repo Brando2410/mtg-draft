@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, Restriction, SelectionType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-    export const HarmonizedTrioBrainstorm: CardDefinition = {
+export const HarmonizedTrioBrainstorm: CardDefinition = {
     name: "Harmonized Trio // Brainstorm",
     manaCost: "{U}",
     colors: ["U"],
@@ -9,23 +9,29 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, Selecti
     oracleText: "{T}, Tap two untapped creatures you control: This creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "1",
     toughness: "1",
-    image_url: "https://cards.scryfall.io/png/front/6/1/617208ff-dd9b-44fd-a740-d3188081e5cc.png",
+    image_url: "https://cards.scryfall.io/png/front/6/1/617208ff-dd9b-44fd-a740-d3188081e5cc.png",
+
     abilities: [
         {
             type: AbilityType.Activated,
             costs: [
-                { type: CostType.TapSelection, value: 2, restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'State', value: 'Untapped' },
-                { type: 'Control', value: 'YouControl' },
-                { type: 'Identity', value: 'Other' }
-            ] },
+                {
+                    type: CostType.TapSelection,
+                    value: 2,
+                    restrictions: [
+                        "creature",
+                        "untapped",
+                        "youcontrol",
+                        "other"
+                    ]
+
+                },
                 { type: CostType.Tap }
             ],
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -57,8 +63,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, Selecti
                             type: TargetType.CardInHand,
                             count: 2,
                             restrictions: [
-                Restriction.YouControl
-            ]
+                                Restriction.YouControl
+                            ]
                         },
                         targetMapping: TargetMapping.Controller
                     }
@@ -67,4 +73,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, Selecti
         ]
     }
 };
-    

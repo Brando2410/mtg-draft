@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetType, Zone } from '@shared/engine_types';
-    export const TerramorphicExpanse: CardDefinition = {
+import { TargetMapping, AbilityType, CardDefinition, CostType, EffectType, TargetType, Zone } from '@shared/engine_types';
+export const TerramorphicExpanse: CardDefinition = {
     name: "Terramorphic Expanse",
     manaCost: "",
     colors: [],
@@ -14,7 +14,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetType, Zone } f
             type: AbilityType.Activated,
             costs: [
                 { type: CostType.Tap },
-                { type: CostType.Sacrifice, targetMapping: TargetType.Self }
+                { type: CostType.Sacrifice, targetMapping: TargetMapping.Self }
             ],
             effects: [
                 {
@@ -23,8 +23,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetType, Zone } f
                         type: TargetType.Land,
                         count: 1,
                         restrictions: [
-                { type: 'Type', value: 'Basic' }
-            ]
+                            "Basic"
+                        ]
                     },
                     zone: Zone.Battlefield,
                     tapped: true,
@@ -33,4 +33,4 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetType, Zone } f
         }
     ]
 };
-    
+

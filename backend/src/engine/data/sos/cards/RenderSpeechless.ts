@@ -18,8 +18,6 @@ export const RenderSpeechless: CardDefinition = {
             targetDefinition: [
                 {
                     type: TargetType.Opponent,
-                    count: 1,
-                    minCount: 1,
                     label: "target opponent"
                 },
                 {
@@ -35,9 +33,7 @@ export const RenderSpeechless: CardDefinition = {
                     label: 'Choose a nonland card to discard',
                     targetMapping: TargetMapping.Target1,
                     targetIdMapping: 'TARGET_1_HAND_REVEAL_PICK',
-                    restrictions: [
-                        { type: 'Type', value: 'Nonland' }
-                    ],
+                    restrictions: ["nonland"],
                     effects: [{ type: EffectType.MoveToZone, zone: Zone.Graveyard, targetMapping: TargetMapping.SelectedCard, isDiscard: true }]
                 },
                 {

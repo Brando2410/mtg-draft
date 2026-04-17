@@ -26,9 +26,9 @@ export const ZaffaiandtheTempests: CardDefinition = {
                     isFreeCast: true,
                     targetMapping: TargetMapping.Controller,
                     restrictions: [
-                { type: 'Type', value: 'InstantOrSorcery' },
-                { type: 'Type', value: 'FromHand' }
-            ],
+                        "InstantOrSorcery",
+                        "FromHand"
+                    ],
                     limitPerTurn: 1
                 }
             ]

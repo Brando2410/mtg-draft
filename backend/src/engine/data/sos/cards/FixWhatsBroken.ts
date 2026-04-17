@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-    export const FixWhatsBroken: CardDefinition = {
+export const FixWhatsBroken: CardDefinition = {
     name: "Fix What's Broken",
     manaCost: "{2}{W}{B}",
     colors: [
@@ -17,21 +17,22 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
             type: AbilityType.Spell,
             costs: [{ type: CostType.PayLife, value: DynamicAmount.X }],
             effects: [
-                { 
-                    type: EffectType.MoveToZone, 
+                {
+                    type: EffectType.MoveToZone,
                     zone: Zone.Battlefield,
                     targetMapping: TargetMapping.MatchingCards,
                     restrictions: [
-                { type: 'Type', value: 'Artifact_Or_Creature' },
-                { type: 'Zone', value: 'Graveyard' },
-                { type: 'Control', value: 'YouControl' },
-                { type: 'ManaValue',
-                comparison: 'Equal',
-                value: DynamicAmount.X }
-            ]
+                        "ArtifactOrCreature",
+                        "graveyard",
+                        "youcontrol",
+                        {
+                            type: 'ManaValue',
+                            comparison: 'Equal',
+                            value: DynamicAmount.X
+                        }
+                    ]
                 }
             ]
         }
     ]
 };
-    

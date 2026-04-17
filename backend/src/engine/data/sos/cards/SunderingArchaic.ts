@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-    export const SunderingArchaic: CardDefinition = {
+export const SunderingArchaic: CardDefinition = {
     name: "Sundering Archaic",
     manaCost: "{6}",
     colors: [],
@@ -14,16 +14,18 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
                 count: 1,
+                type: TargetType.NonlandPermanent,
                 restrictions: [
-                { type: 'Type', value: 'Nonland' },
-                { type: 'Control', value: 'OpponentControl' },
-                { type: 'ManaValue',
-                comparison: 'LessOrEqual',
-                value: DynamicAmount.ConvergeAmount }
-            ]
+                    "opponentcontrol",
+                    {
+                        type: 'ManaValue',
+                        comparison: 'LessOrEqual',
+                        value: DynamicAmount.ConvergeAmount
+                    }
+                ]
             },
             effects: [
                 {
@@ -52,4 +54,3 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
     power: "3",
     toughness: "3"
 };
-    

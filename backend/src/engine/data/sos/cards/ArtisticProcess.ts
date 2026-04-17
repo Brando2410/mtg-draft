@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
     export const ArtisticProcess: CardDefinition = {
     name: "Artistic Process",
     manaCost: "{3}{R}{R}",
@@ -21,7 +21,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                         {
                             label: '6 damage to target creature',
                             effects: [{ type: EffectType.DealDamage, amount: 6, targetMapping: TargetMapping.Target1 }],
-                            targetDefinition: { type: 'Creature' }
+                            targetDefinition: { type: TargetType.Creature }
                         },
                         {
                             label: '2 damage to each creature you don\'t control',
@@ -38,7 +38,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                                         toughness: '3',
                                         colors: ['U', 'R'],
                                         types: ['Creature'],
-                                        subtypes: ['Elemental'],
+                                        subtypes: ['Elemental'],
+
                                         image_url: 'https://cards.scryfall.io/png/front/3/d/3d0b9b88-705e-4df0-8a93-3e240b81355b.png?1682693891'
                                     }
                                 },

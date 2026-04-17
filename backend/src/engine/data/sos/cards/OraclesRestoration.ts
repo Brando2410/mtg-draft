@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const OraclesRestoration: CardDefinition = {
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const OraclesRestoration: CardDefinition = {
     name: "Oracle's Restoration",
     manaCost: "{G}",
     colors: [
@@ -15,12 +15,11 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: DurationType.Permanent,
+                type: TargetType.Creature,
                 count: 1,
                 restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Control', value: 'YouControl' }
-            ]
+                    "youcontrol"
+                ]
             },
             effects: [
                 {
@@ -45,4 +44,3 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         }
     ]
 };
-    

@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     keywords: ["Menace"],
     oracleText: "Menace\nWhenever this creature attacks, you gain 1 life.\n{B}{G}: Return this card from your graveyard to the battlefield tapped.",
     power: "1",
-    toughness: "1",
+    toughness: "1",
+
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -27,7 +28,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                 {
                     type: EffectType.MoveToZone,
                     zone: Zone.Battlefield,
-                    targetMapping: TargetType.Self,
+                    targetMapping: TargetMapping.Self,
                     tapped: true
                 }
             ]

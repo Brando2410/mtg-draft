@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-    export const AntiquitiesontheLoose: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping } from '@shared/engine_types';
+export const AntiquitiesontheLoose: CardDefinition = {
     name: "Antiquities on the Loose",
     manaCost: "{1}{W}{W}",
     colors: [
@@ -11,7 +11,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     subtypes: [],
     keywords: ["Flashback"],
     oracleText: "Create two 2/2 red and white Spirit creature tokens. Then if this spell was cast from anywhere other than your hand, put a +1/+1 counter on each Spirit you control.\nFlashback {4}{W}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
-    flashbackCost: "{4}{W}{W}",
+    flashbackCost: "{4}{W}{W}",
+
     abilities: [
         {
             type: AbilityType.Spell,
@@ -32,14 +33,14 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
                 },
                 {
                     type: EffectType.ConditionalEffect,
-                    condition: 'NOT_CAST_FROM_HAND',
+                    condition: ConditionType.NotCastFromHand,
                     effects: [
                         {
                             type: EffectType.AddCounters,
                             amount: 1,
                             counterType: '+1/+1',
                             targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                            restrictions: [{ type: 'Subtype', value: 'Spirit' }]
+                            restrictions: ["Spirit"]
                         }
                     ]
                 }
@@ -47,4 +48,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
         }
     ]
 };
-    

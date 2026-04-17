@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zon
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared.",
     power: "4",
-    toughness: "2",
+    toughness: "2",
+
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/3/c/3c34660c-25e3-4ff5-9b2b-5554ded2bcc3.png?1775937441",
     preparedFace: {
@@ -22,8 +23,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zon
             {
                 type: AbilityType.Spell,
                 targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Control', value: 'YouControl' }
+                "Creature",
+                "youcontrol"
             ] },
                 effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
             }

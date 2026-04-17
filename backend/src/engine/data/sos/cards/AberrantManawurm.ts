@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
     export const AberrantManawurm: CardDefinition = {
     name: "Aberrant Manawurm",
     manaCost: "{3}{G}",
@@ -20,7 +20,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, Trig
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    targetMapping: TargetType.Self,
+                    targetMapping: TargetMapping.Self,
                     powerModifier: 'EVENT_AMOUNT',
                     duration: { type: DurationType.UntilEndOfTurn }
                 }
@@ -31,3 +31,4 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, Trig
     toughness: "5"
 };
     
+

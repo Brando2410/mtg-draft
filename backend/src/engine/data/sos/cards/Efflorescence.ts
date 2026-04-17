@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const Efflorescence: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const Efflorescence: CardDefinition = {
     name: "Efflorescence",
     manaCost: "{2}{G}",
     colors: [
@@ -14,25 +14,22 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ] },
+            targetDefinition: { type: TargetType.Creature, count: 1 },
             effects: [
-                { 
-                    type: EffectType.AddCounters, 
-                    amount: 2, 
-                    counterType: '+1/+1', 
-                    targetMapping: TargetMapping.Target1 
+                {
+                    type: EffectType.AddCounters,
+                    amount: 2,
+                    counterType: '+1/+1',
+                    targetMapping: TargetMapping.Target1
                 },
-                { 
-                    type: EffectType.ApplyContinuousEffect, 
+                {
+                    type: EffectType.ApplyContinuousEffect,
                     condition: ConditionType.GainedLifeThisTurn,
-                    duration: { type: DurationType.UntilEndOfTurn }, 
-                    abilitiesToAdd: ['Trample', 'Indestructible'], 
-                    targetMapping: TargetMapping.Target1 
+                    duration: { type: DurationType.UntilEndOfTurn },
+                    abilitiesToAdd: ['Trample', 'Indestructible'],
+                    targetMapping: TargetMapping.Target1
                 }
             ]
         }
     ]
 };
-    

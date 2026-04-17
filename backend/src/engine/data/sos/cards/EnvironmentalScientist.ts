@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-    export const EnvironmentalScientist: CardDefinition = {
+export const EnvironmentalScientist: CardDefinition = {
     name: "Environmental Scientist",
     manaCost: "{1}{G}",
     colors: [
@@ -13,6 +13,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
         "Druid"
     ],
     keywords: [],
+    power: "2",
+    toughness: "2",
     oracleText: "When this creature enters, you may search your library for a basic land card, reveal it, put it into your hand, then shuffle.",
     abilities: [
         {
@@ -25,9 +27,10 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
                     targetDefinition: {
                         type: TargetType.Land,
                         count: 1,
+                        minCount: 0,
                         restrictions: [
-                { type: 'Type', value: 'Basic' }
-            ]
+                            "Basic"
+                        ]
                     },
                     zone: Zone.Hand,
                     optional: true,
@@ -36,8 +39,5 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
                 }
             ]
         }
-    ],
-    power: "2",
-    toughness: "2"
+    ]
 };
-    

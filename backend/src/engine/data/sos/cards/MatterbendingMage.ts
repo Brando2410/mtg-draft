@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const MatterbendingMage: CardDefinition = {
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+export const MatterbendingMage: CardDefinition = {
     name: "Matterbending Mage",
     manaCost: "{2}{U}",
     colors: [
@@ -13,30 +13,32 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         "Wizard"
     ],
     keywords: [],
+    power: "2",
+    toughness: "2",
     oracleText: "When this creature enters, return up to one other target creature to its owner's hand.\nWhenever you cast a spell with {X} in its mana cost, this creature can't be blocked this turn.",
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
-                type: DurationType.Permanent,
-                count: [0, 1],
+                type: TargetType.Creature,
+                count: 1,
+                minCount: 0,
                 restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Type', value: 'OtherThanSource' }
-            ]
+                    "other"
+                ]
             },
             effects: [
                 {
                     type: EffectType.MoveToZone,
-                    zone: 'HAND',
+                    zone: Zone.Hand,
                     targetMapping: TargetMapping.Target1
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
+            eventMatch: TriggerEvent.CastSpell,
             condition: (state: any, event: any, trigger: any) => {
                 const card = event.data?.card || event.data?.object;
                 return card && card.definition.manaCost?.includes('{X}') && event.playerId === trigger.controllerId;
@@ -46,12 +48,9 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
                     type: EffectType.ApplyContinuousEffect,
                     abilitiesToAdd: ["Unblockable"],
                     duration: { type: DurationType.UntilEndOfTurn },
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
-    ],
-    power: "2",
-    toughness: "2"
+    ]
 };
-    

@@ -171,8 +171,17 @@ export class PermanentHandler {
         });
     }
 
-    public static handleMoveCounters(state: GameState, targets: string[], sourceId: string, log: (m: string) => void, effect?: any) {
-        const sourceObj = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId) || Object.values(state.players).flatMap(p => p.graveyard).find((o: any) => o.id === sourceId);
+    public static handleMoveCounters(state: GameState, targets: string[], sourceId: string, log: (m: string) => void, effect?: any, stackObject?: any) {
+        let sourceObj = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId) || Object.values(state.players).flatMap(p => p.graveyard).find((o: any) => o.id === sourceId);
+        
+        // CR 603.10: If the source is not in a public zone or has no counters (because it died), check the stack object's event snapshot (LKI)
+        if (!sourceObj || !sourceObj.counters || Object.keys(sourceObj.counters).length === 0) {
+            const snapshot = stackObject?.data?.eventData?.data?.object;
+            if (snapshot && snapshot.id === sourceId && snapshot.counters && Object.keys(snapshot.counters).length > 0) {
+                sourceObj = snapshot;
+            }
+        }
+
         if (!sourceObj || !sourceObj.counters) return;
 
         let inputType = effect?.counterType;

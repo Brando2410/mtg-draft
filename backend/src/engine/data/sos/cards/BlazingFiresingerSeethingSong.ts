@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared.",
     power: "2",
-    toughness: "3",
+    toughness: "3",
+
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/3/b/3ba971e7-0b7a-4750-896f-7cf063e66b2a.png?1775937691",
     preparedFace: {

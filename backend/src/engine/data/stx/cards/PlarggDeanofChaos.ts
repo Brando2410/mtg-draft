@@ -34,8 +34,8 @@ export const PlarggDeanofChaos: CardDefinition = {
                         type: EffectType.SearchLibrary,
                         fromTop: -1,
                         restrictions: [
-                            { type: 'Not', restriction: { type: 'Type', value: 'Land' } },
-                            { type: 'ManaValue', comparison: 'LessOrEqual', value: 3 }
+                            "nonland",
+                            "mv <= 3"
                         ],
                         zone: Zone.Exile,
                         effects: [{
@@ -69,11 +69,8 @@ export const PlarggDeanofChaos: CardDefinition = {
                         powerModifier: 1,
                         targetMapping: TargetMapping.AllCreaturesYouControl,
                         restrictions: [
-                            { type: 'Attacking' },
-                            {
-                                type: 'Not',
-                                restriction: { type: 'Self' }
-                            }
+                            "attacking",
+                            "other"
                         ]
                     }]
                 },

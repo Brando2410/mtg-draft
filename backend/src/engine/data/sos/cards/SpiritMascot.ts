@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
     export const SpiritMascot: CardDefinition = {
     name: "Spirit Mascot",
     manaCost: "{R}{W}",
@@ -25,7 +25,7 @@ import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } fro
                     type: EffectType.AddCounters,
                     counterType: '+1/+1',
                     amount: 1,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -34,3 +34,4 @@ import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } fro
     toughness: "2"
 };
     
+

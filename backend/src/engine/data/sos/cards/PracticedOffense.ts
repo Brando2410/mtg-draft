@@ -11,7 +11,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     subtypes: [],
     keywords: ["Flashback"],
     oracleText: "Put a +1/+1 counter on each creature target player controls. Target creature gains your choice of double strike or lifelink until end of turn.\nFlashback {1}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
-    flashbackCost: "{1}{W}",
+    flashbackCost: "{1}{W}",
+
     abilities: [
         {
             type: AbilityType.Spell,

@@ -17,9 +17,9 @@ export const IdolofEndurance: CardDefinition = {
                     returnZone: Zone.Graveyard,
                     targetMapping: TargetMapping.AllMatchingCards,
                     restrictions: [
-                        { type: 'Type', value: 'Creature' },
-                        { type: 'Attribute', attribute: 'ManaValue', value: 3, comparison: 'LE' },
-                        { type: 'Source', value: 'CONTROLLER' }
+                        "Creature",
+                        "mv <= 3",
+                        "youcontrol"
                     ],
                     storeLinkedId: 'IDOL_EXILED'
                 }

@@ -169,14 +169,22 @@ export class ActionProcessor {
   private static handleLeavingBattlefield(state: GameState, card: GameObject, to: Zone, log?: (m: string) => void) {
       const types = card.definition.types.map(t => t.toLowerCase());
       
+      // CR 603.10: "Leaves-the-battlefield" events MUST look back in time.
+      // We capture a snapshot of the card (especially counters) to support triggers like Modular, Scolding Administrator, etc.
+      const snapshot = {
+          ...card,
+          definition: { ...card.definition },
+          counters: { ...card.counters }
+      };
+
       // Rule 603.10a: "Dies" triggers (specifically for creatures moving to graveyard)
       if (to === Zone.Graveyard && types.includes('creature')) {
-          state.turnState.creaturesDiedThisTurn.push(card);
-          TriggerProcessor.onEvent(state, { type: 'ON_DEATH', targetId: card.id, sourceId: card.id, data: { object: card } }, log || (() => {}));
+          state.turnState.creaturesDiedThisTurn.push(snapshot);
+          TriggerProcessor.onEvent(state, { type: 'ON_DEATH', targetId: card.id, sourceId: card.id, data: { object: snapshot } }, log || (() => {}));
       }
 
       // General Leave trigger
-      TriggerProcessor.onEvent(state, { type: 'ON_LEAVE_BATTLEFIELD', targetId: card.id, sourceId: card.id, data: { object: card, toZone: to } }, log || (() => {}));
+      TriggerProcessor.onEvent(state, { type: 'ON_LEAVE_BATTLEFIELD', targetId: card.id, sourceId: card.id, data: { object: snapshot, toZone: to } }, log || (() => {}));
   }
 
   public static removeFromCurrentZone(state: GameState, card: GameObject) {

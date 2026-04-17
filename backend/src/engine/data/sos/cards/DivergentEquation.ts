@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-    export const DivergentEquation: CardDefinition = {
+export const DivergentEquation: CardDefinition = {
     name: "Divergent Equation",
     manaCost: "{X}{X}{U}",
     colors: [
@@ -14,20 +14,19 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { 
-                type: TargetType.CardInGraveyard, 
-                minCount: 0, 
-                count: 'X' as any, 
+            targetDefinition: {
+                type: TargetType.CardInGraveyard,
+                minCount: 0,
+                count: 'X' as any,
                 restrictions: [
-                { type: 'Type', value: 'InstantOrSorcery' },
-                { type: 'Control', value: 'YouControl' }
-            ] 
+                    "InstantOrSorcery",
+                    "youcontrol"
+                ]
             },
             effects: [
                 { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.TargetAll },
-                { type: CostType.Exile, targetMapping: TargetType.Self }
+                { type: CostType.Exile, targetMapping: TargetMapping.Self }
             ]
         }
     ]
 };
-    

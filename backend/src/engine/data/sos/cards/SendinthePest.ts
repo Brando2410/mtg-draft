@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const SendinthePest: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+export const SendinthePest: CardDefinition = {
     name: "Send in the Pest",
     manaCost: "{1}{B}",
     colors: [
@@ -36,7 +36,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
                             {
                                 type: AbilityType.Triggered,
                                 eventMatch: TriggerEvent.Attack,
-                                condition: "SelfAttacks",
+                                condition: ConditionType.SelfAttacks,
                                 effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
                             }
                         ]
@@ -47,4 +47,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
         }
     ]
 };
-    

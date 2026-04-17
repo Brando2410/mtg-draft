@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
-    export const PageLooseLeaf: CardDefinition = {
+export const PageLooseLeaf: CardDefinition = {
     name: "Page, Loose Leaf",
     manaCost: "{2}",
     colors: [],
@@ -32,8 +32,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
                 {
                     type: EffectType.RevealUntilCondition,
                     restrictions: [
-                { type: 'Type', value: 'InstantOrSorcery' }
-            ],
+                        "InstantOrSorcery"
+                    ],
                     zone: Zone.Hand,
                     remainderZone: Zone.Library,
                     remainderPosition: 'bottom',
@@ -46,4 +46,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
     power: "0",
     toughness: "2"
 };
-    

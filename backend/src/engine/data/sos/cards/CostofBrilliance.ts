@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const CostofBrilliance: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const CostofBrilliance: CardDefinition = {
     name: "Cost of Brilliance",
     manaCost: "{2}{B}",
     colors: [
@@ -14,7 +14,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Player', count: 1 },
+            targetDefinition: { type: TargetType.Player, count: 1 },
             effects: [
                 { type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Target1 },
                 { type: EffectType.LoseLife, amount: 2, targetMapping: TargetMapping.Target1 },
@@ -24,9 +24,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ] },
+                            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0 },
                             effects: [
                                 { type: EffectType.AddCounters, amount: 1, startingCounters: { type: 'p1p1', amount: 1 }, targetMapping: TargetMapping.Target2 }
                             ]
@@ -38,4 +36,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
         }
     ]
 };
-    

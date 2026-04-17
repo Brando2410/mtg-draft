@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     keywords: ["Flying", "Prepared"],
     oracleText: "Flying\nThis creature enters prepared.",
     power: "3",
-    toughness: "3",
+    toughness: "3",
+
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/3/4/34949019-2f88-4447-b648-5226bedf569a.png?1775937905",
     preparedFace: {

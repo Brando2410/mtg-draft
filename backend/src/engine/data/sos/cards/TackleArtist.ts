@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, ConditionType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
 export const TackleArtist: CardDefinition = {
     name: "Tackle Artist",
     manaCost: "{3}{R}",
@@ -25,14 +25,14 @@ export const TackleArtist: CardDefinition = {
                     amount: 2,
                     counterType: '+1/+1',
                     condition: 'SPENT_MANA_GE:5',
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 },
                 {
                     type: EffectType.AddCounters,
                     amount: 1,
                     counterType: '+1/+1',
                     condition: 'SPENT_MANA_LT:5',
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -40,3 +40,4 @@ export const TackleArtist: CardDefinition = {
     power: "4",
     toughness: "3"
 };
+

@@ -1,5 +1,6 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
-    export const AppliedGeometry: CardDefinition = {
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
+
+export const AppliedGeometry: CardDefinition = {
     name: "Applied Geometry",
     manaCost: "{2}{G}{U}",
     colors: [
@@ -16,8 +17,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } f
         {
             type: AbilityType.Spell,
             targetDefinition: { 
-                type: 'Permanent', 
-                restrictions: [Restriction.YouControl, { type: 'NotSubtype', value: 'Aura' }] 
+                type: TargetType.Permanent, 
+                restrictions: [Restriction.YouControl, "not_aura"] 
             },
             effects: [
                 {
@@ -38,4 +39,3 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } f
         }
     ]
 };
-    

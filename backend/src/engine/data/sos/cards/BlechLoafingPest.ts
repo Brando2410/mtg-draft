@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const BlechLoafingPest: CardDefinition = {
+export const BlechLoafingPest: CardDefinition = {
     name: "Blech, Loafing Pest",
     manaCost: "{1}{B}{G}",
     colors: [
@@ -18,7 +18,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.LifeGain,
+            eventMatch: TriggerEvent.LifeGain,
             effects: [
                 {
                     type: EffectType.AddCounters,
@@ -26,13 +26,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
                     counterType: '+1/+1',
                     targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
                     restrictions: [
-                { type: 'Subtype',
-                subtypes: ['Pest',
-                { type: 'Type', value: 'Bat' },
-                { type: 'Type', value: 'Insect' },
-                { type: 'Type', value: 'Snake' },
-                { type: 'Type', value: 'Spider' }
-            ] }
+                        "Pest_or_Bat_or_Insect_or_Snake_or_Spider"
                     ]
                 }
             ]
@@ -41,4 +35,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     power: "3",
     toughness: "4"
 };
-    

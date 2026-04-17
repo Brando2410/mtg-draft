@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const MindintoMatter: CardDefinition = {
+export const MindintoMatter: CardDefinition = {
     name: "Mind into Matter",
     manaCost: "{X}{G}{U}",
     colors: [
@@ -28,7 +28,7 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
                     targetMapping: TargetMapping.Controller,
                     choices: [
                         {
-                            label: "Put card with mana value X or less onto battlefield tapped",
+                            label: "Put permanent card with mana value X or less onto battlefield tapped",
                             effects: [
                                 {
                                     type: EffectType.PutOnBattlefield,
@@ -37,12 +37,12 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
                                         type: TargetType.CardInHand,
                                         count: 1,
                                         restrictions: [
-                { type: 'Type', value: 'Permanent' },
-                {
+                                            "Permanent",
+                                            {
                                                 type: 'ManaValueLe',
-                value: DynamicAmount.X
+                                                value: DynamicAmount.X
                                             }
-            ]
+                                        ]
                                     },
                                 }
                             ]
@@ -57,4 +57,3 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
         }
     ]
 };
-    

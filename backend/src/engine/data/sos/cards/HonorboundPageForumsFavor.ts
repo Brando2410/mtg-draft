@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     keywords: ["First strike", "Prepared"],
     oracleText: "First strike\nThis creature enters prepared.",
     power: "3",
-    toughness: "3",
+    toughness: "3",
+
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/7/9/79a70863-860f-4a7b-9cb2-d3546b689d44.png?1775937039",
     preparedFace: {

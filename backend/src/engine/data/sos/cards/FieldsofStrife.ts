@@ -12,7 +12,8 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
     subtypes: [],
     keywords: [],
     oracleText: "Fields of Strife enters the battlefield tapped.\n{T}: Add {R} or {W}.\n{2}{R}{W}, {T}: Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
-    entersTapped: true,
+    entersTapped: true,
+
     abilities: [
         {
             type: AbilityType.Activated,

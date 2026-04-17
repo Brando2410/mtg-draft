@@ -1,4 +1,4 @@
-import { AbilityType, EffectType, DurationType, TargetMapping, CardDefinition, TriggerEvent } from "@shared/engine_types";
+import { AbilityType, CardDefinition, ConditionType, EffectType, DurationType, TargetMapping, TriggerEvent } from "@shared/engine_types";
 
 export const OrneryDilophosaur: CardDefinition = {
 
@@ -16,7 +16,7 @@ export const OrneryDilophosaur: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Attack,
-            condition: "HAS_PERMANENT:creature,power>=4",
+            condition: `${ConditionType.HasPermanent}:creature,power>=4`,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -30,6 +30,3 @@ export const OrneryDilophosaur: CardDefinition = {
     ]
 
 };
-
-
-

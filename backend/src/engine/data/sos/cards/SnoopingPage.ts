@@ -25,7 +25,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
                     type: EffectType.ApplyContinuousEffect,
                     abilitiesToAdd: ["CannotBeBlocked"],
                     duration: { type: DurationType.UntilEndOfTurn },
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         },

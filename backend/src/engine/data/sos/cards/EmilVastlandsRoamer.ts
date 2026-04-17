@@ -32,7 +32,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DynamicAmount, Ef
             type: AbilityType.Activated,
             costs: [
                 { type: CostType.Mana, value: '{4}{G}' },
-                { type: CostType.Tap, targetMapping: TargetType.Self }
+                { type: CostType.Tap, targetMapping: TargetMapping.Self }
             ],
             effects: [
                 {

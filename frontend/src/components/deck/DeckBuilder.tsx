@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Loader2, X, Home, RefreshCw, BarChart2, Sun, FileText, AlertTriangle, Database, Clipboard as ClipboardIcon, Menu, Filter, Save } from 'lucide-react';
 import { fetchSearchCards, fetchExactCard, fetchCardsBatch } from '../../services/scryfall';
 import type { SimplifiedCard, ScryfallCard } from '../../services/scryfall';
+import { fetchRegistryCards, mapRegistryToSimplified } from '../../services/registry';
 import { StatsModal } from '../shared/StatsModal';
 import { CardGridItem } from '../shared/CardGridItem';
 
@@ -20,7 +21,7 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
 
   // --- STATO SEARCH & UI ---
   const [addQuery, setAddQuery] = useState('');
-  const [apiSuggestions, setApiSuggestions] = useState<ScryfallCard[]>([]);
+  const [apiSuggestions, setApiSuggestions] = useState<SimplifiedCard[]>([]);
   const [isApiLoading, setIsApiLoading] = useState(false);
   const [zoomCard, setZoomCard] = useState<SimplifiedCard | null>(null);
   const [isZoomFlipped, setIsZoomFlipped] = useState(false);
@@ -55,26 +56,40 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
     { name: 'Forest', color: 'G' },
   ];
 
-  // Debounce per Scryfall Search
+  // Debounce per Local Registry Search (Replacing Scryfall)
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
       if (addQuery.length >= 2) {
         setIsApiLoading(true);
-        const results = await fetchSearchCards(addQuery, 'en');
-        setApiSuggestions(results);
+        const results = await fetchRegistryCards(addQuery);
+        // Only show implemented cards that have an image
+        setApiSuggestions(results
+          .filter(c => c.engineStatus === 'IMPLEMENTED' && c.image_url)
+          .map(mapRegistryToSimplified)
+        );
         setIsApiLoading(false);
       } else {
         setApiSuggestions([]);
       }
-    }, 450);
+    }, 300);
     return () => clearTimeout(timeoutId);
   }, [addQuery]);
 
   const handleAddCard = async (cardName: string) => {
+    // If it's a basic land, we might still want scryfall if not in registry, but user said ONLY implemented.
+    // However, basic lands are ubiquitous.
     setIsApiLoading(true);
-    const result = await fetchExactCard(cardName, 'en');
-    if (result) {
-      setDeckCards(prev => [...prev, result]);
+    const results = await fetchRegistryCards(cardName);
+    const match = results.find(c => c.name.toLowerCase() === cardName.toLowerCase());
+    if (match && match.engineStatus === 'IMPLEMENTED') {
+      setDeckCards(prev => [...prev, mapRegistryToSimplified(match)]);
+    } else {
+      // Fallback to scryfall ONLY for basic lands if needed? 
+      // No, user said "only chose implemented card".
+      // But let's check if the match was found but not implemented.
+      if (match) {
+        alert(`${cardName} non è ancora stata implementata nell'engine.`);
+      }
     }
     setIsApiLoading(false);
   };
@@ -165,7 +180,7 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
           </div>
         </div>
         <div className="flex items-center gap-4 w-full lg:max-w-3xl">
-          <div className="relative flex-1 group"><Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500" /><input value={addQuery} onChange={e => setAddQuery(e.target.value)} placeholder="Cerca carta Scryfall..." className="w-full bg-slate-900 border border-white/5 pl-14 pr-6 py-5 rounded-[2rem] outline-none focus:border-indigo-500/50 transition-all font-bold text-lg" />{isApiLoading && <Loader2 className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500 animate-spin" />}</div>
+          <div className="relative flex-1 group"><Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" /><input value={addQuery} onChange={e => setAddQuery(e.target.value)} placeholder="Cerca tra le carte implementate..." className="w-full bg-slate-900 border border-white/5 pl-14 pr-6 py-5 rounded-[2rem] outline-none focus:border-emerald-500/50 transition-all font-bold text-lg" />{isApiLoading && <Loader2 className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500 animate-spin" />}</div>
           <button onClick={() => setIsImportModalOpen(true)} className="p-5 bg-slate-900/50 text-indigo-400 rounded-[2rem] border border-white/5"><FileText className="w-6 h-6" /></button>
           <button onClick={saveDeck} className={`px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-widest text-sm flex items-center gap-3 transition-all ${saveStatus === 'saved' ? 'bg-emerald-600' : 'bg-indigo-600 text-white'}`}>{saveStatus === 'saving' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />} {saveStatus === 'saved' ? 'Saved' : 'Save'}</button>
         </div>
@@ -194,7 +209,7 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
       <div className="p-4 lg:p-0 space-y-8">
          <div className="lg:hidden relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500" />
-            <input value={addQuery} onChange={e => setAddQuery(e.target.value)} placeholder="Scryfall Search..." className="w-full bg-slate-900 border border-white/5 pl-12 pr-4 py-4 rounded-2xl text-sm font-bold text-white outline-none" />
+            <input value={addQuery} onChange={e => setAddQuery(e.target.value)} placeholder="Search Implemented..." className="w-full bg-slate-900 border border-white/5 pl-12 pr-4 py-4 rounded-2xl text-sm font-bold text-white outline-none" />
             {isApiLoading && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500 animate-spin" />}
          </div>
 
@@ -209,10 +224,15 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
          <AnimatePresence>
            {apiSuggestions.length > 0 && (
              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="flex lg:grid gap-4 p-4 lg:p-8 bg-indigo-950/20 border border-indigo-500/20 rounded-[1.5rem] lg:rounded-[3rem] shadow-2xl overflow-x-auto lg:overflow-x-visible lg:grid-cols-8 custom-scrollbar mb-8">
-               {apiSuggestions.map(card => {
-                 const img = card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal || '';
-                 return (<button key={card.id} onClick={() => handleAddCard(card.name)} className="relative min-w-[120px] lg:min-w-0 aspect-[2.5/3.5] rounded-xl overflow-hidden hover:scale-105 active:scale-95 transition-all shadow-xl border border-white/5"><img src={img} className="w-full h-full object-cover" /></button>);
-               })}
+                {apiSuggestions.map(card => (
+                  <button 
+                    key={card.scryfall_id} 
+                    onClick={() => setDeckCards(prev => [...prev, card])} 
+                    className="relative min-w-[120px] lg:min-w-0 aspect-[2.5/3.5] rounded-xl overflow-hidden hover:scale-105 active:scale-95 transition-all shadow-xl border border-white/5"
+                  >
+                    <img src={card.image_url} className="w-full h-full object-cover" />
+                  </button>
+                ))}
              </motion.div>
            )}
          </AnimatePresence>

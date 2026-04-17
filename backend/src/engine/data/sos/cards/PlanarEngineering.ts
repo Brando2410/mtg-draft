@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetType, Zone } from '@shared/engine_types';
-    export const PlanarEngineering: CardDefinition = {
+export const PlanarEngineering: CardDefinition = {
     name: "Planar Engineering",
     manaCost: "{3}{G}",
     colors: [
@@ -24,8 +24,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetT
                         type: TargetType.Land,
                         count: 4,
                         restrictions: [
-                { type: 'Type', value: 'Basic' }
-            ]
+                            "Basic"
+                        ]
                     },
                     zone: Zone.Battlefield,
                     tapped: true,
@@ -35,4 +35,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetT
         }
     ]
 };
-    

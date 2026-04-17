@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const DigSiteInventory: CardDefinition = {
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const DigSiteInventory: CardDefinition = {
     name: "Dig Site Inventory",
     manaCost: "{W}",
     colors: [
@@ -13,15 +13,17 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         "Flashback"
     ],
     oracleText: "Put a +1/+1 counter on target creature you control. It gains vigilance until end of turn.\nFlashback {W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
-    flashbackCost: "{W}",
+    flashbackCost: "{W}",
+
     abilities: [
         {
             type: AbilityType.Spell,
             flashbackCost: "{W}",
-            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Control', value: 'YouControl' }
-            ] },
+            targetDefinition: {
+                type: TargetType.Creature, count: 1, restrictions: [
+                    "youcontrol"
+                ]
+            },
             effects: [
                 {
                     type: EffectType.AddCounters,
@@ -39,4 +41,3 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         }
     ]
 };
-    

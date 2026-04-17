@@ -2,13 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
 export const WitherbloomCharm: CardDefinition = {
     name: "Witherbloom Charm",
     manaCost: "{B}{G}",
-    colors: [
-        "B",
-        "G"
-    ],
-    types: [
-        "Instant"
-    ],
+    colors: ["B", "G"],
+    types: ["Instant"],
     subtypes: [],
     keywords: [],
     oracleText: "Choose one —\n• You may sacrifice a permanent. If you do, draw two cards.\n• You gain 5 life.\n• Destroy target nonland permanent with mana value 2 or less.",
@@ -31,9 +26,7 @@ export const WitherbloomCharm: CardDefinition = {
                                             costs: [
                                                 {
                                                     type: CostType.Sacrifice,
-                                                    restrictions: [
-                { type: 'Type', value: 'Permanent' }
-            ],
+                                                    restrictions: ["Permanent"],
                                                 }
                                             ],
                                             effects: [
@@ -67,13 +60,7 @@ export const WitherbloomCharm: CardDefinition = {
                             targetDefinition: {
                                 type: TargetType.NonlandPermanent,
                                 count: 1,
-                                restrictions: [
-                {
-                                        type: 'ManaValue',
-                comparison: 'LessOrEqual',
-                value: 2
-                                    }
-            ]
+                                restrictions: ["mv <= 2"]
                             },
                             effects: [
                                 {

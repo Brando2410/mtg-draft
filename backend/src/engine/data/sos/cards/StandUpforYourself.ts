@@ -17,7 +17,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
             targetDefinition: {
                 type: TargetType.Creature,
                 restrictions: [
-                    { type: 'Power', comparison: 'GreaterOrEqual', value: 3 }
+                    "power>=3"
                 ]
             },
             effects: [

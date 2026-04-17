@@ -35,7 +35,7 @@ export const PostmortemProfessor: CardDefinition = {
                     type: CostType.Exile,
                     sourceZones: ['Graveyard'],
                     restrictions: [
-                        { type: 'Type', value: 'InstantOrSorcery' }
+                        "InstantOrSorcery"
                     ]
                 }
             ],
@@ -43,7 +43,7 @@ export const PostmortemProfessor: CardDefinition = {
                 {
                     type: EffectType.MoveToZone,
                     zone: Zone.Battlefield,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }

@@ -16,7 +16,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     oracleText: "At the beginning of your upkeep, surveil 1. Then if there are three or more creature cards in your graveyard, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "3",
     toughness: "3",
-    image_url: "https://cards.scryfall.io/png/front/8/b/8b1e10e8-ea14-4761-910b-4072e2a18456.png?1775937504",
+    image_url: "https://cards.scryfall.io/png/front/8/b/8b1e10e8-ea14-4761-910b-4072e2a18456.png?1775937504",
+
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -29,7 +30,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
                     restrictions: [
                 { type: 'Type', value: '3' }
             ],
-                    effects: [{ type: EffectType.Prepare, targetMapping: TargetType.Self }]
+                    effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
                 }
             ]
         }
@@ -48,7 +49,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
                     type: TargetType.CardInGraveyard,
                     count: 1,
                     restrictions: [
-                { type: 'Type', value: 'Creature' }
+                "Creature"
             ]
                 },
                 effects: [

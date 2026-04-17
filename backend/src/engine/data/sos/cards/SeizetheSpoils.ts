@@ -11,7 +11,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
     subtypes: [],
     keywords: [],
     oracleText: "As an additional cost to cast this spell, discard a card.\nDraw two cards and create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
-    image_url: 'https://cards.scryfall.io/large/front/a/1/a1d9b4c2-9e19-4c8d-8153-97aeab6c55cc.jpg',
+    image_url: 'https://cards.scryfall.io/large/front/a/1/a1d9b4c2-9e19-4c8d-8153-97aeab6c55cc.jpg',
+
     abilities: [
         {
             type: AbilityType.Spell,

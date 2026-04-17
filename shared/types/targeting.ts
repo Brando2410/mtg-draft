@@ -30,7 +30,6 @@ export type TargetType = (typeof TargetType)[keyof typeof TargetType];
 
 export interface TargetDefinition {
     type?: TargetType | string;
-    maxTargets?: number;
     count?: number | any;
     minCount?: number;
     optional?: boolean;
@@ -39,7 +38,6 @@ export interface TargetDefinition {
     sourceZones?: Zone[];
     zone?: Zone;
     controller?: string;
-    maxSelections?: number;
     label?: string;
 }
 

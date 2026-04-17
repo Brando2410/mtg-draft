@@ -256,7 +256,7 @@ export class EffectProcessor {
         }
         case 'MoveCounters': {
             const { PermanentHandler } = require('./handlers/PermanentHandler');
-            return PermanentHandler.handleMoveCounters(state, validTargetIds, sourceId, log, effect);
+            return PermanentHandler.handleMoveCounters(state, validTargetIds, sourceId, log, effect, stackObject);
         }
         case 'Attach': {
             const { PermanentHandler } = require('./handlers/PermanentHandler');
@@ -301,8 +301,7 @@ export class EffectProcessor {
       }
       case 'Choice': {
           const { ChoiceEffectHandler } = require('./handlers/ChoiceEffectHandler');
-          const searchingPlayerId = validTargetIds.find((tid: string) => state.players[tid as PlayerId]) as PlayerId || controllerId;
-          return ChoiceEffectHandler.handleChoice(state, effect, sourceId, validTargetIds, log, searchingPlayerId, stackObject, parentContext, this.findObject);
+          return ChoiceEffectHandler.handleChoice(state, effect, sourceId, validTargetIds, log, controllerId, stackObject, parentContext, this.findObject);
       }
       case 'Necromentia': {
           const { ChoiceEffectHandler } = require('./handlers/ChoiceEffectHandler');

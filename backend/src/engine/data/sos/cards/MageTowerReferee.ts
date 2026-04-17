@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const MageTowerReferee: CardDefinition = {
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+export const MageTowerReferee: CardDefinition = {
     name: "Mage Tower Referee",
     manaCost: "{2}",
     colors: [],
@@ -15,7 +15,7 @@ import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } fro
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
+            eventMatch: TriggerEvent.CastSpell,
             condition: (state, event, ability) => {
                 if (event.playerId !== ability.controllerId) return false;
                 const card = event.data?.card;
@@ -28,7 +28,7 @@ import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } fro
                     type: EffectType.AddCounters,
                     counterType: '+1/+1',
                     amount: 1,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -36,4 +36,4 @@ import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } fro
     power: "2",
     toughness: "1"
 };
-    
+

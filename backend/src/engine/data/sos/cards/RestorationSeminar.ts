@@ -21,7 +21,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
                 count: 1,
                 restrictions: [
                 Restriction.NonLand,
-                { type: 'Type', value: 'Permanent' }
+                "Permanent"
             ]
             },
             effects: [
@@ -31,7 +31,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
                 },
                 {
                     type: EffectType.Paradigm,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }

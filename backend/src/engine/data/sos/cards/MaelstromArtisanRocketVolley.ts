@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
     export const MaelstromArtisanRocketVolley: CardDefinition = {
     name: "Maelstrom Artisan // Rocket Volley",
     manaCost: "{1}{R}{R}",
@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
     keywords: ["Haste", "Prepared"],
     oracleText: "Haste\nThis creature enters prepared.",
     power: "3",
-    toughness: "2",
+    toughness: "2",
+
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/5/c/5c88391d-271f-4021-a5d9-158ebc1e6357.png?1775937805",
     preparedFace: {
@@ -22,11 +23,11 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
             {
                 type: AbilityType.Spell,
                 targetDefinition: {
-                    type: DurationType.Permanent,
+                    type: TargetType.Creature,
                     count: 1,
                     restrictions: [
-                { type: 'Type', value: 'Land' },
-                { type: 'Type', value: 'Nonbasic' }
+                "Land",
+                "nonbasic"
             ]
                 },
                 effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]

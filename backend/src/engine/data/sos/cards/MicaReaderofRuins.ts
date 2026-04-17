@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const MicaReaderofRuins: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+export const MicaReaderofRuins: CardDefinition = {
     name: "Mica, Reader of Ruins",
     manaCost: "{3}{R}",
     colors: [
@@ -18,11 +18,11 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastInstantOrSorcery, //we need to ensure that you casted it
-            condition: "CONTROLLER_HAS_ARTIFACT && TRIGGER_EVENT_SOURCE.controllerId === CONTROLLER_ID",
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: `${ConditionType.ControllerHasArtifact} && ${ConditionType.EventPlayerIsYou}`,
             effects: [
                 {
-                    type: CostType.Choice,
+                    type: EffectType.Choice,
                     label: "Sacrifice an artifact to copy the spell?",
                     choices: [
                         {
@@ -32,8 +32,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
                                     type: CostType.Sacrifice,
                                     targetMapping: TargetMapping.Controller,
                                     restrictions: [
-                { type: 'Type', value: 'Artifact' }
-            ]
+                                        "Artifact"
+                                    ]
                                 },
                                 {
                                     type: EffectType.CopySpellOnStack,
@@ -51,4 +51,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
     power: "4",
     toughness: "4"
 };
-    

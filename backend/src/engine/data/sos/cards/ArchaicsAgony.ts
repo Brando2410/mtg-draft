@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
     export const ArchaicsAgony: CardDefinition = {
     name: "Archaic's Agony",
     manaCost: "{4}{R}",
@@ -14,7 +14,7 @@ import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, T
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Creature' },
+            targetDefinition: { type: TargetType.Creature },
             effects: [
                 {
                     type: EffectType.DealDamage,

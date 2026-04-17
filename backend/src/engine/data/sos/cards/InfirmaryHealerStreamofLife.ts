@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared.",
     power: "2",
-    toughness: "3",
+    toughness: "3",
+
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/9/1/911442e3-3003-4683-a766-e791e9553667.png?1775938036",
     preparedFace: {

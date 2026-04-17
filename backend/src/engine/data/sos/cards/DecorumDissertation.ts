@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const DecorumDissertation: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const DecorumDissertation: CardDefinition = {
     name: "Decorum Dissertation",
     manaCost: "{2}{U}",
     colors: [
@@ -14,7 +14,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Player', count: 1 },
+            targetDefinition: { type: TargetType.Player, count: 1 },
             effects: [
                 { type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Target1 },
                 {
@@ -24,9 +24,11 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: { type: 'Card', count: 1, restrictions: [
-                { type: 'Type', value: 'Land' }
-            ], sourceZones: ['Hand'] },
+                            targetDefinition: {
+                                type: TargetType.CardInHand, count: 1, minCount: 0, restrictions: [
+                                    "Land"
+                                ]
+                            },
                             effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.SelectedCards }]
                         },
                         { label: "No", effects: [] }
@@ -36,4 +38,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
         }
     ]
 };
-    

@@ -20,7 +20,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
         restrictions: [
                 Restriction.NonLand,
                 Restriction.Permanent,
-                { type: 'Type', value: 'mv <= 3' },
+                "mv <= 3",
                 Restriction.YouControl
             ],
         count: 1

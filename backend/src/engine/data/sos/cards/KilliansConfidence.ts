@@ -51,7 +51,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                             label: "Pay {W/B}",
                             effects: [
                                 { type: EffectType.PayMana, value: '{W/B}' } as any,
-                                { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetType.Self }
+                                { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Self }
                             ]
                         },
                         { label: "Decline", effects: [] }

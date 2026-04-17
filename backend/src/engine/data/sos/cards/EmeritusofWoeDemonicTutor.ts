@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared. At the beginning of your end step, if two or more creatures died this turn, this creature becomes prepared.",
     power: "5",
-    toughness: "4",
+    toughness: "4",
+
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/7/e/7eb9e83d-515d-4911-a06b-9982200277b2.png?1776269683",
     abilities: [
@@ -19,7 +20,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }

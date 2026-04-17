@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const GnarledSage: CardDefinition = {
     name: "Gnarled Sage",
@@ -20,17 +20,16 @@ export const GnarledSage: CardDefinition = {
                     toughnessModifier: 2,
                     layer: 7,
                     targetMapping: TargetMapping.Self,
-                    condition: "DRAWN_CARDS_GE:2"
+                    condition: `${ConditionType.DrawnCardsGe}:2`
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
                     abilitiesToAdd: ["Vigilance"],
                     layer: 6,
                     targetMapping: TargetMapping.Self,
-                    condition: "DRAWN_CARDS_GE:2"
+                    condition: `${ConditionType.DrawnCardsGe}:2`
                 }
             ],
         }
     ]
 };
-

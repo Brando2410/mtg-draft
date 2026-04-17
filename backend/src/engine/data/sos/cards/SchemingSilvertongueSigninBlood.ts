@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const SchemingSilvertongueSigninBlood: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+export const SchemingSilvertongueSigninBlood: CardDefinition = {
     name: "Scheming Silvertongue // Sign in Blood",
     manaCost: "{1}{B}",
     colors: ["B"],
@@ -9,16 +9,16 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     oracleText: "Flying, lifelink\nAt the beginning of your second main phase, if you gained 2 or more life this turn, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "1",
     toughness: "3",
-    image_url: "https://cards.scryfall.io/png/front/f/e/fe85a124-0d8b-4a29-8df1-65888a39147f.png?1775937600",
+    image_url: "https://cards.scryfall.io/png/front/f/e/fe85a124-0d8b-4a29-8df1-65888a39147f.png?1775937600",
     abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.PostCombatMainPhaseStart,
-            condition: "LIFE_GAINED_2_OR_MORE_THIS_TURN",
+            condition: ConditionType.LifeGained2OrMoreThisTurn,
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -52,4 +52,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
         ]
     }
 };
-    

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
     export const AncestralAnger: CardDefinition = {
     name: "Ancestral Anger",
     manaCost: "{R}",
@@ -14,7 +14,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Creature' },
+            targetDefinition: { type: TargetType.Creature },
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

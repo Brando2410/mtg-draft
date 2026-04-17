@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
     export const RehearsedDebater: CardDefinition = {
     name: "Rehearsed Debater",
     manaCost: "{2}{W}",
@@ -22,7 +22,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, Trig
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    targetMapping: TargetType.Self,
+                    targetMapping: TargetMapping.Self,
                     duration: { type: DurationType.UntilEndOfTurn },
                     powerModifier: 1,
                     toughnessModifier: 1
@@ -34,3 +34,4 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, Trig
     toughness: "3"
 };
     
+

@@ -138,15 +138,17 @@ app.delete('/api/assets/:type/:filename', async (req, res) => {
   }
 });
 
+import { CardRegistryService } from './services/CardRegistryService';
+
 // --- Implemented Cards Registry ---
 app.get('/api/implemented', (req, res) => {
   try {
-    const cards = Object.values(m21).map(card => ({
-      name: card.name,
-      oracleText: card.oracleText,
-      engineStatus: card.abilities?.length ? 'IMPLEMENTED' : 'DATA_ONLY',
-      manualStatus: card.abilities?.length ? 'VERIFIED' : 'MISSING', // Default for now
-    }));
+    const query = req.query.q as string;
+    if (query) {
+      const results = CardRegistryService.searchCards(query);
+      return res.json(results);
+    }
+    const cards = CardRegistryService.getAllCards();
     res.json(cards);
   } catch (err) {
     res.status(500).json({ error: 'Errore nel recupero delle carte implementate' });

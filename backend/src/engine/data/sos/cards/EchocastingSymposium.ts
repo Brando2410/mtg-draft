@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const EchocastingSymposium: CardDefinition = {
+export const EchocastingSymposium: CardDefinition = {
     name: "Echocasting Symposium",
     manaCost: "{4}{U}{U}",
     colors: [
@@ -18,14 +18,15 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
             type: AbilityType.Spell,
             targetDefinition: [
                 { type: TargetType.Player, count: 1 },
-                { type: DurationType.Permanent, count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Control', value: 'YouControl' }
-            ] }
+                {
+                    type: TargetType.Creature, count: 1, restrictions: [
+                        "youcontrol"
+                    ]
+                }
             ],
             effects: [
-                { 
-                    type: EffectType.CreateTokenCopy, 
+                {
+                    type: EffectType.CreateTokenCopy,
                     targetMapping: TargetMapping.Target1, // Player
                     target2Mapping: 'TARGET_2' // Creature to copy
                 },
@@ -34,4 +35,3 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         }
     ]
 };
-    

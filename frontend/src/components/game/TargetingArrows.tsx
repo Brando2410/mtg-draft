@@ -41,7 +41,9 @@ export const TargetingArrows = memo(({ stack, battlefield, pendingAction, hovere
         const isHovered = hoveredCardId === sobj.id || hoveredCardId === sobj.card?.id;
 
         sobj.targets.forEach((targetId, idx) => {
-          const targetEl = document.getElementById(`game-card-${targetId}`) || document.getElementById(`player-avatar-${targetId}`);
+          const targetEl = document.getElementById(`game-card-${targetId}`) || 
+                          document.getElementById(`player-avatar-${targetId}`) ||
+                          document.getElementById(`stack-obj-${targetId}`);
           if (!targetEl) return;
           
           const targetRect = targetEl.getBoundingClientRect();
@@ -61,13 +63,27 @@ export const TargetingArrows = memo(({ stack, battlefield, pendingAction, hovere
       // 2. Currently selecting targets (Real-time feedback)
       if (pendingAction?.type === 'TARGETING' && pendingAction.data?.selectedTargets) {
           const sourceId = pendingAction.sourceId;
-          const sourceEl = document.getElementById(`stack-obj-${sourceId}`) || 
-                          document.getElementById(`game-card-${sourceId}`);
-                          
+          const isOnBattlefield = battlefield.some(o => o.id === sourceId);
+          const isOnStack = stack.some(s => s.id === sourceId);
+          
+          let sourceEl = null;
+          if (isOnStack) {
+              sourceEl = document.getElementById(`stack-obj-${sourceId}`);
+          } else if (isOnBattlefield) {
+              sourceEl = document.getElementById(`game-card-${sourceId}`);
+          }
+          
+          // If not on stack or battlefield, it's likely in hand or just a player action - start from avatar
+          if (!sourceEl) {
+              sourceEl = document.getElementById(`player-avatar-${pendingAction.playerId}`);
+          }
+                            
           if (sourceEl) {
               const sourceRect = sourceEl.getBoundingClientRect();
               pendingAction.data.selectedTargets.forEach((targetId: string, idx: number) => {
-                  const targetEl = document.getElementById(`game-card-${targetId}`) || document.getElementById(`player-avatar-${targetId}`);
+                  const targetEl = document.getElementById(`game-card-${targetId}`) || 
+                                  document.getElementById(`player-avatar-${targetId}`) ||
+                                  document.getElementById(`stack-obj-${targetId}`);
                   if (!targetEl) return;
                   const targetRect = targetEl.getBoundingClientRect();
                   

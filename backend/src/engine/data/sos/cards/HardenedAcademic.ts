@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const HardenedAcademic: CardDefinition = {
+export const HardenedAcademic: CardDefinition = {
     name: "Hardened Academic",
     manaCost: "{R}{W}",
     colors: [
@@ -13,6 +13,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         "Bird",
         "Cleric"
     ],
+    power: "2",
+    toughness: "1",
     keywords: ["Flying", "Haste"],
     oracleText: "Flying, haste\nDiscard a card: This creature gains lifelink until end of turn.\nWhenever one or more cards leave your graveyard, put a +1/+1 counter on target creature you control.",
     abilities: [
@@ -23,21 +25,20 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                 {
                     type: EffectType.ApplyContinuousEffect,
                     abilitiesToAdd: ["Lifelink"],
-                    duration: 'UntilEndOfTurn',
-                    targetMapping: TargetType.Self
+                    duration: { type: DurationType.UntilEndOfTurn },
+                    targetMapping: TargetMapping.Self
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.LeaveGraveyard,
+            eventMatch: TriggerEvent.LeaveGraveyard,
             targetDefinition: {
-                type: DurationType.Permanent,
+                type: TargetType.Creature,
                 count: 1,
                 restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Control', value: 'YouControl' }
-            ]
+                    "youcontrol"
+                ]
             },
             effects: [
                 {
@@ -48,8 +49,5 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                 }
             ]
         }
-    ],
-    power: "2",
-    toughness: "1"
+    ]
 };
-    

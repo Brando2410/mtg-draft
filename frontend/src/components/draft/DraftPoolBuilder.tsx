@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Loader2, X, Database, Save, Download, Home, FileText, RefreshCw, ChevronUp, BarChart2 } from 'lucide-react';
 import { fetchSearchCards, fetchExactCard, fetchCardsBatch } from '../../services/scryfall';
 import type { SimplifiedCard, ScryfallCard } from '../../services/scryfall';
+import { fetchRegistryCards, mapRegistryToSimplified } from '../../services/registry';
 import { StatsModal } from '../shared/StatsModal';
 import { CardGridItem } from '../shared/CardGridItem';
 
@@ -25,7 +26,7 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
 
   // --- STATO PER AGGIUNTA CARTE (API Scryfall) ---
   const [addQuery, setAddQuery] = useState('');
-  const [apiSuggestions, setApiSuggestions] = useState<ScryfallCard[]>([]);
+  const [apiSuggestions, setApiSuggestions] = useState<SimplifiedCard[]>([]);
   const [isApiLoading, setIsApiLoading] = useState(false);
   const [zoomCard, setZoomCard] = useState<SimplifiedCard | null>(null);
   const [isZoomFlipped, setIsZoomFlipped] = useState(false);
@@ -97,8 +98,11 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
     const timeoutId = setTimeout(async () => {
       if (addQuery.length >= 2) {
         setIsApiLoading(true);
-        const results = await fetchSearchCards(addQuery, 'en');
-        setApiSuggestions(results);
+        const results = await fetchRegistryCards(addQuery);
+        setApiSuggestions(results
+          .filter(c => c.engineStatus === 'IMPLEMENTED' && c.image_url)
+          .map(mapRegistryToSimplified)
+        );
         setIsApiLoading(false);
       } else { setApiSuggestions([]); }
     }, 450);
@@ -106,9 +110,20 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
   }, [addQuery]);
 
   const handleAddCard = async (card: any) => {
+    // If it's already a SimplifiedCard (from suggestions), just add it
+    if (card.scryfall_id) {
+       setDraftPool(prev => [card, ...prev]);
+       return;
+    }
+
     setIsApiLoading(true);
-    const result = await fetchExactCard(card.name);
-    if (result) setDraftPool(prev => [result, ...prev]);
+    const results = await fetchRegistryCards(card.name);
+    const match = results.find(c => c.name.toLowerCase() === card.name.toLowerCase());
+    if (match && match.engineStatus === 'IMPLEMENTED') {
+       setDraftPool(prev => [mapRegistryToSimplified(match), ...prev]);
+    } else if (match) {
+       alert(`${card.name} non è ancora implementata.`);
+    }
     setIsApiLoading(false);
   };
 
@@ -197,7 +212,7 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
            <div className="flex items-center gap-4 w-full lg:max-w-2xl">
               <div className="relative flex-1 group">
                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500" />
-                 <input value={addQuery} onChange={e => setAddQuery(e.target.value)} placeholder="Scryfall Search..." className="w-full bg-slate-900 border border-white/5 pl-14 pr-6 py-5 rounded-[2rem] outline-none focus:border-indigo-500/50 transition-all font-bold text-lg" />
+                 <input value={addQuery} onChange={e => setAddQuery(e.target.value)} placeholder="Cerca tra le carte implementate..." className="w-full bg-slate-900 border border-white/5 pl-14 pr-6 py-5 rounded-[2rem] outline-none focus:border-indigo-500/50 transition-all font-bold text-lg" />
                  {isApiLoading && <Loader2 className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500 animate-spin" />}
               </div>
               <button onClick={() => setIsImportModalOpen(true)} className="p-5 bg-slate-900/50 text-indigo-400 rounded-[2rem] border border-white/5 active:scale-95 transition-all"><FileText className="w-6 h-6" /></button>
@@ -243,7 +258,7 @@ export const DraftPoolBuilder = ({ onBack, skipRestore = false }: DraftPoolBuild
                  {apiSuggestions.length > 0 && (
                    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 p-8 bg-slate-900/80 rounded-[3rem] border border-indigo-500/20">
                       {apiSuggestions.map(card => (
-                        <button key={card.id} onClick={() => handleAddCard(card)} className="relative aspect-[2.5/3.5] rounded-xl overflow-hidden hover:scale-105 active:scale-95 transition-all shadow-xl"><img src={card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal} className="w-full h-full object-cover" /></button>
+                        <button key={card.scryfall_id} onClick={() => handleAddCard(card)} className="relative aspect-[2.5/3.5] rounded-xl overflow-hidden hover:scale-105 active:scale-95 transition-all shadow-xl"><img src={card.image_url} className="w-full h-full object-cover" /></button>
                       ))}
                    </motion.div>
                  )}

@@ -36,7 +36,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                     powerModifier: 2,
                     toughnessModifier: 2,
                     duration: { type: DurationType.UntilEndOfTurn },
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }

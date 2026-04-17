@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
     export const ArcaneOmens: CardDefinition = {
     name: "Arcane Omens",
     manaCost: "{4}{B}",
@@ -14,7 +14,7 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping }
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Player' },
+            targetDefinition: { type: TargetType.Player },
             effects: [
                 {
                     type: EffectType.DiscardCards,

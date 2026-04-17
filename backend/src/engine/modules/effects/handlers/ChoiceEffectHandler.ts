@@ -59,101 +59,105 @@ export class ChoiceEffectHandler {
 
         // --- HAND-PICKING OR GRAVEYARD-PICKING ---
         const targetZoneMapping = (effect as any).targetIdMapping;
-        if (['TARGET_1_HAND', 'TARGET_1_HAND_REVEAL_PICK', 'TARGET_1_GRAVEYARD', 'TARGET_1_BATTLEFIELD', 'ALL_BATTLEFIELD', 'CONTROLLER_HAND', 'CONTROLLER_GRAVEYARD', 'CONTROLLER_BATTLEFIELD', 'CONTROLLER_SIDEBOARD', 'NAME_A_CARD', 'OPPONENT_HAND_REVEAL_PICK'].includes(targetZoneMapping)) {
-            let targetPlayerId: string | undefined;
-            let mappingPlayerId: string | undefined; // Player who chooses
+        const mappingPlayerId = controllerId;
 
+        const isStandardMapping = ['TARGET_1_HAND', 'TARGET_1_HAND_REVEAL_PICK', 'TARGET_1_GRAVEYARD', 'TARGET_1_BATTLEFIELD', 'ALL_BATTLEFIELD', 'CONTROLLER_HAND', 'CONTROLLER_GRAVEYARD', 'CONTROLLER_BATTLEFIELD', 'CONTROLLER_SIDEBOARD', 'NAME_A_CARD', 'OPPONENT_HAND_REVEAL_PICK', 'LAST_MILLED_IDS', 'LAST_EXILED_IDS', 'PARENT_CONTEXT_EXILED_IDS'].includes(targetZoneMapping);
+
+        if (isStandardMapping) {
+            let workingMappingPlayerId = mappingPlayerId;
             if (targetZoneMapping.startsWith('TARGET_1_')) {
-                mappingPlayerId = targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK' ? controllerId : targets[0];
-            } else if (targetZoneMapping === 'OPPONENT_HAND_REVEAL_PICK') {
-                mappingPlayerId = controllerId;
-            } else {
-                mappingPlayerId = controllerId;
+                workingMappingPlayerId = targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK' ? controllerId : (targets[0] || controllerId);
             }
 
-            const targetPlayer = state.players[mappingPlayerId as PlayerId];
-            if (targetPlayer || targetZoneMapping.endsWith('_BATTLEFIELD') || targetZoneMapping === 'ALL_BATTLEFIELD') {
-                const isGraveyard = targetZoneMapping.endsWith('_GRAVEYARD');
-                const isSideboard = targetZoneMapping.endsWith('_SIDEBOARD');
-                const isBattlefield = targetZoneMapping.endsWith('_BATTLEFIELD') || targetZoneMapping === 'ALL_BATTLEFIELD';
-                const isNameACard = targetZoneMapping === 'NAME_A_CARD';
+            const targetPlayer = state.players[workingMappingPlayerId as PlayerId];
+            const isGraveyard = targetZoneMapping.endsWith('_GRAVEYARD');
+            const isSideboard = targetZoneMapping.endsWith('_SIDEBOARD');
+            const isBattlefield = targetZoneMapping.endsWith('_BATTLEFIELD') || targetZoneMapping === 'ALL_BATTLEFIELD';
+            const isNameACard = targetZoneMapping === 'NAME_A_CARD';
+            const isLastMilled = targetZoneMapping === 'LAST_MILLED_IDS';
+            const isLastExiled = targetZoneMapping === 'LAST_EXILED_IDS' || targetZoneMapping === 'PARENT_CONTEXT_EXILED_IDS';
 
-                let sourceCards: GameObject[] = [];
-                if (isNameACard) {
-                    // Use controller's library as a pool of names
-                    sourceCards = state.players[controllerId].library;
-                } else if (isBattlefield) {
-                    sourceCards = targetZoneMapping === 'ALL_BATTLEFIELD' ? state.battlefield : state.battlefield.filter(o => o.controllerId === mappingPlayerId);
-                } else if (targetPlayer || targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK' || targetZoneMapping === 'OPPONENT_HAND_REVEAL_PICK') {
-                    if (targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK' || targetZoneMapping === 'OPPONENT_HAND_REVEAL_PICK') {
-                        const targetOppId = targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK'
-                            ? targets[0] as PlayerId
-                            : Object.keys(state.players).find(pid => pid !== controllerId) as PlayerId;
-                        const targetOpp = state.players[targetOppId];
-                        if (targetOpp) {
-                            sourceCards = targetOpp.hand;
-                            targetOpp.hand.forEach((c: any) => (c as any).isRevealed = true);
-                        }
-                    } else {
-                        sourceCards = isGraveyard ? targetPlayer.graveyard : (isSideboard ? (targetPlayer.sideboard || []) : targetPlayer.hand);
+            let sourceCards: GameObject[] = [];
+            const { TargetingProcessor } = require('../../actions/TargetingProcessor');
+
+            if (isNameACard) {
+                sourceCards = state.players[controllerId].library;
+            } else if (isBattlefield) {
+                sourceCards = targetZoneMapping === 'ALL_BATTLEFIELD' ? state.battlefield : state.battlefield.filter(o => o.controllerId === workingMappingPlayerId);
+            } else if (isLastMilled || isLastExiled) {
+                const poolIds = TargetingProcessor.resolveTargetMapping(state, targetZoneMapping, targets, sourceId, controllerId, stackObject?.data, effect, parentContext);
+                sourceCards = poolIds.map((id: string) => TargetingProcessor.findObjectInAnyZone(state, id)).filter(Boolean);
+            } else if (targetPlayer || targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK' || targetZoneMapping === 'OPPONENT_HAND_REVEAL_PICK') {
+                if (targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK' || targetZoneMapping === 'OPPONENT_HAND_REVEAL_PICK') {
+                    const targetOppId = targetZoneMapping === 'TARGET_1_HAND_REVEAL_PICK'
+                        ? targets[0] as PlayerId
+                        : Object.keys(state.players).find(pid => pid !== controllerId) as PlayerId;
+                    const targetOpp = state.players[targetOppId];
+                    if (targetOpp) {
+                        sourceCards = targetOpp.hand;
+                        targetOpp.hand.forEach((c: any) => (c as any).isRevealed = true);
                     }
+                } else {
+                    sourceCards = isGraveyard ? targetPlayer.graveyard : (isSideboard ? (targetPlayer.sideboard || []) : targetPlayer.hand);
                 }
+            }
 
-                if (isNameACard) {
-                    state.pendingAction = ChoiceGenerator.createCardChoice(state, sourceCards, {
-                        label: "Name a non-land card",
-                        playerId: mappingPlayerId as PlayerId,
-                        sourceId: sourceId,
-                        restrictions: effect.restrictions || ['Nonland'],
-                        filterSelectable: true,
-                        optional: false,
-                        actionType: ActionType.ResolutionChoice,
-                        onSelected: (c: any) => {
-                            if (stackObject) {
-                                if (!stackObject.data) stackObject.data = {};
-                                stackObject.data.chosenName = c.definition.name;
-                            }
-                            return (effect.effects || []);
-                        },
-                        hideUndo: true,
-                        stackObj: stackObject,
-                        parentContext: parentContext
-                    });
-                    return;
-                }
-
-                if (targetZoneMapping === 'TARGET_1_HAND') {
-                    targetPlayer!.hand.forEach((c: any) => (c as any).isRevealed = true);
-                }
-
-                const { TargetingProcessor } = require('../../actions/TargetingProcessor');
-                const validCandidates = sourceCards.filter(c =>
-                    TargetingProcessor.matchesRestrictions(state, c, effect.restrictions || [], mappingPlayerId as PlayerId, sourceId, undefined, stackObject)
-                );
-
-                if (validCandidates.length === 0) {
-                    log(`[INFO] ChoiceEffectHandler: No valid targets in zone for "${effect.label || 'Choice'}". Auto-skipping.`);
-                    return;
-                }
-
+            if (isNameACard) {
                 state.pendingAction = ChoiceGenerator.createCardChoice(state, sourceCards, {
-                    label: effect.label || (isGraveyard ? 'Choose a card from Graveyard' : (isSideboard ? 'Choose a Lesson from Sideboard' : (isBattlefield ? 'Choose a permanent to return' : 'Choose a card from Hand'))),
-                    playerId: mappingPlayerId as PlayerId, // The player who makes the choice
+                    label: "Name a non-land card",
+                    playerId: workingMappingPlayerId as PlayerId,
                     sourceId: sourceId,
-                    restrictions: effect.restrictions,
+                    restrictions: effect.restrictions || ['Nonland'],
                     filterSelectable: true,
-                    minChoices: effect.minChoices,
-                    maxChoices: effect.maxChoices,
-                    optional: effect.optional !== false,
-                    actionType: effect.optional ? ActionType.OptionalAction : ActionType.ResolutionChoice,
-                    onSelected: (c) => (effect.effects || []).map((sub: any) => ({ ...sub, targetId: c.id })),
+                    optional: false,
+                    actionType: ActionType.ResolutionChoice,
+                    onSelected: (c: any) => {
+                        if (stackObject) {
+                            if (!stackObject.data) stackObject.data = {};
+                            stackObject.data.chosenName = c.definition.name;
+                        }
+                        return (effect.effects || []);
+                    },
                     hideUndo: true,
                     stackObj: stackObject,
-                    parentContext: parentContext,
-                    targets: targets
+                    parentContext: parentContext
                 });
                 return;
             }
+
+            if (targetZoneMapping === 'TARGET_1_HAND') {
+                targetPlayer!.hand.forEach((c: any) => (c as any).isRevealed = true);
+            }
+
+            const targetDef = effect.targetDefinition;
+            const restrictions = effect.restrictions || (targetDef ? [...(targetDef.restrictions || []), ...(targetDef.type ? [targetDef.type] : [])] : []);
+
+            const validCandidates = sourceCards.filter(c =>
+                TargetingProcessor.matchesRestrictions(state, c, restrictions, workingMappingPlayerId as PlayerId, sourceId, undefined, stackObject)
+            );
+
+            if (validCandidates.length === 0) {
+                log(`[INFO] ChoiceEffectHandler: No valid targets in zone for "${effect.label || 'Choice'}". Auto-skipping.`);
+                return;
+            }
+
+            state.pendingAction = ChoiceGenerator.createCardChoice(state, sourceCards, {
+                label: effect.label || (isGraveyard ? 'Choose a card from Graveyard' : (isSideboard ? 'Choose a Lesson from Sideboard' : (isBattlefield ? 'Choose a permanent to return' : (isLastMilled ? 'Choose a milled card' : 'Choose a card from Hand')))),
+                playerId: workingMappingPlayerId as PlayerId,
+                sourceId: sourceId,
+                restrictions: restrictions,
+                filterSelectable: true,
+                minChoices: effect.minChoices || targetDef?.minCount || (targetDef?.optional ? 0 : (targetDef?.count || 1)),
+                maxChoices: effect.maxChoices || targetDef?.count || 1,
+                optional: effect.optional !== false,
+                actionType: effect.optional ? ActionType.OptionalAction : ActionType.ResolutionChoice,
+                onSelected: (c) => (effect.effects || []).map((sub: any) => ({ ...sub, targetId: c.id })),
+                hideUndo: true,
+                stackObj: stackObject,
+                parentContext: parentContext,
+                targets: targets
+            });
+            return;
         }
 
         // --- GENERIC MODAL CHOICES OR AUTO-SEQUENCE ---

@@ -16,7 +16,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } 
     keywords: [],
     oracleText: "At the beginning of your first main phase, add {U}{R}. Spend this mana only to cast instant and sorcery spells.",
     power: "2",
-    toughness: "2",
+    toughness: "2",
+
     abilities: [
         {
             type: AbilityType.Triggered,

@@ -33,7 +33,7 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
             type: AbilityType.Activated,
             costs: [
                 { type: CostType.Mana, value: '{X}' },
-                { type: CostType.Tap, targetMapping: TargetType.Self }
+                { type: CostType.Tap, targetMapping: TargetMapping.Self }
             ],
             effects: [
                 {

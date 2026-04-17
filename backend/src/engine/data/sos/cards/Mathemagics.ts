@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
     export const Mathemagics: CardDefinition = {
     name: "Mathemagics",
     manaCost: "{X}{X}{U}{U}",
@@ -14,7 +14,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Player' },
+            targetDefinition: { type: TargetType.Player },
             effects: [
                 {
                     type: EffectType.DrawCards,

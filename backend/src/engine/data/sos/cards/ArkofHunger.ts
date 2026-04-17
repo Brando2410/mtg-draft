@@ -31,7 +31,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Tap, targetMapping: TargetType.Self }],
+            costs: [{ type: CostType.Tap, targetMapping: TargetMapping.Self }],
             effects: [
                 { type: EffectType.Mill, amount: 1 },
                 { type: EffectType.AllowPlayMilledCard, duration: { type: DurationType.UntilEndOfTurn } }

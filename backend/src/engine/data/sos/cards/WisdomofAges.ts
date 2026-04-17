@@ -18,10 +18,13 @@ export const WisdomofAges: CardDefinition = {
                 {
                     type: EffectType.MoveToZone,
                     zone: Zone.Hand,
-                    sourceZones: ['Graveyard'],
-                    restrictions: [
-                { type: 'Type', value: 'InstantOrSorcery' }
-            ],
+                    targetDefinition: {
+                        type: TargetType.CardInGraveyard,
+                        restrictions: [
+                            "InstantOrSorcery"
+                        ],
+                        count: 999
+                    },
                     targetMapping: TargetMapping.TargetAll
                 },
                 {
@@ -32,7 +35,7 @@ export const WisdomofAges: CardDefinition = {
                 },
                 {
                     type: CostType.Exile,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }

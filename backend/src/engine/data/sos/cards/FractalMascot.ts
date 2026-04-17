@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const FractalMascot: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+export const FractalMascot: CardDefinition = {
     name: "Fractal Mascot",
     manaCost: "{4}{G}{U}",
     colors: [
@@ -14,18 +14,19 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         "Elk"
     ],
     keywords: ["Trample"],
+    power: "6",
+    toughness: "6",
     oracleText: "Trample\nWhen this creature enters, tap target creature an opponent controls. Put a stun counter on it. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
-                type: DurationType.Permanent,
+                type: TargetType.Creature,
                 count: 1,
                 restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Control', value: 'OpponentControls' }
-            ]
+                    "opponentcontrol"
+                ]
             },
             effects: [
                 {
@@ -40,8 +41,5 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                 }
             ]
         }
-    ],
-    power: "6",
-    toughness: "6"
+    ]
 };
-    

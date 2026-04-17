@@ -47,7 +47,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, Selecti
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
-                restrictions: [Restriction.Creature, { type: 'ManaValueLe', value: 3 }]
+                restrictions: [Restriction.Creature, "mv <= 3"]
             },
             effects: [
                 {

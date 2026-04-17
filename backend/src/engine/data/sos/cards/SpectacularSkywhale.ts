@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
 export const SpectacularSkywhale: CardDefinition = {
     name: "Spectacular Skywhale",
     manaCost: "{2}{U}{R}",
@@ -26,7 +26,7 @@ export const SpectacularSkywhale: CardDefinition = {
                     amount: 3,
                     counterType: '+1/+1',
                     condition: 'SPENT_MANA_GE:5',
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -34,7 +34,7 @@ export const SpectacularSkywhale: CardDefinition = {
                     duration: { type: DurationType.UntilEndOfTurn },
                     powerModifier: 3,
                     toughnessModifier: 0,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -42,3 +42,4 @@ export const SpectacularSkywhale: CardDefinition = {
     power: "1",
     toughness: "4"
 };
+

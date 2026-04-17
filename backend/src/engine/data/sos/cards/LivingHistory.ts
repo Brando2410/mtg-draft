@@ -40,7 +40,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [
-                { type: 'State', value: 'Attacking' }
+                "attacking"
             ]
             },
             effects: [

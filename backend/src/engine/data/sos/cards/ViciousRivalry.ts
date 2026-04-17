@@ -1,5 +1,6 @@
-import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType } from '@shared/engine_types';
-    export const ViciousRivalry: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
+
+export const ViciousRivalry: CardDefinition = {
     name: "Vicious Rivalry",
     manaCost: "{2}{B}{G}",
     colors: [
@@ -23,14 +24,12 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType } from
                     type: EffectType.Destroy,
                     selectionType: 'All' as any,
                     restrictions: [
-                { type: 'ManaValueLessOrEqual',
-                amount: DynamicAmount.X },
-                { type: 'Type', value: 'ArtifactOrCreature' }
-            ],
-                    targetMapping: 'MATCHING_PERMANENTS'
+                        "mv <= X",
+                        "ArtifactOrCreature"
+                    ],
+                    targetMapping: 'MATCHING_PERMANENTS' as any
                 }
             ]
         }
     ]
 };
-    

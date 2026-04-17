@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
-    export const BurrogBarrage: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const BurrogBarrage: CardDefinition = {
     name: "Burrog Barrage",
     manaCost: "{1}{G}",
     colors: [
@@ -14,10 +14,11 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, Dyn
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Control', value: 'YouControl' }
-            ] },
+            targetDefinition: {
+                type: TargetType.Creature, count: 1, restrictions: [
+                    "youcontrol"
+                ]
+            },
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -33,10 +34,11 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, Dyn
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Control', value: 'OpponentControl' }
-            ] },
+                            targetDefinition: {
+                                type: TargetType.Creature, count: 1, restrictions: [
+                                    "opponentcontrol"
+                                ]
+                            },
                             effects: [
                                 {
                                     type: EffectType.DealDamage,
@@ -53,4 +55,3 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, Dyn
         }
     ]
 };
-    

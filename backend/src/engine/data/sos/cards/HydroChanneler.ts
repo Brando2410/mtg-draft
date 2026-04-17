@@ -15,7 +15,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
     keywords: [],
     oracleText: "{T}: Add {U}. Spend this mana only to cast an instant or sorcery spell.\n{1}, {T}: Add one mana of any color. Spend this mana only to cast an instant or sorcery spell.",
     power: "1",
-    toughness: "3",
+    toughness: "3",
+
     abilities: [
         {
             type: AbilityType.Activated,

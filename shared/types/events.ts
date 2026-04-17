@@ -49,7 +49,8 @@ export const TriggerEvent = {
     ValentinReplacementSuccess: 'ON_VALENTIN_REPLACEMENT_SUCCESS',
     ActivateLoyalty: 'ON_ACTIVATE_LOYALTY',
     TriggerQueued: 'ON_TRIGGER_QUEUED',
-    DamageDealt: 'ON_DAMAGE_DEALT'
+    DamageDealt: 'ON_DAMAGE_DEALT',
+    Landfall: 'ON_LANDFALL'
 } as const;
 export type TriggerEvent = (typeof TriggerEvent)[keyof typeof TriggerEvent];
 

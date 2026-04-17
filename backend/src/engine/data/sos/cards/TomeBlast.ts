@@ -11,7 +11,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
     subtypes: [],
     keywords: ["Flashback"],
     oracleText: "Tome Blast deals 2 damage to any target.\nFlashback {4}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
-    flashbackCost: "{4}{R}",
+    flashbackCost: "{4}{R}",
+
     abilities: [
         {
             type: AbilityType.Spell,

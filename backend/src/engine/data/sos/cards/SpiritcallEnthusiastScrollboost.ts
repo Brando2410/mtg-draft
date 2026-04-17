@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     keywords: [],
     oracleText: "Whenever one or more tokens you control enter, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "3",
-    toughness: "3",
+    toughness: "3",
+
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -17,7 +18,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }

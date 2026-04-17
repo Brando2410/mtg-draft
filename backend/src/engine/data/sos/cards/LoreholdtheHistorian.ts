@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const LoreholdtheHistorian: CardDefinition = {
+export const LoreholdtheHistorian: CardDefinition = {
     name: "Lorehold, the Historian",
     manaCost: "{3}{R}{W}",
     colors: [
@@ -26,16 +26,16 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
                     targetMapping: TargetMapping.MatchingCards,
                     activeZones: ['Hand'],
                     restrictions: [
-                { type: 'Type', value: 'Instant or Sorcery' },
-                Restriction.YouControl
-            ],
+                        "InstantOrSorcery",
+                        Restriction.YouControl
+                    ],
                     keywordsToAdd: ['Miracle {2}']
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Upkeep,
+            eventMatch: TriggerEvent.Upkeep,
             condition: 'IS_OPPONENT_UPKEEP',
             effects: [
                 {
@@ -66,4 +66,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
     power: "5",
     toughness: "5"
 };
-    

@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const Daydream: CardDefinition = {
+export const Daydream: CardDefinition = {
     name: "Daydream",
     manaCost: "{W}",
     colors: [
@@ -16,9 +16,11 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
         {
             type: AbilityType.Spell,
             flashbackCost: "{2}{W}",
-            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
-                { type: 'Control', value: 'YouControl' }
-            ] },
+            targetDefinition: {
+                type: TargetType.Creature, count: 1, restrictions: [
+                    "youcontrol"
+                ]
+            },
             effects: [
                 {
                     type: CostType.Exile,
@@ -26,11 +28,10 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                     next: {
                         type: EffectType.PutOnBattlefield,
                         targetMapping: TargetMapping.Target1,
-                        startingCounters: { counterType: 'P1P1', amount: 1 }
+                        startingCounters: { counterType: 'p1p1', amount: 1 }
                     }
                 }
             ]
         }
     ]
 };
-    

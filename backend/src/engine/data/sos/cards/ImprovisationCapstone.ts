@@ -24,7 +24,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
                 },
                 {
                     type: EffectType.Paradigm,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }

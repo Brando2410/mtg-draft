@@ -45,6 +45,7 @@ export const ConditionType = {
     ObjectIsSelf: 'OBJECT_IS_SELF',
     CreatureDiedThisTurn: 'CREATURE_DIED_THIS_TURN',
     GainedLifeThisTurn: 'GAINED_LIFE_THIS_TURN',
+    HandCountGe: 'HAND_COUNT_GE',
     Infusion: 'INFUSION',
     TargetIsOpponent: 'TARGET_IS_OPPONENT',
     OwnCreatureEnters: 'OWN_CREATURE_ENTERS',
@@ -61,7 +62,22 @@ export const ConditionType = {
     CardsLeftYourGraveyardThisTurn: 'CARDS_LEFT_YOUR_GRAVEYARD_THIS_TURN',
     OpponentHasMoreCards: 'OPPONENT_HAS_MORE_CARDS',
     CastInstantSorceryThisTurn: 'CAST_INSTANT_SORCERY_THIS_TURN',
-    OwnCreatureDies: 'OWN_CREATURE_DIES'
+    OwnCreatureDies: 'OWN_CREATURE_DIES',
+    ReparteeTrigger: 'REPARTEE_TRIGGER',
+    SelfAttacks: 'SELF_ATTACKS',
+    SpellTargetsSource: 'SPELL_TARGETS_SOURCE',
+    LifeGained2OrMoreThisTurn: 'LIFE_GAINED_2_OR_MORE_THIS_TURN',
+    LifeGained3OrMoreThisTurn: 'LIFE_GAINED_3_OR_MORE_THIS_TURN',
+    ControllerHasArtifact: 'CONTROLLER_HAS_ARTIFACT',
+    EventPlayerIsYou: 'EVENT_PLAYER_IS_YOU',
+    HasPermanent: 'HAS_PERMANENT',
+    NotHasPermanent: 'NOT_HAS_PERMANENT',
+    SpellTargetsCreature: 'SPELL_TARGETS_CREATURE',
+    SpellIsCreature: 'SPELL_IS_CREATURE',
+    SelfDied: 'SELF_DIED',
+    EventSourceIsSelf: 'EVENT_SOURCE_IS_SELF',
+    NotCastFromHand: 'NOT_CAST_FROM_HAND',
+    EventObjectIsTriggerSource: 'EVENT_OBJECT_IS_TRIGGER_SOURCE'
 } as const;
 export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType] | string;
 

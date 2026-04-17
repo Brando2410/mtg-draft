@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const ChelonianTackle: CardDefinition = {
+export const ChelonianTackle: CardDefinition = {
     name: "Chelonian Tackle",
     manaCost: "{2}{G}",
     colors: [
@@ -14,9 +14,11 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
-                { type: 'Control', value: 'YouControl' }
-            ] },
+            targetDefinition: {
+                type: TargetType.Creature, count: 1, restrictions: [
+                    "youcontrol"
+                ]
+            },
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -31,9 +33,11 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
-                { type: 'Control', value: 'OpponentControl' }
-            ] },
+                            targetDefinition: {
+                                type: TargetType.Creature, count: 1, restrictions: [
+                                    "opponentcontrol"
+                                ]
+                            },
                             effects: [
                                 {
                                     type: EffectType.Fight,
@@ -49,4 +53,3 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         }
     ]
 };
-    

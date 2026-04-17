@@ -17,7 +17,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
             targetDefinition: {
                 type: TargetType.Creature,
                 restrictions: [
-                { type: 'Control', value: 'YouControl' }
+                "youcontrol"
             ],
                 count: 'AnyNumber' //missing why to express any number
             },

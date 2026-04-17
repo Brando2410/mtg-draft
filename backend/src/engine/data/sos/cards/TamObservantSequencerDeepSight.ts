@@ -6,7 +6,7 @@ export const TamObservantSequencerDeepSight: CardDefinition = {
     types: ["Creature"],
     subtypes: ["Gorgon", "Wizard"],
     keywords: [],
-    oracleText: "Landfall â€” Whenever a land you control enters, Tam becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    oracleText: "Landfall — Whenever a land you control enters, Tam becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     supertypes: ["Legendary"],
 
     power: "4",
@@ -17,15 +17,11 @@ export const TamObservantSequencerDeepSight: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.EnterBattlefieldOther,
-            restrictions: [
-                { type: 'Type', value: 'Land' }
-            ],
-            condition: ConditionType.PlayerIsController,
+            eventMatch: TriggerEvent.Landfall,
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }

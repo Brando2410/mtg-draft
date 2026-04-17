@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const OwlinHistorian: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+export const OwlinHistorian: CardDefinition = {
     name: "Owlin Historian",
     manaCost: "{2}{W}",
     colors: [
@@ -13,11 +13,13 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
         "Cleric"
     ],
     keywords: ["Flying"],
+    power: "2",
+    toughness: "3",
     oracleText: "Flying\nWhen this creature enters, surveil 1. (Look at the top card of your library. You may put it into your graveyard.)\nWhenever one or more cards leave your graveyard, this creature gets +1/+1 until end of turn.",
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.Surveil,
@@ -28,20 +30,17 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.LeaveGraveyard,
+            eventMatch: TriggerEvent.LeaveGraveyard,
             condition: ConditionType.PlayerIsController,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 1,
                     toughnessModifier: 1,
-                    duration: 'UntilEndOfTurn',
-                    targetMapping: TargetType.Self
+                    duration: { type: DurationType.UntilEndOfTurn },
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
-    ],
-    power: "2",
-    toughness: "3"
+    ]
 };
-    

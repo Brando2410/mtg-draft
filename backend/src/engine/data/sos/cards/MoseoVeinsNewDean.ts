@@ -45,7 +45,7 @@ export const MoseoVeinsNewDean: CardDefinition = {
                 minCount: 0,
                 optional: true,
                 restrictions: [
-                    { type: 'Type', value: 'Creature' },
+                    "Creature",
                     {
                         type: 'ManaValueLe',
                         value: 'GAINED_LIFE_AMOUNT'

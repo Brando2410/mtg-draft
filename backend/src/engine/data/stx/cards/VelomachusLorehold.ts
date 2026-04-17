@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const VelomachusLorehold: CardDefinition = {
     name: "Velomachus Lorehold",
@@ -15,7 +15,7 @@ export const VelomachusLorehold: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Attack,
-            condition: "SelfAttacks",
+            condition: ConditionType.SelfAttacks,
             effects: [{
                 type: EffectType.SearchLibrary,
                 fromTop: 7,
@@ -33,6 +33,3 @@ export const VelomachusLorehold: CardDefinition = {
         }
     ]
 };
-
-
-

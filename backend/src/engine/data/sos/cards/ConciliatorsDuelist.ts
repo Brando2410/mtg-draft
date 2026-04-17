@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const ConciliatorsDuelist: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+export const ConciliatorsDuelist: CardDefinition = {
     name: "Conciliator's Duelist",
     manaCost: "{W}{W}{B}{B}",
     colors: [
@@ -18,7 +18,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller },
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.EachPlayer }
@@ -26,7 +26,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastInstantOrSorcery,
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
             condition: 'REPARTEE_TRIGGER',
             effects: [
                 {
@@ -35,16 +35,14 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ] },
+                            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0 },
                             effects: [
                                 {
                                     type: CostType.Exile,
                                     targetMapping: TargetMapping.Target1,
                                     next: {
                                         type: EffectType.AddTriggeredAbility,
-                    eventMatch: TriggerEvent.EndStep,
+                                        eventMatch: TriggerEvent.EndStep,
                                         duration: { type: DurationType.UntilEndOfTurn },
                                         effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 }]
                                     }
@@ -60,4 +58,3 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     power: "4",
     toughness: "3"
 };
-    

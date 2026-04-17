@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const ScoldingAdministrator: CardDefinition = {
+export const ScoldingAdministrator: CardDefinition = {
     name: "Scolding Administrator",
     manaCost: "{W}{B}",
     colors: [
@@ -16,27 +16,27 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
     keywords: ["Menace"],
     oracleText: "Menace (This creature can't be blocked except by two or more creatures.)\nRepartee — Whenever you cast an instant or sorcery spell that targets a creature, put a +1/+1 counter on this creature.\nWhen this creature dies, if it had counters on it, put those counters on up to one target creature.",
     power: "2",
-    toughness: "2",
+    toughness: "2",
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: "REPARTEE_TRIGGER",
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: ConditionType.ReparteeTrigger,
             effects: [
                 {
                     type: EffectType.AddCounters,
                     amount: 1,
                     counterType: '+1/+1',
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Death,
+            eventMatch: TriggerEvent.Death,
             condition: ConditionType.HasCounters,
             targetDefinition: {
-                type: "Creature",
+                type: TargetType.Creature,
                 count: 1,
                 optional: true
             },
@@ -49,4 +49,3 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
         }
     ]
 };
-    

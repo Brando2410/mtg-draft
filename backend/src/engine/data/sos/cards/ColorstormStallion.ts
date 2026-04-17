@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
     export const ColorstormStallion: CardDefinition = {
     name: "Colorstorm Stallion",
     manaCost: "{1}{U}{R}",
@@ -27,12 +27,12 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
                     powerModifier: 1,
                     toughnessModifier: 1,
                     duration: { type: DurationType.UntilEndOfTurn },
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 },
                 {
                     type: EffectType.CreateTokenCopy,
                     condition: 'SPENT_MANA_GE:5',
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -41,3 +41,4 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
     toughness: "3"
 };
     
+

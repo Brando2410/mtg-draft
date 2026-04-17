@@ -117,6 +117,8 @@ export class GameEngine {
         this.drawCard(playerId);
       }
     }
+    // CR 103: Starting draw doesn't count for "this turn" effects
+    this.state.turnState.cardsDrawnThisTurn = {};
     this.resetPriorityToActivePlayer();
   }
 

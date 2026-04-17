@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const SocialSnub: CardDefinition = {
+export const SocialSnub: CardDefinition = {
     name: "Social Snub",
     manaCost: "{1}{W}{B}",
     colors: [
@@ -15,12 +15,12 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
+            eventMatch: TriggerEvent.CastSpell,
             condition: 'HAS_PERMANENT:creature',
             effects: [
                 {
                     type: EffectType.CopySpellOnStack,
-                    targetMapping: TargetType.Self,
+                    targetMapping: TargetMapping.Self,
                     optional: true
                 }
             ]
@@ -32,8 +32,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                     type: CostType.Sacrifice,
                     targetMapping: TargetMapping.EachPlayer,
                     restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ]
+                        "Creature"
+                    ]
                 },
                 {
                     type: EffectType.LoseLife,
@@ -49,4 +49,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
         }
     ]
 };
-    

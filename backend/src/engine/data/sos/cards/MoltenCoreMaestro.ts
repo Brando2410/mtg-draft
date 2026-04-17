@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, ConditionType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
 export const MoltenCoreMaestro: CardDefinition = {
     name: "Molten-Core Maestro",
     manaCost: "{1}{R}",
@@ -24,7 +24,7 @@ export const MoltenCoreMaestro: CardDefinition = {
                     type: EffectType.AddCounters,
                     amount: 1,
                     counterType: '+1/+1',
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 },
                 {
                     type: EffectType.AddMana,
@@ -38,3 +38,4 @@ export const MoltenCoreMaestro: CardDefinition = {
     power: "2",
     toughness: "2"
 };
+

@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     keywords: ["Flying", "Ward {2}", "Prepared"],
     oracleText: "Flying, ward {2}\nThis creature enters prepared.\nWhenever this creature attacks, you may exile eight cards from your graveyard. If you do, this creature becomes prepared.",
     power: "5",
-    toughness: "5",
+    toughness: "5",
+
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.png?1775937223",
     abilities: [
@@ -36,7 +37,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                                 },
                                 {
                                     type: EffectType.Prepare,
-                                    targetMapping: TargetType.Self
+                                    targetMapping: TargetMapping.Self
                                 }
                             ]
                         },

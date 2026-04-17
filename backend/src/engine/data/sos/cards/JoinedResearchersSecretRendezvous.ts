@@ -1,5 +1,6 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const JoinedResearchersSecretRendezvous: CardDefinition = {
+
+export const JoinedResearchersSecretRendezvous: CardDefinition = {
     name: "Joined Researchers // Secret Rendezvous",
     manaCost: "{1}{W}",
     colors: ["W"],
@@ -8,17 +9,18 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
     keywords: ["First strike", "Prepared"],
     oracleText: "First strike\nAt the beginning of each end step, if an opponent has more cards in hand than you, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "2",
-    toughness: "2",
+    toughness: "2",
     image_url: "https://cards.scryfall.io/png/front/1/e/1ebaafe0-3a9a-424c-8698-d26e7be45343.png?1775937069",
+    
     abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: ConditionType.OpponentHasMoreCards,
+            condition: 'OPPONENT_HAS_MORE_CARDS_IN_HAND',
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -34,9 +36,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
             {
                 type: AbilityType.Spell,
                 targetDefinition: {
-                    type: TargetType.Player,
-                    count: 1,
-                    restrictions: [{ type: 'Opponent' } as any]
+                    type: TargetType.Opponent,
+                    count: 1
                 },
                 effects: [
                     {
@@ -54,4 +55,3 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
         ]
     }
 };
-    

@@ -31,7 +31,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
             ],
             targetDefinition: {
                 maxTargets: 1,
-                restrictions: [{ type: 'CARD_TYPE', value: 'Artifact' }, { type: 'CARD_TYPE', value: 'Enchantment' }]
+                restrictions: ["Artifact_or_Enchantment"]
             }
         }
     ],

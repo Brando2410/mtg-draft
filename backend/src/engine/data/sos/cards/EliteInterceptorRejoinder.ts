@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const EliteInterceptorRejoinder: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const EliteInterceptorRejoinder: CardDefinition = {
     name: "Elite Interceptor",
     manaCost: "{W}",
     colors: ["W"],
@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
     keywords: ["Prepared"],
     oracleText: "This creature enters prepared.",
     power: "1",
-    toughness: "2",
+    toughness: "2",
+
     image_url: "https://cards.scryfall.io/png/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.png?1775936992",
     entersPrepared: true,
     preparedFace: {
@@ -21,9 +22,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: { type: 'Permanent', count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ] },
+                targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0, optional: true },
                 effects: [
                     {
                         type: CostType.Choice,
@@ -39,4 +38,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
         ]
     }
 };
-    

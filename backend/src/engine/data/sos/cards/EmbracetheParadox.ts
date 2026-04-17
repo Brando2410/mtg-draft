@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-    export const EmbracetheParadox: CardDefinition = {
+export const EmbracetheParadox: CardDefinition = {
     name: "Embrace the Paradox",
     manaCost: "{3}{G}{U}",
     colors: [
@@ -31,9 +31,10 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                                 type: TargetType.Card,
                                 zone: Zone.Hand,
                                 count: 1,
+                                minCount: 0,
                                 restrictions: [
-                { type: 'Type', value: 'Land' }
-            ]
+                                    "Land"
+                                ]
                             },
                             effects: [
                                 {
@@ -49,4 +50,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
         }
     ]
 };
-    

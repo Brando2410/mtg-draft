@@ -1,5 +1,6 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const SilverquillCharm: CardDefinition = {
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+
+export const SilverquillCharm: CardDefinition = {
     name: "Silverquill Charm",
     manaCost: "{W}{B}",
     colors: [
@@ -19,23 +20,18 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
             modes: [
                 {
                     label: "Put two +1/+1 counters on target creature",
-                    targetDefinition: { type: 'Permanent', count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ] },
+                    targetDefinition: { type: TargetType.Creature, count: 1 },
                     effects: [
                         { type: EffectType.AddCounters, amount: 2, counterType: '+1/+1', targetMapping: TargetMapping.Target1 }
                     ]
                 },
                 {
                     label: "Exile target creature with power 2 or less",
-                    targetDefinition: { type: 'Permanent', count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Power',
-                comparison: 'LessOrEqual',
-                value: 2 }
-            ] },
+                    targetDefinition: {
+                        type: TargetType.Creature, count: 1, restrictions: ["power<=2"]
+                    },
                     effects: [
-                        { type: CostType.Exile, targetMapping: TargetMapping.Target1 }
+                        { type: EffectType.Exile, targetMapping: TargetMapping.Target1 }
                     ]
                 },
                 {
@@ -49,4 +45,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
         }
     ]
 };
-    

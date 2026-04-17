@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-    export const RunBehind: CardDefinition = {
+export const RunBehind: CardDefinition = {
     name: "Run Behind",
     manaCost: "{3}{U}",
     colors: [
@@ -19,16 +19,14 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                 {
                     type: EffectType.CostReduction,
                     amount: 1,
-                    targetMapping: TargetType.Self,
+                    targetMapping: TargetMapping.Self,
                     condition: 'TARGET_1_MATCHES:attacking'
                 }
             ]
         },
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: DurationType.Permanent, restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ] },
+            targetDefinition: { type: TargetType.Creature },
             effects: [
                 {
                     type: CostType.Choice,
@@ -62,4 +60,3 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         }
     ]
 };
-    

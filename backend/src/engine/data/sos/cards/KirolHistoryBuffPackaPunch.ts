@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     keywords: ["Prepared"],
     oracleText: "Whenever one or more cards leave your graveyard, Kirol becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "2",
-    toughness: "3",
+    toughness: "3",
+
     image_url: "https://cards.scryfall.io/png/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.png?1775938375",
     abilities: [
         {
@@ -20,7 +21,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
             effects: [
                 {
                     type: EffectType.Prepare,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }

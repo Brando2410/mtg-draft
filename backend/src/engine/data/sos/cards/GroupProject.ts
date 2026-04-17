@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-    export const GroupProject: CardDefinition = {
+export const GroupProject: CardDefinition = {
     name: "Group Project",
     manaCost: "{1}{W}",
     colors: [
@@ -39,14 +39,15 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                 {
                     type: EffectType.AdditionalCost,
                     condition: 'IS_FLASHBACK_CAST',
-                    targetMapping: TargetType.Self,
-                    additionalCosts: [{ type: CostType.TapSelection, value: 3, restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'State', value: 'Untapped' }
-            ] }]
+                    targetMapping: TargetMapping.Self,
+                    additionalCosts: [{
+                        type: CostType.TapSelection, value: 3, restrictions: [
+                            "Creature",
+                            "untapped"
+                        ]
+                    }]
                 }
             ]
         }
     ]
 };
-    

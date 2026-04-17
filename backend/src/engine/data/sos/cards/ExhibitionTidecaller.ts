@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
     export const ExhibitionTidecaller: CardDefinition = {
     name: "Exhibition Tidecaller",
     manaCost: "{U}",
@@ -18,7 +18,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastInstantOrSorcery,
-            targets: [{ type: 'Player' }],
+            targets: [{ type: TargetType.Player }],
             condition: ConditionType.PlayerIsController,
             effects: [
                 {

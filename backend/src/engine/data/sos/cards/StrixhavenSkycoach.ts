@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-    export const StrixhavenSkycoach: CardDefinition = {
+export const StrixhavenSkycoach: CardDefinition = {
     name: "Strixhaven Skycoach",
     manaCost: "{3}",
     colors: [],
@@ -10,6 +10,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
         "Vehicle"
     ],
     keywords: ["Flying", "Crew 2"],
+    power: "3",
+    toughness: "2",
     oracleText: "Flying\nWhen this Vehicle enters, you may search your library for a basic land card, reveal it, put it into your hand, then shuffle.\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
     abilities: [
         {
@@ -21,9 +23,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                     targetDefinition: {
                         type: TargetType.Land,
                         count: 1,
-                        restrictions: [
-                { type: 'Type', value: 'Basic' }
-            ]
+                        restrictions: ["Basic"]
                     },
                     optional: true,
                     reveal: true,
@@ -38,14 +38,11 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
             effects: [
                 {
                     type: EffectType.CREW,
-                    targetMapping: TargetType.Self,
+                    targetMapping: TargetMapping.Self,
                     powerOverride: 3,
                     toughnessOverride: 2
                 }
             ]
         }
     ],
-    power: "3",
-    toughness: "2"
 };
-    

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, ConditionType, EffectType, TargetType } from '@shared/engine_types';
     export const UlnaAlleyShopkeep: CardDefinition = {
     name: "Ulna Alley Shopkeep",
     manaCost: "{2}{B}",
@@ -24,7 +24,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType } fr
                     powerModifier: 2,
                     toughnessModifier: 0,
                     condition: ConditionType.GainedLifeThisTurn,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -33,3 +33,4 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType } fr
     toughness: "3"
 };
     
+

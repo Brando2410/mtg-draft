@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const WildgrowthArchaic: CardDefinition = {
+import { TargetMapping, AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+export const WildgrowthArchaic: CardDefinition = {
     name: "Wildgrowth Archaic",
     manaCost: "{2/G}{2/G}",
     colors: [
@@ -21,33 +21,32 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount
                     type: EffectType.EntersWithCounters,
                     amount: DynamicAmount.ConvergeAmount,
                     counterType: '+1/+1',
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
-            restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ],
-            condition: ConditionType.PlayerIsController,
+            eventMatch: TriggerEvent.CastSpell,
+            condition: `${ConditionType.PlayerIsController} && ${ConditionType.SpellIsCreature}`,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    duration: DurationType.Permanent,
-                    replacementEffect: {
-                    eventMatch: TriggerEvent.EnterBattlefield,
-                        condition: 'EVENT_OBJECT_IS_TRIGGER_SOURCE',
-                        effects: [
-                            {
-                                type: EffectType.AddCounters,
-                                amount: DynamicAmount.ConvergeAmount,
-                                counterType: '+1/+1',
-                                targetMapping: TargetType.Self
-                            }
-                        ]
-                    }
+                    duration: { type: DurationType.UntilEndOfTurn },
+                    targetMapping: TargetMapping.TriggerEventSource,
+                    abilitiesToAdd: [
+                        {
+                            type: AbilityType.Static,
+                            effects: [
+                                {
+                                    type: EffectType.EntersWithCounters,
+                                    amount: DynamicAmount.ConvergeAmount,
+                                    counterType: '+1/+1',
+                                    targetMapping: TargetMapping.Self
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         }
@@ -55,4 +54,4 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount
     power: "0",
     toughness: "0"
 };
-    
+

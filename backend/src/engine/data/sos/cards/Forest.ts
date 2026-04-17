@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetType } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, CostType, EffectType, TargetType } from '@shared/engine_types';
     export const Forest: CardDefinition = {
     name: "Forest",
     manaCost: "",
@@ -15,10 +15,12 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetType } from '@
     abilities: [
         {
             id: "forest_mana",
-            type: AbilityType.Activated,            isManaAbility: true,
-            costs: [{ type: CostType.Tap, targetMapping: TargetType.Self }],
+            type: AbilityType.Activated,
+            isManaAbility: true,
+            costs: [{ type: CostType.Tap, targetMapping: TargetMapping.Self }],
             effects: [{ type: EffectType.AddMana, value: '{G}' }]
         }
     ]
 };
     
+

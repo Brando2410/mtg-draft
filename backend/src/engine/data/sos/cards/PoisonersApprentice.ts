@@ -25,7 +25,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
                     effects: [
                         {
                             type: EffectType.ApplyContinuousEffect,
-                            duration: DurationType.UntilEndOfTurn,
+                            duration: { type: DurationType.UntilEndOfTurn },
                             powerModifier: -4,
                             toughnessModifier: -4,
                             targetMapping: TargetMapping.EachOpponentCreature

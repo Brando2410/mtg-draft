@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const CauldronofEssence: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+export const CauldronofEssence: CardDefinition = {
     name: "Cauldron of Essence",
     manaCost: "{1}{B}{G}",
     colors: [
@@ -15,7 +15,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.DeathOther,
+            eventMatch: TriggerEvent.DeathOther,
             condition: ConditionType.OwnCreatureDies,
             effects: [
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.EachOpponent },
@@ -27,14 +27,18 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
             costs: [
                 { type: CostType.Mana, value: '{1}{B}{G}' },
                 { type: CostType.Tap },
-                { type: CostType.Sacrifice, restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ] }
+                {
+                    type: CostType.Sacrifice, restrictions: [
+                        "Creature"
+                    ]
+                }
             ],
-            targetDefinition: { type: 'CardInGraveyard', count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Control', value: 'Yours' }
-            ] },
+            targetDefinition: {
+                type: TargetType.CardInGraveyard, count: 1, restrictions: [
+                    "Creature",
+                    "youcontrol"
+                ]
+            },
             activatedOnlyAsSorcery: true,
             effects: [
                 { type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 }
@@ -42,4 +46,3 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
         }
     ]
 };
-    

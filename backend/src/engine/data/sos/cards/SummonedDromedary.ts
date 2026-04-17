@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetType, Zone } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, CostType, EffectType, TargetType, Zone } from '@shared/engine_types';
     export const SummonedDromedary: CardDefinition = {
     name: "Summoned Dromedary",
     manaCost: "{3}{W}",
@@ -24,7 +24,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetType, Zone } f
                 {
                     type: EffectType.MoveToZone,
                     zone: Zone.Hand,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -33,3 +33,4 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetType, Zone } f
     toughness: "3"
 };
     
+

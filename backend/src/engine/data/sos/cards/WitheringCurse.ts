@@ -22,20 +22,16 @@ export const WitheringCurse: CardDefinition = {
                             condition: ConditionType.Infusion,
                             type: EffectType.Destroy,
                             targetMapping: TargetMapping.AllMatchingPermanents,
-                            restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ]
+                            restrictions: ["Creature"]
                         },
                         {
                             condition: 'INFUSION',
                             type: EffectType.ApplyContinuousEffect,
-                            duration: DurationType.UntilEndOfTurn,
+                            duration: { type: DurationType.UntilEndOfTurn },
                             powerModifier: -2,
                             toughnessModifier: -2,
                             targetMapping: TargetMapping.AllMatchingPermanents,
-                            restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ]
+                            restrictions: ["Creature"]
                         }
                     ]
                 }

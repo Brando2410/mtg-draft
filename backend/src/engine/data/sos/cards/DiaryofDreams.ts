@@ -21,7 +21,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
                     type: EffectType.AddCounters, 
                     amount: 1, 
                     startingCounters: { type: 'page', amount: 1 }, 
-                    targetMapping: TargetType.Self 
+                    targetMapping: TargetMapping.Self 
                 }
             ]
         },

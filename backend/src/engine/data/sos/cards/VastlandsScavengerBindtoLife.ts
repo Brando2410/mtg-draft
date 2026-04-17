@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-    export const VastlandsScavengerBindtoLife: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone, TargetType } from '@shared/engine_types';
+export const VastlandsScavengerBindtoLife: CardDefinition = {
     name: "Vastlands Scavenger // Bind to Life",
     manaCost: "{1}{G}{G}",
     colors: ["G"],
@@ -8,7 +8,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone 
     keywords: ["Deathtouch", "Prepared"],
     oracleText: "Deathtouch\nThis creature enters prepared.",
     power: "4",
-    toughness: "4",
+    toughness: "4",
+
     entersPrepared: true,
     image_url: "https://cards.scryfall.io/png/front/4/7/476b6a4d-cc05-4e98-8a45-a5c6582ec514.png?1775938136",
     preparedFace: {
@@ -23,18 +24,19 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone 
                 type: AbilityType.Spell,
                 effects: [
                     { type: EffectType.Mill, amount: 7, targetMapping: TargetMapping.Controller },
-                    { 
-                        type: CostType.Choice, 
+                    {
+                        type: EffectType.Choice,
+                        label: 'Choose a creature card to return to the battlefield',
                         targetIdMapping: TargetMapping.LastMilledIds,
-                        restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ],
-                        label: 'Put a creature card from among them onto the battlefield',
-                        effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield }]
+                        targetDefinition: {
+                            count: 1,
+                            minCount: 0,
+                            type: TargetType.Creature
+                        },
+                        effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 }]
                     }
                 ]
             }
         ]
     }
 };
-    

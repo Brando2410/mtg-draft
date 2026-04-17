@@ -12,7 +12,7 @@ export const CullingRitual: CardDefinition = {
                 {
                     type: EffectType.Destroy,
                     targetMapping: TargetMapping.AllMatchingPermanents,
-                    restrictions: [{ type: 'Nonland' }, { type: 'Attribute', attribute: 'ManaValue', value: 2, comparison: 'LE' }]
+                    restrictions: ["nonland", "mv <= 2"]
                 },
                 {
                     type: EffectType.Choice,

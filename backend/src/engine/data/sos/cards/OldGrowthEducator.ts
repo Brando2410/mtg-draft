@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapping, AbilityType, CardDefinition, ConditionType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
 export const OldGrowthEducator: CardDefinition = {
     name: "Old-Growth Educator",
     manaCost: "{2}{B}{G}",
@@ -25,7 +25,7 @@ export const OldGrowthEducator: CardDefinition = {
                     type: EffectType.AddCounters,
                     counterType: '+1/+1',
                     amount: 2,
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
@@ -33,3 +33,4 @@ export const OldGrowthEducator: CardDefinition = {
     power: "4",
     toughness: "4"
 };
+

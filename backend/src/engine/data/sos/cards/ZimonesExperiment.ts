@@ -1,13 +1,10 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-    export const ZimonesExperiment: CardDefinition = {
+
+export const ZimonesExperiment: CardDefinition = {
     name: "Zimone's Experiment",
     manaCost: "{3}{G}",
-    colors: [
-        "G"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["G"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "Look at the top five cards of your library. You may reveal up to two creature and/or land cards from among them, then put the rest on the bottom of your library in a random order. Put all land cards revealed this way onto the battlefield tapped and put all creature cards revealed this way into your hand.",
@@ -21,12 +18,9 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@s
                     targetMapping: TargetMapping.Controller,
                     fromTop: 5,
                     reveal: true,
-                    optional: true,
-                    amount: 2, // Up to two
-                    restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Type', value: 'Land' }
-            ],
+                    selectionType: 'AnyNumber',
+                    amount: 2,
+                    restrictions: ["Creature_or_Land"],
                     remainderZone: Zone.Library,
                     remainderPosition: 'bottom',
                     shuffleRemainder: true,
@@ -45,4 +39,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@s
         }
     ]
 };
-    

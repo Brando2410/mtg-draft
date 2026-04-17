@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, TargetType } from '@shared/engine_types';
-    export const EndoftheHunt: CardDefinition = {
+export const EndoftheHunt: CardDefinition = {
     name: "End of the Hunt",
     manaCost: "{1}{B}",
     colors: [
@@ -15,11 +15,8 @@ import { AbilityType, CardDefinition, CostType, TargetType } from '@shared/engin
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Player,
+                type: TargetType.Opponent,
                 count: 1,
-                restrictions: [
-                { type: 'Control', value: 'Opponent' }
-            ]
             },
             effects: [
                 {
@@ -30,4 +27,3 @@ import { AbilityType, CardDefinition, CostType, TargetType } from '@shared/engin
         }
     ]
 };
-    

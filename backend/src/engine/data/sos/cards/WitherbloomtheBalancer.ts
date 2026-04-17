@@ -22,7 +22,7 @@ export const WitherbloomtheBalancer: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CostReduction,
-                    targetMapping: TargetType.Self,
+                    targetMapping: TargetMapping.Self,
                     amount: DynamicAmount.CreaturesYouControl
                 }
             ]
@@ -35,8 +35,8 @@ export const WitherbloomtheBalancer: CardDefinition = {
                     targetMapping: TargetMapping.Controller,
                     amount: DynamicAmount.CreaturesYouControl,
                     restrictions: [
-                { type: 'Type', value: 'InstantOrSorcery' }
-            ]
+                        "InstantOrSorcery"
+                    ]
                 }
             ]
         }

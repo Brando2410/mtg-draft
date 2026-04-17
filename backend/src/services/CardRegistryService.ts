@@ -1,0 +1,78 @@
+import { CardDefinition } from '../engine/data/logic_utils';
+import { m21 } from '../engine/data/m21';
+import { sos } from '../engine/data/sos';
+import { stx } from '../engine/data/stx';
+
+export interface RegistryCard {
+  name: string;
+  set: string;
+  oracleText?: string;
+  manaCost?: string;
+  typeLine?: string;
+  cmc?: number;
+  colors?: string[];
+  keywords?: string[];
+  image_url?: string;
+  back_image_url?: string;
+  scryfall_id?: string;
+  engineStatus: 'IMPLEMENTED' | 'DATA_ONLY';
+  manualStatus: 'VERIFIED' | 'MISSING';
+}
+
+export class CardRegistryService {
+  private static allCards: RegistryCard[] = [];
+
+  static initialize() {
+    const combined: Record<string, { card: CardDefinition, set: string }> = {};
+
+    // Standardize and merge
+    Object.entries(m21).forEach(([name, card]) => { combined[name] = { card, set: 'M21' }; });
+    Object.entries(sos).forEach(([name, card]) => { combined[name] = { card, set: 'SOS' }; });
+    Object.entries(stx).forEach(([name, card]) => { combined[name] = { card, set: 'STX' }; });
+
+    this.allCards = Object.values(combined).map(({ card, set }) => {
+      // Basic check: if it has abilities implemented or custom logic beyond just data
+      const isImplemented = !!(card.abilities?.length || card.staticAbilities?.length || card.triggeredAbilities?.length);
+      
+      return {
+        name: card.name,
+        set: set,
+        oracleText: card.oracleText,
+        manaCost: card.manaCost,
+        typeLine: card.typeLine,
+        cmc: card.cmc,
+        colors: card.colors,
+        keywords: card.keywords,
+        image_url: card.image_url,
+        back_image_url: (card as any).back_image_url,
+        scryfall_id: card.scryfall_id,
+        engineStatus: isImplemented ? 'IMPLEMENTED' : 'DATA_ONLY',
+        manualStatus: isImplemented ? 'VERIFIED' : 'MISSING',
+      };
+    });
+
+    // Deduplicate by name (sometimes the same card exists in multiple sets or faces)
+    const seen = new Set<string>();
+    this.allCards = this.allCards.filter(c => {
+      if (seen.has(c.name)) return false;
+      seen.add(c.name);
+      return true;
+    });
+
+    console.log(`CardRegistry initialized with ${this.allCards.length} cards.`);
+  }
+
+  static getAllCards(): RegistryCard[] {
+    if (this.allCards.length === 0) {
+      this.initialize();
+    }
+    return this.allCards;
+  }
+
+  static searchCards(query: string): RegistryCard[] {
+    const cards = this.getAllCards();
+    if (!query) return cards;
+    const q = query.toLowerCase();
+    return cards.filter(c => c.name.toLowerCase().includes(q));
+  }
+}

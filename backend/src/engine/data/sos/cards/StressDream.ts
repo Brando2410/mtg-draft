@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-    export const StressDream: CardDefinition = {
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+export const StressDream: CardDefinition = {
     name: "Stress Dream",
     manaCost: "{3}{U}{R}",
     colors: [
@@ -16,11 +16,9 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, Z
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: DurationType.Permanent,
-                maxSelections: 1,
-                restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ]
+                type: TargetType.Creature,
+                count: 1,
+                optional: true
             },
             effects: [
                 {
@@ -41,4 +39,3 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, Z
         }
     ]
 };
-    

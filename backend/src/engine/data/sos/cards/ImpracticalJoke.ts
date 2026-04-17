@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const ImpracticalJoke: CardDefinition = {
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const ImpracticalJoke: CardDefinition = {
     name: "Impractical Joke",
     manaCost: "{R}",
     colors: [
@@ -15,13 +15,9 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: DurationType.Permanent,
+                type: TargetType.CreatureOrPlaneswalker,
                 count: 1,
-                optional: true,
-                restrictions: [
-                { type: 'Type', value: 'Creature' },
-                { type: 'Type', value: 'Planeswalker' }
-            ]
+                minCount: 0,
             },
             effects: [
                 {
@@ -36,4 +32,3 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         }
     ]
 };
-    

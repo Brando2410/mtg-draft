@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const SkycoachWaypoint: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const SkycoachWaypoint: CardDefinition = {
     name: "Skycoach Waypoint",
     manaCost: "",
     colors: [],
@@ -22,9 +22,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
                 { type: CostType.Mana, value: '{3}' },
                 { type: CostType.Tap }
             ],
-            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ] },
+            targetDefinition: { type: TargetType.Creature, count: 1 },
             effects: [
                 {
                     type: EffectType.Prepare,
@@ -34,4 +32,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
         }
     ]
 };
-    

@@ -24,7 +24,7 @@ export const FollowtheLumarets: CardDefinition = {
                             fromTop: 4,
                             amount: 2,
                             restrictions: [
-                                { type: 'Type', value: 'Creature_OR_Land' }
+                                "Creature_or_Land"
                             ],
                             reveal: true,
                             optional: true,
@@ -39,7 +39,7 @@ export const FollowtheLumarets: CardDefinition = {
                             fromTop: 4,
                             amount: 1,
                             restrictions: [
-                                { type: 'Type', value: 'Creature_OR_Land' }
+                                "Creature_or_Land"
                             ],
                             reveal: true,
                             optional: true,

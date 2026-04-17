@@ -9,7 +9,8 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
     oracleText: "When this creature enters, target player creates a 1/1 white and black Inkling creature token with flying. Then if an opponent controls more creatures than you, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "3",
     toughness: "3",
-    image_url: "https://cards.scryfall.io/png/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.png?1775936999",
+    image_url: "https://cards.scryfall.io/png/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.png?1775936999",
+
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -28,7 +29,8 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
                         types: ['Creature'],
                         subtypes: ['Inkling'],
                         power: 1,
-                        toughness: 1,
+                        toughness: 1,
+
                         image_url: 'https://cards.scryfall.io/png/front/c/9/c9deae5c-80d4-4701-b425-91853b7ee03b.png?1682693898'
                     }
                 },
@@ -38,7 +40,7 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
                     effects: [
                         {
                             type: EffectType.Prepare,
-                            targetMapping: TargetType.Self
+                            targetMapping: TargetMapping.Self
                         }
                     ]
                 }
