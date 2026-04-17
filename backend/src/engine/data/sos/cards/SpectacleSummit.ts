@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engine_types';
-    export const SpectacleSummit: CardDefinition = {
+export const SpectacleSummit: CardDefinition = {
     name: "Spectacle Summit",
     manaCost: "",
     colors: [],
@@ -17,7 +17,9 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
             isManaAbility: true,
             effects: [
                 {
-                    type: EffectType.AddMana,
+                    type: EffectType.Choice,
+                    optional: true,
+                    label: "Choose a color",
                     choices: [
                         { label: '{U}', effects: [{ type: EffectType.AddMana, manaType: 'U' }] },
                         { label: '{R}', effects: [{ type: EffectType.AddMana, manaType: 'R' }] }
@@ -40,4 +42,4 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
         }
     ]
 };
-    
+

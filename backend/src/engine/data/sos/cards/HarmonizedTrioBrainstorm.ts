@@ -11,8 +11,6 @@ export const HarmonizedTrioBrainstorm: CardDefinition = {
     oracleText: "{T}, Tap two untapped creatures you control: This creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "1",
     toughness: "1",
-    image_url: "https://cards.scryfall.io/png/front/6/1/617208ff-dd9b-44fd-a740-d3188081e5cc.png",
-
     abilities: [
         {
             type: AbilityType.Activated,

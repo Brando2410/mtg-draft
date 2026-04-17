@@ -1,4 +1,4 @@
-import { AbilityType, ActionType, ConditionType, ContinuousEffect, DurationType, EffectDefinition, EffectType, EmblemDefinition, GameObject, GameObjectId, GameState, Phase, PlayerId, Step, TargetMapping, TriggeredAbility, Zone } from '@shared/engine_types';
+import { AbilityType, ActionType, ConditionType, ContinuousEffect, DurationType, EffectDefinition, EffectType, EmblemDefinition, GameObject, GameObjectId, GameState, Phase, PlayerId, Step, TargetMapping, TargetType, TriggeredAbility, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { ActionProcessor } from '../actions/ActionProcessor';
 
@@ -153,6 +153,15 @@ export class EffectProcessor {
     };
 
     let validTargetIds = resolveMapping((effect as any).targetMapping, 0);
+    if ((effect as any).targetId && !validTargetIds.includes((effect as any).targetId)) {
+        validTargetIds.push((effect as any).targetId);
+    }
+    if ((effect as any).targetIds && Array.isArray((effect as any).targetIds)) {
+        (effect as any).targetIds.forEach((tid: string) => {
+            if (!validTargetIds.includes(tid)) validTargetIds.push(tid);
+        });
+    }
+
     // CR 608.2c: If an effect has no target mapping specified, it defaults to the controller for player-centric actions
     if (!(effect as any).targetMapping && validTargetIds.length === 0) {
         if (['CreateToken', 'DrawCards', 'Scry', 'Surveil', 'AddMana', 'Learn', 'Mill'].includes(effect.type)) {
@@ -308,6 +317,9 @@ export class EffectProcessor {
           return ChoiceEffectHandler.handleNecromentia(state, effect, sourceId, validTargetIds, log, controllerId, stackObject, parentContext);
       }
       case 'ApplyContinuousEffect': {
+          if (effect.targetDefinition && validTargetIds.length === 0) {
+              return (this as any).resolveInteractiveEffectSelection(state, effect, sourceId, controllerId, log, stackObject, parentContext);
+          }
           const { ContinuousEffectHandler } = require('./handlers/ContinuousEffectHandler');
           return ContinuousEffectHandler.handle(state, effect, sourceId, validTargetIds, log, controllerId, (amt: any) => this.resolveAmount(state, amt, sourceId, controllerId, stackObject, [], parentContext), stackObject);
       }
@@ -856,6 +868,61 @@ export class EffectProcessor {
            (state.pendingAction?.data?.lookingCards as GameObject[])?.find(o => o.id === id) ||
            (parentContext?.lookingCards as GameObject[])?.find(o => o.id === id) ||
            (stackObject?.data?.lookingCards as GameObject[])?.find(o => o.id === id);
+  }
+
+  private static resolveInteractiveEffectSelection(state: GameState, effect: EffectDefinition, sourceId: string, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any) {
+    const { ChoiceGenerator } = require('./ChoiceGenerator');
+    const { TargetingProcessor } = require('../actions/TargetingProcessor');
+    const targetDef = Array.isArray(effect.targetDefinition) ? effect.targetDefinition[0] : effect.targetDefinition!;
+    if (!targetDef) return;
+
+    const player = state.players[controllerId];
+    if (!player) return;
+
+    let pool: GameObject[] = [];
+    if (targetDef.type === TargetType.CardInHand || targetDef.type === 'CARD_IN_HAND') {
+        pool = player.hand;
+    } else if (targetDef.type === TargetType.CardInGraveyard || targetDef.type === 'CARD_IN_GRAVEYARD') {
+        pool = Object.values(state.players).flatMap(p => p.graveyard);
+    } else if (targetDef.type === TargetType.Permanent || targetDef.type === 'PERMANENT') {
+        pool = state.battlefield;
+    } else {
+        // Fallback for general cards or spells
+        pool = [...Object.values(state.players).flatMap(p => [...p.hand, ...p.graveyard]), ...state.battlefield];
+    }
+
+    const searchRestrictions = [...(effect.restrictions || []), ...(targetDef.restrictions || []), ...(targetDef.type ? [targetDef.type] : [])];
+    const validCandidates = pool.filter(c => 
+        TargetingProcessor.matchesRestrictions(state, c, searchRestrictions, controllerId, sourceId, undefined, stackObject)
+    );
+
+    if (validCandidates.length === 0) {
+        log(`[INFO] EffectProcessor: No valid targets in zone for "${effect.label || 'Selection'}". Auto-skipping.`);
+        return;
+    }
+
+    const resolvedMax = this.resolveAmount(state, targetDef.count || 1, sourceId, controllerId, stackObject);
+    const resolvedMin = (targetDef.minCount !== undefined) ? this.resolveAmount(state, targetDef.minCount, sourceId, controllerId, stackObject) : (targetDef.optional ? 0 : resolvedMax);
+
+    state.pendingAction = ChoiceGenerator.createCardChoice(state, pool, {
+        label: effect.label || `Select up to ${resolvedMax} target(s)`,
+        playerId: controllerId,
+        sourceId: sourceId,
+        restrictions: searchRestrictions,
+        filterSelectable: true,
+        optional: targetDef.optional || effect.optional,
+        minChoices: resolvedMin,
+        maxChoices: resolvedMax,
+        actionType: (targetDef.optional || effect.optional) ? ActionType.OptionalAction : ActionType.ResolutionChoice,
+        onSelected: (selected: any) => {
+            const selectedIds = Array.isArray(selected) ? selected.map((s: any) => s.id) : [selected.id];
+            // Return original effect with resolved targets injected
+            return [{ ...effect, targetId: selectedIds[0], targetIds: selectedIds }];
+        },
+        hideUndo: true,
+        stackObj: stackObject,
+        parentContext: parentContext
+    });
   }
 }
 

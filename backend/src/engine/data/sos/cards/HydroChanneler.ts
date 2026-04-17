@@ -1,24 +1,17 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const HydroChanneler: CardDefinition = {
+
+export const HydroChanneler: CardDefinition = {
     name: "Hydro-Channeler",
     manaCost: "{1}{U}",
-    scryfall_id: "099f8400-d70a-48ef-8ff6-645eae97e072",
+    scryfall_id: "0038d212-3d95-4f98-8c2e-7b2404d0ced7",
     image_url: "https://cards.scryfall.io/normal/front/0/9/099f8400-d70a-48ef-8ff6-645eae97e072.jpg?1775937286",
-    colors: [
-        "U"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Merfolk",
-        "Wizard"
-    ],
+    colors: ["U"],
+    types: ["Creature"],
+    subtypes: ["Merfolk", "Wizard"],
     keywords: [],
     oracleText: "{T}: Add {U}. Spend this mana only to cast an instant or sorcery spell.\n{1}, {T}: Add one mana of any color. Spend this mana only to cast an instant or sorcery spell.",
     power: "1",
     toughness: "3",
-
     abilities: [
         {
             type: AbilityType.Activated,
@@ -37,19 +30,18 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
             costs: [{ type: CostType.Mana, value: '{1}' }, { type: CostType.Tap }],
             effects: [
                 {
-                    type: 'Choice' as any,
+                    type: EffectType.Choice,
                     label: "Choose a color of mana to add",
-                    effects: [
-                        { type: EffectType.AddMana, value: '{W}', manaRestrictions: ['InstantOrSorcery'], label: "Add {W}", targetMapping: TargetMapping.Controller },
-                        { type: EffectType.AddMana, value: '{U}', manaRestrictions: ['InstantOrSorcery'], label: "Add {U}", targetMapping: TargetMapping.Controller },
-                        { type: EffectType.AddMana, value: '{B}', manaRestrictions: ['InstantOrSorcery'], label: "Add {B}", targetMapping: TargetMapping.Controller },
-                        { type: EffectType.AddMana, value: '{R}', manaRestrictions: ['InstantOrSorcery'], label: "Add {R}", targetMapping: TargetMapping.Controller },
-                        { type: EffectType.AddMana, value: '{G}', manaRestrictions: ['InstantOrSorcery'], label: "Add {G}", targetMapping: TargetMapping.Controller }
+                    choices: [
+                        { label: "White", value: "{W}", effects: [{ type: EffectType.AddMana, value: '{W}', manaRestrictions: ['InstantOrSorcery'], targetMapping: TargetMapping.Controller }] },
+                        { label: "Blue", value: "{U}", effects: [{ type: EffectType.AddMana, value: '{U}', manaRestrictions: ['InstantOrSorcery'], targetMapping: TargetMapping.Controller }] },
+                        { label: "Black", value: "{B}", effects: [{ type: EffectType.AddMana, value: '{B}', manaRestrictions: ['InstantOrSorcery'], targetMapping: TargetMapping.Controller }] },
+                        { label: "Red", value: "{R}", effects: [{ type: EffectType.AddMana, value: '{R}', manaRestrictions: ['InstantOrSorcery'], targetMapping: TargetMapping.Controller }] },
+                        { label: "Green", value: "{G}", effects: [{ type: EffectType.AddMana, value: '{G}', manaRestrictions: ['InstantOrSorcery'], targetMapping: TargetMapping.Controller }] }
                     ],
                     targetMapping: TargetMapping.Controller
                 }
             ]
         }
-    ],
+    ]
 };
-    

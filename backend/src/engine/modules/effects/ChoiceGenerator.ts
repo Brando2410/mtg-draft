@@ -88,14 +88,16 @@ export class ChoiceGenerator {
      * Build generic button-based choices.
      */
     public static createModalChoice(
+        state: GameState,
         config: ChoiceConfig & { minChoices?: number, maxChoices?: number, lookingCards?: GameObject[] },
-        choices: { label: string, value: any, effects?: any[] }[]
+        choices: { label: string, value: any, costs?: any[], effects?: any[] }[]
     ) {
+        const { CostProcessor } = require('../magic/CostProcessor');
         return this.wrap(config.playerId, config.sourceId, {
             label: config.label,
             choices: choices.map(c => ({
                 ...c,
-                selectable: true
+                selectable: c.costs ? CostProcessor.canPay(state, c.costs, config.sourceId, config.playerId) : true
             })),
             hideUndo: config.hideUndo,
             lookingCards: config.lookingCards,
@@ -200,10 +202,84 @@ export class ChoiceGenerator {
     }
 
     /**
+     * Build an interactive choice for a specific cost (e.g. TapSelection).
+     */
+    public static createCostInteractionChoice(state: GameState, cost: any, sourceId: string, playerId: PlayerId, choice: any, data: any): any {
+        const { TargetingProcessor } = require('../actions/TargetingProcessor');
+        const { ActionType } = require('@shared/engine_types');
+        
+        let candidates: GameObject[] = [];
+        let label = "Choose targets for cost";
+
+        if (cost.type === 'TapSelection') {
+            candidates = state.battlefield.filter(o => 
+                String(o.controllerId) === String(playerId) && 
+                !o.isTapped &&
+                (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, playerId, sourceId))
+            );
+            label = `Tap ${cost.amount || cost.value || 1} creatures`;
+        } else if (cost.type === 'Discard') {
+            candidates = state.players[playerId].hand.filter(c =>
+                !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, playerId, sourceId)
+            );
+            label = `Discard ${cost.amount || cost.value || 1} cards`;
+        } else if (cost.type === 'Exile') {
+            const zones = cost.sourceZones || ['Graveyard'];
+            const pool: GameObject[] = [];
+            if (zones.includes('Graveyard')) pool.push(...state.players[playerId].graveyard);
+            if (zones.includes('Hand')) pool.push(...state.players[playerId].hand);
+            if (zones.includes('Battlefield')) pool.push(...state.battlefield.filter(o => String(o.controllerId) === String(playerId)));
+
+            candidates = pool.filter(c =>
+                !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, playerId, sourceId)
+            );
+            label = `Exile ${cost.amount || cost.value || 1} cards`;
+        } else if (cost.type === 'Sacrifice') {
+            candidates = state.battlefield.filter(o =>
+                String(o.controllerId) === String(playerId) &&
+                (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, playerId, sourceId))
+            );
+            label = `Sacrifice ${cost.amount || cost.value || 1} permanents`;
+        }
+
+        const amount = Number(cost.value || cost.amount || 1);
+        
+        return {
+            type: ActionType.ModalSelection,
+            playerId,
+            sourceId,
+            data: {
+                label,
+                isCostChoice: true,
+                costType: cost.type,
+                minChoices: amount,
+                maxChoices: amount,
+                stackObj: data.stackObj,
+                parentContext: pruneContext(data.parentContext),
+                nextEffectIndex: data.nextEffectIndex,
+                // Save the choice data so we can resume resolution after the cost is paid
+                choiceEffects: choice.effects,
+                remainingCosts: choice.costs.filter((c: any) => c !== cost),
+                lookingCards: candidates, // Required for UI to render card grid
+                choices: candidates.map(c => ({
+                    label: c.definition.name,
+                    value: c.id,
+                    imageUrl: c.definition.image_url || `https://api.scryfall.com/cards/${c.definition.scryfall_id}?format=image&version=normal`,
+                    type_line: c.definition.type_line,
+                    cardData: c,
+                    selectable: true
+                }))
+            }
+        };
+    }
+
+    /**
      * Wraps data into the standard engine pendingAction format.
      */
     private static wrap(playerId: string, sourceId: string, data: any, type: ActionType | string = ActionType.ResolutionChoice): any {
+        console.log(`[CHOICE-DEBUG] Creating pendingAction: type=${type}, sourceId=${sourceId}`);
         return {
+
             type,
             playerId,
             sourceId,

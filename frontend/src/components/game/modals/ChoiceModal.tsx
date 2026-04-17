@@ -189,7 +189,7 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                                                 >
                                                     <GameCard 
                                                         obj={card} 
-                                                        variant="battlefield" 
+                                                        variant="small" 
                                                         onHoverStart={() => onHoverStart?.(card)}
                                                         onHoverEnd={onHoverEnd}
                                                     />
@@ -238,6 +238,7 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                                                 <div className="relative group/card shadow-2xl">
                                                     <GameCard 
                                                         obj={card} 
+                                                        variant="small"
                                                         onHoverStart={() => onHoverStart?.(card)}
                                                         onHoverEnd={onHoverEnd}
                                                     />
@@ -290,7 +291,7 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                                                     <div className="relative group/card shadow-2xl">
                                                         <GameCard 
                                                             obj={card} 
-                                                            variant="battlefield" 
+                                                            variant="small" 
                                                             onHoverStart={() => onHoverStart?.(card)}
                                                             onHoverEnd={onHoverEnd}
                                                         />
@@ -360,6 +361,7 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                                                       manaCost: ''
                                                    }
                                                 } as any}
+                                                variant="small"
                                                 onHoverStart={() => onHoverStart?.(trigger as any)}
                                                 onHoverEnd={onHoverEnd}
                                             />
@@ -396,6 +398,7 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                                 >
                                     <GameCard 
                                         obj={choice.cardData} 
+                                        variant="hand"
                                         onHoverStart={onHoverStart} 
                                         onHoverEnd={onHoverEnd}
                                         isSelected={false}

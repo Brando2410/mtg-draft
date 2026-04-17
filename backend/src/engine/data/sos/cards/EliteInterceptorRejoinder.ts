@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 export const EliteInterceptorRejoinder: CardDefinition = {
     name: "Elite Interceptor",
     manaCost: "{W}",
@@ -12,7 +12,6 @@ export const EliteInterceptorRejoinder: CardDefinition = {
     power: "1",
     toughness: "2",
 
-    image_url: "https://cards.scryfall.io/png/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.png?1775936992",
     entersPrepared: true,
     preparedFace: {
         name: "Rejoinder",

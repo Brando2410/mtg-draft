@@ -1,13 +1,12 @@
 import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engine_types';
-    export const DeathcapGlade: CardDefinition = {
+
+export const DeathcapGlade: CardDefinition = {
     name: "Deathcap Glade",
     manaCost: "",
     scryfall_id: "78897104-80e1-4d8a-9958-145b40f679e8",
     image_url: "https://cards.scryfall.io/normal/front/7/8/78897104-80e1-4d8a-9958-145b40f679e8.jpg?1775938766",
     colors: [],
-    types: [
-        "Land"
-    ],
+    types: ["Land"],
     subtypes: [],
     keywords: [],
     oracleText: "This land enters tapped unless you control two or more other lands.\n{T}: Add {B} or {G}.",
@@ -17,14 +16,17 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
             type: AbilityType.Activated,
             costs: [{ type: CostType.Tap }],
             isManaAbility: true,
-            effects: [{ type: EffectType.AddMana, mana: '{B}' }]
-        },
-        {
-            type: AbilityType.Activated,
-            costs: [{ type: CostType.Tap }],
-            isManaAbility: true,
-            effects: [{ type: EffectType.AddMana, mana: '{G}' }]
+            effects: [
+                {
+                    type: EffectType.Choice,
+                    optional: true,
+                    label: "Choose a color",
+                    choices: [
+                        { label: '{B}', effects: [{ type: EffectType.AddMana, manaType: 'B' }] },
+                        { label: '{G}', effects: [{ type: EffectType.AddMana, manaType: 'G' }] }
+                    ]
+                }
+            ]
         }
     ]
 };
-    

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
     export const LandscapePainterVibrantIdea: CardDefinition = {
     name: "Landscape Painter",
     manaCost: "{1}{U}",
@@ -13,7 +13,6 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     toughness: "1",
 
     entersPrepared: true,
-    image_url: "https://cards.scryfall.io/png/front/c/0/c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf.png?1775937300",
     preparedFace: {
         name: "Vibrant Idea",
         image_url: "https://cards.scryfall.io/png/front/c/0/c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf.png?1775937300",

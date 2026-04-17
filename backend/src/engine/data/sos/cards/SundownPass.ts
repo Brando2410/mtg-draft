@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engine_types';
-    export const SundownPass: CardDefinition = {
+export const SundownPass: CardDefinition = {
     name: "Sundown Pass",
     manaCost: "",
     colors: [],
@@ -17,7 +17,9 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
             isManaAbility: true,
             effects: [
                 {
-                    type: EffectType.AddMana,
+                    type: EffectType.Choice,
+                    optional: true,
+                    label: "Choose a color",
                     choices: [
                         { label: '{R}', effects: [{ type: EffectType.AddMana, manaType: 'R' }] },
                         { label: '{W}', effects: [{ type: EffectType.AddMana, manaType: 'W' }] }
@@ -27,4 +29,4 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
         }
     ]
 };
-    
+

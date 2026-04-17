@@ -10,7 +10,7 @@ interface StackViewProps {
   exile?: GameObject[];
   battlefield: GameObject[];
   onTapCard: (id: string) => void;
-  onInspect?: (zone: { cards: GameObject[], label: string }) => void;
+  onInspect?: (zone: { label: string, cards: GameObject[], type: 'graveyard' | 'exile', isMe: boolean }) => void;
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: () => void;
   targetableIds?: Set<string>;
@@ -20,15 +20,18 @@ interface StackViewProps {
  * Arena-style StackView. 
  * Shows spells and abilities currently waiting to resolve.
  */
-export const StackView = ({ stack, pendingAction, battlefield, onTapCard, onHoverStart, onHoverEnd }: StackViewProps) => {
-  const effectiveStack = [...stack];
+export const StackView = ({ stack, pendingAction, battlefield, onTapCard, onHoverStart, onHoverEnd, onInspect }: StackViewProps) => {
+  // Filter stack to only show valid objects (same criteria as pending action)
+  const filteredStack = stack.filter(s => s.sourceId || s.name || s.card || s.definition);
+  const effectiveStack = [...filteredStack];
+
   if (pendingAction?.data?.stackObj) {
     const pObj = pendingAction.data.stackObj;
     // CRITICAL: Ensure we have a valid object to show. 
     // If it has no sourceId and no name, it's likely a hidden system action we shouldn't render as a card.
     if (pObj.sourceId || pObj.name || pObj.card || pObj.definition) {
       // Deduplicate: If the pending action's stackObj is already represented on the stack, don't show it twice.
-      const isAlreadyOnStack = stack.some(s => 
+      const isAlreadyOnStack = filteredStack.some(s => 
         s.id === pObj.id || 
         (s.sourceId && s.sourceId === pObj.sourceId && s.type === pObj.type)
       );
@@ -41,7 +44,7 @@ export const StackView = ({ stack, pendingAction, battlefield, onTapCard, onHove
   if (effectiveStack.length === 0) return null;
 
   return (
-    <div className="flex flex-col items-center gap-2 p-1 bg-slate-950/60 backdrop-blur-xl rounded-[2rem] border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.9)] overflow-hidden ring-1 ring-white/5 w-full max-w-[18vw] min-h-[30vh]">
+    <div className="flex flex-col items-center gap-2 p-1 bg-slate-950/60 backdrop-blur-xl rounded-[2rem] border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.9)] overflow-hidden ring-1 ring-white/5 w-full max-w-[18vw] min-h-[15vh]">
       {/* HEADER */}
       <div className="flex items-center gap-3 mt-4 mb-2">
         <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_12px_rgba(34,211,238,0.8)]" />
@@ -50,7 +53,7 @@ export const StackView = ({ stack, pendingAction, battlefield, onTapCard, onHove
         </div>
       </div>
       
-      <div className="flex-1 w-full flex flex-col-reverse items-center justify-start gap-3 max-h-[65vh] overflow-y-auto overflow-x-hidden px-2 py-4 no-scrollbar scroll-smooth">
+      <div className="flex-1 w-full flex flex-col-reverse items-center justify-end gap-3 max-h-[65vh] overflow-y-auto overflow-x-hidden px-2 py-4 no-scrollbar scroll-smooth">
         <AnimatePresence mode="popLayout">
           {effectiveStack.map((sobj, index) => {
             const isPending = pendingAction?.data?.stackObj?.id === sobj.id;

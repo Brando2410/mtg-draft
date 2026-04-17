@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
     export const GoblinGlasswrightCraftwithPride: CardDefinition = {
     name: "Goblin Glasswright",
     manaCost: "{1}{R}",
@@ -13,7 +13,6 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     toughness: "2",
 
     entersPrepared: true,
-    image_url: "https://cards.scryfall.io/png/front/c/8/c85c5f06-dd31-4e2c-97be-2f64d65069ea.png?1775937759",
     preparedFace: {
         name: "Craft with Pride",
         image_url: "https://cards.scryfall.io/png/front/c/8/c85c5f06-dd31-4e2c-97be-2f64d65069ea.png?1775937759",

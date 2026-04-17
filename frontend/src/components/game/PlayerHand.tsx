@@ -8,6 +8,7 @@ interface PlayerHandProps {
   onPlayCard?: (cardId: string) => void;
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: () => void;
+  targetableIds?: Set<string>;
 }
 
 /**
@@ -21,7 +22,8 @@ export const PlayerHand = ({
   virtualHand = [], 
   onPlayCard, 
   onHoverStart, 
-  onHoverEnd 
+  onHoverEnd,
+  targetableIds = new Set()
 }: PlayerHandProps) => {
   
   const allCards = [
@@ -30,32 +32,31 @@ export const PlayerHand = ({
   ];
 
   const totalCards = allCards.length;
-  // Dynamic spread: Ensure names are always visible by limiting overlap
-  const maxHandWidth = 800;
-  const spacing = Math.min(80, maxHandWidth / Math.max(totalCards, 1));
+  // Dynamic spread: Use viewport-relative spacing (converted to rem for consistency)
+  const maxHandWidthRem = 48; 
+  const spacingRem = Math.min(3.8, maxHandWidthRem / Math.max(totalCards, 1));
 
   const getCardRotation = (index: number) => {
     if (totalCards <= 1) return 0;
     const middle = (totalCards - 1) / 2;
-    // Minimal rotation to keep text mostly horizontal for legibility
     return (index - middle) * (18 / Math.max(totalCards - 1, 1)); 
   };
 
   const getCardY = (index: number) => {
     const middle = (totalCards - 1) / 2;
     const offset = Math.abs(index - middle);
-    // Positioned so that the name bar (top 30px) is fully above the screen edge.
-    // 176 (height) - 100 (offset) = 76px visible. This provides ample space for name + art peek.
-    return 100 + (offset * 5); // Linear arch for subtler curve
+    // Vertical arch in VH units for perfect scaling
+    // Vertical arch sitting higher from total bottom
+    return 6 + (offset * 0.6); 
   };
 
   const getCardX = (index: number) => {
     const middle = (totalCards - 1) / 2;
-    return (index - middle) * spacing;
+    return (index - middle) * (spacingRem * 1.1); // Tightened spread
   };
 
   return (
-    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full h-80 flex items-end justify-center z-[600] pointer-events-none">
+    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full h-[35vh] flex items-end justify-center z-[600] pointer-events-none">
       <div className="relative w-full h-full flex items-end justify-center pointer-events-none">
         <AnimatePresence>
           {allCards.map((card, index) => {
@@ -66,22 +67,22 @@ export const PlayerHand = ({
             return (
               <motion.div
                 key={card.id}
-                initial={{ y: 300, opacity: 0, rotate: rotation }}
+                initial={{ y: '30vh', opacity: 0, rotate: rotation }}
                 animate={{ 
-                  y: yBase, 
-                  x: xBase,
+                  y: `${yBase}vh`, 
+                  x: `${xBase}vw`,
                   opacity: 1, 
                   rotate: rotation,
-                  zIndex: index, // Left-to-right overlapping
-                  transition: { type: 'spring', stiffness: 200, damping: 25 }
+                  zIndex: index, 
+                  transition: { type: 'tween', duration: 0.3, ease: "easeOut" }
                 }}
-                exit={{ y: 400, opacity: 0 }}
+                exit={{ y: '40vh', opacity: 0 }}
                 whileHover={{ 
                   y: 0, 
                   rotate: 0,
                   scale: 1.35,
                   zIndex: 800, // Pop above Avatar (500)
-                  transition: { type: 'spring', stiffness: 500, damping: 30 }
+                  transition: { type: 'spring', stiffness: 1200, damping: 50 }
                 }}
                 className="absolute origin-bottom cursor-pointer pointer-events-auto"
                 onClick={() => onPlayCard?.(card.id)}
@@ -91,6 +92,7 @@ export const PlayerHand = ({
                         obj={card} 
                         variant="hand" 
                         isPlayable={card.effectiveStats?.isPlayable}
+                        isTargetable={targetableIds.has(card.id)}
                         onHoverStart={onHoverStart}
                         onHoverEnd={onHoverEnd}
                     />

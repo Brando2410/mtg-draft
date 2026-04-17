@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
     name: "Sanar, Unfinished Genius // Wild Idea",
     manaCost: "{U}{R}",
@@ -26,7 +26,6 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
                         types: ["Artifact", "Token"],
                         subtypes: ["Treasure"],
                         oracleText: "{T}, Sacrifice this token: Add one mana of any color.",
-                        image_url: "https://cards.scryfall.io/png/front/1/a/1a2d027f-8996-4761-a776-47cd428f6779.png?1641306162",
                         abilities: [
                             {
                                 type: AbilityType.Activated,

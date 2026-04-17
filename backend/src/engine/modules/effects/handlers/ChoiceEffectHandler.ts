@@ -31,7 +31,11 @@ export class ChoiceEffectHandler {
             });
         }
 
-        // --- SUPPORT FOR PRE-SELECTED CHOICES ---
+        // ARCHITECTURAL NOTE: Pre-selected Choices (Silent Auto-Tap)
+        // Mana abilities with choices (e.g. dual lands) are pre-calculated by the 
+        // AutoTapEngine. The chosen index (cIdx) is attached to the stackObject.
+        // If present, we consume it here and resolve the effects immediately,
+        // bypassing the creation of a 'RESOLUTION_CHOICE' pending action/modal.
         const preSelectedIdx = stackObject?.data?.preSelectedChoice !== undefined
             ? stackObject.data.preSelectedChoice
             : (stackObject as any)?.preSelectedChoice;
@@ -189,6 +193,7 @@ export class ChoiceEffectHandler {
         const lookingCards = cardTargets.map(tid => TargetingProcessor.findObjectInAnyZone(state, tid)).filter(Boolean) as GameObject[];
 
         state.pendingAction = ChoiceGenerator.createModalChoice(
+            state,
             {
                 label: effect.label || 'Choose an option',
                 playerId: firstPlayerId,

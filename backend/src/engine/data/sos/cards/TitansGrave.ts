@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engine_types';
-    export const TitansGrave: CardDefinition = {
+export const TitansGrave: CardDefinition = {
     name: "Titan's Grave",
     manaCost: "",
     colors: [],
@@ -18,7 +18,9 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
             isManaAbility: true,
             effects: [
                 {
-                    type: EffectType.AddMana,
+                    type: EffectType.Choice,
+                    optional: true,
+                    label: "Choose a color",
                     choices: [
                         { label: '{B}', effects: [{ type: EffectType.AddMana, manaType: 'B' }] },
                         { label: '{G}', effects: [{ type: EffectType.AddMana, manaType: 'G' }] }
@@ -42,4 +44,4 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
         }
     ]
 };
-    
+

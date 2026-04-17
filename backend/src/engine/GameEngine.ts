@@ -158,13 +158,13 @@ export class GameEngine {
       {
         declareAttacker: (pId: string, cId: string) => this.declareAttacker(pId, cId),
         handleBlockSelection: (pId: string, cId: string) => this.handleBlockSelection(pId, cId),
-        tapForMana: (pId: string, cId: string) => this.tapForMana(pId, cId),
+        tapForMana: (pId: string, cId: string, aIdx?: number, cIdx?: number) => this.tapForMana(pId, cId, aIdx, cIdx),
         activateAbility: (pId: PlayerId, cId: string, idx: number) => this.activateAbility(pId, cId, idx)
       }
     );
   }
 
-  public autoTapLand(playerId: PlayerId, cardId: string): boolean {
+  public autoTapLand(playerId: PlayerId, cardId: string, abilityIndex?: number, choiceIndex?: number): boolean {
     const obj = this.state.battlefield.find(o => o.id === cardId);
     if (!obj || obj.controllerId !== playerId || obj.isTapped) return false;
     
@@ -173,24 +173,20 @@ export class GameEngine {
     const logic = oracle.getCard(obj.definition.name);
     if (!logic || !logic.abilities) return false;
 
-    const manaAbilityIdx = logic.abilities.findIndex((a: any) => a.isManaAbility);
+    let manaAbilityIdx = abilityIndex !== undefined ? abilityIndex : logic.abilities.findIndex((a: any) => a.isManaAbility);
+    if (manaAbilityIdx === -1) {
+        // Fallback for cases where index might be wrong or wasn't provided accurately
+        manaAbilityIdx = logic.abilities.findIndex((a: any) => a.isManaAbility);
+    }
     if (manaAbilityIdx === -1) return false;
 
-    // Use activateAbility with bypassTargeting=true for silent autotap
-    return this.activateAbility(playerId, cardId, manaAbilityIdx, [], true);
+    // Standardize ability index and use bypassTargeting=true for silent, synchronous tapping 
+    // during the auto-tap sequence.
+    return this.activateAbility(playerId, cardId, manaAbilityIdx, [], true, choiceIndex);
   }
 
-  public tapForMana(playerId: PlayerId, cardId: string): boolean {
-    return PlayerActionProcessor.tapForMana(
-      this.state,
-      playerId,
-      cardId,
-      (m: string) => this.log(m),
-      {
-        declareAttacker: (pId: string, cId: string) => this.declareAttacker(pId, cId),
-        handleBlockSelection: (pId: string, cId: string) => this.handleBlockSelection(pId, cId)
-      }
-    );
+  public tapForMana(playerId: PlayerId, cardId: string, abilityIndex?: number, choiceIndex?: number): boolean {
+    return this.autoTapLand(playerId, cardId, abilityIndex, choiceIndex);
   }
 
   /**
@@ -254,20 +250,16 @@ export class GameEngine {
       declaredTargets,
       (m) => this.log(m),
       {
-        tapForMana: (p, c) => this.autoTapLand(p, c),
-        passPriority: (p) => this.passPriority(p),
-        checkAutoPass: (p) => this.checkAutoPass(p),
+        tapForMana: (p: PlayerId, c: string, aIdx?: number, cIdx?: number) => this.autoTapLand(p, c, aIdx, cIdx),
+        passPriority: (p: PlayerId) => this.passPriority(p),
+        checkAutoPass: (p: PlayerId) => this.checkAutoPass(p),
         checkStateBasedActions: () => this.checkStateBasedActions()
       },
       bypassTargeting
     );
   }
 
-  /**
-   * CR 602: Activating Activated Abilities
-   * @param abilityIndex The index of the ability in the card's m21 entry
-   */
-  public activateAbility(playerId: PlayerId, cardId: string, abilityIndex: number, declaredTargets: string[] = [], bypassTargeting: boolean = false): boolean {
+  public activateAbility(playerId: PlayerId, cardId: string, abilityIndex: number, declaredTargets: string[] = [], bypassTargeting = false, choiceIndex?: number): boolean {
     return SpellProcessor.activateAbility(
       this.state,
       playerId,
@@ -276,11 +268,13 @@ export class GameEngine {
       declaredTargets,
       (m) => this.log(m),
       {
-        tapForMana: (p, c) => this.autoTapLand(p, c),
-        passPriority: (p) => this.passPriority(p),
-        checkAutoPass: (p) => this.checkAutoPass(p)
+        tapForMana: (p: PlayerId, c: string, aIdx?: number, cIdx?: number) => this.tapForMana(p, c, aIdx, cIdx),
+        passPriority: (p: PlayerId) => this.passPriority(p),
+        checkAutoPass: (p: PlayerId) => this.checkAutoPass(p),
+        checkStateBasedActions: () => this.checkStateBasedActions()
       },
-      bypassTargeting
+      bypassTargeting,
+      choiceIndex
     );
   }
 
@@ -627,13 +621,13 @@ export class GameEngine {
       {
         resetPriorityToActivePlayer: () => this.resetPriorityToActivePlayer(),
         activateAbility: (p: PlayerId, c: string, i: number, t: string[], b: boolean = false) => this.activateAbility(p, c, i, t, b),
-        tapForMana: (p: string, c: string) => this.tapForMana(p, c),
+        tapForMana: (p: string, c: string, aIdx?: number, cIdx?: number) => this.tapForMana(p, c, aIdx, cIdx),
         checkAutoPass: (p: string) => this.checkAutoPass(p)
       }
     );
 
     if (success && !this.state.pendingAction) {
-      this.resetPriorityToActivePlayer();
+      // Priority is already handled by ChoiceProcessor (either reset to active or kept by the player)
     }
     return success;
   }

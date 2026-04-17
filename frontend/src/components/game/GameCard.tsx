@@ -95,16 +95,16 @@ export const GameCard = memo(({
   const rotation = 0;
   const isActuallyTapped = isTapped && variant !== 'zoom';
 
-  // DIMENSIONS
+  // DIMENSIONS (Using CSS variables for global responsiveness)
   const dimensions = {
-    battlefield: { w: 'w-32', h: 'h-24', rounded: 'rounded-sm' },
-    hand: { w: 'w-32', h: 'h-44', rounded: 'rounded-lg' },
-    stack: { w: 'w-28', h: 'h-40', rounded: 'rounded-lg' },
-    small: { w: 'w-20', h: 'h-28', rounded: 'rounded-md' },
-    tiny: { w: 'w-12', h: 'h-16', rounded: 'rounded-sm' },
+    battlefield: { width: '100%', height: '100%', rounded: 'rounded-sm' },
+    hand: { width: 'var(--card-w-hand)', height: 'var(--card-h-hand)', rounded: 'rounded-lg' },
+    stack: { width: 'calc(var(--u) * 11)', height: 'calc(var(--u) * 15.3)', rounded: 'rounded-lg' },
+    small: { width: 'calc(var(--u) * 8.5)', height: 'calc(var(--u) * 11.9)', rounded: 'rounded-md' },
+    tiny: { width: 'calc(var(--u) * 5.1)', height: 'calc(var(--u) * 7.2)', rounded: 'rounded-sm' },
     zoom: { 
-      w: (definition.faces && definition.faces.length > 1) ? 'w-[640px]' : 'w-[340px]', 
-      h: 'h-auto', 
+      width: (definition.faces && definition.faces.length > 1) ? 'calc(var(--u) * 60)' : 'calc(var(--u) * 32)', 
+      height: 'auto', 
       rounded: 'rounded-2xl' 
     }
   }[variant];
@@ -130,9 +130,8 @@ export const GameCard = memo(({
     const symbols = cost.match(/\{([^}]+)\}/g)?.map(s => s.slice(1, -1)) || [];
     
     // Scale down if many symbols
-    const tooMany = symbols.length > 5;
-    const baseSize = variant === 'zoom' ? 20 : 12;
-    const finalSize = tooMany && variant !== 'zoom' ? Math.max(8, baseSize - (symbols.length - 5) * 1) : baseSize;
+    const baseSize = variant === 'zoom' ? 30 : (variant === 'tiny' ? 8 : 13);
+    const finalSize = `calc(var(--u) * ${baseSize / 7.5})`;
 
     return (
       <div className="flex gap-0.5 items-center justify-end shrink-0 ml-auto">
@@ -141,7 +140,7 @@ export const GameCard = memo(({
             key={i}
             src={`https://svgs.scryfall.io/card-symbols/${s.toUpperCase().replace(/\//g, '')}.svg`}
             alt={s}
-            style={{ width: `${finalSize}px`, height: `${finalSize}px` }}
+            style={{ width: finalSize, height: finalSize }}
             className="drop-shadow-sm select-none shrink-0"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
@@ -228,31 +227,45 @@ export const GameCard = memo(({
         opacity: 1, 
         rotate: rotation,
         y: verticalShift,
+        // Pulse glow for playable cards (Cyan for standard, Fuchsia for virtual/prepared)
+        boxShadow: (isPlayable && !isOpponent) 
+          ? [
+              `0 0 15px ${(isPrepared || (obj as any).isVirtual ? 'rgba(217, 70, 239, 0.4)' : 'rgba(34, 211, 238, 0.4)')}`,
+              `0 0 25px ${(isPrepared || (obj as any).isVirtual ? 'rgba(217, 70, 239, 0.7)' : 'rgba(34, 211, 238, 0.7)')}`,
+              `0 0 15px ${(isPrepared || (obj as any).isVirtual ? 'rgba(217, 70, 239, 0.4)' : 'rgba(34, 211, 238, 0.4)')}`
+            ]
+          : isSelected 
+            ? '0 0 20px rgba(250, 204, 21, 0.4)'
+            : '0 0 0px rgba(0,0,0,0)'
       }}
       transition={{ 
-        type: 'spring', 
-        stiffness: 1500, 
-        damping: 60,
-        mass: 0.1
+        boxShadow: {
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+        },
+        type: 'tween', 
+        duration: 0.15,
+        ease: "easeOut"
       }}
       style={{
-        minWidth: variant === 'battlefield' ? '8rem' : 'auto',
-        minHeight: variant === 'battlefield' ? '6rem' : 'auto',
+        width: dimensions.width,
+        height: dimensions.height,
         ...borderStyle
       }}
-      whileHover={ (variant === 'small' || disableHoverAnim) ? {} : { 
-        y: (variant === 'hand') ? -5 : verticalShift,
-        scale: variant === 'hand' ? 1.05 : 1,
+      whileHover={ (variant === 'small' || variant === 'hand' || variant === 'battlefield' || disableHoverAnim) ? {} : { 
+        y: verticalShift,
+        scale: 1,
       }}
       onMouseEnter={() => onHoverStart?.(obj)}
       onMouseLeave={() => onHoverEnd?.()}
       onClick={() => onClick?.(obj.id)}
       className={`relative shrink-0 cursor-pointer transition-all animate-in fade-in duration-300
         flex flex-col
-        ${dimensions.w} ${dimensions.h} ${dimensions.rounded} ${variant !== 'zoom' ? `border-[1.5px] ${borderClass} shadow-xl` : ''}
-        ${variant === 'battlefield' ? 'hover:ring-2 hover:ring-indigo-400/50 hover:shadow-[0_0_20px_rgba(129,140,248,0.4)]' : ''}
+        ${dimensions.rounded} ${variant !== 'zoom' ? `border-[1.5px] ${borderClass} shadow-xl` : ''}
+        ${variant === 'battlefield' ? 'hover:ring-2 hover:ring-indigo-400/50 hover:shadow-[0_0_20px_rgba(129,140,248,0.4)]' : ''} 
         ${isTargetable ? 'ring-4 ring-red-500 ring-offset-2 ring-offset-slate-900 shadow-[0_0_20px_rgba(239,68,68,0.8)]' : ''} 
-        ${(isPlayable && !isOpponent) ? ((obj as any).isVirtual ? 'ring-2 ring-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.6)]' : 'ring-2 ring-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)]') : ''} 
+        ${(isPlayable && !isOpponent) ? ((isPrepared || (obj as any).isVirtual) ? 'ring-4 ring-fuchsia-500 !border-2 !border-fuchsia-400 shadow-[0_0_15px_rgba(217,70,239,0.6)]' : 'ring-4 ring-cyan-400 !border-2 !border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)]') : ''} 
         ${isSelected ? 'ring-2 ring-yellow-400' : ''}
         ${isCurrentlyDeclaringAttack ? 'ring-4 ring-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.9)] !border-orange-400' : ''}`}
     >
@@ -272,11 +285,11 @@ export const GameCard = memo(({
       {variant === 'battlefield' && (
         <div 
             style={colors.length > 1 ? { background: (borderStyle as any).headerBackground } : {}}
-            className={`flex-none h-4 flex items-center px-2 border-b overflow-hidden rounded-t-sm z-30 transition-colors
+            className={`flex-none h-[calc(var(--u)*1.8)] flex items-center px-2 border-b overflow-hidden rounded-t-sm z-30 transition-colors
             ${isCurrentlyDeclaringAttack ? 'bg-orange-600 border-orange-400/50 text-white' : headerClass}
         `}>
             <h3 className={`font-black tracking-tighter truncate w-full whitespace-nowrap
-                ${definition.name.length > 25 ? 'text-[8.5px]' : definition.name.length > 18 ? 'text-[10px]' : 'text-[11.5px]'}
+                ${definition.name.length > 25 ? 'text-[calc(var(--u)*0.85)]' : definition.name.length > 18 ? 'text-[calc(var(--u)*1.05)]' : 'text-[calc(var(--u)*1.3)]'}
             `}>
                 {formatName(displayName)}
 
@@ -359,7 +372,7 @@ export const GameCard = memo(({
                           ${headerClass}
                       `}>
                           <h3 className={`font-black leading-tight tracking-tighter drop-shadow-md truncate flex-1 min-w-0
-                              ${definition.name.length > 20 ? 'text-[8.5px]' : definition.name.length > 15 ? 'text-[9.5px]' : 'text-[11px]'}
+                              ${definition.name.length > 20 ? 'text-[calc(var(--u)*1.1)]' : definition.name.length > 15 ? 'text-[calc(var(--u)*1.3)]' : 'text-[calc(var(--u)*1.5)]'}
                           `}>
                               {formatName(displayName)}
 
@@ -402,13 +415,13 @@ export const GameCard = memo(({
                           const tColor = (damagePreview > 0 || damageMarked > 0 || currentT < origT) ? 'text-red-400' : currentT > origT ? 'text-emerald-400' : 'text-white';
 
                           return (
-                              <div className="bg-black shadow-2xl z-30 flex items-center justify-center absolute bottom-0 right-0 px-2 py-1 border-t border-l border-white/30 rounded-tl-md">
-                                  <div className="flex items-center gap-1.5">
-                                      <span className={`font-black tracking-normal text-sm ${pColor}`}>
+                              <div className="bg-black shadow-2xl z-30 flex items-center justify-center absolute bottom-0 right-0 px-[1vh] py-[0.5vh] border-t border-l border-white/30 rounded-tl-md">
+                                  <div className="flex items-center gap-[0.5vh]">
+                                      <span className={`font-black tracking-normal text-[calc(var(--u)*1.8)] ${pColor}`}>
                                           {currentP}
                                       </span>
-                                      <span className="text-[10px] text-white/40 font-bold">/</span>
-                                      <span className={`font-black tracking-normal text-sm ${tColor} ${damagePreview > 0 ? 'drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]' : ''}`}>
+                                      <span className="text-[calc(var(--u)*1.2)] text-white/40 font-bold">/</span>
+                                      <span className={`font-black tracking-normal text-[calc(var(--u)*1.8)] ${tColor} ${damagePreview > 0 ? 'drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]' : ''}`}>
                                           {previewT}
                                       </span>
                                   </div>
@@ -417,7 +430,7 @@ export const GameCard = memo(({
                       })()}
 
                       {isPlaneswalker && variant === 'battlefield' && (
-                          <div className={`border rounded-md px-1.5 py-0.5 flex items-center gap-1 shadow-2xl
+                          <div className={`border rounded-md px-[1.5vh] py-[0.5vh] flex items-center gap-[0.5vh] shadow-2xl
                             ${cardColor === 'white' ? 'bg-stone-100 border-stone-400 text-stone-900' :
                               cardColor === 'blue' ? 'bg-blue-800 border-blue-400 text-white' :
                               cardColor === 'black' ? 'bg-slate-900 border-slate-700 text-white' :
@@ -426,8 +439,8 @@ export const GameCard = memo(({
                               cardColor === 'multicolor' ? 'bg-amber-700 border-amber-400 text-white' :
                               'bg-slate-900 border-slate-600 text-white'}
                           `}>
-                              <Zap className={`w-2.5 h-2.5 ${cardColor === 'white' ? 'text-stone-900 fill-stone-900' : 'text-amber-400 fill-amber-400'}`} />
-                              <span className="text-xs font-black px-0.5">
+                              <Zap className={`w-[1.2vh] h-[1.2vh] ${cardColor === 'white' ? 'text-stone-900 fill-stone-900' : 'text-amber-400 fill-amber-400'}`} />
+                              <span className="text-[calc(var(--u)*1.8)] font-black px-0.5">
                                   {counters.loyalty || 0}
                               </span>
                           </div>
@@ -440,8 +453,8 @@ export const GameCard = memo(({
 
       {/* TAP ICON OVERLAY (Centered) - Outside filter to stay vibrant */}
       {isActuallyTapped && (
-          <div className="absolute inset-0 z-[100] flex items-center justify-center translate-y-5 pointer-events-none animate-in scale-in-95 fade-in duration-300">
-             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-90 drop-shadow-[0_0_20px_rgba(0,0,0,0.9)]">
+          <div className="absolute inset-0 z-[100] flex items-center justify-center translate-y-[2vh] pointer-events-none animate-in scale-in-95 fade-in duration-300">
+             <svg width="calc(var(--u)*8.5)" height="calc(var(--u)*8.5)" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-90 drop-shadow-[0_0_20px_rgba(0,0,0,0.9)]">
                 <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
                 <path d="M21 3v5h-5" />
              </svg>
@@ -452,14 +465,14 @@ export const GameCard = memo(({
       {variant !== 'zoom' && (
         <>
             {stackSize > 1 && (
-                <div className="absolute -top-2 -right-2 bg-slate-950 border border-white/20 px-2 py-0.5 rounded-full shadow-2xl z-[60]">
-                    <span className="text-[10px] font-black text-white italic">x{stackSize}</span>
+                <div className="absolute -top-[1vh] -right-[1vh] bg-slate-950 border border-white/20 px-[1vh] py-[0.2vh] rounded-full shadow-2xl z-[60]">
+                    <span className="text-[calc(var(--u)*1.3)] font-black text-white italic">x{stackSize}</span>
                 </div>
             )}
 
             {(obj as any).isRevealed && (
-                <div className="absolute top-7 left-2 z-[60] bg-black/60 backdrop-blur-md rounded-full p-1 shadow-lg border border-white/20">
-                    <Eye className="w-3 h-3 text-cyan-400" />
+                <div className="absolute top-[3vh] left-[1vh] z-[60] bg-black/60 backdrop-blur-md rounded-full p-[0.6vh] shadow-lg border border-white/20">
+                    <Eye className="w-[1.2vh] h-[1.2vh] text-cyan-400" />
                 </div>
             )}
         </>
@@ -484,9 +497,9 @@ export const GameCard = memo(({
                 <div 
                   key={type}
                   style={{ background: gradient }}
-                  className="w-6 h-6 rounded-full flex items-center justify-center border border-white/50 shadow-[0_2px_6px_rgba(0,0,0,0.6),inset_0_-2px_4px_rgba(0,0,0,0.3)]"
+                  className="w-[2.5vh] h-[2.5vh] rounded-full flex items-center justify-center border border-white/50 shadow-[0_2px_6px_rgba(0,0,0,0.6),inset_0_-2px_4px_rgba(0,0,0,0.3)]"
                 >
-                  <span className="text-white text-[10px] font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] select-none">
+                  <span className="text-white text-[calc(var(--u)*1.5)] font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] select-none">
                     {val}
                   </span>
                 </div>
@@ -497,27 +510,43 @@ export const GameCard = memo(({
 
       {/* CONTEXTUAL ACTION BUTTONS (Safety Step) */}
       {pendingAction?.data?.isContextual && pendingAction.sourceId === obj.id && !isOpponent && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[300] flex flex-col gap-1.5 w-[140px] animate-in slide-in-from-top-2 fade-in duration-200">
-           {pendingAction.data.choices.map((choice: any, idx: number) => {
-              const isCancel = choice.value === 'none' || choice.label.toLowerCase().includes('cancel');
-              return (
-                <button
-                  key={idx}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onClick?.(`CHOICE_${idx}`);
-                  }}
-                  className={`w-full py-2.5 px-3 rounded-lg font-black text-[10px] uppercase tracking-tighter shadow-2xl border-2 transition-all active:scale-95
-                    ${isCancel 
-                      ? 'bg-slate-900/95 border-slate-600 text-slate-400 hover:bg-slate-800 hover:text-white' 
-                      : 'bg-indigo-600/95 border-indigo-400 text-white hover:bg-indigo-500 hover:scale-105 shadow-indigo-500/20 shadow-lg'}
-                  `}
-                >
-                  {choice.label}
-                </button>
+        <>
+          {/* Click-away overlay */}
+          <div 
+            className="fixed inset-0 z-[290] cursor-default"
+            onClick={(e) => {
+              e.stopPropagation();
+              const cancelIdx = pendingAction.data.choices.findIndex((c: any) => 
+                c.value === 'none' || 
+                c.label.toLowerCase().includes('cancel') || 
+                c.label.toLowerCase().includes('none')
               );
-           })}
-        </div>
+              if (cancelIdx !== -1) onClick?.(`CHOICE_${cancelIdx}`);
+            }}
+          />
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-[1vh] z-[300] flex flex-col gap-[0.5vh] w-[calc(var(--u)*18)] animate-in slide-in-from-bottom-2 fade-in duration-200">
+            {pendingAction.data.choices.map((choice: any, idx: number) => {
+                const isCancel = choice.value === 'none' || 
+                                choice.label.toLowerCase().includes('cancel') || 
+                                choice.label.toLowerCase().includes('none');
+                
+                if (isCancel) return null;
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClick?.(`CHOICE_${idx}`);
+                    }}
+                    className="w-full py-[1vh] px-[1.5vh] rounded-lg font-black text-[calc(var(--u)*1.1)] uppercase tracking-tighter shadow-2xl border-2 transition-all active:scale-95 bg-indigo-600/95 border-indigo-400 text-white hover:bg-indigo-500 hover:scale-105 shadow-indigo-500/20 shadow-lg"
+                  >
+                    {choice.label}
+                  </button>
+                );
+            })}
+          </div>
+        </>
       )}
     </motion.div>
   );

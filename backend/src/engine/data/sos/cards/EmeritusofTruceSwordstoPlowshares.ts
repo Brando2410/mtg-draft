@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
     export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
     name: "Emeritus of Truce // Swords to Plowshares",
     manaCost: "{1}{W}{W}",
@@ -11,7 +11,6 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
     oracleText: "When this creature enters, target player creates a 1/1 white and black Inkling creature token with flying. Then if an opponent controls more creatures than you, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "3",
     toughness: "3",
-    image_url: "https://cards.scryfall.io/png/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.png?1775936999",
 
     abilities: [
         {

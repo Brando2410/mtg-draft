@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/engine_types';
     export const FractalTender: CardDefinition = {
     name: "Fractal Tender",
     manaCost: "{3}{G}{U}",
@@ -32,7 +32,6 @@ import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/e
                         colors: ['G', 'U'],
                         power: '0',
                         toughness: '0',
-                        image_url: 'https://cards.scryfall.io/png/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.png?1682693894'
                     },
                     amount: 1,
                     startingCounters: {

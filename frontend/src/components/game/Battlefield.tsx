@@ -8,8 +8,9 @@ import { CombatArrows } from './CombatArrows';
 import { StackView } from './StackView';
 import { TargetingArrows } from './TargetingArrows';
 import { ChoiceModal } from './modals/ChoiceModal';
-import { ZoneInspector } from './modals/ZoneInspector';
 import { XSelectionModal } from './modals/XSelectionModal';
+import { ZonePile } from './ZonePile';
+import { Avatar } from './Avatar';
 
 const CardStack = memo(({ 
   cards, 
@@ -34,13 +35,13 @@ const CardStack = memo(({
   const untaped = cards.filter(c => !c.isTapped);
   const tapped = cards.filter(c => c.isTapped);
 
-  const renderPile = (stack: GameObject[], isTappedStack: boolean) => {
+  const renderPile = (stack: GameObject[]) => {
     if (stack.length === 0) return null;
     
     const visibleDepth = Math.min(stack.length, 4);
     
     return (
-        <div className={`relative ${isTappedStack ? 'mt-8' : ''}`} style={{ width: '6rem', height: '8rem' }}>
+        <div className="relative" style={{ width: 'var(--card-w)', height: 'var(--card-h)' }}>
             {Array.from({ length: visibleDepth }).map((_, i) => (
                 <div 
                     key={stack[i].id + i}
@@ -76,9 +77,9 @@ const CardStack = memo(({
   };
 
   return (
-    <div className="flex gap-16">
-        {renderPile(untaped, false)}
-        {renderPile(tapped, true)}
+    <div className="flex gap-[8vh]">
+        {renderPile(untaped)}
+        {renderPile(tapped)}
     </div>
   );
 });
@@ -122,8 +123,8 @@ const SubZone = memo(({
 
     if (!stackSameName) {
         return rootCards.map(obj => (
-            <div key={obj.id} className="relative group/card-container">
-                 <GameCard 
+            <>
+                <GameCard 
                     obj={obj} 
                     variant="battlefield"
                     onClick={onTapCard} 
@@ -148,7 +149,7 @@ const SubZone = memo(({
                         <GameCard obj={aura} variant="tiny" />
                     </div>
                 ))}
-            </div>
+            </>
         ));
     }
 
@@ -164,11 +165,38 @@ const SubZone = memo(({
     ));
   }, [cards, allBattlefieldCards, onTapCard, stackSameName, targetableIds, onHoverStart, onHoverEnd, isDeclaringAttacks, attackers, pendingAction]);
 
+  const isWrapped = content.length > 6;
+  const wrapScale = isWrapped ? 0.55 : 1;
+  const count = cards.length;
+  const internalScale = (count > 5 && !isWrapped) ? Math.max(0.2, 1 - (count - 5) * 0.08) : 1;
+
+  const zoneStyle = {
+    '--card-w': `calc(var(--u) * 20 * ${internalScale * wrapScale})`,
+    '--card-h': `calc(var(--u) * 14.4 * ${internalScale * wrapScale})`,
+    '--card-gap': isWrapped ? '1vh' : '2.5vh',
+  } as React.CSSProperties;
+
   return (
-    <div className="flex-1 flex flex-col gap-1 w-full h-full min-w-[100px]">
-      <div className={`flex flex-wrap items-center justify-${align} gap-8 p-6 h-full content-center`}>
+    <div className={`flex flex-col h-full w-full relative ${align === 'start' ? 'items-start' : align === 'end' ? 'items-end' : 'items-center'} justify-center select-none overflow-hidden`} style={zoneStyle}>
+      <div className={`flex ${isWrapped ? 'flex-wrap' : 'flex-nowrap'} gap-y-2 ${align === 'start' ? 'justify-start' : align === 'end' ? 'justify-end' : 'justify-center'} items-center h-full max-h-full w-full px-[2.5vh] py-0`}>
         <AnimatePresence>
-          {content}
+          {content.map((c, i) => (
+             <div 
+                key={i} 
+                className="relative group/card-container flex items-center justify-center min-w-0 flex-none max-h-[var(--card-h)]" 
+                style={{ 
+                    width: `calc(100% / ${Math.min(content.length, isWrapped ? Math.ceil(content.length / 2) : content.length)} - (var(--card-gap, 2.5vh)))`,
+                    height: isWrapped ? '45%' : '90%',
+                    maxWidth: 'var(--card-w)',
+                    maxHeight: 'var(--card-h)',
+                    marginRight: 'var(--card-gap)'
+                }}
+             >
+                <div className="w-full h-full aspect-[1.38/1] flex items-center justify-center">
+                    {c}
+                </div>
+             </div>
+          ))}
         </AnimatePresence>
         {cards.length === 0 && (
           <div className="text-[10px] font-black uppercase text-white/5 tracking-[0.4em] pointer-events-none select-none italic text-center w-full">
@@ -188,22 +216,30 @@ interface BattlefieldProps {
   combat: any;
   exile: any[];
   currentStep: string;
+  currentPhase: string;
   onTapCard: (id: string) => void;
   onChoiceResolve: (payload: any) => void;
   hoveredCardId?: string;
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: () => void;
   pendingAction?: any;
+  onInspectZone: (zone: { label: string, cards: GameObject[], type: 'graveyard' | 'exile', isMe: boolean }) => void;
+  onToggleStop: (step: string) => void;
+  onAvatarClick: (isOpponent: boolean) => void;
+  scrySurveilResult?: any;
 }
 
 export const Battlefield = ({ 
-  me, opponent, battlefield, stack, combat, exile, currentStep, pendingAction, onTapCard,
+  me, opponent, battlefield, stack, combat, exile, currentStep, currentPhase, pendingAction, onTapCard,
   onChoiceResolve,
   hoveredCardId,
   onHoverStart,
-  onHoverEnd 
+  onHoverEnd,
+  onInspectZone,
+  onToggleStop,
+  onAvatarClick,
+  scrySurveilResult
 }: BattlefieldProps) => {
-  const [inspectingZone, setInspectingZone] = useState<{ cards: GameObject[], label: string } | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const planningArrow = useMemo(() => {
@@ -260,10 +296,7 @@ export const Battlefield = ({
       {/* MODALS */}
       <ChoiceModal pendingAction={pendingAction} me={me} onTapCard={onTapCard} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} />
       <XSelectionModal pendingAction={pendingAction} me={me} onResolve={onChoiceResolve} />
-      <ZoneInspector 
-        inspectingZone={inspectingZone} onClose={() => setInspectingZone(null)} 
-        onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} 
-      />
+
 
       <div 
         className="flex-1 flex flex-col relative overflow-hidden" 
@@ -274,18 +307,53 @@ export const Battlefield = ({
         <TargetingArrows stack={stack} battlefield={battlefield} pendingAction={pendingAction} hoveredCardId={hoveredCardId} />
         
         {/* OPPONENT SIDE */}
-        <div className="w-full flex-1 flex flex-col-reverse relative">
-           <div className="h-1/2">
-                <SubZone cards={zones.opp.creatures} allBattlefieldCards={battlefield} label="Opponent Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={true} pendingAction={pendingAction} />
+        <div className="w-full h-1/2 flex flex-col relative overflow-hidden">
+           {/* BACK ROW: PILES */}
+           <div className="h-[30%] flex items-center justify-end px-[0.5vw] bg-black/40 border-b border-white/5 shrink-0 overflow-hidden">
+                <div className="flex gap-[2vh] h-[85%] items-center">
+                    {(exile || []).filter(o => o.ownerId === opponent?.id).length > 0 && (
+                        <ZonePile label="Exl" count={(exile || []).filter(o => o.ownerId === opponent?.id).length} cards={(exile || []).filter(o => o.ownerId === opponent?.id)} type="exile" onClick={() => onInspectZone({ label: "Enemy Exile", cards: (exile || []).filter(o => o.ownerId === opponent?.id), type: 'exile', isMe: false })} />
+                    )}
+                    <ZonePile label="Gry" count={opponent?.graveyard.length || 0} cards={opponent?.graveyard} type="graveyard" onClick={() => onInspectZone({ label: "Enemy Graveyard", cards: opponent?.graveyard || [], type: 'graveyard', isMe: false })} />
+                    <ZonePile label="Lib" count={opponent?.library.length || 0} type="library" />
+                </div>
            </div>
-           <div className="h-1/2 flex border-b border-white/5 bg-black/5">
-                <SubZone cards={zones.opp.lands} allBattlefieldCards={battlefield} label="Lands" align="start" onTapCard={onTapCard} stackSameName={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={true} pendingAction={pendingAction} />
-                <SubZone cards={zones.opp.nonCreatures} allBattlefieldCards={battlefield} label="Support" align="end" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={true} pendingAction={pendingAction} />
+
+           {/* MIDDLE ROW: LANDS & SUPPORT */}
+           <div className="h-[35%] grid grid-cols-[1fr,12vh,1fr] border-b border-white/5 bg-black/20 px-[0.5vw] relative shrink-0 overflow-hidden">
+                <div className="h-full border-r border-white/5 overflow-hidden">
+                    <SubZone cards={zones.opp.lands} allBattlefieldCards={battlefield} label="Lands" align="start" onTapCard={onTapCard} stackSameName={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={true} pendingAction={pendingAction} />
+                </div>
+                
+                {/* OPPONENT AVATAR CENTERPIECE */}
+                <div className="h-full flex items-center justify-center shrink-0 bg-black/10 z-10">
+                    {opponent && (
+                        <Avatar 
+                            player={opponent} 
+                            isOpponent isActive={opponent.id === opponent.id} 
+                            onToggleStop={onToggleStop}
+                            viewerStops={me?.stops}
+                            currentStep={currentStep as any}
+                            currentPhase={currentPhase as any}
+                            scrySurveilResult={scrySurveilResult}
+                            onClick={() => onAvatarClick(true)}
+                        />
+                    )}
+                </div>
+
+                <div className="h-full border-l border-white/5 overflow-hidden">
+                    <SubZone cards={zones.opp.nonCreatures} allBattlefieldCards={battlefield} label="Support" align="end" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={true} pendingAction={pendingAction} />
+                </div>
+           </div>
+
+           {/* FRONT ROW: CREATURES */}
+           <div className="h-[35%] relative shrink-0 overflow-hidden px-[0.5vw]">
+                <SubZone cards={zones.opp.creatures} allBattlefieldCards={battlefield} label="Opponent Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={true} pendingAction={pendingAction} />
            </div>
         </div>
 
         {/* MIDDLE DIVIDER GAP */}
-        <div className="w-full h-20 border-y border-white/5 bg-white/[0.01] relative z-10 flex items-center justify-center">
+        <div className="w-full h-[3vh] border-y border-white/5 bg-white/[0.01] relative z-10 flex items-center justify-center py-[0.5vh] shrink-0">
             <AnimatePresence>
                 {pendingAction && (
                     <motion.div 
@@ -326,13 +394,48 @@ export const Battlefield = ({
         </div>
 
         {/* PLAYER SIDE */}
-        <div className="w-full flex-1 flex flex-col relative">
-           <div className="h-1/2 border-b border-white/5">
+        <div className="w-full h-1/2 flex flex-col relative overflow-hidden">
+           {/* FRONT ROW: CREATURES */}
+           <div className="h-[35%] border-b border-white/5 shrink-0 overflow-hidden px-[0.5vw]">
                 <SubZone cards={zones.me.creatures} allBattlefieldCards={battlefield} label="Your Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={false} pendingAction={pendingAction} />
            </div>
-           <div className="h-1/2 flex bg-black/5">
-                <SubZone cards={zones.me.lands} allBattlefieldCards={battlefield} label="Your Lands" align="start" onTapCard={onTapCard} stackSameName={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={false} pendingAction={pendingAction} />
-                <SubZone cards={zones.me.nonCreatures} allBattlefieldCards={battlefield} label="Your Support" align="end" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={false} pendingAction={pendingAction} />
+
+           {/* MIDDLE ROW: LANDS & SUPPORT */}
+           <div className="h-[35%] grid grid-cols-[1fr,12vh,1fr] bg-black/20 border-b border-white/5 px-[0.5vw] relative shrink-0 overflow-hidden">
+                <div className="h-full border-r border-white/5 overflow-hidden">
+                    <SubZone cards={zones.me.lands} allBattlefieldCards={battlefield} label="Your Lands" align="start" onTapCard={onTapCard} stackSameName={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={false} pendingAction={pendingAction} />
+                </div>
+
+                {/* PLAYER AVATAR CENTERPIECE */}
+                <div className="h-full flex items-center justify-center shrink-0 bg-black/10 z-10">
+                    {me && (
+                        <Avatar 
+                            player={me} 
+                            isActive={me.id === me.id}
+                            onToggleStop={onToggleStop}
+                            viewerStops={me.stops}
+                            currentStep={currentStep as any}
+                            currentPhase={currentPhase as any}
+                            scrySurveilResult={scrySurveilResult}
+                            onClick={() => onAvatarClick(false)}
+                        />
+                    )}
+                </div>
+
+                <div className="h-full border-l border-white/5 overflow-hidden">
+                    <SubZone cards={zones.me.nonCreatures} allBattlefieldCards={battlefield} label="Your Support" align="end" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={false} pendingAction={pendingAction} />
+                </div>
+           </div>
+
+           {/* BACK ROW: PILES */}
+           <div className="h-[30%] flex items-center justify-start px-[0.5vw] bg-black/40 shrink-0 overflow-hidden">
+                <div className="flex gap-[2vh] h-[85%] items-center">
+                    <ZonePile label="Lib" count={me?.library.length || 0} type="library" />
+                    <ZonePile label="Gry" count={me?.graveyard.length || 0} cards={me?.graveyard} type="graveyard" onClick={() => onInspectZone({ label: "Your Graveyard", cards: me?.graveyard || [], type: 'graveyard', isMe: true })} />
+                    {(exile || []).filter(o => o.ownerId === me?.id).length > 0 && (
+                        <ZonePile label="Exl" count={(exile || []).filter(o => o.ownerId === me?.id).length} cards={(exile || []).filter(o => o.ownerId === me?.id)} type="exile" onClick={() => onInspectZone({ label: "Your Exile", cards: (exile || []).filter(o => o.ownerId === me?.id), type: 'exile', isMe: true })} />
+                    )}
+                </div>
            </div>
         </div>
 
@@ -340,7 +443,7 @@ export const Battlefield = ({
         <div className="absolute right-10 top-1/2 -translate-y-1/2 z-50">
             <StackView 
                 stack={stack} pendingAction={pendingAction} me={me} exile={exile} battlefield={battlefield}
-                onTapCard={onTapCard} onInspect={setInspectingZone} targetableIds={targetableIds}
+                onTapCard={onTapCard} onInspect={onInspectZone} targetableIds={targetableIds}
                 onHoverStart={onHoverStart} onHoverEnd={onHoverEnd}
             />
         </div>

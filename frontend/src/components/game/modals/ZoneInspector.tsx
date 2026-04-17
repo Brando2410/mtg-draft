@@ -60,6 +60,7 @@ export const ZoneInspector = ({ inspectingZone, onClose, onTapCard, targetableId
               <GameCard 
                 key={obj.id} 
                 obj={obj} 
+                variant="small"
                 onClick={() => onTapCard(obj.id)} 
                 isTargetable={targetableIds.has(obj.id)}
                 onHoverStart={onHoverStart}

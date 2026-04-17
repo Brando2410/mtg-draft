@@ -1,4 +1,12 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone, SelectionType } from '@shared/engine_types';
+
+/**
+ * Cauldron of Essence
+ * {1}{B}{G}
+ * Artifact
+ * Whenever a creature you control dies, each opponent loses 1 life and you gain 1 life.
+ * {1}{B}{G}, {T}, Sacrifice a creature: Return target creature card from your graveyard to the battlefield. Activate only as a sorcery.
+ */
 export const CauldronofEssence: CardDefinition = {
     name: "Cauldron of Essence",
     manaCost: "{1}{B}{G}",
@@ -6,8 +14,6 @@ export const CauldronofEssence: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/b/7/b7091740-e70c-4cf2-8d3d-b8e1ac1fbbdd.jpg?1775938230",
     colors: ["B", "G"],
     types: ["Artifact"],
-    subtypes: [],
-    keywords: [],
     oracleText: "Whenever a creature you control dies, each opponent loses 1 life and you gain 1 life.\n{1}{B}{G}, {T}, Sacrifice a creature: Return target creature card from your graveyard to the battlefield. Activate only as a sorcery.",
     abilities: [
         {
@@ -26,12 +32,19 @@ export const CauldronofEssence: CardDefinition = {
                 { type: CostType.Tap },
                 { type: CostType.Sacrifice, restrictions: ["Creature"] }
             ],
-            targetDefinition: {
-                type: TargetType.CardInGraveyard, count: 1, restrictions: ["Creature", "youcontrol"]
-            },
             activatedOnlyAsSorcery: true,
             effects: [
-                { type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 }
+                { 
+                    type: EffectType.PutOnBattlefield, 
+                    zone: Zone.Battlefield,
+                    label: "Select a creature card from your graveyard to return",
+                    selectionType: SelectionType.Search,
+                    targetDefinition: { 
+                        type: TargetType.CardInGraveyard, 
+                        count: 1, 
+                        restrictions: ["Creature", "Yours"] 
+                    } 
+                }
             ]
         }
     ]

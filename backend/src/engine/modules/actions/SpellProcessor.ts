@@ -17,7 +17,7 @@ export class SpellProcessor {
         declaredTargets: string[],
         log: (m: string) => void,
         engine: {
-            tapForMana: (p: PlayerId, c: string) => void;
+            tapForMana: (p: PlayerId, c: string, aIdx?: number, cIdx?: number) => void;
             passPriority: (p: PlayerId) => void;
             checkAutoPass: (p: PlayerId) => void;
             checkStateBasedActions: () => void;
@@ -382,14 +382,11 @@ export class SpellProcessor {
         playerId: PlayerId,
         cardId: string,
         abilityIndex: number,
-        declaredTargets: string[],
+        declaredTargets: string[] = [],
         log: (m: string) => void,
-        engine: {
-            tapForMana: (p: PlayerId, c: string) => void;
-            passPriority: (p: PlayerId) => void;
-            checkAutoPass: (p: PlayerId) => void;
-        },
-        bypassTargeting = false
+        engine: any,
+        bypassTargeting: boolean = false,
+        preSelectedChoice?: number
     ): boolean {
         const { TargetingProcessor } = require('./TargetingProcessor');
         const obj = TargetingProcessor.findObjectInAnyZone(state, cardId);
@@ -403,7 +400,11 @@ export class SpellProcessor {
             return false;
         }
 
-        if (state.pendingAction) {
+        // ARCHITECTURAL NOTE: Bypassing Pending Actions
+        // When bypassTargeting is true (during auto-tap), we ignore the presence of other 
+        // pending actions. This is necessary because land-tapping often triggers 
+        // sub-effects (like choice modals) which we have already pre-resolved.
+        if (state.pendingAction && !bypassTargeting) {
             log(`Cannot activate ability: Pending action ${state.pendingAction.type} must be resolved first.`);
             return false;
         }
@@ -440,12 +441,12 @@ export class SpellProcessor {
 
         // Step 3: Targeting (Rule 602.2b)
         if (ability.targetDefinition && (declaredTargets === undefined || declaredTargets.length === 0) && !bypassTargeting) {
-            const targetingResult = this.handleAbilityTargeting(state, playerId, cardId, obj, ability, abilityIndex, log, engine);
+            const targetingResult = this.handleAbilityTargeting(state, playerId, cardId, obj, ability, abilityIndex, log, engine, preSelectedChoice);
             if (targetingResult) return true; // Handled pending action or single target recursion
         }
 
         // Step 4: Finalization (Rule 602.2h)
-        return this.finalizeAbilityActivation(state, playerId, obj, ability, abilityIndex, declaredTargets || [], log, engine);
+        return this.finalizeAbilityActivation(state, playerId, obj, ability, abilityIndex, declaredTargets || [], log, engine, preSelectedChoice);
     }
 
     private static handleLandPlay(state: GameState, playerId: PlayerId, cardToPlay: GameObject, engine: any, log: (m: string) => void): boolean {
@@ -891,10 +892,44 @@ export class SpellProcessor {
         delete (state as any).lastChoiceIndex;
 
         // Pay Mana
+        const hasConfirmedAutoTap = (state as any).confirmedAutoTap;
+        delete (state as any).confirmedAutoTap;
+
         if (!ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
             if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, cardToPlay)) {
-                log(`Auto-tapping lands to pay ${totalMana}...`);
-                ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, log, engine.tapForMana, cardToPlay);
+                if (hasConfirmedAutoTap) {
+                    log(`Using pre-confirmed auto-tap for ${totalMana}...`);
+                    ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, log, engine.tapForMana, cardToPlay);
+                } else {
+                    log(`Auto-tapping lands to pay ${totalMana}...`);
+                    const manaSnapshot = JSON.parse(JSON.stringify(player.manaPool));
+                    const restrictedSnapshot = JSON.parse(JSON.stringify(player.restrictedMana || []));
+                    const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, log, engine.tapForMana, cardToPlay);
+                    
+                    if (tappedIds.length > 0) {
+                        const { ActionType } = require('@shared/engine_types');
+                        state.pendingAction = {
+                            type: ActionType.ModalSelection,
+                            playerId: playerId,
+                            sourceId: cardToPlay.id,
+                            data: {
+                                label: `Confirm auto-tap for ${cardToPlay.definition.name}?`,
+                                choices: [
+                                    { label: `Confirm Cast (${totalMana})`, value: 'confirm' }
+                                ],
+                                isSpellCasting: true,
+                                confirmedAutoTap: true,
+                                totalMana,
+                                declaredTargets: declaredTargets || [],
+                                tappedLandIds: tappedIds,
+                                producedMana,
+                                manaSnapshot,
+                                restrictedSnapshot
+                            }
+                        };
+                        return true;
+                    }
+                }
             } else {
                 log(`Illegal Play: Not enough mana for ${cardToPlay.definition.name} (Effective Cost: ${totalMana})`);
                 return false;
@@ -1283,7 +1318,7 @@ export class SpellProcessor {
         return null;
     }
 
-    private static handleAbilityTargeting(state: GameState, playerId: PlayerId, cardId: string, obj: GameObject, ability: any, abilityIndex: number, log: (m: string) => void, engine: any): boolean {
+    private static handleAbilityTargeting(state: GameState, playerId: PlayerId, cardId: string, obj: GameObject, ability: any, abilityIndex: number, log: (m: string) => void, engine: any, preSelectedChoice?: number): boolean {
         const { TargetingProcessor } = require('./TargetingProcessor');
         const pool = [
             ...Object.keys(state.players),
@@ -1309,7 +1344,7 @@ export class SpellProcessor {
             log(`[AUTO-TARGET] Automatically targeting the only opponent for ${obj.definition.name}.`);
 
             if (maxCount === 1) {
-                return this.finalizeAbilityActivation(state, playerId, obj, ability, abilityIndex, [opponentId], log, engine);
+                return this.finalizeAbilityActivation(state, playerId, obj, ability, abilityIndex, [opponentId], log, engine, preSelectedChoice);
             }
 
             const autoSelected = [opponentId];
@@ -1331,7 +1366,8 @@ export class SpellProcessor {
                     maxCount,
                     minCount,
                     count,
-                    prompt
+                    prompt,
+                    preSelectedChoice
                 }
             };
             return true;
@@ -1340,7 +1376,7 @@ export class SpellProcessor {
         if (legalForFirst.length === 0) {
             if (firstDef.optional || firstDef.minCount === 0) {
                 log(`No legal targets found, skipping.`);
-                return this.finalizeAbilityActivation(state, playerId, obj, ability, abilityIndex, [], log, engine);
+                return this.finalizeAbilityActivation(state, playerId, obj, ability, abilityIndex, [], log, engine, preSelectedChoice);
             } else {
                 log(`Illegal Play: No valid targets available for ${obj.definition.name}'s ability.`);
                 return false;
@@ -1366,13 +1402,17 @@ export class SpellProcessor {
         return true;
     }
 
-    private static finalizeAbilityActivation(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, abilityIndex: number, declaredTargets: string[], log: (m: string) => void, engine: any): boolean {
+    private static finalizeAbilityActivation(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, abilityIndex: number, declaredTargets: string[], log: (m: string) => void, engine: any, preSelectedChoice?: number): boolean {
         const { AbilityType } = require('@shared/engine_types');
         const { TriggerProcessor } = require('./../effects/TriggerProcessor');
         const playerObj = state.players[playerId];
 
         const stackId = `ability_${Date.now()}`;
+        // ARCHITECTURAL NOTE: Choice Propagation (Egress)
+        // If the auto-tap engine pre-calculated a choice (e.g. which color a dual land produced),
+        // it is passed here so ChoiceEffectHandler can skip the UI modal.
         const stackObj = {
+
             id: stackId,
             controllerId: playerId,
             sourceId: obj.id,
@@ -1384,6 +1424,7 @@ export class SpellProcessor {
             xValue: (obj as any).xValue,
             card: obj,
             definition: obj.definition,
+            preSelectedChoice: preSelectedChoice,
             data: {
                 effects: (ability as any).effects || [],
                 targetDefinition: ability.targetDefinition

@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engine_types';
-    export const DreamrootCascade: CardDefinition = {
+export const DreamrootCascade: CardDefinition = {
     name: "Dreamroot Cascade",
     manaCost: "",
     scryfall_id: "ef662b92-5a7f-48c9-bcc1-14b55e091aef",
@@ -19,7 +19,8 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
             isManaAbility: true,
             effects: [
                 {
-                    type: EffectType.AddMana,
+                    type: EffectType.Choice,
+                    label: "Choose a color",
                     choices: [
                         { label: '{G}', effects: [{ type: EffectType.AddMana, manaType: 'G' }] },
                         { label: '{U}', effects: [{ type: EffectType.AddMana, manaType: 'U' }] }
@@ -29,4 +30,3 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
         }
     ]
 };
-    

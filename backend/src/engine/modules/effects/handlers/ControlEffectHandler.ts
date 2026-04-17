@@ -202,16 +202,16 @@ export class ControlEffectHandler {
         });
         break;
 
-      case 'AddMana':
+      case 'AddMana': {
         const { ManaProcessor: MP } = require('../../magic/ManaProcessor');
         const { ChoiceGenerator: CG } = require('../ChoiceGenerator');
         const effectiveTargets = (targets && targets.length > 0) ? targets : [controllerId];
         
-        let manaStr = effect.value || effect.amount || effect.manaType || effect.mana || 'C';
+        // Prioritize manaType/mana over amount/value for symbol resolution
+        let manaStr = effect.manaType || effect.mana || effect.value || (effect.amount && !isNaN(parseInt(effect.amount)) ? effect.amount.toString() : null) || 'C';
         const isFlexible = String(manaStr).toUpperCase() === 'ANY' || String(manaStr).toUpperCase() === '{ANY}';
 
         if (isFlexible) {
-            // CR 605: If mana of any color is added, the player chooses which color.
             const tid = effectiveTargets[0];
             const p = state.players[tid as PlayerId];
             if (p) {
@@ -224,7 +224,7 @@ export class ControlEffectHandler {
                         manaType: c, 
                         value: c, 
                         mana: c, 
-                        amount: effect.amount || 1 // Ensure we keep the amount if it was like "Add two mana of any one color"
+                        amount: effect.amount || 1 
                     }]
                 }));
 
@@ -242,24 +242,50 @@ export class ControlEffectHandler {
         effectiveTargets.forEach(tid => {
             const p = state.players[tid as PlayerId];
             if (p) {
-                const res = MP.parseManaCost(manaStr.startsWith('{') ? manaStr : `{${manaStr}}`);
+                const amount = effect.amount || 1;
+                // Ensure braces if missing
+                const formattedMana = String(manaStr).startsWith('{') ? String(manaStr) : `{${manaStr}}`;
+                const res = MP.parseManaCost(formattedMana);
                 
-                if (effect.manaRestrictions) {
-                    if (!p.restrictedMana) p.restrictedMana = [];
-                    // Handle colored mana in restrictions
+                const rawRestrictions = effect.manaRestrictions || effect.restriction || effect.restrictions;
+                const restrictionList = rawRestrictions ? (Array.isArray(rawRestrictions) ? rawRestrictions : [rawRestrictions]) : null;
+
+                if (restrictionList) {
+                    const newRestricted = [...(p.restrictedMana || [])];
                     Object.entries(res.colored).forEach(([s, a]) => {
-                        p.restrictedMana!.push({ color: s as any, amount: a as number, restrictions: effect.manaRestrictions });
+                        const total = (a as number) * amount;
+                        if (total > 0) {
+                            newRestricted.push({ color: s as any, amount: total, restrictions: restrictionList });
+                            log(`[MANA] Produced {${s}} x ${total} (Restricted: ${restrictionList.join(', ')})`);
+                        }
                     });
                     if (res.generic > 0) {
-                        p.restrictedMana!.push({ color: 'C', amount: res.generic, restrictions: effect.manaRestrictions });
+                        const total = res.generic * amount;
+                        newRestricted.push({ color: 'C', amount: total, restrictions: restrictionList });
+                        log(`[MANA] Produced {C} x ${total} (Restricted: ${restrictionList.join(', ')})`);
                     }
+                    p.restrictedMana = newRestricted;
                 } else {
-                    Object.entries(res.colored).forEach(([s, a]) => (p.manaPool as any)[s] += (a as number));
-                    p.manaPool['C'] += res.generic;
+                    // Update manaPool with a new object reference to ensure UI/Socket change detection
+                    const newPool = { ...p.manaPool };
+                    Object.entries(res.colored).forEach(([s, a]) => {
+                        const total = (a as number) * amount;
+                        if (total > 0) {
+                            (newPool as any)[s] += total;
+                            log(`[MANA] Produced {${s}} x ${total}`);
+                        }
+                    });
+                    const genericTotal = res.generic * amount;
+                    if (genericTotal > 0) {
+                        newPool.C += genericTotal;
+                        log(`[MANA] Produced {C} x ${genericTotal}`);
+                    }
+                    p.manaPool = newPool;
                 }
             }
         });
         break;
+      }
     }
   }
 }

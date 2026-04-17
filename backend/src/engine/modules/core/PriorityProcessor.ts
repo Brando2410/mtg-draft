@@ -226,14 +226,41 @@ export class PriorityProcessor {
       return false;
     }
 
-    // Check hand for castable spells - IGNORING priority check for engine validation
-    const hasCastable = player.hand.some(card => {
-      const canPlay = this.canObjectBePlayed(state, playerId, card.id, false);
-      return canPlay;
+    // 1. Check hand for castable spells
+    const hasCastableHand = player.hand.some(card => {
+        const playable = this.canObjectBePlayed(state, playerId, card.id, false);
+        if (playable) console.log(`[DEBUG] Hand card ${card.definition.name} IS playable.`);
+        return playable;
     });
-    if (hasCastable) return true;
+    if (hasCastableHand) return true;
 
-    // Chapter 3 Check: Battlefield Activated Abilities - IGNORING priority check
+    // 2. Check Graveyard for castable spells (Flashback) or activated abilities
+    const hasGraveAction = player.graveyard.some(card => {
+        const playable = this.canObjectBePlayed(state, playerId, card.id, false);
+        if (playable) console.log(`[DEBUG] Grave card ${card.definition.name} IS playable.`);
+        return playable;
+    });
+    if (hasGraveAction) return true;
+
+    // 3. Check Exile for castable spells
+    const hasExileAction = state.exile.some(card => {
+        if (card.controllerId !== playerId) return false;
+        const playable = this.canObjectBePlayed(state, playerId, card.id, false);
+        if (playable) console.log(`[DEBUG] Exile card ${card.definition.name} IS playable.`);
+        return playable;
+    });
+    if (hasExileAction) return true;
+
+    // 4. Check Top of Library (permission)
+    if (player.library.length > 0) {
+      const topCard = player.library[player.library.length - 1];
+      if (this.canObjectBePlayed(state, playerId, topCard.id, false)) {
+          console.log(`[DEBUG] canPlayerTakeAnyAction: TRUE because of library top.`);
+          return true;
+      }
+    }
+
+    // 5. Chapter 3 Check: Battlefield Activated Abilities
     const hasBattlefieldAction = state.battlefield.some(obj => {
       if (obj.controllerId !== playerId) return false;
 
@@ -244,25 +271,32 @@ export class PriorityProcessor {
         const isSorcery = face.types.some((t: string) => t.toLowerCase() === 'sorcery');
 
         let timingOk = isInstant;
-        // Rule 307.1 / 117.1a: Sorcery timing (Active Player, Main Phase, Stack Empty)
         if (isSorcery && isOurTurn && stackEmpty && (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain)) {
           timingOk = true;
         }
 
         if (timingOk) {
           const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], face);
-          if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, obj)) return true;
+          if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, obj)) {
+              console.log(`[DEBUG] Battlefield Prepared Copy of ${obj.definition.name} IS playable.`);
+              return true;
+          }
         }
       }
 
       const logic = oracle.getCard(obj.definition.name);
-
       if (!logic || !logic.abilities) return false;
 
-      return logic.abilities.some((ability: any, index: number) => this.canAbilityBeActivated(state, playerId, obj.id, index, false));
-
+      return logic.abilities.some((ability: any, index: number) => {
+          const canAct = this.canAbilityBeActivated(state, playerId, obj.id, index, false);
+          if (canAct) console.log(`[DEBUG] Battlefield Ability of ${obj.definition.name} (idx ${index}) IS playable.`);
+          return canAct;
+      });
     });
 
+    if (!hasBattlefieldAction) {
+        // console.log(`[DEBUG] canPlayerTakeAnyAction: FALSE for ${playerId}. Hand size: ${player.hand.length}, Grave size: ${player.graveyard.length}`);
+    }
     return hasBattlefieldAction;
   }
 
@@ -348,6 +382,13 @@ export class PriorityProcessor {
             );
             return candidates.length > 0;
           }
+          if (cost.type === 'Discard') {
+            const candidates = player.hand.filter(c => 
+                c.id !== cardToPlay!.id && 
+                TargetingProcessor.matchesRestrictions(state, c, cost.restrictions || [], playerId, cardToPlay!.id)
+            );
+            return candidates.length > 0;
+          }
           return true;
         });
         if (!canPayAllExtras) canPlay = false;
@@ -356,7 +397,9 @@ export class PriorityProcessor {
       // --- CHECK TARGETS ---
       if (canPlay) {
         const logic = oracle.getCard(cardToPlay.definition.name);
-        const spellAbility = logic?.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell);
+        // Fallback to definition abilities for spells without dedicated logic (like virtual spells)
+        const spellAbility = logic?.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell) ||
+                            cardToPlay.definition.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell);
         
         // Modal check
         if (spellAbility?.modes) {

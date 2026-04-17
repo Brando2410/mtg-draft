@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
     export const LeechCollectorBloodletting: CardDefinition = {
     name: "Leech Collector // Bloodletting",
     manaCost: "{1}{B}",
@@ -12,7 +12,6 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     power: "2",
     toughness: "2",
 
-    image_url: "https://cards.scryfall.io/png/front/c/7/c715fe4c-c0e7-4342-811f-b74687851097.png?1775937525",
     abilities: [
         {
             type: AbilityType.Triggered,

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 export const GraveResearcherReanimate: CardDefinition = {
     name: "Grave Researcher // Reanimate",
     manaCost: "{2}{B} // {B}",
@@ -18,12 +18,12 @@ export const GraveResearcherReanimate: CardDefinition = {
     oracleText: "At the beginning of your upkeep, surveil 1. Then if there are three or more creature cards in your graveyard, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "3",
     toughness: "3",
-    image_url: "https://cards.scryfall.io/png/front/8/b/8b1e10e8-ea14-4761-910b-4072e2a18456.png?1775937504",
 
     abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Upkeep,
+            condition: ConditionType.IsYourTurn,
             effects: [
                 {
                     type: EffectType.Surveil,

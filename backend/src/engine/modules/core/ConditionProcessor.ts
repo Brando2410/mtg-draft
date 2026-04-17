@@ -145,6 +145,12 @@ export class ConditionProcessor {
           if (type === 'SPENT_MANA_LE') return spent <= threshold;
           return false;
         }
+        case 'CONVERGE_GE': {
+          const threshold = parseInt(restrictions[0]);
+          const obj = state.battlefield.find(o => o.id === sourceId) || (event as any)?.data?.object || (event as any)?.card || (event as any)?.gameObject;
+          const converge = obj?.convergeAmount || (event as any)?.convergeAmount || (event as any)?.data?.convergeAmount || 0;
+          return converge >= threshold;
+        }
         case 'SPELL_IS_MULTICOLORED': {
           const card = event?.data?.card || event?.data?.object || (event as any)?.gameObject;
           if (!card) return false;
@@ -206,7 +212,16 @@ export class ConditionProcessor {
         case 'CONTROL_SUBTYPE_GE': {
           const subtype = restrictions[0];
           const threshold = parseInt(restrictions[1]) || 1;
-          return state.battlefield.filter(o => o.controllerId === controllerId && (o.definition.subtypes || []).some(s => s.toLowerCase() === subtype.toLowerCase())).length >= threshold;
+          return state.battlefield.filter(o => String(o.controllerId) === String(controllerId) && (o.definition.subtypes || []).some(s => s.toLowerCase() === subtype.toLowerCase())).length >= threshold;
+        }
+        case 'CONTROL_COUNT_GE': {
+          const threshold = parseInt(restrictions[restrictions.length - 1]);
+          const realRestrictions = restrictions.slice(0, -1);
+          const count = state.battlefield.filter(obj =>
+            String(obj.controllerId) === String(controllerId) &&
+            TargetingProcessor.matchesRestrictions(state, obj, realRestrictions, controllerId, sourceId)
+          ).length;
+          return count >= threshold;
         }
         case 'EVENT_OBJECT_OWNER_NOT_YOU': {
           const card = event?.data?.card || event?.data?.object;

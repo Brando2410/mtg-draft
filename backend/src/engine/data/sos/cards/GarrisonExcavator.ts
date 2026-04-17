@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } from '@shared/engine_types';
     export const GarrisonExcavator: CardDefinition = {
     name: "Garrison Excavator",
     manaCost: "{3}{R}",
@@ -32,7 +32,6 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } 
                         power: 2,
                         toughness: 2,
                         keywords: ['Flying'],
-                        image_url: 'https://cards.scryfall.io/png/front/f/9/f98c0167-7434-4607-87c4-315fa8b6972e.png?1682693862'
                     }
                 }
             ]

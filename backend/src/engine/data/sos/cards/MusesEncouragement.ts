@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
     export const MusesEncouragement: CardDefinition = {
     name: "Muse's Encouragement",
     manaCost: "{4}{U}",
@@ -26,7 +26,6 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
                         subtypes: ["Elemental"],
                         power: "3",
                         toughness: "3",
-                        image_url: "https://cards.scryfall.io/png/front/3/d/3d0b9b88-705e-4df0-8a93-3e240b81355b.png?1682693891",
                         abilities: [
                             {
                                 type: AbilityType.Static,

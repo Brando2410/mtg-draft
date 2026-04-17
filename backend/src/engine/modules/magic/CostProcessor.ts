@@ -17,11 +17,16 @@ export class CostProcessor {
    * Checks for restrictions like "Cannot Tap" (Rule 101.1).
    */
   public static canPay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId, playerId: PlayerId): boolean {
-    const source = this.findObject(state, sourceId);
-    if (!source) return false;
+    let source = this.findObject(state, sourceId);
+    
+    // Fallback for resolving objects in transition
+    if (!source) {
+        source = { id: sourceId, ownerId: playerId, controllerId: playerId, definition: { name: 'Resolving Object' }, zone: Zone.Stack } as any;
+    }
 
+    const validSource = source as GameObject;
     for (const cost of costs) {
-      if (!this.canPaySingle(state, cost, source, playerId)) {
+      if (!this.canPaySingle(state, cost, validSource, playerId)) {
         return false;
       }
     }
@@ -33,11 +38,15 @@ export class CostProcessor {
    * Note: This assumes canPay has already been checked.
    */
   public static pay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId, playerId: PlayerId, log: (m: string) => void) {
-    const source = this.findObject(state, sourceId);
-    if (!source) return;
+    let source = this.findObject(state, sourceId);
+    
+    if (!source) {
+        source = { id: sourceId, ownerId: playerId, controllerId: playerId, definition: { name: 'Resolving Object' }, zone: Zone.Stack } as any;
+    }
 
+    const validSource = source as GameObject;
     for (const cost of costs) {
-      this.paySingle(state, cost, source, playerId, log);
+      this.paySingle(state, cost, validSource, playerId, log);
     }
   }
 
@@ -124,7 +133,7 @@ export class CostProcessor {
       case CostType.TapSelection: {
         const amount = Number(cost.value || cost.amount || 1);
         const candidates = state.battlefield.filter(o => 
-            o.controllerId === playerId && 
+            String(o.controllerId) === String(playerId) && 
             !o.isTapped &&
             (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, playerId, source.id))
         );
@@ -312,10 +321,30 @@ export class CostProcessor {
   }
 
   private static findObject(state: GameState, id: GameObjectId): GameObject | undefined {
-    return state.battlefield.find(o => o.id === id) || 
-           state.exile.find(o => o.id === id) ||
-           state.stack.find(o => o.id === id)?.card ||
-           Object.values(state.players).flatMap(p => [...p.hand, ...p.graveyard, ...p.library]).find(o => o.id === id);
+    if (!id) return undefined;
+
+    // 1. Battlefield
+    let found = state.battlefield.find(o => o.id === id);
+    if (found) return found;
+
+    // 2. Stack (Checking instance ID, source ID, and card ID)
+    const stackEntry = state.stack.find(o => o.id === id || o.sourceId === id || o.card?.id === id);
+    if (stackEntry?.card) return stackEntry.card;
+
+    // 3. Player Zones
+    for (const pid in state.players) {
+        const p = state.players[pid as PlayerId];
+        found = p.hand.find(o => o.id === id) || 
+                p.graveyard.find(o => o.id === id) || 
+                p.library.find(o => o.id === id);
+        if (found) return found;
+    }
+
+    // 4. Exile
+    found = state.exile.find(o => o.id === id);
+    if (found) return found;
+
+    return undefined;
   }
 }
 

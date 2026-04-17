@@ -16,8 +16,10 @@ import { TargetMapping, AbilityType, CardDefinition, CostType, EffectType, Targe
     oracleText: "Vigilance\n{1}{W}: Return this card from your graveyard to your hand. Activate only as a sorcery.",
     abilities: [
         {
+            name: "Return to Hand",
             type: AbilityType.Activated,
             activeZone: Zone.Graveyard,
+            manaCost: "{1}{W}",
             costs: [{ type: CostType.Mana, value: '{1}{W}' }],
             activatedOnlyAsSorcery: true,
             effects: [

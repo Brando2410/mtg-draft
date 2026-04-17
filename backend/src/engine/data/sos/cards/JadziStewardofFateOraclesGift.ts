@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 export const JadziStewardofFateOraclesGift: CardDefinition = {
     name: "Jadzi, Steward of Fate // Oracle's Gift",
     manaCost: "{2}{U}",
@@ -13,7 +13,6 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
     toughness: "4",
 
     entersPrepared: true,
-    image_url: "https://cards.scryfall.io/png/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.png?1775937293",
     abilities: [
         {
             type: AbilityType.Triggered,

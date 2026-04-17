@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 export const LivingHistory: CardDefinition = {
     name: "Living History",
     manaCost: "{1}{R}",
@@ -23,7 +23,6 @@ export const LivingHistory: CardDefinition = {
                         subtypes: ["Spirit"],
                         power: 2,
                         toughness: 2,
-                        image_url: "https://cards.scryfall.io/png/front/f/9/f98c0167-7434-4607-87c4-315fa8b6972e.png?1682693862"
                     },
                     amount: 1,
                     targetMapping: TargetMapping.Controller

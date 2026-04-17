@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 export const MaelstromArtisanRocketVolley: CardDefinition = {
     name: "Maelstrom Artisan // Rocket Volley",
     manaCost: "{1}{R}{R}",
@@ -13,7 +13,6 @@ export const MaelstromArtisanRocketVolley: CardDefinition = {
     toughness: "2",
 
     entersPrepared: true,
-    image_url: "https://cards.scryfall.io/png/front/5/c/5c88391d-271f-4021-a5d9-158ebc1e6357.png?1775937805",
     preparedFace: {
         name: "Rocket Volley",
         image_url: "https://cards.scryfall.io/png/front/5/c/5c88391d-271f-4021-a5d9-158ebc1e6357.png?1775937805",

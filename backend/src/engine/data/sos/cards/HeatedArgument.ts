@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, SelectionType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, SelectionType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const HeatedArgument: CardDefinition = {
     name: "Heated Argument",
     manaCost: "{4}{R}",
@@ -27,25 +27,30 @@ export const HeatedArgument: CardDefinition = {
                     targetMapping: TargetMapping.Target1
                 },
                 {
-                    type: 'Choice' as any,
+                    type: EffectType.Choice,
                     label: "Exile a card from your graveyard to deal 2 damage to target's controller?",
-                    optional: true,
-                    effects: [
+                    choices: [
                         {
-                            type: CostType.Exile,
-                            selectionType: SelectionType.Target,
-                            targetDefinition: {
-                                type: TargetType.CardInGraveyard,
-                                count: 1,
-                                restrictions: [
-                                    "youcontrol"
-                                ]
-                            }
+                            label: "Yes",
+                            condition: "GRAVEYARD_COUNT_GE:1",
+                            costs: [
+                                {
+                                    type: CostType.Exile,
+                                    amount: 1,
+                                    sourceZones: [Zone.Graveyard]
+                                }
+                            ],
+                            effects: [
+                                {
+                                    type: EffectType.DealDamage,
+                                    amount: 2,
+                                    targetMapping: TargetMapping.Target1Controller
+                                }
+                            ]
                         },
                         {
-                            type: EffectType.DealDamage,
-                            amount: 2,
-                            targetMapping: TargetMapping.Target1Controller
+                            label: "No",
+                            effects: []
                         }
                     ],
                     targetMapping: TargetMapping.Controller

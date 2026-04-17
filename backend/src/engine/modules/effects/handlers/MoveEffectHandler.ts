@@ -131,15 +131,19 @@ export class MoveEffectHandler {
             return;
         }
 
+        const { EffectProcessor } = require('../EffectProcessor');
+        const resolvedMin = (targetDef.minCount !== undefined) ? EffectProcessor.resolveAmount(state, targetDef.minCount, sourceId, controllerId, stackObject) : (EffectProcessor.resolveAmount(state, targetDef.count || 1, sourceId, controllerId, stackObject));
+        const resolvedMax = EffectProcessor.resolveAmount(state, targetDef.count || 1, sourceId, controllerId, stackObject);
+
         state.pendingAction = ChoiceGenerator.createCardChoice(state, pool, {
-            label: effect.label || `Select a card to move`,
+            label: effect.label || `Select up to ${resolvedMax} card${resolvedMax !== 1 ? 's' : ''} to move from your graveyard`,
             playerId: controllerId,
             sourceId: sourceId,
             restrictions: targetDef.restrictions,
             filterSelectable: true,
             optional: effect.optional,
-            minChoices: (targetDef.minCount !== undefined) ? targetDef.minCount : (targetDef.count || 1),
-            maxChoices: targetDef.count || 1,
+            minChoices: resolvedMin,
+            maxChoices: resolvedMax,
             actionType: effect.optional ? ActionType.OptionalAction : ActionType.ResolutionChoice,
             onSelected: (c: GameObject) => {
                 const subEffects: any[] = [];

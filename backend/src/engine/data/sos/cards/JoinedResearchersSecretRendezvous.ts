@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const JoinedResearchersSecretRendezvous: CardDefinition = {
     name: "Joined Researchers // Secret Rendezvous",
@@ -12,7 +12,6 @@ export const JoinedResearchersSecretRendezvous: CardDefinition = {
     oracleText: "First strike\nAt the beginning of each end step, if an opponent has more cards in hand than you, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "2",
     toughness: "2",
-    image_url: "https://cards.scryfall.io/png/front/1/e/1ebaafe0-3a9a-424c-8698-d26e7be45343.png?1775937069",
     
     abilities: [
         {

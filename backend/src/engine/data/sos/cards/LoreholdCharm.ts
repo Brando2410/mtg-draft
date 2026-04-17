@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, SelectionType } from '@shared/engine_types';
 export const LoreholdCharm: CardDefinition = {
     name: "Lorehold Charm",
     manaCost: "{R}{W}",
@@ -15,6 +15,7 @@ export const LoreholdCharm: CardDefinition = {
             effects: [
                 {
                     type: CostType.Choice,
+                    optional: true,
                     choices: [
                         {
                             label: "Each opponent sacrifices a nontoken artifact",
@@ -30,19 +31,20 @@ export const LoreholdCharm: CardDefinition = {
                             ]
                         },
                         {
-                            label: "Return target artifact or creature with MV 2 or less from graveyard",
-                            targetDefinition: {
-                                type: TargetType.CardInGraveyard,
-                                count: 1,
-                                restrictions: [
-                                    "ArtifactOrCreature",
-                                    "mv <= 2"
-                                ]
-                            },
+                            label: "Return artifact or creature with MV 2 or less from your graveyard",
                             effects: [
                                 {
                                     type: EffectType.PutOnBattlefield,
-                                    targetMapping: TargetMapping.Target1
+                                    selectionType: SelectionType.Search,
+                                    targetDefinition: {
+                                        type: TargetType.CardInGraveyard,
+                                        count: 1,
+                                        restrictions: [
+                                            "ArtifactOrCreature",
+                                            "mv <= 2",
+                                            "Yours"
+                                        ]
+                                    }
                                 }
                             ]
                         },

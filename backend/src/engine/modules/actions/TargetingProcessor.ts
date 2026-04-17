@@ -101,7 +101,7 @@ export class TargetingProcessor {
             if (type.includes('hand')) location = "in hand";
 
             const knownAdjectives = [
-                'other', 'another', 'nonland', 'noncreature', 'token', 'nontoken', 'legendary', 
+                'other', 'another', 'nonland', 'noncreature', 'token', 'nontoken', 'legendary',
                 'tapped', 'untapped', 'monocolored', 'multicolored', 'colorless',
                 'white', 'blue', 'black', 'red', 'green'
             ];
@@ -151,7 +151,7 @@ export class TargetingProcessor {
             // Sort adjectives to maintain "another" at the start
             const finalAdjectives = [...new Set(adjectives)];
             const adjStr = finalAdjectives.join(' ');
-            
+
             if (adjStr.includes('another')) {
                 typeStr = `${adjStr} ${mainNoun}`;
             } else {
@@ -185,7 +185,7 @@ export class TargetingProcessor {
         if (def.minCount === 0 && def.count > 0 && !isSequenceOptional) {
             const countStr = def.count === 1 ? "one" : def.count;
             const plural = (def.count > 1 && !typeStr.endsWith('s')) ? "s" : "";
-            
+
             let cleanType = typeStr;
             if (cleanType.startsWith('a ')) cleanType = cleanType.substring(2);
             if (cleanType.startsWith('an ')) cleanType = cleanType.substring(3);
@@ -245,16 +245,16 @@ export class TargetingProcessor {
 
             if (type === TargetType.Player.toLowerCase() || type === TargetType.Opponent.toLowerCase() || type === TargetType.AnyTarget.toLowerCase() || type === TargetType.PlayerOrPlaneswalker.toLowerCase() || restrictions.includes('player') || restrictions.includes('anytarget')) {
 
-                let sourceControllerId = (sourceOrId as any)?.controllerId || 
+                let sourceControllerId = (sourceOrId as any)?.controllerId ||
                     state.stack.find(s => s.id === sourceId || s.sourceId === sourceId)?.controllerId ||
                     state.battlefield.find(o => o.id === sourceId)?.controllerId;
 
                 if (!sourceControllerId) {
                     for (const pId in state.players) {
                         const player = state.players[pId as PlayerId];
-                        const isInZone = player.hand.some(c => c.id === sourceId) || 
-                                       player.graveyard.some(c => c.id === sourceId) || 
-                                       player.library.some(c => c.id === sourceId);
+                        const isInZone = player.hand.some(c => c.id === sourceId) ||
+                            player.graveyard.some(c => c.id === sourceId) ||
+                            player.library.some(c => c.id === sourceId);
                         if (isInZone) {
                             sourceControllerId = pId;
                             break;
@@ -367,10 +367,10 @@ export class TargetingProcessor {
         let expectedZone = targetDefForIndex?.zone;
         if (!expectedZone) {
             if (targetZone === Zone.Stack) expectedZone = Zone.Stack;
-            else if (['instant', 'sorcery', 'instant_or_sorcery'].includes(typeLineCheck)) expectedZone = Zone.Stack;
-            else if (targetDefForIndex?.type === 'CardInGraveyard' || String(targetDefForIndex?.type).toLowerCase() === 'cardingraveyard') expectedZone = Zone.Graveyard;
-            else if (targetDefForIndex?.type === 'CardInHand' || String(targetDefForIndex?.type).toLowerCase() === 'cardinhand') expectedZone = Zone.Hand;
-            else if (targetDefForIndex?.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'graveyard')) expectedZone = Zone.Graveyard;
+            else if (['instant', 'sorcery', 'instant_or_sorcery', 'spell_on_stack', 'spellonstack', 'spell'].includes(typeLineCheck)) expectedZone = Zone.Stack;
+            else if (['card_in_graveyard', 'cardingraveyard'].includes(typeLineCheck)) expectedZone = Zone.Graveyard;
+            else if (['card_in_hand', 'cardinhand'].includes(typeLineCheck)) expectedZone = Zone.Hand;
+            else if (targetDefForIndex?.restrictions?.some((r: any) => typeof r === 'string' && ['graveyard', 'in_graveyard'].includes(r.toLowerCase()))) expectedZone = Zone.Graveyard;
             else expectedZone = Zone.Battlefield;
         }
 
@@ -519,14 +519,14 @@ export class TargetingProcessor {
                 // Handle player-specific target checks if necessary
                 return restrictions.includes('player') || restrictions.includes('anytarget');
             }
-            
+
             // Handle abilities on the stack (which don't have a Card definition)
             if (targetObj.type === 'TriggeredAbility' || targetObj.type === 'ActivatedAbility' || targetObj.type === 'Spell') {
                 const isAbility = targetObj.type.includes('Ability');
                 return restrictions.some(r => {
                     const rType = (typeof r === 'string' ? r : (r.type || '')).toLowerCase();
                     const rValue = (typeof r === 'string' ? '' : (r.value || '')).toLowerCase();
-                    
+
                     if (rType === 'type' && rValue === 'ability' && isAbility) return true;
                     if (rType === 'ability' || rValue === 'ability') return isAbility;
                     if (rType === 'spell' || rValue === 'spell') return targetObj.type === 'Spell';
@@ -827,7 +827,7 @@ export class TargetingProcessor {
                         }
 
                         let match = true;
-                        
+
                         // Normalized extraction of type/value
                         const restrictionType = (r.type || "").toLowerCase();
                         const restrictionValue = r.value !== undefined ? String(r.value) : null;
@@ -846,7 +846,7 @@ export class TargetingProcessor {
                             }
                             return objTypes.includes(lt);
                         })) match = false;
-                        
+
                         if (rSubtypes.length > 0 && !rSubtypes.some((s: string) => (definition.subtypes || []).some((ts: string) => ts.toLowerCase() === s.toLowerCase()))) match = false;
                         if (r.nameIncludes && definition.name && !definition.name.toLowerCase().includes(r.nameIncludes.toLowerCase())) match = false;
                         if (r.nameEquals || r.name) {
@@ -855,7 +855,7 @@ export class TargetingProcessor {
                             if (!targetName || targetName.toLowerCase() !== filterName.toLowerCase()) match = false;
                         }
                         if (r.hasxinmanacost && !definition.manaCost?.includes('X')) match = false;
-                        
+
                         // --- SOS: Handle Control Restriction Objects ---
                         if (restrictionType === 'control' && restrictionValue) {
                             const lValue = restrictionValue.toLowerCase();
@@ -996,7 +996,7 @@ export class TargetingProcessor {
         if (isUndoing) {
             if (actionData.selectedTargets.length > 0) {
                 const removed = actionData.selectedTargets.pop();
-                
+
                 // Refresh prompt and pool for the NEW index after removing
                 const nextIndex = actionData.selectedTargets.length;
                 const currentDef = this.getDefinitionForIndex(targetDef, nextIndex);
@@ -1037,12 +1037,12 @@ export class TargetingProcessor {
                     if (sourceOnField.abilitiesUsedThisTurn > 0) sourceOnField.abilitiesUsedThisTurn--;
                     const abilityIndex = actionData.abilityIndex;
                     if (abilityIndex !== undefined) {
-                        const { m21 } = require('../../data/m21');
-                        const logic = m21[sourceOnField.definition.name];
-                        const ability = logic?.abilities[abilityIndex];
+                        const { oracle } = require('../../OracleLogicMap');
+                        const logic = oracle.getCard(sourceOnField.definition.name);
+                        const ability = (logic as any)?.abilities?.[abilityIndex];
                         const lCost = ability?.costs?.find((c: any) => c.type === 'Loyalty')?.value;
                         if (lCost !== undefined) {
-                            sourceOnField.counters['Loyalty'] = (sourceOnField.counters['Loyalty'] || 0) - lCost;
+                            sourceOnField.counters['loyalty'] = (sourceOnField.counters['loyalty'] || 0) - lCost;
                             log(`Refunding loyalty for ${sourceOnField.definition.name}: ${lCost > 0 ? '+' : ''}${lCost}`);
                         }
                     }

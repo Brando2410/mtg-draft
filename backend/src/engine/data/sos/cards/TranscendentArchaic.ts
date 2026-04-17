@@ -30,7 +30,7 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
                                 },
                                 {
                                     type: EffectType.ConditionalEffect,
-                                    condition: 'DRAWN_CARDS_GE:1',
+                                    condition: 'CONVERGE_GE:1',
                                     effects: [
                                         {
                                             type: EffectType.DiscardCards,

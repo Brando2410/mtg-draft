@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-    export const EmeritusofAbundanceRegrowth: CardDefinition = {
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone, SelectionType } from '@shared/engine_types';
+export const EmeritusofAbundanceRegrowth: CardDefinition = {
     name: "Emeritus of Abundance // Regrowth",
     manaCost: "{2}{G}",
     scryfall_id: "ac095763-6f4e-4d4e-9c99-414646368f8d",
@@ -11,9 +11,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     oracleText: "Vigilance\nThis creature enters prepared. Whenever this creature attacks, if you control eight or more lands, this creature becomes prepared.",
     power: "3",
     toughness: "4",
-
     entersPrepared: true,
-    image_url: "https://cards.scryfall.io/png/front/a/c/ac095763-6f4e-4d4e-9c99-414646368f8d.png?1775937986",
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -37,20 +35,20 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
-                    type: 'Card',
-                    zone: Zone.Graveyard,
-                    count: 1
-                },
                 effects: [
                     {
                         type: EffectType.MoveToZone,
                         zone: Zone.Hand,
-                        targetMapping: TargetMapping.Target1
+                        label: "Select a card from your graveyard to return to your hand",
+                        selectionType: SelectionType.Search,
+                        targetDefinition: {
+                            type: TargetType.CardInGraveyard,
+                            count: 1,
+                            restrictions: ['Yours']
+                        }
                     }
                 ]
             }
         ]
     }
 };
-    

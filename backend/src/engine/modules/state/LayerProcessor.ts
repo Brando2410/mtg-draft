@@ -401,7 +401,6 @@ export class LayerProcessor {
             sourceCreatureId: o.id
           };
           player.virtualHand.push(virtualSpell as any);
-          console.log(`[DEBUG] LayerProcessor: Push virtual_prepared_${o.id} to ${player.id}'s hand. face: ${face.name}`);
         }
       });
 

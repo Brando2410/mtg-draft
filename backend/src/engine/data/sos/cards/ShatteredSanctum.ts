@@ -1,11 +1,10 @@
 import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engine_types';
-    export const ShatteredSanctum: CardDefinition = {
+
+export const ShatteredSanctum: CardDefinition = {
     name: "Shattered Sanctum",
     manaCost: "",
     colors: [],
-    types: [
-        "Land"
-    ],
+    types: ["Land"],
     subtypes: [],
     keywords: [],
     oracleText: "This land enters tapped unless you control two or more other lands.\n{T}: Add {W} or {B}.",
@@ -17,7 +16,8 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
             isManaAbility: true,
             effects: [
                 {
-                    type: EffectType.AddMana,
+                    type: EffectType.Choice,
+                    label: "Choose a color",
                     choices: [
                         { label: '{W}', effects: [{ type: EffectType.AddMana, manaType: 'W' }] },
                         { label: '{B}', effects: [{ type: EffectType.AddMana, manaType: 'B' }] }
@@ -27,4 +27,3 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
         }
     ]
 };
-    

@@ -57,7 +57,7 @@ const Stopper = memo(({ id, label, isOpponent, stops, onToggleStop, isActive, cu
     <div className="flex flex-col items-center gap-1.5 group relative">
         <div 
           onClick={(e) => { e.stopPropagation(); onToggleStop?.(internalId); }}
-          className={`w-3.5 h-3.5 rotate-45 border-2 transition-all cursor-pointer relative z-10
+          className={`w-[1.5vh] h-[1.5vh] rotate-45 border-2 transition-all cursor-pointer relative z-10
             ${isSet ? activeColor : 'bg-slate-900/90 border-white/20 hover:border-white/50'}
             ${isCurrent ? 'ring-2 ring-cyan-400/50 shadow-[0_0_10px_rgba(34,211,238,0.5)]' : ''}`}
         />
@@ -162,7 +162,7 @@ export const Avatar = memo(({
         )}
       </AnimatePresence>
 
-      <div className="flex items-center gap-6 relative h-12">
+      <div className="flex items-center gap-[4vh] relative h-[6vh]">
           <div className="flex gap-4 items-center">
               <Stopper {...commonProps} id="beginning" label="Beginning" />
               <Stopper {...commonProps} id="main1" label="Main 1" />
@@ -221,6 +221,34 @@ export const Avatar = memo(({
                 ))}
               </AnimatePresence>
 
+              {/* DYNAMIC PRIORITY HALO */}
+              <AnimatePresence>
+                {(isPriority || isActive) && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ 
+                      opacity: isPriority ? [0.4, 0.8, 0.4] : 0.4,
+                      scale: isPriority ? [1.02, 1.15, 1.02] : 1.05,
+                      boxShadow: isPriority 
+                        ? [
+                            '0 0 40px rgba(99, 102, 241, 0.4)',
+                            '0 0 70px rgba(99, 102, 241, 0.8)',
+                            '0 0 40px rgba(99, 102, 241, 0.4)'
+                          ]
+                        : '0 0 30px rgba(255, 255, 255, 0.2)'
+                    }}
+                    transition={{ 
+                      duration: 2, 
+                      repeat: Infinity, 
+                      ease: "easeInOut" 
+                    }}
+                    className={`absolute inset-[-4px] rounded-full z-0 pointer-events-none border-2
+                        ${isPriority ? 'border-indigo-400/30' : 'border-white/10'}
+                    `}
+                  />
+                )}
+              </AnimatePresence>
+
               <motion.div 
                 id={`player-avatar-${player.id}`}
                 onClick={onClick}
@@ -228,11 +256,13 @@ export const Avatar = memo(({
                   scale: isActive ? 1.05 : 1,
                   x: isLosingLife ? [-2, 2, -2, 2, 0] : 0,
                   filter: isLosingLife ? 'contrast(1.2) brightness(1.1)' : 'contrast(1) brightness(1)',
-                  boxShadow: isPriority ? '0 0 40px rgba(99, 102, 241, 0.4)' : '0 0 20px rgba(0,0,0,0.5)'
+                  boxShadow: isPriority 
+                    ? '0 0 60px rgba(99, 102, 241, 0.6), inset 0 0 20px rgba(99, 102, 241, 0.4)' 
+                    : (isActive ? '0 0 30px rgba(99, 102, 241, 0.2)' : '0 0 20px rgba(0,0,0,0.5)')
                 }}
                 transition={{ duration: 0.1 }}
-                className={`w-20 h-20 rounded-full border-2 overflow-hidden transition-all cursor-pointer relative
-                  ${isPriority ? 'border-indigo-400 shadow-lg' : 'border-white/20'}
+                className={`w-[9vh] h-[9vh] rounded-full border-2 overflow-hidden transition-all cursor-pointer relative z-10
+                  ${isPriority ? 'border-indigo-400' : (isActive ? 'border-white/40' : 'border-white/20')}
                   ${targetable ? 'ring-4 ring-red-500 animate-pulse border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : ''}
                   bg-slate-950 flex items-center justify-center`}
               >
@@ -267,9 +297,7 @@ export const Avatar = memo(({
                       </span>
                   </motion.div>
 
-                  {isActive && (
-                      <div className={`absolute ${isOpponent ? 'top-1' : 'bottom-11'} left-1/2 -translate-x-1/2 w-1.5 h-3.5 bg-indigo-500 rounded-full shadow-[0_0_12px_rgba(99,102,241,1)] z-30`} />
-                  )}
+
               </motion.div>
           </div>
 

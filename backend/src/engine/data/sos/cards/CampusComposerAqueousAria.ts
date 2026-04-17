@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
     export const CampusComposerAqueousAria: CardDefinition = {
     name: "Campus Composer",
     manaCost: "{3}{U}",
@@ -12,7 +12,6 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     power: "3",
     toughness: "4",
 
-    image_url: "https://cards.scryfall.io/png/front/f/a/fac8ac39-ecb4-4142-bf37-131c65660a9b.png?1775937189",
     entersPrepared: true,
     preparedFace: {
         name: "Aqueous Aria",

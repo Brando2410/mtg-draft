@@ -5,9 +5,7 @@ import { Battlefield } from './Battlefield';
 import { PlayerHand } from './PlayerHand';
 import { OpponentHand } from './OpponentHand';
 import { DebugConsole } from './DebugConsole';
-import { Avatar } from './Avatar';
 import { ActionButton } from './ActionButton';
-import { ZonePile } from './ZonePile';
 import { socket } from '../../services/socket';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type GameObject, ActionType } from '@shared/engine_types';
@@ -90,7 +88,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
         
         const timer = setTimeout(() => {
             setTurnTransition(null);
-        }, 1000);
+        }, 800);
         return () => clearTimeout(timer);
     }
   }, [gameState?.activePlayerId, effectivePlayerId]);
@@ -189,10 +187,10 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
                 className="fixed inset-0 z-[5000] flex items-center justify-center pointer-events-none"
               >
                   <motion.div 
-                    initial={{ scale: 0.5, letterSpacing: '0.5em', opacity: 0, y: 20 }}
+                    initial={{ scale: 0.8, letterSpacing: '0.2em', opacity: 0, y: 10 }}
                     animate={{ scale: 1, letterSpacing: '0.1em', opacity: 1, y: 0 }}
-                    exit={{ scale: 1.2, opacity: 0, filter: 'blur(20px)' }}
-                    transition={{ type: "spring", damping: 15, stiffness: 100 }}
+                    exit={{ scale: 1.1, opacity: 0, filter: 'blur(10px)' }}
+                    transition={{ type: "spring", damping: 20, stiffness: 200 }}
                     className="relative"
                   >
                       {/* Ambient Glow */}
@@ -219,7 +217,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
       </AnimatePresence>
 
       {/* GLOBAL UI CONTROLS (Top Left) */}
-      <div className="fixed top-6 left-6 flex items-center gap-4 z-[400]">
+      <div className="fixed top-[3vh] left-[3vh] flex items-center gap-[1vw] z-[400]">
           <button 
             onClick={() => setShowDebug(true)}
             className="p-3 bg-white/5 hover:bg-indigo-500/20 rounded-2xl border border-white/5 transition-all group"
@@ -237,24 +235,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
       </div>
 
       {/* TOP: Opponent HUD & Hand */}
-      <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[500]">
-          <Avatar 
-                player={opponent!} 
-                isOpponent isActive={gameState.activePlayerId === opponentId}
-                isPriority={gameState.priorityPlayerId === opponentId}
-                onToggleStop={handleToggleStop}
-                viewerStops={me?.stops}
-                currentStep={gameState.currentStep}
-                currentPhase={gameState.currentPhase}
-                targetable={gameState.pendingAction?.type === ActionType.Targeting && gameState.pendingAction.data?.targets?.includes(opponentId)}
-                scrySurveilResult={gameState.turnState.lastScrySurveilResult}
-                onClick={() => {
-                   if (gameState.pendingAction?.type === ActionType.Targeting && gameState.pendingAction.data?.targets?.includes(opponentId)) {
-                        socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: opponentId });
-                   }
-                }}
-          />
-      </div>
+
 
       <OpponentHand 
           hand={[...(opponent?.hand || []), ...(opponent?.virtualHand || [])]} 
@@ -262,38 +243,8 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           onHoverEnd={stopZoom}
       />
 
-      {/* ZONE PILES: OPPONENT (Top Right) */}
-      <div className="fixed top-8 right-8 flex flex-row gap-6 z-[800]">
-          {(gameState.exile || []).filter(o => o.ownerId === opponentId).length > 0 && (
-             <ZonePile 
-                label="Exile" 
-                count={(gameState.exile || []).filter(o => o.ownerId === opponentId).length} 
-                type="exile" 
-                onClick={() => setInspectingZone({ 
-                    label: "Enemy Exile", 
-                    cards: (gameState.exile || []).filter(o => o.ownerId === opponentId),
-                    type: 'exile',
-                    isMe: false
-                })}
-             />
-          )}
-          <ZonePile 
-            label="Graveyard" 
-            count={opponent?.graveyard.length || 0} 
-            topCard={opponent?.graveyard[opponent.graveyard.length-1]} 
-            type="graveyard" 
-            onClick={() => setInspectingZone({ 
-                label: "Enemy Graveyard", 
-                cards: opponent?.graveyard || [],
-                type: 'graveyard',
-                isMe: false
-            })}
-          />
-          <ZonePile label="Library" count={opponent?.library.length || 0} type="library" />
-      </div>
-
       {/* CENTRAL BATTLEFIELD */}
-      <div className="flex-1 relative flex flex-col pt-36 pb-48 px-10 overflow-hidden">
+      <div className="flex-1 relative flex flex-col p-0 overflow-hidden gap-0">
         
 
         <Battlefield 
@@ -301,6 +252,15 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           stack={gameState.stack || []} combat={gameState.combat} 
           pendingAction={gameState.pendingAction} exile={gameState.exile || []}
           currentStep={gameState.currentStep}
+          currentPhase={gameState.currentPhase}
+          scrySurveilResult={gameState.turnState.lastScrySurveilResult}
+          onToggleStop={handleToggleStop}
+          onAvatarClick={(isOpponent) => {
+             const targetId = isOpponent ? opponentId : effectivePlayerId;
+             if (gameState.pendingAction?.type === ActionType.Targeting && gameState.pendingAction.data?.targets?.includes(targetId)) {
+                  socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: targetId });
+             }
+          }}
           onTapCard={(id) => {
             if (id.startsWith('ORDER_')) {
               const order = id.replace('ORDER_', '').split(',');
@@ -331,6 +291,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           hoveredCardId={hoveredCard?.id}
           onHoverStart={startZoom}
           onHoverEnd={stopZoom}
+          onInspectZone={setInspectingZone}
         />
 
         <ActionButton 
@@ -380,59 +341,10 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
         />
       </div>
 
-      {/* ZONE PILES: PLAYER (Bottom Left) */}
-      <div className="fixed bottom-8 left-8 flex flex-row gap-6 z-[800]">
-          <ZonePile 
-            label="Library" 
-            count={me?.library.length || 0} 
-            type="library" 
-          />
-          <ZonePile 
-            label="Graveyard" 
-            count={me?.graveyard.length || 0} 
-            topCard={me?.graveyard[me.graveyard.length-1]} 
-            type="graveyard" 
-            onClick={() => setInspectingZone({ 
-                label: "Your Graveyard", 
-                cards: me?.graveyard || [],
-                type: 'graveyard',
-                isMe: true
-            })}
-          />
-          {(gameState.exile || []).filter(o => o.ownerId === effectivePlayerId).length > 0 && (
-              <ZonePile 
-                label="Exile" 
-                count={(gameState.exile || []).filter(o => o.ownerId === effectivePlayerId).length} 
-                type="exile" 
-                onClick={() => setInspectingZone({ 
-                    label: "Your Exile", 
-                    cards: (gameState.exile || []).filter(o => o.ownerId === effectivePlayerId),
-                    type: 'exile',
-                    isMe: true
-                })}
-              />
-          )}
-      </div>
+
 
       {/* BOTTOM: Player HUD & Hand */}
-      <div className="fixed bottom-40 left-1/2 -translate-x-1/2 z-[500]">
-          <Avatar 
-                player={me!} 
-                isActive={gameState.activePlayerId === effectivePlayerId}
-                isPriority={gameState.priorityPlayerId === effectivePlayerId}
-                onToggleStop={handleToggleStop}
-                viewerStops={me?.stops}
-                currentStep={gameState.currentStep}
-                currentPhase={gameState.currentPhase}
-                targetable={gameState.pendingAction?.type === ActionType.Targeting && gameState.pendingAction.data?.targets?.includes(effectivePlayerId)}
-                scrySurveilResult={gameState.turnState.lastScrySurveilResult}
-                onClick={() => {
-                   if (gameState.pendingAction?.type === ActionType.Targeting && gameState.pendingAction.data?.targets?.includes(effectivePlayerId)) {
-                        socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: effectivePlayerId });
-                   }
-                }}
-          />
-      </div>
+
       <PlayerHand 
           hand={me?.hand || []} 
           virtualHand={me?.virtualHand || []}
@@ -454,7 +366,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                className="fixed left-12 bottom-12 z-[3000] pointer-events-none"
+                className="fixed left-[5vh] bottom-[5vh] z-[3000] pointer-events-none"
               >
                   <GameCard obj={hoveredCard} variant="zoom" />
               </motion.div>

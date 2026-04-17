@@ -1,4 +1,4 @@
-import { ActionType, GameState, PlayerId, Zone } from '@shared/engine_types';
+import { AbilityCost, ActionType, GameState, PlayerId, Zone } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
 import { EffectProcessor } from '../effects/EffectProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
@@ -22,7 +22,7 @@ export class ChoiceProcessor {
         resetPriorityToActivePlayer: () => void;
         activateAbility: (p: PlayerId, c: string, idx: number, targets: string[], bypass?: boolean) => boolean;
         finaliseTargeting?: (p: PlayerId, targets: string[]) => boolean;
-        tapForMana: (p: PlayerId, c: string) => void;
+        tapForMana: (p: PlayerId, c: string, aIdx?: number, cIdx?: number) => void;
         checkAutoPass?: (p: PlayerId) => void;
         passPriority?: (p: PlayerId) => void;
     }
@@ -309,6 +309,33 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         (cardInHand as any).selectedFaceDefinition = undefined;
     }
 
+    const { ManaProcessor } = require('../magic/ManaProcessor');
+
+    // Revert Auto-tap lands if we were in the confirmation step
+    if (savedActionData?.tappedLandIds && Array.isArray(savedActionData.tappedLandIds)) {
+        ManaProcessor.untapLands(state, savedActionData.tappedLandIds);
+        
+        if (savedActionData.manaSnapshot) {
+            // Precise cleanup: Restore EXACT state before auto-tap
+            player.manaPool = savedActionData.manaSnapshot;
+            player.restrictedMana = savedActionData.restrictedSnapshot || [];
+            log(`Undo: Untapped ${savedActionData.tappedLandIds.length} lands and restored mana pool.`);
+        } else if (savedActionData.producedMana) {
+            // Precision cleanup (via tracked production)
+            const pm = savedActionData.producedMana;
+            Object.entries(pm).forEach(([color, amount]) => {
+                if ((amount as number) > 0) {
+                    player.manaPool[color as keyof typeof player.manaPool] -= (amount as number);
+                }
+            });
+            log(`Undo: Untapped ${savedActionData.tappedLandIds.length} lands and cleared auto-tapped mana.`);
+        } else if (savedActionData.totalMana) {
+            // Fallback (older actions)
+            ManaProcessor.refundManaCost(player, savedActionData.totalMana);
+            log(`Undo: Untapped ${savedActionData.tappedLandIds.length} lands and refunded mana.`);
+        }
+    }
+
     log(`Action cancelled.`);
     state.pendingAction = undefined;
     state.priorityPlayerId = playerId; 
@@ -483,12 +510,58 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             targets, 
             log, 
             {
-                tapForMana: (p: any, c: any) => engine.tapForMana(p, c),
+                tapForMana: (p: any, c: any, aIdx?: number, cIdx?: number) => engine.tapForMana(p, c, aIdx, cIdx),
                 passPriority: (p: any) => engine.passPriority ? engine.passPriority(p) : engine.resetPriorityToActivePlayer(),
                 checkAutoPass: (p: any) => engine.checkAutoPass ? engine.checkAutoPass(p) : engine.resetPriorityToActivePlayer()
             },
             true 
         );
+    }
+
+    // --- RESUME AFTER INTERACTIVE COST ---
+    if (action.data.isCostChoice && (action.data.stackObj || action.data.nextEffectIndex !== undefined)) {
+        log(`[RESOLVING] Resuming resolution after interactive cost ${costType}...`);
+        const { EffectProcessor } = require('./../effects/EffectProcessor');
+        
+        // 1. Pay the interactive cost (IDs already in state)
+        // We create a dummy cost object to trigger the payment logic in CostProcessor
+        const costToPay = { type: action.data.costType, amount: action.data.maxChoices, value: action.data.maxChoices };
+        CostProcessor.pay(state, [costToPay], sourceId, playerId, log);
+        
+        // 2. Pay any remaining costs that were part of the same choice
+        if (action.data.remainingCosts && action.data.remainingCosts.length > 0) {
+            CostProcessor.pay(state, action.data.remainingCosts, sourceId, playerId, log);
+        }
+
+        // 3. Resolve the effects of the choice
+        if (action.data.choiceEffects && action.data.choiceEffects.length > 0) {
+             EffectProcessor.resolveEffects(state, action.data.choiceEffects, sourceId, savedTargets, log, 0, action.data.stackObj, action.data.parentContext, playerId);
+        }
+
+        // 4. Resume parent resolution
+        const stackObj = action.data.stackObj;
+        let currentCtx = action.data.parentContext;
+        while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex < currentCtx.effects.length) {
+            log(`[RESOLVING] Resuming parent resolution context for ${sourceId}...`);
+            const nextIdx = currentCtx.nextEffectIndex;
+            const effs = currentCtx.effects;
+            const parentTargets = currentCtx.targets || currentCtx.parentContext?.targets || [];
+            const parentCtx = currentCtx.parentContext;
+            
+            currentCtx = parentCtx; 
+            const completed = EffectProcessor.resolveEffects(state, effs, sourceId, parentTargets, log, nextIdx, stackObj, parentCtx);
+            
+            if (stackObj && !completed && state.pendingAction) {
+               stackObj.data = { ...stackObj.data, nextEffectIndex: (state.pendingAction as any).data.nextEffectIndex };
+            }
+        }
+
+        this.finalizeResolution(state, sourceId, stackObj, action, log, engine);
+        return true;
+    }
+
+    if (action.data?.confirmedAutoTap) {
+        (state as any).confirmedAutoTap = true;
     }
 
     return SpellProcessor.playCard(
@@ -498,7 +571,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         savedTargets, 
         log, 
         {
-            tapForMana: (p: any, c: any) => engine.tapForMana ? engine.tapForMana(p, c) : true,
+            tapForMana: (p: any, c: any, aIdx?: number, cIdx?: number) => engine.tapForMana ? engine.tapForMana(p, c, aIdx, cIdx) : true,
             checkAutoPass: (p: any) => engine.checkAutoPass ? engine.checkAutoPass(p) : engine.resetPriorityToActivePlayer(),
             passPriority: (p: any) => {}, 
             checkStateBasedActions: () => {}
@@ -524,6 +597,22 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             log(`Insufficient resources to select: ${choice.label}`);
             return false;
         }
+
+        // INTERACTIVE COST TRIGGER
+        const interactiveCost = choice.costs.find((c: AbilityCost) => 
+            (c.type === 'TapSelection' && !(state as any).lastChosenTapSelectionIds) ||
+            (c.type === 'Discard' && !(state as any).lastChosenDiscardId) ||
+            (c.type === 'Sacrifice' && !(state as any).lastChosenSacrificeId && !this.isSelfSac(c, sourceId)) ||
+            (c.type === 'Exile' && !(state as any).lastChosenExileIds)
+        );
+        
+        if (interactiveCost) {
+            const { ChoiceGenerator } = require('./../effects/ChoiceGenerator');
+            state.pendingAction = ChoiceGenerator.createCostInteractionChoice(state, interactiveCost, sourceId, action.playerId, choice, action.data);
+            log(`[INTERACTIVE-COST] Prompting for ${interactiveCost.type} cost selection...`);
+            return true;
+        }
+
         CostProcessor.pay(state, choice.costs, sourceId, action.playerId, log);
     }
 
@@ -565,6 +654,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             if (action.type === 'RESOLUTION_CHOICE' && action.data?.choices && !action.data.lookingCards) {
                  // Sequenced Modal Choice
                  state.pendingAction = ChoiceGenerator.createModalChoice(
+                    state,
                     {
                         label: action.data.label,
                         playerId: nextPlayerIds[0],
@@ -604,7 +694,11 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             }
         }
     }
-    
+    this.finalizeResolution(state, sourceId, stackObj, action, log, engine);
+    return true;
+  }
+
+  private static finalizeResolution(state: GameState, sourceId: string, stackObj: any, action: any, log: (m: string) => void, engine: any) {
     if (!state.pendingAction) {
        if (stackObj) {
            const fullStackObj = state.stack.find(s => s.id === stackObj.id);
@@ -632,8 +726,10 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     } else {
        state.priorityPlayerId = (state as any).pendingAction.playerId || null;
     }
+  }
 
-    return true;
+  private static isSelfSac(cost: any, sourceId: string): boolean {
+    return cost.targetMapping === 'SELF' || (cost.restrictions || []).some((r: any) => typeof r === 'string' && r.toLowerCase() === 'self');
   }
 
   public static resolveTargeting(
@@ -681,7 +777,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         action.data.declaredTargets || [], 
         log, 
         {
-            tapForMana: (p: any, c: any) => engine.tapForMana ? engine.tapForMana(p, c) : true,
+            tapForMana: (p: any, c: any, aIdx?: number, cIdx?: number) => engine.tapForMana ? engine.tapForMana(p, c, aIdx, cIdx) : true,
             checkAutoPass: (p: any) => engine.checkAutoPass ? engine.checkAutoPass(p) : engine.resetPriorityToActivePlayer(),
             passPriority: (p: any) => {}, 
             checkStateBasedActions: () => {}

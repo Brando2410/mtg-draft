@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
     export const EmeritusofWoeDemonicTutor: CardDefinition = {
     name: "Emeritus of Woe // Demonic Tutor",
     manaCost: "{3}{B}",
@@ -13,7 +13,6 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     toughness: "4",
 
     entersPrepared: true,
-    image_url: "https://cards.scryfall.io/png/front/7/e/7eb9e83d-515d-4911-a06b-9982200277b2.png?1776269683",
     abilities: [
         {
             type: AbilityType.Triggered,

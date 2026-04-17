@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 export const LluwenExchangeStudentPestFriend: CardDefinition = {
     name: "Lluwen, Exchange Student // Pest Friend",
     manaCost: "{2}{B}{G}",
@@ -13,7 +13,6 @@ export const LluwenExchangeStudentPestFriend: CardDefinition = {
     toughness: "4",
 
     entersPrepared: true,
-    image_url: "https://cards.scryfall.io/png/front/a/0/a0bcb638-c3c8-4973-9537-5c471f43f34f.png?1775938382",
     abilities: [
         {
             type: AbilityType.Activated,

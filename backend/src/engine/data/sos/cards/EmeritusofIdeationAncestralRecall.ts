@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const EmeritusofIdeationAncestralRecall: CardDefinition = {
+export const EmeritusofIdeationAncestralRecall: CardDefinition = {
     name: "Emeritus of Ideation // Ancestral Recall",
     manaCost: "{3}{U}{U}",
     scryfall_id: "75961d36-acf6-425f-9698-0bf52af74f31",
@@ -13,7 +13,6 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     toughness: "5",
 
     entersPrepared: true,
-    image_url: "https://cards.scryfall.io/png/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.png?1775937223",
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -54,7 +53,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     ],
     preparedFace: {
         name: "Ancestral Recall",
-        image_url: "https://cards.scryfall.io/png/front/2/3/2398892d-28e9-4009-81ec-0d544af79d2b.png?1614638829",
+        //    image_url: "https://cards.scryfall.io/png/front/2/3/2398892d-28e9-4009-81ec-0d544af79d2b.png?1614638829",
+        image_url: "https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223",
         manaCost: "{U}",
         colors: ["U"],
         types: ["Instant"],
@@ -77,4 +77,4 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
         ]
     }
 };
-    
+

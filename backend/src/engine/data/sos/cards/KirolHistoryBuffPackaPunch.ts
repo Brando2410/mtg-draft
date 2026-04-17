@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
     export const KirolHistoryBuffPackaPunch: CardDefinition = {
     name: "Kirol, History Buff // Pack a Punch",
     manaCost: "{R}{W}",
@@ -12,7 +12,6 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     power: "2",
     toughness: "3",
 
-    image_url: "https://cards.scryfall.io/png/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.png?1775938375",
     abilities: [
         {
             type: AbilityType.Triggered,

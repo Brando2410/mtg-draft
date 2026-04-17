@@ -8,39 +8,33 @@
     --card-padding: 0.75rem;
     --font-scale: 1;
     --toggle-x: 20px;
+    
+    /* Responsive Scaling System (Based on 1080p standards but scaling with VH) */
+    --u: min(0.75vh, 0.45vw); /* Universal Unit */
+    --card-w: calc(var(--u) * 20);
+    --card-h: clamp(60px, calc(var(--u) * 14.4), 180px);
+    --card-w-hand: clamp(120px, calc(var(--u) * 18), 240px);
+    --card-h-hand: clamp(168px, calc(var(--u) * 25.2), 336px);
+    
     scrollbar-gutter: stable;
   }
 
   html {
     scrollbar-gutter: stable;
+    font-size: calc(var(--u) * 1.5);
   }
 
-  @media (orientation: portrait) {
+  @media (max-width: 1200px) {
     :root {
-      --card-gap: 0.6rem;
-      --card-padding: 0.85rem;
+      --u: min(1.1vh, 0.85vw);
+      --font-scale: 1.1;
     }
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: 2000px) {
     :root {
-      --card-gap: 1.5rem;
-      --card-padding: 1.5rem;
-      --font-scale: 1.5;
-      --toggle-x: 28px;
+      --u: min(0.85vh, 0.6vw);
     }
-  }
-
-  @media (max-height: 500px) {
-    :root {
-      --card-gap: 0.25rem;
-      --card-padding: 0.5rem;
-      --font-scale: 0.85;
-    }
-  }
-
-  body {
-    @apply bg-slate-950 text-slate-100 min-h-[100dvh] font-sans antialiased;
   }
 }
 

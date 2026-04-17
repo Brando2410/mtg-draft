@@ -24,26 +24,31 @@ export const AzizaMageTowerCaptain: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: "CONTROL_COUNT_GE:creature,untapped,3",
             effects: [
                 {
-                    type: CostType.Choice,
-                    label: 'Tap 3 creatures to copy?',
-                    optional: true,
-                    costs: [
+                    type: EffectType.Choice,
+                    label: "Aziza: Tap 3 creatures to copy spell?",
+                    choices: [
                         {
-                            type: CostType.Tap,
-                            amount: 3,
-                            targetDefinition: {
-                                type: TargetType.Creature,
-                                count: 3,
-                                restrictions: ["untapped", "youcontrol"]
-                            }
-                        }
-                    ],
-                    effects: [
+                            label: "Yes",
+                            costs: [
+                                {
+                                    type: CostType.TapSelection,
+                                    value: 3,
+                                    restrictions: ["creature", "untapped", "youcontrol"]
+                                }
+                            ],
+                            effects: [
+                                {
+                                    type: EffectType.CopySpellOnStack,
+                                    targetMapping: TargetMapping.TriggerEventSource
+                                }
+                            ]
+                        },
                         {
-                            type: EffectType.CopySpellOnStack,
-                            targetMapping: TargetMapping.TriggerEventSource
+                            label: "No",
+                            effects: []
                         }
                     ]
                 }
