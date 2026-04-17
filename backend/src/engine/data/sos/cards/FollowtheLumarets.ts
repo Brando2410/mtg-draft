@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, Zone } from '@shared/engine_types';
-    export const FollowtheLumarets: CardDefinition = {
+export const FollowtheLumarets: CardDefinition = {
     name: "Follow the Lumarets",
     manaCost: "{1}{G}",
     colors: [
@@ -23,7 +23,9 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Zone } from '@s
                             type: EffectType.LookAtTopAndPick,
                             fromTop: 4,
                             amount: 2,
-                            restrictions: ['Creature_OR_Land'],
+                            restrictions: [
+                                { type: 'Type', value: 'Creature_OR_Land' }
+                            ],
                             reveal: true,
                             optional: true,
                             zone: Zone.Hand,
@@ -32,11 +34,13 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Zone } from '@s
                             shuffleRemainder: true
                         },
                         {
-                            condition: '!INFUSION',
+                            condition: 'INFUSION',
                             type: EffectType.LookAtTopAndPick,
                             fromTop: 4,
                             amount: 1,
-                            restrictions: ['Creature_OR_Land'],
+                            restrictions: [
+                                { type: 'Type', value: 'Creature_OR_Land' }
+                            ],
                             reveal: true,
                             optional: true,
                             zone: Zone.Hand,
@@ -50,4 +54,3 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Zone } from '@s
         }
     ]
 };
-    

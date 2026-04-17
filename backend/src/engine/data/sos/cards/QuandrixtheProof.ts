@@ -24,7 +24,10 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } f
                     layer: 6,
                     targetMapping: TargetMapping.MatchingCards,
                     // Restoring FromHand now that base logic is fixed
-                    restrictions: ['InstantOrSorcery', Restriction.FromHand],
+                    restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' },
+                Restriction.FromHand
+            ],
                     abilitiesToAdd: ['Cascade']
                 }
             ]

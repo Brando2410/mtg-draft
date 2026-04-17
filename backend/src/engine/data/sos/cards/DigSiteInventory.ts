@@ -18,7 +18,10 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         {
             type: AbilityType.Spell,
             flashbackCost: "{W}",
-            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'YouControl'] },
+            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Control', value: 'YouControl' }
+            ] },
             effects: [
                 {
                     type: EffectType.AddCounters,

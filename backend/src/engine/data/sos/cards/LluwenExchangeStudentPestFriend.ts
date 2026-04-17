@@ -20,7 +20,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                     type: CostType.Exile,
                     zone: Zone.Graveyard,
                     amount: 1,
-                    restrictions: ['Creature']
+                    restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ]
                 }
             ],
             effects: [{ type: EffectType.Prepare, targetMapping: TargetType.Self }]

@@ -145,7 +145,9 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
                     type: EffectType.LookAtTopAndPick,
                     fromTop: 3,
                     optional: true,
-                    restrictions: ['Land'],
+                    restrictions: [
+                { type: 'Type', value: 'Land' }
+            ],
                     reveal: true,
                     zone: Zone.Hand,
                     remainderZone: Zone.Library,
@@ -201,7 +203,10 @@ export const STX_Batch_5_Pledgemages: CardDefinition[] = [
                     amount: 1,
                     targetMapping: TargetMapping.EachOpponent,
                     damageSourceMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                    restrictions: [{ type: 'Subtype', value: 'Spirit' }]
+                    restrictions: [
+                { type: 'Subtype',
+                value: 'Spirit' }
+            ]
                 }
             ]
         }

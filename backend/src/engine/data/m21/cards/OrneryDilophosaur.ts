@@ -1,4 +1,4 @@
-import { AbilityType, Zone, EffectType, DurationType, TargetMapping, CardDefinition, TriggerEvent } from "@shared/engine_types";
+import { AbilityType, EffectType, DurationType, TargetMapping, CardDefinition, TriggerEvent } from "@shared/engine_types";
 
 export const OrneryDilophosaur: CardDefinition = {
 
@@ -26,7 +26,6 @@ export const OrneryDilophosaur: CardDefinition = {
                     targetMapping: TargetMapping.Self
                 }
             ],
-            activeZone: Zone.Battlefield,
         }
     ]
 

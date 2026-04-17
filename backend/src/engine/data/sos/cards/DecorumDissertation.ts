@@ -24,7 +24,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: { type: 'Card', count: 1, restrictions: ['Land'], sourceZones: ['Hand'] },
+                            targetDefinition: { type: 'Card', count: 1, restrictions: [
+                { type: 'Type', value: 'Land' }
+            ], sourceZones: ['Hand'] },
                             effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.SelectedCards }]
                         },
                         { label: "No", effects: [] }

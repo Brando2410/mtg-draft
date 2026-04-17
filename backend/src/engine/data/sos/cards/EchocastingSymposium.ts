@@ -18,7 +18,10 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
             type: AbilityType.Spell,
             targetDefinition: [
                 { type: TargetType.Player, count: 1 },
-                { type: DurationType.Permanent, count: 1, restrictions: ['Creature', 'YouControl'] }
+                { type: DurationType.Permanent, count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Control', value: 'YouControl' }
+            ] }
             ],
             effects: [
                 { 

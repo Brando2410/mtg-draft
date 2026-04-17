@@ -23,42 +23,62 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                     choices: [
                         {
                             label: "Destroy target nonland permanent (Slot 1)",
-                            targetDefinition: { type: DurationType.Permanent, count: 1, restrictions: ['NonLand'] },
+                            targetDefinition: { type: DurationType.Permanent, count: 1, restrictions: [
+                { type: 'Type', value: 'NonLand' }
+            ] },
                             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
                         },
                         {
                             label: "Destroy target nonland permanent (Slot 2)",
-                            targetDefinition: { type: DurationType.Permanent, count: 1, restrictions: ['NonLand'] },
+                            targetDefinition: { type: DurationType.Permanent, count: 1, restrictions: [
+                { type: 'Type', value: 'NonLand' }
+            ] },
                             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target2 }]
                         },
                         {
                             label: "Destroy target nonland permanent (Slot 3)",
-                            targetDefinition: { type: DurationType.Permanent, count: 1, restrictions: ['NonLand'] },
+                            targetDefinition: { type: DurationType.Permanent, count: 1, restrictions: [
+                { type: 'Type', value: 'NonLand' }
+            ] },
                             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target3 }]
                         },
                         {
                             label: "Destroy target nonland permanent (Slot 4)",
-                            targetDefinition: { type: DurationType.Permanent, count: 1, restrictions: ['NonLand'] },
+                            targetDefinition: { type: DurationType.Permanent, count: 1, restrictions: [
+                { type: 'Type', value: 'NonLand' }
+            ] },
                             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target4 }]
                         },
                         {
                             label: "Return target nonland permanent card (Slot 1)",
-                            targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: ['NonLand', 'Permanent'] },
+                            targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: [
+                { type: 'Type', value: 'NonLand' },
+                { type: 'Type', value: 'Permanent' }
+            ] },
                             effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target5 }]
                         },
                         {
                             label: "Return target nonland permanent card (Slot 2)",
-                            targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: ['NonLand', 'Permanent'] },
+                            targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: [
+                { type: 'Type', value: 'NonLand' },
+                { type: 'Type', value: 'Permanent' }
+            ] },
                             effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target6 }]
                         },
                         {
                             label: "Return target nonland permanent card (Slot 3)",
-                            targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: ['NonLand', 'Permanent'] },
+                            targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: [
+                { type: 'Type', value: 'NonLand' },
+                { type: 'Type', value: 'Permanent' }
+            ] },
                             effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target7 }]
                         },
                         {
                             label: "Return target nonland permanent card (Slot 4)",
-                            targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: ['NonLand', 'Permanent'] },
+                            targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: [
+                { type: 'Type', value: 'NonLand' },
+                { type: 'Type', value: 'Permanent' }
+            ] },
                             effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target8 }]
                         }
                     ]

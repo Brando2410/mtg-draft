@@ -17,14 +17,18 @@ export const IndulgentAristocrat: CardDefinition = {
             type: AbilityType.Activated,
             costs: [
                 { type: CostType.Mana, value: '{2}' },
-                { type: CostType.Sacrifice, restrictions: ['Creature'] }
+                { type: CostType.Sacrifice, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] }
             ],
             effects: [{
                 type: EffectType.AddCounters,
                 amount: 1,
                 counterType: '+1/+1',
                 targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                restrictions: ['Vampire']
+                restrictions: [
+                { type: 'Type', value: 'Vampire' }
+            ]
             }]
         }
     ]

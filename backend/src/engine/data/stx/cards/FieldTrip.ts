@@ -15,7 +15,10 @@ export const FieldTrip: CardDefinition = {
           targetDefinition: {
             type: TargetType.Land,
             count: 1,
-            restrictions: ['Basic', 'Forest']
+            restrictions: [
+                { type: 'Type', value: 'Basic' },
+                { type: 'Type', value: 'Forest' }
+            ]
           },
           zone: Zone.Hand,
           reveal: true,

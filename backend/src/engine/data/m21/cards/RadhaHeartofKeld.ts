@@ -39,7 +39,9 @@ export const RadhaHeartofKeld: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AllowPlayFromTop,
-                    restrictions: ['Land'],
+                    restrictions: [
+                { type: 'Type', value: 'Land' }
+            ],
                     targetMapping: TargetMapping.Controller
                 }
             ]

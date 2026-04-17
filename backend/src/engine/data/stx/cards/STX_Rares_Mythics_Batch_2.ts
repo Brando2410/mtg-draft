@@ -110,7 +110,10 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
                     type: EffectType.SearchLibrary,
                     fromTop: 7,
                     optional: true,
-                    restrictions: ['InstantOrSorcery', 'MV_LE_SOURCE_POWER'],
+                    restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' },
+                { type: 'Type', value: 'MV_LE_SOURCE_POWER' }
+            ],
                     zone: Zone.Stack,
                     isFreeCast: true,
                     remainderZone: Zone.Library,
@@ -176,7 +179,10 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
                             choices: [{
                                 label: "Exile & Create Beast",
                                 effects: [
-                                    { type: EffectType.Exile, sourceZone: Zone.Graveyard, restrictions: [{ type: 'Type', value: 'Creature' }] },
+                                    { type: EffectType.Exile, sourceZone: Zone.Graveyard, restrictions: [
+                { type: 'Type',
+                value: 'Creature' }
+            ] },
                                     { type: EffectType.CreateToken, tokenBlueprint: { name: 'Beast', power: "3", toughness: "3", colors: ['R'], types: ['Creature', 'Token'], subtypes: ['Beast'] } }
                                 ]
                             }]
@@ -185,13 +191,22 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
                     {
                         type: AbilityType.Activated,
                         costs: [{ type: 'Loyalty', value: '-2' }],
-                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Source', value: 'CONTROLLER' }] },
+                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [
+                { type: 'Type',
+                value: 'Creature' },
+                { type: 'Source',
+                value: 'CONTROLLER' }
+            ] },
                         effects: [
                             { type: EffectType.Exile, targetMapping: TargetMapping.Target1, storeMV: 'SAVED_MV' },
                             {
                                 type: EffectType.SearchLibrary,
                                 fromTop: -1, 
-                                restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'ManaValueGreaterThanSaved' }],
+                                restrictions: [
+                { type: 'Type',
+                value: 'Creature' },
+                { type: 'ManaValueGreaterThanSaved' }
+            ],
                                 zone: Zone.Battlefield,
                                 remainderZone: Zone.Library,
                                 remainderPosition: 'bottom',
@@ -243,7 +258,12 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
                 abilities: [
                     {
                         type: AbilityType.Static,
-                        effects: [{ type: EffectType.CostReduction, amount: '{1}', restrictions: [{ type: 'Type', value: 'Instant' }, { type: 'Type', value: 'Sorcery' }] }]
+                        effects: [{ type: EffectType.CostReduction, amount: '{1}', restrictions: [
+                { type: 'Type',
+                value: 'Instant' },
+                { type: 'Type',
+                value: 'Sorcery' }
+            ] }]
                     },
                     {
                         type: AbilityType.Activated,
@@ -293,12 +313,20 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
                 abilities: [
                     {
                         type: AbilityType.Static,
-                        effects: [{ type: EffectType.CostReduction, amount: '{1}', restrictions: [{ type: 'Type', value: 'Instant' }, { type: 'Type', value: 'Sorcery' }] }]
+                        effects: [{ type: EffectType.CostReduction, amount: '{1}', restrictions: [
+                { type: 'Type',
+                value: 'Instant' },
+                { type: 'Type',
+                value: 'Sorcery' }
+            ] }]
                     },
                     {
                         type: AbilityType.Activated,
                         costs: [{ type: 'Loyalty', value: '+1' }],
-                        targetDefinition: { count: 1, type: TargetType.Permanent, optional: true, restrictions: [{ type: 'Type', value: 'Creature' }] },
+                        targetDefinition: { count: 1, type: TargetType.Permanent, optional: true, restrictions: [
+                { type: 'Type',
+                value: 'Creature' }
+            ] },
                         effects: [{
                             type: EffectType.ApplyContinuousEffect,
                             duration: 'UNTIL_YOUR_NEXT_TURN',
@@ -318,7 +346,13 @@ export const STX_Rares_Mythics_Batch_2: CardDefinition[] = [
                     {
                         type: AbilityType.Activated,
                         costs: [{ type: 'Loyalty', value: '-7' }],
-                        targetDefinition: { count: 5, type: TargetType.Card, optional: true, restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Instant' }, { type: 'Type', value: 'Sorcery' }] }, { type: 'Source', value: 'GRAVEYARD' }] },
+                        targetDefinition: { count: 5, type: TargetType.Card, optional: true, restrictions: [
+                { type: 'Any',
+                restrictions: [{ type: 'Type',
+                value: 'Instant' },
+                { type: 'Type',
+                value: 'Sorcery' }
+            ] }, { type: 'Source', value: 'GRAVEYARD' }] },
                         effects: [
                             { type: EffectType.Exile, targetMapping: TargetMapping.TargetAll },
                             { type: EffectType.CastSpell, targetMapping: TargetMapping.TargetAll, isFreeCast: true }

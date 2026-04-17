@@ -160,7 +160,10 @@ export const STX_Remaining_Lessons: CardDefinition[] = [
                                 targetDefinition: {
                                     type: TargetType.CardInGraveyard,
                                     count: 1,
-                                    restrictions: ['Planeswalker', { type: 'ManaValueLessEqualX' }]
+                                    restrictions: [
+                { type: 'Type', value: 'Planeswalker' },
+                { type: 'ManaValueLessEqualX' }
+            ]
                                 },
                                 effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 }]
                             },
@@ -169,7 +172,9 @@ export const STX_Remaining_Lessons: CardDefinition[] = [
                                 targetDefinition: {
                                     count: 1,
                                     type: TargetType.Planeswalker,
-                                    restrictions: [{ type: 'ManaValueLessEqualX' }]
+                                    restrictions: [
+                { type: 'ManaValueLessEqualX' }
+            ]
                                 },
                                 effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
                             }

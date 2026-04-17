@@ -18,10 +18,12 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
             targetDefinition: {
                 count: 1,
                 restrictions: [
-                    'Nonland',
-                    'OpponentControl',
-                    { type: 'ManaValue', comparison: 'LessOrEqual', value: DynamicAmount.ConvergeAmount }
-                ]
+                { type: 'Type', value: 'Nonland' },
+                { type: 'Control', value: 'OpponentControl' },
+                { type: 'ManaValue',
+                comparison: 'LessOrEqual',
+                value: DynamicAmount.ConvergeAmount }
+            ]
             },
             effects: [
                 {

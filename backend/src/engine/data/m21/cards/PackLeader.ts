@@ -20,7 +20,10 @@ export const PackLeader: CardDefinition = {
                 toughnessModifier: 1,
                 layer: 7,
                 targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                restrictions: ['Dog', 'other']
+                restrictions: [
+                { type: 'Type', value: 'Dog' },
+                { type: 'Type', value: 'other' }
+            ]
             }]
         },
         {
@@ -31,7 +34,9 @@ export const PackLeader: CardDefinition = {
                 type: EffectType.AddPreventionEffect,
                 damageType: 'CombatDamage',
                 targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                restrictions: ['Dog'],
+                restrictions: [
+                { type: 'Type', value: 'Dog' }
+            ],
                 duration: { type: DurationType.UntilEndOfTurn }
             }]
         }

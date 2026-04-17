@@ -22,7 +22,10 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, Eff
             condition: ConditionType.ObjectIsSelf,
             targetDefinition: {
                 type: 'Creature',
-                restrictions: ['YouControl', 'Other'],
+                restrictions: [
+                { type: 'Control', value: 'YouControl' },
+                { type: 'Identity', value: 'Other' }
+            ],
                 count: 1,
                 optional: true,
                 zone: Zone.Battlefield

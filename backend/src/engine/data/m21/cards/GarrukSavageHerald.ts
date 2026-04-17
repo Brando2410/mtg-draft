@@ -24,7 +24,9 @@ export const GarrukSavageHerald: CardDefinition = {
                     targetMapping: 'CONTROLLER',
                     reveal: true,
                     optional: false,
-                    restrictions: ['creature'],
+                    restrictions: [
+                { type: 'Type', value: 'creature' }
+            ],
                     remainderZone: Zone.Library,
                     libraryPosition: 'bottom'
                 }]

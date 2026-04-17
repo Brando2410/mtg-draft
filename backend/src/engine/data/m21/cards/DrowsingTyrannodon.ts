@@ -14,9 +14,7 @@ export const DrowsingTyrannodon: CardDefinition = {
     keywords: ["Defender"],
     abilities: [
         {
-            id: "drowsing_tyrannodon_defender",
             type: AbilityType.Static,
-            activeZone: Zone.Battlefield,
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 layer: 6,

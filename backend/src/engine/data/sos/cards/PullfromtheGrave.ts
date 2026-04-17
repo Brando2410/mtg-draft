@@ -18,7 +18,10 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
                 type: TargetType.CardInGraveyard,
                 count: 2,
                 minCount: 0,
-                restrictions: [Restriction.Creature, 'your_graveyard']
+                restrictions: [
+                Restriction.Creature,
+                { type: 'Type', value: 'your_graveyard' }
+            ]
             },
             effects: [
                 {

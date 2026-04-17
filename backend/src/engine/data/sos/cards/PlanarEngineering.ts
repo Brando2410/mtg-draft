@@ -23,7 +23,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetT
                     targetDefinition: {
                         type: TargetType.Land,
                         count: 4,
-                        restrictions: ['Basic']
+                        restrictions: [
+                { type: 'Type', value: 'Basic' }
+            ]
                     },
                     zone: Zone.Battlefield,
                     tapped: true,

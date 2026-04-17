@@ -23,7 +23,10 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@s
                     reveal: true,
                     optional: true,
                     amount: 2, // Up to two
-                    restrictions: ["Creature", "Land"],
+                    restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Type', value: 'Land' }
+            ],
                     remainderZone: Zone.Library,
                     remainderPosition: 'bottom',
                     shuffleRemainder: true,

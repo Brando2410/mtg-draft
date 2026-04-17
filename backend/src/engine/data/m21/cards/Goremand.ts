@@ -18,7 +18,9 @@ export const Goremand: CardDefinition = {
                 {
                     type: EffectType.AdditionalCost,
                     targetMapping: TargetMapping.Self,
-                    additionalCosts: [{ type: CostType.Sacrifice, restrictions: ['Creature'] }]
+                    additionalCosts: [{ type: CostType.Sacrifice, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] }]
                 }
             ]
         },
@@ -29,7 +31,9 @@ export const Goremand: CardDefinition = {
                 {
                     type: EffectType.Sacrifice,
                     targetMapping: TargetMapping.EachOpponent,
-                    restrictions: ['Creature']
+                    restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ]
                 }
             ]
         }

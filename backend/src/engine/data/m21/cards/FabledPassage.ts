@@ -26,7 +26,9 @@ export const FabledPassage: CardDefinition = {
                         targetDefinition: {
                             type: TargetType.Land,
                             count: 1,
-                            restrictions: ['Basic']
+                            restrictions: [
+                { type: 'Type', value: 'Basic' }
+            ]
                         },
                         zone: Zone.Battlefield,
                         tapped: true,

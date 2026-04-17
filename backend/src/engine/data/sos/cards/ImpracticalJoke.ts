@@ -18,7 +18,10 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
                 type: DurationType.Permanent,
                 count: 1,
                 optional: true,
-                restrictions: ["Creature", "Planeswalker"]
+                restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Type', value: 'Planeswalker' }
+            ]
             },
             effects: [
                 {

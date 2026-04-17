@@ -26,7 +26,9 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         },
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: DurationType.Permanent, restrictions: ['Creature'] },
+            targetDefinition: { type: DurationType.Permanent, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] },
             effects: [
                 {
                     type: CostType.Choice,

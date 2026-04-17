@@ -31,7 +31,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                                 type: TargetType.Card,
                                 zone: Zone.Hand,
                                 count: 1,
-                                restrictions: ['Land']
+                                restrictions: [
+                { type: 'Type', value: 'Land' }
+            ]
                             },
                             effects: [
                                 {

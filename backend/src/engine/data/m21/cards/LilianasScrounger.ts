@@ -19,7 +19,10 @@ export const LilianasScrounger: CardDefinition = {
                 type: TargetType.Planeswalker,
                 count: 1,
                 minCount: 0,
-                restrictions: ['Liliana', 'YouControl']
+                restrictions: [
+                { type: 'Type', value: 'Liliana' },
+                { type: 'Control', value: 'YouControl' }
+            ]
             },
             effects: [
                 {

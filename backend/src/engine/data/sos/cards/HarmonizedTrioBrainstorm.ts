@@ -14,7 +14,12 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, Selecti
         {
             type: AbilityType.Activated,
             costs: [
-                { type: CostType.TapSelection, value: 2, restrictions: ['Creature', 'Untapped', 'YouControl', 'Other'] },
+                { type: CostType.TapSelection, value: 2, restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'State', value: 'Untapped' },
+                { type: 'Control', value: 'YouControl' },
+                { type: 'Identity', value: 'Other' }
+            ] },
                 { type: CostType.Tap }
             ],
             effects: [
@@ -51,7 +56,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, Selecti
                         targetDefinition: {
                             type: TargetType.CardInHand,
                             count: 2,
-                            restrictions: [Restriction.YouControl]
+                            restrictions: [
+                Restriction.YouControl
+            ]
                         },
                         targetMapping: TargetMapping.Controller
                     }

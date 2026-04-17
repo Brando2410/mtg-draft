@@ -651,8 +651,30 @@ export class TargetingProcessor {
                         }
 
                         let match = true;
-                        const rTypes = r.types || (r.type ? [r.type] : []);
-                        const rSubtypes = r.subtypes || (r.subtype ? [r.subtype] : []);
+                        
+                        // Normalized extraction of type/value
+                        const restrictionType = (r.type || "").toLowerCase();
+                        const restrictionValue = r.value !== undefined ? String(r.value) : null;
+
+                        const rTypes = r.types || (restrictionType === 'type' && restrictionValue ? [restrictionValue] : (r.type ? [r.type] : []));
+                        const rSubtypes = r.subtypes || (restrictionType === 'subtype' && restrictionValue ? [restrictionValue] : (r.subtype ? [r.subtype] : []));
+
+                        // Special support for legacy wrapped strings like { type: 'Type', value: 'MV_GE:6' }
+                        if (restrictionType === 'type' && restrictionValue && restrictionValue.startsWith('MV_')) {
+                            // Re-dispatch as a ManaValue check
+                            if (restrictionValue.includes('GE:')) {
+                                (r as any).type = 'ManaValue';
+                                (r as any).value = parseInt(restrictionValue.split(':')[1]);
+                                (r as any).comparison = 'GreaterOrEqual';
+                            } else if (restrictionValue.includes('LE:')) {
+                                (r as any).type = 'ManaValue';
+                                (r as any).value = parseInt(restrictionValue.split(':')[1]);
+                            } else if (restrictionValue === 'MV_LE_SOURCE_POWER') {
+                                (r as any).type = 'ManaValue';
+                                (r as any).value = 'SOURCE_POWER';
+                                (r as any).comparison = 'LessOrEqual';
+                            }
+                        }
 
                         const functionalTypes = ['manavalue', 'mv', 'manavaluele', 'manavalueless', 'mvless', 'power', 'toughness', 'cmc'];
                         if (rTypes.length > 0 && !rTypes.some((t: string) => {
@@ -664,6 +686,7 @@ export class TargetingProcessor {
                             }
                             return objTypes.includes(lt);
                         })) match = false;
+                        
                         if (rSubtypes.length > 0 && !rSubtypes.some((s: string) => (definition.subtypes || []).some((ts: string) => ts.toLowerCase() === s.toLowerCase()))) match = false;
                         if (r.nameIncludes && definition.name && !definition.name.toLowerCase().includes(r.nameIncludes.toLowerCase())) match = false;
                         if (r.nameEquals || r.name) {
@@ -687,6 +710,9 @@ export class TargetingProcessor {
                                 }
                             } else if (val === 'GAINED_LIFE_AMOUNT') {
                                 val = state.turnState.lifeGainedThisTurn[controllerId || ''] || 0;
+                            } else if (val === 'SOURCE_POWER') {
+                                const source = this.findObjectInAnyZone(state, sourceId);
+                                val = source ? (source.effectiveStats?.power || 0) : 0;
                             } else if (val === 'CONVERGE_AMOUNT') {
                                 const sourceObj = this.findObjectInAnyZone(state, sourceId);
                                 val = (sourceObj as any)?.convergeAmount || 0;

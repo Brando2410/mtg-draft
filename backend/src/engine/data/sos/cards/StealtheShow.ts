@@ -45,8 +45,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, Eff
                                 type: DurationType.Permanent,
                                 count: 1,
                                 restrictions: [
-                                    'CreatureOrPlaneswalker'
-                                ]
+                { type: 'Type', value: 'CreatureOrPlaneswalker' }
+            ]
                             },
                             effects: [
                                 {

@@ -29,7 +29,14 @@ export const BlexVexingPest: CardDefinition = {
                     toughnessModifier: 1,
                     layer: 7,
                     targetMapping: TargetMapping.OtherCreaturesYouControl,
-                    restrictions: [{ type: 'SubtypeIn', value: ['Pest', 'Bat', 'Insect', 'Snake', 'Spider'] }]
+                    restrictions: [
+                { type: 'SubtypeIn',
+                value: ['Pest',
+                { type: 'Type', value: 'Bat' },
+                { type: 'Type', value: 'Insect' },
+                { type: 'Type', value: 'Snake' },
+                { type: 'Type', value: 'Spider' }
+            ] }]
                 }]
             }]
         },

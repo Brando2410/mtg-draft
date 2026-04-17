@@ -137,7 +137,9 @@ export const STX_Batch_12_FinalMix: CardDefinition[] = [
                         targetDefinition: {
                             type: TargetType.Card,
                             count: 1,
-                            restrictions: ['InstantOrSorcery']
+                            restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' }
+            ]
                         },
                         zone: Zone.Hand,
                         reveal: true,
@@ -168,7 +170,12 @@ export const STX_Batch_12_FinalMix: CardDefinition[] = [
                 targetDefinition: {
                     count: 1,
                     type: TargetType.Permanent,
-                    restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Source', value: 'CONTROLLER' }]
+                    restrictions: [
+                { type: 'Type',
+                value: 'Creature' },
+                { type: 'Source',
+                value: 'CONTROLLER' }
+            ]
                 },
                 effects: [{ type: EffectType.MoveCounters, targetMapping: TargetMapping.Target1 }]
             }

@@ -39,9 +39,9 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, Dyn
                                     targetDefinition: {
                                         type: DurationType.Permanent,
                                         restrictions: [
-                                            'Creature',
-                                            'Another'
-                                        ],
+                { type: 'Type', value: 'Creature' },
+                { type: 'Identity', value: 'Another' }
+            ],
                                         count: 1
                                     },
                                     effects: [

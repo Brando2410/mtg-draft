@@ -14,7 +14,10 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, Dyn
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'YouControl'] },
+            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Control', value: 'YouControl' }
+            ] },
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -30,7 +33,10 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, Dyn
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'OpponentControl'] },
+                            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Control', value: 'OpponentControl' }
+            ] },
                             effects: [
                                 {
                                     type: EffectType.DealDamage,

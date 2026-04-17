@@ -12,7 +12,9 @@ export const SwiftResponse: CardDefinition = {
             targetDefinition: {
                 type: TargetType.Creature,
                 count: 1,
-                restrictions: ['Tapped']
+                restrictions: [
+                { type: 'State', value: 'Tapped' }
+            ]
             },
             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
         }

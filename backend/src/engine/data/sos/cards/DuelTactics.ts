@@ -18,13 +18,17 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         {
             type: AbilityType.Spell,
             flashbackCost: "{1}{R}",
-            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
+            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] },
             effects: [
                 { type: EffectType.DealDamage, amount: 1, targetMapping: TargetMapping.Target1 },
                 {
                     type: EffectType.ApplyContinuousEffect,
                     duration: { type: DurationType.UntilEndOfTurn },
-                    restrictions: [{ type: 'CannotBlock' }],
+                    restrictions: [
+                { type: 'CannotBlock' }
+            ],
                     targetMapping: TargetMapping.Target1
                 }
             ]

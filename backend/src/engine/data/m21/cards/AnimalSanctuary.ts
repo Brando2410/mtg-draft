@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const AnimalSanctuary: CardDefinition = {
 
@@ -12,26 +12,32 @@ export const AnimalSanctuary: CardDefinition = {
     keywords: [],
     abilities: [
         {
-            id: "animal_sanctuary_mana",
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             effects: [{ type: EffectType.AddMana, amount: '{C}', targetMapping: TargetMapping.Controller }]
         },
         {
-            id: "animal_sanctuary_counter",
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
-            costs: [{ type: 'Mana', value: '{2}' }, { type: 'Tap' }],
+            costs: [{ type: CostType.Mana, value: '{2}' }, { type: CostType.Tap }],
             targetDefinition: {
-                type: TargetType.Creature, count: 1,
-                restrictions: [{
-                    subtypes: ['Bird', 'Cat', 'Dog', 'Goat', 'Ox', 'Snake']
-                }]
+                type: TargetType.Creature,
+                count: 1,
+                restrictions: [
+                    {
+                        type: 'Any',
+                        restrictions: [
+                            { type: 'Subtype', value: 'Bird' },
+                            { type: 'Subtype', value: 'Cat' },
+                            { type: 'Subtype', value: 'Dog' },
+                            { type: 'Subtype', value: 'Goat' },
+                            { type: 'Subtype', value: 'Ox' },
+                            { type: 'Subtype', value: 'Snake' }
+                        ]
+                    }
+                ]
             },
             effects: [{ type: EffectType.AddCounters, counterType: 'p1p1', amount: 1, targetMapping: TargetMapping.Target1 }]
         }
     ]
 
 };
-

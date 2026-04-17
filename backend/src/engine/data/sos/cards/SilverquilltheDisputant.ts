@@ -25,11 +25,15 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
                 {
                     type: EffectType.AdditionalCost,
                     targetMapping: TargetMapping.Controller,
-                    restrictions: ['InstantOrSorcery'],
+                    restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' }
+            ],
                     additionalCosts: [
                         {
                             type: CostType.Sacrifice,
-                            restrictions: ['power>=1'],
+                            restrictions: [
+                { type: 'Type', value: 'power>=1' }
+            ],
                             isCasualty: true,
                             optional: true,
                             label: 'Casualty 1'

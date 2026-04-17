@@ -27,7 +27,11 @@ export const WitherbloomCommand: CardDefinition = {
                         targetDefinition: { 
                             count: 1, 
                             type: TargetType.Permanent, 
-                            restrictions: [Restriction.NonCreature, Restriction.NonLand, "mv <= 2"] 
+                            restrictions: [
+                Restriction.NonCreature,
+                Restriction.NonLand,
+                { type: 'Type', value: 'mv <= 2' }
+            ] 
                         },
                         effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }] 
                     },
@@ -38,7 +42,9 @@ export const WitherbloomCommand: CardDefinition = {
                     },
                     { 
                         label: 'Opponent loses 2, you gain 2', 
-                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: [Restriction.Opponent] },
+                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: [
+                Restriction.Opponent
+            ] },
                         effects: [{ type: EffectType.LoseLife, amount: 2, targetMapping: TargetMapping.Target1 }, { type: EffectType.GainLife, amount: 2, targetMapping: TargetMapping.Controller }] 
                     }
                 ]

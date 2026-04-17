@@ -18,7 +18,9 @@ export const SublimeEpiphany: CardDefinition = {
                 },
                 {
                     label: 'Counter target activated or triggered ability',
-                    targetDefinition: { type: TargetType.AnyTarget, count: 1, restrictions: ['Ability'] },
+                    targetDefinition: { type: TargetType.AnyTarget, count: 1, restrictions: [
+                { type: 'Type', value: 'Ability' }
+            ] },
                     effects: [{ type: EffectType.CounterAbility, targetMapping: TargetMapping.Target1 }]
                 },
                 {
@@ -28,7 +30,9 @@ export const SublimeEpiphany: CardDefinition = {
                 },
                 {
                     label: 'Create token copy of target creature',
-                    targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
+                    targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
+                { type: 'Control', value: 'YouControl' }
+            ] },
                     effects: [{ type: EffectType.CreateTokenCopy, targetMapping: TargetMapping.Target1 }]
                 },
                 {

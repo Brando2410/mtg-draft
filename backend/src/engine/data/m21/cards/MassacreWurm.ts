@@ -19,7 +19,10 @@ export const MassacreWurm: CardDefinition = {
                 powerModifier: -2,
                 toughnessModifier: -2,
                 targetMapping: TargetMapping.AllMatchingPermanents,
-                restrictions: ['Creature', 'OpponentControl']
+                restrictions: [
+                    { type: 'Type', value: 'Creature' },
+                    { type: 'Control', value: 'OpponentControl' }
+                ]
             }]
         },
         {
@@ -29,12 +32,8 @@ export const MassacreWurm: CardDefinition = {
             effects: [{
                 type: EffectType.LoseLife,
                 amount: 2,
-                targetMapping: 'EVENT_OBJECT_CONTROLLER' as any
+                targetMapping: TargetMapping.EventObjectController
             }]
         }
     ]
 };
-
-
-
-

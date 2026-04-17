@@ -25,7 +25,10 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
                     layer: 6,
                     targetMapping: TargetMapping.MatchingCards,
                     activeZones: ['Hand'],
-                    restrictions: ['Instant or Sorcery', Restriction.YouControl],
+                    restrictions: [
+                { type: 'Type', value: 'Instant or Sorcery' },
+                Restriction.YouControl
+            ],
                     keywordsToAdd: ['Miracle {2}']
                 }
             ]

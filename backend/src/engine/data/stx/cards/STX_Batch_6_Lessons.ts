@@ -17,7 +17,9 @@ export const STX_Batch_6_Lessons: CardDefinition[] = [
             targetDefinition: {
               type: TargetType.Land,
               count: 1,
-              restrictions: ['Basic']
+              restrictions: [
+                { type: 'Type', value: 'Basic' }
+            ]
             },
             zone: Zone.Hand,
             reveal: true,

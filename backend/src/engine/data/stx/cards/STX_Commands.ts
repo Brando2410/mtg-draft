@@ -55,21 +55,39 @@ export const STX_Commands: CardDefinition[] = [
                     { 
                         label: 'Mill 3, return land', 
                         targetDefinition: { count: 1, type: TargetType.Player },
-                        effects: [{ type: EffectType.Mill, amount: 3, targetMapping: TargetMapping.Target1 }, { type: EffectType.LookAtTopAndPick, fromZone: Zone.Graveyard, restrictions: ['Land'], zone: Zone.Hand }] 
+                        effects: [{ type: EffectType.Mill, amount: 3, targetMapping: TargetMapping.Target1 }, { type: EffectType.LookAtTopAndPick, fromZone: Zone.Graveyard, restrictions: [
+                { type: 'Type', value: 'Land' }
+            ], zone: Zone.Hand }] 
                     },
                     { 
                         label: 'Destroy permanent (MV <= 2)', 
-                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Not', restriction: { type: 'Type', value: 'Creature' } }, { type: 'Not', restriction: { type: 'Type', value: 'Land' } }, { type: 'Attribute', attribute: 'ManaValue', value: 2, comparison: 'LE' }] },
+                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [
+                { type: 'Not',
+                restriction: { type: 'Type',
+                value: 'Creature' } },
+                { type: 'Not',
+                restriction: { type: 'Type',
+                value: 'Land' } },
+                { type: 'Attribute',
+                attribute: 'ManaValue',
+                value: 2,
+                comparison: 'LE' }
+            ] },
                         effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }] 
                     },
                     { 
                         label: 'Target creature gets -3/-1', 
-                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
+                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [
+                { type: 'Type',
+                value: 'Creature' }
+            ] },
                         effects: [{ type: EffectType.ApplyContinuousEffect, duration: 'UNTIL_END_OF_TURN', powerModifier: -3, toughnessModifier: -1, targetMapping: TargetMapping.Target1 }] 
                     },
                     { 
                         label: 'Opponent loses 2, you gain 2', 
-                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: ['Opponent'] },
+                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: [
+                { type: 'Control', value: 'Opponent' }
+            ] },
                         effects: [{ type: EffectType.LoseLife, amount: 2, targetMapping: TargetMapping.Target1 }, { type: EffectType.GainLife, amount: 2, targetMapping: TargetMapping.Controller }] 
                     }
                 ]
@@ -92,12 +110,18 @@ export const STX_Commands: CardDefinition[] = [
                 choices: [
                     { 
                         label: 'Creature gets +3/+3 and vigilance', 
-                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
+                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [
+                { type: 'Type',
+                value: 'Creature' }
+            ] },
                         effects: [{ type: EffectType.ApplyContinuousEffect, duration: 'UNTIL_END_OF_TURN', powerModifier: 3, toughnessModifier: 3, abilitiesToAdd: ['Vigilance'], targetMapping: TargetMapping.Target1 }] 
                     },
                     { 
                         label: 'Return creature (MV <= 2)', 
-                        targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: ['Creature', 'mv<=2'] },
+                        targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Type', value: 'mv<=2' }
+            ] },
                         effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 }] 
                     },
                     { 
@@ -107,7 +131,9 @@ export const STX_Commands: CardDefinition[] = [
                     },
                     { 
                         label: 'Opponent sacrifices a creature', 
-                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: ['Opponent'] },
+                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: [
+                { type: 'Control', value: 'Opponent' }
+            ] },
                         effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Target1, restriction: 'Creature' }] 
                     }
                 ]
@@ -130,17 +156,32 @@ export const STX_Commands: CardDefinition[] = [
                 choices: [
                     { 
                         label: 'Bounce creature/planeswalker', 
-                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Type', value: 'Planeswalker' }] }] },
+                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [
+                { type: 'Any',
+                restrictions: [{ type: 'Type',
+                value: 'Creature' },
+                { type: 'Type',
+                value: 'Planeswalker' }
+            ] }] },
                         effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }] 
                     },
                     { 
                         label: 'Counter artifact/enchantment spell', 
-                        targetDefinition: { count: 1, type: TargetType.Spell, restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Artifact' }, { type: 'Type', value: 'Enchantment' }] }] },
+                        targetDefinition: { count: 1, type: TargetType.Spell, restrictions: [
+                { type: 'Any',
+                restrictions: [{ type: 'Type',
+                value: 'Artifact' },
+                { type: 'Type',
+                value: 'Enchantment' }
+            ] }] },
                         effects: [{ type: EffectType.CounterSpell, targetMapping: TargetMapping.Target1 }] 
                     },
                     { 
                         label: 'Two +1/+1 counters', 
-                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [{ type: 'Type', value: 'Creature' }] },
+                        targetDefinition: { count: 1, type: TargetType.Permanent, restrictions: [
+                { type: 'Type',
+                value: 'Creature' }
+            ] },
                         effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 2, targetMapping: TargetMapping.Target1 }] 
                     },
                     { 

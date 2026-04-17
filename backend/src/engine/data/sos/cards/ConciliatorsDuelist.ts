@@ -35,7 +35,9 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
+                            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] },
                             effects: [
                                 {
                                     type: CostType.Exile,

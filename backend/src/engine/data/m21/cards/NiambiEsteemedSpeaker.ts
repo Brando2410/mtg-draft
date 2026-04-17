@@ -19,7 +19,10 @@ export const NiambiEsteemedSpeaker: CardDefinition = {
                 type: TargetType.Creature,
                 count: 1,
                 minCount: 0,
-                restrictions: ['YouControl', 'Other']
+                restrictions: [
+                { type: 'Control', value: 'YouControl' },
+                { type: 'Identity', value: 'Other' }
+            ]
             },
             effects: [
                 {
@@ -39,7 +42,9 @@ export const NiambiEsteemedSpeaker: CardDefinition = {
             costs: [
                 { type: CostType.Mana, value: '{1}{W}{U}' },
                 { type: CostType.Tap },
-                { type: CostType.Discard, restrictions: ['Legendary'] }],
+                { type: CostType.Discard, restrictions: [
+                { type: 'Type', value: 'Legendary' }
+            ] }],
             effects: [{ type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Controller }]
         }
     ]

@@ -18,7 +18,10 @@ export const LilianaDeathMage: CardDefinition = {
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 optional: true,
-                restrictions: ['Creature', 'YouControl']
+                restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Control', value: 'YouControl' }
+            ]
             },
             effects: [{
                 type: EffectType.ReturnToHand,

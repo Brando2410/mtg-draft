@@ -20,14 +20,20 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
             modes: [
                 {
                     label: "Copy target instant or sorcery spell you control",
-                    targetDefinition: { type: AbilityType.Spell, count: 1, restrictions: ['InstantOrSorcery', 'YouControl'] },
+                    targetDefinition: { type: AbilityType.Spell, count: 1, restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' },
+                { type: 'Control', value: 'YouControl' }
+            ] },
                     effects: [
                         { type: EffectType.CopySpellOnStack, chooseNewTargets: true, targetMapping: TargetMapping.Target1 }
                     ]
                 },
                 {
                     label: "Copy target creature spell you control",
-                    targetDefinition: { type: AbilityType.Spell, count: 1, restrictions: ['Creature', 'YouControl'] },
+                    targetDefinition: { type: AbilityType.Spell, count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Control', value: 'YouControl' }
+            ] },
                     effects: [
                         { 
                             type: EffectType.CopySpellOnStack, 

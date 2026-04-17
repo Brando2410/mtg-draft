@@ -21,7 +21,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] },
                 effects: [
                     {
                         type: CostType.Choice,

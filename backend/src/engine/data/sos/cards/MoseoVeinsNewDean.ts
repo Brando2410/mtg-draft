@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-    export const MoseoVeinsNewDean: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+export const MoseoVeinsNewDean: CardDefinition = {
     name: "Moseo, Vein's New Dean",
     manaCost: "{2}{B}",
     colors: ["B"],
@@ -17,7 +17,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
                     amount: 1,
                     tokenBlueprint: {
                         name: 'Pest',
-                        colors: ['black', 'green'],
+                        colors: ['B', 'G'],
                         types: ['Creature'],
                         subtypes: ['Pest'],
                         power: 1,
@@ -38,14 +38,18 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: 'INFUSION && OUR_TURN', // Only in your end step if you gained life
+            condition: `${ConditionType.Infusion} && ${ConditionType.IsYourTurn}`,
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
+                minCount: 0,
                 optional: true,
                 restrictions: [
-                    'Creature',
-                    { type: 'ManaValueLe', value: 'GAINED_LIFE_AMOUNT' }
+                    { type: 'Type', value: 'Creature' },
+                    {
+                        type: 'ManaValueLe',
+                        value: 'GAINED_LIFE_AMOUNT'
+                    }
                 ]
             },
             effects: [
@@ -60,4 +64,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     power: "2",
     toughness: "1"
 };
-    

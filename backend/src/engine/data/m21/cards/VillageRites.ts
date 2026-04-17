@@ -13,7 +13,9 @@ export const VillageRites: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            costs: [{ type: CostType.Sacrifice, restrictions: ['Creature'] }],
+            costs: [{ type: CostType.Sacrifice, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] }],
 
             effects: [{ type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Controller }]
         }

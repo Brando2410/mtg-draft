@@ -27,7 +27,9 @@ export const SanctumofAll: CardDefinition = {
                                     type: EffectType.SearchLibrary,
                                     sourceZones: [Zone.Library, Zone.Graveyard],
                                     zone: Zone.Battlefield,
-                                    restrictions: ["Shrine"],
+                                    restrictions: [
+                { type: 'Type', value: 'Shrine' }
+            ],
                                     reveal: true,
                                     shuffle: true
                                 }

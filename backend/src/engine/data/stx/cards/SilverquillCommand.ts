@@ -24,7 +24,10 @@ export const SilverquillCommand: CardDefinition = {
                         targetDefinition: { 
                             count: 1, 
                             type: TargetType.Creature, 
-                            restrictions: [Restriction.Graveyard, "mv <= 2"] 
+                            restrictions: [
+                Restriction.Graveyard,
+                { type: 'Type', value: 'mv <= 2' }
+            ] 
                         },
                         effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 }] 
                     },
@@ -35,7 +38,9 @@ export const SilverquillCommand: CardDefinition = {
                     },
                     { 
                         label: 'Opponent sacrifices a creature', 
-                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: [Restriction.Opponent] },
+                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: [
+                Restriction.Opponent
+            ] },
                         effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Target1, restriction: Restriction.Creature }] 
                     }
                 ]

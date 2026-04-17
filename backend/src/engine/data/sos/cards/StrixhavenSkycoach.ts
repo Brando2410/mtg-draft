@@ -21,7 +21,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                     targetDefinition: {
                         type: TargetType.Land,
                         count: 1,
-                        restrictions: ['Basic']
+                        restrictions: [
+                { type: 'Type', value: 'Basic' }
+            ]
                     },
                     optional: true,
                     reveal: true,

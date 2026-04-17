@@ -24,7 +24,9 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                             targetDefinition: {
                                 type: DurationType.Permanent,
                                 count: 1,
-                                restrictions: ["Artifact"]
+                                restrictions: [
+                { type: 'Type', value: 'Artifact' }
+            ]
                             },
                             effects: [
                                 {
@@ -38,7 +40,10 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                             targetDefinition: {
                                 type: DurationType.Permanent,
                                 count: 1,
-                                restrictions: ["Creature", "Flying"]
+                                restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Type', value: 'Flying' }
+            ]
                             },
                             effects: [
                                 {

@@ -19,7 +19,9 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
             modes: [
                 {
                     label: "Discard hand, draw cards equal to opponent's hand size",
-                    targetDefinition: { type: TargetType.Player, count: 1, restrictions: ['Opponent'] },
+                    targetDefinition: { type: TargetType.Player, count: 1, restrictions: [
+                { type: 'Control', value: 'Opponent' }
+            ] },
                     effects: [
                         { type: EffectType.DiscardCards, amount: 'ALL', targetMapping: TargetMapping.Controller },
                         { type: EffectType.DrawCards, amount: DynamicAmount.Target1HandSize, targetMapping: TargetMapping.Controller }

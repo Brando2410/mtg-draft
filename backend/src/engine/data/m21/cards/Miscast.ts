@@ -11,7 +11,9 @@ export const Miscast: CardDefinition = {
             type: AbilityType.Spell,
             targetDefinition: {
                 type: TargetType.Spell,
-                restrictions: ["InstantOrSorcery"]
+                restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' }
+            ]
             },
             effects: [
                 {

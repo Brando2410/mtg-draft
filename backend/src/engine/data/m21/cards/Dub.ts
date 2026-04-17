@@ -16,7 +16,9 @@ export const Dub: CardDefinition = {
                 id: "dub_spell",
                 type: AbilityType.Spell,
                 activeZone: Zone.Hand,
-                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] }
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] }
             },
             {
                 id: "dub_static",

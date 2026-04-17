@@ -18,7 +18,10 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                 type: TargetType.CardInGraveyard, 
                 minCount: 0, 
                 count: 'X' as any, 
-                restrictions: ['InstantOrSorcery', 'YouControl'] 
+                restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' },
+                { type: 'Control', value: 'YouControl' }
+            ] 
             },
             effects: [
                 { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.TargetAll },

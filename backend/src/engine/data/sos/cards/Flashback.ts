@@ -19,7 +19,9 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                     type: CostType.Choice,
                     label: "Choose an instant or sorcery card in your graveyard",
                     targetIdMapping: 'CONTROLLER_GRAVEYARD',
-                    restrictions: ['InstantOrSorcery'],
+                    restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' }
+            ],
                     optional: false,
                     effects: [
                         {

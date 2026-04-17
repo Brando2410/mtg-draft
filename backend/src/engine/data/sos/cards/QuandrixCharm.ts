@@ -43,7 +43,9 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                         },
                         {
                             label: 'Destroy target enchantment',
-                            targetDefinition: { count: 1, type: DurationType.Permanent, restrictions: ['Enchantment'] },
+                            targetDefinition: { count: 1, type: DurationType.Permanent, restrictions: [
+                { type: 'Type', value: 'Enchantment' }
+            ] },
                             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
                         },
                         {

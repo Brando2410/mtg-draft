@@ -34,8 +34,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 restrictions: [
-                    'InstantOrSorcery'
-                ],
+                { type: 'Type', value: 'InstantOrSorcery' }
+            ],
                 count: 1
             },
             effects: [

@@ -16,7 +16,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
         {
             type: AbilityType.Spell,
             flashbackCost: "{2}{W}",
-            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
+            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
+                { type: 'Control', value: 'YouControl' }
+            ] },
             effects: [
                 {
                     type: CostType.Exile,

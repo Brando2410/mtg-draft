@@ -18,7 +18,9 @@ export const DaybreakCharger: CardDefinition = {
                     eventMatch: 'ON_ETB',
                 activeZone: Zone.Battlefield,
                 condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
-                targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
+                targetDefinition: { type: 'Permanent', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] },
                 effects: [{ type: 'ApplyContinuousEffect', duration: 'UNTIL_END_OF_TURN', powerModifier: 2, toughnessModifier: 0, layer: 7, targetMapping: 'TARGET_1' }]
             }
         ]

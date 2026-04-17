@@ -44,9 +44,9 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 restrictions: [
-                    'OpponentControl',
-                    'InstantOrSorcery'
-                ]
+                { type: 'Control', value: 'OpponentControl' },
+                { type: 'Type', value: 'InstantOrSorcery' }
+            ]
             },
             effects: [
                 {

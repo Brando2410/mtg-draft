@@ -15,7 +15,9 @@ export const BasicConjuration: CardDefinition = {
                         type: EffectType.LookAtTopAndPick,
                         fromTop: 6,
                         optional: true,
-                        restrictions: ['Creature'],
+                        restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ],
                         reveal: true,
                         zone: Zone.Hand,
                         targetMapping: TargetMapping.Controller,

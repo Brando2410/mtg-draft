@@ -17,7 +17,12 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
                     eventMatch: TriggerEvent.EnterBattlefield,
       targetDefinition: {
         type: TargetType.CardInGraveyard,
-        restrictions: [Restriction.NonLand, Restriction.Permanent, 'mv <= 3', Restriction.YouControl],
+        restrictions: [
+                Restriction.NonLand,
+                Restriction.Permanent,
+                { type: 'Type', value: 'mv <= 3' },
+                Restriction.YouControl
+            ],
         count: 1
       },
       effects: [

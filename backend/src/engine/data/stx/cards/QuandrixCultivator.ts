@@ -24,7 +24,10 @@ export const QuandrixCultivator: CardDefinition = {
                             targetDefinition: {
                                 type: TargetType.Card,
                                 count: 1,
-                                restrictions: ['Basic', 'Forest_OR_Island']
+                                restrictions: [
+                { type: 'Type', value: 'Basic' },
+                { type: 'Type', value: 'Forest_OR_Island' }
+            ]
                             },
                             zone: Zone.Battlefield,
                             tapped: true,

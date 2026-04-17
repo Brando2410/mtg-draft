@@ -17,7 +17,9 @@ import { AbilityType, CardDefinition, CostType, TargetType } from '@shared/engin
             targetDefinition: {
                 type: TargetType.Player,
                 count: 1,
-                restrictions: ['Opponent']
+                restrictions: [
+                { type: 'Control', value: 'Opponent' }
+            ]
             },
             effects: [
                 {

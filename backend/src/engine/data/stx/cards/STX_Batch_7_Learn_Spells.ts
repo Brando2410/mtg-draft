@@ -84,7 +84,10 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
             targetDefinition: {
               type: TargetType.Land,
               count: 1,
-              restrictions: ['Basic', 'Forest']
+              restrictions: [
+                { type: 'Type', value: 'Basic' },
+                { type: 'Type', value: 'Forest' }
+            ]
             },
             zone: Zone.Hand,
             reveal: true,
@@ -107,7 +110,10 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
         targetDefinition: {
           count: 1,
           type: TargetType.Permanent,
-          restrictions: [{ type: 'Type', value: 'Creature' }]
+          restrictions: [
+                { type: 'Type',
+                value: 'Creature' }
+            ]
         },
         effects: [
           { type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Target1 },
@@ -161,7 +167,10 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
         targetDefinition: {
           count: 2,
           type: TargetType.Permanent,
-          restrictions: [{ type: 'Type', value: 'Creature' }],
+          restrictions: [
+                { type: 'Type',
+                value: 'Creature' }
+            ],
           minCount: 0
         },
         effects: [
@@ -183,7 +192,10 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
         targetDefinition: {
           count: 1,
           type: TargetType.Permanent,
-          restrictions: [{ type: 'Type', value: 'Creature' }]
+          restrictions: [
+                { type: 'Type',
+                value: 'Creature' }
+            ]
         },
         effects: [
           {
@@ -213,7 +225,12 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
           count: 1,
           type: TargetType.Permanent,
           restrictions: [
-            { type: 'Any', restrictions: [{ type: 'Type', value: 'Artifact' }, { type: 'Type', value: 'Enchantment' }] },
+                { type: 'Any',
+                restrictions: [{ type: 'Type',
+                value: 'Artifact' },
+                { type: 'Type',
+                value: 'Enchantment' }
+            ] },
             { type: 'Attribute', attribute: 'ManaValue', value: 2, comparison: 'LE' }
           ]
         },
@@ -261,7 +278,13 @@ export const STX_Batch_7_Learn_Spells: CardDefinition[] = [
         targetDefinition: {
           count: 1,
           type: TargetType.Permanent,
-          restrictions: [{ type: 'Any', restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Type', value: 'Planeswalker' }] }]
+          restrictions: [
+                { type: 'Any',
+                restrictions: [{ type: 'Type',
+                value: 'Creature' },
+                { type: 'Type',
+                value: 'Planeswalker' }
+            ] }]
         },
         effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
       }

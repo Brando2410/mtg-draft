@@ -25,7 +25,9 @@ export const BrashTaunter: CardDefinition = {
             eventMatch: TriggerEvent.DamageDealtToCreature,
             activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => event.targetId === source.sourceId,
-            targetDefinition: { type: TargetType.Player, count: 1, restrictions: ['Opponent'] },
+            targetDefinition: { type: TargetType.Player, count: 1, restrictions: [
+                { type: 'Control', value: 'Opponent' }
+            ] },
             effects: [{ type: EffectType.DealDamage, amount: 'EVENT_AMOUNT', targetMapping: TargetMapping.Target1 }]
         },
         {
@@ -33,7 +35,9 @@ export const BrashTaunter: CardDefinition = {
             type: AbilityType.Activated,
             activeZone: Zone.Battlefield,
             costs: [{ type: 'Mana', value: '{2}{R}' }, { type: 'Tap' }],
-            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['Other'] },
+            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
+                { type: 'Identity', value: 'Other' }
+            ] },
             effects: [{ type: EffectType.Fight, targetMapping: TargetMapping.Target1, target2Mapping: TargetMapping.Target2 }]
         }
     ]

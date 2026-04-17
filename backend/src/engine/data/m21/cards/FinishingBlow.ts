@@ -19,7 +19,10 @@ export const FinishingBlow: CardDefinition = {
                 targetDefinition: {
                     type: TargetType.Permanent,
                     count: 1,
-                    restrictions: ["creature", "planeswalker"]
+                    restrictions: [
+                { type: 'Type', value: 'creature' },
+                { type: 'Type', value: 'planeswalker' }
+            ]
                 },
                 effects: [
                     {

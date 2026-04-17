@@ -32,7 +32,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                 {
                     type: CostType.Exile,
                     sourceZones: ['Graveyard'],
-                    restrictions: ['InstantOrSorcery']
+                    restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' }
+            ]
                 }
             ],
             effects: [

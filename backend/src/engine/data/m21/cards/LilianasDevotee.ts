@@ -17,7 +17,9 @@ export const LilianasDevotee: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 1,
                     targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                    restrictions: ['Zombie']
+                    restrictions: [
+                { type: 'Type', value: 'Zombie' }
+            ]
                 }
             ]
         },

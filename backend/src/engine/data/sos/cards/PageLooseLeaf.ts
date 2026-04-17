@@ -31,7 +31,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetM
             effects: [
                 {
                     type: EffectType.RevealUntilCondition,
-                    restrictions: ['InstantOrSorcery'],
+                    restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' }
+            ],
                     zone: Zone.Hand,
                     remainderZone: Zone.Library,
                     remainderPosition: 'bottom',

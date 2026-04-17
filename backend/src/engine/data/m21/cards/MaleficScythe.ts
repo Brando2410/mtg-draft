@@ -3,6 +3,7 @@ import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping, Cos
 export const MaleficScythe: CardDefinition = {
     name: 'Malefic Scythe',
     manaCost: '{B}',
+    colors: ['B'],
     types: ['Artifact'],
     subtypes: ['Equipment'],
     oracleText: 'Equipped creature gets +1/+1 for each soul counter on Malefic Scythe.\nWhenever equipped creature dies, put a soul counter on Malefic Scythe.\nEquip {1}',
@@ -42,7 +43,9 @@ export const MaleficScythe: CardDefinition = {
             costs: [{ type: CostType.Mana, value: '{1}' }],
             targetDefinition: {
                 type: TargetType.Creature,
-                restrictions: ['youcontrol']
+                restrictions: [
+                { type: 'Type', value: 'youcontrol' }
+            ]
             },
             effects: [{
                 type: EffectType.Attach,

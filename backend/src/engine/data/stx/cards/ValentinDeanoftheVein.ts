@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, CostType, DurationType } from '@shared/engine_types';
 
 export const ValentinDeanoftheVein: CardDefinition = {
     name: "Valentin, Dean of the Vein",
@@ -29,8 +29,8 @@ export const ValentinDeanoftheVein: CardDefinition = {
                     effects: [{
                         type: EffectType.ApplyContinuousEffect,
                         layer: 6,
-                        targetMapping: TargetMapping.MatchingCards,
-                        restrictions: [{ type: 'OpponentControl' }, { type: 'Type', value: 'Creature' }, { type: 'Not', restriction: { type: 'Token' } }],
+                        targetMapping: TargetMapping.EachOpponentCreature,
+                        restrictions: [{ type: 'Not', restriction: { type: 'Token' } }],
                         exileOnMoveToGraveyard: true,
                     }]
                 },
@@ -44,7 +44,7 @@ export const ValentinDeanoftheVein: CardDefinition = {
                         optional: true,
                         choices: [{
                             label: "Pay {2}",
-                            costs: [{ type: 'Mana', value: '{2}' }],
+                            costs: [{ type: CostType.Mana, value: '{2}' }],
                             effects: [{
                                 type: EffectType.CreateToken,
                                 tokenBlueprint: {
@@ -89,8 +89,8 @@ export const ValentinDeanoftheVein: CardDefinition = {
                         label: "Pay {1}",
                         costs: [{ type: 'Mana', value: '{1}' }],
                         effects: [
-                            { type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: 'ALL_CREATURES_YOU_CONTROL' },
-                            { type: EffectType.ApplyContinuousEffect, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Trample'], targetMapping: 'ALL_CREATURES_YOU_CONTROL' }
+                            { type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.AllCreaturesYouControl },
+                            { type: EffectType.ApplyContinuousEffect, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToAdd: ['Trample'], targetMapping: TargetMapping.AllCreaturesYouControl }
                         ]
                     }]
                 }]

@@ -18,7 +18,9 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
             targetDefinition: {
                 type: DurationType.Permanent,
                 count: 1,
-                restrictions: ["Artifact or Creature"]
+                restrictions: [
+                { type: 'Type', value: 'Artifact or Creature' }
+            ]
             },
             effects: [
                 {

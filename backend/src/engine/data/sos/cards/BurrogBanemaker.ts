@@ -1,5 +1,6 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetType } from '@shared/engine_types';
-    export const BurrogBanemaker: CardDefinition = {
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, CostType } from '@shared/engine_types';
+
+export const BurrogBanemaker: CardDefinition = {
     name: "Burrog Banemaker",
     manaCost: "{B}",
     colors: [
@@ -12,6 +13,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         "Frog",
         "Warlock"
     ],
+    power: "1",
+    toughness: "1",
     keywords: ["Deathtouch"],
     oracleText: "Deathtouch\n{1}{B}: This creature gets +1/+1 until end of turn.",
     abilities: [
@@ -21,16 +24,16 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    sublayer: 'Stats',
+                    sublayer: '7',
                     powerModifier: 1,
                     toughnessModifier: 1,
                     duration: { type: DurationType.UntilEndOfTurn },
-                    targetMapping: TargetType.Self
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
     ],
-    power: "1",
-    toughness: "1"
 };
-    
+
+
+

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const GarruksUprising: CardDefinition = {
     name: "Garruk's Uprising",
@@ -11,32 +11,29 @@ export const GarruksUprising: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) => 
-                event.sourceId === source.id && 
+            condition: (state: any, event: any, source: any) =>
+                event.sourceId === source.id &&
                 state.battlefield.some((o: any) => o.controllerId === source.controllerId && (o.effectiveStats?.power || 0) >= 4),
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         },
         {
             type: AbilityType.Static,
-            activeZone: Zone.Battlefield,
-            effects: [{ 
-                type: EffectType.ApplyContinuousEffect, 
-                abilitiesToAdd: ['Trample'], 
-                targetMapping: TargetMapping.AllCreaturesYouControl 
+            effects: [{
+                type: EffectType.ApplyContinuousEffect,
+                abilitiesToAdd: ['Trample'],
+                targetMapping: TargetMapping.AllCreaturesYouControl
             }]
         },
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => {
                 const entered = state.battlefield.find((o: any) => o.id === event.sourceId);
-                return entered && 
-                       entered.controllerId === source.controllerId && 
-                       entered.definition.types.includes('Creature') &&
-                       (entered.effectiveStats?.power || 0) >= 4 && 
-                       entered.id !== source.id;
+                return entered &&
+                    entered.controllerId === source.controllerId &&
+                    entered.definition.types.includes('Creature') &&
+                    (entered.effectiveStats?.power || 0) >= 4 &&
+                    entered.id !== source.id;
             },
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }

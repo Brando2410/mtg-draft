@@ -15,7 +15,10 @@ export const BasrisAcolyte: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: { type: TargetType.Creature, count: 2, minCount: 0, optional: true, restrictions: ['Other', 'YouControl'] },
+            targetDefinition: { type: TargetType.Creature, count: 2, minCount: 0, optional: true, restrictions: [
+                { type: 'Identity', value: 'Other' },
+                { type: 'Control', value: 'YouControl' }
+            ] },
             effects: [{ type: EffectType.AddCounters, amount: 1, counterType: 'p1p1', targetMapping: TargetMapping.Target1 }],
         }
     ]

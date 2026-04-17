@@ -39,7 +39,10 @@ export const ChandraHeartofFire: CardDefinition = {
                     type: EffectType.SearchLibrary,
                     label: 'Search Library and Graveyard for Red Instant/Sorcery cards',
                     targetIdMapping: 'CONTROLLER_GRAVEYARD_AND_LIBRARY',
-                    restrictions: ['Red', 'InstantOrSorcery'],
+                    restrictions: [
+                { type: 'Type', value: 'Red' },
+                { type: 'Type', value: 'InstantOrSorcery' }
+            ],
                     maxCount: 99,
                     optional: true,
                     effects: [

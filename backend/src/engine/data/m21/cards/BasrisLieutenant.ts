@@ -17,7 +17,9 @@ export const BasrisLieutenant: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
             activeZone: Zone.Battlefield,
-            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
+            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
+                { type: 'Control', value: 'YouControl' }
+            ] },
             effects: [
                 { type: EffectType.AddCounters, amount: 1, counterType: 'p1p1', targetMapping: TargetMapping.Target1 }
             ]

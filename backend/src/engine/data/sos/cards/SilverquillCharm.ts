@@ -19,14 +19,21 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
             modes: [
                 {
                     label: "Put two +1/+1 counters on target creature",
-                    targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
+                    targetDefinition: { type: 'Permanent', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] },
                     effects: [
                         { type: EffectType.AddCounters, amount: 2, counterType: '+1/+1', targetMapping: TargetMapping.Target1 }
                     ]
                 },
                 {
                     label: "Exile target creature with power 2 or less",
-                    targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', { type: 'Power', comparison: 'LessOrEqual', value: 2 }] },
+                    targetDefinition: { type: 'Permanent', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Power',
+                comparison: 'LessOrEqual',
+                value: 2 }
+            ] },
                     effects: [
                         { type: CostType.Exile, targetMapping: TargetMapping.Target1 }
                     ]

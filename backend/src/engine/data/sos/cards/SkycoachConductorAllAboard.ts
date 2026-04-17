@@ -24,7 +24,10 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone 
                 targetDefinition: {
                     type: 'Creature',
                     count: 1,
-                    restrictions: ['YouControl', { not: { subtype: 'Pilot' } }]
+                    restrictions: [
+                { type: 'Control', value: 'YouControl' },
+                { not: { subtype: 'Pilot' } }
+            ]
                 },
                 effects: [
                     { type: CostType.Exile, targetMapping: TargetMapping.Target1 },

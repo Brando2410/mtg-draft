@@ -17,7 +17,9 @@ export const AngelicPage: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Tap }],
-            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['AttackingOrBlocking'] },
+            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
+                { type: 'State', value: 'AttackingOrBlocking' }
+            ] },
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 duration: { type: DurationType.UntilEndOfTurn },

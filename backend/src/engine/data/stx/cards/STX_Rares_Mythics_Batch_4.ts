@@ -54,7 +54,10 @@ export const STX_Rares_Mythics_Batch_4: CardDefinition[] = [
             {
                 type: AbilityType.Triggered,
                 eventMatch: TriggerEvent.Magecraft,
-                targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: ['Creature', 'Yours'] },
+                targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Control', value: 'Yours' }
+            ] },
                 effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
             }
         ],
@@ -71,7 +74,10 @@ export const STX_Rares_Mythics_Batch_4: CardDefinition[] = [
                         type: 'Sacrifice', 
                         optional: true, 
                         selectionType: SelectionType.AnyNumber,
-                        restrictions: [{ type: 'Type', value: 'Creature' }],
+                        restrictions: [
+                { type: 'Type',
+                value: 'Creature' }
+            ],
                         costModifiers: [{ type: 'REDUCE_GENERIC_PER_COUNTER', counterType: 'SacrificeCount', amount: 2 }] // Simplified for engine
                     }],
                     effects: [

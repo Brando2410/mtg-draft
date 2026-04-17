@@ -1,16 +1,13 @@
 import {
     CardDefinition,
-    Zone,
     AbilityType,
     TriggerEvent,
     TargetMapping,
     EffectType,
     DynamicAmount,
     TargetType,
-    Restriction,
-    ConditionType,
     DurationType,
-    CostType
+    Zone
 } from '@shared/engine_types';
 
 export const MilaCraftyCompanion: CardDefinition = {
@@ -27,7 +24,7 @@ export const MilaCraftyCompanion: CardDefinition = {
         {
             name: "Mila, Crafty Companion",
             manaCost: "{1}{W}{W}",
-            colors: ["White"],
+            colors: ["W"],
             supertypes: ["Legendary"],
             types: ["Creature"],
             subtypes: ["Fox"],
@@ -38,38 +35,34 @@ export const MilaCraftyCompanion: CardDefinition = {
                 {
                     type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.AttackersDeclared,
-                    condition: "OPPONENT_ATTACKS_YOUR_PLANESWALKER",
-                    effects: [
-                        {
-                            type: EffectType.AddCounters,
-                            counterType: "loyalty",
-                            amount: 1,
-                            targetMapping: "ALL_PLANESWALKERS_YOU_CONTROL"
-                        }
-                    ]
+                    condition: 'OpponentAttacksYourPlaneswalker',
+                    effects: [{ 
+                        type: EffectType.AddCounters, 
+                        counterType: 'loyalty', 
+                        amount: 1, 
+                        targetMapping: TargetMapping.AllPlaneswalkersYouControl 
+                    }]
                 },
                 {
                     type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.BecomeTarget,
-                    condition: "OPPONENT_TARGETS_YOUR_PERMANENT",
-                    effects: [
-                        {
-                            type: EffectType.Choice,
-                            label: "Draw a card?",
-                            targetMapping: TargetMapping.Controller,
-                            choices: [
-                                { label: "Yes", effects: [{ type: EffectType.DrawCards, amount: 1 }] },
-                                { label: "No", effects: [] }
-                            ]
-                        }
-                    ]
+                    condition: 'OpponentTargetsYourPermanent',
+                    effects: [{
+                        type: EffectType.Choice,
+                        label: "Draw a card?",
+                        targetMapping: TargetMapping.Controller,
+                        choices: [
+                            { label: "Yes", effects: [{ type: EffectType.DrawCards, amount: 1 }] },
+                            { label: "No", effects: [] }
+                        ]
+                    }]
                 }
             ]
         },
         {
             name: "Lukka, Wayward Bonder",
             manaCost: "{4}{R}{R}",
-            colors: ["Red"],
+            colors: ["R"],
             supertypes: ["Legendary"],
             types: ["Planeswalker"],
             subtypes: ["Lukka"],
@@ -77,97 +70,74 @@ export const MilaCraftyCompanion: CardDefinition = {
             oracleText: "+1: You may discard a card. If you do, draw a card. If a creature card was discarded this way, draw two cards instead.\n-2: Return target creature card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of your next upkeep.\n-7: You get an emblem with “Whenever a creature you control enters, it deals damage equal to its power to any target.”",
             abilities: [
                 {
-                    id: "lukka_plus1",
                     type: AbilityType.Activated,
-                    costs: [{ type: CostType.Loyalty, value: 1 }],
-                    effects: [
-                        {
-                            type: EffectType.Choice,
-                            label: "Discard a card?",
-                            choices: [
-                                {
-                                    label: "Discard",
-                                    effects: [
-                                        { type: EffectType.DiscardCards, amount: 1 },
-                                        {
-                                            type: EffectType.ConditionalEffect,
-                                            condition: "LAST_DISCARDED_HAS_TYPE_CREATURE",
-                                            effects: [{ type: EffectType.DrawCards, amount: 2 }],
-                                            onFailureEffects: [{ type: EffectType.DrawCards, amount: 1 }]
-                                        }
-                                    ]
-                                },
-                                {
-                                    label: "Decline",
-                                    effects: []
-                                }
-                            ]
-                        }
-                    ]
+                    costs: [{ type: 'Loyalty', value: 1 }],
+                    effects: [{
+                        type: EffectType.Choice,
+                        label: "Discard a card?",
+                        choices: [
+                            {
+                                label: "Discard",
+                                effects: [
+                                    { type: EffectType.DiscardCards, amount: 1 },
+                                    {
+                                        type: EffectType.ConditionalEffect,
+                                        condition: 'DiscardedCreature',
+                                        effects: [{ type: EffectType.DrawCards, amount: 2 }],
+                                        onFailureEffects: [{ type: EffectType.DrawCards, amount: 1 }]
+                                    }
+                                ]
+                            },
+                            { label: "Decline", effects: [] }
+                        ]
+                    }]
                 },
                 {
-                    id: "lukka_minus2",
                     type: AbilityType.Activated,
-                    costs: [{ type: CostType.Loyalty, value: -2 }],
+                    costs: [{ type: 'Loyalty', value: -2 }],
                     targetDefinition: {
                         type: TargetType.CardInGraveyard,
-                        zone: Zone.Graveyard,
                         count: 1,
-                        restrictions: [Restriction.Creature]
+                        restrictions: [{ type: 'Type', value: 'Creature' }]
                     },
                     effects: [
-                        {
-                            type: EffectType.PutOnBattlefield,
-                            targetMapping: TargetMapping.Target1
-                        },
+                        { type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 },
                         {
                             type: EffectType.ApplyContinuousEffect,
                             duration: { type: DurationType.Permanent },
-                            abilitiesToAdd: ["Haste"],
+                            abilitiesToAdd: ['Haste'],
                             targetMapping: TargetMapping.Target1
                         },
                         {
                             type: EffectType.CreateDelayedTrigger,
                             eventMatch: TriggerEvent.Upkeep,
-                            condition: "IS_YOUR_TURN",
-                            effects: [{
-                                type: EffectType.Exile,
-                                targetMapping: TargetMapping.Target1
-                            }]
+                            duration: { type: DurationType.UntilEndOfTurn },
+                            condition: 'IsYourTurn',
+                            effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
                         }
                     ]
                 },
                 {
-                    id: "lukka_minus7",
                     type: AbilityType.Activated,
-                    costs: [{ type: CostType.Loyalty, value: -7 }],
-                    effects: [
-                        {
-                            type: EffectType.CreateEmblem,
-                            emblemBlueprint: {
-                                name: "Lukka, Wayward Bonder Emblem",
-                                oracleText: "Whenever a creature enters the battlefield under your control, it deals damage equal to its power to any target.",
-                                abilities: [
-                                    {
-                                        type: AbilityType.Triggered,
-                                        eventMatch: TriggerEvent.EnterBattlefieldOther,
-                                        condition: ConditionType.OwnCreatureEnters,
-                                        targetDefinition: {
-                                            type: TargetType.AnyTarget,
-                                            count: 1
-                                        },
-                                        effects: [
-                                            {
-                                                type: EffectType.DealDamage,
-                                                amount: 'TARGET_1_POWER',
-                                                damageSourceMapping: 'TRIGGER_EVENT_SOURCE'
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
+                    costs: [{ type: 'Loyalty', value: -7 }],
+                    effects: [{
+                        type: EffectType.CreateEmblem,
+                        emblemBlueprint: {
+                            name: "Lukka, Wayward Bonder Emblem",
+                            oracleText: "Whenever a creature enters the battlefield under your control, it deals damage equal to its power to any target.",
+                            abilities: [{
+                                type: AbilityType.Triggered,
+                                eventMatch: TriggerEvent.EnterBattlefieldOther,
+                                condition: 'OwnCreatureEnters',
+                                targetDefinition: { type: TargetType.AnyTarget, count: 1 },
+                                effects: [{
+                                    type: EffectType.DealDamage,
+                                    amount: DynamicAmount.TriggerObjectPower,
+                                    damageSourceMapping: TargetMapping.TriggerEventSource
+                                }]
+                            }]
                         }
-                    ]
+                    }]
                 }
             ]
         }

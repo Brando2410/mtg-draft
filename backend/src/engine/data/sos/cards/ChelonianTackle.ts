@@ -14,7 +14,9 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
+            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
+                { type: 'Control', value: 'YouControl' }
+            ] },
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -29,7 +31,9 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['OpponentControl'] },
+                            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
+                { type: 'Control', value: 'OpponentControl' }
+            ] },
                             effects: [
                                 {
                                     type: EffectType.Fight,

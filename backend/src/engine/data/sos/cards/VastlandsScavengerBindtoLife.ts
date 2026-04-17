@@ -26,7 +26,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone 
                     { 
                         type: CostType.Choice, 
                         targetIdMapping: TargetMapping.LastMilledIds,
-                        restrictions: ['Creature'],
+                        restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ],
                         label: 'Put a creature card from among them onto the battlefield',
                         effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield }]
                     }

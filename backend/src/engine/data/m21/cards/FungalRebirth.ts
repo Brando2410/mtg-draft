@@ -12,7 +12,10 @@ export const FungalRebirth: CardDefinition = {
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
-                restrictions: ['Permanent', 'YouControl']
+                restrictions: [
+                { type: 'Type', value: 'Permanent' },
+                { type: 'Control', value: 'YouControl' }
+            ]
             },
             effects: [
                 {

@@ -18,7 +18,10 @@ export const SelflessSavior: CardDefinition = {
             targetDefinition: {
                 type: TargetType.Creature,
                 count: 1,
-                restrictions: ['Another', 'YouControl']
+                restrictions: [
+                { type: 'Identity', value: 'Another' },
+                { type: 'Control', value: 'YouControl' }
+            ]
             },
             effects: [
                 {

@@ -31,7 +31,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
                                 {
                                     type: CostType.Sacrifice,
                                     targetMapping: TargetMapping.Controller,
-                                    restrictions: ['Artifact']
+                                    restrictions: [
+                { type: 'Type', value: 'Artifact' }
+            ]
                                 },
                                 {
                                     type: EffectType.CopySpellOnStack,

@@ -27,9 +27,14 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
             costs: [
                 { type: CostType.Mana, value: '{1}{B}{G}' },
                 { type: CostType.Tap },
-                { type: CostType.Sacrifice, restrictions: ['Creature'] }
+                { type: CostType.Sacrifice, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] }
             ],
-            targetDefinition: { type: 'CardInGraveyard', count: 1, restrictions: ['Creature', 'Yours'] },
+            targetDefinition: { type: 'CardInGraveyard', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Control', value: 'Yours' }
+            ] },
             activatedOnlyAsSorcery: true,
             effects: [
                 { type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 }

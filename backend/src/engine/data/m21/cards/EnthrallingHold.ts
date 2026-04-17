@@ -13,7 +13,9 @@ export const EnthrallingHold: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['Tapped'] }
+            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
+                { type: 'State', value: 'Tapped' }
+            ] }
         },
         {
             type: AbilityType.Static,

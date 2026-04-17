@@ -58,7 +58,9 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
                         targetDefinition: {
                             type: TargetType.Card,
                             count: 1,
-                            restrictions: ['InstantOrSorcery']
+                            restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' }
+            ]
                         },
                         zone: Zone.Hand,
                         reveal: true,

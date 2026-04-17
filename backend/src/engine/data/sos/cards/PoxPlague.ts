@@ -41,7 +41,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
                                 {
                                     type: CostType.Sacrifice,
                                     targetMapping: TargetMapping.Target1,
-                                    restrictions: ['Permanent'],
+                                    restrictions: [
+                { type: 'Type', value: 'Permanent' }
+            ],
                                     amount: (state: any, source: any, targets: string[]) => {
                                         const pId = targets[0];
                                         const perms = state.battlefield.filter((o: any) => o.controllerId === pId);

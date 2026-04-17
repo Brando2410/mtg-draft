@@ -17,7 +17,9 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Select
             targetDefinition: {
                 type: DurationType.Permanent,
                 count: 1,
-                restrictions: ["Creature"]
+                restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ]
             },
             effects: [
                 {
@@ -36,7 +38,9 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Select
                             targetDefinition: {
                                 type: TargetType.CardInGraveyard,
                                 count: 1,
-                                restrictions: ['YouControl']
+                                restrictions: [
+                { type: 'Control', value: 'YouControl' }
+            ]
                             }
                         },
                         {

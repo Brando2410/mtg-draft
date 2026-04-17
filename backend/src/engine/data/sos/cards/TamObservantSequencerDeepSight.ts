@@ -19,7 +19,7 @@ export const TamObservantSequencerDeepSight: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefieldOther,
             restrictions: [
-                'Land'
+                { type: 'Type', value: 'Land' }
             ],
             condition: ConditionType.PlayerIsController,
             effects: [

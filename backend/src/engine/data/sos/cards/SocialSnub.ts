@@ -31,7 +31,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                 {
                     type: CostType.Sacrifice,
                     targetMapping: TargetMapping.EachPlayer,
-                    restrictions: ['Creature']
+                    restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ]
                 },
                 {
                     type: EffectType.LoseLife,

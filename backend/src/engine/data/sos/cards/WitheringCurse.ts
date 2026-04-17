@@ -22,7 +22,9 @@ export const WitheringCurse: CardDefinition = {
                             condition: ConditionType.Infusion,
                             type: EffectType.Destroy,
                             targetMapping: TargetMapping.AllMatchingPermanents,
-                            restrictions: ['Creature']
+                            restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ]
                         },
                         {
                             condition: 'INFUSION',
@@ -31,7 +33,9 @@ export const WitheringCurse: CardDefinition = {
                             powerModifier: -2,
                             toughnessModifier: -2,
                             targetMapping: TargetMapping.AllMatchingPermanents,
-                            restrictions: ['Creature']
+                            restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ]
                         }
                     ]
                 }

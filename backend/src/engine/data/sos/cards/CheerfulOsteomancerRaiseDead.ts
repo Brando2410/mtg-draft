@@ -21,7 +21,10 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zon
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: ['Creature', 'YouControl'] },
+                targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Control', value: 'YouControl' }
+            ] },
                 effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
             }
         ]

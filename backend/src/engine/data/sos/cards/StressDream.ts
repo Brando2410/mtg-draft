@@ -18,7 +18,9 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, Z
             targetDefinition: {
                 type: DurationType.Permanent,
                 maxSelections: 1,
-                restrictions: ['Creature']
+                restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ]
             },
             effects: [
                 {

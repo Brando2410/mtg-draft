@@ -62,6 +62,8 @@ export const TargetMapping = {
     OtherPlaneswalkersYouControl: 'OTHER_PLANESWALKERS_YOU_CONTROL',
     AllLandsYouControl: 'ALL_LANDS_YOU_CONTROL',
     AllOtherCreaturesAndPlaneswalkers: 'ALL_OTHER_CREATURES_AND_PLANESWALKERS',
+    AllPlaneswalkersYouControl: 'ALL_PLANESWALKERS_YOU_CONTROL',
+    EventObjectController: 'EVENT_OBJECT_CONTROLLER',
     MatchingCards: 'MATCHING_CARDS',
     Target1HandRevealPick: 'TARGET_1_HAND_REVEAL_PICK',
     Target1Controller: 'TARGET_1_CONTROLLER',
@@ -101,6 +103,7 @@ export const DynamicAmount = {
     SourcePower: 'SOURCE_POWER',
     SourceToughness: 'SOURCE_TOUGHNESS',
     SourceCountersP1P1: 'SOURCE_COUNTERS_P1P1',
+    Power: 'POWER',
     DestroyedCount: 'DESTROYED_COUNT',
     SavedMV: 'SAVED_MV',
     TriggerEventValue: 'TRIGGER_EVENT_VALUE',
@@ -120,7 +123,13 @@ export const DynamicAmount = {
     GraveyardSize: 'GRAVEYARD_SIZE',
     GraveyardSizeNegative: 'GRAVEYARD_SIZE_NEGATIVE',
     HandSize: 'HAND_SIZE',
-    OtherAttackingCreaturesCount: 'OTHER_ATTACKING_CREATURES_COUNT'
+    OtherAttackingCreaturesCount: 'OTHER_ATTACKING_CREATURES_COUNT',
+    HandCount: 'HAND_SIZE',
+    ShrinesYouControlCount: 'COUNT_Shrine',
+    TriggerObjectPower: 'TRIGGER_EVENT_SOURCE_POWER',
+    EventObjectPower: 'EVENT_OBJECT_POWER',
+    GreatestPowerInYourGraveyard: 'GREATEST_POWER_IN_GRAVEYARD',
+    CreaturesDiedThisTurnCount: 'CREATURES_DIED_THIS_TURN_COUNT'
 } as const;
 export type DynamicAmount = (typeof DynamicAmount)[keyof typeof DynamicAmount];
 

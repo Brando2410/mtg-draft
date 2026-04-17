@@ -17,7 +17,9 @@ export const LegionsJudgment: CardDefinition = {
                 type: TargetType.Creature,
                 count: 1,
                 minCount: 1,
-                restrictions: ["power >= 4"]
+                restrictions: [
+                { type: 'Type', value: 'power >= 4' }
+            ]
             },
             effects: [{
                 type: EffectType.Destroy,

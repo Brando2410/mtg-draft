@@ -24,7 +24,11 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restri
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
-                restrictions: ['Noncreature', 'Nonland', Restriction.YouControl]
+                restrictions: [
+                { type: 'Type', value: 'Noncreature' },
+                { type: 'Type', value: 'Nonland' },
+                Restriction.YouControl
+            ]
             },
             effects: [
                 {

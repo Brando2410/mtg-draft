@@ -17,7 +17,9 @@ export const VrynWingmare: CardDefinition = {
                 {
                     type: EffectType.SpellTax,
                     amount: 1,
-                    restrictions: ['Noncreature'],
+                    restrictions: [
+                { type: 'Type', value: 'Noncreature' }
+            ],
                     targetMapping: TargetMapping.EachPlayer
                 }
             ]

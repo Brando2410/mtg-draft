@@ -12,13 +12,18 @@ export class ConditionProcessor {
    * CR 608.2c: Evaluates a condition string against the state.
    */
   public static matchesCondition(
-    state: GameState, 
-    condition: ConditionType | undefined, 
-    sourceId: GameObjectId, 
-    controllerId: PlayerId, 
+    state: GameState,
+    condition: ConditionType | undefined,
+    sourceId: GameObjectId,
+    controllerId: PlayerId,
     event?: GameEvent
   ): boolean {
     if (!condition) return true;
+
+    // Support for negation: !CONDITION
+    if (condition.startsWith('!')) {
+      return !this.matchesCondition(state, condition.substring(1), sourceId, controllerId, event);
+    }
 
     // Support for multiple conditions: CONDITION_1 && CONDITION_2
     if (condition.includes('&&')) {
@@ -29,7 +34,7 @@ export class ConditionProcessor {
     if (condition.includes(':')) {
       const [type, params] = condition.split(':');
       const restrictions = params.split(',').map(r => r.trim());
-      
+
       // We use a local require for TargetingProcessor to avoid top-level circularity if needed, 
       // but ideally TargetingProcessor should also be refactored.
       const { TargetingProcessor } = require('../actions/TargetingProcessor');
@@ -107,9 +112,9 @@ export class ConditionProcessor {
           return false;
         }
         case 'SPELL_IS_MULTICOLORED': {
-            const card = event?.data?.card || event?.data?.object || (event as any)?.gameObject;
-            if (!card) return false;
-            return (card.definition.colors || []).length > 1;
+          const card = event?.data?.card || event?.data?.object || (event as any)?.gameObject;
+          if (!card) return false;
+          return (card.definition.colors || []).length > 1;
         }
         case 'COUNTER_GE': {
           const countType = restrictions[0];
@@ -156,7 +161,7 @@ export class ConditionProcessor {
           return (state.players[controllerId]?.hand.length || 0) >= threshold;
         }
         case 'GRAVEYARD_CREATURE_COUNT_GE': {
-          const threshold = parseInt(restrictions[0]);
+          const threshold = parseInt(restrictions[0] || '0');
           return (state.players[controllerId]?.graveyard.filter(c => (c.definition.types || []).some(t => t.toLowerCase() === 'creature')).length || 0) >= threshold;
         }
         case 'IS_FLASHBACK_CAST': {
@@ -165,34 +170,34 @@ export class ConditionProcessor {
           return (event as any)?.isFlashbackCast === true; // Support direct property on StackObject
         }
         case 'CONTROL_SUBTYPE_GE': {
-            const subtype = restrictions[0];
-            const threshold = parseInt(restrictions[1]) || 1;
-            return state.battlefield.filter(o => o.controllerId === controllerId && (o.definition.subtypes || []).some(s => s.toLowerCase() === subtype.toLowerCase())).length >= threshold;
+          const subtype = restrictions[0];
+          const threshold = parseInt(restrictions[1]) || 1;
+          return state.battlefield.filter(o => o.controllerId === controllerId && (o.definition.subtypes || []).some(s => s.toLowerCase() === subtype.toLowerCase())).length >= threshold;
         }
         case 'EVENT_OBJECT_OWNER_NOT_YOU': {
-            const card = event?.data?.card || event?.data?.object;
-            if (!card) return false;
-            return card.ownerId !== controllerId;
+          const card = event?.data?.card || event?.data?.object;
+          if (!card) return false;
+          return card.ownerId !== controllerId;
         }
         case 'CREATURES_DIED_COUNT_GE': {
-            const threshold = parseInt(restrictions[0]);
-            return (state.turnState.creaturesDiedThisTurn.length || 0) >= threshold;
+          const threshold = parseInt(restrictions[0]);
+          return (state.turnState.creaturesDiedThisTurn.length || 0) >= threshold;
         }
         case 'EVENT_COUNTER_TYPE_MATCHES': {
-            const expectedType = restrictions[0] === 'p1p1' ? '+1/+1' : restrictions[0];
-            const actualType = (event as any)?.counterType || (event as any)?.data?.counterType;
-            const normalizedActualType = actualType === 'p1p1' ? '+1/+1' : actualType;
-            return normalizedActualType === expectedType;
+          const expectedType = restrictions[0] === 'p1p1' ? '+1/+1' : restrictions[0];
+          const actualType = (event as any)?.counterType || (event as any)?.data?.counterType;
+          const normalizedActualType = actualType === 'p1p1' ? '+1/+1' : actualType;
+          return normalizedActualType === expectedType;
         }
 
         case 'EVENT_OBJECT_IS_TARGET_1': {
-            const objId = event?.data?.object?.id || (event as any)?.gameObject?.id || event?.targetId;
-            const targetId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0];
-            return objId === targetId;
+          const objId = event?.data?.object?.id || (event as any)?.gameObject?.id || event?.targetId;
+          const targetId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0];
+          return objId === targetId;
         }
         case 'EVENT_OBJECT_IS_TRIGGER_SOURCE': {
-            const objId = event?.data?.object?.id || (event as any)?.gameObject?.id;
-            return objId === sourceId;
+          const objId = event?.data?.object?.id || (event as any)?.gameObject?.id;
+          return objId === sourceId;
         }
       }
     }
@@ -232,9 +237,9 @@ export class ConditionProcessor {
       case 'CREATURE_DIED_UNDER_YOUR_CONTROL_THIS_TURN':
         return state.turnState.creaturesDiedThisTurn.some(c => c.controllerId === controllerId);
       case 'TARGET_1_IS_PREPARED': {
-          const targetId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0] || (event as any)?.targetId;
-          const targetObj = state.battlefield.find(o => o.id === targetId);
-          return targetObj?.isPrepared || false;
+        const targetId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0] || (event as any)?.targetId;
+        const targetObj = state.battlefield.find(o => o.id === targetId);
+        return targetObj?.isPrepared || false;
       }
       case 'SPELL_IS_CREATURE': {
         const card = event?.data?.card || event?.data?.object;
@@ -254,30 +259,29 @@ export class ConditionProcessor {
         if (event?.playerId !== controllerId) return false;
         const targets = event?.targets || event?.data?.targets || [];
         return targets.some((tid: string) => {
-            const obj = state.battlefield.find(o => o.id === tid);
-            return obj && obj.definition.types.some(t => t.toLowerCase() === 'creature');
+          const obj = state.battlefield.find(o => o.id === tid);
+          return obj && obj.definition.types.some(t => t.toLowerCase() === 'creature');
         });
       }
       case 'PUT_COUNTER_ON_SELF_THIS_TURN':
         return state.turnState.countersAddedThisTurnIds?.includes(sourceId) || false;
       case 'NOT_CAST_FROM_HAND': {
-          const zone = (event as any).sourceZone || (event as any).lastNonStackZone || event?.data?.sourceZone || event?.card?.lastNonStackZone;
-          return zone !== Zone.Hand;
+        const zone = (event as any).sourceZone || (event as any).lastNonStackZone || event?.data?.sourceZone || event?.card?.lastNonStackZone;
+        return zone !== Zone.Hand;
       }
       case 'CAST_FROM_GRAVEYARD_OR_EXILE': {
-          const zone = (event as any).sourceZone || (event as any).lastNonStackZone || event?.data?.sourceZone || event?.card?.lastNonStackZone;
-          return zone === Zone.Graveyard || zone === Zone.Exile;
+        const zone = (event as any).sourceZone || (event as any).lastNonStackZone || event?.data?.sourceZone || event?.card?.lastNonStackZone;
+        return zone === Zone.Graveyard || zone === Zone.Exile;
       }
       case 'CAST_FROM_HAND': {
-          const zone = (event as any).sourceZone || (event as any).lastNonStackZone || event?.data?.sourceZone || event?.card?.lastNonStackZone;
-          return zone === Zone.Hand;
+        const zone = (event as any).sourceZone || (event as any).lastNonStackZone || event?.data?.sourceZone || event?.card?.lastNonStackZone;
+        return zone === Zone.Hand;
       }
-      case 'EVENT_PLAYER_IS_CONTROLLER':
       case 'EVENT_PLAYER_IS_YOU':
         return event?.playerId === controllerId;
       case 'EVENT_OBJECT_CONTROLLER_IS_YOU': {
-          const eObj = event?.data?.object || (event as any)?.gameObject;
-          return eObj?.controllerId === controllerId;
+        const eObj = event?.data?.object || (event as any)?.gameObject;
+        return eObj?.controllerId === controllerId;
       }
       case 'TRIGGER_SOURCE_POW_OR_TOUGH_LE_1': {
         const tid = event?.data?.object?.id || event?.targetId;
@@ -306,11 +310,11 @@ export class ConditionProcessor {
       case 'PLAYER_IS_CONTROLLER':
         return event?.playerId === controllerId;
       case 'EVENT_OBJECT_HAS_X': {
-          const obj = event?.data?.object || event?.data?.card || (event as any)?.gameObject;
-          if (!obj) return false;
-          const hasX = (obj.definition.manaCost || '').includes('X');
-          // if (state.logs) state.logs.push(`[DEBUG] Condition check: EVENT_OBJECT_HAS_X for ${obj.definition.name} = ${hasX}`);
-          return hasX;
+        const obj = event?.data?.object || event?.data?.card || (event as any)?.gameObject;
+        if (!obj) return false;
+        const hasX = (obj.definition.manaCost || '').includes('X');
+        // if (state.logs) state.logs.push(`[DEBUG] Condition check: EVENT_OBJECT_HAS_X for ${obj.definition.name} = ${hasX}`);
+        return hasX;
       }
       case 'OBJECT_IS_SELF':
         return true;
@@ -372,20 +376,20 @@ export class ConditionProcessor {
         return types.includes('instant') || types.includes('sorcery');
       }
       case 'IS_CREATURE': {
-          const tId = (event as any)?.targetId || sourceId;
-          const obj = state.battlefield.find(o => o.id === tId);
-          if (!obj) return false;
-          const { LayerProcessor } = require('./../state/LayerProcessor');
-          const stats = LayerProcessor.getEffectiveStats(obj, state);
-          return stats.types.some((t: string) => t.toLowerCase() === 'creature');
+        const tId = (event as any)?.targetId || sourceId;
+        const obj = state.battlefield.find(o => o.id === tId);
+        if (!obj) return false;
+        const { LayerProcessor } = require('./../state/LayerProcessor');
+        const stats = LayerProcessor.getEffectiveStats(obj, state);
+        return stats.types.some((t: string) => t.toLowerCase() === 'creature');
       }
       case 'NOT_CREATURE': {
-          const tId = (event as any)?.targetId || sourceId;
-          const obj = state.battlefield.find(o => o.id === tId);
-          if (!obj) return true;
-          const { LayerProcessor } = require('./../state/LayerProcessor');
-          const stats = LayerProcessor.getEffectiveStats(obj, state);
-          return !stats.types.some((t: string) => t.toLowerCase() === 'creature');
+        const tId = (event as any)?.targetId || sourceId;
+        const obj = state.battlefield.find(o => o.id === tId);
+        if (!obj) return true;
+        const { LayerProcessor } = require('./../state/LayerProcessor');
+        const stats = LayerProcessor.getEffectiveStats(obj, state);
+        return !stats.types.some((t: string) => t.toLowerCase() === 'creature');
       }
       case 'CAST_INSTANT_SORCERY_THIS_TURN':
         return state.turnState.instantOrSorceryCastThisTurn[controllerId] || false;
@@ -410,17 +414,20 @@ export class ConditionProcessor {
         return Object.values(state.players).some(p => p.id !== controllerId && p.hand.length > player.hand.length);
       }
       case 'OPPONENT_CONTROLS_MORE_CREATURES': {
-          const myCreatures = state.battlefield.filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature')).length;
-          const opponentId = Object.keys(state.players).find(id => id !== controllerId);
-          if (!opponentId) return false;
-          const oppCreatures = state.battlefield.filter(o => o.controllerId === opponentId && o.definition.types.some(t => t.toLowerCase() === 'creature')).length;
-          return oppCreatures > myCreatures;
+        const myCreatures = state.battlefield.filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'creature')).length;
+        const opponentId = Object.keys(state.players).find(id => id !== controllerId);
+        if (!opponentId) return false;
+        const oppCreatures = state.battlefield.filter(o => o.controllerId === opponentId && o.definition.types.some(t => t.toLowerCase() === 'creature')).length;
+        return oppCreatures > myCreatures;
       }
       case 'OWN_CREATURE_DIES': {
         const obj = event?.data?.object || (event as any)?.gameObject;
         if (!obj) return false;
         return obj.controllerId === controllerId && obj.definition.types.map((t: string) => t.toLowerCase()).includes('creature');
       }
+      case 'SELF_DIED':
+      case 'SELFDIED':
+        return (event as any)?.targetId === sourceId;
       case 'YOUR_CARD_LEAVES_GRAVEYARD':
         return event?.playerId === controllerId;
       case 'SELF_ATTACKS':
@@ -436,40 +443,40 @@ export class ConditionProcessor {
         return types.includes('instant') || types.includes('sorcery');
       }
       case 'OPPONENT_ATTACKS_YOUR_PLANESWALKER': {
-          const opponentId = event?.playerId;
-          if (!opponentId || opponentId === controllerId) return false;
-          
-          const attackers = state.combat?.attackers || [];
-          return attackers.some(a => {
-              const defender = state.battlefield.find(o => o.id === a.targetId);
-              return defender && 
-                     defender.controllerId === controllerId && 
-                     defender.definition.types.some(t => t.toLowerCase() === 'planeswalker');
-          });
+        const opponentId = event?.playerId;
+        if (!opponentId || opponentId === controllerId) return false;
+
+        const attackers = state.combat?.attackers || [];
+        return attackers.some(a => {
+          const defender = state.battlefield.find(o => o.id === a.targetId);
+          return defender &&
+            defender.controllerId === controllerId &&
+            defender.definition.types.some(t => t.toLowerCase() === 'planeswalker');
+        });
       }
       case 'OPPONENT_TARGETS_YOUR_PERMANENT': {
-          // targetId is in event for BecomeTarget
-          const tId = (event as any)?.targetId || (event as any)?.data?.targetId;
-          const target = state.battlefield.find(o => o.id === tId);
-          if (!target || target.controllerId !== controllerId) return false;
-          
-          // sourceId is the thing that did the targeting
-          const sId = (event as any)?.sourceId || (event as any)?.data?.sourceId;
-          const { TargetingProcessor } = require('./../actions/TargetingProcessor');
-          const source = TargetingProcessor.findObjectInAnyZone(state, sId);
-          // If source is null (e.g. game event), or source controller is you, it's not an opponent targeting
-          if (!source || source.controllerId === controllerId) return false;
-          
-          return true;
+        // targetId is in event for BecomeTarget
+        const tId = (event as any)?.targetId || (event as any)?.data?.targetId;
+        const target = state.battlefield.find(o => o.id === tId);
+        if (!target || target.controllerId !== controllerId) return false;
+
+        // sourceId is the thing that did the targeting
+        const sId = (event as any)?.sourceId || (event as any)?.data?.sourceId;
+        const { TargetingProcessor } = require('./../actions/TargetingProcessor');
+        const source = TargetingProcessor.findObjectInAnyZone(state, sId);
+        // If source is null (e.g. game event), or source controller is you, it's not an opponent targeting
+        if (!source || source.controllerId === controllerId) return false;
+
+        return true;
       }
       case 'LAST_DISCARDED_HAS_TYPE_CREATURE': {
-          const lastIds = state.turnState.lastDiscardedIds || [];
-          if (lastIds.length === 0) return false;
-          const { TargetingProcessor } = require('./../actions/TargetingProcessor');
-          return lastIds.some(id => {
-              const obj = TargetingProcessor.findObjectInAnyZone(state, id);
-              return obj && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
-          });
+        const lastIds = state.turnState.lastDiscardedIds || [];
+        if (lastIds.length === 0) return false;
+        const { TargetingProcessor } = require('./../actions/TargetingProcessor');
+        return lastIds.some(id => {
+          const obj = TargetingProcessor.findObjectInAnyZone(state, id);
+          return obj && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
+        });
       }
       case 'TRIGGER_EVENT_SOURCE.CONTROLLERID === CONTROLLER_ID':
         return event?.playerId === controllerId;
@@ -483,6 +490,74 @@ export class ConditionProcessor {
         const obj = event?.data?.object || (event as any)?.gameObject || event?.object || (state.battlefield.find((o: any) => o.id === event?.sourceId));
         return obj?.controllerId === controllerId;
       }
+      case 'GRAVEYARD_CREATURE_COUNT_GE':
+        return (state.players[controllerId]?.graveyard.filter(c => (c.definition.types || []).some(t => t.toLowerCase() === 'creature')).length || 0) >= 1;
+      case 'ARTIFACT_COUNT_GE':
+        return state.battlefield.filter(o => o.controllerId === controllerId && (o.definition.types || []).some(t => t.toLowerCase() === 'artifact')).length >= 1;
+      case 'LAND_COUNT_GE':
+        return state.battlefield.filter(o => o.controllerId === controllerId && (o.definition.types || []).some(t => t.toLowerCase() === 'land')).length >= 1;
+      case 'CAST_FROM_HAND':
+      case 'NOTCASTFROMHAND':
+        const zone = (event as any).sourceZone || (event as any).lastNonStackZone || event?.data?.sourceZone || event?.card?.lastNonStackZone;
+        return zone === Zone.Hand;
+      case 'IS_MAIN_PHASE':
+      case 'CAST_DURING_MAIN_PHASE':
+      case 'CASTDURINGMAINPHASE':
+        return state.currentStep.toLowerCase().includes('main');
+      case 'CONTROLEIGHTORMORELANDS':
+      case 'CONTROL_EIGHT_OR_MORE_LANDS':
+        return state.battlefield.filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === 'land')).length >= 8;
+      case 'DISCARDED_CREATURE':
+      case 'DISCARDEDCREATURE':
+        const discIds = state.turnState.lastDiscardedIds || [];
+        return discIds.some(id => {
+          const obj = state.players[controllerId]?.graveyard.find(c => c.id === id);
+          return obj && obj.definition.types.some(t => t.toLowerCase() === 'creature');
+        });
+      case 'IS_INSTANT_OR_SORCERY_DISCARDED':
+        const discIdsIS = state.turnState.lastDiscardedIds || [];
+        return discIdsIS.some(id => {
+          const obj = state.players[controllerId]?.graveyard.find(c => c.id === id);
+          return obj && (obj.definition.types.some(t => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery'));
+        });
+      case 'SELF_IS_ATTACKING':
+      case 'SELFISATTACKING':
+      case 'SELFATTACKING':
+        return state.combat?.attackers.some(a => a.attackerId === sourceId) || false;
+      case 'NOTLAND':
+      case 'NON_LAND':
+        const eObj = event?.data?.object || (event as any)?.gameObject;
+        return eObj && !eObj.definition.types.some((t: string) => t.toLowerCase() === 'land') || false;
+      case 'XIS1': return (event as any)?.xValue === 1;
+      case 'XIS2': return (event as any)?.xValue === 2;
+      case 'XIS3': return (event as any)?.xValue === 3;
+      case 'XIS4ORMORE': return ((event as any)?.xValue || 0) >= 4;
+      case 'YOUGAINEDLIFE':
+      case 'LIFEGAINEDTHISTURN':
+      case 'YOU_GAINED_LIFE':
+        return (state.turnState.lifeGainedThisTurn[controllerId] || 0) > 0;
+      case 'TARGET_IS_CREATURE_YOU_CONTROL_AND_COUNTER_IS_P1P1':
+      case 'TARGETISCREATUREYOUCONTROLANDCOUNTERISP1P1': {
+        const tId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0];
+        const obj = state.battlefield.find(o => o.id === tId);
+        const counterType = (event as any)?.counterType || (event as any)?.data?.counterType;
+        return !!(obj && obj.controllerId === controllerId && (counterType === '+1/+1' || counterType === 'p1p1'));
+      }
+      case 'TARGETS_MANA_VALUE_4_GE':
+      case 'TARGETSMANAVALUE4ORGREATER': {
+        const tId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0];
+        const obj = state.battlefield.find(o => o.id === tId);
+        if (!obj) return false;
+        const { ManaProcessor } = require('./../magic/ManaProcessor');
+        return ManaProcessor.getManaValue(obj.definition.manaCost) >= 4;
+      }
+      case 'OPPONENTHASMORECARDSINHAND':
+      case 'OPPONENT_HAS_MORE_CARDS_IN_HAND':
+        const myHand = state.players[controllerId]?.hand.length || 0;
+        return Object.values(state.players).some(p => p.id !== controllerId && p.hand.length > myHand);
+      case 'YOUCONTROLENTEREDOBJECT':
+        const entObj = event?.data?.object || (event as any)?.gameObject;
+        return entObj && entObj.controllerId === controllerId || false;
       default:
         // Assume true if unknown (safer for gameplay)
         return true;

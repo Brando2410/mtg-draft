@@ -32,7 +32,11 @@ export const DireFleetWarmonger: CardDefinition = {
                                         targetDefinition: {
                                             type: TargetType.Permanent,
                                             count: 1,
-                                            restrictions: ["creature", "other", "yours"]
+                                            restrictions: [
+                { type: 'Type', value: 'creature' },
+                { type: 'Type', value: 'other' },
+                { type: 'Type', value: 'yours' }
+            ]
                                         },
                                         targetMapping: "CONTROLLER"
                                     },

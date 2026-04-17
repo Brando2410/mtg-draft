@@ -15,9 +15,15 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
         {
             type: AbilityType.Spell,
             targetDefinition: [
-                { type: 'Player', count: 1, restrictions: ['Opponent'] },
-                { type: 'Permanent', count: 1, minCount: 0, restrictions: ['Creature'], optional: true },
-                { type: 'Permanent', count: 1, minCount: 0, restrictions: ['Creature'], optional: true }
+                { type: 'Player', count: 1, restrictions: [
+                { type: 'Control', value: 'Opponent' }
+            ] },
+                { type: 'Permanent', count: 1, minCount: 0, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ], optional: true },
+                { type: 'Permanent', count: 1, minCount: 0, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ], optional: true }
             ],
             effects: [
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.Target1 },

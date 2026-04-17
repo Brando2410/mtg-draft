@@ -25,7 +25,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
                     type: CostType.Choice,
                     label: "Choose an instant or sorcery card in your graveyard to return to your hand",
                     targetIdMapping: 'CONTROLLER_GRAVEYARD',
-                    restrictions: ['InstantOrSorcery'],
+                    restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' }
+            ],
                     effects: [
                         {
                             type: EffectType.ReturnToHand,

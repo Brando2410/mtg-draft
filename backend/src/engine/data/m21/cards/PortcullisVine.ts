@@ -20,7 +20,10 @@ export const PortcullisVine: CardDefinition = {
                 { type: CostType.Tap },
                 {
                     type: CostType.Sacrifice,
-                    restrictions: ['Creature', 'Defender']
+                    restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Type', value: 'Defender' }
+            ]
                 }
             ],
             effects: [

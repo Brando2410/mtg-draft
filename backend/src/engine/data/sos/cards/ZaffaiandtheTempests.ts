@@ -25,7 +25,10 @@ export const ZaffaiandtheTempests: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     isFreeCast: true,
                     targetMapping: TargetMapping.Controller,
-                    restrictions: ['InstantOrSorcery', 'FromHand'],
+                    restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' },
+                { type: 'Type', value: 'FromHand' }
+            ],
                     limitPerTurn: 1
                 }
             ]

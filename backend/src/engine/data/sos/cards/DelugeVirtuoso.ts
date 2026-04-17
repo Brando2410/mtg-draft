@@ -22,7 +22,10 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastInstantOrSorcery,
             condition: ConditionType.PlayerIsController,
-            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature', 'OpponentControl'] },
+            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Control', value: 'OpponentControl' }
+            ] },
             effects: [
                 { type: EffectType.ApplyContinuousEffect, sublayer: 'Stats', powerModifier: -1, toughnessModifier: -1, duration: { type: DurationType.UntilEndOfTurn }, targetMapping: TargetMapping.Target1 }
             ]

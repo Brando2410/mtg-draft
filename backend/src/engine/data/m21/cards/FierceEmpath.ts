@@ -21,7 +21,9 @@ export const FierceEmpath: CardDefinition = {
                     targetDefinition: {
                         type: TargetType.Creature,
                         count: 1,
-                        restrictions: ['MV_GE:6']
+                        restrictions: [
+                            { type: 'ManaValue', comparison: 'GreaterOrEqual', value: 6 }
+            ]
                     },
                     zone: Zone.Hand,
                     reveal: true,

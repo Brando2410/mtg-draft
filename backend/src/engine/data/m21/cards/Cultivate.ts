@@ -20,7 +20,9 @@ export const Cultivate: CardDefinition = {
                         type: TargetType.Land,
                         count: 1,
                         minCount: 0,
-                        restrictions: ['Basic']
+                        restrictions: [
+                { type: 'Type', value: 'Basic' }
+            ]
                     },
                     zone: Zone.Battlefield,
                     tapped: true,
@@ -33,7 +35,9 @@ export const Cultivate: CardDefinition = {
                         type: TargetType.Land,
                         count: 1,
                         minCount: 0,
-                        restrictions: ['Basic']
+                        restrictions: [
+                { type: 'Type', value: 'Basic' }
+            ]
                     },
                     zone: Zone.Hand,
                     reveal: true,

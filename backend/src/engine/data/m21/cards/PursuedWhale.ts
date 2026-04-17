@@ -28,14 +28,21 @@ export const PursuedWhale: CardDefinition = {
                     subtypes: ["Pirate"],
                     power: "1",
                     toughness: "1",
-                    keywords: ['CannotBlock'],
+                    keywords: [],
                     abilities: [{
                         type: AbilityType.Static,
-                        effects: [{
-                            type: EffectType.ApplyContinuousEffect,
-                            restrictions: [{ type: 'MustAttack' }],
-                            targetMapping: TargetMapping.AllCreaturesYouControl
-                        }],
+                        effects: [
+                            {
+                                type: EffectType.ApplyContinuousEffect,
+                                restrictions: [{ type: 'CannotBlock' }],
+                                targetMapping: TargetMapping.Self
+                            },
+                            {
+                                type: EffectType.ApplyContinuousEffect,
+                                restrictions: [{ type: 'MustAttack' }],
+                                targetMapping: TargetMapping.AllCreaturesYouControl
+                            }
+                        ],
 
                     }],
                 }

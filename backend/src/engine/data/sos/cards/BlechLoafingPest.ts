@@ -26,7 +26,13 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
                     counterType: '+1/+1',
                     targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
                     restrictions: [
-                        { type: 'Subtype', subtypes: ['Pest', 'Bat', 'Insect', 'Snake', 'Spider'] }
+                { type: 'Subtype',
+                subtypes: ['Pest',
+                { type: 'Type', value: 'Bat' },
+                { type: 'Type', value: 'Insect' },
+                { type: 'Type', value: 'Snake' },
+                { type: 'Type', value: 'Spider' }
+            ] }
                     ]
                 }
             ]

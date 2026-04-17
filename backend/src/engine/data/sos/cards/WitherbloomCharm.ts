@@ -32,8 +32,8 @@ export const WitherbloomCharm: CardDefinition = {
                                                 {
                                                     type: CostType.Sacrifice,
                                                     restrictions: [
-                                                        'Permanent'
-                                                    ],
+                { type: 'Type', value: 'Permanent' }
+            ],
                                                 }
                                             ],
                                             effects: [
@@ -68,13 +68,12 @@ export const WitherbloomCharm: CardDefinition = {
                                 type: TargetType.NonlandPermanent,
                                 count: 1,
                                 restrictions: [
-
-                                    {
+                {
                                         type: 'ManaValue',
-                                        comparison: 'LessOrEqual',
-                                        value: 2
+                comparison: 'LessOrEqual',
+                value: 2
                                     }
-                                ]
+            ]
                             },
                             effects: [
                                 {

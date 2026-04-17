@@ -32,7 +32,9 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
                     targetDefinition: {
                         type: TargetType.CardInGraveyard,
                         count: [0, 1],
-                        restrictions: ['Land']
+                        restrictions: [
+                { type: 'Type', value: 'Land' }
+            ]
                     },
                     // Use a special mapping that filters cards discarded by current spell
                     targetMapping: TargetMapping.LastDiscardedCards

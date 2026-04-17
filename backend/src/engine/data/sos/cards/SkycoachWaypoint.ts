@@ -22,7 +22,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
                 { type: CostType.Mana, value: '{3}' },
                 { type: CostType.Tap }
             ],
-            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
+            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] },
             effects: [
                 {
                     type: EffectType.Prepare,

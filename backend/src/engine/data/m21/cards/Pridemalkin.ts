@@ -16,7 +16,9 @@ export const Pridemalkin: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
+            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
+                { type: 'Control', value: 'YouControl' }
+            ] },
             effects: [{
                 type: EffectType.AddCounters,
                 counterType: 'p1p1',
@@ -31,7 +33,10 @@ export const Pridemalkin: CardDefinition = {
                 layer: 6,
                 abilitiesToAdd: ['Trample'],
                 targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                restrictions: ['Creature', 'HasCounter_+1/+1']
+                restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Type', value: 'HasCounter_+1/+1' }
+            ]
             }]
         }
     ]

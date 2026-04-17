@@ -32,7 +32,9 @@ export const ExperimentalOverload: CardDefinition = {
                     minChoices: 0,
                     maxChoices: 1,
                     targetIdMapping: 'CONTROLLER_GRAVEYARD',
-                    restrictions: ['InstantOrSorcery'],
+                    restrictions: [
+                { type: 'Type', value: 'InstantOrSorcery' }
+            ],
                     effects: [
                         { type: EffectType.ReturnToHand }
                     ]

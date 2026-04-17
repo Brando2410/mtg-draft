@@ -17,7 +17,10 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
             targetDefinition: {
                 type: DurationType.Permanent,
                 count: 1,
-                restrictions: ['Creature', 'YouControl']
+                restrictions: [
+                { type: 'Type', value: 'Creature' },
+                { type: 'Control', value: 'YouControl' }
+            ]
             },
             effects: [
                 {

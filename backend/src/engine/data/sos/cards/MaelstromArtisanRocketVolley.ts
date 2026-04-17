@@ -24,7 +24,10 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } 
                 targetDefinition: {
                     type: DurationType.Permanent,
                     count: 1,
-                    restrictions: ["Land", "Nonbasic"]
+                    restrictions: [
+                { type: 'Type', value: 'Land' },
+                { type: 'Type', value: 'Nonbasic' }
+            ]
                 },
                 effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
             }

@@ -32,7 +32,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                                     targetDefinition: {
                                         type: TargetType.Land,
                                         count: 1,
-                                        restrictions: ['Basic']
+                                        restrictions: [
+                { type: 'Type', value: 'Basic' }
+            ]
                                     },
                                     zone: Zone.Battlefield,
                                     targetMapping: TargetMapping.Target1Controller, // The player whose library is searched

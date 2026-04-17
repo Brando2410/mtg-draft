@@ -61,7 +61,9 @@ export const LilianaWakeroftheDead: CardDefinition = {
                                 targetDefinition: {
                                     type: TargetType.CardInGraveyard,
                                     count: 1,
-                                    restrictions: ['Creature']
+                                    restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ]
                                 },
                                 effects: [
                                     { type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 },

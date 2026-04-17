@@ -18,7 +18,9 @@ export const ConspicuousSnoop: CardDefinition = {
             type: AbilityType.Static,
             effects: [{ 
                 type: EffectType.AllowPlayFromTop, 
-                restrictions: ['Goblin'], 
+                restrictions: [
+                { type: 'Type', value: 'Goblin' }
+            ], 
                 targetMapping: TargetMapping.Controller 
             }]
         },

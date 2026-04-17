@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const PlarggDeanofChaos: CardDefinition = {
     name: "Plargg, Dean of Chaos",
@@ -24,16 +24,19 @@ export const PlarggDeanofChaos: CardDefinition = {
             abilities: [
                 {
                     type: AbilityType.Activated,
-                    costs: [{ type: 'Tap', targetMapping: TargetMapping.Self }, { type: 'Discard', value: 1 }],
+                    costs: [{ type: CostType.Tap }, { type: CostType.Discard, value: 1 }],
                     effects: [{ type: EffectType.DrawCards, amount: 1 }]
                 },
                 {
                     type: AbilityType.Activated,
-                    costs: [{ type: 'Mana', value: '{4}{R}' }, { type: 'Tap', targetMapping: TargetMapping.Self }],
+                    costs: [{ type: CostType.Mana, value: '{4}{R}' }, { type: CostType.Tap }],
                     effects: [{
                         type: EffectType.SearchLibrary,
                         fromTop: -1,
-                        restrictions: ['Nonland', 'MV_LE:3'],
+                        restrictions: [
+                            { type: 'Not', restriction: { type: 'Type', value: 'Land' } },
+                            { type: 'ManaValue', comparison: 'LessOrEqual', value: 3 }
+                        ],
                         zone: Zone.Exile,
                         effects: [{
                             type: EffectType.Choice,
@@ -65,7 +68,13 @@ export const PlarggDeanofChaos: CardDefinition = {
                         type: EffectType.ApplyContinuousEffect,
                         powerModifier: 1,
                         targetMapping: TargetMapping.AllCreaturesYouControl,
-                        restrictions: [{ type: 'Attacking' }, { type: 'Not', restriction: { type: 'Self' } }]
+                        restrictions: [
+                            { type: 'Attacking' },
+                            {
+                                type: 'Not',
+                                restriction: { type: 'Self' }
+                            }
+                        ]
                     }]
                 },
                 {

@@ -27,8 +27,8 @@ export const ChandrasIncinerator: CardDefinition = {
                 type: TargetType.CreatureOrPlaneswalker,
                 count: 1,
                 restrictions: [
-                    'OpponentControl'
-                ]
+                { type: 'Control', value: 'OpponentControl' }
+            ]
             },
             effects: [{
                 type: EffectType.DealDamage,

@@ -25,7 +25,10 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } f
                     layer: 6,
                     targetMapping: TargetMapping.MatchingCards,
                     activeZones: ['Stack'],
-                    restrictions: ['Instant or Sorcery', Restriction.YouControl],
+                    restrictions: [
+                { type: 'Type', value: 'Instant or Sorcery' },
+                Restriction.YouControl
+            ],
                     keywordsToAdd: ['Storm']
                 }
             ]

@@ -21,7 +21,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                     label: 'Choose a nonland card',
                     targetMapping: TargetMapping.Controller,
                     targetIdMapping: 'OPPONENT_HAND_REVEAL_PICK',
-                    restrictions: ['Nonland'],
+                    restrictions: [
+                { type: 'Type', value: 'Nonland' }
+            ],
                     effects: [{ type: EffectType.MoveToZone, zone: Zone.Graveyard, targetMapping: TargetMapping.SelectedCard, isDiscard: true }]
                 },
                 {
@@ -30,7 +32,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                         type: TargetType.Creature,
                         count: 1,
                         minCount: 0,
-                        restrictions: ['Creature']
+                        restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ]
                     },
     amount: 2,
                     counterType: '+1/+1',

@@ -32,7 +32,10 @@ export const UgintheSpiritDragon: CardDefinition = {
                 {
                     type: EffectType.Exile,
                     targetMapping: TargetMapping.AllMatchingPermanents,
-                    restrictions: ['oneormorecolors', 'mv_le_x']
+                    restrictions: [
+                { type: 'Type', value: 'oneormorecolors' },
+                { type: 'Type', value: 'mv_le_x' }
+            ]
                 }
             ]
         },
@@ -57,7 +60,9 @@ export const UgintheSpiritDragon: CardDefinition = {
                     targetDefinition: {
                         type: TargetType.CardInHand,
                         count: 7,
-                        restrictions: ['Permanent'],
+                        restrictions: [
+                { type: 'Type', value: 'Permanent' }
+            ],
                         minCount: 0
                     },
                     effects: [

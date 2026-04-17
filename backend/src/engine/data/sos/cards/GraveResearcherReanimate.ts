@@ -26,7 +26,9 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
                 {
                     type: EffectType.ConditionalEffect,
                     condition: 'GRAVEYARD_CREATURE_COUNT_GE' as any,
-                    restrictions: ['3'],
+                    restrictions: [
+                { type: 'Type', value: '3' }
+            ],
                     effects: [{ type: EffectType.Prepare, targetMapping: TargetType.Self }]
                 }
             ]
@@ -45,7 +47,9 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
                 targetDefinition: {
                     type: TargetType.CardInGraveyard,
                     count: 1,
-                    restrictions: ['Creature']
+                    restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ]
                 },
                 effects: [
                     {

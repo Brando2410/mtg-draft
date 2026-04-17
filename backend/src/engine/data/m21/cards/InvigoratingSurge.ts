@@ -11,7 +11,9 @@ export const InvigoratingSurge: CardDefinition = {
             type: AbilityType.Spell,
             targetDefinition: {
                 type: TargetType.Creature,
-                restrictions: ["youcontrol"]
+                restrictions: [
+                { type: 'Type', value: 'youcontrol' }
+            ]
             },
             effects: [
                 {

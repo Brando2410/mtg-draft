@@ -19,7 +19,10 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
-                restrictions: [Restriction.NonLand, 'Permanent']
+                restrictions: [
+                Restriction.NonLand,
+                { type: 'Type', value: 'Permanent' }
+            ]
             },
             effects: [
                 {

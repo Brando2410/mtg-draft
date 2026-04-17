@@ -25,7 +25,10 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                                 {
                                     type: CostType.Sacrifice,
                                     targetMapping: TargetMapping.EachOpponent,
-                                    restrictions: ['Artifact', 'NonToken']
+                                    restrictions: [
+                { type: 'Type', value: 'Artifact' },
+                { type: 'Type', value: 'NonToken' }
+            ]
                                 }
                             ]
                         },
@@ -35,9 +38,11 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                                 type: TargetType.CardInGraveyard,
                                 count: 1,
                                 restrictions: [
-                                    'ArtifactOrCreature',
-                                    { type: 'ManaValue', comparison: 'LessOrEqual', value: 2 }
-                                ]
+                { type: 'Type', value: 'ArtifactOrCreature' },
+                { type: 'ManaValue',
+                comparison: 'LessOrEqual',
+                value: 2 }
+            ]
                             },
                             effects: [
                                 {

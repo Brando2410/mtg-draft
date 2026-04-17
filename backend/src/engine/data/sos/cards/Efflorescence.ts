@@ -14,7 +14,9 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Permanent', count: 1, restrictions: ['Creature'] },
+            targetDefinition: { type: 'Permanent', count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] },
             effects: [
                 { 
                     type: EffectType.AddCounters, 

@@ -23,9 +23,10 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType } from
                     type: EffectType.Destroy,
                     selectionType: 'All' as any,
                     restrictions: [
-                        { type: 'ManaValueLessOrEqual', amount: DynamicAmount.X },
-                        'ArtifactOrCreature'
-                    ],
+                { type: 'ManaValueLessOrEqual',
+                amount: DynamicAmount.X },
+                { type: 'Type', value: 'ArtifactOrCreature' }
+            ],
                     targetMapping: 'MATCHING_PERMANENTS'
                 }
             ]

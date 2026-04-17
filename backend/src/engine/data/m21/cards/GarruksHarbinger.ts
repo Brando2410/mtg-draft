@@ -14,7 +14,6 @@ export const GarruksHarbinger: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: [TriggerEvent.DamageDealtToPlayer, TriggerEvent.DamageTaken],
-            activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => {
                 if (event.sourceId !== source.id || !event.data?.isCombat) return false;
                 // Target must be a player OR a planeswalker
@@ -35,10 +34,16 @@ export const GarruksHarbinger: CardDefinition = {
                         count: 1,
                         restrictions: [
                             {
-                                type: 'Any',
+                                type: 'LogicAny',
                                 restrictions: [
-                                    'Creature',
-                                    { type: 'All', restrictions: ['Planeswalker', 'Garruk'] }
+                                    { type: 'Type', value: 'Creature' },
+                                    {
+                                        type: 'LogicAll',
+                                        restrictions: [
+                                            { type: 'Type', value: 'Planeswalker' },
+                                            { type: 'Subtype', value: 'Garruk' }
+                                        ]
+                                    }
                                 ]
                             }
                         ]

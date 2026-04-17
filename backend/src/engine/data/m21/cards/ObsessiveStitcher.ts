@@ -23,7 +23,9 @@ export const ObsessiveStitcher: CardDefinition = {
             type: AbilityType.Activated,
             activeZone: Zone.Battlefield,
             costs: [{ type: CostType.Mana, value: '{2}{U}{B}' }, { type: CostType.Tap }, { type: CostType.SacrificeSelf }],
-            targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: ['Creature'] },
+            targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ] },
             effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 }]
         }
     ]

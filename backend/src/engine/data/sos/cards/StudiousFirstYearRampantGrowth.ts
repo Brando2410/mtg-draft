@@ -27,7 +27,9 @@ import { AbilityType, CardDefinition, EffectType, TargetType, Zone } from '@shar
                         targetDefinition: {
                             type: TargetType.Land,
                             count: 1,
-                            restrictions: ['Basic']
+                            restrictions: [
+                { type: 'Type', value: 'Basic' }
+            ]
                         },
                         zone: Zone.Battlefield,
                         tapped: true

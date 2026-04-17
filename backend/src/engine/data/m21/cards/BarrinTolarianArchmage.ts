@@ -17,7 +17,9 @@ export const BarrinTolarianArchmage: CardDefinition = {
             eventMatch: TriggerEvent.EnterBattlefield,
             activeZone: Zone.Battlefield,
             condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
-            targetDefinition: { type: TargetType.CreatureOrPlaneswalker, count: 1, optional: true, restrictions: ['Other'] },
+            targetDefinition: { type: TargetType.CreatureOrPlaneswalker, count: 1, optional: true, restrictions: [
+                { type: 'Identity', value: 'Other' }
+            ] },
             effects: [{ type: EffectType.ReturnToHand, targetMapping: TargetMapping.Target1 }]
         },
         {

@@ -30,7 +30,10 @@ export const SanctumofShatteredHeights: CardDefinition = {
                             label: "Yes",
                             effects: [
                                 { type: EffectType.PayMana, value: "{1}" },
-                                { type: EffectType.DiscardCards, amount: 1, restrictions: ["Land", "Shrine"] },
+                                { type: EffectType.DiscardCards, amount: 1, restrictions: [
+                { type: 'Type', value: 'Land' },
+                { type: 'Type', value: 'Shrine' }
+            ] },
                                 {
                                     type: EffectType.DealDamage,
                                     amount: countShrines,

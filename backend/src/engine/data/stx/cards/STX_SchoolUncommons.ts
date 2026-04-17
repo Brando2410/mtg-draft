@@ -25,7 +25,10 @@ export const STX_SchoolUncommons: CardDefinition[] = [
                             targetDefinition: {
                                 type: TargetType.Card,
                                 count: 1,
-                                restrictions: ['Basic', 'Forest_or_Island']
+                                restrictions: [
+                { type: 'Type', value: 'Basic' },
+                { type: 'Type', value: 'Forest_or_Island' }
+            ]
                             },
                             zone: Zone.Battlefield,
                             tapped: true,
@@ -57,7 +60,9 @@ export const STX_SchoolUncommons: CardDefinition[] = [
                 { 
                     type: 'Exile', 
                     sourceZone: Zone.Graveyard, 
-                    restrictions: ['Creature']
+                    restrictions: [
+                { type: 'Type', value: 'Creature' }
+            ]
                 }
             ],
             effects: [

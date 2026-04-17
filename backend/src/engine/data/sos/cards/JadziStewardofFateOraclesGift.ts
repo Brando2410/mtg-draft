@@ -51,7 +51,9 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
                         counterType: '+1/+1',
                         amount: DynamicAmount.X,
                         targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                        restrictions: ['Fractal']
+                        restrictions: [
+                { type: 'Type', value: 'Fractal' }
+            ]
                     }
                 ]
             }

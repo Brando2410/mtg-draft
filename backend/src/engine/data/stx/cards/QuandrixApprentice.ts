@@ -18,7 +18,9 @@ export const QuandrixApprentice: CardDefinition = {
                     type: EffectType.LookAtTopAndPick,
                     fromTop: 3,
                     optional: true,
-                    restrictions: ['Land'],
+                    restrictions: [
+                { type: 'Type', value: 'Land' }
+            ],
                     reveal: true,
                     zone: Zone.Hand,
                     remainderZone: Zone.Library,

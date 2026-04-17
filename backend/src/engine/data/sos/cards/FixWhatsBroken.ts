@@ -22,11 +22,13 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
                     zone: Zone.Battlefield,
                     targetMapping: TargetMapping.MatchingCards,
                     restrictions: [
-                        'Artifact_Or_Creature',
-                        'Graveyard',
-                        'YouControl',
-                        { type: 'ManaValue', comparison: 'Equal', value: DynamicAmount.X }
-                    ]
+                { type: 'Type', value: 'Artifact_Or_Creature' },
+                { type: 'Zone', value: 'Graveyard' },
+                { type: 'Control', value: 'YouControl' },
+                { type: 'ManaValue',
+                comparison: 'Equal',
+                value: DynamicAmount.X }
+            ]
                 }
             ]
         }

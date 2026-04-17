@@ -41,7 +41,7 @@ export const DestructiveTampering: CardDefinition = {
                                         type: EffectType.ApplyContinuousEffect,
                                         duration: { type: DurationType.UntilEndOfTurn },
                                         targetMapping: "ALL_CREATURES_WITHOUT_FLYING",
-                                        abilitiesToAdd: ["CannotBlock"]
+                                        restrictions: [{ type: 'CannotBlock' }]
                                     }
                                 ]
                             }

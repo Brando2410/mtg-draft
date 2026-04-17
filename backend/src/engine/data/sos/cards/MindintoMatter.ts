@@ -37,12 +37,12 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
                                         type: TargetType.CardInHand,
                                         count: 1,
                                         restrictions: [
-                                            'Permanent',
-                                            {
+                { type: 'Type', value: 'Permanent' },
+                {
                                                 type: 'ManaValueLe',
-                                                value: DynamicAmount.X
+                value: DynamicAmount.X
                                             }
-                                        ]
+            ]
                                     },
                                 }
                             ]

@@ -12,7 +12,9 @@ export const RangersGuile: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: ['YouControl'] },
+            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [
+                { type: 'Control', value: 'YouControl' }
+            ] },
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

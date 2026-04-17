@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-    export const AjanisResponse: CardDefinition = {
+export const AjanisResponse: CardDefinition = {
     name: "Ajani's Response",
     manaCost: "{4}{W}",
     colors: [
@@ -26,7 +26,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
         },
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: 'Creature' },
+            targetDefinition: { type: TargetType.Creature },
             effects: [
                 {
                     type: EffectType.Destroy,
@@ -36,4 +36,3 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
         }
     ]
 };
-    
