@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, Eff
 export const JolraelMwonvuliRecluse: CardDefinition = {
     name: "Jolrael, Mwonvuli Recluse",
     manaCost: "{1}{G}",
+    scryfall_id: "7dcdcfce-3f32-48f9-83f8-87b9ccbf92e3",
+    image_url: "https://cards.scryfall.io/normal/front/7/d/7dcdcfce-3f32-48f9-83f8-87b9ccbf92e3.jpg?1594737074",
     oracleText: "Whenever you draw your second card each turn, create a 2/2 green Cat creature token.\n{4}{G}{G}: Until end of turn, creatures you control have base power and toughness X/X, where X is the number of cards in your hand.",
     colors: ["G"],
     supertypes: ["Legendary"],

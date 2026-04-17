@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Z
 export const NineLives: CardDefinition = {
     name: "Nine Lives",
     manaCost: "{1}{W}{W}",
+    scryfall_id: "e70b7a73-484e-48f1-944c-3d38866cdc20",
+    image_url: "https://cards.scryfall.io/normal/front/e/7/e70b7a73-484e-48f1-944c-3d38866cdc20.jpg?1594735092",
     oracleText: "Hexproof\nIf a source would deal damage to you, prevent that damage and put an incarnation counter on this enchantment.\nWhen there are nine or more incarnation counters on this enchantment, exile it.\nWhen this enchantment leaves the battlefield, you lose the game.",
     colors: ["white"],
     supertypes: [],

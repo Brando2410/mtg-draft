@@ -4,6 +4,8 @@ export const LibraryLarcenist: CardDefinition = {
 
     name: "Library Larcenist",
     manaCost: "{2}{U}",
+    scryfall_id: "cb33529b-80bd-4f52-94cc-d8371c53ad75",
+    image_url: "https://cards.scryfall.io/normal/front/c/b/cb33529b-80bd-4f52-94cc-d8371c53ad75.jpg?1594735558",
     oracleText: "Whenever Library Larcenist attacks or blocks, draw a card.",
     colors: ["U"],
     supertypes: [],

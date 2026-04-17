@@ -4,6 +4,8 @@ export const JungleHollow: CardDefinition = {
 
     name: "Jungle Hollow",
     manaCost: "",
+    scryfall_id: "69f28d7a-6480-4725-9719-2354921e6410",
+    image_url: "https://cards.scryfall.io/normal/front/6/9/69f28d7a-6480-4725-9719-2354921e6410.jpg?1594737643",
     oracleText: "Jungle Hollow enters the battlefield tapped.\nWhen Jungle Hollow enters the battlefield, you gain 1 life.\n{T}: Add {B} or {G}.",
     colors: [],
     supertypes: [],

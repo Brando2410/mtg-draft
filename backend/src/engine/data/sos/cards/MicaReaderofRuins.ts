@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
 export const MicaReaderofRuins: CardDefinition = {
     name: "Mica, Reader of Ruins",
     manaCost: "{3}{R}",
+    scryfall_id: "949ad3ff-9e80-493c-a3ae-146b919bfcd7",
+    image_url: "https://cards.scryfall.io/normal/front/9/4/949ad3ff-9e80-493c-a3ae-146b919bfcd7.jpg?1775937824",
     colors: [
         "R"
     ],

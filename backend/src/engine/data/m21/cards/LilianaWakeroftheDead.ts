@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, Eff
 export const LilianaWakeroftheDead: CardDefinition = {
     name: "Liliana, Waker of the Dead",
     manaCost: "{2}{B}{B}",
+    scryfall_id: "e329a3e2-6702-4758-8aac-c3017e77b619",
+    image_url: "https://cards.scryfall.io/normal/front/e/3/e329a3e2-6702-4758-8aac-c3017e77b619.jpg?1594739061",
     oracleText: "+1: Each player discards a card. Each opponent who can't loses 3 life.\n−3: Target creature gets -X/-X until end of turn, where X is the number of cards in your graveyard.\n−7: You get an emblem with \"At the beginning of combat on your turn, put target creature card from a graveyard onto the battlefield under your control. It gains haste.\"",
     colors: ["B"],
     supertypes: ["Legendary"],

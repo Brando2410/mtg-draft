@@ -4,6 +4,8 @@ export const AnimalSanctuary: CardDefinition = {
 
     name: "Animal Sanctuary",
     manaCost: "",
+    scryfall_id: "f8d7a2c7-666d-4fc6-bac8-ef8eb66e355d",
+    image_url: "https://cards.scryfall.io/normal/front/f/8/f8d7a2c7-666d-4fc6-bac8-ef8eb66e355d.jpg?1594737594",
     oracleText: "{T}: Add {C}.\n{2}, {T}: Put a +1/+1 counter on target Bird, Cat, Dog, Goat, Ox, or Snake.",
     colors: [],
     supertypes: [],

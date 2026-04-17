@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const InklingSummoning: CardDefinition = {
     name: 'Inkling Summoning',
     manaCost: '{1}{W/B}{W/B}',
+    scryfall_id: "04a8a5b8-9743-4d1a-89e9-61bdf180b2e0",
+    image_url: "https://cards.scryfall.io/normal/front/0/4/04a8a5b8-9743-4d1a-89e9-61bdf180b2e0.jpg?1637082323",
     colors: ['W', 'B'],
     types: ['Sorcery'],
     subtypes: ['Lesson'],

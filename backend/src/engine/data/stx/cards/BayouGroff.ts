@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, CostType, TargetMapping, TargetType } from
 export const BayouGroff: CardDefinition = {
     name: 'Bayou Groff',
     manaCost: '{1}{G}',
+    scryfall_id: "4a82b032-b1ba-456c-abab-c0f7430b0587",
+    image_url: "https://cards.scryfall.io/normal/front/4/a/4a82b032-b1ba-456c-abab-c0f7430b0587.jpg?1624592412",
     colors: ['G'],
     types: ['Creature'],
     subtypes: ['Dog', 'Plant'],

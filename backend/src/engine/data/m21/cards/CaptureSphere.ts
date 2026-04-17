@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
 export const CaptureSphere: CardDefinition = {
     name: "Capture Sphere",
     manaCost: "{3}{U}",
+    scryfall_id: "f5ed9f08-56e8-4e24-aae2-05270d7c1ba8",
+    image_url: "https://cards.scryfall.io/normal/front/f/5/f5ed9f08-56e8-4e24-aae2-05270d7c1ba8.jpg?1594735438",
     oracleText: "Flash\nEnchant creature\nWhen Capture Sphere enters the battlefield, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.",
     colors: ["U"],
     supertypes: [],

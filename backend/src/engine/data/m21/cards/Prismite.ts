@@ -4,6 +4,8 @@ export const Prismite: CardDefinition = {
 
     name: "Prismite",
     manaCost: "{2}",
+    scryfall_id: "eedce8ab-771a-4247-9504-72ae0629df83",
+    image_url: "https://cards.scryfall.io/normal/front/e/e/eedce8ab-771a-4247-9504-72ae0629df83.jpg?1594737532",
     oracleText: "{2}: Add one mana of any color.",
     colors: [],
     supertypes: [],

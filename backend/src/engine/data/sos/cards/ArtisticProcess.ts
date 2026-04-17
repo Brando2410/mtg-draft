@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     export const ArtisticProcess: CardDefinition = {
     name: "Artistic Process",
     manaCost: "{3}{R}{R}",
+    scryfall_id: "bce9d933-be58-4301-beb4-07b04d0b69f0",
+    image_url: "https://cards.scryfall.io/normal/front/b/c/bce9d933-be58-4301-beb4-07b04d0b69f0.jpg?1775937683",
     colors: [
         "R"
     ],

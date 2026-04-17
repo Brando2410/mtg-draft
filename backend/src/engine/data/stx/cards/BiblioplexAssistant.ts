@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const BiblioplexAssistant: CardDefinition = {
     name: 'Biblioplex Assistant',
     manaCost: '{4}',
+    scryfall_id: "d74e1117-0196-4268-be97-a1e81b5dc90e",
+    image_url: "https://cards.scryfall.io/normal/front/d/7/d74e1117-0196-4268-be97-a1e81b5dc90e.jpg?1624740545",
     colors: [],
     types: ['Artifact', 'Creature'],
     subtypes: ['Construct'],

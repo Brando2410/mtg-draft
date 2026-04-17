@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
     export const ChargingStrifeknight: CardDefinition = {
     name: "Charging Strifeknight",
     manaCost: "{2}{R}",
+    scryfall_id: "9940d992-1ba1-40ec-9b93-17d773452c4b",
+    image_url: "https://cards.scryfall.io/normal/front/9/9/9940d992-1ba1-40ec-9b93-17d773452c4b.jpg?1775937699",
     colors: [
         "R"
     ],

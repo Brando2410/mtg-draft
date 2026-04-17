@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     export const Pterafractyl: CardDefinition = {
     name: "Pterafractyl",
     manaCost: "{X}{G}{U}",
+    scryfall_id: "ecd33152-e290-4505-addd-a8d08cefdddd",
+    image_url: "https://cards.scryfall.io/normal/front/e/c/ecd33152-e290-4505-addd-a8d08cefdddd.jpg?1775938495",
     colors: [
         "G",
         "U"

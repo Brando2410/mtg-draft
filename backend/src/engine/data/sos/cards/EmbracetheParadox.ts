@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
 export const EmbracetheParadox: CardDefinition = {
     name: "Embrace the Paradox",
     manaCost: "{3}{G}{U}",
+    scryfall_id: "c0cf5e0f-3668-46f2-850d-d91a538e8ead",
+    image_url: "https://cards.scryfall.io/normal/front/c/0/c0cf5e0f-3668-46f2-850d-d91a538e8ead.jpg?1775938288",
     colors: [
         "G",
         "U"

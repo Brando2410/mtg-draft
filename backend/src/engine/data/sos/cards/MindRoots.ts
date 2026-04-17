@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
 export const MindRoots: CardDefinition = {
     name: "Mind Roots",
     manaCost: "{1}{B}{G}",
+    scryfall_id: "9d5fdbda-ebbe-45d6-a668-5ddee057a063",
+    image_url: "https://cards.scryfall.io/normal/front/9/d/9d5fdbda-ebbe-45d6-a668-5ddee057a063.jpg?1775938410",
     colors: [
         "B",
         "G"

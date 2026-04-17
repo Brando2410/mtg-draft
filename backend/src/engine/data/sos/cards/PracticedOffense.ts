@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     export const PracticedOffense: CardDefinition = {
     name: "Practiced Offense",
     manaCost: "{2}{W}",
+    scryfall_id: "79c7cf94-c0a1-432d-90d7-7f0599c2e7a8",
+    image_url: "https://cards.scryfall.io/normal/front/7/9/79c7cf94-c0a1-432d-90d7-7f0599c2e7a8.jpg?1775937087",
     colors: [
         "W"
     ],

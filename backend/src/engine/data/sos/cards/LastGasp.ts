@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     export const LastGasp: CardDefinition = {
     name: "Last Gasp",
     manaCost: "{1}{B}",
+    scryfall_id: "da5f3729-6ec7-4482-90cb-83b973edeae4",
+    image_url: "https://cards.scryfall.io/normal/front/d/a/da5f3729-6ec7-4482-90cb-83b973edeae4.jpg?1775937510",
     colors: [
         "B"
     ],

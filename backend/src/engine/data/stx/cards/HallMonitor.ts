@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
 export const HallMonitor: CardDefinition = {
     name: 'Hall Monitor',
     manaCost: '{R}',
+    scryfall_id: "02fdc551-0b22-49f4-8765-143ad82f16a3",
+    image_url: "https://cards.scryfall.io/normal/front/0/2/02fdc551-0b22-49f4-8765-143ad82f16a3.jpg?1624591927",
     colors: ['R'],
     types: ['Creature'],
     subtypes: ['Lizard', 'Wizard'],

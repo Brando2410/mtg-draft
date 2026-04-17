@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const FoolishFate: CardDefinition = {
     name: "Foolish Fate",
     manaCost: "{2}{B}",
+    scryfall_id: "d278f4c9-d20b-4a76-8c5c-4d3e985948b9",
+    image_url: "https://cards.scryfall.io/normal/front/d/2/d278f4c9-d20b-4a76-8c5c-4d3e985948b9.jpg?1775937489",
     colors: [
          "B"
      ],

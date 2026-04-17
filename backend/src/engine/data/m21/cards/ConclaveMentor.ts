@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const ConclaveMentor: CardDefinition = {
     name: "Conclave Mentor",
     manaCost: "{G}{W}",
+    scryfall_id: "a328a93a-e720-46d5-a190-cc65d1c90cea",
+    image_url: "https://cards.scryfall.io/normal/front/a/3/a328a93a-e720-46d5-a190-cc65d1c90cea.jpg?1594737354",
     oracleText: "If one or more +1/+1 counters would be put on a creature you control, that many plus one +1/+1 counters are put on that creature instead.\nWhen this creature dies, you gain life equal to its power.",
     colors: ["G", "W"],
     supertypes: [],

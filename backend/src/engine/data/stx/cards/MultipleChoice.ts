@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const MultipleChoice: CardDefinition = {
     name: 'Multiple Choice',
     manaCost: '{X}{U}',
+    scryfall_id: "08c9890f-7081-42f6-89eb-35c83911b443",
+    image_url: "https://cards.scryfall.io/normal/front/0/8/08c9890f-7081-42f6-89eb-35c83911b443.jpg?1624661911",
     colors: ['U'],
     types: ['Sorcery'],
     oracleText: 'If X is 1, return target creature to its owner\'s hand. If X is 2, create a 2/2 blue Drake creature token with flying. If X is 3, create a 4/4 blue and red Elemental creature token. If X is 4 or more, do all of the above and draw three cards.',

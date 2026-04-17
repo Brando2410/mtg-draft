@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const MoseoVeinsNewDean: CardDefinition = {
     name: "Moseo, Vein's New Dean",
     manaCost: "{2}{B}",
+    scryfall_id: "6877180c-22a1-4c4d-9178-316f4c34661b",
+    image_url: "https://cards.scryfall.io/normal/front/6/8/6877180c-22a1-4c4d-9178-316f4c34661b.jpg?1775937545",
     colors: ["B"],
     types: ["Legendary", "Creature"],
     subtypes: ["Bird", "Skeleton", "Warlock"],

@@ -3,6 +3,8 @@ import {AbilityType, Zone, CardDefinition, EffectType, GameEvent, GameObject, Ta
 export const CryptLurker: CardDefinition = {
         name: "Crypt Lurker",
         manaCost: "{3}{B}",
+    scryfall_id: "c0bba170-5176-4fab-a10d-e23d70128875",
+    image_url: "https://cards.scryfall.io/normal/front/c/0/c0bba170-5176-4fab-a10d-e23d70128875.jpg?1594736052",
         oracleText: "When Crypt Lurker enters the battlefield, you may sacrifice a creature or discard a creature card. If you do, draw a card.",
         colors: ["black"],
         supertypes: [],

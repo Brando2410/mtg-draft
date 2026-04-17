@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
     export const NoxiousNewt: CardDefinition = {
     name: "Noxious Newt",
     manaCost: "{1}{G}",
+    scryfall_id: "3a028306-c5d7-4f8f-b6f4-0d103fd47000",
+    image_url: "https://cards.scryfall.io/normal/front/3/a/3a028306-c5d7-4f8f-b6f4-0d103fd47000.jpg?1775938060",
     colors: [
         "G"
     ],

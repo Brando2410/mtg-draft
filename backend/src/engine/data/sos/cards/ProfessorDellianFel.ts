@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restr
     export const ProfessorDellianFel: CardDefinition = {
     name: 'Professor Dellian Fel',
     manaCost: '{2}{W}{B}',
+    scryfall_id: "6ff3b4d8-1271-4c5d-8834-7662244f173d",
+    image_url: "https://cards.scryfall.io/normal/front/6/f/6ff3b4d8-1271-4c5d-8834-7662244f173d.jpg?1775938486",
     colors: ['W', 'B'],
     types: ['Legendary', 'Planeswalker'],
     subtypes: ['Dellian'],

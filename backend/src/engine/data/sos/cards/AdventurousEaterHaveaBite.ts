@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     export const AdventurousEaterHaveaBite: CardDefinition = {
     name: "Adventurous Eater // Have a Bite",
     manaCost: "{2}{B} // {B}",
+    scryfall_id: "d40cc7da-c731-418e-8547-7033d1939450",
+    image_url: "https://cards.scryfall.io/normal/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.jpg?1775937412",
     colors: [
         "B"
     ],

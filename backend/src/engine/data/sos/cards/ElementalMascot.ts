@@ -2,6 +2,8 @@ import { TargetMapping, AbilityType, CardDefinition, ConditionType, DurationType
     export const ElementalMascot: CardDefinition = {
     name: "Elemental Mascot",
     manaCost: "{1}{U}{R}",
+    scryfall_id: "c507eb1c-48e9-4d28-bb2d-71f2a9df9ab0",
+    image_url: "https://cards.scryfall.io/normal/front/c/5/c507eb1c-48e9-4d28-bb2d-71f2a9df9ab0.jpg?1775938280",
     colors: [
         "R",
         "U"

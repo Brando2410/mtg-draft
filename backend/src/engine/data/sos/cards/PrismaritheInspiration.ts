@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } f
 export const PrismaritheInspiration: CardDefinition = {
     name: "Prismari, the Inspiration",
     manaCost: "{5}{U}{R}",
+    scryfall_id: "767ff9fa-4e7f-421a-b911-45186b520ae1",
+    image_url: "https://cards.scryfall.io/normal/front/7/6/767ff9fa-4e7f-421a-b911-45186b520ae1.jpg?1775938472",
     colors: [
         "R",
         "U"

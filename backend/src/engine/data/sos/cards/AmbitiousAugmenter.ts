@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const AmbitiousAugmenter: CardDefinition = {
     name: "Ambitious Augmenter",
     manaCost: "{G}",
+    scryfall_id: "85629088-2007-4db5-9397-bac12a3d7498",
+    image_url: "https://cards.scryfall.io/normal/front/8/5/85629088-2007-4db5-9397-bac12a3d7498.jpg?1775937950",
     colors: ["G"],
     types: ["Creature"],
     subtypes: ["Turtle", "Wizard"],

@@ -3,6 +3,8 @@ import { AbilityType, Zone, CardDefinition, EffectType, TargetMapping, TriggerEv
 export const HistorianofZhalfir: CardDefinition = {
     name: "Historian of Zhalfir",
     manaCost: "{2}{U}{U}",
+    scryfall_id: "ae981da0-f32c-49d5-bcb0-2b9255a4e1fe",
+    image_url: "https://cards.scryfall.io/normal/front/a/e/ae981da0-f32c-49d5-bcb0-2b9255a4e1fe.jpg?1596250023",
     oracleText: "Whenever Historian of Zhalfir attacks, if you control a Teferi planeswalker, draw a card.",
     colors: ["U"],
     supertypes: [],

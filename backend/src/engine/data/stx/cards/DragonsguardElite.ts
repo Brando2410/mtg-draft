@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const DragonsguardElite: CardDefinition = {
     name: 'Dragonsguard Elite',
     manaCost: '{1}{G}',
+    scryfall_id: "658ec634-3eb2-4967-b938-d20d31ab77e3",
+    image_url: "https://cards.scryfall.io/normal/front/6/5/658ec634-3eb2-4967-b938-d20d31ab77e3.jpg?1624592623",
     colors: ['G'],
     types: ['Creature'],
     subtypes: ['Human', 'Druid'],

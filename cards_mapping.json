@@ -1,0 +1,2074 @@
+{
+  "Aberrant Manawurm": {
+    "id": "797131cf-d80d-4050-bebd-2ce1d7fae5d0",
+    "url": "https://cards.scryfall.io/normal/front/7/9/797131cf-d80d-4050-bebd-2ce1d7fae5d0.jpg?1775937935"
+  },
+  "Abigale, Poet Laureate // Heroic Stanza": {
+    "id": "77285d12-e658-4eb3-ba13-ff202afab9c8",
+    "url": "https://cards.scryfall.io/normal/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.jpg?1775938164"
+  },
+  "Abstract Paintmage": {
+    "id": "ea008094-d995-4740-9b39-c61049356c55",
+    "url": "https://cards.scryfall.io/normal/front/e/a/ea008094-d995-4740-9b39-c61049356c55.jpg?1775938173"
+  },
+  "Additive Evolution": {
+    "id": "b44ec684-d558-45eb-bcd6-8119428634c2",
+    "url": "https://cards.scryfall.io/normal/front/b/4/b44ec684-d558-45eb-bcd6-8119428634c2.jpg?1775937943"
+  },
+  "Adventurous Eater // Have a Bite": {
+    "id": "d40cc7da-c731-418e-8547-7033d1939450",
+    "url": "https://cards.scryfall.io/normal/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.jpg?1775937412"
+  },
+  "Ajani's Response": {
+    "id": "9cd1417a-badc-4abd-a8ca-5b31f85c1072",
+    "url": "https://cards.scryfall.io/normal/front/9/c/9cd1417a-badc-4abd-a8ca-5b31f85c1072.jpg?1776047920"
+  },
+  "Ambitious Augmenter": {
+    "id": "85629088-2007-4db5-9397-bac12a3d7498",
+    "url": "https://cards.scryfall.io/normal/front/8/5/85629088-2007-4db5-9397-bac12a3d7498.jpg?1775937950"
+  },
+  "Ancestral Anger": {
+    "id": "6c5a93d6-d4ab-4062-bb3c-1b5330bf15ad",
+    "url": "https://cards.scryfall.io/normal/front/6/c/6c5a93d6-d4ab-4062-bb3c-1b5330bf15ad.jpg?1775937666"
+  },
+  "Antiquities on the Loose": {
+    "id": "68ee92cd-51af-4de5-bcc8-34d0bb2fd398",
+    "url": "https://cards.scryfall.io/normal/front/6/8/68ee92cd-51af-4de5-bcc8-34d0bb2fd398.jpg?1775936960"
+  },
+  "Applied Geometry": {
+    "id": "f109f2eb-895b-44a6-b6b5-81bf3831ccd5",
+    "url": "https://cards.scryfall.io/normal/front/f/1/f109f2eb-895b-44a6-b6b5-81bf3831ccd5.jpg?1775938180"
+  },
+  "Arcane Omens": {
+    "id": "d357d997-9d4e-4ade-81f2-37629853f13a",
+    "url": "https://cards.scryfall.io/normal/front/d/3/d357d997-9d4e-4ade-81f2-37629853f13a.jpg?1775937419"
+  },
+  "Archaic's Agony": {
+    "id": "8d99f8b2-5c1c-4059-bf68-c6b2e9e5b275",
+    "url": "https://cards.scryfall.io/normal/front/8/d/8d99f8b2-5c1c-4059-bf68-c6b2e9e5b275.jpg?1775937675"
+  },
+  "Ark of Hunger": {
+    "id": "79d01c19-162b-4a12-9e27-18366d95eaa0",
+    "url": "https://cards.scryfall.io/normal/front/7/9/79d01c19-162b-4a12-9e27-18366d95eaa0.jpg?1775938187"
+  },
+  "Arnyn, Deathbloom Botanist": {
+    "id": "6168b472-0930-4db5-9920-407340b99050",
+    "url": "https://cards.scryfall.io/normal/front/6/1/6168b472-0930-4db5-9920-407340b99050.jpg?1775937426"
+  },
+  "Artistic Process": {
+    "id": "bce9d933-be58-4301-beb4-07b04d0b69f0",
+    "url": "https://cards.scryfall.io/normal/front/b/c/bce9d933-be58-4301-beb4-07b04d0b69f0.jpg?1775937683"
+  },
+  "Ascendant Dustspeaker": {
+    "id": "de3de40b-a7ac-455e-add2-4e451b602d17",
+    "url": "https://cards.scryfall.io/normal/front/d/e/de3de40b-a7ac-455e-add2-4e451b602d17.jpg?1776000359"
+  },
+  "Aziza, Mage Tower Captain": {
+    "id": "6261e89a-dbf1-481a-823e-6bb00be57195",
+    "url": "https://cards.scryfall.io/normal/front/6/2/6261e89a-dbf1-481a-823e-6bb00be57195.jpg?1775938194"
+  },
+  "Banishing Betrayal": {
+    "id": "1ae9d2f3-7a9f-433a-aa1f-14337ae6f9d4",
+    "url": "https://cards.scryfall.io/normal/front/1/a/1ae9d2f3-7a9f-433a-aa1f-14337ae6f9d4.jpg?1775937176"
+  },
+  "Berta, Wise Extrapolator": {
+    "id": "75f89c36-c81d-4580-9a5c-218fed0c5c9a",
+    "url": "https://cards.scryfall.io/normal/front/7/5/75f89c36-c81d-4580-9a5c-218fed0c5c9a.jpg?1775938201"
+  },
+  "Biblioplex Tomekeeper": {
+    "id": "bf2efdd9-d2b4-4bea-a5b9-dbb2eee4dfba",
+    "url": "https://cards.scryfall.io/normal/front/b/f/bf2efdd9-d2b4-4bea-a5b9-dbb2eee4dfba.jpg?1775938724"
+  },
+  "Blazing Firesinger // Seething Song": {
+    "id": "3ba971e7-0b7a-4750-896f-7cf063e66b2a",
+    "url": "https://cards.scryfall.io/normal/front/3/b/3ba971e7-0b7a-4750-896f-7cf063e66b2a.jpg?1775937691"
+  },
+  "Blech, Loafing Pest": {
+    "id": "f588fa50-7cc5-41ba-90df-2d252eb5c785",
+    "url": "https://cards.scryfall.io/normal/front/f/5/f588fa50-7cc5-41ba-90df-2d252eb5c785.jpg?1775938208"
+  },
+  "Bogwater Lumaret": {
+    "id": "7a42f51a-3377-47bb-b6fb-c0515bf1dcfb",
+    "url": "https://cards.scryfall.io/normal/front/7/a/7a42f51a-3377-47bb-b6fb-c0515bf1dcfb.jpg?1775938216"
+  },
+  "Borrowed Knowledge": {
+    "id": "a3226e14-554d-47c9-b8b6-dfeb53cc41ba",
+    "url": "https://cards.scryfall.io/normal/front/a/3/a3226e14-554d-47c9-b8b6-dfeb53cc41ba.jpg?1775938224"
+  },
+  "Brush Off": {
+    "id": "151eab82-d20f-433b-b3bb-1d44e2871d5c",
+    "url": "https://cards.scryfall.io/normal/front/1/5/151eab82-d20f-433b-b3bb-1d44e2871d5c.jpg?1775937183"
+  },
+  "Burrog Banemaker": {
+    "id": "3e4f9d23-1a17-4188-ac91-f8ddea46a1c4",
+    "url": "https://cards.scryfall.io/normal/front/3/e/3e4f9d23-1a17-4188-ac91-f8ddea46a1c4.jpg?1775937433"
+  },
+  "Burrog Barrage": {
+    "id": "95d5b0a8-2b66-418e-9e5e-ecf7b304c31e",
+    "url": "https://cards.scryfall.io/normal/front/9/5/95d5b0a8-2b66-418e-9e5e-ecf7b304c31e.jpg?1775937957"
+  },
+  "Campus Composer // Aqueous Aria": {
+    "id": "fac8ac39-ecb4-4142-bf37-131c65660a9b",
+    "url": "https://cards.scryfall.io/normal/front/f/a/fac8ac39-ecb4-4142-bf37-131c65660a9b.jpg?1775937189"
+  },
+  "Cauldron of Essence": {
+    "id": "b7091740-e70c-4cf2-8d3d-b8e1ac1fbbdd",
+    "url": "https://cards.scryfall.io/normal/front/b/7/b7091740-e70c-4cf2-8d3d-b8e1ac1fbbdd.jpg?1775938230"
+  },
+  "Charging Strifeknight": {
+    "id": "9940d992-1ba1-40ec-9b93-17d773452c4b",
+    "url": "https://cards.scryfall.io/normal/front/9/9/9940d992-1ba1-40ec-9b93-17d773452c4b.jpg?1775937699"
+  },
+  "Chase Inspiration": {
+    "id": "06f9f257-c7ef-44b7-8b2b-f038fba900af",
+    "url": "https://cards.scryfall.io/normal/front/0/6/06f9f257-c7ef-44b7-8b2b-f038fba900af.jpg?1775937195"
+  },
+  "Cheerful Osteomancer // Raise Dead": {
+    "id": "3c34660c-25e3-4ff5-9b2b-5554ded2bcc3",
+    "url": "https://cards.scryfall.io/normal/front/3/c/3c34660c-25e3-4ff5-9b2b-5554ded2bcc3.jpg?1775937441"
+  },
+  "Chelonian Tackle": {
+    "id": "a82a4d8c-4105-4923-85a2-ef58241f725c",
+    "url": "https://cards.scryfall.io/normal/front/a/8/a82a4d8c-4105-4923-85a2-ef58241f725c.jpg?1775937964"
+  },
+  "Choreographed Sparks": {
+    "id": "0cda4235-4dce-48fe-a8a5-2a952dedbe25",
+    "url": "https://cards.scryfall.io/normal/front/0/c/0cda4235-4dce-48fe-a8a5-2a952dedbe25.jpg?1775937707"
+  },
+  "Colorstorm Stallion": {
+    "id": "f5b54d46-2caf-4d1b-8be1-dbd9e9dce058",
+    "url": "https://cards.scryfall.io/normal/front/f/5/f5b54d46-2caf-4d1b-8be1-dbd9e9dce058.jpg?1775938240"
+  },
+  "Colossus of the Blood Age": {
+    "id": "bfa7f0a4-6b65-4e53-ba00-848df260d8e3",
+    "url": "https://cards.scryfall.io/normal/front/b/f/bfa7f0a4-6b65-4e53-ba00-848df260d8e3.jpg?1775938248"
+  },
+  "Comforting Counsel": {
+    "id": "5223a04f-6b47-4379-80ce-8489c4a91734",
+    "url": "https://cards.scryfall.io/normal/front/5/2/5223a04f-6b47-4379-80ce-8489c4a91734.jpg?1775937970"
+  },
+  "Conciliator's Duelist": {
+    "id": "e225929b-6197-4550-969e-3c4a97206a68",
+    "url": "https://cards.scryfall.io/normal/front/e/2/e225929b-6197-4550-969e-3c4a97206a68.jpg?1775938257"
+  },
+  "Cost of Brilliance": {
+    "id": "3a46816b-9f75-4c72-9ec6-cded6a4a0d01",
+    "url": "https://cards.scryfall.io/normal/front/3/a/3a46816b-9f75-4c72-9ec6-cded6a4a0d01.jpg?1775937447"
+  },
+  "Cuboid Colony": {
+    "id": "6384d135-7780-4d75-9e95-71bce506948e",
+    "url": "https://cards.scryfall.io/normal/front/6/3/6384d135-7780-4d75-9e95-71bce506948e.jpg?1775938265"
+  },
+  "Daydream": {
+    "id": "e2b16cb2-b8b2-45df-9695-3c16e9d89e28",
+    "url": "https://cards.scryfall.io/normal/front/e/2/e2b16cb2-b8b2-45df-9695-3c16e9d89e28.jpg?1775936973"
+  },
+  "Deathcap Glade": {
+    "id": "78897104-80e1-4d8a-9958-145b40f679e8",
+    "url": "https://cards.scryfall.io/normal/front/7/8/78897104-80e1-4d8a-9958-145b40f679e8.jpg?1775938766"
+  },
+  "Decorum Dissertation": {
+    "id": "f4ab2d9b-c73d-478d-aac7-4d3bb24296d2",
+    "url": "https://cards.scryfall.io/normal/front/f/4/f4ab2d9b-c73d-478d-aac7-4d3bb24296d2.jpg?1775937454"
+  },
+  "Deluge Virtuoso": {
+    "id": "2e3b16ed-8727-48fd-8b1f-c0cbd329385e",
+    "url": "https://cards.scryfall.io/normal/front/2/e/2e3b16ed-8727-48fd-8b1f-c0cbd329385e.jpg?1775937202"
+  },
+  "Diary of Dreams": {
+    "id": "ee1e0a96-af80-444e-a456-5b256cf60625",
+    "url": "https://cards.scryfall.io/normal/front/e/e/ee1e0a96-af80-444e-a456-5b256cf60625.jpg?1775938731"
+  },
+  "Dig Site Inventory": {
+    "id": "e52464ee-df8b-41ec-af93-4b0eb004383e",
+    "url": "https://cards.scryfall.io/normal/front/e/5/e52464ee-df8b-41ec-af93-4b0eb004383e.jpg?1775936980"
+  },
+  "Dina's Guidance": {
+    "id": "775c1e50-08a4-413f-ab0f-f1c2a79cfe94",
+    "url": "https://cards.scryfall.io/normal/front/7/7/775c1e50-08a4-413f-ab0f-f1c2a79cfe94.jpg?1775938273"
+  },
+  "Dissection Practice": {
+    "id": "ddbf1242-6832-475e-9a77-65dd9b4bb32a",
+    "url": "https://cards.scryfall.io/normal/front/d/d/ddbf1242-6832-475e-9a77-65dd9b4bb32a.jpg?1775937462"
+  },
+  "Divergent Equation": {
+    "id": "26295e25-f1bf-4665-ba00-dad35c49bbc2",
+    "url": "https://cards.scryfall.io/normal/front/2/6/26295e25-f1bf-4665-ba00-dad35c49bbc2.jpg?1775937210"
+  },
+  "Dreamroot Cascade": {
+    "id": "ef662b92-5a7f-48c9-bcc1-14b55e091aef",
+    "url": "https://cards.scryfall.io/normal/front/e/f/ef662b92-5a7f-48c9-bcc1-14b55e091aef.jpg?1775938773"
+  },
+  "Duel Tactics": {
+    "id": "8f3a1675-0cc7-4dfd-a12e-4740a2cf81e8",
+    "url": "https://cards.scryfall.io/normal/front/8/f/8f3a1675-0cc7-4dfd-a12e-4740a2cf81e8.jpg?1775937718"
+  },
+  "Eager Glyphmage": {
+    "id": "bf736de9-9bc4-49df-ae60-672ed4f83f32",
+    "url": "https://cards.scryfall.io/normal/front/b/f/bf736de9-9bc4-49df-ae60-672ed4f83f32.jpg?1775936986"
+  },
+  "Echocasting Symposium": {
+    "id": "5d7086a7-dc42-468a-a2cf-a6f89030f947",
+    "url": "https://cards.scryfall.io/normal/front/5/d/5d7086a7-dc42-468a-a2cf-a6f89030f947.jpg?1775937216"
+  },
+  "Efflorescence": {
+    "id": "79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515",
+    "url": "https://cards.scryfall.io/normal/front/7/9/79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515.jpg?1775937979"
+  },
+  "Elemental Mascot": {
+    "id": "c507eb1c-48e9-4d28-bb2d-71f2a9df9ab0",
+    "url": "https://cards.scryfall.io/normal/front/c/5/c507eb1c-48e9-4d28-bb2d-71f2a9df9ab0.jpg?1775938280"
+  },
+  "Elite Interceptor // Rejoinder": {
+    "id": "2970683e-e69c-42cb-a067-34abd56fb42b",
+    "url": "https://cards.scryfall.io/normal/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.jpg?1775936992"
+  },
+  "Embrace the Paradox": {
+    "id": "c0cf5e0f-3668-46f2-850d-d91a538e8ead",
+    "url": "https://cards.scryfall.io/normal/front/c/0/c0cf5e0f-3668-46f2-850d-d91a538e8ead.jpg?1775938288"
+  },
+  "Emeritus of Abundance // Regrowth": {
+    "id": "ac095763-6f4e-4d4e-9c99-414646368f8d",
+    "url": "https://cards.scryfall.io/normal/front/a/c/ac095763-6f4e-4d4e-9c99-414646368f8d.jpg?1775937986"
+  },
+  "Emeritus of Conflict // Lightning Bolt": {
+    "id": "f58dba4f-1abb-47a3-a684-29c32bab95c0",
+    "url": "https://cards.scryfall.io/normal/front/f/5/f58dba4f-1abb-47a3-a684-29c32bab95c0.jpg?1775937726"
+  },
+  "Emeritus of Ideation // Ancestral Recall": {
+    "id": "75961d36-acf6-425f-9698-0bf52af74f31",
+    "url": "https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223"
+  },
+  "Emeritus of Truce // Swords to Plowshares": {
+    "id": "9869a753-5e41-4098-ab41-e75b4396ec50",
+    "url": "https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999"
+  },
+  "Emeritus of Woe // Demonic Tutor": {
+    "id": "7eb9e83d-515d-4911-a06b-9982200277b2",
+    "url": "https://cards.scryfall.io/normal/front/7/e/7eb9e83d-515d-4911-a06b-9982200277b2.jpg?1776269683"
+  },
+  "Emil, Vastlands Roamer": {
+    "id": "3654416d-8558-4af2-9e10-18dbc8f2b376",
+    "url": "https://cards.scryfall.io/normal/front/3/6/3654416d-8558-4af2-9e10-18dbc8f2b376.jpg?1775937993"
+  },
+  "Encouraging Aviator // Jump": {
+    "id": "72654b84-9902-41db-92ab-a3499c31221c",
+    "url": "https://cards.scryfall.io/normal/front/7/2/72654b84-9902-41db-92ab-a3499c31221c.jpg?1775937230"
+  },
+  "End of the Hunt": {
+    "id": "0809b51a-6a05-4f18-9bf4-1b8382da648f",
+    "url": "https://cards.scryfall.io/normal/front/0/8/0809b51a-6a05-4f18-9bf4-1b8382da648f.jpg?1775937476"
+  },
+  "Ennis, Debate Moderator": {
+    "id": "d2ef31b4-24fa-4443-9f05-c8e99c3522e5",
+    "url": "https://cards.scryfall.io/normal/front/d/2/d2ef31b4-24fa-4443-9f05-c8e99c3522e5.jpg?1775937005"
+  },
+  "Environmental Scientist": {
+    "id": "f2bf6b36-43e4-49d9-98b2-cbb4304c248b",
+    "url": "https://cards.scryfall.io/normal/front/f/2/f2bf6b36-43e4-49d9-98b2-cbb4304c248b.jpg?1775938001"
+  },
+  "Erode": {
+    "id": "32e670da-7563-4f6a-a7db-4c126a440eb8",
+    "url": "https://cards.scryfall.io/normal/front/3/2/32e670da-7563-4f6a-a7db-4c126a440eb8.jpg?1775937013"
+  },
+  "Essenceknit Scholar": {
+    "id": "2a3cba55-3fae-4d45-ae03-4d662ec13718",
+    "url": "https://cards.scryfall.io/normal/front/2/a/2a3cba55-3fae-4d45-ae03-4d662ec13718.jpg?1775938295"
+  },
+  "Essence Scatter": {
+    "id": "32840097-0531-4c43-b6a8-e76c17420b04",
+    "url": "https://cards.scryfall.io/normal/front/3/2/32840097-0531-4c43-b6a8-e76c17420b04.jpg?1775937236"
+  },
+  "Eternal Student": {
+    "id": "f97fac69-3e77-4150-9702-cc726daa6d21",
+    "url": "https://cards.scryfall.io/normal/front/f/9/f97fac69-3e77-4150-9702-cc726daa6d21.jpg?1775937483"
+  },
+  "Exhibition Tidecaller": {
+    "id": "a58c364e-d0c5-41b9-8c8b-2e5a99468cc7",
+    "url": "https://cards.scryfall.io/normal/front/a/5/a58c364e-d0c5-41b9-8c8b-2e5a99468cc7.jpg?1775937242"
+  },
+  "Expressive Firedancer": {
+    "id": "259b8c45-6241-4206-a34e-34c7f401f47b",
+    "url": "https://cards.scryfall.io/normal/front/2/5/259b8c45-6241-4206-a34e-34c7f401f47b.jpg?1775937734"
+  },
+  "Fields of Strife": {
+    "id": "3dc7a4c3-c356-4fba-bea0-e8788da3eb57",
+    "url": "https://cards.scryfall.io/normal/front/3/d/3dc7a4c3-c356-4fba-bea0-e8788da3eb57.jpg?1775938780"
+  },
+  "Fix What's Broken": {
+    "id": "c0cd1d71-8e4a-4e00-80cd-83aec231fa57",
+    "url": "https://cards.scryfall.io/normal/front/c/0/c0cd1d71-8e4a-4e00-80cd-83aec231fa57.jpg?1775938304"
+  },
+  "Flashback": {
+    "id": "1b832fda-d7c4-4566-884c-2a8b6da15488",
+    "url": "https://cards.scryfall.io/normal/front/1/b/1b832fda-d7c4-4566-884c-2a8b6da15488.jpg?1775937742"
+  },
+  "Flow State": {
+    "id": "47d6093b-b1b6-4956-8bfd-02cce899f832",
+    "url": "https://cards.scryfall.io/normal/front/4/7/47d6093b-b1b6-4956-8bfd-02cce899f832.jpg?1775937249"
+  },
+  "Follow the Lumarets": {
+    "id": "f9488480-2b6c-40bc-a93e-29fb1292a2e4",
+    "url": "https://cards.scryfall.io/normal/front/f/9/f9488480-2b6c-40bc-a93e-29fb1292a2e4.jpg?1775938009"
+  },
+  "Foolish Fate": {
+    "id": "d278f4c9-d20b-4a76-8c5c-4d3e985948b9",
+    "url": "https://cards.scryfall.io/normal/front/d/2/d278f4c9-d20b-4a76-8c5c-4d3e985948b9.jpg?1775937489"
+  },
+  "Forest": {
+    "id": "3279314f-d639-4489-b2ab-3621bb3ca64b",
+    "url": "https://cards.scryfall.io/normal/front/3/2/3279314f-d639-4489-b2ab-3621bb3ca64b.jpg?1594737877"
+  },
+  "Forum Necroscribe": {
+    "id": "67504a12-7414-4209-bf1c-624b4db19d52",
+    "url": "https://cards.scryfall.io/normal/front/6/7/67504a12-7414-4209-bf1c-624b4db19d52.jpg?1775937497"
+  },
+  "Forum of Amity": {
+    "id": "1de6c6cc-0c55-4997-8623-d7f796bd9ab8",
+    "url": "https://cards.scryfall.io/normal/front/1/d/1de6c6cc-0c55-4997-8623-d7f796bd9ab8.jpg?1775938787"
+  },
+  "Fractal Anomaly": {
+    "id": "e1975a61-aef0-49a6-a6d6-c3a37e2e2b22",
+    "url": "https://cards.scryfall.io/normal/front/e/1/e1975a61-aef0-49a6-a6d6-c3a37e2e2b22.jpg?1775937257"
+  },
+  "Fractalize": {
+    "id": "e3c3b19b-01b6-4f5a-b428-513b778c5d89",
+    "url": "https://cards.scryfall.io/normal/front/e/3/e3c3b19b-01b6-4f5a-b428-513b778c5d89.jpg?1775937264"
+  },
+  "Fractal Mascot": {
+    "id": "cf5b19e3-eed1-4b36-9756-660ffb3baa08",
+    "url": "https://cards.scryfall.io/normal/front/c/f/cf5b19e3-eed1-4b36-9756-660ffb3baa08.jpg?1775938311"
+  },
+  "Fractal Tender": {
+    "id": "ea7f5262-4ddb-410a-be72-4bac6af9b4ec",
+    "url": "https://cards.scryfall.io/normal/front/e/a/ea7f5262-4ddb-410a-be72-4bac6af9b4ec.jpg?1775938318"
+  },
+  "Garrison Excavator": {
+    "id": "f11d2846-f181-4751-82ac-1e1ced6f46c7",
+    "url": "https://cards.scryfall.io/normal/front/f/1/f11d2846-f181-4751-82ac-1e1ced6f46c7.jpg?1775937750"
+  },
+  "Geometer's Arthropod": {
+    "id": "ec0f3613-1edc-40e8-8f26-2e5ef13be55e",
+    "url": "https://cards.scryfall.io/normal/front/e/c/ec0f3613-1edc-40e8-8f26-2e5ef13be55e.jpg?1775938325"
+  },
+  "Germination Practicum": {
+    "id": "abe8332f-c76e-44e2-9427-d1228453abec",
+    "url": "https://cards.scryfall.io/normal/front/a/b/abe8332f-c76e-44e2-9427-d1228453abec.jpg?1775938016"
+  },
+  "Glorious Decay": {
+    "id": "a335f396-1004-4fee-842a-a35ff6ba17f2",
+    "url": "https://cards.scryfall.io/normal/front/a/3/a335f396-1004-4fee-842a-a35ff6ba17f2.jpg?1775938023"
+  },
+  "Goblin Glasswright // Craft with Pride": {
+    "id": "c85c5f06-dd31-4e2c-97be-2f64d65069ea",
+    "url": "https://cards.scryfall.io/normal/front/c/8/c85c5f06-dd31-4e2c-97be-2f64d65069ea.jpg?1775937759"
+  },
+  "Graduation Day": {
+    "id": "db1cea01-123e-4b23-8b98-f94cabce3912",
+    "url": "https://cards.scryfall.io/normal/front/d/b/db1cea01-123e-4b23-8b98-f94cabce3912.jpg?1775937020"
+  },
+  "Grapple with Death": {
+    "id": "62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a",
+    "url": "https://cards.scryfall.io/normal/front/6/2/62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a.jpg?1775938332"
+  },
+  "Grave Researcher // Reanimate": {
+    "id": "8b1e10e8-ea14-4761-910b-4072e2a18456",
+    "url": "https://cards.scryfall.io/normal/front/8/b/8b1e10e8-ea14-4761-910b-4072e2a18456.jpg?1775937504"
+  },
+  "Great Hall of the Biblioplex": {
+    "id": "42d92674-2664-411c-b9c5-b04da7c845f4",
+    "url": "https://cards.scryfall.io/normal/front/4/2/42d92674-2664-411c-b9c5-b04da7c845f4.jpg?1775938794"
+  },
+  "Group Project": {
+    "id": "e8abc1eb-6225-4b18-8502-b5324b818aed",
+    "url": "https://cards.scryfall.io/normal/front/e/8/e8abc1eb-6225-4b18-8502-b5324b818aed.jpg?1775937026"
+  },
+  "Growth Curve": {
+    "id": "1675a445-86ae-413b-b95a-a1c254a7f252",
+    "url": "https://cards.scryfall.io/normal/front/1/6/1675a445-86ae-413b-b95a-a1c254a7f252.jpg?1775938339"
+  },
+  "Hardened Academic": {
+    "id": "06c9e8a7-2840-4cff-90af-c6636e598f78",
+    "url": "https://cards.scryfall.io/normal/front/0/6/06c9e8a7-2840-4cff-90af-c6636e598f78.jpg?1775938346"
+  },
+  "Harmonized Trio // Brainstorm": {
+    "id": "617208ff-dd9b-44fd-a740-d3188081e5cc",
+    "url": "https://cards.scryfall.io/normal/front/6/1/617208ff-dd9b-44fd-a740-d3188081e5cc.jpg?1775937273"
+  },
+  "Harsh Annotation": {
+    "id": "e07a8fc7-c11c-4469-a31d-0abf40e57bbf",
+    "url": "https://cards.scryfall.io/normal/front/e/0/e07a8fc7-c11c-4469-a31d-0abf40e57bbf.jpg?1775937033"
+  },
+  "Heated Argument": {
+    "id": "0038d212-3d95-4f98-8c2e-7b2404d0ced7",
+    "url": "https://cards.scryfall.io/normal/front/0/0/0038d212-3d95-4f98-8c2e-7b2404d0ced7.jpg?1775937767"
+  },
+  "Homesickness": {
+    "id": "6e4a1f82-b0b1-4608-91f8-130bee731435",
+    "url": "https://cards.scryfall.io/normal/front/6/e/6e4a1f82-b0b1-4608-91f8-130bee731435.jpg?1775937280"
+  },
+  "Honorbound Page // Forum's Favor": {
+    "id": "79a70863-860f-4a7b-9cb2-d3546b689d44",
+    "url": "https://cards.scryfall.io/normal/front/7/9/79a70863-860f-4a7b-9cb2-d3546b689d44.jpg?1775937039"
+  },
+  "Hungry Graffalon": {
+    "id": "030b1272-5990-4bc9-8fc1-82cc05602060",
+    "url": "https://cards.scryfall.io/normal/front/0/3/030b1272-5990-4bc9-8fc1-82cc05602060.jpg?1775938030"
+  },
+  "Hydro-Channeler": {
+    "id": "099f8400-d70a-48ef-8ff6-645eae97e072",
+    "url": "https://cards.scryfall.io/normal/front/0/9/099f8400-d70a-48ef-8ff6-645eae97e072.jpg?1775937286"
+  },
+  "Imperious Inkmage": {
+    "id": "d5df1c3f-2536-4476-b8cd-34b026c38366",
+    "url": "https://cards.scryfall.io/normal/front/d/5/d5df1c3f-2536-4476-b8cd-34b026c38366.jpg?1775938353"
+  },
+  "Impractical Joke": {
+    "id": "39a816b4-39b8-421c-b828-68db901d34b7",
+    "url": "https://cards.scryfall.io/normal/front/3/9/39a816b4-39b8-421c-b828-68db901d34b7.jpg?1775937777"
+  },
+  "Improvisation Capstone": {
+    "id": "d01fe6e9-49ee-4708-833e-75cd5a9f167c",
+    "url": "https://cards.scryfall.io/normal/front/d/0/d01fe6e9-49ee-4708-833e-75cd5a9f167c.jpg?1775937787"
+  },
+  "Infirmary Healer // Stream of Life": {
+    "id": "911442e3-3003-4683-a766-e791e9553667",
+    "url": "https://cards.scryfall.io/normal/front/9/1/911442e3-3003-4683-a766-e791e9553667.jpg?1775938036"
+  },
+  "Informed Inkwright": {
+    "id": "5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6",
+    "url": "https://cards.scryfall.io/normal/front/5/d/5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6.jpg?1775937046"
+  },
+  "Inkling Mascot": {
+    "id": "6d4a2f39-0e1e-4076-815a-2676a09a1aab",
+    "url": "https://cards.scryfall.io/normal/front/6/d/6d4a2f39-0e1e-4076-815a-2676a09a1aab.jpg?1775938360"
+  },
+  "Inkshape Demonstrator": {
+    "id": "bcfac992-9984-4529-b9ff-a42d58832b34",
+    "url": "https://cards.scryfall.io/normal/front/b/c/bcfac992-9984-4529-b9ff-a42d58832b34.jpg?1775937053"
+  },
+  "Interjection": {
+    "id": "0534cff6-299c-4155-b318-eb7581989e8a",
+    "url": "https://cards.scryfall.io/normal/front/0/5/0534cff6-299c-4155-b318-eb7581989e8a.jpg?1775937061"
+  },
+  "Island": {
+    "id": "fc9a66a1-367c-4035-a22e-00fab55be5a0",
+    "url": "https://cards.scryfall.io/normal/front/f/c/fc9a66a1-367c-4035-a22e-00fab55be5a0.jpg?1594737796"
+  },
+  "Jadzi, Steward of Fate // Oracle's Gift": {
+    "id": "a95b6baf-01e6-49c3-9a26-394b127d53c3",
+    "url": "https://cards.scryfall.io/normal/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.jpg?1775937293"
+  },
+  "Joined Researchers // Secret Rendezvous": {
+    "id": "1ebaafe0-3a9a-424c-8698-d26e7be45343",
+    "url": "https://cards.scryfall.io/normal/front/1/e/1ebaafe0-3a9a-424c-8698-d26e7be45343.jpg?1775937069"
+  },
+  "Killian's Confidence": {
+    "id": "55ff776a-fc3b-4338-8864-d57a85b3f123",
+    "url": "https://cards.scryfall.io/normal/front/5/5/55ff776a-fc3b-4338-8864-d57a85b3f123.jpg?1775938369"
+  },
+  "Kirol, History Buff // Pack a Punch": {
+    "id": "676ba521-66e4-42cf-a315-70d03cb7334e",
+    "url": "https://cards.scryfall.io/normal/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.jpg?1775938375"
+  },
+  "Landscape Painter // Vibrant Idea": {
+    "id": "c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf",
+    "url": "https://cards.scryfall.io/normal/front/c/0/c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf.jpg?1775937300"
+  },
+  "Last Gasp": {
+    "id": "da5f3729-6ec7-4482-90cb-83b973edeae4",
+    "url": "https://cards.scryfall.io/normal/front/d/a/da5f3729-6ec7-4482-90cb-83b973edeae4.jpg?1775937510"
+  },
+  "Lecturing Scornmage": {
+    "id": "ad07091e-8c24-43af-8ce8-031847bcaf30",
+    "url": "https://cards.scryfall.io/normal/front/a/d/ad07091e-8c24-43af-8ce8-031847bcaf30.jpg?1775937516"
+  },
+  "Leech Collector // Bloodletting": {
+    "id": "c715fe4c-c0e7-4342-811f-b74687851097",
+    "url": "https://cards.scryfall.io/normal/front/c/7/c715fe4c-c0e7-4342-811f-b74687851097.jpg?1775937525"
+  },
+  "Living History": {
+    "id": "2028792c-fd60-40d4-bff7-3b82dbe1ffb5",
+    "url": "https://cards.scryfall.io/normal/front/2/0/2028792c-fd60-40d4-bff7-3b82dbe1ffb5.jpg?1775937797"
+  },
+  "Lluwen, Exchange Student // Pest Friend": {
+    "id": "a0bcb638-c3c8-4973-9537-5c471f43f34f",
+    "url": "https://cards.scryfall.io/normal/front/a/0/a0bcb638-c3c8-4973-9537-5c471f43f34f.jpg?1775938382"
+  },
+  "Lorehold Charm": {
+    "id": "5fe70295-e550-4577-a341-dab6c25aabfd",
+    "url": "https://cards.scryfall.io/normal/front/5/f/5fe70295-e550-4577-a341-dab6c25aabfd.jpg?1775938389"
+  },
+  "Lorehold, the Historian": {
+    "id": "71a6701f-40f1-43ef-bff5-a5907fd67cd6",
+    "url": "https://cards.scryfall.io/normal/front/7/1/71a6701f-40f1-43ef-bff5-a5907fd67cd6.jpg?1775938396"
+  },
+  "Lumaret's Favor": {
+    "id": "c5e7c856-8b71-44e6-8998-0b0b3ff0ef99",
+    "url": "https://cards.scryfall.io/normal/front/c/5/c5e7c856-8b71-44e6-8998-0b0b3ff0ef99.jpg?1775938045"
+  },
+  "Maelstrom Artisan // Rocket Volley": {
+    "id": "5c88391d-271f-4021-a5d9-158ebc1e6357",
+    "url": "https://cards.scryfall.io/normal/front/5/c/5c88391d-271f-4021-a5d9-158ebc1e6357.jpg?1775937805"
+  },
+  "Mage Tower Referee": {
+    "id": "1ceb704a-97a8-49f9-b799-30f001404144",
+    "url": "https://cards.scryfall.io/normal/front/1/c/1ceb704a-97a8-49f9-b799-30f001404144.jpg?1775938737"
+  },
+  "Magmablood Archaic": {
+    "id": "4d611278-9948-4345-b4dd-aa6eaf21b233",
+    "url": "https://cards.scryfall.io/normal/front/4/d/4d611278-9948-4345-b4dd-aa6eaf21b233.jpg?1775937816"
+  },
+  "Mana Sculpt": {
+    "id": "200c8e3d-c53b-40c7-a29a-fccc1281bfc6",
+    "url": "https://cards.scryfall.io/normal/front/2/0/200c8e3d-c53b-40c7-a29a-fccc1281bfc6.jpg?1775937307"
+  },
+  "Masterful Flourish": {
+    "id": "8d93d14d-7760-4af2-a237-2df326dd28d3",
+    "url": "https://cards.scryfall.io/normal/front/8/d/8d93d14d-7760-4af2-a237-2df326dd28d3.jpg?1775937531"
+  },
+  "Mathemagics": {
+    "id": "cd3cc172-5609-4bc8-9d84-50680fed6df9",
+    "url": "https://cards.scryfall.io/normal/front/c/d/cd3cc172-5609-4bc8-9d84-50680fed6df9.jpg?1775937314"
+  },
+  "Matterbending Mage": {
+    "id": "460c6afd-cddf-4fea-925f-b27517ff250a",
+    "url": "https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321"
+  },
+  "Melancholic Poet": {
+    "id": "d8309815-7035-47a5-acf2-2b2ac1e65037",
+    "url": "https://cards.scryfall.io/normal/front/d/8/d8309815-7035-47a5-acf2-2b2ac1e65037.jpg?1775937538"
+  },
+  "Mica, Reader of Ruins": {
+    "id": "949ad3ff-9e80-493c-a3ae-146b919bfcd7",
+    "url": "https://cards.scryfall.io/normal/front/9/4/949ad3ff-9e80-493c-a3ae-146b919bfcd7.jpg?1775937824"
+  },
+  "Mindful Biomancer": {
+    "id": "2c3a6eb8-ce0c-4dc8-9ed6-d2a9223eef53",
+    "url": "https://cards.scryfall.io/normal/front/2/c/2c3a6eb8-ce0c-4dc8-9ed6-d2a9223eef53.jpg?1775938052"
+  },
+  "Mind into Matter": {
+    "id": "0a7f0fdf-1d4b-4458-a19c-274611e8a59a",
+    "url": "https://cards.scryfall.io/normal/front/0/a/0a7f0fdf-1d4b-4458-a19c-274611e8a59a.jpg?1775938403"
+  },
+  "Mind Roots": {
+    "id": "9d5fdbda-ebbe-45d6-a668-5ddee057a063",
+    "url": "https://cards.scryfall.io/normal/front/9/d/9d5fdbda-ebbe-45d6-a668-5ddee057a063.jpg?1775938410"
+  },
+  "Molten-Core Maestro": {
+    "id": "326dfe32-3674-4a11-acd8-5ba62371235a",
+    "url": "https://cards.scryfall.io/normal/front/3/2/326dfe32-3674-4a11-acd8-5ba62371235a.jpg?1775937832"
+  },
+  "Molten Note": {
+    "id": "506f69aa-7dc4-4dd7-990a-7371fc1762c0",
+    "url": "https://cards.scryfall.io/normal/front/5/0/506f69aa-7dc4-4dd7-990a-7371fc1762c0.jpg?1775938416"
+  },
+  "Moment of Reckoning": {
+    "id": "577d9dc8-7720-4dc9-b650-64b4729b309b",
+    "url": "https://cards.scryfall.io/normal/front/5/7/577d9dc8-7720-4dc9-b650-64b4729b309b.jpg?1775938423"
+  },
+  "Moseo, Vein's New Dean": {
+    "id": "6877180c-22a1-4c4d-9178-316f4c34661b",
+    "url": "https://cards.scryfall.io/normal/front/6/8/6877180c-22a1-4c4d-9178-316f4c34661b.jpg?1775937545"
+  },
+  "Mountain": {
+    "id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+    "url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848"
+  },
+  "Muse Seeker": {
+    "id": "71cb4a6b-b500-4b28-bcdb-ec4188242f39",
+    "url": "https://cards.scryfall.io/normal/front/7/1/71cb4a6b-b500-4b28-bcdb-ec4188242f39.jpg?1775937328"
+  },
+  "Muse's Encouragement": {
+    "id": "c59e0004-1d6a-42a1-8ce4-31da2af2e1bf",
+    "url": "https://cards.scryfall.io/normal/front/c/5/c59e0004-1d6a-42a1-8ce4-31da2af2e1bf.jpg?1775937336"
+  },
+  "Nita, Forum Conciliator": {
+    "id": "fd80a87d-35d3-4ad1-8172-c85e93032d1d",
+    "url": "https://cards.scryfall.io/normal/front/f/d/fd80a87d-35d3-4ad1-8172-c85e93032d1d.jpg?1775938431"
+  },
+  "Noxious Newt": {
+    "id": "3a028306-c5d7-4f8f-b6f4-0d103fd47000",
+    "url": "https://cards.scryfall.io/normal/front/3/a/3a028306-c5d7-4f8f-b6f4-0d103fd47000.jpg?1775938060"
+  },
+  "Old-Growth Educator": {
+    "id": "eb7e858a-9b85-49b2-a379-ee656b64935a",
+    "url": "https://cards.scryfall.io/normal/front/e/b/eb7e858a-9b85-49b2-a379-ee656b64935a.jpg?1775938438"
+  },
+  "Oracle's Restoration": {
+    "id": "0863a19d-4511-4a78-98dd-d194afd1c39b",
+    "url": "https://cards.scryfall.io/normal/front/0/8/0863a19d-4511-4a78-98dd-d194afd1c39b.jpg?1775938067"
+  },
+  "Orysa, Tide Choreographer": {
+    "id": "010ed379-63f5-452c-9cd4-00d51647c0e3",
+    "url": "https://cards.scryfall.io/normal/front/0/1/010ed379-63f5-452c-9cd4-00d51647c0e3.jpg?1775937343"
+  },
+  "Owlin Historian": {
+    "id": "5fe99be0-e1ec-485e-82f8-02eba7b82441",
+    "url": "https://cards.scryfall.io/normal/front/5/f/5fe99be0-e1ec-485e-82f8-02eba7b82441.jpg?1775937078"
+  },
+  "Page, Loose Leaf": {
+    "id": "8c6fecfd-8241-4cf0-b1eb-19472b99e0ed",
+    "url": "https://cards.scryfall.io/normal/front/8/c/8c6fecfd-8241-4cf0-b1eb-19472b99e0ed.jpg?1775938744"
+  },
+  "Paradox Gardens": {
+    "id": "dbc3447e-1329-4ea1-b4ca-b321b0ffec8f",
+    "url": "https://cards.scryfall.io/normal/front/d/b/dbc3447e-1329-4ea1-b4ca-b321b0ffec8f.jpg?1775938801"
+  },
+  "Paradox Surveyor": {
+    "id": "d7cb1af2-0302-46ff-8303-ae9d07541a01",
+    "url": "https://cards.scryfall.io/normal/front/d/7/d7cb1af2-0302-46ff-8303-ae9d07541a01.jpg?1775938445"
+  },
+  "Pensive Professor": {
+    "id": "66d47940-84f9-4479-8562-45e5148435d4",
+    "url": "https://cards.scryfall.io/normal/front/6/6/66d47940-84f9-4479-8562-45e5148435d4.jpg?1775937349"
+  },
+  "Pestbrood Sloth": {
+    "id": "c1251ae6-2f19-4f84-ab02-6a6cc7ce6056",
+    "url": "https://cards.scryfall.io/normal/front/c/1/c1251ae6-2f19-4f84-ab02-6a6cc7ce6056.jpg?1775938073"
+  },
+  "Pest Mascot": {
+    "id": "d882beb9-6766-4818-afbb-f6fd7a2d5b70",
+    "url": "https://cards.scryfall.io/normal/front/d/8/d882beb9-6766-4818-afbb-f6fd7a2d5b70.jpg?1775938452"
+  },
+  "Petrified Hamlet": {
+    "id": "355dd460-b0e9-41f2-a058-b7f7e39ac387",
+    "url": "https://cards.scryfall.io/normal/front/3/5/355dd460-b0e9-41f2-a058-b7f7e39ac387.jpg?1775938807"
+  },
+  "Pigment Wrangler // Striking Palette": {
+    "id": "c2faf4cf-c4b6-4721-ac06-0e045dd9704a",
+    "url": "https://cards.scryfall.io/normal/front/c/2/c2faf4cf-c4b6-4721-ac06-0e045dd9704a.jpg?1775937841"
+  },
+  "Plains": {
+    "id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+    "url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767"
+  },
+  "Planar Engineering": {
+    "id": "c83b96a3-ddfd-4d11-8a85-5bf62087cbb9",
+    "url": "https://cards.scryfall.io/normal/front/c/8/c83b96a3-ddfd-4d11-8a85-5bf62087cbb9.jpg?1775938080"
+  },
+  "Poisoner's Apprentice": {
+    "id": "3755a2e9-af55-4625-a006-2a86c7893a96",
+    "url": "https://cards.scryfall.io/normal/front/3/7/3755a2e9-af55-4625-a006-2a86c7893a96.jpg?1775937552"
+  },
+  "Postmortem Professor": {
+    "id": "174f5d7e-5d36-4d13-96bf-9b12cd644716",
+    "url": "https://cards.scryfall.io/normal/front/1/7/174f5d7e-5d36-4d13-96bf-9b12cd644716.jpg?1775937558"
+  },
+  "Potioner's Trove": {
+    "id": "2123b349-4649-4a15-a8b5-b54414d2b1b7",
+    "url": "https://cards.scryfall.io/normal/front/2/1/2123b349-4649-4a15-a8b5-b54414d2b1b7.jpg?1775938752"
+  },
+  "Pox Plague": {
+    "id": "9c99c17b-ad3a-4859-97e8-469718b81cd9",
+    "url": "https://cards.scryfall.io/normal/front/9/c/9c99c17b-ad3a-4859-97e8-469718b81cd9.jpg?1775937566"
+  },
+  "Practiced Offense": {
+    "id": "79c7cf94-c0a1-432d-90d7-7f0599c2e7a8",
+    "url": "https://cards.scryfall.io/normal/front/7/9/79c7cf94-c0a1-432d-90d7-7f0599c2e7a8.jpg?1775937087"
+  },
+  "Practiced Scrollsmith": {
+    "id": "40075e3f-58b3-47fd-8fbe-4b301e9ce7a1",
+    "url": "https://cards.scryfall.io/normal/front/4/0/40075e3f-58b3-47fd-8fbe-4b301e9ce7a1.jpg?1775938459"
+  },
+  "Primary Research": {
+    "id": "f6fdb814-45c6-4d14-afff-7f5bd1bd10a1",
+    "url": "https://cards.scryfall.io/normal/front/f/6/f6fdb814-45c6-4d14-afff-7f5bd1bd10a1.jpg?1775937094"
+  },
+  "Prismari Charm": {
+    "id": "8f6c2a5e-fe13-407c-aadd-c9caf2884ff1",
+    "url": "https://cards.scryfall.io/normal/front/8/f/8f6c2a5e-fe13-407c-aadd-c9caf2884ff1.jpg?1775938465"
+  },
+  "Prismari, the Inspiration": {
+    "id": "767ff9fa-4e7f-421a-b911-45186b520ae1",
+    "url": "https://cards.scryfall.io/normal/front/7/6/767ff9fa-4e7f-421a-b911-45186b520ae1.jpg?1775938472"
+  },
+  "Procrastinate": {
+    "id": "1edb449d-620f-4e21-9d76-2c840635eb9d",
+    "url": "https://cards.scryfall.io/normal/front/1/e/1edb449d-620f-4e21-9d76-2c840635eb9d.jpg?1775937356"
+  },
+  "Proctor's Gaze": {
+    "id": "b127d543-0a90-4af6-9410-94d5cd30389e",
+    "url": "https://cards.scryfall.io/normal/front/b/1/b127d543-0a90-4af6-9410-94d5cd30389e.jpg?1775938479"
+  },
+  "Professor Dellian Fel": {
+    "id": "6ff3b4d8-1271-4c5d-8834-7662244f173d",
+    "url": "https://cards.scryfall.io/normal/front/6/f/6ff3b4d8-1271-4c5d-8834-7662244f173d.jpg?1775938486"
+  },
+  "Pterafractyl": {
+    "id": "ecd33152-e290-4505-addd-a8d08cefdddd",
+    "url": "https://cards.scryfall.io/normal/front/e/c/ecd33152-e290-4505-addd-a8d08cefdddd.jpg?1775938495"
+  },
+  "A-Ardent Dustspeaker": {
+    "id": "79b12c44-9537-4863-a678-c982e8714a5a",
+    "url": "https://cards.scryfall.io/normal/front/7/9/79b12c44-9537-4863-a678-c982e8714a5a.jpg?1681158267"
+  },
+  "Academic Dispute": {
+    "id": "4620cc3b-e401-4096-b310-fed080806344",
+    "url": "https://cards.scryfall.io/normal/front/4/6/4620cc3b-e401-4096-b310-fed080806344.jpg?1624591542"
+  },
+  "Academic Probation": {
+    "id": "05521edf-f47f-4e7a-aec5-cdc4ae7368c2",
+    "url": "https://cards.scryfall.io/normal/front/0/5/05521edf-f47f-4e7a-aec5-cdc4ae7368c2.jpg?1637082074"
+  },
+  "Access Tunnel": {
+    "id": "edf8eb51-9643-4c54-b38e-e7abea92bbe1",
+    "url": "https://cards.scryfall.io/normal/front/e/d/edf8eb51-9643-4c54-b38e-e7abea92bbe1.jpg?1624740811"
+  },
+  "Accomplished Alchemist": {
+    "id": "0d7b7830-b65e-4c53-98e8-152026764e4b",
+    "url": "https://cards.scryfall.io/normal/front/0/d/0d7b7830-b65e-4c53-98e8-152026764e4b.jpg?1629218987"
+  },
+  "A-Dueling Coach": {
+    "id": "27b19a46-f4e9-4a08-b118-a62a93901c1e",
+    "url": "https://cards.scryfall.io/normal/front/2/7/27b19a46-f4e9-4a08-b118-a62a93901c1e.jpg?1681158578"
+  },
+  "Aether Helix": {
+    "id": "7d1c653e-f629-4105-a52c-379c5cd78208",
+    "url": "https://cards.scryfall.io/normal/front/7/d/7d1c653e-f629-4105-a52c-379c5cd78208.jpg?1627428064"
+  },
+  "Ageless Guardian": {
+    "id": "4a5ff6af-402f-4bf6-a75b-dc1e0e40aff6",
+    "url": "https://cards.scryfall.io/normal/front/4/a/4a5ff6af-402f-4bf6-a75b-dc1e0e40aff6.jpg?1624589202"
+  },
+  "A-Maelstrom Muse": {
+    "id": "f53e674b-5d48-4734-beeb-2a3deeb935e0",
+    "url": "https://cards.scryfall.io/normal/front/f/5/f53e674b-5d48-4734-beeb-2a3deeb935e0.jpg?1733351214"
+  },
+  "A-Mentor's Guidance": {
+    "id": "bf572a77-bd21-48e3-9640-3f17a5416ab1",
+    "url": "https://cards.scryfall.io/normal/front/b/f/bf572a77-bd21-48e3-9640-3f17a5416ab1.jpg?1681159072"
+  },
+  "Arcane Subtraction": {
+    "id": "68cdb00c-ea86-4b72-8f62-570820edfa1b",
+    "url": "https://cards.scryfall.io/normal/front/6/8/68cdb00c-ea86-4b72-8f62-570820edfa1b.jpg?1624589947"
+  },
+  "Archmage Emeritus": {
+    "id": "761df6cd-0928-4167-8902-58fdb50181a0",
+    "url": "https://cards.scryfall.io/normal/front/7/6/761df6cd-0928-4167-8902-58fdb50181a0.jpg?1624589970"
+  },
+  "Archway Commons": {
+    "id": "f6f6a2ff-7eb7-4680-af2b-e69ac88a65c9",
+    "url": "https://cards.scryfall.io/normal/front/f/6/f6f6a2ff-7eb7-4680-af2b-e69ac88a65c9.jpg?1624740834"
+  },
+  "Ardent Dustspeaker": {
+    "id": "7ff4832a-26c0-4da5-abbb-1941e7084e72",
+    "url": "https://cards.scryfall.io/normal/front/7/f/7ff4832a-26c0-4da5-abbb-1941e7084e72.jpg?1624591569"
+  },
+  "A-Rowan, Scholar of Sparks // A-Will, Scholar of Frost": {
+    "id": "6168bf9a-8a2e-46a5-ba87-7f88a4edc526",
+    "url": "https://cards.scryfall.io/normal/front/6/1/6168bf9a-8a2e-46a5-ba87-7f88a4edc526.jpg?1682292291"
+  },
+  "Arrogant Poet": {
+    "id": "556a0816-83c5-41dc-8546-213b21e2cceb",
+    "url": "https://cards.scryfall.io/normal/front/5/5/556a0816-83c5-41dc-8546-213b21e2cceb.jpg?1624590711"
+  },
+  "A-Spell Satchel": {
+    "id": "cd8acc65-c7e0-4ba5-b956-af0679ffb830",
+    "url": "https://cards.scryfall.io/normal/front/c/d/cd8acc65-c7e0-4ba5-b956-af0679ffb830.jpg?1681159425"
+  },
+  "A-Symmetry Sage": {
+    "id": "c2409aee-3a80-4533-80bc-9383624c285d",
+    "url": "https://cards.scryfall.io/normal/front/c/2/c2409aee-3a80-4533-80bc-9383624c285d.jpg?1681159448"
+  },
+  "A-Tanazir Quandrix": {
+    "id": "957117fe-ddc9-4c5d-bff8-f74602a24dd8",
+    "url": "https://cards.scryfall.io/normal/front/9/5/957117fe-ddc9-4c5d-bff8-f74602a24dd8.jpg?1681169173"
+  },
+  "A-Tenured Inkcaster": {
+    "id": "d4ea2dad-f276-47b8-912c-267a832f1d36",
+    "url": "https://cards.scryfall.io/normal/front/d/4/d4ea2dad-f276-47b8-912c-267a832f1d36.jpg?1681159475"
+  },
+  "A-Tome Shredder": {
+    "id": "2952a34c-b0c0-4e1c-9a00-c74c7e6b7d32",
+    "url": "https://cards.scryfall.io/normal/front/2/9/2952a34c-b0c0-4e1c-9a00-c74c7e6b7d32.jpg?1681159560"
+  },
+  "Augmenter Pugilist // Echoing Equation": {
+    "id": "d9131fc3-018a-4975-8795-47be3956160d",
+    "url": "https://cards.scryfall.io/normal/front/d/9/d9131fc3-018a-4975-8795-47be3956160d.jpg?1666094681"
+  },
+  "Baleful Mastery": {
+    "id": "35f1a6ba-e46f-44fb-93f4-fb883d677b36",
+    "url": "https://cards.scryfall.io/normal/front/3/5/35f1a6ba-e46f-44fb-93f4-fb883d677b36.jpg?1624590749"
+  },
+  "Basic Conjuration": {
+    "id": "8be52d88-f430-4437-a0d3-590c2947c838",
+    "url": "https://cards.scryfall.io/normal/front/8/b/8be52d88-f430-4437-a0d3-590c2947c838.jpg?1637082092"
+  },
+  "Bayou Groff": {
+    "id": "4a82b032-b1ba-456c-abab-c0f7430b0587",
+    "url": "https://cards.scryfall.io/normal/front/4/a/4a82b032-b1ba-456c-abab-c0f7430b0587.jpg?1624592412"
+  },
+  "Beaming Defiance": {
+    "id": "7e22411c-11c1-4770-8491-7952dd406e01",
+    "url": "https://cards.scryfall.io/normal/front/7/e/7e22411c-11c1-4770-8491-7952dd406e01.jpg?1624589223"
+  },
+  "Beledros Witherbloom": {
+    "id": "93f786a2-a7b7-4f9e-92e8-9a6a11efe290",
+    "url": "https://cards.scryfall.io/normal/front/9/3/93f786a2-a7b7-4f9e-92e8-9a6a11efe290.jpg?1627428096"
+  },
+  "Biblioplex Assistant": {
+    "id": "d74e1117-0196-4268-be97-a1e81b5dc90e",
+    "url": "https://cards.scryfall.io/normal/front/d/7/d74e1117-0196-4268-be97-a1e81b5dc90e.jpg?1624740545"
+  },
+  "Big Play": {
+    "id": "9016d667-50a9-4093-9a99-b34dcdafe60b",
+    "url": "https://cards.scryfall.io/normal/front/9/0/9016d667-50a9-4093-9a99-b34dcdafe60b.jpg?1624592445"
+  },
+  "Biomathematician": {
+    "id": "b41a35ef-dae1-4534-a12a-d3951b285273",
+    "url": "https://cards.scryfall.io/normal/front/b/4/b41a35ef-dae1-4534-a12a-d3951b285273.jpg?1627428126"
+  },
+  "Blade Historian": {
+    "id": "a46d64ec-aca4-428e-bce6-66cd755c8cc3",
+    "url": "https://cards.scryfall.io/normal/front/a/4/a46d64ec-aca4-428e-bce6-66cd755c8cc3.jpg?1627428161"
+  },
+  "Blex, Vexing Pest // Search for Blex": {
+    "id": "c204b7ca-0904-40fa-b20c-92400fae20b8",
+    "url": "https://cards.scryfall.io/normal/front/c/2/c204b7ca-0904-40fa-b20c-92400fae20b8.jpg?1739541943"
+  },
+  "Blood Age General": {
+    "id": "f30237cc-27c8-4075-acbd-d75a16588a68",
+    "url": "https://cards.scryfall.io/normal/front/f/3/f30237cc-27c8-4075-acbd-d75a16588a68.jpg?1624591594"
+  },
+  "Blood Researcher": {
+    "id": "3e35e9ba-a10e-4926-a7a6-3a65efc2a730",
+    "url": "https://cards.scryfall.io/normal/front/3/e/3e35e9ba-a10e-4926-a7a6-3a65efc2a730.jpg?1627428197"
+  },
+  "Blot Out the Sky": {
+    "id": "0141312f-4b68-4c56-b1dc-5b7e6afbb96c",
+    "url": "https://cards.scryfall.io/normal/front/0/1/0141312f-4b68-4c56-b1dc-5b7e6afbb96c.jpg?1627428247"
+  },
+  "Body of Research": {
+    "id": "98b56823-0076-49cc-b5aa-4accb8e2782e",
+    "url": "https://cards.scryfall.io/normal/front/9/8/98b56823-0076-49cc-b5aa-4accb8e2782e.jpg?1627428272"
+  },
+  "Bookwurm": {
+    "id": "57d230fc-d382-40b4-bdbd-5fe880fa16bf",
+    "url": "https://cards.scryfall.io/normal/front/5/7/57d230fc-d382-40b4-bdbd-5fe880fa16bf.jpg?1624592487"
+  },
+  "Brackish Trudge": {
+    "id": "90ba37ee-159f-421f-8d37-a7b5f1b562f0",
+    "url": "https://cards.scryfall.io/normal/front/9/0/90ba37ee-159f-421f-8d37-a7b5f1b562f0.jpg?1624590775"
+  },
+  "Burrog Befuddler": {
+    "id": "6040c573-cd8c-4593-8ade-d9922482035c",
+    "url": "https://cards.scryfall.io/normal/front/6/0/6040c573-cd8c-4593-8ade-d9922482035c.jpg?1624589994"
+  },
+  "Bury in Books": {
+    "id": "ac2a2cf5-80cf-4c06-8b04-bc04a5460de5",
+    "url": "https://cards.scryfall.io/normal/front/a/c/ac2a2cf5-80cf-4c06-8b04-bc04a5460de5.jpg?1624590030"
+  },
+  "Callous Bloodmage": {
+    "id": "81358736-65cf-44d8-819e-d0268d14cc76",
+    "url": "https://cards.scryfall.io/normal/front/8/1/81358736-65cf-44d8-819e-d0268d14cc76.jpg?1624590806"
+  },
+  "Campus Guide": {
+    "id": "87a9a8a2-de81-441b-b501-418311b677f7",
+    "url": "https://cards.scryfall.io/normal/front/8/7/87a9a8a2-de81-441b-b501-418311b677f7.jpg?1624740567"
+  },
+  "Charge Through": {
+    "id": "ed16926f-feb0-481a-8c5e-88ea119752cd",
+    "url": "https://cards.scryfall.io/normal/front/e/d/ed16926f-feb0-481a-8c5e-88ea119752cd.jpg?1624592517"
+  },
+  "Clever Lumimancer": {
+    "id": "69957656-cfdf-4001-8e84-0ef29e4a468d",
+    "url": "https://cards.scryfall.io/normal/front/6/9/69957656-cfdf-4001-8e84-0ef29e4a468d.jpg?1624589246"
+  },
+  "Closing Statement": {
+    "id": "785e6d07-fe40-4723-b963-02da0a0987c7",
+    "url": "https://cards.scryfall.io/normal/front/7/8/785e6d07-fe40-4723-b963-02da0a0987c7.jpg?1627428302"
+  },
+  "Codie, Vociferous Codex": {
+    "id": "ea476ee1-67d9-4dd8-a5ac-f68a155eb18b",
+    "url": "https://cards.scryfall.io/normal/front/e/a/ea476ee1-67d9-4dd8-a5ac-f68a155eb18b.jpg?1624740590"
+  },
+  "Cogwork Archivist": {
+    "id": "8c024a2d-20fb-478b-a62e-e3590a1e3ac1",
+    "url": "https://cards.scryfall.io/normal/front/8/c/8c024a2d-20fb-478b-a62e-e3590a1e3ac1.jpg?1624740614"
+  },
+  "Combat Professor": {
+    "id": "3f669ac4-98ed-4e23-91a9-281f8277ab04",
+    "url": "https://cards.scryfall.io/normal/front/3/f/3f669ac4-98ed-4e23-91a9-281f8277ab04.jpg?1624589275"
+  },
+  "Confront the Past": {
+    "id": "e1951763-be97-400c-aa95-6b101f47bddf",
+    "url": "https://cards.scryfall.io/normal/front/e/1/e1951763-be97-400c-aa95-6b101f47bddf.jpg?1637082105"
+  },
+  "Conspiracy Theorist": {
+    "id": "742a7487-70a2-448b-8e66-c33cba798a32",
+    "url": "https://cards.scryfall.io/normal/front/7/4/742a7487-70a2-448b-8e66-c33cba798a32.jpg?1624591621"
+  },
+  "Containment Breach": {
+    "id": "0dcca120-b72e-4007-98e1-cb22e7b9a705",
+    "url": "https://cards.scryfall.io/normal/front/0/d/0dcca120-b72e-4007-98e1-cb22e7b9a705.jpg?1771241735"
+  },
+  "Crackle with Power": {
+    "id": "de547f52-3798-4b3a-947d-24873251204b",
+    "url": "https://cards.scryfall.io/normal/front/d/e/de547f52-3798-4b3a-947d-24873251204b.jpg?1624591645"
+  },
+  "Cram Session": {
+    "id": "c59a249f-35ed-447a-845b-32ba5a53124e",
+    "url": "https://cards.scryfall.io/normal/front/c/5/c59a249f-35ed-447a-845b-32ba5a53124e.jpg?1627428330"
+  },
+  "Creative Outburst": {
+    "id": "eab58d87-bf01-45dc-8958-e2b3375f914b",
+    "url": "https://cards.scryfall.io/normal/front/e/a/eab58d87-bf01-45dc-8958-e2b3375f914b.jpg?1627428357"
+  },
+  "Crushing Disappointment": {
+    "id": "7fbe8cf1-11df-4ca4-9a6b-265193c49250",
+    "url": "https://cards.scryfall.io/normal/front/7/f/7fbe8cf1-11df-4ca4-9a6b-265193c49250.jpg?1624590861"
+  },
+  "Culling Ritual": {
+    "id": "8f6f91d3-cc07-4a42-99a0-5fb83b29cc25",
+    "url": "https://cards.scryfall.io/normal/front/8/f/8f6f91d3-cc07-4a42-99a0-5fb83b29cc25.jpg?1627428386"
+  },
+  "Culmination of Studies": {
+    "id": "2483060e-9d3f-48ae-80ea-0119bf6b4d67",
+    "url": "https://cards.scryfall.io/normal/front/2/4/2483060e-9d3f-48ae-80ea-0119bf6b4d67.jpg?1627428427"
+  },
+  "Curate": {
+    "id": "f2a0e716-22b7-4a5e-9b7a-d4a806ee7427",
+    "url": "https://cards.scryfall.io/normal/front/f/2/f2a0e716-22b7-4a5e-9b7a-d4a806ee7427.jpg?1665819389"
+  },
+  "Daemogoth Titan": {
+    "id": "c2f18828-ade7-4b99-97b2-e34bc2fdb68c",
+    "url": "https://cards.scryfall.io/normal/front/c/2/c2f18828-ade7-4b99-97b2-e34bc2fdb68c.jpg?1627428470"
+  },
+  "Daemogoth Woe-Eater": {
+    "id": "c965cbe3-50e5-41bb-bdb9-e65d97aab716",
+    "url": "https://cards.scryfall.io/normal/front/c/9/c965cbe3-50e5-41bb-bdb9-e65d97aab716.jpg?1627428499"
+  },
+  "Deadly Brew": {
+    "id": "87d33e48-90fc-4aac-b09a-68050bc053b5",
+    "url": "https://cards.scryfall.io/normal/front/8/7/87d33e48-90fc-4aac-b09a-68050bc053b5.jpg?1627428539"
+  },
+  "Decisive Denial": {
+    "id": "b2e9d132-95f7-4ee7-9c91-be19e4ad7a5d",
+    "url": "https://cards.scryfall.io/normal/front/b/2/b2e9d132-95f7-4ee7-9c91-be19e4ad7a5d.jpg?1627428577"
+  },
+  "Defend the Campus": {
+    "id": "85e4e1b5-77d6-4af4-b22e-6f6b4d129f5d",
+    "url": "https://cards.scryfall.io/normal/front/8/5/85e4e1b5-77d6-4af4-b22e-6f6b4d129f5d.jpg?1624589309"
+  },
+  "Detention Vortex": {
+    "id": "54ebe581-be17-415a-a160-28d8f4e95636",
+    "url": "https://cards.scryfall.io/normal/front/5/4/54ebe581-be17-415a-a160-28d8f4e95636.jpg?1624589334"
+  },
+  "Devastating Mastery": {
+    "id": "3b6be019-29b9-4c81-9899-aefeaf9cc977",
+    "url": "https://cards.scryfall.io/normal/front/3/b/3b6be019-29b9-4c81-9899-aefeaf9cc977.jpg?1624589359"
+  },
+  "Devouring Tendrils": {
+    "id": "f7444555-da19-4d2d-ad81-233c54fbb78e",
+    "url": "https://cards.scryfall.io/normal/front/f/7/f7444555-da19-4d2d-ad81-233c54fbb78e.jpg?1624592593"
+  },
+  "Dina, Soul Steeper": {
+    "id": "9cd2b567-0cf7-4441-b3ce-e31141dd91c8",
+    "url": "https://cards.scryfall.io/normal/front/9/c/9cd2b567-0cf7-4441-b3ce-e31141dd91c8.jpg?1627428607"
+  },
+  "Divide by Zero": {
+    "id": "1958d96e-ec44-48ab-80b1-5b01a24ac7b8",
+    "url": "https://cards.scryfall.io/normal/front/1/9/1958d96e-ec44-48ab-80b1-5b01a24ac7b8.jpg?1702134275"
+  },
+  "Double Major": {
+    "id": "c3d35413-8742-4443-8859-93c91112978d",
+    "url": "https://cards.scryfall.io/normal/front/c/3/c3d35413-8742-4443-8859-93c91112978d.jpg?1627428638"
+  },
+  "Draconic Intervention": {
+    "id": "657de246-b9fc-47b1-b932-091e9500bb82",
+    "url": "https://cards.scryfall.io/normal/front/6/5/657de246-b9fc-47b1-b932-091e9500bb82.jpg?1624591671"
+  },
+  "Dragon's Approach": {
+    "id": "0cb504a0-1dfb-49d0-84c3-7bd318d55481",
+    "url": "https://cards.scryfall.io/normal/front/0/c/0cb504a0-1dfb-49d0-84c3-7bd318d55481.jpg?1624591696"
+  },
+  "Dragonsguard Elite": {
+    "id": "658ec634-3eb2-4967-b938-d20d31ab77e3",
+    "url": "https://cards.scryfall.io/normal/front/6/5/658ec634-3eb2-4967-b938-d20d31ab77e3.jpg?1624592623"
+  },
+  "Dramatic Finale": {
+    "id": "a8ec9be6-c8ad-4a82-8253-c49cdb9443ba",
+    "url": "https://cards.scryfall.io/normal/front/a/8/a8ec9be6-c8ad-4a82-8253-c49cdb9443ba.jpg?1627428668"
+  },
+  "Dream Strix": {
+    "id": "31d82f7a-64f1-463f-bb6b-936c3e49bf2b",
+    "url": "https://cards.scryfall.io/normal/front/3/1/31d82f7a-64f1-463f-bb6b-936c3e49bf2b.jpg?1624590117"
+  },
+  "Dueling Coach": {
+    "id": "45b3dbb0-0d68-4351-bfc9-a09c50454bf7",
+    "url": "https://cards.scryfall.io/normal/front/4/5/45b3dbb0-0d68-4351-bfc9-a09c50454bf7.jpg?1624589385"
+  },
+  "Eager First-Year": {
+    "id": "7a83543b-3b6f-4e28-96f9-007b814bcfd6",
+    "url": "https://cards.scryfall.io/normal/front/7/a/7a83543b-3b6f-4e28-96f9-007b814bcfd6.jpg?1624589409"
+  },
+  "Ecological Appreciation": {
+    "id": "115f3d72-1aaf-4237-91b9-389256e5e5c8",
+    "url": "https://cards.scryfall.io/normal/front/1/1/115f3d72-1aaf-4237-91b9-389256e5e5c8.jpg?1624592652"
+  },
+  "Efreet Flamepainter": {
+    "id": "d9f0731c-2a3d-4613-bffa-8b967e4f142e",
+    "url": "https://cards.scryfall.io/normal/front/d/9/d9f0731c-2a3d-4613-bffa-8b967e4f142e.jpg?1624591720"
+  },
+  "Elemental Expressionist": {
+    "id": "7473db42-905b-4fda-af8c-fd24d906b642",
+    "url": "https://cards.scryfall.io/normal/front/7/4/7473db42-905b-4fda-af8c-fd24d906b642.jpg?1627428704"
+  },
+  "Elemental Masterpiece": {
+    "id": "4331a7a6-e98e-4517-b0f9-ace379426a94",
+    "url": "https://cards.scryfall.io/normal/front/4/3/4331a7a6-e98e-4517-b0f9-ace379426a94.jpg?1627428735"
+  },
+  "Elemental Summoning": {
+    "id": "ea51991c-1589-4c62-965b-5ae8d233520b",
+    "url": "https://cards.scryfall.io/normal/front/e/a/ea51991c-1589-4c62-965b-5ae8d233520b.jpg?1637082123"
+  },
+  "Elite Spellbinder": {
+    "id": "9d3a7998-ccac-45ad-a4e9-3a2cb057f63b",
+    "url": "https://cards.scryfall.io/normal/front/9/d/9d3a7998-ccac-45ad-a4e9-3a2cb057f63b.jpg?1624589440"
+  },
+  "Emergent Sequence": {
+    "id": "04a81975-5f0e-4593-a2da-b9689f9a985f",
+    "url": "https://cards.scryfall.io/normal/front/0/4/04a81975-5f0e-4593-a2da-b9689f9a985f.jpg?1624592681"
+  },
+  "Enthusiastic Study": {
+    "id": "543c64ff-2c51-4a63-a940-dc8645717c85",
+    "url": "https://cards.scryfall.io/normal/front/5/4/543c64ff-2c51-4a63-a940-dc8645717c85.jpg?1624591748"
+  },
+  "Environmental Sciences": {
+    "id": "46b394fc-a99c-44e7-9226-da0699167541",
+    "url": "https://cards.scryfall.io/normal/front/4/6/46b394fc-a99c-44e7-9226-da0699167541.jpg?1637082125"
+  },
+  "Essence Infusion": {
+    "id": "71a48d0c-1e5b-43f2-8974-e2e5bb06310d",
+    "url": "https://cards.scryfall.io/normal/front/7/1/71a48d0c-1e5b-43f2-8974-e2e5bb06310d.jpg?1624590892"
+  },
+  "Eureka Moment": {
+    "id": "e400c9b7-c789-49dd-9f72-b9d1df03fcca",
+    "url": "https://cards.scryfall.io/normal/front/e/4/e400c9b7-c789-49dd-9f72-b9d1df03fcca.jpg?1771242160"
+  },
+  "Excavated Wall": {
+    "id": "fed54d00-b11f-4529-864c-63a114617b36",
+    "url": "https://cards.scryfall.io/normal/front/f/e/fed54d00-b11f-4529-864c-63a114617b36.jpg?1624740639"
+  },
+  "Exhilarating Elocution": {
+    "id": "8468417d-7ef5-43e0-9190-e88f3eed9e82",
+    "url": "https://cards.scryfall.io/normal/front/8/4/8468417d-7ef5-43e0-9190-e88f3eed9e82.jpg?1627428957"
+  },
+  "Expanded Anatomy": {
+    "id": "c5642b9d-0daa-4e6b-ad48-f88dd37d6574",
+    "url": "https://cards.scryfall.io/normal/front/c/5/c5642b9d-0daa-4e6b-ad48-f88dd37d6574.jpg?1637082010"
+  },
+  "Expel": {
+    "id": "be517a58-b7ee-4213-98a5-8c19e1b2def6",
+    "url": "https://cards.scryfall.io/normal/front/b/e/be517a58-b7ee-4213-98a5-8c19e1b2def6.jpg?1624589466"
+  },
+  "Explosive Welcome": {
+    "id": "122c01e6-38a6-456e-971e-9004df85ac1c",
+    "url": "https://cards.scryfall.io/normal/front/1/2/122c01e6-38a6-456e-971e-9004df85ac1c.jpg?1624591777"
+  },
+  "Exponential Growth": {
+    "id": "7c129bb7-9489-44bd-a46d-c5f738bf9d25",
+    "url": "https://cards.scryfall.io/normal/front/7/c/7c129bb7-9489-44bd-a46d-c5f738bf9d25.jpg?1624592712"
+  },
+  "Expressive Iteration": {
+    "id": "31b770cc-09e7-4c0b-b2a4-462ab4f7200d",
+    "url": "https://cards.scryfall.io/normal/front/3/1/31b770cc-09e7-4c0b-b2a4-462ab4f7200d.jpg?1678110681"
+  },
+  "Extus, Oriq Overlord // Awaken the Blood Avatar": {
+    "id": "ba09360a-067e-48a5-bdc5-a19fd066a785",
+    "url": "https://cards.scryfall.io/normal/front/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379"
+  },
+  "Eyetwitch": {
+    "id": "1f4d1bb6-cb8f-4d01-9879-0b3a0585cbf4",
+    "url": "https://cards.scryfall.io/normal/front/1/f/1f4d1bb6-cb8f-4d01-9879-0b3a0585cbf4.jpg?1624590927"
+  },
+  "Fervent Mastery": {
+    "id": "1f824caf-b32c-442a-8631-887831a57360",
+    "url": "https://cards.scryfall.io/normal/front/1/f/1f824caf-b32c-442a-8631-887831a57360.jpg?1624591811"
+  },
+  "Field Trip": {
+    "id": "f235060a-eb49-4a73-bb5f-01228c3c4070",
+    "url": "https://cards.scryfall.io/normal/front/f/2/f235060a-eb49-4a73-bb5f-01228c3c4070.jpg?1624592751"
+  },
+  "First Day of Class": {
+    "id": "091eb13d-9318-4b12-9f94-6276b11981d1",
+    "url": "https://cards.scryfall.io/normal/front/0/9/091eb13d-9318-4b12-9f94-6276b11981d1.jpg?1624591842"
+  },
+  "Flamescroll Celebrant // Revel in Silence": {
+    "id": "0dba25e3-2b4f-45d4-965f-3834bcb359ee",
+    "url": "https://cards.scryfall.io/normal/front/0/d/0dba25e3-2b4f-45d4-965f-3834bcb359ee.jpg?1739656768"
+  },
+  "Flunk": {
+    "id": "f8487884-e991-4feb-823b-90d9125edf19",
+    "url": "https://cards.scryfall.io/normal/front/f/8/f8487884-e991-4feb-823b-90d9125edf19.jpg?1624590966"
+  },
+  "Fortifying Draught": {
+    "id": "6789b717-a000-464a-a39b-32c1aeefe560",
+    "url": "https://cards.scryfall.io/normal/front/6/7/6789b717-a000-464a-a39b-32c1aeefe560.jpg?1624592776"
+  },
+  "Fractal Summoning": {
+    "id": "cc3f1f7e-eb19-49c1-a1ee-93b85ac8815c",
+    "url": "https://cards.scryfall.io/normal/front/c/c/cc3f1f7e-eb19-49c1-a1ee-93b85ac8815c.jpg?1637082130"
+  },
+  "Fracture": {
+    "id": "a11224f8-06ea-4ec3-85e6-d5c8d906840c",
+    "url": "https://cards.scryfall.io/normal/front/a/1/a11224f8-06ea-4ec3-85e6-d5c8d906840c.jpg?1627429052"
+  },
+  "Frostboil Snarl": {
+    "id": "c22ba565-da08-4957-93bb-8d266fe0b0d8",
+    "url": "https://cards.scryfall.io/normal/front/c/2/c22ba565-da08-4957-93bb-8d266fe0b0d8.jpg?1664347368"
+  },
+  "Frost Trickster": {
+    "id": "fd79c9cc-0a8c-4d88-96e2-cb177134a18d",
+    "url": "https://cards.scryfall.io/normal/front/f/d/fd79c9cc-0a8c-4d88-96e2-cb177134a18d.jpg?1624590148"
+  },
+  "Fuming Effigy": {
+    "id": "7ce76a38-fc5f-4e29-ba24-4a877179a62c",
+    "url": "https://cards.scryfall.io/normal/front/7/c/7ce76a38-fc5f-4e29-ba24-4a877179a62c.jpg?1624591876"
+  },
+  "Furycalm Snarl": {
+    "id": "53e33f37-7fd1-4431-a032-cd61b644401c",
+    "url": "https://cards.scryfall.io/normal/front/5/3/53e33f37-7fd1-4431-a032-cd61b644401c.jpg?1664347380"
+  },
+  "Galazeth Prismari": {
+    "id": "06c9158c-064b-4d12-b860-d2c1450d1897",
+    "url": "https://cards.scryfall.io/normal/front/0/6/06c9158c-064b-4d12-b860-d2c1450d1897.jpg?1627429083"
+  },
+  "Gnarled Professor": {
+    "id": "a32338e8-1f6a-49b9-bd93-26578adab6b3",
+    "url": "https://cards.scryfall.io/normal/front/a/3/a32338e8-1f6a-49b9-bd93-26578adab6b3.jpg?1624592799"
+  },
+  "Go Blank": {
+    "id": "846e8657-7435-44c6-a997-b8b156d0cd2c",
+    "url": "https://cards.scryfall.io/normal/front/8/4/846e8657-7435-44c6-a997-b8b156d0cd2c.jpg?1624590993"
+  },
+  "Golden Ratio": {
+    "id": "626fbddb-3963-4dd2-8507-9777ed66bbbc",
+    "url": "https://cards.scryfall.io/normal/front/6/2/626fbddb-3963-4dd2-8507-9777ed66bbbc.jpg?1627429110"
+  },
+  "Grinning Ignus": {
+    "id": "cfa04897-6438-45e5-a10b-2e8afaf2b9eb",
+    "url": "https://cards.scryfall.io/normal/front/c/f/cfa04897-6438-45e5-a10b-2e8afaf2b9eb.jpg?1657064689"
+  },
+  "Guiding Voice": {
+    "id": "d6fb3163-12ca-4a7f-a0c7-b8ddfc9408a0",
+    "url": "https://cards.scryfall.io/normal/front/d/6/d6fb3163-12ca-4a7f-a0c7-b8ddfc9408a0.jpg?1624589500"
+  },
+  "Hall Monitor": {
+    "id": "02fdc551-0b22-49f4-8765-143ad82f16a3",
+    "url": "https://cards.scryfall.io/normal/front/0/2/02fdc551-0b22-49f4-8765-143ad82f16a3.jpg?1624591927"
+  },
+  "Hall of Oracles": {
+    "id": "7642dddd-4461-46dd-b396-9e0a89f7232e",
+    "url": "https://cards.scryfall.io/normal/front/7/6/7642dddd-4461-46dd-b396-9e0a89f7232e.jpg?1624740927"
+  },
+  "Harness Infinity": {
+    "id": "f74120ce-9f11-449f-bb72-04fe2a27a9f6",
+    "url": "https://cards.scryfall.io/normal/front/f/7/f74120ce-9f11-449f-bb72-04fe2a27a9f6.jpg?1627429142"
+  },
+  "Heated Debate": {
+    "id": "f40c88e2-28ed-4e5b-bcb3-4397d6a15a6f",
+    "url": "https://cards.scryfall.io/normal/front/f/4/f40c88e2-28ed-4e5b-bcb3-4397d6a15a6f.jpg?1624591954"
+  },
+  "Hofri Ghostforge": {
+    "id": "bd8deecf-eded-418b-ac4c-5c3e8f54e86d",
+    "url": "https://cards.scryfall.io/normal/front/b/d/bd8deecf-eded-418b-ac4c-5c3e8f54e86d.jpg?1627429212"
+  },
+  "Honor Troll": {
+    "id": "a9c6a6b9-f00c-46a5-8dab-796483e3a262",
+    "url": "https://cards.scryfall.io/normal/front/a/9/a9c6a6b9-f00c-46a5-8dab-796483e3a262.jpg?1624592827"
+  },
+  "Humiliate": {
+    "id": "dc3ae8cb-fbdb-45a8-83c2-cbf4aff01f90",
+    "url": "https://cards.scryfall.io/normal/front/d/c/dc3ae8cb-fbdb-45a8-83c2-cbf4aff01f90.jpg?1627429247"
+  },
+  "Hunt for Specimens": {
+    "id": "8ff0f47f-75cb-42b0-ba4d-78522cad9861",
+    "url": "https://cards.scryfall.io/normal/front/8/f/8ff0f47f-75cb-42b0-ba4d-78522cad9861.jpg?1624591017"
+  },
+  "Igneous Inspiration": {
+    "id": "5781ad7b-dc1b-4cc1-9e72-6e714b9ba1de",
+    "url": "https://cards.scryfall.io/normal/front/5/7/5781ad7b-dc1b-4cc1-9e72-6e714b9ba1de.jpg?1624591976"
+  },
+  "Illuminate History": {
+    "id": "98739789-80b5-4224-a2e4-09e00654aa9d",
+    "url": "https://cards.scryfall.io/normal/front/9/8/98739789-80b5-4224-a2e4-09e00654aa9d.jpg?1637082308"
+  },
+  "Illustrious Historian": {
+    "id": "56cc4e7d-3b06-4938-9023-d903912350c0",
+    "url": "https://cards.scryfall.io/normal/front/5/6/56cc4e7d-3b06-4938-9023-d903912350c0.jpg?1624592062"
+  },
+  "Infuse with Vitality": {
+    "id": "840600a9-3e78-48a6-b75b-860446b82c1b",
+    "url": "https://cards.scryfall.io/normal/front/8/4/840600a9-3e78-48a6-b75b-860446b82c1b.jpg?1627429284"
+  },
+  "Ingenious Mastery": {
+    "id": "2386d020-a9ae-4d54-b5e4-f2cb5a7298cc",
+    "url": "https://cards.scryfall.io/normal/front/2/3/2386d020-a9ae-4d54-b5e4-f2cb5a7298cc.jpg?1624590178"
+  },
+  "Inkling Summoning": {
+    "id": "04a8a5b8-9743-4d1a-89e9-61bdf180b2e0",
+    "url": "https://cards.scryfall.io/normal/front/0/4/04a8a5b8-9743-4d1a-89e9-61bdf180b2e0.jpg?1637082323"
+  },
+  "Introduction to Annihilation": {
+    "id": "b0bc4682-bcaf-4f51-be0b-9f2851a16e3b",
+    "url": "https://cards.scryfall.io/normal/front/b/0/b0bc4682-bcaf-4f51-be0b-9f2851a16e3b.jpg?1637082326"
+  },
+  "Introduction to Prophecy": {
+    "id": "7820923e-bad2-4d6a-92b3-97b9737d2ca9",
+    "url": "https://cards.scryfall.io/normal/front/7/8/7820923e-bad2-4d6a-92b3-97b9737d2ca9.jpg?1637082328"
+  },
+  "Jadzi, Oracle of Arcavios // Journey to the Oracle": {
+    "id": "d7148d24-373e-4485-860b-c3429c2337f2",
+    "url": "https://cards.scryfall.io/normal/front/d/7/d7148d24-373e-4485-860b-c3429c2337f2.jpg?1624593477"
+  },
+  "Karok Wrangler": {
+    "id": "74729320-f6ee-4176-9463-397d6e477d7a",
+    "url": "https://cards.scryfall.io/normal/front/7/4/74729320-f6ee-4176-9463-397d6e477d7a.jpg?1624592906"
+  },
+  "Kasmina, Enigma Sage": {
+    "id": "178bf300-38cf-4ab2-9e66-6fcaa112b649",
+    "url": "https://cards.scryfall.io/normal/front/1/7/178bf300-38cf-4ab2-9e66-6fcaa112b649.jpg?1627429348"
+  },
+  "Kelpie Guide": {
+    "id": "0112ebfb-55ad-401c-9dc5-ffd829f5b5bf",
+    "url": "https://cards.scryfall.io/normal/front/0/1/0112ebfb-55ad-401c-9dc5-ffd829f5b5bf.jpg?1624590206"
+  },
+  "Kianne, Dean of Substance // Imbraham, Dean of Theory": {
+    "id": "8b45dc40-6827-46a7-a9b7-802be698d053",
+    "url": "https://cards.scryfall.io/normal/front/8/b/8b45dc40-6827-46a7-a9b7-802be698d053.jpg?1634060520"
+  },
+  "Killian, Ink Duelist": {
+    "id": "23ef4f09-2aa1-4a03-b2e2-66d1522f1e46",
+    "url": "https://cards.scryfall.io/normal/front/2/3/23ef4f09-2aa1-4a03-b2e2-66d1522f1e46.jpg?1627429378"
+  },
+  "Lash of Malice": {
+    "id": "af3da2c6-29ed-4563-8bae-d1cc05df8897",
+    "url": "https://cards.scryfall.io/normal/front/a/f/af3da2c6-29ed-4563-8bae-d1cc05df8897.jpg?1624591043"
+  },
+  "Leech Fanatic": {
+    "id": "307f9fe7-241b-4eb6-a059-be5384b4a1b6",
+    "url": "https://cards.scryfall.io/normal/front/3/0/307f9fe7-241b-4eb6-a059-be5384b4a1b6.jpg?1624591070"
+  },
+  "Leonin Lightscribe": {
+    "id": "2a465d7b-398c-444b-9eae-331ea2513f6d",
+    "url": "https://cards.scryfall.io/normal/front/2/a/2a465d7b-398c-444b-9eae-331ea2513f6d.jpg?1624589525"
+  },
+  "Letter of Acceptance": {
+    "id": "34750231-34aa-401c-b192-47b56588923a",
+    "url": "https://cards.scryfall.io/normal/front/3/4/34750231-34aa-401c-b192-47b56588923a.jpg?1624740664"
+  },
+  "Leyline Invocation": {
+    "id": "4edfbed0-0c0d-4aa5-bfe0-5268aff0f958",
+    "url": "https://cards.scryfall.io/normal/front/4/e/4edfbed0-0c0d-4aa5-bfe0-5268aff0f958.jpg?1624592930"
+  },
+  "Lorehold Apprentice": {
+    "id": "048157c6-4626-4881-ba19-deddd13622dc",
+    "url": "https://cards.scryfall.io/normal/front/0/4/048157c6-4626-4881-ba19-deddd13622dc.jpg?1627429424"
+  },
+  "Lorehold Campus": {
+    "id": "d35461cf-becf-4399-8329-64b4496b7fc2",
+    "url": "https://cards.scryfall.io/normal/front/d/3/d35461cf-becf-4399-8329-64b4496b7fc2.jpg?1707961343"
+  },
+  "Lorehold Command": {
+    "id": "e4f0885f-1049-4a19-853d-f4e6d4bec29e",
+    "url": "https://cards.scryfall.io/normal/front/e/4/e4f0885f-1049-4a19-853d-f4e6d4bec29e.jpg?1627429447"
+  },
+  "Lorehold Excavation": {
+    "id": "43105beb-46f3-4914-8222-4907bd76d48f",
+    "url": "https://cards.scryfall.io/normal/front/4/3/43105beb-46f3-4914-8222-4907bd76d48f.jpg?1627429478"
+  },
+  "Lorehold Pledgemage": {
+    "id": "79b88b38-6b5a-4a89-80ca-add79c11e8b9",
+    "url": "https://cards.scryfall.io/normal/front/7/9/79b88b38-6b5a-4a89-80ca-add79c11e8b9.jpg?1627429506"
+  },
+  "Maelstrom Muse": {
+    "id": "5516e81e-16ea-411c-9df0-ed3b03670220",
+    "url": "https://cards.scryfall.io/normal/front/5/5/5516e81e-16ea-411c-9df0-ed3b03670220.jpg?1627429544"
+  },
+  "Mage Duel": {
+    "id": "92325638-0321-4409-8910-2287c64c182e",
+    "url": "https://cards.scryfall.io/normal/front/9/2/92325638-0321-4409-8910-2287c64c182e.jpg?1624592958"
+  },
+  "Mage Hunter": {
+    "id": "56fcbe4a-2d98-4fa9-a6c3-e28255171a4d",
+    "url": "https://cards.scryfall.io/normal/front/5/6/56fcbe4a-2d98-4fa9-a6c3-e28255171a4d.jpg?1624591098"
+  },
+  "Mage Hunters' Onslaught": {
+    "id": "ed85140f-f0e0-4ac1-a67f-26d17ff95e31",
+    "url": "https://cards.scryfall.io/normal/front/e/d/ed85140f-f0e0-4ac1-a67f-26d17ff95e31.jpg?1624591129"
+  },
+  "Magma Opus": {
+    "id": "27c914a3-2294-4feb-9450-c012cfd307a6",
+    "url": "https://cards.scryfall.io/normal/front/2/7/27c914a3-2294-4feb-9450-c012cfd307a6.jpg?1627429585"
+  },
+  "Make Your Mark": {
+    "id": "7e937830-3804-44e8-b9d0-3e5f5cf39eab",
+    "url": "https://cards.scryfall.io/normal/front/7/e/7e937830-3804-44e8-b9d0-3e5f5cf39eab.jpg?1627429633"
+  },
+  "Manifestation Sage": {
+    "id": "76fc5cd2-fbb0-4d13-9089-0292b356de48",
+    "url": "https://cards.scryfall.io/normal/front/7/6/76fc5cd2-fbb0-4d13-9089-0292b356de48.jpg?1627429666"
+  },
+  "Mascot Exhibition": {
+    "id": "2047592c-739c-41dd-b3e8-31ae1c7688ab",
+    "url": "https://cards.scryfall.io/normal/front/2/0/2047592c-739c-41dd-b3e8-31ae1c7688ab.jpg?1637082330"
+  },
+  "Mascot Interception": {
+    "id": "8f0ea66f-1756-4b0d-8ccc-3b3a7370b531",
+    "url": "https://cards.scryfall.io/normal/front/8/f/8f0ea66f-1756-4b0d-8ccc-3b3a7370b531.jpg?1624592085"
+  },
+  "Master Symmetrist": {
+    "id": "255cdc39-6ad8-4831-9718-6712cb17654c",
+    "url": "https://cards.scryfall.io/normal/front/2/5/255cdc39-6ad8-4831-9718-6712cb17654c.jpg?1666629845"
+  },
+  "Mavinda, Students' Advocate": {
+    "id": "8b3d521f-31cd-4bd2-b6b6-771c79252789",
+    "url": "https://cards.scryfall.io/normal/front/8/b/8b3d521f-31cd-4bd2-b6b6-771c79252789.jpg?1624589549"
+  },
+  "Mentor's Guidance": {
+    "id": "0dbb1230-a465-4499-bb9c-35a06712a08b",
+    "url": "https://cards.scryfall.io/normal/front/0/d/0dbb1230-a465-4499-bb9c-35a06712a08b.jpg?1624590229"
+  },
+  "Mercurial Transformation": {
+    "id": "adcbe115-5482-4e5a-95bb-8ccbb01d3547",
+    "url": "https://cards.scryfall.io/normal/front/a/d/adcbe115-5482-4e5a-95bb-8ccbb01d3547.jpg?1637082344"
+  },
+  "Mila, Crafty Companion // Lukka, Wayward Bonder": {
+    "id": "8e4e0f81-f92b-4a3a-bb29-adcc3de211b4",
+    "url": "https://cards.scryfall.io/normal/front/8/e/8e4e0f81-f92b-4a3a-bb29-adcc3de211b4.jpg?1748260747"
+  },
+  "Moldering Karok": {
+    "id": "70c2ef30-0db5-4ef5-999c-7ffa48769421",
+    "url": "https://cards.scryfall.io/normal/front/7/0/70c2ef30-0db5-4ef5-999c-7ffa48769421.jpg?1627429702"
+  },
+  "Mortality Spear": {
+    "id": "f1f39fe7-dc12-49c9-80ac-4135dc1f8f08",
+    "url": "https://cards.scryfall.io/normal/front/f/1/f1f39fe7-dc12-49c9-80ac-4135dc1f8f08.jpg?1627429727"
+  },
+  "Multiple Choice": {
+    "id": "08c9890f-7081-42f6-89eb-35c83911b443",
+    "url": "https://cards.scryfall.io/normal/front/0/8/08c9890f-7081-42f6-89eb-35c83911b443.jpg?1624661911"
+  },
+  "Necroblossom Snarl": {
+    "id": "b0aed316-c28a-4c1a-a0a3-ab75ceba3ee7",
+    "url": "https://cards.scryfall.io/normal/front/b/0/b0aed316-c28a-4c1a-a0a3-ab75ceba3ee7.jpg?1664347382"
+  },
+  "Necrotic Fumes": {
+    "id": "5e1b68a4-fb8d-4b59-b049-73505296f775",
+    "url": "https://cards.scryfall.io/normal/front/5/e/5e1b68a4-fb8d-4b59-b049-73505296f775.jpg?1637082347"
+  },
+  "Needlethorn Drake": {
+    "id": "9c0cf2c4-723e-46c4-b2aa-4c957177209a",
+    "url": "https://cards.scryfall.io/normal/front/9/c/9c0cf2c4-723e-46c4-b2aa-4c957177209a.jpg?1627429768"
+  },
+  "Novice Dissector": {
+    "id": "4c4677bc-736b-4bf2-851e-b158718a4224",
+    "url": "https://cards.scryfall.io/normal/front/4/c/4c4677bc-736b-4bf2-851e-b158718a4224.jpg?1681639730"
+  },
+  "Oggyar Battle-Seer": {
+    "id": "a38329f1-af6e-47b8-86e4-f2a39e1edbf8",
+    "url": "https://cards.scryfall.io/normal/front/a/3/a38329f1-af6e-47b8-86e4-f2a39e1edbf8.jpg?1627429796"
+  },
+  "Oriq Loremage": {
+    "id": "25214a91-2f64-46ee-9834-7fbf684800f7",
+    "url": "https://cards.scryfall.io/normal/front/2/5/25214a91-2f64-46ee-9834-7fbf684800f7.jpg?1624591221"
+  },
+  "Overgrown Arch": {
+    "id": "a71dddf5-8f72-4018-9cc8-5f63a17f1ee5",
+    "url": "https://cards.scryfall.io/normal/front/a/7/a71dddf5-8f72-4018-9cc8-5f63a17f1ee5.jpg?1624593012"
+  },
+  "Owlin Shieldmage": {
+    "id": "d3350367-42bd-44af-be13-ad31c002f8ac",
+    "url": "https://cards.scryfall.io/normal/front/d/3/d3350367-42bd-44af-be13-ad31c002f8ac.jpg?1627429830"
+  },
+  "Pestilent Cauldron // Restorative Burst": {
+    "id": "aaa1e6be-08cc-4ccc-b2de-3511613e4fd0",
+    "url": "https://cards.scryfall.io/normal/front/a/a/aaa1e6be-08cc-4ccc-b2de-3511613e4fd0.jpg?1739657898"
+  },
+  "Adherent of Hope": {
+    "id": "ce2bc7ad-458d-445e-a0a9-7897b596fdd0",
+    "url": "https://cards.scryfall.io/normal/front/c/e/ce2bc7ad-458d-445e-a0a9-7897b596fdd0.jpg?1596250018"
+  },
+  "Alchemist's Gift": {
+    "id": "6e4c9574-1ee3-461e-848f-8f02c6a8b7ee",
+    "url": "https://cards.scryfall.io/normal/front/6/e/6e4c9574-1ee3-461e-848f-8f02c6a8b7ee.jpg?1594735950"
+  },
+  "Alpine Houndmaster": {
+    "id": "43224e74-2c51-40bd-bc34-f66e990a3e33",
+    "url": "https://cards.scryfall.io/normal/front/4/3/43224e74-2c51-40bd-bc34-f66e990a3e33.jpg?1594737342"
+  },
+  "Alpine Watchdog": {
+    "id": "c392a7e5-6ff5-4c2f-9590-f8811a724f44",
+    "url": "https://cards.scryfall.io/normal/front/c/3/c392a7e5-6ff5-4c2f-9590-f8811a724f44.jpg?1594734679"
+  },
+  "Angelic Ascension": {
+    "id": "e8cca776-b0e4-4cd2-815f-36c1f86cf497",
+    "url": "https://cards.scryfall.io/normal/front/e/8/e8cca776-b0e4-4cd2-815f-36c1f86cf497.jpg?1594734706"
+  },
+  "Animal Sanctuary": {
+    "id": "f8d7a2c7-666d-4fc6-bac8-ef8eb66e355d",
+    "url": "https://cards.scryfall.io/normal/front/f/8/f8d7a2c7-666d-4fc6-bac8-ef8eb66e355d.jpg?1594737594"
+  },
+  "Anointed Chorister": {
+    "id": "9c977c67-b0c0-40b0-b129-28de094aaf40",
+    "url": "https://cards.scryfall.io/normal/front/9/c/9c977c67-b0c0-40b0-b129-28de094aaf40.jpg?1594734721"
+  },
+  "Archfiend's Vessel": {
+    "id": "83437022-ba00-4370-83c2-ce1260336fcc",
+    "url": "https://cards.scryfall.io/normal/front/8/3/83437022-ba00-4370-83c2-ce1260336fcc.jpg?1594735964"
+  },
+  "Aven Gagglemaster": {
+    "id": "c5b57247-81cc-44ec-b5a9-0702111a98a8",
+    "url": "https://cards.scryfall.io/normal/front/c/5/c5b57247-81cc-44ec-b5a9-0702111a98a8.jpg?1594734738"
+  },
+  "Azusa, Lost but Seeking": {
+    "id": "0b8aff2c-1f7b-4507-b914-53f8c4706b3d",
+    "url": "https://cards.scryfall.io/normal/front/0/b/0b8aff2c-1f7b-4507-b914-53f8c4706b3d.jpg?1596259277"
+  },
+  "Bad Deal": {
+    "id": "7a3f8bc2-ef66-474f-92a3-9c4df1670cec",
+    "url": "https://cards.scryfall.io/normal/front/7/a/7a3f8bc2-ef66-474f-92a3-9c4df1670cec.jpg?1594735984"
+  },
+  "Baneslayer Angel": {
+    "id": "4bd3014b-94bb-4a9f-92cf-239a2dcc7e97",
+    "url": "https://cards.scryfall.io/normal/front/4/b/4bd3014b-94bb-4a9f-92cf-239a2dcc7e97.jpg?1594734758"
+  },
+  "Barrin, Tolarian Archmage": {
+    "id": "cb078fbb-beb9-4c0b-be93-ed1e73e6f8d8",
+    "url": "https://cards.scryfall.io/normal/front/c/b/cb078fbb-beb9-4c0b-be93-ed1e73e6f8d8.jpg?1594735404"
+  },
+  "Basri, Devoted Paladin": {
+    "id": "2688b45d-9d74-4d9f-9a63-29c82b48d64f",
+    "url": "https://cards.scryfall.io/normal/front/2/6/2688b45d-9d74-4d9f-9a63-29c82b48d64f.jpg?1596168674"
+  },
+  "Basri Ket": {
+    "id": "98c85699-2daf-4e87-a3be-465d02bd64bb",
+    "url": "https://cards.scryfall.io/normal/front/9/8/98c85699-2daf-4e87-a3be-465d02bd64bb.jpg?1594734775"
+  },
+  "Basri's Acolyte": {
+    "id": "08d1dd97-2675-4953-ab95-d47d23abfe05",
+    "url": "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1594734783"
+  },
+  "Basri's Aegis": {
+    "id": "577657ed-162f-4104-b0af-ee9733e90f20",
+    "url": "https://cards.scryfall.io/normal/front/5/7/577657ed-162f-4104-b0af-ee9733e90f20.jpg?1596250020"
+  },
+  "Basri's Lieutenant": {
+    "id": "74b1eae0-1bf8-4922-a9e3-45c01ece9005",
+    "url": "https://cards.scryfall.io/normal/front/7/4/74b1eae0-1bf8-4922-a9e3-45c01ece9005.jpg?1594734796"
+  },
+  "Basri's Solidarity": {
+    "id": "c2e6fdc0-bdd4-4bba-b8f1-bbc8dfad038e",
+    "url": "https://cards.scryfall.io/normal/front/c/2/c2e6fdc0-bdd4-4bba-b8f1-bbc8dfad038e.jpg?1594734810"
+  },
+  "Battle-Rattle Shaman": {
+    "id": "faca827d-0b35-48d7-acd6-13ecacc32b82",
+    "url": "https://cards.scryfall.io/normal/front/f/a/faca827d-0b35-48d7-acd6-13ecacc32b82.jpg?1594736472"
+  },
+  "Bloodfell Caves": {
+    "id": "5d89a0e2-1163-4a11-b0df-deef2e6c8108",
+    "url": "https://cards.scryfall.io/normal/front/5/d/5d89a0e2-1163-4a11-b0df-deef2e6c8108.jpg?1594737607"
+  },
+  "Blood Glutton": {
+    "id": "28ff52a2-4223-4551-b388-b4dd21cc1437",
+    "url": "https://cards.scryfall.io/normal/front/2/8/28ff52a2-4223-4551-b388-b4dd21cc1437.jpg?1594736007"
+  },
+  "Blossoming Sands": {
+    "id": "c8483586-9a07-4f54-a390-7dd97fcea5cb",
+    "url": "https://cards.scryfall.io/normal/front/c/8/c8483586-9a07-4f54-a390-7dd97fcea5cb.jpg?1594737617"
+  },
+  "Bolt Hound": {
+    "id": "9f8cf3f9-4e3b-4af2-b5ef-a97eb1d2b674",
+    "url": "https://cards.scryfall.io/normal/front/9/f/9f8cf3f9-4e3b-4af2-b5ef-a97eb1d2b674.jpg?1594736483"
+  },
+  "Bone Pit Brute": {
+    "id": "6075e0a3-a0ab-4a11-8ad2-7dabb071d309",
+    "url": "https://cards.scryfall.io/normal/front/6/0/6075e0a3-a0ab-4a11-8ad2-7dabb071d309.jpg?1594736498"
+  },
+  "Brash Taunter": {
+    "id": "ebb5e613-a803-42f3-840a-7089ac6b7e3d",
+    "url": "https://cards.scryfall.io/normal/front/e/b/ebb5e613-a803-42f3-840a-7089ac6b7e3d.jpg?1594736510"
+  },
+  "Burlfist Oak": {
+    "id": "3d0ec3bd-d894-4861-abcb-7b2e4f4de05c",
+    "url": "https://cards.scryfall.io/normal/front/3/d/3d0ec3bd-d894-4861-abcb-7b2e4f4de05c.jpg?1594736896"
+  },
+  "Burn Bright": {
+    "id": "f19b4a80-41e1-4c5f-869a-682f08543f12",
+    "url": "https://cards.scryfall.io/normal/front/f/1/f19b4a80-41e1-4c5f-869a-682f08543f12.jpg?1594736518"
+  },
+  "Caged Zombie": {
+    "id": "f8067745-35b6-4abd-9ae9-712159a26c89",
+    "url": "https://cards.scryfall.io/normal/front/f/8/f8067745-35b6-4abd-9ae9-712159a26c89.jpg?1594736024"
+  },
+  "Cancel": {
+    "id": "59e14910-ee2e-49ae-855e-46a8ab6cad82",
+    "url": "https://cards.scryfall.io/normal/front/5/9/59e14910-ee2e-49ae-855e-46a8ab6cad82.jpg?1594735420"
+  },
+  "Canopy Stalker": {
+    "id": "a3f6a13a-ab38-49d1-8712-f9c9135a23c8",
+    "url": "https://cards.scryfall.io/normal/front/a/3/a3f6a13a-ab38-49d1-8712-f9c9135a23c8.jpg?1594736903"
+  },
+  "Capture Sphere": {
+    "id": "f5ed9f08-56e8-4e24-aae2-05270d7c1ba8",
+    "url": "https://cards.scryfall.io/normal/front/f/5/f5ed9f08-56e8-4e24-aae2-05270d7c1ba8.jpg?1594735438"
+  },
+  "Carrion Grub": {
+    "id": "31df3d95-bbdb-449d-9601-4fa844c3c640",
+    "url": "https://cards.scryfall.io/normal/front/3/1/31df3d95-bbdb-449d-9601-4fa844c3c640.jpg?1594736036"
+  },
+  "Celestial Enforcer": {
+    "id": "46666fba-d4a7-4687-8747-a42e4c6d853e",
+    "url": "https://cards.scryfall.io/normal/front/4/6/46666fba-d4a7-4687-8747-a42e4c6d853e.jpg?1594734826"
+  },
+  "Chandra, Flame's Catalyst": {
+    "id": "1e49ce44-5286-4310-88c2-f8a1402b113b",
+    "url": "https://cards.scryfall.io/normal/front/1/e/1e49ce44-5286-4310-88c2-f8a1402b113b.jpg?1596168039"
+  },
+  "Chandra, Heart of Fire": {
+    "id": "a4c3ca8c-c77c-43b8-84ad-796313ecc813",
+    "url": "https://cards.scryfall.io/normal/front/a/4/a4c3ca8c-c77c-43b8-84ad-796313ecc813.jpg?1594752360"
+  },
+  "Chandra's Firemaw": {
+    "id": "76cf0b50-155f-4e65-9e48-88b378ad93a1",
+    "url": "https://cards.scryfall.io/normal/front/7/6/76cf0b50-155f-4e65-9e48-88b378ad93a1.jpg?1596250195"
+  },
+  "Chandra's Incinerator": {
+    "id": "ed875705-b7b6-4464-b16f-61629ffed04f",
+    "url": "https://cards.scryfall.io/normal/front/e/d/ed875705-b7b6-4464-b16f-61629ffed04f.jpg?1594736535"
+  },
+  "Chandra's Magmutt": {
+    "id": "91d3e366-4da5-42c8-bbd5-a0c178c0da28",
+    "url": "https://cards.scryfall.io/normal/front/9/1/91d3e366-4da5-42c8-bbd5-a0c178c0da28.jpg?1594736548"
+  },
+  "Chandra's Pyreling": {
+    "id": "e7744fcf-2336-489d-bc05-f3fce78713a9",
+    "url": "https://cards.scryfall.io/normal/front/e/7/e7744fcf-2336-489d-bc05-f3fce78713a9.jpg?1594736559"
+  },
+  "Chromatic Orrery": {
+    "id": "3af78d76-ad5c-44ba-880d-b834bcde5398",
+    "url": "https://cards.scryfall.io/normal/front/3/a/3af78d76-ad5c-44ba-880d-b834bcde5398.jpg?1594737470"
+  },
+  "Chrome Replicator": {
+    "id": "1e01bcb4-e823-4da5-b433-e75be3356367",
+    "url": "https://cards.scryfall.io/normal/front/1/e/1e01bcb4-e823-4da5-b433-e75be3356367.jpg?1594737478"
+  },
+  "Colossal Dreadmaw": {
+    "id": "8059c52b-5d25-4052-b48a-e9e219a7a546",
+    "url": "https://cards.scryfall.io/normal/front/8/0/8059c52b-5d25-4052-b48a-e9e219a7a546.jpg?1594736914"
+  },
+  "Conclave Mentor": {
+    "id": "a328a93a-e720-46d5-a190-cc65d1c90cea",
+    "url": "https://cards.scryfall.io/normal/front/a/3/a328a93a-e720-46d5-a190-cc65d1c90cea.jpg?1594737354"
+  },
+  "Concordia Pegasus": {
+    "id": "600d3517-e370-47ae-ac4f-c7ef8995a89c",
+    "url": "https://cards.scryfall.io/normal/front/6/0/600d3517-e370-47ae-ac4f-c7ef8995a89c.jpg?1594734840"
+  },
+  "Conspicuous Snoop": {
+    "id": "5d878dab-5ed2-4ef3-b2c7-472290892854",
+    "url": "https://cards.scryfall.io/normal/front/5/d/5d878dab-5ed2-4ef3-b2c7-472290892854.jpg?1616182104"
+  },
+  "Containment Priest": {
+    "id": "a24e8dba-5c86-4e32-8a52-61402f7fe9f0",
+    "url": "https://cards.scryfall.io/normal/front/a/2/a24e8dba-5c86-4e32-8a52-61402f7fe9f0.jpg?1594734854"
+  },
+  "Crash Through": {
+    "id": "8257c205-00cd-4d41-bd58-098575ea2343",
+    "url": "https://cards.scryfall.io/normal/front/8/2/8257c205-00cd-4d41-bd58-098575ea2343.jpg?1594736580"
+  },
+  "Crypt Lurker": {
+    "id": "c0bba170-5176-4fab-a10d-e23d70128875",
+    "url": "https://cards.scryfall.io/normal/front/c/0/c0bba170-5176-4fab-a10d-e23d70128875.jpg?1594736052"
+  },
+  "Cultivate": {
+    "id": "4a433310-3fe2-4156-864d-7a6b2638340b",
+    "url": "https://cards.scryfall.io/normal/front/4/a/4a433310-3fe2-4156-864d-7a6b2638340b.jpg?1594736923"
+  },
+  "Daybreak Charger": {
+    "id": "ff87a671-054f-4357-8a62-450d36559a1b",
+    "url": "https://cards.scryfall.io/normal/front/f/f/ff87a671-054f-4357-8a62-450d36559a1b.jpg?1594734866"
+  },
+  "Deathbloom Thallid": {
+    "id": "dc4513e1-9978-44ce-b7a5-4e2b5b63ad9e",
+    "url": "https://cards.scryfall.io/normal/front/d/c/dc4513e1-9978-44ce-b7a5-4e2b5b63ad9e.jpg?1594736070"
+  },
+  "Defiant Strike": {
+    "id": "5c23869b-c99a-49dd-9e29-fcc0eb63fad1",
+    "url": "https://cards.scryfall.io/normal/front/5/c/5c23869b-c99a-49dd-9e29-fcc0eb63fad1.jpg?1594734879"
+  },
+  "Demonic Embrace": {
+    "id": "56149192-ddc1-45a4-b7aa-be311da5fe8e",
+    "url": "https://cards.scryfall.io/normal/front/5/6/56149192-ddc1-45a4-b7aa-be311da5fe8e.jpg?1594736081"
+  },
+  "Destructive Tampering": {
+    "id": "bfe6a3a9-8d62-47c4-a78b-9baa9133a540",
+    "url": "https://cards.scryfall.io/normal/front/b/f/bfe6a3a9-8d62-47c4-a78b-9baa9133a540.jpg?1594736589"
+  },
+  "Dire Fleet Warmonger": {
+    "id": "1fa781df-859f-4346-9424-b3713b17e1f6",
+    "url": "https://cards.scryfall.io/normal/front/1/f/1fa781df-859f-4346-9424-b3713b17e1f6.jpg?1594737366"
+  },
+  "Discontinuity": {
+    "id": "b33ba0a8-04e9-4df6-af20-a3ca4470cdcc",
+    "url": "https://cards.scryfall.io/normal/front/b/3/b33ba0a8-04e9-4df6-af20-a3ca4470cdcc.jpg?1594735451"
+  },
+  "Dismal Backwater": {
+    "id": "b3b1afa0-9bb5-4566-a85e-86a5c03e0187",
+    "url": "https://cards.scryfall.io/normal/front/b/3/b3b1afa0-9bb5-4566-a85e-86a5c03e0187.jpg?1594737627"
+  },
+  "Double Vision": {
+    "id": "754b77b4-4cc4-4e49-a7a4-667401e7e063",
+    "url": "https://cards.scryfall.io/normal/front/7/5/754b77b4-4cc4-4e49-a7a4-667401e7e063.jpg?1594736598"
+  },
+  "Drowsing Tyrannodon": {
+    "id": "288b056a-ea80-4fdc-990d-0ee1e9a7bf64",
+    "url": "https://cards.scryfall.io/normal/front/2/8/288b056a-ea80-4fdc-990d-0ee1e9a7bf64.jpg?1616399654"
+  },
+  "Dub": {
+    "id": "c3de35fd-425d-46b8-bc7d-c2f05d86858d",
+    "url": "https://cards.scryfall.io/normal/front/c/3/c3de35fd-425d-46b8-bc7d-c2f05d86858d.jpg?1594734896"
+  },
+  "Duress": {
+    "id": "49c07ea0-27ff-46fb-a41f-3e378c977b5d",
+    "url": "https://cards.scryfall.io/normal/front/4/9/49c07ea0-27ff-46fb-a41f-3e378c977b5d.jpg?1594736092"
+  },
+  "Elder Gargaroth": {
+    "id": "d51269cf-a333-4a64-94cd-245798d840d2",
+    "url": "https://cards.scryfall.io/normal/front/d/5/d51269cf-a333-4a64-94cd-245798d840d2.jpg?1594736944"
+  },
+  "Eliminate": {
+    "id": "f8eb4087-3a4c-4de8-8e29-f4cd71acb180",
+    "url": "https://cards.scryfall.io/normal/front/f/8/f8eb4087-3a4c-4de8-8e29-f4cd71acb180.jpg?1594736106"
+  },
+  "Enthralling Hold": {
+    "id": "d3bc7176-abe0-47cf-a242-cf22a1f590be",
+    "url": "https://cards.scryfall.io/normal/front/d/3/d3bc7176-abe0-47cf-a242-cf22a1f590be.jpg?1594735471"
+  },
+  "Epitaph Golem": {
+    "id": "7988fd09-32a4-406b-8e7f-e77393d680a7",
+    "url": "https://cards.scryfall.io/normal/front/7/9/7988fd09-32a4-406b-8e7f-e77393d680a7.jpg?1594737486"
+  },
+  "Experimental Overload": {
+    "id": "6f1bace4-a327-4eb6-a6ef-8394e76c06b7",
+    "url": "https://cards.scryfall.io/normal/front/6/f/6f1bace4-a327-4eb6-a6ef-8394e76c06b7.jpg?1594737377"
+  },
+  "Fabled Passage": {
+    "id": "d313d051-7295-4884-8cbf-f2f835fd45f4",
+    "url": "https://cards.scryfall.io/normal/front/d/3/d313d051-7295-4884-8cbf-f2f835fd45f4.jpg?1594737636"
+  },
+  "Faith's Fetters": {
+    "id": "8e742d49-e6f0-4016-ba4c-11878fad89cb",
+    "url": "https://cards.scryfall.io/normal/front/8/e/8e742d49-e6f0-4016-ba4c-11878fad89cb.jpg?1594734908"
+  },
+  "Falconer Adept": {
+    "id": "fb4733e6-6fe2-4460-ac9f-82feb583d790",
+    "url": "https://cards.scryfall.io/normal/front/f/b/fb4733e6-6fe2-4460-ac9f-82feb583d790.jpg?1594734928"
+  },
+  "Feat of Resistance": {
+    "id": "73148b3b-73d3-4f57-8b67-1e91fbe112b9",
+    "url": "https://cards.scryfall.io/normal/front/7/3/73148b3b-73d3-4f57-8b67-1e91fbe112b9.jpg?1595640319"
+  },
+  "Feline Sovereign": {
+    "id": "84a9485a-d356-4cbe-b257-b62008a21328",
+    "url": "https://cards.scryfall.io/normal/front/8/4/84a9485a-d356-4cbe-b257-b62008a21328.jpg?1594736953"
+  },
+  "Fetid Imp": {
+    "id": "56a95546-c45a-4da5-b1e8-d5658b5b7d53",
+    "url": "https://cards.scryfall.io/normal/front/5/6/56a95546-c45a-4da5-b1e8-d5658b5b7d53.jpg?1594736117"
+  },
+  "Fierce Empath": {
+    "id": "17bc2af0-5a1d-4319-a285-6a15cf86be83",
+    "url": "https://cards.scryfall.io/normal/front/1/7/17bc2af0-5a1d-4319-a285-6a15cf86be83.jpg?1594736962"
+  },
+  "Fiery Emancipation": {
+    "id": "0b12e4b7-2c45-4795-94d3-901f89b8f290",
+    "url": "https://cards.scryfall.io/normal/front/0/b/0b12e4b7-2c45-4795-94d3-901f89b8f290.jpg?1594736606"
+  },
+  "Finishing Blow": {
+    "id": "2b85a552-2119-4d9c-b7c1-c09c2d9f2f38",
+    "url": "https://cards.scryfall.io/normal/front/2/b/2b85a552-2119-4d9c-b7c1-c09c2d9f2f38.jpg?1594736130"
+  },
+  "Forgotten Sentinel": {
+    "id": "3bd39a06-c53a-42c2-b2df-028358f03406",
+    "url": "https://cards.scryfall.io/normal/front/3/b/3bd39a06-c53a-42c2-b2df-028358f03406.jpg?1594737496"
+  },
+  "Frantic Inventory": {
+    "id": "8f14abb0-0e9f-448e-85d7-6cb71f756c56",
+    "url": "https://cards.scryfall.io/normal/front/8/f/8f14abb0-0e9f-448e-85d7-6cb71f756c56.jpg?1594735485"
+  },
+  "Frost Breath": {
+    "id": "393fc485-d3c1-4826-933d-89f66df769d4",
+    "url": "https://cards.scryfall.io/normal/front/3/9/393fc485-d3c1-4826-933d-89f66df769d4.jpg?1594735496"
+  },
+  "Fungal Rebirth": {
+    "id": "4037e3b2-cb62-4f88-943d-3edcd6827c23",
+    "url": "https://cards.scryfall.io/normal/front/4/0/4037e3b2-cb62-4f88-943d-3edcd6827c23.jpg?1594736973"
+  },
+  "Furious Rise": {
+    "id": "2ae12125-73a3-488b-98b8-9f982addac56",
+    "url": "https://cards.scryfall.io/normal/front/2/a/2ae12125-73a3-488b-98b8-9f982addac56.jpg?1594736617"
+  },
+  "Furor of the Bitten": {
+    "id": "cb0e6279-8a66-4124-9def-fa0c83c26db9",
+    "url": "https://cards.scryfall.io/normal/front/c/b/cb0e6279-8a66-4124-9def-fa0c83c26db9.jpg?1594736626"
+  },
+  "Gadrak, the Crown-Scourge": {
+    "id": "44b83bb7-00c8-4078-b27f-42a830a544b5",
+    "url": "https://cards.scryfall.io/normal/front/4/4/44b83bb7-00c8-4078-b27f-42a830a544b5.jpg?1594736636"
+  },
+  "Gale Swooper": {
+    "id": "d2e3b99c-e48e-4f4d-ba7a-e9218137b432",
+    "url": "https://cards.scryfall.io/normal/front/d/2/d2e3b99c-e48e-4f4d-ba7a-e9218137b432.jpg?1594734966"
+  },
+  "Garruk, Savage Herald": {
+    "id": "48133629-4a5b-4c91-b496-2ee94f6cbc4c",
+    "url": "https://cards.scryfall.io/normal/front/4/8/48133629-4a5b-4c91-b496-2ee94f6cbc4c.jpg?1596168466"
+  },
+  "Garruk's Gorehorn": {
+    "id": "3928bbce-87b7-4b28-9af4-20362935c909",
+    "url": "https://cards.scryfall.io/normal/front/3/9/3928bbce-87b7-4b28-9af4-20362935c909.jpg?1594736993"
+  },
+  "Garruk's Harbinger": {
+    "id": "9e0fa0b6-5f3f-4669-84e8-2c38c9593d88",
+    "url": "https://cards.scryfall.io/normal/front/9/e/9e0fa0b6-5f3f-4669-84e8-2c38c9593d88.jpg?1595022082"
+  },
+  "Garruk's Uprising": {
+    "id": "71a4860a-8bb6-45c0-b00a-b4a42da33ab9",
+    "url": "https://cards.scryfall.io/normal/front/7/1/71a4860a-8bb6-45c0-b00a-b4a42da33ab9.jpg?1594737017"
+  },
+  "Garruk's Warsteed": {
+    "id": "d6099863-8d3d-44bf-8d3b-dc3602119617",
+    "url": "https://cards.scryfall.io/normal/front/d/6/d6099863-8d3d-44bf-8d3b-dc3602119617.jpg?1596250201"
+  },
+  "Garruk, Unleashed": {
+    "id": "af2fdbec-bca2-4af5-9c2a-28b0b35b18a3",
+    "url": "https://cards.scryfall.io/normal/front/a/f/af2fdbec-bca2-4af5-9c2a-28b0b35b18a3.jpg?1594736982"
+  },
+  "Ghostly Pilferer": {
+    "id": "2810631f-c55c-4947-a26f-4d3ce76024b3",
+    "url": "https://cards.scryfall.io/normal/front/2/8/2810631f-c55c-4947-a26f-4d3ce76024b3.jpg?1594735508"
+  },
+  "Gloom Sower": {
+    "id": "a1b4f7ec-ea2e-4d90-98cd-0c92bd9f64c1",
+    "url": "https://cards.scryfall.io/normal/front/a/1/a1b4f7ec-ea2e-4d90-98cd-0c92bd9f64c1.jpg?1594736141"
+  },
+  "Glorious Anthem": {
+    "id": "17d154d3-7ae5-43ff-9978-d974285e2c89",
+    "url": "https://cards.scryfall.io/normal/front/1/7/17d154d3-7ae5-43ff-9978-d974285e2c89.jpg?1594734982"
+  },
+  "Gnarled Sage": {
+    "id": "5f22116a-8b6a-4bbe-999f-7329e1e2b2d9",
+    "url": "https://cards.scryfall.io/normal/front/5/f/5f22116a-8b6a-4bbe-999f-7329e1e2b2d9.jpg?1594737027"
+  },
+  "Goblin Arsonist": {
+    "id": "fa4bf664-3b92-4598-b905-2bc090958c8b",
+    "url": "https://cards.scryfall.io/normal/front/f/a/fa4bf664-3b92-4598-b905-2bc090958c8b.jpg?1594736650"
+  },
+  "Goblin Wizardry": {
+    "id": "d7ac8bdd-851f-449d-a108-70578eabf254",
+    "url": "https://cards.scryfall.io/normal/front/d/7/d7ac8bdd-851f-449d-a108-70578eabf254.jpg?1594736662"
+  },
+  "Goremand": {
+    "id": "c9cd537c-e40e-438f-a751-e0ad8f6e6283",
+    "url": "https://cards.scryfall.io/normal/front/c/9/c9cd537c-e40e-438f-a751-e0ad8f6e6283.jpg?1594736154"
+  },
+  "Grasp of Darkness": {
+    "id": "7737b578-8ae3-4846-b508-93ef40f25244",
+    "url": "https://cards.scryfall.io/normal/front/7/7/7737b578-8ae3-4846-b508-93ef40f25244.jpg?1594736166"
+  },
+  "Griffin Aerie": {
+    "id": "6ea1ee60-5644-4f78-913d-32c36065957f",
+    "url": "https://cards.scryfall.io/normal/front/6/e/6ea1ee60-5644-4f78-913d-32c36065957f.jpg?1594734998"
+  },
+  "Grim Tutor": {
+    "id": "928558ab-e29a-44cb-ac2f-88443571f41a",
+    "url": "https://cards.scryfall.io/normal/front/9/2/928558ab-e29a-44cb-ac2f-88443571f41a.jpg?1594736179"
+  },
+  "Havoc Jester": {
+    "id": "386e5cb2-39c8-453d-a642-c5d9f8495601",
+    "url": "https://cards.scryfall.io/normal/front/3/8/386e5cb2-39c8-453d-a642-c5d9f8495601.jpg?1594736672"
+  },
+  "Heartfire Immolator": {
+    "id": "869fb9f1-0d59-4874-aa52-ac665c3cc0e8",
+    "url": "https://cards.scryfall.io/normal/front/8/6/869fb9f1-0d59-4874-aa52-ac665c3cc0e8.jpg?1594736682"
+  },
+  "Hellkite Punisher": {
+    "id": "7bf663d3-850b-4a24-8e4b-08311adf4ed0",
+    "url": "https://cards.scryfall.io/normal/front/7/b/7bf663d3-850b-4a24-8e4b-08311adf4ed0.jpg?1594736690"
+  },
+  "Heroic Intervention": {
+    "id": "43c037e3-7d1a-48ca-8ecc-276696592f62",
+    "url": "https://cards.scryfall.io/normal/front/4/3/43c037e3-7d1a-48ca-8ecc-276696592f62.jpg?1594737038"
+  },
+  "Historian of Zhalfir": {
+    "id": "ae981da0-f32c-49d5-bcb0-2b9255a4e1fe",
+    "url": "https://cards.scryfall.io/normal/front/a/e/ae981da0-f32c-49d5-bcb0-2b9255a4e1fe.jpg?1596250023"
+  },
+  "Hobblefiend": {
+    "id": "4bfffc18-b36a-4dd5-909e-60ea9f8eb60b",
+    "url": "https://cards.scryfall.io/normal/front/4/b/4bfffc18-b36a-4dd5-909e-60ea9f8eb60b.jpg?1594736699"
+  },
+  "Hooded Blightfang": {
+    "id": "ac38a51f-9a3b-451c-b72d-6d4e0b296fbd",
+    "url": "https://cards.scryfall.io/normal/front/a/c/ac38a51f-9a3b-451c-b72d-6d4e0b296fbd.jpg?1594736187"
+  },
+  "Hunter's Edge": {
+    "id": "7c08c80f-f27c-4e3a-b048-143aea740096",
+    "url": "https://cards.scryfall.io/normal/front/7/c/7c08c80f-f27c-4e3a-b048-143aea740096.jpg?1594737048"
+  },
+  "Idol of Endurance": {
+    "id": "4d60e84e-be05-49da-9720-4225abe9d003",
+    "url": "https://cards.scryfall.io/normal/front/4/d/4d60e84e-be05-49da-9720-4225abe9d003.jpg?1612316288"
+  },
+  "Igneous Cur": {
+    "id": "d2bfec5d-3182-415a-afe8-0b5511cfd656",
+    "url": "https://cards.scryfall.io/normal/front/d/2/d2bfec5d-3182-415a-afe8-0b5511cfd656.jpg?1594736708"
+  },
+  "Indulging Patrician": {
+    "id": "642e0c48-1f77-41e0-abbe-f570b757cd66",
+    "url": "https://cards.scryfall.io/normal/front/6/4/642e0c48-1f77-41e0-abbe-f570b757cd66.jpg?1594737387"
+  },
+  "Infernal Scarring": {
+    "id": "975e4b8e-add9-439c-9463-e2facee96c10",
+    "url": "https://cards.scryfall.io/normal/front/9/7/975e4b8e-add9-439c-9463-e2facee96c10.jpg?1594736195"
+  },
+  "Invigorating Surge": {
+    "id": "531e1fc0-a3aa-4b57-87b2-79a31af5c922",
+    "url": "https://cards.scryfall.io/normal/front/5/3/531e1fc0-a3aa-4b57-87b2-79a31af5c922.jpg?1594737063"
+  },
+  "Jeskai Elder": {
+    "id": "a188164c-01fe-4980-83a5-91d14e218cf5",
+    "url": "https://cards.scryfall.io/normal/front/a/1/a188164c-01fe-4980-83a5-91d14e218cf5.jpg?1594735524"
+  },
+  "Jolrael, Mwonvuli Recluse": {
+    "id": "7dcdcfce-3f32-48f9-83f8-87b9ccbf92e3",
+    "url": "https://cards.scryfall.io/normal/front/7/d/7dcdcfce-3f32-48f9-83f8-87b9ccbf92e3.jpg?1594737074"
+  },
+  "Jungle Hollow": {
+    "id": "69f28d7a-6480-4725-9719-2354921e6410",
+    "url": "https://cards.scryfall.io/normal/front/6/9/69f28d7a-6480-4725-9719-2354921e6410.jpg?1594737643"
+  },
+  "Kaervek, the Spiteful": {
+    "id": "b0fd1009-cd3d-4b53-b9f1-dbc47e8708ab",
+    "url": "https://cards.scryfall.io/normal/front/b/0/b0fd1009-cd3d-4b53-b9f1-dbc47e8708ab.jpg?1594736203"
+  },
+  "Keen Glidemaster": {
+    "id": "cce6289e-f665-4faa-8285-c843447f3e52",
+    "url": "https://cards.scryfall.io/normal/front/c/c/cce6289e-f665-4faa-8285-c843447f3e52.jpg?1594735543"
+  },
+  "Keral Keep Disciples": {
+    "id": "7b862e46-f5a2-4fce-98b5-2c5aa49ec648",
+    "url": "https://cards.scryfall.io/normal/front/7/b/7b862e46-f5a2-4fce-98b5-2c5aa49ec648.jpg?1596250198"
+  },
+  "Kinetic Augur": {
+    "id": "dc5e8221-fc2d-4d90-80f3-729606648c54",
+    "url": "https://cards.scryfall.io/normal/front/d/c/dc5e8221-fc2d-4d90-80f3-729606648c54.jpg?1594736717"
+  },
+  "Kitesail Freebooter": {
+    "id": "88496096-fd9a-451a-85d9-31ccc3580623",
+    "url": "https://cards.scryfall.io/normal/front/8/8/88496096-fd9a-451a-85d9-31ccc3580623.jpg?1594736212"
+  },
+  "Leafkin Avenger": {
+    "id": "7bd3a903-23e0-4b5a-9c7e-390d5ced8371",
+    "url": "https://cards.scryfall.io/normal/front/7/b/7bd3a903-23e0-4b5a-9c7e-390d5ced8371.jpg?1594737394"
+  },
+  "Legion's Judgment": {
+    "id": "032f6c5a-8d88-4a55-a54b-28df42d801e1",
+    "url": "https://cards.scryfall.io/normal/front/0/3/032f6c5a-8d88-4a55-a54b-28df42d801e1.jpg?1594735024"
+  },
+  "Library Larcenist": {
+    "id": "cb33529b-80bd-4f52-94cc-d8371c53ad75",
+    "url": "https://cards.scryfall.io/normal/front/c/b/cb33529b-80bd-4f52-94cc-d8371c53ad75.jpg?1594735558"
+  },
+  "Life Goes On": {
+    "id": "3888197f-5da4-4413-9cad-b37a12ba1e60",
+    "url": "https://cards.scryfall.io/normal/front/3/8/3888197f-5da4-4413-9cad-b37a12ba1e60.jpg?1594737084"
+  },
+  "Light of Promise": {
+    "id": "d5f80411-0a95-4e0a-b7a8-af23ddf385cc",
+    "url": "https://cards.scryfall.io/normal/front/d/5/d5f80411-0a95-4e0a-b7a8-af23ddf385cc.jpg?1594735041"
+  },
+  "Liliana, Death Mage": {
+    "id": "921e3dc3-f8eb-4498-a6a8-b424952230cd",
+    "url": "https://cards.scryfall.io/normal/front/9/2/921e3dc3-f8eb-4498-a6a8-b424952230cd.jpg?1596167418"
+  },
+  "Liliana's Devotee": {
+    "id": "ae5d7f15-a86f-4eaa-8280-2e7f73c8ce3a",
+    "url": "https://cards.scryfall.io/normal/front/a/e/ae5d7f15-a86f-4eaa-8280-2e7f73c8ce3a.jpg?1594736229"
+  },
+  "Liliana's Scorn": {
+    "id": "b231f941-4acb-46f2-81ae-16e5a28e65af",
+    "url": "https://cards.scryfall.io/normal/front/b/2/b231f941-4acb-46f2-81ae-16e5a28e65af.jpg?1596250190"
+  },
+  "Liliana's Scrounger": {
+    "id": "5a64625f-937a-449e-b1fc-cd0f25b033f6",
+    "url": "https://cards.scryfall.io/normal/front/5/a/5a64625f-937a-449e-b1fc-cd0f25b033f6.jpg?1596250192"
+  },
+  "Liliana's Standard Bearer": {
+    "id": "3dc48b87-62cb-48f6-8979-e6fb98717b52",
+    "url": "https://cards.scryfall.io/normal/front/3/d/3dc48b87-62cb-48f6-8979-e6fb98717b52.jpg?1594736239"
+  },
+  "Liliana's Steward": {
+    "id": "1945fc78-8aa4-46fb-9571-eaa1c4729e3d",
+    "url": "https://cards.scryfall.io/normal/front/1/9/1945fc78-8aa4-46fb-9571-eaa1c4729e3d.jpg?1594736251"
+  },
+  "Liliana, Waker of the Dead": {
+    "id": "e329a3e2-6702-4758-8aac-c3017e77b619",
+    "url": "https://cards.scryfall.io/normal/front/e/3/e329a3e2-6702-4758-8aac-c3017e77b619.jpg?1594739061"
+  },
+  "Llanowar Visionary": {
+    "id": "d6e23afa-7e08-4049-baf0-d4d0134ba2c8",
+    "url": "https://cards.scryfall.io/normal/front/d/6/d6e23afa-7e08-4049-baf0-d4d0134ba2c8.jpg?1594737093"
+  },
+  "Lofty Denial": {
+    "id": "64832674-beb1-446e-b2f7-8a5e271139a5",
+    "url": "https://cards.scryfall.io/normal/front/6/4/64832674-beb1-446e-b2f7-8a5e271139a5.jpg?1616182218"
+  },
+  "Lorescale Coatl": {
+    "id": "3be31fb0-115e-4e62-babd-16870f249f06",
+    "url": "https://cards.scryfall.io/normal/front/3/b/3be31fb0-115e-4e62-babd-16870f249f06.jpg?1594737402"
+  },
+  "Makeshift Battalion": {
+    "id": "31a500e6-01f5-4a3a-8839-68b9b515e919",
+    "url": "https://cards.scryfall.io/normal/front/3/1/31a500e6-01f5-4a3a-8839-68b9b515e919.jpg?1594735061"
+  },
+  "Malefic Scythe": {
+    "id": "89e2bc57-8f18-4ba1-a11b-9d69d029f56a",
+    "url": "https://cards.scryfall.io/normal/front/8/9/89e2bc57-8f18-4ba1-a11b-9d69d029f56a.jpg?1594736272"
+  },
+  "Mangara, the Diplomat": {
+    "id": "9b4e628f-5fc5-4c17-a07d-448d361d7e7c",
+    "url": "https://cards.scryfall.io/normal/front/9/b/9b4e628f-5fc5-4c17-a07d-448d361d7e7c.jpg?1594735076"
+  },
+  "Masked Blackguard": {
+    "id": "d61b4b71-3cbb-4422-8ce7-657ca3bb6a82",
+    "url": "https://cards.scryfall.io/normal/front/d/6/d61b4b71-3cbb-4422-8ce7-657ca3bb6a82.jpg?1594736285"
+  },
+  "Massacre Wurm": {
+    "id": "e3185b01-0d91-4927-98e9-bc9df6c20917",
+    "url": "https://cards.scryfall.io/normal/front/e/3/e3185b01-0d91-4927-98e9-bc9df6c20917.jpg?1594736296"
+  },
+  "Mazemind Tome": {
+    "id": "9fd761f3-6b43-4150-8595-dc3abd85b06c",
+    "url": "https://cards.scryfall.io/normal/front/9/f/9fd761f3-6b43-4150-8595-dc3abd85b06c.jpg?1594737505"
+  },
+  "Meteorite": {
+    "id": "ec3a2c95-4e7a-43c5-90bd-6f1de7c82a5c",
+    "url": "https://cards.scryfall.io/normal/front/e/c/ec3a2c95-4e7a-43c5-90bd-6f1de7c82a5c.jpg?1594737513"
+  },
+  "Mind Rot": {
+    "id": "833a8604-92d5-443b-9bc0-bd91c973ef07",
+    "url": "https://cards.scryfall.io/normal/front/8/3/833a8604-92d5-443b-9bc0-bd91c973ef07.jpg?1594736305"
+  },
+  "Miscast": {
+    "id": "033afbd5-9937-4957-98ba-48e469a490bb",
+    "url": "https://cards.scryfall.io/normal/front/0/3/033afbd5-9937-4957-98ba-48e469a490bb.jpg?1594735579"
+  },
+  "Mistral Singer": {
+    "id": "d961c441-b76b-4bd8-b510-a3e073207a1b",
+    "url": "https://cards.scryfall.io/normal/front/d/9/d961c441-b76b-4bd8-b510-a3e073207a1b.jpg?1594735588"
+  },
+  "Mystic Skyfish": {
+    "id": "0002ab72-834b-4c81-82b1-0d2760ea96b0",
+    "url": "https://cards.scryfall.io/normal/front/0/0/0002ab72-834b-4c81-82b1-0d2760ea96b0.jpg?1596250027"
+  },
+  "Necromentia": {
+    "id": "32c5252e-ff15-4f86-ad63-d8286427e70f",
+    "url": "https://cards.scryfall.io/normal/front/3/2/32c5252e-ff15-4f86-ad63-d8286427e70f.jpg?1594736316"
+  },
+  "Niambi, Esteemed Speaker": {
+    "id": "e21827eb-fa49-4784-a86b-aef164a5018e",
+    "url": "https://cards.scryfall.io/normal/front/e/2/e21827eb-fa49-4784-a86b-aef164a5018e.jpg?1594737411"
+  },
+  "Nine Lives": {
+    "id": "e70b7a73-484e-48f1-944c-3d38866cdc20",
+    "url": "https://cards.scryfall.io/normal/front/e/7/e70b7a73-484e-48f1-944c-3d38866cdc20.jpg?1594735092"
+  },
+  "Obsessive Stitcher": {
+    "id": "e449f985-d149-49eb-87d9-7a325215f82d",
+    "url": "https://cards.scryfall.io/normal/front/e/4/e449f985-d149-49eb-87d9-7a325215f82d.jpg?1594737421"
+  },
+  "Onakke Ogre": {
+    "id": "76e42d07-57d9-4de4-8d41-eb42dd1573ed",
+    "url": "https://cards.scryfall.io/normal/front/7/6/76e42d07-57d9-4de4-8d41-eb42dd1573ed.jpg?1594736725"
+  },
+  "Opt": {
+    "id": "323db259-d35e-467d-9a46-4adcb2fc107c",
+    "url": "https://cards.scryfall.io/normal/front/3/2/323db259-d35e-467d-9a46-4adcb2fc107c.jpg?1652898493"
+  },
+  "Ornery Dilophosaur": {
+    "id": "c2c4a0e7-9ca4-4291-94de-165cc2ded822",
+    "url": "https://cards.scryfall.io/normal/front/c/2/c2c4a0e7-9ca4-4291-94de-165cc2ded822.jpg?1594737108"
+  },
+  "Pack Leader": {
+    "id": "a8b94bc1-68d1-41dc-914c-a33ecb9aeb49",
+    "url": "https://cards.scryfall.io/normal/front/a/8/a8b94bc1-68d1-41dc-914c-a33ecb9aeb49.jpg?1594735110"
+  },
+  "Palladium Myr": {
+    "id": "27305aad-f1bd-4895-8611-143bc0250bee",
+    "url": "https://cards.scryfall.io/normal/front/2/7/27305aad-f1bd-4895-8611-143bc0250bee.jpg?1594737522"
+  },
+  "Peer into the Abyss": {
+    "id": "aac00055-640e-4749-8d23-d242e6d0b23a",
+    "url": "https://cards.scryfall.io/normal/front/a/a/aac00055-640e-4749-8d23-d242e6d0b23a.jpg?1594736330"
+  },
+  "Pestilent Haze": {
+    "id": "08b78aa8-a63a-4aa2-bb82-3fbf2595ed7c",
+    "url": "https://cards.scryfall.io/normal/front/0/8/08b78aa8-a63a-4aa2-bb82-3fbf2595ed7c.jpg?1594736339"
+  },
+  "Pitchburn Devils": {
+    "id": "fbd306cf-6625-4414-b9e5-4b909bb1bb13",
+    "url": "https://cards.scryfall.io/normal/front/f/b/fbd306cf-6625-4414-b9e5-4b909bb1bb13.jpg?1594736737"
+  },
+  "Portcullis Vine": {
+    "id": "d1abd95a-4ecc-479c-b200-5aaf7c993ef8",
+    "url": "https://cards.scryfall.io/normal/front/d/1/d1abd95a-4ecc-479c-b200-5aaf7c993ef8.jpg?1594737120"
+  },
+  "Predatory Wurm": {
+    "id": "4073cbc6-11de-4d4a-bcd7-792f9b7c5219",
+    "url": "https://cards.scryfall.io/normal/front/4/0/4073cbc6-11de-4d4a-bcd7-792f9b7c5219.jpg?1596250202"
+  },
+  "Pridemalkin": {
+    "id": "df520254-0c72-496b-9222-263ca9d3c5d5",
+    "url": "https://cards.scryfall.io/normal/front/d/f/df520254-0c72-496b-9222-263ca9d3c5d5.jpg?1594737133"
+  },
+  "Primal Might": {
+    "id": "1cd8cee8-7ea0-4037-8a3b-39334dc064fb",
+    "url": "https://cards.scryfall.io/normal/front/1/c/1cd8cee8-7ea0-4037-8a3b-39334dc064fb.jpg?1594737142"
+  },
+  "Prismite": {
+    "id": "eedce8ab-771a-4247-9504-72ae0629df83",
+    "url": "https://cards.scryfall.io/normal/front/e/e/eedce8ab-771a-4247-9504-72ae0629df83.jpg?1594737532"
+  },
+  "Pursued Whale": {
+    "id": "b1501118-5837-49b5-9446-0bc3032035ca",
+    "url": "https://cards.scryfall.io/normal/front/b/1/b1501118-5837-49b5-9446-0bc3032035ca.jpg?1594735617"
+  },
+  "Quirion Dryad": {
+    "id": "a20d20f7-bc4d-42fa-9f5b-5bb330eb7f38",
+    "url": "https://cards.scryfall.io/normal/front/a/2/a20d20f7-bc4d-42fa-9f5b-5bb330eb7f38.jpg?1594737152"
+  },
+  "Radha, Heart of Keld": {
+    "id": "2bbd37b1-49cb-4295-9a1f-fb85368a8f12",
+    "url": "https://cards.scryfall.io/normal/front/2/b/2bbd37b1-49cb-4295-9a1f-fb85368a8f12.jpg?1594737431"
+  },
+  "Radiant Fountain": {
+    "id": "0296c34b-120b-483e-8b49-6d432c04f9a4",
+    "url": "https://cards.scryfall.io/normal/front/0/2/0296c34b-120b-483e-8b49-6d432c04f9a4.jpg?1594737654"
+  },
+  "Rain of Revelation": {
+    "id": "da367981-9d6f-419f-9f58-f969b6183336",
+    "url": "https://cards.scryfall.io/normal/front/d/a/da367981-9d6f-419f-9f58-f969b6183336.jpg?1594735631"
+  },
+  "Rambunctious Mutt": {
+    "id": "3f602ecc-c264-4f3e-adeb-d0186668653e",
+    "url": "https://cards.scryfall.io/normal/front/3/f/3f602ecc-c264-4f3e-adeb-d0186668653e.jpg?1599435086"
+  },
+  "Ranger's Guile": {
+    "id": "02392840-f0c4-462e-84ce-9a7cdd9f5efb",
+    "url": "https://cards.scryfall.io/normal/front/0/2/02392840-f0c4-462e-84ce-9a7cdd9f5efb.jpg?1594737163"
+  }
+}

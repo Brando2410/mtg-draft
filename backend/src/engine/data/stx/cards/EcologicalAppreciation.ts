@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const EcologicalAppreciation: CardDefinition = {
         name: "Ecological Appreciation",
         manaCost: "{X}{G}{G}{G}",
+    scryfall_id: "115f3d72-1aaf-4237-91b9-389256e5e5c8",
+    image_url: "https://cards.scryfall.io/normal/front/1/1/115f3d72-1aaf-4237-91b9-389256e5e5c8.jpg?1624592652",
         colors: ['G'],
         types: ["Sorcery"],
         oracleText: "Search your library and graveyard for up to four creature cards with different names that each have mana value X or less and reveal them. An opponent chooses two of those cards. Shuffle the chosen cards into your library and put the rest onto the battlefield. Exile Ecological Appreciation.",

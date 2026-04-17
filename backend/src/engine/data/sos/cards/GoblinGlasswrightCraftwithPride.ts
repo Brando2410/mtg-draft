@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     export const GoblinGlasswrightCraftwithPride: CardDefinition = {
     name: "Goblin Glasswright",
     manaCost: "{1}{R}",
+    scryfall_id: "c85c5f06-dd31-4e2c-97be-2f64d65069ea",
+    image_url: "https://cards.scryfall.io/normal/front/c/8/c85c5f06-dd31-4e2c-97be-2f64d65069ea.jpg?1775937759",
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Goblin", "Sorcerer"],

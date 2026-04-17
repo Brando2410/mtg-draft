@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 export const NitaForumConciliator: CardDefinition = {
     name: "Nita, Forum Conciliator",
     manaCost: "{1}{W}{B}",
+    scryfall_id: "fd80a87d-35d3-4ad1-8172-c85e93032d1d",
+    image_url: "https://cards.scryfall.io/normal/front/f/d/fd80a87d-35d3-4ad1-8172-c85e93032d1d.jpg?1775938431",
     colors: [
         "B",
         "W"

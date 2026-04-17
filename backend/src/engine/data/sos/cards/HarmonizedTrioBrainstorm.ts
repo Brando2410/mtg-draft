@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, Restriction, Selecti
 export const HarmonizedTrioBrainstorm: CardDefinition = {
     name: "Harmonized Trio // Brainstorm",
     manaCost: "{U}",
+    scryfall_id: "617208ff-dd9b-44fd-a740-d3188081e5cc",
+    image_url: "https://cards.scryfall.io/normal/front/6/1/617208ff-dd9b-44fd-a740-d3188081e5cc.jpg?1775937273",
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Merfolk", "Bard", "Wizard"],

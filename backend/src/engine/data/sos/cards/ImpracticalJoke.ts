@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
 export const ImpracticalJoke: CardDefinition = {
     name: "Impractical Joke",
     manaCost: "{R}",
+    scryfall_id: "39a816b4-39b8-421c-b828-68db901d34b7",
+    image_url: "https://cards.scryfall.io/normal/front/3/9/39a816b4-39b8-421c-b828-68db901d34b7.jpg?1775937777",
     colors: [
         "R"
     ],

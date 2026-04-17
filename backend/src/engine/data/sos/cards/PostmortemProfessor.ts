@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
 export const PostmortemProfessor: CardDefinition = {
     name: "Postmortem Professor",
     manaCost: "{1}{B}",
+    scryfall_id: "174f5d7e-5d36-4d13-96bf-9b12cd644716",
+    image_url: "https://cards.scryfall.io/normal/front/1/7/174f5d7e-5d36-4d13-96bf-9b12cd644716.jpg?1775937558",
     colors: [
         "B"
     ],

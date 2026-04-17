@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
 export const ExtusOriqOverlord: CardDefinition = {
     name: "Extus, Oriq Overlord",
     manaCost: "{1}{W}{B}{B}",
+    scryfall_id: "ba09360a-067e-48a5-bdc5-a19fd066a785",
+    image_url: "https://cards.scryfall.io/normal/front/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1624593379",
     colors: ["W", "B"],
     supertypes: ["Legendary"],
     types: ["Creature"],

@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount
 export const WildgrowthArchaic: CardDefinition = {
     name: "Wildgrowth Archaic",
     manaCost: "{2/G}{2/G}",
+    scryfall_id: "d1861bc6-93d5-4b09-a5dd-94c0a0629e5f",
+    image_url: "https://cards.scryfall.io/normal/front/d/1/d1861bc6-93d5-4b09-a5dd-94c0a0629e5f.jpg?1775939082",
     colors: ["G"],
     types: ["Creature"],
     subtypes: ["Avatar"],

@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TriggerEvent, TargetMapping } 
 export const MangaraTheDiplomat: CardDefinition = {
     name: "Mangara, the Diplomat",
     manaCost: "{3}{W}",
+    scryfall_id: "9b4e628f-5fc5-4c17-a07d-448d361d7e7c",
+    image_url: "https://cards.scryfall.io/normal/front/9/b/9b4e628f-5fc5-4c17-a07d-448d361d7e7c.jpg?1594735076",
     oracleText: "Lifelink\nWhenever an opponent attacks with creatures, if two or more of those creatures are attacking you and/or planeswalkers you control, draw a card.\nWhenever an opponent casts their second spell each turn, draw a card.",
     colors: ["W"],
     supertypes: ["Legendary"],

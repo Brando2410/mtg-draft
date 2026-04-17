@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const MatterbendingMage: CardDefinition = {
     name: "Matterbending Mage",
     manaCost: "{2}{U}",
+    scryfall_id: "460c6afd-cddf-4fea-925f-b27517ff250a",
+    image_url: "https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321",
     colors: [
         "U"
     ],

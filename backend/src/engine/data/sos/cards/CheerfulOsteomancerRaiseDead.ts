@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zon
     export const CheerfulOsteomancerRaiseDead: CardDefinition = {
     name: "Cheerful Osteomancer",
     manaCost: "{3}{B}",
+    scryfall_id: "3c34660c-25e3-4ff5-9b2b-5554ded2bcc3",
+    image_url: "https://cards.scryfall.io/normal/front/3/c/3c34660c-25e3-4ff5-9b2b-5554ded2bcc3.jpg?1775937441",
     colors: ["B"],
     types: ["Creature"],
     subtypes: ["Orc", "Warlock"],

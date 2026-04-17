@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const Flashback: CardDefinition = {
     name: "Flashback",
     manaCost: "{R}",
+    scryfall_id: "1b832fda-d7c4-4566-884c-2a8b6da15488",
+    image_url: "https://cards.scryfall.io/normal/front/1/b/1b832fda-d7c4-4566-884c-2a8b6da15488.jpg?1775937742",
     colors: [
         "R"
     ],

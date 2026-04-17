@@ -3,6 +3,8 @@ import {AbilityType, Zone, CardDefinition, EffectType, GameEvent, GameObject, Ta
 export const FuroroftheBitten: CardDefinition = {
         name: "Furor of the Bitten",
         manaCost: "{R}",
+    scryfall_id: "cb0e6279-8a66-4124-9def-fa0c83c26db9",
+    image_url: "https://cards.scryfall.io/normal/front/c/b/cb0e6279-8a66-4124-9def-fa0c83c26db9.jpg?1594736626",
         oracleText: "Enchant creature\nEnchanted creature gets +2/+2 and attacks each combat if able.",
         colors: ["red"],
         supertypes: [],

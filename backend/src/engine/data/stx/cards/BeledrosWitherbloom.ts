@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const BeledrosWitherbloom: CardDefinition = {
         name: "Beledros Witherbloom",
         manaCost: "{5}{B}{G}",
+    scryfall_id: "93f786a2-a7b7-4f9e-92e8-9a6a11efe290",
+    image_url: "https://cards.scryfall.io/normal/front/9/3/93f786a2-a7b7-4f9e-92e8-9a6a11efe290.jpg?1627428096",
         colors: ["B", "G"],
         supertypes: ["Legendary"],
         types: ["Creature"],

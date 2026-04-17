@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping }
 export const AntiquitiesontheLoose: CardDefinition = {
     name: "Antiquities on the Loose",
     manaCost: "{1}{W}{W}",
+    scryfall_id: "68ee92cd-51af-4de5-bcc8-34d0bb2fd398",
+    image_url: "https://cards.scryfall.io/normal/front/6/8/68ee92cd-51af-4de5-bcc8-34d0bb2fd398.jpg?1775936960",
     colors: [
         "W"
     ],

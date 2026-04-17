@@ -4,6 +4,8 @@ export const PursuedWhale: CardDefinition = {
 
     name: "Pursued Whale",
     manaCost: "{5}{U}{U}",
+    scryfall_id: "b1501118-5837-49b5-9446-0bc3032035ca",
+    image_url: "https://cards.scryfall.io/normal/front/b/1/b1501118-5837-49b5-9446-0bc3032035ca.jpg?1594735617",
     colors: ["U"],
     supertypes: [],
     types: ["Creature"],

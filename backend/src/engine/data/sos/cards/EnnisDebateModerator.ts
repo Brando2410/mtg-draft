@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, Eff
 export const EnnisDebateModerator: CardDefinition = {
     name: "Ennis, Debate Moderator",
     manaCost: "{1}{W}",
+    scryfall_id: "d2ef31b4-24fa-4443-9f05-c8e99c3522e5",
+    image_url: "https://cards.scryfall.io/normal/front/d/2/d2ef31b4-24fa-4443-9f05-c8e99c3522e5.jpg?1775937005",
     colors: [
         "W"
     ],

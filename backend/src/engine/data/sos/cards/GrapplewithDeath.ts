@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const GrapplewithDeath: CardDefinition = {
     name: "Grapple with Death",
     manaCost: "{1}{B}{G}",
+    scryfall_id: "62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a",
+    image_url: "https://cards.scryfall.io/normal/front/6/2/62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a.jpg?1775938332",
     colors: ["B", "G"],
     types: ["Sorcery"],
     subtypes: [],

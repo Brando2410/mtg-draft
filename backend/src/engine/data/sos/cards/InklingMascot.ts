@@ -2,6 +2,8 @@ import { TargetMapping, AbilityType, CardDefinition, DurationType, EffectType, T
     export const InklingMascot: CardDefinition = {
     name: "Inkling Mascot",
     manaCost: "{W}{B}",
+    scryfall_id: "6d4a2f39-0e1e-4076-815a-2676a09a1aab",
+    image_url: "https://cards.scryfall.io/normal/front/6/d/6d4a2f39-0e1e-4076-815a-2676a09a1aab.jpg?1775938360",
     colors: [
         "B",
         "W"

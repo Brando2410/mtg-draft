@@ -4,6 +4,8 @@ export const Pridemalkin: CardDefinition = {
 
     name: "Pridemalkin",
     manaCost: "{2}{G}",
+    scryfall_id: "df520254-0c72-496b-9222-263ca9d3c5d5",
+    image_url: "https://cards.scryfall.io/normal/front/d/f/df520254-0c72-496b-9222-263ca9d3c5d5.jpg?1594737133",
     oracleText: "When this creature enters, put a +1/+1 counter on target creature you control. Each creature you control with a +1/+1 counter on it has trample.",
     colors: ["G"],
     supertypes: [],

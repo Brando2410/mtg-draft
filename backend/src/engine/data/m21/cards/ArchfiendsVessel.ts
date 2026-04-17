@@ -4,6 +4,8 @@ export const ArchfiendsVessel: CardDefinition = {
 
     name: "Archfiend's Vessel",
     manaCost: "{B}",
+    scryfall_id: "83437022-ba00-4370-83c2-ce1260336fcc",
+    image_url: "https://cards.scryfall.io/normal/front/8/3/83437022-ba00-4370-83c2-ce1260336fcc.jpg?1594735964",
     oracleText: "Lifelink (Damage dealt by this creature also causes you to gain that much life.)\nWhen this creature enters, if it entered from your graveyard or you cast it from your graveyard, exile it. If you do, create a 5/5 black Demon creature token with flying.",
     colors: ["B"],
     supertypes: [],

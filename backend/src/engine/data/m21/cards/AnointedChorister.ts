@@ -4,6 +4,8 @@ export const AnointedChorister: CardDefinition = {
 
     name: "Anointed Chorister",
     manaCost: "{W}",
+    scryfall_id: "9c977c67-b0c0-40b0-b129-28de094aaf40",
+    image_url: "https://cards.scryfall.io/normal/front/9/c/9c977c67-b0c0-40b0-b129-28de094aaf40.jpg?1594734721",
     oracleText: "Lifelink (Damage dealt by this creature also causes you to gain that much life.)\n{4}{W}: This creature gets +3/+3 until end of turn.",
     colors: ["W"],
     supertypes: [],

@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
     export const DreamrootCascade: CardDefinition = {
     name: "Dreamroot Cascade",
     manaCost: "",
+    scryfall_id: "ef662b92-5a7f-48c9-bcc1-14b55e091aef",
+    image_url: "https://cards.scryfall.io/normal/front/e/f/ef662b92-5a7f-48c9-bcc1-14b55e091aef.jpg?1775938773",
     colors: [],
     types: [
         "Land"

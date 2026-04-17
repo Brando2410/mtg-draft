@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
     export const BogwaterLumaret: CardDefinition = {
     name: "Bogwater Lumaret",
     manaCost: "{B}{G}",
+    scryfall_id: "7a42f51a-3377-47bb-b6fb-c0515bf1dcfb",
+    image_url: "https://cards.scryfall.io/normal/front/7/a/7a42f51a-3377-47bb-b6fb-c0515bf1dcfb.jpg?1775938216",
     colors: [
         "B",
         "G"

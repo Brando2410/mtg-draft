@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
     export const HydroChanneler: CardDefinition = {
     name: "Hydro-Channeler",
     manaCost: "{1}{U}",
+    scryfall_id: "099f8400-d70a-48ef-8ff6-645eae97e072",
+    image_url: "https://cards.scryfall.io/normal/front/0/9/099f8400-d70a-48ef-8ff6-645eae97e072.jpg?1775937286",
     colors: [
         "U"
     ],

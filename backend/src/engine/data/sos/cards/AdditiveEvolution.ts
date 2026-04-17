@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, R
     export const AdditiveEvolution: CardDefinition = {
     name: "Additive Evolution",
     manaCost: "{3}{G}{G}",
+    scryfall_id: "b44ec684-d558-45eb-bcd0-e4b7db5c38a3",
+    image_url: "https://cards.scryfall.io/normal/front/b/4/b44ec684-d558-45eb-bcd0-e4b7db5c38a3.jpg?1775937943",
     colors: [
         "G"
     ],

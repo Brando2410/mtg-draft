@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     export const Homesickness: CardDefinition = {
     name: "Homesickness",
     manaCost: "{4}{U}{U}",
+    scryfall_id: "6e4a1f82-b0b1-4608-91f8-130bee731435",
+    image_url: "https://cards.scryfall.io/normal/front/6/e/6e4a1f82-b0b1-4608-91f8-130bee731435.jpg?1775937280",
     colors: [
         "U"
     ],

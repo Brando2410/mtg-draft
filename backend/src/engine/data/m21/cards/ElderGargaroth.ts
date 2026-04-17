@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
 export const ElderGargaroth: CardDefinition = {
     name: "Elder Gargaroth",
     manaCost: "{3}{G}{G}",
+    scryfall_id: "d51269cf-a333-4a64-94cd-245798d840d2",
+    image_url: "https://cards.scryfall.io/normal/front/d/5/d51269cf-a333-4a64-94cd-245798d840d2.jpg?1594736944",
     oracleText: "Vigilance, reach, trample\nWhenever Elder Gargaroth attacks or blocks, choose one —\n• Create a 3/3 green Beast creature token.\n• You gain 3 life.\n• Draw a card.",
     colors: ["G"],
     supertypes: [],

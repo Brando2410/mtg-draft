@@ -3,6 +3,8 @@ import {AbilityType, Zone, CardDefinition, EffectType, GameEvent, GameObject, Ta
 export const FabledPassage: CardDefinition = {
         name: "Fabled Passage",
         manaCost: "",
+    scryfall_id: "d313d051-7295-4884-8cbf-f2f835fd45f4",
+    image_url: "https://cards.scryfall.io/normal/front/d/3/d313d051-7295-4884-8cbf-f2f835fd45f4.jpg?1594737636",
         oracleText: "{T}, Sacrifice this land: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. Then if you control four or more lands, untap that land.",
         colors: [],
         supertypes: [],

@@ -4,6 +4,8 @@ export const MakeshiftBattalion: CardDefinition = {
 
     name: "Makeshift Battalion",
     manaCost: "{2}{W}",
+    scryfall_id: "31a500e6-01f5-4a3a-8839-68b9b515e919",
+    image_url: "https://cards.scryfall.io/normal/front/3/1/31a500e6-01f5-4a3a-8839-68b9b515e919.jpg?1594735061",
     oracleText: "Whenever this creature and at least two other creatures attack, put a +1/+1 counter on this creature.",
     colors: ["W"],
     supertypes: [],

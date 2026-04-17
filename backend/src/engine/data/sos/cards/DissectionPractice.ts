@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const DissectionPractice: CardDefinition = {
     name: "Dissection Practice",
     manaCost: "{B}",
+    scryfall_id: "ddbf1242-6832-475e-9a77-65dd9b4bb32a",
+    image_url: "https://cards.scryfall.io/normal/front/d/d/ddbf1242-6832-475e-9a77-65dd9b4bb32a.jpg?1775937462",
     colors: [
         "B"
     ],

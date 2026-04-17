@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
     export const ForumofAmity: CardDefinition = {
     name: "Forum of Amity",
     manaCost: "",
+    scryfall_id: "1de6c6cc-0c55-4997-8623-d7f796bd9ab8",
+    image_url: "https://cards.scryfall.io/normal/front/1/d/1de6c6cc-0c55-4997-8623-d7f796bd9ab8.jpg?1775938787",
     colors: [],
     types: [
         "Land"

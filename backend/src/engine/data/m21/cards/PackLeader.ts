@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const PackLeader: CardDefinition = {
     name: "Pack Leader",
     manaCost: "{1}{W}",
+    scryfall_id: "a8b94bc1-68d1-41dc-914c-a33ecb9aeb49",
+    image_url: "https://cards.scryfall.io/normal/front/a/8/a8b94bc1-68d1-41dc-914c-a33ecb9aeb49.jpg?1594735110",
     oracleText: "Other Dogs you control get +1/+1.\nWhenever this creature attacks, prevent all combat damage that would be dealt this turn to Dogs you control.",
     colors: ["W"],
     supertypes: [],

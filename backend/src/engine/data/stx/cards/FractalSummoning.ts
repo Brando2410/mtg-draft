@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const FractalSummoning: CardDefinition = {
     name: 'Fractal Summoning',
     manaCost: '{X}{G/U}',
+    scryfall_id: "cc3f1f7e-eb19-49c1-a1ee-93b85ac8815c",
+    image_url: "https://cards.scryfall.io/normal/front/c/c/cc3f1f7e-eb19-49c1-a1ee-93b85ac8815c.jpg?1637082130",
     colors: ['G', 'U'],
     types: ['Sorcery'],
     subtypes: ['Lesson'],

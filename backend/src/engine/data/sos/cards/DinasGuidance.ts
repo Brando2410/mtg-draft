@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     export const DinasGuidance: CardDefinition = {
     name: "Dina's Guidance",
     manaCost: "{1}{B}{G}",
+    scryfall_id: "775c1e50-08a4-413f-ab0f-f1c2a79cfe94",
+    image_url: "https://cards.scryfall.io/normal/front/7/7/775c1e50-08a4-413f-ab0f-f1c2a79cfe94.jpg?1775938273",
     colors: [
         "B",
         "G"

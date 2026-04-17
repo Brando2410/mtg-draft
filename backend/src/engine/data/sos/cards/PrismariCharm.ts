@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restri
 export const PrismariCharm: CardDefinition = {
   name: 'Prismari Charm',
   manaCost: '{U}{R}',
+    scryfall_id: "8f6c2a5e-fe13-407c-aadd-c9caf2884ff1",
+    image_url: "https://cards.scryfall.io/normal/front/8/f/8f6c2a5e-fe13-407c-aadd-c9caf2884ff1.jpg?1775938465",
   colors: ['U', 'R'],
   types: ['Instant'],
   subtypes: [],

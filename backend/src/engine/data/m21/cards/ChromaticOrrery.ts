@@ -3,6 +3,8 @@ import { AbilityType, EffectType, CardDefinition, TargetMapping, CostType } from
 export const ChromaticOrrery: CardDefinition = {
     name: "Chromatic Orrery",
     manaCost: "{7}",
+    scryfall_id: "3af78d76-ad5c-44ba-880d-b834bcde5398",
+    image_url: "https://cards.scryfall.io/normal/front/3/a/3af78d76-ad5c-44ba-880d-b834bcde5398.jpg?1594737470",
     oracleText: "You may spend mana as though it were mana of any color.\n{T}: Add {C}{C}{C}{C}{C}.\n{5}, {T}: Draw a card for each color among permanents you control.",
     colors: [],
     supertypes: [],

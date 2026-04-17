@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetType, TargetMapping } fr
 export const PeerintotheAbyss: CardDefinition = {
     name: "Peer into the Abyss",
     manaCost: "{4}{B}{B}{B}",
+    scryfall_id: "aac00055-640e-4749-8d23-d242e6d0b23a",
+    image_url: "https://cards.scryfall.io/normal/front/a/a/aac00055-640e-4749-8d23-d242e6d0b23a.jpg?1594736330",
     oracleText: "Target player draws cards equal to half the number of cards in their library and loses half their life. Round up each time.",
     colors: ["B"],
     supertypes: [],

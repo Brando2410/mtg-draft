@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const BorrowedKnowledge: CardDefinition = {
     name: "Borrowed Knowledge",
     manaCost: "{2}{R}{W}",
+    scryfall_id: "a3226e14-554d-47c9-b8b6-dfeb53cc41ba",
+    image_url: "https://cards.scryfall.io/normal/front/a/3/a3226e14-554d-47c9-b8b6-dfeb53cc41ba.jpg?1775938224",
     colors: [
         "R",
         "W"

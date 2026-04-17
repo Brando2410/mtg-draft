@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     export const MasterfulFlourish: CardDefinition = {
     name: "Masterful Flourish",
     manaCost: "{B}",
+    scryfall_id: "8d93d14d-7760-4af2-a237-2df326dd28d3",
+    image_url: "https://cards.scryfall.io/normal/front/8/d/8d93d14d-7760-4af2-a237-2df326dd28d3.jpg?1775937531",
     colors: [
         "B"
     ],

@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
 export const NecroticFumes: CardDefinition = {
     name: 'Necrotic Fumes',
     manaCost: '{1}{B}',
+    scryfall_id: "5e1b68a4-fb8d-4b59-b049-73505296f775",
+    image_url: "https://cards.scryfall.io/normal/front/5/e/5e1b68a4-fb8d-4b59-b049-73505296f775.jpg?1637082347",
     colors: ['B'],
     types: ['Sorcery'],
     subtypes: ['Lesson'],

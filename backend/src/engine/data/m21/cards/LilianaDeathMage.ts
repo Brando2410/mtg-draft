@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
 export const LilianaDeathMage: CardDefinition = {
     name: "Liliana, Death Mage",
     manaCost: "{4}{B}{B}",
+    scryfall_id: "921e3dc3-f8eb-4498-a6a8-b424952230cd",
+    image_url: "https://cards.scryfall.io/normal/front/9/2/921e3dc3-f8eb-4498-a6a8-b424952230cd.jpg?1596167418",
     oracleText: "+1: Return up to one target creature card from your graveyard to your hand.\n −3: Destroy target creature. Its controller loses 2 life.\n −7: Target opponent loses 2 life for each creature card in their graveyard.",
     colors: ["B"],
     supertypes: ["Legendary"],

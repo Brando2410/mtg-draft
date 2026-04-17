@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     export const OrysaTideChoreographer: CardDefinition = {
     name: "Orysa, Tide Choreographer",
     manaCost: "{4}{U}",
+    scryfall_id: "010ed379-63f5-452c-9cd4-00d51647c0e3",
+    image_url: "https://cards.scryfall.io/normal/front/0/1/010ed379-63f5-452c-9cd4-00d51647c0e3.jpg?1775937343",
     colors: [
         "U"
     ],

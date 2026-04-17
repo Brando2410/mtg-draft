@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const EagerFirstYear: CardDefinition = {
     name: 'Eager First-Year',
     manaCost: '{1}{W}',
+    scryfall_id: "7a83543b-3b6f-4e28-96f9-007b814bcfd6",
+    image_url: "https://cards.scryfall.io/normal/front/7/a/7a83543b-3b6f-4e28-96f9-007b814bcfd6.jpg?1624589409",
     colors: ['W'],
     types: ['Creature'],
     subtypes: ['Human', 'Wizard'],

@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, Zone } from '@shared
     export const EternalStudent: CardDefinition = {
     name: "Eternal Student",
     manaCost: "{3}{B}",
+    scryfall_id: "f97fac69-3e77-4150-9702-cc726daa6d21",
+    image_url: "https://cards.scryfall.io/normal/front/f/9/f97fac69-3e77-4150-9702-cc726daa6d21.jpg?1775937483",
     colors: [
         "B"
     ],

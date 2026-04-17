@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
 export const ContainmentBreach: CardDefinition = {
   name: 'Containment Breach',
   manaCost: '{2}{G}',
+    scryfall_id: "0dcca120-b72e-4007-98e1-cb22e7b9a705",
+    image_url: "https://cards.scryfall.io/normal/front/0/d/0dcca120-b72e-4007-98e1-cb22e7b9a705.jpg?1771241735",
   colors: ['G'],
   types: ['Sorcery'],
   subtypes: ['Lesson'],

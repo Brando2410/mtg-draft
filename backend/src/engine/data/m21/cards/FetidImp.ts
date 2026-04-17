@@ -3,6 +3,8 @@ import { AbilityType, Zone, CardDefinition, EffectType, DurationType, CostType, 
 export const FetidImp: CardDefinition = {
     name: "Fetid Imp",
     manaCost: "{1}{B}",
+    scryfall_id: "56a95546-c45a-4da5-b1e8-d5658b5b7d53",
+    image_url: "https://cards.scryfall.io/normal/front/5/6/56a95546-c45a-4da5-b1e8-d5658b5b7d53.jpg?1594736117",
     oracleText: "Flying\n{B}: This creature gains deathtouch until end of turn. (Any amount of damage it deals to a creature is enough to destroy it.)",
     colors: ["B"],
     supertypes: [],

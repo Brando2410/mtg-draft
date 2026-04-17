@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const EchocastingSymposium: CardDefinition = {
     name: "Echocasting Symposium",
     manaCost: "{4}{U}{U}",
+    scryfall_id: "5d7086a7-dc42-468a-a2cf-a6f89030f947",
+    image_url: "https://cards.scryfall.io/normal/front/5/d/5d7086a7-dc42-468a-a2cf-a6f89030f947.jpg?1775937216",
     colors: [
         "U"
     ],

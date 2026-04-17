@@ -3,6 +3,8 @@ import {AbilityType, Zone, CardDefinition, EffectType, GameEvent, GameObject, Ta
 export const GarrukSavageHerald: CardDefinition = {
         name: "Garruk, Savage Herald",
         manaCost: "{4}{G}{G}",
+    scryfall_id: "48133629-4a5b-4c91-b496-2ee94f6cbc4c",
+    image_url: "https://cards.scryfall.io/normal/front/4/8/48133629-4a5b-4c91-b496-2ee94f6cbc4c.jpg?1596168466",
         oracleText: "+1: Reveal the top card of your library. If it's a creature card, put it into your hand. Otherwise, put it on the bottom of your library.\n-2: Target creature you control deals damage equal to its power to another target creature.\n-7: Until end of turn, creatures you control gain \"You may have this creature assign its combat damage as though it weren't blocked.\"",
         colors: ["green"],
         supertypes: ["Legendary"],

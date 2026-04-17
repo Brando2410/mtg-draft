@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetT
 export const GadraktheCrownScourge: CardDefinition = {
         name: "Gadrak, the Crown-Scourge",
         manaCost: "{2}{R}",
+    scryfall_id: "44b83bb7-00c8-4078-b27f-42a830a544b5",
+    image_url: "https://cards.scryfall.io/normal/front/4/4/44b83bb7-00c8-4078-b27f-42a830a544b5.jpg?1594736636",
         oracleText: "Flying\nGadrak can't attack unless you control four or more artifacts.\nAt the beginning of your end step, create a Treasure token for each nontoken creature that died this turn. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
         colors: ["red"],
         supertypes: ["Legendary"],

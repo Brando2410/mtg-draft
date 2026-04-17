@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
 export const CauldronofEssence: CardDefinition = {
     name: "Cauldron of Essence",
     manaCost: "{1}{B}{G}",
+    scryfall_id: "b7091740-e70c-4cf2-8d3d-b8e1ac1fbbdd",
+    image_url: "https://cards.scryfall.io/normal/front/b/7/b7091740-e70c-4cf2-8d3d-b8e1ac1fbbdd.jpg?1775938230",
     colors: ["B", "G"],
     types: ["Artifact"],
     subtypes: [],

@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, C
 export const BlossomingSands: CardDefinition = {
     name: "Blossoming Sands",
     manaCost: "",
+    scryfall_id: "c8483586-9a07-4f54-a390-7dd97fcea5cb",
+    image_url: "https://cards.scryfall.io/normal/front/c/8/c8483586-9a07-4f54-a390-7dd97fcea5cb.jpg?1594737617",
     oracleText: "Blossoming Sands enters the battlefield tapped.\nWhen Blossoming Sands enters the battlefield, you gain 1 life.\n{T}: Add {G} or {W}.",
     colors: [],
     supertypes: [],

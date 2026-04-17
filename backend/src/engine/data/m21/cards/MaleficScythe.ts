@@ -3,6 +3,8 @@ import { CardDefinition, AbilityType, EffectType, TargetType, TargetMapping, Cos
 export const MaleficScythe: CardDefinition = {
     name: 'Malefic Scythe',
     manaCost: '{B}',
+    scryfall_id: "89e2bc57-8f18-4ba1-a11b-9d69d029f56a",
+    image_url: "https://cards.scryfall.io/normal/front/8/9/89e2bc57-8f18-4ba1-a11b-9d69d029f56a.jpg?1594736272",
     colors: ['B'],
     types: ['Artifact'],
     subtypes: ['Equipment'],

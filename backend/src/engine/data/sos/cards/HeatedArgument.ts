@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Select
 export const HeatedArgument: CardDefinition = {
     name: "Heated Argument",
     manaCost: "{4}{R}",
+    scryfall_id: "0038d212-3d95-4f98-8c2e-7b2404d0ced7",
+    image_url: "https://cards.scryfall.io/normal/front/0/0/0038d212-3d95-4f98-8c2e-7b2404d0ced7.jpg?1775937767",
     colors: [
         "R"
     ],

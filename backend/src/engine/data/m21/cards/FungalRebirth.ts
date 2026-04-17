@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zon
 export const FungalRebirth: CardDefinition = {
     name: "Fungal Rebirth",
     manaCost: "{2}{G}",
+    scryfall_id: "4037e3b2-cb62-4f88-943d-3edcd6827c23",
+    image_url: "https://cards.scryfall.io/normal/front/4/0/4037e3b2-cb62-4f88-943d-3edcd6827c23.jpg?1594736973",
     oracleText: "Return target permanent card from your graveyard to your hand. If a creature died this turn, create two 1/1 green Saproling creature tokens.",
     colors: ["G"],
     types: ["Instant"],

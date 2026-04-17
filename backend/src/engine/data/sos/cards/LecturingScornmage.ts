@@ -2,6 +2,8 @@ import { TargetMapping, AbilityType, CardDefinition, EffectType, TargetType, Tri
     export const LecturingScornmage: CardDefinition = {
     name: "Lecturing Scornmage",
     manaCost: "{B}",
+    scryfall_id: "ad07091e-8c24-43af-8ce8-031847bcaf30",
+    image_url: "https://cards.scryfall.io/normal/front/a/d/ad07091e-8c24-43af-8ce8-031847bcaf30.jpg?1775937516",
     colors: [
         "B"
     ],

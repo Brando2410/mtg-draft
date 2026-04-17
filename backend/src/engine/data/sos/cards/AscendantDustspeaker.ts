@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
 export const AscendantDustspeaker: CardDefinition = {
     name: "Ascendant Dustspeaker",
     manaCost: "{4}{W}",
+    scryfall_id: "de3de40b-a7ac-455e-add2-4e451b602d17",
+    image_url: "https://cards.scryfall.io/normal/front/d/e/de3de40b-a7ac-455e-add2-4e451b602d17.jpg?1776000359",
     colors: [
         "W"
     ],

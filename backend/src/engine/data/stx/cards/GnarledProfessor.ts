@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const GnarledProfessor: CardDefinition = {
         name: "Gnarled Professor",
         manaCost: "{2}{G}{G}",
+    scryfall_id: "a32338e8-1f6a-49b9-bd93-26578adab6b3",
+    image_url: "https://cards.scryfall.io/normal/front/a/3/a32338e8-1f6a-49b9-bd93-26578adab6b3.jpg?1624592799",
         colors: ["G"],
         types: ["Creature"],
         subtypes: ["Treefolk", "Druid"],

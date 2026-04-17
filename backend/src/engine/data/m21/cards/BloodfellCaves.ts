@@ -4,6 +4,8 @@ export const BloodfellCaves: CardDefinition = {
 
     name: "Bloodfell Caves",
     manaCost: "",
+    scryfall_id: "5d89a0e2-1163-4a11-b0df-deef2e6c8108",
+    image_url: "https://cards.scryfall.io/normal/front/5/d/5d89a0e2-1163-4a11-b0df-deef2e6c8108.jpg?1594737607",
     oracleText: "Bloodfell Caves enters the battlefield tapped.\nWhen Bloodfell Caves enters the battlefield, you gain 1 life.\n{T}: Add {B} or {R}.",
     colors: [],
     supertypes: [],

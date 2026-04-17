@@ -4,6 +4,8 @@ export const BrashTaunter: CardDefinition = {
 
     name: "Brash Taunter",
     manaCost: "{4}{R}",
+    scryfall_id: "ebb5e613-a803-42f3-840a-7089ac6b7e3d",
+    image_url: "https://cards.scryfall.io/normal/front/e/b/ebb5e613-a803-42f3-840a-7089ac6b7e3d.jpg?1594736510",
     oracleText: "Indestructible\nWhenever this creature is dealt damage, it deals that much damage to target opponent.\n{2}{R}, {T}: This creature fights another target creature.",
     colors: ["R"],
     supertypes: [],

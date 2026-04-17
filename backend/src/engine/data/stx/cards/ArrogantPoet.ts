@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const ArrogantPoet: CardDefinition = {
     name: 'Arrogant Poet',
     manaCost: '{1}{B}',
+    scryfall_id: "556a0816-83c5-41dc-8546-213b21e2cceb",
+    image_url: "https://cards.scryfall.io/normal/front/5/5/556a0816-83c5-41dc-8546-213b21e2cceb.jpg?1624590711",
     colors: ['B'],
     types: ['Creature'],
     subtypes: ['Human', 'Warlock'],

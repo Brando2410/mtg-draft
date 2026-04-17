@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const HarshAnnotation: CardDefinition = {
     name: "Harsh Annotation",
     manaCost: "{1}{W}",
+    scryfall_id: "e07a8fc7-c11c-4469-a31d-0abf40e57bbf",
+    image_url: "https://cards.scryfall.io/normal/front/e/0/e07a8fc7-c11c-4469-a31d-0abf40e57bbf.jpg?1775937033",
     colors: [
         "W"
     ],

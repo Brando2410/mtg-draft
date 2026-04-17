@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const GraduationDay: CardDefinition = {
     name: "Graduation Day",
     manaCost: "{1}{G}",
+    scryfall_id: "db1cea01-123e-4b23-8b98-f94cabce3912",
+    image_url: "https://cards.scryfall.io/normal/front/d/b/db1cea01-123e-4b23-8b98-f94cabce3912.jpg?1775937020",
     colors: [
         "G"
     ],

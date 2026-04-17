@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     export const PestbroodSloth: CardDefinition = {
     name: "Pestbrood Sloth",
     manaCost: "{3}{G}",
+    scryfall_id: "c1251ae6-2f19-4f84-ab02-6a6cc7ce6056",
+    image_url: "https://cards.scryfall.io/normal/front/c/1/c1251ae6-2f19-4f84-ab02-6a6cc7ce6056.jpg?1775938073",
     colors: [
         "G"
     ],

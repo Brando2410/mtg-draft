@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Dur
 export const ExpandedAnatomy: CardDefinition = {
     name: 'Expanded Anatomy',
     manaCost: '{3}',
+    scryfall_id: "c5642b9d-0daa-4e6b-ad48-f88dd37d6574",
+    image_url: "https://cards.scryfall.io/normal/front/c/5/c5642b9d-0daa-4e6b-ad48-f88dd37d6574.jpg?1637082010",
     colors: [],
     types: ['Sorcery'],
     subtypes: ['Lesson'],

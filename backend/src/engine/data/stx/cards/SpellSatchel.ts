@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const SpellSatchel: CardDefinition = {
     name: 'Spell Satchel',
     manaCost: '{2}',
+    scryfall_id: "cd8acc65-c7e0-4ba5-b956-af0679ffb830",
+    image_url: "https://cards.scryfall.io/normal/front/c/d/cd8acc65-c7e0-4ba5-b956-af0679ffb830.jpg?1681159425",
     colors: [],
     types: ['Artifact'],
     oracleText: 'Magecraft — Whenever you cast or copy an instant or sorcery spell, put a book counter on Spell Satchel.\n{T}, Remove a book counter from Spell Satchel: Add {C}.\n{3}, {T}, Remove three book counters from Spell Satchel: Draw a card.',

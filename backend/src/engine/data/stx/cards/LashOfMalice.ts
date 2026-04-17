@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Dur
 export const LashofMalice: CardDefinition = {
     name: 'Lash of Malice',
     manaCost: '{B}',
+    scryfall_id: "af3da2c6-29ed-4563-8bae-d1cc05df8897",
+    image_url: "https://cards.scryfall.io/normal/front/a/f/af3da2c6-29ed-4563-8bae-d1cc05df8897.jpg?1624591043",
     colors: ['B'],
     types: ['Instant'],
     oracleText: 'Target creature gets +2/-2 until end of turn.',

@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
 export const LoreholdCharm: CardDefinition = {
     name: "Lorehold Charm",
     manaCost: "{R}{W}",
+    scryfall_id: "5fe70295-e550-4577-a341-dab6c25aabfd",
+    image_url: "https://cards.scryfall.io/normal/front/5/f/5fe70295-e550-4577-a341-dab6c25aabfd.jpg?1775938389",
     colors: ["R", "W"],
     types: ["Instant"],
     subtypes: [],

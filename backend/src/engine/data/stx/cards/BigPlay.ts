@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Dur
 export const BigPlay: CardDefinition = {
     name: 'Big Play',
     manaCost: '{1}{G}',
+    scryfall_id: "9016d667-50a9-4093-9a99-b34dcdafe60b",
+    image_url: "https://cards.scryfall.io/normal/front/9/0/9016d667-50a9-4093-9a99-b34dcdafe60b.jpg?1624592445",
     colors: ['G'],
     types: ['Instant'],
     oracleText: 'Target creature gets +2/+2 until end of turn. Put a +1/+1 counter on it.',

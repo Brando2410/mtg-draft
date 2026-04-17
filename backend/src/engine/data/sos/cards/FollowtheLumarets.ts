@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Zone } from '@s
 export const FollowtheLumarets: CardDefinition = {
     name: "Follow the Lumarets",
     manaCost: "{1}{G}",
+    scryfall_id: "f9488480-2b6c-40bc-a93e-29fb1292a2e4",
+    image_url: "https://cards.scryfall.io/normal/front/f/9/f9488480-2b6c-40bc-a93e-29fb1292a2e4.jpg?1775938009",
     colors: [
         "G"
     ],

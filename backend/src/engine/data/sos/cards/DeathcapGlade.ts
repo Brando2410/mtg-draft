@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engin
     export const DeathcapGlade: CardDefinition = {
     name: "Deathcap Glade",
     manaCost: "",
+    scryfall_id: "78897104-80e1-4d8a-9958-145b40f679e8",
+    image_url: "https://cards.scryfall.io/normal/front/7/8/78897104-80e1-4d8a-9958-145b40f679e8.jpg?1775938766",
     colors: [],
     types: [
         "Land"

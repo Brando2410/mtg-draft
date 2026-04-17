@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
 export const MindintoMatter: CardDefinition = {
     name: "Mind into Matter",
     manaCost: "{X}{G}{U}",
+    scryfall_id: "0a7f0fdf-1d4b-4458-a19c-274611e8a59a",
+    image_url: "https://cards.scryfall.io/normal/front/0/a/0a7f0fdf-1d4b-4458-a19c-274611e8a59a.jpg?1775938403",
     colors: [
         "G",
         "U"

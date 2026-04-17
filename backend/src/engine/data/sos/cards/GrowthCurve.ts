@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const GrowthCurve: CardDefinition = {
     name: "Growth Curve",
     manaCost: "{G}{U}",
+    scryfall_id: "1675a445-86ae-413b-b95a-a1c254a7f252",
+    image_url: "https://cards.scryfall.io/normal/front/1/6/1675a445-86ae-413b-b95a-a1c254a7f252.jpg?1775938339",
     colors: [
         "G",
         "U"

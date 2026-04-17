@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     export const CampusComposerAqueousAria: CardDefinition = {
     name: "Campus Composer",
     manaCost: "{3}{U}",
+    scryfall_id: "fac8ac39-ecb4-4142-bf37-131c65660a9b",
+    image_url: "https://cards.scryfall.io/normal/front/f/a/fac8ac39-ecb4-4142-bf37-131c65660a9b.jpg?1775937189",
     colors: ["U"],
     types: ["Creature"],
     subtypes: ["Merfolk", "Bard"],

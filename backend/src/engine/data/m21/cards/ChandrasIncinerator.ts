@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
 export const ChandrasIncinerator: CardDefinition = {
     name: "Chandra's Incinerator",
     manaCost: "{5}{R}",
+    scryfall_id: "ed875705-b7b6-4464-b16f-61629ffed04f",
+    image_url: "https://cards.scryfall.io/normal/front/e/d/ed875705-b7b6-4464-b16f-61629ffed04f.jpg?1594736535",
     oracleText: "This spell costs {X} less to cast, where X is the total amount of noncombat damage dealt to your opponents this turn.\nTrample\nWhenever a source you control deals noncombat damage to an opponent, Chandra's Incinerator deals that much damage to target creature or planeswalker that player controls.",
     colors: ["R"],
     types: ["Creature"],

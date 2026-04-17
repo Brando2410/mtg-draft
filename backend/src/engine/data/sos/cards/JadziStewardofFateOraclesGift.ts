@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const JadziStewardofFateOraclesGift: CardDefinition = {
     name: "Jadzi, Steward of Fate // Oracle's Gift",
     manaCost: "{2}{U}",
+    scryfall_id: "a95b6baf-01e6-49c3-9a26-394b127d53c3",
+    image_url: "https://cards.scryfall.io/normal/front/a/9/a95b6baf-01e6-49c3-9a26-394b127d53c3.jpg?1775937293",
     colors: ["U"],
     types: ["Legendary", "Creature"],
     subtypes: ["Human", "Wizard"],

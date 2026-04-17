@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     export const KilliansConfidence: CardDefinition = {
     name: "Killian's Confidence",
     manaCost: "{W}{B}",
+    scryfall_id: "55ff776a-fc3b-4338-8864-d57a85b3f123",
+    image_url: "https://cards.scryfall.io/normal/front/5/5/55ff776a-fc3b-4338-8864-d57a85b3f123.jpg?1775938369",
     colors: [
         "B",
         "W"

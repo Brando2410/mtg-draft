@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const AjanisResponse: CardDefinition = {
     name: "Ajani's Response",
     manaCost: "{4}{W}",
+    scryfall_id: "9cd1417a-badc-4abd-a8ca-5b31f85c1072",
+    image_url: "https://cards.scryfall.io/normal/front/9/c/9cd1417a-badc-4abd-a8ca-5b31f85c1072.jpg?1776047920",
     colors: [
         "W"
     ],

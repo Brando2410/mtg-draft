@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 export const GarrukUnleashed: CardDefinition = {
     name: "Garruk, Unleashed",
     manaCost: "{2}{G}{G}",
+    scryfall_id: "af2fdbec-bca2-4af5-9c2a-28b0b35b18a3",
+    image_url: "https://cards.scryfall.io/normal/front/a/f/af2fdbec-bca2-4af5-9c2a-28b0b35b18a3.jpg?1594736982",
     oracleText: "+1: Up to one target creature gets +3/+3 and gains trample until end of turn.\n−2: Create a 3/3 green Beast creature token. Then if an opponent controls more creatures than you, put a loyalty counter on Garruk.\n−7: You get an emblem with \"At the beginning of your end step, you may search your library for a creature card, put it onto the battlefield, then shuffle.\"",
     colors: ["G"],
     supertypes: ["Legendary"],

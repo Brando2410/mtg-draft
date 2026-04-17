@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 export const HardenedAcademic: CardDefinition = {
     name: "Hardened Academic",
     manaCost: "{R}{W}",
+    scryfall_id: "06c9e8a7-2840-4cff-90af-c6636e598f78",
+    image_url: "https://cards.scryfall.io/normal/front/0/6/06c9e8a7-2840-4cff-90af-c6636e598f78.jpg?1775938346",
     colors: [
         "R",
         "W"

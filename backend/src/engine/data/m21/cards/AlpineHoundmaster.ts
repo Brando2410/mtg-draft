@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, T
 export const AlpineHoundmaster: CardDefinition = {
     name: "Alpine Houndmaster",
     manaCost: "{R}{W}",
+    scryfall_id: "43224e74-2c51-40bd-bc34-f66e990a3e33",
+    image_url: "https://cards.scryfall.io/normal/front/4/3/43224e74-2c51-40bd-bc34-f66e990a3e33.jpg?1594737342",
     oracleText: "When this creature enters, you may search your library for a card named Alpine Watchdog and/or a card named Igneous Cur, reveal them, put them into your hand, then shuffle.\nWhenever this creature attacks, it gets +X/+0 until end of turn, where X is the number of other attacking creatures.",
     colors: ["R", "W"],
     types: ["Creature"],

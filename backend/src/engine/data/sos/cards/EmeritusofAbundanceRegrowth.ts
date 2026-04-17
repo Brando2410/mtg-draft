@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     export const EmeritusofAbundanceRegrowth: CardDefinition = {
     name: "Emeritus of Abundance // Regrowth",
     manaCost: "{2}{G}",
+    scryfall_id: "ac095763-6f4e-4d4e-9c99-414646368f8d",
+    image_url: "https://cards.scryfall.io/normal/front/a/c/ac095763-6f4e-4d4e-9c99-414646368f8d.jpg?1775937986",
     colors: ["G"],
     types: ["Creature"],
     subtypes: ["Elf", "Druid"],

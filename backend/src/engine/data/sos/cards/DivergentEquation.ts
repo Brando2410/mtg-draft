@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
 export const DivergentEquation: CardDefinition = {
     name: "Divergent Equation",
     manaCost: "{X}{X}{U}",
+    scryfall_id: "26295e25-f1bf-4665-ba00-dad35c49bbc2",
+    image_url: "https://cards.scryfall.io/normal/front/2/6/26295e25-f1bf-4665-ba00-dad35c49bbc2.jpg?1775937210",
     colors: [
         "U"
     ],

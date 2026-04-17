@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
 export const BaneslayerAngel: CardDefinition = {
     name: "Baneslayer Angel",
     manaCost: "{3}{W}{W}",
+    scryfall_id: "4bd3014b-94bb-4a9f-92cf-239a2dcc7e97",
+    image_url: "https://cards.scryfall.io/normal/front/4/b/4bd3014b-94bb-4a9f-92cf-239a2dcc7e97.jpg?1594734758",
     oracleText: "Flying, first strike, lifelink, protection from Demons and from Dragons",
     colors: ["W"],
     types: ["Creature"],

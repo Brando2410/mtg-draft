@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const ElementalSummoning: CardDefinition = {
     name: 'Elemental Summoning',
     manaCost: '{3}{U/R}{U/R}',
+    scryfall_id: "ea51991c-1589-4c62-965b-5ae8d233520b",
+    image_url: "https://cards.scryfall.io/normal/front/e/a/ea51991c-1589-4c62-965b-5ae8d233520b.jpg?1637082123",
     colors: ['U', 'R'],
     types: ['Sorcery'],
     subtypes: ['Lesson'],

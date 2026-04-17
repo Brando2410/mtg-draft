@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
 export const DoubleMajor: CardDefinition = {
     name: "Double Major",
     manaCost: "{G}{U}",
+    scryfall_id: "c3d35413-8742-4443-8859-93c91112978d",
+    image_url: "https://cards.scryfall.io/normal/front/c/3/c3d35413-8742-4443-8859-93c91112978d.jpg?1627428638",
     colors: ['G', 'U'],
     types: ["Instant"],
     oracleText: "Copy target creature spell you control, except the copy isn't legendary if the spell is legendary.",

@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
     name: "Abigale, Poet Laureate // Heroic Stanza",
     manaCost: "{1}{W}{B} // {1}{W/B}",
+    scryfall_id: "77285d12-e658-4eb3-ba13-ff202afab9c8",
+    image_url: "https://cards.scryfall.io/normal/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.jpg?1775938164",
     colors: [
         "B",
         "W"

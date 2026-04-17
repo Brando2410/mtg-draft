@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const SymmetrySage: CardDefinition = {
     name: 'Symmetry Sage',
     manaCost: '{U}',
+    scryfall_id: "c2409aee-3a80-4533-80bc-9383624c285d",
+    image_url: "https://cards.scryfall.io/normal/front/c/2/c2409aee-3a80-4533-80bc-9383624c285d.jpg?1681159448",
     colors: ['U'],
     types: ['Creature'],
     subtypes: ['Human', 'Wizard'],

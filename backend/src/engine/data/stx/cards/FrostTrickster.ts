@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
 export const FrostTrickster: CardDefinition = {
     name: 'Frost Trickster',
     manaCost: '{2}{U}',
+    scryfall_id: "fd79c9cc-0a8c-4d88-96e2-cb177134a18d",
+    image_url: "https://cards.scryfall.io/normal/front/f/d/fd79c9cc-0a8c-4d88-96e2-cb177134a18d.jpg?1624590148",
     colors: ['U'],
     types: ['Creature'],
     subtypes: ['Bird', 'Wizard'],

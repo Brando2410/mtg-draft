@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const GalazethPrismari: CardDefinition = {
     name: "Galazeth Prismari",
     manaCost: "{2}{U}{R}",
+    scryfall_id: "06c9158c-064b-4d12-b860-d2c1450d1897",
+    image_url: "https://cards.scryfall.io/normal/front/0/6/06c9158c-064b-4d12-b860-d2c1450d1897.jpg?1627429083",
     colors: ["U", "R"],
     supertypes: ["Legendary"],
     types: ["Creature"],

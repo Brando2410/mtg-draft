@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const MuseSeeker: CardDefinition = {
     name: "Muse Seeker",
     manaCost: "{1}{U}",
+    scryfall_id: "71cb4a6b-b500-4b28-bcdb-ec4188242f39",
+    image_url: "https://cards.scryfall.io/normal/front/7/1/71cb4a6b-b500-4b28-bcdb-ec4188242f39.jpg?1775937328",
     colors: [
         "U"
     ],

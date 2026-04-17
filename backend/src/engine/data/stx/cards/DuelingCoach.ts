@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
 export const DuelingCoach: CardDefinition = {
     name: 'Dueling Coach',
     manaCost: '{3}{W}',
+    scryfall_id: "45b3dbb0-0d68-4351-bfc9-a09c50454bf7",
+    image_url: "https://cards.scryfall.io/normal/front/4/5/45b3dbb0-0d68-4351-bfc9-a09c50454bf7.jpg?1624589385",
     colors: ['W'],
     types: ['Creature'],
     subtypes: ['Human', 'Wizard'],

@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Dur
 export const EnthusiasticStudy: CardDefinition = {
     name: 'Enthusiastic Study',
     manaCost: '{1}{R}',
+    scryfall_id: "543c64ff-2c51-4a63-a940-dc8645717c85",
+    image_url: "https://cards.scryfall.io/normal/front/5/4/543c64ff-2c51-4a63-a940-dc8645717c85.jpg?1624591748",
     colors: ['R'],
     types: ['Instant'],
     oracleText: "Target creature gets +3/+1 and gains trample until end of turn. Learn.",

@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, T
     export const ArchaicsAgony: CardDefinition = {
     name: "Archaic's Agony",
     manaCost: "{4}{R}",
+    scryfall_id: "8d99f8b2-5c1c-4059-bf68-c6b2e9e5b275",
+    image_url: "https://cards.scryfall.io/normal/front/8/d/8d99f8b2-5c1c-4059-bf68-c6b2e9e5b275.jpg?1775937675",
     colors: [
         "R"
     ],

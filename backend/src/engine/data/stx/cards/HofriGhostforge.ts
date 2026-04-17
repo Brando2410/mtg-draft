@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Z
 export const HofriGhostforge: CardDefinition = {
     name: "Hofri Ghostforge",
     manaCost: "{3}{R}{W}",
+    scryfall_id: "bd8deecf-eded-418b-ac4c-5c3e8f54e86d",
+    image_url: "https://cards.scryfall.io/normal/front/b/d/bd8deecf-eded-418b-ac4c-5c3e8f54e86d.jpg?1627429212",
     colors: ["R", "W"],
     supertypes: ["Legendary"],
     types: ["Creature"],

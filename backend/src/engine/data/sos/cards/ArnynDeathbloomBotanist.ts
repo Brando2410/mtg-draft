@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
     export const ArnynDeathbloomBotanist: CardDefinition = {
     name: "Arnyn, Deathbloom Botanist",
     manaCost: "{2}{B}",
+    scryfall_id: "6168b472-0930-4db5-9920-407340b99050",
+    image_url: "https://cards.scryfall.io/normal/front/6/1/6168b472-0930-4db5-9920-407340b99050.jpg?1775937426",
     colors: [
         "B"
     ],

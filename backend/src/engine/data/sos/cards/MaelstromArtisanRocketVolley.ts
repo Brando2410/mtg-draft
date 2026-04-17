@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 export const MaelstromArtisanRocketVolley: CardDefinition = {
     name: "Maelstrom Artisan // Rocket Volley",
     manaCost: "{1}{R}{R}",
+    scryfall_id: "5c88391d-271f-4021-a5d9-158ebc1e6357",
+    image_url: "https://cards.scryfall.io/normal/front/5/c/5c88391d-271f-4021-a5d9-158ebc1e6357.jpg?1775937805",
     colors: ["R"],
     types: ["Creature"],
     subtypes: ["Minotaur", "Sorcerer"],

@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const DefendtheCampus: CardDefinition = {
     name: 'Defend the Campus',
     manaCost: '{1}{W}',
+    scryfall_id: "85e4e1b5-77d6-4af4-b22e-6f6b4d129f5d",
+    image_url: "https://cards.scryfall.io/normal/front/8/5/85e4e1b5-77d6-4af4-b22e-6f6b4d129f5d.jpg?1624589309",
     colors: ['W'],
     types: ['Instant'],
     oracleText: 'Choose one —\n• Creatures you control get +1/+1 until end of turn.\n• Destroy target creature with power 4 or greater.',

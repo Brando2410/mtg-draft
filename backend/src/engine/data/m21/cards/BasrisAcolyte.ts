@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
 export const BasrisAcolyte: CardDefinition = {
     name: "Basri's Acolyte",
     manaCost: "{2}{W}{W}",
+    scryfall_id: "08d1dd97-2675-4953-ab95-d47d23abfe05",
+    image_url: "https://cards.scryfall.io/normal/front/0/8/08d1dd97-2675-4953-ab95-d47d23abfe05.jpg?1594734783",
     oracleText: "Lifelink (Damage dealt by this creature also causes you to gain that much life.)\nWhen this creature enters, put a +1/+1 counter on each of up to two other target creatures you control.",
     colors: ["W"],
     supertypes: [],

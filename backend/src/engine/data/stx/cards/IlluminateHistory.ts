@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const IlluminateHistory: CardDefinition = {
         name: 'Illuminate History',
         manaCost: '{2}{R}{R}',
+    scryfall_id: "98739789-80b5-4224-a2e4-09e00654aa9d",
+    image_url: "https://cards.scryfall.io/normal/front/9/8/98739789-80b5-4224-a2e4-09e00654aa9d.jpg?1637082308",
         colors: ['R'],
         types: ['Sorcery'],
         subtypes: ['Lesson'],

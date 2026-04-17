@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 export const IdolofEndurance: CardDefinition = {
     name: "Idol of Endurance",
     manaCost: "{2}{W}",
+    scryfall_id: "4d60e84e-be05-49da-9720-4225abe9d003",
+    image_url: "https://cards.scryfall.io/normal/front/4/d/4d60e84e-be05-49da-9720-4225abe9d003.jpg?1612316288",
     oracleText: "When this artifact enters, exile all creature cards with mana value 3 or less from your graveyard until this artifact leaves the battlefield.\n{1}{W}, {T}: Until end of turn, you may cast a creature spell from among cards exiled with this artifact without paying its mana cost.",
     colors: ["W"],
     types: ["Artifact"],

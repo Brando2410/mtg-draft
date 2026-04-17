@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, Dyn
 export const BurrogBarrage: CardDefinition = {
     name: "Burrog Barrage",
     manaCost: "{1}{G}",
+    scryfall_id: "95d5b0a8-2b66-418e-9e5e-ecf7b304c31e",
+    image_url: "https://cards.scryfall.io/normal/front/9/5/95d5b0a8-2b66-418e-9e5e-ecf7b304c31e.jpg?1775937957",
     colors: [
         "G"
     ],

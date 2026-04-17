@@ -2,6 +2,8 @@ import { TargetMapping, AbilityType, CardDefinition, ConditionType, DurationType
 export const ExpressiveFiredancer: CardDefinition = {
     name: "Expressive Firedancer",
     manaCost: "{1}{R}",
+    scryfall_id: "259b8c45-6241-4206-a34e-34c7f401f47b",
+    image_url: "https://cards.scryfall.io/normal/front/2/5/259b8c45-6241-4206-a34e-34c7f401f47b.jpg?1775937734",
     colors: [
         "R"
     ],

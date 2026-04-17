@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/e
     export const EagerGlyphmage: CardDefinition = {
     name: "Eager Glyphmage",
     manaCost: "{3}{W}",
+    scryfall_id: "bf736de9-9bc4-49df-ae60-672ed4f83f32",
+    image_url: "https://cards.scryfall.io/normal/front/b/f/bf736de9-9bc4-49df-ae60-672ed4f83f32.jpg?1775936986",
     colors: [
         "W"
     ],

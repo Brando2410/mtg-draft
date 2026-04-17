@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, T
 export const MagmabloodArchaic: CardDefinition = {
     name: "Magmablood Archaic",
     manaCost: "{2/R}{2/R}{2/R}",
+    scryfall_id: "4d611278-9948-4345-b4dd-aa6eaf21b233",
+    image_url: "https://cards.scryfall.io/normal/front/4/d/4d611278-9948-4345-b4dd-aa6eaf21b233.jpg?1775937816",
     colors: [
         "R"
     ],

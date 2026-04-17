@@ -4,6 +4,8 @@ export const RadhaHeartofKeld: CardDefinition = {
 
     name: "Radha, Heart of Keld",
     manaCost: "{1}{R}{G}",
+    scryfall_id: "2bbd37b1-49cb-4295-9a1f-fb85368a8f12",
+    image_url: "https://cards.scryfall.io/normal/front/2/b/2bbd37b1-49cb-4295-9a1f-fb85368a8f12.jpg?1594737431",
     oracleText: "As long as it's your turn, Radha, Heart of Keld has first strike.\nYou may look at the top card of your library any time.\nYou may play lands from the top of your library.\n{4}{R}{G}: Radha gets +X/+X until end of turn, where X is the number of lands you control.",
     colors: ["R", "G"],
     supertypes: ["Legendary"],

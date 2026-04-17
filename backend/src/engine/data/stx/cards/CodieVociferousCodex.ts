@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DurationType, CostType, EffectType, Target
 export const CodieVociferousCodex: CardDefinition = {
     name: "Codie, Vociferous Codex",
     manaCost: "{3}",
+    scryfall_id: "ea476ee1-67d9-4dd8-a5ac-f68a155eb18b",
+    image_url: "https://cards.scryfall.io/normal/front/e/a/ea476ee1-67d9-4dd8-a5ac-f68a155eb18b.jpg?1624740590",
     colors: [],
     supertypes: ["Legendary"],
     types: ["Artifact", "Creature"],

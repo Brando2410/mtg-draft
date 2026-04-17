@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@s
 export const EurekaMoment: CardDefinition = {
     name: 'Eureka Moment',
     manaCost: '{2}{G}{U}',
+    scryfall_id: "e400c9b7-c789-49dd-9f72-b9d1df03fcca",
+    image_url: "https://cards.scryfall.io/normal/front/e/4/e400c9b7-c789-49dd-9f72-b9d1df03fcca.jpg?1771242160",
     colors: ['G', 'U'],
     types: ['Instant'],
     oracleText: 'Draw two cards. You may put a land card from your hand onto the battlefield.',

@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     export const MusesEncouragement: CardDefinition = {
     name: "Muse's Encouragement",
     manaCost: "{4}{U}",
+    scryfall_id: "c59e0004-1d6a-42a1-8ce4-31da2af2e1bf",
+    image_url: "https://cards.scryfall.io/normal/front/c/5/c59e0004-1d6a-42a1-8ce4-31da2af2e1bf.jpg?1775937336",
     colors: [
         "U"
     ],

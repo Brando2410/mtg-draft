@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
 export const ArchmageEmeritus: CardDefinition = {
     name: 'Archmage Emeritus',
     manaCost: '{2}{U}{U}',
+    scryfall_id: "761df6cd-0928-4167-8902-58fdb50181a0",
+    image_url: "https://cards.scryfall.io/normal/front/7/6/761df6cd-0928-4167-8902-58fdb50181a0.jpg?1624589970",
     colors: ['U'],
     types: ['Creature'],
     subtypes: ['Human', 'Wizard'],

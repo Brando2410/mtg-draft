@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     export const InformedInkwright: CardDefinition = {
     name: "Informed Inkwright",
     manaCost: "{1}{W}",
+    scryfall_id: "5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6",
+    image_url: "https://cards.scryfall.io/normal/front/5/d/5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6.jpg?1775937046",
     colors: [
         "W"
     ],

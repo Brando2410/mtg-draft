@@ -3,6 +3,8 @@ import {AbilityType, Zone, CardDefinition, EffectType, GameEvent, GameObject, Ta
 export const ForgottenSentinel: CardDefinition = {
         name: "Forgotten Sentinel",
         manaCost: "{4}",
+    scryfall_id: "3bd39a06-c53a-42c2-b2df-028358f03406",
+    image_url: "https://cards.scryfall.io/normal/front/3/b/3bd39a06-c53a-42c2-b2df-028358f03406.jpg?1594737496",
         oracleText: "This creature enters tapped.",
         colors: [],
         supertypes: [],

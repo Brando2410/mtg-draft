@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Trigg
 export const LilianasDevotee: CardDefinition = {
     name: "Liliana's Devotee",
     manaCost: "{2}{B}",
+    scryfall_id: "ae5d7f15-a86f-4eaa-8280-2e7f73c8ce3a",
+    image_url: "https://cards.scryfall.io/normal/front/a/e/ae5d7f15-a86f-4eaa-8280-2e7f73c8ce3a.jpg?1594736229",
     oracleText: "Zombies you control get +1/+0.\nAt the beginning of your end step, if a creature died this turn, you may pay {1}{B}. If you do, create a 2/2 black Zombie creature token.",
     colors: ["B"],
     types: ["Creature"],

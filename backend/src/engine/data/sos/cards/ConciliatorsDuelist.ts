@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
 export const ConciliatorsDuelist: CardDefinition = {
     name: "Conciliator's Duelist",
     manaCost: "{W}{W}{B}{B}",
+    scryfall_id: "e225929b-6197-4550-969e-3c4a97206a68",
+    image_url: "https://cards.scryfall.io/normal/front/e/2/e225929b-6197-4550-969e-3c4a97206a68.jpg?1775938257",
     colors: ["B", "W"],
     types: ["Creature"],
     subtypes: ["Kor", "Warlock"],

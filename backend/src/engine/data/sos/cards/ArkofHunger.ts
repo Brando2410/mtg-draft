@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     export const ArkofHunger: CardDefinition = {
     name: "Ark of Hunger",
     manaCost: "{2}{R}{W}",
+    scryfall_id: "79d01c19-162b-4a12-9e27-18366d95eaa0",
+    image_url: "https://cards.scryfall.io/normal/front/7/9/79d01c19-162b-4a12-9e27-18366d95eaa0.jpg?1775938187",
     colors: [
         "R",
         "W"

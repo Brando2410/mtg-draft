@@ -4,6 +4,8 @@ export const BasrisLieutenant: CardDefinition = {
 
     name: "Basri's Lieutenant",
     manaCost: "{3}{W}",
+    scryfall_id: "74b1eae0-1bf8-4922-a9e3-45c01ece9005",
+    image_url: "https://cards.scryfall.io/normal/front/7/4/74b1eae0-1bf8-4922-a9e3-45c01ece9005.jpg?1594734796",
     oracleText: "Vigilance, protection from multicolored.\nWhen Basri's Lieutenant enters the battlefield, put a +1/+1 counter on target creature you control.\nWhenever Basri's Lieutenant or another creature you control dies, if it had a +1/+1 counter on it, create a 2/2 white Knight creature token with vigilance.",
     colors: ["W"],
     supertypes: [],

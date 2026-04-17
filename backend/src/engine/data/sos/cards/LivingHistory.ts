@@ -2,6 +2,8 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
 export const LivingHistory: CardDefinition = {
     name: "Living History",
     manaCost: "{1}{R}",
+    scryfall_id: "2028792c-fd60-40d4-bff7-3b82dbe1ffb5",
+    image_url: "https://cards.scryfall.io/normal/front/2/0/2028792c-fd60-40d4-bff7-3b82dbe1ffb5.jpg?1775937797",
     colors: ["R"],
     types: ["Enchantment"],
     subtypes: [],

@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetT
 export const DaybreakCharger: CardDefinition = {
         name: "Daybreak Charger",
         manaCost: "{1}{W}",
+    scryfall_id: "ff87a671-054f-4357-8a62-450d36559a1b",
+    image_url: "https://cards.scryfall.io/normal/front/f/f/ff87a671-054f-4357-8a62-450d36559a1b.jpg?1594734866",
         oracleText: "When this creature enters, target creature gets +2/+0 until end of turn.",
         colors: ["white"],
         supertypes: [],

@@ -3,6 +3,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
 export const LoreholdApprentice: CardDefinition = {
     name: "Lorehold Apprentice",
     manaCost: "{R}{W}",
+    scryfall_id: "048157c6-4626-4881-ba19-deddd13622dc",
+    image_url: "https://cards.scryfall.io/normal/front/0/4/048157c6-4626-4881-ba19-deddd13622dc.jpg?1627429424",
     colors: ["R", "W"],
     types: ["Creature"],
     subtypes: ["Human", "Cleric"],
