@@ -1,9 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Loader2, X, Home, RefreshCw, BarChart2, Sun, FileText, AlertTriangle, Database, Clipboard as ClipboardIcon, Menu, Filter, Save } from 'lucide-react';
-import { fetchSearchCards, fetchExactCard, fetchCardsBatch } from '../../services/scryfall';
-import type { SimplifiedCard, ScryfallCard } from '../../services/scryfall';
-import { fetchRegistryCards, mapRegistryToSimplified } from '../../services/registry';
+import { fetchRegistryCards, fetchRegistryCardsBatch, mapRegistryToSimplified, enrichCardsWithScryfall } from '../../services/registry';
+import type { SimplifiedCard } from '../../services/scryfall';
 import { StatsModal } from '../shared/StatsModal';
 import { CardGridItem } from '../shared/CardGridItem';
 
@@ -56,37 +55,42 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
     { name: 'Forest', color: 'G' },
   ];
 
-  // Debounce per Local Registry Search (Replacing Scryfall)
+  // Initial load and Debounce per Local Registry Search
   useEffect(() => {
-    const timeoutId = setTimeout(async () => {
+    const loadCards = async () => {
+      setIsApiLoading(true);
+      let results = [];
       if (addQuery.length >= 2) {
-        setIsApiLoading(true);
-        const results = await fetchRegistryCards(addQuery);
-        // Only show implemented cards that have an image
-        setApiSuggestions(results
-          .filter(c => c.engineStatus === 'IMPLEMENTED' && c.image_url)
-          .map(mapRegistryToSimplified)
-        );
-        setIsApiLoading(false);
+        results = await fetchRegistryCards(addQuery);
       } else {
-        setApiSuggestions([]);
+        // Se la query è vuota, mostriamo le prime 50 carte implementate
+        const all = await fetchRegistryCards();
+        results = all.slice(0, 50);
       }
-    }, 300);
+
+      // Filtriamo per implementate (manteniamo tutte, anche senza immagine locale)
+      const implemented = results.filter(c => c.engineStatus === 'IMPLEMENTED');
+      
+      // Arricchiamo con Scryfall (immagini, ecc.)
+      const enriched = await enrichCardsWithScryfall(implemented);
+      
+      setApiSuggestions(enriched.map(mapRegistryToSimplified));
+      setIsApiLoading(false);
+    };
+
+    const timeoutId = setTimeout(loadCards, addQuery.length >= 2 ? 300 : 0);
     return () => clearTimeout(timeoutId);
   }, [addQuery]);
 
   const handleAddCard = async (cardName: string) => {
-    // If it's a basic land, we might still want scryfall if not in registry, but user said ONLY implemented.
-    // However, basic lands are ubiquitous.
     setIsApiLoading(true);
     const results = await fetchRegistryCards(cardName);
     const match = results.find(c => c.name.toLowerCase() === cardName.toLowerCase());
+    
     if (match && match.engineStatus === 'IMPLEMENTED') {
-      setDeckCards(prev => [...prev, mapRegistryToSimplified(match)]);
+      const enriched = await enrichCardsWithScryfall([match]);
+      setDeckCards(prev => [...prev, mapRegistryToSimplified(enriched[0])]);
     } else {
-      // Fallback to scryfall ONLY for basic lands if needed? 
-      // No, user said "only chose implemented card".
-      // But let's check if the match was found but not implemented.
       if (match) {
         alert(`${cardName} non è ancora stata implementata nell'engine.`);
       }
@@ -110,7 +114,7 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
     setImportErrors([]);
     const names = importText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
     try {
-      const { found, notFound } = await fetchCardsBatch(names);
+      const { found, notFound } = await fetchRegistryCardsBatch(names);
       if (found.length > 0) setDeckCards(prev => [...prev, ...found]);
       if (notFound.length > 0) setImportErrors(notFound);
       else { setIsImportModalOpen(false); setImportText(''); }

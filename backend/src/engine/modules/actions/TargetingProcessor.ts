@@ -42,29 +42,131 @@ export class TargetingProcessor {
         const counts = this.calculateTotalCounts(targetDef, xValue);
         // A target is optional if it's explicitly marked optional OR has minCount 0.
         // We also check if we've already fulfilled the mandatory part of a multi-target sequence.
-        // TRICKY: Spells being cast are "cancelable" (interface optional) but might be mandatory (rules mandatory).
-        // If it's a spell casting and it's mandatory, we DON'T want "You may" even if UI allows cancel.
         const isRulesOptional = def.optional || def.minCount === 0;
         const isSequenceOptional = counts.minCount <= selectedCount;
 
-        const isOptional = isRulesOptional || isSequenceOptional;
+        const type = (def.type || "target").toString().toLowerCase();
+        const rawRestrictions = def.restrictions || [];
+        const restrictions = rawRestrictions.map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
 
-        let type = def.type || "target";
-        const restrictions = (def.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
+        let typeStr = "";
 
-        let typeStr = type.toLowerCase();
-        if (restrictions.includes('opponent') || typeStr === 'opponent') typeStr = "an opponent";
-        else if (restrictions.includes('you')) typeStr = "yourself";
-        else if (type === 'Player' || typeStr === 'player') typeStr = "a player";
+        if (restrictions.includes('opponent') || type === 'opponent') {
+            typeStr = "an opponent";
+        } else if (restrictions.includes('you') || type === 'self') {
+            typeStr = "yourself";
+        } else if (type === 'player') {
+            typeStr = "a player";
+        } else if (type === 'anytarget' || type === 'any_target') {
+            typeStr = "any target";
+        } else {
+            // Complex object labeling based on type & restrictions
+            let adjectives: string[] = [];
+            let mainNoun = "target";
+            let location = "";
 
-        else if (type === 'Creature') typeStr = "a creature";
-        else if (type === 'Permanent') typeStr = "a permanent";
-        else if (type === 'CardInGraveyard') typeStr = "a card from graveyard";
-        else if (type === 'SpellOnStack') typeStr = "a spell on stack";
-        else if (type === 'AnyTarget' || typeStr === 'anytarget') typeStr = "any target";
+            // Mapping for base types (handles both shorthand strings and internal enum names)
+            const baseTypeMap: Record<string, string> = {
+                'creature': 'creature',
+                'artifact': 'artifact',
+                'land': 'land',
+                'enchantment': 'enchantment',
+                'planeswalker': 'planeswalker',
+                'permanent': 'permanent',
+                'spell': 'spell',
+                'card': 'card',
+                'cardingraveyard': 'card',
+                'card_in_graveyard': 'card',
+                'cardinhand': 'card',
+                'card_in_hand': 'card',
+                'spellonstack': 'spell',
+                'spell_on_stack': 'spell',
+                'non_land_permanent': 'nonland permanent',
+                'nonland_permanent': 'nonland permanent',
+                'nonlandpermanent': 'nonland permanent',
+                'instant_or_sorcery': 'instant or sorcery card',
+                'instantorsorcery': 'instant or sorcery card',
+                'player_or_planeswalker': 'player or planeswalker',
+                'artifact_or_creature': 'artifact or creature',
+                'artifactorcreature': 'artifact or creature',
+                'artifact_or_enchantment': 'artifact or enchantment',
+                'artifactorenchantment': 'artifact or enchantment',
+                'creature_or_planeswalker': 'creature or planeswalker',
+                'creatureorplaneswalker': 'creature or planeswalker'
+            };
+
+            mainNoun = baseTypeMap[type] || type;
+
+            if (type.includes('graveyard')) location = "in any graveyard";
+            if (type.includes('hand')) location = "in hand";
+
+            const knownAdjectives = [
+                'other', 'another', 'nonland', 'noncreature', 'token', 'nontoken', 'legendary', 
+                'tapped', 'untapped', 'monocolored', 'multicolored', 'colorless',
+                'white', 'blue', 'black', 'red', 'green'
+            ];
+
+            const baseTypes = ['creature', 'artifact', 'land', 'enchantment', 'planeswalker', 'permanent', 'spell', 'card'];
+
+            for (const r of restrictions) {
+                if (typeof r !== 'string') continue;
+                const lr = r.toLowerCase();
+
+                // 1. Basic Adjectives
+                if (knownAdjectives.includes(lr)) {
+                    if (lr === 'other' || lr === 'another') adjectives.unshift('another'); // "Another" always comes first
+                    else adjectives.push(lr);
+                    continue;
+                }
+
+                // 2. Type overrides or subtype as adjective
+                if (baseTypes.includes(lr)) {
+                    if (mainNoun === 'card' || mainNoun === 'target' || mainNoun === 'permanent') {
+                        mainNoun = lr + (mainNoun === 'card' ? ' card' : '');
+                    }
+                } else if (lr === 'instant' || lr === 'sorcery') {
+                    mainNoun = lr + " card";
+                } else if (lr === 'instantorsorcery' || lr === 'instant_or_sorcery') {
+                    mainNoun = "instant or sorcery card";
+                } else if (!lr.includes('control') && !lr.includes('yours') && !lr.includes('opponents') && lr !== 'graveyard') {
+                    // Assume it's a subtype (e.g., "Spirit", "Elf")
+                    adjectives.push(r); // Use original casing for subtypes if available, though here it's already lower
+                }
+
+                // 3. Ownership / Specific location
+                if (lr === 'youcontrol' || lr === 'yours' || lr === 'youown') {
+                    if (location.includes('graveyard')) location = "in your graveyard";
+                    else if (location.includes('hand')) location = "in your hand";
+                    else location = "you control";
+                } else if (lr === 'opponentcontrol' || lr === 'opponents' || lr === 'opponentcontrols' || lr === 'opponentowns') {
+                    if (location.includes('graveyard')) location = "in an opponent's graveyard";
+                    else if (location.includes('hand')) location = "in an opponent's hand";
+                    else location = "an opponent controls";
+                } else if (lr === 'graveyard' && !location) {
+                    location = "in any graveyard";
+                }
+            }
+
+            // Assemble the phrase
+            // Sort adjectives to maintain "another" at the start
+            const finalAdjectives = [...new Set(adjectives)];
+            const adjStr = finalAdjectives.join(' ');
+            
+            if (adjStr.includes('another')) {
+                typeStr = `${adjStr} ${mainNoun}`;
+            } else {
+                const combined = adjStr ? `${adjStr} ${mainNoun}` : mainNoun;
+                const firstChar = combined[0].toLowerCase();
+                const prefix = "aeiou".includes(firstChar) ? "an" : "a";
+                typeStr = `${prefix} ${combined}`;
+            }
+
+            if (location) {
+                typeStr += ` ${location}`;
+            }
+        }
 
         // If the definition specifies a label, use it! 
-        // We prepend "You may " if it's optional for the RULES (not just because it's a cancelable spell).
         if (def.label) {
             let label = def.label;
             if (label.toLowerCase().trim().endsWith('to') || label.toLowerCase().trim().endsWith('select')) {
@@ -79,11 +181,11 @@ export class TargetingProcessor {
 
         const prefix = (isRulesOptional || (isSequenceOptional && !isSpellCasting)) ? "You may select" : "Select";
 
-        // Handle "Up to" phrasing for targets with minCount 0
+        // Handle "Up to" phrasing
         if (def.minCount === 0 && def.count > 0 && !isSequenceOptional) {
             const countStr = def.count === 1 ? "one" : def.count;
-            const plural = def.count > 1 ? "s" : "";
-            // Special case for type strings that already include "a " or "an "
+            const plural = (def.count > 1 && !typeStr.endsWith('s')) ? "s" : "";
+            
             let cleanType = typeStr;
             if (cleanType.startsWith('a ')) cleanType = cleanType.substring(2);
             if (cleanType.startsWith('an ')) cleanType = cleanType.substring(3);

@@ -1,4 +1,5 @@
-import { CardDefinition } from '../engine/data/logic_utils';
+import { CardDefinition } from '@shared/engine_types';
+import { ManaProcessor } from '../engine/modules/magic/ManaProcessor';
 import { m21 } from '../engine/data/m21';
 import { sos } from '../engine/data/sos';
 import { stx } from '../engine/data/stx';
@@ -32,22 +33,22 @@ export class CardRegistryService {
 
     this.allCards = Object.values(combined).map(({ card, set }) => {
       // Basic check: if it has abilities implemented or custom logic beyond just data
-      const isImplemented = !!(card.abilities?.length || card.staticAbilities?.length || card.triggeredAbilities?.length);
-      
+      const isImplemented = !!(card.abilities?.length);
+
       return {
         name: card.name,
         set: set,
         oracleText: card.oracleText,
         manaCost: card.manaCost,
-        typeLine: card.typeLine,
-        cmc: card.cmc,
+        typeLine: card.type_line,
+        cmc: ManaProcessor.getManaValue(card.manaCost),
         colors: card.colors,
         keywords: card.keywords,
         image_url: card.image_url,
         back_image_url: (card as any).back_image_url,
         scryfall_id: card.scryfall_id,
         engineStatus: isImplemented ? 'IMPLEMENTED' : 'DATA_ONLY',
-        manualStatus: isImplemented ? 'VERIFIED' : 'MISSING',
+        manualStatus: isImplemented ? 'VERIFIED' : 'MISSING'
       };
     });
 
