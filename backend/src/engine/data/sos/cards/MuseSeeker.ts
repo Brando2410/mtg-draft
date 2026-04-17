@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const MuseSeeker: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+export const MuseSeeker: CardDefinition = {
     name: "Muse Seeker",
     manaCost: "{1}{U}",
     colors: [
@@ -17,9 +17,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     abilities: [
         {
             type: AbilityType.Triggered,
-            name: "Opus",
-                    eventMatch: TriggerEvent.CastSpell,
-            condition: TriggerEvent.CastInstantOrSorcery,
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: ConditionType.PlayerIsController,
             effects: [
                 {
                     type: EffectType.DrawCards,
@@ -30,13 +29,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
                     type: EffectType.DiscardCards,
                     amount: 1,
                     targetMapping: TargetMapping.Controller,
-                    condition: {
-                        type: 'NOT',
-                        inner: {
-                            type: 'SPENT_MANA_GE',
-                            param: '5'
-                        }
-                    }
+                    condition: 'SPENT_MANA_LT:5',
                 }
             ]
         }
@@ -44,4 +37,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     power: "1",
     toughness: "2"
 };
-    

@@ -204,22 +204,22 @@ export class MoveEffectHandler {
 
     private static resolveDrawCards(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any, targets: string[] = []) {
         const { EffectProcessor } = require('../EffectProcessor');
-        const amount = EffectProcessor.resolveAmount(state, effect.amount, (stackObject as any)?.sourceId || '', controllerId, stackObject);
         const playerIds = targets.filter(tid => state.players[tid as PlayerId]) as PlayerId[];
         if (playerIds.length === 0) playerIds.push(controllerId);
 
         playerIds.forEach(pid => {
+            const amount = EffectProcessor.resolveAmount(state, effect.amount, (stackObject as any)?.sourceId || '', pid, stackObject, [pid], parentContext);
             this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], zone: Zone.Hand, fromTop: amount, isDraw: true }, pid, log, stackObject, parentContext);
         });
     }
 
     private static resolveMill(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, stackObject?: any, parentContext?: any, targets: string[] = []) {
         const { EffectProcessor } = require('../EffectProcessor');
-        const amount = EffectProcessor.resolveAmount(state, effect.amount, (stackObject as any)?.sourceId || '', controllerId, stackObject);
         const playerIds = targets.filter(tid => state.players[tid as PlayerId]) as PlayerId[];
         if (playerIds.length === 0) playerIds.push(controllerId);
 
         playerIds.forEach(pid => {
+            const amount = EffectProcessor.resolveAmount(state, effect.amount, (stackObject as any)?.sourceId || '', pid, stackObject, [pid], parentContext);
             this.resolveLibraryTopMoves(state, { ...effect, selectionType: 'TopN', sourceZones: [Zone.Library], zone: Zone.Graveyard, fromTop: amount }, pid, log, stackObject, parentContext);
         });
     }

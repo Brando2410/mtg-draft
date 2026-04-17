@@ -84,6 +84,15 @@ export class ContinuousEffectHandler {
         }
     }
 
+    let targetControllerId = (effect as any).targetControllerId || controllerId;
+    if (effect.targetControllerMapping) {
+        const { TargetingProcessor } = require('../../actions/TargetingProcessor');
+        const controllerIds = TargetingProcessor.resolveTargetMapping(state, effect.targetControllerMapping, resolvedTargetIds, sourceId, controllerId, undefined, effect);
+        if (controllerIds.length > 0) {
+            targetControllerId = controllerIds[0] as PlayerId;
+        }
+    }
+
     const continuousEff: any = {
         id: effId,
         sourceId,
@@ -118,24 +127,18 @@ export class ContinuousEffectHandler {
         spendAnyMana: (effect as any).spendAnyMana,
         exileOnMoveToGraveyard: (effect as any).exileOnMoveToGraveyard || (effect as any).redirectConditions?.onLeaveZone === Zone.Graveyard,
         playerModifier: (effect as any).playerModifier,
+        targetControllerId: targetControllerId,
         restrictions: (effect as any).restrictions ? (effect as any).restrictions.map((r: any) => ({
             id: `rest_${effId}`,
             sourceId,
             type: typeof r === 'string' ? r as any : r.type,
-            targetControllerId: controllerId,
+            targetControllerId: targetControllerId,
             duration: duration
         })) : undefined
     };
 
-    if (effect.targetControllerMapping) {
-        const { TargetingProcessor } = require('../../actions/TargetingProcessor');
-        const controllerIds = TargetingProcessor.resolveTargetMapping(state, effect.targetControllerMapping, resolvedTargetIds, sourceId, controllerId, undefined, effect);
-        if (controllerIds.length > 0) {
-            continuousEff.duration.untilTurnOfPlayerId = controllerIds[0] as PlayerId;
-            continuousEff.targetControllerId = controllerIds[0] as PlayerId;
-        }
-    } else if ((effect as any).targetControllerId) {
-         continuousEff.targetControllerId = (effect as any).targetControllerId;
+    if (continuousEff.targetControllerId) {
+        continuousEff.duration.untilTurnOfPlayerId = continuousEff.targetControllerId;
     }
 
     if (effect.copyFromIdMapping) {
@@ -144,6 +147,14 @@ export class ContinuousEffectHandler {
         if (ids.length > 0) {
             continuousEff.copyFromId = ids[0];
         }
+    }
+
+    // --- NAMED CARD SUPPORT (Academic Probation / Necromentia) ---
+    const chosenName = (effect as any).chosenName || stackObject?.data?.chosenName;
+    if (chosenName) {
+        if (!state.turnState.namedCards) state.turnState.namedCards = {};
+        state.turnState.namedCards[sourceId] = chosenName;
+        continuousEff.value = chosenName; // Also store in effect for redundancy
     }
 
     state.ruleRegistry.continuousEffects.push(continuousEff);

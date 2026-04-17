@@ -78,7 +78,8 @@ export class CostProcessor {
       }
 
       case CostType.Sacrifice:
-        if (cost.targetMapping === 'SELF') {
+      case CostType.SacrificeSelf:
+        if (cost.targetMapping === 'SELF' || cost.type === CostType.SacrificeSelf) {
            return state.battlefield.some(c => c.id === source.id);
         }
         if (cost.restrictions) {
@@ -168,9 +169,10 @@ export class CostProcessor {
       }
 
       case CostType.Sacrifice:
+      case CostType.SacrificeSelf:
         // CR 701.17: To sacrifice a permanent, move it to its owner's graveyard.
         let toSac;
-        if (cost.targetMapping === 'SELF') {
+        if (cost.targetMapping === 'SELF' || cost.type === CostType.SacrificeSelf) {
             toSac = source;
             log(`[SACRIFICE] Identified source ${source.definition.name} as SELF sacrifice target.`);
         } else {
@@ -224,7 +226,7 @@ export class CostProcessor {
        case CostType.Exile:
        case CostType.ExileSelf:
          let exiles: GameObject[] = [];
-         if (cost.targetMapping === 'SELF') {
+         if (cost.targetMapping === 'SELF' || cost.type === CostType.ExileSelf) {
              exiles = [source];
          } else {
              const chosenIds = (state as any).lastChosenExileIds || ((state as any).lastChosenExileId ? [(state as any).lastChosenExileId] : []);

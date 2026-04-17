@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const MoltenCoreMaestro: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+export const MoltenCoreMaestro: CardDefinition = {
     name: "Molten-Core Maestro",
     manaCost: "{1}{R}",
     colors: [
@@ -17,8 +17,8 @@ import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } fro
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
-            condition: 'PLAYER_IS_CONTROLLER && (EVENT_OBJECT_MATCHES:Instant || EVENT_OBJECT_MATCHES:Sorcery)',
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: ConditionType.PlayerIsController,
             effects: [
                 {
                     type: EffectType.AddCounters,
@@ -38,4 +38,3 @@ import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent } fro
     power: "2",
     toughness: "2"
 };
-    

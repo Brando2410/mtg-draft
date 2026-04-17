@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const ThunderdrumSoloist: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+export const ThunderdrumSoloist: CardDefinition = {
     name: "Thunderdrum Soloist",
     manaCost: "{1}{R}",
     colors: [
@@ -17,8 +17,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
-            condition: 'PLAYER_IS_CONTROLLER && (EVENT_OBJECT_MATCHES:Instant || EVENT_OBJECT_MATCHES:Sorcery)',
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: ConditionType.PlayerIsController,
             effects: [
                 {
                     type: EffectType.DealDamage,
@@ -40,4 +40,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
     power: "1",
     toughness: "3"
 };
-    

@@ -158,7 +158,7 @@ export class ChoiceGenerator {
             return this.createDiscardChoice(state, nextPlayerIds, sourceId, amount, label, stackObj, parentContext, failureEffects, log);
         }
 
-        const resolvedAmount = (typeof amount === 'number' || amount === 'ANY' || amount === 'ALL') ? amount : (require('./EffectProcessor').EffectProcessor.resolveAmount(state, amount, sourceId, currentPlayerId, [currentPlayerId]));
+        const resolvedAmount = (typeof amount === 'number' || amount === 'ANY' || amount === 'ALL') ? amount : (require('./EffectProcessor').EffectProcessor.resolveAmount(state, amount, sourceId, currentPlayerId, stackObj, [currentPlayerId]));
         
         const isAny = resolvedAmount === 'ANY' || resolvedAmount === 'Any';
         const isAll = resolvedAmount === 'ALL' || resolvedAmount === 'All';

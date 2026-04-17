@@ -195,18 +195,30 @@ export class EffectProcessor {
           return MoveEffectHandler.handle(state, effect, validTargetIds, log, searchingPlayerId, stackObject, parentContext);
       }
       case 'DealDamage': {
-          const sourceMappingIds = (effect as any).damageSourceMapping ? TargetingProcessor.resolveTargetMapping(state, (effect as any).damageSourceMapping, targets, sourceId, controllerId, stackObject?.data, effect) : [];
-          const usedSourceId = sourceMappingIds[0] || (effect as any).damageSourceId || sourceId;
           const { LifeDamageHandler } = require('./handlers/LifeDamageHandler');
-          return LifeDamageHandler.handleDamage(state, validTargetIds, amount, usedSourceId, log);
+          validTargetIds.forEach((tid: string) => {
+              const sourceMappingIds = (effect as any).damageSourceMapping ? TargetingProcessor.resolveTargetMapping(state, (effect as any).damageSourceMapping, targets, sourceId, controllerId, stackObject?.data, effect) : [];
+              const usedSourceId = sourceMappingIds[0] || (effect as any).damageSourceId || sourceId;
+              const amt = this.resolveAmount(state, (effect as any).amount, sourceId, controllerId, stackObject, [tid], parentContext);
+              LifeDamageHandler.handleDamage(state, [tid], amt, usedSourceId, log);
+          });
+          return;
       }
       case 'GainLife': {
           const { LifeDamageHandler } = require('./handlers/LifeDamageHandler');
-          return LifeDamageHandler.handleGainLife(state, validTargetIds, amount, log);
+          validTargetIds.forEach((tid: string) => {
+              const amt = this.resolveAmount(state, (effect as any).amount, sourceId, controllerId, stackObject, [tid], parentContext);
+              LifeDamageHandler.handleGainLife(state, [tid], amt, log);
+          });
+          return;
       }
       case 'LoseLife': {
           const { LifeDamageHandler } = require('./handlers/LifeDamageHandler');
-          return LifeDamageHandler.handleLoseLife(state, validTargetIds, amount, log);
+          validTargetIds.forEach((tid: string) => {
+              const amt = this.resolveAmount(state, (effect as any).amount, sourceId, controllerId, stackObject, [tid], parentContext);
+              LifeDamageHandler.handleLoseLife(state, [tid], amt, log);
+          });
+          return;
       }
       case 'Destroy': {
           const { PermanentHandler } = require('./handlers/PermanentHandler');
@@ -232,7 +244,11 @@ export class EffectProcessor {
         case 'AddCounters': {
             const { PermanentHandler } = require('./handlers/PermanentHandler');
             const type = (effect as any).counterType || (effect as any).value || (effect as any).type || 'p1p1';
-            return PermanentHandler.handleAddCounters(state, validTargetIds, amount, type, log);
+            validTargetIds.forEach((tid: string) => {
+                const amt = this.resolveAmount(state, (effect as any).amount, sourceId, controllerId, stackObject, [tid], parentContext);
+                PermanentHandler.handleAddCounters(state, [tid], amt, type, log);
+            });
+            return;
         }
         case 'DoubleCounters': {
             const { PermanentHandler } = require('./handlers/PermanentHandler');
@@ -249,14 +265,19 @@ export class EffectProcessor {
         case 'DiscardCards': {
             const { ChoiceGenerator } = require('./ChoiceGenerator');
             state.turnState.lastDiscardedIds = []; // Clear for new discard sequence
-            state.pendingAction = ChoiceGenerator.createDiscardChoice(state, validTargetIds as PlayerId[], sourceId, amount, effect.label || "Discard Cards", stackObject, parentContext, (effect as any).onFailureEffects, log);
+            // Pass the RAW amount (function or string) so ChoiceGenerator can resolve per-player in the queue
+            state.pendingAction = ChoiceGenerator.createDiscardChoice(state, validTargetIds as PlayerId[], sourceId, (effect as any).amount, effect.label || "Discard Cards", stackObject, parentContext, (effect as any).onFailureEffects, log);
             return;
         }
         case 'CreateToken': {
           const { PermanentHandler } = require('./handlers/PermanentHandler');
-          let p = (effect as any).powerOverride !== undefined ? this.resolveAmount(state, (effect as any).powerOverride, sourceId, controllerId, stackObject, [], parentContext) : undefined;
-          let t = (effect as any).toughnessOverride !== undefined ? this.resolveAmount(state, (effect as any).toughnessOverride, sourceId, controllerId, stackObject, [], parentContext) : undefined;
-          return PermanentHandler.handleCreateToken(state, validTargetIds, amount, (effect as any).tokenBlueprint, log, p, t, effect, stackObject);
+          validTargetIds.forEach((tid: string) => {
+              const amt = this.resolveAmount(state, (effect as any).amount, sourceId, tid as PlayerId, stackObject, [tid], parentContext);
+              const p = (effect as any).powerOverride !== undefined ? this.resolveAmount(state, (effect as any).powerOverride, sourceId, tid as PlayerId, stackObject, [tid], parentContext) : undefined;
+              const t = (effect as any).toughnessOverride !== undefined ? this.resolveAmount(state, (effect as any).toughnessOverride, sourceId, tid as PlayerId, stackObject, [tid], parentContext) : undefined;
+              PermanentHandler.handleCreateToken(state, [tid], amt, (effect as any).tokenBlueprint, log, p, t, effect, stackObject);
+          });
+          return;
       }
       case 'CreateEmblem': {
           const { PermanentHandler } = require('./handlers/PermanentHandler');

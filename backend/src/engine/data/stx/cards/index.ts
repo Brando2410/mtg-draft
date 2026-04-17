@@ -139,24 +139,3 @@ export { VillageRites } from '../../m21/cards/VillageRites';
 export { Revitalize } from '../../m21/cards/Revitalize';
 export { DefiantStrike } from '../../m21/cards/DefiantStrike';
 export { Cultivate } from '../../m21/cards/Cultivate';
-
-// Batches
-// export * from './STX_Batch_10';
-// export * from './STX_Batch_11_UncommonMix';
-// export * from './STX_Batch_12_FinalMix';
-// export * from './STX_Batch_13_Outliers';
-// export * from './STX_Batch_5_Pledgemages';
-// export * from './STX_Batch_6_Lessons';
-// export * from './STX_Batch_7_Learn_Spells';
-// export * from './STX_Batch_8_Mystical_Archive';
-// export * from './STX_Batch_9_Final_Synergies';
-// export * from './STX_Commands';
-// export * from './STX_MagecraftPowerhouses';
-// export * from './STX_Rares_Mythics_Batch_1';
-// export * from './STX_Rares_Mythics_Batch_2';
-// export * from './STX_Rares_Mythics_Batch_3';
-// export * from './STX_Rares_Mythics_Batch_4';
-// export * from './STX_Rares_Mythics_Batch_5';
-// export * from './STX_Remaining_Lessons';
-// export * from './STX_RemovalStaples';
-// export * from './STX_SchoolUncommons';

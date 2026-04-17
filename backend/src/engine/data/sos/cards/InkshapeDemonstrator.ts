@@ -17,7 +17,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, Trig
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
             condition: 'REPARTEE_TRIGGER',
             effects: [
                 {

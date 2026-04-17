@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const GraduationDay: CardDefinition = {
+export const GraduationDay: CardDefinition = {
     name: "Graduation Day",
     manaCost: "{1}{G}",
     colors: [
@@ -14,8 +14,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: 'EVENT_SPELL_TARGET_MATCHES:creature',
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: 'REPARTEE_TRIGGER',
             targetDefinition: {
                 type: TargetType.AnyTarget,
                 count: 1,
@@ -32,4 +32,3 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
         }
     ]
 };
-    

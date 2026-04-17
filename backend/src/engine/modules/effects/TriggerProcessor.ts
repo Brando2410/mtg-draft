@@ -557,7 +557,7 @@ export class TriggerProcessor {
             const targets = stackObj?.targets || [];
             if (targets.some((tid: string) => state.battlefield.find(o => o.id === tid)?.definition.types.some(t => t.toLowerCase() === 'creature'))) {
                 state.battlefield.forEach(obj => {
-                    if (obj.controllerId === event.playerId && obj.definition.keywords?.includes('Repartee')) {
+                    if (String(obj.controllerId) === String(event.playerId) && obj.definition.keywords?.includes('Repartee')) {
                         const reparteeAbility = oracle.getCard(obj.definition.name)?.abilities?.find((a: any) => a.id?.includes('repartee') || a.eventMatch === 'ON_REPARTEE' || a.name === 'Repartee');
                         if (reparteeAbility) {
                             matchingTriggers.push({ ...reparteeAbility, id: `repartee_gen_${obj.id}_${Date.now()}`, sourceId: obj.id, controllerId: obj.controllerId } as any);
@@ -572,7 +572,7 @@ export class TriggerProcessor {
         if (event.type === 'ON_ETB' && event.data?.object?.definition.types.some((t: string) => t.toLowerCase() === 'land')) {
             const obj = event.data.object;
             state.battlefield.forEach(p => {
-                if (p.controllerId === obj.controllerId) {
+                if (String(p.controllerId) === String(obj.controllerId)) {
                     const landfallAbility = oracle.getCard(p.definition.name)?.abilities?.find((a: any) => a.eventMatch === 'ON_LANDFALL' || a.name === 'Landfall');
                     if (landfallAbility) {
                         matchingTriggers.push({ ...landfallAbility, id: `landfall_${p.id}_${Date.now()}`, sourceId: p.id, controllerId: p.controllerId } as any);
@@ -585,10 +585,20 @@ export class TriggerProcessor {
     private static processOpus(state: GameState, event: GameEvent, matchingTriggers: TriggeredAbility[]) {
         if (event.type === 'ON_CAST_INSTANT_SORCERY' && event.playerId) {
             state.battlefield.forEach(p => {
-                if (p.controllerId === event.playerId) {
+                if (String(p.controllerId) === String(event.playerId)) {
                     const opusAbility = oracle.getCard(p.definition.name)?.abilities?.find((a: any) => a.eventMatch === 'ON_OPUS' || a.name === 'Opus');
                     if (opusAbility) {
-                        matchingTriggers.push({ ...opusAbility, id: `opus_${p.id}_${Date.now()}`, sourceId: p.id, controllerId: p.controllerId, eventData: { spent: event.data?.card?.paidManaValue || 0 } } as any);
+                        // Avoid adding duplicate trigger if collectMatchingTriggers already found it
+                        const alreadyAdded = matchingTriggers.some(t => t.sourceId === p.id && (t.name === 'Opus' || t.oracleText?.includes('Opus')));
+                        if (!alreadyAdded) {
+                            matchingTriggers.push({ 
+                                ...opusAbility, 
+                                id: `opus_sys_${p.id}_${Date.now()}`, 
+                                sourceId: p.id, 
+                                controllerId: p.controllerId, 
+                                eventData: { spent: event.data?.card?.paidManaValue || 0 } 
+                            } as any);
+                        }
                     }
                 }
             });

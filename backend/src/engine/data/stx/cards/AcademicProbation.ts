@@ -1,40 +1,75 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, DurationType } from '@shared/engine_types';
+import {
+    AbilityType,
+    CardDefinition,
+    Color,
+    DurationType,
+    EffectType,
+    Restriction,
+    RestrictionType,
+    TargetMapping,
+    TargetType
+} from '@shared/engine_types';
 
+/**
+ * Academic Probation (STX 007)
+ */
 export const AcademicProbation: CardDefinition = {
-    name: "Academic Probation",
-    manaCost: "{1}{W}",
+    name: 'Academic Probation',
+    manaCost: '{1}{W}',
+    type_line: 'Sorcery',
+    types: ['Sorcery'],
     colors: ["W"],
-    types: ["Sorcery"],
-    subtypes: ["Lesson"],
-    oracleText: "Choose one —\n• Choose a nonland card name. Until your next turn, target opponent can't cast spells with the chosen name.\n• Target creature can't block this turn.",
+    oracleText: "Choose one —\n• Choose a nonland card name. Until your next turn, spells with the chosen name can't be cast and activated abilities of permanents with that name can't be activated.\n• Choose target nonland permanent. Until your next turn, it can't attack or block, and its activated abilities can't be activated.",
     abilities: [
         {
             type: AbilityType.Spell,
-            effects: [{
-                type: EffectType.Choice,
-                label: "Choose a mode",
-                choices: [
-                    {
-                        label: "Restriction",
-                        targetDefinition: { count: 1, type: TargetType.Player, restrictions: [{ type: 'Opponent' }] },
-                        effects: [
-                            { type: EffectType.Choice, label: 'Choose a nonland card name', targetIdMapping: 'NAME_A_CARD', restrictions: [{ type: 'Not', restriction: { type: 'Type', value: 'Land' } }] },
-                            {
-                                type: EffectType.ApplyContinuousEffect,
-                                duration: { type: DurationType.UntilEndOfTurn },
-                                restrictions: [{ type: 'CannotCastNamedCard' }],
-                                targetMapping: TargetMapping.Target1
-                            }
-                        ]
-                    },
-                    {
-                        label: "Blocker",
-                        targetDefinition: { count: 1, type: TargetType.Creature },
-                        effects: [{ type: EffectType.ApplyContinuousEffect, duration: { type: DurationType.UntilEndOfTurn }, restrictions: [{ type: 'CannotBlock' }], targetMapping: TargetMapping.Target1 }]
-                    }
-                ]
-            }]
+            effects: [
+                {
+                    type: EffectType.Choice,
+                    label: 'Academic Probation: Choose a mode',
+                    choices: [
+                        {
+                            label: 'Name a nonland card',
+                            effects: [
+                                {
+                                    type: EffectType.Choice,
+                                    targetIdMapping: TargetMapping.NameACard,
+                                    restrictions: [Restriction.NonLand],
+                                    effects: [
+                                        {
+                                            type: EffectType.ApplyContinuousEffect,
+                                            duration: { type: DurationType.UntilYourNextTurn },
+                                            restrictions: [
+                                                RestrictionType.CannotCastNamedCard,
+                                                RestrictionType.CannotActivateNamedCardAbilities
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            label: 'Target nonland permanent',
+                            targetDefinition: {
+                                type: TargetType.Permanent,
+                                restrictions: [Restriction.NonLand]
+                            },
+                            effects: [
+                                {
+                                    type: EffectType.ApplyContinuousEffect,
+                                    duration: { type: DurationType.UntilYourNextTurn },
+                                    targetMapping: TargetMapping.Target1,
+                                    restrictions: [
+                                        RestrictionType.CannotAttack,
+                                        RestrictionType.CannotBlock,
+                                        RestrictionType.CannotActivateAbilities
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     ]
 };
-

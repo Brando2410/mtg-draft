@@ -27,7 +27,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: 'PLAYER_IS_CONTROLLER && SPELL_TARGETS_CREATURE',
+            condition: 'REPARTEE_TRIGGER',
             effects: [
                 {
                     type: CostType.Choice,

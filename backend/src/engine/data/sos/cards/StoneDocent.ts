@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-    export const StoneDocent: CardDefinition = {
+export const StoneDocent: CardDefinition = {
     name: "Stone Docent",
     manaCost: "{1}{W}",
     colors: [
@@ -40,4 +40,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone 
     power: "3",
     toughness: "1"
 };
-    

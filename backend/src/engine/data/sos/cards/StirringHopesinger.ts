@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const StirringHopesinger: CardDefinition = {
+export const StirringHopesinger: CardDefinition = {
     name: "Stirring Hopesinger",
     manaCost: "{2}{W}",
     colors: [
@@ -17,8 +17,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     abilities: [
         {
             type: AbilityType.Triggered,
-            id: "Repartee",
-                    eventMatch: TriggerEvent.CastSpell,
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
             condition: 'REPARTEE_TRIGGER',
             effects: [
                 {
@@ -33,4 +32,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     power: "1",
     toughness: "3"
 };
-    

@@ -32,7 +32,7 @@ export class RestrictionProcessor {
 
             // 3. Named Card Restriction (Academic Probation)
             if (r.type === 'CannotCastNamedCard') {
-                const namedCardName = state.turnState.namedCards?.[r.sourceId];
+                const namedCardName = state.turnState.namedCards?.[r.sourceId] || (r as any).value;
                 if (namedCardName && card.definition.name.toLowerCase() === namedCardName.toLowerCase()) {
                     return false;
                 }

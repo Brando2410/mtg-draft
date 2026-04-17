@@ -1,4 +1,4 @@
-import { ConditionType, GameEvent, GameObject, GameObjectId, GameState, PlayerId, Zone } from '@shared/engine_types';
+import { ConditionType, GameEvent, GameObject, GameObjectId, GameState, PlayerId, TriggerEvent, Zone } from '@shared/engine_types';
 
 /**
  * Rules Engine Module: Condition Evaluation
@@ -20,19 +20,53 @@ export class ConditionProcessor {
   ): boolean {
     if (!condition) return true;
 
-    // Support for negation: !CONDITION
-    if (condition.startsWith('!')) {
-      return !this.matchesCondition(state, condition.substring(1), sourceId, controllerId, event);
+    // Support for function-based conditions
+    if (typeof condition === 'function') {
+      return (condition as any)(state, event, { sourceId, controllerId });
     }
 
-    // Support for multiple conditions: CONDITION_1 && CONDITION_2
+    if (typeof condition !== 'string') return true;
+
+    // --- RECURSIVE LOGICAL PARSER (Supports parentheses, &&, ||) ---
+    // 1. Handle Parentheses
+    if (condition.includes('(')) {
+      let result = condition;
+      while (result.includes('(')) {
+        const lastOpen = result.lastIndexOf('(');
+        const nextClose = result.indexOf(')', lastOpen);
+        if (nextClose === -1) break; // Malformed
+
+        const subExpr = result.substring(lastOpen + 1, nextClose);
+        const subRes = this.matchesCondition(state, subExpr, sourceId, controllerId, event);
+        result = result.substring(0, lastOpen) + (subRes ? 'TRUE_VAL' : 'FALSE_VAL') + result.substring(nextClose + 1);
+      }
+      return this.matchesCondition(state, result, sourceId, controllerId, event);
+    }
+
+    // 2. Handle OR (||) - lowest precedence
+    if (condition.includes('||')) {
+      return condition.split('||').some(c => this.matchesCondition(state, c.trim(), sourceId, controllerId, event));
+    }
+
+    // 3. Handle AND (&&)
     if (condition.includes('&&')) {
       return condition.split('&&').every(c => this.matchesCondition(state, c.trim(), sourceId, controllerId, event));
     }
 
-    // Parameterized conditions: HAS_PERMANENT:creature,power>=4
-    if (condition.includes(':')) {
-      const [type, params] = condition.split(':');
+    // 4. Handle Placeholder results from parentheses reduction
+    if (condition.trim() === 'TRUE_VAL') return true;
+    if (condition.trim() === 'FALSE_VAL') return false;
+
+    // 5. Handle Negation (!)
+    if (condition.trim().startsWith('!')) {
+      return !this.matchesCondition(state, condition.trim().substring(1), sourceId, controllerId, event);
+    }
+
+    const trimmedCondition = condition.trim();
+
+    // 6. Parameterized conditions: HAS_PERMANENT:creature,power>=4
+    if (trimmedCondition.includes(':')) {
+      const [type, params] = trimmedCondition.split(':');
       const restrictions = params.split(',').map(r => r.trim());
 
       // We use a local require for TargetingProcessor to avoid top-level circularity if needed, 
@@ -56,7 +90,7 @@ export class ConditionProcessor {
           const opponent = Object.keys(state.players).find(pid => pid !== controllerId);
           return opponent ? (state.players[opponent as PlayerId]?.life || 0) <= oppLife : false;
         case 'EVENT_OBJECT_MATCHES': {
-          const obj = event?.data?.object || (event as any)?.gameObject || event?.object || (state.battlefield.find((o: any) => o.id === event?.sourceId));
+          const obj = event?.data?.object || event?.data?.card || (event as any)?.gameObject || event?.object || (state.battlefield.find((o: any) => o.id === event?.sourceId));
           if (!obj) return false;
           return TargetingProcessor.matchesRestrictions(state, obj, restrictions, controllerId, sourceId);
         }
@@ -199,11 +233,23 @@ export class ConditionProcessor {
           const objId = event?.data?.object?.id || (event as any)?.gameObject?.id;
           return objId === sourceId;
         }
+
+        case 'SELF_COMBAT_DAMAGE_PLAYER_OR_PLANESWALKER': {
+          if (!event || event.sourceId !== sourceId || !event.data?.isCombat) return false;
+          // DamageDealtToPlayer is always valid if source matches
+          if (event.type === TriggerEvent.DamageDealtToPlayer || event.type === 'ON_DAMAGE_PLAYER') return true;
+          // DamageTaken is valid only if target is a Planeswalker
+          if (event.type === TriggerEvent.DamageTaken) {
+            const targetObj = state.battlefield.find(o => o.id === event.targetId);
+            return !!targetObj && targetObj.definition.types.some(t => t.toLowerCase() === 'planeswalker');
+          }
+          return false;
+        }
       }
     }
 
     // Generic/Legacy strings
-    switch (condition.toUpperCase()) {
+    switch (trimmedCondition.toUpperCase()) {
       case 'SPELL_TARGETS_SOURCE': {
         const targets = (event?.data as any)?.targets || [];
         return targets.includes(sourceId);
@@ -277,11 +323,13 @@ export class ConditionProcessor {
         const zone = (event as any).sourceZone || (event as any).lastNonStackZone || event?.data?.sourceZone || event?.card?.lastNonStackZone;
         return zone === Zone.Hand;
       }
+      case 'PLAYER_IS_CONTROLLER':
       case 'EVENT_PLAYER_IS_YOU':
-        return event?.playerId === controllerId;
+      case 'TRIGGER_EVENT_SOURCE.CONTROLLERID === CONTROLLER_ID':
+        return String(event?.playerId) === String(controllerId);
       case 'EVENT_OBJECT_CONTROLLER_IS_YOU': {
-        const eObj = event?.data?.object || (event as any)?.gameObject;
-        return eObj?.controllerId === controllerId;
+        const eObj = event?.data?.object || event?.data?.card || (event as any)?.gameObject || event?.object || (state.battlefield.find((o: any) => o.id === (event?.sourceId || (event as any)?.sourceId)));
+        return String(eObj?.controllerId) === String(controllerId);
       }
       case 'TRIGGER_SOURCE_POW_OR_TOUGH_LE_1': {
         const tid = event?.data?.object?.id || event?.targetId;
@@ -307,8 +355,10 @@ export class ConditionProcessor {
           obj.definition.types.some(t => t.toLowerCase() === 'creature') &&
           (Number(obj.definition.power || 0) >= 4 || (obj.effectiveStats?.power || 0) >= 4)
         );
-      case 'PLAYER_IS_CONTROLLER':
-        return event?.playerId === controllerId;
+      case 'SOURCE_IS_SELF':
+      case 'OBJECT_IS_SELF':
+      case 'EVENT_SOURCE_IS_SELF':
+        return String(sourceId) === String((event as any)?.sourceId || event?.sourceId || event?.data?.sourceId);
       case 'EVENT_OBJECT_HAS_X': {
         const obj = event?.data?.object || event?.data?.card || (event as any)?.gameObject;
         if (!obj) return false;
@@ -436,8 +486,8 @@ export class ConditionProcessor {
       case 'CONTROLLER_HAS_ARTIFACT':
         return state.battlefield.some(o => o.controllerId === controllerId && (o.definition.types || []).some(t => t.toLowerCase() === 'artifact'));
       case 'ON_CAST_INSTANT_SORCERY': {
-        if (event?.playerId !== controllerId) return false;
-        const card = event?.data?.card || event?.data?.object;
+        if (String(event?.playerId) !== String(controllerId)) return false;
+        const card = event?.data?.card || event?.data?.object || (event as any)?.gameObject;
         if (!card) return false;
         const types = card.definition.types.map((t: string) => t.toLowerCase());
         return types.includes('instant') || types.includes('sorcery');
@@ -484,12 +534,8 @@ export class ConditionProcessor {
         return !(event as any)?.data?.isCombat;
       case 'EVENT_IS_COMBAT':
         return !!(event as any)?.data?.isCombat;
-      case 'EVENT_PLAYER_IS_YOU':
-        return event?.playerId === controllerId;
-      case 'EVENT_OBJECT_CONTROLLER_IS_YOU': {
-        const obj = event?.data?.object || (event as any)?.gameObject || event?.object || (state.battlefield.find((o: any) => o.id === event?.sourceId));
-        return obj?.controllerId === controllerId;
-      }
+      case 'YOUR_CARD_LEAF_GRAVEYARD':
+        return String(event?.playerId) === String(controllerId);
       case 'GRAVEYARD_CREATURE_COUNT_GE':
         return (state.players[controllerId]?.graveyard.filter(c => (c.definition.types || []).some(t => t.toLowerCase() === 'creature')).length || 0) >= 1;
       case 'ARTIFACT_COUNT_GE':

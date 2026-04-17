@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
     export const ForumNecroscribe: CardDefinition = {
     name: "Forum Necroscribe",
     manaCost: "{5}{B}",
@@ -17,13 +17,13 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Z
     abilities: [
          {
              type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
+                    eventMatch: TriggerEvent.CastInstantOrSorcery,
              targets: [{ type: 'Card', restrictions: [
                 { type: 'Type', value: 'Creature' },
                 { type: 'Zone', value: 'Graveyard' },
                 { type: 'Control', value: 'YouControl' }
             ] }],
-             condition: 'PLAYER_IS_CONTROLLER && (EVENT_OBJECT_MATCHES:Instant || EVENT_OBJECT_MATCHES:Sorcery) && SPELL_TARGETS_CREATURE',
+             condition: 'PLAYER_IS_CONTROLLER && SPELL_TARGETS_CREATURE',
              effects: [
                  {
                      type: EffectType.MoveToZone,

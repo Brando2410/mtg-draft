@@ -51,6 +51,8 @@ export const RestrictionType = {
     CannotBlockThisTurn: 'CannotBlockThisTurn',
     CannotCastType: 'CannotCastType',
     CannotActivateNonManaAbilities: 'CannotActivateNonManaAbilities',
+    CannotActivateAbilities: 'CannotActivateAbilities',
+    CannotActivateNamedCardAbilities: 'CannotActivateNamedCardAbilities',
     CannotCastNamedCard: 'CannotCastNamedCard',
     CannotCastPermanentSpells: 'CannotCastPermanentSpells',
     MustAttack: 'MustAttack',

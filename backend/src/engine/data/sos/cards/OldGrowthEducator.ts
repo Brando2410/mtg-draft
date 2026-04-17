@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const OldGrowthEducator: CardDefinition = {
+export const OldGrowthEducator: CardDefinition = {
     name: "Old-Growth Educator",
     manaCost: "{2}{B}{G}",
     colors: [
@@ -18,8 +18,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType, Tri
     abilities: [
         {
             type: AbilityType.Triggered,
-            id: "Infusion",
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             condition: ConditionType.Infusion,
             effects: [
                 {
@@ -34,4 +33,3 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType, Tri
     power: "4",
     toughness: "4"
 };
-    

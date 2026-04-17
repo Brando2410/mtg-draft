@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const ExpressiveFiredancer: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+export const ExpressiveFiredancer: CardDefinition = {
     name: "Expressive Firedancer",
     manaCost: "{1}{R}",
     colors: [
@@ -17,8 +17,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, Trig
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
-            condition: 'PLAYER_IS_CONTROLLER && (EVENT_OBJECT_MATCHES:Instant || EVENT_OBJECT_MATCHES:Sorcery)',
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: ConditionType.PlayerIsController,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -39,4 +39,3 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, Trig
     power: "2",
     toughness: "2"
 };
-    

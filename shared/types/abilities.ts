@@ -96,6 +96,7 @@ export interface TriggeredAbility {
     id: string;
     sourceId: GameObjectId;
     controllerId: PlayerId;
+    name?: string;
     eventMatch: string | string[];
     activeZone?: Zone;
     condition?: (state: any, event: any, ability: TriggeredAbility) => boolean;

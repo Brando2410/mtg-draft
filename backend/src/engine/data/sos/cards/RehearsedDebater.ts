@@ -18,7 +18,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, Trig
         {
             type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: 'PLAYER_IS_CONTROLLER && SPELL_TARGETS_CREATURE',
+            condition: 'REPARTEE_TRIGGER',
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

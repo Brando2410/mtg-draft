@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const SpectacularSkywhale: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+export const SpectacularSkywhale: CardDefinition = {
     name: "Spectacular Skywhale",
     manaCost: "{2}{U}{R}",
     colors: [
@@ -18,8 +18,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, Trig
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastSpell,
-            condition: 'PLAYER_IS_CONTROLLER && (EVENT_OBJECT_MATCHES:Instant || EVENT_OBJECT_MATCHES:Sorcery)',
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: ConditionType.PlayerIsController,
             effects: [
                 {
                     type: EffectType.AddCounters,
@@ -42,4 +42,3 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, Trig
     power: "1",
     toughness: "4"
 };
-    

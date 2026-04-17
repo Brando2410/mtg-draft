@@ -14,21 +14,15 @@ export const GarruksHarbinger: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: [TriggerEvent.DamageDealtToPlayer, TriggerEvent.DamageTaken],
-            condition: (state: any, event: any, source: any) => {
-                if (event.sourceId !== source.id || !event.data?.isCombat) return false;
-                // Target must be a player OR a planeswalker
-                const targetObj = state.battlefield.find((o: any) => o.id === event.targetId);
-                const isPlayer = !!state.players[event.targetId];
-                const isPlaneswalker = targetObj && targetObj.definition.types.some((t: string) => t.toLowerCase() === 'planeswalker');
-                return isPlayer || isPlaneswalker;
-            },
+            condition: 'SELF_COMBAT_DAMAGE_PLAYER_OR_PLANESWALKER',
             effects: [
                 {
                     type: EffectType.LookAtTopAndPick,
-                    fromTop: (state: any, event: any) => event.amount,
+                    fromTop: 'EVENT_AMOUNT',
                     amount: 1,
                     optional: true,
                     reveal: true,
+                    sourceZones: [Zone.Library],
                     targetDefinition: {
                         type: TargetType.Card,
                         count: 1,

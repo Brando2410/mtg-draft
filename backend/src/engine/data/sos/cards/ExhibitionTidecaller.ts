@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
     export const ExhibitionTidecaller: CardDefinition = {
     name: "Exhibition Tidecaller",
     manaCost: "{U}",
@@ -17,9 +17,9 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastSpell,
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
             targets: [{ type: 'Player' }],
-            condition: 'PLAYER_IS_CONTROLLER && (EVENT_OBJECT_MATCHES:Instant || EVENT_OBJECT_MATCHES:Sorcery)',
+            condition: ConditionType.PlayerIsController,
             effects: [
                 {
                     type: EffectType.Mill,

@@ -659,22 +659,6 @@ export class TargetingProcessor {
                         const rTypes = r.types || (restrictionType === 'type' && restrictionValue ? [restrictionValue] : (r.type ? [r.type] : []));
                         const rSubtypes = r.subtypes || (restrictionType === 'subtype' && restrictionValue ? [restrictionValue] : (r.subtype ? [r.subtype] : []));
 
-                        // Special support for legacy wrapped strings like { type: 'Type', value: 'MV_GE:6' }
-                        if (restrictionType === 'type' && restrictionValue && restrictionValue.startsWith('MV_')) {
-                            // Re-dispatch as a ManaValue check
-                            if (restrictionValue.includes('GE:')) {
-                                (r as any).type = 'ManaValue';
-                                (r as any).value = parseInt(restrictionValue.split(':')[1]);
-                                (r as any).comparison = 'GreaterOrEqual';
-                            } else if (restrictionValue.includes('LE:')) {
-                                (r as any).type = 'ManaValue';
-                                (r as any).value = parseInt(restrictionValue.split(':')[1]);
-                            } else if (restrictionValue === 'MV_LE_SOURCE_POWER') {
-                                (r as any).type = 'ManaValue';
-                                (r as any).value = 'SOURCE_POWER';
-                                (r as any).comparison = 'LessOrEqual';
-                            }
-                        }
 
                         const functionalTypes = ['manavalue', 'mv', 'manavaluele', 'manavalueless', 'mvless', 'power', 'toughness', 'cmc'];
                         if (rTypes.length > 0 && !rTypes.some((t: string) => {

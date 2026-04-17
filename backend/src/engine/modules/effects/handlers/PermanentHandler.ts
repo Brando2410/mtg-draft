@@ -39,7 +39,7 @@ export class PermanentHandler {
                 candidates = candidates.filter(c => LayerProcessor.getEffectiveStats(c, state).power === maxPower);
             }
 
-            const amount = effect?.amount !== undefined ? (typeof effect.amount === 'number' ? effect.amount : (require('../EffectProcessor').EffectProcessor.resolveAmount(state, effect.amount, sourceId, tid as PlayerId, [tid]))) : 1;
+            const amount = effect?.amount !== undefined ? (typeof effect.amount === 'number' ? effect.amount : (require('../EffectProcessor').EffectProcessor.resolveAmount(state, effect.amount, sourceId, tid as PlayerId, stackObject, [tid], parentContext))) : 1;
 
             if (candidates.length <= amount && amount > 0) {
                 candidates.forEach(c => ActionProcessor.moveCard(state, c, Zone.Graveyard, tid as PlayerId, log));

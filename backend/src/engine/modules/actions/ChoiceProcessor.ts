@@ -572,7 +572,8 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             } else if (action.data?.isSacrificeSequence) {
                  // Sequenced Sacrifice Choice
                  const { PermanentHandler } = require('../effects/handlers/PermanentHandler');
-                 PermanentHandler.handleSacrifice(state, nextPlayerIds, sourceId as string, log, action.data.stackObj, action.data.parentContext, { label: action.data.label });
+                 const realEffect = action.data.parentContext?.effects?.[action.data.parentContext?.nextEffectIndex];
+                 PermanentHandler.handleSacrifice(state, nextPlayerIds, sourceId as string, log, action.data.stackObj, action.data.parentContext, realEffect || { label: action.data.label });
             } else if (action.data?.isChoiceSequence) {
                  // Sequenced Choice (Auto-Sequence)
                  const { ChoiceEffectHandler } = require('../effects/handlers/ChoiceEffectHandler');
