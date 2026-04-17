@@ -507,7 +507,8 @@ export class EffectProcessor {
         }
 
         case 'CounterSpell':
-        case 'CounterAbility': {
+        case 'CounterAbility':
+        case 'CounterSpellOrAbility': {
             validTargetIds.forEach((tid: string) => {
                 const stackObj = state.stack.find(s => s.id === tid);
                 if (stackObj) {

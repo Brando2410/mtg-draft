@@ -1,5 +1,6 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const RootManipulation: CardDefinition = {
+
+export const RootManipulation: CardDefinition = {
     name: "Root Manipulation",
     manaCost: "{3}{B}{G}",
     colors: [
@@ -26,6 +27,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
                 },
                 {
                     type: EffectType.AddTriggeredAbility,
+                    targetMapping: TargetMapping.AllCreaturesYouControl,
                     eventMatch: TriggerEvent.Attack,
                     condition: 'EVENT_OBJECT_MATCHES:Creature,YouControl',
                     duration: { type: DurationType.UntilEndOfTurn },
@@ -35,4 +37,3 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         }
     ]
 };
-    

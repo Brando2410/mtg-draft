@@ -1,6 +1,6 @@
 import { memo, useMemo, useState } from 'react';
-import { type PlayerState, type GameObject, type StackObject } from '@shared/engine_types';
-import { AnimatePresence } from 'framer-motion';
+import { type PlayerState, type GameObject, type StackObject, ActionType } from '@shared/engine_types';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Modular Components
 import { GameCard } from './GameCard';
@@ -26,7 +26,8 @@ const CardStack = memo(({
   onHoverStart?: (obj: GameObject) => void,
   onHoverEnd?: () => void,
   variant?: 'battlefield' | 'tiny',
-  pendingAction?: any
+  pendingAction?: any,
+  planningArrow?: { x1: number, y1: number, x2: number, y2: number, sourceId?: string } | null;
 }) => {
   if (cards.length === 0) return null;
   
@@ -206,12 +207,13 @@ export const Battlefield = ({
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const planningArrow = useMemo(() => {
-    if (pendingAction?.type === 'DECLARE_BLOCKERS' && pendingAction.sourceId) {
-        const el = document.getElementById(`card-${pendingAction.sourceId}`);
+    if ((pendingAction?.type === 'DECLARE_BLOCKERS' || pendingAction?.type === ActionType.DeclareBlockers) && pendingAction.sourceId) {
+        const el = document.getElementById(`game-card-${pendingAction.sourceId}`);
         const bf = document.getElementById('battlefield-center')?.getBoundingClientRect();
         if (el && bf) {
             const r = el.getBoundingClientRect();
             return {
+                sourceId: pendingAction.sourceId,
                 x1: r.left + r.width/2 - bf.left,
                 y1: r.top + r.height/2 - bf.top,
                 x2: mousePos.x - bf.left,
@@ -244,21 +246,7 @@ export const Battlefield = ({
       const perms = battlefield.filter(o => o.controllerId === pid);
       
       return {
-        creatures: perms.filter(o => o.definition.types.includes('Creature')).sort((a, b) => {
-            const aCombat = combatants.has(a.id);
-            const bCombat = combatants.has(b.id);
-            if (aCombat && !bCombat) return -1;
-            if (!aCombat && bCombat) return 1;
-            if (aCombat && bCombat) {
-                // Align by attackerId
-                const aRef = (combat?.attackers?.find((att: any) => att.attackerId === a.id) || 
-                              combat?.blockers?.find((blk: any) => blk.blockerId === a.id))?.attackerId || a.id;
-                const bRef = (combat?.attackers?.find((att: any) => att.attackerId === b.id) || 
-                              combat?.blockers?.find((blk: any) => blk.blockerId === b.id))?.attackerId || b.id;
-                return aRef.localeCompare(bRef);
-            }
-            return 0;
-        }),
+        creatures: perms.filter(o => o.definition.types.includes('Creature')),
         nonCreatures: perms.filter(o => !o.definition.types.includes('Creature') && !o.definition.types.includes('Land')),
         lands: perms.filter(o => o.definition.types.includes('Land')),
       };
@@ -286,7 +274,7 @@ export const Battlefield = ({
         <TargetingArrows stack={stack} battlefield={battlefield} pendingAction={pendingAction} hoveredCardId={hoveredCardId} />
         
         {/* OPPONENT SIDE */}
-        <div className="w-full h-1/2 flex flex-col-reverse relative border-b border-white/5">
+        <div className="w-full flex-1 flex flex-col-reverse relative">
            <div className="h-1/2">
                 <SubZone cards={zones.opp.creatures} allBattlefieldCards={battlefield} label="Opponent Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={true} pendingAction={pendingAction} />
            </div>
@@ -296,8 +284,49 @@ export const Battlefield = ({
            </div>
         </div>
 
+        {/* MIDDLE DIVIDER GAP */}
+        <div className="w-full h-20 border-y border-white/5 bg-white/[0.01] relative z-10 flex items-center justify-center">
+            <AnimatePresence>
+                {pendingAction && (
+                    <motion.div 
+                        key={pendingAction.type + (pendingAction.playerId === me?.id ? 'me' : 'opp')}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.05 }}
+                        className="pointer-events-none flex flex-col items-center"
+                    >
+                        {/* HIDE FOR SELECTOR (they have the modal), SHOW FOR OPPONENT */}
+                        {pendingAction.playerId !== me?.id ? (
+                            <div className="flex flex-col items-center">
+                                <h2 className="relative text-3xl font-black text-white/40 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] tracking-tight italic uppercase leading-none">
+                                    {pendingAction.type === ActionType.Discard ? 'Opponent is discarding...' : 'Opponent is making a choice...'}
+                                </h2>
+                                {pendingAction.data?.label && (
+                                    <span className="relative text-[10px] text-indigo-400 font-bold uppercase tracking-[0.3em] mt-2 block">{pendingAction.data.label}</span>
+                                )}
+                            </div>
+                        ) : (
+                            /* MY ACTION (Only if NOT a modal choice) */
+                            !([ActionType.Choice, ActionType.ResolutionChoice, ActionType.ModalSelection, ActionType.OptionalAction, ActionType.Scry, ActionType.Surveil, ActionType.ChooseX] as any[]).includes(pendingAction.type) && (
+                                <div className="flex flex-col items-center">
+                                    <h2 className="relative text-3xl font-black text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] tracking-tight italic uppercase leading-none">
+                                        {pendingAction.type === ActionType.DeclareAttackers ? 'Declare Attackers' :
+                                        pendingAction.type === ActionType.DeclareBlockers ? 'Declare Blockers' :
+                                        pendingAction.type === ActionType.OrderAttackers ? 'Order Blockers' :
+                                        pendingAction.type === ActionType.Discard ? `Discard ${pendingAction.count || 1} card${(pendingAction.count || 1) > 1 ? 's' : ''}` :
+                                        pendingAction.type === ActionType.Targeting ? (pendingAction.data?.prompt || 'Select targets') :
+                                        (pendingAction.data?.label || 'Make a choice')}
+                                    </h2>
+                                </div>
+                            )
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+
         {/* PLAYER SIDE */}
-        <div className="w-full h-1/2 flex flex-col relative">
+        <div className="w-full flex-1 flex flex-col relative">
            <div className="h-1/2 border-b border-white/5">
                 <SubZone cards={zones.me.creatures} allBattlefieldCards={battlefield} label="Your Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={false} pendingAction={pendingAction} />
            </div>

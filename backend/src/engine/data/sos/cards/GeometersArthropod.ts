@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
-    export const GeometersArthropod: CardDefinition = {
+export const GeometersArthropod: CardDefinition = {
     name: "Geometer's Arthropod",
     manaCost: "{G}{U}",
     colors: [
@@ -13,6 +13,8 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
         "Fractal",
         "Crab"
     ],
+    power: "1",
+    toughness: "4",
     keywords: [],
     oracleText: "Whenever you cast a spell with {X} in its mana cost, look at the top X cards of your library. Put one of them into your hand and the rest on the bottom of your library in a random order.",
     abilities: [
@@ -30,8 +32,5 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
                 }
             ]
         }
-    ],
-    power: "1",
-    toughness: "4"
+    ]
 };
-    

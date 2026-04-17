@@ -356,13 +356,25 @@ export class PriorityProcessor {
       // --- CHECK TARGETS ---
       if (canPlay) {
         const logic = oracle.getCard(cardToPlay.definition.name);
-        const targetDefinition = (logic as any)?.targetDefinition || logic?.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition;
+        const spellAbility = logic?.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell);
+        
+        // Modal check
+        if (spellAbility?.modes) {
+            const hasValidMode = spellAbility.modes.some((mode: any) => {
+                if (!mode.targetDefinition || mode.targetDefinition.optional) return true;
+                const { TargetingProcessor } = require('../actions/TargetingProcessor');
+                return TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, mode.targetDefinition, playerId);
+            });
+            if (!hasValidMode) canPlay = false;
+        } else {
+            const targetDefinition = (logic as any)?.targetDefinition || spellAbility?.targetDefinition;
 
-        if (targetDefinition && !targetDefinition.optional) {
-          const { TargetingProcessor } = require('../actions/TargetingProcessor');
-          if (!TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, targetDefinition, playerId)) {
-            canPlay = false;
-          }
+            if (targetDefinition && !targetDefinition.optional) {
+              const { TargetingProcessor } = require('../actions/TargetingProcessor');
+              if (!TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, targetDefinition, playerId)) {
+                canPlay = false;
+              }
+            }
         }
       }
 
@@ -513,7 +525,13 @@ export class PriorityProcessor {
     if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) return false;
 
     // Target Check
-    if (ability.targetDefinition && !ability.targetDefinition.optional) {
+    if (ability.modes) {
+        const hasValidMode = ability.modes.some((mode: any) => {
+            if (!mode.targetDefinition || mode.targetDefinition.optional) return true;
+            return TargetingProcessor.hasLegalTargets(state, obj.id, mode.targetDefinition, playerId);
+        });
+        if (!hasValidMode) return false;
+    } else if (ability.targetDefinition && !ability.targetDefinition.optional) {
       if (!TargetingProcessor.hasLegalTargets(state, obj.id, ability.targetDefinition, playerId)) {
         return false;
       }

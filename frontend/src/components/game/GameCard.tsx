@@ -19,6 +19,7 @@ export interface GameCardProps {
   isOpponent?: boolean;
   pendingAction?: any;
   disableHoverAnim?: boolean;
+  damagePreview?: number;
 }
 
 /**
@@ -40,7 +41,8 @@ export const GameCard = memo(({
   isBlocking = false,
   isOpponent = false,
   pendingAction,
-  disableHoverAnim = false
+  disableHoverAnim = false,
+  damagePreview = 0
 }: GameCardProps) => {
   const { definition, effectiveStats, counters, isTapped, isPhasedOut, damageMarked, summoningSickness, isPrepared } = obj;
   const stats = effectiveStats;
@@ -84,10 +86,10 @@ export const GameCard = memo(({
       .join(' ');
   };
 
-  // Animation logic: Lunging forward if BLOCKING
+  // Animation logic: Lunging forward if ATTACKING or BLOCKING
   const isCurrentlyDeclaringAttack = isDeclaringAttacks && isAttacking;
   const lungeDirection = isOpponent ? 1 : -1;
-  const verticalShift = isBlocking ? (lungeDirection * 25) : 0;
+  const verticalShift = (isAttacking || isBlocking) ? (lungeDirection * 30) : 0;
   
   // TAP VISUALS: No rotation, just grayed out + icon
   const rotation = 0;
@@ -220,12 +222,18 @@ export const GameCard = memo(({
   return (
     <motion.div
       id={`game-card-${obj.id}`}
-      initial={{ scale: 0.9, opacity: 0 }}
+      initial={false}
       animate={{ 
         scale: isSelected ? 1.05 : 1, 
         opacity: 1, 
         rotate: rotation,
         y: verticalShift,
+      }}
+      transition={{ 
+        type: 'spring', 
+        stiffness: 1500, 
+        damping: 60,
+        mass: 0.1
       }}
       style={{
         minWidth: variant === 'battlefield' ? '8rem' : 'auto',
@@ -233,15 +241,16 @@ export const GameCard = memo(({
         ...borderStyle
       }}
       whileHover={ (variant === 'small' || disableHoverAnim) ? {} : { 
-        y: variant === 'hand' ? 0 : (verticalShift - 5),
-        scale: 1.02,
+        y: (variant === 'hand') ? -5 : verticalShift,
+        scale: variant === 'hand' ? 1.05 : 1,
       }}
       onMouseEnter={() => onHoverStart?.(obj)}
       onMouseLeave={() => onHoverEnd?.()}
       onClick={() => onClick?.(obj.id)}
-      className={`relative shrink-0 cursor-pointer transition-shadow animate-in fade-in duration-300
+      className={`relative shrink-0 cursor-pointer transition-all animate-in fade-in duration-300
         flex flex-col
         ${dimensions.w} ${dimensions.h} ${dimensions.rounded} ${variant !== 'zoom' ? `border-[1.5px] ${borderClass} shadow-xl` : ''}
+        ${variant === 'battlefield' ? 'hover:ring-2 hover:ring-indigo-400/50 hover:shadow-[0_0_20px_rgba(129,140,248,0.4)]' : ''}
         ${isTargetable ? 'ring-4 ring-red-500 ring-offset-2 ring-offset-slate-900 shadow-[0_0_20px_rgba(239,68,68,0.8)]' : ''} 
         ${(isPlayable && !isOpponent) ? ((obj as any).isVirtual ? 'ring-2 ring-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.6)]' : 'ring-2 ring-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)]') : ''} 
         ${isSelected ? 'ring-2 ring-yellow-400' : ''}
@@ -382,24 +391,25 @@ export const GameCard = memo(({
                   <div className="flex justify-between items-end">
 
                       {isCreature && variant === 'battlefield' && (() => {
-                          const origP = parseInt(definition.power || '0');
-                          const origT = parseInt(definition.toughness || '0');
+                          const origP = parseInt(String(definition.power || '0'));
+                          const origT = parseInt(String(definition.toughness || '0'));
                           const currentP = stats?.power ?? origP;
                           const currentT = stats?.toughness ?? origT;
                           const displayT = currentT - damageMarked;
 
                           const pColor = currentP > origP ? 'text-emerald-400' : currentP < origP ? 'text-red-400' : 'text-white';
-                          const tColor = (damageMarked > 0 || currentT < origT) ? 'text-red-400' : currentT > origT ? 'text-emerald-400' : 'text-white';
+                          const previewT = displayT - damagePreview;
+                          const tColor = (damagePreview > 0 || damageMarked > 0 || currentT < origT) ? 'text-red-400' : currentT > origT ? 'text-emerald-400' : 'text-white';
 
                           return (
-                              <div className="bg-black shadow-2xl z-30 flex items-center justify-center absolute bottom-0 right-0 px-2 py-0.5 border-t border-l border-white/30 rounded-tl-md">
-                                  <div className="flex items-center gap-1">
-                                      <span className={`font-black tracking-normal text-xs ${pColor}`}>
+                              <div className="bg-black shadow-2xl z-30 flex items-center justify-center absolute bottom-0 right-0 px-2 py-1 border-t border-l border-white/30 rounded-tl-md">
+                                  <div className="flex items-center gap-1.5">
+                                      <span className={`font-black tracking-normal text-sm ${pColor}`}>
                                           {currentP}
                                       </span>
                                       <span className="text-[10px] text-white/40 font-bold">/</span>
-                                      <span className={`font-black tracking-normal text-xs ${tColor}`}>
-                                          {displayT}
+                                      <span className={`font-black tracking-normal text-sm ${tColor} ${damagePreview > 0 ? 'drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]' : ''}`}>
+                                          {previewT}
                                       </span>
                                   </div>
                               </div>

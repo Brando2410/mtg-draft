@@ -247,6 +247,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
                 currentStep={gameState.currentStep}
                 currentPhase={gameState.currentPhase}
                 targetable={gameState.pendingAction?.type === ActionType.Targeting && gameState.pendingAction.data?.targets?.includes(opponentId)}
+                scrySurveilResult={gameState.turnState.lastScrySurveilResult}
                 onClick={() => {
                    if (gameState.pendingAction?.type === ActionType.Targeting && gameState.pendingAction.data?.targets?.includes(opponentId)) {
                         socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: opponentId });
@@ -294,46 +295,6 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
       {/* CENTRAL BATTLEFIELD */}
       <div className="flex-1 relative flex flex-col pt-36 pb-48 px-10 overflow-hidden">
         
-        {/* GAME STATE LABEL (Arena-style instruction text) */}
-        <AnimatePresence>
-            {gameState.pendingAction && (
-                <motion.div 
-                    key={gameState.pendingAction.type + (gameState.pendingAction.playerId === effectivePlayerId ? 'me' : 'opp')}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 1.05 }}
-                    className="absolute top-[42%] left-0 right-0 z-[150] pointer-events-none flex flex-col items-center"
-                >
-                    {/* HIDE FOR SELECTOR (they have the modal), SHOW FOR OPPONENT */}
-                    {gameState.pendingAction.playerId !== effectivePlayerId ? (
-                        <div className="flex flex-col items-center">
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/60 to-transparent h-12 top-1/2 -translate-y-1/2 blur-md" />
-                            <h2 className="relative text-3xl font-black text-white/40 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] tracking-tight italic uppercase">
-                                {gameState.pendingAction.type === ActionType.Discard ? 'Opponent is discarding...' : 'Opponent is making a choice...'}
-                            </h2>
-                            {gameState.pendingAction.data?.label && (
-                                <span className="relative text-sm text-indigo-400 font-bold uppercase tracking-widest mt-2">{gameState.pendingAction.data.label}</span>
-                            )}
-                        </div>
-                    ) : (
-                        /* MY ACTION (Only if NOT a modal choice) */
-                        !([ActionType.Choice, ActionType.ResolutionChoice, ActionType.ModalSelection, ActionType.OptionalAction, ActionType.Scry, ActionType.Surveil, ActionType.ChooseX] as any[]).includes(gameState.pendingAction.type) && (
-                            <div className="flex flex-col items-center">
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/60 to-transparent h-12 top-1/2 -translate-y-1/2 blur-md" />
-                                <h2 className="relative text-3xl font-black text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] tracking-tight italic uppercase">
-                                    {gameState.pendingAction.type === ActionType.DeclareAttackers ? 'Declare Attackers' :
-                                     gameState.pendingAction.type === ActionType.DeclareBlockers ? 'Declare Blockers' :
-                                     gameState.pendingAction.type === ActionType.OrderAttackers ? 'Order Blockers' :
-                                     gameState.pendingAction.type === ActionType.Discard ? `Discard ${gameState.pendingAction.count || 1} card${(gameState.pendingAction.count || 1) > 1 ? 's' : ''}` :
-                                     gameState.pendingAction.type === ActionType.Targeting ? (gameState.pendingAction.data?.prompt || 'Select targets') :
-                                     (gameState.pendingAction.data?.label || 'Make a choice')}
-                                </h2>
-                            </div>
-                        )
-                    )}
-                </motion.div>
-            )}
-        </AnimatePresence>
 
         <Battlefield 
           me={me} opponent={opponent} battlefield={gameState.battlefield}
@@ -356,6 +317,11 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
             if (pType === 'TARGETING' || pType === ActionType.Targeting) {
               socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: id });
               return;
+            }
+            if ((pType === 'DECLARE_BLOCKERS' || pType === ActionType.DeclareBlockers) && gameState.pendingAction?.sourceId === id) {
+                // If clicking the current selection again, send UNDO
+                socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: 'undo' });
+                return;
             }
             socket.emit('tap_permanent', { roomId: room.id, playerId: effectivePlayerId, cardId: id });
           }}
@@ -459,6 +425,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
                 currentStep={gameState.currentStep}
                 currentPhase={gameState.currentPhase}
                 targetable={gameState.pendingAction?.type === ActionType.Targeting && gameState.pendingAction.data?.targets?.includes(effectivePlayerId)}
+                scrySurveilResult={gameState.turnState.lastScrySurveilResult}
                 onClick={() => {
                    if (gameState.pendingAction?.type === ActionType.Targeting && gameState.pendingAction.data?.targets?.includes(effectivePlayerId)) {
                         socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: effectivePlayerId });

@@ -4,11 +4,11 @@ import { type GameObject } from '@shared/engine_types';
 interface CombatArrowsProps {
   combat: any;
   battlefield: GameObject[];
-  planningArrow?: { x1: number, y1: number, x2: number, y2: number } | null;
+  planningArrow?: { x1: number, y1: number, x2: number, y2: number, sourceId?: string } | null;
 }
 
 export const CombatArrows = memo(({ combat, battlefield, planningArrow }: CombatArrowsProps) => {
-  const [arrows, setArrows] = useState<{ x1: number, y1: number, x2: number, y2: number, id: string, color: string, isPlanning?: boolean }[]>([]);
+  const [arrows, setArrows] = useState<{ x1: number, y1: number, x2: number, y2: number, id: string, color: string, isPlanning?: boolean, isLine?: boolean }[]>([]);
 
   useEffect(() => {
     const update = () => {
@@ -22,6 +22,10 @@ export const CombatArrows = memo(({ combat, battlefield, planningArrow }: Combat
       
       // Attackers -> Target (Direct to Player or Planeswalker)
       combat.attackers.forEach((a: { attackerId: string, targetId: string }) => {
+        // Check if blocked
+        const isBlocked = combat.blockers.some((b: any) => b.attackerId === a.attackerId);
+        if (isBlocked) return;
+
         const sourceEl = document.getElementById(`game-card-${a.attackerId}`);
         // First try to find card element (for PW targets), then fall back to player avatar
         const targetEl = document.getElementById(`game-card-${a.targetId}`) || document.getElementById(`player-avatar-${a.targetId}`); 
@@ -43,6 +47,9 @@ export const CombatArrows = memo(({ combat, battlefield, planningArrow }: Combat
 
       // Blockers -> Attackers
       combat.blockers.forEach((b: { blockerId: string, attackerId: string }) => {
+        // Hide existing arrow if we are currently re-planning this blocker
+        if (planningArrow && planningArrow.sourceId === b.blockerId) return;
+
         const elB = document.getElementById(`game-card-${b.blockerId}`);
         const elA = document.getElementById(`game-card-${b.attackerId}`);
         if (elB && elA) {
@@ -54,7 +61,8 @@ export const CombatArrows = memo(({ combat, battlefield, planningArrow }: Combat
             y1: rB.top + rB.height / 2 - bfCenter.top,
             x2: rA.left + rA.width / 2 - bfCenter.left,
             y2: rA.top + rA.height / 2 - bfCenter.top,
-            color: '#fbbf24' // Warning Gold
+            color: '#fbbf24', // Warning Gold
+            isLine: true 
           });
         }
       });
@@ -64,7 +72,8 @@ export const CombatArrows = memo(({ combat, battlefield, planningArrow }: Combat
               id: 'planning',
               ...planningArrow,
               color: '#facc15', // Vibrant Gold
-              isPlanning: true
+              isPlanning: true,
+              isLine: false
           });
       }
 
@@ -129,12 +138,14 @@ export const CombatArrows = memo(({ combat, battlefield, planningArrow }: Combat
             />
 
             {/* Manual Arrowhead */}
-            <path 
-              d="M -16,-8 L 0,0 L -16,8 Z"
-              fill={arrow.color}
-              transform={`translate(${arrow.x2}, ${arrow.y2}) rotate(${(angle * 180) / Math.PI})`}
-              opacity="0.9"
-            />
+            {!arrow.isLine && (
+                <path 
+                d="M -16,-8 L 0,0 L -16,8 Z"
+                fill={arrow.color}
+                transform={`translate(${arrow.x2}, ${arrow.y2}) rotate(${(angle * 180) / Math.PI})`}
+                opacity="0.9"
+                />
+            )}
 
             {/* Inner bright core */}
             <path

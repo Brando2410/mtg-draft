@@ -72,6 +72,7 @@ export const EffectType = {
     Tap: 'Tap',
     CounterSpell: 'CounterSpell',
     CounterAbility: 'CounterAbility',
+    CounterSpellOrAbility: 'CounterSpellOrAbility',
     CreateTokenCopy: 'CreateTokenCopy',
     ChangeTarget: 'ChangeTarget',
     EndTurn: 'EndTurn',

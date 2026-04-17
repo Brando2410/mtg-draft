@@ -144,6 +144,16 @@ private static handleScrySurveil(
     const { top = [], bottom = [], graveyard = [] } = typeof payload === 'string' ? JSON.parse(payload) : payload;
 
     log(`[RESOLVING ${action.type}] ${state.players[playerId].name} reordered cards.`);
+    
+    // Track result for UI
+    state.turnState.lastScrySurveilResult = {
+        playerId,
+        top: top.length,
+        bottom: bottom.length,
+        graveyard: graveyard.length,
+        type: action.type,
+        timestamp: Date.now()
+    };
 
     // 1. Validate all cards are still in a valid state (optional but good)
     const cards = action.data.lookingCards || [];

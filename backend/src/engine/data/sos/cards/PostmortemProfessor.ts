@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-    export const PostmortemProfessor: CardDefinition = {
+export const PostmortemProfessor: CardDefinition = {
     name: "Postmortem Professor",
     manaCost: "{1}{B}",
     colors: [
@@ -12,6 +12,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
         "Zombie",
         "Warlock"
     ],
+    power: "2",
+    toughness: "2",
     keywords: ["CannotBlock"],
     oracleText: "This creature can't block.\nWhenever this creature attacks, each opponent loses 1 life and you gain 1 life.\n{1}{B}, Exile an instant or sorcery card from your graveyard: Return this card from your graveyard to the battlefield.",
     abilities: [
@@ -33,8 +35,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
                     type: CostType.Exile,
                     sourceZones: ['Graveyard'],
                     restrictions: [
-                { type: 'Type', value: 'InstantOrSorcery' }
-            ]
+                        { type: 'Type', value: 'InstantOrSorcery' }
+                    ]
                 }
             ],
             effects: [
@@ -46,7 +48,4 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
             ]
         }
     ],
-    power: "2",
-    toughness: "2"
 };
-    

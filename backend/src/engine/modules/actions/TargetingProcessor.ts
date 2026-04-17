@@ -24,7 +24,7 @@ export class TargetingProcessor {
             let dMax = d.maxCount || count;
             if (dMax === 'X') dMax = xValue;
 
-            let dMin = d.minCount !== undefined ? d.minCount : count;
+            let dMin = d.minCount !== undefined ? d.minCount : (d.optional ? 0 : count);
             if (dMin === 'X') dMin = xValue;
 
             maxCount += dMax;
@@ -225,7 +225,7 @@ export class TargetingProcessor {
             ].map(t => t.toLowerCase());
 
             if (typeLineCheck === 'anytarget') {
-                const isValidAnyTarget = combinedTypes.some((t: string) => t === 'creature' || t === 'planeswalker');
+                const isValidAnyTarget = combinedTypes.some((t: string) => t === 'creature' || t === 'planeswalker') || targetZone === Zone.Stack;
                 if (!isValidAnyTarget) return false;
             } else if (typeLineCheck === 'permanent') {
                 const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
@@ -403,6 +403,21 @@ export class TargetingProcessor {
                 // Handle player-specific target checks if necessary
                 return restrictions.includes('player') || restrictions.includes('anytarget');
             }
+            
+            // Handle abilities on the stack (which don't have a Card definition)
+            if (targetObj.type === 'TriggeredAbility' || targetObj.type === 'ActivatedAbility' || targetObj.type === 'Spell') {
+                const isAbility = targetObj.type.includes('Ability');
+                return restrictions.some(r => {
+                    const rType = (typeof r === 'string' ? r : (r.type || '')).toLowerCase();
+                    const rValue = (typeof r === 'string' ? '' : (r.value || '')).toLowerCase();
+                    
+                    if (rType === 'type' && rValue === 'ability' && isAbility) return true;
+                    if (rType === 'ability' || rValue === 'ability') return isAbility;
+                    if (rType === 'spell' || rValue === 'spell') return targetObj.type === 'Spell';
+                    return false;
+                });
+            }
+
             return false;
         }
 
@@ -807,6 +822,22 @@ export class TargetingProcessor {
         if (isUndoing) {
             if (actionData.selectedTargets.length > 0) {
                 const removed = actionData.selectedTargets.pop();
+                
+                // Refresh prompt and pool for the NEW index after removing
+                const nextIndex = actionData.selectedTargets.length;
+                const currentDef = this.getDefinitionForIndex(targetDef, nextIndex);
+                if (currentDef?.label) {
+                    state.pendingAction!.data.label = currentDef.label;
+                }
+                const pool = [
+                    ...Object.keys(state.players),
+                    ...state.battlefield.map((o: any) => o.id),
+                    ...state.exile.map((o: any) => o.id),
+                    ...state.stack.map((o: any) => o.id),
+                    ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
+                ];
+                actionData.targets = pool.filter(tid => this.isLegalTarget(state, state.pendingAction!.sourceId, tid, targetDef, nextIndex));
+
                 updatePrompt();
                 log(`Removed last target: ${removed}`);
                 return true;

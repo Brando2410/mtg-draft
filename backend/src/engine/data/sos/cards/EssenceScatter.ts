@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const EssenceScatter: CardDefinition = {
+export const EssenceScatter: CardDefinition = {
     name: "Essence Scatter",
     manaCost: "{1}{U}",
     colors: [
@@ -15,11 +15,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Spell,
-                count: 1,
-                restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ]
+                type: TargetType.Creature,
+                count: 1
             },
             effects: [
                 {
@@ -30,4 +27,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
         }
     ]
 };
-    

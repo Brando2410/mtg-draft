@@ -113,7 +113,9 @@ export class MoveEffectHandler {
 
         let pool: GameObject[] = [];
         if (targetDef.type === TargetType.CardInHand) pool = player.hand;
-        else if (targetDef.type === TargetType.CardInGraveyard) pool = player.graveyard;
+        else if (targetDef.type === TargetType.CardInGraveyard) {
+            pool = Object.values(state.players).flatMap((p: any) => p.graveyard);
+        }
         else if (targetDef.type === TargetType.Permanent) pool = state.battlefield.filter(o => o.controllerId === controllerId);
         else return;
 

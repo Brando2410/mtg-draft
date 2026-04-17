@@ -277,25 +277,7 @@ export class TriggerProcessor {
     private static collectMatchingTriggers(state: GameState, event: GameEvent): TriggeredAbility[] {
         const triggers: any[] = [];
 
-        // 1. Battlefield (Rule 603.2)
-        state.battlefield.forEach(obj => {
-            const cardLogic = oracle.getCard(obj.definition.name);
-            if (cardLogic?.abilities) {
-                cardLogic.abilities.forEach((ability: any, index: number) => {
-                    if (ability.type === AbilityType.Triggered) {
-                        triggers.push({ 
-                            ...ability, 
-                            id: `trigger_${obj.id}_${index}`,
-                            sourceId: obj.id, 
-                            controllerId: obj.controllerId,
-                            abilityIndex: index
-                        });
-                    }
-                });
-            }
-        });
-
-        // 2. Emblems (Rule 114)
+        // 1. Emblems (Rule 114)
         if (state.emblems) {
             state.emblems.forEach(emblem => {
                 if (emblem.abilities) {
@@ -315,7 +297,7 @@ export class TriggerProcessor {
             });
         }
 
-        // 3. Continuous Effects (Granted Abilities - Rule 611.3)
+        // 2. Continuous Effects (Granted Abilities - Rule 611.3)
         state.ruleRegistry.continuousEffects.forEach(effect => {
             const { EffectType } = require('@shared/engine_types');
             if (effect.type === EffectType.AddTriggeredAbility && (effect as any).value) {
@@ -331,7 +313,8 @@ export class TriggerProcessor {
             }
         });
 
-        // 4. Delayed Triggers (Rule 603.7)
+        // 3. Registered Triggered Abilities (Rule 603.2, 603.7)
+        // This includes permanent battlefield triggers and delayed triggers
         if (state.ruleRegistry.triggeredAbilities) {
             state.ruleRegistry.triggeredAbilities.forEach(t => {
                 triggers.push(t);
@@ -377,7 +360,8 @@ export class TriggerProcessor {
             if (event.type === TriggerEvent.Attack || event.type === TriggerEvent.Block) {
                  if (tEvent === TriggerEvent.Attack || tEvent === TriggerEvent.Block || tEvent === TriggerEvent.AttackOrBlock) {
                      // Only check identity if card is not using global condition (convention)
-                     if (event.sourceId !== t.sourceId && !t.isGlobal && !t.condition?.includes('EVENT_SOURCE')) return false;
+                     // Or if the event source is one of the targeted objects for this trigger (granted abilities fallback)
+                     if (event.sourceId !== t.sourceId && !t.isGlobal && !t.condition?.includes('EVENT_SOURCE') && !t.targetIds?.includes(event.sourceId)) return false;
                  }
             }
 
@@ -489,11 +473,11 @@ export class TriggerProcessor {
                             activeZone: 'Battlefield',
                             effects: [{
                                 type: 'Choice',
-                                label: `Ward Trigger: ${labelStr} or spell will be countered.`,
+                                label: `Ward Trigger: ${labelStr} or spell/ability will be countered.`,
                                 targetMapping: 'EVENT_PLAYER',
                                 choices: [
                                     { label: labelStr, effects: choiceEffects },
-                                    { label: "Don't Pay (Counter)", effects: [{ type: 'CounterSpell', targetMapping: 'TRIGGER_SOURCE' }] }
+                                    { label: "Don't Pay (Counter)", effects: [{ type: EffectType.CounterSpellOrAbility, targetMapping: 'TRIGGER_SOURCE' }] }
                                 ]
                             }]
                         } as any);

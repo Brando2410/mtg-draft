@@ -156,6 +156,14 @@ export interface TurnState {
     namedCards?: Record<string, string>;
     countersAddedThisTurnIds: GameObjectId[];
     damagePreventionDisabled?: boolean;
+    lastScrySurveilResult?: {
+        playerId: PlayerId;
+        top: number;
+        bottom: number;
+        graveyard: number;
+        type: string;
+        timestamp: number;
+    };
 }
 
 export interface PendingAction {

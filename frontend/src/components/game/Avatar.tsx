@@ -14,6 +14,14 @@ interface AvatarProps {
   onClick?: () => void;
   currentStep?: Step;
   currentPhase?: Phase;
+  scrySurveilResult?: {
+    playerId: string;
+    top: number;
+    bottom: number;
+    graveyard: number;
+    type: string;
+    timestamp: number;
+  };
 }
 
 interface StopperProps {
@@ -86,13 +94,33 @@ export const Avatar = memo(({
   targetable = false,
   onClick,
   currentStep,
-  currentPhase
+  currentPhase,
+  scrySurveilResult
 }: AvatarProps) => {
   
   const [impacts, setImpacts] = useState<{ id: string, amount: number, rotation: number }[]>([]);
   const [showPulse, setShowPulse] = useState<'gain' | 'loss' | null>(null);
+  const [scryNotice, setScryNotice] = useState<{ top: number, bottom: number, graveyard: number, type: string } | null>(null);
   const prevLife = useRef(player.life);
+  const prevScryTime = useRef(0);
   const stops = viewerStops || player.stops || {};
+
+  useEffect(() => {
+    if (scrySurveilResult && scrySurveilResult.playerId === player.id && scrySurveilResult.timestamp > prevScryTime.current) {
+        setScryNotice({
+            top: scrySurveilResult.top,
+            bottom: scrySurveilResult.bottom,
+            graveyard: scrySurveilResult.graveyard,
+            type: scrySurveilResult.type
+        });
+        prevScryTime.current = scrySurveilResult.timestamp;
+
+        const timer = setTimeout(() => {
+            setScryNotice(null);
+        }, 5000);
+        return () => clearTimeout(timer);
+    }
+  }, [scrySurveilResult, player.id]);
 
   useEffect(() => {
     if (player.life !== prevLife.current) {
@@ -250,6 +278,54 @@ export const Avatar = memo(({
               <Stopper {...commonProps} id="main2" label="Main 2" />
               <Stopper {...commonProps} id="end" label="End Step" />
           </div>
+
+          {/* SCRY/SURVEIL SPEECH BUBBLE */}
+          <AnimatePresence>
+            {scryNotice && (
+              <motion.div
+                initial={{ opacity: 0, y: isOpponent ? 20 : -20, scale: 0.8 }}
+                animate={{ opacity: 1, y: isOpponent ? 90 : -90, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
+                className={`absolute left-1/2 -translate-x-1/2 z-[600] pointer-events-none
+                    bg-slate-900/90 border border-indigo-500/30 backdrop-blur-md px-4 py-2 rounded-2xl
+                    shadow-[0_10px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(99,102,241,0.2)]
+                    flex flex-col items-center gap-0.5 min-w-[120px]`}
+              >
+                {/* Speech bubble arrow */}
+                <div className={`absolute left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 rotate-45 border-r border-b border-indigo-500/30
+                    ${isOpponent ? '-top-1.5 border-r-0 border-b-0 border-l border-t' : '-bottom-1.5'}`} 
+                />
+
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-1 italic">
+                    {scryNotice.type}
+                </span>
+
+                <div className="flex items-center gap-3">
+                    {scryNotice.top > 0 && (
+                        <div className="flex flex-col items-center">
+                            <span className="text-[8px] font-bold text-slate-500 uppercase">Top</span>
+                            <span className="text-sm font-black text-white leading-none">{scryNotice.top}</span>
+                        </div>
+                    )}
+                    {scryNotice.bottom > 0 && (
+                        <div className="flex flex-col items-center">
+                            <span className="text-[8px] font-bold text-slate-500 uppercase">Bottom</span>
+                            <span className="text-sm font-black text-white leading-none">{scryNotice.bottom}</span>
+                        </div>
+                    )}
+                    {scryNotice.graveyard > 0 && (
+                        <div className="flex flex-col items-center">
+                            <span className="text-[8px] font-bold text-slate-500 uppercase">Grave</span>
+                            <span className="text-sm font-black text-white leading-none">{scryNotice.graveyard}</span>
+                        </div>
+                    )}
+                    {scryNotice.top === 0 && scryNotice.bottom === 0 && scryNotice.graveyard === 0 && (
+                        <span className="text-[10px] font-black italic text-slate-400">0 cards moved</span>
+                    )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
       </div>
     </div>
   );

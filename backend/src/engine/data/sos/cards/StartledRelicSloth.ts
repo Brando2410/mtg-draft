@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const StartledRelicSloth: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+export const StartledRelicSloth: CardDefinition = {
     name: "Startled Relic Sloth",
     manaCost: "{2}{R}{W}",
     colors: [
@@ -17,26 +17,26 @@ import { AbilityType, CardDefinition, ConditionType, CostType, TargetMapping, Ta
         "Trample",
         "Lifelink"
     ],
+    power: "4",
+    toughness: "4",
     oracleText: "Trample, lifelink\nAt the beginning of combat on your turn, exile up to one target card from a graveyard.",
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.BeginningOfCombatStep,
+            eventMatch: TriggerEvent.BeginningOfCombatStep,
             condition: ConditionType.IsYourTurn,
-            targetDefinition: {
-                type: TargetType.CardInGraveyard,
-                count: 1,
-                optional: true
-            },
             effects: [
                 {
-                    type: CostType.Exile,
-                    targetMapping: TargetMapping.Target1
+                    type: EffectType.Exile,
+                    targetDefinition: {
+                        type: TargetType.CardInGraveyard,
+                        count: 1,
+                        minCount: 0,
+                        optional: true,
+                        label: "Select up to one card to exile"
+                    }
                 }
             ]
         }
-    ],
-    power: "4",
-    toughness: "4"
+    ]
 };
-    

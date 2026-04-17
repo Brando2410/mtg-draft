@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-    export const RenderSpeechless: CardDefinition = {
+export const RenderSpeechless: CardDefinition = {
     name: "Render Speechless",
     manaCost: "{2}{W}{B}",
     colors: [
@@ -15,32 +15,38 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     abilities: [
         {
             type: AbilityType.Spell,
+            targetDefinition: [
+                {
+                    type: TargetType.Opponent,
+                    count: 1,
+                    minCount: 1,
+                    label: "target opponent"
+                },
+                {
+                    type: TargetType.Creature,
+                    count: 1,
+                    minCount: 0,
+                    label: "up to one target creature"
+                }
+            ],
             effects: [
                 {
-                    type: CostType.Choice,
-                    label: 'Choose a nonland card',
-                    targetMapping: TargetMapping.Controller,
-                    targetIdMapping: 'OPPONENT_HAND_REVEAL_PICK',
+                    type: EffectType.Choice,
+                    label: 'Choose a nonland card to discard',
+                    targetMapping: TargetMapping.Target1,
+                    targetIdMapping: 'TARGET_1_HAND_REVEAL_PICK',
                     restrictions: [
-                { type: 'Type', value: 'Nonland' }
-            ],
+                        { type: 'Type', value: 'Nonland' }
+                    ],
                     effects: [{ type: EffectType.MoveToZone, zone: Zone.Graveyard, targetMapping: TargetMapping.SelectedCard, isDiscard: true }]
                 },
                 {
                     type: EffectType.AddCounters,
-                    targetDefinition: {
-                        type: TargetType.Creature,
-                        count: 1,
-                        minCount: 0,
-                        restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ]
-                    },
-    amount: 2,
-                    counterType: '+1/+1',
-    }
+                    targetMapping: TargetMapping.Target2,
+                    amount: 2,
+                    counterType: 'p1p1',
+                }
             ]
         }
     ]
 };
-    

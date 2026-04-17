@@ -71,27 +71,51 @@ export const OrderingModal = ({ pendingAction, me, battlefield, onOrderClick }: 
                   onReorder={setItems}
                   className="flex justify-center gap-6 min-w-max px-10"
                 >
-                  {items.map((id, index) => {
-                    const obj = battlefield.find(o => o.id === id);
-                    return (
-                      <Reorder.Item 
-                        key={id} 
-                        value={id}
-                        className="relative group cursor-grab active:cursor-grabbing"
-                      >
-                        {/* ORDER NUMBER BADGE - Smaller, focused, and high z-index */}
-                        <div className="absolute top-1 left-1 z-[100] pointer-events-none">
-                            <div className="w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-lg text-xs font-black italic text-white ring-2 ring-emerald-500/30">
-                                {index + 1}
-                            </div>
-                        </div>
+                  {(() => {
+                    const attacker = battlefield.find(o => o.id === pendingAction.sourceId);
+                    const attackerPower = parseInt(String(attacker?.effectiveStats?.power ?? 0));
+                    let remainingPower = attackerPower;
 
-                        <div className="transition-transform duration-200 hover:scale-[1.02] pointer-events-none">
-                          {obj && <GameCard obj={obj} variant="battlefield" />}
-                        </div>
-                      </Reorder.Item>
-                    );
-                  })}
+                    return items.map((id, index) => {
+                      const obj = battlefield.find(o => o.id === id);
+                      if (!obj) return null;
+
+                      const toughness = Math.max(0, parseInt(String(obj.effectiveStats?.toughness ?? 0)) - (obj.damageMarked || 0));
+                      const isLast = index === items.length - 1;
+                      const damageDealt = isLast ? remainingPower : Math.min(remainingPower, toughness);
+                      const isLethal = damageDealt >= toughness && toughness > 0;
+                      remainingPower = Math.max(0, remainingPower - damageDealt);
+
+                      return (
+                        <Reorder.Item 
+                          key={id} 
+                          value={id}
+                          className="relative group cursor-grab active:cursor-grabbing"
+                        >
+                          {/* LETHAL INDICATOR - Subtle Ring */}
+                          {isLethal && (
+                            <div className="absolute inset-0 z-10 border-4 border-red-500/50 rounded-sm pointer-events-none animate-pulse" />
+                          )}
+
+                          {/* ORDER NUMBER BADGE */}
+                          <div className="absolute top-1 left-1 z-[120] pointer-events-none">
+                              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-xl text-sm font-black italic text-white ring-2 ring-indigo-500/20">
+                                  {index + 1}
+                              </div>
+                          </div>
+
+                          <div className="transition-transform duration-200 hover:scale-[1.02] pointer-events-none group-hover:drop-shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+                            <GameCard 
+                                obj={obj} 
+                                variant="battlefield" 
+                                damagePreview={damageDealt}
+                                isTargetable={isLethal} // Visual hint
+                            />
+                          </div>
+                        </Reorder.Item>
+                      );
+                    });
+                  })()}
                 </Reorder.Group>
               </div>
 

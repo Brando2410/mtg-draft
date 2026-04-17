@@ -589,27 +589,69 @@ export class SpellProcessor {
             return false;
         }
 
-        const precalculatedTargets = [
+        const pool = [
             ...Object.keys(state.players),
             ...state.battlefield.map(o => o.id),
             ...state.exile.map(o => o.id),
+            ...state.stack.map(o => o.id),
             ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
-        ].filter(tid => TargetingProcessor.isLegalTarget(state, cardToPlay.id, tid, targetDefinition));
+        ];
 
-        const isSingleOpponentTarget = targetDefinition.type === 'Player' &&
-            targetDefinition.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'opponent') &&
-            precalculatedTargets.length === 1 &&
+        const firstDef = TargetingProcessor.getDefinitionForIndex(targetDefinition, 0);
+        const legalForFirst = pool.filter(tid => TargetingProcessor.isLegalTarget(state, cardToPlay, tid, targetDefinition, 0));
+
+        const firstType = (firstDef.type || '').toLowerCase();
+        const firstRestrictions = (firstDef.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
+        const isOpponentTarget = firstType === 'opponent' || (firstType === 'player' && firstRestrictions.includes('opponent'));
+
+        const isSingleOpponentTarget = isOpponentTarget &&
+            legalForFirst.length === 1 &&
             state.playerOrder.length === 2;
 
         if (isSingleOpponentTarget) {
+            const opponentId = legalForFirst[0];
             log(`[AUTO-TARGET] Automatically targeting the only opponent for ${cardToPlay.definition.name}.`);
-            return precalculatedTargets;
+            
+            const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDefinition, cardToPlay.xValue || 0);
+            
+            // If the spell only needs 1 target, we are done!
+            if (maxCount === 1) {
+                return [opponentId];
+            }
+
+            // Otherwise, we auto-select the first and continue to the next
+            const autoSelected = [opponentId];
+            const nextIndex = autoSelected.length;
+            const nextDef = TargetingProcessor.getDefinitionForIndex(targetDefinition, nextIndex);
+            const prompt = TargetingProcessor.generateTargetPrompt(targetDefinition, nextIndex, cardToPlay.xValue || 0, true);
+
+            state.pendingAction = {
+                type: 'TARGETING',
+                playerId: playerId,
+                sourceId: cardToPlay.id,
+                data: {
+                    targetDefinition,
+                    targets: pool.filter(tid => TargetingProcessor.isLegalTarget(state, cardToPlay, tid, targetDefinition, nextIndex)),
+                    selectedTargets: autoSelected,
+                    label: nextDef.label,
+                    isSpellCasting: true,
+                    xValue: cardToPlay.xValue,
+                    maxCount,
+                    minCount,
+                    count,
+                    prompt
+                }
+            };
+            log(`[AUTO-TARGET] Opponent selected. Now selecting secondary targets...`);
+            return true;
         }
 
+        const precalculatedTargets = legalForFirst; // Default view for first selection step
+
         if (precalculatedTargets.length === 0) {
-            if (targetDefinition.optional) {
-                log(`No legal targets found, auto-skipping optional target selection.`);
-                return []; // Represents empty targets for an optional trigger-like choice during spell casting
+            if (targetDefinition.optional || firstDef.optional || firstDef.minCount === 0) {
+                log(`No legal targets found for first requirement, auto-skipping.`);
+                return []; 
             } else {
                 log(`Illegal Play: No valid targets available for ${cardToPlay.definition.name}.`);
                 return false;
@@ -1245,26 +1287,63 @@ export class SpellProcessor {
             ...state.exile.map(o => o.id),
             ...state.stack.map(o => o.id)
         ];
-        const precalculatedTargets = pool.filter(tid => TargetingProcessor.isLegalTarget(state, obj.id, tid, ability.targetDefinition));
-        const minCount = ability.targetDefinition!.minCount !== undefined ? ability.targetDefinition!.minCount : (ability.targetDefinition!.count || 1);
+        const firstDef = TargetingProcessor.getDefinitionForIndex(ability.targetDefinition, 0);
+        const legalForFirst = pool.filter(tid => TargetingProcessor.isLegalTarget(state, obj, tid, ability.targetDefinition, 0));
 
-        if (precalculatedTargets.length < minCount) {
-            log(`Illegal Activation: Not enough valid targets available for ${obj.definition.name}'s ability. Found ${precalculatedTargets.length}, need ${minCount}.`);
-            return false;
-        }
+        const firstType = (firstDef.type || '').toLowerCase();
+        const firstRestrictions = (firstDef.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
+        const isOpponentTarget = firstType === 'opponent' || (firstType === 'player' && firstRestrictions.includes('opponent'));
 
-        const isSingleOpponentTarget = ability.targetDefinition?.type === 'Player' &&
-            ability.targetDefinition?.restrictions?.some((r: any) => typeof r === 'string' && r.toLowerCase() === 'opponent') &&
-            precalculatedTargets.length === 1 &&
+        const isSingleOpponentTarget = isOpponentTarget &&
+            legalForFirst.length === 1 &&
             state.playerOrder.length === 2;
 
+        const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(ability.targetDefinition, (obj as any).xValue || 0);
+
         if (isSingleOpponentTarget) {
-            this.activateAbility(state, playerId, cardId, abilityIndex, precalculatedTargets, log, engine, true);
+            const opponentId = legalForFirst[0];
+            log(`[AUTO-TARGET] Automatically targeting the only opponent for ${obj.definition.name}.`);
+
+            if (maxCount === 1) {
+                return this.finalizeAbilityActivation(state, playerId, obj, ability, abilityIndex, [opponentId], log, engine);
+            }
+
+            const autoSelected = [opponentId];
+            const nextIndex = autoSelected.length;
+            const nextDef = TargetingProcessor.getDefinitionForIndex(ability.targetDefinition, nextIndex);
+            const prompt = TargetingProcessor.generateTargetPrompt(ability.targetDefinition, nextIndex, (obj as any).xValue || 0, false);
+
+            state.pendingAction = {
+                type: 'TARGETING',
+                playerId: playerId,
+                sourceId: obj.id,
+                data: {
+                    abilityIndex: abilityIndex,
+                    targetDefinition: ability.targetDefinition,
+                    targets: pool.filter(tid => TargetingProcessor.isLegalTarget(state, obj, tid, ability.targetDefinition, nextIndex)),
+                    selectedTargets: autoSelected,
+                    label: nextDef.label,
+                    xValue: (obj as any).xValue,
+                    maxCount,
+                    minCount,
+                    count,
+                    prompt
+                }
+            };
             return true;
         }
 
-        const { maxCount, minCount: calculatedMin, count } = TargetingProcessor.calculateTotalCounts(ability.targetDefinition, (obj as any).xValue || 0);
-        const prompt = TargetingProcessor.generateTargetPrompt(ability.targetDefinition, 0, (obj as any).xValue || 0, true);
+        if (legalForFirst.length === 0) {
+            if (firstDef.optional || firstDef.minCount === 0) {
+                log(`No legal targets found, skipping.`);
+                return this.finalizeAbilityActivation(state, playerId, obj, ability, abilityIndex, [], log, engine);
+            } else {
+                log(`Illegal Play: No valid targets available for ${obj.definition.name}'s ability.`);
+                return false;
+            }
+        }
+
+        const prompt = TargetingProcessor.generateTargetPrompt(ability.targetDefinition, 0, (obj as any).xValue || 0, false);
         state.pendingAction = {
             type: 'TARGETING',
             playerId: playerId,
@@ -1272,9 +1351,9 @@ export class SpellProcessor {
             data: {
                 abilityIndex: abilityIndex,
                 targetDefinition: ability.targetDefinition,
-                targets: precalculatedTargets,
+                targets: legalForFirst,
                 maxCount,
-                minCount: calculatedMin,
+                minCount,
                 count,
                 prompt
             }
