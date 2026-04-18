@@ -227,6 +227,8 @@ interface BattlefieldProps {
   onToggleStop: (step: string) => void;
   onAvatarClick: (isOpponent: boolean) => void;
   scrySurveilResult?: any;
+  activePlayerId: string;
+  priorityPlayerId: string | null;
 }
 
 export const Battlefield = ({ 
@@ -238,7 +240,9 @@ export const Battlefield = ({
   onInspectZone,
   onToggleStop,
   onAvatarClick,
-  scrySurveilResult
+  scrySurveilResult,
+  activePlayerId,
+  priorityPlayerId
 }: BattlefieldProps) => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
@@ -330,7 +334,8 @@ export const Battlefield = ({
                     {opponent && (
                         <Avatar 
                             player={opponent} 
-                            isOpponent isActive={opponent.id === opponent.id} 
+                            isOpponent isActive={opponent.id === activePlayerId} 
+                            isPriority={opponent.id === priorityPlayerId || (pendingAction?.playerId === opponent.id)}
                             onToggleStop={onToggleStop}
                             viewerStops={me?.stops}
                             currentStep={currentStep as any}
@@ -411,7 +416,8 @@ export const Battlefield = ({
                     {me && (
                         <Avatar 
                             player={me} 
-                            isActive={me.id === me.id}
+                            isActive={me.id === activePlayerId}
+                            isPriority={me.id === priorityPlayerId || (pendingAction?.playerId === me.id)}
                             onToggleStop={onToggleStop}
                             viewerStops={me.stops}
                             currentStep={currentStep as any}

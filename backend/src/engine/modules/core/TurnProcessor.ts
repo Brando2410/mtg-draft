@@ -96,5 +96,244 @@ export class TurnProcessor {
       return true;
     });
   }
+
+  /**
+   * CR 500: Advancing the turn phase/step
+   */
+  public static advanceStep(state: GameState, engine: import('../../interfaces/EngineContext').EngineContext, log: (m: string) => void) {
+    const prevPhase = state.currentPhase;
+    const prevStep = state.currentStep;
+
+    let next = this.getNextStep(state);
+
+    // 3. Skip First Strike Damage if no First Strike scorers (Rule 510.4)
+    if (next.step === Step.FirstStrikeDamage) {
+      const { CombatProcessor } = require('../combat/CombatProcessor');
+      if (!CombatProcessor.hasFirstStrikeStep(state)) {
+        next = { phase: Phase.Combat, step: Step.CombatDamage, turnEnded: false };
+      }
+    }
+
+    if (next.turnEnded) {
+      log(`[FLOW] Turn is ending on request: ${next.phase}/${next.step}`);
+      this.cleanupEndOfTurn(state, log);
+      this.rotateActivePlayer(state, log);
+      state.turnNumber++;
+      log(`Turn ${state.turnNumber} - Active: ${engine.getPlayerName(state.activePlayerId)}`);
+    }
+
+    state.currentPhase = next.phase;
+    state.currentStep = next.step;
+    state.consecutivePasses = 0;
+    log(`[PHASE] >>> Entering ${state.currentPhase}: ${state.currentStep} <<<`);
+
+    // CR 603.6: Phase/Step Transition Triggers
+    const phaseName = state.currentPhase.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
+    const stepName = state.currentStep.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
+
+    // Fire generic event for the step (e.g., ON_END_STEP, ON_UPKEEP_STEP)
+    const stepEvent = {
+      type: `ON_${stepName}_STEP`,
+      playerId: state.activePlayerId,
+      data: { phase: state.currentPhase, step: state.currentStep }
+    };
+    const { TriggerProcessor } = require('../effects/TriggerProcessor');
+    TriggerProcessor.onEvent(state, stepEvent, log);
+    this.cleanupExpiredEffectsByEvent(state, stepEvent.type, log, state.activePlayerId);
+
+
+    // Fire generic event for the phase (e.g., ON_PRE_COMBAT_MAIN_PHASE_START)
+    const phaseEvent = {
+      type: `ON_${phaseName}_PHASE_START`,
+      playerId: state.activePlayerId,
+      data: { phase: state.currentPhase, step: state.currentStep }
+    };
+    TriggerProcessor.onEvent(state, phaseEvent, log);
+    this.cleanupExpiredEffectsByEvent(state, phaseEvent.type, log, state.activePlayerId);
+
+    const { ManaProcessor } = require('../magic/ManaProcessor');
+    ManaProcessor.emptyAllManaPools(state);
+    
+    this.handleStepEntryRules(state, engine, log);
+
+    if (state.pendingAction) {
+      log(`[WAITING] Pending Action: ${state.pendingAction.type} for ${engine.getPlayerName(state.pendingAction.playerId)}`);
+      engine.checkAutoPass(state.pendingAction.playerId);
+      return;
+    }
+
+    if (state.currentStep === Step.Untap || state.currentStep === Step.Cleanup) {
+      log(`[FLOW] Auto-advancing from administrative step ${state.currentStep}`);
+      state.priorityPlayerId = null;
+      this.advanceStep(state, engine, log);
+    } else {
+      engine.resetPriorityToActivePlayer();
+    }
+  }
+
+  /**
+   * CR 500: Turn Rotation and Maintenance
+   */
+  public static rotateActivePlayer(state: GameState, log: (m: string) => void) {
+    const currentIndex = state.playerOrder.indexOf(state.activePlayerId);
+    
+    // Extra turns logic
+    const currentPlayer = state.players[state.activePlayerId];
+    if (currentPlayer && currentPlayer.extraTurns > 0) {
+        currentPlayer.extraTurns--;
+        log(`[TURN] ${currentPlayer.name} takes an EXTRA turn! (${currentPlayer.extraTurns} remaining)`);
+    } else {
+        let nextIndex = (currentIndex + 1) % state.playerOrder.length;
+        let nextPlayerId = state.playerOrder[nextIndex];
+        let nextPlayer = state.players[nextPlayerId];
+        
+        while (nextPlayer && nextPlayer.turnsToSkip > 0) {
+            log(`[TURN] ${nextPlayer.name} SKIPS a turn! (${nextPlayer.turnsToSkip} remaining)`);
+            nextPlayer.turnsToSkip--;
+            nextIndex = (nextIndex + 1) % state.playerOrder.length;
+            nextPlayerId = state.playerOrder[nextIndex];
+            nextPlayer = state.players[nextPlayerId];
+        }
+        
+        state.activePlayerId = nextPlayerId;
+    }
+
+    if (state.players[state.activePlayerId]) {
+      state.players[state.activePlayerId].hasPlayedLandThisTurn = false;
+    }
+
+    // CR 500: Reset turn-wide logic tracking
+    for (const pId in state.players) {
+        state.players[pId].passUntilEndOfTurn = false;
+    }
+
+    // Rule 606.3: Reset activated ability usage
+    state.battlefield.forEach(obj => obj.abilitiesUsedThisTurn = 0);
+
+    state.turnState = {
+      permanentReturnedToHandThisTurn: false,
+      playersWithPermanentReturnedThisTurn: {},
+      noncombatDamageDealtToOpponents: {},
+      creaturesAttackedThisTurn: 0,
+      creaturesDiedThisTurn: [],
+      lastDamageAmount: 0,
+      lastExcessDamageAmount: 0,
+      lastLifeGainedAmount: 0,
+      lastCardsDrawnAmount: 0,
+      cardsDrawnThisTurn: {},
+      spellsCastThisTurn: {},
+      lifeGainedThisTurn: {},
+      instantOrSorceryCastThisTurn: {},
+      cardLeftGraveyardThisTurn: {},
+      landsPlayedThisTurn: {},
+      triggeredAbilitiesUsedThisTurn: {},
+      lastDiscardedCount: 0,
+      cardsExiledThisTurn: {},
+      countersAddedThisTurnIds: [],
+      turnStartTime: Date.now()
+    };
+  }
+
+  /**
+   * CR 502/503/514: Step-specific Entry Rules
+   */
+  public static handleStepEntryRules(state: GameState, engine: import('../../interfaces/EngineContext').EngineContext, log: (m: string) => void) {
+    const activeId = state.activePlayerId;
+    const { DurationType } = require('@shared/engine_types');
+
+    if (state.currentStep === Step.Untap) {
+      const { RegistryProcessor } = require('./RegistryProcessor');
+      const { ActionProcessor } = require('../actions/ActionProcessor');
+      state.battlefield.filter(c => c.controllerId === activeId).forEach(c => RegistryProcessor.registerAbilities(state, c));
+      ActionProcessor.untapAll(state, activeId, log);
+
+      // CR 611.2: Expire "Until Next Untap Step" effects
+      state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
+          if (eff.duration?.type === DurationType.UntilYourNextTurn && eff.duration.untilTurnOfPlayerId === activeId) {
+              return false;
+          }
+          if (eff.duration?.type === DurationType.UntilNextUntapStep) {
+              const targets = (eff as any).targetIds || [];
+              const hasActiveTarget = targets.some((tid: string) => state.battlefield.find(o => o.id === tid)?.controllerId === activeId);
+              if (hasActiveTarget) return false;
+          }
+          return true;
+      });
+    }
+    else if (state.currentPhase === Phase.Combat) {
+      const { CombatProcessor } = require('../combat/CombatProcessor');
+      CombatProcessor.handleStepEntry(state, log);
+    }
+    else if (state.currentStep === Step.Draw) {
+      const skipDraw = state.turnNumber === 1 && state.playerOrder[0] === activeId;
+      if (!skipDraw && !engine.drawCard(activeId)) {
+        log(`${engine.getPlayerName(activeId)} deck-out loss.`);
+      }
+    }
+    else if (state.currentStep === Step.Cleanup) {
+      const player = state.players[activeId];
+      if (player && player.hand.length > player.maxHandSize) {
+        player.pendingDiscardCount = player.hand.length - player.maxHandSize;
+        state.pendingAction = {
+          type: 'DISCARD',
+          playerId: activeId,
+          count: player.pendingDiscardCount
+        };
+        log(`${player.name} must discard ${player.pendingDiscardCount} card(s) to reach hand size (${player.maxHandSize}).`);
+      }
+
+      state.battlefield.forEach(obj => obj.damageMarked = 0);
+
+      state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
+          if (eff.duration?.type === DurationType.UntilEndOfYourNextTurn && eff.duration.untilTurnOfPlayerId === activeId) {
+              if (eff.timestamp < state.turnState.turnStartTime) return false;
+          }
+          return eff.duration.type !== DurationType.UntilEndOfTurn;
+      });
+      state.ruleRegistry.triggeredAbilities = state.ruleRegistry.triggeredAbilities.filter(
+        t => !t.duration || t.duration.type !== DurationType.UntilEndOfTurn
+      );
+    }
+  }
+
+  /**
+   * CR 514: Cleanup Step Maintenance
+   */
+  public static cleanupEndOfTurn(state: GameState, log: (m: string) => void) {
+    log(`[CLEANUP] Removing 'Until End of Turn' effects and resetting markers.`);
+    const { DurationType } = require('@shared/engine_types');
+
+    state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
+      return eff.duration?.type !== DurationType.UntilEndOfTurn;
+    });
+
+    state.battlefield.forEach(obj => {
+      obj.damageMarked = 0;
+      obj.deathtouchMarked = false;
+      obj.abilitiesUsedThisTurn = 0;
+    });
+  }
+
+  /**
+   * Clear rule-duration effects conditionally
+   */
+  public static cleanupExpiredEffectsByEvent(state: GameState, eventType: string, log: (m: string) => void, activePlayerId?: PlayerId) {
+    const { DurationType } = require('@shared/engine_types');
+    const previousCount = state.ruleRegistry.continuousEffects.length;
+    
+    state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
+      if (eff.duration?.type === DurationType.UntilEvent && eff.duration.expiryEvent === eventType) {
+        if (eff.duration.untilTurnOfPlayerId && eff.duration.untilTurnOfPlayerId !== activePlayerId) {
+            return true;
+        }
+        return false;
+      }
+      return true;
+    });
+
+    if (state.ruleRegistry.continuousEffects.length < previousCount) {
+      log(`[FLOW] Expired ${previousCount - state.ruleRegistry.continuousEffects.length} continuous effect(s) on event ${eventType}.`);
+    }
+  }
 }
 

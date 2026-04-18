@@ -12,14 +12,7 @@ import { oracle } from '../../OracleLogicMap';
 /**
  * Priority Handling (Rule 117)
  */
-export interface PriorityCallbacks {
-  log: (m: string) => void;
-  getPlayerName: (id: PlayerId) => string;
-  resolveTopOrAdvanceStep: () => void;
-  confirmAttackers: (pId: string) => void;
-  confirmBlockers: (pId: string) => void;
-  checkStateBasedActions: () => void;
-}
+import { EngineContext } from '../../interfaces/EngineContext';
 
 export class PriorityProcessor {
 
@@ -30,17 +23,17 @@ export class PriorityProcessor {
   public static passPriority(
     state: GameState,
     playerId: PlayerId,
-    callbacks: PriorityCallbacks,
+    engine: EngineContext,
     isAuto = false
   ) {
     // 1. Intercept for special actions
     if (state.pendingAction?.playerId === playerId) {
       if (state.pendingAction.type === 'DECLARE_ATTACKERS') {
-        callbacks.confirmAttackers(playerId);
+        engine.confirmAttackers(playerId);
         return;
       }
       if (state.pendingAction.type === 'DECLARE_BLOCKERS') {
-        callbacks.confirmBlockers(playerId);
+        engine.confirmBlockers(playerId);
         return;
       }
     }
@@ -53,13 +46,13 @@ export class PriorityProcessor {
     // CR 117.1: A player must resolve pending mandatory actions before passing
     if (state.pendingAction && String(state.pendingAction.playerId) === String(playerId)) {
       console.log(`[PRIORITY-PROC] passPriority BLOCKED: ${playerId} has pending ${state.pendingAction.type}.`);
-      callbacks.log(`Invalid Action: Player must resolve pending ${state.pendingAction.type} first.`);
+      engine.log(`Invalid Action: Player must resolve pending ${state.pendingAction.type} first.`);
       return;
     }
 
     const player = state.players[playerId];
     if (player && player.pendingDiscardCount > 0) {
-      if (!isAuto) callbacks.log(`${callbacks.getPlayerName(playerId)} must finish discarding first.`);
+      if (!isAuto) engine.log(`${engine.getPlayerName(playerId)} must finish discarding first.`);
       return;
     }
 
@@ -76,44 +69,44 @@ export class PriorityProcessor {
         if (isBeginning && player.stops[beginKey]) player.stops[beginKey] = false;
 
         console.log(`[STOPPER] Untoggled stop for ${stopKey}/beginning after manual pass.`);
-        callbacks.log(`Stop cleared for ${state.currentStep}.`);
+        engine.log(`Stop cleared for ${state.currentStep}.`);
       }
     }
 
     state.consecutivePasses++;
 
     const prefix = isAuto ? '[Auto-Pass] ' : '[Manual-Pass] ';
-    callbacks.log(`${prefix}${callbacks.getPlayerName(playerId)} passed. (${state.consecutivePasses}/${state.playerOrder.length} passes)`);
+    engine.log(`${prefix}${engine.getPlayerName(playerId)} passed. (${state.consecutivePasses}/${state.playerOrder.length} passes)`);
 
     if (state.consecutivePasses >= state.playerOrder.length) {
-      callbacks.resolveTopOrAdvanceStep();
+      engine.resolveTopOrAdvanceStep();
     } else {
-      this.givePriorityToNextPlayer(state, callbacks);
+      this.givePriorityToNextPlayer(state, engine);
     }
   }
 
   public static givePriorityToNextPlayer(
     state: GameState,
-    callbacks: PriorityCallbacks
+    engine: EngineContext
   ) {
     if (!state.priorityPlayerId) return;
     const currentIndex = state.playerOrder.indexOf(state.priorityPlayerId);
     const nextIndex = (currentIndex + 1) % state.playerOrder.length;
 
-    callbacks.checkStateBasedActions();
+    engine.checkStateBasedActions();
 
     state.priorityPlayerId = state.playerOrder[nextIndex];
-    callbacks.log(`[PRIORITY] Shifted to ${callbacks.getPlayerName(state.priorityPlayerId)}.`);
+    engine.log(`[PRIORITY] Shifted to ${engine.getPlayerName(state.priorityPlayerId)}.`);
 
-    this.checkAutoPass(state, state.priorityPlayerId, callbacks);
+    this.checkAutoPass(state, state.priorityPlayerId, engine);
   }
 
   public static resetPriorityToActivePlayer(
     state: GameState,
-    callbacks: PriorityCallbacks
+    engine: EngineContext
   ) {
     state.consecutivePasses = 0;
-    callbacks.checkStateBasedActions();
+    engine.checkStateBasedActions();
 
     // Only set priority to active player if an SBA or trigger didn't just set up a mandatory action.
     if (!state.pendingAction) {
@@ -121,14 +114,14 @@ export class PriorityProcessor {
     }
 
     if (state.priorityPlayerId) {
-      this.checkAutoPass(state, state.priorityPlayerId, callbacks);
+      this.checkAutoPass(state, state.priorityPlayerId, engine);
     }
   }
 
   public static checkAutoPass(
     state: GameState,
     playerId: PlayerId,
-    callbacks: PriorityCallbacks
+    engine: EngineContext
   ) {
     const isPriority = state.priorityPlayerId && String(state.priorityPlayerId) === String(playerId);
     const isPending = state.pendingAction && String(state.pendingAction.playerId) === String(playerId);
@@ -148,11 +141,11 @@ export class PriorityProcessor {
 
       if (!hasManualStop) {
         if (state.pendingAction?.type === 'DECLARE_ATTACKERS' && !TurnProcessor.hasPotentialAttackers(state, playerId)) {
-          callbacks.confirmAttackers(playerId);
+          engine.confirmAttackers(playerId);
           return;
         }
         if (state.pendingAction?.type === 'DECLARE_BLOCKERS' && !TurnProcessor.hasPotentialBlockers(state, playerId)) {
-          callbacks.confirmBlockers(playerId);
+          engine.confirmBlockers(playerId);
           return;
         }
       }
@@ -183,8 +176,8 @@ export class PriorityProcessor {
         return; // Don't auto-pass combat declarations even if Skip is active
       }
 
-      callbacks.log(`[Auto-Pass] ${callbacks.getPlayerName(playerId)} skipped${!canAct ? ': no legal actions found' : ' (Pass Turn active)'}.`);
-      this.passPriority(state, playerId, callbacks, true);
+      engine.log(`[Auto-Pass] ${engine.getPlayerName(playerId)} skipped${!canAct ? ': no legal actions found' : ' (Pass Turn active)'}.`);
+      this.passPriority(state, playerId, engine, true);
     } else if (player && (canAct || hasManualStop)) {
       console.log(`[ENGINE] Priority held by ${playerId} (Actions available or Stop set)`);
     }
@@ -635,6 +628,22 @@ export class PriorityProcessor {
 
       return true;
     });
+  }
+
+  /**
+   * CR 117: Passes priority continuously until the end of the turn or next interaction point.
+   */
+  public static togglePassTurn(state: GameState, playerId: string, engine: EngineContext) {
+    const player = state.players[playerId];
+    if (!player) return;
+    
+    player.passUntilEndOfTurn = !player.passUntilEndOfTurn;
+    engine.log(`[PASS-TURN] ${player.name} ${player.passUntilEndOfTurn ? 'enabled' : 'disabled'} Pass Turn.`);
+    
+    // Immediately check if we should auto-pass now that it's toggled
+    if (player.passUntilEndOfTurn && state.priorityPlayerId === playerId) {
+        this.checkAutoPass(state, playerId, engine);
+    }
   }
 }
 

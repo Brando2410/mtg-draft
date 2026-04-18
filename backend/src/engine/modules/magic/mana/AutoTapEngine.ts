@@ -4,6 +4,7 @@ import { ManaParser } from './ManaParser';
 import { ManaPoolManager } from './ManaPoolManager';
 import { ManaColor } from './ManaTypes';
 import { ManaPoolRecord } from './ManaTypes';
+import { EngineContext } from '../../../interfaces/EngineContext';
 
 export class AutoTapEngine {
     public static autoTapLandsForCost(
@@ -11,7 +12,7 @@ export class AutoTapEngine {
         playerId: PlayerId,
         costStr: string,
         log: (m: string) => void,
-        tapForManaCallback: (p: string, c: string, aIdx?: number, cIdx?: number) => void,
+        engine: EngineContext,
         payingFor?: GameObject
     ): { tappedIds: string[], producedMana: ManaPoolRecord } {
         const player = state.players[playerId];
@@ -251,10 +252,9 @@ export class AutoTapEngine {
                     if (abilityColors.hasChoice) actualCIdx = 0;
                 }
 
-                // ARCHITECTURAL NOTE: Choice Propagation
-                // We pass the calculated cIdx (Choice Index) into the callback.
+                // We pass the calculated cIdx (Choice Index) into the engine.
                 // This informs the land exactly which color to produce, bypassing the manual modal.
-                tapForManaCallback(playerId, source.obj.id, source.aIdx, actualCIdx);
+                engine.tapForMana(playerId, source.obj.id, source.aIdx, actualCIdx);
                 
                 // ARCHITECTURAL NOTE: Stealth Pending Action Clearance
                 // Some mana abilities (like dual lands or forum/paradox) erroneously trigger standard 
@@ -305,7 +305,7 @@ export class AutoTapEngine {
             }
 
             // See ARCHITECTURAL NOTE on Choice Propagation above.
-            tapForManaCallback(playerId, source.obj.id, source.aIdx, actualCIdx);
+            engine.tapForMana(playerId, source.obj.id, source.aIdx, actualCIdx);
             
             // See ARCHITECTURAL NOTE on Stealth Pending Action Clearance above.
             if (state.pendingAction && (state.pendingAction.sourceId === source.obj.id || state.pendingAction.type === 'RESOLUTION_CHOICE')) {

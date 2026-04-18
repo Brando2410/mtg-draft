@@ -8,6 +8,8 @@ import { ActionProcessor } from './ActionProcessor';
 /**
  * Casting Spells and Activating Abilities (Chapters 601 & 602)
  */
+import { EngineContext } from '../../interfaces/EngineContext';
+
 export class SpellProcessor {
 
     public static playCard(
@@ -16,12 +18,7 @@ export class SpellProcessor {
         cardInstanceId: string,
         declaredTargets: string[],
         log: (m: string) => void,
-        engine: {
-            tapForMana: (p: PlayerId, c: string, aIdx?: number, cIdx?: number) => void;
-            passPriority: (p: PlayerId) => void;
-            checkAutoPass: (p: PlayerId) => void;
-            checkStateBasedActions: () => void;
-        },
+        engine: EngineContext,
         bypassTargeting = false
     ): boolean {
         log(`[DEBUG] SpellProcessor.playCard: Card ${cardInstanceId} by ${playerId} (BypassTargeting: ${bypassTargeting})`);
@@ -382,11 +379,11 @@ export class SpellProcessor {
         playerId: PlayerId,
         cardId: string,
         abilityIndex: number,
-        declaredTargets: string[] = [],
+        declaredTargets: string[],
         log: (m: string) => void,
-        engine: any,
-        bypassTargeting: boolean = false,
-        preSelectedChoice?: number
+        engine: EngineContext,
+        bypassTargeting = false,
+        choiceIndex?: number
     ): boolean {
         const { TargetingProcessor } = require('./TargetingProcessor');
         const obj = TargetingProcessor.findObjectInAnyZone(state, cardId);
@@ -441,12 +438,12 @@ export class SpellProcessor {
 
         // Step 3: Targeting (Rule 602.2b)
         if (ability.targetDefinition && (declaredTargets === undefined || declaredTargets.length === 0) && !bypassTargeting) {
-            const targetingResult = this.handleAbilityTargeting(state, playerId, cardId, obj, ability, abilityIndex, log, engine, preSelectedChoice);
+            const targetingResult = this.handleAbilityTargeting(state, playerId, cardId, obj, ability, abilityIndex, log, engine, choiceIndex);
             if (targetingResult) return true; // Handled pending action or single target recursion
         }
 
         // Step 4: Finalization (Rule 602.2h)
-        return this.finalizeAbilityActivation(state, playerId, obj, ability, abilityIndex, declaredTargets || [], log, engine, preSelectedChoice);
+        return this.finalizeAbilityActivation(state, playerId, obj, ability, abilityIndex, declaredTargets || [], log, engine, choiceIndex);
     }
 
     private static handleLandPlay(state: GameState, playerId: PlayerId, cardToPlay: GameObject, engine: any, log: (m: string) => void): boolean {
@@ -899,12 +896,12 @@ export class SpellProcessor {
             if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, cardToPlay)) {
                 if (hasConfirmedAutoTap) {
                     log(`Using pre-confirmed auto-tap for ${totalMana}...`);
-                    ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, log, engine.tapForMana, cardToPlay);
+                    ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, log, engine, cardToPlay);
                 } else {
                     log(`Auto-tapping lands to pay ${totalMana}...`);
                     const manaSnapshot = JSON.parse(JSON.stringify(player.manaPool));
                     const restrictedSnapshot = JSON.parse(JSON.stringify(player.restrictedMana || []));
-                    const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, log, engine.tapForMana, cardToPlay);
+                    const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, log, engine, cardToPlay);
                     
                     if (tappedIds.length > 0) {
                         const { ActionType } = require('@shared/engine_types');
@@ -1438,7 +1435,7 @@ export class SpellProcessor {
             if (!ManaProcessor.canPayManaCost(playerObj, effectiveMana, state)) {
                 if (ManaProcessor.canPayWithTotal(playerObj, state.battlefield, effectiveMana)) {
                     log(`Auto-tapping lands to pay ability cost ${effectiveMana}...`);
-                    ManaProcessor.autoTapLandsForCost(state, playerId, effectiveMana, log, engine.tapForMana);
+                    ManaProcessor.autoTapLandsForCost(state, playerId, effectiveMana, log, engine);
                 }
             }
         }

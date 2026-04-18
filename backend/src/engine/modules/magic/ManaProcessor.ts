@@ -3,6 +3,7 @@ import { ManaParser } from './mana/ManaParser';
 import { ManaPoolManager } from './mana/ManaPoolManager';
 import { ManaValidator } from './mana/ManaValidator';
 import { AutoTapEngine } from './mana/AutoTapEngine';
+import { EngineContext } from '../../interfaces/EngineContext';
 
 /**
  * Handle Mana Pool, Cost Analysis, and Payments (Chapters 106 & 117)
@@ -80,7 +81,7 @@ export class ManaProcessor {
    * Orchestrates the automated tapping of lands and non-land sources to satisfy a cost.
    * Includes optimizations for source complexity and future hand playability.
    */
-  public static autoTapLandsForCost(state: any, playerId: string, costStr: string, log: (m: string) => void, tapForManaCallback: (p: string, c: string, aIdx?: number, cIdx?: number) => void, payingFor?: GameObject): { tappedIds: string[], producedMana: any } {
-    return AutoTapEngine.autoTapLandsForCost(state, playerId, costStr, log, tapForManaCallback, payingFor);
+  public static autoTapLandsForCost(state: any, playerId: string, costStr: string, log: (m: string) => void, engine: EngineContext, payingFor?: GameObject): { tappedIds: string[], producedMana: any } {
+    return AutoTapEngine.autoTapLandsForCost(state, playerId, costStr, log, engine, payingFor);
   }
 }

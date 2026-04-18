@@ -8,6 +8,8 @@ import { TargetingProcessor } from './TargetingProcessor';
 import { ChoiceGenerator } from '../effects/ChoiceGenerator';
 import { PlayerActionProcessor } from './PlayerActionProcessor';
 
+import { EngineContext } from '../../interfaces/EngineContext';
+
 /**
  * Handles interactive player choices (Targeting, Modal Choices)
  */
@@ -18,14 +20,7 @@ export class ChoiceProcessor {
     playerId: string,
     choiceIndex: number | string,
     log: (m: string) => void,
-    engine: {
-        resetPriorityToActivePlayer: () => void;
-        activateAbility: (p: PlayerId, c: string, idx: number, targets: string[], bypass?: boolean) => boolean;
-        finaliseTargeting?: (p: PlayerId, targets: string[]) => boolean;
-        tapForMana: (p: PlayerId, c: string, aIdx?: number, cIdx?: number) => void;
-        checkAutoPass?: (p: PlayerId) => void;
-        passPriority?: (p: PlayerId) => void;
-    }
+    engine: EngineContext
   ): boolean {
     const action = state.pendingAction;
     if (!action || action.playerId !== playerId) return false;
@@ -509,11 +504,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             action.data.abilityIndex, 
             targets, 
             log, 
-            {
-                tapForMana: (p: any, c: any, aIdx?: number, cIdx?: number) => engine.tapForMana(p, c, aIdx, cIdx),
-                passPriority: (p: any) => engine.passPriority ? engine.passPriority(p) : engine.resetPriorityToActivePlayer(),
-                checkAutoPass: (p: any) => engine.checkAutoPass ? engine.checkAutoPass(p) : engine.resetPriorityToActivePlayer()
-            },
+            engine,
             true 
         );
     }
@@ -570,17 +561,12 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         sourceId, 
         savedTargets, 
         log, 
-        {
-            tapForMana: (p: any, c: any, aIdx?: number, cIdx?: number) => engine.tapForMana ? engine.tapForMana(p, c, aIdx, cIdx) : true,
-            checkAutoPass: (p: any) => engine.checkAutoPass ? engine.checkAutoPass(p) : engine.resetPriorityToActivePlayer(),
-            passPriority: (p: any) => {}, 
-            checkStateBasedActions: () => {}
-        },
+        engine,
         true 
     );
   }
 
-  private static handleResolutionChoice(state: GameState, sourceId: string, choice: any, action: any, log: (m: string) => void, engine: any): boolean {
+  private static handleResolutionChoice(state: GameState, sourceId: string, choice: any, action: any, log: (m: string) => void, engine: EngineContext): boolean {
     log(`Option selected: ${choice.label}`);
     const savedActionData = action.data;
     const stackObj = savedActionData?.stackObj;
@@ -776,12 +762,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         sourceId, 
         action.data.declaredTargets || [], 
         log, 
-        {
-            tapForMana: (p: any, c: any, aIdx?: number, cIdx?: number) => engine.tapForMana ? engine.tapForMana(p, c, aIdx, cIdx) : true,
-            checkAutoPass: (p: any) => engine.checkAutoPass ? engine.checkAutoPass(p) : engine.resetPriorityToActivePlayer(),
-            passPriority: (p: any) => {}, 
-            checkStateBasedActions: () => {}
-        },
+        engine,
         true 
     );
 

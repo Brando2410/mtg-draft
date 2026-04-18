@@ -3,12 +3,7 @@ import { LayerProcessor } from '../state/LayerProcessor';
 import { DamageProcessor } from '../combat/DamageProcessor';
 import { TriggerProcessor } from '../effects/TriggerProcessor';
 
-export interface CombatCallbacks {
-    log: (m: string) => void;
-    getPlayerName: (id: PlayerId) => string;
-    resetPriorityToActivePlayer: () => void;
-    advanceStep: () => void;
-}
+import { EngineContext } from '../../interfaces/EngineContext';
 
 /**
  * Combat Mechanism (Chapter 506-511)
@@ -100,17 +95,17 @@ export class CombatProcessor {
   /**
    * CR 508.2: Confirming the Attacker Declaration Action
    */
-  public static confirmAttackers(state: GameState, playerId: PlayerId, callbacks: CombatCallbacks) {
+  public static confirmAttackers(state: GameState, playerId: PlayerId, engine: EngineContext) {
     if (state.pendingAction?.type !== 'DECLARE_ATTACKERS' || state.pendingAction.playerId !== playerId) return;
     
     // CR 508.1: Validate global attack requirements (e.g. MustAttack)
     const validation = this.validateAllAttackers(state);
     if (!validation.isValid) {
-        callbacks.log(`[ATTACK] ERR: ${validation.error}`);
+        engine.log(`[ATTACK] ERR: ${validation.error}`);
         return;
     }
 
-    callbacks.log(`${callbacks.getPlayerName(playerId)} confirmed attackers.`);
+    engine.log(`${engine.getPlayerName(playerId)} confirmed attackers.`);
     
     const attackers = state.combat?.attackers || [];
     state.turnState.creaturesAttackedThisTurn += attackers.length;
@@ -129,7 +124,7 @@ export class CombatProcessor {
                     playerId: playerId,
                     targetId: attackerObj.id,
                     data: { object: attackerObj }
-                }, (m: string) => callbacks.log(m));
+                }, (m: string) => engine.log(m));
             }
         }
     });
@@ -140,7 +135,7 @@ export class CombatProcessor {
             type: 'ON_ATTACKERS_DECLARED',
             playerId: playerId,
             data: { attackers }
-        }, (m: string) => callbacks.log(m));
+        }, (m: string) => engine.log(m));
 
         // Rule 508.1m: Individual attack triggers
         attackers.forEach(a => {
@@ -150,7 +145,7 @@ export class CombatProcessor {
                 sourceId: a.attackerId, 
                 playerId: playerId,
                 data: { object: attackerObj, targetId: a.targetId }
-            }, (m: string) => callbacks.log(m));
+            }, (m: string) => engine.log(m));
         });
     }
 
@@ -158,14 +153,14 @@ export class CombatProcessor {
 
     const attackerCount = (state.combat?.attackers || []).length;
     if (attackerCount === 0) {
-        callbacks.log("No attackers declared. Speeding to next phase.");
-        callbacks.advanceStep();
+        engine.log("No attackers declared. Speeding to next phase.");
+        engine.advanceStep();
     } else {
-        callbacks.resetPriorityToActivePlayer();
+        engine.resetPriorityToActivePlayer();
     }
   }
 
-  public static clearAttackers(state: GameState, playerId: PlayerId, callbacks: CombatCallbacks) {
+  public static clearAttackers(state: GameState, playerId: PlayerId, engine: EngineContext) {
     if (state.pendingAction?.type !== 'DECLARE_ATTACKERS' || state.pendingAction.playerId !== playerId) return;
     if (!state.combat) return;
 
@@ -194,34 +189,34 @@ export class CombatProcessor {
     });
 
     state.combat.attackers = mandatoryAttackers;
-    callbacks.log(`${callbacks.getPlayerName(playerId)} cleared non-mandatory attackers.`);
-    callbacks.resetPriorityToActivePlayer();
+    engine.log(`${engine.getPlayerName(playerId)} cleared non-mandatory attackers.`);
+    engine.resetPriorityToActivePlayer();
   }
 
-  public static clearBlockers(state: GameState, playerId: PlayerId, callbacks: CombatCallbacks) {
+  public static clearBlockers(state: GameState, playerId: PlayerId, engine: EngineContext) {
     if (state.pendingAction?.type !== 'DECLARE_BLOCKERS' || state.pendingAction.playerId !== playerId) return;
     if (!state.combat) return;
 
     state.combat.blockers = [];
-    callbacks.log(`${callbacks.getPlayerName(playerId)} cleared all blockers.`);
-    callbacks.resetPriorityToActivePlayer();
+    engine.log(`${engine.getPlayerName(playerId)} cleared all blockers.`);
+    engine.resetPriorityToActivePlayer();
   }
 
   /**
    * CR 509.2: Confirming the Blocker Declaration Action
    */
-  public static confirmBlockers(state: GameState, playerId: PlayerId, callbacks: CombatCallbacks) {
+  public static confirmBlockers(state: GameState, playerId: PlayerId, engine: EngineContext) {
     if (state.pendingAction?.type !== 'DECLARE_BLOCKERS' || state.pendingAction.playerId !== playerId) return;
     
     // CR 509.1: Validate global block requirements (e.g. Menace)
     const validation = this.validateAllBlockers(state);
     if (!validation.isValid) {
-        callbacks.log(`[BLOCK] ERR: ${validation.error}`);
+        engine.log(`[BLOCK] ERR: ${validation.error}`);
         // Keep in block declaration mode until fixed
         return;
     }
 
-    callbacks.log(`${callbacks.getPlayerName(playerId)} confirmed blockers.`);
+    engine.log(`${engine.getPlayerName(playerId)} confirmed blockers.`);
     
     // Rule 509.1: Individual block triggers
     if (state.combat?.blockers) {
@@ -233,14 +228,14 @@ export class CombatProcessor {
                 sourceId: b.blockerId, 
                 playerId: playerId,
                 data: { object: blockerObj, targetId: b.attackerId }
-            }, (m: string) => callbacks.log(m));
+            }, (m: string) => engine.log(m));
             TriggerProcessor.onEvent(state, { 
                 type: 'ON_BECAME_BLOCKED', 
                 sourceId: b.attackerId, 
                 targetId: b.blockerId, 
                 playerId: playerId,
                 data: { object: attackerObj, targetId: b.blockerId }
-            }, (m: string) => callbacks.log(m));
+            }, (m: string) => engine.log(m));
         });
     }
 
@@ -248,10 +243,10 @@ export class CombatProcessor {
     
     // CR 509.2 / 509.3: If multiple blockers/attackers are involved, we need damage assignment order first.
     if (this.needsOrdering(state)) {
-        this.setupNextOrderingAction(state, (m) => callbacks.log(m));
+        this.setupNextOrderingAction(state, (m) => engine.log(m));
     } else {
         // CR 509.4: Give priority window in Declare Blockers step.
-        callbacks.resetPriorityToActivePlayer();
+        engine.resetPriorityToActivePlayer();
     }
   }
 
@@ -456,12 +451,12 @@ export class CombatProcessor {
   /**
    * CR 509.2 / 509.3: Finalize a damage assignment order.
    */
-  public static resolveCombatOrdering(state: GameState, playerId: string, order: string[], callbacks: CombatCallbacks): boolean {
+  public static resolveCombatOrdering(state: GameState, playerId: string, order: string[], engine: EngineContext): boolean {
     const { PlayerActionProcessor } = require('../actions/PlayerActionProcessor');
-    PlayerActionProcessor.resolveCombatOrdering(state, playerId, order, (m: string) => callbacks.log(m));
+    PlayerActionProcessor.resolveCombatOrdering(state, playerId, order, (m: string) => engine.log(m));
     
     // Once ordering is complete (and no more pending actions exist), give priority back to AP.
-    callbacks.resetPriorityToActivePlayer();
+    engine.resetPriorityToActivePlayer();
     return true;
   }
   

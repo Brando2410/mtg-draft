@@ -7,14 +7,7 @@ import { LayerProcessor } from '../state/LayerProcessor';
 import { ChoiceProcessor } from './ChoiceProcessor';
 import { oracle } from '../../OracleLogicMap';
 
-export interface PlayerActionCallbacks {
-    log: (m: string) => void;
-    getPlayerName: (id: PlayerId) => string;
-    playCard: (pId: PlayerId, cId: string, targets: string[], bypass: boolean) => boolean;
-    activateAbility: (pId: PlayerId, cId: string, idx: number, targets: string[], bypass: boolean) => boolean;
-    resetPriorityToActivePlayer: () => void;
-    checkAutoPass: (pId: PlayerId) => void;
-}
+import { EngineContext } from '../../interfaces/EngineContext';
 
 // Need to safely interact with Rule registries without causing circular dependencies.
 export class PlayerActionProcessor {
@@ -26,12 +19,7 @@ export class PlayerActionProcessor {
     playerId: PlayerId,
     cardId: string,
     log: (m: string) => void,
-    actionHandlers: {
-      declareAttacker: (pId: string, cId: string) => boolean;
-      handleBlockSelection: (pId: string, cId: string) => boolean;
-      tapForMana: (pId: string, cId: string) => boolean;
-      activateAbility: (pId: PlayerId, cId: string, idx: number) => boolean;
-    }
+    engine: EngineContext
   ): boolean {
     const obj = state.battlefield.find(c => c.id === cardId);
     if (!obj) return false;
@@ -39,10 +27,10 @@ export class PlayerActionProcessor {
     // 1. Intercept for special actions (Combat)
     if (state.pendingAction?.playerId === playerId) {
       if (state.pendingAction.type === 'DECLARE_ATTACKERS') {
-        return actionHandlers.declareAttacker(playerId, cardId);
+        return engine.declareAttacker(playerId, cardId);
       }
       if (state.pendingAction.type === 'DECLARE_BLOCKERS') {
-        return actionHandlers.handleBlockSelection(playerId, cardId);
+        return engine.handleBlockSelection(playerId, cardId);
       }
     }
 
@@ -127,7 +115,7 @@ export class PlayerActionProcessor {
                 
                 // If it has no choices and only costs Tap, we just fire it immediate
                 // Rules 605.3a: Mana abilities don't use the stack and are resolved immediately.
-                return actionHandlers.activateAbility(playerId, cardId, abilityIdx);
+                return engine.activateAbility(playerId, cardId, abilityIdx);
             }
 
             // Safety Step: For single non-mana utility abilities, show a confirmation modal 
@@ -166,7 +154,35 @@ export class PlayerActionProcessor {
     }
 
     // 4. Default: Tap for Mana (Undo/Untap) or non-PW interaction
-    return actionHandlers.tapForMana(playerId, cardId);
+    return engine.tapForMana(playerId, cardId) || false;
+  }
+
+  public static autoTapLand(
+    state: GameState,
+    playerId: PlayerId,
+    cardId: string,
+    engine: EngineContext,
+    abilityIndex?: number,
+    choiceIndex?: number
+  ): boolean {
+    const obj = state.battlefield.find(o => o.id === cardId);
+    if (!obj || obj.controllerId !== playerId || obj.isTapped) return false;
+    
+    // We use a simplified check for the first mana ability to ensure synchronous tapping
+    const { oracle } = require('../../OracleLogicMap');
+    const logic = oracle.getCard(obj.definition.name);
+    if (!logic || !logic.abilities) return false;
+
+    let manaAbilityIdx = abilityIndex !== undefined ? abilityIndex : logic.abilities.findIndex((a: any) => a.isManaAbility);
+    if (manaAbilityIdx === -1) {
+        // Fallback for cases where index might be wrong or wasn't provided accurately
+        manaAbilityIdx = logic.abilities.findIndex((a: any) => a.isManaAbility);
+    }
+    if (manaAbilityIdx === -1) return false;
+
+    // Standardize ability index and use bypassTargeting=true for silent, synchronous tapping 
+    // during the auto-tap sequence.
+    return engine.activateAbility(playerId, cardId, manaAbilityIdx, [], true, choiceIndex);
   }
 
   public static tapForMana(
@@ -174,10 +190,8 @@ export class PlayerActionProcessor {
     playerId: PlayerId,
     cardId: string,
     log: (m: string) => void,
-    actionHandlers: {
-      declareAttacker: (pId: string, cId: string) => boolean;
-      handleBlockSelection: (pId: string, cId: string) => boolean;
-    }
+    engine: EngineContext
+
   ): boolean {
     const card = state.battlefield.find(c => c.id === cardId);
     if (!card || card.controllerId !== playerId) return false;
@@ -442,17 +456,17 @@ export class PlayerActionProcessor {
   /**
    * CR 603: Resolve a specific target selection from the UI.
    */
-  public static resolveTargeting(state: GameState, playerId: PlayerId, targetId: string, callbacks: PlayerActionCallbacks): boolean {
+  public static resolveTargeting(state: GameState, playerId: PlayerId, targetId: string, engine: EngineContext): boolean {
     const { TargetingProcessor } = require('./TargetingProcessor');
     return TargetingProcessor.resolveInteractiveTargeting(
         state,
         playerId,
         targetId,
-        (m: string) => callbacks.log(m),
+        (m: string) => engine.log(m),
         {
-            ...callbacks,
-            resetPriorityToActivePlayer: () => callbacks.resetPriorityToActivePlayer(),
-            finaliseTargeting: (p: PlayerId, t: string[]) => TargetingProcessor.finaliseTargeting(state, p, t, callbacks)
+            ...engine,
+            resetPriorityToActivePlayer: () => engine.resetPriorityToActivePlayer(),
+            finaliseTargeting: (p: PlayerId, t: string[]) => TargetingProcessor.finaliseTargeting(state, p, t, engine)
         }
     );
   }

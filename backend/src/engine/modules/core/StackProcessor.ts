@@ -46,5 +46,61 @@ export class StackProcessor {
   public static cleanStack(state: GameState) {
       // rule 608.2b re-check could happen here
   }
+
+  /**
+   * Resolves the top object of the stack or advances the turn step if empty (Rule 117.4)
+   */
+  public static resolveTopOrAdvanceStep(
+    state: GameState, 
+    engine: import('../../interfaces/EngineContext').EngineContext, 
+    resolver: import('./StackResolver').StackResolver, 
+    log: (m: string) => void
+  ) {
+    if (state.stack.length > 0) {
+      const objectToResolve = state.stack.pop();
+      if (objectToResolve) {
+        state.consecutivePasses = 0; // CR 117.4: Resolution or stack changes reset pass count
+        if (state.stack.length > 0) {
+          console.log(`[DEBUG] STACK CONTENTS:`, state.stack.map(s => ({ id: s.id, name: (s as any).name || s.card?.definition.name, idx: (s as any).data?.nextEffectIndex })));
+        }
+
+        log(`--------------------------------------------------`);
+        const objectName = (objectToResolve as any).name || objectToResolve.card?.definition.name || 'Effect';
+        log(`[RESOLVING] >>> ${objectName} is resolving <<<`);
+
+        // --- DIAGNOSTIC TRACING ---
+        if (state.stack.length > 5) {
+          const { EffectProcessor } = require('../effects/EffectProcessor');
+          EffectProcessor.troubleshoot(state, objectToResolve.sourceId);
+        }
+        
+        const effects = StackProcessor.getEffectsForResolution(state, objectToResolve);
+        const startIndex = (objectToResolve as any).data?.nextEffectIndex || 0;
+        const completed = resolver.resolveObject(objectToResolve, effects, startIndex);
+
+        if (!completed) {
+          // Suspended resolution. Push the object back to the stack.
+          if (!objectToResolve.data) objectToResolve.data = {};
+          objectToResolve.data.nextEffectIndex = state.pendingAction?.data?.nextEffectIndex || 0;
+          state.stack.push(objectToResolve);
+
+          // During suspended resolution, priority is given to the player who must act
+          state.priorityPlayerId = state.pendingAction?.playerId || null;
+          return;
+        }
+
+        const stackRemaining = state.stack.map(s => s.card?.definition.name || 'Effect').join(', ');
+        if (stackRemaining) {
+          log(`[STACK-LEFT] Still on stack: [${stackRemaining}]`);
+        } else {
+          log(`[STACK-EMPTY] The stack is now empty.`);
+        }
+        log(`--------------------------------------------------`);
+        engine.resetPriorityToActivePlayer();
+      }
+    } else {
+      engine.advanceStep();
+    }
+  }
 }
 

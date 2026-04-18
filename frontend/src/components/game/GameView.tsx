@@ -254,6 +254,8 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           currentStep={gameState.currentStep}
           currentPhase={gameState.currentPhase}
           scrySurveilResult={gameState.turnState.lastScrySurveilResult}
+          activePlayerId={gameState.activePlayerId}
+          priorityPlayerId={gameState.priorityPlayerId}
           onToggleStop={handleToggleStop}
           onAvatarClick={(isOpponent) => {
              const targetId = isOpponent ? opponentId : effectivePlayerId;
