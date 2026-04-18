@@ -16,7 +16,13 @@ export class GameSetupProcessor {
         avatar: avatars[id],
         life: 20,
         poisonCounters: 0,
-        library: (decks[id] || []).map((cardRef, index) => this.createGameObject(id, cardRef, index)),
+        library: (() => {
+          const d = decks[id];
+          let cards: any[] = [];
+          if (Array.isArray(d)) cards = d;
+          else if (d) cards = (d as any).mainEntry || (d as any).cards || [];
+          return cards.map((cardRef, index) => this.createGameObject(id, cardRef, index));
+        })(),
         hand: [],
         graveyard: [],
         sideboard: [],

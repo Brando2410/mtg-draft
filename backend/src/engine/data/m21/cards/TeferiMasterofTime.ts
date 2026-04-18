@@ -28,9 +28,7 @@ export const TeferiMasterofTime: CardDefinition = {
             targetDefinition: {
                 type: TargetType.Creature,
                 count: 1,
-                restrictions: [
-                { type: 'Control', value: 'OpponentControl' }
-            ]
+                restrictions: ['OpponentControl']
             },
             effects: [{ type: EffectType.PhaseOut, targetMapping: TargetMapping.Target1 }]
         },

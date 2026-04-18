@@ -447,20 +447,20 @@ export class TriggerProcessor {
                         const match = wardStr.match(/Ward(?:\s+|—\s*|:\s*)(?:Pay\s+)?(.+)/i);
                         if (!match) return;
                         const costStr = match[1].trim();
-                        const choiceEffects: any[] = [];
+                        const choiceCosts: any[] = [];
                         let labelStr = costStr;
 
                         if (costStr.toLowerCase().includes('life')) {
                             const amount = parseInt(costStr.replace(/\D/g, '')) || 0;
-                            choiceEffects.push({ type: 'LoseLife', amount: amount, targetMapping: 'TARGET_1' });
+                            choiceCosts.push({ type: 'PayLife', value: String(amount) });
                             labelStr = `Pay ${amount} life`;
                         } else if (costStr.toLowerCase().includes('discard')) {
                             const amount = parseInt(costStr.replace(/\D/g, '')) || 1;
-                            choiceEffects.push({ type: 'DiscardCards', amount: amount, targetMapping: 'TARGET_1' });
+                            choiceCosts.push({ type: 'Discard', amount: amount });
                             labelStr = `Discard ${amount} card${amount > 1 ? 's' : ''}`;
                         } else if (costStr.includes('{') || !isNaN(parseInt(costStr))) {
                             const manaVal = costStr.startsWith('{') ? costStr : `{${costStr}}`;
-                            choiceEffects.push({ type: 'PayMana', value: manaVal, targetMapping: 'TARGET_1' });
+                            choiceCosts.push({ type: 'Mana', value: manaVal });
                             labelStr = `Pay ${manaVal}`;
                         }
 
@@ -476,8 +476,8 @@ export class TriggerProcessor {
                                 label: `Ward Trigger: ${labelStr} or spell/ability will be countered.`,
                                 targetMapping: 'EVENT_PLAYER',
                                 choices: [
-                                    { label: labelStr, effects: choiceEffects },
-                                    { label: "Don't Pay (Counter)", effects: [{ type: EffectType.CounterSpellOrAbility, targetMapping: 'TRIGGER_SOURCE' }] }
+                                    { label: labelStr, costs: choiceCosts, effects: [] },
+                                    { label: "Don't Pay (Counter)", effects: [{ type: EffectType.CounterSpellOrAbility, targetMapping: 'TRIGGER_EVENT_SOURCE' }] }
                                 ]
                             }]
                         } as any);

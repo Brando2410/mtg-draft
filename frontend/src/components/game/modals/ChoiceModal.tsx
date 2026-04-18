@@ -396,14 +396,19 @@ export const ChoiceModal = ({ pendingAction, me, onTapCard, onHoverStart, onHove
                                     className={`relative cursor-pointer transition-none ${isSelected ? 'z-20' : 'z-10'}`}
                                     onClick={() => handleChoiceClick(originalIdx)}
                                 >
-                                    <GameCard 
-                                        obj={choice.cardData} 
-                                        variant="hand"
-                                        onHoverStart={onHoverStart} 
-                                        onHoverEnd={onHoverEnd}
-                                        isSelected={false}
-                                        disableHoverAnim={true}
-                                    />
+                                    <div 
+                                        className="w-[calc(var(--u)*24)] h-[calc(var(--u)*17.3)]"
+                                        style={{ '--header-scale': 2.0 } as any}
+                                    >
+                                        <GameCard 
+                                            obj={choice.cardData} 
+                                            variant="battlefield"
+                                            onHoverStart={onHoverStart} 
+                                            onHoverEnd={onHoverEnd}
+                                            isSelected={false}
+                                            disableHoverAnim={true}
+                                        />
+                                    </div>
                                     {isSelected && (
                                         <>
                                             <div className="absolute inset-x-[-2px] inset-y-[-2px] border-[3px] border-yellow-400 rounded-lg shadow-[0_0_20px_rgba(250,204,21,0.6)] pointer-events-none z-10" />

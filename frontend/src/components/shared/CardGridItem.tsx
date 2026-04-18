@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Maximize2, Trash2, Plus, RefreshCw } from 'lucide-react';
 import type { SimplifiedCard } from '../../services/scryfall';
@@ -25,6 +26,7 @@ export const CardGridItem = ({
   onFlipToggle,
   isFlipped = false
 }: CardGridItemProps) => {
+  const [imageError, setImageError] = useState(false);
   const displayImage = (isFlipped && card.back_image_url) ? card.back_image_url : card.image_url;
 
   return (
@@ -37,7 +39,22 @@ export const CardGridItem = ({
       className={`group relative rounded-2xl overflow-hidden bg-slate-900 shadow-2xl transition-all duration-300 hover:-translate-y-2 ring-1 ring-inset ${isSelected ? 'ring-indigo-500 ring-2 translate-y-[-8px]' : 'ring-white/5 hover:shadow-indigo-500/20'}`}
     >
       <div className="relative aspect-[2.5/3.5] bg-slate-950 overflow-hidden">
-        <img src={displayImage} alt={card.name} className="w-full h-full object-cover group-hover:scale-105 duration-700 pointer-events-none ring-1 ring-white/10" />
+        {imageError ? (
+          <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-slate-900 to-slate-950 text-center border border-white/5">
+            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-2">Image Lost</span>
+            <span className="text-sm font-black text-white italic leading-tight uppercase line-clamp-3">{card.name}</span>
+            <div className="mt-auto pt-2 border-t border-white/5 w-full">
+               <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{card.mana_cost || 'No Cost'}</span>
+            </div>
+          </div>
+        ) : (
+          <img 
+            src={displayImage} 
+            alt={card.name} 
+            onError={() => setImageError(true)}
+            className="w-full h-full object-cover group-hover:scale-105 duration-700 pointer-events-none ring-1 ring-white/10" 
+          />
+        )}
         
         {/* COUNT BADGE */}
         <div className="absolute bottom-2 left-2 flex items-center justify-center min-w-[32px] h-8 bg-indigo-600 text-white rounded-lg shadow-xl border border-indigo-400 z-10 px-2 pointer-events-none">

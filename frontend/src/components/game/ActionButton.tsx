@@ -247,8 +247,22 @@ export const ActionButton = memo(({
                 className="flex flex-col gap-2 w-64"
             >
                 {/* SECONDARY TARGETING ACTIONS */}
-                {isTargeting && (
-                    <div className="flex flex-col gap-2">
+                {(() => {
+                    if (!isTargeting) return null;
+                    const targetDef = pendingAction.data?.targetDefinition;
+                    const minCount = pendingAction.data?.minCount ?? (targetDef?.minCount ?? (targetDef?.optional ? 0 : (targetDef?.count ?? 1)));
+                    const totalCount = pendingAction.data?.count ?? (targetDef?.count ?? 1);
+                    const isOptional = minCount === 0;
+                    
+                    // Show secondary if:
+                    // 1. Multiple targets (need Clear Selection vs Confirm)
+                    // 2. Optional target (need Cancel Cast vs Confirm-without-targets)
+                    const showSecondary = totalCount > 1 || isOptional;
+                    
+                    if (!showSecondary) return null;
+
+                    return (
+                        <div className="flex flex-col gap-2">
                          <motion.button 
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -265,8 +279,9 @@ export const ActionButton = memo(({
                                     : (pendingAction.data?.isSpellCasting ? "Cancel Cast" : "Cancel Activation")}
                             </span>
                         </motion.button>
-                    </div>
-                )}
+                        </div>
+                    );
+                })()}
 
                 {/* PRIMARY ACTION BUTTON */}
                 <button

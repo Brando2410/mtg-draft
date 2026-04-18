@@ -1,9 +1,9 @@
-﻿import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
     export const AdditiveEvolution: CardDefinition = {
     name: "Additive Evolution",
     manaCost: "{3}{G}{G}",
     scryfall_id: "b44ec684-d558-45eb-bcd0-e4b7db5c38a3",
-    image_url: "https://cards.scryfall.io/normal/front/b/4/b44ec684-d558-45eb-bcd0-e4b7db5c38a3.jpg?1775937943",
+    image_url: "https://cards.scryfall.io/normal/front/b/4/b44ec684-d558-45eb-bcd6-8119428634c2.jpg?1775937943",
     colors: [
         "G"
     ],

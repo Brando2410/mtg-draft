@@ -11,20 +11,22 @@ export const registerRoomHandlers = (io: Server, socket: Socket, rooms: Map<stri
     const { cubeId, hostName, playerId } = data;
     const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
 
-    const rules: Rules = data.rules || {
-      playerCount: Number(data.playerCount ?? 8),
-      packsPerPlayer: Number(data.packsPerPlayer ?? 3),
-      cardsPerPack: Number(data.cardsPerPack ?? 15),
+    const rules: Rules = {
+      playerCount: Number(data.rules?.playerCount ?? data.playerCount ?? 8),
+      packsPerPlayer: Number(data.rules?.packsPerPlayer ?? data.packsPerPlayer ?? 3),
+      cardsPerPack: Number(data.rules?.cardsPerPack ?? data.cardsPerPack ?? 15),
       timer: (function () {
-        const t = data.timer !== undefined ? data.timer : data.timerSeconds;
+        const t = data.rules?.timer !== undefined ? data.rules?.timer : (data.timer !== undefined ? data.timer : data.timerSeconds);
         if (t === null || t === undefined) return null;
         const n = Number(t);
         return isNaN(n) ? null : n;
       })(),
-      rarityBalance: data.rarityBalance === true || data.rules?.rarityBalance === true,
-      anonymousMode: data.anonymousMode === true || data.rules?.anonymousMode === true,
-      fillBots: data.fillBots === true || data.rules?.fillBots === true,
-      cubeName: 'MTG Cube'
+      rarityBalance: data.rules?.rarityBalance === true || data.rarityBalance === true,
+      anonymousMode: data.rules?.anonymousMode === true || data.anonymousMode === true,
+      fillBots: data.rules?.fillBots === true || data.fillBots === true,
+      isSealed: data.rules?.isSealed === true || data.isSealed === true,
+      isNormalMatch: data.rules?.isNormalMatch === true || data.isNormalMatch === true,
+      cubeName: data.rules?.cubeName || data.cubeName || 'MTG Cube'
     };
 
     const cubeData = cubeId ? await PersistenceService.getCube(cubeId) : null;
@@ -44,10 +46,9 @@ export const registerRoomHandlers = (io: Server, socket: Socket, rooms: Map<stri
       }],
       status: 'waiting',
       isPaused: false,
-      isNormalMatch: data.isNormalMatch === true,
-      cube: cubeData || { name: data.isNormalMatch ? "Partita Normale" : "Cubo Sconosciuto", cards: [] },
-      rules: { ...rules, cubeName: cubeData?.name || (data.isNormalMatch ? "Partita Normale" : "MTG Cube") },
-      gameState: data.isNormalMatch ? new GameEngine([playerId as PlayerId]).getState() : undefined
+      isNormalMatch: data.isNormalMatch === true || data.rules?.isNormalMatch === true,
+      cube: cubeData || { name: (data.isNormalMatch || data.rules?.isNormalMatch) ? "Partita Normale" : "Cubo Sconosciuto", cards: [] },
+      rules: { ...rules, cubeName: cubeData?.name || ((data.isNormalMatch || data.rules?.isNormalMatch) ? "Partita Normale" : "MTG Cube") }
     };
 
     rooms.set(roomId, newRoom);
@@ -86,7 +87,9 @@ export const registerRoomHandlers = (io: Server, socket: Socket, rooms: Map<stri
     }
 
     if (room.status !== 'waiting') {
-      socket.emit('error_join', 'Draft già iniziata.');
+      const msg = room.isNormalMatch ? 'Match già iniziato.' : 'Draft già iniziata.';
+      LoggerService.warn('ROOM', `Join rejected for ${roomId}: status is ${room.status}`, { roomId, status: room.status, isNormalMatch: room.isNormalMatch });
+      socket.emit('error_join', msg);
       return;
     }
 

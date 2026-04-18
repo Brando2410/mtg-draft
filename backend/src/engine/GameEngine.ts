@@ -137,7 +137,11 @@ export class GameEngine implements EngineContext {
    */
   public drawCard(playerId: PlayerId): boolean {
     const player = this.state.players[playerId];
-    if (!player || player.library.length === 0) return false;
+    if (!player) return false;
+    if (player.library.length === 0) {
+      player.hasLostDueToEmptyLibrary = true;
+      return false;
+    }
     const { MoveEffectHandler } = require('./modules/effects/handlers/MoveEffectHandler');
     MoveEffectHandler.handle(this.state, { type: 'DrawCards', amount: 1 } as any, [playerId], (m: string) => this.log(m), playerId);
     return true;
@@ -345,6 +349,15 @@ export class GameEngine implements EngineContext {
 
   public setState(newState: GameState) {
     this.state = newState;
+
+    // VERY IMPORTANT: Re-link the engine to the state for processors that depend on it
+    Object.defineProperty(this.state, 'gameEngine', {
+      value: this,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    });
+
     // VERY IMPORTANT: Re-link resolver to the newest state reference
     this.resolver = new StackResolver(this.state);
   }

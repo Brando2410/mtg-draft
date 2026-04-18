@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Loader2, X, Home, RefreshCw, BarChart2, Sun, FileText, AlertTriangle, Database, Clipboard as ClipboardIcon, Menu, Filter, Save } from 'lucide-react';
+import { Search, Loader2, X, Home, RefreshCw, BarChart2, Sun, FileText, AlertTriangle, Database, Clipboard as ClipboardIcon, Menu, Filter, Save, ArrowRight } from 'lucide-react';
 import { fetchRegistryCards, fetchRegistryCardsBatch, mapRegistryToSimplified, enrichCardsWithScryfall } from '../../services/registry';
 import type { SimplifiedCard } from '../../services/scryfall';
 import { StatsModal } from '../shared/StatsModal';
@@ -9,9 +9,40 @@ import { CardGridItem } from '../shared/CardGridItem';
 interface DeckBuilderProps {
   onBack?: () => void;
   initialDeck?: any;
+  pool?: any[];
+  onConfirm?: (deck: any[]) => void;
 }
 
-export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
+interface PoolCardImageProps {
+  card: SimplifiedCard;
+}
+
+const PoolCardImage = ({ card }: PoolCardImageProps) => {
+  const [error, setError] = useState(false);
+  
+  if (error || !card.image_url) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center p-3 bg-gradient-to-br from-slate-900 to-slate-950 text-center border border-white/5">
+        <span className="text-[8px] font-black uppercase tracking-widest text-indigo-400 mb-1">Image Lost</span>
+        <span className="text-[10px] font-black text-white italic leading-tight uppercase line-clamp-3">{card.name}</span>
+        <div className="mt-auto pt-1 border-t border-white/5 w-full">
+           <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">{card.mana_cost || 'No Cost'}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <img 
+      src={card.image_url} 
+      alt={card.name}
+      onError={() => setError(true)}
+      className="w-full h-full object-cover" 
+    />
+  );
+};
+
+export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilderProps) => {
   // --- STATO DEL MAZZO ---
   const [deckName, setDeckName] = useState(initialDeck?.name || 'Nuovo Mazzo');
   const [isEditingName, setIsEditingName] = useState(false);
@@ -38,6 +69,11 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
   const [filterCmc, setFilterCmc] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
+  // --- FILTRI POOL ---
+  const [poolFilterColors, setPoolFilterColors] = useState<string[]>([]);
+  const [poolFilterRarity, setPoolFilterRarity] = useState<string | null>(null);
+  const [poolFilterCmc, setPoolFilterCmc] = useState<number | null>(null);
+
   // Mappa simboli Scryfall
   const manaSymbols: Record<string, string> = {
     'W': 'https://svgs.scryfall.io/card-symbols/W.svg',
@@ -57,6 +93,33 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
 
   // Initial load and Debounce per Local Registry Search
   useEffect(() => {
+    if (pool) {
+      // If pool is provided, we don't fetch from registry
+      const mappedPool = pool.map(c => ({
+        scryfall_id: c.scryfall_id || c.id,
+        name: c.name,
+        rarity: c.rarity || 'common',
+        color: c.colors || [],
+        image_url: c.image_url || c.image_uris?.normal || '',
+        back_image_url: c.back_image_url,
+        cmc: c.cmc || 0,
+        type_line: c.type_line,
+        mana_cost: c.manaCost || '',
+        keywords: c.keywords || []
+      }));
+      
+      const filtered = mappedPool.filter(c => {
+        const matchesName = c.name.toLowerCase().includes(addQuery.toLowerCase());
+        const matchesColor = poolFilterColors.length === 0 || poolFilterColors.some(col => c.color.includes(col));
+        const matchesRarity = !poolFilterRarity || c.rarity.toLowerCase() === poolFilterRarity.toLowerCase();
+        const matchesCmc = poolFilterCmc === null || (poolFilterCmc === 6 ? c.cmc >= 6 : c.cmc === poolFilterCmc);
+        return matchesName && matchesColor && matchesRarity && matchesCmc;
+      });
+        
+      setApiSuggestions(filtered as any);
+      return;
+    }
+
     const loadCards = async () => {
       setIsApiLoading(true);
       let results = [];
@@ -80,7 +143,7 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
 
     const timeoutId = setTimeout(loadCards, addQuery.length >= 2 ? 300 : 0);
     return () => clearTimeout(timeoutId);
-  }, [addQuery]);
+  }, [addQuery, poolFilterColors, poolFilterRarity, poolFilterCmc]);
 
   const handleAddCard = async (cardName: string) => {
     setIsApiLoading(true);
@@ -186,7 +249,13 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
         <div className="flex items-center gap-4 w-full lg:max-w-3xl">
           <div className="relative flex-1 group"><Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" /><input value={addQuery} onChange={e => setAddQuery(e.target.value)} placeholder="Cerca tra le carte implementate..." className="w-full bg-slate-900 border border-white/5 pl-14 pr-6 py-5 rounded-[2rem] outline-none focus:border-emerald-500/50 transition-all font-bold text-lg" />{isApiLoading && <Loader2 className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500 animate-spin" />}</div>
           <button onClick={() => setIsImportModalOpen(true)} className="p-5 bg-slate-900/50 text-indigo-400 rounded-[2rem] border border-white/5"><FileText className="w-6 h-6" /></button>
-          <button onClick={saveDeck} className={`px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-widest text-sm flex items-center gap-3 transition-all ${saveStatus === 'saved' ? 'bg-emerald-600' : 'bg-indigo-600 text-white'}`}>{saveStatus === 'saving' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />} {saveStatus === 'saved' ? 'Saved' : 'Save'}</button>
+          {onConfirm ? (
+            <button onClick={() => onConfirm(deckCards)} className={`px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-widest text-sm flex items-center gap-3 transition-all bg-emerald-600 text-white shadow-lg active:scale-95`}>
+               Conferma Mazzo <ArrowRight className="w-5 h-5" />
+            </button>
+          ) : (
+            <button onClick={saveDeck} className={`px-10 py-5 rounded-[2rem] font-black uppercase italic tracking-widest text-sm flex items-center gap-3 transition-all ${saveStatus === 'saved' ? 'bg-emerald-600' : 'bg-indigo-600 text-white'}`}>{saveStatus === 'saving' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />} {saveStatus === 'saved' ? 'Saved' : 'Save'}</button>
+          )}
         </div>
       </div>
 
@@ -217,13 +286,47 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
             {isApiLoading && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500 animate-spin" />}
          </div>
 
-         <div className="hidden lg:grid grid-cols-1 xl:grid-cols-2 gap-8">
-           <div className="bg-slate-900/30 p-6 rounded-[2.5rem] border border-white/5 space-y-4 shadow-xl">
-             <div className="flex items-center gap-3 px-2"><Sun className="w-4 h-4 text-amber-400" /><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Terre Base Fast-Add</span></div>
-             <div className="flex justify-between gap-4">{basicLands.map(land => (<button key={land.name} onClick={() => handleAddCard(land.name)} className="group flex-1 flex flex-col items-center gap-2 p-3 bg-slate-950/40 border border-white/5 rounded-2xl hover:bg-slate-800 transition-all active:scale-90"><div className={`w-8 h-8 rounded-full flex items-center justify-center p-1.5 ${land.color === 'W' ? 'bg-amber-100 text-amber-600' : land.color === 'U' ? 'bg-blue-100 text-blue-600' : land.color === 'B' ? 'bg-slate-800 text-slate-100' : land.color === 'R' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}><img src={manaSymbols[land.color as keyof typeof manaSymbols]} className="w-full h-full" /></div><span className="text-[8px] font-black uppercase text-slate-500">{land.name}</span></button>))}</div>
-           </div>
-           <button onClick={() => setShowStats(true)} className="bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/20 p-6 rounded-[2.5rem] flex items-center justify-center gap-4 group transition-all"><BarChart2 className="w-10 h-10 text-indigo-400 group-hover:scale-110 transition-transform" /><div className="text-left"><h4 className="text-xl font-black text-white uppercase italic">Analisi Mazzo</h4><p className="text-indigo-400/60 font-black uppercase text-[10px] tracking-widest">Visualizza Curve Mana e Simboli</p></div></button>
-         </div>
+         {apiSuggestions.length > 0 && (
+            <div className="flex flex-col gap-4 mb-4">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex gap-1 bg-slate-950 p-1 rounded-xl border border-white/5">
+                  {['W', 'U', 'B', 'R', 'G'].map(col => (
+                    <button 
+                      key={col} 
+                      onClick={() => setPoolFilterColors(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col])}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${poolFilterColors.includes(col) ? 'bg-indigo-600 shadow-lg scale-110' : 'opacity-40 hover:opacity-100 grayscale hover:grayscale-0'}`}
+                    >
+                      <img src={manaSymbols[col]} className="w-5 h-5" alt={col} />
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="flex gap-1 bg-slate-950 p-1 rounded-xl border border-white/5">
+                  {['Common', 'Uncommon', 'Rare', 'Mythic'].map(rar => (
+                    <button 
+                      key={rar} 
+                      onClick={() => setPoolFilterRarity(poolFilterRarity === rar ? null : rar)}
+                      className={`px-3 h-8 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${poolFilterRarity === rar ? 'bg-white text-slate-950' : 'text-slate-500 hover:text-white'}`}
+                    >
+                      {rar[0]}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex gap-1 bg-slate-950 p-1 rounded-xl border border-white/5">
+                  {[0,1,2,3,4,5,6].map(val => (
+                    <button 
+                      key={val} 
+                      onClick={() => setPoolFilterCmc(poolFilterCmc === val ? null : val)}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-[10px] transition-all ${poolFilterCmc === val ? 'bg-white text-slate-950' : 'text-slate-500 hover:text-white'}`}
+                    >
+                      {val === 6 ? '6+' : val}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
          <AnimatePresence>
            {apiSuggestions.length > 0 && (
@@ -232,9 +335,9 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
                   <button 
                     key={card.scryfall_id} 
                     onClick={() => setDeckCards(prev => [...prev, card])} 
-                    className="relative min-w-[120px] lg:min-w-0 aspect-[2.5/3.5] rounded-xl overflow-hidden hover:scale-105 active:scale-95 transition-all shadow-xl border border-white/5"
+                    className="relative min-w-[120px] lg:min-w-0 aspect-[2.5/3.5] rounded-xl overflow-hidden hover:scale-105 active:scale-95 transition-all shadow-xl border border-white/5 bg-slate-900 group"
                   >
-                    <img src={card.image_url} className="w-full h-full object-cover" />
+                    <PoolCardImage card={card} />
                   </button>
                 ))}
              </motion.div>
@@ -249,6 +352,41 @@ export const DeckBuilder = ({ onBack, initialDeck }: DeckBuilderProps) => {
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-3 sm:gap-6">
                {groupedCards.map(({ card, count }) => (<CardGridItem key={card.scryfall_id} card={card} count={count} onZoom={() => setZoomCard(card)} onRemove={() => removeCard(card.scryfall_id)} onQuickAdd={() => handleAddCard(card.name)} />))}
                {groupedCards.length === 0 && (<div className="col-span-full py-20 bg-slate-900/10 border border-dashed border-white/5 rounded-[2rem] flex flex-col items-center justify-center gap-4"><AlertTriangle className="w-10 h-10 text-slate-700" /><p className="text-slate-500 font-black uppercase text-[10px] tracking-widest">Nessuna carta trovata</p></div>)}
+            </div>
+
+            {/* LOWER ACTIONS */}
+            {/* PREMIUM DECK FOOTER UTILITIES */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 pt-12 mt-12 border-t border-white/5">
+              <div className="bg-[#0f172a]/80 backdrop-blur-xl p-8 rounded-[3rem] border border-white/10 space-y-6 shadow-2xl relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent pointer-events-none" />
+                <div className="flex items-center gap-3 px-2 relative"><Sun className="w-5 h-5 text-amber-400" /><span className="text-xs font-black uppercase tracking-[0.2em] text-slate-300">Terre Base Fast-Add</span></div>
+                <div className="flex justify-between gap-4 relative">
+                    {basicLands.map(land => (
+                        <button 
+                            key={land.name} 
+                            onClick={() => handleAddCard(land.name)} 
+                            className="group flex-1 flex flex-col items-center gap-3 p-4 bg-white/5 border border-white/5 rounded-[2rem] hover:bg-white/10 hover:border-indigo-500/30 transition-all active:scale-90"
+                        >
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center p-2 shadow-lg ${land.color === 'W' ? 'bg-amber-100 text-amber-600' : land.color === 'U' ? 'bg-blue-100 text-blue-600' : land.color === 'B' ? 'bg-slate-800 text-slate-100' : land.color === 'R' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                                <img src={manaSymbols[land.color as keyof typeof manaSymbols]} className="w-full h-full" alt={land.color} />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white transition-colors">{land.name}</span>
+                        </button>
+                    ))}
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setShowStats(true)} 
+                className="bg-gradient-to-br from-indigo-600/20 to-purple-600/20 hover:from-indigo-600/30 hover:to-purple-600/30 border border-indigo-500/30 p-8 rounded-[3rem] flex items-center justify-center gap-8 group transition-all shadow-2xl relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <BarChart2 className="w-14 h-14 text-indigo-400 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500" />
+                <div className="text-left relative">
+                    <h4 className="text-3xl font-black text-white uppercase italic tracking-tighter">Analisi Mazzo</h4>
+                    <p className="text-indigo-400/80 font-black uppercase text-[10px] tracking-[0.3em] mt-1">Deep stats & Mana Curve Distribution</p>
+                </div>
+              </button>
             </div>
          </div>
       </div>

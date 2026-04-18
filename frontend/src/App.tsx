@@ -12,10 +12,13 @@ import { MatchLobby } from './components/lobby/MatchLobby';
 import { AdminPanel } from './components/admin/AdminPanel';
 import { AssetManager } from './components/admin/AssetManager';
 import { DraftHistory } from './components/history/DraftHistory';
+import { TournamentBracket } from './components/lobby/TournamentBracket';
+import { SealedSetup } from './components/lobby/SealedSetup';
 import { DeckBuilder } from './components/deck/DeckBuilder';
 import { GameView } from './components/game/GameView';
 import { X } from 'lucide-react';
 import { useDraftStore } from './store/useDraftStore';
+import { socket } from './services/socket';
 
 function App() {
   const { 
@@ -41,6 +44,8 @@ function App() {
   const [isAssetOpen, setIsAssetOpen] = useState(false);
   const [skipRestore, setSkipRestore] = useState(false);
   const [selectedDeck, setSelectedDeck] = useState<any>(null);
+  const [_, setIsSealedMode] = useState(false);
+  const [spectatedMatchIndex, setSpectatedMatchIndex] = useState<number | null>(null);
 
   useEffect(() => {
     initSocketListeners();
@@ -118,7 +123,11 @@ function App() {
             onBack={() => setActiveView('menu')}
             onSelectMode={(mode) => {
               if (mode === 'draft') {
+                setIsSealedMode(false);
                 setActiveView('draft_config' as any);
+              } else if (mode === 'sealed') {
+                setIsSealedMode(true);
+                setActiveView('sealed_config' as any);
               } else {
                 // Normal Match: 2 players, no cube needed
                 createRoom({
@@ -133,6 +142,14 @@ function App() {
 
         {activeView === 'draft_config' as any && (
           <DraftSetup 
+            onBack={() => setActiveView('draft_setup')} 
+            onCreateRoom={createRoom}
+            isSealed={false}
+          />
+        )}
+
+        {activeView === 'sealed_config' as any && (
+          <SealedSetup 
             onBack={() => setActiveView('draft_setup')} 
             onCreateRoom={createRoom}
           />
@@ -178,11 +195,44 @@ function App() {
 
         {activeView === 'drafting' && room && (
           <div className="animate-in fade-in slide-in-from-top-4 duration-700">
-            {room.isNormalMatch ? (
+            {room.status === 'deckbuilding' || (room.rules.isSealed && room.status === 'drafting') ? (
+               <DeckBuilder 
+                 onBack={() => setActiveView('menu')}
+                 pool={room.players.find(p => p.playerId === playerId || '')?.pool}
+                 onConfirm={(deck) => {
+                   socket?.emit('ready_with_deck', { roomId: room.id, playerId, deck });
+                 }}
+               />
+            ) : room.status === 'tournament' && spectatedMatchIndex === null ? (
+               <TournamentBracket 
+                  room={room}
+                  playerId={playerId}
+                  onBack={() => setActiveView('menu')}
+                  onJoinMatch={() => {
+                     setSpectatedMatchIndex(null); 
+                     // We don't really need a socket event to "join", 
+                     // we just need to render GameView with that match index.
+                  }}
+                  onSpectate={(idx) => {
+                     setSpectatedMatchIndex(idx);
+                  }}
+               />
+            ) : (room.isNormalMatch || (room.status === 'tournament' && (spectatedMatchIndex !== null || room.matches?.some(m => m.players.includes(playerId))))) ? (
                <GameView 
                  room={room} 
                  playerId={playerId} 
-                 onBack={() => setActiveView('menu')} 
+                 customGameState={spectatedMatchIndex !== null ? room.matches?.[spectatedMatchIndex]?.engineState : room.matches?.find(m => m.players.includes(playerId))?.engineState}
+                 onBack={() => {
+                    if (spectatedMatchIndex !== null) {
+                       setSpectatedMatchIndex(null);
+                    } else if (room.status === 'tournament' && room.matches?.some(m => m.players.includes(playerId))) {
+                       // If I was in my own match, go back to bracket
+                       // Or if I want to leave the tournament?
+                       setActiveView('menu');
+                    } else {
+                       setActiveView('menu');
+                    }
+                 }} 
                />
             ) : (
                <DraftPackView

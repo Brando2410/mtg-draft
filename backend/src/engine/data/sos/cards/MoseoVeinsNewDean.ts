@@ -8,6 +8,8 @@ export const MoseoVeinsNewDean: CardDefinition = {
     types: ["Legendary", "Creature"],
     subtypes: ["Bird", "Skeleton", "Warlock"],
     keywords: ["Flying"],
+    power: "2",
+    toughness: "1",
     oracleText: "Flying\nWhen Moseo enters, create a 1/1 black and green Pest creature token with \"Whenever this token attacks, you gain 1 life.\"\nInfusion â€” At the beginning of your end step, if you gained life this turn, return up to one target creature card with mana value X or less from your graveyard to the battlefield, where X is the amount of life you gained this turn.",
     abilities: [
         {
@@ -61,7 +63,5 @@ export const MoseoVeinsNewDean: CardDefinition = {
                 }
             ]
         }
-    ],
-    power: "2",
-    toughness: "1"
+    ]
 };

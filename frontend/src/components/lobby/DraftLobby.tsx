@@ -93,10 +93,10 @@ export const DraftLobby = ({
            <div className="flex items-center gap-4 lg:w-1/3">
               <div className="flex flex-col">
                  <h1 className="text-2xl lg:text-5xl font-black text-white uppercase italic tracking-tighter leading-none">
-                    Stanza <span className="text-indigo-500">Draft</span>
+                    Stanza <span className={rules.isSealed ? "text-purple-500" : "text-indigo-500"}>{rules.isSealed ? 'Sealed' : 'Draft'}</span>
                  </h1>
                  <p className="text-[10px] lg:text-xs text-slate-500 font-bold uppercase tracking-[0.3em] mt-2">
-                    {rules.cubeName || 'Cubo Draft'}
+                    {rules.isSealed ? 'Pool Personale' : (rules.cubeName || 'Cubo Draft')}
                  </p>
               </div>
               <div className="hidden lg:flex items-center justify-center gap-2 bg-indigo-600 px-4 h-[50px] rounded-full border border-indigo-400/30 shadow-lg">
@@ -130,9 +130,9 @@ export const DraftLobby = ({
                   <button 
                     disabled={currentPlayers < 2}
                     onClick={onStart}
-                    className="px-10 h-[50px] bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95"
+                    className={`px-10 h-[50px] ${rules.isSealed ? 'bg-purple-600 hover:bg-purple-500' : 'bg-emerald-600 hover:bg-emerald-500'} disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95`}
                   >
-                    AVVIA DRAFT <Play className="w-4 h-4 fill-current" />
+                    {rules.isSealed ? 'AVVIA EVENTO' : 'AVVIA DRAFT'} <Play className="w-4 h-4 fill-current" />
                   </button>
 
                   <button 
@@ -220,7 +220,7 @@ export const DraftLobby = ({
              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setRulesOpen(false)} className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" />
              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative w-full max-w-lg bg-slate-900 border border-white/10 rounded-[3rem] p-10 shadow-2xl">
                 <div className="flex justify-between items-center mb-8 shrink-0">
-                   <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">Regole <span className="text-indigo-500">Draft</span></h3>
+                   <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">Regole <span className={rules.isSealed ? "text-purple-500" : "text-indigo-500"}>{rules.isSealed ? 'Sealed' : 'Draft'}</span></h3>
                    <button onClick={() => setRulesOpen(false)} className="p-3 bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors">
                       <X className="w-6 h-6" />
                    </button>

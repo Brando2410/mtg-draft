@@ -291,14 +291,13 @@ export const GameCard = memo(({
       {variant === 'battlefield' && (
         <div 
             style={colors.length > 1 ? { background: (borderStyle as any).headerBackground } : {}}
-            className={`flex-none h-[calc(var(--u)*1.8*var(--local-scale,1))] flex items-center px-2 border-b overflow-hidden rounded-t-sm z-30 transition-colors
+            className={`flex-none h-[calc(var(--u)*1.8*var(--header-scale,var(--local-scale,1)))] flex items-center px-2 border-b overflow-hidden rounded-t-sm z-30 transition-colors
             ${isCurrentlyDeclaringAttack ? 'bg-orange-600 border-orange-400/50 text-white' : headerClass}
         `}>
-            <h3 className={`font-black tracking-tighter truncate w-full whitespace-nowrap
-                ${definition.name.length > 25 ? 'text-[calc(var(--u)*0.85)]' : definition.name.length > 18 ? 'text-[calc(var(--u)*1.05)]' : 'text-[calc(var(--u)*1.3)]'}
+            <h3 className={`font-black tracking-tighter truncate flex-1 min-w-0 text-left leading-none
+                ${definition.name.length > 25 ? 'text-[calc(var(--u)*0.9*var(--header-scale,var(--local-scale,1)))]' : definition.name.length > 18 ? 'text-[calc(var(--u)*1.1*var(--header-scale,var(--local-scale,1)))]' : 'text-[calc(var(--u)*1.3*var(--header-scale,var(--local-scale,1)))]'}
             `}>
                 {formatName(displayName)}
-
             </h3>
         </div>
       )}

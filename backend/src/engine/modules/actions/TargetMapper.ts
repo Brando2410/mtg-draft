@@ -231,6 +231,7 @@ export class TargetMapper {
         effect?: any,
         parentContext?: any
     ): string[] {
+
         const eventData = stackData?.eventData;
 
         switch (mapping) {
@@ -447,6 +448,17 @@ export class TargetMapper {
                 const maxMV = Math.max(...mvs);
                 return candidates.filter(o => ManaProcessor.getManaValue(o.definition.manaCost || '') === maxMV).map(o => o.id);
             }
+            case 'EVENT_PLAYER':
+            case 'TRIGGER_CONTROLLER':
+                return eventData?.playerId ? [eventData.playerId] : [];
+            case 'EVENT_SOURCE':
+            case 'TRIGGER_SOURCE':
+            case 'TRIGGER_EVENT_SOURCE':
+            case 'WARD_SPELL':
+                return eventData?.sourceId ? [eventData.sourceId] : (eventData?.data?.sourceId ? [eventData.data.sourceId] : (eventData?.data?.sourceCard?.id ? [eventData.data.sourceCard.id] : []));
+            case 'EVENT_TARGET':
+            case 'TRIGGER_TARGET':
+                return eventData?.targetId ? [eventData.targetId] : (eventData?.data?.targetId ? [eventData.data.targetId] : (eventData?.data?.object?.id ? [eventData.data.object.id] : []));
             case 'EVENT_OBJECT':
                 return eventData?.object?.id ? [eventData.object.id] : [];
             case 'EXILED_CARD': {

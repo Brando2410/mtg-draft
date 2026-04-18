@@ -54,7 +54,7 @@ export class SpellProcessor {
             return false;
         }
 
-        const cardToPlay = SpellValidator.resolveCardToPlay(state, playerId, cardInstanceId, log);
+        const cardToPlay = SpellValidator.resolveCardToPlay(state, playerId, cardInstanceId, log, bypassTargeting);
         if (!cardToPlay) return false;
 
         // --- ACTIVATED ABILITY REDIRECTION (Graveyard) ---
@@ -496,7 +496,7 @@ export class SpellProcessor {
 
         // Fire targeting triggers
         (declaredTargets || []).forEach(tid => {
-            TriggerProcessor.onEvent(state, { type: 'ON_BECOME_TARGET', playerId, targetId: tid, data: { sourceId: stackObj.id, sourceCard: cardToPlay } }, log);
+            TriggerProcessor.onEvent(state, { type: 'ON_BECOME_TARGET', playerId, targetId: tid, sourceId: stackObj.id, data: { sourceId: stackObj.id, sourceCard: cardToPlay } }, log);
         });
 
         state.consecutivePasses = 0;
@@ -583,11 +583,11 @@ export class SpellProcessor {
         log(`Activated ability of ${obj.definition.name}: ${ability.id}`);
 
         declaredTargets.forEach(tid => {
-            TriggerProcessor.onEvent(state, { type: 'ON_BECOME_TARGET', playerId, targetId: tid, data: { sourceId: stackId, sourceCard: obj } }, log);
+            TriggerProcessor.onEvent(state, { type: 'ON_BECOME_TARGET', playerId, targetId: tid, sourceId: stackId, data: { sourceId: stackId, sourceCard: obj } }, log);
         });
 
         state.consecutivePasses = 0;
-        engine.passPriority(playerId);
+        engine.checkAutoPass(playerId);
         return true;
     }
 

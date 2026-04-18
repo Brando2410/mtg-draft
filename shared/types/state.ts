@@ -113,6 +113,9 @@ export interface PlayerState {
     pendingDiscardCount: number;
     manaCheat?: boolean;
     virtualHand: GameObject[];
+    hasLost?: boolean;
+    hasWon?: boolean;
+    hasLostDueToEmptyLibrary?: boolean;
     stops: Record<string, boolean>;
     autoOrderTriggers: boolean;
     passUntilEndOfTurn: boolean;

@@ -1,4 +1,4 @@
-import { AbilityType, GameState, Phase, PlayerId, Step, Zone } from '@shared/engine_types';
+import { AbilityType, GameState, Phase, PlayerId, Step, Zone, TargetMapping } from '@shared/engine_types';
 import { TurnProcessor } from './TurnProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
@@ -543,11 +543,24 @@ export class PriorityProcessor {
 
     if (isRestricted) return false;
     // Timing Check (Rule 602.1 / 606.3)
+    const isPlaneswalker = obj.definition.types.some((t: string) => String(t).toLowerCase() === 'planeswalker');
     let timingOk = this.validateTiming(state, playerId, ability, true);
 
-    const isPlaneswalker = obj.definition.types.includes('Planeswalker');
     if (isPlaneswalker) {
-      const canActivateAnyTime = (cardLogic.abilities || []).some((a: any) => a.type === 'Static' && a.id.includes('any_turn'));
+      // Rule 606.3: loyalty abilities are sorcery speed by default
+      if (timingOk) {
+        const isOurTurn = state.activePlayerId === playerId;
+        const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
+        const stackEmpty = state.stack.length === 0;
+        if (!isOurTurn || !isMain || !stackEmpty) timingOk = false;
+      }
+
+      const canActivateAnyTime = (cardLogic.abilities || []).some((a: any) => a.type === 'Static' && String(a.id || "").includes('any_turn')) ||
+        state.ruleRegistry.continuousEffects.some(e =>
+          e.type === EffectType.AllowOutOfTurnActivation &&
+          (e.targetIds?.includes(obj.id) || (e.targetMapping === TargetMapping.Self && e.sourceId === obj.id))
+        );
+      
       if (!canActivateAnyTime && !timingOk) return false;
       if (obj.abilitiesUsedThisTurn > 0) return false;
     } else if (!timingOk) {

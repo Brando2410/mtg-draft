@@ -38,7 +38,7 @@ export class SpellValidator {
      *
      * @returns The resolved GameObject, or null if the card cannot be found/played.
      */
-    public static resolveCardToPlay(state: GameState, playerId: PlayerId, cardInstanceId: string, log: (m: string) => void): GameObject | null {
+    public static resolveCardToPlay(state: GameState, playerId: PlayerId, cardInstanceId: string, log: (m: string) => void, bypassPermission = false): GameObject | null {
         const player = state.players[playerId];
         const { PriorityProcessor } = require('./../core/PriorityProcessor');
         const { TargetingProcessor } = require('./TargetingProcessor');
@@ -73,6 +73,7 @@ export class SpellValidator {
             if (hasGraveAbility) return obj;
 
             if (permissionType) {
+                if (bypassPermission) return obj;
                 const hasPermission = PriorityProcessor.findPermissionEffect(state, playerId, permissionType, obj.id);
                 if (hasPermission) return obj;
                 log(`[DEBUG] No ${permissionType} permission found for ${obj.definition.name} in ${obj.zone}.`);

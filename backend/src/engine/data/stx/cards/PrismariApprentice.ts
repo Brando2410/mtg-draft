@@ -14,7 +14,7 @@ export const PrismariApprentice: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Magecraft,
             effects: [
-                { type: EffectType.ApplyContinuousEffect, abilitiesToAdd: ['CannotBeBlocked'], duration: DurationType.UntilEndOfTurn, targetMapping: TargetMapping.Self },
+                { type: EffectType.ApplyContinuousEffect, abilitiesToAdd: ['CannotBeBlocked'], duration: { type: DurationType.UntilEndOfTurn }, targetMapping: TargetMapping.Self },
                 {
                     type: EffectType.Choice,
                     label: "Add +1/+1 counter if MV >= 5",

@@ -32,6 +32,7 @@ export interface Player {
     isBot?: boolean; // New property to identify bots
     lastSeen: number;
     pool: Card[];
+    matchWins?: number;
 }
 
 export interface Rules {
@@ -44,6 +45,7 @@ export interface Rules {
     fillBots: boolean; // New setting to fill missing players with bots
     cubeName: string;
     isNormalMatch?: boolean;
+    isSealed?: boolean;
 }
 
 export interface DraftState {
@@ -66,7 +68,7 @@ export interface Room {
     host: string; // Socket ID
     hostPlayerId: string;
     players: Player[];
-    status: 'waiting' | 'drafting' | 'completed';
+    status: 'waiting' | 'drafting' | 'deckbuilding' | 'active' | 'tournament' | 'completed';
     isPaused: boolean;
     cube: {
         name: string;
@@ -76,6 +78,12 @@ export interface Room {
     isNormalMatch?: boolean;
     draftState?: DraftState;
     gameState?: GameState;
+    matches?: {
+        players: string[];
+        wins: Record<string, number>;
+        status: 'pending' | 'active' | 'completed';
+        engineState?: any;
+    }[];
     checkpoint?: GameState; // DEBUG: Saved game state
     serverTime?: number;
 }

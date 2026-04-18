@@ -6,30 +6,143 @@ import { BotLogic } from '../../bots/BotLogic';
 import { PersistenceService } from '../../services/PersistenceService';
 import { LoggerService } from '../../services/LoggerService';
 import { GameEngine } from '../../engine/GameEngine';
+import { SealedService } from '../../services/SealedService';
+import { ActionProcessor } from '../../engine/modules/actions/ActionProcessor';
+import { GameSetupProcessor } from '../../engine/modules/core/GameSetupProcessor';
+import { GameState } from '@shared/engine_types';
 
 
 export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<string, Room>) => {
-  socket.on('ready_with_deck', async ({ roomId, playerId, deck }) => {
+
+  const withMatch = (roomId: string, playerId: string, callback: (engine: GameEngine, room: Room, matchIndex?: number) => void) => {
+    try {
+      const room = rooms.get(roomId);
+      if (!room) return;
+
+      let gameState: GameState | undefined;
+      let matchIndex: number | undefined;
+
+      if (room.status === 'tournament' && room.matches) {
+        matchIndex = room.matches.findIndex(m => m.players.includes(playerId));
+        if (matchIndex === -1) return;
+        gameState = room.matches[matchIndex].engineState;
+      } else {
+        gameState = room.gameState;
+      }
+
+      if (!gameState) {
+        LoggerService.warn('MATCH', `No GameState found for room ${roomId}`, { roomId, status: room.status });
+        return;
+      }
+
+      const playerIds = gameState.players ? Object.keys(gameState.players) : room.players.map(p => p.playerId as PlayerId);
+      const playerNames: Record<string, string> = {};
+      room.players.forEach(p => playerNames[p.playerId] = p.name);
+
+      const engine = new GameEngine(playerIds as any, {}, playerNames);
+      engine.setState(gameState);
+
+      // Execute the action (most engine actions are synchronous)
+      callback(engine, room, matchIndex);
+
+      const newState = engine.getState();
+      
+      // CR 704: Handle losing/winning conditions automatically
+      const players = Object.values(newState.players);
+      const lostPlayer = players.find(p => p.hasLost);
+      
+      if (lostPlayer && room.status === 'tournament' && matchIndex !== undefined) {
+        const match = room.matches![matchIndex];
+        if (match.status === 'active') {
+          const winnerId = match.players.find(id => id !== lostPlayer.id);
+          if (winnerId) {
+            match.wins[winnerId] = (match.wins[winnerId] || 0) + 1;
+            match.status = 'completed';
+            LoggerService.info('MATCH', `Match ${matchIndex} resolved. Winner: ${winnerId}`);
+          }
+        }
+      }
+
+      if (matchIndex !== undefined) {
+        room.matches![matchIndex].engineState = newState;
+      } else {
+        room.gameState = newState;
+      }
+
+      io.to(roomId).emit('room_update', room);
+      PersistenceService.saveRooms(rooms).catch(e => LoggerService.error('SAVE', `Save failed: ${e.message}`));
+    } catch (err: any) {
+      LoggerService.error('SOCKET', `Error in withMatch: ${err.message}`, { roomId, playerId });
+    }
+  };
+
+  socket.on('ready_with_deck', async ({ roomId, playerId, deck }: { roomId: string, playerId: string, deck: any }) => {
     const room = rooms.get(roomId);
     if (!room) return;
     const player = room.players.find(p => p.playerId === playerId);
     if (player) {
       (player as any).deck = deck;
-      io.to(roomId).emit('room_update', room);
+      (player as any).isReady = true;
+
+      const allReady = room.players.length >= (room.rules.playerCount || 2) && 
+                       room.players.every(p => (p as any).isReady || p.isBot);
+
+      if (allReady && !room.isNormalMatch) {
+        startTournamentMatches(io, room);
+      } else {
+        io.to(roomId).emit('room_update', room);
+      }
       await PersistenceService.saveRooms(rooms);
     }
   });
 
-  socket.on('start_draft', async ({ roomId, deck }) => {
+  const startTournamentMatches = (io: Server, room: Room) => {
+    LoggerService.info('TOURNAMENT', `Starting matches for room ${room.id}`);
+
+    const players = room.players.filter(p => !p.isBot);
+    const matches: any[] = [];
+
+    for (let i = 0; i < players.length; i += 2) {
+      if (i + 1 < players.length) {
+        const p1 = players[i];
+        const p2 = players[i + 1];
+
+        const playerIds = [p1.playerId, p2.playerId] as any;
+        const decksByPlayer = {
+          [p1.playerId]: (p1 as any).deck,
+          [p2.playerId]: (p2 as any).deck
+        };
+        const playerNames = {
+          [p1.playerId]: p1.name,
+          [p2.playerId]: p2.name
+        };
+        const engine = new GameEngine(playerIds, decksByPlayer, playerNames);
+        engine.startGame();
+
+        matches.push({
+          players: [p1.playerId, p2.playerId],
+          wins: { [p1.playerId]: 0, [p2.playerId]: 0 },
+          status: 'active',
+          engineState: engine.getState()
+        });
+      }
+    }
+
+    room.matches = matches;
+    room.status = 'tournament';
+
+    io.to(room.id).emit('room_update', room);
+    io.to(room.id).emit('match_started', room);
+  };
+
+  socket.on('start_draft', async ({ roomId, deck }: { roomId: string, deck?: any }) => {
     const room = rooms.get(roomId);
     if (!room) return;
 
-    // Use persistent ID for authorization
     const isHost = room.host === socket.id || room.hostPlayerId === socket.data.playerId;
     if (!isHost) return;
 
     if (room.isNormalMatch) {
-      // Load default deck if missing
       let finalDeck = deck;
       if (!finalDeck) {
         finalDeck = await PersistenceService.getDeck('m21_test_deck.json');
@@ -42,12 +155,11 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
       for (const p of room.players) {
         const pDeck = (p as any).deck || finalDeck;
-        // Handle both object { cards: [] } and raw array [] formats
         let cards = [];
         if (Array.isArray(pDeck)) {
-            cards = pDeck;
+          cards = pDeck;
         } else {
-            cards = pDeck?.mainEntry || pDeck?.cards || [];
+          cards = pDeck?.mainEntry || pDeck?.cards || [];
         }
         decksByPlayer[p.playerId] = cards;
         playerNames[p.playerId] = p.name;
@@ -56,370 +168,139 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
       const engine = new GameEngine(playerIds, decksByPlayer, playerNames, playerAvatars);
       engine.startGame();
-      room.status = 'drafting';
+      room.status = 'active';
       room.gameState = engine.getState();
+    } else if (room.rules.isSealed) {
+      SealedService.startSealed(room);
     } else {
       DraftService.startDraft(room);
       BotLogic.triggerBotPicks(rooms, roomId);
     }
-    LoggerService.info('DRAFT', `${room.isNormalMatch ? 'Normal Match' : 'Draft'} started in room: ${roomId}`, { roomId });
+    LoggerService.info('DRAFT', `${room.isNormalMatch ? 'Normal Match' : 'Draft'} started in room: ${roomId}`, { roomId, status: room.status });
     io.to(roomId).emit('draft_started', room);
     await PersistenceService.saveRooms(rooms);
   });
 
-  socket.on('pass_priority', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const playerNames: Record<string, string> = {};
-    room.players.forEach(p => playerNames[p.playerId] = p.name);
-
-    const engine = new GameEngine(playerIds, {}, playerNames);
-    engine.setState(room.gameState);
-
-    try {
+  socket.on('pass_priority', async ({ roomId, playerId }: { roomId: string, playerId: string }) => {
+    withMatch(roomId, playerId, (engine) => {
       engine.passPriority(playerId);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (error) {
-      console.warn(`[SOCKET] Pass priority error:`, error);
-    }
+    });
   });
 
-  socket.on('toggle_pass_turn', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const playerNames: Record<string, string> = {};
-    room.players.forEach(p => playerNames[p.playerId] = p.name);
-
-    const engine = new GameEngine(playerIds, {}, playerNames);
-    engine.setState(room.gameState);
-
-    try {
+  socket.on('toggle_pass_turn', async ({ roomId, playerId }: { roomId: string, playerId: string }) => {
+    withMatch(roomId, playerId, (engine) => {
       engine.togglePassTurn(playerId);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (error) {
-      console.warn(`[SOCKET] Toggle pass turn error:`, error);
-    }
+    });
   });
 
-  socket.on('play_card', async ({ roomId, playerId, cardInstanceId, targets = [] }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const playerNames: Record<string, string> = {};
-    room.players.forEach(p => playerNames[p.playerId] = p.name);
-
-    const engine = new GameEngine(playerIds, {}, playerNames);
-    engine.setState(room.gameState);
-
-    try {
+  socket.on('play_card', async ({ roomId, playerId, cardInstanceId, targets = [] }: { roomId: string, playerId: string, cardInstanceId: string, targets: string[] }) => {
+    withMatch(roomId, playerId, (engine) => {
       engine.playCard(playerId, cardInstanceId, targets);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (error) {
-      console.warn(`[SOCKET] Play card error:`, error);
-    }
-  });
-
-  socket.on('debug_swap_hand', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const engine = new GameEngine(playerIds);
-    engine.setState(room.gameState);
-
-    try {
-      const state = engine.getState();
-      const pState = state.players[playerId];
-      if (!pState) return;
-
-      const handSize = pState.hand.length;
-      // Move hand to library
-      pState.library.push(...pState.hand);
-      pState.hand = [];
-
-      // Shuffle before drawing to avoid getting the same cards back (LIFO)
-      engine.shuffleLibrary(playerId);
-
-      // Draw new ones
-      for (let i = 0; i < Math.max(7, handSize); i++) {
-        (engine as any).drawCard(playerId);
-      }
-
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (error) {
-      console.warn(`[SOCKET] Debug swap hand error:`, error);
-    }
+    });
   });
 
   socket.on('shuffle_library', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const playerNames: Record<string, string> = {};
-    room.players.forEach(p => playerNames[p.playerId] = p.name);
-
-    const engine = new GameEngine(playerIds, {}, playerNames);
-    engine.setState(room.gameState);
-
-    try {
+    withMatch(roomId, playerId, (engine) => {
       engine.shuffleLibrary(playerId);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (error) {
-      console.warn(`[SOCKET] Shuffle library error:`, error);
-    }
+    });
   });
 
-  socket.on('tap_permanent', async ({ roomId, playerId, cardId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const playerNames: Record<string, string> = {};
-    room.players.forEach(p => playerNames[p.playerId] = p.name);
-
-    const engine = new GameEngine(playerIds, {}, playerNames);
-    engine.setState(room.gameState);
-
-    try {
+  socket.on('tap_permanent', async ({ roomId, playerId, cardId }: { roomId: string, playerId: string, cardId: string }) => {
+    withMatch(roomId, playerId, (engine) => {
       engine.interactWithPermanent(playerId, cardId);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (error) {
-      console.warn(`[SOCKET] Interaction error:`, error);
-    }
+    });
   });
 
-  socket.on('activate_ability', async ({ roomId, playerId, cardId, abilityIndex, targets = [] }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const playerNames: Record<string, string> = {};
-    room.players.forEach(p => playerNames[p.playerId] = p.name);
-
-    const engine = new GameEngine(playerIds, {}, playerNames);
-    engine.setState(room.gameState);
-
-    try {
+  socket.on('activate_ability', async ({ roomId, playerId, cardId, abilityIndex, targets = [] }: { roomId: string, playerId: string, cardId: string, abilityIndex: number, targets: string[] }) => {
+    withMatch(roomId, playerId, (engine) => {
       engine.activateAbility(playerId, cardId, abilityIndex, targets);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (error) {
-      console.warn(`[SOCKET] Activate ability error:`, error);
-    }
+    });
   });
 
-  socket.on('toggle_full_control', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const player = room.gameState.players[playerId];
-    if (player) {
-      player.fullControl = !player.fullControl;
-      io.to(roomId).emit('draft_update', room);
-      console.log(`[Socket] Full control toggled for ${player.name}: ${player.fullControl}`);
-      await PersistenceService.saveRooms(rooms);
-    }
+  socket.on('toggle_full_control', async ({ roomId, playerId }: { roomId: string, playerId: string }) => {
+    withMatch(roomId, playerId, (engine) => {
+      const state = engine.getState();
+      const player = state.players[playerId];
+      if (player) {
+        player.fullControl = !player.fullControl;
+        LoggerService.info('SOCKET', `Full control toggled for ${player.name}: ${player.fullControl}`);
+      }
+    });
   });
 
-  socket.on('toggle_auto_order', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const player = room.gameState.players[playerId];
-    if (player) {
-      player.autoOrderTriggers = !player.autoOrderTriggers;
-      io.to(roomId).emit('draft_update', room);
-      console.log(`[Socket] Auto-order triggers toggled for ${player.name}: ${player.autoOrderTriggers}`);
-      await PersistenceService.saveRooms(rooms);
-    }
+  socket.on('toggle_auto_order', async ({ roomId, playerId }: { roomId: string, playerId: string }) => {
+    withMatch(roomId, playerId, (engine) => {
+      const state = engine.getState();
+      const player = state.players[playerId];
+      if (player) {
+        player.autoOrderTriggers = !player.autoOrderTriggers;
+      }
+    });
   });
 
-  socket.on('toggle_stop', async ({ roomId, playerId, step }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const player = room.gameState.players[playerId];
-    if (player) {
-      if (!player.stops) player.stops = {};
-      player.stops[step] = !player.stops[step];
-      io.to(roomId).emit('draft_update', room);
-      console.log(`[Socket] Stop toggled for ${player.name}: ${step} = ${player.stops[step]}`);
-      await PersistenceService.saveRooms(rooms);
-    }
+  socket.on('toggle_stop', async ({ roomId, playerId, step }: { roomId: string, playerId: string, step: string }) => {
+    withMatch(roomId, playerId, (engine) => {
+      const state = engine.getState();
+      const player = state.players[playerId];
+      if (player) {
+        if (!player.stops) player.stops = {};
+        player.stops[step] = !player.stops[step];
+      }
+    });
   });
 
-  socket.on('discard_card', async ({ roomId, playerId, cardId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const engine = new GameEngine(playerIds);
-    engine.setState(room.gameState);
-
-    try {
+  socket.on('discard_card', async ({ roomId, playerId, cardId }: { roomId: string, playerId: string, cardId: string }) => {
+    withMatch(roomId, playerId, (engine) => {
       engine.discardCard(playerId, cardId);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (error) {
-      console.warn(`[SOCKET] Discard error:`, error);
-    }
+    });
   });
 
-  socket.on('resolve_choice', async ({ roomId, playerId, choiceIndex }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const playerNames: Record<string, string> = {};
-    room.players.forEach(p => playerNames[p.playerId] = p.name);
-
-    const engine = new GameEngine(playerIds, {}, playerNames);
-    engine.setState(room.gameState);
-
-    try {
+  socket.on('resolve_choice', async ({ roomId, playerId, choiceIndex }: { roomId: string, playerId: string, choiceIndex: any }) => {
+    withMatch(roomId, playerId, (engine) => {
       engine.resolveChoice(playerId, choiceIndex);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (error) {
-      console.warn(`[SOCKET] Resolve choice error:`, error);
-    }
+    });
   });
 
-  socket.on('resolve_target', async ({ roomId, playerId, targetId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const playerNames: Record<string, string> = {};
-    room.players.forEach(p => playerNames[p.playerId] = p.name);
-
-    const engine = new GameEngine(playerIds, {}, playerNames);
-    engine.setState(room.gameState);
-
-    try {
-      // Rule 601.2c: The player announces his or her activation of an ability and chooses targets
-      if (room.gameState.pendingAction?.type === 'TARGETING') {
-        // Unified targeting resolution (Spells or Abilities)
+  socket.on('resolve_target', async ({ roomId, playerId, targetId }: { roomId: string, playerId: string, targetId: string }) => {
+    withMatch(roomId, playerId, (engine) => {
+      const state = engine.getState();
+      if (state.pendingAction?.type === 'TARGETING') {
         engine.resolveTargeting(playerId, targetId);
-      } else if (room.gameState.pendingAction?.type === 'DECLARE_ATTACKERS') {
-        // In combat, selecting a target re-targets the attacker
+      } else if (state.pendingAction?.type === 'DECLARE_ATTACKERS') {
         engine.interactWithPermanent(playerId, targetId);
       }
-
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (error) {
-      console.warn(`[SOCKET] Resolve target error:`, error);
-    }
+    });
   });
-  socket.on('resolve_combat_ordering', async ({ roomId, playerId, order }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
 
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const playerNames: Record<string, string> = {};
-    room.players.forEach(p => playerNames[p.playerId] = p.name);
-
-    const engine = new GameEngine(playerIds, {}, playerNames);
-    engine.setState(room.gameState);
-
-    try {
+  socket.on('resolve_combat_ordering', async ({ roomId, playerId, order }: { roomId: string, playerId: string, order: string[] }) => {
+    withMatch(roomId, playerId, (engine) => {
       engine.resolveCombatOrdering(playerId, order);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (error) {
-      console.warn(`[SOCKET] Resolve ordering error:`, error);
-    }
+    });
   });
 
-  socket.on('clear_attackers', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-    const engine = new GameEngine(room.players.map(p => p.playerId as PlayerId));
-    engine.setState(room.gameState);
-    try {
+  socket.on('clear_attackers', async ({ roomId, playerId }: { roomId: string, playerId: string }) => {
+    withMatch(roomId, playerId, (engine) => {
       engine.clearAttackers(playerId);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (err) { console.warn(err); }
+    });
   });
 
   socket.on('clear_blockers', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-    const engine = new GameEngine(room.players.map(p => p.playerId as PlayerId));
-    engine.setState(room.gameState);
-    try {
+    withMatch(roomId, playerId, (engine) => {
       engine.clearBlockers(playerId);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (err) { console.warn(err); }
-  });
-
-  socket.on('clear_attackers', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-    const engine = new GameEngine(room.players.map(p => p.playerId as PlayerId));
-    engine.setState(room.gameState);
-    try {
-      engine.clearAttackers(playerId);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (err) { console.warn(err); }
-  });
-
-  socket.on('clear_blockers', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-    const engine = new GameEngine(room.players.map(p => p.playerId as PlayerId));
-    engine.setState(room.gameState);
-    try {
-      engine.clearBlockers(playerId);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (err) { console.warn(err); }
+    });
   });
 
   socket.on('back_to_lobby', async ({ roomId }) => {
     const room = rooms.get(roomId);
     if (!room) return;
-    
-    // Auth check
+
     const isHost = room.host === socket.id || room.hostPlayerId === socket.data.playerId;
     if (!isHost) return;
 
     room.status = 'waiting';
     room.gameState = undefined;
-    // Clear ready decks to allow re-selection
     room.players.forEach(p => {
-        (p as any).deck = undefined;
+      (p as any).deck = undefined;
     });
 
     LoggerService.info('DRAFT', `Room ${roomId} returned to lobby by host.`);
@@ -429,7 +310,24 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
   /* --- DEBUG COMMANDS --- */
 
-  socket.on('debug_reset_game', async ({ roomId }) => {
+  socket.on('debug_swap_hand', async ({ roomId, playerId }: { roomId: string, playerId: string }) => {
+    withMatch(roomId, playerId, (engine) => {
+      const state = engine.getState();
+      const pState = state.players[playerId];
+      if (!pState) return;
+
+      const handSize = pState.hand.length;
+      pState.library.push(...pState.hand);
+      pState.hand = [];
+      engine.shuffleLibrary(playerId);
+
+      for (let i = 0; i < Math.max(7, handSize); i++) {
+        engine.drawCard(playerId);
+      }
+    });
+  });
+
+  socket.on('debug_reset_game', async ({ roomId }: { roomId: string }) => {
     const room = rooms.get(roomId);
     if (!room) return;
 
@@ -444,9 +342,9 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       const pDeck = (p as any).deck || defaultDeck;
       let cards = [];
       if (Array.isArray(pDeck)) {
-          cards = pDeck;
+        cards = pDeck;
       } else {
-          cards = pDeck?.mainEntry || pDeck?.cards || [];
+        cards = pDeck?.mainEntry || pDeck?.cards || [];
       }
       decksByPlayer[p.playerId] = cards;
       playerNames[p.playerId] = p.name;
@@ -459,136 +357,82 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
     room.gameState = engine.getState();
     room.gameState.logs.push(">> [DEBUG] GAME RESET BY ADMIN");
 
-    io.to(roomId).emit('draft_update', room);
+    io.to(roomId).emit('room_update', room);
     await PersistenceService.saveRooms(rooms);
-    console.log(`[DEBUG] Room ${roomId} has been reset.`);
   });
 
-  socket.on('debug_add_life', async ({ roomId, playerId, amount }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const engine = new GameEngine(playerIds);
-    engine.setState(room.gameState);
-
-    try {
+  socket.on('debug_add_life', async ({ roomId, playerId, amount }: { roomId: string, playerId: string, amount: number }) => {
+    withMatch(roomId, playerId, (engine) => {
       engine.gainLife(playerId, amount);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (error) {
-      console.warn(`[SOCKET] Debug life error:`, error);
-    }
+    });
   });
 
-  socket.on('debug_move_card_from_library', async ({ roomId, playerId, cardId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const engine = new GameEngine(playerIds);
-    engine.setState(room.gameState);
-
-    try {
-      const pState = room.gameState.players[playerId];
+  socket.on('debug_move_card_from_library', async ({ roomId, playerId, cardId }: { roomId: string, playerId: string, cardId: string }) => {
+    withMatch(roomId, playerId, (engine) => {
+      const state = engine.getState();
+      const pState = state.players[playerId];
       if (!pState) return;
 
       const card = pState.library.find(c => c.id === cardId);
       if (card) {
-          // Unified move using ActionProcessor (which GameEngine uses internally)
-          const { ActionProcessor } = require('../../engine/modules/actions/ActionProcessor');
-          ActionProcessor.moveCard(room.gameState, card, Zone.Hand, playerId, (m: string) => room.gameState!.logs.push(`>> [DEBUG] ${m}`));
-          
-          room.gameState = engine.getState();
-          io.to(roomId).emit('draft_update', room);
-          await PersistenceService.saveRooms(rooms);
+        ActionProcessor.moveCard(state, card, Zone.Hand, playerId, (m: string) => state.logs.push(`>> [DEBUG] ${m}`));
       }
-    } catch (error) {
-      console.warn(`[SOCKET] Debug move card error:`, error);
-    }
+    });
   });
 
-  socket.on('debug_add_card', async ({ roomId, playerId, cardName }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const engine = new GameEngine(playerIds);
-    engine.setState(room.gameState);
-
-    try {
-      const pState = room.gameState.players[playerId];
+  socket.on('debug_add_card', async ({ roomId, playerId, cardName }: { roomId: string, playerId: string, cardName: string }) => {
+    withMatch(roomId, playerId, async (engine) => {
+      const state = engine.getState();
+      const pState = state.players[playerId];
       if (!pState) return;
 
       const allCards = await PersistenceService.getDeck('all.json');
       const cardRef = allCards?.cards?.find((c: any) => c.name.toLowerCase() === cardName.toLowerCase());
-      
+
       if (cardRef) {
-          const { GameSetupProcessor } = require('../../engine/modules/core/GameSetupProcessor');
-          const card = GameSetupProcessor.createGameObject(playerId, cardRef, pState.hand.length + pState.library.length + 999);
-          card.zone = Zone.Hand;
-          pState.hand.push(card);
-          
-          room.gameState.logs.push(`>> [DEBUG] Added ${cardRef.name} to ${pState.name}'s hand.`);
-          room.gameState = engine.getState();
-          io.to(roomId).emit('draft_update', room);
-          await PersistenceService.saveRooms(rooms);
+        const card = GameSetupProcessor.createGameObject(playerId, cardRef, pState.hand.length + pState.library.length + 999);
+        card.zone = Zone.Hand;
+        pState.hand.push(card);
+        state.logs.push(`>> [DEBUG] Added ${cardRef.name} to ${pState.name}'s hand.`);
       }
-    } catch (error) {
-      console.warn(`[SOCKET] Debug add card error:`, error);
-    }
+    });
   });
 
   socket.on('debug_draw_card', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-
-    const playerIds = room.players.map(p => p.playerId as PlayerId);
-    const engine = new GameEngine(playerIds);
-    engine.setState(room.gameState);
-
-    try {
+    withMatch(roomId, playerId, (engine) => {
       engine.drawCard(playerId);
-      room.gameState = engine.getState();
-      io.to(roomId).emit('draft_update', room);
-      await PersistenceService.saveRooms(rooms);
-    } catch (error) {
-      console.warn(`[SOCKET] Debug draw error:`, error);
-    }
+    });
   });
 
   socket.on('toggle_mana_cheat', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || !room.gameState) return;
-    const player = room.gameState.players[playerId];
-    if (player) {
-      player.manaCheat = !player.manaCheat;
-      io.to(roomId).emit('draft_update', room);
-    }
+    withMatch(roomId, playerId, (engine) => {
+      const state = engine.getState();
+      const player = state.players[playerId];
+      if (player) {
+        player.manaCheat = !player.manaCheat;
+      }
+    });
   });
 
   socket.on('save_checkpoint', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || room.hostPlayerId !== playerId) return;
-    room.checkpoint = JSON.parse(JSON.stringify(room.gameState));
-    io.to(roomId).emit('draft_update', room);
-    console.log(`[DEBUG] Checkpoint saved for room ${roomId}`);
+    withMatch(roomId, playerId, (engine, room) => {
+      if (room.hostPlayerId !== playerId) return;
+      room.checkpoint = JSON.parse(JSON.stringify(engine.getState()));
+      LoggerService.info('DEBUG', `Checkpoint saved for room ${roomId}`);
+    });
   });
 
   socket.on('load_checkpoint', async ({ roomId, playerId }) => {
-    const room = rooms.get(roomId);
-    if (!room || room.hostPlayerId !== playerId) return;
-    const restoredState = JSON.parse(JSON.stringify(room.checkpoint));
-    if (restoredState) {
-      restoredState.logs.push(">> [DEBUG] GAME RESTORED FROM CHECKPOINT");
-      room.gameState = restoredState;
-      io.to(roomId).emit('draft_update', room);
-      console.log(`[DEBUG] Checkpoint restored for room ${roomId}`);
-    }
+    withMatch(roomId, playerId, (engine, room, matchIndex) => {
+      if (room.hostPlayerId !== playerId) return;
+      const restoredState = JSON.parse(JSON.stringify(room.checkpoint));
+      if (restoredState) {
+        restoredState.logs.push(">> [DEBUG] GAME RESTORED FROM CHECKPOINT");
+        engine.setState(restoredState);
+        LoggerService.info('DEBUG', `Checkpoint restored for room ${roomId}`);
+      }
+    });
   });
 
 
 };
-
-

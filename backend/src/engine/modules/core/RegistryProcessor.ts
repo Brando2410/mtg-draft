@@ -28,6 +28,8 @@ export class RegistryProcessor {
             return;
         }
 
+        console.log(`[REGISTRY] Registering ${ability.type} ability for ${card.definition.name} in ${card.zone}`);
+
         switch (ability.type) {
             case 'TriggeredAbility':
                 this.registerTriggeredAbility(state, card, ability, id);
@@ -114,7 +116,7 @@ export class RegistryProcessor {
     if (!ability.effects) return;
     ability.effects.forEach((eff: any, eId: number) => {
         const effId = `${id}_eff_${eId}`;
-        const continuousTypes = ['ApplyContinuousEffect', 'AdditionalCost', 'SpellTax', 'CostReduction', 'AllowCastFromGraveyard', 'AllowPlayFromTop', 'AllowPlayExiled'];
+        const continuousTypes = ['ApplyContinuousEffect', 'AdditionalCost', 'SpellTax', 'CostReduction', 'AllowCastFromGraveyard', 'AllowPlayFromTop', 'AllowPlayExiled', 'AllowOutOfTurnActivation', 'AdditionalLandPlays'];
         if (continuousTypes.includes(eff.type)) {
             state.ruleRegistry.continuousEffects.push({
                 id: effId,

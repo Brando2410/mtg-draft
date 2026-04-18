@@ -12,9 +12,10 @@ interface SavedCube {
 interface DraftSetupProps {
   onBack: () => void;
   onCreateRoom: (setupData: any) => void;
+  isSealed?: boolean;
 }
 
-export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
+export const DraftSetup = ({ onBack, onCreateRoom, isSealed = false }: DraftSetupProps) => {
   const { wallpaperList, fetchAssets } = useDraftStore();
   const [cubes, setCubes] = useState<SavedCube[]>([]);
   const [loadingCubes, setLoadingCubes] = useState(true);
@@ -26,8 +27,8 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
   const [playerCount, setPlayerCount] = useState(8);
   const [timer, setTimer] = useState(60);
   const [timerEnabled, setTimerEnabled] = useState(true);
-  const [packsPerPlayer, setPacksPerPlayer] = useState(3);
-  const [cardsPerPack, setCardsPerPack] = useState(15);
+  const [packsPerPlayer, setPacksPerPlayer] = useState(isSealed ? 6 : 3);
+  const [cardsPerPack, setCardsPerPack] = useState(isSealed ? 14 : 15);
   const [anonymousMode, setAnonymousMode] = useState(false);
   const [randomPacks, setRandomPacks] = useState(false);
   const [hostName, setHostName] = useState(localStorage.getItem('mtg_player_name') || 'Giocatore');
@@ -42,6 +43,11 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
     };
     init();
 
+    if (isSealed) {
+       setSelectedCubeId('sos');
+       setLoadingCubes(false);
+       return;
+    }
     const fetchCubes = async () => {
       try {
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -76,18 +82,19 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
   const hasEnoughCards = selectedCube ? selectedCube.cardCount >= totalNeeded : true;
 
   const handleCreate = () => {
-    if (!selectedCubeId || !hostName.trim() || !hasEnoughCards) return;
+    if ((!isSealed && !selectedCubeId) || !hostName.trim() || (!isSealed && !hasEnoughCards)) return;
     setLoading(true);
     localStorage.setItem('mtg_player_name', hostName.trim());
     onCreateRoom({
-      cubeId: selectedCubeId,
-      cubeName: selectedCube?.name,
+      cubeId: isSealed ? 'sos' : selectedCubeId,
+      cubeName: isSealed ? 'Strixhaven' : selectedCube?.name,
       playerCount,
       timer: timerEnabled ? timer : null,
       packsPerPlayer,
       cardsPerPack,
       anonymousMode,
       randomPacks,
+      isSealed,
       hostName: hostName.trim()
     });
   };
@@ -181,8 +188,8 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
           <div className="flex items-center gap-3 portrait:gap-6 lg:gap-10">
              <button onClick={onBack} className="p-2 portrait:p-3.5 lg:p-4 bg-slate-900 border border-white/10 rounded-lg portrait:rounded-2xl lg:rounded-3xl shadow-2xl transition-all hover:bg-slate-800"><Home className="w-4 h-4 portrait:w-6 portrait:h-6 lg:w-7 lg:h-7" /></button>
              <div>
-                <h1 className="text-sm portrait:text-2xl lg:text-5xl font-black text-white uppercase italic tracking-tighther leading-none">Setup <span className="text-indigo-500">Draft</span></h1>
-                <p className="text-[7px] portrait:text-[10px] lg:text-sm font-bold text-slate-500 uppercase mt-1 max-lg:landscape:hidden">Session Configuration</p>
+                <h1 className="text-sm portrait:text-2xl lg:text-5xl font-black text-white uppercase italic tracking-tighther leading-none">Setup <span className="text-indigo-500">{isSealed ? 'Sealed' : 'Draft'}</span></h1>
+                 <p className="text-[7px] portrait:text-[10px] lg:text-sm font-bold text-slate-500 uppercase mt-1 max-lg:landscape:hidden">{isSealed ? 'Expansion Pool' : 'Session Configuration'}</p>
              </div>
           </div>
 
@@ -190,8 +197,8 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
           <div className="hidden portrait:flex compact:flex flex-col items-start gap-1 flex-1 max-w-[200px] portrait:max-w-none mx-4 portrait:mx-0 portrait:w-full">
              <div className="flex items-center gap-1.5 px-1">
                <Database className="w-3 h-3 text-indigo-400" />
-               <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest leading-none">Seleziona Cubo</span>
-               <span className={`text-[8px] font-black italic ml-auto ${hasEnoughCards ? 'text-emerald-400' : 'text-red-400'}`}>{selectedCube?.cardCount}/{totalNeeded}</span>
+                <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest leading-none">Seleziona {isSealed ? 'Espansione' : 'Cubo'}</span>
+                {!isSealed && <span className={`text-[8px] font-black italic ml-auto ${hasEnoughCards ? 'text-emerald-400' : 'text-red-400'}`}>{selectedCube?.cardCount}/{totalNeeded}</span>}
              </div>
              <div className="relative w-full">
                <select 
@@ -199,7 +206,11 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
                  onChange={(e) => setSelectedCubeId(e.target.value)}
                  className="w-full bg-slate-900/60 border border-white/10 rounded-lg py-1.5 px-3 text-[10px] font-black uppercase tracking-tight text-indigo-400 outline-none appearance-none cursor-pointer hover:bg-slate-900"
                >
-                 {cubes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                 {isSealed ? (
+                    <option value="sos">STRIXHAVEN (SOS)</option>
+                  ) : (
+                    cubes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)
+                  )}
                </select>
                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-600 pointer-events-none" />
              </div>
@@ -237,13 +248,20 @@ export const DraftSetup = ({ onBack, onCreateRoom }: DraftSetupProps) => {
               <div className="flex items-center justify-between px-1">
                  <div className="flex items-center gap-2 lg:gap-4">
                     <Database className="w-3 h-3 portrait:w-4 portrait:h-4 lg:w-6 lg:h-6 text-indigo-400" />
-                    <span className="text-[8px] portrait:text-[11px] lg:text-lg font-black text-slate-300 uppercase tracking-[0.4em]">Seleziona Cubo</span>
+                    <span className="text-[8px] portrait:text-[11px] lg:text-lg font-black text-slate-300 uppercase tracking-[0.4em]">Seleziona {isSealed ? 'Espansione' : 'Cubo'}</span>
                  </div>
-                 <span className={`text-[7px] portrait:text-[11px] lg:text-sm font-black uppercase ${hasEnoughCards ? 'text-emerald-500/50' : 'text-red-500'}`}>{selectedCube?.cardCount || 0}/{totalNeeded}</span>
+                 {!isSealed && <span className={`text-[7px] portrait:text-[11px] lg:text-sm font-black uppercase ${hasEnoughCards ? 'text-emerald-500/50' : 'text-red-500'}`}>{selectedCube?.cardCount || 0}/{totalNeeded}</span>}
               </div>
               
               <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-1.5 portrait:space-y-4 lg:space-y-6">
-                 {loadingCubes ? (
+                 {isSealed ? (
+                    <button
+                      className="w-full py-1.5 portrait:py-4 lg:py-6 px-3 portrait:px-5 lg:px-8 rounded-lg portrait:rounded-2xl lg:rounded-3xl border transition-all text-[8px] portrait:text-sm lg:text-xl font-black uppercase tracking-tight text-left flex items-center justify-between group bg-indigo-600 border-indigo-400 text-white shadow-2xl shadow-indigo-600/30"
+                    >
+                      <span className="truncate mr-2 leading-none">STRIXHAVEN (SOS)</span>
+                      <span className="text-[7px] portrait:text-[10px] lg:text-sm font-black shrink-0 text-indigo-200">275+</span>
+                    </button>
+                 ) : loadingCubes ? (
                    Array(3).fill(0).map((_, i) => <div key={i} className="h-10 portrait:h-14 lg:h-20 bg-white/5 rounded-xl animate-pulse" />)
                  ) : cubes.map(cube => (
                    <button

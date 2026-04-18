@@ -54,18 +54,23 @@ export const ZoneInspector = ({ inspectingZone, onClose, onTapCard, targetableId
           </button>
         </div>
         
-        <div className="flex-1 w-full max-w-6xl overflow-y-auto pr-4 custom-scrollbar">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 pb-20 justify-items-center">
+        <div className="flex-1 w-full max-w-7xl overflow-y-auto pr-4 custom-scrollbar">
+          <div className="flex flex-wrap justify-center gap-10 pb-20">
             {inspectingZone.cards.map((obj) => (
-              <GameCard 
+              <div 
                 key={obj.id} 
-                obj={obj} 
-                variant="small"
-                onClick={() => onTapCard(obj.id)} 
-                isTargetable={targetableIds.has(obj.id)}
-                onHoverStart={onHoverStart}
-                onHoverEnd={onHoverEnd}
-              />
+                className="w-[calc(var(--u)*26)] h-[calc(var(--u)*18.7)] flex items-center justify-center shrink-0"
+                style={{ '--header-scale': 2.0 } as any}
+              >
+                <GameCard 
+                  obj={obj} 
+                  variant="battlefield"
+                  onClick={() => onTapCard(obj.id)} 
+                  isTargetable={targetableIds.has(obj.id)}
+                  onHoverStart={onHoverStart}
+                  onHoverEnd={onHoverEnd}
+                />
+              </div>
             ))}
             {inspectingZone.cards.length === 0 && (
                <div className="col-span-full h-64 flex flex-col items-center justify-center text-slate-700 bg-black/20 rounded-3xl border border-white/5 w-full">

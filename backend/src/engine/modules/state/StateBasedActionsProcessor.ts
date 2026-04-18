@@ -28,7 +28,13 @@ export class StateBasedActionsProcessor {
     let actionTaken = false;
 
     // 1. RULE 704.5a: Player loses if Life <= 0
-    // (Implementation pending: needs PlayerState integration)
+    for (const p of Object.values(state.players)) {
+      if ((p.life <= 0 || p.hasLostDueToEmptyLibrary) && !p.hasLost) {
+        log(`[SBA] ${p.name} loses the game (Life: ${p.life}, EmptyLibrary: ${p.hasLostDueToEmptyLibrary}).`);
+        p.hasLost = true;
+        actionTaken = true;
+      }
+    }
 
     // 2. Creature & Planeswalker checks (Rule 704.5f-i)
     const objects = [...state.battlefield];

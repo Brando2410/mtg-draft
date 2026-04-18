@@ -90,9 +90,12 @@ export const useDraftStore = create<DraftState>((set, get) => ({
 
     socket.on('joined_successfully', (room: Room) => {
       logger.info('Joined room successfully', { roomId: room.id, status: room.status });
+      
+      const isInGame = ['drafting', 'deckbuilding', 'active', 'tournament'].includes(room.status);
+      
       set({ 
         room, 
-        activeView: room.status === 'drafting' ? 'drafting' : 'draft_lobby',
+        activeView: isInGame ? 'drafting' : 'draft_lobby',
         isJoining: false,
         joinError: null
       });

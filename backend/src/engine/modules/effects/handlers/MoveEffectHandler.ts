@@ -287,6 +287,22 @@ export class MoveEffectHandler {
         const found = !!targetCard;
         if (log && revealed.length > 0) log(`[REVEAL-UNTIL] Exiled ${revealed.length} cards from library. Found match: ${found}`);
 
+        // Move non-matching cards (and the match if it wasn't handled) from Exile to bottom
+        const remaining = revealed.filter(c => c !== targetCard);
+        if (remaining.length > 0) {
+            const remainderZone = (effect as any).remainderZone || Zone.Library;
+            const remainderPos = (effect as any).remainderPosition || 'bottom';
+            const shuffle = (effect as any).shuffleRemainder;
+
+            if (shuffle) {
+                ActionProcessor.shuffle(remaining);
+            }
+
+            for (const c of remaining) {
+                ActionProcessor.moveCard(state, c, remainderZone, c.ownerId, log, remainderPos as any);
+            }
+        }
+
         if (found) {
             // The card is already in Exile now.
             if (effect.next) {
@@ -302,12 +318,13 @@ export class MoveEffectHandler {
                         optional: true,
                         onSelected: (c: any) => {
                             const yesChoice = choicesArr.find((ch: any) => ch.label === 'Yes' || ch.value === 'yes');
-                            return (yesChoice?.effects || []).map((eff: any) => ({ ...eff, targetId: targetCard.id }));
+                            return (yesChoice?.effects || []);
                         },
                         onNone: () => {
                             const noChoice = choicesArr.find((ch: any) => ch.label === 'No' || ch.value === 'no');
-                            return (noChoice?.effects || []).map((eff: any) => ({ ...eff, targetId: targetCard.id }));
+                            return (noChoice?.effects || []);
                         },
+                        targets: [targetCard.id],
                         stackObj: stackObject,
                         parentContext: parentContext
                     });
@@ -319,21 +336,6 @@ export class MoveEffectHandler {
             }
         }
 
-        // Move non-matching cards (and the match if it wasn't handled) from Exile to bottom
-        const remaining = revealed.filter(c => c !== targetCard);
-        if (remaining.length > 0) {
-            const remainderZone = (effect as any).remainderZone || Zone.Library;
-            const remainderPos = (effect as any).remainderPosition || 'bottom';
-            const shuffle = (effect as any).shuffleRemainder;
-
-            if (shuffle) {
-                ActionProcessor.shuffle(remaining);
-            }
-
-            for (const c of remaining) {
-                ActionProcessor.moveCard(state, c, (effect as any).remainderZone || Zone.Library, c.ownerId, log, 'bottom');
-            }
-        }
     }
 
     private static resolveExchangeHandAndGraveyard(state: GameState, effect: EffectDefinition, targets: string[], controllerId: PlayerId, log: (m: string) => void) {

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import type { SimplifiedCard } from '../../services/scryfall';
 import { DeckHeader } from './DeckHeader';
 import { MainboardGrid } from './MainboardGrid';
@@ -27,8 +27,11 @@ export const DeckReviewView = ({
   isHost = false, 
   onTogglePause
 }: DeckReviewProps) => {
-  const [mainboard, setMainboard] = useState<SimplifiedCard[]>(pool);
-  const [sideboard, setSideboard] = useState<SimplifiedCard[]>([]);
+  const [filterQuery, setFilterQuery] = useState('');
+  const [filterColors, setFilterColors] = useState<string[]>([]);
+  const [filterRarity, setFilterRarity] = useState<string | null>(null);
+  const [filterCmc, setFilterCmc] = useState<number | null>(null);
+
   const [draggedCardIndex, setDraggedCardIndex] = useState<{ index: number, source: 'main' | 'side' } | null>(null);
   const [isSideboardCollapsed, setIsSideboardCollapsed] = useState(true);
   const [separateByType, setSeparateByType] = useState(false);
@@ -36,6 +39,14 @@ export const DeckReviewView = ({
   const [flippedIds, setFlippedIds] = useState<Set<string>>(new Set());
   const [zoomCard, setZoomCard] = useState<SimplifiedCard | null>(null);
   const [isZoomFlipped, setIsZoomFlipped] = useState(false);
+
+  const manaSymbols: Record<string, string> = {
+    'W': 'https://svgs.scryfall.io/card-symbols/W.svg',
+    'U': 'https://svgs.scryfall.io/card-symbols/U.svg',
+    'B': 'https://svgs.scryfall.io/card-symbols/B.svg',
+    'R': 'https://svgs.scryfall.io/card-symbols/R.svg',
+    'G': 'https://svgs.scryfall.io/card-symbols/G.svg',
+  };
 
   const toggleFlip = useCallback((e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -47,11 +58,44 @@ export const DeckReviewView = ({
     });
   }, []);
 
+  const filteredPool = useMemo(() => {
+    return pool.filter(card => {
+        const matchesQuery = card.name.toLowerCase().includes(filterQuery.toLowerCase());
+        const matchesColor = filterColors.length === 0 || filterColors.some(col => (card as any).color?.includes(col) || (card as any).colors?.includes(col));
+        const matchesRarity = !filterRarity || (card.rarity || '').toLowerCase() === filterRarity.toLowerCase();
+        const matchesCmc = filterCmc === null || (filterCmc === 6 ? card.cmc >= 6 : card.cmc === filterCmc);
+        return matchesQuery && matchesColor && matchesRarity && matchesCmc;
+    });
+  }, [pool, filterQuery, filterColors, filterRarity, filterCmc]);
+
+  // We still want to manage main/side but we filter what we SEE
+  const [mainboard, setMainboard] = useState<SimplifiedCard[]>(pool);
+  const [sideboard, setSideboard] = useState<SimplifiedCard[]>([]);
+  
+  // Re-sync mainboard when pool changes (new pick)
+  useEffect(() => {
+      setMainboard(() => {
+          // Keep existing sideboard cards in sideboard, new cards go to main
+          const sideIds = new Set(sideboard.map(c => c.scryfall_id + (c as any).id));
+          const newMain = pool.filter(c => !sideIds.has(c.scryfall_id + (c as any).id));
+          return newMain;
+      });
+  }, [pool]);
+// Sideboard is not a dependency here because we want to stick to what's in it, not re-run when it changes via UI
+
+  const displayedMain = useMemo(() => {
+      return mainboard.filter(c => filteredPool.some(f => (f.scryfall_id + (f as any).id) === (c.scryfall_id + (c as any).id)));
+  }, [mainboard, filteredPool]);
+
+  const displayedSide = useMemo(() => {
+      return sideboard.filter(c => filteredPool.some(f => (f.scryfall_id + (f as any).id) === (c.scryfall_id + (c as any).id)));
+  }, [sideboard, filteredPool]);
+
   const columns = useMemo(() => {
     const cols: Record<number, { creatures: SimplifiedCard[], others: SimplifiedCard[], all: SimplifiedCard[] }> = {};
     for (let i = 0; i <= 6; i++) cols[i] = { creatures: [], others: [], all: [] };
 
-    mainboard.forEach(card => {
+    displayedMain.forEach(card => {
       const cmc = Math.min(card.cmc, 6);
       const isCreature = card.type_line?.toLowerCase().includes('creature');
       if (isCreature) cols[cmc].creatures.push(card);
@@ -59,14 +103,14 @@ export const DeckReviewView = ({
       cols[cmc].all.push(card);
     });
     return cols;
-  }, [mainboard]);
+  }, [displayedMain]);
 
   const stats = useMemo(() => {
-    const creatures = mainboard.filter((c) => c.type_line?.toLowerCase().includes('creature')).length;
-    const nonCreatures = mainboard.length - creatures;
+    const creatures = displayedMain.filter((c) => c.type_line?.toLowerCase().includes('creature')).length;
+    const nonCreatures = displayedMain.length - creatures;
     const manaCurve = new Array(9).fill(0);
     
-    mainboard.forEach((c) => {
+    displayedMain.forEach((c) => {
       const cmc = Math.floor(c.cmc || 0);
       const idx = Math.min(cmc, 8);
       manaCurve[idx]++;
@@ -75,7 +119,7 @@ export const DeckReviewView = ({
     const colorSymbols: Record<string, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 };
     let totalColorSymbols = 0;
 
-    mainboard.forEach((c) => {
+    displayedMain.forEach((c) => {
       const manaCost = c.mana_cost || "";
       const matches = manaCost.match(/\{([^}]+)\}/g) || [];
       matches.forEach((sym: string) => {
@@ -96,11 +140,11 @@ export const DeckReviewView = ({
        });
     }
 
-    const totalCmc = mainboard.reduce((acc: number, c) => acc + (c.cmc || 0), 0);
-    const avgCmc = mainboard.length > 0 ? (totalCmc / mainboard.length).toFixed(1) : "0.0";
+    const totalCmc = displayedMain.reduce((acc: number, c) => acc + (c.cmc || 0), 0);
+    const avgCmc = displayedMain.length > 0 ? (totalCmc / displayedMain.length).toFixed(1) : "0.0";
     
     return { creatures, nonCreatures, manaCurve, colorSymbols, colorPercentages, avgCmc };
-  }, [mainboard]);
+  }, [displayedMain]);
 
   const activeCmcs = useMemo(() => {
     return [0, 1, 2, 3, 4, 5, 6].filter(cmc => columns[cmc].all.length > 0);
@@ -185,12 +229,60 @@ export const DeckReviewView = ({
         formatTime={formatTime}
       />
 
+      {/* FILTERS BAR */}
+      <div className="bg-slate-900/50 border-b border-white/5 p-4 flex flex-wrap items-center gap-6 z-10">
+          <div className="flex gap-1 bg-slate-950 p-1 rounded-xl border border-white/5 shadow-inner">
+            {['W', 'U', 'B', 'R', 'G'].map(col => (
+              <button 
+                key={col} 
+                onClick={() => setFilterColors(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col])}
+                className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${filterColors.includes(col) ? 'bg-indigo-600 shadow-lg scale-110 active:scale-95' : 'opacity-40 grayscale hover:opacity-100 hover:grayscale-0'}`}
+              >
+                <img src={manaSymbols[col]} className="w-6 h-6" alt={col} />
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-1 bg-slate-950 p-1 rounded-xl border border-white/5 h-12 items-center px-1">
+            {['Common', 'Uncommon', 'Rare', 'Mythic'].map(rar => (
+              <button 
+                key={rar} 
+                onClick={() => setFilterRarity(filterRarity === rar ? null : rar)}
+                className={`px-4 h-10 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${filterRarity === rar ? 'bg-white text-slate-950 shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+              >
+                {rar[0]}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-1 bg-slate-950 p-1 rounded-xl border border-white/5 h-12 items-center px-1">
+            {[0,1,2,3,4,5,6].map(val => (
+              <button 
+                key={val} 
+                onClick={() => setFilterCmc(filterCmc === val ? null : val)}
+                className={`w-10 h-10 rounded-lg flex items-center justify-center font-black text-[11px] transition-all ${filterCmc === val ? 'bg-white text-slate-950 shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+              >
+                {val === 6 ? '6+' : val}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex-1 min-w-[200px] relative">
+             <input 
+                value={filterQuery} 
+                onChange={e => setFilterQuery(e.target.value)}
+                placeholder="Search in pool..."
+                className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold outline-none focus:border-indigo-500/50 transition-all shadow-inner"
+             />
+          </div>
+      </div>
+
       <div className="flex-1 flex overflow-hidden relative">
         <MainboardGrid 
           activeCmcs={activeCmcs}
           columns={columns}
           separateByType={separateByType}
-          mainboard={mainboard}
+          mainboard={displayedMain}
           flippedIds={flippedIds}
           onToggleFlip={toggleFlip}
           onMoveToSideboard={moveToSideboard}
@@ -200,7 +292,7 @@ export const DeckReviewView = ({
         />
 
         <SideboardSidebar 
-          sideboard={sideboard}
+          sideboard={displayedSide}
           isSideboardCollapsed={isSideboardCollapsed}
           flippedIds={flippedIds}
           onToggleFlip={toggleFlip}

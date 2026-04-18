@@ -421,7 +421,7 @@ export class TargetValidator {
                 const zone = targetObj.zone || targetObj.card?.zone;
                 const lastZone = targetObj.lastNonStackZone || targetObj.card?.lastNonStackZone;
                 const match = zone === Zone.Hand || lastZone === Zone.Hand;
-                if (log) log(`[DEBUG] fromhand check for ${definition?.name || targetObj.name}: Zone=${zone}, LastZone=${lastZone} -> ${match}`);
+                if (log) log(`[DEBUG] matchesRestrictions: ${definition?.name || targetObj.name} is ${match ? 'MATCHED' : 'NOT MATCHED'} by fromhand (Zone=${zone}, Last=${lastZone})`);
                 if (!match) return false;
                 continue;
             }

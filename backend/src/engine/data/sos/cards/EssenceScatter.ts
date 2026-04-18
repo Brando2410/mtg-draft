@@ -17,7 +17,7 @@ export const EssenceScatter: CardDefinition = {
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Creature,
+                type: TargetType.Spell,
                 count: 1
             },
             effects: [

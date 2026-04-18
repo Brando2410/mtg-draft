@@ -19,9 +19,10 @@ interface GameViewProps {
   room: Room;
   playerId: string;
   onBack: () => void;
+  customGameState?: any;
 }
 
-export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
+export const GameView = ({ room, playerId, onBack, customGameState }: GameViewProps) => {
   const [showDebug, setShowDebug] = useState(false);
   const [effectivePlayerId, setEffectivePlayerId] = useState(playerId);
   const [hoveredCard, setHoveredCard] = useState<GameObject | null>(null);
@@ -33,7 +34,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
   const { resetMatch, backToLobby } = useDraftStore();
   const [inspectingZone, setInspectingZone] = useState<{ cards: GameObject[], label: string, type: 'graveyard' | 'exile', isMe: boolean } | null>(null);
   
-  const gameState = room.gameState;
+  const gameState = customGameState || room.gameState;
   const me = gameState?.players[effectivePlayerId];
   const opponentId = Object.keys(gameState?.players || {}).find(id => id !== effectivePlayerId);
   const opponent = opponentId ? gameState?.players[opponentId] : null;
@@ -115,10 +116,10 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
 
   const handleAllAttack = () => {
     if (!gameState || !me) return;
-    const creatures = gameState.battlefield.filter(obj => {
+    const creatures = gameState.battlefield.filter((obj: any) => {
       const isMyCreature = obj.controllerId === effectivePlayerId && 
                           (obj.definition.types.includes('Creature') || (obj.definition.type_line || '').toLowerCase().includes('creature'));
-      const alreadyAttacking = gameState.combat?.attackers?.some(a => a.attackerId === obj.id);
+      const alreadyAttacking = gameState.combat?.attackers?.some((a: any) => a.attackerId === obj.id);
       
       // Rule 302.6: Haste bypasses summoning sickness. Power check is not strictly required but good for Arena feel.
       const hasHaste = (obj.definition.keywords || []).includes('Haste') || (obj.effectiveStats?.keywords || []).includes('Haste');
@@ -127,7 +128,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
       return isMyCreature && !alreadyAttacking && canAttack;
     });
 
-    creatures.forEach(c => {
+    creatures.forEach((c: any) => {
       socket.emit('tap_permanent', { roomId: room.id, playerId: effectivePlayerId, cardId: c.id });
     });
   };
@@ -146,7 +147,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
     const type = inspectingZone.type;
     
     if (type === 'exile') {
-        const nextCards = (gameState.exile || []).filter(o => o.ownerId === (nextIsMe ? effectivePlayerId : opponentId));
+        const nextCards = (gameState.exile || []).filter((o: any) => o.ownerId === (nextIsMe ? effectivePlayerId : opponentId));
         setInspectingZone({
             label: nextIsMe ? "Your Exile" : "Enemy Exile",
             cards: nextCards,
@@ -334,7 +335,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
           stops={me?.stops}
           effectivePlayerId={effectivePlayerId}
           attackerCount={gameState.combat?.attackers?.length || 0}
-          blockerCount={gameState.combat?.blockers?.filter(b => gameState.battlefield.find(o => o.id === b.blockerId)?.controllerId === effectivePlayerId).length || 0}
+          blockerCount={gameState.combat?.blockers?.filter((b: any) => gameState.battlefield.find((o: any) => o.id === b.blockerId)?.controllerId === effectivePlayerId).length || 0}
           onAllAttack={handleAllAttack}
           onCancelAttacks={handleCancelAttacks}
           onCancelBlocks={handleCancelBlocks}

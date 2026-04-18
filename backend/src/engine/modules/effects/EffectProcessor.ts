@@ -99,7 +99,8 @@ export class EffectProcessor {
                 sourceId: stackObject.sourceId,
                 type: stackObject.type,
                 definition: source?.definition, // Pass the definition for clean rendering
-                targets: stackObject.targets || []
+                targets: stackObject.targets || [],
+                data: stackObject.data
             };
         }
         return null;
@@ -130,8 +131,10 @@ export class EffectProcessor {
 
         // Resolve Target Mappings
         const resolveMapping = (m: string, index: number) => {
-            const ids = TargetingProcessor.resolveTargetMapping(state, m || "", targets, sourceId, controllerId, stackObject?.data, effect, parentContext);
 
+            const ids = TargetingProcessor.resolveTargetMapping(state, m || "", targets, sourceId, controllerId, stackObject?.data, effect, parentContext);
+            if (m) log(`[DEBUG] EffectProcessor: Resolved mapping "${m}" to targets: ${ids}`);
+            
             // If Choice effect has no explicit mapping, it should receive all parent targets to pass them down
             if (effect.type === 'Choice' && (!m || m === "") && ids.length === 0) {
                 return ids.length > 0 ? ids : [...targets];
@@ -865,6 +868,7 @@ export class EffectProcessor {
             state.exile.find(o => o.id === id) ||
             state.limbo?.find(o => o.id === id) ||
             (stackObject?.card?.id === id ? stackObject.card : undefined) ||
+            ((state as any).paradigmCopies && (state as any).paradigmCopies[id]) ||
             (state.pendingAction?.data?.lookingCards as GameObject[])?.find(o => o.id === id) ||
             (parentContext?.lookingCards as GameObject[])?.find(o => o.id === id) ||
             (stackObject?.data?.lookingCards as GameObject[])?.find(o => o.id === id);

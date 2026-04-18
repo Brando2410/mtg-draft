@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const ThornfistStriker: CardDefinition = {
+export const ThornfistStriker: CardDefinition = {
     name: "Thornfist Striker",
     manaCost: "{2}{G}",
     colors: [
@@ -37,4 +37,4 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping }
     power: "3",
     toughness: "3"
 };
-    
+

@@ -48,6 +48,10 @@ export class LayerProcessor {
         return true;
       });
 
+      if (log && activeEffects.length > 0 && obj.zone === Zone.Stack) {
+        log(`[DEBUG] getEffectiveStats for ${obj.definition?.name || obj.id} on Stack: Found ${activeEffects.length} active effects in registry.`);
+      }
+
       // 2. LAYER 1: Copiable Values (Rule 707)
       let currentDefinition = { ...obj.definition };
       const supertypes = new Set<string>(currentDefinition.supertypes || []);
