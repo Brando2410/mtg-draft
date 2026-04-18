@@ -138,8 +138,58 @@ export class TargetingProcessor {
         }
 
         if (isSkipping) {
-            if (minCount > 0 && (actionData.selectedTargets?.length || 0) < minCount) {
-                log(`Targeting requirement not met: ${actionData.selectedTargets?.length || 0}/${minCount}. Please select more targets.`);
+            const nextIndex = actionData.selectedTargets.length;
+            const currentDef = TargetingProcessor.getDefinitionForIndex(targetDef, nextIndex);
+            
+            // Sequential skipping: if we are in an array of definitions, 
+            // clicking 'skip' on an optional slot should move to the next slot if available.
+            const isChunkOptional = currentDef?.optional || currentDef?.minCount === 0;
+            const hasMoreSlots = nextIndex < maxCount;
+
+            if (isChunkOptional && Array.isArray(targetDef) && hasMoreSlots) {
+                // Find if there are more definitions after the current index's definition
+                let cumulative = 0;
+                let hasLaterDefinition = false;
+                for (let i = 0; i < targetDef.length; i++) {
+                    const d = targetDef[i];
+                    const dCount = typeof d.count === 'number' ? d.count : 1;
+                    cumulative += dCount;
+                    if (nextIndex < cumulative) {
+                        // We found the current definition chunk at index i
+                        if (i < targetDef.length - 1 || nextIndex < cumulative - 1) {
+                            hasLaterDefinition = true;
+                        }
+                        break;
+                    }
+                }
+
+                if (hasLaterDefinition) {
+                    actionData.selectedTargets.push(null);
+                    updatePrompt();
+                    
+                    const newNextIndex = actionData.selectedTargets.length;
+                    const newNextDef = TargetingProcessor.getDefinitionForIndex(targetDef, newNextIndex);
+                    if (newNextDef?.label) {
+                        state.pendingAction!.data.label = newNextDef.label;
+                    }
+                    
+                    // Refresh targets for the new index
+                    const pool = [
+                        ...Object.keys(state.players),
+                        ...state.battlefield.map((o: any) => o.id),
+                        ...state.exile.map((o: any) => o.id),
+                        ...state.stack.map((o: any) => o.id),
+                        ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
+                    ];
+                    actionData.targets = pool.filter(tid => TargetingProcessor.isLegalTarget(state, state.pendingAction!.sourceId, tid, targetDef, newNextIndex));
+
+                    log(`Skipped optional target slot ${newNextIndex}.`);
+                    return true;
+                }
+            }
+
+            if (minCount > 0 && (actionData.selectedTargets?.filter((t: any) => t !== null).length || 0) < minCount) {
+                log(`Targeting requirement not met: ${actionData.selectedTargets?.filter((t: any) => t !== null).length || 0}/${minCount}. Please select more targets.`);
                 return false;
             }
             return engine.finaliseTargeting(playerId, actionData.selectedTargets);
@@ -151,8 +201,33 @@ export class TargetingProcessor {
             return false;
         }
 
-        if (actionData.selectedTargets.includes(targetId)) {
-            log(`Target already selected.`);
+        // Duplicate check (Rule 115.3: Allow same target if chosen for DIFFERENT instances of the word 'target')
+        const nextIndex = actionData.selectedTargets.length;
+        let isDuplicate = false;
+        if (Array.isArray(targetDef)) {
+            let cumulative = 0;
+            for (const d of targetDef) {
+                const dCount = typeof d.count === 'number' ? d.count : 1;
+                const endIdx = cumulative + dCount;
+                if (nextIndex >= cumulative && nextIndex < endIdx) {
+                    // Check only within the current definition chunk
+                    const currentChunk = actionData.selectedTargets.slice(cumulative, nextIndex);
+                    if (currentChunk.includes(targetId)) {
+                        isDuplicate = true;
+                    }
+                    break;
+                }
+                cumulative = endIdx;
+            }
+        } else {
+            // Single definition: block all duplicates
+            if (actionData.selectedTargets.includes(targetId)) {
+                isDuplicate = true;
+            }
+        }
+
+        if (isDuplicate) {
+            log(`Target already selected for this instance of the word 'target'.`);
             return false;
         }
 

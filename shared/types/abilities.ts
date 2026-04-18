@@ -1,10 +1,11 @@
 // abilities.ts
 // Ability types and structures
 
-import { EffectDefinition, EffectDuration } from './effects';
-import { GameObjectId, PlayerId, Zone } from './core';
-import { TargetDefinition } from './targeting';
-import { TriggerEvent } from './events';
+import type { EffectDefinition, EffectDuration } from './effects';
+import type { GameObjectId, PlayerId } from './core';
+import { Zone } from './core';
+import type { TargetDefinition } from './targeting';
+import type { TriggerEvent } from './events';
 
 export const AbilityType = {
     Spell: 'Spell',

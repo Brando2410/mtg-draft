@@ -51,6 +51,7 @@ export class GameEngine implements EngineContext {
         preventionEffects: []
       },
       emblems: [],
+      limbo: [],
       consecutivePasses: 0,
       logs: ['Match Start Initialization...'],
       playerOrder: players,

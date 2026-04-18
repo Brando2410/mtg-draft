@@ -273,7 +273,7 @@ export class TargetMapper {
             case 'TARGET_6': return targets[5] ? [targets[5]] : [];
             case 'TARGET_7': return targets[6] ? [targets[6]] : [];
             case 'TARGET_8': return targets[7] ? [targets[7]] : [];
-            case 'TARGET_ALL': return targets;
+            case 'TARGET_ALL': return (targets || []).filter(Boolean);
             case 'MATCHING_PERMANENTS_YOU_CONTROL':
                 if (!effect?.restrictions) return [];
                 return state.battlefield

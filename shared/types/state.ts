@@ -1,10 +1,12 @@
 // state.ts
 // Game state and player state structures
 
-import { ContinuousEffect, EffectDefinition, EffectDuration } from './effects';
-import { GameObjectId, Phase, PlayerId, Step, Zone } from './core';
-import { AbilityRestriction, TargetDefinition } from './targeting';
-import { AbilityType, ParsedAbility } from './abilities';
+import type { ContinuousEffect } from './effects';
+import { Phase, Step, Zone } from './core';
+import type { GameObjectId, PlayerId } from './core';
+import type { AbilityRestriction } from './targeting';
+import { AbilityType } from './abilities';
+import type { ParsedAbility } from './abilities';
 
 export interface CardDefinition {
     name: string;
@@ -189,6 +191,7 @@ export interface GameState {
     pendingTriggers?: StackObject[];
     pendingAction?: PendingAction;
     ruleRegistry: RuleRegistry;
+    limbo: GameObject[];
     consecutivePasses: number;
     logs: string[];
     turnState: TurnState;

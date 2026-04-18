@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Loader2, X, Database, Save, Download, Home, FileText, RefreshCw, ChevronUp, BarChart2 } from 'lucide-react';
-import { fetchSearchCards, fetchExactCard, fetchCardsBatch } from '../../services/scryfall';
-import type { SimplifiedCard, ScryfallCard } from '../../services/scryfall';
+import { fetchCardsBatch } from '../../services/scryfall';
+import type { SimplifiedCard } from '../../services/scryfall';
 import { fetchRegistryCards, mapRegistryToSimplified } from '../../services/registry';
 import { StatsModal } from '../shared/StatsModal';
 import { CardGridItem } from '../shared/CardGridItem';

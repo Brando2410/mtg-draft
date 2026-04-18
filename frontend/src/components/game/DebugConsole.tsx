@@ -281,11 +281,14 @@ export const DebugConsole = ({
                                                         {Number(effect.powerModifier) > 0 ? '+' : ''}{effect.powerModifier}/{effect.toughnessModifier ?? 0}
                                                     </span>
                                                 )}
-                                                {effect.abilitiesToAdd?.map(ability => (
-                                                    <span key={ability} className="text-[8px] font-black text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/10 uppercase">
-                                                        {ability}
-                                                    </span>
-                                                ))}
+                                                {effect.abilitiesToAdd?.map((ability, aIdx) => {
+                                                    const abilityName = typeof ability === 'string' ? ability : (ability.name || (ability as any).type || 'Ability');
+                                                    return (
+                                                        <span key={`${abilityName}-${aIdx}`} className="text-[8px] font-black text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/10 uppercase">
+                                                            {abilityName}
+                                                        </span>
+                                                    );
+                                                })}
                                                 <span className="text-[7px] font-bold text-slate-600 uppercase ml-auto">
                                                     {effect.duration.type.replace('Until', '')}
                                                 </span>

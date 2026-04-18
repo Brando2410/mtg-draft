@@ -23,6 +23,7 @@ interface ActionButtonProps {
   passUntilEndOfTurn?: boolean;
   onTogglePassTurn?: () => void;
   onClear?: () => void;
+  onUndo?: () => void;
 }
 
 interface PhaseIndicatorProps {
@@ -107,7 +108,8 @@ export const ActionButton = memo(({
   fullControl = false,
   passUntilEndOfTurn = false,
   onTogglePassTurn,
-  onClear
+  onClear,
+  onUndo
 }: ActionButtonProps) => {
   const isTargeting = (pendingAction?.playerId === effectivePlayerId) && (pendingAction?.type === ActionType.Targeting || (pendingAction?.type as any) === 'TARGETING');
 
@@ -163,6 +165,8 @@ export const ActionButton = memo(({
             const minCount = pendingAction.data?.minCount ?? (targetDef?.minCount ?? (isOptional ? 0 : (targetDef?.count ?? 1)));
             const totalCount = pendingAction.data?.count ?? (targetDef?.count ?? 1);
             const isSpellCasting = pendingAction.data?.isSpellCasting;
+            const isAbility = pendingAction.data?.abilityIndex !== undefined;
+            const isInteractive = isSpellCasting || isAbility;
             
             const canConfirm = selected.length >= minCount;
             
@@ -171,10 +175,10 @@ export const ActionButton = memo(({
                 orange = true;
                 disabled = false;
             } else {
-                text = isSpellCasting ? "Cancel" : "Waiting";
+                text = isInteractive ? "Cancel" : "Waiting";
                 orange = false;
-                disabled = !isSpellCasting;
-                if (isSpellCasting) {
+                disabled = !isInteractive;
+                if (isInteractive) {
                     cancel = true;
                 }
             }
@@ -244,28 +248,24 @@ export const ActionButton = memo(({
             >
                 {/* SECONDARY TARGETING ACTIONS */}
                 {isTargeting && (
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="flex justify-center"
-                    >
-                        <button 
-                            onClick={onClear}
-                            disabled={(pendingAction.data?.selectedTargets || []).length === 0}
-                            className={`
-                                flex items-center justify-center gap-2 px-6 py-2 rounded-full w-full
-                                border-t border-white/20
-                                font-serif text-lg font-bold tracking-tight
-                                transition-all duration-300
-                                ${ (pendingAction.data?.selectedTargets || []).length === 0
-                                    ? 'bg-slate-800 text-slate-500 opacity-50 cursor-not-allowed grayscale'
-                                    : 'bg-gradient-to-b from-slate-700 to-slate-900 text-white shadow-[0_4px_15px_rgba(0,0,0,0.4)] border border-white/10 hover:scale-105 active:scale-95 cursor-pointer shadow-lg'
-                                }
-                            `}
+                    <div className="flex flex-col gap-2">
+                         <motion.button 
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            onClick={(pendingAction.data?.selectedTargets || []).length > 0 ? onClear : onUndo}
+                            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-full w-full transition-all text-[10px] font-black uppercase tracking-widest shadow-lg ${
+                                (pendingAction.data?.selectedTargets || []).length > 0
+                                    ? "bg-slate-800/60 text-slate-300 border border-slate-500/30 hover:bg-slate-600/40"
+                                    : "bg-red-950/40 text-red-100 border border-red-500/30 hover:bg-red-500/30"
+                            } ${(pendingAction.data?.selectedTargets || []).length === 0 && !pendingAction.data?.isSpellCasting && pendingAction.data?.abilityIndex === undefined ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                         >
-                            <span>Clear Selection</span>
-                        </button>
-                    </motion.div>
+                            <span>
+                                {(pendingAction.data?.selectedTargets || []).length > 0 
+                                    ? "Clear Selection" 
+                                    : (pendingAction.data?.isSpellCasting ? "Cancel Cast" : "Cancel Activation")}
+                            </span>
+                        </motion.button>
+                    </div>
                 )}
 
                 {/* PRIMARY ACTION BUTTON */}

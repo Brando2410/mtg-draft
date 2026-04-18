@@ -1,8 +1,9 @@
 // targeting.ts
 // Targeting and restriction interfaces
 
-import { EffectDuration } from './effects';
-import { GameObjectId, PlayerId, Zone } from './core';
+import type { EffectDuration } from './effects';
+import type { GameObjectId, PlayerId } from './core';
+import { Zone } from './core';
 
 export const TargetType = {
     Creature: 'CREATURE',

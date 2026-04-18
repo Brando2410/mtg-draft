@@ -34,16 +34,16 @@ export const CauldronofEssence: CardDefinition = {
             ],
             activatedOnlyAsSorcery: true,
             effects: [
-                { 
-                    type: EffectType.PutOnBattlefield, 
+                {
+                    type: EffectType.PutOnBattlefield,
                     zone: Zone.Battlefield,
-                    label: "Select target creature card from your graveyard to return",
+                    label: "Select target creature card from your graveyard to put onto the battlefield",
                     selectionType: SelectionType.Search,
-                    targetDefinition: { 
-                        type: TargetType.CardInGraveyard, 
-                        count: 1, 
-                        restrictions: ["Creature", "Yours"] 
-                    } 
+                    targetDefinition: {
+                        type: TargetType.CardInGraveyard,
+                        count: 1,
+                        restrictions: ["Creature", "Yours"]
+                    }
                 }
             ]
         }

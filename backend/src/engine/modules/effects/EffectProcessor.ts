@@ -179,7 +179,7 @@ export class EffectProcessor {
         const amount = (effect as any).amount !== undefined ? this.resolveAmount(state, (effect as any).amount, sourceId, controllerId, stackObject, validTargetIds, parentContext) : 1;
 
         // Generic Interactive Selection support
-        if (effect.targetDefinition && validTargetIds.length === 0 && !effect.targetMapping) {
+        if (effect.targetDefinition && validTargetIds.length === 0 && !effect.targetMapping && !['SearchLibrary', 'Choice', 'LookAtTopAndPick', 'Scry', 'Surveil'].includes(effect.type)) {
             return (this as any).resolveInteractiveEffectSelection(state, effect, sourceId, controllerId, log, stackObject, parentContext);
         }
 
@@ -863,6 +863,7 @@ export class EffectProcessor {
             state.stack.find(s => s.id === id || s.sourceId === id)?.card ||
             Object.values(state.players).flatMap(p => [...p.graveyard, ...p.hand, ...p.library]).find(o => o.id === id) ||
             state.exile.find(o => o.id === id) ||
+            state.limbo?.find(o => o.id === id) ||
             (stackObject?.card?.id === id ? stackObject.card : undefined) ||
             (state.pendingAction?.data?.lookingCards as GameObject[])?.find(o => o.id === id) ||
             (parentContext?.lookingCards as GameObject[])?.find(o => o.id === id) ||

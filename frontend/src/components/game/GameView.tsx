@@ -312,7 +312,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
               const selected = currentPending?.data?.selectedTargets || [];
               const targetDef = currentPending?.data?.targetDefinition;
               const isOptional = targetDef?.optional || targetDef?.minCount === 0;
-              const min = targetDef?.minCount ?? (isOptional ? 0 : (targetDef?.count ?? 1));
+              const min = currentPending?.data?.minCount ?? (targetDef?.minCount ?? (isOptional ? 0 : (targetDef?.count ?? 1)));
               const canConfirm = selected.length >= min;
               
               console.log(`[ACTION-BUTTON] Targeting confirmed: ${canConfirm}. Selected: ${selected.length}, Min: ${min}`);
@@ -327,6 +327,7 @@ export const GameView = ({ room, playerId, onBack }: GameViewProps) => {
             }
           }}
           onClear={() => socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: 'clear' })}
+          onUndo={() => socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: 'undo' })}
           onToggleStop={handleToggleStop}
           stackLength={gameState.stack?.length || 0}
           isMyTurn={gameState.activePlayerId === effectivePlayerId}

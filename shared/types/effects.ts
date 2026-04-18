@@ -1,9 +1,10 @@
 // effects.ts
 // Effect types, definitions, and durations
 
-import { ParsedAbility } from './abilities';
-import { AbilityRestriction } from './targeting';
-import { GameObjectId, PlayerId, Step, Zone, TargetMapping } from './core';
+import type { ParsedAbility } from './abilities';
+import type { AbilityRestriction } from './targeting';
+import type { GameObjectId, PlayerId } from './core';
+import { Step, Zone, TargetMapping } from './core';
 
 export const EffectType = {
     DealDamage: 'DealDamage',

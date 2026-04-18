@@ -34,6 +34,10 @@ export class TargetValidator {
         const st = state.stack.find(s => s.id === id || s.card?.id === id);
         if (st && st.card) return st.card;
 
+        // 5. Limbo (Zone.None)
+        const lb = (state as any).limbo?.find((o: any) => o.id === id);
+        if (lb) return lb;
+
         return null;
     }
 

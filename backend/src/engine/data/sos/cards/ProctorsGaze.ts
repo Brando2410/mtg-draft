@@ -20,7 +20,7 @@ export const ProctorsGaze: CardDefinition = {
             effects: [
                 {
                     type: EffectType.ReturnToHand,
-                    targetMapping: TargetMapping.Controller,
+                    targetMapping: TargetMapping.Target1,
 
                 },
                 {

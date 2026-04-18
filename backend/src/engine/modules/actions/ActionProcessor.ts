@@ -215,6 +215,8 @@ export class ActionProcessor {
         }
         p.library = p.library.filter(c => c.id !== cid);
     }
+    if (!state.limbo) state.limbo = [];
+    state.limbo = state.limbo.filter(c => c.id !== cid);
   }
 
    private static addToTargetZone(state: GameState, card: GameObject, to: Zone, targetPlayerId: PlayerId, isToken: boolean, from: Zone, log?: (m: string) => void, libraryPosition: 'top' | 'bottom' = 'top') {
@@ -270,6 +272,11 @@ export class ActionProcessor {
           this.handleEnteringGraveyard(state, card, from, log);
       }
       
+      if (to === Zone.None) {
+          if (!state.limbo) state.limbo = [];
+          state.limbo.push(card);
+      }
+
       RegistryProcessor.registerAbilities(state, card);
     }
   }

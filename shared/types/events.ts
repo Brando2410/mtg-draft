@@ -1,8 +1,9 @@
 // events.ts
 // Event constants and interfaces
 
-import { GameObject } from './state';
-import { GameObjectId, PlayerId, Zone } from './core';
+import type { GameObject } from './state';
+import type { GameObjectId, PlayerId } from './core';
+import { Zone } from './core';
 
 export const TriggerEvent = {
     EnterBattlefield: 'ON_ETB',
