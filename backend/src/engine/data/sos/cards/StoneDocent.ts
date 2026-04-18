@@ -22,7 +22,7 @@ export const StoneDocent: CardDefinition = {
             activatedOnlyAsSorcery: true,
             costs: [
                 { type: CostType.Mana, value: '{W}' },
-                { type: CostType.Exile, targetMapping: TargetMapping.Self }
+                { type: CostType.ExileSelf }
             ],
             activeZone: Zone.Graveyard,
             effects: [

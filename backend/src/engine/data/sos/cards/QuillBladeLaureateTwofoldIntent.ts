@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const QuillBladeLaureateTwofoldIntent: CardDefinition = {
+export const QuillBladeLaureateTwofoldIntent: CardDefinition = {
     name: "Quill-Blade Laureate // Twofold Intent",
     manaCost: "{1}{W}",
     colors: ["W"],
@@ -9,7 +9,6 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     oracleText: "Double strike\nThis creature enters prepared.",
     power: "1",
     toughness: "1",
-
     image_url: "https://cards.scryfall.io/png/front/6/2/62a47835-5719-48c4-a740-a0c5f00dce11.png?1775937102",
     entersPrepared: true,
     preparedFace: {
@@ -18,6 +17,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         manaCost: "{1}{W}",
         colors: ["W"],
         types: ["Sorcery"],
+        type_line: "Sorcery",
         oracleText: "Target creature gets +1/+0 and gains double strike until end of turn.",
         abilities: [
             {
@@ -40,4 +40,4 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         ]
     }
 };
-    
+

@@ -181,7 +181,7 @@ const SubZone = memo(({
       <div className={`flex ${isWrapped ? 'flex-wrap' : 'flex-nowrap'} gap-y-2 ${align === 'start' ? 'justify-start' : align === 'end' ? 'justify-end' : 'justify-center'} items-center h-full max-h-full w-full px-[2.5vh] py-0`}>
         <AnimatePresence>
           {content.map((c, i) => (
-             <div 
+              <div 
                 key={i} 
                 className="relative group/card-container flex items-center justify-center min-w-0 flex-none max-h-[var(--card-h)]" 
                 style={{ 
@@ -189,8 +189,10 @@ const SubZone = memo(({
                     height: isWrapped ? '45%' : '90%',
                     maxWidth: 'var(--card-w)',
                     maxHeight: 'var(--card-h)',
-                    marginRight: 'var(--card-gap)'
-                }}
+                    marginRight: 'var(--card-gap)',
+                    '--local-scale': internalScale * wrapScale,
+                    '--card-scale': internalScale * wrapScale
+                } as any}
              >
                 <div className="w-full h-full aspect-[1.38/1] flex items-center justify-center">
                     {c}

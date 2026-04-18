@@ -16,7 +16,7 @@ export const StoneriseSpirit: CardDefinition = {
             activeZone: Zone.Graveyard,
             costs: [
                 { type: CostType.Mana, value: '{4}' },
-                { type: CostType.Exile, targetMapping: TargetMapping.Self }
+                { type: CostType.ExileSelf }
             ],
             targetDefinition: { count: 1, type: TargetType.Creature },
             effects: [{

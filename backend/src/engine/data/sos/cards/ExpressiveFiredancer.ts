@@ -25,7 +25,8 @@ export const ExpressiveFiredancer: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     duration: { type: DurationType.UntilEndOfTurn },
-                    stats: { powerModifier: 1, toughnessModifier: 1 },
+                    powerModifier: 1,
+                    toughnessModifier: 1,
                     targetMapping: TargetMapping.Self
                 },
                 {

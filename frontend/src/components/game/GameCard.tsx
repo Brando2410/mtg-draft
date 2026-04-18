@@ -103,7 +103,7 @@ export const GameCard = memo(({
     small: { width: 'calc(var(--u) * 8.5)', height: 'calc(var(--u) * 11.9)', rounded: 'rounded-md' },
     tiny: { width: 'calc(var(--u) * 5.1)', height: 'calc(var(--u) * 7.2)', rounded: 'rounded-sm' },
     zoom: { 
-      width: (definition.faces && definition.faces.length > 1) ? 'calc(var(--u) * 60)' : 'calc(var(--u) * 32)', 
+      width: (definition.faces && definition.faces.length > 1) ? 'calc(var(--u) * 82)' : 'calc(var(--u) * 44)', 
       height: 'auto', 
       rounded: 'rounded-2xl' 
     }
@@ -131,7 +131,7 @@ export const GameCard = memo(({
     
     // Scale down if many symbols
     const baseSize = variant === 'zoom' ? 30 : (variant === 'tiny' ? 8 : 13);
-    const finalSize = `calc(var(--u) * ${baseSize / 7.5})`;
+    const finalSize = `calc(var(--u) * ${baseSize / 7.5} * var(--local-scale, 1))`;
 
     return (
       <div className="flex gap-0.5 items-center justify-end shrink-0 ml-auto">
@@ -166,7 +166,7 @@ export const GameCard = memo(({
     
     if (!icon) return null;
     return (
-        <div title={keyword} className="w-4 h-4 bg-black/60 backdrop-blur-sm rounded flex items-center justify-center text-[8px] shadow-sm">
+        <div title={keyword} className="w-[calc(var(--u)*2.2*var(--local-scale,1))] h-[calc(var(--u)*2.2*var(--local-scale,1))] bg-black/60 backdrop-blur-sm rounded flex items-center justify-center text-[calc(var(--u)*1.1*var(--local-scale,1))] shadow-sm">
             {icon}
         </div>
     );
@@ -285,7 +285,7 @@ export const GameCard = memo(({
       {variant === 'battlefield' && (
         <div 
             style={colors.length > 1 ? { background: (borderStyle as any).headerBackground } : {}}
-            className={`flex-none h-[calc(var(--u)*1.8)] flex items-center px-2 border-b overflow-hidden rounded-t-sm z-30 transition-colors
+            className={`flex-none h-[calc(var(--u)*1.8*var(--local-scale,1))] flex items-center px-2 border-b overflow-hidden rounded-t-sm z-30 transition-colors
             ${isCurrentlyDeclaringAttack ? 'bg-orange-600 border-orange-400/50 text-white' : headerClass}
         `}>
             <h3 className={`font-black tracking-tighter truncate w-full whitespace-nowrap
@@ -415,13 +415,13 @@ export const GameCard = memo(({
                           const tColor = (damagePreview > 0 || damageMarked > 0 || currentT < origT) ? 'text-red-400' : currentT > origT ? 'text-emerald-400' : 'text-white';
 
                           return (
-                              <div className="bg-black shadow-2xl z-30 flex items-center justify-center absolute bottom-0 right-0 px-[1vh] py-[0.5vh] border-t border-l border-white/30 rounded-tl-md">
-                                  <div className="flex items-center gap-[0.5vh]">
-                                      <span className={`font-black tracking-normal text-[calc(var(--u)*1.8)] ${pColor}`}>
+                              <div className="bg-black shadow-2xl z-30 flex items-center justify-center absolute bottom-0 right-0 px-[calc(var(--u)*1.5*var(--local-scale,1))] py-[calc(var(--u)*0.7*var(--local-scale,1))] border-t border-l border-white/30 rounded-tl-md">
+                                  <div className="flex items-center gap-[calc(var(--u)*0.7*var(--local-scale,1))]">
+                                      <span className={`font-black tracking-normal text-[calc(var(--u)*1.8*var(--local-scale,1))] ${pColor}`}>
                                           {currentP}
                                       </span>
-                                      <span className="text-[calc(var(--u)*1.2)] text-white/40 font-bold">/</span>
-                                      <span className={`font-black tracking-normal text-[calc(var(--u)*1.8)] ${tColor} ${damagePreview > 0 ? 'drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]' : ''}`}>
+                                      <span className="text-[calc(var(--u)*1.2*var(--local-scale,1))] text-white/40 font-bold">/</span>
+                                      <span className={`font-black tracking-normal text-[calc(var(--u)*1.8*var(--local-scale,1))] ${tColor} ${damagePreview > 0 ? 'drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]' : ''}`}>
                                           {previewT}
                                       </span>
                                   </div>
@@ -430,7 +430,7 @@ export const GameCard = memo(({
                       })()}
 
                       {isPlaneswalker && variant === 'battlefield' && (
-                          <div className={`border rounded-md px-[1.5vh] py-[0.5vh] flex items-center gap-[0.5vh] shadow-2xl
+                          <div className={`border rounded-md px-[calc(var(--u)*1.5*var(--local-scale,1))] py-[calc(var(--u)*0.5*var(--local-scale,1))] flex items-center gap-[calc(var(--u)*0.5*var(--local-scale,1))] shadow-2xl
                             ${cardColor === 'white' ? 'bg-stone-100 border-stone-400 text-stone-900' :
                               cardColor === 'blue' ? 'bg-blue-800 border-blue-400 text-white' :
                               cardColor === 'black' ? 'bg-slate-900 border-slate-700 text-white' :
@@ -439,8 +439,8 @@ export const GameCard = memo(({
                               cardColor === 'multicolor' ? 'bg-amber-700 border-amber-400 text-white' :
                               'bg-slate-900 border-slate-600 text-white'}
                           `}>
-                              <Zap className={`w-[1.2vh] h-[1.2vh] ${cardColor === 'white' ? 'text-stone-900 fill-stone-900' : 'text-amber-400 fill-amber-400'}`} />
-                              <span className="text-[calc(var(--u)*1.8)] font-black px-0.5">
+                              <Zap className={`w-[calc(var(--u)*1.2*var(--local-scale,1))] h-[calc(var(--u)*1.2*var(--local-scale,1))] ${cardColor === 'white' ? 'text-stone-900 fill-stone-900' : 'text-amber-400 fill-amber-400'}`} />
+                              <span className="text-[calc(var(--u)*1.8*var(--local-scale,1))] font-black px-0.5">
                                   {counters.loyalty || 0}
                               </span>
                           </div>
@@ -480,7 +480,7 @@ export const GameCard = memo(({
 
       {/* COUNTER BADGES - Top Level (Prevent Clipping) */}
       {variant === 'battlefield' && (
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 flex flex-col gap-1 items-center z-[200] group-hover:scale-110 transition-transform">
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 flex flex-col gap-[calc(var(--u)*0.5*var(--local-scale,1))] items-center z-[200] group-hover:scale-110 transition-transform">
           {Object.entries(counters).map(([type, val]) => {
               if (val <= 0 || type === 'loyalty') return null;
               
@@ -497,9 +497,9 @@ export const GameCard = memo(({
                 <div 
                   key={type}
                   style={{ background: gradient }}
-                  className="w-[2.5vh] h-[2.5vh] rounded-full flex items-center justify-center border border-white/50 shadow-[0_2px_6px_rgba(0,0,0,0.6),inset_0_-2px_4px_rgba(0,0,0,0.3)]"
+                  className="w-[calc(var(--u)*3*var(--local-scale,1))] h-[calc(var(--u)*3*var(--local-scale,1))] rounded-full flex items-center justify-center border border-white/50 shadow-[0_2px_6px_rgba(0,0,0,0.6),inset_0_-2px_4px_rgba(0,0,0,0.3)]"
                 >
-                  <span className="text-white text-[calc(var(--u)*1.5)] font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] select-none">
+                  <span className="text-white text-[calc(var(--u)*1.8*var(--local-scale,1))] font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] select-none">
                     {val}
                   </span>
                 </div>
