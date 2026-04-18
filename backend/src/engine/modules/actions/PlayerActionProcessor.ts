@@ -98,7 +98,7 @@ export class PlayerActionProcessor {
 
     const allActivated = (logic?.abilities || [])
         .map((a: any, index: number) => ({ ability: a, index }))
-        .filter((entry: any) => entry.ability.type === AbilityType.Activated && PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, false));
+        .filter((entry: any) => entry.ability.type === AbilityType.Activated && PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, true));
 
     if (allActivated.length > 0) {
         if (state.priorityPlayerId !== playerId) {

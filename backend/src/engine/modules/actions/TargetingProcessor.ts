@@ -280,6 +280,4 @@ export class TargetingProcessor {
             return success;
         }
     }
-
-
 }

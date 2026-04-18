@@ -18,7 +18,7 @@ export class TriggerProcessor {
 
         // 2. Process system-recognized keywords (Prowess, Ward, etc.)
         this.processSystemKeywords(state, event, matchingTriggers, log);
-        
+
         if (matchingTriggers.length === 0) return;
 
         // --- DEDUPLICATION (Fix for Issue #2: prevents multiple triggers for the same ability instance) ---
@@ -31,7 +31,7 @@ export class TriggerProcessor {
             }
         });
         const uniqueTriggers = Array.from(uniqueTriggersMap.values());
-        
+
         if (uniqueTriggers.length < matchingTriggers.length) {
             log(`[DEBUG] Deduplicated ${matchingTriggers.length} triggers down to ${uniqueTriggers.length} for event ${event.type}.`);
         }
@@ -328,14 +328,14 @@ export class TriggerProcessor {
             const matchesPrimary = tEvents.some(type => {
                 const { TriggerEvent } = require('@shared/engine_types');
                 return type === event.type ||
-                (type === TriggerEvent.EnterBattlefieldOther && event.type === TriggerEvent.EnterBattlefield) ||
-                (type === TriggerEvent.AttackOrBlock && (event.type === TriggerEvent.Attack || event.type === TriggerEvent.Block)) ||
-                (type === TriggerEvent.DamageDealtToCreature && event.type === TriggerEvent.DamageTaken) ||
-                (type === TriggerEvent.DamageDealtToPlayer && (event.type === TriggerEvent.DamageDealtToPlayer || event.type === 'ON_DAMAGE_DEALT_TO_PLAYER')) ||
-                (type === TriggerEvent.DeathOther && event.type === TriggerEvent.Death) ||
-                (type === TriggerEvent.CountersAddedOther && event.type === TriggerEvent.CountersAdded) ||
-                (type === TriggerEvent.Magecraft && event.playerId === t.controllerId && (event.type === TriggerEvent.CastInstantOrSorcery || (event.type === TriggerEvent.CopySpell && event.data?.isInstantOrSorcery))) ||
-                (type === TriggerEvent.MagecraftOpponent && event.playerId !== t.controllerId && (event.type === TriggerEvent.CastInstantOrSorcery || (event.type === TriggerEvent.CopySpell && event.data?.isInstantOrSorcery)));
+                    (type === TriggerEvent.EnterBattlefieldOther && event.type === TriggerEvent.EnterBattlefield) ||
+                    (type === TriggerEvent.AttackOrBlock && (event.type === TriggerEvent.Attack || event.type === TriggerEvent.Block)) ||
+                    (type === TriggerEvent.DamageDealtToCreature && event.type === TriggerEvent.DamageTaken) ||
+                    (type === TriggerEvent.DamageDealtToPlayer && (event.type === TriggerEvent.DamageDealtToPlayer || event.type === 'ON_DAMAGE_DEALT_TO_PLAYER')) ||
+                    (type === TriggerEvent.DeathOther && event.type === TriggerEvent.Death) ||
+                    (type === TriggerEvent.CountersAddedOther && event.type === TriggerEvent.CountersAdded) ||
+                    (type === TriggerEvent.Magecraft && event.playerId === t.controllerId && (event.type === TriggerEvent.CastInstantOrSorcery || (event.type === TriggerEvent.CopySpell && event.data?.isInstantOrSorcery))) ||
+                    (type === TriggerEvent.MagecraftOpponent && event.playerId !== t.controllerId && (event.type === TriggerEvent.CastInstantOrSorcery || (event.type === TriggerEvent.CopySpell && event.data?.isInstantOrSorcery)));
             });
 
             if (!matchesPrimary) return false;
@@ -358,11 +358,11 @@ export class TriggerProcessor {
                 if (tEvent === TriggerEvent.CountersAddedOther && targetId === t.sourceId) return false;
             }
             if (event.type === TriggerEvent.Attack || event.type === TriggerEvent.Block) {
-                 if (tEvent === TriggerEvent.Attack || tEvent === TriggerEvent.Block || tEvent === TriggerEvent.AttackOrBlock) {
-                     // Only check identity if card is not using global condition (convention)
-                     // Or if the event source is one of the targeted objects for this trigger (granted abilities fallback)
-                     if (event.sourceId !== t.sourceId && !t.isGlobal && !t.condition?.includes('EVENT_SOURCE') && !t.targetIds?.includes(event.sourceId)) return false;
-                 }
+                if (tEvent === TriggerEvent.Attack || tEvent === TriggerEvent.Block || tEvent === TriggerEvent.AttackOrBlock) {
+                    // Only check identity if card is not using global condition (convention)
+                    // Or if the event source is one of the targeted objects for this trigger (granted abilities fallback)
+                    if (event.sourceId !== t.sourceId && !t.isGlobal && !t.condition?.includes('EVENT_SOURCE') && !t.targetIds?.includes(event.sourceId)) return false;
+                }
             }
 
             if (!this.checkZone(state, t, event.type)) return false;
@@ -575,12 +575,12 @@ export class TriggerProcessor {
                         // Avoid adding duplicate trigger if collectMatchingTriggers already found it
                         const alreadyAdded = matchingTriggers.some(t => t.sourceId === p.id && (t.name === 'Opus' || t.oracleText?.includes('Opus')));
                         if (!alreadyAdded) {
-                            matchingTriggers.push({ 
-                                ...opusAbility, 
-                                id: `opus_sys_${p.id}_${Date.now()}`, 
-                                sourceId: p.id, 
-                                controllerId: p.controllerId, 
-                                eventData: { spent: event.data?.card?.paidManaValue || 0 } 
+                            matchingTriggers.push({
+                                ...opusAbility,
+                                id: `opus_sys_${p.id}_${Date.now()}`,
+                                sourceId: p.id,
+                                controllerId: p.controllerId,
+                                eventData: { spent: event.data?.card?.paidManaValue || 0 }
                             } as any);
                         }
                     }

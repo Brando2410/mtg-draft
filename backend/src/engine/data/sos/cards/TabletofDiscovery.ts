@@ -36,6 +36,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                     type: CostType.Tap
                 }
             ],
+            oracleText: "{T}: Add {R}.",
             isManaAbility: true,
             effects: [
                 {
@@ -52,6 +53,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                     type: CostType.Tap
                 }
             ],
+            oracleText: "{T}: Add {R}{R}. (Spend only for instants/sorceries)",
             isManaAbility: true,
             effects: [
                 {

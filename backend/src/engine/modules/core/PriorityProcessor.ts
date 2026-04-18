@@ -221,26 +221,26 @@ export class PriorityProcessor {
 
     // 1. Check hand for castable spells
     const hasCastableHand = player.hand.some(card => {
-        const playable = this.canObjectBePlayed(state, playerId, card.id, false);
-        if (playable) console.log(`[DEBUG] Hand card ${card.definition.name} IS playable.`);
-        return playable;
+      const playable = this.canObjectBePlayed(state, playerId, card.id, false);
+      if (playable) console.log(`[DEBUG] Hand card ${card.definition.name} IS playable.`);
+      return playable;
     });
     if (hasCastableHand) return true;
 
     // 2. Check Graveyard for castable spells (Flashback) or activated abilities
     const hasGraveAction = player.graveyard.some(card => {
-        const playable = this.canObjectBePlayed(state, playerId, card.id, false);
-        if (playable) console.log(`[DEBUG] Grave card ${card.definition.name} IS playable.`);
-        return playable;
+      const playable = this.canObjectBePlayed(state, playerId, card.id, false);
+      if (playable) console.log(`[DEBUG] Grave card ${card.definition.name} IS playable.`);
+      return playable;
     });
     if (hasGraveAction) return true;
 
     // 3. Check Exile for castable spells
     const hasExileAction = state.exile.some(card => {
-        if (card.controllerId !== playerId) return false;
-        const playable = this.canObjectBePlayed(state, playerId, card.id, false);
-        if (playable) console.log(`[DEBUG] Exile card ${card.definition.name} IS playable.`);
-        return playable;
+      if (card.controllerId !== playerId) return false;
+      const playable = this.canObjectBePlayed(state, playerId, card.id, false);
+      if (playable) console.log(`[DEBUG] Exile card ${card.definition.name} IS playable.`);
+      return playable;
     });
     if (hasExileAction) return true;
 
@@ -248,8 +248,8 @@ export class PriorityProcessor {
     if (player.library.length > 0) {
       const topCard = player.library[player.library.length - 1];
       if (this.canObjectBePlayed(state, playerId, topCard.id, false)) {
-          console.log(`[DEBUG] canPlayerTakeAnyAction: TRUE because of library top.`);
-          return true;
+        console.log(`[DEBUG] canPlayerTakeAnyAction: TRUE because of library top.`);
+        return true;
       }
     }
 
@@ -271,8 +271,8 @@ export class PriorityProcessor {
         if (timingOk) {
           const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], face);
           if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, obj)) {
-              console.log(`[DEBUG] Battlefield Prepared Copy of ${obj.definition.name} IS playable.`);
-              return true;
+            console.log(`[DEBUG] Battlefield Prepared Copy of ${obj.definition.name} IS playable.`);
+            return true;
           }
         }
       }
@@ -281,14 +281,14 @@ export class PriorityProcessor {
       if (!logic || !logic.abilities) return false;
 
       return logic.abilities.some((ability: any, index: number) => {
-          const canAct = this.canAbilityBeActivated(state, playerId, obj.id, index, false);
-          if (canAct) console.log(`[DEBUG] Battlefield Ability of ${obj.definition.name} (idx ${index}) IS playable.`);
-          return canAct;
+        const canAct = this.canAbilityBeActivated(state, playerId, obj.id, index, false);
+        if (canAct) console.log(`[DEBUG] Battlefield Ability of ${obj.definition.name} (idx ${index}) IS playable.`);
+        return canAct;
       });
     });
 
     if (!hasBattlefieldAction) {
-        // console.log(`[DEBUG] canPlayerTakeAnyAction: FALSE for ${playerId}. Hand size: ${player.hand.length}, Grave size: ${player.graveyard.length}`);
+      // console.log(`[DEBUG] canPlayerTakeAnyAction: FALSE for ${playerId}. Hand size: ${player.hand.length}, Grave size: ${player.graveyard.length}`);
     }
     return hasBattlefieldAction;
   }
@@ -376,9 +376,9 @@ export class PriorityProcessor {
             return candidates.length > 0;
           }
           if (cost.type === 'Discard') {
-            const candidates = player.hand.filter(c => 
-                c.id !== cardToPlay!.id && 
-                TargetingProcessor.matchesRestrictions(state, c, cost.restrictions || [], playerId, cardToPlay!.id)
+            const candidates = player.hand.filter(c =>
+              c.id !== cardToPlay!.id &&
+              TargetingProcessor.matchesRestrictions(state, c, cost.restrictions || [], playerId, cardToPlay!.id)
             );
             return candidates.length > 0;
           }
@@ -392,25 +392,25 @@ export class PriorityProcessor {
         const logic = oracle.getCard(cardToPlay.definition.name);
         // Fallback to definition abilities for spells without dedicated logic (like virtual spells)
         const spellAbility = logic?.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell) ||
-                            cardToPlay.definition.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell);
-        
+          cardToPlay.definition.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell);
+
         // Modal check
         if (spellAbility?.modes) {
-            const hasValidMode = spellAbility.modes.some((mode: any) => {
-                if (!mode.targetDefinition || mode.targetDefinition.optional) return true;
-                const { TargetingProcessor } = require('../actions/TargetingProcessor');
-                return TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, mode.targetDefinition, playerId);
-            });
-            if (!hasValidMode) canPlay = false;
+          const hasValidMode = spellAbility.modes.some((mode: any) => {
+            if (!mode.targetDefinition || mode.targetDefinition.optional) return true;
+            const { TargetingProcessor } = require('../actions/TargetingProcessor');
+            return TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, mode.targetDefinition, playerId);
+          });
+          if (!hasValidMode) canPlay = false;
         } else {
-            const targetDefinition = (logic as any)?.targetDefinition || spellAbility?.targetDefinition;
+          const targetDefinition = (logic as any)?.targetDefinition || spellAbility?.targetDefinition;
 
-            if (targetDefinition && !targetDefinition.optional) {
-              const { TargetingProcessor } = require('../actions/TargetingProcessor');
-              if (!TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, targetDefinition, playerId)) {
-                canPlay = false;
-              }
+          if (targetDefinition && !targetDefinition.optional) {
+            const { TargetingProcessor } = require('../actions/TargetingProcessor');
+            if (!TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, targetDefinition, playerId)) {
+              canPlay = false;
             }
+          }
         }
       }
 
@@ -520,26 +520,26 @@ export class PriorityProcessor {
     // Restriction Check: Faith's Fetters / Arrest / Academic Probation
     const stats = LayerProcessor.getEffectiveStats(obj, state);
     const allRestrictions = [
-        ...state.ruleRegistry.restrictions,
-        ...(state.ruleRegistry.continuousEffects.flatMap(e => e.restrictions || []))
+      ...state.ruleRegistry.restrictions,
+      ...(state.ruleRegistry.continuousEffects.flatMap(e => e.restrictions || []))
     ];
 
     const isRestricted = allRestrictions.some(r => {
-        // Target-based restrictions
-        if (r.targetId === objId) {
-            if (r.type === 'CannotActivateAbilities') return true;
-            if (r.type === 'CannotActivateNonManaAbilities' && !ability.isManaAbility) return true;
+      // Target-based restrictions
+      if (r.targetId === objId) {
+        if (r.type === 'CannotActivateAbilities') return true;
+        if (r.type === 'CannotActivateNonManaAbilities' && !ability.isManaAbility) return true;
+      }
+      // Name-based restrictions (Mode 1 of Academic Probation)
+      if (r.type === 'CannotActivateNamedCardAbilities') {
+        const namedCardName = state.turnState.namedCards?.[r.sourceId] || (r as any).value;
+        if (namedCardName && obj.definition.name.toLowerCase() === namedCardName.toLowerCase()) {
+          return true;
         }
-        // Name-based restrictions (Mode 1 of Academic Probation)
-        if (r.type === 'CannotActivateNamedCardAbilities') {
-            const namedCardName = state.turnState.namedCards?.[r.sourceId] || (r as any).value;
-            if (namedCardName && obj.definition.name.toLowerCase() === namedCardName.toLowerCase()) {
-                return true;
-            }
-        }
-        return false;
-    }) || stats.restrictions?.includes('CannotActivateAbilities') || 
-       (stats.restrictions?.includes('CannotActivateNonManaAbilities') && !ability.isManaAbility);
+      }
+      return false;
+    }) || stats.restrictions?.includes('CannotActivateAbilities') ||
+      (stats.restrictions?.includes('CannotActivateNonManaAbilities') && !ability.isManaAbility);
 
     if (isRestricted) return false;
     // Timing Check (Rule 602.1 / 606.3)
@@ -562,11 +562,11 @@ export class PriorityProcessor {
 
     // Target Check
     if (ability.modes) {
-        const hasValidMode = ability.modes.some((mode: any) => {
-            if (!mode.targetDefinition || mode.targetDefinition.optional) return true;
-            return TargetingProcessor.hasLegalTargets(state, obj.id, mode.targetDefinition, playerId);
-        });
-        if (!hasValidMode) return false;
+      const hasValidMode = ability.modes.some((mode: any) => {
+        if (!mode.targetDefinition || mode.targetDefinition.optional) return true;
+        return TargetingProcessor.hasLegalTargets(state, obj.id, mode.targetDefinition, playerId);
+      });
+      if (!hasValidMode) return false;
     } else if (ability.targetDefinition && !ability.targetDefinition.optional) {
       if (!TargetingProcessor.hasLegalTargets(state, obj.id, ability.targetDefinition, playerId)) {
         return false;
@@ -585,19 +585,25 @@ export class PriorityProcessor {
 
     const isInstantOrFlash = typeLine.includes('instant') ||
       types.includes('instant') ||
-      (def.oracleText || '').includes('Flash') ||
-      (def.keywords || []).includes('Flash');
+      (def.keywords || []).some((k: string) => k.toLowerCase() === 'flash') ||
+      /\bFlash\b/.test(def.oracleText || '');
 
     const isLand = typeLine.includes('land') || types.includes('land');
 
     // Rule 602.1: Sorcery-speed abilities
     const onlyAsSorcery = objOrAbility.activatedOnlyAsSorcery || (!isInstantOrFlash && !isActivatedAbility) || (isActivatedAbility && objOrAbility.activatedOnlyAsSorcery);
 
+    console.log(`[TIMING-DEBUG] ${def.name}: isInstantOrFlash: ${isInstantOrFlash}, isActivatedAbility: ${isActivatedAbility}, onlyAsSorcery: ${onlyAsSorcery}, typeLine: ${typeLine}, types: ${types}`);
+
     if (onlyAsSorcery || isLand) {
       const isOurTurn = state.activePlayerId === playerId;
       const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
       const stackEmpty = state.stack.length === 0;
-      if (!isOurTurn || !isMain || !stackEmpty) return false;
+
+      if (!isOurTurn || !isMain || !stackEmpty) {
+        console.log(`[TIMING-DEBUG] ${def.name} BLOCKED: OnlyAsSorcery: ${onlyAsSorcery}, isLand: ${isLand}, OurTurn: ${isOurTurn}, Main: ${isMain}, StackEmpty: ${stackEmpty}`);
+        return false;
+      }
     }
 
     return true;
@@ -636,13 +642,13 @@ export class PriorityProcessor {
   public static togglePassTurn(state: GameState, playerId: string, engine: EngineContext) {
     const player = state.players[playerId];
     if (!player) return;
-    
+
     player.passUntilEndOfTurn = !player.passUntilEndOfTurn;
     engine.log(`[PASS-TURN] ${player.name} ${player.passUntilEndOfTurn ? 'enabled' : 'disabled'} Pass Turn.`);
-    
+
     // Immediately check if we should auto-pass now that it's toggled
     if (player.passUntilEndOfTurn && state.priorityPlayerId === playerId) {
-        this.checkAutoPass(state, playerId, engine);
+      this.checkAutoPass(state, playerId, engine);
     }
   }
 }

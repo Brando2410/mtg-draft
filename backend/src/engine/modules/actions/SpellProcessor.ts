@@ -121,14 +121,14 @@ export class SpellProcessor {
         const structuredTypes = (currentDefinition.types || []).map((t: string) => t.toLowerCase());
         const rawTypeLine = (currentDefinition.type_line || '').toLowerCase();
         const parsedTypes = rawTypeLine.split('//')[0].split(/[-—]/)[0].trim().split(/\s+/).filter(Boolean).map((t: string) => t.toLowerCase());
-        
+
         const types = structuredTypes.length > 0 ? structuredTypes : parsedTypes;
-        
+
         const isLand = types.includes('land');
         const isInstant = types.includes('instant');
         const isSorcery = types.includes('sorcery');
-        const isFlash = (currentDefinition.oracleText || '').includes('Flash') || 
-                       (currentDefinition.keywords || []).some((k: string) => k.toLowerCase() === 'flash');
+        const isFlash = (currentDefinition.keywords || []).some((k: string) => k.toLowerCase() === 'flash') ||
+            /\bFlash\b/.test(currentDefinition.oracleText || '');
 
         const isInstantOrFlash = isInstant || isFlash;
         const isInstantOrSorcery = isInstant || isSorcery;
@@ -351,7 +351,7 @@ export class SpellProcessor {
                     const manaSnapshot = JSON.parse(JSON.stringify(player.manaPool));
                     const restrictedSnapshot = JSON.parse(JSON.stringify(player.restrictedMana || []));
                     const { tappedIds, producedMana } = ManaProcessor.autoTapLandsForCost(state, playerId, totalMana, log, engine, cardToPlay);
-                    
+
                     if (tappedIds.length > 0) {
                         const { ActionType } = require('@shared/engine_types');
                         state.pendingAction = {
@@ -510,10 +510,10 @@ export class SpellProcessor {
 
         state.consecutivePasses = 0;
         TriggerProcessor.onEvent(state, { type: 'ON_CAST_SPELL', playerId, amount: (cardToPlay as any).paidManaValue || 0, data: { card: cardToPlay, sourceId: cardToPlay.id, stackSnapshot: JSON.parse(JSON.stringify(stackObj)) } }, log);
-        
+
         if (isFirstInstantOrSorcery) TriggerProcessor.onEvent(state, { type: 'ON_CAST_FIRST_INSTANT_SORCERY', playerId, amount: (cardToPlay as any).paidManaValue || 0, data: { card: cardToPlay, sourceId: cardToPlay.id, stackSnapshot: JSON.parse(JSON.stringify(stackObj)) } }, log);
         if (isInstantOrSorcery) TriggerProcessor.onEvent(state, { type: 'ON_CAST_INSTANT_SORCERY', playerId, amount: (cardToPlay as any).paidManaValue || 0, data: { card: cardToPlay, sourceId: cardToPlay.id, stackSnapshot: JSON.parse(JSON.stringify(stackObj)) } }, log);
-        
+
         if (!cardToPlay.definition.types.some((t: string) => t.toLowerCase() === 'creature')) {
             TriggerProcessor.onEvent(state, { type: 'ON_CAST_NON_CREATURE', playerId, data: { card: cardToPlay, sourceId: cardToPlay.id } }, log);
         }

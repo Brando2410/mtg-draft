@@ -14,6 +14,7 @@ export const ForumofAmity: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
+            id: "Add {W} or {B}",
             costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [
@@ -30,6 +31,7 @@ export const ForumofAmity: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
+            id: "Surveil 1",
             costs: [
                 { type: CostType.Mana, value: '{2}{W}{B}' },
                 { type: CostType.Tap }

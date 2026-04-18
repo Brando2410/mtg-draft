@@ -121,48 +121,51 @@ const SubZone = memo(({
   const content = useMemo(() => {
     const rootCards = cards.filter(c => !(c as any).attachedTo);
 
-    if (!stackSameName) {
-        return rootCards.map(obj => (
-            <>
-                <GameCard 
-                    obj={obj} 
-                    variant="battlefield"
-                    onClick={onTapCard} 
-                    isTargetable={targetableIds.has(obj.id)}
-                    onHoverStart={onHoverStart}
-                    onHoverEnd={onHoverEnd}
-                    isPlayable={obj.effectiveStats?.isPlayable}
-                    isAttacking={attackers.has(obj.id)}
-                    isBlocking={blockers.has(obj.id)}
-                    isDeclaringAttacks={isDeclaringAttacks}
-                    isOpponent={isOpponent}
-                    isSelected={obj.id === pendingAction?.sourceId}
-                    pendingAction={pendingAction}
-                />
-                {allBattlefieldCards.filter(a => (a as any).attachedTo === obj.id).map((aura, i) => (
-                    <div 
-                        key={aura.id} 
-                        className="absolute -top-4 -right-2 z-10 hover:z-50 hover:scale-150 transition-all cursor-pointer"
-                        style={{ transform: `translateX(${i * 10}px)` }}
-                        onClick={(e) => { e.stopPropagation(); onTapCard?.(aura.id); }}
-                    >
-                        <GameCard obj={aura} variant="tiny" />
-                    </div>
-                ))}
-            </>
-        ));
-    }
+    return rootCards.map(obj => {
+        let element;
+        if (!stackSameName) {
+            element = (
+                <>
+                    <GameCard 
+                        obj={obj} 
+                        variant="battlefield"
+                        onClick={onTapCard} 
+                        isTargetable={targetableIds.has(obj.id)}
+                        onHoverStart={onHoverStart}
+                        onHoverEnd={onHoverEnd}
+                        isPlayable={obj.effectiveStats?.isPlayable}
+                        isAttacking={attackers.has(obj.id)}
+                        isBlocking={blockers.has(obj.id)}
+                        isDeclaringAttacks={isDeclaringAttacks}
+                        isOpponent={isOpponent}
+                        isSelected={obj.id === pendingAction?.sourceId}
+                        pendingAction={pendingAction}
+                    />
+                    {allBattlefieldCards.filter(a => (a as any).attachedTo === obj.id).map((aura, i) => (
+                        <div 
+                            key={aura.id} 
+                            className="absolute -top-4 -right-2 z-10 hover:z-50 hover:scale-150 transition-all cursor-pointer"
+                            style={{ transform: `translateX(${i * 10}px)` }}
+                            onClick={(e) => { e.stopPropagation(); onTapCard?.(aura.id); }}
+                        >
+                            <GameCard obj={aura} variant="tiny" />
+                        </div>
+                    ))}
+                </>
+            );
+        } else {
+             // For stacked cards, we use the name as key but we still want to detect selection if any card in stack is selected
+             const name = obj.definition.name;
+             const group = rootCards.filter(c => c.definition.name === name);
+             // Prevent returning multiple elements for the same name in stack mode
+             if (rootCards.findIndex(c => c.definition.name === name) !== rootCards.indexOf(obj)) return null;
 
-    const groups: Record<string, GameObject[]> = {};
-    rootCards.forEach(c => {
-      const name = c.definition.name;
-      if (!groups[name]) groups[name] = [];
-      groups[name].push(c);
-    });
+             element = <CardStack cards={group} onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} pendingAction={pendingAction} />;
+        }
 
-    return Object.entries(groups).map(([name, group]) => (
-      <CardStack key={name} cards={group} onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} pendingAction={pendingAction} />
-    ));
+        return { id: obj.id, element, isSelected: obj.id === pendingAction?.sourceId };
+    }).filter(Boolean);
+
   }, [cards, allBattlefieldCards, onTapCard, stackSameName, targetableIds, onHoverStart, onHoverEnd, isDeclaringAttacks, attackers, pendingAction]);
 
   const isWrapped = content.length > 6;
@@ -177,25 +180,24 @@ const SubZone = memo(({
   } as React.CSSProperties;
 
   return (
-    <div className={`flex flex-col h-full w-full relative ${align === 'start' ? 'items-start' : align === 'end' ? 'items-end' : 'items-center'} justify-center select-none overflow-hidden`} style={zoneStyle}>
-      <div className={`flex ${isWrapped ? 'flex-wrap' : 'flex-nowrap'} gap-y-2 ${align === 'start' ? 'justify-start' : align === 'end' ? 'justify-end' : 'justify-center'} items-center h-full max-h-full w-full px-[2.5vh] py-0`}>
+    <div className={`flex flex-col h-full w-full relative ${align === 'start' ? 'items-start' : align === 'end' ? 'items-end' : 'items-center'} justify-center select-none`} style={zoneStyle}>
+      <div className={`flex ${isWrapped ? 'flex-wrap' : 'flex-nowrap'} gap-y-2 ${align === 'start' ? 'justify-start' : align === 'end' ? 'justify-end' : 'justify-center'} items-center h-full max-h-full w-full px-[2.5vh] py-0 overflow-visible`}>
         <AnimatePresence>
-          {content.map((c, i) => (
-              <div 
-                key={i} 
-                className="relative group/card-container flex items-center justify-center min-w-0 flex-none max-h-[var(--card-h)]" 
+          {content.map((item: any, i: number) => (
+             <div 
+                key={item.id} 
+                className={`relative group/card-container flex items-center justify-center min-w-0 flex-none max-h-[var(--card-h)] transition-[z-index] duration-0
+                    ${item.isSelected ? 'z-[500]' : 'z-10'}`} 
                 style={{ 
                     width: `calc(100% / ${Math.min(content.length, isWrapped ? Math.ceil(content.length / 2) : content.length)} - (var(--card-gap, 2.5vh)))`,
                     height: isWrapped ? '45%' : '90%',
                     maxWidth: 'var(--card-w)',
                     maxHeight: 'var(--card-h)',
-                    marginRight: 'var(--card-gap)',
-                    '--local-scale': internalScale * wrapScale,
-                    '--card-scale': internalScale * wrapScale
-                } as any}
+                    marginRight: 'var(--card-gap)'
+                }}
              >
                 <div className="w-full h-full aspect-[1.38/1] flex items-center justify-center">
-                    {c}
+                    {item.element}
                 </div>
              </div>
           ))}
@@ -326,7 +328,7 @@ export const Battlefield = ({
            </div>
 
            {/* MIDDLE ROW: LANDS & SUPPORT */}
-           <div className="h-[35%] grid grid-cols-[1fr,12vh,1fr] border-b border-white/5 bg-black/20 px-[0.5vw] relative shrink-0 overflow-hidden">
+           <div className="h-[35%] grid grid-cols-[1fr,12vh,1fr] border-b border-white/5 bg-black/20 px-[0.5vw] relative shrink-0">
                 <div className="h-full border-r border-white/5 overflow-hidden">
                     <SubZone cards={zones.opp.lands} allBattlefieldCards={battlefield} label="Lands" align="start" onTapCard={onTapCard} stackSameName={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={true} pendingAction={pendingAction} />
                 </div>
@@ -354,7 +356,7 @@ export const Battlefield = ({
            </div>
 
            {/* FRONT ROW: CREATURES */}
-           <div className="h-[35%] relative shrink-0 overflow-hidden px-[0.5vw]">
+           <div className="h-[35%] relative shrink-0 px-[0.5vw]">
                 <SubZone cards={zones.opp.creatures} allBattlefieldCards={battlefield} label="Opponent Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={true} pendingAction={pendingAction} />
            </div>
         </div>
@@ -403,12 +405,12 @@ export const Battlefield = ({
         {/* PLAYER SIDE */}
         <div className="w-full h-1/2 flex flex-col relative overflow-hidden">
            {/* FRONT ROW: CREATURES */}
-           <div className="h-[35%] border-b border-white/5 shrink-0 overflow-hidden px-[0.5vw]">
+           <div className="h-[35%] border-b border-white/5 shrink-0 px-[0.5vw]">
                 <SubZone cards={zones.me.creatures} allBattlefieldCards={battlefield} label="Your Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={false} pendingAction={pendingAction} />
            </div>
 
            {/* MIDDLE ROW: LANDS & SUPPORT */}
-           <div className="h-[35%] grid grid-cols-[1fr,12vh,1fr] bg-black/20 border-b border-white/5 px-[0.5vw] relative shrink-0 overflow-hidden">
+           <div className="h-[35%] grid grid-cols-[1fr,12vh,1fr] bg-black/20 border-b border-white/5 px-[0.5vw] relative shrink-0">
                 <div className="h-full border-r border-white/5 overflow-hidden">
                     <SubZone cards={zones.me.lands} allBattlefieldCards={battlefield} label="Your Lands" align="start" onTapCard={onTapCard} stackSameName={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={false} pendingAction={pendingAction} />
                 </div>

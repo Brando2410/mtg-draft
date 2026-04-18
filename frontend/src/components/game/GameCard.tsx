@@ -103,7 +103,7 @@ export const GameCard = memo(({
     small: { width: 'calc(var(--u) * 8.5)', height: 'calc(var(--u) * 11.9)', rounded: 'rounded-md' },
     tiny: { width: 'calc(var(--u) * 5.1)', height: 'calc(var(--u) * 7.2)', rounded: 'rounded-sm' },
     zoom: { 
-      width: (definition.faces && definition.faces.length > 1) ? 'calc(var(--u) * 82)' : 'calc(var(--u) * 44)', 
+      width: (definition.faces && definition.faces.length > 1) ? 'calc(var(--u) * 92)' : 'calc(var(--u) * 48)', 
       height: 'auto', 
       rounded: 'rounded-2xl' 
     }
@@ -185,7 +185,13 @@ export const GameCard = memo(({
     return config[color.toLowerCase()] || config.colorless;
   };
 
-  const colors = (definition.colors || []).map(c => c.toLowerCase());
+  const colors = (definition.colors || [])
+    .map(c => c.toLowerCase())
+    .sort((a, b) => {
+      if (a === 'white') return 1;
+      if (b === 'white') return -1;
+      return 0; // Retain existing relative order for other colors
+    });
   let headerClass = "";
   let borderStyle: any = {};
 
