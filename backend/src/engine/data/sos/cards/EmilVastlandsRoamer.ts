@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DynamicAmount, Ef
     name: "Emil, Vastlands Roamer",
     manaCost: "{2}{G}",
     scryfall_id: "3654416d-8558-4af2-9e10-18dbc8f2b376",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/3/6/3654416d-8558-4af2-9e10-18dbc8f2b376.jpg?1775937993",
     colors: [
         "G"

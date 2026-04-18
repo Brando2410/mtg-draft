@@ -3,6 +3,7 @@ import { TargetMapping, AbilityType, CardDefinition, ConditionType, DurationType
     name: "Colorstorm Stallion",
     manaCost: "{1}{U}{R}",
     scryfall_id: "f5b54d46-2caf-4d1b-8be1-dbd9e9dce058",
+    rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/f/5/f5b54d46-2caf-4d1b-8be1-dbd9e9dce058.jpg?1775938240",
     colors: [
         "R",

@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     name: "Ancestral Anger",
     manaCost: "{R}",
     scryfall_id: "6c5a93d6-d4ab-4062-bb3c-1b5330bf15ad",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/6/c/6c5a93d6-d4ab-4062-bb3c-1b5330bf15ad.jpg?1775937666",
     colors: [
         "R"

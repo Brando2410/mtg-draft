@@ -3,6 +3,7 @@ export const PlanarEngineering: CardDefinition = {
     name: "Planar Engineering",
     manaCost: "{3}{G}",
     scryfall_id: "c83b96a3-ddfd-4d11-8a85-5bf62087cbb9",
+    rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/c/8/c83b96a3-ddfd-4d11-8a85-5bf62087cbb9.jpg?1775938080",
     colors: [
         "G"

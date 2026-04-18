@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     name: "Brush Off",
     manaCost: "{2}{U}{U}",
     scryfall_id: "151eab82-d20f-433b-b3bb-1d44e2871d5c",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/1/5/151eab82-d20f-433b-b3bb-1d44e2871d5c.jpg?1775937183",
     colors: [
         "U"

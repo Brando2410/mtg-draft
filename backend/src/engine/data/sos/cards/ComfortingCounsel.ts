@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
     name: "Comforting Counsel",
     manaCost: "{1}{G}",
     scryfall_id: "5223a04f-6b47-4379-80ce-8489c4a91734",
+    rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/5/2/5223a04f-6b47-4379-80ce-8489c4a91734.jpg?1775937970",
     colors: [
         "G"

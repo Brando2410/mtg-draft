@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     name: "Essenceknit Scholar",
     manaCost: "{B}{B/G}{G}",
     scryfall_id: "2a3cba55-3fae-4d45-ae03-4d662ec13718",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/2/a/2a3cba55-3fae-4d45-ae03-4d662ec13718.jpg?1775938295",
     colors: [
         "B",

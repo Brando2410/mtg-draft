@@ -3,6 +3,7 @@ import { TargetMapping, AbilityType, CardDefinition, DurationType, EffectType, T
     name: "Aberrant Manawurm",
     manaCost: "{3}{G}",
     scryfall_id: "797131cf-d80d-4050-bebd-2ce1d7fae5d0",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/7/9/797131cf-d80d-4050-bebd-2ce1d7fae5d0.jpg?1775937935",
     colors: [
         "G"

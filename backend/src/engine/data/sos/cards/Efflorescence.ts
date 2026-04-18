@@ -3,6 +3,7 @@ export const Efflorescence: CardDefinition = {
     name: "Efflorescence",
     manaCost: "{2}{G}",
     scryfall_id: "79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/7/9/79b9ace7-eceb-4f97-9ee7-d5ee3e0b3515.jpg?1775937979",
     colors: [
         "G"

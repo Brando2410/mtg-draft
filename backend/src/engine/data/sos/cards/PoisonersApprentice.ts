@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
     name: "Poisoner's Apprentice",
     manaCost: "{2}{B}",
     scryfall_id: "3755a2e9-af55-4625-a006-2a86c7893a96",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/3/7/3755a2e9-af55-4625-a006-2a86c7893a96.jpg?1775937552",
     colors: [
         "B"

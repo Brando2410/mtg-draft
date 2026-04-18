@@ -4,6 +4,7 @@ export const AppliedGeometry: CardDefinition = {
     name: "Applied Geometry",
     manaCost: "{2}{G}{U}",
     scryfall_id: "f109f2eb-895b-44a6-b6b5-81bf3831ccd5",
+    rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/f/1/f109f2eb-895b-44a6-b6b5-81bf3831ccd5.jpg?1775938180",
     colors: [
         "G",

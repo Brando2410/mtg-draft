@@ -3,6 +3,7 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
     name: "Emeritus of Ideation // Ancestral Recall",
     manaCost: "{3}{U}{U}",
     scryfall_id: "75961d36-acf6-425f-9698-0bf52af74f31",
+    rarity: "mythic",
     image_url: "https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223",
     colors: ["U"],
     types: ["Creature"],

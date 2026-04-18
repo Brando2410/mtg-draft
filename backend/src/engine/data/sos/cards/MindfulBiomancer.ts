@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     name: "Mindful Biomancer",
     manaCost: "{1}{G}",
     scryfall_id: "2c3a6eb8-ce0c-4dc8-9ed6-d2a9223eef53",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/2/c/2c3a6eb8-ce0c-4dc8-9ed6-d2a9223eef53.jpg?1775938052",
     colors: [
         "G"

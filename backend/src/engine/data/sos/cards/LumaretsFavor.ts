@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
     name: "Lumaret's Favor",
     manaCost: "{1}{G}",
     scryfall_id: "c5e7c856-8b71-44e6-8998-0b0b3ff0ef99",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/c/5/c5e7c856-8b71-44e6-8998-0b0b3ff0ef99.jpg?1775938045",
     colors: [
         "G"

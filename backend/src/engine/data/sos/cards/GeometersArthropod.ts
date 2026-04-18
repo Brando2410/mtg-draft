@@ -3,6 +3,7 @@ export const GeometersArthropod: CardDefinition = {
     name: "Geometer's Arthropod",
     manaCost: "{G}{U}",
     scryfall_id: "ec0f3613-1edc-40e8-8f26-2e5ef13be55e",
+    rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/e/c/ec0f3613-1edc-40e8-8f26-2e5ef13be55e.jpg?1775938325",
     colors: [
         "G",

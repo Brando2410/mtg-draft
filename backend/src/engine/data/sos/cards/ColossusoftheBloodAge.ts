@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
     name: "Colossus of the Blood Age",
     manaCost: "{4}{R}{W}",
     scryfall_id: "bfa7f0a4-6b65-4e53-ba00-848df260d8e3",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/b/f/bfa7f0a4-6b65-4e53-ba00-848df260d8e3.jpg?1775938248",
     colors: [
         "R",

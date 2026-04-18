@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     name: "Biblioplex Tomekeeper",
     manaCost: "{4}",
     scryfall_id: "bf2efdd9-d2b4-4bea-a5b9-dbb2eee4dfba",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/b/f/bf2efdd9-d2b4-4bea-a5b9-dbb2eee4dfba.jpg?1775938724",
     colors: [],
     types: [

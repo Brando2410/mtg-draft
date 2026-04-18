@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     name: "Chase Inspiration",
     manaCost: "{U}",
     scryfall_id: "06f9f257-c7ef-44b7-8b2b-f038fba900af",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/0/6/06f9f257-c7ef-44b7-8b2b-f038fba900af.jpg?1775937195",
     colors: [
         "U"

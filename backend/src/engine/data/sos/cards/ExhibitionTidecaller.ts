@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
     name: "Exhibition Tidecaller",
     manaCost: "{U}",
     scryfall_id: "a58c364e-d0c5-41b9-8c8b-2e5a99468cc7",
+    rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/a/5/a58c364e-d0c5-41b9-8c8b-2e5a99468cc7.jpg?1775937242",
     colors: [
         "U"

@@ -3,6 +3,7 @@ export const Erode: CardDefinition = {
     name: "Erode",
     manaCost: "{W}",
     scryfall_id: "32e670da-7563-4f6a-a7db-4c126a440eb8",
+    rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/3/2/32e670da-7563-4f6a-a7db-4c126a440eb8.jpg?1775937013",
     colors: ["W"],
     types: ["Instant"],

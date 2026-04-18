@@ -3,6 +3,7 @@ export const CostofBrilliance: CardDefinition = {
     name: "Cost of Brilliance",
     manaCost: "{2}{B}",
     scryfall_id: "3a46816b-9f75-4c72-9ec6-cded6a4a0d01",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/3/a/3a46816b-9f75-4c72-9ec6-cded6a4a0d01.jpg?1775937447",
     colors: ["B"],
     types: ["Sorcery"],

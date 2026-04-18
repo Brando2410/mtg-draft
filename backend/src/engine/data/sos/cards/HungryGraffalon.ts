@@ -3,6 +3,7 @@ import { CardDefinition } from '@shared/engine_types';
     name: "Hungry Graffalon",
     manaCost: "{3}{G}",
     scryfall_id: "030b1272-5990-4bc9-8fc1-82cc05602060",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/0/3/030b1272-5990-4bc9-8fc1-82cc05602060.jpg?1775938030",
     colors: [
         "G"

@@ -4,6 +4,7 @@ export const JoinedResearchersSecretRendezvous: CardDefinition = {
     name: "Joined Researchers // Secret Rendezvous",
     manaCost: "{1}{W}",
     scryfall_id: "1ebaafe0-3a9a-424c-8698-d26e7be45343",
+    rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/1/e/1ebaafe0-3a9a-424c-8698-d26e7be45343.jpg?1775937069",
     colors: ["W"],
     types: ["Creature"],

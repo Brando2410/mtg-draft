@@ -3,6 +3,7 @@
     name: "Leech Collector // Bloodletting",
     manaCost: "{1}{B}",
     scryfall_id: "c715fe4c-c0e7-4342-811f-b74687851097",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/c/7/c715fe4c-c0e7-4342-811f-b74687851097.jpg?1775937525",
     colors: ["B"],
     types: ["Creature"],

@@ -3,6 +3,7 @@ export const MageTowerReferee: CardDefinition = {
     name: "Mage Tower Referee",
     manaCost: "{2}",
     scryfall_id: "1ceb704a-97a8-49f9-b799-30f001404144",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/1/c/1ceb704a-97a8-49f9-b799-30f001404144.jpg?1775938737",
     colors: [],
     types: ["Artifact", "Creature"],

@@ -3,6 +3,7 @@ export const LluwenExchangeStudentPestFriend: CardDefinition = {
     name: "Lluwen, Exchange Student // Pest Friend",
     manaCost: "{2}{B}{G}",
     scryfall_id: "a0bcb638-c3c8-4973-9537-5c471f43f34f",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/a/0/a0bcb638-c3c8-4973-9537-5c471f43f34f.jpg?1775938382",
     colors: ["B", "G"],
     types: ["Legendary", "Creature"],

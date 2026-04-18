@@ -3,6 +3,7 @@ export const MoltenNote: CardDefinition = {
     name: "Molten Note",
     manaCost: "{X}{R}{W}",
     scryfall_id: "506f69aa-7dc4-4dd7-990a-7371fc1762c0",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/5/0/506f69aa-7dc4-4dd7-990a-7371fc1762c0.jpg?1775938416",
     colors: [
         "R",

@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } 
     name: "Abstract Paintmage",
     manaCost: "{U}{U/R}{R}",
     scryfall_id: "ea008094-d995-4740-9b39-c61049356c55",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/e/a/ea008094-d995-4740-9b39-c61049356c55.jpg?1775938173",
     colors: [
         "R",

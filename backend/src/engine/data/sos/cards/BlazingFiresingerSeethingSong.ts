@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
     name: "Blazing Firesinger",
     manaCost: "{2}{R}",
     scryfall_id: "3ba971e7-0b7a-4750-896f-7cf063e66b2a",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/3/b/3ba971e7-0b7a-4750-896f-7cf063e66b2a.jpg?1775937691",
     colors: ["R"],
     types: ["Creature"],

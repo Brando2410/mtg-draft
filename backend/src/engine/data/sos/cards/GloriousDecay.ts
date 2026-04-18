@@ -3,6 +3,7 @@ export const GloriousDecay: CardDefinition = {
     name: "Glorious Decay",
     manaCost: "{1}{G}",
     scryfall_id: "a335f396-1004-4fee-842a-a35ff6ba17f2",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/a/3/a335f396-1004-4fee-842a-a35ff6ba17f2.jpg?1775938023",
     colors: [
         "G"

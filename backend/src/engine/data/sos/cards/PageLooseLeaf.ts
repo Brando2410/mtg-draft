@@ -3,6 +3,7 @@ export const PageLooseLeaf: CardDefinition = {
     name: "Page, Loose Leaf",
     manaCost: "{2}",
     scryfall_id: "8c6fecfd-8241-4cf0-b1eb-19472b99e0ed",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/8/c/8c6fecfd-8241-4cf0-b1eb-19472b99e0ed.jpg?1775938744",
     colors: [],
     types: [

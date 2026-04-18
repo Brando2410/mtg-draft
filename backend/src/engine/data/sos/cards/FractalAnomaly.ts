@@ -3,6 +3,7 @@
     name: "Fractal Anomaly",
     manaCost: "{U}",
     scryfall_id: "e1975a61-aef0-49a6-a6d6-c3a37e2e2b22",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/e/1/e1975a61-aef0-49a6-a6d6-c3a37e2e2b22.jpg?1775937257",
     colors: [
         "U"

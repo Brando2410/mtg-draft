@@ -33,6 +33,7 @@ export interface CardDefinition {
     flashbackCost?: string;
     abilities?: (ParsedAbility | string)[];
     exileOnResolution?: boolean;
+    rarity?: 'common' | 'uncommon' | 'rare' | 'mythic' | 'basic';
 }
 
 export interface GameObject {

@@ -3,6 +3,7 @@ import { TargetMapping, AbilityType, CardDefinition, CostType, DurationType, Eff
     name: "Great Hall of the Biblioplex",
     manaCost: "",
     scryfall_id: "42d92674-2664-411c-b9c5-b04da7c845f4",
+    rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/4/2/42d92674-2664-411c-b9c5-b04da7c845f4.jpg?1775938794",
     colors: [],
     types: ["Land"],

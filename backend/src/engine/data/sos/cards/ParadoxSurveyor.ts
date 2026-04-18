@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Tr
     name: "Paradox Surveyor",
     manaCost: "{G}{G/U}{U}",
     scryfall_id: "d7cb1af2-0302-46ff-8303-ae9d07541a01",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/d/7/d7cb1af2-0302-46ff-8303-ae9d07541a01.jpg?1775938445",
     colors: [
         "G",

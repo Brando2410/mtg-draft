@@ -3,6 +3,7 @@ export const PracticedScrollsmith: CardDefinition = {
     name: "Practiced Scrollsmith",
     manaCost: "{R}{R/W}{W}",
     scryfall_id: "40075e3f-58b3-47fd-8fbe-4b301e9ce7a1",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/4/0/40075e3f-58b3-47fd-8fbe-4b301e9ce7a1.jpg?1775938459",
     colors: [
         "R",

@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
     name: "Mana Sculpt",
     manaCost: "{1}{U}{U}",
     scryfall_id: "200c8e3d-c53b-40c7-a29a-fccc1281bfc6",
+    rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/2/0/200c8e3d-c53b-40c7-a29a-fccc1281bfc6.jpg?1775937307",
     colors: [
         "U"

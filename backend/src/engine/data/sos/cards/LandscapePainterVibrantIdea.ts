@@ -3,6 +3,7 @@
     name: "Landscape Painter",
     manaCost: "{1}{U}",
     scryfall_id: "c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/c/0/c0bd30c4-3cdf-4eda-8be5-0fb5e5ddddbf.jpg?1775937300",
     colors: ["U"],
     types: ["Creature"],

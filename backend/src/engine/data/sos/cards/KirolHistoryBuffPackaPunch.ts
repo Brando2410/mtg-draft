@@ -3,6 +3,7 @@
     name: "Kirol, History Buff // Pack a Punch",
     manaCost: "{R}{W}",
     scryfall_id: "676ba521-66e4-42cf-a315-70d03cb7334e",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.jpg?1775938375",
     colors: ["R", "W"],
     types: ["Legendary", "Creature"],

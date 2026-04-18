@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     name: "Melancholic Poet",
     manaCost: "{1}{B}",
     scryfall_id: "d8309815-7035-47a5-acf2-2b2ac1e65037",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/d/8/d8309815-7035-47a5-acf2-2b2ac1e65037.jpg?1775937538",
     colors: [
         "B"

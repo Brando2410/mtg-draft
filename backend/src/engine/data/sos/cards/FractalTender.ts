@@ -3,6 +3,7 @@
     name: "Fractal Tender",
     manaCost: "{3}{G}{U}",
     scryfall_id: "ea7f5262-4ddb-410a-be72-4bac6af9b4ec",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/e/a/ea7f5262-4ddb-410a-be72-4bac6af9b4ec.jpg?1775938318",
     colors: [
         "G",

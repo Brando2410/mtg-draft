@@ -3,6 +3,7 @@ export const EmeritusofConflictLightningBolt: CardDefinition = {
     name: "Emeritus of Conflict // Lightning Bolt",
     manaCost: "{1}{R}",
     scryfall_id: "f58dba4f-1abb-47a3-a684-29c32bab95c0",
+    rarity: "mythic",
     image_url: "https://cards.scryfall.io/normal/front/f/5/f58dba4f-1abb-47a3-a684-29c32bab95c0.jpg?1775937726",
     colors: ["R"],
     types: ["Creature"],

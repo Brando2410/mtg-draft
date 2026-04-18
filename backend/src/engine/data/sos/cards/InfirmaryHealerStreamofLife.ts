@@ -3,6 +3,7 @@
     name: "Infirmary Healer // Stream of Life",
     manaCost: "{1}{G}",
     scryfall_id: "911442e3-3003-4683-a766-e791e9553667",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/9/1/911442e3-3003-4683-a766-e791e9553667.jpg?1775938036",
     colors: ["G"],
     types: ["Creature"],

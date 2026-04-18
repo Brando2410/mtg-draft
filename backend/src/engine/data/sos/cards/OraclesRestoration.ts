@@ -3,6 +3,7 @@ export const OraclesRestoration: CardDefinition = {
     name: "Oracle's Restoration",
     manaCost: "{G}",
     scryfall_id: "0863a19d-4511-4a78-98dd-d194afd1c39b",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/0/8/0863a19d-4511-4a78-98dd-d194afd1c39b.jpg?1775938067",
     colors: [
         "G"

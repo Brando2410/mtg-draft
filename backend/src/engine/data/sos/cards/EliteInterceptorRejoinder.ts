@@ -3,6 +3,7 @@ export const EliteInterceptorRejoinder: CardDefinition = {
     name: "Elite Interceptor",
     manaCost: "{W}",
     scryfall_id: "2970683e-e69c-42cb-a067-34abd56fb42b",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.jpg?1775936992",
     colors: ["W"],
     types: ["Creature"],

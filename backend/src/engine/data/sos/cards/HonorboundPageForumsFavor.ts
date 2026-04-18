@@ -3,6 +3,7 @@
     name: "Honorbound Page // Forum's Favor",
     manaCost: "{3}{W}",
     scryfall_id: "79a70863-860f-4a7b-9cb2-d3546b689d44",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/7/9/79a70863-860f-4a7b-9cb2-d3546b689d44.jpg?1775937039",
     colors: ["W"],
     types: ["Creature"],

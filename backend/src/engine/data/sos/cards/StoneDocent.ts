@@ -3,6 +3,7 @@ export const StoneDocent: CardDefinition = {
     name: "Stone Docent",
     manaCost: "{1}{W}",
     scryfall_id: "c2abfffb-bf36-44af-9a27-6e109e4d77dd",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/c/2/c2abfffb-bf36-44af-9a27-6e109e4d77dd.jpg?1775937164",
     colors: [
         "W"

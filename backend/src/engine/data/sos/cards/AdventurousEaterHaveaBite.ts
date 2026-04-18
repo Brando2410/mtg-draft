@@ -3,6 +3,7 @@
     name: "Adventurous Eater // Have a Bite",
     manaCost: "{2}{B} // {B}",
     scryfall_id: "d40cc7da-c731-418e-8547-7033d1939450",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/d/4/d40cc7da-c731-418e-8547-7033d1939450.jpg?1775937412",
     colors: [
         "B"

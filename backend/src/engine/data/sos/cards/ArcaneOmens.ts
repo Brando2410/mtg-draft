@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
     name: "Arcane Omens",
     manaCost: "{4}{B}",
     scryfall_id: "d357d997-9d4e-4ade-81f2-37629853f13a",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/d/3/d357d997-9d4e-4ade-81f2-37629853f13a.jpg?1775937419",
     colors: [
         "B"

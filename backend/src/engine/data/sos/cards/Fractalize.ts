@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     name: "Fractalize",
     manaCost: "{X}{U}",
     scryfall_id: "e3c3b19b-01b6-4f5a-b428-513b778c5d89",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/e/3/e3c3b19b-01b6-4f5a-b428-513b778c5d89.jpg?1775937264",
     colors: [
         "U"

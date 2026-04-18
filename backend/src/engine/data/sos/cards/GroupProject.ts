@@ -3,6 +3,7 @@ export const GroupProject: CardDefinition = {
     name: "Group Project",
     manaCost: "{1}{W}",
     scryfall_id: "e8abc1eb-6225-4b18-8502-b5324b818aed",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/e/8/e8abc1eb-6225-4b18-8502-b5324b818aed.jpg?1775937026",
     colors: [
         "W"

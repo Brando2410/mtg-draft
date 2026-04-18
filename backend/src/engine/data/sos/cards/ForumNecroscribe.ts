@@ -3,6 +3,7 @@ export const ForumNecroscribe: CardDefinition = {
     name: "Forum Necroscribe",
     manaCost: "{5}{B}",
     scryfall_id: "67504a12-7414-4209-bf1c-624b4db19d52",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/6/7/67504a12-7414-4209-bf1c-624b4db19d52.jpg?1775937497",
     colors: [
         "B"

@@ -3,6 +3,7 @@
     name: "Garrison Excavator",
     manaCost: "{3}{R}",
     scryfall_id: "f11d2846-f181-4751-82ac-1e1ced6f46c7",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/f/1/f11d2846-f181-4751-82ac-1e1ced6f46c7.jpg?1775937750",
     colors: [
         "R"

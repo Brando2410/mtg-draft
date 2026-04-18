@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     name: "Interjection",
     manaCost: "{W}",
     scryfall_id: "0534cff6-299c-4155-b318-eb7581989e8a",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/0/5/0534cff6-299c-4155-b318-eb7581989e8a.jpg?1775937061",
     colors: [
         "W"

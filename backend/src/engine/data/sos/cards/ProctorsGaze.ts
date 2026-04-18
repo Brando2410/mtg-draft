@@ -3,6 +3,7 @@ export const ProctorsGaze: CardDefinition = {
     name: "Proctor's Gaze",
     manaCost: "{2}{G}{U}",
     scryfall_id: "b127d543-0a90-4af6-9410-94d5cd30389e",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/b/1/b127d543-0a90-4af6-9410-94d5cd30389e.jpg?1775938479",
     colors: ["G", "U"],
     types: ["Instant"],

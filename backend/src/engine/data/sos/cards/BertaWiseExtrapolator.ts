@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
     name: "Berta, Wise Extrapolator",
     manaCost: "{2}{G}{U}",
     scryfall_id: "75f89c36-c81d-4580-9a5c-218fed0c5c9a",
+    rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/7/5/75f89c36-c81d-4580-9a5c-218fed0c5c9a.jpg?1775938201",
     colors: [
         "G",

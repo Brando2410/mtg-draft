@@ -3,6 +3,7 @@ export const BlechLoafingPest: CardDefinition = {
     name: "Blech, Loafing Pest",
     manaCost: "{1}{B}{G}",
     scryfall_id: "f588fa50-7cc5-41ba-90df-2d252eb5c785",
+    rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/f/5/f588fa50-7cc5-41ba-90df-2d252eb5c785.jpg?1775938208",
     colors: [
         "B",

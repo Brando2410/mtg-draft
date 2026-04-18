@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
     name: "Bogwater Lumaret",
     manaCost: "{B}{G}",
     scryfall_id: "7a42f51a-3377-47bb-b6fb-c0515bf1dcfb",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/7/a/7a42f51a-3377-47bb-b6fb-c0515bf1dcfb.jpg?1775938216",
     colors: [
         "B",

@@ -3,6 +3,7 @@
     name: "Pigment Wrangler // Striking Palette",
     manaCost: "{4}{R}",
     scryfall_id: "c2faf4cf-c4b6-4721-ac06-0e045dd9704a",
+    rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/c/2/c2faf4cf-c4b6-4721-ac06-0e045dd9704a.jpg?1775937841",
     colors: ["R"],
     types: ["Creature"],

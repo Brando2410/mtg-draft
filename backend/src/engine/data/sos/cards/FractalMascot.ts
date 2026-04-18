@@ -3,6 +3,7 @@ export const FractalMascot: CardDefinition = {
     name: "Fractal Mascot",
     manaCost: "{4}{G}{U}",
     scryfall_id: "cf5b19e3-eed1-4b36-9756-660ffb3baa08",
+    rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/c/f/cf5b19e3-eed1-4b36-9756-660ffb3baa08.jpg?1775938311",
     colors: [
         "G",

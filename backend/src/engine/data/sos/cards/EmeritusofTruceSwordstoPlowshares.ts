@@ -3,6 +3,7 @@
     name: "Emeritus of Truce // Swords to Plowshares",
     manaCost: "{1}{W}{W}",
     scryfall_id: "9869a753-5e41-4098-ab41-e75b4396ec50",
+    rarity: "mythic",
     image_url: "https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999",
     colors: ["W"],
     types: ["Creature"],

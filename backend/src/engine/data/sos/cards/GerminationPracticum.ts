@@ -3,6 +3,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     name: "Germination Practicum",
     manaCost: "{3}{G}{G}",
     scryfall_id: "abe8332f-c76e-44e2-9427-d1228453abec",
+    rarity: "mythic",
     image_url: "https://cards.scryfall.io/normal/front/a/b/abe8332f-c76e-44e2-9427-d1228453abec.jpg?1775938016",
     colors: [
         "G"

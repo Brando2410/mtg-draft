@@ -3,6 +3,7 @@ export const DecorumDissertation: CardDefinition = {
     name: "Decorum Dissertation",
     manaCost: "{2}{U}",
     scryfall_id: "f4ab2d9b-c73d-478d-aac7-4d3bb24296d2",
+    rarity: "mythic",
     image_url: "https://cards.scryfall.io/normal/front/f/4/f4ab2d9b-c73d-478d-aac7-4d3bb24296d2.jpg?1775937454",
     colors: [
         "U"

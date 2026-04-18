@@ -3,6 +3,7 @@ export const ChoreographedSparks: CardDefinition = {
     name: "Choreographed Sparks",
     manaCost: "{R}{R}",
     scryfall_id: "0cda4235-4dce-48fe-a8a5-2a952dedbe25",
+    rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/0/c/0cda4235-4dce-48fe-a8a5-2a952dedbe25.jpg?1775937707",
     colors: [
         "R"
