@@ -37,7 +37,7 @@ export const CauldronofEssence: CardDefinition = {
                 { 
                     type: EffectType.PutOnBattlefield, 
                     zone: Zone.Battlefield,
-                    label: "Select a creature card from your graveyard to return",
+                    label: "Select target creature card from your graveyard to return",
                     selectionType: SelectionType.Search,
                     targetDefinition: { 
                         type: TargetType.CardInGraveyard, 

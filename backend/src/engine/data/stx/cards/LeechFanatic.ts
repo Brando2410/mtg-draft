@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, CostType, DurationType } from '@shared/engine_types';
 
 export const LeechFanatic: CardDefinition = {
     name: 'Leech Fanatic',
@@ -14,7 +14,7 @@ export const LeechFanatic: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Attack,
+            eventMatch: TriggerEvent.Attack,
             condition: 'SelfAttacking',
             effects: [{
                 type: EffectType.Choice,
@@ -22,12 +22,12 @@ export const LeechFanatic: CardDefinition = {
                 optional: true,
                 choices: [{
                     label: "Pay 2 Life",
-                    costs: [{ type: 'Life', value: 2 }],
-                    effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Self, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Lifelink'] }]
+                    costs: [{ type: CostType.PayLife, value: 2 }],
+                    effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Self, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToAdd: ['Lifelink'] }]
                 }]
             }]
         }
     ]
-  };
+};
 
 

@@ -15,7 +15,7 @@ export const Flashback: CardDefinition = {
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    label: "Select an instant or sorcery to gain flashback",
+                    label: "Select an instant or sorcery in your graveyard to gain Flashback",
                     selectionType: SelectionType.Search,
                     targetDefinition: {
                         type: TargetType.CardInGraveyard,

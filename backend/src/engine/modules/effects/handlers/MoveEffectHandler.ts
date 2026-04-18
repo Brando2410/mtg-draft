@@ -121,9 +121,20 @@ export class MoveEffectHandler {
 
         const sourceId = (stackObject as any)?.sourceId || '';
         
-        const { TargetingProcessor } = require('../../actions/TargetingProcessor');
+        const getRestrictions = (td: any) => {
+            if (!td) return [];
+            const res = [...(td.restrictions || [])];
+            const typeStr = td.type as string;
+            // Only add types that are actual card types, excluding zone/entity indicators
+            if (typeStr && !['ANY', 'CARD', 'PLAYER', 'OPPONENT', 'ANY_TARGET', 'CARD_IN_GRAVEYARD', 'CARD_IN_HAND', 'CARD_IN_LIBRARY', 'SELF'].includes(typeStr)) {
+                res.push(typeStr);
+            }
+            return res;
+        };
+
+        const restrictions = getRestrictions(targetDef);
         const validCandidates = pool.filter(c => 
-            TargetingProcessor.matchesRestrictions(state, c, targetDef.restrictions || [], controllerId, sourceId, undefined, stackObject)
+            TargetingProcessor.matchesRestrictions(state, c, restrictions, controllerId, sourceId, undefined, stackObject)
         );
 
         if (validCandidates.length === 0) {
@@ -139,7 +150,7 @@ export class MoveEffectHandler {
             label: effect.label || `Select up to ${resolvedMax} card${resolvedMax !== 1 ? 's' : ''} to move from your graveyard`,
             playerId: controllerId,
             sourceId: sourceId,
-            restrictions: targetDef.restrictions,
+            restrictions: restrictions,
             filterSelectable: true,
             optional: effect.optional,
             minChoices: resolvedMin,
@@ -150,6 +161,8 @@ export class MoveEffectHandler {
                 const zone = effect.zone || Zone.Hand;
                 subEffects.push({
                     type: 'MoveToZone',
+                    targetId: c.id,
+                    targetPlayerId: controllerId,
                     zone: zone,
                     tapped: effect.tapped,
                     reveal: effect.reveal,
@@ -514,9 +527,20 @@ export class MoveEffectHandler {
 
         const sourceId = stackObject?.sourceId || '';
         const { TargetingProcessor: TP } = require('../../actions/TargetingProcessor');
+        const getRestrictions = (td: any) => {
+            if (!td) return [];
+            const res = [...(td.restrictions || [])];
+            const typeStr = td.type as string;
+            // Only add types that are actual card types, excluding zone/entity indicators
+            if (typeStr && !['ANY', 'CARD', 'PLAYER', 'OPPONENT', 'ANY_TARGET', 'CARD_IN_GRAVEYARD', 'CARD_IN_HAND', 'CARD_IN_LIBRARY', 'SELF'].includes(typeStr)) {
+                res.push(typeStr);
+            }
+            return res;
+        };
+
         const targetRestrictions = Array.isArray(effect.targetDefinition) 
-            ? effect.targetDefinition.flatMap((td: any) => td.restrictions || [])
-            : (effect.targetDefinition as any)?.restrictions || [];
+            ? (effect.targetDefinition as any[]).flatMap(getRestrictions)
+            : getRestrictions(effect.targetDefinition);
             
         const searchRestrictions = [...(effect.restrictions || []), ...targetRestrictions];
         

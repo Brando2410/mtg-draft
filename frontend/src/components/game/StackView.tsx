@@ -10,7 +10,6 @@ interface StackViewProps {
   exile?: GameObject[];
   battlefield: GameObject[];
   onTapCard: (id: string) => void;
-  onInspect?: (zone: { label: string, cards: GameObject[], type: 'graveyard' | 'exile', isMe: boolean }) => void;
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: () => void;
   targetableIds?: Set<string>;
@@ -20,7 +19,7 @@ interface StackViewProps {
  * Arena-style StackView. 
  * Shows spells and abilities currently waiting to resolve.
  */
-export const StackView = ({ stack, pendingAction, battlefield, onTapCard, onHoverStart, onHoverEnd, onInspect }: StackViewProps) => {
+export const StackView = ({ stack, pendingAction, battlefield, onTapCard, onHoverStart, onHoverEnd }: StackViewProps) => {
   // Filter stack to only show valid objects (same criteria as pending action)
   const filteredStack = stack.filter(s => s.sourceId || s.name || s.card || s.definition);
   const effectiveStack = [...filteredStack];

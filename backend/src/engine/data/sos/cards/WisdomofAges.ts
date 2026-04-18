@@ -34,7 +34,7 @@ export const WisdomofAges: CardDefinition = {
                     targetMapping: TargetMapping.Controller
                 },
                 {
-                    type: CostType.Exile,
+                    type: EffectType.Exile,
                     targetMapping: TargetMapping.Self
                 }
             ]

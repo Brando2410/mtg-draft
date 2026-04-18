@@ -2,16 +2,9 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
 export const ThunderdrumSoloist: CardDefinition = {
     name: "Thunderdrum Soloist",
     manaCost: "{1}{R}",
-    colors: [
-        "R"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Dwarf",
-        "Bard"
-    ],
+    colors: ["R"],
+    types: ["Creature"],
+    subtypes: ["Dwarf", "Bard"],
     power: "1",
     toughness: "3",
     keywords: ["Reach"],

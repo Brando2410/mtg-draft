@@ -31,8 +31,8 @@ export const IdolofEndurance: CardDefinition = {
             type: AbilityType.Activated,
             activeZone: Zone.Battlefield,
             costs: [
-                { type: CostType.Mana, value: '{1}{W}' }, 
-                { type: CostType.Tap, targetMapping: TargetMapping.Self }
+                { type: CostType.Mana, value: '{1}{W}' },
+                { type: CostType.Tap }
             ],
             effects: [
                 {

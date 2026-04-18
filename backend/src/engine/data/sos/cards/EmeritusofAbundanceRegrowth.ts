@@ -39,7 +39,7 @@ export const EmeritusofAbundanceRegrowth: CardDefinition = {
                     {
                         type: EffectType.MoveToZone,
                         zone: Zone.Hand,
-                        label: "Select a card from your graveyard to return to your hand",
+                        label: "Select target card from your graveyard to return to your hand",
                         selectionType: SelectionType.Search,
                         targetDefinition: {
                             type: TargetType.CardInGraveyard,

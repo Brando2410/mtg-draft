@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ArchwayCommons: CardDefinition = {
     name: 'Archway Commons',
@@ -15,19 +15,19 @@ export const ArchwayCommons: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [{
                 type: EffectType.Choice,
                 label: "Pay {1} or sacrifice Archway Commons?",
                 choices: [
-                    { label: "Pay {1}", costs: [{ type: 'Mana', value: '{1}' }] },
-                    { label: "Sacrifice", effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Self }] }
+                    { label: "Pay {1}", costs: [{ type: CostType.Mana, value: '{1}' }] },
+                    { label: "Sacrifice", effects: [{ type: CostType.Sacrifice, targetMapping: TargetMapping.Self }] }
                 ]
             }]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap' }],
+            costs: [{ type: CostType.Tap }],
             effects: [{
                 type: EffectType.Choice,
                 label: "Select color",
@@ -41,6 +41,6 @@ export const ArchwayCommons: CardDefinition = {
             }]
         }
     ]
-  };
+};
 
 

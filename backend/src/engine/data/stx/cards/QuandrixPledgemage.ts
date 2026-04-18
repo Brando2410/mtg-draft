@@ -12,10 +12,10 @@ export const QuandrixPledgemage: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Magecraft,
+            eventMatch: TriggerEvent.Magecraft,
             effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Self }]
         }
     ]
-  };
+};
 
 

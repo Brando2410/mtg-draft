@@ -84,13 +84,13 @@ export class SpellInteractiveManager {
             return false;
         }
 
-        const pool = [
+        const pool = [...new Set([
             ...Object.keys(state.players),
             ...state.battlefield.map(o => o.id),
             ...state.exile.map(o => o.id),
             ...state.stack.map(o => o.id),
             ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
-        ];
+        ])];
 
         const firstDef = TargetingProcessor.getDefinitionForIndex(targetDefinition, 0);
         const legalForFirst = pool.filter(tid => TargetingProcessor.isLegalTarget(state, cardToPlay, tid, targetDefinition, 0));
@@ -99,24 +99,23 @@ export class SpellInteractiveManager {
         const firstRestrictions = (firstDef.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
         const isOpponentTarget = firstType === 'opponent' || (firstType === 'player' && firstRestrictions.includes('opponent'));
 
-        const isSingleOpponentTarget = isOpponentTarget &&
-            legalForFirst.length === 1;
+        const isSingleOpponentTarget = isOpponentTarget && legalForFirst.length === 1;
 
         if (isSingleOpponentTarget) {
             const opponentId = legalForFirst[0];
             log(`[AUTO-TARGET] Automatically targeting the only opponent for ${cardToPlay.definition.name}.`);
             
-            const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDefinition, cardToPlay.xValue || 0);
+            const totalCounts = TargetingProcessor.calculateTotalCounts(targetDefinition, cardToPlay.xValue || 0);
             
-            // If the spell only needs 1 target, we are done!
-            if (maxCount === 1) {
+            if (totalCounts.maxCount === 1) {
                 return [opponentId];
             }
 
-            // Otherwise, we auto-select the first and continue to the next
+            // More than 1 target total: auto-select the first and continue
             const autoSelected = [opponentId];
             const nextIndex = autoSelected.length;
             const nextDef = TargetingProcessor.getDefinitionForIndex(targetDefinition, nextIndex);
+            const secondaryPool = pool.filter(tid => TargetingProcessor.isLegalTarget(state, cardToPlay, tid, targetDefinition, nextIndex));
             const prompt = TargetingProcessor.generateTargetPrompt(targetDefinition, nextIndex, cardToPlay.xValue || 0, true);
 
             state.pendingAction = {
@@ -125,18 +124,19 @@ export class SpellInteractiveManager {
                 sourceId: cardToPlay.id,
                 data: {
                     targetDefinition,
-                    targets: pool.filter(tid => TargetingProcessor.isLegalTarget(state, cardToPlay, tid, targetDefinition, nextIndex)),
+                    targets: secondaryPool,
                     selectedTargets: autoSelected,
-                    label: nextDef.label,
+                    label: nextDef?.label,
                     isSpellCasting: true,
                     xValue: cardToPlay.xValue,
-                    maxCount,
-                    minCount,
-                    count,
-                    prompt
+                    maxCount: totalCounts.maxCount,
+                    minCount: totalCounts.minCount,
+                    count: totalCounts.count,
+                    prompt,
+                    isOptional: totalCounts.minCount === 0,
+                    canSkip: totalCounts.minCount === 0 || autoSelected.length >= totalCounts.minCount
                 }
             };
-            log(`[AUTO-TARGET] Opponent selected. Now selecting secondary targets...`);
             return true;
         }
 
@@ -166,7 +166,9 @@ export class SpellInteractiveManager {
                 maxCount,
                 minCount,
                 count,
-                prompt
+                prompt,
+                isOptional: minCount === 0,
+                canSkip: minCount === 0
             }
         };
         log(`[TARGETING] ${state.players[playerId].name} is selecting targets for ${cardToPlay.definition.name}...`);
@@ -602,7 +604,9 @@ export class SpellInteractiveManager {
                     minCount,
                     count,
                     prompt,
-                    preSelectedChoice
+                    preSelectedChoice,
+                    isOptional: minCount === 0,
+                    canSkip: minCount === 0 || autoSelected.length >= minCount
                 }
             };
             return true;
@@ -630,7 +634,9 @@ export class SpellInteractiveManager {
                 maxCount,
                 minCount,
                 count,
-                prompt
+                prompt,
+                isOptional: minCount === 0,
+                canSkip: minCount === 0
             }
         };
         log(`[TARGETING] Player must choose targets for ${obj.definition.name}'s ability.`);

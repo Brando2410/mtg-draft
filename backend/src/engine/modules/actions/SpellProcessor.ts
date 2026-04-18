@@ -1,17 +1,7 @@
 import { ActionType, AbilityCost, GameObject, GameState, PlayerId, Zone, EffectType, TargetMapping, AbilityType, Phase, CostType } from '@shared/engine_types';
-import { PriorityProcessor } from '../core/PriorityProcessor';
-import { TargetingProcessor } from './TargetingProcessor';
-import { LayerProcessor } from '../state/LayerProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
 import { oracle } from '../../OracleLogicMap';
-import { RestrictionProcessor } from './RestrictionProcessor';
-import { ChoiceGenerator } from '../effects/ChoiceGenerator';
-import { ActionProcessor } from './ActionProcessor';
-import { TriggerProcessor } from '../effects/TriggerProcessor';
-import { ConditionProcessor } from '../core/ConditionProcessor';
-import { EffectProcessor } from '../effects/EffectProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
-
 import { EngineContext } from '../../interfaces/EngineContext';
 import { SpellValidator } from './SpellValidator';
 import { SpellCostCalculator } from './SpellCostCalculator';
@@ -181,7 +171,7 @@ export class SpellProcessor {
         // --- SETUP SEQUENCE: TARGETING -> CHOICE -> FINALIZATION ---
 
         // Step 1: Check Targeting
-        if (targetDefinition && (!declaredTargets || declaredTargets.length === 0)) {
+        if (targetDefinition && (!declaredTargets || declaredTargets.length === 0) && !bypassTargeting) {
             const result = SpellInteractiveManager.handleTargetingChoice(state, playerId, cardToPlay, targetDefinition, totalMana, cardInstanceId, log, engine);
             if (result === true || result === false) return result;
             declaredTargets = result;
@@ -336,6 +326,7 @@ export class SpellProcessor {
 
         const preSelectedChoice = (state as any).lastChoiceIndex;
         delete (state as any).lastChoiceIndex;
+        delete (state as any).consumedModeIndex;
 
         // Pay Mana
         const hasConfirmedAutoTap = (state as any).confirmedAutoTap;

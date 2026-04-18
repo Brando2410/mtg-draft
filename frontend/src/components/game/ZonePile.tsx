@@ -71,16 +71,18 @@ export const ZonePile = memo(({ label, count, topCard, cards, onClick, type = 'l
                 )}
                 
                 {/* COUNT BADGE (Arena Style) */}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-black/0 backdrop-blur-[3px] py-[0.1vh] text-center border-t border-white/5">
-                     <span className="text-[calc(var(--u)*1.6)] font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">{count}</span>
+                <div className="absolute inset-x-0 bottom-0 bg-black/80 backdrop-blur-[2px] py-[0.1vh] px-1 flex items-center justify-center gap-1.5 border-t border-white/10">
+                     <span className="text-[calc(var(--u)*1.2)] font-black text-white/50 uppercase tracking-tight italic select-none leading-none">
+                        {label}
+                     </span>
+                     <span className="text-white/20 font-black text-[calc(var(--u)*1.2)] leading-none">-</span>
+                     <span className="text-[calc(var(--u)*1.2)] font-black text-white drop-shadow-[0_1px_4px_rgba(0,0,0,1)] leading-none">
+                        {count}
+                     </span>
                 </div>
             </div>
 
         </div>
-        
-        <span className="text-[7px] font-black uppercase tracking-[0.2em] text-white/20 italic oblique transition-colors group-hover:text-white/60">
-            {label}
-        </span>
     </div>
   );
 });

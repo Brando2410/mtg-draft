@@ -50,7 +50,6 @@ export const VisionarysDance = {
                 },
                 {
                     type: CostType.Discard,
-                    targetMapping: TargetMapping.Self
                 }
             ],
             effects: [

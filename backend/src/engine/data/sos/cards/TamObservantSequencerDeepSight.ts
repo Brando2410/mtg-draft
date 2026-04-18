@@ -6,12 +6,10 @@ export const TamObservantSequencerDeepSight: CardDefinition = {
     types: ["Creature"],
     subtypes: ["Gorgon", "Wizard"],
     keywords: [],
-    oracleText: "Landfall — Whenever a land you control enters, Tam becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
+    oracleText: "Landfall  Whenever a land you control enters, Tam becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     supertypes: ["Legendary"],
-
     power: "4",
     toughness: "3",
-
     entersPrepared: false,
     image_url: "https://cards.scryfall.io/png/front/7/1/7120e71b-2976-451b-89a7-a1665dc6fb6b.png?1775938655",
     abilities: [

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const SilverquillPledgemage: CardDefinition = {
     name: 'Silverquill Pledgemage',
@@ -12,19 +12,19 @@ export const SilverquillPledgemage: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Magecraft,
+            eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.Choice,
                     label: "Choose an ability for Silverquill Pledgemage",
                     choices: [
-                        { label: 'Flying', effects: [{ type: EffectType.ApplyContinuousEffect, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Flying'], targetMapping: TargetMapping.Self }] },
-                        { label: 'Lifelink', effects: [{ type: EffectType.ApplyContinuousEffect, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Lifelink'], targetMapping: TargetMapping.Self }] }
+                        { label: 'Flying', effects: [{ type: EffectType.ApplyContinuousEffect, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToAdd: ['Flying'], targetMapping: TargetMapping.Self }] },
+                        { label: 'Lifelink', effects: [{ type: EffectType.ApplyContinuousEffect, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToAdd: ['Lifelink'], targetMapping: TargetMapping.Self }] }
                     ]
                 }
             ]
         }
     ]
-  };
+};
 
 

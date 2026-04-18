@@ -1,16 +1,11 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-    export const DinasGuidance: CardDefinition = {
+export const DinasGuidance: CardDefinition = {
     name: "Dina's Guidance",
     manaCost: "{1}{B}{G}",
     scryfall_id: "775c1e50-08a4-413f-ab0f-f1c2a79cfe94",
     image_url: "https://cards.scryfall.io/normal/front/7/7/775c1e50-08a4-413f-ab0f-f1c2a79cfe94.jpg?1775938273",
-    colors: [
-        "B",
-        "G"
-    ],
-    types: [
-        "Instant"
-    ],
+    colors: ["B", "G"],
+    types: ["Instant"],
     subtypes: [],
     keywords: [],
     oracleText: "Search your library for a creature card, reveal it, put it into your hand or graveyard, then shuffle.",
@@ -20,12 +15,15 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: { type: TargetType.Creature, count: 1 },
+                    targetDefinition: {
+                        type: TargetType.Creature,
+                        count: 1
+                    },
                     reveal: true,
-                    zone: CostType.Exile,
+                    zone: Zone.None,
                     effects: [
                         {
-                            type: CostType.Choice,
+                            type: EffectType.Choice,
                             label: "Put card into hand or graveyard?",
                             choices: [
                                 {
@@ -57,4 +55,4 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
         }
     ]
 };
-    
+

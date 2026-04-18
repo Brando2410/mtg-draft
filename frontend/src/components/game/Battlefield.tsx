@@ -183,7 +183,7 @@ const SubZone = memo(({
     <div className={`flex flex-col h-full w-full relative ${align === 'start' ? 'items-start' : align === 'end' ? 'items-end' : 'items-center'} justify-center select-none`} style={zoneStyle}>
       <div className={`flex ${isWrapped ? 'flex-wrap' : 'flex-nowrap'} gap-y-2 ${align === 'start' ? 'justify-start' : align === 'end' ? 'justify-end' : 'justify-center'} items-center h-full max-h-full w-full px-[2.5vh] py-0 overflow-visible`}>
         <AnimatePresence>
-          {content.map((item: any, i: number) => (
+          {content.map((item: any) => (
              <div 
                 key={item.id} 
                 className={`relative group/card-container flex items-center justify-center min-w-0 flex-none max-h-[var(--card-h)] transition-[z-index] duration-0
@@ -320,10 +320,10 @@ export const Battlefield = ({
            <div className="h-[30%] flex items-center justify-end px-[0.5vw] bg-black/40 border-b border-white/5 shrink-0 overflow-hidden">
                 <div className="flex gap-[2vh] h-[85%] items-center">
                     {(exile || []).filter(o => o.ownerId === opponent?.id).length > 0 && (
-                        <ZonePile label="Exl" count={(exile || []).filter(o => o.ownerId === opponent?.id).length} cards={(exile || []).filter(o => o.ownerId === opponent?.id)} type="exile" onClick={() => onInspectZone({ label: "Enemy Exile", cards: (exile || []).filter(o => o.ownerId === opponent?.id), type: 'exile', isMe: false })} />
+                        <ZonePile label="exile" count={(exile || []).filter(o => o.ownerId === opponent?.id).length} cards={(exile || []).filter(o => o.ownerId === opponent?.id)} type="exile" onClick={() => onInspectZone({ label: "Enemy Exile", cards: (exile || []).filter(o => o.ownerId === opponent?.id), type: 'exile', isMe: false })} />
                     )}
-                    <ZonePile label="Gry" count={opponent?.graveyard.length || 0} cards={opponent?.graveyard} type="graveyard" onClick={() => onInspectZone({ label: "Enemy Graveyard", cards: opponent?.graveyard || [], type: 'graveyard', isMe: false })} />
-                    <ZonePile label="Lib" count={opponent?.library.length || 0} type="library" />
+                    <ZonePile label="grave" count={opponent?.graveyard.length || 0} cards={opponent?.graveyard} type="graveyard" onClick={() => onInspectZone({ label: "Enemy Graveyard", cards: opponent?.graveyard || [], type: 'graveyard', isMe: false })} />
+                    <ZonePile label="lib" count={opponent?.library.length || 0} type="library" />
                 </div>
            </div>
 
@@ -440,10 +440,10 @@ export const Battlefield = ({
            {/* BACK ROW: PILES */}
            <div className="h-[30%] flex items-center justify-start px-[0.5vw] bg-black/40 shrink-0 overflow-hidden">
                 <div className="flex gap-[2vh] h-[85%] items-center">
-                    <ZonePile label="Lib" count={me?.library.length || 0} type="library" />
-                    <ZonePile label="Gry" count={me?.graveyard.length || 0} cards={me?.graveyard} type="graveyard" onClick={() => onInspectZone({ label: "Your Graveyard", cards: me?.graveyard || [], type: 'graveyard', isMe: true })} />
+                    <ZonePile label="lib" count={me?.library.length || 0} type="library" />
+                    <ZonePile label="grave" count={me?.graveyard.length || 0} cards={me?.graveyard} type="graveyard" onClick={() => onInspectZone({ label: "Your Graveyard", cards: me?.graveyard || [], type: 'graveyard', isMe: true })} />
                     {(exile || []).filter(o => o.ownerId === me?.id).length > 0 && (
-                        <ZonePile label="Exl" count={(exile || []).filter(o => o.ownerId === me?.id).length} cards={(exile || []).filter(o => o.ownerId === me?.id)} type="exile" onClick={() => onInspectZone({ label: "Your Exile", cards: (exile || []).filter(o => o.ownerId === me?.id), type: 'exile', isMe: true })} />
+                        <ZonePile label="exile" count={(exile || []).filter(o => o.ownerId === me?.id).length} cards={(exile || []).filter(o => o.ownerId === me?.id)} type="exile" onClick={() => onInspectZone({ label: "Your Exile", cards: (exile || []).filter(o => o.ownerId === me?.id), type: 'exile', isMe: true })} />
                     )}
                 </div>
            </div>
@@ -453,7 +453,7 @@ export const Battlefield = ({
         <div className="absolute right-10 top-1/2 -translate-y-1/2 z-50">
             <StackView 
                 stack={stack} pendingAction={pendingAction} me={me} exile={exile} battlefield={battlefield}
-                onTapCard={onTapCard} onInspect={onInspectZone} targetableIds={targetableIds}
+                onTapCard={onTapCard} targetableIds={targetableIds}
                 onHoverStart={onHoverStart} onHoverEnd={onHoverEnd}
             />
         </div>

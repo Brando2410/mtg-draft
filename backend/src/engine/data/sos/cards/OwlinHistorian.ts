@@ -4,16 +4,9 @@ export const OwlinHistorian: CardDefinition = {
     manaCost: "{2}{W}",
     scryfall_id: "5fe99be0-e1ec-485e-82f8-02eba7b82441",
     image_url: "https://cards.scryfall.io/normal/front/5/f/5fe99be0-e1ec-485e-82f8-02eba7b82441.jpg?1775937078",
-    colors: [
-        "W"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Bird",
-        "Cleric"
-    ],
+    colors: ["W"],
+    types: ["Creature"],
+    subtypes: ["Bird", "Cleric"],
     keywords: ["Flying"],
     power: "2",
     toughness: "3",

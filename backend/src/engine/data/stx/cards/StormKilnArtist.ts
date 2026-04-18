@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, CostType } from '@shared/engine_types';
 
 export const StormKilnArtist: CardDefinition = {
     name: 'Storm-Kiln Artist',
@@ -24,7 +24,7 @@ export const StormKilnArtist: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Magecraft,
+            eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -36,7 +36,7 @@ export const StormKilnArtist: CardDefinition = {
                         abilities: [
                             {
                                 type: AbilityType.Activated,
-                                costs: [{ type: 'Tap' }, { type: 'Sacrifice', targetMapping: TargetMapping.Self }],
+                                costs: [{ type: CostType.Tap }, { type: CostType.Sacrifice, targetMapping: TargetMapping.Self }],
                                 effects: [{ type: EffectType.AddMana, manaType: 'ANY', amount: 1 }]
                             }
                         ]
@@ -45,6 +45,6 @@ export const StormKilnArtist: CardDefinition = {
             ]
         }
     ]
-  };
+};
 
 

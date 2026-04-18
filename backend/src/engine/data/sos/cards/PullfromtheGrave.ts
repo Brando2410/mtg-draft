@@ -2,12 +2,8 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Ta
 export const PullfromtheGrave: CardDefinition = {
     name: "Pull from the Grave",
     manaCost: "{2}{B}",
-    colors: [
-        "B"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["B"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "Return up to two target creature cards from your graveyard to your hand. You gain 2 life.",

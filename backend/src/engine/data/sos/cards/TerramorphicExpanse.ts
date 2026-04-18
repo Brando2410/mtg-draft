@@ -3,9 +3,7 @@ export const TerramorphicExpanse: CardDefinition = {
     name: "Terramorphic Expanse",
     manaCost: "",
     colors: [],
-    types: [
-        "Land"
-    ],
+    types: ["Land"],
     subtypes: [],
     keywords: [],
     oracleText: "{T}, Sacrifice this land: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
@@ -22,9 +20,7 @@ export const TerramorphicExpanse: CardDefinition = {
                     targetDefinition: {
                         type: TargetType.Land,
                         count: 1,
-                        restrictions: [
-                            "Basic"
-                        ]
+                        restrictions: ["Basic"]
                     },
                     zone: Zone.Battlefield,
                     tapped: true,

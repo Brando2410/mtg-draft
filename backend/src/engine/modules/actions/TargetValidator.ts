@@ -52,9 +52,15 @@ export class TargetValidator {
             const type = (targetDefForIndex?.type || '').toLowerCase();
             const restrictions = (targetDefForIndex?.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
 
-            if (type === TargetType.Player.toLowerCase() || type === TargetType.Opponent.toLowerCase() || type === TargetType.AnyTarget.toLowerCase() || type === TargetType.PlayerOrPlaneswalker.toLowerCase() || restrictions.includes('player') || restrictions.includes('anytarget')) {
+            if (type === TargetType.Player.toLowerCase() ||
+                type === TargetType.Opponent.toLowerCase() ||
+                type === TargetType.AnyTarget.toLowerCase() ||
+                type === TargetType.PlayerOrPlaneswalker.toLowerCase() ||
+                restrictions.includes('player') ||
+                restrictions.includes('anytarget')) {
 
                 let sourceControllerId = (sourceOrId as any)?.controllerId ||
+                    (sourceOrId as any)?.ownerId ||
                     state.stack.find(s => s.id === sourceId || s.sourceId === sourceId)?.controllerId ||
                     state.battlefield.find(o => o.id === sourceId)?.controllerId;
 
@@ -111,11 +117,6 @@ export class TargetValidator {
         }
 
         if (!targetObj) {
-            targetObj = state.exile.find(o => o.id === targetId);
-            if (targetObj) targetZone = Zone.Exile;
-        }
-
-        if (!targetObj) {
             targetObj = state.stack.find(s => s.id === targetId);
             if (targetObj) {
                 targetZone = Zone.Stack;
@@ -133,7 +134,8 @@ export class TargetValidator {
         const coreTypes = [
             'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 'permanent',
             'instant', 'sorcery', 'instant_or_sorcery', 'instantorsorcery', 'artifact_or_creature', 'artifactorcreature',
-            'artifact_or_enchantment', 'artifactorenchantment', 'creature_or_planeswalker', 'creatureorplaneswalker', 'nonland_permanent', 'nonlandpermanent', 'non_land_permanent', 'player_or_planeswalker',
+            'artifact_or_enchantment', 'artifactorenchantment', 'creature_or_planeswalker', 'creatureorplaneswalker',
+            'nonland_permanent', 'nonlandpermanent', 'non_land_permanent', 'nonland', 'player_or_planeswalker',
             'artifact_enchantment_or_planeswalker', 'artifactenchantmentorplaneswalker'
         ];
 
@@ -163,9 +165,12 @@ export class TargetValidator {
                 if (!combinedTypes.includes('artifact') && !combinedTypes.includes('enchantment') && !combinedTypes.includes('planeswalker')) return false;
             } else if (typeLineCheck === 'creature_or_planeswalker' || typeLineCheck === 'creatureorplaneswalker') {
                 if (!combinedTypes.includes('creature') && !combinedTypes.includes('planeswalker')) return false;
-            } else if (typeLineCheck === 'nonland_permanent' || typeLineCheck === 'nonlandpermanent' || typeLineCheck === 'non_land_permanent') {
-                const permTypes = ['artifact', 'creature', 'enchantment', 'planeswalker'];
-                if (!combinedTypes.some(t => permTypes.includes(t))) return false;
+            } else if (typeLineCheck === 'nonland_permanent' || typeLineCheck === 'nonlandpermanent' || typeLineCheck === 'non_land_permanent' || typeLineCheck === 'nonland') {
+                if (targetZone !== Zone.Battlefield) return false;
+                if (combinedTypes.includes('land')) return false;
+                // A permanent is any object on the battlefield. If it's not a land, it matches.
+                const permTypes = ['artifact', 'creature', 'enchantment', 'planeswalker', 'permanent'];
+                if (!combinedTypes.some(t => permTypes.includes(t)) && combinedTypes.length > 0) return false;
             } else if (typeLineCheck === 'player_or_planeswalker') {
                 if (!combinedTypes.includes('planeswalker')) return false;
             } else {
@@ -184,14 +189,7 @@ export class TargetValidator {
         }
 
         if (expectedZone !== 'Any' && targetZone !== expectedZone) {
-            // Special Case: If no specific definition was provided, allow matching cards in Library/Graveyard/Hand 
-            // This is common for MoveEffectHandler searches where we only pass restrictions.
-            const isManualSearch = !targetDefForIndex;
-            if (isManualSearch && (targetZone === Zone.Library || targetZone === Zone.Graveyard || targetZone === Zone.Hand)) {
-                // Proceed
-            } else {
-                return false;
-            }
+            return false;
         }
 
         const sourceStack = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
@@ -530,7 +528,8 @@ export class TargetValidator {
                 'tapped', 'untapped', 'yours', 'opponents', 'attackingorblocking', 'basic',
                 'instantorsorcerycastthisturn', 'player', 'anytarget', 'creature', 'artifact', 'land', 'enchantment', 'planeswalker',
                 'instant', 'sorcery', 'hasxinmanacost', 'monocolored', 'multicolored', 'colorless', 'oneormorecolors',
-                'fromhand', 'castfromhand', 'nontoken', 'token', 'mv_le_power', 'mv_le_x', 'shares_color_with_source', 'spell_or_permanent'
+                'fromhand', 'castfromhand', 'nontoken', 'token', 'mv_le_power', 'mv_le_x', 'shares_color_with_source', 'spell_or_permanent',
+                'nonlandpermanent', 'non_land_permanent'
             ].includes(lr) || lr.startsWith('cmc') || lr.startsWith('mv') || lr.startsWith('power') || lr.startsWith('toughness') || lr.startsWith('hascounter');
 
 
@@ -592,8 +591,9 @@ export class TargetValidator {
                         if (lr === 'creature_or_planeswalker' || lr === 'creatureorplaneswalker') {
                             return objTypes.includes('creature') || objTypes.includes('planeswalker');
                         }
-                        if (lr === 'nonland_permanent' || lr === 'nonlandpermanent' || lr === 'non_land_permanent') {
-                            const permTypes = ['artifact', 'creature', 'enchantment', 'planeswalker'];
+                        if (lr === 'nonland_permanent' || lr === 'nonlandpermanent' || lr === 'non_land_permanent' || lr === 'nonland') {
+                            if (objTypes.includes('land')) return false;
+                            const permTypes = ['artifact', 'creature', 'enchantment', 'planeswalker', 'permanent'];
                             return objTypes.some((t: string) => permTypes.includes(t.toLowerCase()));
                         }
                         if (lr === 'spell_or_permanent' || lr === 'spellorpermanent') {

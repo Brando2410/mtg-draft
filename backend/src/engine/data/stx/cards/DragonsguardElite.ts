@@ -14,7 +14,7 @@ export const DragonsguardElite: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Magecraft,
+            eventMatch: TriggerEvent.Magecraft,
             effects: [
                 {
                     type: EffectType.AddCounters,
@@ -37,6 +37,6 @@ export const DragonsguardElite: CardDefinition = {
             ]
         }
     ]
-  };
+};
 
 

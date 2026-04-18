@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, ConditionType } from '@shared/engine_types';
 
 export const BloodResearcher: CardDefinition = {
     name: 'Blood Researcher',
@@ -15,11 +15,11 @@ export const BloodResearcher: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.LifeGain,
-            condition: 'YouGainedLife',
+            eventMatch: TriggerEvent.LifeGain,
+            condition: ConditionType.EventPlayerIsYou,
             effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Self }]
         }
     ]
-  };
+};
 
 

@@ -1,4 +1,4 @@
-import { AbilityType, Zone, EffectType, CardDefinition, TargetMapping } from "@shared/engine_types";
+import { AbilityType, Zone, EffectType, CardDefinition, CostType } from "@shared/engine_types";
 
 export const Island: CardDefinition = {
 
@@ -17,7 +17,7 @@ export const Island: CardDefinition = {
             type: AbilityType.Activated,
             activeZone: Zone.Battlefield,
             isManaAbility: true,
-            costs: [{ type: 'Tap', targetMapping: TargetMapping.Self }],
+            costs: [{ type: CostType.Tap }],
             effects: [{ type: EffectType.AddMana, value: 'U' }]
         }
     ]

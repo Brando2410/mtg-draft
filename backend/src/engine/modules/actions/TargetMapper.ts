@@ -28,18 +28,22 @@ export class TargetMapper {
             targetCount += count;
         });
 
-        return { maxCount, minCount, count: targetCount };
+        return { 
+            maxCount: Number(maxCount), 
+            minCount: Number(minCount), 
+            count: Number(targetCount) 
+        };
     }
 
     public static generateTargetPrompt(targetDef: any, selectedCount: number, xValue: number = 0, isSpellCasting: boolean = false): string {
         const def = this.getDefinitionForIndex(targetDef, selectedCount);
         if (!def) return "Select targets";
 
-        const counts = this.calculateTotalCounts(targetDef, xValue);
-        // A target is optional if it's explicitly marked optional OR has minCount 0.
-        // We also check if we've already fulfilled the mandatory part of a multi-target sequence.
+        const currentCounts = this.calculateTotalCounts(def, xValue);
+        const globalCounts = this.calculateTotalCounts(targetDef, xValue);
+
         const isRulesOptional = def.optional || def.minCount === 0;
-        const isSequenceOptional = counts.minCount <= selectedCount;
+        const isSequenceOptional = globalCounts.minCount <= selectedCount;
 
         const type = (def.type || "target").toString().toLowerCase();
         const rawRestrictions = def.restrictions || [];
@@ -175,21 +179,43 @@ export class TargetMapper {
             return label;
         }
 
-        const prefix = (isRulesOptional || (isSequenceOptional && !isSpellCasting)) ? "You may select" : "Select";
-
         // Handle "Up to" phrasing
-        if (def.minCount === 0 && def.count > 0 && !isSequenceOptional) {
+        if (def.minCount === 0 && def.count > 0) {
             const countStr = def.count === 1 ? "one" : def.count;
-            const plural = (def.count > 1 && !typeStr.endsWith('s')) ? "s" : "";
-
             let cleanType = typeStr;
             if (cleanType.startsWith('a ')) cleanType = cleanType.substring(2);
             if (cleanType.startsWith('an ')) cleanType = cleanType.substring(3);
-
-            return `Select up to ${countStr} ${cleanType}${plural}`;
+            const finalType = (def.count > 1 || def.count === 'X') ? this.pluralize(cleanType) : cleanType;
+            const prefix = isSequenceOptional ? "You may select up to" : "Select up to";
+            return `${prefix} ${countStr} target ${finalType}`;
         }
 
-        return `${prefix} ${typeStr}`;
+        let finalTypeStr = typeStr;
+        if (finalTypeStr.startsWith('a ')) finalTypeStr = finalTypeStr.substring(2);
+        else if (finalTypeStr.startsWith('an ')) finalTypeStr = finalTypeStr.substring(3);
+
+        const totalMax = currentCounts.maxCount;
+        const needsCount = totalMax > 1 && !isSequenceOptional;
+        const basePrefix = (isRulesOptional || (isSequenceOptional && !isSpellCasting)) ? "You may select" : "Select";
+
+        if (finalTypeStr === 'any target') {
+            if (needsCount) return `${basePrefix} ${totalMax} targets`;
+            return `${basePrefix} target`;
+        }
+
+        if (needsCount) {
+            return `${basePrefix} ${totalMax} target ${this.pluralize(finalTypeStr)}`;
+        }
+
+        return `${basePrefix} target ${finalTypeStr}`;
+    }
+
+    private static pluralize(str: string): string {
+        if (!str || str.endsWith('s')) return str;
+        if (str.endsWith('y') && !str.endsWith('ay') && !str.endsWith('ey') && !str.endsWith('oy') && !str.endsWith('uy')) {
+            return str.substring(0, str.length - 1) + 'ies';
+        }
+        return str + 's';
     }
 
     /**

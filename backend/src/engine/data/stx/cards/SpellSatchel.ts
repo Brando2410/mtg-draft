@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const SpellSatchel: CardDefinition = {
     name: 'Spell Satchel',
@@ -11,20 +11,20 @@ export const SpellSatchel: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Magecraft,
+            eventMatch: TriggerEvent.Magecraft,
             effects: [{ type: EffectType.AddCounters, counterType: 'book', amount: 1, targetMapping: TargetMapping.Self }]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Tap' }, { type: 'RemoveCounter', counterType: 'book', amount: 1 }],
+            costs: [{ type: CostType.Tap }, { type: 'RemoveCounter', counterType: 'book', amount: 1 }],
             effects: [{ type: EffectType.AddMana, amount: '{C}' }]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Mana', value: '{3}' }, { type: 'Tap' }, { type: 'RemoveCounter', counterType: 'book', amount: 3 }],
+            costs: [{ type: CostType.Mana, value: '{3}' }, { type: CostType.Tap }, { type: 'RemoveCounter', counterType: 'book', amount: 3 }],
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }
     ]
-  };
+};
 
 

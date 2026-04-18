@@ -40,7 +40,7 @@ export class TargetingProcessor {
         const actionData = state.pendingAction.data;
         const targetDef = actionData?.targetDefinition;
         const isOptional = targetDef?.optional || targetDef?.minCount === 0;
-        const isSkipping = targetId === 'skip' || targetId === 'none' || targetId === 'confirm';
+        const isSkipping = targetId === 'skip' || targetId === 'none' || targetId === 'confirm' || targetId === 'done';
         const isUndoing = targetId === 'undo' || targetId === 'back';
 
         const counts = TargetingProcessor.calculateTotalCounts(targetDef, (actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0)));
@@ -99,6 +99,12 @@ export class TargetingProcessor {
                         ManaProcessor.refundManaCost(player, stackObj.card.definition.manaCost);
                         log(`Refunding mana for ${stackObj.card.definition.name}: ${stackObj.card.definition.manaCost}`);
                     }
+                } else if (sourceId) {
+                    // Fallback for spells that haven't entered the stack yet (targeting phase)
+                    const card = TargetingProcessor.findObjectInAnyZone(state, sourceId);
+                    if (card && card.zone === Zone.Hand) {
+                        card.xValue = undefined; // Reset state
+                    }
                 }
                 state.stack = state.stack.filter(s => s.id !== stackId);
 
@@ -132,8 +138,8 @@ export class TargetingProcessor {
         }
 
         if (isSkipping) {
-            if (actionData.selectedTargets.length < minCount) {
-                log(`Targeting is required (minimum ${minCount}), cannot finalize yet.`);
+            if (minCount > 0 && (actionData.selectedTargets?.length || 0) < minCount) {
+                log(`Targeting requirement not met: ${actionData.selectedTargets?.length || 0}/${minCount}. Please select more targets.`);
                 return false;
             }
             return engine.finaliseTargeting(playerId, actionData.selectedTargets);

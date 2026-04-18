@@ -593,15 +593,12 @@ export class PriorityProcessor {
     // Rule 602.1: Sorcery-speed abilities
     const onlyAsSorcery = objOrAbility.activatedOnlyAsSorcery || (!isInstantOrFlash && !isActivatedAbility) || (isActivatedAbility && objOrAbility.activatedOnlyAsSorcery);
 
-    console.log(`[TIMING-DEBUG] ${def.name}: isInstantOrFlash: ${isInstantOrFlash}, isActivatedAbility: ${isActivatedAbility}, onlyAsSorcery: ${onlyAsSorcery}, typeLine: ${typeLine}, types: ${types}`);
-
     if (onlyAsSorcery || isLand) {
       const isOurTurn = state.activePlayerId === playerId;
       const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
       const stackEmpty = state.stack.length === 0;
 
       if (!isOurTurn || !isMain || !stackEmpty) {
-        console.log(`[TIMING-DEBUG] ${def.name} BLOCKED: OnlyAsSorcery: ${onlyAsSorcery}, isLand: ${isLand}, OurTurn: ${isOurTurn}, Main: ${isMain}, StackEmpty: ${stackEmpty}`);
         return false;
       }
     }

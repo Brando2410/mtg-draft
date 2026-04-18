@@ -3,19 +3,11 @@ export const TheDawningArchaic: CardDefinition = {
     name: "The Dawning Archaic",
     manaCost: "{10}",
     colors: [],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Avatar"
-    ],
-    keywords: [
-        "Reach"
-    ],
+    types: ["Creature"],
+    subtypes: ["Avatar"],
+    keywords: ["Reach"],
     oracleText: "This spell costs {1} less to cast for each instant and sorcery card in your graveyard.\nReach\nWhenever The Dawning Archaic attacks, you may cast target instant or sorcery card from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead.",
-    supertypes: [
-        "Legendary"
-    ],
+    supertypes: ["Legendary"],
 
 
     abilities: [
