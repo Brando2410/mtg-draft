@@ -1,4 +1,4 @@
-import {AbilityType, Zone, CardDefinition, EffectType, GameEvent, GameObject, TargetType} from "@shared/engine_types";
+import { CardDefinition } from "@shared/engine_types";
 
 export const FuriousRise: CardDefinition = {
         name: "Furious Rise",

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, PlayerId, GameObjectId, GameState } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameState, PlayerId, TargetMapping } from '@shared/engine_types';
 
 /**
  * Pox Plague (SOS 0XX)

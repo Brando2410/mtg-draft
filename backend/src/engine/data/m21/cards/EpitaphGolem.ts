@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, Zone, EffectType, TargetType, TargetMapping, Restriction } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from "@shared/engine_types";
 
 export const EpitaphGolem: CardDefinition = {
     name: "Epitaph Golem",

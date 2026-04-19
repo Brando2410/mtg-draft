@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CostType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 export const VisionarysDance = {
     name: "Visionary's Dance",
     manaCost: "{5}{U}{R}",

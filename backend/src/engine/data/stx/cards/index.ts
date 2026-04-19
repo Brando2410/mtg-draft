@@ -1,3 +1,11 @@
+export { Cultivate } from '../../m21/cards/Cultivate';
+export { DefiantStrike } from '../../m21/cards/DefiantStrike';
+// Mystical Archive (Shared with M21)
+export { Duress } from '../../m21/cards/Duress';
+export { Opt } from '../../m21/cards/Opt';
+export { Revitalize } from '../../m21/cards/Revitalize';
+export { Shock } from '../../m21/cards/Shock';
+export { VillageRites } from '../../m21/cards/VillageRites';
 export * from './AcademicDispute';
 export * from './AcademicProbation';
 export * from './AgelessGuardian';
@@ -89,8 +97,8 @@ export * from './PracticalResearch';
 export * from './PrismariApprentice';
 export * from './PrismariCommand';
 export * from './PrismariPledgemage';
-export * from './ProfessorOnyx';
 export * from './ProfessorofSymbology';
+export * from './ProfessorOnyx';
 export * from './QuandrixApprentice';
 export * from './QuandrixCommand';
 export * from './QuandrixCultivator';
@@ -131,11 +139,3 @@ export * from './WitherbloomApprentice';
 export * from './WitherbloomCommand';
 export * from './WitherbloomPledgemage';
 
-// Mystical Archive (Shared with M21)
-export { Duress } from '../../m21/cards/Duress';
-export { Opt } from '../../m21/cards/Opt';
-export { Shock } from '../../m21/cards/Shock';
-export { VillageRites } from '../../m21/cards/VillageRites';
-export { Revitalize } from '../../m21/cards/Revitalize';
-export { DefiantStrike } from '../../m21/cards/DefiantStrike';
-export { Cultivate } from '../../m21/cards/Cultivate';

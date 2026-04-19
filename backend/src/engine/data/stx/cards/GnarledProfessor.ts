@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/engine_types';
 
 export const GnarledProfessor: CardDefinition = {
         name: "Gnarled Professor",

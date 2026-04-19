@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 export const StealtheShow: CardDefinition = {
     name: "Steal the Show",
     manaCost: "{2}{R}",

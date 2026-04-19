@@ -1,15 +1,5 @@
-import { ActionType, AbilityCost, GameObject, GameState, PlayerId, Zone, EffectType, TargetMapping, AbilityType, Phase, CostType } from '@shared/engine_types';
-import { PriorityProcessor } from '../core/PriorityProcessor';
-import { TargetingProcessor } from './TargetingProcessor';
-import { LayerProcessor } from '../state/LayerProcessor';
-import { CostProcessor } from '../magic/CostProcessor';
+import { AbilityCost, AbilityType, ActivatedAbilityDefinition, CostType, GameObject, GameState, Zone } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
-import { RestrictionProcessor } from './RestrictionProcessor';
-import { ChoiceGenerator } from '../effects/ChoiceGenerator';
-import { ActionProcessor } from './ActionProcessor';
-import { TriggerProcessor } from '../effects/TriggerProcessor';
-import { ConditionProcessor } from '../core/ConditionProcessor';
-import { EffectProcessor } from '../effects/EffectProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
 
 /**
@@ -69,13 +59,12 @@ export class SpellCostCalculator {
             if (override === 'SOURCE_MANA_COST') override = currentDef.manaCost;
             baseCost = currentDef.flashbackCost || (currentDef as any).flashback_cost || override || baseCost;
         } else if (card.zone === Zone.Graveyard || (Object.values(state.players) as any[]).some(p => p.virtualHand.some((v: any) => v.id === card.id))) {
-            // Support for graveyard-activated abilities (e.g. Stone Docent)
             const graveyardAbility = currentDef.abilities?.find((a: any) =>
                 a.type === AbilityType.Activated &&
-                (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
-            );
+                (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
+            ) as ActivatedAbilityDefinition;
             if (graveyardAbility) {
-                baseCost = (graveyardAbility as any).manaCost || (graveyardAbility as any).costs?.find((c: any) => c.type === CostType.Mana)?.value || baseCost;
+                baseCost = graveyardAbility.manaCost || graveyardAbility.costs?.find((c: any) => c.type === CostType.Mana)?.value || baseCost;
             }
 
         }
@@ -144,9 +133,14 @@ export class SpellCostCalculator {
                         }
                     });
                 }
-                // Case B: Inherent Costs inside the Spell ability itself (Instants/Sorceries)
-                if ((a.type === AbilityType.Spell || a.type === 'SpellAbility') && a.costs) {
-                    additionalCosts = [...additionalCosts, ...a.costs];
+                // Case B: Inherent Costs/Reductions inside the Spell ability itself (Instants/Sorceries)
+                if ((a.type === AbilityType.Spell || a.type === 'SpellAbility')) {
+                    if (a.costs) {
+                        additionalCosts = [...additionalCosts, ...a.costs];
+                    }
+                    if (a.costReduction) {
+                        modifiers.push({ ...a.costReduction, sourceId: card.id, controllerId: card.controllerId } as any);
+                    }
                 }
             });
         }
@@ -163,8 +157,15 @@ export class SpellCostCalculator {
             const restrictions = (mod as any).restrictions || [];
             const { ConditionProcessor } = require('./../core/ConditionProcessor');
 
-            const matches = TargetingProcessor.matchesRestrictions(state, card, (restrictions as any[] || []), card.controllerId, mod.sourceId);
-            const conditionMatches = !mod.condition || ConditionProcessor.matchesCondition(state, mod.condition, mod.sourceId, card.controllerId, { data: { card: card, targets } } as any);
+            const matches = TargetingProcessor.matchesRestrictions(state, card, (restrictions as any[] || []), {
+                sourceId: mod.sourceId,
+                controllerId: card.controllerId
+            });
+            const conditionMatches = !mod.condition || ConditionProcessor.matchesCondition(state, mod.condition, {
+                sourceId: mod.sourceId,
+                controllerId: card.controllerId,
+                event: { data: { card: card, targets } } as any
+            });
 
             if (!matches || !conditionMatches) continue;
 

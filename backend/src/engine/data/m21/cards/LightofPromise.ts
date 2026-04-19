@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const LightofPromise: CardDefinition = {
     name: "Light of Promise",

@@ -1,4 +1,4 @@
-import { AbilityType, Zone, EffectType, TargetMapping, TriggerEvent, CardDefinition } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from "@shared/engine_types";
 
 export const KineticAugur: CardDefinition = {
 

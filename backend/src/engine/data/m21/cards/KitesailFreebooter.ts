@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, Zone, EffectType, TriggerEvent, TargetType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from "@shared/engine_types";
 
 export const KitesailFreebooter: CardDefinition = {
     name: "Kitesail Freebooter",

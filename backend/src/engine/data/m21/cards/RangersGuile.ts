@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, DurationType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from "@shared/engine_types";
 
 export const RangersGuile: CardDefinition = {
     name: "Ranger's Guile",

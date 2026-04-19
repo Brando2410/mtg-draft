@@ -1,9 +1,8 @@
+import { Player, Room, Rules } from '@shared/types';
 import { Server, Socket } from 'socket.io';
-import { Room, Player, Rules, PlayerId } from '@shared/types';
-import { PersistenceService } from '../../services/PersistenceService';
-import { LoggerService } from '../../services/LoggerService';
-import { GameEngine } from '../../engine/GameEngine';
 import { AssetService } from '../../services/AssetService';
+import { LoggerService } from '../../services/LoggerService';
+import { PersistenceService } from '../../services/PersistenceService';
 
 export const registerRoomHandlers = (io: Server, socket: Socket, rooms: Map<string, Room>) => {
   socket.on('create_room', async (data: any) => {

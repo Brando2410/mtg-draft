@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const TanazirQuandrix: CardDefinition = {
     name: "Tanazir Quandrix",

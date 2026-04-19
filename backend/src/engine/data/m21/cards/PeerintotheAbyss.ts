@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const PeerintotheAbyss: CardDefinition = {
     name: "Peer into the Abyss",

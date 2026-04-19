@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, CostType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const CodieVociferousCodex: CardDefinition = {
     name: "Codie, Vociferous Codex",

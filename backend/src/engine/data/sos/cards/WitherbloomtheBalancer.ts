@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
 export const WitherbloomtheBalancer: CardDefinition = {
     name: "Witherbloom, the Balancer",
     manaCost: "{6}{B}{G}",

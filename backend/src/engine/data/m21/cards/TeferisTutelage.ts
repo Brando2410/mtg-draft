@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, Zone, EffectType, TargetMapping, TriggerEvent, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const TeferisTutelage: CardDefinition = {
     name: "Teferi's Tutelage",

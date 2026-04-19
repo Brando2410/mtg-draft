@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
 
 export const CrashThrough: CardDefinition = {
         name: "Crash Through",

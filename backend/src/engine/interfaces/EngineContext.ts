@@ -1,4 +1,69 @@
-import { PlayerId } from '@shared/engine_types';
+import {
+    AbilityCost,
+    EffectDefinition, GameObject, GameState, PlayerId, ResolutionContext, StackObject
+} from '@shared/engine_types';
+
+export interface PlayCardOptions {
+    playerId: PlayerId;
+    cardId: string;
+    targets?: string[];
+    bypassPriority?: boolean;
+    bypassTargeting?: boolean;
+}
+
+export interface ActivateAbilityOptions {
+    playerId: PlayerId;
+    cardId: string;
+    abilityIndex: number;
+    targets?: string[];
+    choiceIndex?: number;
+    bypassPriority?: boolean;
+    bypassTargeting?: boolean;
+}
+
+export interface FinalizeCastOptions {
+    playerId: string;
+    cardToPlay: GameObject;
+    totalMana: string;
+    additionalCosts: AbilityCost[];
+    declaredTargets: string[];
+    spellEffects: EffectDefinition[];
+    targetDefinition: any; // Targeting can still be complex, keeping as any for now or checking if there's a TargetDefinition
+    isFirstInstantOrSorcery: boolean;
+    isInstantOrSorcery: boolean;
+}
+
+export interface FinalizeAbilityOptions {
+    playerId: string;
+    obj: GameObject;
+    ability: any; // Ability is often specific to the card, but could be ParsedAbility
+    abilityIndex: number;
+    declaredTargets: string[];
+    preSelectedChoice?: number;
+}
+
+export interface EffectExecutionOptions {
+    state: GameState;
+    effect: EffectDefinition;
+    sourceId: string;
+    validTargetIds: string[];
+    log: (m: string) => void;
+    stackObject?: StackObject;
+    parentContext?: ResolutionContext;
+    controllerIdOverride?: PlayerId;
+}
+
+export interface ResolveEffectsOptions {
+    state: GameState;
+    effects: EffectDefinition[];
+    sourceId: string;
+    targets: string[];
+    log: (m: string) => void;
+    startIndex?: number;
+    stackObject?: StackObject;
+    parentContext?: ResolutionContext;
+    controllerIdOverride?: PlayerId;
+}
 
 export interface EngineContext {
     log(m: string): void;
@@ -6,8 +71,8 @@ export interface EngineContext {
 
     // Core actions
     drawCard(pId: PlayerId): boolean;
-    playCard(pId: PlayerId, cId: string, targets: string[], bypass: boolean): boolean;
-    activateAbility(pId: PlayerId, cId: string, idx: number, targets?: string[], bypass?: boolean, cIdx?: number): boolean;
+    playCard(options: PlayCardOptions): boolean;
+    activateAbility(options: ActivateAbilityOptions): boolean;
     tapForMana(pId: PlayerId, cId: string, aIdx?: number, cIdx?: number): boolean | void;
     
     // Passing & Priority

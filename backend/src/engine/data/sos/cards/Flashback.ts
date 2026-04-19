@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, SelectionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, SelectionType, TargetType } from '@shared/engine_types';
 export const Flashback: CardDefinition = {
     name: "Flashback",
     manaCost: "{R}",

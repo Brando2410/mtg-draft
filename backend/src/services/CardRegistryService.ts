@@ -1,8 +1,8 @@
 import { CardDefinition } from '@shared/engine_types';
-import { ManaProcessor } from '../engine/modules/magic/ManaProcessor';
 import { m21 } from '../engine/data/m21';
 import { sos } from '../engine/data/sos';
 import { stx } from '../engine/data/stx';
+import { ManaProcessor } from '../engine/modules/magic/ManaProcessor';
 
 export interface RegistryCard {
   name: string;

@@ -1,4 +1,4 @@
-import { TargetMapping, AbilityType, CardDefinition, ConditionType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
     export const PestMascot: CardDefinition = {
     name: "Pest Mascot",
     manaCost: "{1}{B}{G}",

@@ -1,7 +1,7 @@
-import { EffectDefinition, GameObject, GameObjectId, GameState, PlayerId, StackObject, Zone } from '@shared/engine_types';
+import { EffectDefinition, GameState, StackObject, Zone } from '@shared/engine_types';
 import { ActionProcessor } from '../actions/ActionProcessor';
-import { EffectProcessor } from '../effects/EffectProcessor';
 import { TargetingProcessor } from '../actions/TargetingProcessor';
+import { EffectProcessor } from '../effects/EffectProcessor';
 
 /**
  * Rules Engine Module: Stack Resolution (Rule 608)
@@ -41,15 +41,15 @@ export class StackResolver {
     }
     
     // 2. Execute Effects (Rule 608.2c)
-    const completed = EffectProcessor.resolveEffects(
-        this.state, 
-        effects, 
-        stackObj.sourceId, 
-        stackObj.targets, 
-        (m: string) => this.log(m),
+    const completed = EffectProcessor.resolveEffects({
+        state: this.state,
+        effects,
+        sourceId: stackObj.sourceId,
+        targets: stackObj.targets || [],
+        log: (m: string) => this.log(m),
         startIndex,
-        stackObj
-    );
+        stackObject: stackObj
+    });
     
     if (!completed) {
         return false; // SUSPENDED
@@ -65,13 +65,13 @@ export class StackResolver {
 
     // A spell/ability is countered if ALL its targets are illegal.
     return stackObj.targets.every((targetId, index) => {
-        return !TargetingProcessor.isLegalTarget(
-            this.state, 
-            stackObj.card || stackObj.sourceId, 
-            targetId, 
-            stackObj.data?.targetDefinition,
-            index
-        );
+        return !TargetingProcessor.isLegalTarget(this.state, {
+            sourceId: stackObj.sourceId,
+            controllerId: stackObj.controllerId,
+            stackObject: stackObj,
+            targetDef: stackObj.data?.targetDefinition,
+            targetIndex: index
+        }, targetId);
     });
   }
 
@@ -116,10 +116,12 @@ export class StackResolver {
         card.xValue = stackObj.xValue;
         ActionProcessor.moveCard(this.state, card, Zone.Battlefield, stackObj.controllerId, (m: string) => this.log(m));
       } else if (card.zone === Zone.Stack) {
-        if (stackObj.exileOnResolution || (stackObj as any).isCopy) {
-            this.log(`[RULE 701.5] ${card.definition.name} was exiled instead of being put into graveyard.`);
+        if (stackObj.exileOnResolution || (stackObj as any).isCopy || (card as any).isPreparedCopy) {
+            const reason = (card as any).isPreparedCopy ? 'Prepared spell' : ((stackObj as any).isCopy ? 'Copy' : 'Effect');
+            this.log(`[RULE 701.5] ${card.definition.name} (${reason}) ceases to exist after resolution.`);
+            
             ActionProcessor.removeFromCurrentZone(this.state, card);
-            if (! (stackObj as any).isCopy) {
+            if (!((stackObj as any).isCopy || (card as any).isPreparedCopy)) {
                 ActionProcessor.moveCard(this.state, card, Zone.Exile, card.ownerId, (m: string) => this.log(m));
             }
         } else {

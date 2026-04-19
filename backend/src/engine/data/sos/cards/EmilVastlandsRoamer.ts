@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
     export const EmilVastlandsRoamer: CardDefinition = {
     name: "Emil, Vastlands Roamer",
     manaCost: "{2}{G}",

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const AscendantDustspeaker: CardDefinition = {
     name: "Ascendant Dustspeaker",

@@ -1,4 +1,4 @@
-import { AbilityType, DurationType, EffectType, TargetType, CardDefinition, TargetMapping, CostType } from "@shared/engine_types";
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType } from "@shared/engine_types";
 
 export const KeenGlidemaster: CardDefinition = {
 

@@ -1,11 +1,11 @@
-import { Server, Socket } from 'socket.io';
 import { Room } from '@shared/types';
+import { Server, Socket } from 'socket.io';
 import { LoggerService } from '../services/LoggerService';
-import { registerRoomHandlers } from './parts/roomHandlers';
+import { registerAdminHandlers } from './parts/adminHandlers';
 import { registerDraftHandlers } from './parts/draftHandlers';
 import { registerMatchHandlers } from './parts/matchHandlers';
 import { registerPlayerHandlers } from './parts/playerHandlers';
-import { registerAdminHandlers } from './parts/adminHandlers';
+import { registerRoomHandlers } from './parts/roomHandlers';
 
 export class SocketHandlers {
   static register(io: Server, socket: Socket, rooms: Map<string, Room>) {

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 export const AzizaMageTowerCaptain: CardDefinition = {
     name: "Aziza, Mage Tower Captain",
     manaCost: "{R}{W}",

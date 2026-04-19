@@ -1,15 +1,14 @@
-import { Server, Socket } from 'socket.io';
+import { GameState, PlayerId, Zone } from '@shared/engine_types';
 import { Room } from '@shared/types';
-import { PlayerId, Zone } from '@shared/engine_types';
-import { DraftService } from '../../services/DraftService';
+import { Server, Socket } from 'socket.io';
 import { BotLogic } from '../../bots/BotLogic';
-import { PersistenceService } from '../../services/PersistenceService';
-import { LoggerService } from '../../services/LoggerService';
 import { GameEngine } from '../../engine/GameEngine';
-import { SealedService } from '../../services/SealedService';
 import { ActionProcessor } from '../../engine/modules/actions/ActionProcessor';
 import { GameSetupProcessor } from '../../engine/modules/core/GameSetupProcessor';
-import { GameState } from '@shared/engine_types';
+import { DraftService } from '../../services/DraftService';
+import { LoggerService } from '../../services/LoggerService';
+import { PersistenceService } from '../../services/PersistenceService';
+import { SealedService } from '../../services/SealedService';
 
 
 export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<string, Room>) => {
@@ -195,7 +194,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
   socket.on('play_card', async ({ roomId, playerId, cardInstanceId, targets = [] }: { roomId: string, playerId: string, cardInstanceId: string, targets: string[] }) => {
     withMatch(roomId, playerId, (engine) => {
-      engine.playCard(playerId, cardInstanceId, targets);
+      engine.playCard({ playerId, cardId: cardInstanceId, targets });
     });
   });
 
@@ -213,7 +212,7 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
   socket.on('activate_ability', async ({ roomId, playerId, cardId, abilityIndex, targets = [] }: { roomId: string, playerId: string, cardId: string, abilityIndex: number, targets: string[] }) => {
     withMatch(roomId, playerId, (engine) => {
-      engine.activateAbility(playerId, cardId, abilityIndex, targets);
+      engine.activateAbility({ playerId, cardId, abilityIndex, targets });
     });
   });
 

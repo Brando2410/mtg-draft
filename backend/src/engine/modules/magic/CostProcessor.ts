@@ -1,10 +1,10 @@
 import { AbilityCost, CostType, GameObject, GameObjectId, GameState, PlayerId, RestrictionType, Zone } from '@shared/engine_types';
 
-import { ManaProcessor } from './ManaProcessor';
 import { ActionProcessor } from '../actions/ActionProcessor';
-import { LayerProcessor } from '../state/LayerProcessor';
 import { TargetingProcessor } from '../actions/TargetingProcessor';
 import { TriggerProcessor } from '../effects/TriggerProcessor';
+import { LayerProcessor } from '../state/LayerProcessor';
+import { ManaProcessor } from './ManaProcessor';
 
 /**
  * Rules Engine Module: Cost Processing (Rule 601.2h / 101.1)
@@ -92,12 +92,12 @@ export class CostProcessor {
            return state.battlefield.some(c => c.id === source.id);
         }
         if (cost.restrictions) {
-           return state.battlefield.some(c => c.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, c, cost.restrictions!, playerId, source.id));
+           return state.battlefield.some(c => c.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, c, cost.restrictions!, { controllerId: playerId, sourceId: source.id }));
         }
         return state.battlefield.some(c => c.controllerId === playerId);
 
       case CostType.Discard:
-        return player.hand.some(c => !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, playerId, source.id));
+        return player.hand.some(c => !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }));
 
       case CostType.PayLife:
         return player.life > (parseInt(cost.value) || 0);
@@ -115,7 +115,7 @@ export class CostProcessor {
             if (z === Zone.Exile) return state.exile; // Rare but possible
             return [];
         });
-        return pool.some(c => !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, playerId, source.id));
+        return pool.some(c => !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }));
 
       case CostType.Crew: {
         const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
@@ -135,7 +135,7 @@ export class CostProcessor {
         const candidates = state.battlefield.filter(o => 
             String(o.controllerId) === String(playerId) && 
             !o.isTapped &&
-            (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, playerId, source.id))
+            (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, { controllerId: playerId, sourceId: source.id }))
         );
         // console.log(`[DEBUG] TapSelection canPay: amount=${amount}, candidates=${candidates.length}, sourceId=${source.id}`);
         return candidates.length >= amount;
@@ -191,7 +191,7 @@ export class CostProcessor {
                 toSac = state.battlefield.find(c => c.id === chosenId);
             } else {
                 // Fallback for auto-order/automated effects (not recommended for complex costs)
-                toSac = state.battlefield.find(c => c.controllerId === playerId && (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions!, playerId, source.id)));
+                toSac = state.battlefield.find(c => c.controllerId === playerId && (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions!, { controllerId: playerId, sourceId: source.id })));
             }
         }
         

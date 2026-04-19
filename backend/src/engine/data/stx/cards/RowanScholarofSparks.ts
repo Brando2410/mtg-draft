@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, CostType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const RowanScholarofSparks: CardDefinition = {
     name: "Rowan, Scholar of Sparks",

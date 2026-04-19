@@ -1,6 +1,6 @@
-import { GameObject, GameObjectId, GameState, PlayerId, Zone, TargetType, TargetMapping } from '@shared/engine_types';
-import { LayerProcessor } from '../state/LayerProcessor';
+import { GameObject, GameState, TargetingContext, TargetType, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../magic/ManaProcessor';
+import { LayerProcessor } from '../state/LayerProcessor';
 import { TargetMapper } from './TargetMapper';
 
 export class TargetValidator {
@@ -38,6 +38,14 @@ export class TargetValidator {
         const lb = (state as any).limbo?.find((o: any) => o.id === id);
         if (lb) return lb;
 
+        // 6. Paradigm & Dynamic Virtual Copies
+        if ((state as any).paradigmCopies && (state as any).paradigmCopies[id]) {
+            return (state as any).paradigmCopies[id];
+        }
+        if ((state as any).dynamicCopies && (state as any).dynamicCopies[id]) {
+            return (state as any).dynamicCopies[id];
+        }
+
         return null;
     }
 
@@ -45,11 +53,10 @@ export class TargetValidator {
      * CR 608.2b: Checks if a target is still legal as a spell or ability attempts to resolve.
      * Also used during the casting process (CR 601.2c).
      */
-    public static isLegalTarget(state: GameState, sourceOrId: string | any, targetId: string, abilityTargetDef?: any, targetIndex: number = 0): boolean {
-        const sourceId = typeof sourceOrId === 'string' ? sourceOrId : (sourceOrId as any).sourceId || (sourceOrId as any).id;
-        const sourceObjProvided = typeof sourceOrId === 'string' ? null : sourceOrId;
+    public static isLegalTarget(state: GameState, context: TargetingContext, targetId: string): boolean {
+        const { sourceId, controllerId, stackObject, targetDef, targetIndex } = context;
 
-        const targetDefForIndex = TargetMapper.getDefinitionForIndex(abilityTargetDef, targetIndex);
+        const targetDefForIndex = TargetMapper.getDefinitionForIndex(targetDef, targetIndex || 0);
 
         // 1. If target is a player
         if (state.players[targetId]) {
@@ -63,29 +70,7 @@ export class TargetValidator {
                 restrictions.includes('player') ||
                 restrictions.includes('anytarget')) {
 
-                let sourceControllerId = (sourceOrId as any)?.controllerId ||
-                    (sourceOrId as any)?.ownerId ||
-                    state.stack.find(s => s.id === sourceId || s.sourceId === sourceId)?.controllerId ||
-                    state.battlefield.find(o => o.id === sourceId)?.controllerId;
-
-                if (!sourceControllerId) {
-                    for (const pId in state.players) {
-                        const player = state.players[pId as PlayerId];
-                        const isInZone = player.hand.some(c => c.id === sourceId) ||
-                            player.graveyard.some(c => c.id === sourceId) ||
-                            player.library.some(c => c.id === sourceId);
-                        if (isInZone) {
-                            sourceControllerId = pId;
-                            break;
-                        }
-                    }
-                    if (!sourceControllerId) {
-                        const exiled = state.exile.find(o => o.id === sourceId);
-                        if (exiled) {
-                            sourceControllerId = exiled.controllerId || exiled.ownerId;
-                        }
-                    }
-                }
+                const sourceControllerId = controllerId;
 
                 if (restrictions.includes('opponent') || type === TargetType.Opponent.toLowerCase()) {
                     if (sourceControllerId && targetId === sourceControllerId) return false;
@@ -131,34 +116,82 @@ export class TargetValidator {
 
         if (targetObj.isPhasedOut) return false;
 
+        // --- KEYWORD VALIDATION (Rule 702) ---
+        // CR 702.11 (Hexproof), CR 702.18 (Shroud), CR 702.16 (Protection)
+        const stats = LayerProcessor.getEffectiveStats(targetObj, state);
+        const keywords = stats.keywords;
+        const sourceControllerId = controllerId;
+        const isOpponentTarget = sourceControllerId && targetObj.controllerId !== sourceControllerId;
+        const source = this.findObjectInAnyZone(state, sourceId);
+
+        // 1. Shroud (Rule 702.18)
+        if (keywords.includes('Shroud')) return false;
+
+        // 2. Hexproof (Rule 702.11)
+        const hexproofKeywords = keywords.filter((k: string) => k.toLowerCase().startsWith('hexproof'));
+        for (const hp of hexproofKeywords) {
+            if (hp.toLowerCase() === 'hexproof') {
+                if (isOpponentTarget) return false;
+            } else if (hp.toLowerCase().startsWith('hexproof from ')) {
+                const qualityStr = hp.toLowerCase().replace('hexproof from ', '');
+                const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
+                if (isOpponentTarget && source && this.sourceHasQualities(source, qualities, state)) return false;
+            }
+        }
+
+        // 3. Protection (Rule 702.16b: Protection prevents targeting by sources with specified qualities)
+        const protectionKeywords = keywords.filter((k: string) => k.toLowerCase().startsWith('protection from'));
+        if (protectionKeywords.length > 0 && source) {
+            for (const prot of protectionKeywords) {
+                const qualityStr = prot.toLowerCase().replace('protection from ', '');
+                const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
+                if (this.sourceHasQualities(source, qualities, state)) return false;
+            }
+        }
+
+        // --- TYPE & ZONE VALIDATION ---
         const typeLineCheck = (targetDefForIndex?.type || '').toLowerCase();
         const isPlayerTargetOnly = typeLineCheck === 'player';
         if (isPlayerTargetOnly) return false;
 
         const coreTypes = [
-            'creature', 'artifact', 'land', 'enchantment', 'planeswalker', 'permanent',
-            'instant', 'sorcery', 'instant_or_sorcery', 'instantorsorcery', 'artifact_or_creature', 'artifactorcreature',
-            'artifact_or_enchantment', 'artifactorenchantment', 'creature_or_planeswalker', 'creatureorplaneswalker',
-            'nonland_permanent', 'nonlandpermanent', 'non_land_permanent', 'nonland', 'player_or_planeswalker',
-            'artifact_enchantment_or_planeswalker', 'artifactenchantmentorplaneswalker'
+            'creature',
+            'artifact',
+            'land',
+            'enchantment',
+            'planeswalker',
+            'permanent',
+            'instant',
+            'sorcery',
+            'instant_or_sorcery',
+            'instantorsorcery',
+            'artifact_or_creature',
+            'artifactorcreature',
+            'artifact_or_enchantment',
+            'artifactorenchantment',
+            'creature_or_planeswalker',
+            'creatureorplaneswalker',
+            'nonland_permanent',
+            'nonlandpermanent',
+            'non_land_permanent',
+            'nonland',
+            'player_or_planeswalker',
+            'artifact_enchantment_or_planeswalker',
+            'artifactenchantmentorplaneswalker',
         ];
 
         if (typeLineCheck === 'spell' || typeLineCheck === 'triggeredability' || typeLineCheck === 'activatedability') {
             if (targetZone !== Zone.Stack) return false;
             if (targetObj.type.toLowerCase() !== typeLineCheck) return false;
         } else if (typeLineCheck === 'anytarget' || coreTypes.includes(typeLineCheck)) {
-            const stats = LayerProcessor.getEffectiveStats(targetObj, state);
-            const combinedTypes = [
-                ...(stats.types || []),
-                ...(stats.supertypes || [])
-            ].map(t => t.toLowerCase());
+            const combinedTypes = [...(stats.types || []), ...(stats.supertypes || [])].map((t) => t.toLowerCase());
 
             if (typeLineCheck === 'anytarget') {
                 const isValidAnyTarget = combinedTypes.some((t: string) => t === 'creature' || t === 'planeswalker') || targetZone === Zone.Stack;
                 if (!isValidAnyTarget) return false;
             } else if (typeLineCheck === 'permanent') {
                 const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
-                if (!combinedTypes.some(t => permTypes.includes(t))) return false;
+                if (!combinedTypes.some((t) => permTypes.includes(t))) return false;
             } else if (typeLineCheck === 'instant_or_sorcery' || typeLineCheck === 'instantorsorcery') {
                 if (!combinedTypes.includes('instant') && !combinedTypes.includes('sorcery')) return false;
             } else if (typeLineCheck === 'artifact_or_creature' || typeLineCheck === 'artifactorcreature') {
@@ -169,12 +202,17 @@ export class TargetValidator {
                 if (!combinedTypes.includes('artifact') && !combinedTypes.includes('enchantment') && !combinedTypes.includes('planeswalker')) return false;
             } else if (typeLineCheck === 'creature_or_planeswalker' || typeLineCheck === 'creatureorplaneswalker') {
                 if (!combinedTypes.includes('creature') && !combinedTypes.includes('planeswalker')) return false;
-            } else if (typeLineCheck === 'nonland_permanent' || typeLineCheck === 'nonlandpermanent' || typeLineCheck === 'non_land_permanent' || typeLineCheck === 'nonland') {
+            } else if (
+                typeLineCheck === 'nonland_permanent' ||
+                typeLineCheck === 'nonlandpermanent' ||
+                typeLineCheck === 'non_land_permanent' ||
+                typeLineCheck === 'nonland'
+            ) {
                 if (targetZone !== Zone.Battlefield) return false;
                 if (combinedTypes.includes('land')) return false;
                 // A permanent is any object on the battlefield. If it's not a land, it matches.
                 const permTypes = ['artifact', 'creature', 'enchantment', 'planeswalker', 'permanent'];
-                if (!combinedTypes.some(t => permTypes.includes(t)) && combinedTypes.length > 0) return false;
+                if (!combinedTypes.some((t) => permTypes.includes(t)) && combinedTypes.length > 0) return false;
             } else if (typeLineCheck === 'player_or_planeswalker') {
                 if (!combinedTypes.includes('planeswalker')) return false;
             } else {
@@ -188,7 +226,8 @@ export class TargetValidator {
             else if (['instant', 'sorcery', 'instant_or_sorcery', 'spell_on_stack', 'spellonstack', 'spell'].includes(typeLineCheck)) expectedZone = Zone.Stack;
             else if (['card_in_graveyard', 'cardingraveyard'].includes(typeLineCheck)) expectedZone = Zone.Graveyard;
             else if (['card_in_hand', 'cardinhand'].includes(typeLineCheck)) expectedZone = Zone.Hand;
-            else if (targetDefForIndex?.restrictions?.some((r: any) => typeof r === 'string' && ['graveyard', 'in_graveyard'].includes(r.toLowerCase()))) expectedZone = Zone.Graveyard;
+            else if (targetDefForIndex?.restrictions?.some((r: any) => typeof r === 'string' && ['graveyard', 'in_graveyard'].includes(r.toLowerCase())))
+                expectedZone = Zone.Graveyard;
             else expectedZone = Zone.Battlefield;
         }
 
@@ -196,67 +235,9 @@ export class TargetValidator {
             return false;
         }
 
-        const sourceStack = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
-        const sourceBattlefield = state.battlefield.find(o => o.id === sourceId);
-        const sourceGraveyard = (Object.values(state.players) as any[]).flatMap(p => p.graveyard).find((o: any) => o.id === sourceId);
-
-        let source = sourceObjProvided || (sourceStack?.card) || sourceBattlefield || sourceGraveyard;
-        if (!source && sourceStack) source = sourceStack;
-
-        let sourceControllerId = source?.controllerId || (sourceStack as any)?.controllerId;
-
-        if (!sourceControllerId) {
-            for (const pId in state.players) {
-                const cardInHand = state.players[pId as PlayerId].hand.find(c => c.id === sourceId);
-                if (cardInHand) {
-                    sourceControllerId = pId;
-                    source = cardInHand;
-                    break;
-                }
-            }
-        }
-
-        if (!source) {
-            // Log missing source if needed
-        }
-
-        const keywords = LayerProcessor.getEffectiveStats(targetObj, state).keywords;
-
-        // Protection (Rule 702.16)
-        const protectionKeywords = keywords.filter((k: string) => k.toLowerCase().startsWith('protection from'));
-        for (const prot of protectionKeywords) {
-            const qualityStr = prot.toLowerCase().replace('protection from ', '');
-            const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
-            if (source && this.sourceHasQualities(source, qualities, state)) return false;
-        }
-
-        // Hexproof (Rule 702.11)
-        const hexproofKeywords = keywords.filter((k: string) => k.toLowerCase().startsWith('hexproof'));
-        for (const hp of hexproofKeywords) {
-            if (hp.toLowerCase() === 'hexproof') {
-                if (sourceControllerId && sourceControllerId !== targetObj.controllerId) return false;
-            } else if (hp.toLowerCase().startsWith('hexproof from ')) {
-                const qualityStr = hp.toLowerCase().replace('hexproof from ', '');
-                const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
-                if (sourceControllerId && sourceControllerId !== targetObj.controllerId) {
-                    if (source && this.sourceHasQualities(source, qualities, state)) return false;
-                }
-            }
-        }
-
-        // Shroud (Rule 702.18)
-        if (keywords.includes('Shroud')) return false;
-
-        let restrictions = targetDefForIndex?.restrictions;
-        if (targetDefForIndex?.perTargetRestrictions && targetDefForIndex.perTargetRestrictions[targetIndex]) {
-            restrictions = targetDefForIndex.perTargetRestrictions[targetIndex];
-        }
-
-        if (restrictions) {
-            return this.matchesRestrictions(state, targetObj, restrictions, sourceControllerId, sourceId, undefined, (targetDefForIndex as any)?.stackObj);
-        }
-
-        return true;
+        // --- CUSTOM RESTRICTIONS ---
+        const restrictions = targetDefForIndex?.restrictions || [];
+        return this.matchesRestrictions(state, targetObj, restrictions, context);
     }
 
     /**
@@ -291,7 +272,7 @@ export class TargetValidator {
 
         const legalPerIndex: string[][] = [];
         for (let i = 0; i < count; i++) {
-            const legal = allPotentialTargets.filter(tid => this.isLegalTarget(state, sourceId, tid, targetDef, i));
+            const legal = allPotentialTargets.filter(tid => this.isLegalTarget(state, { sourceId, controllerId, targetDef, targetIndex: i }, tid));
             if (i < minCount && legal.length === 0) return false; // Mandatory slot i has no candidates
             legalPerIndex.push(legal);
         }
@@ -317,7 +298,8 @@ export class TargetValidator {
     /**
      * Evaluates a set of restrictions against a target object or player.
      */
-    public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], controllerId: string | null, sourceId: string, log?: (msg: string) => void, stackObject?: any): boolean {
+    public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], context: TargetingContext, log?: (msg: string) => void): boolean {
+        const { sourceId, controllerId, stackObject } = context;
         if (!targetObj) return false;
         const definition = targetObj.definition || targetObj.card?.definition;
         if (log) log(`[DEBUG] matchesRestrictions for ${definition?.name || targetObj.name}: [${restrictions.join(', ')}]`);
@@ -441,7 +423,7 @@ export class TargetValidator {
                 if (valPart.match(/^\d+$/)) {
                     val = parseInt(valPart);
                 } else if (valPart === 'x') {
-                    val = stackObject?.xValue || (state.pendingAction as any)?.data?.xValue || (state.pendingAction as any)?.xValue || 0;
+                    val = stackObject?.xValue || stackObject?.data?.xValue || (state.pendingAction as any)?.data?.xValue || (state.pendingAction as any)?.xValue || 0;
                 } else if (valPart === 'power' || valPart === 'source_power') {
                     const source = this.findObjectInAnyZone(state, sourceId);
                     val = source ? LayerProcessor.getEffectiveStats(source, state).power : 0;
@@ -633,10 +615,10 @@ export class TargetValidator {
                     } else {
                         // Recursion for Any/All blocks
                         if (r.type === 'Any' || r.type === 'any') {
-                            return r.restrictions.some((subR: any) => this.matchesRestrictions(state, targetObj, [subR], controllerId, sourceId, log, stackObject));
+                            return r.restrictions.some((subR: any) => this.matchesRestrictions(state, targetObj, [subR], context));
                         }
                         if (r.type === 'All' || r.type === 'all') {
-                            return r.restrictions.every((subR: any) => this.matchesRestrictions(state, targetObj, [subR], controllerId, sourceId, log, stackObject));
+                            return r.restrictions.every((subR: any) => this.matchesRestrictions(state, targetObj, [subR], context));
                         }
 
                         let match = true;

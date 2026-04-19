@@ -1,5 +1,4 @@
 import { AbilityType, EffectDefinition, GameState, StackObject } from '@shared/engine_types';
-import { m21 } from '../../data/m21';
 
 /**
  * Handles the management and resolution of objects on the stack (Rule 405)

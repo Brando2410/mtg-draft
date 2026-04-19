@@ -1,71 +1,93 @@
 // events.ts
 // Event constants and interfaces
 
-import type { GameObject } from './state';
-import type { GameObjectId, PlayerId } from './core';
-import { Zone } from './core';
+import type { GameObjectId, PlayerId } from "./core";
+import { Zone } from "./core";
+import type { GameObject } from "./state";
 
 export const TriggerEvent = {
-    EnterBattlefield: 'ON_ETB',
-    EnterBattlefieldOther: 'ON_ETB_OTHER',
-    Death: 'ON_DEATH',
-    DeathOther: 'ON_DEATH_OTHER',
-    LeaveBattlefield: 'ON_LEAVE_BATTLEFIELD',
-    Attack: 'ON_ATTACK',
-    Block: 'ON_BLOCK',
-    BecameBlocked: 'ON_BECAME_BLOCKED',
-    AttackersDeclared: 'ON_ATTACKERS_DECLARED',
-    AttackOrBlock: 'ON_ATTACK_OR_BLOCK',
-    DamageDealtToCreature: 'ON_DAMAGE_DEALT_TO_CREATURE',
-    DamageDealtToPlayer: 'ON_DAMAGE_PLAYER',
-    DamageTaken: 'ON_DAMAGE_TAKED',
-    NoncombatDamageOpponent: 'ON_NONCOMBAT_DAMAGE_OPPONENT',
-    CountersAdded: 'ON_COUNTERS_ADDED',
-    CountersAddedOther: 'ON_COUNTERS_ADDED_OTHER',
-    CastInstantOrSorcery: 'ON_CAST_INSTANT_SORCERY',
-    CastFirstInstantOrSorcery: 'ON_CAST_FIRST_INSTANT_SORCERY',
-    CastNonCreature: 'ON_CAST_NON_CREATURE',
-    CastSpell: 'ON_CAST_SPELL',
-    OpponentCastNonHand: 'ON_OPPONENT_CAST_NON_HAND',
-    SecondSpellCast: 'ON_SECOND_SPELL_CAST',
-    ThirdSpellCast: 'ON_THIRD_SPELL_CAST',
-    CopySpell: 'ON_COPY_SPELL',
-    Magecraft: 'ON_MAGECRAFT',
-    MagecraftOpponent: 'ON_MAGECRAFT_OPPONENT',
-    Draw: 'ON_DRAW',
-    SecondDraw: 'ON_SECOND_DRAW',
-    BecomeTarget: 'ON_BECOME_TARGET',
-    LifeGain: 'ON_LIFE_GAIN',
-    Sacrifice: 'ON_SACRIFICE',
-    Untap: 'ON_UNTAP',
-    EndOfTurn: 'ON_END_OF_TURN',
-    EndStep: 'ON_END_STEP',
-    StartOfCombat: 'ON_START_OF_COMBAT',
-    BeginningOfCombatStep: 'ON_BEGINNING_OF_COMBAT_STEP',
-    PreCombatMainPhaseStart: 'ON_PRE_COMBAT_MAIN_PHASE_START',
-    PostCombatMainPhaseStart: 'ON_POST_COMBAT_MAIN_PHASE_START',
-    Upkeep: 'ON_UPKEEP_STEP',
-    Cleanup: 'ON_CLEANUP_STEP',
-    LeaveGraveyard: 'ON_LEAVE_GRAVEYARD',
-    ValentinReplacementSuccess: 'ON_VALENTIN_REPLACEMENT_SUCCESS',
-    ActivateLoyalty: 'ON_ACTIVATE_LOYALTY',
-    TriggerQueued: 'ON_TRIGGER_QUEUED',
-    DamageDealt: 'ON_DAMAGE_DEALT',
-    Landfall: 'ON_LANDFALL'
+  ActivateLoyalty: "ON_ACTIVATE_LOYALTY",
+  Attack: "ON_ATTACK",
+  AttackOrBlock: "ON_ATTACK_OR_BLOCK",
+  AttackersDeclared: "ON_ATTACKERS_DECLARED",
+  BecameBlocked: "ON_BECAME_BLOCKED",
+  BecomeTarget: "ON_BECOME_TARGET",
+  BeginningOfCombatStep: "ON_BEGINNING_OF_COMBAT_STEP",
+  Block: "ON_BLOCK",
+  CastFirstInstantOrSorcery: "ON_CAST_FIRST_INSTANT_SORCERY",
+  CastInstantOrSorcery: "ON_CAST_INSTANT_SORCERY",
+  CastNonCreature: "ON_CAST_NON_CREATURE",
+  CastSpell: "ON_CAST_SPELL",
+  Cleanup: "ON_CLEANUP_STEP",
+  CopySpell: "ON_COPY_SPELL",
+  CountersAdded: "ON_COUNTERS_ADDED",
+  CountersAddedOther: "ON_COUNTERS_ADDED_OTHER",
+  DamageDealt: "ON_DAMAGE_DEALT",
+  DamageDealtToCreature: "ON_DAMAGE_DEALT_TO_CREATURE",
+  DamageDealtToPlayer: "ON_DAMAGE_PLAYER",
+  DamageTaken: "ON_DAMAGE_TAKED",
+  Death: "ON_DEATH",
+  DeathOther: "ON_DEATH_OTHER",
+  Draw: "ON_DRAW",
+  EndOfTurn: "ON_END_OF_TURN",
+  EndStep: "ON_END_STEP",
+  EnterBattlefield: "ON_ETB",
+  EnterBattlefieldOther: "ON_ETB_OTHER",
+  Landfall: "ON_LANDFALL",
+  LeaveBattlefield: "ON_LEAVE_BATTLEFIELD",
+  LeaveGraveyard: "ON_LEAVE_GRAVEYARD",
+  LifeGain: "ON_LIFE_GAIN",
+  Magecraft: "ON_MAGECRAFT",
+  MagecraftOpponent: "ON_MAGECRAFT_OPPONENT",
+  NoncombatDamageOpponent: "ON_NONCOMBAT_DAMAGE_OPPONENT",
+  OpponentCastNonHand: "ON_OPPONENT_CAST_NON_HAND",
+  PostCombatMainPhaseStart: "ON_POST_COMBAT_MAIN_PHASE_START",
+  PreCombatMainPhaseStart: "ON_PRE_COMBAT_MAIN_PHASE_START",
+  Sacrifice: "ON_SACRIFICE",
+  SecondDraw: "ON_SECOND_DRAW",
+  SecondSpellCast: "ON_SECOND_SPELL_CAST",
+  StartOfCombat: "ON_START_OF_COMBAT",
+  ThirdSpellCast: "ON_THIRD_SPELL_CAST",
+  TriggerQueued: "ON_TRIGGER_QUEUED",
+  Untap: "ON_UNTAP",
+  Upkeep: "ON_UPKEEP_STEP",
+  ValentinReplacementSuccess: "ON_VALENTIN_REPLACEMENT_SUCCESS",
 } as const;
 export type TriggerEvent = (typeof TriggerEvent)[keyof typeof TriggerEvent];
 
+/**
+ * EventPayload - Standardized metadata for game events.
+ * Eliminates ambiguous 'data', 'object', 'gameObject' properties.
+ */
+export interface EventPayload {
+  object?: GameObject; // Primary object involved (e.g. thing entering, dying, tapped)
+  card?: GameObject; // Contextual alias for object in non-battlefield zones
+  targetId?: GameObjectId; // ID of an object being targeted or affected
+  targetIds?: string[]; // List of affected IDs (e.g. for mass triggers)
+  sourceId?: GameObjectId; // Source of the action/effect (e.g. damaging source)
+  sourceObject?: GameObject; // Full object reference for the source
+  targetObject?: GameObject; // Full object reference for the target
+  amount?: number; // Numeric data (damage, life gain, counters)
+  counterType?: string; // Type of counter added/removed
+  fromZone?: Zone; // Previous zone for move events
+  toZone?: Zone; // Destination zone for move events
+  text?: string; // Chosen name, type, or label
+  stackSnapshot?: any; // Reference snapshot for 'look-back' resolution
+}
+
 export interface GameEvent {
-    type: string;
-    playerId?: PlayerId;
-    sourceId?: GameObjectId;
-    targetId?: GameObjectId;
-    targets?: string[];
-    amount?: number;
-    counterType?: string;
-    sourceZone?: Zone;
-    card?: GameObject;
-    object?: any;
-    gameObject?: any;
-    data?: any;
+  type: string | TriggerEvent;
+  playerId?: PlayerId; // Player who performed the action or is affected
+  payload?: EventPayload; // Structured metadata
+
+  // Legacy support (to be phased out)
+  data?: any;
+  sourceId?: GameObjectId;
+  targetId?: GameObjectId;
+  amount?: number;
+  targets?: string[];
+  counterType?: string;
+  sourceZone?: Zone;
+  card?: GameObject;
+  object?: any;
 }

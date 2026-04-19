@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent, TargetMapping } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from "@shared/engine_types";
 
 export const FaithsFetters: CardDefinition = {
     name: "Faith's Fetters",

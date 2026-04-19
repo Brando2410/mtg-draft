@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const WisdomofAges: CardDefinition = {
     name: "Wisdom of Ages",
     manaCost: "{4}{U}{U}{U}",

@@ -1,4 +1,4 @@
-import { TargetMapping, AbilityType, CardDefinition, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
     export const InklingMascot: CardDefinition = {
     name: "Inkling Mascot",
     manaCost: "{W}{B}",

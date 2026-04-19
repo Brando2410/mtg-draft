@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { CardDefinition } from '@shared/engine_types';
 
 export const AgelessGuardian: CardDefinition = {
     name: 'Ageless Guardian',

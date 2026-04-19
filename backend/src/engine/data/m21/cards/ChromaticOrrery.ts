@@ -1,4 +1,4 @@
-import { AbilityType, EffectType, CardDefinition, TargetMapping, CostType } from "@shared/engine_types";
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const ChromaticOrrery: CardDefinition = {
     name: "Chromatic Orrery",

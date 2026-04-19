@@ -1,4 +1,4 @@
-import { AbilityType, Zone, CardDefinition, EffectType, TargetMapping, CostType, DurationType } from "@shared/engine_types";
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const HellkitePunisher: CardDefinition = {
     name: "Hellkite Punisher",

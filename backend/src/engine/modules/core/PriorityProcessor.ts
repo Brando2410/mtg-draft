@@ -1,12 +1,11 @@
-import { AbilityType, GameState, Phase, PlayerId, Step, Zone, TargetMapping } from '@shared/engine_types';
-import { TurnProcessor } from './TurnProcessor';
-import { ManaProcessor } from '../magic/ManaProcessor';
-import { CostProcessor } from '../magic/CostProcessor';
-import { SpellProcessor } from '../actions/SpellProcessor';
-import { LayerProcessor } from '../state/LayerProcessor';
-import { ConditionProcessor } from '../core/ConditionProcessor';
-import { EffectType } from '@shared/engine_types';
+import { AbilityType, EffectType, GameState, Phase, PlayerId, Step, TargetMapping, Zone } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
+import { SpellProcessor } from '../actions/SpellProcessor';
+import { ConditionProcessor } from '../core/ConditionProcessor';
+import { CostProcessor } from '../magic/CostProcessor';
+import { ManaProcessor } from '../magic/ManaProcessor';
+import { LayerProcessor } from '../state/LayerProcessor';
+import { TurnProcessor } from './TurnProcessor';
 
 
 /**
@@ -471,7 +470,10 @@ export class PriorityProcessor {
     const grantedAbilityEffects = state.ruleRegistry.continuousEffects.filter(e =>
       (e.type === EffectType.GainAbilitiesOfTopCard || e.type === EffectType.AddTriggeredAbility) &&
       (e.targetIds?.includes(objId) || (e.targetMapping === 'SELF' && e.sourceId === objId) || LayerProcessor.isTarget(state, e, objId)) &&
-      ConditionProcessor.matchesCondition(state, e.condition, e.sourceId, e.controllerId)
+      ConditionProcessor.matchesCondition(state, e.condition, {
+        sourceId: e.sourceId,
+        controllerId: e.controllerId
+      })
     );
 
     for (const e of grantedAbilityEffects) {
@@ -637,7 +639,10 @@ export class PriorityProcessor {
       if (!source || (e.activeZones && !e.activeZones.includes(source.zone))) return false;
 
       // 3. Condition check
-      if (e.condition && !ConditionProcessor.matchesCondition(state, e.condition, e.sourceId, e.controllerId)) return false;
+      if (e.condition && !ConditionProcessor.matchesCondition(state, e.condition, {
+        sourceId: e.sourceId,
+        controllerId: e.controllerId
+      })) return false;
 
       // 4. Target check (Is this card the target of the permission?)
       if (!LayerProcessor.isTarget(state, e, targetId)) return false;

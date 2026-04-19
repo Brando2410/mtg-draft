@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const ShadrixSilverquill: CardDefinition = {
     name: "Shadrix Silverquill",

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, DurationType, TargetMapping, TriggerEvent } from "@shared/engine_types";
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TriggerEvent } from "@shared/engine_types";
 
 export const OrneryDilophosaur: CardDefinition = {
 

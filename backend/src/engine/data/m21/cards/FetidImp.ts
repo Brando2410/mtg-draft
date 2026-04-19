@@ -1,4 +1,4 @@
-import { AbilityType, Zone, CardDefinition, EffectType, DurationType, CostType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, Zone } from "@shared/engine_types";
 
 export const FetidImp: CardDefinition = {
     name: "Fetid Imp",

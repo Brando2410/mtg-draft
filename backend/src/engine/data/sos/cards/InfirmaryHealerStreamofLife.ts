@@ -1,5 +1,5 @@
-﻿import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const InfirmaryHealerStreamofLife: CardDefinition = {
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+export const InfirmaryHealerStreamofLife: CardDefinition = {
     name: "Infirmary Healer // Stream of Life",
     manaCost: "{1}{G}",
     scryfall_id: "911442e3-3003-4683-a766-e791e9553667",
@@ -39,4 +39,4 @@
         ]
     }
 };
-    
+

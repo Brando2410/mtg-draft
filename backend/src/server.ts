@@ -1,12 +1,12 @@
+import { Card, Player } from '@shared/types';
 import http from 'http';
 import { Server, Socket } from 'socket.io';
 import app from './app';
-import { SocketHandlers } from './socket/handlers';
-import { PersistenceService } from './services/PersistenceService';
-import { DraftService } from './services/DraftService';
 import { BotLogic } from './bots/BotLogic';
+import { DraftService } from './services/DraftService';
 import { LoggerService } from './services/LoggerService';
-import { Room, Player, Card } from '@shared/types';
+import { PersistenceService } from './services/PersistenceService';
+import { SocketHandlers } from './socket/handlers';
 
 const server = http.createServer(app);
 const io = new Server(server, {

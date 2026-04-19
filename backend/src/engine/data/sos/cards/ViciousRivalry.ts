@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType } from '@shared/engine_types';
 
 export const ViciousRivalry: CardDefinition = {
     name: "Vicious Rivalry",

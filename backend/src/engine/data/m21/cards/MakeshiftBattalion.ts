@@ -1,4 +1,4 @@
-import { AbilityType, EffectType, CardDefinition, TargetMapping, TriggerEvent } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from "@shared/engine_types";
 
 export const MakeshiftBattalion: CardDefinition = {
 

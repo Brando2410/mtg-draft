@@ -1,18 +1,13 @@
-import { TargetMapping, AbilityType, CardDefinition, CostType, EffectType, TargetType, Zone } from '@shared/engine_types';
-    export const SummonedDromedary: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+export const SummonedDromedary: CardDefinition = {
     name: "Summoned Dromedary",
     manaCost: "{3}{W}",
-    colors: [
-        "W"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Spirit",
-        "Camel"
-    ],
+    colors: ["W"],
+    types: ["Creature"],
+    subtypes: ["Spirit", "Camel"],
     keywords: ["Vigilance"],
+    power: "4",
+    toughness: "3",
     oracleText: "Vigilance\n{1}{W}: Return this card from your graveyard to your hand. Activate only as a sorcery.",
     abilities: [
         {
@@ -30,9 +25,7 @@ import { TargetMapping, AbilityType, CardDefinition, CostType, EffectType, Targe
                 }
             ]
         }
-    ],
-    power: "4",
-    toughness: "3"
+    ]
 };
-    
+
 

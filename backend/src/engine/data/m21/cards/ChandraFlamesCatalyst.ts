@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, Zone, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const ChandraFlamesCatalyst: CardDefinition = {
     name: "Chandra, Flame's Catalyst",

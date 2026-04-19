@@ -1,4 +1,4 @@
-import { TargetMapping, AbilityType, CardDefinition, CostType, EffectType, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const TerramorphicExpanse: CardDefinition = {
     name: "Terramorphic Expanse",
     manaCost: "",

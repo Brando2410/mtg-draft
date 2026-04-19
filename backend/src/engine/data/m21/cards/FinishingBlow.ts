@@ -1,4 +1,4 @@
-import {AbilityType, Zone, CardDefinition, EffectType, GameEvent, GameObject, TargetType} from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetType, Zone } from "@shared/engine_types";
 
 export const FinishingBlow: CardDefinition = {
         name: "Finishing Blow",

@@ -1,4 +1,4 @@
-import { AbilityType, Zone, EffectType, TargetMapping, CardDefinition } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from "@shared/engine_types";
 
 export const LifeGoesOn: CardDefinition = {
 

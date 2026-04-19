@@ -1,11 +1,11 @@
-import { ActionType, AbilityCost, GameObject, GameState, PlayerId, Zone, EffectType, TargetMapping, AbilityType, Phase, CostType } from '@shared/engine_types';
-import { CostProcessor } from '../magic/CostProcessor';
+import { AbilityCost, AbilityType, GameObject, GameState, Zone } from '@shared/engine_types';
+import { ActivateAbilityOptions, EngineContext, FinalizeAbilityOptions, FinalizeCastOptions, PlayCardOptions } from '../../interfaces/EngineContext';
 import { oracle } from '../../OracleLogicMap';
+import { CostProcessor } from '../magic/CostProcessor';
 import { ManaProcessor } from '../magic/ManaProcessor';
-import { EngineContext } from '../../interfaces/EngineContext';
-import { SpellValidator } from './SpellValidator';
 import { SpellCostCalculator } from './SpellCostCalculator';
 import { SpellInteractiveManager } from './SpellInteractiveManager';
+import { SpellValidator } from './SpellValidator';
 
 /**
  * SpellProcessor - Orchestrator Facade for Casting Spells and Activating Abilities.
@@ -26,24 +26,23 @@ export class SpellProcessor {
 
     public static playCard(
         state: GameState,
-        playerId: PlayerId,
-        cardInstanceId: string,
-        declaredTargets: string[],
         log: (m: string) => void,
         engine: EngineContext,
-        bypassTargeting = false
+        options: PlayCardOptions
     ): boolean {
-        log(`[DEBUG] SpellProcessor.playCard: Card ${cardInstanceId} by ${playerId} (BypassTargeting: ${bypassTargeting})`);
+        const { playerId, cardId: cardInstanceId, bypassPriority = false, bypassTargeting = false } = options;
+        let declaredTargets = options.targets || [];
+        log(`[DEBUG] SpellProcessor.playCard: Card ${cardInstanceId} by ${playerId} (BypassPriority: ${bypassPriority}, BypassTargeting: ${bypassTargeting})`);
         const activeId = String(state.activePlayerId).trim();
         const callerId = String(playerId).trim();
 
         // 1. Priority Error (Rule 117.1)
-        if (!bypassTargeting && String(state.priorityPlayerId) !== String(playerId)) {
+        if (!bypassPriority && String(state.priorityPlayerId) !== String(playerId)) {
             log(`Tried to play card without priority.`);
             return false;
         }
 
-        if (state.pendingAction && !bypassTargeting) {
+        if (state.pendingAction && !bypassPriority) {
             log(`Cannot cast: Pending action ${state.pendingAction.type} must be resolved first.`);
             return false;
         }
@@ -54,7 +53,7 @@ export class SpellProcessor {
             return false;
         }
 
-        const cardToPlay = SpellValidator.resolveCardToPlay(state, playerId, cardInstanceId, log, bypassTargeting);
+        const cardToPlay = SpellValidator.resolveCardToPlay(state, playerId, cardInstanceId, log, bypassPriority);
         if (!cardToPlay) return false;
 
         // --- ACTIVATED ABILITY REDIRECTION (Graveyard) ---
@@ -72,13 +71,19 @@ export class SpellProcessor {
 
                 if (graveAbilityIndex !== undefined && graveAbilityIndex !== -1) {
                     log(`[DEBUG] Converting playCard to activateAbility for ${cardToPlay.definition.name}`);
-                    return SpellProcessor.activateAbility(state, playerId, cardInstanceId, graveAbilityIndex, declaredTargets, log, engine, bypassTargeting);
+                    return SpellProcessor.activateAbility(state, log, engine, {
+                        playerId,
+                        cardId: cardInstanceId,
+                        abilityIndex: graveAbilityIndex,
+                        targets: declaredTargets,
+                        bypassPriority: bypassPriority
+                    });
                 }
             }
         }
 
         // --- MDFC FACE SELECTION (CR 711.1) ---
-        if (cardToPlay.definition.faces && !bypassTargeting && !(cardToPlay as any).selectedFaceDefinition) {
+        if (cardToPlay.definition.faces && !bypassPriority && !(cardToPlay as any).selectedFaceDefinition) {
             const { ChoiceGenerator } = require('./../effects/ChoiceGenerator');
             const { ActionType } = require('@shared/engine_types');
             state.pendingAction = ChoiceGenerator.createModalChoice({
@@ -102,7 +107,7 @@ export class SpellProcessor {
         }
 
         // --- X-VALUE RESET FAIL-SAFE ---
-        if (!bypassTargeting && cardToPlay.xValue !== undefined) {
+        if (!bypassPriority && cardToPlay.xValue !== undefined) {
             cardToPlay.xValue = undefined;
         }
 
@@ -124,7 +129,7 @@ export class SpellProcessor {
         const isInstantOrSorcery = isInstant || isSorcery;
         const isFirstInstantOrSorcery = isInstantOrSorcery && !state.turnState.instantOrSorceryCastThisTurn[playerId];
 
-        if (!SpellValidator.validateCardTiming(state, playerId, cardToPlay, isInstantOrFlash, bypassTargeting, log)) {
+        if (!SpellValidator.validateCardTiming(state, playerId, cardToPlay, isInstantOrFlash, bypassPriority, log)) {
             return false;
         }
 
@@ -205,20 +210,26 @@ export class SpellProcessor {
         }
 
         // Step 3: Finalization
-        return SpellProcessor.finalizeSpellCast(state, playerId, cardToPlay, totalMana, additionalCosts, declaredTargets, spellEffects, targetDefinition, isFirstInstantOrSorcery, isInstantOrSorcery, engine, log);
+        return SpellProcessor.finalizeSpellCast(state, log, engine, {
+            playerId,
+            cardToPlay,
+            totalMana,
+            additionalCosts,
+            declaredTargets,
+            spellEffects,
+            targetDefinition,
+            isFirstInstantOrSorcery,
+            isInstantOrSorcery
+        });
     }
 
     public static activateAbility(
         state: GameState,
-        playerId: PlayerId,
-        cardId: string,
-        abilityIndex: number,
-        declaredTargets: string[],
         log: (m: string) => void,
         engine: EngineContext,
-        bypassTargeting = false,
-        choiceIndex?: number
+        options: ActivateAbilityOptions
     ): boolean {
+        const { playerId, cardId, abilityIndex, targets: declaredTargets = [], bypassPriority = false, choiceIndex, bypassTargeting = false } = options;
         const { TargetingProcessor } = require('./TargetingProcessor');
         const obj = TargetingProcessor.findObjectInAnyZone(state, cardId);
         if (!obj) return false;
@@ -226,7 +237,7 @@ export class SpellProcessor {
         const player = state.players[playerId];
         if (!player) return false;
 
-        if (!bypassTargeting && String(state.priorityPlayerId) !== String(playerId)) {
+        if (!bypassPriority && String(state.priorityPlayerId) !== String(playerId)) {
             log(`Tried to activate ability without priority.`);
             return false;
         }
@@ -235,7 +246,7 @@ export class SpellProcessor {
         // When bypassTargeting is true (during auto-tap), we ignore the presence of other 
         // pending actions. This is necessary because land-tapping often triggers 
         // sub-effects (like choice modals) which we have already pre-resolved.
-        if (state.pendingAction && !bypassTargeting) {
+        if (state.pendingAction && !bypassPriority) {
             log(`Cannot activate ability: Pending action ${state.pendingAction.type} must be resolved first.`);
             return false;
         }
@@ -277,23 +288,23 @@ export class SpellProcessor {
         }
 
         // Step 4: Finalization (Rule 602.2h)
-        return SpellProcessor.finalizeAbilityActivation(state, playerId, obj, ability, abilityIndex, declaredTargets || [], log, engine, choiceIndex);
+        return SpellProcessor.finalizeAbilityActivation(state, log, engine, {
+            playerId,
+            obj,
+            ability,
+            abilityIndex,
+            declaredTargets: declaredTargets || [],
+            preSelectedChoice: choiceIndex
+        });
     }
 
     public static finalizeSpellCast(
         state: GameState,
-        playerId: PlayerId,
-        cardToPlay: GameObject,
-        totalMana: string,
-        additionalCosts: AbilityCost[],
-        declaredTargets: string[],
-        spellEffects: any[],
-        targetDefinition: any,
-        isFirstInstantOrSorcery: boolean,
-        isInstantOrSorcery: boolean,
-        engine: any,
-        log: (m: string) => void
+        log: (m: string) => void,
+        engine: EngineContext,
+        options: FinalizeCastOptions
     ): boolean {
+        const { playerId, cardToPlay, totalMana, additionalCosts, declaredTargets, spellEffects, targetDefinition, isFirstInstantOrSorcery, isInstantOrSorcery } = options;
         const player = state.players[playerId];
         const { ActionProcessor } = require('./ActionProcessor');
         const { TargetingProcessor } = require('./TargetingProcessor');
@@ -517,7 +528,13 @@ export class SpellProcessor {
         return true;
     }
 
-    public static finalizeAbilityActivation(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, abilityIndex: number, declaredTargets: string[], log: (m: string) => void, engine: any, preSelectedChoice?: number): boolean {
+    public static finalizeAbilityActivation(
+        state: GameState,
+        log: (m: string) => void,
+        engine: EngineContext,
+        options: FinalizeAbilityOptions
+    ): boolean {
+        const { playerId, obj, ability, abilityIndex, declaredTargets, preSelectedChoice } = options;
         const { AbilityType } = require('@shared/engine_types');
         const { TriggerProcessor } = require('./../effects/TriggerProcessor');
         const playerObj = state.players[playerId];

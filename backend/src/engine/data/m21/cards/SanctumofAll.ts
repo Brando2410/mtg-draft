@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, GameObject, GameState, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const SanctumofAll: CardDefinition = {
     name: "Sanctum of All",
@@ -10,7 +10,6 @@ export const SanctumofAll: CardDefinition = {
     subtypes: ["Shrine"],
     abilities: [
         {
-            id: "sanctum_all_upkeep_trigger",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Upkeep,
             activeZone: Zone.Battlefield,
@@ -28,8 +27,8 @@ export const SanctumofAll: CardDefinition = {
                                     sourceZones: [Zone.Library, Zone.Graveyard],
                                     zone: Zone.Battlefield,
                                     restrictions: [
-                { type: 'Type', value: 'Shrine' }
-            ],
+                                        { type: 'Type', value: 'Shrine' }
+                                    ],
                                     reveal: true,
                                     shuffle: true
                                 }

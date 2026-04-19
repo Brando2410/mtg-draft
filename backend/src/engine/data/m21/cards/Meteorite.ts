@@ -1,4 +1,4 @@
-import { AbilityType, CostType, EffectType, CardDefinition, TargetMapping, TriggerEvent, TargetType } from "@shared/engine_types";
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent } from "@shared/engine_types";
 
 export const Meteorite: CardDefinition = {
 

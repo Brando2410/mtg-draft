@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
     export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
     name: "Emeritus of Truce // Swords to Plowshares",
     manaCost: "{1}{W}{W}",

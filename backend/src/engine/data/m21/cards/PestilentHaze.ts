@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, Zone, EffectType, TargetMapping, DurationType } from "@shared/engine_types";
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const PestilentHaze: CardDefinition = {
     name: "Pestilent Haze",

@@ -1,7 +1,7 @@
 import { m21 } from './data/m21';
 import { random } from './data/random';
-import { stx } from './data/stx';
 import { sos } from './data/sos';
+import { stx } from './data/stx';
 
 /**
  * The Rules Oracle

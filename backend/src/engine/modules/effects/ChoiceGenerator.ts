@@ -155,7 +155,16 @@ export class ChoiceGenerator {
             if (failureEffects) {
                 const { EffectProcessor } = require('./EffectProcessor');
                 if (log) log(`[DISCARD-DEBUG] ${currentPlayerId} cannot discard. Triggering failure effects.`);
-                EffectProcessor.resolveEffects(state, failureEffects, sourceId, [currentPlayerId], (m: string) => { if (log) log(m); }, 0, stackObj, parentContext);
+                EffectProcessor.resolveEffects({
+                    state,
+                    effects: failureEffects,
+                    log: (m: string) => { if (log) log(m); },
+                    sourceId,
+                    targets: [currentPlayerId],
+                    stackObject: stackObj,
+                    parentContext: parentContext,
+                    controllerIdOverride: currentPlayerId // Set controller from the discard context
+                });
             }
             return this.createDiscardChoice(state, nextPlayerIds, sourceId, amount, label, stackObj, parentContext, failureEffects, log);
         }

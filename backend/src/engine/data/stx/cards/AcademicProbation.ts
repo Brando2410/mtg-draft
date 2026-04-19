@@ -1,8 +1,6 @@
 import {
     AbilityType,
-    CardDefinition,
-    Color,
-    DurationType,
+    CardDefinition, DurationType,
     EffectType,
     Restriction,
     RestrictionType,

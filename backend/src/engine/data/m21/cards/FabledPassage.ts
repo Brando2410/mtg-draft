@@ -1,4 +1,4 @@
-import {AbilityType, Zone, CardDefinition, EffectType, GameEvent, GameObject, TargetType, TargetMapping} from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from "@shared/engine_types";
 
 export const FabledPassage: CardDefinition = {
         name: "Fabled Passage",

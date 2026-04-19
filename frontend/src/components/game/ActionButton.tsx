@@ -253,11 +253,13 @@ export const ActionButton = memo(({
                     const minCount = pendingAction.data?.minCount ?? (targetDef?.minCount ?? (targetDef?.optional ? 0 : (targetDef?.count ?? 1)));
                     const totalCount = pendingAction.data?.count ?? (targetDef?.count ?? 1);
                     const isOptional = minCount === 0;
+                    const isInteractive = pendingAction.data?.isSpellCasting || pendingAction.data?.abilityIndex !== undefined;
                     
                     // Show secondary if:
                     // 1. Multiple targets (need Clear Selection vs Confirm)
                     // 2. Optional target (need Cancel Cast vs Confirm-without-targets)
-                    const showSecondary = totalCount > 1 || isOptional;
+                    // 3. Interactive action (need Cancel Cast/Activation)
+                    const showSecondary = totalCount > 1 || isOptional || isInteractive;
                     
                     if (!showSecondary) return null;
 

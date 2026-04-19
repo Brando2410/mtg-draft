@@ -1,12 +1,12 @@
 // state.ts
 // Game state and player state structures
 
-import type { ContinuousEffect } from './effects';
-import { Phase, Step, Zone } from './core';
-import type { GameObjectId, PlayerId } from './core';
-import type { AbilityRestriction } from './targeting';
+import type { AbilityDefinition } from './abilities';
 import { AbilityType } from './abilities';
-import type { ParsedAbility } from './abilities';
+import type { GameObjectId, PlayerId } from './core';
+import { Phase, Step, Zone } from './core';
+import type { ContinuousEffect } from './effects';
+import type { AbilityRestriction } from './targeting';
 
 export interface CardDefinition {
     name: string;
@@ -31,7 +31,7 @@ export interface CardDefinition {
     preparedFace?: CardDefinition;
     faces?: CardDefinition[];
     flashbackCost?: string;
-    abilities?: (ParsedAbility | string)[];
+    abilities?: (AbilityDefinition | string)[];
     exileOnResolution?: boolean;
     rarity?: 'common' | 'uncommon' | 'rare' | 'mythic' | 'basic';
 }

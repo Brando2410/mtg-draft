@@ -1,10 +1,11 @@
 // effects.ts
 // Effect types, definitions, and durations
 
-import type { ParsedAbility } from './abilities';
-import type { AbilityRestriction } from './targeting';
+import type { AbilityDefinition } from './abilities';
 import type { GameObjectId, PlayerId } from './core';
-import { Step, Zone, TargetMapping } from './core';
+import { Step, TargetMapping, Zone } from './core';
+import type { StackObject } from './state';
+import type { AbilityRestriction, TargetDefinition } from './targeting';
 
 export const EffectType = {
     DealDamage: 'DealDamage',
@@ -154,7 +155,7 @@ export interface ContinuousEffect {
     subtypesSet?: string[];
     colorsToAdd?: string[];
     colorSet?: string[];
-    abilitiesToAdd?: (string | ParsedAbility)[];
+    abilitiesToAdd?: (string | AbilityDefinition)[];
     abilitiesToRemove?: string[];
     removeAllAbilities?: boolean;
     exileOnMoveToGraveyard?: boolean;
@@ -176,6 +177,47 @@ export interface ContinuousEffect {
 }
 
 /**
+ * ResolutionContext (CR 608): Standardized contract for passing state through
+ * the effect resolution chain. Replaces loosely typed 'any' parameters.
+ */
+export interface ResolutionContext {
+    sourceId: GameObjectId;
+    controllerId: PlayerId;
+    targets: string[];
+    effects: EffectDefinition[]; // The list of effects in this resolution chain
+    stackObject?: StackObject;
+    parentContext?: ResolutionContext;
+    startIndex?: number;
+    eventData?: any;
+    exiledIds?: string[];        // Track objects moved to exile during this resolution
+    lookingCards?: string[];     // Track cards revealed/looked at during this resolution (e.g. Scry/Search)
+    nextEffectIndex?: number;    // Pointer for resuming multi-step effects
+}
+
+/**
+ * ConditionContext: Standardized contract for requirement checks in ConditionProcessor.
+ */
+export interface ConditionContext {
+    sourceId: GameObjectId;
+    controllerId: PlayerId;
+    event?: import('./events').GameEvent;
+    stackObject?: StackObject;
+    targets?: string[];
+    eventData?: any;
+}
+
+/**
+ * TargetingContext: Standardized contract for legality checks in TargetValidator.
+ */
+export interface TargetingContext {
+    sourceId: string;
+    controllerId: string;
+    stackObject?: StackObject;
+    targetDef?: any;
+    targetIndex?: number;
+}
+
+/**
  * Rules Engine Representation of an Effect execution (CR 608/609).
  */
 export interface EffectDefinition {
@@ -193,7 +235,6 @@ export interface EffectDefinition {
 
     // --- TARGETING ---
     targetMapping?: any | string;
-    targetDefinition?: any;
     targetControllerMapping?: TargetMapping | string;
     copyFromIdMapping?: TargetMapping | string;
     restrictions?: any[];
@@ -238,6 +279,16 @@ export interface EffectDefinition {
     returnDuration?: DurationType;
 
     // --- SELECTION & INTERACTIVE ---
+    /** 
+     * RESOLUTION-TIME SELECTION (CR 608.2)
+     * These are chosen only when this specific effect resolves (e.g. Scry, Search, Choice).
+     * Uses TargetDefinition structure to filter options.
+     */
+    selectionDefinition?: TargetDefinition; 
+    
+    /** Legacy alias for selectionDefinition */
+    targetDefinition?: TargetDefinition; 
+    
     choices?: { 
         label: string; 
         effects?: EffectDefinition[]; 

@@ -1,5 +1,5 @@
-﻿import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
-    export const CheerfulOsteomancerRaiseDead: CardDefinition = {
+﻿import { AbilityType, CardDefinition, EffectType, SelectionType, TargetType, Zone } from '@shared/engine_types';
+export const CheerfulOsteomancerRaiseDead: CardDefinition = {
     name: "Cheerful Osteomancer",
     manaCost: "{3}{B}",
     scryfall_id: "3c34660c-25e3-4ff5-9b2b-5554ded2bcc3",
@@ -24,13 +24,20 @@
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: [
-                "Creature",
-                "youcontrol"
-            ] },
-                effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
+
+                effects: [{
+                    selectionType: SelectionType.Search,
+                    label: "Select one creature card to return to your hand",
+                    type: EffectType.MoveToZone,
+                    zone: Zone.Hand,
+                    targetDefinition: {
+                        type: TargetType.CardInGraveyard,
+                        count: 1,
+                        restrictions: ["Creature", "yours"]
+                    },
+                }]
             }
         ]
     }
 };
-    
+

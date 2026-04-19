@@ -1,9 +1,9 @@
-import { GameObject, GameObjectId, GameState, PlayerId, Zone, TargetType, TargetMapping } from '@shared/engine_types';
-import { LayerProcessor } from '../state/LayerProcessor';
+import { GameObject, GameState, PlayerId, ResolutionContext, TargetingContext, Zone } from '@shared/engine_types';
+import { EngineContext } from '../../interfaces/EngineContext';
 import { ManaProcessor } from '../magic/ManaProcessor';
 import { ActionProcessor } from './ActionProcessor';
-import { TargetValidator } from './TargetValidator';
 import { TargetMapper } from './TargetMapper';
+import { TargetValidator } from './TargetValidator';
 
 /**
  * Rules Engine Module: Targeting (Rule 115)
@@ -15,11 +15,11 @@ export class TargetingProcessor {
     public static calculateTotalCounts(targetDef: any, xValue: number = 0) { return TargetMapper.calculateTotalCounts(targetDef, xValue); }
     public static generateTargetPrompt(targetDef: any, selectedCount: number, xValue: number = 0, isSpellCasting: boolean = false) { return TargetMapper.generateTargetPrompt(targetDef, selectedCount, xValue, isSpellCasting); }
     public static findObjectInAnyZone(state: GameState, id: string): GameObject | null { return TargetValidator.findObjectInAnyZone(state, id); }
-    public static isLegalTarget(state: GameState, sourceOrId: string | any, targetId: string, abilityTargetDef?: any, targetIndex: number = 0): boolean { return TargetValidator.isLegalTarget(state, sourceOrId, targetId, abilityTargetDef, targetIndex); }
+    public static isLegalTarget(state: GameState, context: TargetingContext, targetId: string): boolean { return TargetValidator.isLegalTarget(state, context, targetId); }
     public static hasLegalTargets(state: GameState, sourceId: string, targetDef: any, controllerId: string): boolean { return TargetValidator.hasLegalTargets(state, sourceId, targetDef, controllerId); }
-    public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], controllerId: string | null, sourceId: string, log?: (msg: string) => void, stackObject?: any): boolean { return TargetValidator.matchesRestrictions(state, targetObj, restrictions, controllerId, sourceId, log, stackObject); }
+    public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], context: TargetingContext, log?: (msg: string) => void): boolean { return TargetValidator.matchesRestrictions(state, targetObj, restrictions, context, log); }
     public static sourceHasQualities(source: any, qualities: string[], state?: GameState): boolean { return TargetValidator.sourceHasQualities(source, qualities, state); }
-    public static resolveTargetMapping(state: GameState, mapping: string, targets: string[], sourceId: GameObjectId, controllerId: PlayerId, stackData?: any, effect?: any, parentContext?: any): string[] { return TargetMapper.resolveTargetMapping(state, mapping, targets, sourceId, controllerId, stackData, effect, parentContext); }
+    public static resolveTargetMapping(state: GameState, mapping: string, context: ResolutionContext, effect?: any): string[] { return TargetMapper.resolveTargetMapping(state, mapping, context, effect); }
     public static getDefinitionForIndex(targetDef: any, targetIndex: number): any { return TargetMapper.getDefinitionForIndex(targetDef, targetIndex); }
 
     /**
@@ -80,7 +80,13 @@ export class TargetingProcessor {
                     ...state.stack.map((o: any) => o.id),
                     ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
                 ];
-                actionData.targets = pool.filter(tid => this.isLegalTarget(state, state.pendingAction!.sourceId, tid, targetDef, nextIndex));
+                actionData.targets = pool.filter(tid => this.isLegalTarget(state, {
+                    sourceId: state.pendingAction!.sourceId || "",
+                    controllerId: playerId,
+                    stackObject: actionData.stackObj,
+                    targetDef: targetDef,
+                    targetIndex: nextIndex
+                }, tid));
 
                 updatePrompt();
                 log(`Removed last target: ${removed}`);
@@ -181,7 +187,13 @@ export class TargetingProcessor {
                         ...state.stack.map((o: any) => o.id),
                         ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
                     ];
-                    actionData.targets = pool.filter(tid => TargetingProcessor.isLegalTarget(state, state.pendingAction!.sourceId, tid, targetDef, newNextIndex));
+                    actionData.targets = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
+                        sourceId: state.pendingAction!.sourceId || "",
+                        controllerId: playerId,
+                        stackObject: actionData.stackObj,
+                        targetDef: targetDef,
+                        targetIndex: newNextIndex
+                    }, tid));
 
                     log(`Skipped optional target slot ${newNextIndex}.`);
                     return true;
@@ -255,7 +267,13 @@ export class TargetingProcessor {
                 ...state.stack.map((o: any) => o.id),
                 ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
             ];
-            actionData.targets = pool.filter(tid => this.isLegalTarget(state, state.pendingAction!.sourceId, tid, targetDef, nextIndex));
+            actionData.targets = pool.filter(tid => this.isLegalTarget(state, {
+                sourceId: state.pendingAction!.sourceId || "",
+                controllerId: playerId,
+                stackObject: actionData.stackObj,
+                targetDef: targetDef,
+                targetIndex: nextIndex
+            }, tid));
         }
 
         return true;
@@ -264,7 +282,7 @@ export class TargetingProcessor {
     /**
      * CR 603: Finalize a targeting sequence and resume the effect chain.
      */
-    public static finaliseTargeting(state: GameState, playerId: PlayerId, resolvedTargets: string[], engine: any): boolean {
+    public static finaliseTargeting(state: GameState, playerId: PlayerId, resolvedTargets: string[], engine: EngineContext): boolean {
         const actionData = state.pendingAction?.data;
         const sourceId = state.pendingAction?.sourceId;
         const abilityIndex = actionData?.abilityIndex;
@@ -277,7 +295,7 @@ export class TargetingProcessor {
             }
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
-            return engine.playCard(playerId, sourceId!, actionData.declaredTargets || [], false);
+            return engine.playCard({ playerId, cardId: sourceId!, targets: actionData.declaredTargets || [], bypassPriority: false });
         }
 
         if (actionData?.nextEffectIndex !== undefined) {
@@ -306,7 +324,16 @@ export class TargetingProcessor {
             }
 
             const { EffectProcessor } = require('./../effects/EffectProcessor');
-            EffectProcessor.resolveEffects(state, savedEffects, useSourceId, savedTargets, (m: string) => engine.log(m), actionData.nextEffectIndex, stackObj, actionData.parentContext);
+            EffectProcessor.resolveEffects({
+                state,
+                effects: savedEffects,
+                sourceId: useSourceId,
+                targets: savedTargets,
+                log: (m: string) => engine.log(m),
+                startIndex: actionData.nextEffectIndex,
+                stackObject: stackObj,
+                parentContext: actionData.parentContext,
+            });
 
             // --- RESUME PARENT CONTEXTS (NESTED RESOLUTION) ---
             let currentCtx = actionData.parentContext;
@@ -320,7 +347,16 @@ export class TargetingProcessor {
                 const pGrantContext = currentCtx.parentContext;
 
                 currentCtx = pGrantContext;
-                EffectProcessor.resolveEffects(state, pEffs, pSource, pTargets, (m: string) => engine.log(m), pNext, pStackObj, pGrantContext);
+                EffectProcessor.resolveEffects({
+                    state,
+                    effects: pEffs,
+                    sourceId: pSource,
+                    targets: pTargets,
+                    log: (m: string) => engine.log(m),
+                    startIndex: pNext,
+                    stackObject: pStackObj,
+                    parentContext: pGrantContext,
+                });
             }
 
             if (!state.pendingAction) {
@@ -350,13 +386,26 @@ export class TargetingProcessor {
         if (abilityIndex !== undefined) {
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
-            const success = engine.activateAbility(playerId, sourceId!, abilityIndex, resolvedTargets, true);
+            const success = engine.activateAbility({
+                playerId,
+                cardId: sourceId!,
+                abilityIndex,
+                targets: resolvedTargets,
+                bypassPriority: true,
+                bypassTargeting: true
+            });
             engine.checkAutoPass(playerId);
             return success;
         } else {
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
-            const success = engine.playCard(playerId, sourceId!, resolvedTargets, true);
+            const success = engine.playCard({
+                playerId,
+                cardId: sourceId!,
+                targets: resolvedTargets,
+                bypassPriority: true,
+                bypassTargeting: true
+            });
             engine.checkAutoPass(playerId);
             return success;
         }

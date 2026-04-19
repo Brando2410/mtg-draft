@@ -302,7 +302,17 @@ export const Battlefield = ({
     <div className="flex-1 relative flex flex-col bg-transparent overflow-hidden">
       
       {/* MODALS */}
-      <ChoiceModal pendingAction={pendingAction} me={me} onTapCard={onTapCard} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} />
+      <ChoiceModal 
+        pendingAction={pendingAction} 
+        me={me} 
+        opponent={opponent}
+        battlefield={battlefield}
+        stack={stack}
+        exile={exile}
+        onTapCard={onTapCard} 
+        onHoverStart={onHoverStart} 
+        onHoverEnd={onHoverEnd} 
+      />
       <XSelectionModal pendingAction={pendingAction} me={me} onResolve={onChoiceResolve} />
 
 

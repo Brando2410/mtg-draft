@@ -1,4 +1,4 @@
-import { EffectType, AbilityType, EffectDefinition, CardDefinition, Zone, TargetType } from '../../../../shared/engine_types';
+import { AbilityType, EffectType } from '../../../../shared/engine_types';
 
 /**
  * ReverseOracle Utility

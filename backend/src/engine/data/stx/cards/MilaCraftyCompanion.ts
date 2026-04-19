@@ -1,4 +1,4 @@
-import { CardDefinition, AbilityType, CostType, TriggerEvent, TargetMapping, EffectType, DynamicAmount, TargetType, DurationType, Zone, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const MilaCraftyCompanion: CardDefinition = {
     name: "Mila, Crafty Companion",

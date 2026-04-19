@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, DurationType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const HeroicIntervention: CardDefinition = {
     name: "Heroic Intervention",

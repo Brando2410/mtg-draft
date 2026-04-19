@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, Zone, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const QuandrixCultivator: CardDefinition = {
     name: 'Quandrix Cultivator',

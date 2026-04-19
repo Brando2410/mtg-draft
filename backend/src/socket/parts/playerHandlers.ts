@@ -1,5 +1,5 @@
-import { Server, Socket } from 'socket.io';
 import { Room } from '@shared/types';
+import { Server, Socket } from 'socket.io';
 import { PersistenceService } from '../../services/PersistenceService';
 
 export const registerPlayerHandlers = (io: Server, socket: Socket, rooms: Map<string, Room>) => {

@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
     export const GoblinGlasswrightCraftwithPride: CardDefinition = {
     name: "Goblin Glasswright",
     manaCost: "{1}{R}",

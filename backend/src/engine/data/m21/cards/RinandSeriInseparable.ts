@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent, CostType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const RinandSeriInseparable: CardDefinition = {
     name: "Rin and Seri, Inseparable",

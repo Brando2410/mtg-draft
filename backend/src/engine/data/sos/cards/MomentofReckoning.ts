@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 export const MomentofReckoning: CardDefinition = {
     name: "Moment of Reckoning",
     manaCost: "{3}{W}{W}{B}{B}",

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent, Zone, CostType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const LoreholdExcavation: CardDefinition = {
     name: 'Lorehold Excavation',

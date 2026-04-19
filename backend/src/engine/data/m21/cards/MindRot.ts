@@ -1,4 +1,4 @@
-import { AbilityType, Zone, EffectType, CardDefinition, TargetType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from "@shared/engine_types";
 
 export const MindRot: CardDefinition = {
 

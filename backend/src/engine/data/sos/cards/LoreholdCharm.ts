@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, SelectionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, SelectionType, TargetMapping, TargetType } from '@shared/engine_types';
 export const LoreholdCharm: CardDefinition = {
     name: "Lorehold Charm",
     manaCost: "{R}{W}",

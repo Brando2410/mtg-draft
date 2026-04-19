@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const ExponentialGrowth: CardDefinition = {
     name: "Exponential Growth",

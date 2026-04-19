@@ -1,7 +1,7 @@
-import fs from 'fs/promises';
+import { Card, Room } from '@shared/types';
 import { existsSync, mkdirSync } from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
-import { Room, Card } from '@shared/types';
 import { LoggerService } from './LoggerService';
 
 export class PersistenceService {

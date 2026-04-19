@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const VastlandsScavengerBindtoLife: CardDefinition = {
     name: "Vastlands Scavenger // Bind to Life",
     manaCost: "{1}{G}{G}",

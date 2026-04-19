@@ -1,4 +1,4 @@
-import {AbilityType, Zone, CardDefinition, EffectType, GameEvent, GameObject, TargetType} from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, Zone } from "@shared/engine_types";
 
 export const Forest: CardDefinition = {
         name: "Forest",

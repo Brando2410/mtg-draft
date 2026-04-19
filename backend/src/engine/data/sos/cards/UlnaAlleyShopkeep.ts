@@ -1,4 +1,4 @@
-import { TargetMapping, AbilityType, CardDefinition, ConditionType, EffectType, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping } from '@shared/engine_types';
 export const UlnaAlleyShopkeep: CardDefinition = {
     name: "Ulna Alley Shopkeep",
     manaCost: "{2}{B}",

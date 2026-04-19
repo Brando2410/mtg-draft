@@ -1,11 +1,11 @@
 // abilities.ts
 // Ability types and structures
 
-import type { EffectDefinition, EffectDuration } from './effects';
 import type { GameObjectId, PlayerId } from './core';
 import { Zone } from './core';
-import type { TargetDefinition } from './targeting';
+import type { EffectDefinition, EffectDuration } from './effects';
 import type { TriggerEvent } from './events';
+import type { TargetDefinition } from './targeting';
 
 export const AbilityType = {
     Spell: 'Spell',
@@ -123,39 +123,129 @@ export interface TriggeredAbility {
     effects?: EffectDefinition[];
 }
 
-export interface ParsedAbility {
+/**
+ * AbilityDefinition - Standardized contract for all card abilities.
+ * Standardizes Rule 113 (Abilities), separating Spell, Activated, Triggered, and Static types.
+ */
+export type AbilityDefinition = 
+    | SpellAbilityDefinition 
+    | ActivatedAbilityDefinition 
+    | TriggeredAbilityDefinition 
+    | StaticAbilityDefinition;
+
+export interface BaseAbilityDefinition {
     id?: string;
+    /** The name of the ability (e.g. "Equip", "Flashback", or custom names) */
     name?: string;
+    /** Mandatory for all abilities - identifies the rules category */
     type: AbilityType;
-    multiMode?: { type: string };
-    multiTargetMapping?: boolean;
-    modes?: any[];
+    /** Full rules text of the ability */
+    oracleText?: string;
+    /** The zone where this ability is active (Default: Battlefield for permanents, Stack for spells) */
     activeZone?: Zone;
-    costs?: AbilityCost[];
-    additionalCosts?: AbilityCost[];
-    isManaAbility?: boolean;
-    eventMatch?: TriggerEvent | TriggerEvent[];
-    condition?: string | ConditionType | ((state: any, event: any, t: any) => boolean);
+    /** 
+     * ACTIVATION-TIME TARGETS (CR 601.2c / 602.2b)
+     * These must be chosen when the spell/ability is put on the stack.
+     */
     targetDefinition?: TargetDefinition | TargetDefinition[];
-    targets?: any[];
-    zone?: Zone;
-    activatedOnlyAsSorcery?: boolean;
+    /** Manual override for card image/art */
+    image_url?: string;
+    /** Metadata for UI display */
     triggerMetadata?: {
         isCombat?: boolean;
         triggerDescription?: string;
     };
+    /** Optionality of the entire ability */
+    optional?: boolean;
+    /** Costs that must be paid in addition to the primary cost (Rule 601.2f) */
+    additionalCosts?: AbilityCost[];
+    /** Shortcut mana cost for display or complex resolution hooks */
+    manaCost?: string;
+    /** Specific cost override for Flashback implementation */
+    flashbackCost?: string;
+    /** Inherent cost reduction logic (used by some specialized cards) */
+    costReduction?: any;
+}
+
+/**
+ * SpellAbilityDefinition - Represents a spell being cast from the hand or other zones (Rule 113.3a).
+ */
+export interface SpellAbilityDefinition extends BaseAbilityDefinition {
+    type: typeof AbilityType.Spell;
+    /** Ordered list of effects to execute upon resolution (Rule 608). Optional for Auras/Modals that use ETB or modes. */
+    effects?: EffectDefinition[];
+    /** Whether the card is exiled after resolving instead of going to graveyard */
+    exileOnResolution?: boolean;
+    /** Modal spell configuration (e.g. "Choose one --") */
     isModal?: boolean;
+    multiMode?: { type: string };
+    multiTargetMapping?: boolean;
     minChoices?: number;
     maxChoices?: number;
-    optional?: boolean;
+    modes?: any[];
+    /** Alternative costs (e.g. Flashback, Overload) */
+    costs?: AbilityCost[];
+}
+
+/**
+ * ActivatedAbilityDefinition - Represents an ability activated by a player (Rule 113.3b).
+ */
+export interface ActivatedAbilityDefinition extends BaseAbilityDefinition {
+    type: typeof AbilityType.Activated;
+    /** Costs required to activate this ability (Rule 602.2b) */
+    costs: AbilityCost[];
+    /** Ordered list of effects to execute upon resolution */
+    effects: EffectDefinition[];
+    /** Limit to sorcery-speed only */
+    activatedOnlyAsSorcery?: boolean;
+    /** Whether this is a mana ability (doesn't use stack, Rule 605) */
+    isManaAbility?: boolean;
+    /** Usage limits per turn */
     limitPerTurn?: number;
+    /** Activation condition (e.g. "only if you have 27+ life") */
+    condition?: string | ConditionType | ((state: any, event: any, t: any) => boolean);
+    /** Pre-declared targets for the ability */
+    targets?: any[];
+    /** Restrictions on what can be targeted or affected */
+    restrictions?: any[];
+}
+
+/**
+ * TriggeredAbilityDefinition - Represents an ability triggered by a game event (Rule 113.3c).
+ */
+export interface TriggeredAbilityDefinition extends BaseAbilityDefinition {
+    type: typeof AbilityType.Triggered;
+    /** The game event(s) that trigger this ability (Rule 603) */
+    eventMatch: TriggerEvent | TriggerEvent[];
+    /** Ordered list of effects to execute upon resolution */
+    effects: EffectDefinition[];
+    /** Logic expression or custom function to check before putting on stack (The "intervening if" clause) */
+    condition?: string | ConditionType | ((state: any, event: any, t: any) => boolean);
+    /** Usage limits per turn */
     maxTriggersPerTurn?: number;
-    oracleText?: string;
+    limitPerTurn?: number;
+    /** Pre-declared targets for the triggered ability */
+    targets?: any[];
+}
+
+/**
+ * StaticAbilityDefinition - Represents a continuous rule change (Rule 113.3d).
+ */
+export interface StaticAbilityDefinition extends BaseAbilityDefinition {
+    type: typeof AbilityType.Static | typeof AbilityType.Replacement;
+    /** Continuous effects generated by this ability (Rule 611) */
+    effects?: EffectDefinition[];
+    /** Custom logic conditions for the static effect to be active */
+    condition?: string | ConditionType | ((state: any, event: any, t: any) => boolean);
+    /** Specific rule restrictions (e.g. "Cannot attack") */
+    restrictions?: { type: string, value?: string, effectZone?: string }[];
+    /** Event to replace (for Replacement effects) */
     replacesEvent?: string;
-    exileOnResolution?: boolean;
+    /** Specific cost reductions granted by this ability */
     costReduction?: any;
+    /** Cost overrides for special actions */
     flashbackCost?: string;
     manaCost?: string;
-    restrictions?: { type: string, value?: string, effectZone?: string }[];
-    effects?: EffectDefinition[];
 }
+
+

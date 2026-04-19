@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 export const HarshAnnotation: CardDefinition = {
     name: "Harsh Annotation",
     manaCost: "{1}{W}",

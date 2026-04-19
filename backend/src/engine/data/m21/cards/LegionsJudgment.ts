@@ -1,4 +1,4 @@
-import { AbilityType, Zone, EffectType, TargetType, CardDefinition, TargetMapping } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from "@shared/engine_types";
 
 export const LegionsJudgment: CardDefinition = {
 

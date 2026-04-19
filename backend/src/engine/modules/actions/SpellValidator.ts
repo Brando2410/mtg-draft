@@ -1,16 +1,5 @@
-import { ActionType, AbilityCost, GameObject, GameState, PlayerId, Zone, EffectType, TargetMapping, AbilityType, Phase, CostType } from '@shared/engine_types';
-import { PriorityProcessor } from '../core/PriorityProcessor';
-import { TargetingProcessor } from './TargetingProcessor';
-import { LayerProcessor } from '../state/LayerProcessor';
+import { AbilityType, EffectType, GameObject, GameState, Phase, PlayerId, Zone } from '@shared/engine_types';
 import { CostProcessor } from '../magic/CostProcessor';
-import { oracle } from '../../OracleLogicMap';
-import { RestrictionProcessor } from './RestrictionProcessor';
-import { ChoiceGenerator } from '../effects/ChoiceGenerator';
-import { ActionProcessor } from './ActionProcessor';
-import { TriggerProcessor } from '../effects/TriggerProcessor';
-import { ConditionProcessor } from '../core/ConditionProcessor';
-import { EffectProcessor } from '../effects/EffectProcessor';
-import { ManaProcessor } from '../magic/ManaProcessor';
 
 /**
  * SpellValidator - Pure rules validation for spell casting and ability activation.
@@ -95,20 +84,34 @@ export class SpellValidator {
             const preparedObj = state.battlefield.find(o => o.id === realId && o.controllerId === playerId && o.isPrepared);
             if (preparedObj && (preparedObj.definition.preparedFace || preparedObj.definition.faces?.[1])) {
                 const face = preparedObj.definition.preparedFace || preparedObj.definition.faces![1];
-                return {
+                const copyId = isCopy ? cardInstanceId : `copy_${preparedObj.id}_${Date.now()}`;
+
+                // Cache check: prevents losing X values and targets between interaction steps
+                if ((state as any).dynamicCopies && (state as any).dynamicCopies[copyId]) {
+                    return (state as any).dynamicCopies[copyId];
+                }
+
+                const copy = {
                     ...preparedObj,
-                    id: isCopy ? cardInstanceId : `copy_${preparedObj.id}_${Date.now()}`,
+                    id: copyId,
                     definition: face,
                     zone: Zone.Battlefield,
                     isPreparedCopy: true,
                     sourceCreatureId: preparedObj.id
                 } as any;
+
+                if (!(state as any).dynamicCopies) (state as any).dynamicCopies = {};
+                (state as any).dynamicCopies[copyId] = copy;
+                return copy;
             }
         }
 
-        // 4. Search for Paradigm Virtual Copies
+        // 4. Search for Paradigm/Dynamic Virtual Copies
         if ((state as any).paradigmCopies && (state as any).paradigmCopies[cardInstanceId]) {
             return (state as any).paradigmCopies[cardInstanceId];
+        }
+        if ((state as any).dynamicCopies && (state as any).dynamicCopies[cardInstanceId]) {
+            return (state as any).dynamicCopies[cardInstanceId];
         }
 
         return null;
@@ -181,7 +184,6 @@ export class SpellValidator {
 
         state.turnState.landsPlayedThisTurn[playerId] = currentLandsPlayed + 1;
         player.hasPlayedLandThisTurn = true;
-        log(`Played Land: ${cardToPlay.definition.name} (${currentLandsPlayed + 1}/${maxLands})`);
         engine.checkStateBasedActions();
         return true;
     }

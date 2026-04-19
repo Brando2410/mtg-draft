@@ -1,4 +1,4 @@
-import { AbilityType, CostType, EffectType, CardDefinition, TargetMapping, DurationType } from "@shared/engine_types";
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const MaskedBlackguard: CardDefinition = {
 

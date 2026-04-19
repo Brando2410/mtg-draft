@@ -1,12 +1,12 @@
 import { AbilityCost, ActionType, GameState, PlayerId, Zone } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
+import { ChoiceGenerator } from '../effects/ChoiceGenerator';
 import { EffectProcessor } from '../effects/EffectProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
 import { ActionProcessor } from './ActionProcessor';
+import { PlayerActionProcessor } from './PlayerActionProcessor';
 import { SpellProcessor } from './SpellProcessor';
 import { TargetingProcessor } from './TargetingProcessor';
-import { ChoiceGenerator } from '../effects/ChoiceGenerator';
-import { PlayerActionProcessor } from './PlayerActionProcessor';
 
 import { EngineContext } from '../../interfaces/EngineContext';
 
@@ -36,7 +36,7 @@ export class ChoiceProcessor {
     // Handle Trigger Ordering
     if (isOrderTriggers) {
         const orderRaw = typeof choiceIndex === 'string' ? choiceIndex.split('|') : [];
-        const order = orderRaw.map(s => s.startsWith('CHOICE_') ? s.substring(7) : s);
+        const order = orderRaw.map(s => s.replace('CHOICE_', ''));
         return PlayerActionProcessor.resolveTriggerOrdering(state, playerId, order, log);
     }
 
@@ -85,7 +85,16 @@ export class ChoiceProcessor {
                 state.turnState.lastDiscardedCount = discardEffects.length;
                 state.turnState.lastDiscardedIds = discardEffects.map(e => e.targetId).filter(id => id);
             }
-            EffectProcessor.resolveEffects(state, allEffects, sourceId as string, [], log, 0, action.data?.stackObj, action.data?.parentContext);
+            EffectProcessor.resolveEffects({
+                state,
+                effects: allEffects,
+                sourceId: sourceId as string,
+                targets: [],
+                log,
+                startIndex: 0,
+                stackObject: action.data?.stackObj,
+                parentContext: action.data?.parentContext,
+            });
         }
 
         // After batch is done, check if we need to move to the next player (for DiscardCards)
@@ -211,7 +220,16 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         const nextParentCtx = currentCtx.parentContext;
         
         currentCtx = nextParentCtx; 
-        const completed = EffectProcessor.resolveEffects(state, effs, sourceId, parentTargets, log, nextIdx, stackObj, nextParentCtx);
+        const completed = EffectProcessor.resolveEffects({
+            state,
+            effects: effs,
+            sourceId,
+            targets: parentTargets,
+            log,
+            startIndex: nextIdx,
+            stackObject: stackObj,
+            parentContext: nextParentCtx,
+        });
         
         if (stackObj && !completed && state.pendingAction) {
            stackObj.data = { ...stackObj.data, nextEffectIndex: (state.pendingAction as any).data.nextEffectIndex };
@@ -362,13 +380,23 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         ];
         const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDef, (obj as any).xValue || 0);
         const prompt = TargetingProcessor.generateTargetPrompt(targetDef, 0, (obj as any).xValue || 0);
-        const legalTargetIds = pool.filter(tid => TargetingProcessor.isLegalTarget(state, obj.id, tid, targetDef));
+        const legalTargetIds = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
+            sourceId: obj.id,
+            controllerId: obj.controllerId,
+            targetDef
+        }, tid));
         
         if (legalTargetIds.length === 0 && minCount === 0) {
             log(`No targets found, auto-skipping target selection for ${obj.definition.name} (+1 ability).`);
             state.priorityPlayerId = playerId;
             state.pendingAction = undefined;
-            return engine.activateAbility(playerId, obj.id, abilityIndex, [], true);
+            return engine.activateAbility({
+                playerId,
+                cardId: obj.id,
+                abilityIndex,
+                bypassPriority: true,
+                bypassTargeting: true
+            });
        }
 
        if (legalTargetIds.length < minCount) {
@@ -376,7 +404,13 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                  log(`No valid targets found, auto-skipping target selection for ${obj.definition.name}.`);
                  state.pendingAction = undefined;
                  state.priorityPlayerId = playerId;
-                 return engine.activateAbility(playerId, obj.id, abilityIndex, [], true);
+                  return engine.activateAbility({
+                      playerId,
+                      cardId: obj.id,
+                      abilityIndex,
+                      bypassPriority: true,
+                      bypassTargeting: true
+                  });
             } else {
                 log(`No legal targets available. Activation invalid.`);
                 return false;
@@ -435,7 +469,13 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
 
     state.pendingAction = undefined;
     state.priorityPlayerId = playerId;
-    return engine.activateAbility(playerId, obj.id, abilityIndex, [], true);
+    return engine.activateAbility({
+        playerId,
+        cardId: obj.id,
+        abilityIndex,
+        bypassPriority: true,
+        bypassTargeting: true
+    });
   }
 
   private static handleModalSelection(state: GameState, playerId: string, sourceId: string, choice: any, choiceIndex: any, action: any, log: (m: string) => void, engine: any): boolean {
@@ -499,13 +539,16 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
 
         return SpellProcessor.activateAbility(
             state, 
-            playerId, 
-            sourceId, 
-            action.data.abilityIndex, 
-            targets, 
             log, 
             engine,
-            true 
+            {
+                playerId, 
+                cardId: sourceId, 
+                abilityIndex: action.data.abilityIndex, 
+                targets, 
+                bypassPriority: true,
+                bypassTargeting: false
+            }
         );
     }
 
@@ -526,7 +569,17 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
 
         // 3. Resolve the effects of the choice
         if (action.data.choiceEffects && action.data.choiceEffects.length > 0) {
-             EffectProcessor.resolveEffects(state, action.data.choiceEffects, sourceId, savedTargets, log, 0, action.data.stackObj, action.data.parentContext, playerId);
+             EffectProcessor.resolveEffects({
+                state,
+                effects: action.data.choiceEffects,
+                sourceId,
+                targets: savedTargets,
+                log,
+                startIndex: 0,
+                stackObject: action.data.stackObj,
+                parentContext: action.data.parentContext,
+                controllerIdOverride: playerId,
+             });
         }
 
         // 4. Resume parent resolution
@@ -540,7 +593,16 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             const parentCtx = currentCtx.parentContext;
             
             currentCtx = parentCtx; 
-            const completed = EffectProcessor.resolveEffects(state, effs, sourceId, parentTargets, log, nextIdx, stackObj, parentCtx);
+            const completed = EffectProcessor.resolveEffects({
+                state,
+                effects: effs,
+                sourceId,
+                targets: parentTargets,
+                log,
+                startIndex: nextIdx,
+                stackObject: stackObj,
+                parentContext: parentCtx,
+            });
             
             if (stackObj && !completed && state.pendingAction) {
                stackObj.data = { ...stackObj.data, nextEffectIndex: (state.pendingAction as any).data.nextEffectIndex };
@@ -557,12 +619,15 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
 
     return SpellProcessor.playCard(
         state, 
-        playerId, 
-        sourceId, 
-        savedTargets, 
         log, 
         engine,
-        true 
+        {
+            playerId, 
+            cardId: sourceId, 
+            targets: savedTargets, 
+            bypassPriority: true,
+            bypassTargeting: false
+        }
     );
   }
 
@@ -603,7 +668,17 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     }
 
     if (choice.effects && choice.effects.length > 0) {
-        EffectProcessor.resolveEffects(state, choice.effects, sourceId, targetsForResolution, log, 0, stackObj, savedActionData, action.playerId);
+        EffectProcessor.resolveEffects({
+            state,
+            effects: choice.effects,
+            sourceId,
+            targets: targetsForResolution,
+            log,
+            startIndex: 0,
+            stackObject: stackObj,
+            parentContext: savedActionData,
+            controllerIdOverride: action.playerId,
+        });
     }
 
     // Cleanup block removed from here and moved to the end
@@ -619,7 +694,16 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         const parentCtx = currentCtx.parentContext;
         
         currentCtx = parentCtx; 
-        const completed = EffectProcessor.resolveEffects(state, effs, sourceId, parentTargets, log, nextIdx, stackObj, parentCtx);
+        const completed = EffectProcessor.resolveEffects({
+            state,
+            effects: effs,
+            sourceId,
+            targets: parentTargets,
+            log,
+            startIndex: nextIdx,
+            stackObject: stackObj,
+            parentContext: parentCtx,
+        });
         
         if (stackObj && !completed && state.pendingAction) {
            stackObj.data = { ...stackObj.data, nextEffectIndex: (state.pendingAction as any).data.nextEffectIndex };
@@ -659,11 +743,23 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                  // Sequenced Sacrifice Choice
                  const { PermanentHandler } = require('../effects/handlers/PermanentHandler');
                  const realEffect = action.data.parentContext?.effects?.[action.data.parentContext?.nextEffectIndex];
-                 PermanentHandler.handleSacrifice(state, nextPlayerIds, sourceId as string, log, action.data.stackObj, action.data.parentContext, realEffect || { label: action.data.label });
+                 PermanentHandler.handleSacrifice(state, log, {
+                     sourceId: sourceId as string,
+                     controllerId: nextPlayerIds[0],
+                     targets: nextPlayerIds,
+                     stackObject: action.data.stackObj,
+                     parentContext: action.data.parentContext
+                 }, realEffect || { label: action.data.label });
             } else if (action.data?.isChoiceSequence) {
                  // Sequenced Choice (Auto-Sequence)
                  const { ChoiceEffectHandler } = require('../effects/handlers/ChoiceEffectHandler');
-                 ChoiceEffectHandler.handleChoice(state, action.data.sequencedEffect, sourceId as string, nextPlayerIds, log, action.playerId, action.data.stackObj, action.data.parentContext);
+                 ChoiceEffectHandler.handleChoice(state, action.data.sequencedEffect, log, {
+                     sourceId: sourceId as string,
+                     controllerId: nextPlayerIds[0],
+                     targets: nextPlayerIds,
+                     stackObject: action.data.stackObj,
+                     parentContext: action.data.parentContext
+                 });
             } else {
                  // Sequenced Discard Choice
                  state.pendingAction = ChoiceGenerator.createDiscardChoice(
@@ -758,12 +854,15 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
 
     const success = SpellProcessor.playCard(
         state, 
-        playerId, 
-        sourceId, 
-        action.data.declaredTargets || [], 
         log, 
         engine,
-        true 
+        {
+            playerId, 
+            cardId: sourceId, 
+            targets: action.data.declaredTargets || [], 
+            bypassPriority: true,
+            bypassTargeting: false
+        }
     );
 
     if (success === false) {

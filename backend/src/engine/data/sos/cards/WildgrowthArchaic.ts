@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 export const WildgrowthArchaic: CardDefinition = {
     name: "Wildgrowth Archaic",
     manaCost: "{2/G}{2/G}",

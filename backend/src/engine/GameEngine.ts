@@ -1,9 +1,7 @@
-import { DurationType, GameObject, GameState, Phase, PlayerId, PlayerState, Step, TriggeredAbility, Zone } from '@shared/engine_types';
+import { GameState, Phase, PlayerId, Step } from '@shared/engine_types';
 import { Card } from '@shared/types';
-import { StackResolver } from './modules';
-import { EngineContext } from './interfaces/EngineContext';
-import { ManaProcessor } from './modules/magic/ManaProcessor';
-import { GameSetupProcessor, PlayerActionProcessor, TurnProcessor, PriorityProcessor, StackProcessor, ActionProcessor, SpellProcessor, ChoiceProcessor, StateBasedActionsProcessor, CombatProcessor, TriggerProcessor, LayerProcessor, EffectProcessor } from './modules';
+import { ActivateAbilityOptions, EngineContext, PlayCardOptions } from './interfaces/EngineContext';
+import { ChoiceProcessor, CombatProcessor, GameSetupProcessor, LayerProcessor, PlayerActionProcessor, PriorityProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor } from './modules';
 
 /**
  * CENTRALIZED MTG RULE ENGINE (Orchestrator)
@@ -143,7 +141,17 @@ export class GameEngine implements EngineContext {
       return false;
     }
     const { MoveEffectHandler } = require('./modules/effects/handlers/MoveEffectHandler');
-    MoveEffectHandler.handle(this.state, { type: 'DrawCards', amount: 1 } as any, [playerId], (m: string) => this.log(m), playerId);
+    MoveEffectHandler.handle(
+      this.state,
+      { type: 'DrawCards', amount: 1 } as any,
+      (m: string) => this.log(m),
+      {
+        sourceId: 'system',
+        controllerId: playerId,
+        targets: [playerId],
+        effects: []
+      }
+    );
     return true;
   }
 
@@ -225,29 +233,21 @@ export class GameEngine implements EngineContext {
    * CR 601: Casting Spells & CR 305: Playing Lands
    * @param declaredTargets Array of GameObject IDs for targeted spells
    */
-  public playCard(playerId: PlayerId, cardInstanceId: string, declaredTargets: string[] = [], bypassTargeting: boolean = false): boolean {
+  public playCard(options: PlayCardOptions): boolean {
     return SpellProcessor.playCard(
       this.state,
-      playerId,
-      cardInstanceId,
-      declaredTargets,
       (m) => this.log(m),
       this,
-      bypassTargeting
+      options
     );
   }
 
-  public activateAbility(playerId: PlayerId, cardId: string, abilityIndex: number, declaredTargets: string[] = [], bypassTargeting = false, choiceIndex?: number): boolean {
+  public activateAbility(options: ActivateAbilityOptions): boolean {
     return SpellProcessor.activateAbility(
       this.state,
-      playerId,
-      cardId,
-      abilityIndex,
-      declaredTargets,
       (m) => this.log(m),
       this,
-      bypassTargeting,
-      choiceIndex
+      options
     );
   }
 
@@ -295,10 +295,26 @@ export class GameEngine implements EngineContext {
 
 
   /**
-   * Checks for State-Based Actions (CR 704).
+   * Checks for State-Based Actions (CR 704) and pending triggers (CR 603).
+   * Rule 117.5: "Each time a player would receive priority, the game first performs all 
+   * applicable state-based actions as a single event, then repeats this process until 
+   * no more state-based actions are performed. Then triggered abilities are put on 
+   * the stack. These steps repeat until no new state-based actions are performed 
+   * and no new abilities trigger."
    */
   public checkStateBasedActions() {
-    StateBasedActionsProcessor.resolveSBAs(this.state, (m: string) => this.log(m));
+    let sbaPerformed = false;
+    let anyTriggersStacked = false;
+
+    do {
+      // 1. Resolve SBAs until stable (Rule 704.3)
+      sbaPerformed = StateBasedActionsProcessor.resolveSBAs(this.state, (m: string) => this.log(m));
+
+      // 2. Resolve Triggers (Rule 603.3)
+      anyTriggersStacked = TriggerProcessor.processPendingTriggers(this.state, (m: string) => this.log(m));
+
+      // 3. Repeat if either step did work (Rule 117.5)
+    } while (sbaPerformed || anyTriggersStacked);
   }
 
 

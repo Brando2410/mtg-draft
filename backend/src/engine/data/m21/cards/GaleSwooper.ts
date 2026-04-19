@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, GameEvent, GameObject, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, Zone } from '@shared/engine_types';
 
 export const GaleSwooper: CardDefinition = {
         name: "Gale Swooper",

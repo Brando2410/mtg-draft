@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
     export const LeechCollectorBloodletting: CardDefinition = {
     name: "Leech Collector // Bloodletting",
     manaCost: "{1}{B}",

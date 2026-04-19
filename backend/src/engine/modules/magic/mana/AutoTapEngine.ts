@@ -1,10 +1,9 @@
 // AutoTapEngine.ts
 import { GameObject, GameState, PlayerId } from '@shared/engine_types';
+import { EngineContext } from '../../../interfaces/EngineContext';
 import { ManaParser } from './ManaParser';
 import { ManaPoolManager } from './ManaPoolManager';
-import { ManaColor } from './ManaTypes';
-import { ManaPoolRecord } from './ManaTypes';
-import { EngineContext } from '../../../interfaces/EngineContext';
+import { ManaColor, ManaPoolRecord } from './ManaTypes';
 
 export class AutoTapEngine {
     public static autoTapLandsForCost(

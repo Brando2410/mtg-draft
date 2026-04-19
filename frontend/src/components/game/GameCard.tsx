@@ -5,7 +5,7 @@ import { Zap, Eye } from 'lucide-react';
 
 export interface GameCardProps {
   obj: GameObject;
-  variant?: 'battlefield' | 'hand' | 'stack' | 'zoom' | 'tiny' | 'small';
+  variant?: 'battlefield' | 'hand' | 'stack' | 'zoom' | 'tiny' | 'small' | 'full';
   onClick?: (id: string) => void;
   isTargetable?: boolean;
   isSelected?: boolean;
@@ -20,6 +20,7 @@ export interface GameCardProps {
   pendingAction?: any;
   disableHoverAnim?: boolean;
   damagePreview?: number;
+  hideHeader?: boolean;
 }
 
 /**
@@ -42,7 +43,8 @@ export const GameCard = memo(({
   isOpponent = false,
   pendingAction,
   disableHoverAnim = false,
-  damagePreview = 0
+  damagePreview = 0,
+  hideHeader = false
 }: GameCardProps) => {
   const { definition, effectiveStats, counters, isTapped, isPhasedOut, damageMarked, summoningSickness, isPrepared } = obj;
   const stats = effectiveStats;
@@ -98,6 +100,7 @@ export const GameCard = memo(({
   // DIMENSIONS (Using CSS variables for global responsiveness)
   const dimensions = {
     battlefield: { width: '100%', height: '100%', rounded: 'rounded-sm' },
+    full: { width: '100%', height: '100%', rounded: 'rounded-xl' },
     hand: { width: 'var(--card-w-hand)', height: 'var(--card-h-hand)', rounded: 'rounded-lg' },
     stack: { width: 'calc(var(--u) * 11)', height: 'calc(var(--u) * 15.3)', rounded: 'rounded-lg' },
     small: { width: 'calc(var(--u) * 8.5)', height: 'calc(var(--u) * 11.9)', rounded: 'rounded-md' },
@@ -288,7 +291,7 @@ export const GameCard = memo(({
       )}
 
       {/* BATTLEFIELD HEADER (Attached above) - Outside filter to stay colored */}
-      {variant === 'battlefield' && (
+      {variant === 'battlefield' && !hideHeader && (
         <div 
             style={colors.length > 1 ? { background: (borderStyle as any).headerBackground } : {}}
             className={`flex-none h-[calc(var(--u)*1.8*var(--header-scale,var(--local-scale,1)))] flex items-center px-2 border-b overflow-hidden rounded-t-sm z-30 transition-colors
@@ -370,7 +373,7 @@ export const GameCard = memo(({
                   ${variant === 'battlefield' ? 'p-0.5' : 'p-1.5'}
               `}>
                   {/* NAME OVERLAY (Only if not battlefield/zoom) */}
-                  {variant !== 'battlefield' && (
+                  {variant !== 'battlefield' && !hideHeader && (
                       <div 
                         style={colors.length > 1 ? { background: (borderStyle as any).headerBackground } : {}}
                         className={`absolute top-0 inset-x-0 flex items-center justify-between gap-1 p-1 shadow-sm border-b

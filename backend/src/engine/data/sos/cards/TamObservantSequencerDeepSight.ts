@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 export const TamObservantSequencerDeepSight: CardDefinition = {
     name: "Tam, Observant Sequencer // Deep Sight",
     manaCost: "{2}{G}{U}",

@@ -1,4 +1,4 @@
-import { ContinuousEffect, DurationType, EffectDefinition, EffectDuration, GameObject, GameObjectId, GameState, PlayerId, Zone } from '@shared/engine_types';
+import { DurationType, EffectDefinition, EffectDuration, GameState, PlayerId, ResolutionContext, Zone } from '@shared/engine_types';
 import { TargetingProcessor } from '../../actions/TargetingProcessor';
 
 /**
@@ -9,13 +9,11 @@ export class ContinuousEffectHandler {
   public static handle(
     state: GameState,
     effect: EffectDefinition,
-    sourceId: GameObjectId,
-    resolvedTargetIds: string[],
     log: (m: string) => void,
-    controllerId: PlayerId,
-    amountResolver: (amt: any) => number,
-    stackObject?: any
+    context: ResolutionContext
   ) {
+    const { EffectProcessor } = require('../EffectProcessor');
+    const { sourceId, targets: resolvedTargetIds, controllerId, stackObject } = context;
     log(`[CE_HANDLER] Resolving effect for source ${sourceId}. Targets: ${resolvedTargetIds.join(', ')}`);
     
     // 1. Resolve Duration
@@ -58,7 +56,7 @@ export class ContinuousEffectHandler {
             finalTargetIds = [sourceId];
         } else {
             // Re-resolve mapping if not provided (safety fallback)
-            finalTargetIds = TargetingProcessor.resolveTargetMapping(state, mapping, [], sourceId, controllerId);
+            finalTargetIds = TargetingProcessor.resolveTargetMapping(state, mapping, context, effect);
         }
     }
 
@@ -87,7 +85,7 @@ export class ContinuousEffectHandler {
     let targetControllerId = (effect as any).targetControllerId || controllerId;
     if (effect.targetControllerMapping) {
         const { TargetingProcessor } = require('../../actions/TargetingProcessor');
-        const controllerIds = TargetingProcessor.resolveTargetMapping(state, effect.targetControllerMapping, resolvedTargetIds, sourceId, controllerId, undefined, effect);
+        const controllerIds = TargetingProcessor.resolveTargetMapping(state, effect.targetControllerMapping, resolvedTargetIds, sourceId, controllerId, stackObject, effect);
         if (controllerIds.length > 0) {
             targetControllerId = controllerIds[0] as PlayerId;
         }
@@ -108,10 +106,10 @@ export class ContinuousEffectHandler {
         targetIds: finalTargetIds,
         abilitiesToAdd: effect.abilitiesToAdd,
         abilitiesToRemove: effect.abilitiesToRemove,
-        powerModifier: effect.powerModifier !== undefined ? amountResolver(effect.powerModifier) : undefined,
-        toughnessModifier: effect.toughnessModifier !== undefined ? amountResolver(effect.toughnessModifier) : undefined,
-        powerSet: effect.powerSet !== undefined ? amountResolver(effect.powerSet) : undefined,
-        toughnessSet: effect.toughnessSet !== undefined ? amountResolver(effect.toughnessSet) : undefined,
+        powerModifier: effect.powerModifier !== undefined ? EffectProcessor.resolveAmount(state, effect.powerModifier, context) : undefined,
+        toughnessModifier: effect.toughnessModifier !== undefined ? EffectProcessor.resolveAmount(state, effect.toughnessModifier, context) : undefined,
+        powerSet: effect.powerSet !== undefined ? EffectProcessor.resolveAmount(state, effect.powerSet, context) : undefined,
+        toughnessSet: effect.toughnessSet !== undefined ? EffectProcessor.resolveAmount(state, effect.toughnessSet, context) : undefined,
         canPlayExiled: effect.canPlayExiled,
         isFreeCast: effect.isFreeCast,
         limitPerTurn: effect.limitPerTurn,
@@ -143,7 +141,7 @@ export class ContinuousEffectHandler {
 
     if (effect.copyFromIdMapping) {
         const { TargetingProcessor } = require('../../actions/TargetingProcessor');
-        const ids = TargetingProcessor.resolveTargetMapping(state, effect.copyFromIdMapping, resolvedTargetIds, sourceId, controllerId, stackObject?.data || stackObject, effect);
+        const ids = TargetingProcessor.resolveTargetMapping(state, effect.copyFromIdMapping, resolvedTargetIds, sourceId, controllerId, stackObject, effect, context);
         if (ids.length > 0) {
             continuousEff.copyFromId = ids[0];
         }

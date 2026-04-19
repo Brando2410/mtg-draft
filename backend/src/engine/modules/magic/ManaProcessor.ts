@@ -1,9 +1,9 @@
 import { GameObject, GameState, PlayerState } from '@shared/engine_types';
+import { EngineContext } from '../../interfaces/EngineContext';
+import { AutoTapEngine } from './mana/AutoTapEngine';
 import { ManaParser } from './mana/ManaParser';
 import { ManaPoolManager } from './mana/ManaPoolManager';
 import { ManaValidator } from './mana/ManaValidator';
-import { AutoTapEngine } from './mana/AutoTapEngine';
-import { EngineContext } from '../../interfaces/EngineContext';
 
 /**
  * Handle Mana Pool, Cost Analysis, and Payments (Chapters 106 & 117)

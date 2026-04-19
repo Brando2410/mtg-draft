@@ -1,7 +1,7 @@
-import { Room, Card, Player } from '@shared/types';
+import { Card, Player, Room } from '@shared/types';
+import { m21 } from '../engine/data/m21';
 import { sos } from '../engine/data/sos';
 import { stx } from '../engine/data/stx';
-import { m21 } from '../engine/data/m21';
 import { LoggerService } from './LoggerService';
 
 export class SealedService {

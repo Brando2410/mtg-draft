@@ -1,4 +1,4 @@
-import {AbilityType, Zone, CardDefinition, EffectType, TargetMapping} from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from "@shared/engine_types";
 
 export const Swamp: CardDefinition = {
 

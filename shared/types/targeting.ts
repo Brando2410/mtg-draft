@@ -1,9 +1,9 @@
 // targeting.ts
 // Targeting and restriction interfaces
 
-import type { EffectDuration } from './effects';
 import type { GameObjectId, PlayerId } from './core';
 import { Zone } from './core';
+import type { EffectDuration } from './effects';
 
 export const TargetType = {
     Creature: 'CREATURE',
@@ -31,17 +31,51 @@ export const TargetType = {
 } as const;
 export type TargetType = (typeof TargetType)[keyof typeof TargetType];
 
+/**
+ * TargetDefinition - Standardized contract for specifying legal targets.
+ * Standardizes Rule 601.2c (Casting) and 608.2b (Resolution).
+ */
 export interface TargetDefinition {
+    /** The fundamental type requirement (CREATURE, PLAYER, etc.) */
     type?: TargetType | string;
-    count?: number | any;
+
+    /** 
+     * Target count logic. 
+     * If number: Exact count required.
+     * If { min, max }: Range of allowed targets.
+     * If 'any' or 'AnyNumber': Select any number of targets.
+     */
+    count?: number | { min: number; max: number } | 'any' | 'AnyNumber';
+
+    /** Equivalent to count: { min: N } */
     minCount?: number;
+
+    /** Equivalent to count: { max: N } */
+    maxCount?: number;
+
+    /** If true, the controller can choose 0 targets even if min/count is specified */
     optional?: boolean;
-    restrictions?: (string | any)[];
-    perTargetRestrictions?: (string | any)[][];
+
+    /** General filters (e.g. ['youcontrol', 'nonland']) */
+    restrictions?: (TargetRestriction | string)[];
+
+    /** Specific filters applied to each individual target slot in multi-targeting */
+    perTargetRestrictions?: (TargetRestriction | string)[][];
+
+    /** Zones where the targets must be located (Default: Battlefield) */
     sourceZones?: Zone[];
+
+    /** Legacy alias for sourceZones[0] */
     zone?: Zone;
-    controller?: string;
+
+    /** Specific controller requirement ('CONTROLLER', 'OPPONENT') */
+    controller?: 'CONTROLLER' | 'OPPONENT' | string;
+
+    /** UI Prompt to show the user */
     label?: string;
+    
+    /** Extra metadata for complex filters (e.g. manaValue threshold) */
+    data?: any;
 }
 
 export const RestrictionType = {
@@ -118,3 +152,11 @@ export const Restriction = {
     YouOwn: 'youown',
     OpponentOwns: 'opponentowns'
 } as const;
+
+export type TargetRestriction = (typeof Restriction)[keyof typeof Restriction] | {
+    type?: string;
+    value?: any;
+    restrictions?: (TargetRestriction | string)[];
+    not?: any;
+    [key: string]: any;
+};

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone, SelectionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, SelectionType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 export const EmeritusofAbundanceRegrowth: CardDefinition = {
     name: "Emeritus of Abundance // Regrowth",
     manaCost: "{2}{G}",

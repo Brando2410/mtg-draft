@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
 export const GroupProject: CardDefinition = {
     name: "Group Project",
     manaCost: "{1}{W}",

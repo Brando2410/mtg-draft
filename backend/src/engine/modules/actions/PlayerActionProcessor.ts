@@ -1,11 +1,8 @@
 import { AbilityType, ActionType, GameState, PlayerId, Zone } from '@shared/engine_types';
+import { oracle } from '../../OracleLogicMap';
 import { CombatProcessor } from '../combat/CombatProcessor';
-import { ManaProcessor } from '../magic/ManaProcessor';
-import { TurnProcessor } from '../core/TurnProcessor';
 import { PriorityProcessor } from '../core/PriorityProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
-import { ChoiceProcessor } from './ChoiceProcessor';
-import { oracle } from '../../OracleLogicMap';
 
 import { EngineContext } from '../../interfaces/EngineContext';
 
@@ -115,7 +112,13 @@ export class PlayerActionProcessor {
                 
                 // If it has no choices and only costs Tap, we just fire it immediate
                 // Rules 605.3a: Mana abilities don't use the stack and are resolved immediately.
-                return engine.activateAbility(playerId, cardId, abilityIdx);
+                return engine.activateAbility({
+                    playerId,
+                    cardId,
+                    abilityIndex: abilityIdx,
+                    bypassPriority: true,
+                    bypassTargeting: true
+                });
             }
 
             // Safety Step: For single non-mana utility abilities, show a confirmation modal 
@@ -182,7 +185,14 @@ export class PlayerActionProcessor {
 
     // Standardize ability index and use bypassTargeting=true for silent, synchronous tapping 
     // during the auto-tap sequence.
-    return engine.activateAbility(playerId, cardId, manaAbilityIdx, [], true, choiceIndex);
+    return engine.activateAbility({
+        playerId,
+        cardId,
+        abilityIndex: manaAbilityIdx,
+        choiceIndex,
+        bypassPriority: true,
+        bypassTargeting: true
+    });
   }
 
   public static tapForMana(

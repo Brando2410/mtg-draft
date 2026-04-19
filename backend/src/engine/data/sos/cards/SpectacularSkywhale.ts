@@ -1,4 +1,4 @@
-import { TargetMapping, AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 export const SpectacularSkywhale: CardDefinition = {
     name: "Spectacular Skywhale",
     manaCost: "{2}{U}{R}",

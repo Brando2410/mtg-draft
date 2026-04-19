@@ -1,6 +1,5 @@
-import { Room, Card, Player } from '@shared/types';
+import { Card, Player, Room } from '@shared/types';
 import { DraftService } from '../services/DraftService';
-import { LoggerService } from '../services/LoggerService';
 
 export class BotLogic {
    /**
