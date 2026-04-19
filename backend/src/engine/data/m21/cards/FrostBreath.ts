@@ -1,7 +1,6 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, Zone } from "@shared/engine_types";
+import { AbilityType, CardDefinition, DurationType, EffectType, RestrictionType, TargetMapping, TargetType, Zone } from "@shared/engine_types";
 
 export const FrostBreath: CardDefinition = {
-
     name: "Frost Breath",
     manaCost: "{2}{U}",
     scryfall_id: "393fc485-d3c1-4826-933d-89f66df769d4",
@@ -29,7 +28,7 @@ export const FrostBreath: CardDefinition = {
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    abilitiesToAdd: ["CannotUntap"],
+                    restrictionsToAdd: [{ type: RestrictionType.CannotUntap }],
                     duration: {
                         type: DurationType.UntilNextUntapStep
                     },
@@ -38,6 +37,4 @@ export const FrostBreath: CardDefinition = {
             ],
         }
     ]
-
 };
-

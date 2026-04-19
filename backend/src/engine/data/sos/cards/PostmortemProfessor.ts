@@ -1,26 +1,30 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, RestrictionType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+
 export const PostmortemProfessor: CardDefinition = {
     name: "Postmortem Professor",
     manaCost: "{1}{B}",
     scryfall_id: "174f5d7e-5d36-4d13-96bf-9b12cd644716",
     rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/1/7/174f5d7e-5d36-4d13-96bf-9b12cd644716.jpg?1775937558",
-    colors: [
-        "B"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Zombie",
-        "Warlock"
-    ],
-    power: "2",
-    toughness: "2",
-    keywords: ["CannotBlock"],
+    colors: ["B"],
+    types: ["Creature"],
+    subtypes: ["Zombie", "Warlock"],
+    power: 2,
+    toughness: 2,
     oracleText: "This creature can't block.\nWhenever this creature attacks, each opponent loses 1 life and you gain 1 life.\n{1}{B}, Exile an instant or sorcery card from your graveyard: Return this card from your graveyard to the battlefield.",
     abilities: [
         {
+            id: "postmortem_professor_no_block",
+            type: AbilityType.Static,
+            effects: [{
+                type: EffectType.ApplyContinuousEffect,
+                layer: 6,
+                targetMapping: TargetMapping.Self,
+                restrictionsToAdd: [{ type: RestrictionType.CannotBlock }]
+            }]
+        },
+        {
+            id: "postmortem_professor_attack_trigger",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Attack,
             condition: 'EVENT_SOURCE_IS_SELF',
@@ -30,6 +34,7 @@ export const PostmortemProfessor: CardDefinition = {
             ]
         },
         {
+            id: "postmortem_professor_recursion",
             type: AbilityType.Activated,
             activeZone: Zone.Graveyard,
             costs: [
@@ -37,9 +42,7 @@ export const PostmortemProfessor: CardDefinition = {
                 {
                     type: CostType.Exile,
                     sourceZones: ['Graveyard'],
-                    restrictions: [
-                        "InstantOrSorcery"
-                    ]
+                    restrictions: ["InstantOrSorcery"]
                 }
             ],
             effects: [

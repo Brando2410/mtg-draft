@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, SelectionType, TargetMapping, TargetType, Zone, Restriction } from '@shared/engine_types';
 
 export const PullfromtheGrave: CardDefinition = {
     name: "Pull from the Grave",
@@ -11,20 +11,21 @@ export const PullfromtheGrave: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
-                type: TargetType.CardInGraveyard,
-                count: { min: 0, max: 2 },
-                restrictions: [
-                    Restriction.Creature,
-                    Restriction.Yours
-                ]
-            },
             effects: [
                 {
                     type: EffectType.MoveToZone,
                     zone: Zone.Hand,
-                    targetMapping: TargetMapping.TargetAll, // Pull all chosen targets from the stack selection
-                    label: "Return selected creature cards to your hand"
+                    selectionType: SelectionType.Search,
+                    label: "Select up to two creature cards to return to your hand",
+                    targetDefinition: {
+                        type: TargetType.CardInGraveyard,
+                        count: 2,
+                        minCount: 0,
+                        restrictions: [
+                            Restriction.Creature,
+                            Restriction.Yours
+                        ]
+                    }
                 },
                 {
                     type: EffectType.GainLife,

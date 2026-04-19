@@ -3,7 +3,7 @@
 
 import type { AbilityDefinition } from './abilities';
 import { AbilityType } from './abilities';
-import type { GameObjectId, PlayerId } from './core';
+import type { GameObjectId, PlayerId, RestrictionObject } from './core';
 import { Phase, Step, Zone } from './core';
 import type { ContinuousEffect } from './effects';
 import type { AbilityRestriction } from './targeting';
@@ -62,10 +62,19 @@ export interface GameObject {
         power: number;
         toughness: number;
         keywords: string[];
-        restrictions?: string[];
+        restrictions?: RestrictionObject[];
         isPlayable?: boolean;
         manaCost?: string;
     };
+    isToken?: boolean;
+    isAttacking?: boolean;
+    isBlocking?: boolean;
+    isGoaded?: boolean;
+    cannotUntapThisTurn?: boolean;
+    selectedFaceDefinition?: CardDefinition;
+    originalDefinition?: CardDefinition;
+    modifierSnapshot?: any;
+    convergeAmount?: number;
 }
 
 export interface StackObject {
@@ -172,12 +181,44 @@ export interface TurnState {
     };
 }
 
+export interface ChoiceOption {
+    label: string;
+    value: any; // The key ID or index returned to the engine
+    selectable?: boolean;
+    effects?: any[];
+    costs?: any[];
+    imageUrl?: string;
+    cardData?: GameObject;
+    type_line?: string;
+}
+
 export interface PendingAction {
     type: string;
     playerId: PlayerId;
     count?: number;
     sourceId?: string;
-    data?: any;
+    data?: {
+        label: string;
+        choices?: ChoiceOption[];
+        isCostChoice?: boolean;
+        costType?: string;
+        minChoices?: number;
+        maxChoices?: number;
+        stackObj?: StackObject;
+        parentContext?: any;
+        lookingCards?: GameObject[];
+        nextPlayerIds?: PlayerId[];
+        discardAmount?: number | string;
+        onFailureEffects?: any[];
+        isContextual?: boolean;
+        hideUndo?: boolean;
+        abilityIndex?: number;
+        isTargetingModal?: boolean;
+        declaredTargets?: string[];
+        targets?: string[];
+        confirmedAutoTap?: boolean;
+        [key: string]: any; // Allow for dynamic extension but prefer typed keys above
+    };
 }
 
 export interface GameState {

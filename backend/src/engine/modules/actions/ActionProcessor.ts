@@ -8,7 +8,8 @@ import {
     Zone
 } from "@shared/engine_types";
 import { RegistryProcessor } from "../core/RegistryProcessor";
-import { TriggerProcessor } from "../effects/TriggerProcessor";
+import { TriggerProcessor } from "../effects/triggers/TriggerProcessor";
+
 
 /**
  * Physical Actions Handling (Rule 400/103)
@@ -65,7 +66,7 @@ export class ActionProcessor {
       state.turnState.lastDiscardedIds.push(card.id);
     }
 
-    const { ReplacementProcessor } = require("../effects/ReplacementProcessor");
+    const { ReplacementProcessor } = require("../effects/replacements/ReplacementProcessor");
     const replacementResult = ReplacementProcessor.handleMovementReplacement(
       state,
       card,
@@ -102,12 +103,10 @@ export class ActionProcessor {
 
     // 2. Rule 400.7: Reset characteristics and update zone
     card.zone = to;
-    const isToken = (card as any).isToken || card.id.startsWith("token_");
+    const isToken = card.isToken || card.id.startsWith("token_");
 
     // Clear reveal status on ANY zone change (Rule 400.7)
-    // Moving out of a hidden zone (like Hand) should always hide the card again unless the next zone is public
-    (card as any).isRevealed = false;
-    (card as any).revealed = false;
+    card.isRevealed = false;
 
     // Rule 400.7: Objects leaving the battlefield lose memory of their state
     if (to !== Zone.Battlefield) {
@@ -117,12 +116,12 @@ export class ActionProcessor {
     // 3. Rule 711.8: MDFC Face Handling
     if (
       (to === Zone.Battlefield || to === Zone.Stack) &&
-      (card as any).selectedFaceDefinition
+      card.selectedFaceDefinition
     ) {
-      if (!(card as any).originalDefinition) {
-        (card as any).originalDefinition = card.definition;
+      if (!card.originalDefinition) {
+        card.originalDefinition = card.definition;
       }
-      card.definition = (card as any).selectedFaceDefinition;
+      card.definition = card.selectedFaceDefinition;
     }
 
     // 4. Rule 400.1: Add to the new zone
@@ -217,8 +216,8 @@ export class ActionProcessor {
           type: "ON_DEATH",
           playerId: card.controllerId,
           payload: {
-            object: snapshot as any,
-            card: snapshot as any,
+            object: snapshot,
+            card: snapshot,
             sourceId: card.id,
             targetId: card.id,
             toZone: to,
@@ -235,7 +234,7 @@ export class ActionProcessor {
         type: "ON_LEAVE_BATTLEFIELD",
         playerId: card.controllerId,
         payload: {
-          object: snapshot as any,
+          object: snapshot,
           sourceId: card.id,
           toZone: to,
           fromZone: Zone.Battlefield,
@@ -319,8 +318,8 @@ export class ActionProcessor {
             {
               sourceId: card.id,
               controllerId: targetPlayerId,
-              event: { xValue: (card as any).xValue } as any,
-              stackObject: card,
+              event: { xValue: card.xValue } as any,
+              stackObject: card as any, // StackObject interface mismatch, using cast for now
             },
           )
         ) {
@@ -331,7 +330,7 @@ export class ActionProcessor {
         card.isTapped = true;
       }
       card.isPrepared = card.definition.entersPrepared || false;
-      (card as any).isRevealed = false; // Always clear when entering public zone
+      card.isRevealed = false; // Always clear when entering public zone
       RegistryProcessor.registerAbilities(state, card);
 
       this.handleEnteringBattlefield(state, card, from, log);
@@ -410,36 +409,34 @@ export class ActionProcessor {
       });
 
     // 2. Reset dynamic engine properties
-    const c = card as any;
-    c.isTapped = false;
-    c.damage = 0;
-    c.damageMarked = 0;
-    c.deathtouchMarked = false;
-    c.isAttacking = false;
-    c.isBlocking = false;
-    c.summoningSickness = false;
-    c.isPhasedOut = false;
-    c.isRevealed = false; // Rule 400.7: Clear revealed status on zone change
-    c.counters = {};
-    c.attachedTo = undefined;
-    c.isGoaded = false;
+    card.isTapped = false;
+    card.damageMarked = 0;
+    card.deathtouchMarked = false;
+    card.isAttacking = false;
+    card.isBlocking = false;
+    card.summoningSickness = false;
+    card.isPhasedOut = false;
+    card.isRevealed = false; // Rule 400.7: Clear revealed status on zone change
+    card.counters = {};
+    card.attachedTo = undefined;
+    card.isGoaded = false;
 
     // Rule 711.4a: MDFC reverts to front face in non-battlefield/stack zones
     if (to !== Zone.Battlefield && to !== Zone.Stack) {
-      if ((card as any).originalDefinition) {
-        card.definition = (card as any).originalDefinition;
-        (card as any).originalDefinition = undefined;
+      if (card.originalDefinition) {
+        card.definition = card.originalDefinition;
+        card.originalDefinition = undefined;
       }
-      if ((card as any).selectedFaceDefinition) {
-        (card as any).selectedFaceDefinition = undefined;
+      if (card.selectedFaceDefinition) {
+        card.selectedFaceDefinition = undefined;
       }
     }
-    c.faceDown = false;
+    card.faceDown = false;
 
     // Rule 107.3: The value of X is preserved as long as the object is on the stack or battlefield.
     // If it moves to Hand, Graveyard, Library, or Exile, it must be reset.
     if (to !== Zone.Stack && to !== Zone.Battlefield) {
-      c.xValue = undefined;
+      card.xValue = undefined;
     }
 
     // Rule 400.7: Objects leaving the battlefield/stack lose their identity
@@ -450,8 +447,8 @@ export class ActionProcessor {
     }
 
     // 3. Wipe calculated stats (they will be recalculated for the new zone)
-    c.effectiveStats = null;
-    c.modifierSnapshot = null;
+    card.effectiveStats = undefined as any;
+    card.modifierSnapshot = null;
   }
 
   private static handleEnteringBattlefield(
@@ -484,9 +481,9 @@ export class ActionProcessor {
           if (e.amount === "CONVERGE_AMOUNT") {
             amount = (card as any).convergeAmount || 0;
           } else if (e.amount === "THREE_MINUS_X") {
-            amount = Math.max(0, 3 - ((card as any).xValue || 0));
+            amount = Math.max(0, 3 - (card.xValue || 0));
           } else if (e.amount === "X") {
-            amount = (card as any).xValue || 0;
+            amount = card.xValue || 0;
           } else {
             amount = typeof e.amount === "number" ? e.amount : 0;
           }
@@ -527,7 +524,7 @@ export class ActionProcessor {
         return type === "planeswalker";
       })
     ) {
-      const def = card.definition as any;
+      const def = card.definition;
       let loyaltyValue = def.loyalty;
 
       // Fallback to Oracle if missing
@@ -589,11 +586,12 @@ export class ActionProcessor {
     state.battlefield.forEach((obj) => {
       if (obj.controllerId === playerId) {
         // Rule 502.1: Check for restrictions that prevent untapping
+        const { TriggerProcessor } = require('../effects/triggers/TriggerProcessor');
         const { LayerProcessor } = require("../state/LayerProcessor");
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         if (
           stats.keywords.includes("CannotUntap") ||
-          (obj as any).cannotUntapThisTurn
+          obj.cannotUntapThisTurn
         ) {
           if (log) log(`${obj.definition.name} does not untap.`);
           return;

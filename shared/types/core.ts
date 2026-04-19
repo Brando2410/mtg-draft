@@ -181,6 +181,48 @@ export const ActionType = {
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 
 /**
+ * RestrictionType - Unified registry of action prevention and rule modifications (Rule 613/701).
+ * Used to define keywords like 'CannotAttack' or 'MustAttack' as structured objects.
+ */
+export const RestrictionType = {
+  CannotAttack: "CannotAttack",
+  CannotBlock: "CannotBlock",
+  CannotBlockThisTurn: "CannotBlockThisTurn",
+  CannotBeBlocked: "CannotBeBlocked",
+  CannotActivateNonManaAbilities: "CannotActivateNonManaAbilities",
+  CannotActivateAbilities: "CannotActivateAbilities",
+  CannotTap: "CannotTap",
+  CannotUntap: "CannotUntap",
+  CannotBeSacrificed: "CannotBeSacrificed",
+  CannotBeCountered: "CannotBeCountered",
+  CannotBeTargeted: "CannotBeTargeted",
+  MustAttack: "MustAttack",
+  MustBlock: "MustBlock",
+  MustBeBlocked: "MustBeBlocked",
+  // Player restrictions
+  CannotCastSpells: "CannotCastSpells",
+  CannotDrawCards: "CannotDrawCards",
+  CannotGainLife: "CannotGainLife",
+  CannotCastPermanentSpells: "CannotCastPermanentSpells",
+  CannotCastNamedCard: "CannotCastNamedCard",
+  CannotActivateNamedCardAbilities: "CannotActivateNamedCardAbilities",
+  CannotCastType: "CannotCastType",
+} as const;
+export type RestrictionType = (typeof RestrictionType)[keyof typeof RestrictionType];
+
+/**
+ * RestrictionObject - A structured rule modification.
+ * Supports conditional restrictions (e.g. "Cannot attack UNLESS...")
+ */
+export interface RestrictionObject {
+    type: RestrictionType | string;
+    condition?: any; // ConditionDefinition reference
+    duration?: any;  // EffectDuration reference
+    value?: any;     // Extra metadata (e.g. specific IDs or colors)
+    sourceId?: string;
+}
+
+/**
  * ActionResult - Standardized outcome of a game engine action.
  * Used by ActionProcessor to return structured feedback to the EffectProcessor.
  */

@@ -3,8 +3,8 @@ import {
     ContinuousEffect,
     GameObject, GameState, Zone
 } from "@shared/engine_types";
-import { TargetingProcessor } from "../actions/TargetingProcessor";
-import { ConditionProcessor } from "../core/ConditionProcessor";
+import { TargetingProcessor } from "../actions/targeting/TargetingProcessor";
+import { ConditionProcessor } from "../core/logic/ConditionProcessor";
 
 /**
  * CR 613: Interaction of Continuous Effects
@@ -177,7 +177,7 @@ export class LayerProcessor {
         )
         .forEach((e) => {
           if (!this.isTarget(state, e, obj.id)) return;
-          const { EffectProcessor } = require("./../effects/EffectProcessor");
+          const { EffectProcessor } = require("../effects/EffectProcessor");
           let pMod = 0;
           let tMod = 0;
 
@@ -227,11 +227,16 @@ export class LayerProcessor {
         toughness = temp;
       }
 
-      // Collect collected restrictions
-      const restrictionTypes = activeEffects
+      // Collect structured restrictions
+      const structuredRestrictions = activeEffects
         .filter((e) => this.isTarget(state, e, obj.id))
         .flatMap((e) => e.restrictions || [])
-        .map((r: any) => (typeof r === "string" ? r : r.type));
+        .map((r: any) => {
+            if (typeof r === "string") {
+                return { type: r } as any;
+            }
+            return r;
+        });
 
       return {
         power,
@@ -240,7 +245,7 @@ export class LayerProcessor {
         colors: Array.from(colors),
         types: Array.from(types),
         subtypes: Array.from(subtypes),
-        restrictions: Array.from(new Set(restrictionTypes)),
+        restrictions: structuredRestrictions,
         flashbackCostOverride: activeEffects.find(
           (e) =>
             this.isTarget(state, e, obj.id) && (e as any).flashbackCostOverride,
@@ -591,7 +596,7 @@ export class LayerProcessor {
     });
 
     // 3. Update effective stats for all objects in all zones (to set isPlayable correctly)
-    const { SpellProcessor } = require("../actions/SpellProcessor");
+    const { SpellProcessor } = require("../actions/spells/SpellProcessor");
     [
       ...state.stack.map((s) => s.card).filter(Boolean),
       ...state.battlefield,

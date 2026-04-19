@@ -1,9 +1,8 @@
 import { AbilityType, ActionType, GameState, PlayerId, Zone } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
 import { CombatProcessor } from '../combat/CombatProcessor';
-import { PriorityProcessor } from '../core/PriorityProcessor';
+import { PriorityProcessor } from '../core/turn/PriorityProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
-
 import { EngineContext } from '../../interfaces/EngineContext';
 
 // Need to safely interact with Rule registries without causing circular dependencies.
@@ -63,23 +62,24 @@ export class PlayerActionProcessor {
         playerId: playerId,
         sourceId: cardId,
         data: {
+          label: `Choose a loyalty ability for ${obj.definition.name}`,
           choices: logic.abilities
             .filter((a: any) => a.type === AbilityType.Activated && a.costs.some((c: any) => c.type === 'Loyalty'))
             .map((a: any) => {
-               const lCost = a.costs.find((c: any) => c.type === 'Loyalty').value;
-               const effectSummary = a.effects.map((e: any) => {
-                  if (e.type === 'DrawCards') return `Draw ${e.amount}`;
-                  if (e.type === 'DiscardCard') return `Discard a card`;
-                  if (e.type === 'AddCounters') return `Add ${e.amount} ${e.value} counter`;
-                  if (e.type === 'CreateToken') return `Create a ${e.tokenBlueprint.name}`;
-                  if (e.type === 'PhasedOut') return `Phase out`;
-                  return e.type;
-               }).join(', ');
+              const lCost = a.costs.find((c: any) => c.type === 'Loyalty').value;
+              const effectSummary = a.effects.map((e: any) => {
+                if (e.type === 'DrawCards') return `Draw ${e.amount}`;
+                if (e.type === 'DiscardCard') return `Discard a card`;
+                if (e.type === 'AddCounters') return `Add ${e.amount} ${e.value} counter`;
+                if (e.type === 'CreateToken') return `Create a ${e.tokenBlueprint.name}`;
+                if (e.type === 'PhasedOut') return `Phase out`;
+                return e.type;
+              }).join(', ');
 
-               return {
-                 label: `${lCost}: ${effectSummary}`,
-                 value: logic.abilities.indexOf(a)
-               };
+              return {
+                label: `${lCost}: ${effectSummary}`,
+                value: logic.abilities.indexOf(a)
+              };
             })
         }
       };
@@ -89,71 +89,73 @@ export class PlayerActionProcessor {
 
     // 3. Generic Activated Ability Choice (Non-Planeswalker)
     const logic = oracle.getCard(obj.definition.name);
-    
+
     const typeLine = (obj.definition.types?.join(' ') + ' ' + (obj.definition.type_line || '')).toLowerCase();
     const isLand = typeLine.includes('land');
 
     const allActivated = (logic?.abilities || [])
-        .map((a: any, index: number) => ({ ability: a, index }))
-        .filter((entry: any) => entry.ability.type === AbilityType.Activated && PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, true));
+      .map((a: any, index: number) => ({ ability: a, index }))
+      .filter((entry: any) => entry.ability.type === AbilityType.Activated && PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, true));
 
     if (allActivated.length > 0) {
-        if (state.priorityPlayerId !== playerId) {
-            log(`Player tried to activate ability without priority.`);
-            return false;
+      if (state.priorityPlayerId !== playerId) {
+        log(`Player tried to activate ability without priority.`);
+        return false;
+      }
+
+      if (allActivated.length === 1) {
+        const { ability, index: abilityIdx } = allActivated[0];
+
+        if (ability.isManaAbility) {
+          // Determine if this mana ability requires choices (like Add {B} or {G})
+          const hasChoices = ability.effects.some((e: any) => e.type === 'AddMana' && e.choices);
+
+          // If it has no choices and only costs Tap, we just fire it immediate
+          // Rules 605.3a: Mana abilities don't use the stack and are resolved immediately.
+          return engine.activateAbility({
+            playerId,
+            cardId,
+            abilityIndex: abilityIdx,
+            bypassPriority: true,
+            bypassTargeting: true
+          });
         }
 
-        if (allActivated.length === 1) {
-            const { ability, index: abilityIdx } = allActivated[0];
-            
-            if (ability.isManaAbility) {
-                // Determine if this mana ability requires choices (like Add {B} or {G})
-                const hasChoices = ability.effects.some((e: any) => e.type === 'AddMana' && e.choices);
-                
-                // If it has no choices and only costs Tap, we just fire it immediate
-                // Rules 605.3a: Mana abilities don't use the stack and are resolved immediately.
-                return engine.activateAbility({
-                    playerId,
-                    cardId,
-                    abilityIndex: abilityIdx,
-                    bypassPriority: true,
-                    bypassTargeting: true
-                });
-            }
+        // Safety Step: For single non-mana utility abilities, show a confirmation modal 
+        state.pendingAction = {
+          type: ActionType.ModalSelection,
+          playerId: playerId,
+          sourceId: cardId,
+          data: {
+            label: `Choose an action for ${obj.definition.name}`,
+            isContextual: true,
+            choices: [
+              { label: 'Activate Ability', value: abilityIdx },
+              { label: 'Cancel', value: 'none' }
+            ]
+          }
+        };
+        state.priorityPlayerId = null;
+        return true;
+      }
 
-            // Safety Step: For single non-mana utility abilities, show a confirmation modal 
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: cardId,
-                data: {
-                    isContextual: true,
-                    choices: [
-                        { label: 'Activate Ability', value: abilityIdx },
-                        { label: 'Cancel', value: 'none' }
-                    ]
-                }
-            };
-            state.priorityPlayerId = null;
-            return true;
-        }
-
-        // If multiple abilities (common for creatures with utility + mana or multiple utilities)
-        if (allActivated.length > 1) {
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: cardId,
-                data: {
-                    choices: allActivated.map((entry: any) => ({
-                        label: entry.ability.oracleText || entry.ability.id || 'Activate Ability',
-                        value: entry.index
-                    }))
-                }
-            };
-            state.priorityPlayerId = null;
-            return true;
-        }
+      // If multiple abilities (common for creatures with utility + mana or multiple utilities)
+      if (allActivated.length > 1) {
+        state.pendingAction = {
+          type: ActionType.ModalSelection,
+          playerId: playerId,
+          sourceId: cardId,
+          data: {
+            label: `Choose an ability to activate for ${obj.definition.name}`,
+            choices: allActivated.map((entry: any) => ({
+              label: entry.ability.oracleText || entry.ability.id || 'Activate Ability',
+              value: entry.index
+            }))
+          }
+        };
+        state.priorityPlayerId = null;
+        return true;
+      }
     }
 
     // 4. Default: Tap for Mana (Undo/Untap) or non-PW interaction
@@ -170,7 +172,7 @@ export class PlayerActionProcessor {
   ): boolean {
     const obj = state.battlefield.find(o => o.id === cardId);
     if (!obj || obj.controllerId !== playerId || obj.isTapped) return false;
-    
+
     // We use a simplified check for the first mana ability to ensure synchronous tapping
     const { oracle } = require('../../OracleLogicMap');
     const logic = oracle.getCard(obj.definition.name);
@@ -178,20 +180,20 @@ export class PlayerActionProcessor {
 
     let manaAbilityIdx = abilityIndex !== undefined ? abilityIndex : logic.abilities.findIndex((a: any) => a.isManaAbility);
     if (manaAbilityIdx === -1) {
-        // Fallback for cases where index might be wrong or wasn't provided accurately
-        manaAbilityIdx = logic.abilities.findIndex((a: any) => a.isManaAbility);
+      // Fallback for cases where index might be wrong or wasn't provided accurately
+      manaAbilityIdx = logic.abilities.findIndex((a: any) => a.isManaAbility);
     }
     if (manaAbilityIdx === -1) return false;
 
     // Standardize ability index and use bypassTargeting=true for silent, synchronous tapping 
     // during the auto-tap sequence.
     return engine.activateAbility({
-        playerId,
-        cardId,
-        abilityIndex: manaAbilityIdx,
-        choiceIndex,
-        bypassPriority: true,
-        bypassTargeting: true
+      playerId,
+      cardId,
+      abilityIndex: manaAbilityIdx,
+      choiceIndex,
+      bypassPriority: true,
+      bypassTargeting: true
     });
   }
 
@@ -215,17 +217,18 @@ export class PlayerActionProcessor {
 
     // GENERIC UNDO LOGIC: If a land has exactly one mana ability, we can try to undo it
     const manaAbilities = logic.abilities.filter((a: any) => a.isManaAbility);
-    if (manaAbilities.length !== 1) return false; 
+    if (manaAbilities.length !== 1) return false;
 
     const ability = manaAbilities[0];
     const addManaEffect = ability.effects.find((e: any) => e.type === 'AddMana');
     if (!addManaEffect) return false;
 
     const player = state.players[playerId];
-    const { ManaProcessor } = require('./../magic/ManaProcessor');
+    const { ManaProcessor } = require('../magic/ManaProcessor');
+
     const manaStr = addManaEffect.value || '{C}';
     const requirements = ManaProcessor.parseManaCost(manaStr.startsWith('{') ? manaStr : `{${manaStr}}`);
-    
+
     // Extract the primary color symbol
     const color = (Object.keys(requirements.colored)[0] as keyof typeof player.manaPool) || 'C';
 
@@ -242,21 +245,21 @@ export class PlayerActionProcessor {
 
   public static declareAttacker(state: GameState, playerId: string, cardId: string, targetId: string | undefined, log: (m: string) => void): boolean {
     const card = state.battlefield.find(c => c.id === cardId);
-    
+
     const isPlaneswalker = card && card.definition.types.includes('Planeswalker') && card.controllerId !== playerId;
     const isOpponent = !!state.players[cardId as PlayerId] && cardId !== playerId;
 
     if (isPlaneswalker || isOpponent) {
-        if (state.combat?.attackers.length) {
-            const last = state.combat.attackers[state.combat.attackers.length - 1];
-            last.targetId = cardId;
-            log(`Attack re-targeted to ${isOpponent ? 'Opponent' : card!.definition.name}.`);
-            return true;
-        }
+      if (state.combat?.attackers.length) {
+        const last = state.combat.attackers[state.combat.attackers.length - 1];
+        last.targetId = cardId;
+        log(`Attack re-targeted to ${isOpponent ? 'Opponent' : card!.definition.name}.`);
+        return true;
+      }
     }
 
     if (!card || card.controllerId !== playerId || card.zone !== Zone.Battlefield) return false;
-    
+
     // CR 302.1: A creature can't attack unless its controller has controlled it... (Summoning Sickness)
     const stats = LayerProcessor.getEffectiveStats(card, state);
     const types = (card.definition.types || []).map(t => t.toLowerCase());
@@ -266,50 +269,50 @@ export class PlayerActionProcessor {
     if (!isCreature) return false;
 
     if (card.summoningSickness && !stats.keywords.includes('Haste')) {
-       log(`${card.definition.name} ha debolezza da evocazione.`);
-       return false;
+      log(`${card.definition.name} ha debolezza da evocazione.`);
+      return false;
     }
 
     if (!state.combat) state.combat = { attackers: [], blockers: [] };
 
     const existingIndex = state.combat.attackers.findIndex(a => a.attackerId === cardId);
     if (existingIndex >= 0) {
-       // Requirement Check: MustAttack (Rule 508.1d)
-       const mustAttack = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'MustAttack') ||
-                         stats.restrictions?.includes('MustAttack');
-       if (mustAttack) {
-          const canAttack = !card.isTapped && !card.summoningSickness && !stats.keywords.includes('Defender');
-          const cannotAttackFlags = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'CannotAttack');
-          
-          if (canAttack && !cannotAttackFlags) {
-             log(`${card.definition.name} must attack and cannot be deselected.`);
-             return false;
-          }
-       }
-       state.combat.attackers.splice(existingIndex, 1);
-       log(`${card.definition.name} removed from attackers.`);
+      // Requirement Check: MustAttack (Rule 508.1d)
+      const mustAttack = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'MustAttack') ||
+        stats.restrictions?.includes('MustAttack');
+      if (mustAttack) {
+        const canAttack = !card.isTapped && !card.summoningSickness && !stats.keywords.includes('Defender');
+        const cannotAttackFlags = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'CannotAttack');
+
+        if (canAttack && !cannotAttackFlags) {
+          log(`${card.definition.name} must attack and cannot be deselected.`);
+          return false;
+        }
+      }
+      state.combat.attackers.splice(existingIndex, 1);
+      log(`${card.definition.name} removed from attackers.`);
     } else {
-       if (card.isTapped) return false;
-       
-       // Rule 702.3a: Defender prevents attacking.
-       if (stats.keywords.includes('Defender')) {
-           log(`[ATTACK] ERR: ${card.definition.name} has Defender and cannot attack.`);
-           return false;
-       }
+      if (card.isTapped) return false;
 
-       // Check for external "CannotAttack" restrictions
-       const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'CannotAttack');
-       if (cannotAttack) {
-           log(`[ATTACK] ERR: ${card.definition.name} cannot attack.`);
-           return false;
-       }
+      // Rule 702.3a: Defender prevents attacking.
+      if (stats.keywords.includes('Defender')) {
+        log(`[ATTACK] ERR: ${card.definition.name} has Defender and cannot attack.`);
+        return false;
+      }
 
-       const opponentId = Object.keys(state.players).find(id => id !== playerId);
-       state.combat.attackers.push({ attackerId: cardId, targetId: targetId || opponentId! });
-       
-       // Rule 702.24: Vigilance prevents tapping when attacking
-       // Note: Tapping now happens upon CONFIRMATION in CombatProcessor
-       log(`${card.definition.name} selected as attacker.`);
+      // Check for external "CannotAttack" restrictions
+      const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'CannotAttack');
+      if (cannotAttack) {
+        log(`[ATTACK] ERR: ${card.definition.name} cannot attack.`);
+        return false;
+      }
+
+      const opponentId = Object.keys(state.players).find(id => id !== playerId);
+      state.combat.attackers.push({ attackerId: cardId, targetId: targetId || opponentId! });
+
+      // Rule 702.24: Vigilance prevents tapping when attacking
+      // Note: Tapping now happens upon CONFIRMATION in CombatProcessor
+      log(`${card.definition.name} selected as attacker.`);
     }
     return true;
   }
@@ -339,7 +342,7 @@ export class PlayerActionProcessor {
     const blockerObj = state.battlefield.find(c => c.id === blockerId);
     const attackers = state.combat?.attackers || [];
     const isAttacking = attackers.some(a => a.attackerId === cardId);
-    
+
     if (!isAttacking) {
       log(`[BLOCK] ERR: ${card.definition.name} is not an attacking creature.`);
       return false;
@@ -347,8 +350,8 @@ export class PlayerActionProcessor {
 
     const { legal, reason } = CombatProcessor.isLegalBlocker(state, blockerId, cardId);
     if (!legal) {
-        log(`${blockerObj?.definition.name} cannot block ${card.definition.name}${reason ? ` (${reason})` : ''}.`);
-        return false;
+      log(`${blockerObj?.definition.name} cannot block ${card.definition.name}${reason ? ` (${reason})` : ''}.`);
+      return false;
     }
 
     if (!state.combat) state.combat = { attackers: [], blockers: [] };
@@ -358,7 +361,7 @@ export class PlayerActionProcessor {
 
     state.combat.blockers.push({ blockerId, attackerId: cardId });
     log(`${state.battlefield.find(c => c.id === blockerId)?.definition.name} blocking ${card.definition.name}`);
-    
+
     const { TriggerProcessor } = require('../effects/TriggerProcessor');
     TriggerProcessor.onEvent(state, { type: 'ON_BLOCK', targetId: blockerId, sourceId: blockerId, data: { object: blockerObj, attackerId: cardId } }, log);
 
@@ -373,11 +376,11 @@ export class PlayerActionProcessor {
     // BUG FIX: Prevent race condition where rapid clicking discards more than required.
     // We only allow discard if there's a pending DISCARD action for this player.
     if (state.pendingAction?.type !== 'DISCARD' || state.pendingAction.playerId !== playerId) {
-        return { finished: false, success: false };
+      return { finished: false, success: false };
     }
 
     if (player.pendingDiscardCount <= 0) {
-        return { finished: false, success: false };
+      return { finished: false, success: false };
     }
 
     const cardIndex = player.hand.findIndex(c => c.id === cardInstanceId);
@@ -386,7 +389,7 @@ export class PlayerActionProcessor {
     const card = player.hand.splice(cardIndex, 1)[0];
     card.zone = Zone.Graveyard;
     player.graveyard.push(card);
-    
+
     const sourceId = state.pendingAction?.sourceId;
     const { TriggerProcessor } = require('./../effects/TriggerProcessor');
     TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card, sourceId } }, log);
@@ -394,13 +397,13 @@ export class PlayerActionProcessor {
     if (player.pendingDiscardCount > 0) {
       player.pendingDiscardCount--;
       if (state.pendingAction && (state.pendingAction as any).count) {
-          (state.pendingAction as any).count--;
+        (state.pendingAction as any).count--;
       }
       log(`${player.name} discarded ${card.definition.name} (${player.pendingDiscardCount} more to go).`);
-      
+
       if (player.pendingDiscardCount === 0) {
         log(`${player.name} finished discarding.`);
-        state.pendingAction = undefined; 
+        state.pendingAction = undefined;
         return { finished: true, success: true };
       }
     } else {
@@ -411,7 +414,7 @@ export class PlayerActionProcessor {
   }
   public static resolveCombatOrdering(state: GameState, playerId: string, order: string[], log: (m: string) => void) {
     if (!state.combat || !state.pendingAction) return;
-    
+
     const sourceId = state.pendingAction.sourceId;
     if (!sourceId) return;
 
@@ -428,7 +431,7 @@ export class PlayerActionProcessor {
     }
 
     state.pendingAction = undefined;
-    
+
     // Check if more ordering is needed
     // We use a dynamic import or require to avoid circular dependency since CombatProcessor uses this class
     const { CombatProcessor } = require('../combat/CombatProcessor');
@@ -440,13 +443,13 @@ export class PlayerActionProcessor {
   public static resolveTriggerOrdering(state: GameState, playerId: string, orderedIds: string[], log: (m: string) => void): boolean {
     if (!state.pendingAction || (state.pendingAction.type as any) !== 'ORDER_TRIGGERS' || state.pendingAction.playerId !== playerId) return false;
 
-    const { triggers } = state.pendingAction.data;
-    
+    const { triggers } = state.pendingAction.data as any;
+
     // The player sends us the IDs in "Stacking Order" (MTGA UI)
     // index 0 -> Last to resolve (Bottom of stack)
     // index N-1 -> First to resolve (Top of stack)
     const orderedTriggers = orderedIds.map(id => triggers.find((t: any) => t.id === id)).filter(Boolean);
-    
+
     if (state.pendingTriggers) {
       state.pendingTriggers = state.pendingTriggers.filter(t => !orderedIds.includes(t.id));
     }
@@ -455,7 +458,7 @@ export class PlayerActionProcessor {
 
     const { TriggerProcessor } = require('./../effects/TriggerProcessor');
     for (const t of orderedTriggers) {
-        TriggerProcessor.stackTrigger(state, t, log);
+      TriggerProcessor.stackTrigger(state, t, log);
     }
 
     // Process remaining if anyone else has triggers
@@ -467,17 +470,18 @@ export class PlayerActionProcessor {
    * CR 603: Resolve a specific target selection from the UI.
    */
   public static resolveTargeting(state: GameState, playerId: PlayerId, targetId: string, engine: EngineContext): boolean {
-    const { TargetingProcessor } = require('./TargetingProcessor');
+    const { TargetingProcessor } = require('./targeting/TargetingProcessor');
+
     return TargetingProcessor.resolveInteractiveTargeting(
-        state,
-        playerId,
-        targetId,
-        (m: string) => engine.log(m),
-        {
-            ...engine,
-            resetPriorityToActivePlayer: () => engine.resetPriorityToActivePlayer(),
-            finaliseTargeting: (p: PlayerId, t: string[]) => TargetingProcessor.finaliseTargeting(state, p, t, engine)
-        }
+      state,
+      playerId,
+      targetId,
+      (m: string) => engine.log(m),
+      {
+        ...engine,
+        resetPriorityToActivePlayer: () => engine.resetPriorityToActivePlayer(),
+        finaliseTargeting: (p: PlayerId, t: string[]) => TargetingProcessor.finaliseTargeting(state, p, t, engine)
+      }
     );
   }
 }

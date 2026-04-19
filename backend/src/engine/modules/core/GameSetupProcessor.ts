@@ -108,6 +108,4 @@ export class GameSetupProcessor {
       [player.library[i], player.library[j]] = [player.library[j], player.library[i]];
     }
   }
-
 }
-

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, RestrictionType, TargetMapping, TargetType, TriggerEvent } from "@shared/engine_types";
 
 export const FaithsFetters: CardDefinition = {
     name: "Faith's Fetters",
@@ -10,8 +10,6 @@ export const FaithsFetters: CardDefinition = {
     supertypes: [],
     types: ["Enchantment"],
     subtypes: ["Aura"],
-    power: "",
-    toughness: "",
     keywords: ["Enchant"],
     abilities: [
         {
@@ -33,10 +31,10 @@ export const FaithsFetters: CardDefinition = {
                 type: EffectType.ApplyContinuousEffect,
                 layer: 6,
                 targetMapping: TargetMapping.EnchantedPermanent,
-                restrictions: [
-                    { type: 'CannotAttack' },
-                    { type: 'CannotBlock' },
-                    { type: 'CannotActivateNonManaAbilities' }
+                restrictionsToAdd: [
+                    { type: RestrictionType.CannotAttack },
+                    { type: RestrictionType.CannotBlock },
+                    { type: RestrictionType.CannotActivateNonManaAbilities }
                 ]
             }]
         }

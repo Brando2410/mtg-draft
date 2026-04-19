@@ -4,7 +4,7 @@ import {
     GameState,
     PlayerId
 } from "@shared/engine_types";
-import { TriggerProcessor } from "../effects/TriggerProcessor";
+import { TriggerProcessor } from "../effects/triggers/TriggerProcessor";
 
 /**
  * Rules Engine Module: Damage Handling (Rule 120)
@@ -302,7 +302,7 @@ export class DamageProcessor {
     );
 
     if (protectionKeywords.length > 0) {
-      const { TargetingProcessor } = require("./../actions/TargetingProcessor");
+      const { TargetingProcessor } = require("../../actions/targeting/TargetingProcessor");
       for (const prot of protectionKeywords) {
         const qualityStr = prot.toLowerCase().replace("protection from ", "");
         const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);

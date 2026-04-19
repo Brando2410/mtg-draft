@@ -1,12 +1,12 @@
-import { AbilityCost, ActionType, GameState, PlayerId, Zone } from '@shared/engine_types';
+import { AbilityCost, ActionType, EffectDefinition, GameState, PlayerId, Zone, ChoiceOption, PendingAction } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
 import { ChoiceGenerator } from '../effects/ChoiceGenerator';
 import { EffectProcessor } from '../effects/EffectProcessor';
 import { CostProcessor } from '../magic/CostProcessor';
 import { ActionProcessor } from './ActionProcessor';
 import { PlayerActionProcessor } from './PlayerActionProcessor';
-import { SpellProcessor } from './SpellProcessor';
-import { TargetingProcessor } from './TargetingProcessor';
+import { SpellProcessor } from './spells/SpellProcessor';
+import { TargetingProcessor } from './targeting/TargetingProcessor';
 
 import { EngineContext } from '../../interfaces/EngineContext';
 
@@ -22,7 +22,7 @@ export class ChoiceProcessor {
     log: (m: string) => void,
     engine: EngineContext
   ): boolean {
-    const action = state.pendingAction;
+    const action = state.pendingAction as PendingAction;
     if (!action || action.playerId !== playerId) return false;
 
     const isModal = action.type === 'MODAL_SELECTION';
@@ -63,11 +63,11 @@ export class ChoiceProcessor {
             return parseInt(raw);
         });
         const sourceId = action.sourceId;
-        const allEffects: any[] = [];
-        let finalChoice: any = null;
+        const allEffects: EffectDefinition[] = [];
+        let finalChoice: ChoiceOption | null = null;
 
         indices.forEach(idx => {
-            const choice = action.data?.choices[idx];
+            const choice = action.data?.choices?.[idx];
             if (choice) {
                 if (choice.effects) allEffects.push(...choice.effects);
                 finalChoice = choice; // Use metadata from the last one if needed
@@ -83,7 +83,7 @@ export class ChoiceProcessor {
             const discardEffects = allEffects.filter(e => e.type === 'MoveToZone' && e.isDiscard);
             if (discardEffects.length > 0) {
                 state.turnState.lastDiscardedCount = discardEffects.length;
-                state.turnState.lastDiscardedIds = discardEffects.map(e => e.targetId).filter(id => id);
+                state.turnState.lastDiscardedIds = discardEffects.map(e => e.targetId).filter(id => id) as string[];
             }
             EffectProcessor.resolveEffects({
                 state,
@@ -100,9 +100,9 @@ export class ChoiceProcessor {
         // After batch is done, check if we need to move to the next player (for DiscardCards)
         const nextPlayerIds = action.data?.nextPlayerIds || action.data?.stackObj?.data?.nextPlayerIds || [];
         if (!state.pendingAction && nextPlayerIds.length > 0) {
-            const discardAmount = action.data?.discardAmount || action.data?.stackObj?.data?.discardAmount;
+            const discardAmount = action.data?.discardAmount || action.data?.stackObj?.data?.discardAmount || 1;
             const failureEffects = action.data?.onFailureEffects || action.data?.stackObj?.data?.onFailureEffects;
-            state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, action.data.label, action.data.stackObj, action.data.parentContext, failureEffects);
+            state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, action.data?.label || "Discard", action.data?.stackObj, action.data?.parentContext, failureEffects);
         }
 
         // Resume whatever was happening - CRITICAL: must start from action.data to catch local effects (like Draw after Discard)
@@ -139,13 +139,13 @@ export class ChoiceProcessor {
 private static handleScrySurveil(
     state: GameState,
     playerId: string,
-    action: any,
+    action: PendingAction,
     payload: any,
     log: (m: string) => void,
     engine: any
 ): boolean {
     const { ActionProcessor } = require('./ActionProcessor');
-    const { top = [], bottom = [], graveyard = [] } = typeof payload === 'string' ? JSON.parse(payload) : payload;
+    const { top = [], bottom = [], graveyard = [] } = (typeof payload === 'string' ? JSON.parse(payload) : payload) as { top?: string[], bottom?: string[], graveyard?: string[] };
 
     log(`[RESOLVING ${action.type}] ${state.players[playerId].name} reordered cards.`);
     
@@ -160,7 +160,7 @@ private static handleScrySurveil(
     };
 
     // 1. Validate all cards are still in a valid state (optional but good)
-    const cards = action.data.lookingCards || [];
+    const cards = action.data?.lookingCards || [];
     
     // 2. Clear current state ofThese cards (they were pulled from library top)
     // Actually, in EffectProcessor they were popped from the library.
@@ -189,14 +189,13 @@ private static handleScrySurveil(
     });
 
     // 5. Cleanup
-    const stackObj = action.data.stackObj;
-    const parentContext = action.data.parentContext;
+    const stackObj = action.data?.stackObj;
     state.pendingAction = undefined;
 
     // 6. Resume resolution if needed - CRITICAL: must start from action.data to catch local effects
     if (stackObj) {
         log(`[RESOLVING] Resuming resolution after ${action.type}...`);
-        return this.resumeResolution(state, action.sourceId, stackObj, action.data, log, engine);
+        return this.resumeResolution(state, action.sourceId!, stackObj, action.data, log, engine);
     }
 
     engine.resetPriorityToActivePlayer();
@@ -272,13 +271,13 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     return true;
 }
 
-  private static handleUndo(state: GameState, playerId: string, action: any, log: (m: string) => void): boolean {
+  private static handleUndo(state: GameState, playerId: string, action: PendingAction, log: (m: string) => void): boolean {
     if (action.data?.hideUndo || action.type === 'RESOLUTION_CHOICE') {
         log(`Undo not available for this mandatory action.`);
         return false;
     }
 
-    const sourceId = action.sourceId;
+    const sourceId = action.sourceId!;
     const savedActionData = action.data;
 
     // A. Revert Battlefield source (Activated Ability/Planeswalker)
@@ -355,7 +354,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     return true;
   }
 
-  private static handleBattlefieldAbilityActivation(state: GameState, playerId: string, obj: any, choice: any, log: (m: string) => void, engine: any): boolean {
+  private static handleBattlefieldAbilityActivation(state: GameState, playerId: string, obj: any, choice: ChoiceOption, log: (m: string) => void, engine: any): boolean {
     if (choice.value === 'none') {
         state.pendingAction = undefined;
         state.priorityPlayerId = playerId;
@@ -379,7 +378,6 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
            ...state.stack.map(o => o.id)
         ];
         const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDef, (obj as any).xValue || 0);
-        const prompt = TargetingProcessor.generateTargetPrompt(targetDef, 0, (obj as any).xValue || 0);
         const legalTargetIds = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
             sourceId: obj.id,
             controllerId: obj.controllerId,
@@ -449,18 +447,19 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
        }
        
         state.pendingAction = {
-           type: 'TARGETING',
-           playerId,
-           sourceId: obj.id,
-           data: { 
-               abilityIndex, 
-               targets: legalTargetIds, 
-               optional: targetDef.optional, 
-               targetDefinition: targetDef,
-               maxCount,
-               minCount,
-               count
-           }
+            type: 'TARGETING',
+            playerId,
+            sourceId: obj.id,
+            data: { 
+                label: 'Select Target',
+                abilityIndex, 
+                targets: legalTargetIds, 
+                optional: targetDef.optional, 
+                targetDefinition: targetDef,
+                maxCount,
+                minCount,
+                count
+            }
         };
        state.priorityPlayerId = playerId;
        log(`Select target for ${obj.definition.name}'s ability.`);
@@ -478,9 +477,9 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     });
   }
 
-  private static handleModalSelection(state: GameState, playerId: string, sourceId: string, choice: any, choiceIndex: any, action: any, log: (m: string) => void, engine: any): boolean {
-    const savedTargets = action.data.declaredTargets || [];
-    const costType = action.data.costType;
+  private static handleModalSelection(state: GameState, playerId: string, sourceId: string, choice: ChoiceOption | null, choiceIndex: any, action: PendingAction, log: (m: string) => void, engine: any): boolean {
+    const savedTargets = action.data?.declaredTargets || [];
+    const costType = action.data?.costType;
     if (log) log(`[DEBUG] handleModalSelection: costType=${costType}, choiceIndex=${choiceIndex}, choiceValue=${choice?.value}`);
 
     // Robustly resolve 'choice' if it's null (e.g. from batch selects)
@@ -488,10 +487,12 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         let idxStr = String(choiceIndex);
         if (idxStr.includes('|')) idxStr = idxStr.split('|')[0];
         const idx = parseInt(idxStr.startsWith('CHOICE_') ? idxStr.substring(7) : idxStr);
-        choice = action.data.choices[idx];
+        choice = action.data?.choices?.[idx] || null;
         if (log) log(`[DEBUG] handleModalSelection: resolved choice from idx ${idx}: ${choice?.label} (${choice?.value})`);
     }
     
+    if (!choice) return false;
+
     state.pendingAction = undefined; 
     
     if (costType === 'Sacrifice') {
@@ -502,14 +503,14 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     } else if (costType === 'TapSelection' || costType === 'Exile') {
         if (log) log(`[DEBUG] handleModalSelection: Processing ${costType} cost...`);
         // Multi-select might have been passed as choiceIndex batch or single
-        if (action.data.maxChoices > 1) {
+        if (action.data?.maxChoices && action.data.maxChoices > 1) {
              const batchIds = typeof choiceIndex === 'string' && choiceIndex.includes('|') 
                 ? choiceIndex.split('|').map(s => {
                     const i = parseInt(s.startsWith('CHOICE_') ? s.substring(7) : s);
-                    return action.data.choices[i]?.value;
+                    return action.data?.choices?.[i]?.value;
                 }).filter(v => v)
                 : [choice?.value].filter(v => v);
-             
+              
              if (costType === 'TapSelection') (state as any).lastChosenTapSelectionIds = batchIds;
              else (state as any).lastChosenExileIds = batchIds;
         } else {
@@ -531,7 +532,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     
     log(`Selected ${costType ? costType + ' item' : 'choice'}: ${choice.label}`);
     
-    if (action.data.abilityIndex !== undefined) {
+    if (action.data?.abilityIndex !== undefined) {
         let targets = savedTargets;
         if (action.data.isTargetingModal) {
             targets = choice.value === 'none' ? [] : (Array.isArray(choice.value) ? choice.value : [choice.value]);
@@ -553,13 +554,13 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     }
 
     // --- RESUME AFTER INTERACTIVE COST ---
-    if (action.data.isCostChoice && (action.data.stackObj || action.data.nextEffectIndex !== undefined)) {
+    if (action.data?.isCostChoice && (action.data?.stackObj || action.data?.nextEffectIndex !== undefined)) {
         log(`[RESOLVING] Resuming resolution after interactive cost ${costType}...`);
         const { EffectProcessor } = require('./../effects/EffectProcessor');
         
         // 1. Pay the interactive cost (IDs already in state)
         // We create a dummy cost object to trigger the payment logic in CostProcessor
-        const costToPay = { type: action.data.costType, amount: action.data.maxChoices, value: action.data.maxChoices };
+        const costToPay = { type: action.data.costType, amount: action.data.maxChoices, value: action.data.maxChoices } as any;
         CostProcessor.pay(state, [costToPay], sourceId, playerId, log);
         
         // 2. Pay any remaining costs that were part of the same choice
@@ -631,7 +632,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     );
   }
 
-  private static handleResolutionChoice(state: GameState, sourceId: string, choice: any, action: any, log: (m: string) => void, engine: EngineContext): boolean {
+  private static handleResolutionChoice(state: GameState, sourceId: string, choice: ChoiceOption, action: PendingAction, log: (m: string) => void, engine: EngineContext): boolean {
     log(`Option selected: ${choice.label}`);
     const savedActionData = action.data;
     const stackObj = savedActionData?.stackObj;
@@ -676,7 +677,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             log,
             startIndex: 0,
             stackObject: stackObj,
-            parentContext: savedActionData,
+            parentContext: savedActionData as any,
             controllerIdOverride: action.playerId,
         });
     }
@@ -685,7 +686,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
 
 
     // Resume Parent Contexts
-    let currentCtx = savedActionData;
+    let currentCtx = savedActionData as any;
     while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex < currentCtx.effects.length) {
         log(`[RESOLVING] Resuming parent resolution context for ${sourceId}...`);
         const nextIdx = currentCtx.nextEffectIndex;
@@ -718,7 +719,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         
         if (nextPlayerIds.length > 0) {
             log(`[CHOICE-SEQUENCE] Advancing to next player: ${nextPlayerIds[0]}`);
-            const discardAmount = action.data?.discardAmount || action.data?.stackObj?.data?.discardAmount;
+            const discardAmount = action.data?.discardAmount || action.data?.stackObj?.data?.discardAmount || 1;
             const failureEffects = action.data?.onFailureEffects || action.data?.stackObj?.data?.onFailureEffects;
             
             if (action.type === 'RESOLUTION_CHOICE' && action.data?.choices && !action.data.lookingCards) {
@@ -729,12 +730,12 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                         label: action.data.label,
                         playerId: nextPlayerIds[0],
                         sourceId: sourceId as string,
-                        actionType: action.type,
+                        actionType: action.type as ActionType,
                         hideUndo: action.data.hideUndo,
                         stackObj: action.data.stackObj,
                         parentContext: action.data.parentContext
                     },
-                    action.data.choices
+                    (action.data.choices as any[]).map(c => ({ label: c.label, value: c.value, costs: c.costs, effects: c.effects }))
                  );
                  if (state.pendingAction && state.pendingAction.data) {
                     state.pendingAction.data.nextPlayerIds = nextPlayerIds.slice(1);
@@ -767,9 +768,9 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                     nextPlayerIds, 
                     sourceId as string, 
                     discardAmount, 
-                    action.data.label, 
-                    action.data.stackObj, 
-                    action.data.parentContext, 
+                    action.data!.label || "Discard", 
+                    action.data!.stackObj, 
+                    action.data!.parentContext, 
                     failureEffects,
                     log
                 );
@@ -780,7 +781,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     return true;
   }
 
-  private static finalizeResolution(state: GameState, sourceId: string, stackObj: any, action: any, log: (m: string) => void, engine: any) {
+  private static finalizeResolution(state: GameState, sourceId: string, stackObj: any, action: PendingAction, log: (m: string) => void, engine: any) {
     if (!state.pendingAction) {
        if (stackObj) {
            const fullStackObj = state.stack.find(s => s.id === stackObj.id);
@@ -827,7 +828,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     return TargetingProcessor.resolveInteractiveTargeting(state, playerId, targetId, log, engine);
   }
 
-  private static handleXChoice(state: GameState, playerId: string, action: any, xValue: any, log: (m: string) => void, engine: any): boolean {
+  private static handleXChoice(state: GameState, playerId: string, action: PendingAction, xValue: any, log: (m: string) => void, engine: any): boolean {
     let x = 0;
     if (typeof xValue === 'object' && xValue !== null && 'x' in xValue) {
         x = parseInt(String(xValue.x));
@@ -840,7 +841,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         return false;
     }
 
-    const sourceId = action.sourceId;
+    const sourceId = action.sourceId!;
     const card = TargetingProcessor.findObjectInAnyZone(state, sourceId);
     if (!card) {
         log(`[CHOOSE_X] Error: Could not find card for sourceId ${sourceId}`);
@@ -859,7 +860,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         {
             playerId, 
             cardId: sourceId, 
-            targets: action.data.declaredTargets || [], 
+            targets: action.data?.declaredTargets || [], 
             bypassPriority: true,
             bypassTargeting: false
         }
@@ -871,4 +872,3 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     return success;
   }
 }
-

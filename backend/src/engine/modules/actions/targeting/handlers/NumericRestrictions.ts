@@ -1,0 +1,63 @@
+import { GameState, GameObject, TargetingContext } from "@shared/engine_types";
+import { IRestrictionHandler } from "../IRestrictionHandler";
+import { LayerProcessor } from "../../../state/LayerProcessor";
+import { ManaProcessor } from "../../../magic/ManaProcessor";
+
+export const NumericRestrictions: Record<string, IRestrictionHandler> = {
+    "NUMERIC_REGEX": {
+        matches(state, targetObj: any, restriction: string, context) {
+            const { sourceId, stackObject } = context;
+            const match = restriction.toLowerCase().match(/^(cmc|mv|power|toughness)\s*(<=|>=|==|=|<|>)\s*(\d+|x|power|source_power|source_mv|source_cmc|converge_amount)$/);
+            if (!match) return true;
+
+            const [, field, op, valPart] = match;
+            let val = 0;
+
+            if (valPart.match(/^\d+$/)) {
+                val = parseInt(valPart);
+            } else if (valPart === 'x') {
+                val = (stackObject?.xValue) || (stackObject as any)?.data?.xValue || (state.pendingAction as any)?.data?.xValue || (state.pendingAction as any)?.xValue || 0;
+            } else if (valPart === 'power' || valPart === 'source_power') {
+                const source = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId);
+                val = source ? LayerProcessor.getEffectiveStats(source, state).power : 0;
+            } else if (valPart === 'source_mv' || valPart === 'source_cmc') {
+                const source = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId);
+                val = source ? ManaProcessor.getManaValue(source.definition.manaCost || '') : 0;
+            } else if (valPart === 'converge_amount') {
+                const source = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId);
+                val = (source as any)?.convergeAmount || 0;
+            }
+
+            let currentVal = 0;
+            if (field === 'cmc' || field === 'mv') currentVal = ManaProcessor.getManaValue(targetObj.definition.manaCost || '');
+            else if (field === 'power') currentVal = LayerProcessor.getEffectiveStats(targetObj, state).power;
+            else if (field === 'toughness') currentVal = LayerProcessor.getEffectiveStats(targetObj, state).toughness;
+
+            if (op === '<=' && !(currentVal <= val)) return false;
+            if (op === '>=' && !(currentVal >= val)) return false;
+            if (op === '<' && !(currentVal < val)) return false;
+            if (op === '>' && !(currentVal > val)) return false;
+            if ((op === '==' || op === '=') && !(currentVal === val)) return false;
+
+            return true;
+        }
+    },
+    "MV_LE_POWER": {
+        matches(state, targetObj: any, r, context) {
+            const { sourceId } = context;
+            const source = state.battlefield.find(o => o.id === sourceId);
+            const sourcePower = source ? LayerProcessor.getEffectiveStats(source, state).power : 0;
+            const targetMV = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            return targetMV <= sourcePower;
+        }
+    },
+    "MV_LE_X": {
+        matches(state, targetObj: any, r, context) {
+            const { stackObject } = context;
+            const xValue = (stackObject?.xValue) || (state.pendingAction as any)?.data?.xValue || (state.pendingAction as any)?.xValue || 0;
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            return mv <= xValue;
+        }
+    }
+};
+

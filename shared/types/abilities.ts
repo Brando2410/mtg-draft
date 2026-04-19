@@ -82,24 +82,55 @@ export const ConditionType = {
 } as const;
 export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType] | string;
 
-export interface AbilityCost {
+/**
+ * Base properties shared by all costs (Rule 601.2f)
+ */
+export interface BaseAbilityCost {
     type: CostType;
-    value?: any;
-    amount?: number;
-    restrictions?: (string | any)[];
-    targetMapping?: string;
-    counterType?: string;
-    costModifiers?: { type: 'REDUCE_GENERIC_PER_COUNTER', counterType: string, amount?: number, multiplier?: number }[];
-    sourceZone?: Zone;
-    sourceZones?: Zone[];
     label?: string;
-    choices?: { label: string, costs: AbilityCost[] }[];
-    zone?: Zone;
     optional?: boolean;
-    restriction?: any;
-    selectionType?: string;
+    [key: string]: any; // Transitional compatibility
+}
+
+export interface ManaCost extends BaseAbilityCost {
+    type: typeof CostType.Mana;
+    value: string; // Mana string like "{1}{B}"
+    costModifiers?: { type: 'REDUCE_GENERIC_PER_COUNTER', counterType: string, amount?: number, multiplier?: number }[];
+}
+
+export interface TapCost extends BaseAbilityCost {
+    type: typeof CostType.Tap;
+}
+
+export interface SacrificeCost extends BaseAbilityCost {
+    type: typeof CostType.Sacrifice | typeof CostType.SacrificeSelf;
+    amount?: number;
+    targetDefinition?: TargetDefinition;
+    restrictions?: (string | any)[];
+}
+
+export interface DiscardCost extends BaseAbilityCost {
+    type: typeof CostType.Discard;
+    amount?: number;
     targetDefinition?: TargetDefinition;
 }
+
+export interface LifeCost extends BaseAbilityCost {
+    type: typeof CostType.PayLife;
+    amount: number;
+}
+
+/**
+ * Rules Engine Representation of an Ability activation cost (CR 602.1a).
+ * Now a Union for type-safe parameter enforcement.
+ */
+export type AbilityCost = 
+    | ManaCost 
+    | TapCost 
+    | SacrificeCost 
+    | DiscardCost 
+    | LifeCost 
+    | BaseAbilityCost;
 
 export interface ActivatedAbility {
     id: string;

@@ -48,7 +48,7 @@ export const SanctumofAll: CardDefinition = {
             replacesEvent: 'ON_SHRINE_TRIGGER',
             condition: (state: any, event: any, ability: any) =>
                 state.battlefield.filter((o: any) => o.controllerId === ability.controllerId && (o.definition.subtypes || []).includes('Shrine')).length >= 5,
-            effects: [{ type: 'AddAdditionalTrigger' as any, targetMapping: TargetMapping.TriggerSource }]
+            effects: [{ type: EffectType.AddAdditionalTrigger, targetMapping: TargetMapping.TriggerSource }]
         }
     ]
 };

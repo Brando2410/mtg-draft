@@ -1,7 +1,9 @@
 import { GameObjectId, GameState, PlayerId, Step } from '@shared/engine_types';
 import { DamageProcessor } from '../combat/DamageProcessor';
-import { TriggerProcessor } from '../effects/TriggerProcessor';
+import { TriggerProcessor } from '../effects/triggers/TriggerProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
+import { RestrictionValidator } from '../core/RestrictionValidator';
+import { RestrictionType } from '@shared/engine_types';
 
 import { EngineContext } from '../../interfaces/EngineContext';
 
@@ -34,14 +36,10 @@ export class CombatProcessor {
       const opponentId = Object.keys(state.players).find(id => id !== state.activePlayerId);
 
       creatures.forEach(creature => {
-          const stats = LayerProcessor.getEffectiveStats(creature, state);
-          const hasMustAttack = state.ruleRegistry.restrictions.some(r => r.targetId === creature.id && r.type === 'MustAttack') ||
-                               (stats as any).restrictions?.includes('MustAttack');
+          const hasMustAttack = RestrictionValidator.isRestricted(state, creature, RestrictionType.MustAttack);
           if (hasMustAttack) {
-              const canAttack = !creature.isTapped && !creature.summoningSickness && !stats.keywords.includes('Defender');
-              const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === creature.id && r.type === 'CannotAttack');
-              
-              if (canAttack && !cannotAttack && opponentId) {
+              const canAttack = !creature.isTapped && !creature.summoningSickness && RestrictionValidator.canAttack(state, creature);
+              if (canAttack && opponentId) {
                   const alreadyAttacking = state.combat!.attackers.some(a => a.attackerId === creature.id);
                   if (!alreadyAttacking) {
                     state.combat!.attackers.push({ attackerId: creature.id, targetId: opponentId });
@@ -170,14 +168,11 @@ export class CombatProcessor {
         const card = state.battlefield.find(o => o.id === a.attackerId);
         if (!card) return false;
         
-        const stats = LayerProcessor.getEffectiveStats(card, state);
-        const hasMustAttack = state.ruleRegistry.restrictions.some(r => r.targetId === card.id && r.type === 'MustAttack') ||
-                             stats.restrictions?.includes('MustAttack');
+        const hasMustAttack = RestrictionValidator.isRestricted(state, card, RestrictionType.MustAttack);
         if (!hasMustAttack) return false;
 
-        const canAttack = !card.isTapped && !card.summoningSickness && !stats.keywords.includes('Defender');
-        const cannotAttackFlags = state.ruleRegistry.restrictions.some(r => r.targetId === card.id && r.type === 'CannotAttack');
-        return canAttack && !cannotAttackFlags;
+        const canAttack = !card.isTapped && !card.summoningSickness && RestrictionValidator.canAttack(state, card);
+        return canAttack;
     });
 
     state.combat.attackers.forEach(a => {
@@ -294,7 +289,7 @@ export class CombatProcessor {
                 type: 'ORDER_BLOCKERS',
                 playerId: state.activePlayerId,
                 sourceId: attacker.attackerId,
-                data: { ids: blockers.map(b => b.blockerId) }
+                data: { label: "OrderBlockers", ids: blockers.map(b => b.blockerId) }
             };
             log(`[FLOW] ${state.players[state.activePlayerId].name} must order blockers for ${state.battlefield.find(o => o.id === attacker.attackerId)?.definition.name}.`);
             return;
@@ -317,7 +312,7 @@ export class CombatProcessor {
                     type: 'ORDER_ATTACKERS',
                     playerId: defenderId,
                     sourceId: blockerId,
-                    data: { ids: attackers }
+                    data: { label: "OrderAttackers", ids: attackers }
                 };
                 log(`[FLOW] ${state.players[defenderId].name} must order attackers for ${state.battlefield.find(o => o.id === blockerId)?.definition.name}.`);
                 return;
@@ -478,10 +473,7 @@ export class CombatProcessor {
     }
 
     // 0. Restriction Check (CannotBlock)
-    const isRestricted = state.ruleRegistry.restrictions.some(r => 
-        r.targetId === blockerId && r.type === 'CannotBlock'
-    ) || bStats.restrictions?.includes('CannotBlock') || bStats.keywords?.includes('CannotBlock');
-    if (isRestricted) return { legal: false, reason: "this creature cannot block" };
+    if (!RestrictionValidator.canBlock(state, blocker)) return { legal: false, reason: "this creature cannot block" };
 
     // 1. CR 702.9: Flying check
     // "A creature with flying can't be blocked except by creatures with flying and/or reach."
@@ -501,7 +493,7 @@ export class CombatProcessor {
     // Blocker's protection from attacker does NOT prevent it from blocking.
     const protectionKeywords = aStats.keywords.filter((k: string) => k.toLowerCase().startsWith('protection from'));
     if (protectionKeywords.length > 0) {
-        const { TargetingProcessor } = require('./../actions/TargetingProcessor');
+        const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
         for (const prot of protectionKeywords) {
           const qualityStr = prot.toLowerCase().replace('protection from ', '');
           const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
@@ -532,26 +524,15 @@ export class CombatProcessor {
         
         // Rule 702.3a / 508.1a: Defender & other "Cannot Attack" restrictions
         if (isAttacking) {
-            const hasDefender = stats.keywords.some((k: string) => k.toLowerCase() === 'defender');
-            if (hasDefender) {
-                return { isValid: false, error: `${creature.definition.name} has Defender and cannot attack.` };
-            }
-            const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === creature.id && r.type === 'CannotAttack');
-            if (cannotAttack) {
+            if (!RestrictionValidator.canAttack(state, creature)) {
                 return { isValid: false, error: `${creature.definition.name} cannot attack.` };
             }
         }
 
         // Requirement Check: MustAttack (Rule 508.1d)
-        // A requirement is ignored if it's impossible (e.g. creature is tapped or has summoning sickness)
-        const mustAttack = state.ruleRegistry.restrictions.some(r => r.targetId === creature.id && r.type === 'MustAttack') ||
-                          (stats as any).restrictions?.includes('MustAttack');
-        if (mustAttack && !isAttacking) {
-            const canAttack = !creature.isTapped && !creature.summoningSickness && !stats.keywords.includes('Defender');
-            // Additional check: CannotAttack restrictions
-            const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === creature.id && r.type === 'CannotAttack');
-            
-            if (canAttack && !cannotAttack) {
+        if (RestrictionValidator.isRestricted(state, creature, RestrictionType.MustAttack) && !isAttacking) {
+            const canAttack = !creature.isTapped && !creature.summoningSickness && RestrictionValidator.canAttack(state, creature);
+            if (canAttack) {
                 return { isValid: false, error: `${creature.definition.name} must attack if able.` };
             }
         }

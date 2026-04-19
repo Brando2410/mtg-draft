@@ -1,9 +1,15 @@
 // targeting.ts
 // Targeting and restriction interfaces
 
-import type { GameObjectId, PlayerId } from './core';
+import type { GameObjectId, PlayerId, RestrictionType } from './core';
 import { Zone } from './core';
 import type { EffectDuration } from './effects';
+import type { GameObject, PlayerState, StackObject } from './state';
+
+/**
+ * Targetable - Union of all entities that can be targeted or affected by restrictions.
+ */
+export type Targetable = GameObject | PlayerState | StackObject;
 
 export const TargetType = {
     Creature: 'CREATURE',
@@ -78,22 +84,7 @@ export interface TargetDefinition {
     data?: any;
 }
 
-export const RestrictionType = {
-    CannotTap: 'CannotTap',
-    CannotUntap: 'CannotUntap',
-    CannotAttack: 'CannotAttack',
-    CannotBlock: 'CannotBlock',
-    CannotBlockThisTurn: 'CannotBlockThisTurn',
-    CannotCastType: 'CannotCastType',
-    CannotActivateNonManaAbilities: 'CannotActivateNonManaAbilities',
-    CannotActivateAbilities: 'CannotActivateAbilities',
-    CannotActivateNamedCardAbilities: 'CannotActivateNamedCardAbilities',
-    CannotCastNamedCard: 'CannotCastNamedCard',
-    CannotCastPermanentSpells: 'CannotCastPermanentSpells',
-    MustAttack: 'MustAttack',
-    MustBeBlocked: 'MustBeBlocked'
-} as const;
-export type RestrictionType = (typeof RestrictionType)[keyof typeof RestrictionType];
+// RestrictionType is now unified in shared/types/core.ts
 
 export interface AbilityRestriction {
     id: string;

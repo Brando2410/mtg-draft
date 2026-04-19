@@ -1,6 +1,6 @@
 import { GameObject, GameState, Zone } from "@shared/engine_types";
 import { ActionProcessor } from "../actions/ActionProcessor";
-import { TargetingProcessor } from "../actions/TargetingProcessor";
+import { TargetingProcessor } from "../actions/targeting/TargetingProcessor";
 import { LayerProcessor } from "../state/LayerProcessor";
 
 /**

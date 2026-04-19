@@ -1,8 +1,8 @@
 import { AbilityCost, CostType, GameObject, GameObjectId, GameState, PlayerId, RestrictionType, Zone } from '@shared/engine_types';
 
 import { ActionProcessor } from '../actions/ActionProcessor';
-import { TargetingProcessor } from '../actions/TargetingProcessor';
-import { TriggerProcessor } from '../effects/TriggerProcessor';
+import { TargetingProcessor } from '../actions/targeting/TargetingProcessor';
+import { TriggerProcessor } from '../effects/triggers/TriggerProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { ManaProcessor } from './ManaProcessor';
 
@@ -108,14 +108,14 @@ export class CostProcessor {
            return !!this.findObject(state, source.id);
         }
         const zones = cost.sourceZones || (cost.sourceZone ? [cost.sourceZone] : [Zone.Battlefield]);
-        const pool = zones.flatMap(z => {
+        const pool = zones.flatMap((z: Zone) => {
             if (z === Zone.Battlefield) return state.battlefield.filter(o => o.controllerId === playerId);
             if (z === Zone.Graveyard) return player.graveyard;
             if (z === Zone.Hand) return player.hand;
             if (z === Zone.Exile) return state.exile; // Rare but possible
             return [];
         });
-        return pool.some(c => !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }));
+        return pool.some((c: GameObject) => !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }));
 
       case CostType.Crew: {
         const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;

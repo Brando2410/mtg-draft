@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, RestrictionType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const CaptureSphere: CardDefinition = {
     name: "Capture Sphere",
@@ -32,7 +32,7 @@ export const CaptureSphere: CardDefinition = {
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 layer: 6,
-                restrictions: [{ type: 'CannotUntap' }],
+                restrictionsToAdd: [{ type: RestrictionType.CannotUntap }],
                 targetMapping: TargetMapping.EnchantedCreature
             }]
         }

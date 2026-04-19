@@ -5,7 +5,7 @@ import type { AbilityDefinition } from './abilities';
 import type { GameObjectId, PlayerId } from './core';
 import { Step, TargetMapping, Zone } from './core';
 import type { StackObject } from './state';
-import type { AbilityRestriction, TargetDefinition } from './targeting';
+import type { AbilityRestriction } from './targeting';
 
 export const EffectType = {
     DealDamage: 'DealDamage',
@@ -75,6 +75,7 @@ export const EffectType = {
     CounterSpell: 'CounterSpell',
     CounterAbility: 'CounterAbility',
     CounterSpellOrAbility: 'CounterSpellOrAbility',
+    CopyAbility: 'CopyAbility',
     CreateTokenCopy: 'CreateTokenCopy',
     ChangeTarget: 'ChangeTarget',
     EndTurn: 'EndTurn',
@@ -188,10 +189,11 @@ export interface ResolutionContext {
     stackObject?: StackObject;
     parentContext?: ResolutionContext;
     startIndex?: number;
-    eventData?: any;
+    event?: import('./events').GameEvent; // Standardized event triggering this resolution
     exiledIds?: string[];        // Track objects moved to exile during this resolution
     lookingCards?: string[];     // Track cards revealed/looked at during this resolution (e.g. Scry/Search)
     nextEffectIndex?: number;    // Pointer for resuming multi-step effects
+    eventData?: any;             // Alias for backward compatibility
 }
 
 /**
@@ -218,103 +220,127 @@ export interface TargetingContext {
 }
 
 /**
- * Rules Engine Representation of an Effect execution (CR 608/609).
+ * AmountResolver - Standardized representation for numeric values that change
+ * based on game state (CR 107).
  */
-export interface EffectDefinition {
-    // --- CORE ---
+export interface AmountResolver {
+    type: 'CONSTANT' | 'POWER' | 'TOUGHNESS' | 'COUNT_PLAYER_PERMANENTS' | 'X_VALUE' | 'SCRIPT';
+    baseValue?: number;
+    multiplier?: number;
+    offset?: number;
+    subtype?: string; // For COUNT_PLAYER_PERMANENTS
+    resolver?: (state: any, context: ResolutionContext) => number;
+}
+
+/**
+ * Base properties shared by all effects (Rule 608)
+ */
+export interface BaseEffect {
     type: EffectType;
-    amount?: number | string | any | ((state: any, source: any, targets: string[], context?: any) => number);
-    value?: any;
     label?: string;
     duration?: EffectDuration | string;
     layer?: number;
     condition?: string | any;
-    oneShot?: boolean;
-    isCombat?: boolean;
-    triggerDescription?: string;
-
-    // --- TARGETING ---
     targetMapping?: any | string;
     targetControllerMapping?: TargetMapping | string;
-    copyFromIdMapping?: TargetMapping | string;
     restrictions?: any[];
+    effects?: EffectDefinition[]; // Nested effects for chaining/conditionals
+    onFailureEffects?: EffectDefinition[];
+    [key: string]: any; // Transitional compatibility
+}
 
-    // --- STATS & COMBAT ---
+export interface DamageEffect extends BaseEffect {
+    type: typeof EffectType.DealDamage;
+    amount: number | string | AmountResolver;
+    damageSourceMapping?: string;
+}
+
+export interface LifeEffect extends BaseEffect {
+    type: typeof EffectType.GainLife | typeof EffectType.LoseLife;
+    amount: number | string | AmountResolver;
+}
+
+export interface MoveEffect extends BaseEffect {
+    type: typeof EffectType.MoveToZone | typeof EffectType.PutOnBattlefield | typeof EffectType.PutInHand | typeof EffectType.ReturnToHand | typeof EffectType.Exile | typeof EffectType.ExileTopCard | typeof EffectType.ExileAllCards | typeof EffectType.ShuffleLibrary;
+    zone?: Zone | string;
+    sourceZones?: Zone[] | string[];
+    libraryPosition?: number | 'top' | 'bottom';
+    shuffle?: boolean;
+    fromTop?: number | string | AmountResolver;
+    reveal?: boolean;
+    tapped?: boolean;
+    ownerControl?: boolean;
+}
+
+export interface DrawEffect extends BaseEffect {
+    type: typeof EffectType.DrawCards | typeof EffectType.DiscardCards | typeof EffectType.Mill | typeof EffectType.Scry | typeof EffectType.Surveil;
+    amount: number | string | AmountResolver;
+    fromTop?: number | string | AmountResolver; // For Scry/Surveil/LookAtTop
+}
+
+export interface SearchEffect extends BaseEffect {
+    type: typeof EffectType.SearchLibrary;
+    sourceZones?: Zone[];
+    shuffle?: boolean;
+    reveal?: boolean;
+    targetDefinition?: any;
+}
+
+export interface CounterEffect extends BaseEffect {
+    type: typeof EffectType.AddCounters | typeof EffectType.Counter | typeof EffectType.DoubleCounters | typeof EffectType.MoveCounters;
+    counterType?: string;
+    amount?: number | string | AmountResolver;
+}
+
+export interface TokenEffect extends BaseEffect {
+    type: typeof EffectType.CreateToken | typeof EffectType.CreateTokenCopy;
+    amount?: number | string | AmountResolver;
+    definition?: any; // CardDefinition for token
+    abilitiesToAdd?: (string | AbilityDefinition)[];
+}
+
+export interface ContinuousEffectDefinition extends BaseEffect {
+    type: typeof EffectType.ApplyContinuousEffect;
+    abilitiesToAdd?: (string | AbilityDefinition)[];
+    abilitiesToRemove?: string[];
+    restrictionsToAdd?: (RestrictionDefinition | string)[];
     powerModifier?: number | string;
     toughnessModifier?: number | string;
     powerSet?: number | string;
     toughnessSet?: number | string;
-    pMod?: number | string;
-    tMod?: number | string;
-    powerDynamic?: any;
-    toughnessDynamic?: any;
-    statBase?: any;
-    staticStats?: { power?: number | string, toughness?: number | string };
-    tapped?: boolean;
-
-    // --- ABILITIES & MODIFIERS ---
-    abilitiesToAdd?: (string | any)[];
-    abilitiesToRemove?: any[];
     removeAllAbilities?: boolean;
-    flashbackCostOverride?: string;
-    subtypesToAdd?: string[];
-    subtypesSet?: string[];
-    canPlayExiled?: boolean;
+}
 
-    // --- MOVEMENT & ZONES ---
-    zone?: Zone | string;
-    sourceZones?: Zone[] | string[];
-    libraryPosition?: number | 'top' | 'bottom';
-    fromTop?: number | string | any;
-    shuffle?: boolean;
-    fromGraveyard?: boolean;
-    fromExile?: boolean;
-    isDiscard?: boolean;
-    isDraw?: boolean;
-    isFreeCast?: boolean;
-    remainderZone?: Zone | string;
-    remainderPosition?: string;
-    shuffleRemainder?: boolean;
-    returnToBattlefield?: boolean;
-    returnDuration?: DurationType;
+export interface RestrictionDefinition {
+    type: import('./core').RestrictionType | string;
+    value?: any;
+    condition?: any;
+}
 
-    // --- SELECTION & INTERACTIVE ---
-    /** 
-     * RESOLUTION-TIME SELECTION (CR 608.2)
-     * These are chosen only when this specific effect resolves (e.g. Scry, Search, Choice).
-     * Uses TargetDefinition structure to filter options.
-     */
-    selectionDefinition?: TargetDefinition; 
-    
-    /** Legacy alias for selectionDefinition */
-    targetDefinition?: TargetDefinition; 
-    
-    choices?: { 
-        label: string; 
-        effects?: EffectDefinition[]; 
-        costs?: any[]; 
-        targetDefinition?: any; 
+export interface ModalEffect extends BaseEffect {
+    type: typeof EffectType.Choice;
+    choices: {
+        label: string;
+        effects?: EffectDefinition[];
+        costs?: any[];
+        targetDefinition?: any;
         value?: string | number;
         condition?: string;
     }[];
-    selectionType?: string;
-    optional?: boolean;
-    reveal?: boolean;
-    revealed?: boolean;
-    revealingPlayerId?: PlayerId | string;
-    ownerControl?: boolean;
-
-    // --- EFFECT CHAINING ---
-    effects?: EffectDefinition[];
-    onFailureEffects?: EffectDefinition[];
-    delayedTriggers?: any[];
-    next?: any;
-    
-    // --- META ---
-    limitPerTurn?: number;
-    eventMatch?: string;
-    manaType?: string;
-    maxCount?: number;
-    costs?: any[];
-    [key: string]: any;
 }
+
+/**
+ * Rules Engine Representation of an Effect execution (CR 608/609).
+ * Now a Union for type-safe parameter enforcement.
+ */
+export type EffectDefinition =
+    | DamageEffect
+    | LifeEffect
+    | DrawEffect
+    | MoveEffect
+    | SearchEffect
+    | CounterEffect
+    | TokenEffect
+    | ContinuousEffectDefinition
+    | ModalEffect
+    | BaseEffect;
