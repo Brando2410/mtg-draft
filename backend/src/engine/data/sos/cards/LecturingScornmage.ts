@@ -6,16 +6,9 @@ export const LecturingScornmage: CardDefinition = {
     scryfall_id: "ad07091e-8c24-43af-8ce8-031847bcaf30",
     rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/a/d/ad07091e-8c24-43af-8ce8-031847bcaf30.jpg?1775937516",
-    colors: [
-        "B"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Human",
-        "Warlock"
-    ],
+    colors: ["B"],
+    types: ["Creature"],
+    subtypes: ["Human", "Warlock"],
     keywords: ["Repartee"],
     oracleText: "Repartee — Whenever you cast an instant or sorcery spell that targets a creature, put a +1/+1 counter on this creature.",
     abilities: [
@@ -26,7 +19,7 @@ export const LecturingScornmage: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    counterType: 'P1P1',
+                    counterType: '+1/+1',
                     amount: 1,
                     targetMapping: TargetMapping.Self
                 }

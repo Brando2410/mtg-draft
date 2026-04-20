@@ -56,13 +56,19 @@ export class RegistryProcessor {
     state.ruleRegistry.activatedAbilities = state.ruleRegistry.activatedAbilities.filter(a => a.sourceId !== cardId);
     state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(c => {
         if (c.sourceId !== cardId) return true;
-        // Rule 611.2a: Floating effects persist even after the source card leaves the zone.
-        return (
-            c.duration?.type === DurationType.UntilEndOfTurn || 
-            c.duration?.type === DurationType.UntilEndOfCombat ||
-            c.duration?.type === DurationType.UntilEvent ||
-            c.duration?.type === DurationType.Permanent
-        );
+        
+        // Normalize duration type for robust matching
+        const dType = (c.duration?.type || "").toString().toUpperCase();
+
+        const isPersistent = 
+            c.id?.startsWith("floating_") ||
+            dType === 'UNTILYOURNEXTTURN' || 
+            dType === 'UNTILENDOFYOURNEXTTURN' ||
+            dType === 'UNTIL_YOUR_NEXT_TURN' ||
+            dType === 'UNTIL_END_OF_YOUR_NEXT_TURN' ||
+            dType === 'PERMANENT';
+            
+        return isPersistent;
     });
     state.ruleRegistry.restrictions = state.ruleRegistry.restrictions.filter(r => r.sourceId !== cardId);
     if (state.ruleRegistry.replacementEffects) {

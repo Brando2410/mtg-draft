@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const WisdomofAges: CardDefinition = {
     name: "Wisdom of Ages",
     manaCost: "{4}{U}{U}{U}",
@@ -17,15 +17,15 @@ export const WisdomofAges: CardDefinition = {
             effects: [
                 {
                     type: EffectType.MoveToZone,
+                    label: "Return all instant and sorcery cards from your graveyard to your hand",
                     zone: Zone.Hand,
                     targetDefinition: {
                         type: TargetType.CardInGraveyard,
                         restrictions: [
-                            "InstantOrSorcery"
-                        ],
-                        count: 999
+                            Restriction.InstantOrSorcery
+                        ]
                     },
-                    targetMapping: TargetMapping.TargetAll
+                    targetMapping: TargetMapping.AllMatchingCards
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,

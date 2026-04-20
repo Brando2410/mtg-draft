@@ -44,10 +44,15 @@ export const TargetingArrows = memo(({ stack, battlefield, pendingAction, hovere
           const targetEl = document.getElementById(`game-card-${targetId}`) || 
                           document.getElementById(`player-avatar-${targetId}`) ||
                           document.getElementById(`stack-obj-${targetId}`);
+          
           if (!targetEl) return;
           
           const targetRect = targetEl.getBoundingClientRect();
           
+          // CRITICAL: If the target element has no size (0 width/height), it's likely hidden or in a pile.
+          // Don't draw arrows to invisible elements.
+          if (targetRect.width === 0 || targetRect.height === 0) return;
+
           newArrows.push({
             id: `${sobj.id}-${targetId}-${idx}`,
             x1: sourceRect.left + sourceRect.width / 2 - bfCenter.left,
@@ -86,6 +91,9 @@ export const TargetingArrows = memo(({ stack, battlefield, pendingAction, hovere
                                   document.getElementById(`stack-obj-${targetId}`);
                   if (!targetEl) return;
                   const targetRect = targetEl.getBoundingClientRect();
+                  
+                  // Don't draw arrows to invisible elements.
+                  if (targetRect.width === 0 || targetRect.height === 0) return;
                   
                   newArrows.push({
                     id: `pending-${targetId}-${idx}`,

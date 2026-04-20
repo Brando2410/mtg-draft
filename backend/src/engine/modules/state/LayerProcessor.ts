@@ -407,6 +407,10 @@ export class LayerProcessor {
           );
           return !!source && (source as any).attachedTo === objId;
         }
+        case "PARENT_CONTEXT_EXILED_IDS": {
+           // For floating effects resolving this dynamically if snapshot missing
+           return Array.isArray(effect.targetIds) && (effect.targetIds as any[]).includes(objId);
+        }
         default:
           return false;
       }
@@ -536,7 +540,6 @@ export class LayerProcessor {
       });
 
       state.exile.forEach((card) => {
-        if (card.controllerId === player.id) {
           const hasPermission = PriorityProcessor.findPermissionEffect(
             state,
             player.id,
@@ -546,7 +549,6 @@ export class LayerProcessor {
           if (hasPermission) {
             player.virtualHand.push(card);
           }
-        }
       });
 
       // Revealed status for public information

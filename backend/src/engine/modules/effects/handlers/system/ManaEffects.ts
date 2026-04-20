@@ -9,7 +9,7 @@ export const ManaHandler: IEffectHandler = {
         if (!player) return;
 
         if (effect.type === "AddMana") {
-            const amount = (effect as any).value || "";
+            const amount = (effect as any).value || (effect as any).manaType || "";
             const added = ManaProcessor.parseManaCost(amount.startsWith("{") ? amount : `{${amount}}`);
             player.manaPool.W += added.colored.W || 0;
             player.manaPool.U += added.colored.U || 0;

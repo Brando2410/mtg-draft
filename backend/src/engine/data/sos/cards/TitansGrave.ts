@@ -3,12 +3,11 @@ export const TitansGrave: CardDefinition = {
     name: "Titan's Grave",
     manaCost: "",
     colors: [],
-    types: [
-        "Land"
-    ],
+    types: ["Land"],
+    rarity: "common",
     subtypes: [],
     keywords: [],
-    oracleText: "This land enters tapped.\n{T}: Add {B} or {G}.\n{2}{B}{G}, {T}: Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    oracleText: "Titan's Grave enters the battlefield tapped.\n{T}: Add {B} or {G}.\n{2}{B}{G}, {T}: Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
     entersTapped: true,
     abilities: [
         {
@@ -19,7 +18,6 @@ export const TitansGrave: CardDefinition = {
             effects: [
                 {
                     type: EffectType.Choice,
-                    optional: true,
                     label: "Choose a color",
                     choices: [
                         { label: '{B}', effects: [{ type: EffectType.AddMana, manaType: 'B' }] },
@@ -31,8 +29,8 @@ export const TitansGrave: CardDefinition = {
         {
             type: AbilityType.Activated,
             id: "Surveil 1",
+            manaCost: "{2}{B}{G}",
             costs: [
-                { type: CostType.Mana, value: '{2}{B}{G}' },
                 { type: CostType.Tap }
             ],
             effects: [

@@ -23,8 +23,8 @@ export const ParadoxGardens: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Add {G} or {U}",
                     choices: [
-                        { label: "Add {G}", effects: [{ type: EffectType.AddMana, value: '{G}' }] },
-                        { label: "Add {U}", effects: [{ type: EffectType.AddMana, value: '{U}' }] }
+                        { label: "Add {G}", effects: [{ type: EffectType.AddMana, manaType: 'G' }] },
+                        { label: "Add {U}", effects: [{ type: EffectType.AddMana, manaType: 'U' }] }
                     ]
                 }
             ],

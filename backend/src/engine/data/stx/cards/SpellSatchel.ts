@@ -17,7 +17,7 @@ export const SpellSatchel: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Tap }, { type: 'RemoveCounter', counterType: 'book', amount: 1 }],
-            effects: [{ type: EffectType.AddMana, amount: '{C}' }]
+            effects: [{ type: EffectType.AddMana, manaType: 'C' }]
         },
         {
             type: AbilityType.Activated,

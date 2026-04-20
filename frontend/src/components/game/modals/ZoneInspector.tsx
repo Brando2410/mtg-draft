@@ -56,9 +56,9 @@ export const ZoneInspector = ({ inspectingZone, onClose, onTapCard, targetableId
         
         <div className="flex-1 w-full max-w-7xl overflow-y-auto pr-4 custom-scrollbar">
           <div className="flex flex-wrap justify-center gap-10 pb-20">
-            {inspectingZone.cards.map((obj) => (
+            {inspectingZone.cards.map((obj, i) => (
               <div 
-                key={obj.id} 
+                key={obj.id || `zone-card-${i}`} 
                 className="w-[calc(var(--u)*26)] h-[calc(var(--u)*18.7)] flex items-center justify-center shrink-0"
                 style={{ '--header-scale': 2.0 } as any}
               >

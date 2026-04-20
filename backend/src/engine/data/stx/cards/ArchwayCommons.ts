@@ -32,11 +32,11 @@ export const ArchwayCommons: CardDefinition = {
                 type: EffectType.Choice,
                 label: "Select color",
                 choices: [
-                    { label: "{W}", effects: [{ type: EffectType.AddMana, value: 'W' }] },
-                    { label: "{U}", effects: [{ type: EffectType.AddMana, value: 'U' }] },
-                    { label: "{B}", effects: [{ type: EffectType.AddMana, value: 'B' }] },
-                    { label: "{R}", effects: [{ type: EffectType.AddMana, value: 'R' }] },
-                    { label: "{G}", effects: [{ type: EffectType.AddMana, value: 'G' }] }
+                    { label: "{W}", effects: [{ type: EffectType.AddMana, manaType: 'W' }] },
+                    { label: "{U}", effects: [{ type: EffectType.AddMana, manaType: 'U' }] },
+                    { label: "{B}", effects: [{ type: EffectType.AddMana, manaType: 'B' }] },
+                    { label: "{R}", effects: [{ type: EffectType.AddMana, manaType: 'R' }] },
+                    { label: "{G}", effects: [{ type: EffectType.AddMana, manaType: 'G' }] }
                 ]
             }]
         }

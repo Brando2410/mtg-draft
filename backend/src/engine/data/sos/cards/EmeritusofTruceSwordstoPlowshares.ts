@@ -38,7 +38,7 @@ export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
                 },
                 {
                     type: EffectType.ConditionalEffect,
-                    condition: ConditionType.OpponentHasMoreCreatures,
+                    condition: ConditionType.OpponentControlsMoreCreatures,
                     effects: [
                         {
                             type: EffectType.Prepare,

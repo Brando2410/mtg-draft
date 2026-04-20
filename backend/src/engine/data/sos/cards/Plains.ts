@@ -16,10 +16,9 @@ export const Plains: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             isManaAbility: true,
-            costs: [{ type: CostType.Tap, targetMapping: TargetMapping.Self }],
-            effects: [{ type: EffectType.AddMana, value: 'W' }]
+            costs: [{ type: CostType.Tap }],
+            effects: [{ type: EffectType.AddMana, manaType: 'W' }]
         }
     ]
 };

@@ -14,8 +14,7 @@ export const CanopyStalker: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Static,
-            restr
-
+            effects: [{ type: EffectType.MustBeBlocked, targetMapping: TargetMapping.Self }]
         },
         {
             type: AbilityType.Triggered,

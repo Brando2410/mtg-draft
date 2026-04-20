@@ -20,6 +20,24 @@ const YOUCONTROL: IRestrictionHandler = {
     }
 };
 
+const YOUOWN: IRestrictionHandler = {
+    matches(state, targetObj: any, r, context) {
+        const controllerId = context.controllerId;
+        if (!controllerId || !targetObj) return false;
+        const ownerId = targetObj.ownerId || targetObj.controllerId;
+        return String(ownerId) === String(controllerId);
+    }
+};
+
+const OPPONENTOWNS: IRestrictionHandler = {
+    matches(state, targetObj: any, r, context) {
+        const controllerId = context.controllerId;
+        if (!controllerId || !targetObj) return true;
+        const ownerId = targetObj.ownerId || targetObj.controllerId;
+        return String(ownerId) !== String(controllerId);
+    }
+};
+
 const NOTCONTROLLED: IRestrictionHandler = {
     matches(state, targetObj: any, r, context) {
         const controllerId = context.controllerId;
@@ -50,6 +68,8 @@ export const StateRestrictions: Record<string, IRestrictionHandler> = {
     TAPPED,
     UNTAPPED,
     YOUCONTROL,
+    YOUOWN,
+    OPPONENTOWNS,
     NOTCONTROLLED,
     OPPONENTCONTROL: NOTCONTROLLED,
     ATTACKING,

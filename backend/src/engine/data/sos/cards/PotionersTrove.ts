@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const PotionersTrove: CardDefinition = {
+export const PotionersTrove: CardDefinition = {
     name: "Potioner's Trove",
     manaCost: "{3}",
     scryfall_id: "2123b349-4649-4a15-a8b5-b54414d2b1b7",
@@ -22,11 +22,11 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
                     type: CostType.Choice,
                     label: "Select color",
                     choices: [
-                        { label: "{W}", effects: [{ type: EffectType.AddMana, value: 'W' }] },
-                        { label: "{U}", effects: [{ type: EffectType.AddMana, value: 'U' }] },
-                        { label: "{B}", effects: [{ type: EffectType.AddMana, value: 'B' }] },
-                        { label: "{R}", effects: [{ type: EffectType.AddMana, value: 'R' }] },
-                        { label: "{G}", effects: [{ type: EffectType.AddMana, value: 'G' }] }
+                        { label: "{W}", effects: [{ type: EffectType.AddMana, manaType: 'W' }] },
+                        { label: "{U}", effects: [{ type: EffectType.AddMana, manaType: 'U' }] },
+                        { label: "{B}", effects: [{ type: EffectType.AddMana, manaType: 'B' }] },
+                        { label: "{R}", effects: [{ type: EffectType.AddMana, manaType: 'R' }] },
+                        { label: "{G}", effects: [{ type: EffectType.AddMana, manaType: 'G' }] }
                     ]
                 }
             ]
@@ -45,4 +45,4 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
         }
     ]
 };
-    
+

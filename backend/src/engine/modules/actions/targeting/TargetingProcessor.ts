@@ -117,22 +117,35 @@ export class TargetingProcessor {
 
                 const sourceOnField = state.battlefield.find(o => o.id === sourceId);
                 if (sourceOnField) {
-                    if (sourceOnField.abilitiesUsedThisTurn > 0) sourceOnField.abilitiesUsedThisTurn--;
                     const abilityIndex = actionData.abilityIndex;
-                    if (abilityIndex !== undefined) {
-                        const { oracle } = require('../../OracleLogicMap');
+                    // ONLY refund and decrement usage if the ability was actually finalized (paid for)
+                    // increments happen in SpellProcessor.finalizeAbilityActivation
+                    if (sourceOnField.abilitiesUsedThisTurn > 0 && abilityIndex !== undefined) {
+                        sourceOnField.abilitiesUsedThisTurn--;
+                        
+                        const { oracle } = require('../../../OracleLogicMap');
                         const logic = oracle.getCard(sourceOnField.definition.name);
                         const ability = (logic as any)?.abilities?.[abilityIndex];
-                        const lCost = ability?.costs?.find((c: any) => c.type === 'Loyalty')?.value;
+                        const lCost = ability?.costs?.find((c: any) => String(c.type).toLowerCase() === 'loyalty')?.value;
                         if (lCost !== undefined) {
-                            sourceOnField.counters['loyalty'] = (sourceOnField.counters['loyalty'] || 0) - lCost;
-                            log(`Refunding loyalty for ${sourceOnField.definition.name}: ${lCost > 0 ? '+' : ''}${lCost}`);
+                            const val = parseInt(String(lCost));
+                            sourceOnField.counters['loyalty'] = (sourceOnField.counters['loyalty'] || 0) - val;
+                            log(`Refunding loyalty for ${sourceOnField.definition.name}: ${val > 0 ? '+' : ''}${val}`);
                         }
                     }
                 }
 
                 state.pendingAction = undefined;
                 state.priorityPlayerId = playerId;
+
+                // CLEANUP TEMPORARY CASTING STATE
+                delete (state as any).lastChosenCostChoiceIndex;
+                delete (state as any).lastChosenSacrificeId;
+                delete (state as any).lastChosenDiscardId;
+                delete (state as any).lastChosenExileIds;
+                delete (state as any).lastChosenModeIndex;
+                delete (state as any).lastChoiceIndex;
+
                 return true;
             }
         }
@@ -373,9 +386,11 @@ export class TargetingProcessor {
 
             engine.log(`--------------------------------------------------`);
             engine.log(`[STACK] + ${engine.getPlayerName(stackObj.controllerId)} cast/activated ${stackObj.card?.definition.name || stackObj.type}`);
-            if (resolvedTargets.length > 0) {
-                engine.log(`[STACK] Target(s): ${resolvedTargets.join(', ')}`);
-            }
+            const targetNames = resolvedTargets.map(tid => {
+                const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
+                return obj?.definition?.name || (state.players[tid as any] ? state.players[tid as any].name : tid);
+            });
+            engine.log(`[STACK] Target(s): ${targetNames.join(', ')}`);
             engine.log(`--------------------------------------------------`);
 
             state.pendingAction = undefined;

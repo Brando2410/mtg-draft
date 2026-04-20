@@ -1,43 +1,44 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+
 export const SuspendAggression: CardDefinition = {
     name: "Suspend Aggression",
     manaCost: "{1}{W}",
+    scryfall_id: "0d3a5893-bc44-48f8-9a99-b1d55695085c",
+    rarity: "uncommon",
+    image_url: "https://cards.scryfall.io/normal/front/0/d/0d3a5893-bc44-48f8-9a99-b1d55695085c.jpg?1775937105",
     colors: ["W"],
     types: ["Instant"],
     subtypes: [],
     keywords: [],
-    oracleText: "Exile target nonland permanent. Exile the top card of that card's owner's library. Until the end of that player's next turn, its owner may play those cards.",
-    type_line: "Instant",
-
+    oracleText: "Exile target nonland permanent and the top card of your library. Until the end of that player's next turn, its owner may play those cards.",
     abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
-                type: TargetType.Creature,
-                restrictions: [Restriction.NonLand],
-                count: 1,
-                zone: Zone.Battlefield
+                type: TargetType.NonlandPermanent,
+                count: 1
             },
             effects: [
                 {
-                    type: CostType.Exile,
-                    targetMapping: TargetMapping.Target1,
-                    next: {
-                        type: CostType.Exile, // Exile top card of owner's library
-                        targetMapping: TargetMapping.Target1Owner,
-                        fromTop: 1,
-                        sourceZones: ['Library'],
-                        next: {
-                            type: EffectType.ApplyContinuousEffect,
-                            targetMapping: 'PARENT_CONTEXT_EXILED_IDS',
-                            duration: { type: DurationType.UntilEndOfTurn, targetMapping: TargetMapping.Target1Owner },
-                            targetControllerMapping: 'PARENT_CONTEXT_EXILED_IDS_OWNERS', // Custom mapping for untilTurnOfPlayerId
-                            canPlayExiled: true
-                        }
-                    }
+                    type: EffectType.Exile,
+                    targetMapping: TargetMapping.Target1
+                },
+                {
+                    type: EffectType.ExileTopCard,
+                    fromTop: 1,
+                    sourceZones: [Zone.Library]
+                },
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    targetMapping: 'PARENT_CONTEXT_EXILED_IDS',
+                    duration: {
+                        type: DurationType.UntilEndOfYourNextTurn
+                    },
+                    targetControllerMapping: 'PARENT_CONTEXT_EXILED_IDS_OWNERS',
+                    canPlayExiled: true,
+                    label: 'Owners may play exiled cards'
                 }
             ]
         }
     ]
 };
-

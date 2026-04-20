@@ -14,11 +14,10 @@ export const Swamp: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             isManaAbility: true,
-            costs: [{ type: CostType.Tap, targetMapping: TargetMapping.Self }],
-            effects: [{ type: EffectType.AddMana, value: 'B' }]
+            costs: [{ type: CostType.Tap }],
+            effects: [{ type: EffectType.AddMana, manaType: 'B' }]
         }
     ]
 };
-    
+

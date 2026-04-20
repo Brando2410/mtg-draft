@@ -5,17 +5,9 @@ export const GeometersArthropod: CardDefinition = {
     scryfall_id: "ec0f3613-1edc-40e8-8f26-2e5ef13be55e",
     rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/e/c/ec0f3613-1edc-40e8-8f26-2e5ef13be55e.jpg?1775938325",
-    colors: [
-        "G",
-        "U"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Fractal",
-        "Crab"
-    ],
+    colors: ["G", "U"],
+    types: ["Creature"],
+    subtypes: ["Fractal", "Crab"],
     power: "1",
     toughness: "4",
     keywords: [],

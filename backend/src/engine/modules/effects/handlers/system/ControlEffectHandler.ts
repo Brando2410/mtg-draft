@@ -99,7 +99,7 @@ export class ControlEffectHandler {
                     if (effect.chooseNewTargets && copy.targets && copy.targets.length > 0) {
                         const targetDef = copy.data?.targetDefinition || copy.targetDefinition;
                         if (targetDef) {
-                            const { TargetingProcessor } = require('../../../actions/TargetingProcessor');
+                            const { TargetingProcessor } = require('../../../actions/targeting/TargetingProcessor');
                             const pool = [
                                 ...Object.keys(state.players),
                                 ...state.battlefield.map((o: GameObject) => o.id),

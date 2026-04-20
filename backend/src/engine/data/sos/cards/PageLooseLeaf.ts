@@ -23,7 +23,7 @@ export const PageLooseLeaf: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Tap }],
-            effects: [{ type: EffectType.AddMana, value: '{C}' }],
+            effects: [{ type: EffectType.AddMana, manaType: 'C' }],
             isManaAbility: true
         },
         {

@@ -30,8 +30,8 @@ export class SpellValidator {
      */
     public static resolveCardToPlay(state: GameState, playerId: PlayerId, cardInstanceId: string, log: (m: string) => void, bypassPermission = false): GameObject | null {
         const player = state.players[playerId];
-        const { PriorityProcessor } = require('../../../core/turn/PriorityProcessor');
-        const { TargetingProcessor } = require('../../targeting/TargetingProcessor');
+        const { PriorityProcessor } = require('../../core/turn/PriorityProcessor');
+        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
 
         // 1. Search in Hand
         const cardInHand = player.hand.find((c: any) => c.id === cardInstanceId);
@@ -45,7 +45,7 @@ export class SpellValidator {
             else if (obj.zone === Zone.Exile) permissionType = EffectType.AllowPlayExiled;
             else if (obj.zone === Zone.Library) permissionType = EffectType.AllowPlayFromTop;
 
-            const { LayerProcessor } = require('../../../state/LayerProcessor');
+            const { LayerProcessor } = require('../../state/LayerProcessor');
             const stats = LayerProcessor.getEffectiveStats(obj, state);
             const hasFlashback = obj.zone === Zone.Graveyard && (stats.keywords?.includes('Flashback') || obj.definition.keywords?.includes('Flashback'));
 
@@ -178,7 +178,7 @@ export class SpellValidator {
         }
 
         // Rule 305: Playing a land is a special action, not a spell.
-        const { ActionProcessor } = require('../../ActionProcessor');
+        const { ActionProcessor } = require('../ActionProcessor');
         ActionProcessor.moveCard(state, cardToPlay, Zone.Battlefield, playerId, log);
 
         state.turnState.landsPlayedThisTurn[playerId] = currentLandsPlayed + 1;

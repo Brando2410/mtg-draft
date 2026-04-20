@@ -33,7 +33,7 @@ export class PlayerActionProcessor {
     if (obj.controllerId !== playerId) return false;
 
     // 2. Planeswalker Logic: Trigger Ability Choice
-    if (obj.definition.types.includes('Planeswalker')) {
+    if (obj.definition.types.some(t => String(t).toLowerCase() === 'planeswalker')) {
       if (state.priorityPlayerId !== playerId) {
         log(`Player tried to activate PW without priority.`);
         return false;
@@ -44,7 +44,9 @@ export class PlayerActionProcessor {
       const isMyTurn = state.activePlayerId === playerId;
 
       const logic = oracle.getCard(obj.definition.name);
-      const canActivateAnyTime = logic?.abilities?.some((a: any) => a.type === 'Static' && a.id.includes('any_turn'));
+      if (!logic || !logic.abilities) return false;
+
+      const canActivateAnyTime = logic.abilities.some((a: any) => a.type === 'Static' && String(a.id || "").includes('any_turn'));
 
       if (!canActivateAnyTime && (!isMyTurn || !isMainPhase || !stackEmpty)) {
         log(`Cannot activate Planeswalker: Sorcery speed only.`);
@@ -56,31 +58,40 @@ export class PlayerActionProcessor {
         return false;
       }
 
-      const { ActionType } = require('@shared/engine_types');
+      const abilities = (logic.abilities as any[]);
+      const filteredEntries = abilities
+        .map((a: any, originalIndex: number) => ({ ability: a, originalIndex }))
+        .filter((entry: any) => {
+          const a = entry.ability;
+          const typeStr = String(a.type || "").toLowerCase();
+          const isActivated = typeStr.includes('activated');
+          const hasLoyalty = a.costs?.some((c: any) => String(c.type || "").toLowerCase().includes('loyalty'));
+          
+          return isActivated && hasLoyalty;
+        });
+
       state.pendingAction = {
         type: ActionType.ModalSelection,
         playerId: playerId,
         sourceId: cardId,
         data: {
           label: `Choose a loyalty ability for ${obj.definition.name}`,
-          choices: logic.abilities
-            .filter((a: any) => a.type === AbilityType.Activated && a.costs.some((c: any) => c.type === 'Loyalty'))
-            .map((a: any) => {
-              const lCost = a.costs.find((c: any) => c.type === 'Loyalty').value;
-              const effectSummary = a.effects.map((e: any) => {
-                if (e.type === 'DrawCards') return `Draw ${e.amount}`;
-                if (e.type === 'DiscardCard') return `Discard a card`;
-                if (e.type === 'AddCounters') return `Add ${e.amount} ${e.value} counter`;
-                if (e.type === 'CreateToken') return `Create a ${e.tokenBlueprint.name}`;
-                if (e.type === 'PhasedOut') return `Phase out`;
-                return e.type;
-              }).join(', ');
+          choices: filteredEntries.map((entry: any) => {
+            const a = entry.ability;
+            const lCostObj = a.costs?.find((c: any) => String(c.type || "").toLowerCase().includes('loyalty'));
+            const lCostVal = parseInt(String(lCostObj?.value || 0));
+            const lCostSign = lCostVal > 0 ? `+${lCostVal}` : `${lCostVal}`;
+            
+            // Truncate if extreme length for modal safety
+            let labelText = a.id || "Ability";
+            if (labelText.length > 120) labelText = labelText.substring(0, 117) + "...";
 
-              return {
-                label: `${lCost}: ${effectSummary}`,
-                value: logic.abilities.indexOf(a)
-              };
-            })
+            return {
+              label: `${lCostSign}: ${labelText}`,
+              value: entry.originalIndex,
+              selectable: true
+            };
+          })
         }
       };
       state.priorityPlayerId = null;
@@ -362,7 +373,7 @@ export class PlayerActionProcessor {
     state.combat.blockers.push({ blockerId, attackerId: cardId });
     log(`${state.battlefield.find(c => c.id === blockerId)?.definition.name} blocking ${card.definition.name}`);
 
-    const { TriggerProcessor } = require('../effects/TriggerProcessor');
+    const { TriggerProcessor } = require('../effects/triggers/TriggerProcessor');
     TriggerProcessor.onEvent(state, { type: 'ON_BLOCK', targetId: blockerId, sourceId: blockerId, data: { object: blockerObj, attackerId: cardId } }, log);
 
     state.pendingAction!.sourceId = undefined;
@@ -391,7 +402,7 @@ export class PlayerActionProcessor {
     player.graveyard.push(card);
 
     const sourceId = state.pendingAction?.sourceId;
-    const { TriggerProcessor } = require('./../effects/TriggerProcessor');
+    const { TriggerProcessor } = require('./../effects/triggers/TriggerProcessor');
     TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card, sourceId } }, log);
 
     if (player.pendingDiscardCount > 0) {
@@ -456,7 +467,7 @@ export class PlayerActionProcessor {
 
     state.pendingAction = undefined;
 
-    const { TriggerProcessor } = require('./../effects/TriggerProcessor');
+    const { TriggerProcessor } = require('./../effects/triggers/TriggerProcessor');
     for (const t of orderedTriggers) {
       TriggerProcessor.stackTrigger(state, t, log);
     }

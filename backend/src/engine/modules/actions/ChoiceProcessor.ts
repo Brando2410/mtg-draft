@@ -83,7 +83,7 @@ export class ChoiceProcessor {
             const discardEffects = allEffects.filter(e => e.type === 'MoveToZone' && e.isDiscard);
             if (discardEffects.length > 0) {
                 state.turnState.lastDiscardedCount = discardEffects.length;
-                state.turnState.lastDiscardedIds = discardEffects.map(e => e.targetId).filter(id => id) as string[];
+                state.turnState.lastDiscardedIds = [];
             }
             EffectProcessor.resolveEffects({
                 state,
@@ -283,11 +283,13 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     // A. Revert Battlefield source (Activated Ability/Planeswalker)
     const objOnBattlefield = state.battlefield.find(o => o.id === sourceId);
     if (objOnBattlefield) {
-        if (objOnBattlefield.abilitiesUsedThisTurn > 0) objOnBattlefield.abilitiesUsedThisTurn--;
-        
-        // Refund Loyalty
+        // ONLY decrement usage and refund if the ability was actually finalized (paid for)
+        // increments happen in SpellProcessor.finalizeAbilityActivation
         const abilityIndex = savedActionData?.abilityIndex;
-        if (abilityIndex !== undefined) {
+        if (objOnBattlefield.abilitiesUsedThisTurn > 0 && abilityIndex !== undefined) {
+            objOnBattlefield.abilitiesUsedThisTurn--;
+            
+            // Refund Loyalty
             const logic = oracle.getCard(objOnBattlefield.definition.name);
             const ability = (logic?.abilities as any)?.[abilityIndex];
             const lCost = ability?.costs?.find((c: any) => c.type === 'Loyalty')?.value;
@@ -351,6 +353,15 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     log(`Action cancelled.`);
     state.pendingAction = undefined;
     state.priorityPlayerId = playerId; 
+
+    // CLEANUP TEMPORARY CASTING STATE
+    delete (state as any).lastChosenCostChoiceIndex;
+    delete (state as any).lastChosenSacrificeId;
+    delete (state as any).lastChosenDiscardId;
+    delete (state as any).lastChosenExileIds;
+    delete (state as any).lastChosenModeIndex;
+    delete (state as any).lastChoiceIndex;
+    
     return true;
   }
 
@@ -523,9 +534,21 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         if (card && card.definition.faces) {
             (card as any).selectedFaceDefinition = card.definition.faces[faceIdx];
         }
-    } else if (String(choice.value).startsWith('COST_CHOICE_')) {
+    } else if (choice && String(choice.value).startsWith('COST_CHOICE_')) {
         const choiceIdx = parseInt(String(choice.value).substring(12));
         (state as any).lastChosenCostChoiceIndex = choiceIdx;
+    } else if (choice && String(choice.value).startsWith('MODE_SELECTION_')) {
+        if (typeof choiceIndex === 'string' && choiceIndex.includes('|')) {
+            const indices = choiceIndex.split('|').map(s => {
+                const i = parseInt(s.startsWith('CHOICE_') ? s.substring(7) : s);
+                const val = action.data?.choices?.[i]?.value;
+                return parseInt(String(val).substring(15));
+            });
+            (state as any).lastChosenModeIndex = indices;
+        } else {
+            const modeIdx = parseInt(String(choice.value).substring(15));
+            (state as any).lastChosenModeIndex = [modeIdx];
+        }
     } else {
         (state as any).lastChoiceIndex = choiceIndex;
     }
@@ -618,6 +641,20 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         (state as any).confirmedAutoTap = true;
     }
 
+    let finalTargets = savedTargets;
+    if (action.data?.isTargetingModal) {
+        // Resolve target(s) from choice(s)
+        if (typeof choiceIndex === 'string' && choiceIndex.includes('|')) {
+            finalTargets = choiceIndex.split('|').map(s => {
+                const i = parseInt(s.startsWith('CHOICE_') ? s.substring(7) : s);
+                return action.data?.choices?.[i]?.value;
+            }).filter(v => v);
+        } else {
+            finalTargets = choice?.value ? [choice.value] : [];
+        }
+        log(`[DEBUG] ChoiceProcessor: Mapping targeting modal selection to targets: ${JSON.stringify(finalTargets)}`);
+    }
+
     return SpellProcessor.playCard(
         state, 
         log, 
@@ -625,7 +662,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         {
             playerId, 
             cardId: sourceId, 
-            targets: savedTargets, 
+            targets: finalTargets, 
             bypassPriority: true,
             bypassTargeting: false
         }

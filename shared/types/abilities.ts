@@ -87,7 +87,11 @@ export const ConditionType = {
     IsInstantOrSorceryDiscarded: 'IS_INSTANT_OR_SORCERY_DISCARDED',
     TotalToughnessGe: 'TOTAL_TOUGHNESS_GE',
     GraveyardCreatureCountGe3: 'GRAVEYARD_CREATURE_COUNT_GE_3',
-    NotCreature: 'NOT_CREATURE'
+    NotCreature: 'NOT_CREATURE',
+    OpponentControlsMoreCreatures: 'OPPONENT_CONTROLS_MORE_CREATURES',
+    CreaturesDiedCountGe: 'CREATURES_DIED_COUNT_GE',
+    CardsExiledThisTurn: 'CARDS_EXILED_THIS_TURN',
+    CreatureDiedUnderYourControlThisTurn: 'CREATURE_DIED_UNDER_YOUR_CONTROL_THIS_TURN'
 } as const;
 export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType] | string;
 

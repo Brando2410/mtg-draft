@@ -1,13 +1,13 @@
 import {
-    ActionType,
-    GameObject,
-    GameState,
-    PlayerId,
-    ResolutionContext,
-    Zone,
-    ModalEffect,
-    EffectDefinition,
-    StackObject
+  ActionType,
+  GameObject,
+  GameState,
+  PlayerId,
+  ResolutionContext,
+  Zone,
+  ModalEffect,
+  EffectDefinition,
+  StackObject
 } from "@shared/engine_types";
 import { ActionProcessor } from "../../../actions/ActionProcessor";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
@@ -34,7 +34,7 @@ export class ChoiceEffectHandler {
 
     let dynamicChoices = effect.choices;
     if (dynamicChoices) {
-      const { ConditionProcessor } = require("../../../core/ConditionProcessor");
+      const { ConditionProcessor } = require("../../../core/logic/ConditionProcessor");
       dynamicChoices = dynamicChoices.filter((c) => {
         if (!c.condition) return true;
         return ConditionProcessor.matchesCondition(state, c.condition as any, {
@@ -109,6 +109,7 @@ export class ChoiceEffectHandler {
       "LAST_MILLED_IDS",
       "LAST_EXILED_IDS",
       "PARENT_CONTEXT_EXILED_IDS",
+      "LAST_DISCARDED_CARDS",
     ].includes(targetZoneMapping);
 
     if (isStandardMapping) {
@@ -131,6 +132,7 @@ export class ChoiceEffectHandler {
       const isLastExiled =
         targetZoneMapping === "LAST_EXILED_IDS" ||
         targetZoneMapping === "PARENT_CONTEXT_EXILED_IDS";
+      const isLastDiscarded = targetZoneMapping === "LAST_DISCARDED_CARDS";
 
       let sourceCards: GameObject[] = [];
       const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
@@ -142,9 +144,9 @@ export class ChoiceEffectHandler {
           targetZoneMapping === "ALL_BATTLEFIELD"
             ? state.battlefield
             : state.battlefield.filter(
-                (o: GameObject) => o.controllerId === workingMappingPlayerId,
-              );
-      } else if (isLastMilled || isLastExiled) {
+              (o: GameObject) => o.controllerId === workingMappingPlayerId,
+            );
+      } else if (isLastMilled || isLastExiled || isLastDiscarded) {
         const poolIds = TargetingProcessor.resolveTargetMapping(
           state,
           targetZoneMapping,
@@ -170,7 +172,7 @@ export class ChoiceEffectHandler {
               ? (targets[0] as PlayerId)
               : (Object.keys(state.players).find(
                 (pid: string) => pid !== controllerId,
-                ) as PlayerId);
+              ) as PlayerId);
           const targetOpp = state.players[targetOppId];
           if (targetOpp) {
             sourceCards = targetOpp.hand;
@@ -221,9 +223,9 @@ export class ChoiceEffectHandler {
         (effect as any).restrictions ||
         (targetDef
           ? [
-              ...(targetDef.restrictions || []),
-              ...(targetDef.type ? [targetDef.type] : []),
-            ]
+            ...(targetDef.restrictions || []),
+            ...(targetDef.type ? [targetDef.type] : []),
+          ]
           : []);
 
       const validCandidates = sourceCards.filter((c: GameObject) =>
@@ -260,7 +262,9 @@ export class ChoiceEffectHandler {
                   ? "Choose a permanent to return"
                   : isLastMilled
                     ? "Choose a milled card"
-                    : "Choose a card from Hand"),
+                    : isLastDiscarded
+                      ? "Choose a discarded card"
+                      : "Choose a card from Hand"),
           playerId: workingMappingPlayerId as PlayerId,
           sourceId: sourceId,
           restrictions: restrictions,
@@ -372,91 +376,4 @@ export class ChoiceEffectHandler {
       state.pendingAction.data.nextPlayerIds = nextPlayers;
     }
   }
-
-  public static handleNecromentia(
-    state: GameState,
-    effect: EffectDefinition,
-    log: (m: string) => void,
-    context: ResolutionContext,
-  ) {
-    const { sourceId, controllerId, targets, stackObject } = context;
-    const targetOpponentId = targets[0] as PlayerId;
-    const targetOpponent = state.players[targetOpponentId];
-    if (!targetOpponent) return;
-
-    if (!stackObject?.data?.chosenName) {
-      state.pendingAction = ChoiceGenerator.createCardChoice(
-        state,
-        state.players[controllerId].library,
-        {
-          label: "Name a nonbasic card",
-          playerId: controllerId,
-          sourceId: sourceId,
-          restrictions: ["NonbasicLand"],
-          optional: false,
-          actionType: ActionType.ResolutionChoice,
-          onSelected: (c: GameObject) => {
-            if (stackObject?.data)
-              stackObject.data.chosenName = c.definition.name;
-            return [{ type: "Necromentia", targetMapping: "TARGET_1" }];
-          },
-          stackObj: stackObject,
-          parentContext: context,
-        },
-      );
-      return;
-    }
-
-    const chosenName = stackObject?.data?.chosenName;
-    if (!chosenName) return;
-    const zones = [Zone.Graveyard, Zone.Hand, Zone.Library];
-    let exiledCount = 0;
-
-    zones.forEach((zone) => {
-      let pool =
-        zone === Zone.Graveyard
-          ? targetOpponent.graveyard
-          : zone === Zone.Hand
-            ? targetOpponent.hand
-            : targetOpponent.library;
-      const toExile = pool.filter(
-        (c: GameObject) => c.definition.name.toLowerCase() === chosenName.toLowerCase(),
-      );
-      if (zone === Zone.Hand) exiledCount = toExile.length;
-
-      toExile.forEach((c: GameObject) => {
-        const from = c.zone as Zone;
-        ActionProcessor.moveCard(state, c, Zone.Exile, c.ownerId, log);
-        TriggerProcessor.onEvent(
-          state,
-          { type: "ON_EXILE", targetId: c.id, sourceId, sourceZone: from },
-          log,
-        );
-      });
-    });
-
-    if (exiledCount > 0) {
-      const { PermanentHandler } = require("../permanent/PermanentHandler");
-      PermanentHandler.handleCreateToken(
-        state,
-        log,
-        { ...context, targets: [targetOpponentId] },
-        {
-          name: "Zombie",
-          power: "2",
-          toughness: "2",
-          colors: ["B"],
-          types: ["Creature"],
-          subtypes: ["Zombie"],
-          image_url:
-            "https://cards.scryfall.io/large/front/d/e/ded254ec-1d94-4458-944c-329a4305ee4c.jpg",
-        },
-        undefined,
-        undefined,
-        { amount: exiledCount } as any
-      );
-    }
-  }
 }
-
-

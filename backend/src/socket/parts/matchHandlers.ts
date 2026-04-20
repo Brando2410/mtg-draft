@@ -72,6 +72,9 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       PersistenceService.saveRooms(rooms).catch(e => LoggerService.error('SAVE', `Save failed: ${e.message}`));
     } catch (err: any) {
       LoggerService.error('SOCKET', `Error in withMatch: ${err.message}`, { roomId, playerId });
+      if (err.stack) {
+        console.error('Stack trace:', err.stack);
+      }
     }
   };
 
@@ -206,7 +209,11 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
   socket.on('tap_permanent', async ({ roomId, playerId, cardId }: { roomId: string, playerId: string, cardId: string }) => {
     withMatch(roomId, playerId, (engine) => {
-      engine.interactWithPermanent(playerId, cardId);
+      try {
+        engine.interactWithPermanent(playerId, cardId);
+      } catch (e) {
+        LoggerService.error('ENGINE', `Error in tap_permanent: ${e}`);
+      }
     });
   });
 

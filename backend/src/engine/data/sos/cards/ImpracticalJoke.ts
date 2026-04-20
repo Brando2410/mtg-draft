@@ -5,12 +5,8 @@ export const ImpracticalJoke: CardDefinition = {
     scryfall_id: "39a816b4-39b8-421c-b828-68db901d34b7",
     rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/3/9/39a816b4-39b8-421c-b828-68db901d34b7.jpg?1775937777",
-    colors: [
-        "R"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["R"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "Damage can't be prevented this turn. Impractical Joke deals 3 damage to up to one target creature or planeswalker.",

@@ -154,7 +154,7 @@ export class EffectProcessor {
     return null;
   }
 
-  private static executeEffect(options: EffectExecutionOptions) {
+   public static executeEffect(options: EffectExecutionOptions) {
     const {
       state,
       effect,
@@ -187,6 +187,10 @@ export class EffectProcessor {
       lookingCards: stackObject?.data?.lookingCards,
       nextEffectIndex: stackObject?.data?.nextEffectIndex
     };
+
+    if (effect.type === 'ApplyContinuousEffect' || effect.type === 'Exile' || effect.type === 'ExileTopCard') {
+        console.log(`[DEBUG] EffectProcessor: Executing ${effect.type}. ExiledIds on stack: ${stackObject?.data?.exiledIds?.join(', ')}`);
+    }
 
     // Rule 608.2: Evaluate conditions
     if (effect.condition) {
@@ -425,7 +429,7 @@ export class EffectProcessor {
     condition: ConditionType,
     context: ResolutionContext,
   ): boolean {
-    const { ConditionProcessor } = require("../core/ConditionProcessor");
+    const { ConditionProcessor } = require("../core/logic/ConditionProcessor");
     const { sourceId, controllerId, targets, stackObject } = context;
 
     // We wrap the stackObject/parent state into a clean ConditionContext
@@ -515,7 +519,8 @@ export class EffectProcessor {
         result = state.players[controllerId]?.hand.length || 0;
         break;
       case "TARGET_1_HAND_SIZE": {
-        const pid = targetIds[0] as PlayerId;
+        const tid = (stackObject as any)?.targets?.[0] || targetIds[0];
+        const pid = tid as PlayerId;
         result = state.players[pid]?.hand.length || 0;
         break;
       }
@@ -534,8 +539,8 @@ export class EffectProcessor {
       }
       case "TARGET_1_POWER":
       case "TARGET_1_TOUGHNESS": {
-        const tid = targetIds[0] || (stackObject as any)?.targets?.[0];
-        const tObj = state.battlefield.find((o) => o.id === tid) || state.turnState.creaturesDiedThisTurn.find((o) => o.id === tid);
+        const tid = (stackObject as any)?.targets?.[0] || targetIds[0];
+        const tObj = state.battlefield.find((o) => o.id === tid) || state.turnState.creaturesDiedThisTurn.find((o) => o.id === tid) || Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === tid);
         if (tObj) {
           const { LayerProcessor } = require("./../state/LayerProcessor");
           const stats = LayerProcessor.getEffectiveStats(tObj, state);
@@ -605,13 +610,13 @@ export class EffectProcessor {
       }
       case "TARGET_1_MANA_VALUE": {
         const { ManaProcessor } = require("../magic/ManaProcessor");
-        const tId = targetIds[0] || (stackObject as any)?.targets?.[0];
+        const tId = (stackObject as any)?.targets?.[0] || targetIds[0];
         const mObj = this.findObject(state, tId, stackObject, parentContext) as GameObject;
         result = mObj ? ManaProcessor.getManaValue(mObj.definition.manaCost) : 0;
         break;
       }
       case "TARGET_1_COUNTERS_P1P1": {
-        const tId = targetIds[0] || (stackObject as any)?.targets?.[0];
+        const tId = (stackObject as any)?.targets?.[0] || targetIds[0];
         const cObj = state.battlefield.find((o) => o.id === tId);
         result = (cObj?.counters?.["p1p1"] || 0) + (cObj?.counters?.["+1/+1"] || 0);
         break;
@@ -630,7 +635,8 @@ export class EffectProcessor {
         break;
       }
       case "TARGET_1_GRAVEYARD_CREATURE_COUNT_X2": {
-        const pid = targetIds[0] as PlayerId;
+        const tid = (stackObject as any)?.targets?.[0] || targetIds[0];
+        const pid = tid as PlayerId;
         const gy = state.players[pid]?.graveyard || [];
         result = gy.filter((c) => (c.definition.types || []).some((t) => t.toLowerCase() === "creature")).length * 2;
         break;

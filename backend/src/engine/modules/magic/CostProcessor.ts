@@ -87,17 +87,25 @@ export class CostProcessor {
       }
 
       case CostType.Sacrifice:
-      case CostType.SacrificeSelf:
-        if (cost.targetMapping === 'SELF' || cost.type === CostType.SacrificeSelf) {
+        if (cost.targetMapping === 'SELF') {
            return state.battlefield.some(c => c.id === source.id);
         }
-        if (cost.restrictions) {
-           return state.battlefield.some(c => c.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, c, cost.restrictions!, { controllerId: playerId, sourceId: source.id }));
-        }
-        return state.battlefield.some(c => c.controllerId === playerId);
+        const neededSac = cost.amount || 1;
+        const validSacrifices = state.battlefield.filter(c => 
+            c.controllerId === playerId && 
+            (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }))
+        );
+        return validSacrifices.length >= neededSac;
+
+      case CostType.SacrificeSelf:
+        return state.battlefield.some(c => c.id === source.id);
 
       case CostType.Discard:
-        return player.hand.some(c => !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }));
+        const neededDisc = cost.amount || 1;
+        const validDiscards = player.hand.filter(c => 
+            (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }))
+        );
+        return validDiscards.length >= neededDisc;
 
       case CostType.PayLife:
         return player.life > (parseInt(cost.value) || 0);
@@ -112,10 +120,14 @@ export class CostProcessor {
             if (z === Zone.Battlefield) return state.battlefield.filter(o => o.controllerId === playerId);
             if (z === Zone.Graveyard) return player.graveyard;
             if (z === Zone.Hand) return player.hand;
-            if (z === Zone.Exile) return state.exile; // Rare but possible
+            if (z === Zone.Exile) return state.exile; 
             return [];
         });
-        return pool.some((c: GameObject) => !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }));
+        const neededExile = cost.amount || 1;
+        const validExiles = pool.filter((c: GameObject) => 
+            (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }))
+        );
+        return validExiles.length >= neededExile;
 
       case CostType.Crew: {
         const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
@@ -172,7 +184,7 @@ export class CostProcessor {
         source.counters.loyalty = oldL + lVal;
         log(`${source.definition.name} loyalty: ${oldL} -> ${source.counters.loyalty}`);
         
-        const { TriggerProcessor } = require('./../effects/TriggerProcessor');
+        const { TriggerProcessor } = require('./../effects/triggers/TriggerProcessor');
         TriggerProcessor.onEvent(state, { type: 'ON_ACTIVATE_LOYALTY', playerId, sourceId: source.id, data: { object: source } }, log);
         break;
       }

@@ -4,7 +4,7 @@ import { IConditionHandler } from "../IConditionHandler";
 export const PermanentConditions: Record<string, IConditionHandler> = {
     "HAS_PERMANENT": {
         matches(state, params, context) {
-            const { TargetingProcessor } = require("../../actions/TargetingProcessor");
+            const { TargetingProcessor } = require("../../actions/targeting/TargetingProcessor");
             const { sourceId, controllerId, stackObject } = context;
             const targetingContext = { sourceId, controllerId, stackObject };
             return state.battlefield.some((obj) =>
@@ -19,13 +19,13 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
     },
     "CONTROL_COUNT_GE": {
         matches(state, params, context) {
-            const { TargetingProcessor } = require("../../actions/TargetingProcessor");
+            const { TargetingProcessor } = require("../../actions/targeting/TargetingProcessor");
             const { sourceId, controllerId, stackObject } = context;
             const targetingContext = { sourceId, controllerId, stackObject };
-            
+
             const threshold = parseInt(params[params.length - 1]);
             const realRestrictions = params.slice(0, -1);
-            
+
             const count = state.battlefield.filter((obj) =>
                 String(obj.controllerId) === String(controllerId) &&
                 TargetingProcessor.matchesRestrictions(state, obj, realRestrictions, targetingContext)
@@ -48,8 +48,8 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { controllerId } = context;
             const threshold = parseInt(params[0]);
-            return state.battlefield.filter(o => 
-                o.controllerId === controllerId && 
+            return state.battlefield.filter(o =>
+                o.controllerId === controllerId &&
                 (o.definition.types || []).some(t => t.toLowerCase() === "artifact")
             ).length >= threshold;
         }
@@ -58,8 +58,8 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { controllerId } = context;
             const threshold = parseInt(params[0]);
-            return state.battlefield.filter(o => 
-                o.controllerId === controllerId && 
+            return state.battlefield.filter(o =>
+                o.controllerId === controllerId &&
                 (o.definition.types || []).some(t => t.toLowerCase() === "land")
             ).length >= threshold;
         }
@@ -87,7 +87,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { controllerId } = context;
             const threshold = parseInt(params[0]);
-            const { LayerProcessor } = require("../../state/LayerProcessor");
+            const { LayerProcessor } = require("../../../state/LayerProcessor");
             const total = state.battlefield
                 .filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === "creature"))
                 .reduce((sum, obj) => sum + LayerProcessor.getEffectiveStats(obj, state).toughness, 0);

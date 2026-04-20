@@ -106,6 +106,8 @@ export class TargetMapper {
         card_in_graveyard: "card",
         cardinhand: "card",
         card_in_hand: "card",
+        cardinexile: "card",
+        card_in_exile: "card",
         spellonstack: "spell",
         spell_on_stack: "spell",
         non_land_permanent: "nonland permanent",
@@ -126,6 +128,7 @@ export class TargetMapper {
 
       if (type.includes("graveyard")) location = "in any graveyard";
       if (type.includes("hand")) location = "in hand";
+      if (type.includes("exile")) location = "in exile";
 
       const knownAdjectives = [
         "other",
@@ -197,6 +200,7 @@ export class TargetMapper {
         if (lr === "youcontrol" || lr === "yours" || lr === "youown") {
           if (location.includes("graveyard")) location = "in your graveyard";
           else if (location.includes("hand")) location = "in your hand";
+          else if (location.includes("exile")) location = "in your exile";
           else location = "you control";
         } else if (
           lr === "opponentcontrol" ||
@@ -208,9 +212,13 @@ export class TargetMapper {
             location = "in an opponent's graveyard";
           else if (location.includes("hand"))
             location = "in an opponent's hand";
+          else if (location.includes("exile"))
+            location = "in an opponent's exile";
           else location = "an opponent controls";
         } else if (lr === "graveyard" && !location) {
           location = "in any graveyard";
+        } else if (lr === "exile" && !location) {
+          location = "in exile";
         }
       }
 
@@ -357,10 +365,14 @@ export class TargetMapper {
           : [];
       case TargetMapping.LastExiledIds:
         return (state as any).lastExiledIds || [];
-      case "PARENT_CONTEXT_EXILED_IDS":
-        return parentContext?.exiledIds || [];
+      case "PARENT_CONTEXT_EXILED_IDS": {
+        const result = (context.exiledIds && context.exiledIds.length > 0) ? context.exiledIds : (parentContext?.exiledIds || []);
+        console.log(`[DEBUG] TargetMapper: PARENT_CONTEXT_EXILED_IDS resolved to: ${result.join(', ')}`);
+        return result;
+      }
       case "PARENT_CONTEXT_EXILED_IDS_OWNERS": {
-        const ids = parentContext?.exiledIds || [];
+        const ids = (context.exiledIds && context.exiledIds.length > 0) ? context.exiledIds : (parentContext?.exiledIds || []);
+        console.log(`[DEBUG] TargetMapper: PARENT_CONTEXT_EXILED_IDS_OWNERS resolving for ids: ${ids.join(', ')}`);
         const owners = ids
           .map(
             (id: string) =>
@@ -368,6 +380,11 @@ export class TargetMapper {
           )
           .filter(Boolean) as string[];
         return [...new Set(owners)];
+      }
+      case "TARGET_1_OWNER": {
+        const targetId = targets[0];
+        const obj = TargetValidator.findObjectInAnyZone(state, targetId);
+        return obj ? [obj.ownerId] : [];
       }
       case "LAST_MILLED_IDS":
         return (state as any).lastMilledIds || [];

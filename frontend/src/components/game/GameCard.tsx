@@ -229,7 +229,7 @@ export const GameCard = memo(({
 
   return (
     <motion.div
-      id={`game-card-${obj.id}`}
+      id={variant === 'battlefield' ? `game-card-${obj.id}` : undefined}
       initial={false}
       animate={{ 
         scale: isSelected ? 1.05 : 1, 

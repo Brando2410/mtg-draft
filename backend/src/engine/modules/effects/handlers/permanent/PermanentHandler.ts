@@ -32,7 +32,7 @@ export class PermanentHandler {
         const [tid, ...nextTargets] = targets;
         const player = state.players[tid as PlayerId];
         if (player) {
-            const { TargetingProcessor } = require('../../../actions/TargetingProcessor');
+            const { TargetingProcessor } = require('../../../actions/targeting/TargetingProcessor');
             const resList = effect?.restrictions || ((effect as any)?.restriction ? [(effect as any).restriction] : ['Creature']);
             let candidates = state.battlefield.filter((o: GameObject) => o.controllerId === tid && TargetingProcessor.matchesRestrictions(state, o, resList, {
                 sourceId,
@@ -157,7 +157,7 @@ export class PermanentHandler {
         targets.forEach((tid: string) => {
             const obj = state.battlefield.find((o: GameObject) => o.id === tid);
             if (obj) {
-                const finalType = type === 'p1p1' ? '+1/+1' : type;
+                const finalType = (type.toLowerCase() === 'p1p1' || type === '+1/+1') ? '+1/+1' : type;
                 const amount = typeof counterEff.amount === 'number' ? counterEff.amount : (EffectProcessor.resolveAmount(state, counterEff.amount, context, [tid]));
                 
                 obj.counters[finalType] = (obj.counters[finalType] || 0) + amount;
@@ -177,7 +177,7 @@ export class PermanentHandler {
         const { targets } = context;
         const counterEff = effect as CounterEffect;
         const type = counterEff.counterType || 'p1p1';
-        const finalType = type === 'p1p1' ? '+1/+1' : type;
+        const finalType = (type.toLowerCase() === 'p1p1' || type === '+1/+1') ? '+1/+1' : type;
         
         targets.forEach((tid: string) => {
             const obj = state.battlefield.find((o: GameObject) => o.id === tid);
@@ -212,7 +212,7 @@ export class PermanentHandler {
         if (!sourceObj || !sourceObj.counters) return;
 
         let inputType = counterEff.counterType;
-        if (inputType === 'p1p1') inputType = '+1/+1';
+        if (inputType && (inputType.toLowerCase() === 'p1p1' || inputType === '+1/+1')) inputType = '+1/+1';
         const counterTypes = inputType ? [inputType] : Object.keys(sourceObj.counters);
 
         counterTypes.forEach((ctype: string) => {
@@ -254,7 +254,7 @@ export class PermanentHandler {
                     const resolvedAmount = EffectProcessor.resolveAmount(state, cAmount, context, [pid]);
                     
                     if (resolvedAmount > 0 && finalType) {
-                        const counterKey = finalType === 'p1p1' ? '+1/+1' : finalType;
+                        const counterKey = (finalType.toLowerCase() === 'p1p1' || finalType === '+1/+1') ? '+1/+1' : finalType;
                         token.counters[counterKey] = (token.counters[counterKey] || 0) + resolvedAmount;
                         log(`[TOKEN] ${token.definition.name} enters with ${resolvedAmount} ${counterKey} counters.`);
                     }
@@ -318,7 +318,8 @@ export class PermanentHandler {
             controllerId: controllerId,
             definition: {
                 name: blueprint.name,
-                manaCost: "",
+                manaCost: blueprint.manaCost ?? "",
+                manaValue: (require('../../../magic/ManaProcessor').ManaProcessor).getManaValue(blueprint.manaCost ?? ""),
                 colors: (blueprint.colors || []).map((c: string) => {
                     const map: Record<string, string> = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
                     return map[c.toUpperCase()] || c.toLowerCase();

@@ -24,6 +24,7 @@ export const TargetType = {
     CreatureOrPlaneswalker: 'CREATURE_OR_PLANESWALKER',
     NonlandPermanent: 'NON_LAND_PERMANENT',
     CardInGraveyard: 'CARD_IN_GRAVEYARD',
+    CardInExile: 'CARD_IN_EXILE',
     CardInHand: 'CARD_IN_HAND',
     Opponent: 'OPPONENT',
     Self: 'SELF',

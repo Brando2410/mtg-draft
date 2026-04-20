@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Zap } from 'lucide-react';
 import { GameCard } from './GameCard';
@@ -7,6 +8,7 @@ interface StackViewProps {
   stack: StackObject[];
   pendingAction?: any;
   me: PlayerState | undefined;
+  opponent: PlayerState | null | undefined;
   exile?: GameObject[];
   battlefield: GameObject[];
   onTapCard: (id: string) => void;
@@ -19,10 +21,59 @@ interface StackViewProps {
  * Arena-style StackView. 
  * Shows spells and abilities currently waiting to resolve.
  */
-export const StackView = ({ stack, pendingAction, battlefield, onTapCard, onHoverStart, onHoverEnd }: StackViewProps) => {
+export const StackView = ({ stack, pendingAction, me, opponent, battlefield, exile, onTapCard, onHoverStart, onHoverEnd }: StackViewProps) => {
+  const [hoveredStackObj, setHoveredStackObj] = useState<StackObject | null>(null);
+
   // Filter stack to only show valid objects (same criteria as pending action)
   const filteredStack = stack.filter(s => s.sourceId || s.name || s.card || s.definition);
   const effectiveStack = [...filteredStack];
+
+  const findObject = (id: string): GameObject | undefined => {
+    if (!id) return undefined;
+    
+    // Check Battlefield
+    const inBf = battlefield.find(o => o.id === id);
+    if (inBf) return inBf;
+
+    // Check Exile
+    const inExile = (exile || []).find(o => o.id === id);
+    if (inExile) return inExile;
+
+    // Check Graveyards
+    const inMyGrave = me?.graveyard.find(o => o.id === id);
+    if (inMyGrave) return inMyGrave;
+
+    const inOppGrave = opponent?.graveyard.find(o => o.id === id);
+    if (inOppGrave) return inOppGrave;
+
+    // Check Stack itself (Spells targeting spells)
+    const inStack = stack.find(s => s.id === id);
+    if (inStack) {
+        return (inStack.card || { 
+            id: inStack.id, 
+            definition: inStack.definition || { name: inStack.name || 'Ability', image_url: '/back.png', types: [], colors: [], manaCost: '', oracleText: '' },
+            counters: {}, keywords: [], zone: 'Stack' 
+        }) as GameObject;
+    }
+
+    // Check Players (Avatars)
+    if (me?.id === id) {
+        return {
+            id: me.id,
+            definition: { name: me.name, image_url: me.avatar_url || '/avatars/default.png', types: ['Player'], colors: [], manaCost: '', oracleText: 'Player' },
+            counters: { life: me.life }, keywords: [], zone: 'Battlefield'
+        } as any;
+    }
+    if (opponent?.id === id) {
+        return {
+            id: opponent.id,
+            definition: { name: opponent.name, image_url: opponent.avatar_url || '/avatars/default.png', types: ['Player'], colors: [], manaCost: '', oracleText: 'Player' },
+            counters: { life: opponent.life }, keywords: [], zone: 'Battlefield'
+        } as any;
+    }
+
+    return undefined;
+  };
 
   if (pendingAction?.data?.stackObj) {
     const pObj = pendingAction.data.stackObj;
@@ -43,7 +94,38 @@ export const StackView = ({ stack, pendingAction, battlefield, onTapCard, onHove
   if (effectiveStack.length === 0) return null;
 
   return (
-    <div className="flex flex-col items-center gap-2 p-1 bg-slate-950/60 backdrop-blur-xl rounded-[2rem] border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.9)] overflow-hidden ring-1 ring-white/5 w-full max-w-[18vw] min-h-[15vh]">
+    <div className="flex flex-col items-center gap-2 p-1 bg-slate-950/60 backdrop-blur-xl rounded-[2rem] border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.9)] ring-1 ring-white/5 w-full max-w-[18vw] min-h-[15vh] relative overflow-visible">
+      
+      {/* TARGET PREVIEW TOOLTIP (Hoisted to root level to prevent clipping) */}
+      <AnimatePresence>
+        {hoveredStackObj && hoveredStackObj.targets && hoveredStackObj.targets.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, x: -20, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -20, scale: 0.9 }}
+            className="absolute right-[calc(100%+2.5vh)] top-0 z-[2000] flex flex-col gap-2 pointer-events-none"
+          >
+            <div className="bg-slate-900/95 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-6 shadow-[0_40px_100px_rgba(0,0,0,0.8)] min-w-[300px]">
+               <div className="flex items-center gap-3 mb-4 border-b border-white/10 pb-3">
+                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
+                 <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white/70">Targeted Objects</span>
+               </div>
+               <div className="flex gap-4 p-2 overflow-x-visible">
+                  {hoveredStackObj.targets.map((tid, idx) => {
+                    const targetObj = findObject(tid);
+                    if (!targetObj) return null;
+                    return (
+                      <div key={tid || `target-${idx}`} className="flex-none w-32 transform transition-transform duration-300">
+                         <GameCard obj={targetObj} variant="small" />
+                      </div>
+                    );
+                  })}
+               </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* HEADER */}
       <div className="flex items-center gap-3 mt-4 mb-2">
         <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_12px_rgba(34,211,238,0.8)]" />
@@ -52,7 +134,7 @@ export const StackView = ({ stack, pendingAction, battlefield, onTapCard, onHove
         </div>
       </div>
       
-      <div className="flex-1 w-full flex flex-col-reverse items-center justify-end gap-3 max-h-[65vh] overflow-y-auto overflow-x-hidden px-2 py-4 no-scrollbar scroll-smooth">
+      <div className="flex-1 w-full flex flex-col-reverse items-center justify-end gap-3 max-h-[65vh] overflow-y-auto px-2 py-4 no-scrollbar scroll-smooth">
         <AnimatePresence mode="popLayout">
           {effectiveStack.map((sobj, index) => {
             const isPending = pendingAction?.data?.stackObj?.id === sobj.id;
@@ -75,7 +157,7 @@ export const StackView = ({ stack, pendingAction, battlefield, onTapCard, onHove
 
             return (
               <motion.div 
-                key={sobj.id} 
+                key={sobj.id || `stack-${index}`} 
                 layout
                 id={`stack-obj-${sobj.id}`}
                 initial={{ opacity: 0, scale: 0.9, y: 20 }} 
@@ -101,9 +183,11 @@ export const StackView = ({ stack, pendingAction, battlefield, onTapCard, onHove
                       variant="stack" 
                       onClick={() => onTapCard(sobj.id)}
                       onHoverStart={() => {
+                        setHoveredStackObj(sobj);
                         onHoverStart?.(displayObj as any);
                       }}
                       onHoverEnd={() => {
+                        setHoveredStackObj(null);
                         onHoverEnd?.();
                       }}
                   />

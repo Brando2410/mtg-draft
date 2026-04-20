@@ -44,7 +44,7 @@ export class SpellCostCalculator {
 
         // Flashback cost override (Rule 702.34)
         // If explicitly forced or if it's a Flashback card in the graveyard, use the alternative cost
-        const { LayerProcessor } = require('./../state/LayerProcessor');
+        const { LayerProcessor } = require('../../state/LayerProcessor');
         const stats = overrideStats || LayerProcessor.getEffectiveStats(card, state);
 
         const hasFlashbackKeyword = stats.keywords?.some((k: string) => k.toLowerCase() === 'flashback') ||
@@ -97,7 +97,7 @@ export class SpellCostCalculator {
             }
 
             // Use LayerProcessor to verify the card is actually a target (checking restrictions)
-            const { LayerProcessor } = require('../../../state/LayerProcessor');
+            const { LayerProcessor } = require('../../state/LayerProcessor');
             return LayerProcessor.isTarget(state, e, card.id);
         });
 
@@ -112,7 +112,7 @@ export class SpellCostCalculator {
         if (effectiveCost !== null) return { totalMana: effectiveCost, additionalCosts, usedAlternativeCostId: isFree?.id };
 
         // 1. Gather global modifiers
-        const { TargetingProcessor } = require('../../targeting/TargetingProcessor');
+        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
         const modifiers = state.ruleRegistry.continuousEffects.filter(e => {
             if (!['SpellTax', 'CostReduction', 'AdditionalCost', 'AllowCastFromGraveyard', 'AllowPlayFromTop', 'AllowPlayExiled'].includes((e as any).type)) return false;
 
@@ -155,7 +155,7 @@ export class SpellCostCalculator {
             if (!impacts) continue;
 
             const restrictions = (mod as any).restrictions || [];
-            const { ConditionProcessor } = require('../../../core/logic/ConditionProcessor');
+            const { ConditionProcessor } = require('../../core/logic/ConditionProcessor');
 
             const matches = TargetingProcessor.matchesRestrictions(state, card, (restrictions as any[] || []), {
                 sourceId: mod.sourceId,
@@ -174,8 +174,8 @@ export class SpellCostCalculator {
                 additionalCosts = [...additionalCosts, ...(mod as any).additionalCosts];
             }
             if (type === 'CostReduction') {
-                const { EffectProcessor } = require('../../../effects/EffectProcessor');
-                const redAmt = EffectProcessor.resolveAmount(state, (mod as any).amount, mod.sourceId, card.controllerId, undefined, targets);
+                const { EffectProcessor } = require('../../effects/EffectProcessor');
+                const redAmt = EffectProcessor.resolveAmount(state, (mod as any).amount, card.controllerId, mod.sourceId, targets, undefined);
                 extraGeneric -= redAmt || 0;
                 if ((mod as any).manaReduction) {
                     const red = ManaProcessor.parseManaCost((mod as any).manaReduction);

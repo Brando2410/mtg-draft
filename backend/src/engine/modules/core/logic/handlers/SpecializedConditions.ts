@@ -6,10 +6,13 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, controllerId } = context;
             if (event?.playerId !== controllerId) return false;
-            const targets = event?.targets || event?.data?.targets || [];
+            const targets = event?.targets || event?.data?.targets || event?.data?.stackSnapshot?.targets || [];
+            if (!targets.length) return false;
+            
+            const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
             return targets.some((tid: string) => {
-                const obj = state.battlefield.find((o) => o.id === tid);
-                return obj && obj.definition.types.some((t) => t.toLowerCase() === "creature");
+                const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
+                return obj && obj.definition.types.some((t: any) => t.toLowerCase() === "creature");
             });
         }
     },
@@ -31,7 +34,7 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
             const spent = (event as any)?.data?.spent || 0;
             const obj = state.battlefield.find((o) => o.id === sourceId);
             if (!obj) return false;
-            const { LayerProcessor } = require("./../../state/LayerProcessor");
+            const { LayerProcessor } = require("../../../state/LayerProcessor");
             const stats = LayerProcessor.getEffectiveStats(obj, state);
             return spent > stats.power || spent > stats.toughness;
         }
@@ -42,7 +45,7 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
             const spent = (event as any)?.data?.card?.paidManaValue ?? (event as any)?.amount ?? 0;
             const obj = state.battlefield.find((o) => o.id === sourceId);
             if (!obj) return false;
-            const { LayerProcessor } = require("./../../state/LayerProcessor");
+            const { LayerProcessor } = require("../../../state/LayerProcessor");
             const stats = LayerProcessor.getEffectiveStats(obj, state);
             return spent > stats.power || spent > stats.toughness;
         }

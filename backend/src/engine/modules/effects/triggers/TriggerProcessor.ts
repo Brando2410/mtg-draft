@@ -534,31 +534,31 @@ export class TriggerProcessor {
       // Identity Filtering (Rule 603.2)
       const { TriggerEvent } = require("@shared/engine_types");
       if (event.type === TriggerEvent.EnterBattlefield) {
-        const enteringId = event.data?.object?.id || event.sourceId;
+        const enteringId = event.data?.object?.id || event.payload?.object?.id || event.payload?.sourceId || event.sourceId;
         if (
-          tEvent === TriggerEvent.EnterBattlefield &&
+          tEvents.includes(TriggerEvent.EnterBattlefield) &&
           enteringId !== t.sourceId
         )
           return false;
         if (
-          tEvent === TriggerEvent.EnterBattlefieldOther &&
+          tEvents.includes(TriggerEvent.EnterBattlefieldOther) &&
           enteringId === t.sourceId
         )
           return false;
       }
       if (event.type === TriggerEvent.Death) {
         const deadId = event.targetId;
-        if (tEvent === TriggerEvent.Death && deadId !== t.sourceId)
+        if (tEvents.includes(TriggerEvent.Death) && deadId !== t.sourceId)
           return false;
-        if (tEvent === TriggerEvent.DeathOther && deadId === t.sourceId)
+        if (tEvents.includes(TriggerEvent.DeathOther) && deadId === t.sourceId)
           return false;
       }
       if (event.type === TriggerEvent.CountersAdded) {
         const targetId = event.targetId;
-        if (tEvent === TriggerEvent.CountersAdded && targetId !== t.sourceId)
+        if (tEvents.includes(TriggerEvent.CountersAdded) && targetId !== t.sourceId)
           return false;
         if (
-          tEvent === TriggerEvent.CountersAddedOther &&
+          tEvents.includes(TriggerEvent.CountersAddedOther) &&
           targetId === t.sourceId
         )
           return false;
@@ -568,9 +568,9 @@ export class TriggerProcessor {
         event.type === TriggerEvent.Block
       ) {
         if (
-          tEvent === TriggerEvent.Attack ||
-          tEvent === TriggerEvent.Block ||
-          tEvent === TriggerEvent.AttackOrBlock
+          tEvents.includes(TriggerEvent.Attack) ||
+          tEvents.includes(TriggerEvent.Block) ||
+          tEvents.includes(TriggerEvent.AttackOrBlock)
         ) {
           // Only check identity if card is not using global condition (convention)
           // Or if the event source is one of the targeted objects for this trigger (granted abilities fallback)

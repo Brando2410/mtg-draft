@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
 export const GroupProject: CardDefinition = {
     name: "Group Project",
     manaCost: "{1}{W}",
@@ -43,10 +43,7 @@ export const GroupProject: CardDefinition = {
                     condition: 'IS_FLASHBACK_CAST',
                     targetMapping: TargetMapping.Self,
                     additionalCosts: [{
-                        type: CostType.TapSelection, value: 3, restrictions: [
-                            "Creature",
-                            "untapped"
-                        ]
+                        type: CostType.TapSelection, value: 3, restrictions: [Restriction.Creature, Restriction.Untapped]
                     }]
                 }
             ]

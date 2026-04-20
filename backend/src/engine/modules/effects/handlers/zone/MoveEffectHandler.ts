@@ -127,7 +127,7 @@ export class MoveEffectHandler {
         (id: string) => state.players[id as PlayerId],
       ) as PlayerId[];
       const amount = typeof drawEff.amount === "number" ? drawEff.amount : 1;
-      return ChoiceGenerator.createDiscardChoice(
+      state.pendingAction = ChoiceGenerator.createDiscardChoice(
         state,
         playerIds,
         (stackObject as any)?.sourceId || "",
@@ -138,6 +138,7 @@ export class MoveEffectHandler {
         effect.effects,
         log,
       );
+      return;
     }
 
     if (effect.type === EffectType.ExchangeHandAndGraveyard) {
@@ -157,15 +158,6 @@ export class MoveEffectHandler {
       ActionProcessor.shuffle(finalTargetIds);
     }
 
-    if (selectionType === "Target" && finalTargetIds.length > 0) {
-      return this.resolveMoveTargets(
-        state,
-        effect,
-        finalTargetIds,
-        log,
-        context,
-      );
-    }
     const { EffectProcessor } = require("../../EffectProcessor");
     const fromTopResolved = EffectProcessor.resolveAmount(
       state,
@@ -185,6 +177,16 @@ export class MoveEffectHandler {
         state,
         { ...effect, fromTop: fromTopResolved },
         affectedPlayerId,
+        log,
+        context,
+      );
+    }
+
+    if (selectionType === "Target" && finalTargetIds.length > 0) {
+      return this.resolveMoveTargets(
+        state,
+        effect,
+        finalTargetIds,
         log,
         context,
       );
@@ -691,14 +693,14 @@ export class MoveEffectHandler {
           return;
         }
         const { EffectProcessor } = require("../../EffectProcessor");
-        EffectProcessor.executeEffect(
+        EffectProcessor.executeEffect({
           state,
-          nextEffect,
-          targetCard.id,
-          [targetCard.id],
+          effect: nextEffect,
+          sourceId: targetCard.id,
+          validTargetIds: [targetCard.id],
           log,
-          context,
-        );
+          parentContext: context,
+        });
         if (state.pendingAction) return;
       }
     }
@@ -780,9 +782,21 @@ export class MoveEffectHandler {
         }
         if (zone === Zone.Exile) {
           (state as any).lastExiledIds = [tid];
+          
+          if (stackObject) {
+            if (!stackObject.data) stackObject.data = {};
+            if (!stackObject.data.exiledIds) stackObject.data.exiledIds = [];
+            if (!stackObject.data.exiledIds.includes(tid)) {
+                stackObject.data.exiledIds.push(tid);
+                console.log(`[DEBUG] MoveEffectHandler: Added ${tid} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
+            }
+          }
+
           if (parentContext) {
             if (!parentContext.exiledIds) parentContext.exiledIds = [];
-            parentContext.exiledIds.push(tid);
+            if (!parentContext.exiledIds.includes(tid)) {
+                parentContext.exiledIds.push(tid);
+            }
           }
           TriggerProcessor.onEvent(
             state,
@@ -987,6 +1001,21 @@ export class MoveEffectHandler {
         if (moveEff.tapped) c.isTapped = true;
       }
       if (zone === Zone.Exile) {
+        if (stackObject) {
+            if (!stackObject.data) stackObject.data = {};
+            if (!stackObject.data.exiledIds) stackObject.data.exiledIds = [];
+            if (!stackObject.data.exiledIds.includes(c.id)) {
+                stackObject.data.exiledIds.push(c.id);
+                console.log(`[DEBUG] MoveEffectHandler: Added library card ${c.id} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
+            }
+        }
+
+        if (parentContext) {
+          if (!parentContext.exiledIds) parentContext.exiledIds = [];
+          if (!parentContext.exiledIds.includes(c.id)) {
+            parentContext.exiledIds.push(c.id);
+          }
+        }
         TriggerProcessor.onEvent(
           state,
           {
@@ -999,6 +1028,21 @@ export class MoveEffectHandler {
         );
       }
     });
+
+    // --- NESTED EFFECTS SUPPORT ---
+    if (effect.effects && effect.effects.length > 0) {
+      const { EffectProcessor } = require("../../EffectProcessor");
+      EffectProcessor.resolveEffects({
+        state,
+        effects: effect.effects,
+        sourceId: (stackObject as any)?.sourceId || controllerId,
+        targets: cards.map((c) => c.id),
+        log,
+        startIndex: 0,
+        stackObject,
+        parentContext: context,
+      });
+    }
   }
 
   private static resolveLibrarySearch(

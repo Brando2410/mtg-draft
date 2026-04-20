@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
     export const InkshapeDemonstrator: CardDefinition = {
     name: "Inkshape Demonstrator",
     manaCost: "{3}{W}",
@@ -21,7 +21,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: 'REPARTEE_TRIGGER',
+            condition: ConditionType.ReparteeTrigger,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

@@ -12,54 +12,50 @@ export const LoreholdCharm: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            effects: [
+            modes: [
                 {
-                    type: EffectType.Choice,
-                    choices: [
+
+                    label: "Each opponent sacrifices a nontoken artifact",
+                    effects: [
                         {
-                            label: "Each opponent sacrifices a nontoken artifact",
-                            effects: [
-                                {
-                                    type: EffectType.Sacrifice,
-                                    targetMapping: TargetMapping.EachOpponent,
-                                    restrictions: [
-                                        Restriction.Artifact,
-                                        Restriction.NonToken
-                                    ]
-                                }
+                            type: EffectType.Sacrifice,
+                            targetMapping: TargetMapping.EachOpponent,
+                            restrictions: [
+                                Restriction.Artifact,
+                                Restriction.NonToken
                             ]
-                        },
+                        }
+                    ]
+                },
+                {
+                    label: "Return target artifact or creature with MV 2 or less from your graveyard",
+                    targetDefinition: {
+                        type: TargetType.CardInGraveyard,
+                        count: 1,
+                        restrictions: [
+                            Restriction.ArtifactOrCreature,
+                            Restriction.ManaValue2OrLess,
+                            Restriction.YouOwn
+                        ]
+                    },
+                    effects: [
                         {
-                            label: "Return target artifact or creature with MV 2 or less from your graveyard",
-                            targetDefinition: {
-                                type: TargetType.CardInGraveyard,
-                                count: 1,
-                                restrictions: [
-                                    Restriction.ArtifactOrCreature,
-                                    Restriction.ManaValue2OrLess,
-                                    Restriction.YouOwn
-                                ]
-                            },
-                            effects: [
-                                {
-                                    type: EffectType.PutOnBattlefield,
-                                    zone: Zone.Battlefield,
-                                    targetMapping: TargetMapping.Target1
-                                }
-                            ]
-                        },
+                            type: EffectType.PutOnBattlefield,
+                            zone: Zone.Battlefield,
+                            targetMapping: TargetMapping.Target1
+                        }
+                    ]
+                },
+                {
+                    label: "Creatures you control get +1/+1 and trample",
+                    effects: [
                         {
-                            label: "Creatures you control get +1/+1 and trample",
-                            effects: [
-                                {
-                                    type: EffectType.ApplyContinuousEffect,
-                                    powerModifier: 1,
-                                    toughnessModifier: 1,
-                                    abilitiesToAdd: ['Trample'],
-                                    duration: { type: DurationType.UntilEndOfTurn },
-                                    targetMapping: TargetMapping.AllCreaturesYouControl
-                                }
-                            ]
+                            type: EffectType.ApplyContinuousEffect,
+                            powerModifier: 1,
+                            toughnessModifier: 1,
+                            abilitiesToAdd: ['Trample'],
+                            duration: { type: DurationType.UntilEndOfTurn },
+                            targetMapping: TargetMapping.AllCreaturesYouControl
                         }
                     ]
                 }

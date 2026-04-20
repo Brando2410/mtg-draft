@@ -1,20 +1,13 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 export const MatterbendingMage: CardDefinition = {
     name: "Matterbending Mage",
     manaCost: "{2}{U}",
     scryfall_id: "460c6afd-cddf-4fea-925f-b27517ff250a",
     rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/4/6/460c6afd-cddf-4fea-925f-b27517ff250a.jpg?1775937321",
-    colors: [
-        "U"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Human",
-        "Wizard"
-    ],
+    colors: ["U"],
+    types: ["Creature"],
+    subtypes: ["Human", "Wizard"],
     keywords: [],
     power: "2",
     toughness: "2",
@@ -27,9 +20,7 @@ export const MatterbendingMage: CardDefinition = {
                 type: TargetType.Creature,
                 count: 1,
                 minCount: 0,
-                restrictions: [
-                    "other"
-                ]
+                restrictions: [Restriction.Other]
             },
             effects: [
                 {

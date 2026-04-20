@@ -587,7 +587,7 @@ export const sos: Record<string, CardDefinition> = {
     'The Dawning Archaic': TheDawningArchaic,
     'Thornfist Striker': ThornfistStriker,
     'Thunderdrum Soloist': ThunderdrumSoloist,
-    'Titans Grave': TitansGrave,
+    'Titan\'s Grave': TitansGrave,
     'Together as One': TogetherasOne,
     'Tome Blast': TomeBlast,
     'Topiary Lecturer': TopiaryLecturer,

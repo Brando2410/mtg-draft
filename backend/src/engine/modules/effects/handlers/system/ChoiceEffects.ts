@@ -9,11 +9,6 @@ export const ChoiceHandler: IEffectHandler = {
     }
 };
 
-export const NecromentiaHandler: IEffectHandler = {
-    handle(state, effect, log, context) {
-        return LegacyChoiceHandler.handleNecromentia(state, effect, log, context);
-    }
-};
 
 export const LearnHandler: IEffectHandler = {
     handle(state, effect, log, context) {

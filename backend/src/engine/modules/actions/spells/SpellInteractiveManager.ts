@@ -1,4 +1,4 @@
-import { AbilityCost, GameObject, GameState, PlayerId, Zone } from '@shared/engine_types';
+import { AbilityCost, ActionType, CostType, GameObject, GameState, PlayerId, TargetType, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 
 import { SpellProcessor } from './SpellProcessor';
@@ -62,7 +62,7 @@ export class SpellInteractiveManager {
         log: (m: string) => void,
         engine: any
     ): boolean | string[] {
-        const { TargetingProcessor } = require('../../targeting/TargetingProcessor');
+        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
         const player = state.players[playerId];
         cardToPlay.controllerId = cardToPlay.controllerId || playerId;
 
@@ -98,9 +98,9 @@ export class SpellInteractiveManager {
         if (isSingleOpponentTarget) {
             const opponentId = legalForFirst[0];
             log(`[AUTO-TARGET] Automatically targeting the only opponent for ${cardToPlay.definition.name}.`);
-            
+
             const totalCounts = TargetingProcessor.calculateTotalCounts(targetDefinition, cardToPlay.xValue || 0);
-            
+
             if (totalCounts.maxCount === 1) {
                 return [opponentId];
             }
@@ -145,7 +145,7 @@ export class SpellInteractiveManager {
         if (precalculatedTargets.length === 0) {
             if (targetDefinition.optional || firstDef.optional || firstDef.minCount === 0) {
                 log(`No legal targets found for first requirement, auto-skipping.`);
-                return []; 
+                return [];
             } else {
                 log(`Illegal Play: No valid targets available for ${cardToPlay.definition.name}.`);
                 return false;
@@ -154,6 +154,44 @@ export class SpellInteractiveManager {
 
         const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDefinition, cardToPlay.xValue || 0);
         const prompt = TargetingProcessor.generateTargetPrompt(targetDefinition, 0, cardToPlay.xValue || 0, true);
+
+        // --- ENHANCEMENT: Graveyard/Exile Targeting Modal ---
+        // If targeting solely from graveyard or exile, use ModalSelection UI for better UX (requested by user)
+        const isOffBattlefieldTargeting = 
+            firstDef.type === (TargetType.CardInGraveyard as any) || 
+            firstDef.type === 'CARD_IN_GRAVEYARD' ||
+            firstDef.type === (TargetType.CardInExile as any) ||
+            firstDef.type === 'CARD_IN_EXILE';
+
+        if (isOffBattlefieldTargeting) {
+            const choices = precalculatedTargets.map(id => {
+                const obj = TargetingProcessor.findObjectInAnyZone(state, id);
+                return {
+                    label: obj?.definition?.name || id,
+                    value: id,
+                    cardData: obj,
+                    selectable: true
+                };
+            });
+
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: cardToPlay.id,
+                data: {
+                    label: firstDef.label || `Choose ${count > 1 ? count + ' cards' : 'a card'} from your graveyard for ${cardToPlay.definition.name}`,
+                    hideUndo: false,
+                    isSpellCasting: true,
+                    isTargetingModal: true,
+                    minChoices: minCount,
+                    maxChoices: maxCount,
+                    choices: choices
+                }
+            };
+            log(`[GRAVEYARD_MODAL] ${state.players[playerId].name} is selecting graveyard targets for ${cardToPlay.definition.name}...`);
+            return true;
+        }
+
         state.pendingAction = {
             type: 'TARGETING',
             playerId: playerId,
@@ -200,32 +238,37 @@ export class SpellInteractiveManager {
         cardInstanceId: string,
         log: (m: string) => void
     ): boolean {
-        const { TargetingProcessor } = require('../../targeting/TargetingProcessor');
-        const { ActionType, CostType } = require('@shared/engine_types');
+        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
         const player = state.players[playerId];
 
         log(`[DEBUG] Additional costs found: ${additionalCosts.length} -> ${JSON.stringify(additionalCosts)}`);
-        
+
         // 1. Choice Cost
         const choiceCost = additionalCosts.find(c => (c.type as string) === 'Choice');
         const hasChosenCostChoice = (state as any).lastChosenCostChoiceIndex !== undefined;
 
         if (choiceCost && !hasChosenCostChoice) {
+            const { CostProcessor } = require('../../magic/CostProcessor');
+            const choices = choiceCost.choices?.map((c: any, idx: number) => {
+                const isPayable = CostProcessor.canPay(state, c.costs, cardToPlay.id, playerId);
+                return {
+                    label: c.label || `Option ${idx + 1}`,
+                    value: `COST_CHOICE_${idx}`,
+                    selectable: isPayable
+                };
+            }) || [];
+
             state.pendingAction = {
-                type: ActionType.ModalSelection,
+                type: ActionType.Choice,
                 playerId: playerId,
                 sourceId: cardToPlay.id,
                 data: {
                     label: choiceCost.label || "Choose an additional cost",
                     hideUndo: false,
                     isCostChoice: true,
-                    costType: 'Choice',
-                    declaredTargets: declaredTargets || [],
-                    choices: choiceCost.choices?.map((c: any, idx: number) => ({
-                        label: c.label,
-                        value: `COST_CHOICE_${idx}`,
-                        selectable: true
-                    }))
+                    isSpellCasting: true,
+                    sourceObject: cardToPlay,
+                    choices: choices
                 }
             };
             log(`[COST_CHOICE] ${state.players[playerId].name} must choose an additional cost for ${cardToPlay.definition.name}.`);
@@ -404,7 +447,7 @@ export class SpellInteractiveManager {
      */
     public static handleAbilityInteractiveCosts(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, abilityIndex: number, declaredTargets: string[] | undefined, log: (m: string) => void): boolean | null {
         const { ActionType, Zone } = require('@shared/engine_types');
-        const { TargetingProcessor } = require('../../targeting/TargetingProcessor');
+        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
         const player = state.players[playerId];
         const additionalCosts = ability.costs || [];
 
@@ -578,7 +621,7 @@ export class SpellInteractiveManager {
      * @returns true if targeting was handled (either pendingAction or direct finalization).
      */
     public static handleAbilityTargeting(state: GameState, playerId: PlayerId, cardId: string, obj: GameObject, ability: any, abilityIndex: number, log: (m: string) => void, engine: any, preSelectedChoice?: number): boolean {
-        const { TargetingProcessor } = require('../../targeting/TargetingProcessor');
+        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
         const pool = [
             ...Object.keys(state.players),
             ...state.battlefield.map(o => o.id),
@@ -670,6 +713,45 @@ export class SpellInteractiveManager {
         }
 
         const prompt = TargetingProcessor.generateTargetPrompt(ability.targetDefinition, 0, (obj as any).xValue || 0, false);
+
+        // --- ENHANCEMENT: Graveyard/Exile Targeting Modal ---
+        const isOffBattlefieldTargeting = 
+            firstDef.type === (TargetType.CardInGraveyard as any) || 
+            firstDef.type === 'CARD_IN_GRAVEYARD' ||
+            firstDef.type === (TargetType.CardInExile as any) ||
+            firstDef.type === 'CARD_IN_EXILE';
+
+        if (isOffBattlefieldTargeting) {
+            const choices = legalForFirst.map(id => {
+                const cObj = TargetingProcessor.findObjectInAnyZone(state, id);
+                return {
+                    label: cObj?.definition?.name || id,
+                    value: id,
+                    cardData: cObj,
+                    selectable: true
+                };
+            });
+
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: obj.id,
+                data: {
+                    abilityIndex: abilityIndex,
+                    label: firstDef.label || `Choose a card from your graveyard for ${obj.definition.name}`,
+                    hideUndo: false,
+                    isSpellCasting: true,
+                    isTargetingModal: true,
+                    minChoices: minCount,
+                    maxChoices: maxCount,
+                    choices: choices,
+                    preSelectedChoice
+                }
+            };
+            log(`[GRAVEYARD_MODAL] Player is selecting graveyard targets for ${obj.definition.name}'s ability...`);
+            return true;
+        }
+
         state.pendingAction = {
             type: 'TARGETING',
             playerId: playerId,

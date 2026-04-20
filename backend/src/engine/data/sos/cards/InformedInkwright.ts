@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
     export const InformedInkwright: CardDefinition = {
     name: "Informed Inkwright",
     manaCost: "{1}{W}",
@@ -21,7 +21,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: 'REPARTEE_TRIGGER',
+            condition: ConditionType.ReparteeTrigger,
             effects: [
                 {
                     type: EffectType.CreateToken,

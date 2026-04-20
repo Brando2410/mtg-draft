@@ -140,7 +140,7 @@ export class GameEngine implements EngineContext {
       player.hasLostDueToEmptyLibrary = true;
       return false;
     }
-    const { MoveEffectHandler } = require('./modules/effects/handlers/MoveEffectHandler');
+    const { MoveEffectHandler } = require('./modules/effects/handlers/zone/MoveEffectHandler');
     MoveEffectHandler.handle(
       this.state,
       { type: 'DrawCards', amount: 1 } as any,
@@ -163,6 +163,10 @@ export class GameEngine implements EngineContext {
    * based on the current game context (Rule 117).
    */
   public interactWithPermanent(playerId: PlayerId, cardId: string): boolean {
+    if (!this.state) {
+        console.error('[GameEngine] interactWithPermanent called but state is undefined');
+        return false;
+    }
     return PlayerActionProcessor.interactWithPermanent(
       this.state,
       playerId,
@@ -173,6 +177,10 @@ export class GameEngine implements EngineContext {
   }
 
   public autoTapLand(playerId: PlayerId, cardId: string, abilityIndex?: number, choiceIndex?: number): boolean {
+    if (!this.state) {
+        console.error('[GameEngine] autoTapLand called but state is undefined');
+        return false;
+    }
     return PlayerActionProcessor.autoTapLand(this.state, playerId, cardId, this, abilityIndex, choiceIndex);
   }
 
@@ -269,8 +277,6 @@ export class GameEngine implements EngineContext {
     TurnProcessor.advanceStep(this.state, this, (m) => this.log(m));
   }
 
-
-
   public givePriorityToNextPlayer() {
     PriorityProcessor.givePriorityToNextPlayer(this.state, this);
   }
@@ -287,12 +293,9 @@ export class GameEngine implements EngineContext {
     PriorityProcessor.togglePassTurn(this.state, playerId, this);
   }
 
-
-
   private canPlayerTakeAnyAction(playerId: PlayerId): boolean {
     return PriorityProcessor.canPlayerTakeAnyAction(this.state, playerId);
   }
-
 
   /**
    * Checks for State-Based Actions (CR 704) and pending triggers (CR 603).
@@ -317,24 +320,19 @@ export class GameEngine implements EngineContext {
     } while (sbaPerformed || anyTriggersStacked);
   }
 
-
   /**
    * Core Action: Player Gain Life (Rule 119.3)
    */
   public gainLife(playerId: PlayerId, amount: number) {
-    const { LifeDamageHandler } = require('./modules/effects/handlers/LifeDamageHandler');
+    const { LifeDamageHandler } = require('./modules/effects/handlers/life/LifeDamageHandler');
     LifeDamageHandler.handleGainLife(this.state, [playerId], amount, (m: string) => this.log(m));
   }
-
-
-
 
   public getState(): GameState {
     // CR 613: Re-evaluate the "Derived State" (P/T, Keywords, isPlayable) before returning to the UI.
     LayerProcessor.updateDerivedStats(this.state, PriorityProcessor);
     return this.state;
   }
-
 
   public resolveChoice(playerId: string, choiceIndex: any): boolean {
     const success = ChoiceProcessor.resolveChoice(
@@ -355,10 +353,6 @@ export class GameEngine implements EngineContext {
     return PlayerActionProcessor.resolveTargeting(this.state, playerId, targetId, this);
   }
 
-
-
-
-
   public resolveCombatOrdering(playerId: string, order: string[]): boolean {
     return CombatProcessor.resolveCombatOrdering(this.state, playerId, order, this);
   }
@@ -378,4 +372,3 @@ export class GameEngine implements EngineContext {
     this.resolver = new StackResolver(this.state);
   }
 }
-

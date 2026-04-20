@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, SelectionType, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, SelectionType, TargetMapping, TargetType } from '@shared/engine_types';
 export const Flashback: CardDefinition = {
     name: "Flashback",
     manaCost: "{R}",
@@ -13,19 +13,17 @@ export const Flashback: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
+            targetDefinition: {
+                type: TargetType.CardInGraveyard,
+                count: 1,
+                restrictions: [
+                    Restriction.InstantOrSorcery, Restriction.YouOwn]
+            },
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
                     label: "Select an instant or sorcery in your graveyard to gain Flashback",
-                    selectionType: SelectionType.Search,
-                    targetDefinition: {
-                        type: TargetType.CardInGraveyard,
-                        count: 1,
-                        restrictions: [
-                            Restriction.InstantOrSorcery,
-                            Restriction.YouOwn
-                        ]
-                    },
+                    targetMapping: TargetMapping.Target1,
                     duration: { type: DurationType.UntilEndOfTurn },
                     abilitiesToAdd: ['Flashback'],
                     flashbackCostOverride: 'SOURCE_MANA_COST'

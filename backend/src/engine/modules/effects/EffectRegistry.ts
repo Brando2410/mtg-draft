@@ -8,11 +8,11 @@ import {
     AttachHandler, PrepareHandler, UnprepareHandler, CreateEmblemHandler
 } from "./handlers/permanent/PermanentEffects";
 import { MovementHandler } from "./handlers/zone/MovementEffects";
-import { ChoiceHandler, NecromentiaHandler, LearnHandler } from "./handlers/system/ChoiceEffects";
+import { ChoiceHandler, LearnHandler } from "./handlers/system/ChoiceEffects";
 import { ContinuousEffectHandler } from "./handlers/system/ContinuousEffects";
 import { CastSpellHandler, ParadigmHandler, ExileTopCardsExcessDamageHandler, ConditionalEffectHandler } from "./handlers/specialized/SpecializedEffects";
 import { CounterSpellHandler, CounterAbilityHandler, CopySpellHandler, CopyAbilityHandler, CounterSpellOrAbilityHandler } from "./handlers/stack/CounterCopyEffects";
-import { ExchangeHandAndGraveyardHandler, DisableDamagePreventionHandler, PendingActionHandler } from "./handlers/system/MiscEffects";
+import { ExchangeHandAndGraveyardHandler, DisableDamagePreventionHandler, PendingActionHandler, NecromentiaHandler } from "./handlers/system/MiscEffects";
 import { ControlEffectsHandler } from "./handlers/system/ControlEffects";
 import { ManaHandler } from "./handlers/system/ManaEffects";
 import { CreateDelayedTriggerHandler } from "./handlers/system/TriggerEffects";

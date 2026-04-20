@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, SelectionType, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, SelectionType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const DivergentEquation: CardDefinition = {
     name: "Divergent Equation",
@@ -12,21 +12,21 @@ export const DivergentEquation: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
+            targetDefinition: {
+                type: TargetType.CardInGraveyard,
+                count: 'X' as any,
+                minCount: 0,
+                restrictions: [
+                    Restriction.InstantOrSorcery,
+                    Restriction.YouOwn
+                ]
+            },
             effects: [
                 {
                     type: EffectType.MoveToZone,
                     zone: Zone.Hand,
                     label: "Select up to X instant/sorcery cards to return to your hand",
-                    selectionType: SelectionType.Search,
-                    targetDefinition: {
-                        type: TargetType.CardInGraveyard,
-                        minCount: 0,
-                        count: 'X' as any,
-                        restrictions: [
-                            Restriction.InstantOrSorcery,
-                            Restriction.YouOwn
-                        ]
-                    }
+                    targetMapping: TargetMapping.Target1
                 }
             ]
         }

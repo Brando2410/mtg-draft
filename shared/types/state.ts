@@ -11,6 +11,7 @@ import type { AbilityRestriction } from './targeting';
 export interface CardDefinition {
     name: string;
     manaCost: string;
+    manaValue?: number;
     colors: string[];
     supertypes?: string[];
     types: string[];

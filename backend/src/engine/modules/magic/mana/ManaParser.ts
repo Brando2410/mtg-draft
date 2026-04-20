@@ -40,7 +40,11 @@ export class ManaParser {
     return { colored, generic, xCount };
   }
 
-  public static getManaValue(costStr: string): number {
+  /**
+   * Calculates the total Mana Value (MV) of a cost string (Rules 107.4, 202.3).
+   * @param xValue The value chosen for X (only relevant for objects on the stack).
+   */
+  public static getManaValue(costStr: string, xValue: number = 0): number {
     if (!costStr) return 0;
     const { colored, generic, xCount } = this.parseManaCost(costStr);
     
@@ -53,6 +57,8 @@ export class ManaParser {
             coloredTotal += count;
         }
     }
-    return coloredTotal + generic;
+
+    // Rule 202.3e: X is the value chosen while on the stack, otherwise 0.
+    return coloredTotal + generic + (xCount * xValue);
   }
 }

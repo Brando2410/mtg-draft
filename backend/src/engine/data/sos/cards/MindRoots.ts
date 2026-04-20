@@ -1,17 +1,12 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const MindRoots: CardDefinition = {
     name: "Mind Roots",
     manaCost: "{1}{B}{G}",
     scryfall_id: "9d5fdbda-ebbe-45d6-a668-5ddee057a063",
     rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/9/d/9d5fdbda-ebbe-45d6-a668-5ddee057a063.jpg?1775938410",
-    colors: [
-        "B",
-        "G"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["B", "G"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "Target player discards two cards. Put up to one land card discarded this way onto the battlefield tapped under your control.",
@@ -29,19 +24,23 @@ export const MindRoots: CardDefinition = {
                     targetMapping: TargetMapping.Target1
                 },
                 {
-                    type: EffectType.MoveToZone,
-                    zone: 'BATTLEFIELD',
-                    entersTapped: true,
+                    type: EffectType.Choice,
+                    label: "Put a land card discarded this way onto the battlefield",
+                    targetIdMapping: "LAST_DISCARDED_CARDS",
                     targetDefinition: {
                         type: TargetType.CardInGraveyard,
                         count: 1,
                         minCount: 0,
-                        restrictions: [
-                            "Land"
-                        ]
+                        restrictions: [Restriction.Land]
                     },
-                    // Use a special mapping that filters cards discarded by current spell
-                    targetMapping: TargetMapping.LastDiscardedCards
+                    effects: [
+                        {
+                            type: EffectType.MoveToZone,
+                            zone: Zone.Battlefield,
+                            tapped: true,
+                            targetMapping: TargetMapping.Target1
+                        }
+                    ]
                 }
             ]
         }

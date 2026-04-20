@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const RehearsedDebater: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+export const RehearsedDebater: CardDefinition = {
     name: "Rehearsed Debater",
     manaCost: "{2}{W}",
     colors: [
@@ -17,8 +17,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: 'REPARTEE_TRIGGER',
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: ConditionType.ReparteeTrigger,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -33,5 +33,5 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     power: "3",
     toughness: "3"
 };
-    
+
 

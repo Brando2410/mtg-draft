@@ -245,6 +245,10 @@ export class ActionProcessor {
   }
 
   public static removeFromCurrentZone(state: GameState, card: GameObject) {
+    if (!state) {
+        console.error('[ActionProcessor] removeFromCurrentZone: state is undefined!');
+        return;
+    }
     RegistryProcessor.unregisterAbilities(state, card.id);
     const cid = card.id;
     const beforeCount = state.battlefield.length;
@@ -310,7 +314,7 @@ export class ActionProcessor {
 
       let entersTapped = card.definition.entersTapped || false;
       if (card.definition.entersTappedCondition) {
-        const { ConditionProcessor } = require("./../core/ConditionProcessor");
+        const { ConditionProcessor } = require("./../core/logic/ConditionProcessor");
         if (
           ConditionProcessor.matchesCondition(
             state,
@@ -389,13 +393,22 @@ export class ActionProcessor {
         // Rule 611.2a: Floating effects (UntilEndOfTurn, UntilEndOfCombat) do NOT depend on the source card staying in the zone.
         // We only clear effects that are tied to the presence of the object (Static) or reach their natural expiry.
         if (eff.sourceId === card.id) {
-          if (
-            eff.duration.type === DurationType.UntilEndOfTurn ||
-            eff.duration.type === DurationType.UntilEndOfCombat ||
-            eff.duration.type === DurationType.UntilEvent ||
-            eff.duration.type === DurationType.Permanent
-          ) {
-            return true; // Keep floating/permanent effects!
+          const dType = (eff.duration?.type || "").toString().toUpperCase();
+
+          const isPersistent = 
+            eff.id?.startsWith("floating_") ||
+            dType === 'UNTILYOURNEXTTURN' || 
+            dType === 'UNTILENDOFYOURNEXTTURN' ||
+            dType === 'UNTIL_YOUR_NEXT_TURN' ||
+            dType === 'UNTIL_END_OF_YOUR_NEXT_TURN' ||
+            dType === 'UNTILENDOFTURN' || 
+            dType === 'UNTILENDOFCOMBAT' ||
+            dType === 'UNTIL_END_OF_TURN' ||
+            dType === 'UNTIL_END_OF_COMBAT' ||
+            dType === 'PERMANENT';
+
+          if (isPersistent) {
+            return true; // Keep floating/persistent effects!
           }
           // Default: Remove non-floating effects sourced from this object if it leaves the zone (e.g. STATIC)
           return false;

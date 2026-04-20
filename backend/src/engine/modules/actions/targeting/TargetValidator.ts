@@ -30,6 +30,14 @@ export class TargetValidator {
         const lb = state.limbo?.find(o => o.id === id);
         if (lb) return lb;
 
+        // Check Dynamic/Paradigm Virtual Copies (Used by Prepared faces, copies on stack, etc.)
+        if ((state as any).dynamicCopies && (state as any).dynamicCopies[id]) {
+            return (state as any).dynamicCopies[id];
+        }
+        if ((state as any).paradigmCopies && (state as any).paradigmCopies[id]) {
+            return (state as any).paradigmCopies[id];
+        }
+
         return null;
     }
 
@@ -94,14 +102,26 @@ export class TargetValidator {
             if (targetZone === Zone.Stack) expectedZone = Zone.Stack;
             else if (['instant', 'sorcery', 'instant_or_sorcery', 'spell', 'spellonstack'].includes(typeLineCheck)) expectedZone = Zone.Stack;
             else if (['card_in_graveyard', 'cardingraveyard'].includes(typeLineCheck)) expectedZone = Zone.Graveyard;
+            else if (['card_in_exile', 'cardinexile'].includes(typeLineCheck)) expectedZone = Zone.Exile;
             else if (targetDefForIndex?.restrictions?.some((r: any) => typeof r === 'string' && ['graveyard', 'in_graveyard'].includes(r.toLowerCase())))
                 expectedZone = Zone.Graveyard;
+            else if (targetDefForIndex?.restrictions?.some((r: any) => typeof r === 'string' && ['exile', 'in_exile'].includes(r.toLowerCase())))
+                expectedZone = Zone.Exile;
             else expectedZone = Zone.Battlefield;
         }
 
         if (expectedZone !== 'Any' && targetZone !== expectedZone) return false;
 
-        const restrictions = targetDefForIndex?.restrictions || [];
+        const restrictions = [...(targetDefForIndex?.restrictions || [])];
+        
+        // Ensure the primary type (e.g. Creature, Enchantment) is validated if not already in restrictions
+        const primaryType = (targetDefForIndex?.type || '').toUpperCase();
+        if (primaryType && primaryType !== 'ANY' && primaryType !== 'PLAYER' && primaryType !== 'ANYTARGET') {
+             if (!restrictions.some(r => typeof r === 'string' && r.toUpperCase() === primaryType)) {
+                 restrictions.push(primaryType);
+             }
+        }
+
         return !!this.matchesRestrictions(state, targetObj, restrictions, context);
     }
 
@@ -147,6 +167,11 @@ export class TargetValidator {
 
             if (handler) {
                 if (!handler.matches(state, targetObj, lr, context)) return false;
+                continue;
+            }
+
+            // Skip strict fallback for complex/alternative restrictions that are handled below
+            if (lr.includes('_or_') || lr.includes('orsorcery') || lr === 'oneormorecolors' || lr === 'mv_le_x' || lr === 'anytarget') {
                 continue;
             }
 
@@ -255,8 +280,30 @@ export class TargetValidator {
 
     public static hasLegalTargets(state: GameState, sourceId: string, targetDef: any, controllerId: string): boolean {
         if (!targetDef) return true;
+        
+        if (Array.isArray(targetDef)) {
+            let currentIndex = 0;
+            return targetDef.every((def) => {
+                const count = typeof def.count === 'number' ? def.count : 1;
+                const minCount = def.minCount !== undefined ? def.minCount : (def.optional ? 0 : count);
+                
+                if (minCount === 0) {
+                     currentIndex += count;
+                     return true;
+                }
+
+                const pool = this.getLegalTargetPool(state, sourceId, targetDef, controllerId, currentIndex);
+                currentIndex += count;
+                return pool.length >= minCount;
+            });
+        }
+
+        const count = typeof targetDef.count === 'number' ? targetDef.count : 1;
+        const minCount = targetDef.minCount !== undefined ? targetDef.minCount : (targetDef.optional ? 0 : count);
+        if (minCount === 0) return true;
+
         const pool = this.getLegalTargetPool(state, sourceId, targetDef, controllerId, 0);
-        return pool.length > 0;
+        return pool.length >= minCount;
     }
 
     public static getLegalTargetPool(state: GameState, sourceId: string, targetDef: any, controllerId: string, targetIndex: number = 0): string[] {

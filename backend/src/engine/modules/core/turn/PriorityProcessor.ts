@@ -368,8 +368,8 @@ export class PriorityProcessor {
         const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
         const canPayAllExtras = additionalCosts.every(cost => {
           if (cost.type === 'Sacrifice') {
-            const candidates = state.battlefield.filter(o => 
-              o.controllerId === playerId && 
+            const candidates = state.battlefield.filter(o =>
+              o.controllerId === playerId &&
               TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId })
             );
             return candidates.length > 0;
@@ -514,7 +514,7 @@ export class PriorityProcessor {
 
     // Restriction Check
     if (!RestrictionValidator.canActivateAbility(state, playerId, ability, obj)) {
-        return false;
+      return false;
     }
     // Timing Check (Rule 602.1 / 606.3)
     const isPlaneswalker = obj.definition.types.some((t: string) => String(t).toLowerCase() === 'planeswalker');
@@ -534,7 +534,7 @@ export class PriorityProcessor {
           e.type === EffectType.AllowOutOfTurnActivation &&
           (e.targetIds?.includes(obj.id) || (e.targetMapping === TargetMapping.Self && e.sourceId === obj.id))
         );
-      
+
       if (!canActivateAnyTime && !timingOk) return false;
       if (obj.abilitiesUsedThisTurn > 0) return false;
     } else if (!timingOk) {
@@ -599,16 +599,23 @@ export class PriorityProcessor {
   public static findPermissionEffect(state: GameState, playerId: string, effectType: string, targetId: string): any {
     const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
 
-    return state.ruleRegistry.continuousEffects.find(e => {
+    const found = state.ruleRegistry.continuousEffects.find(e => {
       // 1. Basic Type/Owner check
       const eType = e.type as string;
-      const matchesType = eType === effectType || (effectType === EffectType.AllowPlayExiled && (e as any).canPlayExiled);
       const effectiveControllerId = (e as any).targetControllerId || e.controllerId;
-      if (!matchesType || effectiveControllerId !== playerId) return false;
+      
+      const matchesType = eType === effectType || (effectType === EffectType.AllowPlayExiled && (e as any).canPlayExiled);
+      
+      if (!matchesType) return false;
+      if (effectiveControllerId !== playerId) return false;
 
-      // 2. Active Zone check (Source must be in an active zone for the ability)
-      const source = TargetingProcessor.findObjectInAnyZone(state, e.sourceId);
-      if (!source || (e.activeZones && !e.activeZones.includes(source.zone))) return false;
+      // 2. Active Zone check (Static abilities only)
+      const isStatic = (e.duration?.type || "").toString().toUpperCase() === 'STATIC';
+      if (isStatic) {
+        const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
+        const source = TargetingProcessor.findObjectInAnyZone(state, e.sourceId);
+        if (!source || (e.activeZones && !e.activeZones.includes(source.zone))) return false;
+      }
 
       // 3. Condition check
       if (e.condition && !ConditionProcessor.matchesCondition(state, e.condition, {
@@ -617,10 +624,15 @@ export class PriorityProcessor {
       })) return false;
 
       // 4. Target check (Is this card the target of the permission?)
-      if (!LayerProcessor.isTarget(state, e, targetId)) return false;
+      const isTarget = LayerProcessor.isTarget(state, e, targetId);
+
+      if (!isTarget) return false;
 
       return true;
     });
+
+
+    return found;
   }
 
   /**

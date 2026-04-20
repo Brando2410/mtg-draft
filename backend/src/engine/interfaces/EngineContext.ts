@@ -74,16 +74,16 @@ export interface EngineContext {
     playCard(options: PlayCardOptions): boolean;
     activateAbility(options: ActivateAbilityOptions): boolean;
     tapForMana(pId: PlayerId, cId: string, aIdx?: number, cIdx?: number): boolean | void;
-    
+
     // Passing & Priority
     resetPriorityToActivePlayer(): void;
     checkAutoPass(pId: PlayerId): void;
     passPriority(pId: PlayerId, isAuto?: boolean): void;
-    
+
     // Phase / Step / Stack Control
     resolveTopOrAdvanceStep(): void;
     advanceStep(): void;
-    
+
     // State Based Actions
     checkStateBasedActions(): void;
 

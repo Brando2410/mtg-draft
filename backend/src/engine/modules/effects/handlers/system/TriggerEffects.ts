@@ -2,13 +2,13 @@ import { IEffectHandler } from "../../IEffectHandler";
 
 export const CreateDelayedTriggerHandler: IEffectHandler = {
     handle(state, effect, log, context) {
-        const { TriggerProcessor } = require("../../TriggerProcessor");
+        const { TriggerProcessor } = require("../../triggers/TriggerProcessor");
         const { sourceId, controllerId, targets } = context;
         
         // Support for capturing data from the current resolution (like MV of countered spell)
         const data = (effect as any).data || {};
         if ((effect as any).captureTargetMV) {
-          const { TargetingProcessor } = require("../actions/TargetingProcessor");
+          const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
           const targetId = targets[0];
           const targetObj =
             TargetingProcessor.findObjectInAnyZone(state, targetId) ||

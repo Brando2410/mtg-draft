@@ -7,7 +7,7 @@ export class TurnProcessor {
 
   public static getNextStep(state: GameState): { phase: Phase, step: Step, turnEnded: boolean } {
     let next = this.calculateNextStep(state.currentPhase, state.currentStep);
-    
+
     // Skip Combat logic moved to PriorityProcessor auto-pass for better UX
     // (We now always enter combat steps so triggers can fire)
 
@@ -15,7 +15,7 @@ export class TurnProcessor {
     if (next.step === Step.DeclareBlockers) {
       const defenderId = Object.keys(state.players).find(id => id !== state.activePlayerId);
       const attackerCount = (state.combat?.attackers || []).length;
-      
+
       if (attackerCount === 0) {
         // Arena-style skip: jumping directly to Main 2 if no combat intent
         next = { phase: Phase.PostCombatMain, step: Step.Main, turnEnded: false };
@@ -45,9 +45,9 @@ export class TurnProcessor {
       { phase: Phase.Ending, step: Step.End },
       { phase: Phase.Ending, step: Step.Cleanup }
     ];
-    
+
     const currentIndex = sequence.findIndex(s => s.phase === phase && s.step === step);
-    
+
     // Rule 500.2: If the turn ends, wrap around
     if (currentIndex === sequence.length - 1) {
       return { ...sequence[0], turnEnded: true };
@@ -58,7 +58,7 @@ export class TurnProcessor {
   public static hasPotentialAttackers(state: GameState, playerId: PlayerId): boolean {
     return state.battlefield.some(obj => {
       if (obj.controllerId !== playerId || obj.isTapped) return false;
-      
+
       const types = (obj.definition.types || []).map(t => t.toLowerCase());
       const typeLine = (obj.definition.type_line || '').toLowerCase();
       const isCreature = types.includes('creature') || typeLine.includes('creature') || (obj.definition.types || []).includes('Creature');
@@ -92,7 +92,7 @@ export class TurnProcessor {
       // Registry Restrictions
       const cannotBlock = state.ruleRegistry.restrictions.some(r => r.targetId === obj.id && (r.type === 'CannotBlock' || r.type === 'CannotBlockThisTurn'));
       if (cannotBlock) return false;
-      
+
       return true;
     });
   }
@@ -108,7 +108,7 @@ export class TurnProcessor {
 
     // 3. Skip First Strike Damage if no First Strike scorers (Rule 510.4)
     if (next.step === Step.FirstStrikeDamage) {
-      const { CombatProcessor } = require('../combat/CombatProcessor');
+      const { CombatProcessor } = require('../../combat/CombatProcessor');
       if (!CombatProcessor.hasFirstStrikeStep(state)) {
         next = { phase: Phase.Combat, step: Step.CombatDamage, turnEnded: false };
       }
@@ -125,6 +125,12 @@ export class TurnProcessor {
     state.currentPhase = next.phase;
     state.currentStep = next.step;
     state.consecutivePasses = 0;
+
+    // CR 500: Administrative steps don't give priority by default
+    if (state.currentStep === Step.Untap || state.currentStep === Step.Cleanup) {
+      state.priorityPlayerId = null;
+    }
+
     log(`[PHASE] >>> Entering ${state.currentPhase}: ${state.currentStep} <<<`);
 
     // CR 603.6: Phase/Step Transition Triggers
@@ -137,7 +143,7 @@ export class TurnProcessor {
       playerId: state.activePlayerId,
       data: { phase: state.currentPhase, step: state.currentStep }
     };
-    const { TriggerProcessor } = require('../../../effects/triggers/TriggerProcessor');
+    const { TriggerProcessor } = require('../../effects/triggers/TriggerProcessor');
     TriggerProcessor.onEvent(state, stepEvent, log);
     this.cleanupExpiredEffectsByEvent(state, stepEvent.type, log, state.activePlayerId);
 
@@ -151,9 +157,9 @@ export class TurnProcessor {
     TriggerProcessor.onEvent(state, phaseEvent, log);
     this.cleanupExpiredEffectsByEvent(state, phaseEvent.type, log, state.activePlayerId);
 
-    const { ManaProcessor } = require('../../../magic/ManaProcessor');
+    const { ManaProcessor } = require('../../magic/ManaProcessor');
     ManaProcessor.emptyAllManaPools(state);
-    
+
     this.handleStepEntryRules(state, engine, log);
 
     if (state.pendingAction) {
@@ -164,7 +170,6 @@ export class TurnProcessor {
 
     if (state.currentStep === Step.Untap || state.currentStep === Step.Cleanup) {
       log(`[FLOW] Auto-advancing from administrative step ${state.currentStep}`);
-      state.priorityPlayerId = null;
       this.advanceStep(state, engine, log);
     } else {
       engine.resetPriorityToActivePlayer();
@@ -176,26 +181,26 @@ export class TurnProcessor {
    */
   public static rotateActivePlayer(state: GameState, log: (m: string) => void) {
     const currentIndex = state.playerOrder.indexOf(state.activePlayerId);
-    
+
     // Extra turns logic
     const currentPlayer = state.players[state.activePlayerId];
     if (currentPlayer && currentPlayer.extraTurns > 0) {
-        currentPlayer.extraTurns--;
-        log(`[TURN] ${currentPlayer.name} takes an EXTRA turn! (${currentPlayer.extraTurns} remaining)`);
+      currentPlayer.extraTurns--;
+      log(`[TURN] ${currentPlayer.name} takes an EXTRA turn! (${currentPlayer.extraTurns} remaining)`);
     } else {
-        let nextIndex = (currentIndex + 1) % state.playerOrder.length;
-        let nextPlayerId = state.playerOrder[nextIndex];
-        let nextPlayer = state.players[nextPlayerId];
-        
-        while (nextPlayer && nextPlayer.turnsToSkip > 0) {
-            log(`[TURN] ${nextPlayer.name} SKIPS a turn! (${nextPlayer.turnsToSkip} remaining)`);
-            nextPlayer.turnsToSkip--;
-            nextIndex = (nextIndex + 1) % state.playerOrder.length;
-            nextPlayerId = state.playerOrder[nextIndex];
-            nextPlayer = state.players[nextPlayerId];
-        }
-        
-        state.activePlayerId = nextPlayerId;
+      let nextIndex = (currentIndex + 1) % state.playerOrder.length;
+      let nextPlayerId = state.playerOrder[nextIndex];
+      let nextPlayer = state.players[nextPlayerId];
+
+      while (nextPlayer && nextPlayer.turnsToSkip > 0) {
+        log(`[TURN] ${nextPlayer.name} SKIPS a turn! (${nextPlayer.turnsToSkip} remaining)`);
+        nextPlayer.turnsToSkip--;
+        nextIndex = (nextIndex + 1) % state.playerOrder.length;
+        nextPlayerId = state.playerOrder[nextIndex];
+        nextPlayer = state.players[nextPlayerId];
+      }
+
+      state.activePlayerId = nextPlayerId;
     }
 
     if (state.players[state.activePlayerId]) {
@@ -204,7 +209,7 @@ export class TurnProcessor {
 
     // CR 500: Reset turn-wide logic tracking
     for (const pId in state.players) {
-        state.players[pId].passUntilEndOfTurn = false;
+      state.players[pId].passUntilEndOfTurn = false;
     }
 
     // Rule 606.3: Reset activated ability usage
@@ -242,26 +247,26 @@ export class TurnProcessor {
     const { DurationType } = require('@shared/engine_types');
 
     if (state.currentStep === Step.Untap) {
-      const { RegistryProcessor } = require('./RegistryProcessor');
-      const { ActionProcessor } = require('../actions/ActionProcessor');
+      const { RegistryProcessor } = require('../RegistryProcessor');
+      const { ActionProcessor } = require('../../actions/ActionProcessor');
       state.battlefield.filter(c => c.controllerId === activeId).forEach(c => RegistryProcessor.registerAbilities(state, c));
       ActionProcessor.untapAll(state, activeId, log);
 
       // CR 611.2: Expire "Until Next Untap Step" effects
       state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
-          if (eff.duration?.type === DurationType.UntilYourNextTurn && eff.duration.untilTurnOfPlayerId === activeId) {
-              return false;
-          }
-          if (eff.duration?.type === DurationType.UntilNextUntapStep) {
-              const targets = (eff as any).targetIds || [];
-              const hasActiveTarget = targets.some((tid: string) => state.battlefield.find(o => o.id === tid)?.controllerId === activeId);
-              if (hasActiveTarget) return false;
-          }
-          return true;
+        if (eff.duration?.type === DurationType.UntilYourNextTurn && eff.duration.untilTurnOfPlayerId === activeId) {
+          return false;
+        }
+        if (eff.duration?.type === DurationType.UntilNextUntapStep) {
+          const targets = (eff as any).targetIds || [];
+          const hasActiveTarget = targets.some((tid: string) => state.battlefield.find(o => o.id === tid)?.controllerId === activeId);
+          if (hasActiveTarget) return false;
+        }
+        return true;
       });
     }
     else if (state.currentPhase === Phase.Combat) {
-      const { CombatProcessor } = require('../combat/CombatProcessor');
+      const { CombatProcessor } = require('../../combat/CombatProcessor');
       CombatProcessor.handleStepEntry(state, log);
     }
     else if (state.currentStep === Step.Draw) {
@@ -285,10 +290,10 @@ export class TurnProcessor {
       state.battlefield.forEach(obj => obj.damageMarked = 0);
 
       state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
-          if (eff.duration?.type === DurationType.UntilEndOfYourNextTurn && eff.duration.untilTurnOfPlayerId === activeId) {
-              if (eff.timestamp < state.turnState.turnStartTime) return false;
-          }
-          return eff.duration.type !== DurationType.UntilEndOfTurn;
+        if (eff.duration?.type === DurationType.UntilEndOfYourNextTurn && eff.duration.untilTurnOfPlayerId === activeId) {
+          if (eff.timestamp < state.turnState.turnStartTime) return false;
+        }
+        return eff.duration.type !== DurationType.UntilEndOfTurn;
       });
       state.ruleRegistry.triggeredAbilities = state.ruleRegistry.triggeredAbilities.filter(
         t => !t.duration || t.duration.type !== DurationType.UntilEndOfTurn
@@ -320,11 +325,11 @@ export class TurnProcessor {
   public static cleanupExpiredEffectsByEvent(state: GameState, eventType: string, log: (m: string) => void, activePlayerId?: PlayerId) {
     const { DurationType } = require('@shared/engine_types');
     const previousCount = state.ruleRegistry.continuousEffects.length;
-    
+
     state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
       if (eff.duration?.type === DurationType.UntilEvent && eff.duration.expiryEvent === eventType) {
         if (eff.duration.untilTurnOfPlayerId && eff.duration.untilTurnOfPlayerId !== activePlayerId) {
-            return true;
+          return true;
         }
         return false;
       }

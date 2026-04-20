@@ -24,7 +24,7 @@ export const GreatHalloftheBiblioplex: CardDefinition = {
             costs: [{ type: CostType.Tap, targetMapping: TargetMapping.Self }, { type: CostType.PayLife, amount: 1 }],
             effects: [{
                 type: EffectType.AddMana,
-                value: '{ANY}',
+                manaType: '{ANY}',
                 manaRestrictions: ['InstantOrSorcery']
             }]
         },

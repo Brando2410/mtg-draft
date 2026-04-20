@@ -38,10 +38,14 @@ export class ChoiceGenerator {
         config: CardChoiceConfig
     ) {
         const { playerId, sourceId, restrictions = [], onSelected, onNone } = config;
-        const { TargetingProcessor } = require('../actions/TargetingProcessor');
+        const { TargetingProcessor } = require('../actions/targeting/TargetingProcessor');
         
         let options = cards.map(c => {
-            const isMatch = TargetingProcessor.matchesRestrictions(state, c, restrictions, playerId, sourceId, undefined, config.stackObj);
+            const isMatch = TargetingProcessor.matchesRestrictions(state, c, restrictions, {
+                playerId,
+                sourceId,
+                stackObject: config.stackObj
+            } as any);
             
             return {
                 label: isMatch ? `Select ${c.definition.name}` : `[Invalid] ${c.definition.name}`,
@@ -214,7 +218,7 @@ export class ChoiceGenerator {
      * Build an interactive choice for a specific cost (e.g. TapSelection).
      */
     public static createCostInteractionChoice(state: GameState, cost: any, sourceId: string, playerId: PlayerId, choice: any, data: any): any {
-        const { TargetingProcessor } = require('../actions/TargetingProcessor');
+        const { TargetingProcessor } = require('../actions/targeting/TargetingProcessor');
         const { ActionType } = require('@shared/engine_types');
         
         let candidates: GameObject[] = [];
@@ -224,12 +228,12 @@ export class ChoiceGenerator {
             candidates = state.battlefield.filter(o => 
                 String(o.controllerId) === String(playerId) && 
                 !o.isTapped &&
-                (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, playerId, sourceId))
+                (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, { controllerId: playerId, sourceId }))
             );
             label = `Tap ${cost.amount || cost.value || 1} creatures`;
         } else if (cost.type === 'Discard') {
             candidates = state.players[playerId].hand.filter(c =>
-                !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, playerId, sourceId)
+                !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId })
             );
             label = `Discard ${cost.amount || cost.value || 1} cards`;
         } else if (cost.type === 'Exile') {
@@ -240,13 +244,13 @@ export class ChoiceGenerator {
             if (zones.includes('Battlefield')) pool.push(...state.battlefield.filter(o => String(o.controllerId) === String(playerId)));
 
             candidates = pool.filter(c =>
-                !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, playerId, sourceId)
+                !cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId })
             );
             label = `Exile ${cost.amount || cost.value || 1} cards`;
         } else if (cost.type === 'Sacrifice') {
             candidates = state.battlefield.filter(o =>
                 String(o.controllerId) === String(playerId) &&
-                (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, playerId, sourceId))
+                (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, { controllerId: playerId, sourceId }))
             );
             label = `Sacrifice ${cost.amount || cost.value || 1} permanents`;
         }

@@ -11,7 +11,8 @@ export const RalZarekGuestLecturer: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '+1' }],
+            id: "Surveil 2",
+            costs: [{ type: CostType.Loyalty, value: 1 }],
             effects: [
                 {
                     type: EffectType.Surveil,
@@ -22,7 +23,8 @@ export const RalZarekGuestLecturer: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '-1' }],
+            id: "Any number of target players each discard a card",
+            costs: [{ type: CostType.Loyalty, value: -1 }],
             targetDefinition: {
                 type: TargetType.Player,
                 count: SelectionType.AnyNumber
@@ -37,11 +39,12 @@ export const RalZarekGuestLecturer: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '-2' }],
+            id: "Return target creature card with mana value 3 or less from your graveyard to the battlefield",
+            costs: [{ type: CostType.Loyalty, value: -2 }],
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
-                restrictions: [Restriction.Creature, "mv <= 3"]
+                restrictions: [Restriction.Creature, "mv <= 3", Restriction.YouOwn]
             },
             effects: [
                 {
@@ -52,7 +55,8 @@ export const RalZarekGuestLecturer: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '-7' }],
+            id: "Flip five coins: Target opponent skips their next X turns, where X is the number of coins that came up heads",
+            costs: [{ type: CostType.Loyalty, value: -7 }],
             targetDefinition: {
                 type: TargetType.Opponent,
                 count: 1

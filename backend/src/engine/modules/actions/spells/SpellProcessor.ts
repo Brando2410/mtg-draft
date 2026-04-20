@@ -59,7 +59,7 @@ export class SpellProcessor {
         // --- ACTIVATED ABILITY REDIRECTION (Graveyard) ---
         // If the card is in the graveyard and we're trying to "play" it, check if it's actually an activated ability card
         if (cardToPlay.zone === Zone.Graveyard && (state.players[playerId].hand.find((c: any) => c.id === cardInstanceId) === undefined)) {
-            const { LayerProcessor } = require('../../../state/LayerProcessor');
+            const { LayerProcessor } = require('../../state/LayerProcessor');
             const stats = LayerProcessor.getEffectiveStats(cardToPlay, state);
             const hasFlashback = stats.keywords?.includes('Flashback') || cardToPlay.definition.keywords?.includes('Flashback');
 
@@ -145,25 +145,54 @@ export class SpellProcessor {
         }
 
         // Priority: Oracle -> Current Definition on Object (for virtual spells/MDFCs)
-        const targetDefinition = (logic as any)?.targetDefinition ||
+        const modalAbility = (logic as any)?.abilities?.find((a: any) => a.modes) || currentDefinition.abilities?.find((a: any) => a.modes);
+        const hasPreSelectedChoice = (state as any).lastChoiceIndex !== undefined;
+        const lastChosenModeIndex = (state as any).lastChosenModeIndex;
+        const hasPreSelectedMode = lastChosenModeIndex !== undefined;
+
+        // --- EXTRACT EFFECTIVE TARGETS/EFFECTS (Modally Aware) ---
+        let targetDefinition = (logic as any)?.targetDefinition ||
             (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition ||
             currentDefinition.targetDefinition ||
             currentDefinition.abilities?.find((a: any) => a.type === 'Spell')?.targetDefinition;
 
-        const spellEffects = (logic as any)?.effects ||
+        let spellEffects = (logic as any)?.effects ||
             (logic as any)?.abilities?.find((a: any) => a.type === 'Spell')?.effects ||
             currentDefinition.effects ||
             currentDefinition.abilities?.find((a: any) => a.type === 'Spell')?.effects || [];
 
+        if (hasPreSelectedMode && modalAbility?.modes) {
+            const indices = Array.isArray(lastChosenModeIndex) ? lastChosenModeIndex : [lastChosenModeIndex];
+            log(`[MODAL] Applying chosen modes: ${indices.join(', ')}`);
+
+            const combinedTargets: any[] = [];
+            const combinedEffects: any[] = [];
+
+            indices.forEach(idx => {
+                const mode = modalAbility.modes[idx];
+                if (!mode) return;
+
+                if (mode.targetDefinition) {
+                    if (Array.isArray(mode.targetDefinition)) combinedTargets.push(...mode.targetDefinition);
+                    else combinedTargets.push(mode.targetDefinition);
+                }
+
+                if (mode.effects) combinedEffects.push(...mode.effects);
+            });
+
+            if (combinedTargets.length > 0) targetDefinition = combinedTargets;
+            if (combinedEffects.length > 0) spellEffects = combinedEffects;
+        }
+
         const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices && !e.targetMapping);
-        const hasPreSelectedChoice = (state as any).lastChoiceIndex !== undefined;
 
         // Step 0.5: Check for X in cost or inherent logic
         const costStr = (currentDefinition.manaCost || '').split('//')[0].trim();
         // X-Value Selection
         const needsX = costStr.includes('{X}') ||
             (logic as any)?.abilities?.some((a: any) => a.costs?.some((c: any) => c.value === 'X')) ||
-            (logic as any)?.effects?.some((e: any) => JSON.stringify(e).includes('"X"'));
+            (logic as any)?.effects?.some((e: any) => JSON.stringify(e).includes('"X"')) ||
+            (hasPreSelectedMode && JSON.stringify(modalAbility.modes[lastChosenModeIndex]).includes('"X"'));
 
         if (needsX && cardToPlay.xValue === undefined) {
             return SpellInteractiveManager.handleXValueChoice(state, playerId, cardToPlay, declaredTargets, log);
@@ -184,6 +213,40 @@ export class SpellProcessor {
 
         // Step 1.5: Check Additional Costs (e.g. Goremand's sacrifice)
         if (SpellInteractiveManager.handleInteractiveCosts(state, playerId, cardToPlay, additionalCosts, declaredTargets, cardInstanceId, log)) {
+            return true;
+        }
+
+        // Step 1.7: Check Mode Selection (Charms/Comands)
+        if (modalAbility && !hasPreSelectedMode) {
+            const { TargetingProcessor } = require('../targeting/TargetingProcessor');
+            const choices = modalAbility.modes.map((mode: any, idx: number) => {
+                const isSelectable = !mode.targetDefinition ||
+                    mode.targetDefinition.optional ||
+                    TargetingProcessor.hasLegalTargets(state, cardToPlay.id, mode.targetDefinition, playerId);
+
+                return {
+                    label: mode.label || `Mode ${idx + 1}`,
+                    value: `MODE_SELECTION_${idx}`,
+                    selectable: isSelectable
+                };
+            });
+
+            const { ActionType } = require('@shared/engine_types');
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: cardToPlay.id,
+                data: {
+                    label: modalAbility.label || 'Choose options',
+                    choices: choices,
+                    minChoices: modalAbility.minChoices || 1,
+                    maxChoices: modalAbility.maxChoices || 1,
+                    isSpellCasting: true,
+                    isModeSelection: true,
+                    declaredTargets: declaredTargets || []
+                }
+            };
+            log(`[MODAL] Selecting mode for ${cardToPlay.definition.name}...`);
             return true;
         }
 
@@ -308,7 +371,7 @@ export class SpellProcessor {
         const player = state.players[playerId];
         const { ActionProcessor } = require('../ActionProcessor');
         const { TargetingProcessor } = require('../targeting/TargetingProcessor');
-        const { TriggerProcessor } = require('../../../effects/triggers/TriggerProcessor');
+        const { TriggerProcessor } = require('../../effects/triggers/TriggerProcessor');
         const { AbilityType, Zone, CostType } = require('@shared/engine_types');
 
         // Modal Choice check (modes like "Choose one")
@@ -430,13 +493,14 @@ export class SpellProcessor {
         delete (state as any).lastChosenDiscardId;
         delete (state as any).lastChosenExileIds;
         delete (state as any).lastChosenCostChoiceIndex;
+        delete (state as any).lastChosenModeIndex;
 
         // Move to Stack
         const lastZone = cardToPlay.zone;
         if (!(cardToPlay as any).isPreparedCopy) {
             ActionProcessor.moveCard(state, cardToPlay, Zone.Stack, playerId, log);
         } else {
-            const { RegistryProcessor } = require('../../../core/RegistryProcessor');
+            const { RegistryProcessor } = require('../../core/RegistryProcessor');
             cardToPlay.zone = Zone.Stack;
             cardToPlay.lastNonStackZone = lastZone;
             RegistryProcessor.registerAbilities(state, cardToPlay);
@@ -536,7 +600,7 @@ export class SpellProcessor {
     ): boolean {
         const { playerId, obj, ability, abilityIndex, declaredTargets, preSelectedChoice } = options;
         const { AbilityType } = require('@shared/engine_types');
-        const { TriggerProcessor } = require('../../../effects/triggers/TriggerProcessor');
+        const { TriggerProcessor } = require('../../effects/triggers/TriggerProcessor');
         const playerObj = state.players[playerId];
 
         const stackId = `ability_${Date.now()}`;
@@ -588,9 +652,16 @@ export class SpellProcessor {
         }
 
         if (ability.isManaAbility) {
-            const { EffectProcessor } = require('../../../effects/EffectProcessor');
+            const { EffectProcessor } = require('../../effects/EffectProcessor');
             (ability as any).effects.forEach((eff: any) => {
-                EffectProcessor.executeEffect(state, eff, obj.id, [], (m: string) => log(m), stackObj, null);
+                EffectProcessor.executeEffect({
+                    state,
+                    effect: eff,
+                    sourceId: obj.id,
+                    validTargetIds: [],
+                    log: (m: string) => log(m),
+                    stackObject: stackObj as any
+                });
             });
             log(`Activated mana ability of ${obj.definition.name}`);
             return true;

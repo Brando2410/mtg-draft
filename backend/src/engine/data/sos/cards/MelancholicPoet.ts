@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const MelancholicPoet: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+export const MelancholicPoet: CardDefinition = {
     name: "Melancholic Poet",
     manaCost: "{1}{B}",
     scryfall_id: "d8309815-7035-47a5-acf2-2b2ac1e65037",
@@ -21,7 +21,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: 'REPARTEE_TRIGGER',
+            condition: ConditionType.ReparteeTrigger,
             effects: [
                 {
                     type: EffectType.LoseLife,
@@ -39,4 +39,4 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     power: "2",
     toughness: "2"
 };
-    
+

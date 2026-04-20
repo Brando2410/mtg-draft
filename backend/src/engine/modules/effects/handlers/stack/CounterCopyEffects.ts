@@ -30,7 +30,7 @@ export const CounterAbilityHandler: IEffectHandler = {
 export const CopySpellHandler: IEffectHandler = {
     handle(state, effect, log, context) {
         const { targets, controllerId, stackObject } = context;
-        const { TriggerProcessor } = require("../../TriggerProcessor");
+        const { TriggerProcessor } = require("../../triggers/TriggerProcessor");
         const { ActionType, GameObject } = require("@shared/engine_types");
 
         targets.forEach((tid: string) => {
@@ -96,7 +96,7 @@ export const CopySpellHandler: IEffectHandler = {
             if (effect.chooseNewTargets && copy.targets && copy.targets.length > 0) {
                 const targetDef = copy.data?.targetDefinition || copy.targetDefinition;
                 if (targetDef) {
-                    const { TargetingProcessor } = require("../../../actions/TargetingProcessor");
+                    const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
                     const pool = [
                         ...Object.keys(state.players),
                         ...state.battlefield.map((o: any) => o.id),
@@ -152,7 +152,7 @@ export const CopyAbilityHandler: IEffectHandler = {
             if (effect.chooseNewTargets && copy.targets && copy.targets.length > 0) {
                 const targetDef = copy.data?.targetDefinition || copy.targetDefinition;
                 if (targetDef) {
-                    const { TargetingProcessor } = require("../../../actions/TargetingProcessor");
+                    const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
                     const pool = [
                         ...Object.keys(state.players),
                         ...state.battlefield.map((o: any) => o.id)

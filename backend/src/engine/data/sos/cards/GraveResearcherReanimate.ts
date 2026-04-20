@@ -16,7 +16,7 @@ export const GraveResearcherReanimate: CardDefinition = {
         "Troll",
         "Warlock"
     ],
-    keywords: ["Surveil", "Prepared"],
+    keywords: ["Prepared"],
     oracleText: "At the beginning of your upkeep, surveil 1. Then if there are three or more creature cards in your graveyard, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "3",
     toughness: "3",
@@ -42,7 +42,7 @@ export const GraveResearcherReanimate: CardDefinition = {
     ],
     preparedFace: {
         name: "Reanimate",
-        image_url: "https://cards.scryfall.io/png/front/3/6/368b6903-5fc4-43e7-bd44-46b8107c8bb4.png?1738000013",
+        image_url: "https://cards.scryfall.io/normal/front/3/6/368b6903-5fc4-43e7-bd44-46b8107c8bb4.png?1738000013",
         manaCost: "{B}",
         colors: ["B"],
         types: ["Sorcery"],

@@ -143,7 +143,7 @@ const SubZone = memo(({
                     />
                     {allBattlefieldCards.filter(a => (a as any).attachedTo === obj.id).map((aura, i) => (
                         <div 
-                            key={aura.id} 
+                            key={aura.id || `aura-${i}`} 
                             className="absolute -top-4 -right-2 z-10 hover:z-50 hover:scale-150 transition-all cursor-pointer"
                             style={{ transform: `translateX(${i * 10}px)` }}
                             onClick={(e) => { e.stopPropagation(); onTapCard?.(aura.id); }}
@@ -183,9 +183,9 @@ const SubZone = memo(({
     <div className={`flex flex-col h-full w-full relative ${align === 'start' ? 'items-start' : align === 'end' ? 'items-end' : 'items-center'} justify-center select-none`} style={zoneStyle}>
       <div className={`flex ${isWrapped ? 'flex-wrap' : 'flex-nowrap'} gap-y-2 ${align === 'start' ? 'justify-start' : align === 'end' ? 'justify-end' : 'justify-center'} items-center h-full max-h-full w-full px-[2.5vh] py-0 overflow-visible`}>
         <AnimatePresence>
-          {content.map((item: any) => (
+          {content.map((item: any, idx: number) => (
              <div 
-                key={item.id} 
+                key={item.id || `battle-item-${idx}`} 
                 className={`relative group/card-container flex items-center justify-center min-w-0 flex-none max-h-[var(--card-h)] transition-[z-index] duration-0
                     ${item.isSelected ? 'z-[500]' : 'z-10'}`} 
                 style={{ 
@@ -299,7 +299,7 @@ export const Battlefield = ({
   }, [battlefield, me?.id, opponent?.id, combatants, combat]);
 
   return (
-    <div className="flex-1 relative flex flex-col bg-transparent overflow-hidden">
+    <div className="flex-1 relative flex flex-col bg-transparent">
       
       {/* MODALS */}
       <ChoiceModal 
@@ -317,7 +317,7 @@ export const Battlefield = ({
 
 
       <div 
-        className="flex-1 flex flex-col relative overflow-hidden" 
+        className="flex-1 flex flex-col relative" 
         id="battlefield-center"
         onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
       >
@@ -460,9 +460,9 @@ export const Battlefield = ({
         </div>
 
         {/* STACK OVERLAY */}
-        <div className="absolute right-10 top-1/2 -translate-y-1/2 z-50">
+        <div className="absolute right-10 top-1/2 -translate-y-1/2 z-50 overflow-visible">
             <StackView 
-                stack={stack} pendingAction={pendingAction} me={me} exile={exile} battlefield={battlefield}
+                stack={stack} pendingAction={pendingAction} me={me} opponent={opponent} exile={exile} battlefield={battlefield}
                 onTapCard={onTapCard} targetableIds={targetableIds}
                 onHoverStart={onHoverStart} onHoverEnd={onHoverEnd}
             />

@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const JoinedResearchersSecretRendezvous: CardDefinition = {
     name: "Joined Researchers // Secret Rendezvous",
@@ -18,7 +18,7 @@ export const JoinedResearchersSecretRendezvous: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: 'OPPONENT_HAS_MORE_CARDS_IN_HAND',
+            condition: ConditionType.OpponentHasMoreCardsInHand,
             effects: [
                 {
                     type: EffectType.Prepare,

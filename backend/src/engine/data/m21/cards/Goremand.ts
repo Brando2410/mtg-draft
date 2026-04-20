@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const Goremand: CardDefinition = {
     name: "Goremand",

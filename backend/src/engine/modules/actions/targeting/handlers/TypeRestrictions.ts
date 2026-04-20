@@ -60,7 +60,19 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return types.includes('instant') || types.includes('sorcery');
         }
     },
+    "INSTANT_OR_SORCERY": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            return types.includes('instant') || types.includes('sorcery');
+        }
+    },
     "CREATUREORPLANESWALKER": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            return types.includes('creature') || types.includes('planeswalker');
+        }
+    },
+    "CREATURE_OR_PLANESWALKER": {
         matches(state, targetObj: any) {
             const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
             return types.includes('creature') || types.includes('planeswalker');
@@ -72,11 +84,53 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return types.includes('creature') || types.includes('land');
         }
     },
+    "CREATURE_OR_LAND": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            return types.includes('creature') || types.includes('land');
+        }
+    },
     "ARTIFACTORENCHANTMENT": {
         matches(state, targetObj: any) {
             const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
             return types.includes('artifact') || types.includes('enchantment');
         }
+    },
+    "ARTIFACT_OR_ENCHANTMENT": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            return types.includes('artifact') || types.includes('enchantment');
+        }
+    },
+    "CARD_IN_GRAVEYARD": {
+        matches(state, targetObj: any) {
+            return targetObj.zone === Zone.Graveyard;
+        }
+    },
+    "CARD_IN_EXILE": {
+        matches(state, targetObj: any) {
+            return targetObj.zone === Zone.Exile;
+        }
+    },
+    "CARD_IN_HAND": {
+        matches(state, targetObj: any) {
+            return targetObj.zone === Zone.Hand;
+        }
+    },
+    "NON_LAND_PERMANENT": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            return !types.includes('land') && ['artifact', 'creature', 'enchantment', 'planeswalker'].some(t => types.includes(t));
+        }
+    },
+    "ANY": {
+        matches() { return true; }
+    },
+    "ANYTARGET": {
+        matches() { return true; }
+    },
+    "ANY_TARGET": {
+        matches() { return true; }
     }
 };
 
@@ -96,10 +150,8 @@ baseTypes.forEach(type => {
 
     // Negative check (e.g., NONCREATURE)
     TypeRestrictions[`NON${upperType}`] = {
-        matches(state, targetObj: any) {
-            return !TypeRestrictions[upperType].matches(state, targetObj, "", {} as any);
+        matches(state, targetObj: any, r, context) {
+            return !TypeRestrictions[upperType].matches(state, targetObj, "", context);
         }
     };
 });
-
-

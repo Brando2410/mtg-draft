@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 export const GraduationDay: CardDefinition = {
     name: "Graduation Day",
     manaCost: "{1}{G}",
@@ -18,7 +18,7 @@ export const GraduationDay: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: 'REPARTEE_TRIGGER',
+            condition: ConditionType.ReparteeTrigger,
             targetDefinition: {
                 type: TargetType.AnyTarget,
                 count: 1,

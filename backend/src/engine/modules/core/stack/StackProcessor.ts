@@ -12,30 +12,30 @@ export class StackProcessor {
     // Priority 1: Effects already stored in stack object data during casting/activation
     let effects: EffectDefinition[] = objectToResolve.data?.effects || [];
     if (effects.length === 0) {
-        const { oracle } = require('../../OracleLogicMap');
-        const logic = oracle.getCard(objectToResolve.definition?.name || objectToResolve.card?.definition?.name || "");
+      const { oracle } = require('../../../OracleLogicMap');
+      const logic = oracle.getCard(objectToResolve.definition?.name || objectToResolve.card?.definition?.name || "");
 
-        if (objectToResolve.type === AbilityType.Spell) {
-          // Priority: Oracle Logic -> Definition Abilities -> Definition Effects
-          const spellAbility = logic?.abilities?.find((a: any) => a.type === AbilityType.Spell) || 
-                             objectToResolve.definition?.abilities?.find((a: any) => a.type === AbilityType.Spell);
-          effects = logic?.effects || (spellAbility as any)?.effects || [];
-        } 
-        else if (objectToResolve.type === AbilityType.Activated) {
-            const sourceObj = state.battlefield.find(o => o.id === objectToResolve.sourceId) || 
-                             (Object.values(state.players)).flatMap(p => p.graveyard).find(o => o.id === objectToResolve.sourceId);
-            
-            if (sourceObj) {
-              const cardLogic = oracle.getCard(sourceObj.definition.name);
-              const ability = cardLogic?.abilities?.[objectToResolve.abilityIndex ?? -1] || 
-                             sourceObj.definition.abilities?.[objectToResolve.abilityIndex ?? -1];
-              if (ability) {
-                  effects = ability.effects || [];
-              }
-            }
+      if (objectToResolve.type === AbilityType.Spell) {
+        // Priority: Oracle Logic -> Definition Abilities -> Definition Effects
+        const spellAbility = logic?.abilities?.find((a: any) => a.type === AbilityType.Spell) ||
+          objectToResolve.definition?.abilities?.find((a: any) => a.type === AbilityType.Spell);
+        effects = logic?.effects || (spellAbility as any)?.effects || [];
+      }
+      else if (objectToResolve.type === AbilityType.Activated) {
+        const sourceObj = state.battlefield.find(o => o.id === objectToResolve.sourceId) ||
+          (Object.values(state.players)).flatMap(p => p.graveyard).find(o => o.id === objectToResolve.sourceId);
+
+        if (sourceObj) {
+          const cardLogic = oracle.getCard(sourceObj.definition.name);
+          const ability = cardLogic?.abilities?.[objectToResolve.abilityIndex ?? -1] ||
+            sourceObj.definition.abilities?.[objectToResolve.abilityIndex ?? -1];
+          if (ability) {
+            effects = ability.effects || [];
+          }
         }
+      }
     }
-    
+
     return effects;
   }
 
@@ -43,16 +43,16 @@ export class StackProcessor {
    * Cleans up the stack and removes objects that are no longer valid.
    */
   public static cleanStack(state: GameState) {
-      // rule 608.2b re-check could happen here
+    // rule 608.2b re-check could happen here
   }
 
   /**
    * Resolves the top object of the stack or advances the turn step if empty (Rule 117.4)
    */
   public static resolveTopOrAdvanceStep(
-    state: GameState, 
-    engine: import('../../../interfaces/EngineContext').EngineContext, 
-    resolver: import('./StackResolver').StackResolver, 
+    state: GameState,
+    engine: import('../../../interfaces/EngineContext').EngineContext,
+    resolver: import('./StackResolver').StackResolver,
     log: (m: string) => void
   ) {
     if (state.stack.length > 0) {
@@ -72,7 +72,7 @@ export class StackProcessor {
           const { EffectProcessor } = require('../../effects/EffectProcessor');
           EffectProcessor.troubleshoot(state, objectToResolve.sourceId);
         }
-        
+
         const effects = StackProcessor.getEffectsForResolution(state, objectToResolve);
         const startIndex = (objectToResolve as any).data?.nextEffectIndex || 0;
         const completed = resolver.resolveObject(objectToResolve, effects, startIndex);
