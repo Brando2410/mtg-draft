@@ -7,9 +7,7 @@ export const ChromaticOrrery: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/3/a/3af78d76-ad5c-44ba-880d-b834bcde5398.jpg?1594737470",
     oracleText: "You may spend mana as though it were mana of any color.\n{T}: Add {C}{C}{C}{C}{C}.\n{5}, {T}: Draw a card for each color among permanents you control.",
     colors: [],
-    supertypes: [],
     types: ["Artifact"],
-    subtypes: [],
     abilities: [
         {
             type: AbilityType.Static,
@@ -43,7 +41,6 @@ export const ChromaticOrrery: CardDefinition = {
             effects: [
                 {
                     type: EffectType.DrawCards,
-                    // Functional counting for colors among permanents you control
                     amount: (state: any, source: any) => {
                         const colors = new Set<string>();
                         state.battlefield.filter((o: any) => o.controllerId === source.controllerId).forEach((o: any) => {
@@ -57,4 +54,3 @@ export const ChromaticOrrery: CardDefinition = {
         }
     ]
 };
-

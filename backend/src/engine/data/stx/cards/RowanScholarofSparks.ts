@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const RowanScholarofSparks: CardDefinition = {
     name: "Rowan, Scholar of Sparks",
@@ -22,7 +22,7 @@ export const RowanScholarofSparks: CardDefinition = {
             abilities: [
                 {
                     type: AbilityType.Static,
-                    effects: [{ type: EffectType.CostReduction, amount: '{1}', restrictions: ['instant_or_sorcery'] }]
+                    effects: [{ type: EffectType.CostReduction, amount: '{1}', restrictions: [Restriction.InstantOrSorcery] }]
                 },
                 {
                     type: AbilityType.Activated,
@@ -72,7 +72,7 @@ export const RowanScholarofSparks: CardDefinition = {
             abilities: [
                 {
                     type: AbilityType.Static,
-                    effects: [{ type: EffectType.CostReduction, amount: '{1}', restrictions: ['instant_or_sorcery'] }]
+                    effects: [{ type: EffectType.CostReduction, amount: '{1}', restrictions: [Restriction.InstantOrSorcery] }]
                 },
                 {
                     type: AbilityType.Activated,
@@ -97,15 +97,22 @@ export const RowanScholarofSparks: CardDefinition = {
                 {
                     type: AbilityType.Activated,
                     costs: [{ type: CostType.Loyalty, value: '-7' }],
-                    targetDefinition: { count: 5, minCount: 0, type: TargetType.CardInGraveyard, restrictions: ['instant_or_sorcery'] },
+                    targetDefinition: {
+                        count: 5,
+                        minCount: 0,
+                        type: TargetType.CardInGraveyard,
+                        restrictions: [Restriction.InstantOrSorcery]
+                    },
                     effects: [
                         { type: EffectType.Exile, targetMapping: TargetMapping.TargetAll },
-                        { type: EffectType.CastSpell, targetMapping: TargetMapping.TargetAll, isFreeCast: true }
+                        {
+                            type: EffectType.CastSpell,
+                            targetMapping: TargetMapping.TargetAll,
+                            isFreeCast: true
+                        }
                     ]
                 }
             ]
         }
     ]
 };
-
-

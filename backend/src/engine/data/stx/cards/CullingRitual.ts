@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
 
 export const CullingRitual: CardDefinition = {
         name: "Culling Ritual",
@@ -14,7 +14,7 @@ export const CullingRitual: CardDefinition = {
                 {
                     type: EffectType.Destroy,
                     targetMapping: TargetMapping.AllMatchingPermanents,
-                    restrictions: ["nonland", "mv <= 2"]
+                    restrictions: [Restriction.NonLand, Restriction.ManaValue2OrLess]
                 },
                 {
                     type: EffectType.Choice,
@@ -24,4 +24,3 @@ export const CullingRitual: CardDefinition = {
             ]
         }]
     };
-

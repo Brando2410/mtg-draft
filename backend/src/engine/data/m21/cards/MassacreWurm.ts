@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const MassacreWurm: CardDefinition = {
     name: "Massacre Wurm",
@@ -21,16 +21,13 @@ export const MassacreWurm: CardDefinition = {
                 powerModifier: -2,
                 toughnessModifier: -2,
                 targetMapping: TargetMapping.AllMatchingPermanents,
-                restrictions: [
-                    { type: 'Type', value: 'Creature' },
-                    { type: 'Control', value: 'OpponentControl' }
-                ]
+                restrictions: [Restriction.Creature, Restriction.OpponentControl]
             }]
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.DeathOther,
-            condition: 'EVENT_OBJECT_MATCHES:creature,opponentcontrol',
+            eventMatch: TriggerEvent.Death,
+            condition: 'EVENT_OBJECT_MATCHES_CREATURE_OPPONENT_CONTROL',
             effects: [{
                 type: EffectType.LoseLife,
                 amount: 2,

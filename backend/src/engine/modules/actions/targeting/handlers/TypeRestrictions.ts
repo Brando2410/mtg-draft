@@ -1,38 +1,7 @@
-import { GameState, GameObject, TargetingContext, Zone } from "@shared/engine_types";
+import { Zone } from "@shared/engine_types";
 import { IRestrictionHandler } from "../IRestrictionHandler";
-import { LayerProcessor } from "../../../state/LayerProcessor";
 
 export const TypeRestrictions: Record<string, IRestrictionHandler> = {
-    "NONLAND": {
-        matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return !types.includes("land");
-        }
-    },
-    "NONCREATURE": {
-        matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return !types.includes("creature");
-        }
-    },
-    "NONARTIFACT": {
-        matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return !types.includes("artifact");
-        }
-    },
-    "NONENCHANTMENT": {
-        matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return !types.includes("enchantment");
-        }
-    },
-    "NONPLANESWALKER": {
-        matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return !types.includes("planeswalker");
-        }
-    },
     "TOKEN": {
         matches(state, targetObj: any) {
             return !!targetObj.isToken;
@@ -55,6 +24,12 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return types.includes("basic");
         }
     },
+    "NONBASIC": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.supertypes || []).map((t: string) => t.toLowerCase());
+            return !types.includes("basic");
+        }
+    },
     "PERMANENT": {
         matches(state, targetObj: any) {
             const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
@@ -72,17 +47,59 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             const type = (targetObj as any).type || '';
             return type.includes('Ability');
         }
+    },
+    "ARTIFACTORCREATURE": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            return types.includes('artifact') || types.includes('creature');
+        }
+    },
+    "INSTANTORSORCERY": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            return types.includes('instant') || types.includes('sorcery');
+        }
+    },
+    "CREATUREORPLANESWALKER": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            return types.includes('creature') || types.includes('planeswalker');
+        }
+    },
+    "CREATUREORLAND": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            return types.includes('creature') || types.includes('land');
+        }
+    },
+    "ARTIFACTORENCHANTMENT": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            return types.includes('artifact') || types.includes('enchantment');
+        }
     }
 };
 
-// Common base types mapper
+// Common base types mapper (Positive and Negative)
 const baseTypes = ['creature', 'planeswalker', 'land', 'artifact', 'enchantment', 'instant', 'sorcery', 'player'];
+
 baseTypes.forEach(type => {
-    TypeRestrictions[type.toUpperCase()] = {
+    const upperType = type.toUpperCase();
+    
+    // Positive check (e.g., CREATURE)
+    TypeRestrictions[upperType] = {
         matches(state, targetObj: any) {
             const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
             return types.includes(type) || (type === 'player' && !!state.players[targetObj.id]);
         }
     };
+
+    // Negative check (e.g., NONCREATURE)
+    TypeRestrictions[`NON${upperType}`] = {
+        matches(state, targetObj: any) {
+            return !TypeRestrictions[upperType].matches(state, targetObj, "", {} as any);
+        }
+    };
 });
+
 

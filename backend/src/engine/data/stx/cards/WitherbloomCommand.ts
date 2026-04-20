@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const WitherbloomCommand: CardDefinition = {
     name: 'Witherbloom Command',
@@ -26,17 +26,17 @@ export const WitherbloomCommand: CardDefinition = {
                         {
                             type: EffectType.LookAtTopAndPick,
                             fromZone: Zone.Graveyard,
-                            restrictions: ['land'],
+                            restrictions: [Restriction.Land],
                             zone: Zone.Hand
                         }
                     ]
                 },
                 {
-                    label: 'Destroy permanent (MV <= 2)',
+                    label: 'Destroy permanent with mana value 2 or less',
                     targetDefinition: {
                         count: 1,
                         type: TargetType.Permanent,
-                        restrictions: ['noncreature', 'nonland', 'mv <= 2']
+                        restrictions: [Restriction.NonCreature, Restriction.NonLand, Restriction.ManaValue2OrLess]
                     },
                     effects: [{
                         type: EffectType.Destroy,
@@ -55,7 +55,7 @@ export const WitherbloomCommand: CardDefinition = {
                     }]
                 },
                 {
-                    label: 'Opponent loses 2, you gain 2',
+                    label: 'Target opponent loses 2, you gain 2',
                     targetDefinition: { count: 1, type: TargetType.Opponent },
                     effects: [{
                         type: EffectType.LoseLife,
@@ -71,4 +71,3 @@ export const WitherbloomCommand: CardDefinition = {
         }]
     }]
 };
-

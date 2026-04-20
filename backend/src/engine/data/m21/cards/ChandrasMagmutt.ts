@@ -1,6 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
-
 export const ChandrasMagmutt: CardDefinition = {
     name: "Chandra's Magmutt",
     manaCost: "{1}{R}",
@@ -16,13 +15,10 @@ export const ChandrasMagmutt: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Tap }],
-
             targetDefinition: {
                 type: TargetType.PlayerOrPlaneswalker,
-                count: 1,
+                count: 1
             },
-
-
             effects: [{
                 type: EffectType.DealDamage,
                 amount: 1,
@@ -31,4 +27,3 @@ export const ChandrasMagmutt: CardDefinition = {
         }
     ]
 };
-

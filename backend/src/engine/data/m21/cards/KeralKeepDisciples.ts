@@ -15,7 +15,7 @@ export const KeralKeepDisciples: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.ActivateLoyalty,
-            condition: 'EVENT_PLAYER_IS_YOU && EVENT_OBJECT_MATCHES:planeswalker,chandra',
+            condition: 'PLAYER_IS_YOU && OBJECT_IS_CHANDRA',
             effects: [
                 {
                     type: EffectType.DealDamage,
@@ -26,5 +26,3 @@ export const KeralKeepDisciples: CardDefinition = {
         }
     ]
 };
-
-

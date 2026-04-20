@@ -1,17 +1,12 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, ConditionType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+
 export const TesteroftheTangential: CardDefinition = {
     name: "Tester of the Tangential",
     manaCost: "{1}{U}",
-    colors: [
-        "U"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Djinn",
-        "Wizard"
-    ],
+    scryfall_id: "71f760e9-b541-477a-b911-45186b520ae1", // placeholder
+    colors: ["U"],
+    types: ["Creature"],
+    subtypes: ["Djinn", "Wizard"],
     power: "1",
     toughness: "1",
     keywords: ["Increment"],
@@ -20,10 +15,10 @@ export const TesteroftheTangential: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.BeginningOfCombatStep,
-            condition: ConditionType.PlayerIsController,
+            condition: ConditionType.IsYourTurn,
             effects: [
                 {
-                    type: CostType.Choice,
+                    type: EffectType.Choice,
                     label: "Pay {X} to move +1/+1 counters?",
                     choices: [
                         {
@@ -36,11 +31,11 @@ export const TesteroftheTangential: CardDefinition = {
                             ],
                             effects: [
                                 {
-                                    type: CostType.Choice,
+                                    type: EffectType.Choice,
                                     label: "Choose target creature to receive counters",
                                     targetDefinition: {
                                         type: TargetType.Creature,
-                                        restrictions: ["another"],
+                                        restrictions: [Restriction.Other],
                                         count: 1
                                     },
                                     effects: [

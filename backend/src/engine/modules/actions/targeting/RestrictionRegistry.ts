@@ -9,12 +9,6 @@ export const RestrictionRegistry: Record<string, IRestrictionHandler> = {
     ...StateRestrictions,
     ...NumericRestrictions,
     ...SpecializedRestrictions,
-    
-    "NON-LAND": TypeRestrictions["NONLAND"],
-    "NON-CREATURE": TypeRestrictions["NONCREATURE"],
-    "NON-ARTIFACT": TypeRestrictions["NONARTIFACT"],
-    "NON-ENCHANTMENT": TypeRestrictions["NONENCHANTMENT"],
-    "NON-PLANESWALKER": TypeRestrictions["NONPLANESWALKER"],
 };
 
 /**

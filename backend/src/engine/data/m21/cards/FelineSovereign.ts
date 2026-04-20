@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const FelineSovereign: CardDefinition = {
     name: "Feline Sovereign",
@@ -19,40 +19,19 @@ export const FelineSovereign: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 1,
                     toughnessModifier: 1,
-                    targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                    restrictions: [
-                        { type: 'Identity', value: 'Other' },
-                        { type: 'Type', value: 'Cat' }
-                    ],
-                    layer: 7
-                },
-                {
-                    type: EffectType.ApplyContinuousEffect,
-                    abilitiesToAdd: ['Protection from Dogs'],
-                    targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                    restrictions: [
-                        { type: 'Identity', value: 'Other' },
-                        { type: 'Type', value: 'Cat' }
-                    ],
-                    layer: 6
+                    restrictions: [Restriction.Other, Restriction.Cat, Restriction.YouControl],
+                    targetMapping: TargetMapping.AllMatchingPermanents
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.DamageDealtToPlayer,
-            condition: (state: any, event: any, source: any) => {
-                if (!event.data?.isCombat) return false;
-                const attacker = state.battlefield.find((o: any) => o.id === event.sourceId);
-                return attacker && attacker.controllerId === source.controllerId && attacker.definition.subtypes.some((s: any) => s.toLowerCase() === 'cat');
-            },
+            eventMatch: TriggerEvent.CombatDamagePlayer,
+            condition: 'SOURCE_IS_CAT_YOU_CONTROL',
             targetDefinition: {
                 type: TargetType.ArtifactOrEnchantment,
                 count: 1,
-                optional: true,
-                restrictions: [
-                    { type: 'Control', value: 'Opponent' }
-                ]
+                minCount: 0,
             },
             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
         }

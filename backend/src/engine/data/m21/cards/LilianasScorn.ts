@@ -1,38 +1,32 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const LilianasScorn: CardDefinition = {
     name: "Liliana's Scorn",
-    manaCost: "{3}{B}{B}",
-    scryfall_id: "b231f941-4acb-46f2-81ae-16e5a28e65af",
-    image_url: "https://cards.scryfall.io/normal/front/b/2/b231f941-4acb-46f2-81ae-16e5a28e65af.jpg?1596250190",
+    manaCost: "{2}{B}{B}",
+    scryfall_id: "0d0f4133-c284-486a-8451-24af1e93895e",
+    image_url: "https://cards.scryfall.io/normal/front/0/d/0d0f4133-c284-486a-8451-24af1e93895e.jpg?1596250212",
     oracleText: "Destroy target creature. You may search your library and/or graveyard for a card named Liliana, Death Mage, reveal it, and put it into your hand. If you search your library this way, shuffle.",
     colors: ["B"],
     types: ["Sorcery"],
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
-                type: TargetType.Creature,
-                count: 1
-            },
+            targetDefinition: { type: TargetType.Creature, count: 1 },
             effects: [
-                {
-                    type: EffectType.Destroy,
-                    targetMapping: TargetMapping.Target1
-                },
+                { type: EffectType.Destroy, targetMapping: TargetMapping.Target1 },
                 {
                     type: EffectType.SearchLibrary,
-                    label: "Search for Liliana, Death Mage",
-                    optional: true,
-                    reveal: true,
-                    zone: Zone.Hand,
-                    sourceZones: [Zone.Library, Zone.Graveyard],
+                    label: "Search your library and/or graveyard for a card named Liliana, Death Mage, reveal it, and put it into your hand.",
                     targetDefinition: {
                         type: TargetType.Card,
-                        restrictions: [{ type: 'Name', value: 'Liliana, Death Mage' }],
                         count: 1,
-                        minCount: 0
+                        restrictions: [{ type: Restriction.Name, value: 'Liliana, Death Mage' }]
                     },
+                    fromZones: [Zone.Library, Zone.Graveyard],
+                    zone: Zone.Hand,
+                    reveal: true,
+                    optional: true,
+                    targetMapping: TargetMapping.Controller
                 }
             ]
         }

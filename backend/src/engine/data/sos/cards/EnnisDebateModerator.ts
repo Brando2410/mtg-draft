@@ -1,4 +1,5 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+
 export const EnnisDebateModerator: CardDefinition = {
     name: "Ennis, Debate Moderator",
     manaCost: "{1}{W}",
@@ -24,30 +25,28 @@ export const EnnisDebateModerator: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            condition: ConditionType.ObjectIsSelf,
             targetDefinition: {
                 type: TargetType.Creature,
-                restrictions: [
-                    "youcontrol",
-                    "other"
-                ],
+                restrictions: [Restriction.YouControl, Restriction.Other],
                 count: 1,
-                optional: true,
-                zone: Zone.Battlefield
+                optional: true
             },
             effects: [
                 {
-                    type: CostType.Exile,
+                    type: EffectType.Exile,
                     targetMapping: TargetMapping.Target1,
-                    returnToBattlefield: true,
-                    returnduration: { type: DurationType.NextEndStep }
+                    next: {
+                        type: EffectType.CreateDelayedTrigger,
+                        eventMatch: TriggerEvent.EndStep,
+                        effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 }]
+                    }
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: 'OUR_TURN && CARDS_EXILED_THIS_TURN',
+            condition: `${ConditionType.CardsExiledThisTurn} && ${ConditionType.OurTurn}`,
             effects: [
                 {
                     type: EffectType.AddCounters,

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const LoreholdExcavation: CardDefinition = {
     name: 'Lorehold Excavation',
@@ -22,7 +22,7 @@ export const LoreholdExcavation: CardDefinition = {
                 {
                     type: CostType.Exile,
                     zone: Zone.Graveyard,
-                    restrictions: ['creature']
+                    restrictions: [Restriction.Creature]
                 }
             ],
             effects: [
@@ -43,5 +43,3 @@ export const LoreholdExcavation: CardDefinition = {
         }
     ]
 };
-
-

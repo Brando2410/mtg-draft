@@ -1,21 +1,18 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const TempleOfMalady: CardDefinition = {
-
     name: "Temple of Malady",
     manaCost: "",
+    scryfall_id: "92569762-cb05-4f40-a19c-88226068e820",
+    image_url: "https://cards.scryfall.io/normal/front/9/2/92569762-cb05-4f40-a19c-88226068e820.jpg?1594737831",
     oracleText: "Temple of Malady enters the battlefield tapped.\nWhen Temple of Malady enters the battlefield, scry 1.\n{T}: Add {B} or {G}.",
     colors: [],
-    supertypes: [],
     types: ["Land"],
-    subtypes: [],
-    keywords: [],
     entersTapped: true,
     abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-
             effects: [{ type: EffectType.Scry, amount: 1, targetMapping: TargetMapping.Controller }]
         },
         {
@@ -31,10 +28,6 @@ export const TempleOfMalady: CardDefinition = {
                     ]
                 }
             ]
-        },
+        }
     ]
-
 };
-
-
-

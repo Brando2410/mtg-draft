@@ -1,5 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const IgneousCur: CardDefinition = {
     name: "Igneous Cur",
@@ -15,9 +14,7 @@ export const IgneousCur: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             costs: [{ type: CostType.Mana, value: '{1}{R}' }],
-
             effects: [{ 
                 type: EffectType.ApplyContinuousEffect, 
                 powerModifier: 2, 
@@ -27,5 +24,3 @@ export const IgneousCur: CardDefinition = {
         }
     ]
 };
-
-

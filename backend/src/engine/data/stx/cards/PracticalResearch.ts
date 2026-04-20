@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
 
 export const PracticalResearch: CardDefinition = {
     name: 'Practical Research',
@@ -13,14 +13,26 @@ export const PracticalResearch: CardDefinition = {
                 { type: EffectType.DrawCards, amount: 4, targetMapping: TargetMapping.Controller },
                 {
                     type: EffectType.Choice,
-                    label: "Discard option",
+                    label: "Choose one",
                     choices: [
-                        { label: "Discard 1 Instant/Sorcery", effects: [{ type: EffectType.DiscardCards, amount: 1, restrictions: ['instant_or_sorcery'] }] },
-                        { label: "Discard 2 cards", effects: [{ type: EffectType.DiscardCards, amount: 2 }] }
+                        {
+                            label: "Discard 1 Instant or Sorcery card",
+                            effects: [{
+                                type: EffectType.DiscardCards,
+                                amount: 1,
+                                restrictions: [Restriction.InstantOrSorcery]
+                            }]
+                        },
+                        {
+                            label: "Discard 2 cards",
+                            effects: [{
+                                type: EffectType.DiscardCards,
+                                amount: 2
+                            }]
+                        }
                     ]
                 }
             ]
         }
     ]
-  };
-
+};

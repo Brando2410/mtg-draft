@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, SelectionType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 /**
  * Cauldron of Essence
@@ -31,20 +31,18 @@ export const CauldronofEssence: CardDefinition = {
             costs: [
                 { type: CostType.Mana, value: '{1}{B}{G}' },
                 { type: CostType.Tap },
-                { type: CostType.Sacrifice, restrictions: ["Creature"] }
+                { type: CostType.Sacrifice, restrictions: [Restriction.Creature] }
             ],
             activatedOnlyAsSorcery: true,
+            targetDefinition: {
+                type: TargetType.CardInGraveyard,
+                count: 1,
+                restrictions: [Restriction.Creature, Restriction.YouControl]
+            },
             effects: [
                 {
                     type: EffectType.PutOnBattlefield,
-                    zone: Zone.Battlefield,
-                    label: "Select target creature card from your graveyard to put onto the battlefield",
-                    selectionType: SelectionType.Search,
-                    targetDefinition: {
-                        type: TargetType.CardInGraveyard,
-                        count: 1,
-                        restrictions: ["Creature", "Yours"]
-                    }
+                    targetMapping: TargetMapping.Target1
                 }
             ]
         }

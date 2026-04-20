@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const ChandraFlamesCatalyst: CardDefinition = {
     name: "Chandra, Flame's Catalyst",
@@ -14,22 +14,22 @@ export const ChandraFlamesCatalyst: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Loyalty', value: 1 }],
-            effects: [{ 
-                type: EffectType.DealDamage, 
-                amount: 3, 
-                targetMapping: TargetMapping.EachOpponent 
+            costs: [{ type: CostType.Loyalty, value: '+1' }],
+            effects: [{
+                type: EffectType.DealDamage,
+                amount: 3,
+                targetMapping: TargetMapping.EachOpponent
             }]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Loyalty', value: -2 }],
+            costs: [{ type: CostType.Loyalty, value: '-2' }],
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 restrictions: [
-                    { type: 'Color', value: 'R' },
-                    { type: 'Type', value: 'InstantOrSorcery' }
+                    Restriction.Red,
+                    Restriction.InstantOrSorcery
                 ]
             },
             effects: [{
@@ -43,7 +43,7 @@ export const ChandraFlamesCatalyst: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: 'Loyalty', value: -8 }],
+            costs: [{ type: CostType.Loyalty, value: '-8' }],
             effects: [
                 { type: EffectType.DiscardCards, amount: DynamicAmount.HandCount, targetMapping: TargetMapping.Controller },
                 { type: EffectType.DrawCards, amount: 7, targetMapping: TargetMapping.Controller },

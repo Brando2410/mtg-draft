@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const DefendtheCampus: CardDefinition = {
     name: 'Defend the Campus',
@@ -20,7 +20,7 @@ export const DefendtheCampus: CardDefinition = {
                     },
                     {
                         label: "Destroy target creature with power 4 or greater",
-                        targetDefinition: { count: 1, type: TargetType.Creature, restrictions: ["power >= 4"] },
+                        targetDefinition: { count: 1, type: TargetType.Creature, restrictions: [Restriction.Power4OrGreater] },
                         effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
                     }
                 ]
@@ -28,4 +28,3 @@ export const DefendtheCampus: CardDefinition = {
         }
     ]
 };
-

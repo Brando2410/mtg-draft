@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
 
 export const Hobblefiend: CardDefinition = {
     name: "Hobblefiend",
@@ -15,15 +15,12 @@ export const Hobblefiend: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             activatedOnlyAsSorcery: true,
             costs: [
                 { type: CostType.Mana, value: '{1}' },
                 {
                     type: CostType.Sacrifice,
-                    restrictions: [
-                { type: 'Identity', value: 'Other' }
-            ]
+                    restrictions: [Restriction.Creature, Restriction.Other]
                 }
             ],
             effects: [{
@@ -35,5 +32,3 @@ export const Hobblefiend: CardDefinition = {
         }
     ]
 };
-
-

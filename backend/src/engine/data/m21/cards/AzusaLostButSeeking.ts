@@ -1,7 +1,6 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const AzusaLostButSeeking: CardDefinition = {
-
     name: "Azusa, Lost but Seeking",
     manaCost: "{2}{G}",
     scryfall_id: "0b8aff2c-1f7b-4507-b914-53f8c4706b3d",
@@ -13,12 +12,9 @@ export const AzusaLostButSeeking: CardDefinition = {
     subtypes: ["Human", "Monk"],
     power: "1",
     toughness: "2",
-    keywords: [],
     abilities: [
         {
-            id: "azusa_extra_lands",
             type: AbilityType.Static,
-            activeZone: Zone.Battlefield,
             effects: [{
                 type: EffectType.AdditionalLandPlays,
                 amount: 2,
@@ -26,5 +22,4 @@ export const AzusaLostButSeeking: CardDefinition = {
             }]
         }
     ]
-
 };

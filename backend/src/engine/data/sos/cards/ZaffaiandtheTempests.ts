@@ -1,7 +1,9 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
+
 export const ZaffaiandtheTempests: CardDefinition = {
     name: "Zaffai and the Tempests",
     manaCost: "{5}{U}{R}",
+    scryfall_id: "71f760e9-b541-477a-b911-45186b520ae1", // placeholder
     colors: [
         "U",
         "R"
@@ -26,8 +28,8 @@ export const ZaffaiandtheTempests: CardDefinition = {
                     isFreeCast: true,
                     targetMapping: TargetMapping.Controller,
                     restrictions: [
-                        "InstantOrSorcery",
-                        "FromHand"
+                        Restriction.InstantOrSorcery,
+                        Restriction.FromHand
                     ],
                     limitPerTurn: 1
                 }

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const BiblioplexAssistant: CardDefinition = {
     name: 'Biblioplex Assistant',
@@ -15,11 +15,11 @@ export const BiblioplexAssistant: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
                 count: 1,
                 type: TargetType.CardInGraveyard,
-                restrictions: ['yours', 'instant_or_sorcery']
+                restrictions: [Restriction.YouControl, Restriction.InstantOrSorcery]
             },
             effects: [{
                 type: EffectType.Choice,
@@ -27,11 +27,16 @@ export const BiblioplexAssistant: CardDefinition = {
                 optional: true,
                 choices: [{
                     label: "Move to Top",
-                    effects: [{ type: EffectType.MoveToZone, zone: Zone.Library, targetMapping: TargetMapping.Target1, libraryPosition: 'top' }]
+                    effects: [{
+                        type: EffectType.MoveToZone,
+                        zone: Zone.Library,
+                        targetMapping: TargetMapping.Target1,
+                        libraryPosition: 'top'
+                    }]
                 }]
             }]
         }
     ]
-  };
+};
 
 

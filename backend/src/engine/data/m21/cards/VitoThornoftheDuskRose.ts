@@ -1,8 +1,10 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const VitoThornoftheDuskRose: CardDefinition = {
     name: "Vito, Thorn of the Dusk Rose",
     manaCost: "{2}{B}",
+    scryfall_id: "167523f0-fc89-4d8e-9087-73d744ec10f0",
+    image_url: "https://cards.scryfall.io/normal/front/1/6/167523f0-fc89-4d8e-9087-73d744ec10f0.jpg?1594736472",
     oracleText: "Whenever you gain life, target opponent loses that much life.\n{3}{B}{B}: Creatures you control gain lifelink until end of turn.",
     colors: ["B"],
     supertypes: ["Legendary"],
@@ -14,16 +16,12 @@ export const VitoThornoftheDuskRose: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.LifeGain,
-            condition: 'EVENT_PLAYER_IS_YOU',
-            targetDefinition: {
-                type: TargetType.Opponent,
-                count: 1
-            },
+            condition: ConditionType.PlayerIsController,
+            targetDefinition: { type: TargetType.Opponent, count: 1 },
             effects: [
                 {
                     type: EffectType.LoseLife,
-                    // Functional amount from life gain event
-                    amount: (state: any, source: any, targets: any, context: any) => context?.data?.eventAmount || 0,
+                    amount: 'EVENT_LIFE_GAINED_AMOUNT',
                     targetMapping: TargetMapping.Target1
                 }
             ]
@@ -42,8 +40,3 @@ export const VitoThornoftheDuskRose: CardDefinition = {
         }
     ]
 };
-
-
-
-
-

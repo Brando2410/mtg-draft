@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const LilianasScrounger: CardDefinition = {
     name: "Liliana's Scrounger",
@@ -20,11 +20,7 @@ export const LilianasScrounger: CardDefinition = {
             targetDefinition: {
                 type: TargetType.Planeswalker,
                 count: 1,
-                minCount: 0,
-                restrictions: [
-                { type: 'Type', value: 'Liliana' },
-                { type: 'Control', value: 'YouControl' }
-            ]
+                restrictions: [Restriction.Liliana, Restriction.YouControl]
             },
             effects: [
                 {
@@ -37,5 +33,3 @@ export const LilianasScrounger: CardDefinition = {
         }
     ]
 };
-
-

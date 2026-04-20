@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, EffectType, SelectionType, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, SelectionType, TargetType, Zone } from '@shared/engine_types';
 export const CheerfulOsteomancerRaiseDead: CardDefinition = {
     name: "Cheerful Osteomancer",
     manaCost: "{3}{B}",
@@ -33,7 +33,7 @@ export const CheerfulOsteomancerRaiseDead: CardDefinition = {
                     targetDefinition: {
                         type: TargetType.CardInGraveyard,
                         count: 1,
-                        restrictions: ["Creature", "yours"]
+                        restrictions: [Restriction.Creature, Restriction.YouControl]
                     },
                 }]
             }

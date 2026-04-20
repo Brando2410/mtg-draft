@@ -7,10 +7,7 @@ export const GloriousAnthem: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/1/7/17d154d3-7ae5-43ff-9978-d974285e2c89.jpg?1594734982",
     oracleText: "Creatures you control get +1/+1.",
     colors: ["W"],
-    supertypes: [],
     types: ["Enchantment"],
-    subtypes: [],
-    keywords: [],
     abilities: [
         {
             type: AbilityType.Static,
@@ -19,10 +16,8 @@ export const GloriousAnthem: CardDefinition = {
                 targetMapping: TargetMapping.AllCreaturesYouControl,
                 powerModifier: 1,
                 toughnessModifier: 1,
-                layer: 7,
+                layer: 7
             }]
         }
     ]
 };
-
-

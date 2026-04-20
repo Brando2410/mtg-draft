@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const SpitefulSquad: CardDefinition = {
   name: 'Spiteful Squad',
@@ -17,11 +17,14 @@ export const SpitefulSquad: CardDefinition = {
       targetDefinition: {
         count: 1,
         type: TargetType.Creature,
-        restrictions: ['youcontrol']
+        restrictions: [Restriction.YouControl]
       },
-      effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: DynamicAmount.SourceCountersP1P1, targetMapping: TargetMapping.Target1 }]
+      effects: [{
+        type: EffectType.AddCounters,
+        counterType: 'P1P1',
+        amount: DynamicAmount.SourceCountersP1P1,
+        targetMapping: TargetMapping.Target1
+      }]
     }
   ]
 };
-
-

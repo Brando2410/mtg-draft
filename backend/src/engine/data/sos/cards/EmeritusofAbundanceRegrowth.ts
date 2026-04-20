@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, SelectionType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, SelectionType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 export const EmeritusofAbundanceRegrowth: CardDefinition = {
     name: "Emeritus of Abundance // Regrowth",
     manaCost: "{2}{G}",
@@ -45,7 +45,7 @@ export const EmeritusofAbundanceRegrowth: CardDefinition = {
                         targetDefinition: {
                             type: TargetType.CardInGraveyard,
                             count: 1,
-                            restrictions: ['Yours']
+                            restrictions: [Restriction.YouControl]
                         }
                     }
                 ]

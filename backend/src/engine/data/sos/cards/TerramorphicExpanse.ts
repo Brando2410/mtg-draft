@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const TerramorphicExpanse: CardDefinition = {
     name: "Terramorphic Expanse",
     manaCost: "",
@@ -20,7 +20,7 @@ export const TerramorphicExpanse: CardDefinition = {
                     targetDefinition: {
                         type: TargetType.Land,
                         count: 1,
-                        restrictions: ["Basic"]
+                        restrictions: [Restriction.Basic]
                     },
                     zone: Zone.Battlefield,
                     tapped: true,

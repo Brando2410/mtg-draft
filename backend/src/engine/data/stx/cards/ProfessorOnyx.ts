@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ProfessorOnyx: CardDefinition = {
     name: "Professor Onyx",
@@ -38,7 +38,7 @@ export const ProfessorOnyx: CardDefinition = {
             effects: [{
                 type: EffectType.Sacrifice,
                 targetMapping: TargetMapping.EachOpponent,
-                restrictions: ['greatestpower', 'creature']
+                restrictions: [Restriction.GreatestPower, Restriction.Creature]
             }]
         },
         {
@@ -56,5 +56,3 @@ export const ProfessorOnyx: CardDefinition = {
         }
     ]
 };
-
-

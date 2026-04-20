@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const AlpineHoundmaster: CardDefinition = {
     name: "Alpine Houndmaster",
@@ -21,11 +21,19 @@ export const AlpineHoundmaster: CardDefinition = {
                     targetDefinition: {
                         type: TargetType.Card,
                         count: 2,
-                        restrictions: [{ type: 'Any', restrictions: [{ type: 'Name', value: 'Alpine Watchdog' }, { type: 'Name', value: 'Igneous Cur' }] }]
+                        optional: true,
+                        restrictions: [
+                            { 
+                                type: Restriction.Any, 
+                                restrictions: [
+                                    { type: Restriction.Name, value: 'Alpine Watchdog' }, 
+                                    { type: Restriction.Name, value: 'Igneous Cur' }
+                                ] 
+                            }
+                        ]
                     },
                     zone: Zone.Hand,
                     reveal: true,
-                    optional: true,
                     targetMapping: TargetMapping.Controller
                 }
             ]
@@ -33,7 +41,7 @@ export const AlpineHoundmaster: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Attack,
-            condition: 'SelfIsAttacking',
+            condition: ConditionType.SelfAttacks,
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 powerModifier: DynamicAmount.OtherAttackingCreaturesCount,
@@ -43,4 +51,3 @@ export const AlpineHoundmaster: CardDefinition = {
         }
     ]
 };
-

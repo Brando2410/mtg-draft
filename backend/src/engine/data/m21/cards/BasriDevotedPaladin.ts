@@ -1,7 +1,6 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const BasriDevotedPaladin: CardDefinition = {
-
     name: "Basri, Devoted Paladin",
     manaCost: "{4}{W}{W}",
     scryfall_id: "2688b45d-9d74-4d9f-9a63-29c82b48d64f",
@@ -11,39 +10,43 @@ export const BasriDevotedPaladin: CardDefinition = {
     supertypes: ["Legendary"],
     types: ["Planeswalker"],
     subtypes: ["Basri"],
-    keywords: [],
     loyalty: "4",
     abilities: [
         {
-            id: "basri_devoted_plus_1",
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
-            costs: [{ type: 'Loyalty', value: '+1' }],
+            costs: [{ type: CostType.Loyalty, value: '+1' }],
             targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0, optional: true },
             effects: [
-                { type: EffectType.AddCounters, amount: 1, counterType: 'p1p1', targetMapping: TargetMapping.Target1 },
-                { type: EffectType.ApplyContinuousEffect, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToAdd: ['Vigilance'], layer: 6, targetMapping: TargetMapping.Target1 }
-            ]
-        },
-        {
-            id: "basri_devoted_minus_1",
-            type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
-            costs: [{ type: 'Loyalty', value: '-1' }],
-            effects: [
+                { type: EffectType.AddCounters, amount: 1, counterType: 'P1P1', targetMapping: TargetMapping.Target1 },
                 {
-                    type: 'AddTriggeredAbility', //?? valid
-                    eventMatch: TriggerEvent.Attack,
+                    type: EffectType.ApplyContinuousEffect,
                     duration: { type: DurationType.UntilEndOfTurn },
-                    effects: [{ type: EffectType.AddCounters, targetMapping: TargetMapping.EventTarget, counterType: 'p1p1', amount: 1 }]
+                    abilitiesToAdd: ['Vigilance'],
+                    layer: 6,
+                    targetMapping: TargetMapping.Target1
                 }
             ]
         },
         {
-            id: "basri_devoted_minus_6",
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
-            costs: [{ type: 'Loyalty', value: '-6' }],
+            costs: [{ type: CostType.Loyalty, value: '-1' }],
+            effects: [
+                {
+                    type: EffectType.AddTriggeredAbility,
+                    eventMatch: TriggerEvent.Attack,
+                    duration: { type: DurationType.UntilEndOfTurn },
+                    effects: [{
+                        type: EffectType.AddCounters,
+                        targetMapping: TargetMapping.EventTarget,
+                        counterType: 'P1P1',
+                        amount: 1
+                    }]
+                }
+            ]
+        },
+        {
+            type: AbilityType.Activated,
+            costs: [{ type: CostType.Loyalty, value: '-6' }],
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -66,5 +69,3 @@ export const BasriDevotedPaladin: CardDefinition = {
         }
     ]
 };
-
-

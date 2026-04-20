@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
 
 export const KasminaEnigmaSage: CardDefinition = {
     name: "Kasmina, Enigma Sage",
@@ -28,13 +28,30 @@ export const KasminaEnigmaSage: CardDefinition = {
                         id: 'kasmina_granted_2',
                         type: AbilityType.Activated,
                         costs: [{ type: CostType.Loyalty, value: '-X' }],
-                        effects: [{ type: EffectType.CreateToken, tokenBlueprint: { name: 'Fractal', power: "0", toughness: "0", colors: ['G', 'U'], types: ['Creature'], subtypes: ['Fractal'] }, startingCounters: { type: 'P1P1', amount: DynamicAmount.X } }]
+                        effects: [{
+                            type: EffectType.CreateToken,
+                            tokenBlueprint:
+                            {
+                                name: 'Fractal',
+                                power: "0",
+                                toughness: "0",
+                                colors: ['G', 'U'],
+                                types: ['Creature'],
+                                subtypes: ['Fractal']
+                            },
+                            startingCounters: { type: 'P1P1', amount: DynamicAmount.X }
+                        }]
                     },
                     {
                         id: 'kasmina_granted_3',
                         type: AbilityType.Activated,
                         costs: [{ type: CostType.Loyalty, value: '-8' }],
-                        effects: [{ type: EffectType.SearchLibrary, zone: Zone.Stack, isFreeCast: true, restrictions: ['instant_or_sorcery', 'shares_color_with_source'] }]
+                        effects: [{
+                            type: EffectType.SearchLibrary,
+                            zone: Zone.Stack,
+                            isFreeCast: true,
+                            restrictions: [Restriction.InstantOrSorcery, Restriction.SharesColorWithSource]
+                        }]
                     }
                 ]
             }]
@@ -60,9 +77,8 @@ export const KasminaEnigmaSage: CardDefinition = {
                 type: EffectType.SearchLibrary,
                 zone: Zone.Stack,
                 isFreeCast: true,
-                restrictions: ['instant_or_sorcery', 'shares_color_with_source']
+                restrictions: [Restriction.InstantOrSorcery, Restriction.SharesColorWithSource]
             }]
         }
     ]
 };
-

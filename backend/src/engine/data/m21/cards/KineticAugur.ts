@@ -1,14 +1,12 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from "@shared/engine_types";
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from "@shared/engine_types";
 
 export const KineticAugur: CardDefinition = {
-
     name: "Kinetic Augur",
     manaCost: "{3}{R}",
     scryfall_id: "dc5e8221-fc2d-4d90-80f3-729606648c54",
     image_url: "https://cards.scryfall.io/normal/front/d/c/dc5e8221-fc2d-4d90-80f3-729606648c54.jpg?1594736717",
-    oracleText: "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nKinetic Augur's power is equal to the number of instant and sorcery cards in your graveyard.\nWhen this creature enters, discard up to two cards, then draw that many cards.",
+    oracleText: "Trample\nKinetic Augur's power is equal to the number of instant and sorcery cards in your graveyard.\nWhen this creature enters, discard up to two cards, then draw that many cards.",
     colors: ["R"],
-    supertypes: [],
     types: ["Creature"],
     subtypes: ["Human", "Shaman"],
     power: "*",
@@ -21,7 +19,7 @@ export const KineticAugur: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     layer: 7,
-                    powerDynamic: 'INSTANTS_AND_SORCERIES_IN_GRAVEYARD',
+                    powerSet: DynamicAmount.InstantsAndSorceriesInGraveyard,
                     targetMapping: TargetMapping.Self
                 }
             ]
@@ -34,10 +32,7 @@ export const KineticAugur: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Discard up to two cards, then draw that many.",
                     choices: [
-                        {
-                            label: "Discard 0",
-                            effects: []
-                        },
+                        { label: "Discard 0", effects: [] },
                         {
                             label: "Discard 1",
                             effects: [
@@ -52,13 +47,10 @@ export const KineticAugur: CardDefinition = {
                                 { type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Controller }
                             ]
                         }
-                    ]
+                    ],
+                    targetMapping: TargetMapping.Controller
                 }
             ]
         }
     ]
-
 };
-
-
-

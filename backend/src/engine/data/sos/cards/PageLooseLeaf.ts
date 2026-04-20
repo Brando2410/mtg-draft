@@ -1,4 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
+
 export const PageLooseLeaf: CardDefinition = {
     name: "Page, Loose Leaf",
     manaCost: "{2}",
@@ -16,6 +17,8 @@ export const PageLooseLeaf: CardDefinition = {
     ],
     keywords: [],
     oracleText: "{T}: Add {C}.\nGrandeur — Discard another card named Page, Loose Leaf: Reveal cards from the top of your library until you reveal an instant or sorcery card. Put that card into your hand and the rest on the bottom of your library in a random order.",
+    power: "0",
+    toughness: "2",
     abilities: [
         {
             type: AbilityType.Activated,
@@ -28,14 +31,14 @@ export const PageLooseLeaf: CardDefinition = {
             costs: [
                 {
                     type: CostType.Discard,
-                    restrictions: [Restriction.Another, 'Page, Loose Leaf'] //legal restriction?
+                    restrictions: [Restriction.Other, Restriction.SameNameAsSource]
                 }
             ],
             effects: [
                 {
                     type: EffectType.RevealUntilCondition,
                     restrictions: [
-                        "InstantOrSorcery"
+                        Restriction.InstantOrSorcery
                     ],
                     zone: Zone.Hand,
                     remainderZone: Zone.Library,
@@ -45,7 +48,5 @@ export const PageLooseLeaf: CardDefinition = {
                 }
             ]
         }
-    ],
-    power: "0",
-    toughness: "2"
+    ]
 };

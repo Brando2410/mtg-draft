@@ -1,4 +1,5 @@
-﻿import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+
 export const LluwenExchangeStudentPestFriend: CardDefinition = {
     name: "Lluwen, Exchange Student // Pest Friend",
     manaCost: "{2}{B}{G}",
@@ -12,7 +13,6 @@ export const LluwenExchangeStudentPestFriend: CardDefinition = {
     oracleText: "Lluwen enters prepared.\nExile a creature card from your graveyard: Lluwen becomes prepared. Activate only as a sorcery.",
     power: "3",
     toughness: "4",
-
     entersPrepared: true,
     abilities: [
         {
@@ -24,7 +24,7 @@ export const LluwenExchangeStudentPestFriend: CardDefinition = {
                     targetDefinition: {
                         type: TargetType.CardInGraveyard,
                         count: 1,
-                        restrictions: ["Creature"]
+                        restrictions: [Restriction.Creature, Restriction.YouOwn]
                     }
                 }
             ],

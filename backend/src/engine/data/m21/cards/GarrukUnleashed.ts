@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone, ConditionType } from '@shared/engine_types';
 
 export const GarrukUnleashed: CardDefinition = {
     name: "Garruk, Unleashed",
@@ -14,28 +14,31 @@ export const GarrukUnleashed: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '+1' }],
-            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0, optional: true },
+            costs: [{ type: CostType.Loyalty, value: 1 }],
+            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0 },
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 duration: { type: DurationType.UntilEndOfTurn },
                 powerModifier: 3,
                 toughnessModifier: 3,
                 abilitiesToAdd: ['Trample'],
-                layer: 7,
                 targetMapping: TargetMapping.Target1
             }]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '-2' }],
+            costs: [{ type: CostType.Loyalty, value: -2 }],
             effects: [
                 {
                     type: EffectType.CreateToken,
                     tokenBlueprint: {
-                        name: 'Beast', power: '3', toughness: '3', colors: ['G'],
-                        types: ['Creature'], subtypes: ['Beast'],
-                        image_url: 'https://cards.scryfall.io/large/front/d/0/d06fcc31-039c-4389-9b93-b6764d265002.jpg'
+                        name: 'Beast',
+                        power: '3',
+                        toughness: '3',
+                        colors: ['G'],
+                        types: ['Creature'],
+                        subtypes: ['Beast'],
+                        image_url: 'https://cards.scryfall.io/large/front/4/e/4e178129-8422-42fe-bed1-073f114620f4.jpg?1594733661'
                     },
                     targetMapping: TargetMapping.Controller
                 },
@@ -44,58 +47,30 @@ export const GarrukUnleashed: CardDefinition = {
                     counterType: 'loyalty',
                     amount: 1,
                     targetMapping: TargetMapping.Self,
-                    condition: (state: any, source: any) => {
-                        const controllerId = source.controllerId;
-                        const opponentId = Object.keys(state.players).find(id => id !== controllerId);
-                        if (!opponentId) return false;
-                        const yourCreatures = state.battlefield.filter((o: any) => o.controllerId === controllerId && o.definition.types.some((t: string) => t.toLowerCase() === 'creature')).length;
-                        const opponentCreatures = state.battlefield.filter((o: any) => o.controllerId === opponentId && o.definition.types.some((t: string) => t.toLowerCase() === 'creature')).length;
-                        return opponentCreatures > yourCreatures;
-                    }
+                    condition: 'OPPONENT_CONTROLS_MORE_CREATURES_THAN_YOU'
                 }
             ]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '-7' }],
+            costs: [{ type: CostType.Loyalty, value: -7 }],
             effects: [{
                 type: EffectType.CreateEmblem,
                 emblemBlueprint: {
-                    name: "Garruk, Unleashed Emblem",
-                    oracleText: "At the beginning of your end step, you may search your library for a creature card, put it onto the battlefield, then shuffle.",
+                    name: 'Garruk, Unleashed Emblem',
+                    image_url: 'https://cards.scryfall.io/large/front/a/1/a164c679-dec5-4da8-9614-722166a08605.jpg?1594733811',
                     abilities: [
                         {
+                            type: AbilityType.Triggered,
                             eventMatch: TriggerEvent.EndStep,
-                            condition: (state: any, event: any, trigger: any) => {
-                                return state.activePlayerId === trigger.controllerId;
-                            },
+                            condition: ConditionType.IsYourTurn,
                             effects: [
                                 {
-                                    type: EffectType.Choice,
-                                    label: "Search library for a creature card?",
-                                    choices: [
-                                        {
-                                            label: "Yes",
-                                            effects: [
-                                                {
-                                                    type: EffectType.SearchLibrary,
-                                                    label: "Search for a creature card",
-                                                    targetDefinition: {
-                                                        type: TargetType.Creature,
-                                                        count: 1,
-                                                        minCount: 0,
-                                                        optional: true,
-                                                        sourceZones: [Zone.Library]
-                                                    }
-                                                },
-                                                { type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 }
-                                            ]
-                                        },
-                                        {
-                                            label: "No",
-                                            effects: []
-                                        }
-                                    ]
+                                    type: EffectType.SearchLibrary,
+                                    targetDefinition: { type: TargetType.Creature, count: 1 },
+                                    zone: Zone.Battlefield,
+                                    optional: true,
+                                    targetMapping: TargetMapping.Controller
                                 }
                             ]
                         }
@@ -105,5 +80,3 @@ export const GarrukUnleashed: CardDefinition = {
         }
     ]
 };
-
-

@@ -1,7 +1,6 @@
 import { AbilityType, CardDefinition, CostType, EffectType } from "@shared/engine_types";
 
 export const Plains: CardDefinition = {
-
     name: "Plains",
     manaCost: "",
     scryfall_id: "4be96696-aff8-4ef9-97dc-8221ef745de9",
@@ -11,13 +10,12 @@ export const Plains: CardDefinition = {
     supertypes: ["Basic"],
     types: ["Land"],
     subtypes: ["Plains"],
-    keywords: [],
     abilities: [
         {
             type: AbilityType.Activated,
             isManaAbility: true,
             costs: [{ type: CostType.Tap }],
-            effects: [{ type: EffectType.AddMana, value: 'W' }]
+            effects: [{ type: EffectType.AddMana, manaType: 'W' }]
         }
     ]
 };

@@ -7,10 +7,7 @@ export const PeerintotheAbyss: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/a/a/aac00055-640e-4749-8d23-d242e6d0b23a.jpg?1594736330",
     oracleText: "Target player draws cards equal to half the number of cards in their library and loses half their life. Round up each time.",
     colors: ["B"],
-    supertypes: [],
     types: ["Sorcery"],
-    subtypes: [],
-    keywords: [],
     abilities: [
         {
             type: AbilityType.Spell,
@@ -22,5 +19,3 @@ export const PeerintotheAbyss: CardDefinition = {
         }
     ]
 };
-
-

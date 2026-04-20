@@ -1,7 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, GameObject, GameState, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
-
-const countShrines = (state: GameState, source: GameObject) =>
-    state.battlefield.filter(o => o.controllerId === source.controllerId && (o.definition.subtypes || []).includes('Shrine')).length;
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const SanctumofCalmWaters: CardDefinition = {
     name: "Sanctum of Calm Waters",
@@ -15,8 +12,7 @@ export const SanctumofCalmWaters: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.PreCombatMainPhaseStart,
-            activeZone: Zone.Battlefield,
-            condition: (state, event, ability) => event.playerId === ability.controllerId,
+            condition: 'PLAYER_IS_CONTROLLER',
             effects: [
                 {
                     type: EffectType.Choice,
@@ -27,7 +23,7 @@ export const SanctumofCalmWaters: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.DrawCards,
-                                    amount: countShrines,
+                                    amount: DynamicAmount.ShrinesYouControlCount,
                                     targetMapping: TargetMapping.Controller
                                 },
                                 {
@@ -44,4 +40,3 @@ export const SanctumofCalmWaters: CardDefinition = {
         }
     ]
 };
-

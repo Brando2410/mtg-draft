@@ -1,5 +1,6 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const GreatHalloftheBiblioplex: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+
+export const GreatHalloftheBiblioplex: CardDefinition = {
     name: "Great Hall of the Biblioplex",
     manaCost: "",
     scryfall_id: "42d92674-2664-411c-b9c5-b04da7c845f4",
@@ -33,7 +34,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
             effects: [
                 {
                     type: EffectType.ConditionalEffect,
-                    condition: 'NOT_CREATURE',
+                    condition: ConditionType.NotCreature,
                     effects: [
                         {
                             type: EffectType.ApplyContinuousEffect,
@@ -63,5 +64,3 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         }
     ]
 };
-    
-

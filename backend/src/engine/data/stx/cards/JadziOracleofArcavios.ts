@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const JadziOracleofArcavios: CardDefinition = {
     name: "Jadzi, Oracle of Arcavios",
@@ -80,7 +80,7 @@ export const JadziOracleofArcavios: CardDefinition = {
                             type: TargetType.Card,
                             count: 99, // "Any number"
                             minCount: 0,
-                            restrictions: ['land']
+                            restrictions: [Restriction.Land]
                         },
                         targetMapping: TargetMapping.TargetAll
                     },

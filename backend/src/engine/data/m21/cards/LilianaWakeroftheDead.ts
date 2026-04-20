@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, } from '@shared/engine_types';
 
 export const LilianaWakeroftheDead: CardDefinition = {
     name: "Liliana, Waker of the Dead",
@@ -24,7 +24,7 @@ export const LilianaWakeroftheDead: CardDefinition = {
                         {
                             type: EffectType.LoseLife,
                             amount: 3,
-                            condition: 'EVENT_PLAYER_IS_OPPONENT',
+                            condition: ConditionType.EventPlayerIsOpponent,
                             targetMapping: TargetMapping.Target1
                         }
                     ]
@@ -34,10 +34,7 @@ export const LilianaWakeroftheDead: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Loyalty, value: -3 }],
-            targetDefinition: {
-                type: TargetType.Creature,
-                count: 1,
-            },
+            targetDefinition: { type: TargetType.Creature, count: 1 },
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 duration: { type: DurationType.UntilEndOfTurn },
@@ -48,12 +45,13 @@ export const LilianaWakeroftheDead: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '-7' }],
+            costs: [{ type: CostType.Loyalty, value: -7 }],
             effects: [
                 {
                     type: EffectType.CreateEmblem,
                     emblemBlueprint: {
                         name: 'Liliana, Waker of the Dead Emblem',
+                        image_url: 'https://cards.scryfall.io/large/front/d/e/defa6875-14f0-466d-9783-605663737ba7.jpg?1594733834',
                         oracleText: 'At the beginning of combat on your turn, put target creature card from a graveyard onto the battlefield under your control. It gains haste.',
                         abilities: [
                             {
@@ -63,9 +61,7 @@ export const LilianaWakeroftheDead: CardDefinition = {
                                 targetDefinition: {
                                     type: TargetType.CardInGraveyard,
                                     count: 1,
-                                    restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ]
+                                    restrictions: [Restriction.Creature]
                                 },
                                 effects: [
                                     { type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 },
@@ -84,6 +80,3 @@ export const LilianaWakeroftheDead: CardDefinition = {
         }
     ]
 };
-
-
-

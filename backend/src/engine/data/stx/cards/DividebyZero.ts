@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const DividebyZero: CardDefinition = {
     name: 'Divide by Zero',
@@ -14,7 +14,7 @@ export const DividebyZero: CardDefinition = {
             targetDefinition: {
                 count: 1,
                 type: TargetType.SpellOrPermanent,
-                restrictions: ["mv >= 1"]
+                restrictions: [Restriction.ManaValue1OrGreater]
             },
             effects: [
                 { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 },
@@ -23,4 +23,3 @@ export const DividebyZero: CardDefinition = {
         }
     ]
 };
-

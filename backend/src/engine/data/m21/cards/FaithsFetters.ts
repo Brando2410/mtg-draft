@@ -7,7 +7,6 @@ export const FaithsFetters: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/8/e/8e742d49-e6f0-4016-ba4c-11878fad89cb.jpg?1594734908",
     oracleText: "Enchant permanent\nWhen this Aura enters, you gain 4 life.\nEnchanted permanent can't attack or block, and its activated abilities can't be activated unless they're mana abilities.",
     colors: ["W"],
-    supertypes: [],
     types: ["Enchantment"],
     subtypes: ["Aura"],
     keywords: ["Enchant"],
@@ -40,6 +39,3 @@ export const FaithsFetters: CardDefinition = {
         }
     ]
 };
-
-
-

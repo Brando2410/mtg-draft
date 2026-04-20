@@ -16,16 +16,12 @@ export const JolraelMwonvuliRecluse: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.SecondDraw,
-            condition: 'PLAYER_IS_CONTROLLER',
             effects: [{
                 type: EffectType.CreateToken,
                 tokenBlueprint: {
-                    name: 'Cat',
-                    power: 2,
-                    toughness: 2,
-                    colors: ['G'],
-                    types: ['Creature'],
-                    subtypes: ['Cat']
+                    name: 'Cat', power: '2', toughness: '2', colors: ['G'],
+                    types: ['Creature'], subtypes: ['Cat'],
+                    image_url: 'https://cards.scryfall.io/large/front/2/a/2a66e6eb-116e-4122-8370-17684074251f.jpg?1594733682'
                 },
                 targetMapping: TargetMapping.Controller
             }]
@@ -43,4 +39,3 @@ export const JolraelMwonvuliRecluse: CardDefinition = {
         }
     ]
 };
-

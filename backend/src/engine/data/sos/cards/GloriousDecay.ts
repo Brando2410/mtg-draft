@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 export const GloriousDecay: CardDefinition = {
     name: "Glorious Decay",
     manaCost: "{1}{G}",
@@ -40,11 +40,11 @@ export const GloriousDecay: CardDefinition = {
                             targetDefinition: {
                                 type: TargetType.Creature,
                                 count: 1,
-                                restrictions: ["flying"]
+                                restrictions: [Restriction.Flying]
                             },
                             effects: [
                                 {
-                                    type: 'DealDamage' as any,
+                                    type: EffectType.DealDamage,
                                     amount: 4,
                                     targetMapping: TargetMapping.Target1
                                 }
@@ -58,7 +58,7 @@ export const GloriousDecay: CardDefinition = {
                             },
                             effects: [
                                 {
-                                    type: CostType.Exile,
+                                    type: EffectType.Exile,
                                     targetMapping: TargetMapping.Target1
                                 },
                                 {

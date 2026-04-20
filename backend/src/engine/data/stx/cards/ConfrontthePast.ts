@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const ConfrontthePast: CardDefinition = {
     name: 'Confront the Past',
@@ -19,12 +19,12 @@ export const ConfrontthePast: CardDefinition = {
                     choices: [
                         {
                             label: "Return from Graveyard",
-                            targetDefinition: { count: 1, type: TargetType.CardInGraveyard, restrictions: ['Planeswalker', 'mv <= x'] },
+                            targetDefinition: { count: 1, type: TargetType.CardInGraveyard, restrictions: [Restriction.Planeswalker, Restriction.ManaValueLessOrEqualToX] },
                             effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 }]
                         },
                         {
                             label: "Exile from Battlefield",
-                            targetDefinition: { count: 1, type: TargetType.Planeswalker, restrictions: ['mv <= x'] },
+                            targetDefinition: { count: 1, type: TargetType.Planeswalker, restrictions: [Restriction.ManaValueLessOrEqualToX] },
                             effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
                         }
                     ]
@@ -33,4 +33,3 @@ export const ConfrontthePast: CardDefinition = {
         }
     ]
 };
-

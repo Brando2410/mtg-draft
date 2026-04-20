@@ -26,6 +26,8 @@ export const TriggerEvent = {
   DamageDealtToCreature: "ON_DAMAGE_DEALT_TO_CREATURE",
   DamageDealtToPlayer: "ON_DAMAGE_PLAYER",
   DamageTaken: "ON_DAMAGE_TAKED",
+  CombatDamagePlayer: "ON_COMBAT_DAMAGE_PLAYER",
+  Damaged: "ON_DAMAGE_TAKED",
   Death: "ON_DEATH",
   DeathOther: "ON_DEATH_OTHER",
   Draw: "ON_DRAW",

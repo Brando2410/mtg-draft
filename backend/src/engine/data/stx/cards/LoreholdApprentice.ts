@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const LoreholdApprentice: CardDefinition = {
     name: "Lorehold Apprentice",
@@ -21,11 +21,9 @@ export const LoreholdApprentice: CardDefinition = {
                     amount: 1,
                     targetMapping: TargetMapping.EachOpponent,
                     damageSourceMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                    restrictions: ['Spirit']
+                    restrictions: [Restriction.Spirit]
                 }
             ]
         }
     ]
 };
-
-

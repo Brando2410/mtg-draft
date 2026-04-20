@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 export const StrixhavenSkycoach: CardDefinition = {
     name: "Strixhaven Skycoach",
     manaCost: "{3}",
@@ -23,7 +23,7 @@ export const StrixhavenSkycoach: CardDefinition = {
                     targetDefinition: {
                         type: TargetType.Land,
                         count: 1,
-                        restrictions: ["Basic"]
+                        restrictions: [Restriction.Basic]
                     },
                     optional: true,
                     reveal: true,

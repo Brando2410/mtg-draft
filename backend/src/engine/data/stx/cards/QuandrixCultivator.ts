@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const QuandrixCultivator: CardDefinition = {
     name: 'Quandrix Cultivator',
@@ -24,7 +24,7 @@ export const QuandrixCultivator: CardDefinition = {
                             targetDefinition: {
                                 type: TargetType.Card,
                                 count: 1,
-                                restrictions: ['basic', 'forest_or_island']
+                                restrictions: [Restriction.Basic, { type: Restriction.Any, restrictions: [Restriction.Forest, Restriction.Island] }]
                             },
                             zone: Zone.Battlefield,
                             tapped: true
@@ -35,5 +35,3 @@ export const QuandrixCultivator: CardDefinition = {
         }
     ]
 };
-
-

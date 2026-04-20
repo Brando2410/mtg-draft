@@ -1,4 +1,5 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+
 export const EnvironmentalScientist: CardDefinition = {
     name: "Environmental Scientist",
     manaCost: "{1}{G}",
@@ -26,17 +27,13 @@ export const EnvironmentalScientist: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetMapping: TargetMapping.Controller,
                     targetDefinition: {
                         type: TargetType.Land,
                         count: 1,
-                        minCount: 0,
-                        restrictions: [
-                            "Basic"
-                        ]
+                        optional: true,
+                        restrictions: [Restriction.Basic]
                     },
                     zone: Zone.Hand,
-                    optional: true,
                     reveal: true,
                     shuffle: true
                 }

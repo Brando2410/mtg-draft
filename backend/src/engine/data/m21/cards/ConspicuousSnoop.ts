@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
 
 export const ConspicuousSnoop: CardDefinition = {
     name: "Conspicuous Snoop",
@@ -18,12 +18,10 @@ export const ConspicuousSnoop: CardDefinition = {
         },
         {
             type: AbilityType.Static,
-            effects: [{ 
-                type: EffectType.AllowPlayFromTop, 
-                restrictions: [
-                { type: 'Type', value: 'Goblin' }
-            ], 
-                targetMapping: TargetMapping.Controller 
+            effects: [{
+                type: EffectType.AllowPlayFromTop,
+                restrictions: [Restriction.Goblin],
+                targetMapping: TargetMapping.Controller
             }]
         },
         {
@@ -33,6 +31,3 @@ export const ConspicuousSnoop: CardDefinition = {
         }
     ]
 };
-
-
-

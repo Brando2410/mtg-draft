@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const Humiliate: CardDefinition = {
     name: 'Humiliate',
@@ -20,7 +20,7 @@ export const Humiliate: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Choose a nonland card to discard",
                     targetIdMapping: 'TARGET_1_HAND_REVEAL_PICK',
-                    restrictions: ['nonland'],
+                    restrictions: [Restriction.NonLand],
                     effects: [{ type: EffectType.MoveToZone, zone: Zone.Graveyard, isDiscard: true }]
                 },
                 {
@@ -30,7 +30,7 @@ export const Humiliate: CardDefinition = {
                     targetDefinition: {
                         count: 1,
                         type: TargetType.Creature,
-                        restrictions: ['yours']
+                        restrictions: [Restriction.YouControl]
                     },
                     targetMapping: TargetMapping.Target2
                 }

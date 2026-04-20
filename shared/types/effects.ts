@@ -107,7 +107,14 @@ export const EffectType = {
     MustBlockThisTurn: 'MustBlockThisTurn',
     EntersTapped: 'EntersTapped',
     ExileUntilLeaves: 'ExileUntilLeaves',
-    Attach: 'Attach'
+    Attach: 'Attach',
+    AllowCastFromExile: 'AllowCastFromExile',
+    AddManaChoice: 'AddManaChoice',
+    GetEmblem: 'GetEmblem',
+    Dig: 'Dig',
+    MustBeBlocked: 'MustBeBlocked',
+    CantAttackUnless: 'CantAttackUnless',
+    ApplyDelayedTrigger: 'ApplyDelayedTrigger'
 } as const;
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
 
@@ -120,7 +127,8 @@ export const DurationType = {
     Permanent: 'PERMANENT',
     UntilYourNextTurn: 'UNTIL_YOUR_NEXT_TURN',
     UntilEndOfYourNextTurn: 'UNTIL_END_OF_YOUR_NEXT_TURN',
-    NextEndStep: 'NEXT_END_STEP'
+    NextEndStep: 'NEXT_END_STEP',
+    UntilSourceLeavesBattlefield: 'UNTIL_SOURCE_LEAVES_BATTLEFIELD'
 } as const;
 export type DurationType = (typeof DurationType)[keyof typeof DurationType];
 
@@ -217,6 +225,7 @@ export interface TargetingContext {
     stackObject?: StackObject;
     targetDef?: any;
     targetIndex?: number;
+    targets?: string[];
 }
 
 /**

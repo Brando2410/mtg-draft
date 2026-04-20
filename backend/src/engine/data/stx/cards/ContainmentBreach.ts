@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const ContainmentBreach: CardDefinition = {
   name: 'Containment Breach',
@@ -15,7 +15,7 @@ export const ContainmentBreach: CardDefinition = {
       targetDefinition: {
         count: 1,
         type: TargetType.ArtifactOrEnchantment,
-        restrictions: ["mv <= 2"]
+        restrictions: [Restriction.ManaValue2OrLess]
       },
       effects: [
         { type: EffectType.Exile, targetMapping: TargetMapping.Target1 },
@@ -42,5 +42,3 @@ export const ContainmentBreach: CardDefinition = {
     }
   ]
 };
-
-

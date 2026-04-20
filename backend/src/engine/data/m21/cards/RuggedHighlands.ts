@@ -1,18 +1,13 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const RuggedHighlands: CardDefinition = {
-
     name: "Rugged Highlands",
     manaCost: "",
     oracleText: "Rugged Highlands enters the battlefield tapped.\nWhen Rugged Highlands enters the battlefield, you gain 1 life.\n{T}: Add {R} or {G}.",
     colors: [],
-    supertypes: [],
     types: ["Land"],
-    subtypes: [],
-    keywords: [],
     entersTapped: true,
     abilities: [
-
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
@@ -31,11 +26,6 @@ export const RuggedHighlands: CardDefinition = {
                     ]
                 }
             ]
-        },
+        }
     ]
-
 };
-
-
-
-

@@ -1,5 +1,6 @@
-﻿import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+
+export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
     name: "Emeritus of Truce // Swords to Plowshares",
     manaCost: "{1}{W}{W}",
     scryfall_id: "9869a753-5e41-4098-ab41-e75b4396ec50",
@@ -12,13 +13,12 @@
     oracleText: "When this creature enters, target player creates a 1/1 white and black Inkling creature token with flying. Then if an opponent controls more creatures than you, this creature becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "3",
     toughness: "3",
-
     abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
-                type: 'Player',
+                type: TargetType.Player,
                 count: 1
             },
             effects: [
@@ -32,13 +32,13 @@
                         subtypes: ['Inkling'],
                         power: 1,
                         toughness: 1,
-
+                        keywords: ['Flying'],
                         image_url: 'https://cards.scryfall.io/png/front/c/9/c9deae5c-80d4-4701-b425-91853b7ee03b.png?1682693898'
                     }
                 },
                 {
                     type: EffectType.ConditionalEffect,
-                    condition: 'OPPONENT_CONTROLS_MORE_CREATURES',
+                    condition: ConditionType.OpponentHasMoreCreatures,
                     effects: [
                         {
                             type: EffectType.Prepare,
@@ -51,7 +51,7 @@
     ],
     preparedFace: {
         name: "Swords to Plowshares",
-        image_url: "https://cards.scryfall.io/png/front/c/c/cc9ece2f-7eda-4fc5-a562-3e16e71560e9.png?1623592209",
+        image_url: "https://cards.scryfall.io/normal/front/9/8/9869a753-5e41-4098-ab41-e75b4396ec50.jpg?1775936999",
         manaCost: "{W}",
         colors: ["W"],
         types: ["Instant"],
@@ -60,12 +60,12 @@
             {
                 type: AbilityType.Spell,
                 targetDefinition: {
-                    type: 'Creature',
+                    type: TargetType.Creature,
                     count: 1
                 },
                 effects: [
                     {
-                        type: CostType.Exile,
+                        type: EffectType.Exile,
                         targetMapping: TargetMapping.Target1
                     },
                     {
@@ -78,4 +78,3 @@
         ]
     }
 };
-    

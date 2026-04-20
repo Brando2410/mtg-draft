@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const HofriGhostforge: CardDefinition = {
     name: "Hofri Ghostforge",
@@ -22,14 +22,14 @@ export const HofriGhostforge: CardDefinition = {
                     toughnessModifier: 1,
                     layer: 7,
                     targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                    restrictions: ['Spirit']
+                    restrictions: [Restriction.Spirit]
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
                     abilitiesToAdd: ["Trample", "Haste"],
                     layer: 6,
                     targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                    restrictions: ['Spirit']
+                    restrictions: [Restriction.Spirit]
                 }
             ]
         },
@@ -62,6 +62,3 @@ export const HofriGhostforge: CardDefinition = {
         }
     ]
 };
-
-
-

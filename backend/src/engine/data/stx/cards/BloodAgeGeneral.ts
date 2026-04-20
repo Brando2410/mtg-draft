@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const BloodAgeGeneral: CardDefinition = {
     name: 'Blood-Age General',
@@ -18,7 +18,7 @@ export const BloodAgeGeneral: CardDefinition = {
                 powerModifier: 1,
                 duration: { type: DurationType.UntilEndOfTurn },
                 targetMapping: TargetMapping.OtherCreaturesYouControl,
-                restrictions: ['Spirit']
+                restrictions: [Restriction.Spirit]
             }]
         }
     ]

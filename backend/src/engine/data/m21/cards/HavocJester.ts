@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const HavocJester: CardDefinition = {
     name: "Havoc Jester",
@@ -15,8 +15,7 @@ export const HavocJester: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Sacrifice,
-            activeZone: Zone.Battlefield,
-            condition: 'PLAYER_IS_CONTROLLER',
+            condition: ConditionType.EventObjectIsTriggerSource,
             targetDefinition: { type: TargetType.AnyTarget, count: 1 },
             effects: [{
                 type: EffectType.DealDamage,
@@ -26,7 +25,3 @@ export const HavocJester: CardDefinition = {
         }
     ]
 };
-
-
-
-

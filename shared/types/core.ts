@@ -114,6 +114,7 @@ export const DynamicAmount = {
   CardsDrawnThisTurn: "CARDS_DRAWN_THIS_TURN",
   ConvergeAmount: "CONVERGE_AMOUNT",
   Target1Power: "TARGET_1_POWER",
+  Target1ManaValue: "TARGET_1_MANA_VALUE",
   Target1HandSize: "TARGET_1_HAND_SIZE",
   DiscardedCountPlus1: "DISCARDED_COUNT_PLUS_1",
   DifferentlyNamedLandsCount: "DIFFERENTLY_NAMED_LANDS_COUNT",
@@ -130,6 +131,11 @@ export const DynamicAmount = {
   EventObjectPower: "EVENT_OBJECT_POWER",
   GreatestPowerInYourGraveyard: "GREATEST_POWER_IN_GRAVEYARD",
   CreaturesDiedThisTurnCount: "CREATURES_DIED_THIS_TURN_COUNT",
+  LandsYouControlCount: "COUNT_Land",
+  DogsYouControlCount: "COUNT_Dog",
+  CatsYouControlCount: "COUNT_Cat",
+  InstantsAndSorceriesInGraveyard: "INSTANTS_SORCERIES_IN_GRAVEYARD",
+  Count_Power4PlusCreaturesYouControl: "COUNT_POWER4PLUS_CREATURES_YOU_CONTROL"
 } as const;
 export type DynamicAmount = (typeof DynamicAmount)[keyof typeof DynamicAmount];
 

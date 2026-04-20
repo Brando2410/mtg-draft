@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const ProctorsGaze: CardDefinition = {
     name: "Proctor's Gaze",
     manaCost: "{2}{G}{U}",
@@ -30,7 +30,7 @@ export const ProctorsGaze: CardDefinition = {
                     targetDefinition: {
                         type: TargetType.Land,
                         count: 1,
-                        restrictions: ["Basic"]
+                        restrictions: [Restriction.Basic]
                     },
                     zone: Zone.Battlefield,
                     tapped: true

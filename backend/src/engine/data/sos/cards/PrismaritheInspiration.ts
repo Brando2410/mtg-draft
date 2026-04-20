@@ -1,4 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
+
 export const PrismaritheInspiration: CardDefinition = {
     name: "Prismari, the Inspiration",
     manaCost: "{5}{U}{R}",
@@ -29,7 +30,7 @@ export const PrismaritheInspiration: CardDefinition = {
                     targetMapping: TargetMapping.MatchingCards,
                     activeZones: ['Stack'],
                     restrictions: [
-                        "InstantOrSorcery",
+                        Restriction.InstantOrSorcery,
                         Restriction.YouControl
                     ],
                     keywordsToAdd: ['Storm']

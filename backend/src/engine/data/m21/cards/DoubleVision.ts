@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const DoubleVision: CardDefinition = {
     name: "Double Vision",
@@ -15,8 +15,12 @@ export const DoubleVision: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastFirstInstantOrSorcery,
-            condition: 'EVENT_PLAYER_IS_YOU',
-            effects: [{ type: EffectType.CopySpellOnStack, targetMapping: TargetMapping.TriggerSource, chooseNewTargets: true }]
+            condition: ConditionType.EventPlayerIsYou,
+            effects: [{
+                type: EffectType.CopySpellOnStack,
+                targetMapping: TargetMapping.TriggerSource,
+                chooseNewTargets: true
+            }]
         }
     ]
 };

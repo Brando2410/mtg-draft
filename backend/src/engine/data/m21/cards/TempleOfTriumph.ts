@@ -1,15 +1,13 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const TempleOfTriumph: CardDefinition = {
-
     name: "Temple of Triumph",
     manaCost: "",
+    scryfall_id: "2d776853-1579-4d64-a690-3ae8e26f634b",
+    image_url: "https://cards.scryfall.io/normal/front/2/d/2d776853-1579-4d64-a690-3ae8e26f634b.jpg?1594737867",
     oracleText: "Temple of Triumph enters the battlefield tapped.\nWhen Temple of Triumph enters the battlefield, scry 1.\n{T}: Add {R} or {W}.",
     colors: [],
-    supertypes: [],
     types: ["Land"],
-    subtypes: [],
-    keywords: [],
     entersTapped: true,
     abilities: [
         {
@@ -33,6 +31,3 @@ export const TempleOfTriumph: CardDefinition = {
         }
     ]
 };
-
-
-

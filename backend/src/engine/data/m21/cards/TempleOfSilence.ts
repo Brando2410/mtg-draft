@@ -1,15 +1,13 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const TempleOfSilence: CardDefinition = {
-
     name: "Temple of Silence",
     manaCost: "",
+    scryfall_id: "46700877-62f7-410c-99d8-9df21e42a98f",
+    image_url: "https://cards.scryfall.io/normal/front/4/6/46700877-62f7-410c-99d8-9df21e42a98f.jpg?1594737854",
     oracleText: "Temple of Silence enters the battlefield tapped.\nWhen Temple of Silence enters the battlefield, scry 1.\n{T}: Add {W} or {B}.",
     colors: [],
-    supertypes: [],
     types: ["Land"],
-    subtypes: [],
-    keywords: [],
     entersTapped: true,
     abilities: [
         {
@@ -30,10 +28,6 @@ export const TempleOfSilence: CardDefinition = {
                     ]
                 }
             ]
-        },
+        }
     ]
-
 };
-
-
-

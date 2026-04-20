@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent, ConditionType } from '@shared/engine_types';
 
 export const GhostlyPilferer: CardDefinition = {
     name: "Ghostly Pilferer",
@@ -15,41 +15,26 @@ export const GhostlyPilferer: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Untap,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) => event.sourceId === source.id,
+            condition: ConditionType.EventObjectIsTriggerSource,
             effects: [
                 {
                     type: EffectType.Choice,
                     label: "You may pay {2} to draw a card",
-                    choices: [
-                        {
-                            label: 'Pay {2}',
-                            costs: [{ type: CostType.Mana, amount: 2 }],
-                            effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
-                        },
-                        { label: 'Do not pay', effects: [] }
-                    ],
-                    targetMapping: TargetMapping.Controller
+                    optional: true,
+                    costs: [{ type: CostType.Mana, amount: 2 }],
+                    effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) =>
-                event.playerId !== source.controllerId && event.fromZone !== Zone.Hand,
+            condition: 'OPPONENT_CAST_FROM_NON_HAND_ZONE',
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         },
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
-            costs: [
-                {
-                    type: CostType.Discard,
-                    amount: 1,
-                }
-            ],
+            costs: [{ type: CostType.Discard, amount: 1 }],
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -61,7 +46,3 @@ export const GhostlyPilferer: CardDefinition = {
         }
     ]
 };
-
-
-
-

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const SanctumofAll: CardDefinition = {
     name: "Sanctum of All",
@@ -13,7 +13,7 @@ export const SanctumofAll: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Upkeep,
             activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, ability: any) => event.playerId === ability.controllerId,
+            condition: 'PLAYER_IS_CONTROLLER',
             effects: [
                 {
                     type: EffectType.Choice,
@@ -26,9 +26,7 @@ export const SanctumofAll: CardDefinition = {
                                     type: EffectType.SearchLibrary,
                                     sourceZones: [Zone.Library, Zone.Graveyard],
                                     zone: Zone.Battlefield,
-                                    restrictions: [
-                                        { type: 'Type', value: 'Shrine' }
-                                    ],
+                                    restrictions: [Restriction.Shrine],
                                     reveal: true,
                                     shuffle: true
                                 }
@@ -43,14 +41,9 @@ export const SanctumofAll: CardDefinition = {
             id: "sanctum_all_trigger_double",
             type: AbilityType.Replacement,
             activeZone: Zone.Battlefield,
-            // Note: Trigger doubling support requires engine-level integration with TriggerProcessor.
-            // This remains a structured placeholder for future engine updates.
             replacesEvent: 'ON_SHRINE_TRIGGER',
-            condition: (state: any, event: any, ability: any) =>
-                state.battlefield.filter((o: any) => o.controllerId === ability.controllerId && (o.definition.subtypes || []).includes('Shrine')).length >= 5,
+            condition: 'YOU_CONTROL_FIVE_OR_MORE_SHRINES',
             effects: [{ type: EffectType.AddAdditionalTrigger, targetMapping: TargetMapping.TriggerSource }]
         }
     ]
 };
-
-

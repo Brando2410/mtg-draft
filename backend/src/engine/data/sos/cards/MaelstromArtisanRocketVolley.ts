@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 export const MaelstromArtisanRocketVolley: CardDefinition = {
     name: "Maelstrom Artisan // Rocket Volley",
     manaCost: "{1}{R}{R}",
@@ -27,7 +27,7 @@ export const MaelstromArtisanRocketVolley: CardDefinition = {
                 targetDefinition: {
                     type: TargetType.Land,
                     count: 1,
-                    restrictions: ["nonbasic"]
+                    restrictions: [Restriction.NonBasic]
                 },
                 effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
             }

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
 export const AntiquitiesontheLoose: CardDefinition = {
     name: "Antiquities on the Loose",
     manaCost: "{1}{W}{W}",
@@ -39,7 +39,7 @@ export const AntiquitiesontheLoose: CardDefinition = {
                             amount: 1,
                             counterType: '+1/+1',
                             targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                            restrictions: ["Spirit"]
+                            restrictions: [Restriction.Spirit]
                         }
                     ]
                 }

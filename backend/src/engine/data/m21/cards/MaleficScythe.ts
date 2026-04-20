@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const MaleficScythe: CardDefinition = {
     name: 'Malefic Scythe',
@@ -11,7 +11,6 @@ export const MaleficScythe: CardDefinition = {
     oracleText: 'Equipped creature gets +1/+1 for each soul counter on Malefic Scythe.\nWhenever equipped creature dies, put a soul counter on Malefic Scythe.\nEquip {1}',
     abilities: [
         {
-            id: 'malefic_scythe_buff',
             type: AbilityType.Static,
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
@@ -22,15 +21,9 @@ export const MaleficScythe: CardDefinition = {
             }]
         },
         {
-            id: 'malefic_scythe_trigger',
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.DeathOther,
-            condition: (state: any, event: any, source: any) => {
-                // Determine if the creature that died was the one Malefic Scythe was attached to.
-                // Equipment triggers on equipped creature death (Rule 603.10).
-                const scythe = state.battlefield.find((o: any) => o.id === source.sourceId);
-                return scythe && event.targetId === scythe.attachedTo;
-            },
+            eventMatch: TriggerEvent.Death,
+            condition: 'IS_ENCHANTED_CREATURE',
             effects: [{
                 type: EffectType.AddCounters,
                 amount: 1,
@@ -39,15 +32,12 @@ export const MaleficScythe: CardDefinition = {
             }]
         },
         {
-            id: 'malefic_scythe_equip',
             type: AbilityType.Activated,
             activatedOnlyAsSorcery: true,
             costs: [{ type: CostType.Mana, value: '{1}' }],
             targetDefinition: {
                 type: TargetType.Creature,
-                restrictions: [
-                { type: 'Type', value: 'youcontrol' }
-            ]
+                restrictions: [Restriction.YouControl]
             },
             effects: [{
                 type: EffectType.Attach,

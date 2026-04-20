@@ -1,5 +1,6 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, Zone } from '@shared/engine_types';
-    export const FlowState: CardDefinition = {
+
+export const FlowState: CardDefinition = {
     name: "Flow State",
     manaCost: "{1}{U}",
     scryfall_id: "47d6093b-b1b6-4956-8bfd-02cce899f832",
@@ -31,7 +32,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Zone } from '@s
                             remainderPosition: 'bottom'
                         },
                         {
-                            condition: '!HAS_INSTANT_AND_SORCERY_IN_GY',
+                            condition: `!${ConditionType.HasInstantAndSorceryInGy}`,
                             type: EffectType.LookAtTopAndPick,
                             fromTop: 3,
                             amount: 1,
@@ -44,5 +45,4 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Zone } from '@s
             ]
         }
     ]
-}
-    
+};

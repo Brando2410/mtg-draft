@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const TorrentSculptor: CardDefinition = {
     name: "Torrent Sculptor",
@@ -33,7 +33,7 @@ export const TorrentSculptor: CardDefinition = {
                         effects: [{
                             type: EffectType.Exile,
                             sourceZone: Zone.Graveyard,
-                            restrictions: [TargetType.InstantOrSorcery],
+                            restrictions: [Restriction.InstantOrSorcery],
                             storeMV: 'SAVED_MV'
                         }, {
                             type: EffectType.AddCounters,

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const NecroticFumes: CardDefinition = {
     name: 'Necrotic Fumes',
@@ -19,7 +19,7 @@ export const NecroticFumes: CardDefinition = {
                     targetMapping: TargetMapping.Controller,
                     additionalCost: {
                         type: CostType.Exile,
-                        restrictions: ['Creature', 'youcontrol']
+                        restrictions: [Restriction.Creature, Restriction.YouControl]
                     }
                 }
             ]
@@ -34,4 +34,3 @@ export const NecroticFumes: CardDefinition = {
         }
     ]
 };
-

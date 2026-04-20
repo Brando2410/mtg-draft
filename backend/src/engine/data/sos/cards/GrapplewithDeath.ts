@@ -1,11 +1,11 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 export const GrapplewithDeath: CardDefinition = {
     name: "Grapple with Death",
-    manaCost: "{1}{B}{G}",
+    manaCost: "{1}{G}{B}",
     scryfall_id: "62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a",
     rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/6/2/62842fb4-8bd3-4d80-b4f9-5bc3c5cebd3a.jpg?1775938332",
-    colors: ["B", "G"],
+    colors: ["G", "B"],
     types: ["Sorcery"],
     subtypes: [],
     keywords: [],
@@ -16,7 +16,7 @@ export const GrapplewithDeath: CardDefinition = {
             targetDefinition: {
                 type: TargetType.Permanent,
                 count: 1,
-                restrictions: ["ArtifactOrCreature"]
+                restrictions: [Restriction.ArtifactOrCreature]
             },
             effects: [
                 {

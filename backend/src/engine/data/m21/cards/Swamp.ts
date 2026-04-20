@@ -1,23 +1,21 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from "@shared/engine_types";
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from "@shared/engine_types";
 
 export const Swamp: CardDefinition = {
-
     name: "Swamp",
     manaCost: "",
+    scryfall_id: "7880df96-f94d-45bf-8be5-60293db71691",
+    image_url: "https://cards.scryfall.io/normal/front/7/8/7880df96-f94d-45bf-8be5-60293db71691.jpg?1594737785",
     oracleText: "({T}: Add {B}.)",
     colors: [],
     supertypes: ["Basic"],
     types: ["Land"],
     subtypes: ["Swamp"],
-    keywords: [],
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             isManaAbility: true,
-            costs: [{ type: 'Tap', targetMapping: TargetMapping.Self }],
-            effects: [{ type: EffectType.AddMana, value: 'B' }]
+            costs: [{ type: CostType.Tap }],
+            effects: [{ type: EffectType.AddMana, manaType: 'B' }]
         }
     ]
 };
-

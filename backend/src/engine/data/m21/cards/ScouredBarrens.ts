@@ -1,15 +1,13 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ScouredBarrens: CardDefinition = {
-
     name: "Scoured Barrens",
     manaCost: "",
+    scryfall_id: "0290bb38-4e89-497d-beef-13e6d60ed013",
+    image_url: "https://cards.scryfall.io/normal/front/0/2/0290bb38-4e89-497d-beef-13e6d60ed013.jpg?1594737664",
     oracleText: "Scoured Barrens enters the battlefield tapped.\nWhen Scoured Barrens enters the battlefield, you gain 1 life.\n{T}: Add {W} or {B}.",
     colors: [],
-    supertypes: [],
     types: ["Land"],
-    subtypes: [],
-    keywords: [],
     entersTapped: true,
     abilities: [
         {
@@ -30,9 +28,6 @@ export const ScouredBarrens: CardDefinition = {
                     ]
                 }
             ]
-        },
+        }
     ]
 };
-
-
-

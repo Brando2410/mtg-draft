@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const QuandrixApprentice: CardDefinition = {
     name: "Quandrix Apprentice",
@@ -18,7 +18,7 @@ export const QuandrixApprentice: CardDefinition = {
                     type: EffectType.LookAtTopAndPick,
                     fromTop: 3,
                     optional: true,
-                    restrictions: ['land'],
+                    restrictions: [Restriction.Land],
                     reveal: true,
                     zone: Zone.Hand,
                     remainderZone: Zone.Library,
@@ -29,5 +29,3 @@ export const QuandrixApprentice: CardDefinition = {
         }
     ]
 };
-
-

@@ -1,14 +1,12 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const AvenGagglemaster: CardDefinition = {
-
     name: "Aven Gagglemaster",
     manaCost: "{3}{W}{W}",
     scryfall_id: "c5b57247-81cc-44ec-b5a9-0702111a98a8",
     image_url: "https://cards.scryfall.io/normal/front/c/5/c5b57247-81cc-44ec-b5a9-0702111a98a8.jpg?1594734738",
     oracleText: "Flying\nWhen this creature enters, you gain 2 life for each creature you control with flying.",
     colors: ["W"],
-    supertypes: [],
     types: ["Creature"],
     subtypes: ["Bird", "Warrior"],
     power: "4",
@@ -16,11 +14,8 @@ export const AvenGagglemaster: CardDefinition = {
     keywords: ["Flying"],
     abilities: [
         {
-            id: "aven_gagglemaster_etb",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
             effects: [{
                 type: EffectType.GainLife,
                 amount: (state: any, source: any) => {
@@ -35,8 +30,4 @@ export const AvenGagglemaster: CardDefinition = {
             }]
         }
     ]
-
 };
-
-
-

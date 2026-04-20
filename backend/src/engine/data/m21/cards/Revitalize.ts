@@ -5,10 +5,7 @@ export const Revitalize: CardDefinition = {
     manaCost: "{1}{W}",
     oracleText: "You gain 3 life.\nDraw a card.",
     colors: ["W"],
-    supertypes: [],
     types: ["Instant"],
-    subtypes: [],
-    keywords: [],
     abilities: [
         {
             type: AbilityType.Spell,
@@ -18,7 +15,4 @@ export const Revitalize: CardDefinition = {
             ]
         }
     ]
-
 };
-
-

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const FrostTrickster: CardDefinition = {
     name: 'Frost Trickster',
@@ -19,7 +19,7 @@ export const FrostTrickster: CardDefinition = {
             targetDefinition: {
                 count: 1,
                 type: TargetType.Creature,
-                restrictions: ['opponentcontrol']
+                restrictions: [Restriction.OpponentControl]
             },
             effects: [
                 { type: EffectType.Tap, targetMapping: TargetMapping.Target1 },

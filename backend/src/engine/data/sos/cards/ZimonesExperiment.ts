@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
 
 export const ZimonesExperiment: CardDefinition = {
     name: "Zimone's Experiment",
@@ -20,7 +20,7 @@ export const ZimonesExperiment: CardDefinition = {
                     reveal: true,
                     selectionType: 'AnyNumber',
                     amount: 2,
-                    restrictions: ["Creature_or_Land"],
+                    restrictions: [Restriction.CreatureOrLand],
                     remainderZone: Zone.Library,
                     remainderPosition: 'bottom',
                     shuffleRemainder: true,

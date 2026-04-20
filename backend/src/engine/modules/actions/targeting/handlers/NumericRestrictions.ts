@@ -1,4 +1,3 @@
-import { GameState, GameObject, TargetingContext } from "@shared/engine_types";
 import { IRestrictionHandler } from "../IRestrictionHandler";
 import { LayerProcessor } from "../../../state/LayerProcessor";
 import { ManaProcessor } from "../../../magic/ManaProcessor";
@@ -57,6 +56,62 @@ export const NumericRestrictions: Record<string, IRestrictionHandler> = {
             const xValue = (stackObject?.xValue) || (state.pendingAction as any)?.data?.xValue || (state.pendingAction as any)?.xValue || 0;
             const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
             return mv <= xValue;
+        }
+    },
+    "MV_GE_1": {
+        matches(state, targetObj: any) {
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            return mv >= 1;
+        }
+    },
+    "MV_GE_4": {
+        matches(state, targetObj: any) {
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            return mv >= 4;
+        }
+    },
+    "MV_LE_3": {
+        matches(state, targetObj: any) {
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            return mv <= 3;
+        }
+    },
+    "MV_LE_4": {
+        matches(state, targetObj: any) {
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            return mv <= 4;
+        }
+    },
+    "MV_GE_6": {
+        matches(state, targetObj: any) {
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            return mv >= 6;
+        }
+    },
+    "MV_LE_1": {
+        matches(state, targetObj: any) {
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            return mv <= 1;
+        }
+    },
+    "MV_LE_2": {
+        matches(state, targetObj: any) {
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            return mv <= 2;
+        }
+    },
+    "POWER_LE_3": {
+        matches(state, targetObj: any) {
+            const power = LayerProcessor.getEffectiveStats(targetObj, state).power;
+            return power <= 3;
+        }
+    },
+    "MV_LE_LIFE_GAINED": {
+        matches(state, targetObj: any, r, context) {
+            const { controllerId } = context;
+            const lifeGained = state.turnState.lifeGainedThisTurn[controllerId] || 0;
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            return mv <= lifeGained;
         }
     }
 };

@@ -191,7 +191,22 @@ export class EffectProcessor {
     // Rule 608.2: Evaluate conditions
     if (effect.condition) {
       const met = this.checkCondition(state, effect.condition, context);
-      if (!met) return;
+      if (!met) {
+        if ((effect as any).onFailureEffects) {
+          return this.resolveEffects({
+            state,
+            effects: (effect as any).onFailureEffects,
+            sourceId,
+            targets,
+            log,
+            startIndex: 0,
+            stackObject,
+            parentContext,
+            controllerIdOverride,
+          });
+        }
+        return;
+      }
     }
 
     // Resolve Target Mappings

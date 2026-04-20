@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
 
 export const EurekaMoment: CardDefinition = {
     name: 'Eureka Moment',
@@ -24,7 +24,7 @@ export const EurekaMoment: CardDefinition = {
                             zone: Zone.Battlefield,
                             sourceZones: [Zone.Hand],
                             targetMapping: TargetMapping.Controller,
-                            restrictions: ['Land']
+                            restrictions: [Restriction.Land]
                         }]
                     }]
                 }

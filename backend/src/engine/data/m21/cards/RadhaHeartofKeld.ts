@@ -1,7 +1,6 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping } from "@shared/engine_types";
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping } from "@shared/engine_types";
 
 export const RadhaHeartofKeld: CardDefinition = {
-
     name: "Radha, Heart of Keld",
     manaCost: "{1}{R}{G}",
     scryfall_id: "2bbd37b1-49cb-4295-9a1f-fb85368a8f12",
@@ -13,11 +12,10 @@ export const RadhaHeartofKeld: CardDefinition = {
     subtypes: ["Elf", "Warrior"],
     power: "3",
     toughness: "3",
-    keywords: [],
     abilities: [
         {
             type: AbilityType.Static,
-            condition: 'IS_YOUR_TURN',
+            condition: ConditionType.IsYourTurn,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -41,9 +39,7 @@ export const RadhaHeartofKeld: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AllowPlayFromTop,
-                    restrictions: [
-                { type: 'Type', value: 'Land' }
-            ],
+                    restrictions: [Restriction.Land],
                     targetMapping: TargetMapping.Controller
                 }
             ]
@@ -58,13 +54,11 @@ export const RadhaHeartofKeld: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     layer: 7,
                     duration: { type: DurationType.UntilEndOfTurn },
-                    powerModifier: 'COUNT_Land',
-                    toughnessModifier: 'COUNT_Land',
+                    powerModifier: DynamicAmount.LandsYouControlCount,
+                    toughnessModifier: DynamicAmount.LandsYouControlCount,
                     targetMapping: TargetMapping.Self
                 }
             ]
         }
     ]
-
 };
-

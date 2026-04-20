@@ -1,5 +1,6 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const ParadoxGardens: CardDefinition = {
+
+export const ParadoxGardens: CardDefinition = {
     name: "Paradox Gardens",
     manaCost: "",
     scryfall_id: "dbc3447e-1329-4ea1-b4ca-b321b0ffec8f",
@@ -19,7 +20,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
             costs: [{ type: CostType.Tap }],
             effects: [
                 {
-                    type: CostType.Choice,
+                    type: EffectType.Choice,
                     label: "Add {G} or {U}",
                     choices: [
                         { label: "Add {G}", effects: [{ type: EffectType.AddMana, value: '{G}' }] },
@@ -45,4 +46,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
         }
     ]
 };
-    

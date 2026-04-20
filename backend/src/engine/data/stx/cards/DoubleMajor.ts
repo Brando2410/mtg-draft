@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const DoubleMajor: CardDefinition = {
     name: "Double Major",
@@ -14,7 +14,7 @@ export const DoubleMajor: CardDefinition = {
             targetDefinition: {
                 type: TargetType.Creature,
                 count: 1,
-                restrictions: ['youcontrol']
+                restrictions: [Restriction.YouControl]
             },
             effects: [{
                 type: EffectType.CopySpellOnStack,

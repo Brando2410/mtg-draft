@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetType, Zone } from '@shared/engine_types';
 export const StudiousFirstYearRampantGrowth: CardDefinition = {
     name: "Studious First-Year // Rampant Growth",
     manaCost: "{G}",
@@ -28,7 +28,7 @@ export const StudiousFirstYearRampantGrowth: CardDefinition = {
                         targetDefinition: {
                             type: TargetType.Land,
                             count: 1,
-                            restrictions: ["Basic"]
+                            restrictions: [Restriction.Basic]
                         },
                         zone: Zone.Battlefield,
                         tapped: true

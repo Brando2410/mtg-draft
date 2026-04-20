@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 export const AzizaMageTowerCaptain: CardDefinition = {
     name: "Aziza, Mage Tower Captain",
     manaCost: "{R}{W}",
@@ -37,7 +37,7 @@ export const AzizaMageTowerCaptain: CardDefinition = {
                                 {
                                     type: CostType.TapSelection,
                                     value: 3,
-                                    restrictions: ["creature", "untapped", "youcontrol"]
+                                    restrictions: [Restriction.Creature, Restriction.Untapped, Restriction.YouControl]
                                 }
                             ],
                             effects: [

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, RestrictionType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, RestrictionType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const PostmortemProfessor: CardDefinition = {
     name: "Postmortem Professor",
@@ -42,7 +42,7 @@ export const PostmortemProfessor: CardDefinition = {
                 {
                     type: CostType.Exile,
                     sourceZones: ['Graveyard'],
-                    restrictions: ["InstantOrSorcery"]
+                    restrictions: [Restriction.InstantOrSorcery]
                 }
             ],
             effects: [

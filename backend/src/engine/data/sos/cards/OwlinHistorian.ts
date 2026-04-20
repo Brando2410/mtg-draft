@@ -1,4 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+
 export const OwlinHistorian: CardDefinition = {
     name: "Owlin Historian",
     manaCost: "{2}{W}",
@@ -27,7 +28,7 @@ export const OwlinHistorian: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.LeaveGraveyard,
-            condition: ConditionType.PlayerIsController,
+            condition: ConditionType.EventPlayerIsYou,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

@@ -1,7 +1,6 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from "@shared/engine_types";
+import { AbilityType, CardDefinition, CostType, EffectType } from "@shared/engine_types";
 
 export const Mountain: CardDefinition = {
-
     name: "Mountain",
     manaCost: "",
     scryfall_id: "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
@@ -11,17 +10,12 @@ export const Mountain: CardDefinition = {
     supertypes: ["Basic"],
     types: ["Land"],
     subtypes: ["Mountain"],
-    keywords: [],
     abilities: [
         {
-            id: "mountain_mana",
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             isManaAbility: true,
-            costs: [{ type: 'Tap', targetMapping: TargetMapping.Self }],
-            effects: [{ type: EffectType.AddMana, value: 'R' }]
+            costs: [{ type: CostType.Tap }],
+            effects: [{ type: EffectType.AddMana, manaType: 'R' }]
         }
     ]
-
 };
-

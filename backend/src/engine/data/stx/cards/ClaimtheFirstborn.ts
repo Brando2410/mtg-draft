@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const ClaimtheFirstborn: CardDefinition = {
   name: 'Claim the Firstborn',
@@ -12,7 +12,7 @@ export const ClaimtheFirstborn: CardDefinition = {
       targetDefinition: {
         count: 1,
         type: TargetType.Creature,
-        restrictions: ["mv <= 3"]
+        restrictions: [Restriction.ManaValue3OrLess]
       },
       effects: [
         { type: EffectType.ApplyContinuousEffect, duration: { type: DurationType.UntilEndOfTurn }, effects: [{ type: EffectType.GainControl }], targetMapping: TargetMapping.Target1 },
@@ -22,4 +22,3 @@ export const ClaimtheFirstborn: CardDefinition = {
     }
   ]
 };
-

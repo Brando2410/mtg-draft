@@ -1,4 +1,5 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+
 export const RunBehind: CardDefinition = {
     name: "Run Behind",
     manaCost: "{3}{U}",
@@ -16,7 +17,7 @@ export const RunBehind: CardDefinition = {
                     type: EffectType.CostReduction,
                     amount: 1,
                     targetMapping: TargetMapping.Self,
-                    condition: 'TARGET_1_MATCHES:attacking'
+                    condition: ConditionType.Target1Matches + ':attacking'
                 }
             ]
         },
@@ -25,7 +26,7 @@ export const RunBehind: CardDefinition = {
             targetDefinition: { type: TargetType.Creature },
             effects: [
                 {
-                    type: CostType.Choice,
+                    type: EffectType.Choice,
                     targetMapping: TargetMapping.Target1Owner,
                     choices: [
                         {
@@ -51,7 +52,7 @@ export const RunBehind: CardDefinition = {
                             ]
                         }
                     ]
-                }
+    }
             ]
         }
     ]

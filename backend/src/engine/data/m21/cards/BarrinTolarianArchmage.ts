@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const BarrinTolarianArchmage: CardDefinition = {
     name: "Barrin, Tolarian Archmage",
@@ -12,28 +12,23 @@ export const BarrinTolarianArchmage: CardDefinition = {
     subtypes: ["Human", "Wizard"],
     power: "2",
     toughness: "2",
-    keywords: [],
     abilities: [
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) => event.data?.object?.id === source.sourceId,
-            targetDefinition: { type: TargetType.CreatureOrPlaneswalker, count: 1, optional: true, restrictions: [
-                { type: 'Identity', value: 'Other' }
-            ] },
+            targetDefinition: {
+                type: TargetType.CreatureOrPlaneswalker,
+                count: 1,
+                minCount: 0,
+                restrictions: [Restriction.Other]
+            },
             effects: [{ type: EffectType.ReturnToHand, targetMapping: TargetMapping.Target1 }]
         },
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            activeZone: Zone.Battlefield,
-            condition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId && state.turnState.playersWithPermanentReturnedThisTurn[source.controllerId] === true,
+            condition: 'OUR_TURN_AND_PERMANENT_RETURNED_TO_HAND_THIS_TURN',
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }
     ]
-
 };
-
-
-

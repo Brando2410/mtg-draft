@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const CombatProfessor: CardDefinition = {
     name: 'Combat Professor',
@@ -20,7 +20,7 @@ export const CombatProfessor: CardDefinition = {
             targetDefinition: {
                 count: 1,
                 type: TargetType.Creature,
-                restrictions: ['youcontrol']
+                restrictions: [Restriction.YouControl]
             },
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
@@ -32,5 +32,3 @@ export const CombatProfessor: CardDefinition = {
         }
     ]
 };
-
-

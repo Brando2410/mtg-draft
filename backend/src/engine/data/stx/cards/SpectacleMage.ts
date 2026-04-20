@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction } from '@shared/engine_types';
 
 export const SpectacleMage: CardDefinition = {
     name: 'Spectacle Mage',
@@ -11,14 +11,13 @@ export const SpectacleMage: CardDefinition = {
     keywords: ['Flying'],
     oracleText: 'Flying\nSpells you cast with mana value 5 or greater cost {1} less to cast.',
     abilities: [
-      {
-        type: AbilityType.Static,
-        effects: [{
-            type: EffectType.CostReduction,
-            amount: '{1}',
-            restrictions: ["mv >= 5"]
-        }]
-      }
+        {
+            type: AbilityType.Static,
+            effects: [{
+                type: EffectType.CostReduction,
+                amount: '{1}',
+                restrictions: [Restriction.ManaValue5OrGreater]
+            }]
+        }
     ]
-  };
-
+};

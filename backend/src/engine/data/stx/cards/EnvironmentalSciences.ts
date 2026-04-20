@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, Zone } from '@shared/engine_types';
 
 export const EnvironmentalSciences: CardDefinition = {
     name: 'Environmental Sciences',
@@ -17,7 +17,7 @@ export const EnvironmentalSciences: CardDefinition = {
                     type: EffectType.SearchLibrary,
                     targetDefinition: {
                         count: 1,
-                        restrictions: ['basic', 'land']
+                        restrictions: [Restriction.Basic, Restriction.Land]
                     },
                     zone: Zone.Hand,
                     reveal: true
@@ -27,4 +27,3 @@ export const EnvironmentalSciences: CardDefinition = {
         }
     ]
 };
-

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const SilverquillCommand: CardDefinition = {
     name: 'Silverquill Command',
@@ -31,7 +31,7 @@ export const SilverquillCommand: CardDefinition = {
                     targetDefinition: {
                         count: 1,
                         type: TargetType.CardInGraveyard,
-                        restrictions: ['creature', 'mv <= 2']
+                        restrictions: [Restriction.Creature, Restriction.ManaValue2OrLess]
                     },
                     effects: [{
                         type: EffectType.MoveToZone,
@@ -58,11 +58,10 @@ export const SilverquillCommand: CardDefinition = {
                     effects: [{
                         type: EffectType.Sacrifice,
                         targetMapping: TargetMapping.Target1,
-                        restrictions: ['creature']
+                        restrictions: [Restriction.Creature]
                     }]
                 }
             ]
         }]
     }]
 };
-

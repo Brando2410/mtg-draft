@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const BeamingDefiance: CardDefinition = {
     name: 'Beaming Defiance',
@@ -14,7 +14,7 @@ export const BeamingDefiance: CardDefinition = {
             targetDefinition: {
                 count: 1,
                 type: TargetType.Creature,
-                restrictions: ['youcontrol']
+                restrictions: [Restriction.YouControl]
             },
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
@@ -26,4 +26,4 @@ export const BeamingDefiance: CardDefinition = {
             }]
         }
     ]
-  };
+};

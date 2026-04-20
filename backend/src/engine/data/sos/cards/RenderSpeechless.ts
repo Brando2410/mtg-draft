@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const RenderSpeechless: CardDefinition = {
     name: "Render Speechless",
     manaCost: "{2}{W}{B}",
@@ -33,7 +33,7 @@ export const RenderSpeechless: CardDefinition = {
                     label: 'Choose a nonland card to discard',
                     targetMapping: TargetMapping.Target1,
                     targetIdMapping: 'TARGET_1_HAND_REVEAL_PICK',
-                    restrictions: ["nonland"],
+                    restrictions: [Restriction.NonLand],
                     effects: [{ type: EffectType.MoveToZone, zone: Zone.Graveyard, targetMapping: TargetMapping.SelectedCard, isDiscard: true }]
                 },
                 {

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const LilianasDevotee: CardDefinition = {
     name: "Liliana's Devotee",
@@ -19,42 +19,34 @@ export const LilianasDevotee: CardDefinition = {
                     type: EffectType.ApplyContinuousEffect,
                     powerModifier: 1,
                     targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                    restrictions: [
-                { type: 'Type', value: 'Zombie' }
-            ]
+                    restrictions: [Restriction.Zombie]
                 }
             ]
         },
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: (state: any, event: any, source: any) =>
-                state.activePlayerId === source.controllerId &&
-                state.turnState.creaturesDiedThisTurn.length > 0,
+            condition: 'IS_YOUR_TURN && CREATURE_DIED_THIS_TURN',
             effects: [
                 {
                     type: EffectType.Choice,
-                    label: "You may pay {1}{B} to create a Zombie token",
-                    choices: [
+                    label: "Pay {1}{B} to create a Zombie?",
+                    optional: true,
+                    effects: [
                         {
-                            label: 'Pay {1}{B}',
-                            effects: [
-                                {
-                                    type: EffectType.CreateToken,
-                                    costs: [{ type: CostType.Mana, value: '{1}{B}' }],
-                                    tokenBlueprint: {
-                                        name: 'Zombie',
-                                        power: 2,
-                                        toughness: 2,
-                                        colors: ['B'],
-                                        types: ['Creature'],
-                                        subtypes: ['Zombie']
-                                    },
-                                    targetMapping: TargetMapping.Controller
-                                }
-                            ]
-                        },
-                        { label: 'Do not pay', effects: [] }
+                            type: EffectType.CreateToken,
+                            costs: [{ type: CostType.Mana, value: '{1}{B}' }],
+                            definition: {
+                                name: 'Zombie',
+                                power: 2,
+                                toughness: 2,
+                                colors: ['B'],
+                                types: ['Creature'],
+                                subtypes: ['Zombie'],
+                                image_url: 'https://cards.scryfall.io/large/front/4/5/453051e4-f3c5-4089-9fc0-ac064436798b.jpg?1594733596'
+                            },
+                            targetMapping: TargetMapping.Controller
+                        }
                     ],
                     targetMapping: TargetMapping.Controller
                 }
@@ -62,7 +54,3 @@ export const LilianasDevotee: CardDefinition = {
         }
     ]
 };
-
-
-
-

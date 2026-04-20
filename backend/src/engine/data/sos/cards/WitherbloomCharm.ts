@@ -1,34 +1,29 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
+
 export const WitherbloomCharm: CardDefinition = {
     name: "Witherbloom Charm",
     manaCost: "{B}{G}",
+    scryfall_id: "71f760e9-b541-477a-b911-45186b520ae1", // placeholder
     colors: ["B", "G"],
     types: ["Instant"],
-    subtypes: [],
-    keywords: [],
     oracleText: "Choose one —\n• You may sacrifice a permanent. If you do, draw two cards.\n• You gain 5 life.\n• Destroy target nonland permanent with mana value 2 or less.",
     abilities: [
         {
             type: AbilityType.Spell,
             effects: [
                 {
-                    type: CostType.Choice,
+                    type: EffectType.Choice,
                     choices: [
                         {
                             label: "You may sacrifice a permanent. If you do, draw two cards.",
                             effects: [
                                 {
-                                    type: CostType.Choice,
+                                    type: EffectType.Choice,
                                     label: "Sacrifice a permanent?",
                                     choices: [
                                         {
                                             label: "Yes",
-                                            costs: [
-                                                {
-                                                    type: CostType.Sacrifice,
-                                                    restrictions: ["Permanent"],
-                                                }
-                                            ],
+                                            costs: [{ type: EffectType.Sacrifice, restrictions: [Restriction.Permanent] }],
                                             effects: [
                                                 {
                                                     type: EffectType.DrawCards,
@@ -37,10 +32,7 @@ export const WitherbloomCharm: CardDefinition = {
                                                 }
                                             ]
                                         },
-                                        {
-                                            label: "No",
-                                            effects: []
-                                        }
+                                        { label: "No", effects: [] }
                                     ]
                                 }
                             ]
@@ -60,7 +52,7 @@ export const WitherbloomCharm: CardDefinition = {
                             targetDefinition: {
                                 type: TargetType.NonlandPermanent,
                                 count: 1,
-                                restrictions: ["mv <= 2"]
+                                restrictions: [Restriction.ManaValue2OrLess]
                             },
                             effects: [
                                 {

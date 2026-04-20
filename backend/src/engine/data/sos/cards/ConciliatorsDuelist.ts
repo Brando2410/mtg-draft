@@ -1,4 +1,5 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+
 export const ConciliatorsDuelist: CardDefinition = {
     name: "Conciliator's Duelist",
     manaCost: "{W}{W}{B}{B}",
@@ -22,23 +23,22 @@ export const ConciliatorsDuelist: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: 'REPARTEE_TRIGGER',
+            condition: ConditionType.ReparteeTrigger,
             effects: [
                 {
-                    type: CostType.Choice,
+                    type: EffectType.Choice,
                     label: "Exile up to one target creature?",
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0 },
+                            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0, optional: true },
                             effects: [
                                 {
-                                    type: CostType.Exile,
+                                    type: EffectType.Exile,
                                     targetMapping: TargetMapping.Target1,
                                     next: {
-                                        type: EffectType.AddTriggeredAbility,
+                                        type: EffectType.CreateDelayedTrigger,
                                         eventMatch: TriggerEvent.EndStep,
-                                        duration: { type: DurationType.UntilEndOfTurn },
                                         effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 }]
                                     }
                                 }

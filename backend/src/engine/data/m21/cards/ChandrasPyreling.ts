@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ChandrasPyreling: CardDefinition = {
     name: "Chandra's Pyreling",
@@ -14,8 +14,7 @@ export const ChandrasPyreling: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.DamageDealtToPlayer,
-            condition: 'EVENT_PLAYER_IS_OPPONENT && EVENT_IS_NONCOMBAT',
+            eventMatch: TriggerEvent.NoncombatDamageOpponent,
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -28,4 +27,3 @@ export const ChandrasPyreling: CardDefinition = {
         }
     ]
 };
-

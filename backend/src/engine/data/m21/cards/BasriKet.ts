@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const BasriKet: CardDefinition = {
     name: "Basri Ket",
@@ -14,106 +14,89 @@ export const BasriKet: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '+1' }],
-            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0, optional: true },
+            costs: [{ type: CostType.Loyalty, value: 1 }],
+            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0 },
             effects: [
-                {
-                    type: EffectType.AddCounters,
-                    amount: 1,
-                    counterType: '+1/+1',
-                    targetMapping: TargetMapping.Target1
-                },
+                { type: EffectType.AddCounters, counterType: '+1/+1', amount: 1, targetMapping: TargetMapping.Target1 },
                 {
                     type: EffectType.ApplyContinuousEffect,
                     duration: { type: DurationType.UntilEndOfTurn },
                     abilitiesToAdd: ['Indestructible'],
-                    layer: 6,
                     targetMapping: TargetMapping.Target1
                 }
             ]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '-2' }],
-            effects: [{
-                type: EffectType.ApplyContinuousEffect,
-                duration: { type: DurationType.UntilEndOfTurn },
-                targetMapping: TargetMapping.Controller,
-                delayedTriggers: [
-                    {
-                        eventMatch: TriggerEvent.AttackersDeclared,
-                        // Only trigger if at least one nontoken creature attacked
-                        condition: (state: any, event: any, trigger: any) => {
-                            if (state.activePlayerId !== trigger.controllerId) return false;
-                            const attackers = event.data.attackers || [];
-                            return attackers.some((a: any) => {
-                                const obj = state.battlefield.find((o: any) => o.id === a.attackerId);
-                                return obj && !obj.isToken && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
-                            });
-                        },
-                        effects: [{
+            costs: [{ type: CostType.Loyalty, value: -2 }],
+            effects: [
+                {
+                    type: EffectType.ApplyDelayedTrigger,
+                    eventMatch: TriggerEvent.Attack,
+                    condition: 'NONTOKEN_CREATURES_ATTACK_UNDER_YOU',
+                    effects: [
+                        {
                             type: EffectType.CreateToken,
-                            // "create THAT MANY" -> count of nontoken attackers
-                            amount: (state: any, source: any, targets: any, context: any) => {
-                                const event = context?.data?.eventData;
-                                const attackers = event?.data?.attackers || [];
-                                return attackers.filter((a: any) => {
-                                    const obj = state.battlefield.find((o: any) => o.id === a.attackerId);
-                                    return obj && !obj.isToken && obj.definition.types.some((t: string) => t.toLowerCase() === 'creature');
-                                }).length;
+                            tokenBlueprint:
+                            {
+                                name: 'Soldier',
+                                power: "1",
+                                toughness: "1",
+                                colors: ['W'],
+                                types: ['Creature'],
+                                subtypes: ['Soldier'],
+                                image_url: 'https://cards.scryfall.io/large/front/2/4/248286ca-6814-432c-9037-7c93cc588725.jpg?1595010997'
                             },
-                            tokenBlueprint: {
-                                name: 'Soldier', power: '1', toughness: '1', colors: ['W'],
-                                types: ['Creature'], subtypes: ['Soldier'],
-                                image_url: 'https://cards.scryfall.io/large/front/b/7/b7b55dcf-ae63-4b84-8d39-80b5a6de3c1a.jpg'
-                            },
-                            isAttacking: true,
+                            amount: 'ATTACKING_NONTOKEN_CREATURES_COUNT',
+                            tapped: true,
+                            attacking: true,
                             targetMapping: TargetMapping.Controller
-                        }]
-                    }
-                ]
-            }]
+                        }
+                    ],
+                    duration: { type: DurationType.UntilEndOfTurn }
+                }
+            ]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '-6' }],
-            effects: [{
-                type: EffectType.CreateEmblem,
-                emblemBlueprint: {
-                    name: "Basri Ket Emblem",
-                    oracleText: "At the beginning of combat on your turn, create a 1/1 white Soldier creature token, then put a +1/+1 counter on each creature you control.",
-                    abilities: [
-                        {
-                            eventMatch: TriggerEvent.BeginningOfCombatStep,
-                            condition: (state: any, event: any, trigger: any) => {
-                                return state.activePlayerId === trigger.controllerId;
-                            },
-                            effects: [
-                                {
-                                    type: EffectType.CreateToken,
-                                    amount: 1,
-                                    targetMapping: TargetMapping.Controller,
-                                    tokenBlueprint: {
-                                        name: 'Soldier', power: '1', toughness: '1', colors: ['W'],
-                                        types: ['Creature'], subtypes: ['Soldier'],
-                                        image_url: 'https://cards.scryfall.io/large/front/b/7/b7b55dcf-ae63-4b84-8d39-80b5a6de3c1a.jpg'
+            costs: [{ type: CostType.Loyalty, value: -6 }],
+            effects: [
+                {
+                    type: EffectType.CreateEmblem,
+                    emblemBlueprint: {
+                        name: 'Basri Ket Emblem',
+                        image_url: 'https://cards.scryfall.io/large/front/1/7/17d4710a-3cc1-470a-8643-fc03632f0535.jpg?1594733789',
+                        abilities: [
+                            {
+                                type: AbilityType.Triggered,
+                                eventMatch: TriggerEvent.BeginningOfCombatStep,
+                                condition: 'OUR_TURN',
+                                effects: [
+                                    {
+                                        type: EffectType.CreateToken,
+                                        tokenBlueprint: {
+                                            name: 'Soldier',
+                                            power: "1",
+                                            toughness: "1",
+                                            colors: ['W'],
+                                            types: ['Creature'],
+                                            subtypes: ['Soldier'],
+                                            image_url: 'https://cards.scryfall.io/large/front/2/4/248286ca-6814-432c-9037-7c93cc588725.jpg?1595010997'
+                                        },
+                                        targetMapping: TargetMapping.Controller
+                                    },
+                                    {
+                                        type: EffectType.AddCounters,
+                                        counterType: '+1/+1',
+                                        amount: 1,
+                                        targetMapping: TargetMapping.AllCreaturesYouControl
                                     }
-                                },
-                                {
-                                    type: EffectType.AddCounters,
-                                    amount: 1,
-                                    counterType: '+1/+1',
-                                    targetMapping: TargetMapping.AllCreaturesYouControl
-                                }
-                            ]
-                        }
-                    ]
+                                ]
+                            }
+                        ]
+                    }
                 }
-            }]
+            ]
         }
     ]
 };
-
-
-
-

@@ -95,5 +95,21 @@ export const TurnConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             return state.activePlayerId === context.controllerId;
         }
+    },
+    "CAST_DURING_MAIN_PHASE": {
+        matches(state, params, context) {
+            const { Phase } = require("@shared/engine_types");
+            return state.activePlayerId === context.controllerId && (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain);
+        }
+    },
+    "NEXT_SPELL_THIS_TURN": {
+        matches(state, params, context) {
+            // This is usually used in Delayed Triggers that trigger on CastSpell.
+            // Under existing logic, if we are in this handler, it means the trigger just went off.
+            // We want to ensure it's the first spell cast AFTER the trigger was created.
+            // However, the simplest implementation for "NextSpellThisTurn" in a one-shot delayed trigger 
+            // is just to return true, because the trigger itself only exists once.
+            return true;
+        }
     }
 };

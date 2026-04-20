@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
 
 export const UmbralJuke: CardDefinition = {
         name: 'Umbral Juke',
@@ -13,11 +13,11 @@ export const UmbralJuke: CardDefinition = {
                     { 
                         type: EffectType.Sacrifice, 
                         targetMapping: TargetMapping.EachOpponent, 
-                        restrictions: [TargetType.CreatureOrPlaneswalker]
+                        restrictions: [Restriction.CreatureOrPlaneswalker]
                     },
                     {
                         type: EffectType.CreateToken,
-                        condition: 'CastDuringMainPhase',
+                        condition: ConditionType.CastDuringMainPhase,
                         tokenBlueprint: {
                             name: 'Inkling',
                             power: "2", 
@@ -32,4 +32,3 @@ export const UmbralJuke: CardDefinition = {
             }
         ]
     };
-

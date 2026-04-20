@@ -7,12 +7,7 @@ export const GoblinWizardry: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/d/7/d7ac8bdd-851f-449d-a108-70578eabf254.jpg?1594736662",
     oracleText: "Create two 1/1 red Goblin Wizard creature tokens with prowess. (Whenever you cast a noncreature spell, they get +1/+1 until end of turn.)",
     colors: ["R"],
-    supertypes: [],
     types: ["Instant"],
-    subtypes: [],
-    power: "",
-    toughness: "",
-    keywords: [],
     abilities: [
         {
             type: AbilityType.Spell,
@@ -20,18 +15,18 @@ export const GoblinWizardry: CardDefinition = {
                 type: EffectType.CreateToken,
                 amount: 2,
                 targetMapping: TargetMapping.Controller,
-                tokenBlueprint: {
+                definition: {
                     name: "Goblin Wizard",
                     power: "1",
                     toughness: "1",
-                    colors: ["red"],
+                    colors: ["R"],
                     types: ["Creature"],
                     subtypes: ["Goblin", "Wizard"],
                     keywords: ["Prowess"],
-                    oracleText: "Prowess"
+                    oracleText: "Prowess",
+                    image_url: 'https://cards.scryfall.io/large/front/c/c/cc6c692d-022f-4dc4-8f43-1678619d8213.jpg?1594733618'
                 }
-            }],
+            }]
         }
     ]
 };
-

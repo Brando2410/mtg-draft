@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const JeskaiElder: CardDefinition = {
     name: "Jeskai Elder",
@@ -16,22 +16,23 @@ export const JeskaiElder: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.DamageDealtToPlayer,
-            activeZone: Zone.Battlefield,
-            condition: 'EVENT_SOURCE_IS_SELF && EVENT_IS_COMBAT',
+            condition: ConditionType.EventObjectIsTriggerSource,
             effects: [
                 {
                     type: EffectType.Choice,
-                    label: "You may draw a card. If you do, discard a card.",
+                    label: "Draw then discard?",
                     optional: true,
-                    choices: [
+                    effects: [
                         {
-                            label: "Yes",
-                            effects: [
-                                { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller },
-                                { type: EffectType.DiscardCards, amount: 1, targetMapping: TargetMapping.Controller }
-                            ]
+                            type: EffectType.DrawCards,
+                            amount: 1,
+                            targetMapping: TargetMapping.Controller
                         },
-                        { label: "No", effects: [] }
+                        {
+                            type: EffectType.DiscardCards,
+                            amount: 1,
+                            targetMapping: TargetMapping.Controller
+                        }
                     ],
                     targetMapping: TargetMapping.Controller
                 }
@@ -39,7 +40,3 @@ export const JeskaiElder: CardDefinition = {
         }
     ]
 };
-
-
-
-

@@ -1,4 +1,5 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+
 export const GraveResearcherReanimate: CardDefinition = {
     name: "Grave Researcher // Reanimate",
     manaCost: "{2}{B} // {B}",
@@ -33,7 +34,7 @@ export const GraveResearcherReanimate: CardDefinition = {
                 },
                 {
                     type: EffectType.ConditionalEffect,
-                    condition: 'GRAVEYARD_CREATURE_COUNT_GE_3',
+                    condition: ConditionType.GraveyardCreatureCountGe3,
                     effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]
                 }
             ]
@@ -52,7 +53,7 @@ export const GraveResearcherReanimate: CardDefinition = {
                 targetDefinition: {
                     type: TargetType.CardInGraveyard,
                     count: 1,
-                    restrictions: ["creature"]
+                    restrictions: [Restriction.Creature]
                 },
                 effects: [
                     {
@@ -62,11 +63,10 @@ export const GraveResearcherReanimate: CardDefinition = {
                     {
                         type: EffectType.LoseLife,
                         targetMapping: TargetMapping.Controller,
-                        amount: 'TARGET_1_MV'
+                        amount: 'TARGET_1_MANA_VALUE'
                     }
                 ]
             }
         ]
     }
 };
-

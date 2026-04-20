@@ -29,7 +29,8 @@ export const CostType = {
     TapSelection: 'TapSelection',
     ExileSelf: 'ExileSelf',
     Choice: 'Choice',
-    SacrificeSelf: 'SacrificeSelf'
+    SacrificeSelf: 'SacrificeSelf',
+    AddCounter: 'AddCounter'
 } as const;
 export type CostType = (typeof CostType)[keyof typeof CostType];
 
@@ -78,7 +79,15 @@ export const ConditionType = {
     SelfDied: 'SELF_DIED',
     EventSourceIsSelf: 'EVENT_SOURCE_IS_SELF',
     NotCastFromHand: 'NOT_CAST_FROM_HAND',
-    EventObjectIsTriggerSource: 'EVENT_OBJECT_IS_TRIGGER_SOURCE'
+    EventObjectIsTriggerSource: 'EVENT_OBJECT_IS_TRIGGER_SOURCE',
+    EventPlayerIsOpponent: 'EVENT_PLAYER_IS_OPPONENT',
+    NextSpellThisTurn: 'NEXT_SPELL_THIS_TURN',
+    CastDuringMainPhase: 'CAST_DURING_MAIN_PHASE',
+    OpponentHasMoreCardsInHand: 'OPPONENT_HAS_MORE_CARDS_IN_HAND',
+    IsInstantOrSorceryDiscarded: 'IS_INSTANT_OR_SORCERY_DISCARDED',
+    TotalToughnessGe: 'TOTAL_TOUGHNESS_GE',
+    GraveyardCreatureCountGe3: 'GRAVEYARD_CREATURE_COUNT_GE_3',
+    NotCreature: 'NOT_CREATURE'
 } as const;
 export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType] | string;
 
@@ -269,7 +278,7 @@ export interface StaticAbilityDefinition extends BaseAbilityDefinition {
     /** Custom logic conditions for the static effect to be active */
     condition?: string | ConditionType | ((state: any, event: any, t: any) => boolean);
     /** Specific rule restrictions (e.g. "Cannot attack") */
-    restrictions?: { type: string, value?: string, effectZone?: string }[];
+    restrictions?: { type: string, value?: string, effectZone?: string, targetId?: string, targetMapping?: string }[];
     /** Event to replace (for Replacement effects) */
     replacesEvent?: string;
     /** Specific cost reductions granted by this ability */

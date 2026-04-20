@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const ValentinDeanoftheVein: CardDefinition = {
     name: "Valentin, Dean of the Vein",
@@ -30,7 +30,7 @@ export const ValentinDeanoftheVein: CardDefinition = {
                         type: EffectType.ApplyContinuousEffect,
                         layer: 6,
                         targetMapping: TargetMapping.EachOpponentCreature,
-                        restrictions: ['nontoken'],
+                        restrictions: [Restriction.NonToken],
                         exileOnMoveToGraveyard: true,
                     }]
                 },
@@ -58,7 +58,11 @@ export const ValentinDeanoftheVein: CardDefinition = {
                                     abilities: [{
                                         type: AbilityType.Triggered,
                                         eventMatch: TriggerEvent.Death,
-                                        effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
+                                        effects: [{
+                                            type: EffectType.GainLife,
+                                            amount: 1,
+                                            targetMapping: TargetMapping.Controller
+                                        }]
                                     }]
                                 }
                             }]
@@ -98,5 +102,3 @@ export const ValentinDeanoftheVein: CardDefinition = {
         }
     ]
 };
-
-

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const MilaCraftyCompanion: CardDefinition = {
     name: "Mila, Crafty Companion",
@@ -90,7 +90,7 @@ export const MilaCraftyCompanion: CardDefinition = {
                     targetDefinition: {
                         type: TargetType.CardInGraveyard,
                         count: 1,
-                        restrictions: ['creature']
+                        restrictions: [Restriction.Creature]
                     },
                     effects: [
                         { type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 },

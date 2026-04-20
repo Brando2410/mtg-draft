@@ -1,14 +1,12 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const DrowsingTyrannodon: CardDefinition = {
-
     name: "Drowsing Tyrannodon",
     manaCost: "{1}{G}",
     scryfall_id: "288b056a-ea80-4fdc-990d-0ee1e9a7bf64",
     image_url: "https://cards.scryfall.io/normal/front/2/8/288b056a-ea80-4fdc-990d-0ee1e9a7bf64.jpg?1616399654",
     oracleText: "Defender (This creature can't attack.)\nAs long as you control a creature with power 4 or greater, this creature can attack as though it didn't have defender.",
     colors: ["G"],
-    supertypes: [],
     types: ["Creature"],
     subtypes: ["Dinosaur"],
     power: "3",
@@ -26,7 +24,4 @@ export const DrowsingTyrannodon: CardDefinition = {
             }]
         }
     ]
-
 };
-
-

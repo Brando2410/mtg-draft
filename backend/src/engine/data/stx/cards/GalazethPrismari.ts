@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const GalazethPrismari: CardDefinition = {
     name: "Galazeth Prismari",
@@ -24,7 +24,7 @@ export const GalazethPrismari: CardDefinition = {
             effects: [{
                 type: EffectType.AddActivatedAbility,
                 targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
-                restrictions: ['Artifact'],
+                restrictions: [Restriction.Artifact],
                 abilitiesToAdd: [{
                     type: AbilityType.Activated,
                     costs: [{ type: CostType.Tap }],
@@ -39,5 +39,3 @@ export const GalazethPrismari: CardDefinition = {
         }
     ]
 };
-
-

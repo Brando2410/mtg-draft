@@ -19,23 +19,14 @@ export const LeafkinAvenger: CardDefinition = {
             effects: [{
                 type: EffectType.AddMana,
                 manaType: 'G',
-                amount: (state: any, source: any) => {
-                    return state.battlefield.filter((o: any) =>
-                        o.controllerId === source.controllerId &&
-                        o.definition.types.some((t: any) => t.toLowerCase() === 'creature') &&
-                        (o.effectiveStats?.power ?? 0) >= 4
-                    ).length;
-                },
+                amount: DynamicAmount.Count_Power4PlusCreaturesYouControl,
                 targetMapping: TargetMapping.Controller
             }]
         },
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Mana, value: '{7}{R}' }],
-            targetDefinition: {
-                type: TargetType.PlayerOrPlaneswalker,
-                count: 1,
-            },
+            targetDefinition: { type: TargetType.PlayerOrPlaneswalker, count: 1 },
             effects: [{
                 type: EffectType.DealDamage,
                 amount: DynamicAmount.SourcePower,
@@ -44,6 +35,3 @@ export const LeafkinAvenger: CardDefinition = {
         }
     ]
 };
-
-
-

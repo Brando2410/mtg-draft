@@ -1,17 +1,10 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const SilverquillCharm: CardDefinition = {
     name: "Silverquill Charm",
     manaCost: "{W}{B}",
-    colors: [
-        "B",
-        "W"
-    ],
-    types: [
-        "Instant"
-    ],
-    subtypes: [],
-    keywords: [],
+    colors: ["B", "W"],
+    types: ["Instant"],
     oracleText: "Choose one —\n• Put two +1/+1 counters on target creature.\n• Exile target creature with power 2 or less.\n• Each opponent loses 3 life and you gain 3 life.",
     abilities: [
         {
@@ -40,7 +33,7 @@ export const SilverquillCharm: CardDefinition = {
                                     targetDefinition: {
                                         type: TargetType.Creature, 
                                         count: 1, 
-                                        restrictions: ["power <= 2"]
+                                        restrictions: [Restriction.Power2OrLess]
                                     }
                                 }
                             ]

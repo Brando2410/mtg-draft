@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const FungalRebirth: CardDefinition = {
     name: "Fungal Rebirth",
@@ -14,10 +14,7 @@ export const FungalRebirth: CardDefinition = {
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
-                restrictions: [
-                { type: 'Type', value: 'Permanent' },
-                { type: 'Control', value: 'YouControl' }
-            ]
+                restrictions: [Restriction.Permanent, Restriction.YouControl]
             },
             effects: [
                 {
@@ -27,13 +24,14 @@ export const FungalRebirth: CardDefinition = {
                 {
                     type: EffectType.CreateToken,
                     condition: 'CREATURE_DIED_THIS_TURN',
-                    tokenBlueprint: {
+                    definition: {
                         name: "Saproling",
                         colors: ["G"],
                         types: ["Creature"],
                         subtypes: ["Saproling"],
                         power: 1,
-                        toughness: 1
+                        toughness: 1,
+                        image_url: 'https://cards.scryfall.io/large/front/c/5/c519d084-7546-444a-9ef2-5ec2fb5633bc.jpg?1594733703'
                     },
                     amount: 2,
                     targetMapping: TargetMapping.Controller
@@ -42,4 +40,3 @@ export const FungalRebirth: CardDefinition = {
         }
     ]
 };
-

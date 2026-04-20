@@ -1,5 +1,6 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const EssenceknitScholar: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+
+export const EssenceknitScholar: CardDefinition = {
     name: "Essenceknit Scholar",
     manaCost: "{B}{B/G}{G}",
     scryfall_id: "2a3cba55-3fae-4d45-ae03-4d662ec13718",
@@ -25,10 +26,9 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
             effects: [
                 {
                     type: EffectType.CreateToken,
-                    amount: 1,
                     tokenBlueprint: {
                         name: 'Pest',
-                        colors: ['black', 'green'],
+                        colors: ['B', 'G'],
                         types: ['Creature'],
                         subtypes: ['Pest'],
                         power: 1,
@@ -49,11 +49,10 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: 'PLAYER_IS_CONTROLLER && CREATURE_DIED_UNDER_YOUR_CONTROL_THIS_TURN',
+            condition: `${ConditionType.PlayerIsController} && ${ConditionType.CreatureDiedUnderYourControlThisTurn}`,
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }
     ],
     power: "3",
     toughness: "1"
 };
-    

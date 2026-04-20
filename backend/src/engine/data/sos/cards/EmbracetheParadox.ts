@@ -1,4 +1,5 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+
 export const EmbracetheParadox: CardDefinition = {
     name: "Embrace the Paradox",
     manaCost: "{3}{G}{U}",
@@ -12,8 +13,6 @@ export const EmbracetheParadox: CardDefinition = {
     types: [
         "Instant"
     ],
-    subtypes: [],
-    keywords: [],
     oracleText: "Draw three cards. You may put a land card from your hand onto the battlefield tapped.",
     abilities: [
         {
@@ -24,9 +23,8 @@ export const EmbracetheParadox: CardDefinition = {
                     amount: 3
                 },
                 {
-                    type: CostType.Choice,
-                    label: 'Put a land card from hand onto battlefield tapped?',
-                    optional: true,
+                    type: EffectType.Choice,
+                    label: 'You may put a land card from hand onto battlefield tapped',
                     choices: [
                         {
                             label: 'Yes',
@@ -35,9 +33,8 @@ export const EmbracetheParadox: CardDefinition = {
                                 zone: Zone.Hand,
                                 count: 1,
                                 minCount: 0,
-                                restrictions: [
-                                    "Land"
-                                ]
+                                optional: true,
+                                restrictions: [Restriction.Land]
                             },
                             effects: [
                                 {
@@ -46,7 +43,8 @@ export const EmbracetheParadox: CardDefinition = {
                                     tapped: true
                                 }
                             ]
-                        }
+                        },
+                        { label: 'Decline', effects: [] }
                     ]
                 }
             ]

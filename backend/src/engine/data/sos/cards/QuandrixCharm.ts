@@ -1,32 +1,31 @@
 import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+
 export const QuandrixCharm: CardDefinition = {
     name: "Quandrix Charm",
     manaCost: "{G}{U}",
+    scryfall_id: "71e549fa-4e7f-421a-b911-45186b520ae1", // Fixed scryfall_id if needed
     colors: ["G", "U"],
     types: ["Instant"],
-    subtypes: [],
-    keywords: [],
     oracleText: "Choose one —\n• Counter target spell unless its controller pays {2}.\n• Destroy target enchantment.\n• Target creature has base power and toughness 5/5 until end of turn.",
     abilities: [
         {
             type: AbilityType.Spell,
             effects: [
                 {
-                    type: CostType.Choice,
-                    label: "Choose one",
+                    type: EffectType.Choice,
                     choices: [
                         {
                             label: 'Counter target spell unless its controller pays {2}',
                             targetDefinition: { count: 1, type: TargetType.Spell },
                             effects: [
                                 {
-                                    type: CostType.Choice,
-                                    label: "Pay {2} or counter?",
+                                    type: EffectType.Choice,
+                                    label: "Pay {2} to prevent countering?",
                                     targetMapping: TargetMapping.Target1Controller,
                                     choices: [
                                         {
                                             label: "Pay {2}",
-                                            costs: [{ type: CostType.Mana, value: '{2}' }]
+                                            costs: [{ type: CostType.Mana, value: '{2}' } as any] // Using any because CostType/EffectType mix
                                         },
                                         {
                                             label: "Don't Pay",

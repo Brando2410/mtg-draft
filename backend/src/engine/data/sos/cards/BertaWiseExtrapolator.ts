@@ -1,5 +1,6 @@
-import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const BertaWiseExtrapolator: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TriggerEvent, ConditionType } from '@shared/engine_types';
+
+export const BertaWiseExtrapolator: CardDefinition = {
     name: "Berta, Wise Extrapolator",
     manaCost: "{2}{G}{U}",
     scryfall_id: "75f89c36-c81d-4580-9a5c-218fed0c5c9a",
@@ -23,11 +24,11 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CountersAdded,
-            condition: 'TRIGGER_TARGET_IS_SELF && EVENT_COUNTER_TYPE_MATCHES:p1p1',
+            condition: `${ConditionType.TriggerTargetIsSelf} && ${ConditionType.EventCounterTypeMatches}:+1/+1`,
             effects: [
                 {
                     type: EffectType.AddMana,
-                    manaType: TargetType.Any,
+                    manaType: 'Any',
                     amount: 1
                 }
             ]
@@ -43,14 +44,14 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
                     type: EffectType.CreateToken,
                     tokenBlueprint: {
                         name: 'Fractal',
-                        power: '0',
-                        toughness: '0',
+                        power: 0,
+                        toughness: 0,
                         colors: ['G', 'U'],
                         types: ['Creature'],
                         subtypes: ['Fractal'],
                         image_url: 'https://cards.scryfall.io/png/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.png?1682693894'
                     }
-    },
+                },
                 {
                     type: EffectType.AddCounters,
                     targetMapping: TargetMapping.LastCreatedToken,
@@ -63,4 +64,3 @@ import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Targe
     power: "1",
     toughness: "4"
 };
-    

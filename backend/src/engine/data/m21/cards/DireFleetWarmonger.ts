@@ -1,66 +1,56 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetType, Zone } from "@shared/engine_types";
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from "@shared/engine_types";
 
 export const DireFleetWarmonger: CardDefinition = {
-        name: "Dire Fleet Warmonger",
-        manaCost: "{1}{B}{R}",
+    name: "Dire Fleet Warmonger",
+    manaCost: "{1}{B}{R}",
     scryfall_id: "1fa781df-859f-4346-9424-b3713b17e1f6",
     image_url: "https://cards.scryfall.io/normal/front/1/f/1fa781df-859f-4346-9424-b3713b17e1f6.jpg?1594737366",
-        oracleText: "At the beginning of combat on your turn, you may sacrifice another creature. If you do, this creature gets +2/+2 and gains trample until end of turn. (It can deal excess combat damage to the player or planeswalker it's attacking.)",
-        colors: ["black", "red"],
-        supertypes: [],
-        types: ["Creature"],
-        subtypes: ["Orc", "Pirate"],
-        power: "3",
-        toughness: "3",
-        keywords: [],
-        abilities: [
-            {
-                id: "dire_fleet_warmonger_trigger",
-                type: AbilityType.Triggered,
-                activeZone: Zone.Battlefield,
-                    eventMatch: "ON_BEGINNING_OF_COMBAT_STEP",
-                condition: (state: any, event: any, source: any) => state.activePlayerId === source.controllerId,
-                effects: [
-                    {
-                        type: EffectType.Choice,
-                        optional: true,
-                        label: "Sacrifice another creature to power up Dire Fleet Warmonger?",
-                        choices: [
-                            {
-                                label: "Sacrifice another creature",
-                                effects: [
-                                    {
-                                        type: EffectType.Sacrifice,
-                                        targetDefinition: {
-                                            type: TargetType.Permanent,
-                                            count: 1,
-                                            restrictions: [
-                { type: 'Type', value: 'creature' },
-                { type: 'Type', value: 'other' },
-                { type: 'Type', value: 'yours' }
-            ]
-                                        },
-                                        targetMapping: "CONTROLLER"
-                                    },
-                                    {
-                                        type: EffectType.ApplyContinuousEffect,
-                                        powerModifier: 2,
-                                        toughnessModifier: 2,
-                                        abilitiesToAdd: ["Trample"],
-                                        duration: {
-                                            type: DurationType.UntilEndOfTurn
-                                        },
-                                        targetMapping: "SELF"
+    oracleText: "At the beginning of combat on your turn, you may sacrifice another creature. If you do, this creature gets +2/+2 and gains trample until end of turn. (It can deal excess combat damage to the player or planeswalker it's attacking.)",
+    colors: ["B", "R"],
+    types: ["Creature"],
+    subtypes: ["Orc", "Pirate"],
+    power: "3",
+    toughness: "3",
+    abilities: [
+        {
+            type: AbilityType.Triggered,
+            eventMatch: TriggerEvent.BeginningOfCombatStep,
+            condition: ConditionType.IsYourTurn,
+            effects: [
+                {
+                    type: EffectType.Choice,
+                    optional: true,
+                    label: "Sacrifice another creature to power up Dire Fleet Warmonger?",
+                    choices: [
+                        {
+                            label: "Sacrifice another creature",
+                            effects: [
+                                {
+                                    type: EffectType.Sacrifice,
+                                    targetDefinition: {
+                                        type: TargetType.Creature,
+                                        count: 1,
+                                        restrictions: [
+                                            Restriction.Other,
+                                            Restriction.YouControl
+                                        ]
                                     }
-                                ]
-                            }
-                        ]
-                    }
-                ],
-                oracleText: "At the beginning of combat on your turn, you may sacrifice another creature. If you do, Dire Fleet Warmonger gets +2/+2 and gains trample until end of turn."
-            }
-        ]
-    };
-
-
-
+                                },
+                                {
+                                    type: EffectType.ApplyContinuousEffect,
+                                    powerModifier: 2,
+                                    toughnessModifier: 2,
+                                    abilitiesToAdd: ["Trample"],
+                                    duration: {
+                                        type: DurationType.UntilEndOfTurn
+                                    },
+                                    targetMapping: TargetMapping.Self
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+        }
+    ]
+};

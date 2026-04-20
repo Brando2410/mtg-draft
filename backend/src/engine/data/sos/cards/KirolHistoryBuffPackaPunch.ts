@@ -1,5 +1,6 @@
-﻿import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const KirolHistoryBuffPackaPunch: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+
+export const KirolHistoryBuffPackaPunch: CardDefinition = {
     name: "Kirol, History Buff // Pack a Punch",
     manaCost: "{R}{W}",
     scryfall_id: "676ba521-66e4-42cf-a315-70d03cb7334e",
@@ -17,9 +18,7 @@
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.LeaveGraveyard,
-            condition: (state, event, trigger) => {
-                return event.playerId === trigger.controllerId;
-            },
+            condition: ConditionType.EventPlayerIsYou,
             effects: [
                 {
                     type: EffectType.Prepare,
@@ -56,4 +55,3 @@
         ]
     }
 };
-    

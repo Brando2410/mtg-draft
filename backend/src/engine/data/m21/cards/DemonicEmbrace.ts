@@ -47,10 +47,8 @@ export const DemonicEmbrace: CardDefinition = {
                     { type: CostType.PayLife, value: 3 },
                     { type: CostType.Discard, amount: 1 }
                 ],
-                targetMapping: TargetMapping.Self
+                targetMapping: TargetMapping.Controller
             }]
         }
     ]
 };
-
-

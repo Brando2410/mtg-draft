@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, GameState, PlayerId, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, GameState, PlayerId, Restriction, TargetMapping } from '@shared/engine_types';
 
 /**
  * Pox Plague (SOS 0XX)
@@ -39,7 +39,7 @@ export const PoxPlague: CardDefinition = {
                 {
                     type: EffectType.Sacrifice,
                     targetMapping: TargetMapping.EachPlayer,
-                    restrictions: ['permanent'],
+                    restrictions: [Restriction.Permanent],
                     amount: (state: GameState, source: any, targets: string[]) => {
                         const pid = targets[0] as PlayerId;
                         const perms = state.battlefield.filter((o) => o.controllerId === pid);

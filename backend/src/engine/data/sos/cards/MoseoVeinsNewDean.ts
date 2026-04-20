@@ -1,4 +1,5 @@
-﻿import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+
 export const MoseoVeinsNewDean: CardDefinition = {
     name: "Moseo, Vein's New Dean",
     manaCost: "{2}{B}",
@@ -9,9 +10,9 @@ export const MoseoVeinsNewDean: CardDefinition = {
     types: ["Legendary", "Creature"],
     subtypes: ["Bird", "Skeleton", "Warlock"],
     keywords: ["Flying"],
+    oracleText: "Flying\nWhen Moseo enters, create a 1/1 black and green Pest creature token with \"Whenever this token attacks, you gain 1 life.\"\nInfusion — At the beginning of your end step, if you gained life this turn, return up to one target creature card with mana value X or less from your graveyard to the battlefield, where X is the amount of life you gained this turn.",
     power: "2",
     toughness: "1",
-    oracleText: "Flying\nWhen Moseo enters, create a 1/1 black and green Pest creature token with \"Whenever this token attacks, you gain 1 life.\"\nInfusion â€” At the beginning of your end step, if you gained life this turn, return up to one target creature card with mana value X or less from your graveyard to the battlefield, where X is the amount of life you gained this turn.",
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -42,23 +43,21 @@ export const MoseoVeinsNewDean: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: `${ConditionType.Infusion} && ${ConditionType.IsYourTurn}`,
+            condition: ConditionType.Infusion, // IsYourTurn is implied by Infusion (usually) but check implementation
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 minCount: 0,
                 optional: true,
                 restrictions: [
-                    "Creature",
-                    {
-                        type: 'ManaValueLe',
-                        value: 'GAINED_LIFE_AMOUNT'
-                    }
+                    Restriction.Creature,
+                    Restriction.ManaValueLeLifeGained,
+                    Restriction.YouOwn
                 ]
             },
             effects: [
                 {
-                    type: EffectType.MoveToZone,
+                    type: EffectType.PutOnBattlefield,
                     zone: Zone.Battlefield,
                     targetMapping: TargetMapping.Target1
                 }

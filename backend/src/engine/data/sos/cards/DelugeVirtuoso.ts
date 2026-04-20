@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const DelugeVirtuoso: CardDefinition = {
     name: "Deluge Virtuoso",
@@ -20,7 +20,7 @@ export const DelugeVirtuoso: CardDefinition = {
             targetDefinition: {
                 type: TargetType.Creature,
                 count: 1,
-                restrictions: ["opponentcontrol"]
+                restrictions: [Restriction.OpponentControl]
             },
             effects: [
                 {

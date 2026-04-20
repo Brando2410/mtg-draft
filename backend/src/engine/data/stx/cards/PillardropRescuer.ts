@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const PillardropRescuer: CardDefinition = {
     name: 'Pillardrop Rescuer',
@@ -17,7 +17,7 @@ export const PillardropRescuer: CardDefinition = {
             targetDefinition: {
                 count: 1,
                 type: TargetType.CardInGraveyard,
-                restrictions: ['Creature', 'mv <= 3', 'yours']
+                restrictions: [Restriction.Creature, 'mv <= 3', Restriction.YouControl]
             },
             effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
         }

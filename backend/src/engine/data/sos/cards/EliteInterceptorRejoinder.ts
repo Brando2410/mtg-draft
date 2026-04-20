@@ -1,4 +1,5 @@
-﻿import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+
 export const EliteInterceptorRejoinder: CardDefinition = {
     name: "Elite Interceptor",
     manaCost: "{W}",
@@ -12,7 +13,6 @@ export const EliteInterceptorRejoinder: CardDefinition = {
     oracleText: "This creature enters prepared.",
     power: "1",
     toughness: "2",
-
     entersPrepared: true,
     preparedFace: {
         name: "Rejoinder",
@@ -24,14 +24,20 @@ export const EliteInterceptorRejoinder: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0, optional: true },
+                targetDefinition: { type: TargetType.Creature, count: 1, optional: true },
                 effects: [
                     {
-                        type: CostType.Choice,
-                        label: "Tap or untap?",
+                        type: EffectType.Choice,
+                        label: "Choose one:",
                         choices: [
-                            { label: CostType.Tap, effects: [{ type: CostType.Tap, targetMapping: TargetMapping.Target1 }] },
-                            { label: EffectType.Untap, effects: [{ type: EffectType.Untap, targetMapping: TargetMapping.Target1 }] }
+                            {
+                                label: "Tap target creature",
+                                effects: [{ type: EffectType.Tap, targetMapping: TargetMapping.Target1 }]
+                            },
+                            {
+                                label: "Untap target creature",
+                                effects: [{ type: EffectType.Untap, targetMapping: TargetMapping.Target1 }]
+                            }
                         ]
                     },
                     { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }

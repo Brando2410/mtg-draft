@@ -1,4 +1,5 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
+
 export const SocialSnub: CardDefinition = {
     name: "Social Snub",
     manaCost: "{1}{W}{B}",
@@ -16,7 +17,7 @@ export const SocialSnub: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
-            condition: 'HAS_PERMANENT:creature',
+            condition: ConditionType.HasPermanent + ':creature',
             effects: [
                 {
                     type: EffectType.CopySpellOnStack,
@@ -29,10 +30,10 @@ export const SocialSnub: CardDefinition = {
             type: AbilityType.Spell,
             effects: [
                 {
-                    type: CostType.Sacrifice,
+                    type: EffectType.Sacrifice,
                     targetMapping: TargetMapping.EachPlayer,
                     restrictions: [
-                        "Creature"
+                        Restriction.Creature
                     ]
                 },
                 {

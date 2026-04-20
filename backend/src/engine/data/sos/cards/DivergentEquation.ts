@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, SelectionType, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, SelectionType, TargetType, Zone } from '@shared/engine_types';
 
 export const DivergentEquation: CardDefinition = {
     name: "Divergent Equation",
@@ -23,8 +23,8 @@ export const DivergentEquation: CardDefinition = {
                         minCount: 0,
                         count: 'X' as any,
                         restrictions: [
-                            "InstantOrSorcery",
-                            "Yours"
+                            Restriction.InstantOrSorcery,
+                            Restriction.YouOwn
                         ]
                     }
                 }

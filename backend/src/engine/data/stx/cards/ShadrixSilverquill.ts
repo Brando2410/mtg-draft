@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const ShadrixSilverquill: CardDefinition = {
     name: "Shadrix Silverquill",
@@ -43,7 +43,7 @@ export const ShadrixSilverquill: CardDefinition = {
                             counterType: 'P1P1',
                             amount: 1,
                             targetMapping: TargetMapping.AllMatchingPermanents,
-                            restrictions: ['Creature', 'controlled_by_target_1']
+                            restrictions: [Restriction.Creature, Restriction.ControlledByTarget1]
                         }]
                     }
                 ]

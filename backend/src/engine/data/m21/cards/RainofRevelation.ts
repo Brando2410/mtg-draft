@@ -7,10 +7,7 @@ export const RainofRevelation: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/d/a/da367981-9d6f-419f-9f58-f969b6183336.jpg?1594735631",
     oracleText: "Draw three cards, then discard a card.",
     colors: ["U"],
-    supertypes: [],
     types: ["Instant"],
-    subtypes: [],
-    keywords: [],
     abilities: [
         {
             type: AbilityType.Spell,
@@ -21,5 +18,3 @@ export const RainofRevelation: CardDefinition = {
         }
     ]
 };
-
-

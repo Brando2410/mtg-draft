@@ -1,5 +1,6 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const OrysaTideChoreographer: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+
+export const OrysaTideChoreographer: CardDefinition = {
     name: "Orysa, Tide Choreographer",
     manaCost: "{4}{U}",
     scryfall_id: "010ed379-63f5-452c-9cd4-00d51647c0e3",
@@ -21,14 +22,18 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     abilities: [
         {
             type: AbilityType.Static,
-            costReduction: {
-                amount: '{3}',
-                condition: 'TOTAL_TOUGHNESS_GE:10'
-            }
+            effects: [
+                {
+                    type: EffectType.CostReduction,
+                    amount: 3,
+                    condition: ConditionType.TotalToughnessGe + ':10',
+                    targetMapping: TargetMapping.Self
+                }
+            ]
         },
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [
                 {
                     type: EffectType.DrawCards,
@@ -41,4 +46,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     power: "2",
     toughness: "2"
 };
-    

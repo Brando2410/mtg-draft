@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 export const WitherbloomtheBalancer: CardDefinition = {
     name: "Witherbloom, the Balancer",
     manaCost: "{6}{B}{G}",
@@ -27,7 +27,7 @@ export const WitherbloomtheBalancer: CardDefinition = {
                     type: EffectType.CostReduction,
                     targetMapping: TargetMapping.Controller,
                     amount: DynamicAmount.CreaturesYouControl,
-                    restrictions: ["InstantOrSorcery"]
+                    restrictions: [Restriction.InstantOrSorcery]
                 }
             ]
         }

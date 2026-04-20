@@ -1,11 +1,10 @@
-import { AbilityType, CardDefinition, EffectType, GameObject, GameState, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-
-const countShrines = (state: GameState, source: GameObject) =>
-    state.battlefield.filter(o => o.controllerId === source.controllerId && (o.definition.subtypes || []).includes('Shrine')).length;
+import { AbilityType, CardDefinition, ConditionType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const SanctumofShatteredHeights: CardDefinition = {
     name: "Sanctum of Shattered Heights",
     manaCost: "{2}{R}",
+    scryfall_id: "28499462-8b4b-4b2a-9d7f-9445ced2ee76",
+    image_url: "https://cards.scryfall.io/normal/front/2/8/28499462-8b4b-4b2a-9d7f-9445ced2ee76.jpg?1594736814",
     oracleText: "At the beginning of your precombat main phase, you may pay {1} and discard a land or Shrine card. If you do, Sanctum of Shattered Heights deals X damage to target creature or planeswalker, where X is the number of Shrines you control.",
     colors: ["R"],
     supertypes: ["Legendary"],
@@ -15,8 +14,7 @@ export const SanctumofShatteredHeights: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.PreCombatMainPhaseStart,
-            activeZone: Zone.Battlefield,
-            condition: (state, event, ability) => event.playerId === ability.controllerId,
+            condition: ConditionType.PlayerIsController,
             targetDefinition: {
                 type: TargetType.CreatureOrPlaneswalker,
                 count: 1,
@@ -30,13 +28,14 @@ export const SanctumofShatteredHeights: CardDefinition = {
                             label: "Yes",
                             effects: [
                                 { type: EffectType.PayMana, value: "{1}" },
-                                { type: EffectType.DiscardCards, amount: 1, restrictions: [
-                { type: 'Type', value: 'Land' },
-                { type: 'Type', value: 'Shrine' }
-            ] },
+                                {
+                                    type: EffectType.DiscardCards,
+                                    amount: 1,
+                                    restrictions: [Restriction.LandOrShrine]
+                                },
                                 {
                                     type: EffectType.DealDamage,
-                                    amount: countShrines,
+                                    amount: DynamicAmount.ShrinesYouControlCount,
                                     targetMapping: TargetMapping.Target1
                                 }
                             ]
@@ -48,5 +47,3 @@ export const SanctumofShatteredHeights: CardDefinition = {
         }
     ]
 };
-
-

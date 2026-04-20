@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from "@shared/engine_types";
 
 export const InvigoratingSurge: CardDefinition = {
     name: "Invigorating Surge",
@@ -13,9 +13,7 @@ export const InvigoratingSurge: CardDefinition = {
             type: AbilityType.Spell,
             targetDefinition: {
                 type: TargetType.Creature,
-                restrictions: [
-                { type: 'Type', value: 'youcontrol' }
-            ]
+                restrictions: [Restriction.YouControl]
             },
             effects: [
                 {

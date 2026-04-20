@@ -152,9 +152,7 @@ export class TargetValidator {
 
             const targetName = (definition.name || (targetObj as any).name || "").toLowerCase();
             const objSubtypes = (definition.subtypes || []).map((s: string) => s.toLowerCase());
-            const singularLr = lr.endsWith('s') ? lr.slice(0, -1) : lr;
-
-            if (targetName !== lr && targetName !== singularLr && !objSubtypes.includes(lr) && !objSubtypes.includes(singularLr)) return false;
+            if (targetName !== lr && !objSubtypes.includes(lr)) return false;
         }
 
         const alternatives = restrictions.filter(r => {
@@ -185,9 +183,9 @@ export class TargetValidator {
                     if (restrictionType === 'type' && restrictionValue && !this.matchesRestrictions(state, targetObj, [restrictionValue], context)) match = false;
                     if (r.subtypes && !r.subtypes.some((s: string) => (definition.subtypes || []).some((ts: string) => ts.toLowerCase() === s.toLowerCase()))) match = false;
                     if (r.nameIncludes && definition.name && !definition.name.toLowerCase().includes(r.nameIncludes.toLowerCase())) match = false;
-                    if (r.nameEquals || r.name) {
+                    if (r.nameEquals || r.name || (restrictionType === 'name' && r.value)) {
                         const tName = definition?.name || (targetObj as any).name;
-                        const fName = (r.nameEquals || r.name || "") as string;
+                        const fName = (r.nameEquals || r.name || r.value || "") as string;
                         if (!tName || tName.toLowerCase() !== fName.toLowerCase()) match = false;
                     }
                     if (restrictionType === 'control' && restrictionValue && !this.matchesRestrictions(state, targetObj, [restrictionValue], context)) match = false;
@@ -205,6 +203,22 @@ export class TargetValidator {
                         if (comp === 'GreaterOrEqual' && mv < val) match = false;
                         if (comp === 'Equal' && mv !== val) match = false;
                     }
+
+                    if (restrictionType === 'color') {
+                        const targetColors = this.getColors(targetObj, state);
+                        const val = restrictionValue?.toLowerCase();
+                        const map: any = { 'w': 'white', 'u': 'blue', 'b': 'black', 'r': 'red', 'g': 'green' };
+                        const finalVal = map[val!] || val;
+                        if (!targetColors.includes(finalVal)) match = false;
+                    }
+
+                    if (restrictionType === 'noncolor') {
+                        const targetColors = this.getColors(targetObj, state);
+                        const val = restrictionValue?.toLowerCase();
+                        const map: any = { 'w': 'white', 'u': 'blue', 'b': 'black', 'r': 'red', 'g': 'green' };
+                        const finalVal = map[val!] || val;
+                        if (targetColors.includes(finalVal)) match = false;
+                    }
                     return match;
                 }
             });
@@ -212,45 +226,18 @@ export class TargetValidator {
         return true;
     }
 
-    public static hasLegalTargets(state: GameState, sourceId: string, targetDef: any, controllerId: string): boolean {
-        if (!targetDef || (Array.isArray(targetDef) ? targetDef.every(d => d.optional) : targetDef.optional)) return true;
-        let count = 0;
-        let minCount = 0;
-        if (Array.isArray(targetDef)) {
-            targetDef.forEach(d => {
-                count += (typeof d.count === 'number' ? d.count : 1);
-                minCount += (d.minCount !== undefined ? d.minCount : (typeof d.count === 'number' ? d.count : 1));
-            });
-        } else {
-            count = targetDef.count || 1;
-            minCount = targetDef.minCount !== undefined ? targetDef.minCount : count;
-        }
-        if (minCount === 0) return true;
-        const allPotentialTargets = [...Object.keys(state.players), ...state.battlefield.map((o: any) => o.id), ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((o: any) => o.id)), ...state.exile.map(o => o.id), ...state.stack.map(o => o.id)];
-        for (let i = 0; i < minCount; i++) {
-            const hasLegal = allPotentialTargets.some(tid => this.isLegalTarget(state, { sourceId, controllerId, targetDef, targetIndex: i }, tid));
-            if (!hasLegal) return false;
-        }
-        return true;
+    public static getColors(obj: any, state?: GameState): string[] {
+        const stats = state ? LayerProcessor.getEffectiveStats(obj, state) : null;
+        const colors = stats?.colors || obj.definition?.colors || (obj as any).card?.definition?.colors || [];
+        const map: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
+        return colors.map((c: string) => map[c.toUpperCase()] || c.toLowerCase());
     }
 
     public static sourceHasQualities(source: Targetable, qualities: string[], state?: GameState): boolean {
         const s = (source as any).card || source;
         const sAsGameObject = s as GameObject;
         const definition = sAsGameObject.definition || sAsGameObject;
-        let sourceColors: string[] = [];
-        if (state && s.id && state.battlefield.some(o => o.id === s.id)) {
-            const stats = LayerProcessor.getEffectiveStats(s, state);
-            sourceColors = stats.colors.map((c: string) => {
-                const map: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
-                return map[c.toUpperCase()] || c.toLowerCase();
-            });
-        } else {
-            sourceColors = (Array.isArray(definition.colors) ? definition.colors : []).map((c: string) => {
-                const map: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
-                return map[c.toUpperCase()] || c.toLowerCase();
-            });
-        }
+        const sourceColors = this.getColors(s, state);
         const sourceTypes = (definition.types || []).map((t: string) => t.toLowerCase());
         const sourceSubtypes = (definition.subtypes || []).map((t: string) => t.toLowerCase());
         const sourceSupertypes = (definition.supertypes || []).map((t: string) => t.toLowerCase());
@@ -264,5 +251,28 @@ export class TargetValidator {
             const singularQ = lowerQ.endsWith('s') ? lowerQ.slice(0, -1) : lowerQ;
             return sourceTypes.includes(lowerQ) || sourceTypes.includes(singularQ) || sourceSubtypes.includes(lowerQ) || sourceSubtypes.includes(singularQ) || sourceSupertypes.includes(lowerQ) || sourceSupertypes.includes(singularQ) || sourceColors.includes(lowerQ) || sourceColors.includes(singularQ);
         });
+    }
+
+    public static hasLegalTargets(state: GameState, sourceId: string, targetDef: any, controllerId: string): boolean {
+        if (!targetDef) return true;
+        const pool = this.getLegalTargetPool(state, sourceId, targetDef, controllerId, 0);
+        return pool.length > 0;
+    }
+
+    public static getLegalTargetPool(state: GameState, sourceId: string, targetDef: any, controllerId: string, targetIndex: number = 0): string[] {
+        const pool = [
+            ...Object.keys(state.players),
+            ...state.battlefield.map(o => o.id),
+            ...state.exile.map(o => o.id),
+            ...state.stack.map(o => o.id),
+            ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
+        ];
+
+        return pool.filter(id => this.isLegalTarget(state, {
+            sourceId,
+            controllerId,
+            targetDef,
+            targetIndex
+        }, id));
     }
 }

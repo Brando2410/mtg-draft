@@ -1,7 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, GameObject, GameState, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
-
-const countShrines = (state: GameState, source: GameObject) =>
-    state.battlefield.filter(o => o.controllerId === source.controllerId && (o.definition.subtypes || []).includes('Shrine')).length;
+import { AbilityType, CardDefinition, ConditionType, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const SanctumofFruitfulHarvest: CardDefinition = {
     name: "Sanctum of Fruitful Harvest",
@@ -15,17 +12,15 @@ export const SanctumofFruitfulHarvest: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.PreCombatMainPhaseStart,
-            activeZone: Zone.Battlefield,
-            condition: (state, event, ability) => event.playerId === ability.controllerId,
+            condition: ConditionType.PlayerIsController,
             effects: [
                 {
                     type: EffectType.AddMana,
-                    manaType: 'ANY',
-                    amount: countShrines,
+                    manaType: 'Any',
+                    amount: DynamicAmount.ShrinesYouControlCount,
                     targetMapping: TargetMapping.Controller
                 }
             ]
         }
     ]
 };
-

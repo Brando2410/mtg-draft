@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
 
 export const BlexVexingPest: CardDefinition = {
     name: "Blex, Vexing Pest",
@@ -31,7 +31,16 @@ export const BlexVexingPest: CardDefinition = {
                     toughnessModifier: 1,
                     layer: 7,
                     targetMapping: TargetMapping.OtherCreaturesYouControl,
-                    restrictions: ['pest_or_bat_or_insect_or_snake_or_spider']
+                    restrictions: [{
+                        type: Restriction.Any,
+                        restrictions: [
+                            Restriction.Pest,
+                            Restriction.Bat,
+                            Restriction.Insect,
+                            Restriction.Snake,
+                            Restriction.Spider
+                        ]
+                    }]
                 }]
             }]
         },
@@ -54,4 +63,3 @@ export const BlexVexingPest: CardDefinition = {
         }
     ]
 };
-

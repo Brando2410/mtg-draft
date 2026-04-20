@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const AscendantDustspeaker: CardDefinition = {
     name: "Ascendant Dustspeaker",
@@ -24,7 +24,7 @@ export const AscendantDustspeaker: CardDefinition = {
             eventMatch: TriggerEvent.EnterBattlefield,
             targetDefinition: {
                 type: TargetType.Creature,
-                restrictions: ["other", "youcontrol"]
+                restrictions: [Restriction.Other, Restriction.YouControl]
             },
             effects: [
                 {

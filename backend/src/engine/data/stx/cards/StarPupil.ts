@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const StarPupil: CardDefinition = {
     name: 'Star Pupil',
@@ -20,11 +20,9 @@ export const StarPupil: CardDefinition = {
             targetDefinition: {
                 count: 1,
                 type: TargetType.Creature,
-                restrictions: ['youcontrol']
+                restrictions: [Restriction.YouControl]
             },
             effects: [{ type: EffectType.MoveCounters, targetMapping: TargetMapping.Target1 }]
         }
     ]
 };
-
-

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const Goremand: CardDefinition = {
     name: "Goremand",
@@ -15,14 +15,14 @@ export const Goremand: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Static,
-            activeZone: Zone.Hand,
             effects: [
                 {
                     type: EffectType.AdditionalCost,
                     targetMapping: TargetMapping.Self,
-                    additionalCosts: [{ type: CostType.Sacrifice, restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ] }]
+                    additionalCosts: [{
+                        type: CostType.Sacrifice,
+                        restrictions: [Restriction.Creature]
+                    }]
                 }
             ]
         },
@@ -33,9 +33,7 @@ export const Goremand: CardDefinition = {
                 {
                     type: EffectType.Sacrifice,
                     targetMapping: TargetMapping.EachOpponent,
-                    restrictions: [
-                { type: 'Type', value: 'Creature' }
-            ]
+                    restrictions: [Restriction.Creature]
                 }
             ]
         }

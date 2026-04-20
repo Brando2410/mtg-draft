@@ -1,4 +1,5 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+
 export const EmeritusofIdeationAncestralRecall: CardDefinition = {
     name: "Emeritus of Ideation // Ancestral Recall",
     manaCost: "{3}{U}{U}",
@@ -12,7 +13,6 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
     oracleText: "Flying, ward {2}\nThis creature enters prepared.\nWhenever this creature attacks, you may exile eight cards from your graveyard. If you do, this creature becomes prepared.",
     power: "5",
     toughness: "5",
-
     entersPrepared: true,
     abilities: [
         {
@@ -20,23 +20,24 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
             eventMatch: TriggerEvent.Attack,
             effects: [
                 {
-                    type: CostType.Choice,
-                    label: "Exile eight cards from your graveyard?",
+                    type: EffectType.Choice,
+                    label: "Exile eight cards from your graveyard to prepare?",
                     choices: [
                         {
-                            label: "Exile 8 cards",
-                            condition: 'GRAVEYARD_COUNT_GE:8',
-                            effects: [
+                            label: "Yes",
+                            costs: [
                                 {
-                                    type: CostType.Choice,
-                                    label: "Select 8 cards to exile",
-                                    targetIdMapping: 'CONTROLLER_GRAVEYARD',
-                                    minChoices: 8,
-                                    maxChoices: 8,
-                                    effects: [
-                                        { type: CostType.Exile }
-                                    ]
-                                },
+                                    type: CostType.Exile,
+                                    amount: 8,
+                                    targetDefinition: {
+                                        type: TargetType.Card,
+                                        zone: Zone.Graveyard,
+                                        count: 8,
+                                        restrictions: [Restriction.YouOwn]
+                                    }
+                                }
+                            ],
+                            effects: [
                                 {
                                     type: EffectType.Prepare,
                                     targetMapping: TargetMapping.Self
@@ -44,7 +45,7 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
                             ]
                         },
                         {
-                            label: "Decline",
+                            label: "No",
                             effects: []
                         }
                     ]
@@ -54,7 +55,6 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
     ],
     preparedFace: {
         name: "Ancestral Recall",
-        //    image_url: "https://cards.scryfall.io/png/front/2/3/2398892d-28e9-4009-81ec-0d544af79d2b.png?1614638829",
         image_url: "https://cards.scryfall.io/normal/front/7/5/75961d36-acf6-425f-9698-0bf52af74f31.jpg?1775937223",
         manaCost: "{U}",
         colors: ["U"],
@@ -64,7 +64,7 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
             {
                 type: AbilityType.Spell,
                 targetDefinition: {
-                    type: 'Player',
+                    type: TargetType.Player,
                     count: 1
                 },
                 effects: [
@@ -78,4 +78,3 @@ export const EmeritusofIdeationAncestralRecall: CardDefinition = {
         ]
     }
 };
-

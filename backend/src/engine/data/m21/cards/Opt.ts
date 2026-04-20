@@ -7,10 +7,7 @@ export const Opt: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/3/2/323db259-d35e-467d-9a46-4adcb2fc107c.jpg?1652898493",
     oracleText: "Scry 1. (Look at the top card of your library. You may put that card on the bottom.)\nDraw a card.",
     colors: ["U"],
-    supertypes: [],
     types: ["Instant"],
-    subtypes: [],
-    keywords: [],
     abilities: [
         {
             type: AbilityType.Spell,
@@ -21,5 +18,3 @@ export const Opt: CardDefinition = {
         }
     ]
 };
-
-

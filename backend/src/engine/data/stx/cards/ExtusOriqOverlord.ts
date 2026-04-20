@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const ExtusOriqOverlord: CardDefinition = {
     name: "Extus, Oriq Overlord",
@@ -31,7 +31,7 @@ export const ExtusOriqOverlord: CardDefinition = {
                 targetDefinition: {
                     count: 1,
                     type: TargetType.CardInGraveyard,
-                    restrictions: ['creature', 'yours']
+                    restrictions: [Restriction.Creature, Restriction.YouControl]
                 },
                 effects: [{
                     type: EffectType.MoveToZone,
@@ -53,7 +53,7 @@ export const ExtusOriqOverlord: CardDefinition = {
                         {
                             type: EffectType.Sacrifice,
                             targetMapping: TargetMapping.EachOpponent,
-                            restrictions: ['creature']
+                            restrictions: [Restriction.Creature]
                         },
                         {
                             type: EffectType.CreateToken,

@@ -1,4 +1,5 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+
 export const NitaForumConciliator: CardDefinition = {
     name: "Nita, Forum Conciliator",
     manaCost: "{1}{W}{B}",
@@ -49,13 +50,13 @@ export const NitaForumConciliator: CardDefinition = {
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 restrictions: [
-                    "opponentcontrol",
-                    "InstantOrSorcery"
+                    Restriction.OpponentControl,
+                    Restriction.InstantOrSorcery
                 ]
             },
             effects: [
                 {
-                    type: CostType.Exile,
+                    type: EffectType.Exile,
                     targetMapping: TargetMapping.Target1
                 },
                 {
@@ -65,9 +66,9 @@ export const NitaForumConciliator: CardDefinition = {
                     canPlayExiled: true,
                     spendAnyMana: true,
                     exileOnMoveToGraveyard: true,
-                    redirectConditions: { zone: Zone.Graveyard, onLeaveZone: CostType.Exile }
+                    redirectConditions: { zone: Zone.Exile } // Simplified from original weird redirect
                 }
             ],
-        }
+    }
     ]
 };

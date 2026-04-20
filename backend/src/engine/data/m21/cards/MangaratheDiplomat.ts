@@ -17,36 +17,14 @@ export const MangaraTheDiplomat: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Attack,
-            condition: (state: any, event: any, source: any) => {
-                // Must be an opponent attacking
-                const isOpponent = event.playerId !== source.controllerId;
-                if (!isOpponent) return false;
-
-                // Count creatures attacking you and/or planeswalkers you control
-                const attackers = event.data?.attackers || [];
-                const myPlaneswalkerIds = state.battlefield
-                    .filter((o: any) => o.controllerId === source.controllerId &&
-                        o.definition.types.some((t: string) => t.toLowerCase() === 'planeswalker'))
-                    .map((o: any) => o.id);
-
-                const attackingMeCount = attackers.filter((a: any) =>
-                    a.targetId === source.controllerId || myPlaneswalkerIds.includes(a.targetId)
-                ).length;
-
-                return attackingMeCount >= 2;
-            },
+            condition: 'OPPONENT_ATTACKING_WITH_2_OR_MORE_AT_YOU_OR_YOUR_PLANESWALKERS',
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         },
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.SecondSpellCast,
-            condition: (state: any, event: any, source: any) => {
-                return event.playerId !== source.controllerId;
-            },
+            condition: 'PLAYER_IS_OPPONENT',
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }
     ]
 };
-
-
-

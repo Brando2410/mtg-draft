@@ -16,12 +16,7 @@ export const HoodedBlightfang: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Attack,
-            condition: (state: any, event: any, source: any) => {
-                const attacker = state.battlefield.find((o: any) => o.id === event.sourceId);
-                return attacker &&
-                    attacker.controllerId === source.controllerId &&
-                    attacker.effectiveStats?.keywords?.includes('Deathtouch');
-            },
+            condition: 'YOU_CONTROL_ATTACKER_WITH_DEATHTOUCH',
             effects: [
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.EachOpponent },
                 { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }
@@ -30,15 +25,7 @@ export const HoodedBlightfang: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.DamageDealt,
-            condition: (state: any, event: any, source: any) => {
-                const targetObj = state.battlefield.find((o: any) => o.id === event.targetId);
-                if (!targetObj?.definition.types.some((t: string) => t.toLowerCase() === 'planeswalker')) return false;
-
-                const sourceObj = state.battlefield.find((o: any) => o.id === event.sourceId);
-                return sourceObj &&
-                    sourceObj.controllerId === source.controllerId &&
-                    sourceObj.effectiveStats?.keywords?.includes('Deathtouch');
-            },
+            condition: 'YOU_CONTROL_SOURCE_WITH_DEATHTOUCH && EVENT_TARGET_IS_PLANESWALKER',
             effects: [{
                 type: EffectType.Destroy,
                 targetMapping: TargetMapping.EventTarget
@@ -46,7 +33,3 @@ export const HoodedBlightfang: CardDefinition = {
         }
     ]
 };
-
-
-
-

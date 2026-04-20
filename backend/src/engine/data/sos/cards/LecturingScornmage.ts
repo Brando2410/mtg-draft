@@ -1,5 +1,6 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const LecturingScornmage: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+
+export const LecturingScornmage: CardDefinition = {
     name: "Lecturing Scornmage",
     manaCost: "{B}",
     scryfall_id: "ad07091e-8c24-43af-8ce8-031847bcaf30",
@@ -21,11 +22,11 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: 'REPARTEE_TRIGGER',
+            condition: ConditionType.ReparteeTrigger,
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    counterType: '+1/+1',
+                    counterType: 'P1P1',
                     amount: 1,
                     targetMapping: TargetMapping.Self
                 }
@@ -35,5 +36,3 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } 
     power: "1",
     toughness: "1"
 };
-    
-

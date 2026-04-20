@@ -1,39 +1,35 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const BasrisAegis: CardDefinition = {
     name: "Basri's Aegis",
-    manaCost: "{2}{W}{W}",
-    scryfall_id: "577657ed-162f-4104-b0af-ee9733e90f20",
-    image_url: "https://cards.scryfall.io/normal/front/5/7/577657ed-162f-4104-b0af-ee9733e90f20.jpg?1596250020",
-    oracleText: "Put a +1/+1 counter on each of up to two target creatures. You may search your library and/or graveyard for a card named Basri, Devoted Paladin, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    manaCost: "{3}{W}",
+    scryfall_id: "8f747867-080e-4735-97e3-057b4455855f",
+    image_url: "https://cards.scryfall.io/normal/front/8/f/8f747867-080e-4735-97e3-057b4455855f.jpg?1596250058",
+    oracleText: "Put a +1/+1 counter on target creature you control. You may search your library and/or graveyard for a card named Basri, Devoted Paladin, reveal it, and put it into your hand. If you search your library this way, shuffle.",
     colors: ["W"],
-    types: ["Sorcery"],
+    types: ["Instant"],
     abilities: [
         {
             type: AbilityType.Spell,
             targetDefinition: {
                 type: TargetType.Creature,
-                count: 2,
-                minCount: 0
+                count: 1,
+                restrictions: [Restriction.YouControl]
             },
             effects: [
-                {
-                    type: EffectType.AddCounters,
-                    counterType: "P1P1",
-                    amount: 1,
-                    targetMapping: TargetMapping.TargetAll
-                },
+                { type: EffectType.AddCounters, counterType: '+1/+1', amount: 1, targetMapping: TargetMapping.Target1 },
                 {
                     type: EffectType.SearchLibrary,
-                    sourceZones: [Zone.Library, Zone.Graveyard],
-                    optional: true,
-                    reveal: true,
-                    zone: Zone.Hand,
                     targetDefinition: {
                         type: TargetType.Card,
-                        restrictions: [{ type: 'Name', value: "Basri, Devoted Paladin" }],
-                        count: 1
-                    }
+                        count: 1,
+                        restrictions: [{ type: Restriction.Name, value: 'Basri, Devoted Paladin' }]
+                    },
+                    fromZones: [Zone.Library, Zone.Graveyard],
+                    zone: Zone.Hand,
+                    reveal: true,
+                    optional: true,
+                    targetMapping: TargetMapping.Controller
                 }
             ]
         }

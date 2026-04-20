@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, Zone } from '@shared/engine_types';
 
 export const BasicConjuration: CardDefinition = {
     name: 'Basic Conjuration',
@@ -17,7 +17,7 @@ export const BasicConjuration: CardDefinition = {
                     type: EffectType.LookAtTopAndPick,
                     fromTop: 6,
                     optional: true,
-                    restrictions: ['creature'],
+                    restrictions: [Restriction.Creature],
                     reveal: true,
                     zone: Zone.Hand,
                     remainderZone: Zone.Library,
@@ -29,4 +29,3 @@ export const BasicConjuration: CardDefinition = {
         }
     ]
 };
-

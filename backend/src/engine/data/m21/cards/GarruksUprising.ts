@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const GarruksUprising: CardDefinition = {
     name: "Garruk's Uprising",
@@ -8,7 +8,6 @@ export const GarruksUprising: CardDefinition = {
     oracleText: "When this enchantment enters, if you control a creature with power 4 or greater, draw a card.\nCreatures you control have trample. (Each of those creatures can deal excess combat damage to the player or planeswalker it's attacking.)\nWhenever a creature you control with power 4 or greater enters, draw a card.",
     colors: ["G"],
     types: ["Enchantment"],
-    subtypes: [],
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -20,11 +19,14 @@ export const GarruksUprising: CardDefinition = {
         },
         {
             type: AbilityType.Static,
-            effects: [{
-                type: EffectType.ApplyContinuousEffect,
-                abilitiesToAdd: ['Trample'],
-                targetMapping: TargetMapping.AllCreaturesYouControl
-            }]
+            effects: [
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    abilitiesToAdd: ['Trample'],
+                    restrictions: [Restriction.Creature, Restriction.YouControl],
+                    targetMapping: TargetMapping.AllMatchingPermanents
+                }
+            ]
         },
         {
             type: AbilityType.Triggered,
@@ -41,7 +43,3 @@ export const GarruksUprising: CardDefinition = {
         }
     ]
 };
-
-
-
-

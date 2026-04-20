@@ -1,4 +1,5 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+
 export const Erode: CardDefinition = {
     name: "Erode",
     manaCost: "{W}",
@@ -7,8 +8,6 @@ export const Erode: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/3/2/32e670da-7563-4f6a-a7db-4c126a440eb8.jpg?1775937013",
     colors: ["W"],
     types: ["Instant"],
-    subtypes: [],
-    keywords: [],
     oracleText: "Destroy target creature or planeswalker. Its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle.",
     abilities: [
         {
@@ -23,30 +22,30 @@ export const Erode: CardDefinition = {
                     targetMapping: TargetMapping.Target1,
                 },
                 {
-                    type: CostType.Choice,
-                    label: 'Search for a basic land?',
-                    targetMapping: TargetMapping.Target1Controller, // The player who makes the choice
+                    type: EffectType.Choice,
+                    label: 'Search for a basic land and put it onto the battlefield tapped?',
+                    targetMapping: TargetMapping.Target1Controller,
                     choices: [
                         {
-                            label: 'Search for a basic land (enters tapped)',
+                            label: 'Yes',
                             effects: [
                                 {
                                     type: EffectType.SearchLibrary,
                                     targetDefinition: {
                                         type: TargetType.Land,
                                         count: 1,
-                                        restrictions: [
-                                            "Basic"
-                                        ]
+                                        optional: true,
+                                        restrictions: [Restriction.Basic]
                                     },
                                     zone: Zone.Battlefield,
-                                    targetMapping: TargetMapping.Target1Controller, // The player whose library is searched
+                                    targetMapping: TargetMapping.Target1Controller,
                                     tapped: true,
                                     shuffle: true,
                                 }
                             ]
-                        }, {
-                            label: 'Decline',
+                        },
+                        {
+                            label: 'No',
                             effects: []
                         }
                     ]

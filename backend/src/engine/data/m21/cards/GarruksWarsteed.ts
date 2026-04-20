@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent, Zone } from "@shared/engine_types";
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const GarruksWarsteed: CardDefinition = {
     name: "Garruk's Warsteed",
@@ -19,20 +19,18 @@ export const GarruksWarsteed: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    optional: true,
-                    sourceZones: [Zone.Library, Zone.Graveyard],
                     targetDefinition: {
                         type: TargetType.Card,
-                        restrictions: [{ type: 'Name', value: "Garruk, Savage Herald" }],
-                        count: 1
+                        count: 1,
+                        restrictions: [{ type: Restriction.Name, value: 'Garruk, Savage Herald' }]
                     },
+                    fromZones: [Zone.Library, Zone.Graveyard],
                     zone: Zone.Hand,
                     reveal: true,
-                    label: "Search for Garruk, Savage Herald"
+                    optional: true,
+                    targetMapping: TargetMapping.Controller
                 }
             ]
         }
     ]
 };
-
-

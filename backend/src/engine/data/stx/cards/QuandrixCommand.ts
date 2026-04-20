@@ -15,11 +15,10 @@ export const QuandrixCommand: CardDefinition = {
             maxChoices: 2,
             choices: [
                 {
-                    label: 'Bounce creature/planeswalker',
+                    label: 'Return target creature or planeswalker to owner\'s hand',
                     targetDefinition: {
                         count: 1,
-                        type: TargetType.Permanent,
-                        restrictions: [Restriction.Creature, Restriction.Planeswalker]
+                        type: TargetType.CreatureOrPlaneswalker,
                     },
                     effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
                 },
@@ -28,7 +27,7 @@ export const QuandrixCommand: CardDefinition = {
                     targetDefinition: {
                         count: 1,
                         type: TargetType.Spell,
-                        restrictions: [Restriction.Artifact, Restriction.Enchantment]
+                        restrictions: [Restriction.ArtifactOrEnchantment]
                     },
                     effects: [{ type: EffectType.CounterSpell, targetMapping: TargetMapping.Target1 }]
                 },
@@ -38,12 +37,22 @@ export const QuandrixCommand: CardDefinition = {
                     effects: [{ type: EffectType.AddCounters, counterType: 'p1p1', amount: 2, targetMapping: TargetMapping.Target1 }]
                 },
                 {
-                    label: 'Shuffle cards into library',
-                    targetDefinition: { count: 3, type: TargetType.Card, optional: true, restrictions: [Restriction.Graveyard] },
-                    effects: [{ type: EffectType.MoveToZone, zone: Zone.Library, libraryPosition: 'top', shuffle: true, targetMapping: TargetMapping.TargetAll }]
+                    label: 'Target player shuffles up to three target cards from graveyard into library.',
+                    targetDefinition: {
+                        count: 3,
+                        type: TargetType.Card,
+                        optional: true,
+                        restrictions: [Restriction.Graveyard]
+                    },
+                    effects: [{
+                        type: EffectType.MoveToZone,
+                        zone: Zone.Library,
+                        libraryPosition: 'top',
+                        shuffle: true,
+                        targetMapping: TargetMapping.TargetAll
+                    }]
                 }
             ]
         }]
     }]
 };
-

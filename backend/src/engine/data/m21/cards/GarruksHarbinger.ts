@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const GarruksHarbinger: CardDefinition = {
     name: "Garruk's Harbinger",
@@ -15,39 +15,33 @@ export const GarruksHarbinger: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: [TriggerEvent.DamageDealtToPlayer, TriggerEvent.DamageTaken],
-            condition: 'SELF_COMBAT_DAMAGE_PLAYER_OR_PLANESWALKER',
+            eventMatch: TriggerEvent.CombatDamagePlayer,
+            condition: ConditionType.EventObjectIsTriggerSource,
             effects: [
                 {
                     type: EffectType.LookAtTopAndPick,
-                    fromTop: 'EVENT_AMOUNT',
-                    amount: 1,
+                    amount: 'EVENT_DAMAGE_AMOUNT',
+                    pickCount: 1,
                     optional: true,
                     reveal: true,
-                    sourceZones: [Zone.Library],
-                    targetDefinition: {
-                        type: TargetType.Card,
-                        count: 1,
-                        restrictions: [
-                            {
-                                type: 'LogicAny',
-                                restrictions: [
-                                    { type: 'Type', value: 'Creature' },
-                                    {
-                                        type: 'LogicAll',
-                                        restrictions: [
-                                            { type: 'Type', value: 'Planeswalker' },
-                                            { type: 'Subtype', value: 'Garruk' }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    zone: Zone.Hand,
+                    restrictions: [
+                        {
+                            type: Restriction.Any,
+                            restrictions: [
+                                Restriction.Creature,
+                                {
+                                    type: Restriction.All,
+                                    restrictions: [
+                                        Restriction.Planeswalker,
+                                        Restriction.Garruk
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
                     remainderZone: Zone.Library,
                     remainderPosition: 'bottom',
-                    shuffleRemainder: true,
+                    random: true,
                     targetMapping: TargetMapping.Controller
                 }
             ]

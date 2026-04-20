@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const HuntersEdge: CardDefinition = {
     name: "Hunter's Edge",
@@ -15,8 +15,8 @@ export const HuntersEdge: CardDefinition = {
                 type: TargetType.Creature,
                 count: 2,
                 perTargetRestrictions: [
-                    ['YouControl'],
-                    ['OpponentControl']
+                    [Restriction.YouControl],
+                    [Restriction.OpponentControl]
                 ]
             },
             effects: [
@@ -36,5 +36,3 @@ export const HuntersEdge: CardDefinition = {
         }
     ]
 };
-
-

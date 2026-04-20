@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const ChandraHeartofFire: CardDefinition = {
     name: "Chandra, Heart of Fire",
@@ -42,9 +42,9 @@ export const ChandraHeartofFire: CardDefinition = {
                     label: 'Search Library and Graveyard for Red Instant/Sorcery cards',
                     targetIdMapping: 'CONTROLLER_GRAVEYARD_AND_LIBRARY',
                     restrictions: [
-                { type: 'Type', value: 'Red' },
-                { type: 'Type', value: 'InstantOrSorcery' }
-            ],
+                        Restriction.Red,
+                        Restriction.InstantOrSorcery
+                    ],
                     maxCount: 99,
                     optional: true,
                     effects: [
@@ -63,5 +63,3 @@ export const ChandraHeartofFire: CardDefinition = {
         }
     ]
 };
-
-

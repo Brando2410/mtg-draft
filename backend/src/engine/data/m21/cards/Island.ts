@@ -1,7 +1,6 @@
-import { AbilityType, CardDefinition, CostType, EffectType, Zone } from "@shared/engine_types";
+import { AbilityType, CardDefinition, CostType, EffectType } from "@shared/engine_types";
 
 export const Island: CardDefinition = {
-
     name: "Island",
     manaCost: "",
     scryfall_id: "fc9a66a1-367c-4035-a22e-00fab55be5a0",
@@ -11,14 +10,12 @@ export const Island: CardDefinition = {
     supertypes: ["Basic"],
     types: ["Land"],
     subtypes: ["Island"],
-    keywords: [],
     abilities: [
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             isManaAbility: true,
             costs: [{ type: CostType.Tap }],
-            effects: [{ type: EffectType.AddMana, value: 'U' }]
+            effects: [{ type: EffectType.AddMana, manaType: 'U' }]
         }
     ]
 };

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const FierceEmpath: CardDefinition = {
     name: "Fierce Empath",
@@ -7,12 +7,10 @@ export const FierceEmpath: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/1/7/17bc2af0-5a1d-4319-a285-6a15cf86be83.jpg?1594736962",
     oracleText: "When this creature enters, you may search your library for a creature card with mana value 6 or greater, reveal it, put it into your hand, then shuffle.",
     colors: ["G"],
-    supertypes: [],
     types: ["Creature"],
     subtypes: ["Elf"],
     power: "1",
     toughness: "1",
-    keywords: [],
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -23,7 +21,7 @@ export const FierceEmpath: CardDefinition = {
                     targetDefinition: {
                         type: TargetType.Creature,
                         count: 1,
-                        restrictions: ["mv >= 6"]
+                        restrictions: [Restriction.ManaValue6OrGreater]
                     },
                     zone: Zone.Hand,
                     reveal: true,
@@ -34,7 +32,3 @@ export const FierceEmpath: CardDefinition = {
         }
     ]
 };
-
-
-
-

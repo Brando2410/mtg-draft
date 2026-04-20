@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const NiambiEsteemedSpeaker: CardDefinition = {
     name: "Niambi, Esteemed Speaker",
@@ -12,7 +12,7 @@ export const NiambiEsteemedSpeaker: CardDefinition = {
     subtypes: ["Human", "Cleric"],
     power: "2",
     toughness: "1",
-    keywords: [],
+    keywords: ["Flash"],
     abilities: [
         {
             type: AbilityType.Triggered,
@@ -20,38 +20,26 @@ export const NiambiEsteemedSpeaker: CardDefinition = {
             targetDefinition: {
                 type: TargetType.Creature,
                 count: 1,
-                minCount: 0,
-                restrictions: [
-                { type: 'Control', value: 'YouControl' },
-                { type: 'Identity', value: 'Other' }
-            ]
+                optional: true,
+                restrictions: [Restriction.YouControl, Restriction.Other]
             },
             effects: [
-                {
-                    type: EffectType.ReturnToHand,
-                    targetMapping: TargetMapping.Target1
-                },
+                { type: EffectType.ReturnToHand, targetMapping: TargetMapping.Target1 },
                 {
                     type: EffectType.GainLife,
-                    amount: 'TARGET_1_CMC',
+                    amount: DynamicAmount.Target1ManaValue,
                     targetMapping: TargetMapping.Controller
                 }
-            ],
+            ]
         },
         {
             type: AbilityType.Activated,
-            activeZone: Zone.Battlefield,
             costs: [
                 { type: CostType.Mana, value: '{1}{W}{U}' },
                 { type: CostType.Tap },
-                { type: CostType.Discard, restrictions: [
-                { type: 'Type', value: 'Legendary' }
-            ] }],
+                { type: CostType.Discard, restrictions: [Restriction.Legendary] }
+            ],
             effects: [{ type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Controller }]
         }
     ]
 };
-
-
-
-

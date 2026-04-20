@@ -1,55 +1,66 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, ConditionType, EffectType, Restriction, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const CodieVociferousCodex: CardDefinition = {
     name: "Codie, Vociferous Codex",
     manaCost: "{3}",
-    scryfall_id: "ea476ee1-67d9-4dd8-a5ac-f68a155eb18b",
-    image_url: "https://cards.scryfall.io/normal/front/e/a/ea476ee1-67d9-4dd8-a5ac-f68a155eb18b.jpg?1624740590",
+    scryfall_id: "714c67a5-93ee-4362-9711-d0e58b90480f",
+    image_url: "https://cards.scryfall.io/normal/front/7/1/714c67a5-93ee-4362-9711-d0e58b90480f.jpg?1632061963",
+    rarity: "rare",
     colors: [],
-    supertypes: ["Legendary"],
-    types: ["Artifact", "Creature"],
+    types: ["Legendary", "Artifact", "Creature"],
     subtypes: ["Construct"],
     power: "1",
     toughness: "4",
-    oracleText: "You can't cast permanent spells.\n{4}, {T}: Add {W}{U}{B}{R}{G}. When you cast your next spell this turn, exile cards from the top of your library until you exile an instant or sorcery card with mana value less than that spell's mana value. You may cast that card without paying its mana cost. Put the rest on the bottom of your library in a random order.",
+    oracleText: "You can't cast unconventional spells.\n{4}, {T}: Add {W}{U}{B}{R}{G}. When you cast your next spell this turn, exile cards from the top of your library until you exile an instant or sorcery card with mana value less than that spell's mana value. You may cast it without paying its mana cost. Put the rest on the bottom of your library in a random order.",
     abilities: [
         {
             type: AbilityType.Static,
-            effects: [{ type: EffectType.CombatConstraint, restrictions: ['CannotCastPermanentSpells'] }]
+            effects: [
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    restrictionsToAdd: [
+                        { type: "CannotCastPermanentSpells" }
+                    ]
+                }
+            ]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Mana, value: '{4}' }, { type: CostType.Tap }],
+            costs: [
+                { type: CostType.Mana, value: "{4}" },
+                { type: CostType.Tap }
+            ],
             effects: [
-                { type: EffectType.AddMana, manaType: 'WUBRG' },
+                {
+                    type: EffectType.AddManaChoice,
+                    mana: "{W}{U}{B}{R}{G}"
+                },
                 {
                     type: EffectType.CreateDelayedTrigger,
                     eventMatch: TriggerEvent.CastSpell,
-                    duration: { type: DurationType.UntilEndOfTurn },
-                    condition: "NextSpellThisTurn",
-                    effects: [{
-                        type: EffectType.SearchLibrary,
-                        fromTop: -1, // Search until found
-                        restrictions: ['instant_or_sorcery', 'mv < source_mv'],
-                        zone: Zone.Exile,
-                        remainderZone: Zone.Library,
-                        remainderPosition: 'bottom',
-                        shuffleRemainder: true,
-                        effects: [{
-                            type: EffectType.Choice,
-                            label: 'Cast revealed spell?',
-                            optional: true,
-                            choices: [{
-                                label: 'Cast',
-                                effects: [{ type: EffectType.CastSpell, targetMapping: TargetMapping.SelectedCard, isFreeCast: true }]
-                            }]
-                        }]
-                    }]
+                    maxTriggers: 1,
+                    condition: ConditionType.NextSpellThisTurn,
+                    effects: [
+                        {
+                            type: EffectType.ExileUntilManaValue,
+                            restrictions: [Restriction.InstantOrSorcery, Restriction.ManaValueLessThanSource],
+                            targetMapping: TargetMapping.Controller,
+                            effects: [
+                                {
+                                    type: EffectType.AllowCastWithoutPaying,
+                                    targetMapping: TargetMapping.SelectedCard
+                                }
+                            ],
+                            onFailureEffects: [
+                                {
+                                    type: EffectType.PutRemainderOnBottomRandom,
+                                    targetMapping: TargetMapping.Controller
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         }
     ]
 };
-
-
-

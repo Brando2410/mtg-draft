@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
 
 export const ExperimentalOverload: CardDefinition = {
     name: "Experimental Overload",
@@ -15,11 +15,12 @@ export const ExperimentalOverload: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CreateToken,
-                    tokenBlueprint: {
+                    definition: {
                         name: 'Weird',
                         colors: ['U', 'R'],
                         types: ['Creature'],
                         subtypes: ['Weird'],
+                        image_url: 'https://cards.scryfall.io/large/front/0/b/0ba503b6-9fa0-482f-870f-ac95ee03893c.jpg?1594733724',
                         power: 0,
                         toughness: 0
                     },
@@ -34,12 +35,8 @@ export const ExperimentalOverload: CardDefinition = {
                     minChoices: 0,
                     maxChoices: 1,
                     targetIdMapping: 'CONTROLLER_GRAVEYARD',
-                    restrictions: [
-                { type: 'Type', value: 'InstantOrSorcery' }
-            ],
-                    effects: [
-                        { type: EffectType.ReturnToHand }
-                    ]
+                    restrictions: [Restriction.InstantOrSorcery],
+                    effects: [{ type: EffectType.ReturnToHand }]
                 }
             ]
         }

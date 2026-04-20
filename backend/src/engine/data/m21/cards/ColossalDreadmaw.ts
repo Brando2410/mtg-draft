@@ -11,8 +11,5 @@ export const ColossalDreadmaw: CardDefinition = {
     subtypes: ["Dinosaur"],
     power: "6",
     toughness: "6",
-    keywords: ["Trample"],
-    abilities: []
+    keywords: ["Trample"]
 };
-
-

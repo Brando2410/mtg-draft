@@ -16,9 +16,12 @@ export const BaneslayerAngel: CardDefinition = {
         {
             type: AbilityType.Static,
             effects: [
-                { type: EffectType.ApplyContinuousEffect, abilitiesToAdd: ['Protection from Demons', 'Protection from Dragons'], targetMapping: TargetMapping.Self }
+                {
+                    type: EffectType.ApplyContinuousEffect,
+                    abilitiesToAdd: ['Protection from Demons', 'Protection from Dragons'],
+                    targetMapping: TargetMapping.Self
+                }
             ]
         }
     ]
 };
-

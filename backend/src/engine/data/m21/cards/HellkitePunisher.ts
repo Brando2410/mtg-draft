@@ -7,7 +7,6 @@ export const HellkitePunisher: CardDefinition = {
     image_url: "https://cards.scryfall.io/normal/front/7/b/7bf663d3-850b-4a24-8e4b-08311adf4ed0.jpg?1594736690",
     oracleText: "Flying\n{R}: This creature gets +1/+0 until end of turn.",
     colors: ["R"],
-    supertypes: [],
     types: ["Creature"],
     subtypes: ["Dragon"],
     power: "6",
@@ -23,8 +22,7 @@ export const HellkitePunisher: CardDefinition = {
                 powerModifier: 1,
                 layer: 7,
                 targetMapping: TargetMapping.Self
-            }],
+            }]
         }
     ]
 };
-

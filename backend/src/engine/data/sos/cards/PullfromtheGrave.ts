@@ -23,7 +23,7 @@ export const PullfromtheGrave: CardDefinition = {
                         minCount: 0,
                         restrictions: [
                             Restriction.Creature,
-                            Restriction.Yours
+                            Restriction.YouControl
                         ]
                     }
                 },
