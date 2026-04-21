@@ -58,9 +58,9 @@ export class CostProcessor {
       case CostType.Tap:
         if (source.isTapped) return false;
 
-        
         // Rule 302.6: Summoning Sickness applies to tap abilities of creatures
-        if (source.definition.types.includes('Creature') && source.summoningSickness) {
+        const isCreature = source.definition.types.some(t => t.toLowerCase() === 'creature');
+        if (isCreature && source.summoningSickness) {
            const stats = LayerProcessor.getEffectiveStats(source, state);
            if (!stats.keywords.includes('Haste')) {
                 return false; 

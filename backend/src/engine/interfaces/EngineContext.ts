@@ -51,6 +51,7 @@ export interface EffectExecutionOptions {
     stackObject?: StackObject;
     parentContext?: ResolutionContext;
     controllerIdOverride?: PlayerId;
+    lookingCards?: any[];
 }
 
 export interface ResolveEffectsOptions {
@@ -63,6 +64,7 @@ export interface ResolveEffectsOptions {
     stackObject?: StackObject;
     parentContext?: ResolutionContext;
     controllerIdOverride?: PlayerId;
+    lookingCards?: any[];
 }
 
 export interface EngineContext {

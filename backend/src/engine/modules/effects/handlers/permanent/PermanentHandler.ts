@@ -341,7 +341,7 @@ export class PermanentHandler {
             isTapped: false,
             damageMarked: 0,
             deathtouchMarked: false,
-            summoningSickness: true,
+            summoningSickness: !(blueprint.keywords || []).some((k: string) => k.toLowerCase() === 'haste'),
             abilitiesUsedThisTurn: 0,
             faceDown: false,
             isPrepared: blueprint.entersPrepared || false,

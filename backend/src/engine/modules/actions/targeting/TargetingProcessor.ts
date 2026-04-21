@@ -150,8 +150,23 @@ export class TargetingProcessor {
             }
         }
 
-        if (targetId === 'clear') {
+        if (targetId === "clear") {
             actionData.selectedTargets = [];
+            const firstIndex = 0;
+            const pool = [
+                ...Object.keys(state.players),
+                ...state.battlefield.map((o: any) => o.id),
+                ...state.exile.map((o: any) => o.id),
+                ...state.stack.map((o: any) => o.id),
+                ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
+            ];
+            actionData.targets = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
+                sourceId: action.sourceId || "",
+                controllerId: playerId,
+                stackObject: actionData.stackObj,
+                targetDef: targetDef,
+                targetIndex: firstIndex
+            }, tid));
             updatePrompt();
             log(`Targeting selection cleared.`);
             return true;

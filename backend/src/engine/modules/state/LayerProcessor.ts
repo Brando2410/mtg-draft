@@ -445,7 +445,7 @@ export class LayerProcessor {
     state: GameState,
     keyword: string,
   ): boolean {
-    return this.getEffectiveKeywords(obj, state).includes(keyword);
+    return this.getEffectiveKeywords(obj, state).some(k => k.toLowerCase() === keyword.toLowerCase());
   }
   /**
    * Batch updates all derived fields (P/T, Keywords, isPlayable) for all relevant objects.

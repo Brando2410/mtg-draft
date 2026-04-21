@@ -244,19 +244,23 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                    const types = card.definition.types.map(t => (t as string).toLowerCase());
                    const isPermanent = types.includes('creature') || types.includes('artifact') || types.includes('enchantment') || types.includes('planeswalker');
                     
-                   if (card.zone === Zone.Stack) {
-                       if (fullStackObj.exileOnResolution || (fullStackObj as any).isCopy) {
-                           log(`[RULE 701.5] ${card.definition.name} was exiled instead of being put into graveyard.`);
-                           ActionProcessor.removeFromCurrentZone(state, card);
-                           if (!(fullStackObj as any).isCopy) {
-                               ActionProcessor.moveCard(state, card, Zone.Exile, card.ownerId, log);
-                           }
-                       } else if (isPermanent) {
-                           ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId, log);
-                       } else {
-                           ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId, log);
-                       }
-                   }
+                    if (card.zone === Zone.Stack) {
+                        const { oracle } = require("../../OracleLogicMap");
+                        const freshDef = oracle.getCard(card.definition.name);
+                        const shouldExile = fullStackObj.exileOnResolution || (fullStackObj as any).isCopy || (card as any).isPreparedCopy || freshDef?.exileOnResolution;
+
+                        if (shouldExile) {
+                            log(`[RULE 701.5] ${card.definition.name} was exiled instead of being put into graveyard.`);
+                            ActionProcessor.removeFromCurrentZone(state, card);
+                            if (!(fullStackObj as any).isCopy) {
+                                ActionProcessor.moveCard(state, card, Zone.Exile, card.ownerId, log);
+                            }
+                        } else if (isPermanent) {
+                            ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId, log);
+                        } else {
+                            ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId, log);
+                        }
+                    }
                } else {
                    // Clean up ability/trigger
                    ActionProcessor.removeFromCurrentZone(state, { id: fullStackObj.id, zone: Zone.Stack } as any);
@@ -603,6 +607,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                 stackObject: action.data.stackObj,
                 parentContext: action.data.parentContext,
                 controllerIdOverride: playerId,
+                lookingCards: action.data.lookingCards,
              });
         }
 
@@ -626,6 +631,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                 startIndex: nextIdx,
                 stackObject: stackObj,
                 parentContext: parentCtx,
+                lookingCards: action.data.lookingCards,
             });
             
             if (stackObj && !completed && state.pendingAction) {
@@ -678,7 +684,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
     if (choice.value && typeof choice.value === 'string' && choice.value.length > 20) {
         targetsForResolution = [choice.value, ...parentTargets];
     }
-    
+
     state.pendingAction = undefined; 
     
     if (choice.costs && choice.costs.length > 0) {
@@ -716,6 +722,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             stackObject: stackObj,
             parentContext: savedActionData as any,
             controllerIdOverride: action.playerId,
+            lookingCards: savedActionData?.lookingCards,
         });
     }
 
@@ -741,6 +748,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             startIndex: nextIdx,
             stackObject: stackObj,
             parentContext: parentCtx,
+            lookingCards: savedActionData?.lookingCards,
         });
         
         if (stackObj && !completed && state.pendingAction) {
@@ -828,13 +836,25 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                    const types = card.definition.types.map(t => (t as string).toLowerCase());
                    const isPermanent = types.includes('creature') || types.includes('artifact') || types.includes('enchantment') || types.includes('planeswalker');
                    
-                   if (card.zone !== Zone.Stack) {
-                       log(`[STACK] Spell card ${card.definition.name} already moved to ${card.zone}. Skipping cleanup.`);
-                   } else if (isPermanent) {
-                       ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId, log);
-                   } else {
-                       ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId, log);
-                   }
+                    if (card.zone !== Zone.Stack) {
+                        log(`[STACK] Spell card ${card.definition.name} already moved to ${card.zone}. Skipping cleanup.`);
+                    } else {
+                        const { oracle } = require("../../OracleLogicMap");
+                        const freshDef = oracle.getCard(card.definition.name);
+                        const shouldExile = fullStackObj.exileOnResolution || (fullStackObj as any).isCopy || (card as any).isPreparedCopy || freshDef?.exileOnResolution;
+
+                        if (shouldExile) {
+                            log(`[RULE 701.5] ${card.definition.name} was exiled instead of being put into graveyard.`);
+                            ActionProcessor.removeFromCurrentZone(state, card);
+                            if (!(fullStackObj as any).isCopy) {
+                                ActionProcessor.moveCard(state, card, Zone.Exile, card.ownerId, log);
+                            }
+                        } else if (isPermanent) {
+                            ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId, log);
+                        } else {
+                            ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId, log);
+                        }
+                    }
                } else {
                    // Clean up ability/trigger
                    ActionProcessor.removeFromCurrentZone(state, { id: fullStackObj.id, zone: Zone.Stack } as any);

@@ -199,7 +199,7 @@ export interface ResolutionContext {
     startIndex?: number;
     event?: import('./events').GameEvent; // Standardized event triggering this resolution
     exiledIds?: string[];        // Track objects moved to exile during this resolution
-    lookingCards?: string[];     // Track cards revealed/looked at during this resolution (e.g. Scry/Search)
+    lookingCards?: any[];        // Track cards revealed/looked at during this resolution (e.g. Scry/Search)
     nextEffectIndex?: number;    // Pointer for resuming multi-step effects
     eventData?: any;             // Alias for backward compatibility
 }

@@ -399,7 +399,7 @@ export const GameCard = memo(({
                     <div className="flex flex-col gap-1 items-start mt-1">
                         <div className="flex flex-wrap gap-0.5">
                             {(stats?.keywords || []).map(k => <KeywordIcon key={k} keyword={k} />)}
-                            {summoningSickness && !isTapped && (
+                            {summoningSickness && isCreature && !isTapped && (
                                 <div title="Summoning Sickness" className="w-4 h-4 bg-indigo-600/80 rounded flex items-center justify-center text-[8px] animate-pulse shadow-sm">
                                     💤
                                 </div>

@@ -300,17 +300,13 @@ export class ActionProcessor {
       card.controllerId = targetPlayerId;
 
       // CR 302.6: Creature enters the battlefield with summoning sickness
-      const isCreature = card.definition.types.some(
-        (t) => t.toLowerCase() === "creature",
-      );
       const hasHasteInDefinition = (card.definition.keywords || []).some(
         (k) => k.toLowerCase() === "haste",
       );
       const hasHasteOnCard = (card.keywords || []).some(
         (k) => k.toLowerCase() === "haste",
       );
-      card.summoningSickness =
-        isCreature && !hasHasteInDefinition && !hasHasteOnCard;
+      card.summoningSickness = !hasHasteInDefinition && !hasHasteOnCard;
 
       let entersTapped = card.definition.entersTapped || false;
       if (card.definition.entersTappedCondition) {

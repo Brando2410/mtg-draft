@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const PracticedOffense: CardDefinition = {
+export const PracticedOffense: CardDefinition = {
     name: "Practiced Offense",
     manaCost: "{2}{W}",
     scryfall_id: "79c7cf94-c0a1-432d-90d7-7f0599c2e7a8",
@@ -24,12 +24,10 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                 {
                     type: TargetType.Player,
                     count: 1,
-                    label: "Target player"
                 },
                 {
                     type: TargetType.Creature,
                     count: 1,
-                    label: "Target creature"
                 }
             ],
             effects: [
@@ -40,7 +38,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                     targetMapping: 'ALL_CREATURES_CONTROLLED_BY_TARGET_1'
                 },
                 {
-                    type: CostType.Choice,
+                    type: EffectType.Choice,
                     label: "Choose a keyword",
                     targetMapping: TargetMapping.Controller,
                     choices: [
@@ -50,7 +48,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                                 {
                                     type: EffectType.ApplyContinuousEffect,
                                     duration: { type: DurationType.UntilEndOfTurn },
-                                    abilitiesToAdd: ['double strike'],
+                                    abilitiesToAdd: ['Double Strike'],
                                     targetMapping: TargetMapping.Target2
                                 }
                             ]
@@ -61,7 +59,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
                                 {
                                     type: EffectType.ApplyContinuousEffect,
                                     duration: { type: DurationType.UntilEndOfTurn },
-                                    abilitiesToAdd: ['lifelink'],
+                                    abilitiesToAdd: ['Lifelink'],
                                     targetMapping: TargetMapping.Target2
                                 }
                             ]
@@ -72,4 +70,4 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         }
     ],
 };
-    
+

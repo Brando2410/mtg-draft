@@ -324,6 +324,15 @@ export class TargetMapper {
     context: ResolutionContext,
     effect?: any,
   ): string[] {
+    return this.doResolveTargetMapping(state, mapping, context, effect);
+  }
+
+  private static doResolveTargetMapping(
+    state: GameState,
+    mapping: string,
+    context: ResolutionContext,
+    effect?: any,
+  ): string[] {
     const { sourceId, controllerId, stackObject, targets, parentContext } =
       context;
     const stackData = stackObject;

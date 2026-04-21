@@ -16,7 +16,7 @@ export const GeometersArthropod: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
-            condition: 'PLAYER_IS_CONTROLLER && EVENT_OBJECT_HAS_X',
+            condition: 'EVENT_PLAYER_IS_YOU && EVENT_OBJECT_HAS_X',
             effects: [
                 {
                     type: EffectType.LookAtTopAndPick,

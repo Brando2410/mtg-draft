@@ -23,8 +23,10 @@ export class ChoiceEffectHandler {
     log: (m: string) => void,
     context: ResolutionContext,
   ): void {
-    const { sourceId, controllerId, targets, stackObject, parentContext } =
+    const { sourceId, controllerId, stackObject, parentContext } =
       context;
+    const targets = context.targets || [];
+    const originalTargets = stackObject?.targets || targets;
     const { EffectProcessor } = require("../../EffectProcessor");
     const sourceObj =
       EffectProcessor.findObject(state, sourceId, stackObject) ||
@@ -209,6 +211,7 @@ export class ChoiceEffectHandler {
             hideUndo: true,
             stackObj: stackObject,
             parentContext: context,
+            targets: originalTargets,
           },
         );
         return;
@@ -286,7 +289,7 @@ export class ChoiceEffectHandler {
           hideUndo: true,
           stackObj: stackObject,
           parentContext: context,
-          targets: targets,
+          targets: originalTargets,
         },
       );
       return;
@@ -360,7 +363,7 @@ export class ChoiceEffectHandler {
         maxChoices: (effect as any).maxChoices,
         stackObj: stackObject,
         parentContext: context,
-        targets: targets,
+        targets: originalTargets,
       },
       (dynamicChoices || []).map((c, idx) => ({
         ...c,

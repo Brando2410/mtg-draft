@@ -12,7 +12,6 @@ export class ContinuousEffectHandler {
         log: (m: string) => void,
         context: ResolutionContext
     ) {
-        console.log(`[DEBUG] ContinuousEffectHandler.handle called for source ${context.sourceId}`);
         const { EffectProcessor } = require('../../EffectProcessor');
         const ceDef = effect as ContinuousEffectDefinition;
         const { sourceId, targets: resolvedTargetIds, controllerId, stackObject } = context;

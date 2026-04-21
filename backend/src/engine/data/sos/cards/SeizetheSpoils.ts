@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const SeizetheSpoils: CardDefinition = {
+export const SeizetheSpoils: CardDefinition = {
     name: "Seize the Spoils",
     manaCost: "{2}{R}",
     colors: [
@@ -47,7 +47,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
                                 effects: [
                                     {
                                         type: EffectType.AddMana,
-                                        mana: '{ANY}'
+                                        manaType: '{ANY}'
                                     }
                                 ]
                             }
@@ -58,4 +58,4 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
         }
     ]
 };
-    
+

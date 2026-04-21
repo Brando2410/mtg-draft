@@ -99,7 +99,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "EVENT_OBJECT_HAS_X": {
         matches(state, params, context) {
             const { event } = context;
-            const obj = event?.data?.object || event?.data?.card || (event as any)?.gameObject;
+            const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || event?.data?.card || (event as any)?.gameObject;
             if (!obj) return false;
             return (obj.definition.manaCost || "").includes("X");
         }

@@ -529,6 +529,12 @@ export class TriggerProcessor {
         );
       });
 
+      if (t.sourceId.includes("arthropod") || t.id?.includes("arthropod") || t.definition?.name?.includes("Arthropod")) {
+          const { TriggerEvent: TE } = require("@shared/engine_types");
+          console.log(`[TRIGGER-DEBUG] Evaluating Geometers Arthropod: event=${event.type}, tEvents=[${tEvents.join(', ')}], matchesPrimary=${matchesPrimary}`);
+          console.log(`[TRIGGER-DEBUG] event.type=${event.type}, TriggerEvent.CastSpell=${(TE as any).CastSpell}`);
+      }
+
       if (!matchesPrimary) return false;
 
       // Identity Filtering (Rule 603.2)
@@ -591,7 +597,7 @@ export class TriggerProcessor {
       if (condition) {
         if (typeof condition === "function") {
           if (!condition(state, event, t)) return false;
-        } else if (typeof condition === "string") {
+        } else {
           const { ConditionProcessor } = require("../../core/logic/ConditionProcessor");
           if (
             !ConditionProcessor.matchesCondition(state, condition, {

@@ -24,6 +24,13 @@ export class ConditionProcessor {
       return (condition as any)(state, context.event, context);
     }
 
+    // 2. Support for object-based condition handlers
+    if (typeof condition === "object" && condition !== null) {
+      if ('matches' in condition && typeof (condition as any).matches === 'function') {
+        return (condition as any).matches(state, [], context);
+      }
+    }
+
     if (typeof condition !== "string") return true;
 
     // --- RECURSIVE LOGICAL PARSER (Supports parentheses, &&, ||, !) ---

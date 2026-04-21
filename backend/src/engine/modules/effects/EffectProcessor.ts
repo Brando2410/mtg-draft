@@ -50,6 +50,7 @@ export interface ResolveEffectsOptions {
     stackObject?: StackObject;
     parentContext?: ResolutionContext;
     controllerIdOverride?: string;
+    lookingCards?: any[];
 }
 
 export class EffectProcessor {
@@ -63,7 +64,8 @@ export class EffectProcessor {
         startIndex = 0,
         stackObject,
         parentContext,
-        controllerIdOverride
+        controllerIdOverride,
+        lookingCards
     } = options;
 
     for (let i = startIndex; i < effects.length; i++) {
@@ -78,6 +80,7 @@ export class EffectProcessor {
         stackObject,
         parentContext,
         controllerIdOverride,
+        lookingCards,
       });
 
       // After execution, if context updated transient fields, sync them to stackObject.data
@@ -184,13 +187,9 @@ export class EffectProcessor {
       startIndex: stackObject?.data?.startIndex || 0,
       event: stackObject?.data?.eventData,
       exiledIds: stackObject?.data?.exiledIds,
-      lookingCards: stackObject?.data?.lookingCards,
+      lookingCards: stackObject?.data?.lookingCards || parentContext?.lookingCards,
       nextEffectIndex: stackObject?.data?.nextEffectIndex
     };
-
-    if (effect.type === 'ApplyContinuousEffect' || effect.type === 'Exile' || effect.type === 'ExileTopCard') {
-        console.log(`[DEBUG] EffectProcessor: Executing ${effect.type}. ExiledIds on stack: ${stackObject?.data?.exiledIds?.join(', ')}`);
-    }
 
     // Rule 608.2: Evaluate conditions
     if (effect.condition) {
@@ -221,10 +220,6 @@ export class EffectProcessor {
         context,
         effect,
       ) as string[];
-      if (m)
-        log(
-          `[DEBUG] EffectProcessor: Resolved mapping "${m}" to targets: ${ids}`,
-        );
 
       // If Choice effect has no explicit mapping, it should receive all parent targets to pass them down
       if (effect.type === EffectType.Choice && (!m || m === "") && ids.length === 0) {
@@ -417,7 +412,7 @@ export class EffectProcessor {
           controllerId: context.controllerId,
           stackObject,
           targetDef,
-          targetIndex: index,
+          targetIndex: validationIndex !== undefined ? validationIndex : index,
         },
         tid,
       );
@@ -493,7 +488,9 @@ export class EffectProcessor {
       case "X":
         result =
           stackObject?.xValue ??
+          stackObject?.data?.event?.payload?.stackSnapshot?.xValue ??
           stackObject?.data?.eventData?.payload?.stackSnapshot?.xValue ??
+          stackObject?.data?.event?.payload?.object?.xValue ??
           stackObject?.data?.eventData?.payload?.object?.xValue ??
           stackObject?.data?.eventData?.xValue ??
           parentContext?.event?.payload?.stackSnapshot?.xValue ??

@@ -6,17 +6,9 @@ export const EnnisDebateModerator: CardDefinition = {
     scryfall_id: "d2ef31b4-24fa-4443-9f05-c8e99c3522e5",
     rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/d/2/d2ef31b4-24fa-4443-9f05-c8e99c3522e5.jpg?1775937005",
-    colors: [
-        "W"
-    ],
-    types: [
-        "Legendary",
-        "Creature"
-    ],
-    subtypes: [
-        "Human",
-        "Cleric"
-    ],
+    colors: ["W"],
+    types: ["Legendary", "Creature"],
+    subtypes: ["Human", "Cleric"],
     keywords: [],
     power: "1",
     toughness: "1",
