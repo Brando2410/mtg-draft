@@ -27,6 +27,9 @@ export class ManaParser {
       let symbol = m.replace(/\{|\}/g, '').toUpperCase().trim();
       if (symbol === 'X') {
         xCount++;
+      } else if (symbol === 'ANY') {
+        // Special case for 'any color' mana symbols (like Treasure tokens)
+        colored['ANY'] = (colored['ANY'] || 0) + 1;
       } else if (['W', 'U', 'B', 'R', 'G', 'C'].includes(symbol)) {
         colored[symbol] = (colored[symbol] || 0) + 1;
       } else if (symbol.includes('/')) {

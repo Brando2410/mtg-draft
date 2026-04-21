@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const WitherbloomCharm: CardDefinition = {
     name: "Witherbloom Charm",
@@ -10,59 +10,56 @@ export const WitherbloomCharm: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            effects: [
+            modes: [
                 {
-                    type: EffectType.Choice,
-                    choices: [
+                    label: "You may sacrifice a permanent. If you do, draw two cards.",
+                    effects: [
                         {
-                            label: "You may sacrifice a permanent. If you do, draw two cards.",
-                            effects: [
+                            type: EffectType.Choice,
+                            label: "Sacrifice a permanent?",
+                            choices: [
                                 {
-                                    type: EffectType.Choice,
-                                    label: "Sacrifice a permanent?",
-                                    choices: [
+                                    label: "Yes",
+                                    costs: [{ type: CostType.Sacrifice, restrictions: [Restriction.Permanent] }],
+                                    effects: [
                                         {
-                                            label: "Yes",
-                                            costs: [{ type: EffectType.Sacrifice, restrictions: [Restriction.Permanent] }],
-                                            effects: [
-                                                {
-                                                    type: EffectType.DrawCards,
-                                                    amount: 2,
-                                                    targetMapping: TargetMapping.Controller
-                                                }
-                                            ]
-                                        },
-                                        { label: "No", effects: [] }
+                                            type: EffectType.DrawCards,
+                                            amount: 2,
+                                            targetMapping: TargetMapping.Controller
+                                        }
                                     ]
-                                }
-                            ]
-                        },
-                        {
-                            label: "You gain 5 life",
-                            effects: [
-                                {
-                                    type: EffectType.GainLife,
-                                    amount: 5,
-                                    targetMapping: TargetMapping.Controller
-                                }
-                            ]
-                        },
-                        {
-                            label: "Destroy target nonland permanent with mana value 2 or less",
-                            targetDefinition: {
-                                type: TargetType.NonlandPermanent,
-                                count: 1,
-                                restrictions: [Restriction.ManaValue2OrLess]
-                            },
-                            effects: [
-                                {
-                                    type: EffectType.Destroy,
-                                    targetMapping: TargetMapping.Target1
-                                }
+                                },
+                                { label: "No", effects: [] }
                             ]
                         }
                     ]
+                },
+                {
+                    label: "You gain 5 life",
+                    effects: [
+                        {
+                            type: EffectType.GainLife,
+                            amount: 5,
+                            targetMapping: TargetMapping.Controller
+                        }
+                    ]
+                },
+                {
+                    label: "Destroy target nonland permanent with mana value 2 or less",
+                    targetDefinition: {
+                        type: TargetType.NonlandPermanent,
+                        count: 1,
+                        restrictions: [Restriction.ManaValue2OrLess]
+                    },
+                    effects: [
+                        {
+                            type: EffectType.Destroy,
+                            targetMapping: TargetMapping.Target1
+                        }
+                    ]
                 }
+
+
             ]
         }
     ]

@@ -80,6 +80,29 @@ export class ControlEffectHandler {
                         };
                     }
 
+                    // PRE-CLEAR TARGETS if choosing new ones (prevents UI arrows during re-selection)
+                    let backupTargets: string[] = [];
+                    if (effect.chooseNewTargets && copy.targets) {
+                        backupTargets = [...copy.targets];
+                        copy.targets = [];
+                        
+                        // Aggressively clear any target-related metadata in copy.data
+                        if (copy.data) {
+                            copy.data.targets = [];
+                            copy.data.selectedTargets = [];
+                            copy.data.declaredTargets = [];
+                            copy.data.targetsControllers = [];
+                        }
+
+                        // Also clear card-level data if it exists
+                        if (copy.card && copy.card.data) {
+                            copy.card.data.targets = [];
+                            copy.card.data.selectedTargets = [];
+                        }
+                    }
+
+                    copy.name = `Copy of ${stackObj.name || stackObj.card?.definition.name || 'Spell'}`;
+
                     state.stack.push(copy);
                     log(`[COPY] Created copy of ${stackObj.card?.definition.name || 'spell'}.`);
 
@@ -96,7 +119,7 @@ export class ControlEffectHandler {
                         }
                     }, log);
 
-                    if (effect.chooseNewTargets && copy.targets && copy.targets.length > 0) {
+                    if (effect.chooseNewTargets) {
                         const targetDef = copy.data?.targetDefinition || copy.targetDefinition;
                         if (targetDef) {
                             const { TargetingProcessor } = require('../../../actions/targeting/TargetingProcessor');
@@ -108,7 +131,9 @@ export class ControlEffectHandler {
                             const legalTargetIds = pool.filter((tid: string) => TargetingProcessor.isLegalTarget(state, {
                                 sourceId: copy.id,
                                 controllerId: copy.controllerId,
-                                targetDef
+                                stackObject: copy,
+                                targetDef: targetDef,
+                                targetIndex: 0
                             }, tid));
 
                             if (legalTargetIds.length > 0) {
@@ -123,8 +148,10 @@ export class ControlEffectHandler {
                                         targetDefinition: targetDef,
                                         targets: legalTargetIds,
                                         selectedTargets: [],
+                                        declaredTargets: [], // Ensure this is also empty
                                         optional: true,
-                                        originalTargets: [...copy.targets]
+                                        _backupTargets: backupTargets, // Internal prefix to hide from UI
+                                        stackObj: copy
                                     }
                                 };
                             }

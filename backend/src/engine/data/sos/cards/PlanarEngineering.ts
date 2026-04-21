@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const PlanarEngineering: CardDefinition = {
     name: "Planar Engineering",
     manaCost: "{3}{G}",
@@ -17,18 +17,19 @@ export const PlanarEngineering: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            costs: [
-                { type: CostType.Sacrifice, restrictions: [Restriction.Land], amount: 2 }
-            ],
             effects: [
+                {
+                    type: EffectType.Sacrifice,
+                    targetMapping: TargetMapping.Controller,
+                    restrictions: [Restriction.Land],
+                    amount: 2
+                },
                 {
                     type: EffectType.SearchLibrary,
                     targetDefinition: {
                         type: TargetType.Land,
                         count: 4,
-                        restrictions: [
-                            "Basic"
-                        ]
+                        restrictions: [Restriction.Basic]
                     },
                     zone: Zone.Battlefield,
                     tapped: true,

@@ -328,6 +328,7 @@ export interface RestrictionDefinition {
 
 export interface ModalEffect extends BaseEffect {
     type: typeof EffectType.Choice;
+    selectionPool?: TargetMapping | string;
     choices: {
         label: string;
         effects?: EffectDefinition[];

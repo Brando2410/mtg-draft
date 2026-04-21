@@ -36,7 +36,6 @@ export const SuspendAggression: CardDefinition = {
                     },
                     targetControllerMapping: 'PARENT_CONTEXT_EXILED_IDS_OWNERS',
                     canPlayExiled: true,
-                    label: 'Owners may play exiled cards'
                 }
             ]
         }

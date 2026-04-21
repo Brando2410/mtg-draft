@@ -30,15 +30,13 @@ export class SpellProcessor {
         engine: EngineContext,
         options: PlayCardOptions
     ): boolean {
-        const { playerId, cardId: cardInstanceId, bypassPriority = false, bypassTargeting = false } = options;
+        const { playerId, cardId: cardInstanceId, bypassPriority = false, bypassTargeting = false, xValue } = options;
         let declaredTargets = options.targets || [];
-        log(`[DEBUG] SpellProcessor.playCard: Card ${cardInstanceId} by ${playerId} (BypassPriority: ${bypassPriority}, BypassTargeting: ${bypassTargeting})`);
         const activeId = String(state.activePlayerId).trim();
         const callerId = String(playerId).trim();
 
         // 1. Priority Error (Rule 117.1)
         if (!bypassPriority && String(state.priorityPlayerId) !== String(playerId)) {
-            log(`Tried to play card without priority.`);
             return false;
         }
 
@@ -55,6 +53,11 @@ export class SpellProcessor {
 
         const cardToPlay = SpellValidator.resolveCardToPlay(state, playerId, cardInstanceId, log, bypassPriority);
         if (!cardToPlay) return false;
+
+        // Apply incoming xValue if provided (for resuming after targeting)
+        if (xValue !== undefined) {
+            cardToPlay.xValue = xValue;
+        }
 
         // --- ACTIVATED ABILITY REDIRECTION (Graveyard) ---
         // If the card is in the graveyard and we're trying to "play" it, check if it's actually an activated ability card
@@ -76,7 +79,8 @@ export class SpellProcessor {
                         cardId: cardInstanceId,
                         abilityIndex: graveAbilityIndex,
                         targets: declaredTargets,
-                        bypassPriority: bypassPriority
+                        bypassPriority: bypassPriority,
+                        xValue: xValue
                     });
                 }
             }
@@ -107,7 +111,7 @@ export class SpellProcessor {
         }
 
         // --- X-VALUE RESET FAIL-SAFE ---
-        if (!bypassPriority && cardToPlay.xValue !== undefined) {
+        if (!bypassPriority && cardToPlay.xValue !== undefined && xValue === undefined) {
             cardToPlay.xValue = undefined;
         }
 
@@ -184,7 +188,13 @@ export class SpellProcessor {
             if (combinedEffects.length > 0) spellEffects = combinedEffects;
         }
 
-        const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices && !e.targetMapping);
+        const choiceEffectIndex = spellEffects.findIndex((e: any, idx: number) => 
+            e.type === 'Choice' && 
+            e.choices && 
+            !e.targetMapping && 
+            idx === 0 &&
+            (!e.choices.some((c: any) => c.costs && c.costs.length > 0))
+        );
 
         // Step 0.5: Check for X in cost or inherent logic
         const costStr = (currentDefinition.manaCost || '').split('//')[0].trim();
@@ -212,9 +222,9 @@ export class SpellProcessor {
         }
 
         // Step 1.5: Check Additional Costs (e.g. Goremand's sacrifice)
-        if (SpellInteractiveManager.handleInteractiveCosts(state, playerId, cardToPlay, additionalCosts, declaredTargets, cardInstanceId, log)) {
-            return true;
-        }
+        const interactiveResult = SpellInteractiveManager.handleInteractiveCosts(state, playerId, cardToPlay, additionalCosts, declaredTargets, cardInstanceId, log);
+        if (interactiveResult === true) return true; // Flow paused for input
+        if (interactiveResult === null) return false; // Illegal play, stop
 
         // Step 1.7: Check Mode Selection (Charms/Comands)
         if (modalAbility && !hasPreSelectedMode) {
@@ -292,10 +302,15 @@ export class SpellProcessor {
         engine: EngineContext,
         options: ActivateAbilityOptions
     ): boolean {
-        const { playerId, cardId, abilityIndex, targets: declaredTargets = [], bypassPriority = false, choiceIndex, bypassTargeting = false } = options;
+        const { playerId, cardId, abilityIndex, targets: declaredTargets = [], bypassPriority = false, choiceIndex, bypassTargeting = false, xValue } = options;
         const { TargetingProcessor } = require('../targeting/TargetingProcessor');
         const obj = TargetingProcessor.findObjectInAnyZone(state, cardId);
         if (!obj) return false;
+
+        // Apply incoming xValue if provided
+        if (xValue !== undefined) {
+            obj.xValue = xValue;
+        }
 
         const player = state.players[playerId];
         if (!player) return false;
@@ -315,14 +330,25 @@ export class SpellProcessor {
         }
 
         const cardLogic = oracle.getCard(obj.definition.name);
-        if (!cardLogic || !cardLogic.abilities || !cardLogic.abilities[abilityIndex]) return false;
-        if (obj.definition.name === "Teferi, Master of Time") {
-            const ability = cardLogic.abilities[abilityIndex];
-            log(`[DEBUG] Activating Teferi ability index ${abilityIndex} (${ability.id}): ${JSON.stringify(obj.definition, null, 2)}`);
+        let abilities = [...(cardLogic?.abilities || [])];
+        if (obj.definition.abilities) {
+          obj.definition.abilities.forEach((a: any) => {
+            if (!abilities.some(existing => existing.id === a.id && a.id !== undefined)) {
+              abilities.push(a);
+            }
+          });
         }
 
-        const ability = cardLogic.abilities[abilityIndex];
-        if (ability.type !== AbilityType.Activated) return false;
+        if (!abilities[abilityIndex]) {
+            log(`[ERROR] Ability index ${abilityIndex} not found for ${obj.definition.name}`);
+            return false;
+        }
+
+        const ability = abilities[abilityIndex];
+        if (ability.type !== AbilityType.Activated) {
+            log(`[ERROR] Ability index ${abilityIndex} for ${obj.definition.name} is not an activated ability (found ${ability.type})`);
+            return false;
+        }
 
         // Step 1: Preliminary Validation (Zone, Costs, Requirements, Limits)
         if (!SpellValidator.validateAbilityActivation(state, playerId, obj, ability, abilityIndex, log)) {
@@ -375,7 +401,12 @@ export class SpellProcessor {
         const { AbilityType, Zone, CostType } = require('@shared/engine_types');
 
         // Modal Choice check (modes like "Choose one")
-        const choiceEffectIndex = spellEffects.findIndex((e: any) => e.type === 'Choice' && e.choices && !e.targetMapping);
+        const choiceEffectIndex = spellEffects.findIndex((e: any, idx: number) => 
+            e.type === 'Choice' && 
+            e.choices && 
+            !e.targetMapping && 
+            (!e.choices.some((c: any) => c.costs && c.costs.length > 0))
+        );
         const hasPreSelectedChoice = (state as any).lastChoiceIndex !== undefined;
 
         if (choiceEffectIndex !== -1 && !hasPreSelectedChoice) {

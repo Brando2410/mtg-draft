@@ -12,6 +12,7 @@ export const DivergentEquation: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
+
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 'X' as any,
@@ -25,8 +26,7 @@ export const DivergentEquation: CardDefinition = {
                 {
                     type: EffectType.MoveToZone,
                     zone: Zone.Hand,
-                    label: "Select up to X instant/sorcery cards to return to your hand",
-                    targetMapping: TargetMapping.Target1
+                    targetMapping: TargetMapping.SelectedCard
                 }
             ]
         }

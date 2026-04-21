@@ -179,7 +179,6 @@ export class PriorityProcessor {
       engine.log(`[Auto-Pass] ${engine.getPlayerName(playerId)} skipped${!canAct ? ': no legal actions found' : ' (Pass Turn active)'}.`);
       this.passPriority(state, playerId, engine, true);
     } else if (player && (canAct || hasManualStop)) {
-      console.log(`[ENGINE] Priority held by ${playerId} (Actions available or Stop set)`);
     }
   }
 
@@ -222,7 +221,6 @@ export class PriorityProcessor {
     // 1. Check hand for castable spells
     const hasCastableHand = player.hand.some(card => {
       const playable = this.canObjectBePlayed(state, playerId, card.id, false);
-      if (playable) console.log(`[DEBUG] Hand card ${card.definition.name} IS playable.`);
       return playable;
     });
     if (hasCastableHand) return true;
@@ -230,7 +228,6 @@ export class PriorityProcessor {
     // 2. Check Graveyard for castable spells (Flashback) or activated abilities
     const hasGraveAction = player.graveyard.some(card => {
       const playable = this.canObjectBePlayed(state, playerId, card.id, false);
-      if (playable) console.log(`[DEBUG] Grave card ${card.definition.name} IS playable.`);
       return playable;
     });
     if (hasGraveAction) return true;
@@ -239,7 +236,6 @@ export class PriorityProcessor {
     const hasExileAction = state.exile.some(card => {
       if (card.controllerId !== playerId) return false;
       const playable = this.canObjectBePlayed(state, playerId, card.id, false);
-      if (playable) console.log(`[DEBUG] Exile card ${card.definition.name} IS playable.`);
       return playable;
     });
     if (hasExileAction) return true;
@@ -248,7 +244,6 @@ export class PriorityProcessor {
     if (player.library.length > 0) {
       const topCard = player.library[player.library.length - 1];
       if (this.canObjectBePlayed(state, playerId, topCard.id, false)) {
-        console.log(`[DEBUG] canPlayerTakeAnyAction: TRUE because of library top.`);
         return true;
       }
     }
@@ -271,7 +266,6 @@ export class PriorityProcessor {
         if (timingOk) {
           const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], face);
           if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, obj)) {
-            console.log(`[DEBUG] Battlefield Prepared Copy of ${obj.definition.name} IS playable.`);
             return true;
           }
         }
@@ -282,7 +276,6 @@ export class PriorityProcessor {
 
       return logic.abilities.some((ability: any, index: number) => {
         const canAct = this.canAbilityBeActivated(state, playerId, obj.id, index, false);
-        if (canAct) console.log(`[DEBUG] Battlefield Ability of ${obj.definition.name} (idx ${index}) IS playable.`);
         return canAct;
       });
     });
@@ -459,6 +452,15 @@ export class PriorityProcessor {
     const cardLogic = oracle.getCard(obj.definition.name);
     let abilities = [...(cardLogic?.abilities || [])];
 
+    // --- SUPPORT FOR IN-LINE ABILITIES (Tokens, Virtual Spells) ---
+    if (obj.definition.abilities) {
+      obj.definition.abilities.forEach((a: any) => {
+        if (!abilities.some(existing => existing.id === a.id && a.id !== undefined)) {
+          abilities.push(a);
+        }
+      });
+    }
+
     // --- SUPPORT FOR GRANTED ABILITIES (Conspicuous Snoop, Galazeth, etc.) ---
     const grantedAbilityEffects = state.ruleRegistry.continuousEffects.filter(e =>
       (e.type === EffectType.GainAbilitiesOfTopCard || e.type === EffectType.AddTriggeredAbility) &&
@@ -541,10 +543,15 @@ export class PriorityProcessor {
       return false;
     }
 
+    // Requirement Check (Rule 602.5b)
+    if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) {
+      return false;
+    }
+
     // Cost Check
     if (!CostProcessor.canPay(state, ability.costs || [], obj.id, playerId)) return false;
 
-    // Requirement Check (Rule 602.5b)
+    // Requirement Check (Rule 602.5b) - Double check after costs? (Historical logic)
     if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) return false;
 
     // Target Check

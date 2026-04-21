@@ -28,7 +28,7 @@ export const ZonePile = memo(({ label, count, topCard, cards, onClick, type = 'l
         onClick={onClick}
         className={`flex flex-col items-center gap-[1vh] group cursor-pointer pointer-events-auto`}
     >
-        <div className="relative w-[10vh] h-[13.5vh] group-hover:scale-105 transition-transform duration-300">
+        <div className="relative w-[10vh] h-[13.5vh] group-hover:ring-[3px] group-hover:ring-indigo-400/80 group-hover:shadow-[0_0_25px_rgba(129,140,248,0.6)] rounded-lg transition-all duration-300">
             {/* STACK DEPTH EFFECT */}
             {Array.from({ length: depth }).map((_, i) => (
                 <div 

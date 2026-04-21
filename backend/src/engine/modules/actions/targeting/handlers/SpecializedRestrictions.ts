@@ -121,7 +121,7 @@ SpecializedRestrictions["POWER4ORGREATER"] = {
         matches(state, targetObj: any) {
             const definition = targetObj.definition || targetObj.card?.definition;
             if (!definition) return false;
-            const { ManaProcessor } = require("../../../../../magic/ManaProcessor");
+            const { ManaProcessor } = require("../../../magic/ManaProcessor");
             return ManaProcessor.getManaValue(definition.manaCost || '') >= mv;
         }
     };
@@ -133,7 +133,7 @@ SpecializedRestrictions["POWER4ORGREATER"] = {
         matches(state, targetObj: any) {
             const definition = targetObj.definition || targetObj.card?.definition;
             if (!definition) return false;
-            const { ManaProcessor } = require("../../../../../magic/ManaProcessor");
+            const { ManaProcessor } = require("../../../magic/ManaProcessor");
             return ManaProcessor.getManaValue(definition.manaCost || '') <= mv;
         }
     };

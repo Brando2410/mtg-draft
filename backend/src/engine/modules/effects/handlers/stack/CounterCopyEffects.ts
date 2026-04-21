@@ -77,6 +77,28 @@ export const CopySpellHandler: IEffectHandler = {
                 };
             }
 
+            // PRE-CLEAR TARGETS if choosing new ones (prevents UI arrows during re-selection)
+            let backupTargets: string[] = [];
+            if (effect.chooseNewTargets && copy.targets) {
+                backupTargets = [...copy.targets];
+                copy.targets = [];
+
+                // Aggressively clear all target-related metadata
+                if (copy.data) {
+                    copy.data.targets = [];
+                    copy.data.selectedTargets = [];
+                    copy.data.declaredTargets = [];
+                    copy.data.targetsControllers = [];
+                }
+                
+                // Clear nested card targets to be safe
+                if (copy.card && copy.card.data) {
+                    copy.card.data.targets = [];
+                    copy.card.data.selectedTargets = [];
+                }
+            }
+
+            copy.name = `Copy of ${stackObj.name || stackObj.card?.definition.name || 'Spell'}`;
             state.stack.push(copy);
             log(`[COPY] Created copy of ${stackObj.card?.definition.name || 'spell'}.`);
 
@@ -93,7 +115,7 @@ export const CopySpellHandler: IEffectHandler = {
                 }
             }, log);
 
-            if (effect.chooseNewTargets && copy.targets && copy.targets.length > 0) {
+            if (effect.chooseNewTargets) {
                 const targetDef = copy.data?.targetDefinition || copy.targetDefinition;
                 if (targetDef) {
                     const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
@@ -105,7 +127,9 @@ export const CopySpellHandler: IEffectHandler = {
                     const legalTargetIds = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
                         sourceId: copy.id,
                         controllerId: copy.controllerId,
-                        targetDef
+                        stackObject: copy,
+                        targetDef,
+                        targetIndex: 0
                     }, tid));
 
                     if (legalTargetIds.length > 0) {
@@ -120,8 +144,10 @@ export const CopySpellHandler: IEffectHandler = {
                                 targetDefinition: targetDef,
                                 targets: legalTargetIds,
                                 selectedTargets: [],
+                                declaredTargets: [], // Force empty for UI
                                 optional: true,
-                                originalTargets: [...copy.targets]
+                                _backupTargets: backupTargets, // Use internal field
+                                stackObj: copy
                             }
                         };
                     }
@@ -160,6 +186,7 @@ export const CopyAbilityHandler: IEffectHandler = {
                     const legalTargetIds = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
                         sourceId: copy.id,
                         controllerId: copy.controllerId,
+                        stackObject: copy,
                         targetDef
                     }, tid));
 

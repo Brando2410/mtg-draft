@@ -574,6 +574,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
                 cardId: sourceId, 
                 abilityIndex: action.data.abilityIndex, 
                 targets, 
+                xValue: action.data.xValue,
                 bypassPriority: true,
                 bypassTargeting: false
             }
@@ -669,6 +670,7 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             playerId, 
             cardId: sourceId, 
             targets: finalTargets, 
+            xValue: action.data?.xValue,
             bypassPriority: true,
             bypassTargeting: false
         }
@@ -685,13 +687,13 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
         targetsForResolution = [choice.value, ...parentTargets];
     }
 
-    state.pendingAction = undefined; 
-    
     if (choice.costs && choice.costs.length > 0) {
         if (!CostProcessor.canPay(state, choice.costs, sourceId, action.playerId)) {
             log(`Insufficient resources to select: ${choice.label}`);
             return false;
         }
+
+        state.pendingAction = undefined; 
 
         // INTERACTIVE COST TRIGGER
         const interactiveCost = choice.costs.find((c: AbilityCost) => 
@@ -708,7 +710,9 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
             return true;
         }
 
-        CostProcessor.pay(state, choice.costs, sourceId, action.playerId, log);
+        CostProcessor.pay(state, choice.costs as AbilityCost[], sourceId, action.playerId, log);
+    } else {
+        state.pendingAction = undefined; 
     }
 
     if (choice.effects && choice.effects.length > 0) {
@@ -910,18 +914,39 @@ private static resumeResolution(state: GameState, sourceId: string, stackObj: an
 
     log(`${state.players[playerId].name} chose X = ${x} for ${card.definition.name}.`);
 
-    const success = SpellProcessor.playCard(
-        state, 
-        log, 
-        engine,
-        {
-            playerId, 
-            cardId: sourceId, 
-            targets: action.data?.declaredTargets || [], 
-            bypassPriority: true,
-            bypassTargeting: false
-        }
-    );
+    const abilityIndex = action.data?.abilityIndex;
+    let success = false;
+    
+    if (abilityIndex !== undefined) {
+        success = SpellProcessor.activateAbility(
+            state, 
+            log, 
+            engine,
+            {
+                playerId, 
+                cardId: sourceId, 
+                abilityIndex,
+                targets: action.data?.declaredTargets || [], 
+                xValue: x,
+                bypassPriority: true,
+                bypassTargeting: false
+            }
+        );
+    } else {
+        success = SpellProcessor.playCard(
+            state, 
+            log, 
+            engine,
+            {
+                playerId, 
+                cardId: sourceId, 
+                targets: action.data?.declaredTargets || [], 
+                xValue: x,
+                bypassPriority: true,
+                bypassTargeting: false
+            }
+        );
+    }
 
     if (success === false) {
         card.xValue = undefined;

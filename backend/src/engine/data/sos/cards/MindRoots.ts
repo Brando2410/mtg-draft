@@ -26,7 +26,7 @@ export const MindRoots: CardDefinition = {
                 {
                     type: EffectType.Choice,
                     label: "Put a land card discarded this way onto the battlefield",
-                    targetIdMapping: "LAST_DISCARDED_CARDS",
+                    selectionPool: TargetMapping.LastDiscardedCards,
                     targetDefinition: {
                         type: TargetType.CardInGraveyard,
                         count: 1,

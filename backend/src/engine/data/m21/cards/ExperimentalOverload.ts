@@ -34,7 +34,7 @@ export const ExperimentalOverload: CardDefinition = {
                     optional: true,
                     minChoices: 0,
                     maxChoices: 1,
-                    targetIdMapping: 'CONTROLLER_GRAVEYARD',
+                    selectionPool: 'CONTROLLER_GRAVEYARD',
                     restrictions: [Restriction.InstantOrSorcery],
                     effects: [{ type: EffectType.ReturnToHand }]
                 }

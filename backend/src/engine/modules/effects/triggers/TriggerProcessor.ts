@@ -7,9 +7,9 @@ import {
     PlayerId,
     TargetMapping,
     TriggeredAbility,
-    TriggerEvent,
     Zone
 } from "@shared/engine_types";
+import { TriggerEvent } from "@shared/types/events";
 import { oracle } from "../../../OracleLogicMap";
 import { LayerProcessor } from "../../state/LayerProcessor";
 
@@ -498,9 +498,8 @@ export class TriggerProcessor {
       const tEvent = t.eventMatch;
       const tEvents = Array.isArray(tEvent) ? tEvent : [tEvent];
 
-      const matchesPrimary = tEvents.some((type) => {
-        const { TriggerEvent } = require("@shared/engine_types");
-        return (
+      const matchesPrimary = tEvents.some((type: any) => {
+        const isMatch = (
           type === event.type ||
           (type === TriggerEvent.EnterBattlefieldOther &&
             event.type === TriggerEvent.EnterBattlefield) ||
@@ -517,28 +516,23 @@ export class TriggerProcessor {
           (type === TriggerEvent.CountersAddedOther &&
             event.type === TriggerEvent.CountersAdded) ||
           (type === TriggerEvent.Magecraft &&
-            event.playerId === t.controllerId &&
+            String(event.playerId) === String(t.controllerId) &&
             (event.type === TriggerEvent.CastInstantOrSorcery ||
               (event.type === TriggerEvent.CopySpell &&
                 event.data?.isInstantOrSorcery))) ||
           (type === TriggerEvent.MagecraftOpponent &&
-            event.playerId !== t.controllerId &&
+            String(event.playerId) !== String(t.controllerId) &&
             (event.type === TriggerEvent.CastInstantOrSorcery ||
               (event.type === TriggerEvent.CopySpell &&
                 event.data?.isInstantOrSorcery)))
         );
-      });
 
-      if (t.sourceId.includes("arthropod") || t.id?.includes("arthropod") || t.definition?.name?.includes("Arthropod")) {
-          const { TriggerEvent: TE } = require("@shared/engine_types");
-          console.log(`[TRIGGER-DEBUG] Evaluating Geometers Arthropod: event=${event.type}, tEvents=[${tEvents.join(', ')}], matchesPrimary=${matchesPrimary}`);
-          console.log(`[TRIGGER-DEBUG] event.type=${event.type}, TriggerEvent.CastSpell=${(TE as any).CastSpell}`);
-      }
+        return isMatch;
+      });
 
       if (!matchesPrimary) return false;
 
       // Identity Filtering (Rule 603.2)
-      const { TriggerEvent } = require("@shared/engine_types");
       if (event.type === TriggerEvent.EnterBattlefield) {
         const enteringId = event.data?.object?.id || event.payload?.object?.id || event.payload?.sourceId || event.sourceId;
         if (
@@ -599,17 +593,19 @@ export class TriggerProcessor {
           if (!condition(state, event, t)) return false;
         } else {
           const { ConditionProcessor } = require("../../core/logic/ConditionProcessor");
-          if (
-            !ConditionProcessor.matchesCondition(state, condition, {
-              sourceId: t.sourceId,
-              controllerId: t.controllerId,
-              event,
-              stackObject: t,
-            })
-          )
+          const matchesInfo = {
+            sourceId: t.sourceId,
+            controllerId: t.controllerId,
+            event,
+            stackObject: t,
+          };
+          if (!ConditionProcessor.matchesCondition(state, condition, matchesInfo)) {
             return false;
+          }
         }
       }
+      
+      if (!this.checkZone(state, t, event.type)) return false;
 
       if (t.limitPerTurn) {
         const usedCount =
@@ -874,6 +870,7 @@ export class TriggerProcessor {
                 {
                   type: "CopySpellOnStack",
                   targetMapping: "TRIGGER_EVENT_SOURCE",
+                  chooseNewTargets: true,
                 },
               ],
             } as any);
@@ -889,7 +886,7 @@ export class TriggerProcessor {
     matchingTriggers: TriggeredAbility[],
   ) {
     if (event.type === "ON_CAST_INSTANT_SORCERY" && event.playerId) {
-      const stackObj = event.data?.stackSnapshot;
+      const stackObj = event.payload?.stackSnapshot || event.data?.stackSnapshot;
       const targets = stackObj?.targets || [];
       if (
         targets.some((tid: string) =>

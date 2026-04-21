@@ -183,6 +183,7 @@ export class SpellInteractiveManager {
                     hideUndo: false,
                     isSpellCasting: true,
                     isTargetingModal: true,
+                    xValue: cardToPlay.xValue,
                     minChoices: minCount,
                     maxChoices: maxCount,
                     choices: choices
@@ -237,7 +238,7 @@ export class SpellInteractiveManager {
         declaredTargets: string[],
         cardInstanceId: string,
         log: (m: string) => void
-    ): boolean {
+    ): boolean | null {
         const { TargetingProcessor } = require('../targeting/TargetingProcessor');
         const player = state.players[playerId];
 
@@ -287,9 +288,10 @@ export class SpellInteractiveManager {
                 }))
                 .map(o => o.id);
 
-            if (legalSacrificeIds.length === 0) {
+            const amount = sacrificeCost.amount || 1;
+            if (legalSacrificeIds.length < amount) {
                 log(`Illegal Play: No valid objects to sacrifice for ${cardToPlay.definition.name}.`);
-                return false;
+                return null; // FAILURE
             }
 
             state.pendingAction = {
@@ -302,6 +304,8 @@ export class SpellInteractiveManager {
                     isCostChoice: true,
                     costType: 'Sacrifice',
                     declaredTargets: declaredTargets || [],
+                    minChoices: amount,
+                    maxChoices: amount,
                     choices: legalSacrificeIds.map(id => {
                         const obj = state.battlefield.find(o => o.id === id);
                         return { label: `Sacrifice ${obj?.definition.name || id}`, value: id, cardData: obj, selectable: true }
@@ -324,9 +328,10 @@ export class SpellInteractiveManager {
                 }))
                 .map(c => c.id);
 
-            if (legalDiscardIds.length === 0) {
+            const amount = discardCost.amount || 1;
+            if (legalDiscardIds.length < amount) {
                 log(`Illegal Play: No valid cards to discard for ${cardToPlay.definition.name}.`);
-                return false;
+                return null; // FAILURE
             }
 
             state.pendingAction = {
@@ -338,8 +343,8 @@ export class SpellInteractiveManager {
                     hideUndo: false,
                     isCostChoice: true,
                     costType: 'Discard',
-                    minChoices: 1,
-                    maxChoices: 1,
+                    minChoices: amount,
+                    maxChoices: amount,
                     declaredTargets: declaredTargets || [],
                     choices: legalDiscardIds.map(id => {
                         const c = player.hand.find(o => o.id === id)!;
@@ -374,7 +379,7 @@ export class SpellInteractiveManager {
             const amount = exileCost.amount || 1;
             if (legalExileIds.length < amount) {
                 log(`Illegal Play: Not enough valid objects to exile for ${cardToPlay.definition.name}.`);
-                return false;
+                return null; // FAILURE
             }
 
             state.pendingAction = {
@@ -742,6 +747,7 @@ export class SpellInteractiveManager {
                     hideUndo: false,
                     isSpellCasting: true,
                     isTargetingModal: true,
+                    xValue: (obj as any).xValue,
                     minChoices: minCount,
                     maxChoices: maxCount,
                     choices: choices,
@@ -761,6 +767,7 @@ export class SpellInteractiveManager {
                 targetDefinition: ability.targetDefinition,
                 targets: legalForFirst,
                 label: firstDef.label || `Select target for ${obj.definition.name}`,
+                xValue: (obj as any).xValue,
                 maxCount,
                 minCount,
                 count,

@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
     name: "Sanar, Unfinished Genius // Wild Idea",
     manaCost: "{U}{R}",
@@ -33,6 +33,12 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
                                 costs: [
                                     { type: CostType.Tap, targetMapping: TargetMapping.Self },
                                     { type: CostType.Sacrifice, targetMapping: TargetMapping.Self }
+                                ],
+                                    effects: [
+                                    {
+                                        type: EffectType.AddMana,
+                                        manaType: '{ANY}'
+                                    }
                                 ],
                                 isManaAbility: true
                             }

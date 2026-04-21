@@ -86,16 +86,14 @@ export class CostProcessor {
         return val >= 0 || current >= Math.abs(val);
       }
 
-      case CostType.Sacrifice:
-        if (cost.targetMapping === 'SELF') {
-           return state.battlefield.some(c => c.id === source.id);
-        }
-        const neededSac = cost.amount || 1;
+      case CostType.Sacrifice: {
+        const neededSac = (cost.amount !== undefined) ? cost.amount : 1;
         const validSacrifices = state.battlefield.filter(c => 
-            c.controllerId === playerId && 
+            String(c.controllerId) === String(playerId) && 
             (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }))
         );
         return validSacrifices.length >= neededSac;
+      }
 
       case CostType.SacrificeSelf:
         return state.battlefield.some(c => c.id === source.id);
@@ -200,10 +198,10 @@ export class CostProcessor {
             // Check for pre-selected target from modal choice
             const chosenId = (state as any).lastChosenSacrificeId;
             if (chosenId) {
-                toSac = state.battlefield.find(c => c.id === chosenId);
+                toSac = state.battlefield.find(c => String(c.id) === String(chosenId));
             } else {
                 // Fallback for auto-order/automated effects (not recommended for complex costs)
-                toSac = state.battlefield.find(c => c.controllerId === playerId && (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions!, { controllerId: playerId, sourceId: source.id })));
+                toSac = state.battlefield.find(c => String(c.controllerId) === String(playerId) && (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions!, { controllerId: playerId, sourceId: source.id })));
             }
         }
         

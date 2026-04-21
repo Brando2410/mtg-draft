@@ -251,7 +251,7 @@ export class SpellValidator {
             const isMainPhase = (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain);
             const stackEmpty = state.stack.length === 0;
             const isSorcerySpeed = String(playerId) === activeId && isMainPhase && stackEmpty;
-            const canActivateAnyTime = (cardLogic.abilities || []).some((a: any) => a.type === 'Static' && String(a.id).includes('any_turn')) ||
+            const canActivateAnyTime = (cardLogic?.abilities || []).some((a: any) => a.type === 'Static' && String(a.id).includes('any_turn')) ||
                 state.ruleRegistry.continuousEffects.some(e =>
                     e.type === EffectType.AllowOutOfTurnActivation &&
                     (e.targetIds?.includes(obj.id) || (e.targetMapping === TargetMapping.Self && e.sourceId === obj.id))

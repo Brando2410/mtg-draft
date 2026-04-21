@@ -6,7 +6,10 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, controllerId } = context;
             if (event?.playerId !== controllerId) return false;
-            const targets = event?.targets || event?.data?.targets || event?.data?.stackSnapshot?.targets || [];
+            const targets = event?.payload?.stackSnapshot?.targets || 
+                           event?.data?.stackSnapshot?.targets || 
+                           event?.targets || 
+                           event?.data?.targets || [];
             if (!targets.length) return false;
             
             const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");

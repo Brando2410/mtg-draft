@@ -40,7 +40,7 @@ export const ChandraHeartofFire: CardDefinition = {
                 {
                     type: EffectType.SearchLibrary,
                     label: 'Search Library and Graveyard for Red Instant/Sorcery cards',
-                    targetIdMapping: 'CONTROLLER_GRAVEYARD_AND_LIBRARY',
+                    selectionPool: 'CONTROLLER_GRAVEYARD_AND_LIBRARY',
                     restrictions: [
                         Restriction.Red,
                         Restriction.InstantOrSorcery

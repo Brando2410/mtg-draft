@@ -40,6 +40,7 @@ export const SeizetheSpoils: CardDefinition = {
                         abilities: [
                             {
                                 type: AbilityType.Activated,
+                                id: 'Treasure_Mana_Ability',
                                 costs: [
                                     { type: CostType.Tap },
                                     { type: CostType.SacrificeSelf }
@@ -49,7 +50,8 @@ export const SeizetheSpoils: CardDefinition = {
                                         type: EffectType.AddMana,
                                         manaType: '{ANY}'
                                     }
-                                ]
+                                ],
+                                isManaAbility: true
                             }
                         ],
                     }

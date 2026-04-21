@@ -42,8 +42,12 @@ export class TargetValidator {
     }
 
     public static isLegalTarget(state: GameState, context: TargetingContext, targetId: string): boolean {
-        const { controllerId, targetDef, targetIndex } = context;
+        const { controllerId, targetDef, targetIndex, sourceId } = context;
         const targetDefForIndex = TargetMapper.getDefinitionForIndex(targetDef, targetIndex || 0);
+
+        if (sourceId?.includes('copy')) {
+            console.log(`[TARGET-DEBUG] Checking legality for ${targetId} from source ${sourceId}. targetDef:`, JSON.stringify(targetDefForIndex));
+        }
 
         if (state.players[targetId]) {
             const type = (targetDefForIndex?.type || '').toLowerCase();
@@ -68,7 +72,11 @@ export class TargetValidator {
         }
 
         const targetObj = this.findObjectInAnyZone(state, targetId);
-        if (!targetObj || targetObj.isPhasedOut) return false;
+        if (!targetObj) {
+            if (sourceId?.includes('copy')) console.log(`[TARGET-DEBUG] FAILED: Target ${targetId} not found in any zone.`);
+            return false;
+        }
+        if (targetObj.isPhasedOut) return false;
 
         const targetZone = targetObj.zone;
         const stats = LayerProcessor.getEffectiveStats(targetObj, state);
@@ -76,13 +84,23 @@ export class TargetValidator {
         const isOpponentTarget = controllerId && targetObj.controllerId !== controllerId;
         const source = this.findObjectInAnyZone(state, context.sourceId);
 
-        if (keywords.includes('Shroud')) return false;
+        if (keywords.includes('Shroud')) {
+            if (sourceId?.includes('copy')) console.log(`[TARGET-DEBUG] FAILED: Target ${targetId} has Shroud.`);
+            return false;
+        }
+
         const hexproofKeywords = keywords.filter((k: string) => k.toLowerCase().startsWith('hexproof'));
         for (const hp of hexproofKeywords) {
-            if (hp.toLowerCase() === 'hexproof' && isOpponentTarget) return false;
+            if (hp.toLowerCase() === 'hexproof' && isOpponentTarget) {
+                if (sourceId?.includes('copy')) console.log(`[TARGET-DEBUG] FAILED: Target ${targetId} has Hexproof.`);
+                return false;
+            }
             if (hp.toLowerCase().startsWith('hexproof from ')) {
                 const qualities = hp.toLowerCase().replace('hexproof from ', '').split(/[\s,]+/).filter(Boolean);
-                if (isOpponentTarget && source && this.sourceHasQualities(source, qualities, state)) return false;
+                if (isOpponentTarget && source && this.sourceHasQualities(source, qualities, state)) {
+                    if (sourceId?.includes('copy')) console.log(`[TARGET-DEBUG] FAILED: Target ${targetId} has Hexproof from source qualities.`);
+                    return false;
+                }
             }
         }
 
@@ -90,7 +108,10 @@ export class TargetValidator {
         if (protectionKeywords.length > 0 && source) {
             for (const prot of protectionKeywords) {
                 const qualities = prot.toLowerCase().replace('protection from ', '').split(/[\s,]+/).filter(Boolean);
-                if (this.sourceHasQualities(source, qualities, state)) return false;
+                if (this.sourceHasQualities(source, qualities, state)) {
+                    if (sourceId?.includes('copy')) console.log(`[TARGET-DEBUG] FAILED: Target ${targetId} has Protection from source qualities.`);
+                    return false;
+                }
             }
         }
 
@@ -110,11 +131,12 @@ export class TargetValidator {
             else expectedZone = Zone.Battlefield;
         }
 
-        if (expectedZone !== 'Any' && targetZone !== expectedZone) return false;
+        if (expectedZone !== 'Any' && targetZone !== expectedZone) {
+            if (sourceId?.includes('copy')) console.log(`[TARGET-DEBUG] FAILED: Zone mismatch for ${targetId}. Expected ${expectedZone}, got ${targetZone}.`);
+            return false;
+        }
 
         const restrictions = [...(targetDefForIndex?.restrictions || [])];
-        
-        // Ensure the primary type (e.g. Creature, Enchantment) is validated if not already in restrictions
         const primaryType = (targetDefForIndex?.type || '').toUpperCase();
         if (primaryType && primaryType !== 'ANY' && primaryType !== 'PLAYER' && primaryType !== 'ANYTARGET') {
              if (!restrictions.some(r => typeof r === 'string' && r.toUpperCase() === primaryType)) {
@@ -122,7 +144,11 @@ export class TargetValidator {
              }
         }
 
-        return !!this.matchesRestrictions(state, targetObj, restrictions, context);
+        const result = !!this.matchesRestrictions(state, targetObj, restrictions, context);
+        if (!result && sourceId?.includes('copy')) {
+            console.log(`[TARGET-DEBUG] FAILED: matchesRestrictions returned false for ${targetId}. Restrictions checked:`, restrictions);
+        }
+        return result;
     }
 
     public static matchesRestrictions(state: GameState, targetObj: Targetable, restrictions: (TargetRestriction | string)[], context: TargetingContext, log?: (msg: string) => void): boolean {
@@ -156,8 +182,13 @@ export class TargetValidator {
             const lr = r.toLowerCase();
             const token = r.toUpperCase();
 
+            let matched = false;
             if (isNumericRestriction(lr)) {
-                if (!RestrictionRegistry["NUMERIC_REGEX"].matches(state, targetObj, lr, context)) return false;
+                matched = RestrictionRegistry["NUMERIC_REGEX"].matches(state, targetObj, lr, context);
+                if (!matched) {
+                    if (sourceId?.includes('copy')) console.log(`[TARGET-DEBUG] Restriction FAILED: ${r} (Numeric)`);
+                    return false;
+                }
                 continue;
             }
 
@@ -166,7 +197,11 @@ export class TargetValidator {
             if (!handler && (lr === "other" || lr === "another")) handler = RestrictionRegistry["OTHER"];
 
             if (handler) {
-                if (!handler.matches(state, targetObj, lr, context)) return false;
+                matched = handler.matches(state, targetObj, lr, context);
+                if (!matched) {
+                    if (sourceId?.includes('copy')) console.log(`[TARGET-DEBUG] Restriction FAILED: ${r} (Handler: ${token})`);
+                    return false;
+                }
                 continue;
             }
 
@@ -177,7 +212,10 @@ export class TargetValidator {
 
             const targetName = (definition.name || (targetObj as any).name || "").toLowerCase();
             const objSubtypes = (definition.subtypes || []).map((s: string) => s.toLowerCase());
-            if (targetName !== lr && !objSubtypes.includes(lr)) return false;
+            if (targetName !== lr && !objSubtypes.includes(lr)) {
+                if (sourceId?.includes('copy')) console.log(`[TARGET-DEBUG] Restriction FAILED: ${r} (Fallback: Name/Subtype mismatch)`);
+                return false;
+            }
         }
 
         const alternatives = restrictions.filter(r => {

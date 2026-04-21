@@ -354,6 +354,22 @@ export class TargetMapper {
         return [sourceId];
       case TargetMapping.Controller:
         return [controllerId];
+      case "CONTROLLER_HAND":
+        return state.players[controllerId]?.hand.map((o) => o.id) || [];
+      case "CONTROLLER_GRAVEYARD":
+        return state.players[controllerId]?.graveyard.map((o) => o.id) || [];
+      case "CONTROLLER_SIDEBOARD":
+        return (state.players[controllerId] as any)?.sideboard?.map((o: any) => o.id) || [];
+      case "CONTROLLER_LIBRARY":
+        return state.players[controllerId]?.library.map((o) => o.id) || [];
+      case "OPPONENT_HAND": {
+        const opponentId = Object.keys(state.players).find((pid) => pid !== controllerId);
+        return opponentId ? state.players[opponentId].hand.map((o) => o.id) : [];
+      }
+      case "OPPONENT_GRAVEYARD": {
+        const opponentId = Object.keys(state.players).find((pid) => pid !== controllerId);
+        return opponentId ? state.players[opponentId].graveyard.map((o) => o.id) : [];
+      }
       case "LINKED_OBJECT":
         const linkKey = effect.linkKey || "linkedCardId";
         const lSource =
@@ -376,12 +392,10 @@ export class TargetMapper {
         return (state as any).lastExiledIds || [];
       case "PARENT_CONTEXT_EXILED_IDS": {
         const result = (context.exiledIds && context.exiledIds.length > 0) ? context.exiledIds : (parentContext?.exiledIds || []);
-        console.log(`[DEBUG] TargetMapper: PARENT_CONTEXT_EXILED_IDS resolved to: ${result.join(', ')}`);
         return result;
       }
       case "PARENT_CONTEXT_EXILED_IDS_OWNERS": {
         const ids = (context.exiledIds && context.exiledIds.length > 0) ? context.exiledIds : (parentContext?.exiledIds || []);
-        console.log(`[DEBUG] TargetMapper: PARENT_CONTEXT_EXILED_IDS_OWNERS resolving for ids: ${ids.join(', ')}`);
         const owners = ids
           .map(
             (id: string) =>
@@ -417,6 +431,10 @@ export class TargetMapper {
         return targets[7] ? [targets[7]] : [];
       case "TARGET_ALL":
         return (targets || []).filter(Boolean);
+      case "TRIGGER_EVENT_SOURCE":
+        return [context.event?.sourceId || context.event?.data?.sourceId || context.event?.payload?.sourceId || ""];
+      case "EVENT_SOURCE":
+        return [context.event?.sourceId || context.event?.data?.sourceId || context.event?.payload?.sourceId || ""];
       case "MATCHING_PERMANENTS_YOU_CONTROL":
         if (!effect?.restrictions) return [];
         return state.battlefield
@@ -467,6 +485,8 @@ export class TargetMapper {
           )
           .map((o) => o.id);
 
+      case "TRIGGER_EVENT_SOURCE":
+      case "EVENT_SOURCE":
       case "TRIGGER_SOURCE": {
         const eData =
           eventData ||
@@ -814,15 +834,20 @@ export class TargetMapper {
     targetDef: any,
     targetIndex: number,
   ): any {
-    if (!Array.isArray(targetDef)) return targetDef;
-    let cumulative = 0;
-    for (const def of targetDef) {
-      const count = typeof def.count === "number" ? def.count : 1;
-      if (targetIndex >= cumulative && targetIndex < cumulative + count) {
-        return def;
-      }
-      cumulative += count;
-    }
-    return targetDef[targetDef.length - 1];
+    if (!targetDef) return null;
+    const def = (() => {
+        if (!Array.isArray(targetDef)) return targetDef;
+        let cumulative = 0;
+        for (const d of targetDef) {
+            const count = typeof d.count === "number" ? d.count : 1;
+            if (targetIndex >= cumulative && targetIndex < cumulative + count) {
+                return d;
+            }
+            cumulative += count;
+        }
+        return targetDef[targetDef.length - 1];
+    })();
+    // console.log(`[MAPPER-DEBUG] targetIndex ${targetIndex} resolved to:`, JSON.stringify(def));
+    return def;
   }
 }

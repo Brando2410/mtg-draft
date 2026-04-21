@@ -178,7 +178,6 @@ export class GameEngine implements EngineContext {
 
   public autoTapLand(playerId: PlayerId, cardId: string, abilityIndex?: number, choiceIndex?: number): boolean {
     if (!this.state) {
-        console.error('[GameEngine] autoTapLand called but state is undefined');
         return false;
     }
     return PlayerActionProcessor.autoTapLand(this.state, playerId, cardId, this, abilityIndex, choiceIndex);
@@ -332,7 +331,7 @@ export class GameEngine implements EngineContext {
     // CR 613: Re-evaluate the "Derived State" (P/T, Keywords, isPlayable) before returning to the UI.
     LayerProcessor.updateDerivedStats(this.state, PriorityProcessor);
     return this.state;
-  }
+}
 
   public resolveChoice(playerId: string, choiceIndex: any): boolean {
     const success = ChoiceProcessor.resolveChoice(

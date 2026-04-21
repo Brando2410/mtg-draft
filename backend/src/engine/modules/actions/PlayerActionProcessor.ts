@@ -104,18 +104,27 @@ export class PlayerActionProcessor {
     const typeLine = (obj.definition.types?.join(' ') + ' ' + (obj.definition.type_line || '')).toLowerCase();
     const isLand = typeLine.includes('land');
 
-    const allActivated = (logic?.abilities || [])
+    const allActivated = [...(logic?.abilities || [])];
+    if (obj.definition.abilities) {
+      obj.definition.abilities.forEach((a: any) => {
+        if (!allActivated.some(existing => existing.id === a.id && a.id !== undefined)) {
+          allActivated.push(a);
+        }
+      });
+    }
+
+    const filtered = allActivated
       .map((a: any, index: number) => ({ ability: a, index }))
       .filter((entry: any) => entry.ability.type === AbilityType.Activated && PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, true));
 
-    if (allActivated.length > 0) {
+    if (filtered.length > 0) {
       if (state.priorityPlayerId !== playerId) {
         log(`Player tried to activate ability without priority.`);
         return false;
       }
 
-      if (allActivated.length === 1) {
-        const { ability, index: abilityIdx } = allActivated[0];
+      if (filtered.length === 1) {
+        const { ability, index: abilityIdx } = filtered[0];
 
         if (ability.isManaAbility) {
           // Determine if this mana ability requires choices (like Add {B} or {G})

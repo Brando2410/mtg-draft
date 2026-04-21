@@ -1137,12 +1137,11 @@ export class MoveEffectHandler {
       reveal: searchEff.reveal,
       optional: effect.optional || (effect as any).selectionType === "AnyNumber",
       filterSelectable: true,
-      minChoices:
-        (effect as any).selectionType === "AnyNumber" || (effect as any).amount === "ANY" ? 0 : 1,
+      minChoices: (effect as any).selectionType === "AnyNumber" || (effect as any).amount === "ANY" || sourceZones.includes(Zone.Library) ? 0 : 1,
       maxChoices:
         (effect as any).selectionType === "AnyNumber" || (effect as any).amount === "ANY"
           ? pool.length
-          : (effect as any).amount || 1,
+          : (effect as any).amount || TP.calculateTotalCounts(searchEff.targetDefinition, 0).maxCount || 1,
       actionType:
         effect.optional || (effect as any).selectionType === "AnyNumber"
           ? ActionType.OptionalAction

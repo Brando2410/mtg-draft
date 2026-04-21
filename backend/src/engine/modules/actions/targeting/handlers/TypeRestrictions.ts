@@ -32,7 +32,8 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
     },
     "PERMANENT": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            const definition = targetObj.definition || targetObj.card?.definition || (targetObj as any).cardData?.definition;
+            const types = (definition?.types || []).map((t: string) => t.toLowerCase());
             const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
             return types.some((t: string) => permTypes.includes(t));
         }
@@ -123,6 +124,9 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return !types.includes('land') && ['artifact', 'creature', 'enchantment', 'planeswalker'].some(t => types.includes(t));
         }
     },
+    "CARD": {
+        matches() { return true; }
+    },
     "ANY": {
         matches() { return true; }
     },
@@ -131,6 +135,18 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
     },
     "ANY_TARGET": {
         matches() { return true; }
+    },
+    "NONAURA": {
+        matches(state, targetObj: any) {
+            const subtypes = (targetObj.definition?.subtypes || []).map((s: string) => s.toLowerCase());
+            return !subtypes.includes("aura");
+        }
+    },
+    "NOT_AURA": {
+        matches(state, targetObj: any) {
+            const subtypes = (targetObj.definition?.subtypes || []).map((s: string) => s.toLowerCase());
+            return !subtypes.includes("aura");
+        }
     }
 };
 

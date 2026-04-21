@@ -21,7 +21,7 @@ export const KitesailFreebooter: CardDefinition = {
                 {
                     type: EffectType.Choice,
                     label: "Choose a noncreature, nonland card from opponent's hand to exile",
-                    targetIdMapping: TargetMapping.Target1HandRevealPick,
+                    selectionPool: TargetMapping.Target1HandRevealPick,
                     restrictions: [Restriction.NonCreature, Restriction.NonLand],
                     effects: [
                         {

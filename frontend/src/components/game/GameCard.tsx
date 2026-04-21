@@ -236,23 +236,8 @@ export const GameCard = memo(({
         opacity: 1, 
         rotate: rotation,
         y: verticalShift,
-        // Pulse glow for playable cards (Cyan for standard, Fuchsia for virtual/prepared)
-        boxShadow: (isPlayable && !isOpponent) 
-          ? [
-              `0 0 15px ${(isPrepared || (obj as any).isVirtual ? 'rgba(217, 70, 239, 0.4)' : 'rgba(34, 211, 238, 0.4)')}`,
-              `0 0 25px ${(isPrepared || (obj as any).isVirtual ? 'rgba(217, 70, 239, 0.7)' : 'rgba(34, 211, 238, 0.7)')}`,
-              `0 0 15px ${(isPrepared || (obj as any).isVirtual ? 'rgba(217, 70, 239, 0.4)' : 'rgba(34, 211, 238, 0.4)')}`
-            ]
-          : isSelected 
-            ? '0 0 20px rgba(250, 204, 21, 0.4)'
-            : '0 0 0px rgba(0,0,0,0)'
       }}
       transition={{ 
-        boxShadow: {
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-        },
         type: 'tween', 
         duration: 0.15,
         ease: "easeOut"
@@ -269,15 +254,26 @@ export const GameCard = memo(({
       onMouseEnter={() => onHoverStart?.(obj)}
       onMouseLeave={() => onHoverEnd?.()}
       onClick={() => onClick?.(obj.id)}
-      className={`relative shrink-0 cursor-pointer transition-all animate-in fade-in duration-300
+      className={`relative shrink-0 cursor-pointer
         flex flex-col
         ${dimensions.rounded} ${variant !== 'zoom' ? `border-[1.5px] ${borderClass} shadow-xl` : ''}
         ${variant === 'battlefield' ? 'hover:ring-2 hover:ring-indigo-400/50 hover:shadow-[0_0_20px_rgba(129,140,248,0.4)]' : ''} 
         ${isTargetable ? 'ring-4 ring-red-500 ring-offset-2 ring-offset-slate-900 shadow-[0_0_20px_rgba(239,68,68,0.8)]' : ''} 
-        ${(isPlayable && !isOpponent) ? ((isPrepared || (obj as any).isVirtual) ? 'ring-4 ring-fuchsia-500 !border-2 !border-fuchsia-400 shadow-[0_0_15px_rgba(217,70,239,0.6)]' : 'ring-4 ring-cyan-400 !border-2 !border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)]') : ''} 
+        ${(isPlayable && !isOpponent) ? ((isPrepared || (obj as any).isVirtual) ? 'ring-[3px] ring-fuchsia-500 !border !border-fuchsia-400' : 'ring-[3px] ring-cyan-400 !border !border-cyan-400') : ''} 
         ${isSelected ? 'ring-2 ring-yellow-400' : ''}
         ${isCurrentlyDeclaringAttack ? 'ring-4 ring-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.9)] !border-orange-400' : ''}`}
     >
+      {/* PLAYABLE GLOW (Isolated to prevent shadow conflicts) */}
+      {(isPlayable && !isOpponent) && (
+        <motion.div
+          initial={{ opacity: 0.3 }}
+          animate={{ opacity: [0.3, 0.7, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className={`absolute inset-[-3px] z-[-1] rounded-[inherit]
+            ${(isPrepared || (obj as any).isVirtual) ? 'bg-fuchsia-500/20 shadow-[0_0_20px_rgba(217,70,239,0.8)]' : 'bg-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.8)]'}
+          `}
+        />
+      )}
       {/* ARENA ATTACK ARROW - Outside filter to stay vibrant */}
       {isCurrentlyDeclaringAttack && (
           <div className={`absolute left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-2 duration-300

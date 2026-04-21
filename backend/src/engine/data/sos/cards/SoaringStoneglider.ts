@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, Zone } from '@shared/engine_types';
 export const SoaringStoneglider: CardDefinition = {
     name: "Soaring Stoneglider",
     manaCost: "{2}{W}",
@@ -14,16 +14,16 @@ export const SoaringStoneglider: CardDefinition = {
             type: AbilityType.Spell,
             costs: [
                 {
-                    type: 'Choice',
+                    type: CostType.Choice,
                     label: 'Choose an additional cost',
                     choices: [
                         {
                             label: 'Exile 2 cards from your graveyard',
-                            costs: [{ type: 'Exile', amount: 2, sourceZones: ['Graveyard'] }]
+                            costs: [{ type: CostType.Exile, amount: 2, sourceZones: [Zone.Graveyard] }]
                         },
                         {
                             label: 'Pay {1}{W}',
-                            costs: [{ type: 'Mana', value: '{1}{W}' }]
+                            costs: [{ type: CostType.Mana, value: '{1}{W}' }]
                         }
                     ]
                 }

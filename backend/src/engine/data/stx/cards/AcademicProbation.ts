@@ -33,7 +33,7 @@ export const AcademicProbation: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.Choice,
-                                    targetIdMapping: TargetMapping.NameACard,
+                                    selectionPool: TargetMapping.NameACard,
                                     restrictions: [Restriction.NonLand],
                                     effects: [
                                         {

@@ -127,8 +127,14 @@ export class SpellCostCalculator {
             cardLogic.abilities?.forEach((a: any) => {
                 // Case A: Static abilities that apply costs to the card itself (creatures)
                 if (a.type === AbilityType.Static && a.activeZone === Zone.Hand) {
+                    if (a.additionalCosts) {
+                        additionalCosts = [...additionalCosts, ...a.additionalCosts];
+                    }
                     a.effects?.forEach((e: any) => {
-                        if ((e.type === 'AdditionalCost' || e.type === 'CostReduction') && e.targetMapping === 'SELF') {
+                        if (e.type === 'AdditionalCost' && e.targetMapping === 'SELF') {
+                            if (e.additionalCosts) additionalCosts = [...additionalCosts, ...e.additionalCosts];
+                        }
+                        if (e.type === 'CostReduction' && e.targetMapping === 'SELF') {
                             modifiers.push({ ...e, sourceId: card.id, controllerId: card.controllerId } as any);
                         }
                     });

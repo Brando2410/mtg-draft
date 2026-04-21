@@ -32,7 +32,7 @@ export const RenderSpeechless: CardDefinition = {
                     type: EffectType.Choice,
                     label: 'Choose a nonland card to discard',
                     targetMapping: TargetMapping.Target1,
-                    targetIdMapping: 'TARGET_1_HAND_REVEAL_PICK',
+                    selectionPool: TargetMapping.Target1HandRevealPick,
                     restrictions: [Restriction.NonLand],
                     effects: [{ type: EffectType.MoveToZone, zone: Zone.Graveyard, targetMapping: TargetMapping.SelectedCard, isDiscard: true }]
                 },

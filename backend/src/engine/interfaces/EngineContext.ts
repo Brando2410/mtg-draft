@@ -7,6 +7,7 @@ export interface PlayCardOptions {
     playerId: PlayerId;
     cardId: string;
     targets?: string[];
+    xValue?: number;
     bypassPriority?: boolean;
     bypassTargeting?: boolean;
 }
@@ -16,6 +17,7 @@ export interface ActivateAbilityOptions {
     cardId: string;
     abilityIndex: number;
     targets?: string[];
+    xValue?: number;
     choiceIndex?: number;
     bypassPriority?: boolean;
     bypassTargeting?: boolean;

@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
     export const GoblinGlasswrightCraftwithPride: CardDefinition = {
     name: "Goblin Glasswright",
     manaCost: "{1}{R}",
@@ -41,6 +41,12 @@
                                     costs: [
                                         { type: CostType.Tap, targetMapping: TargetMapping.Self },
                                         { type: CostType.Sacrifice, targetMapping: TargetMapping.Self }
+                                    ],
+                                    effects: [
+                                        {
+                                            type: EffectType.AddMana,
+                                            manaType: '{ANY}'
+                                        }
                                     ],
                                     isManaAbility: true
                                 }

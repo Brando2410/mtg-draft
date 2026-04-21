@@ -20,7 +20,7 @@ export const Duress: CardDefinition = {
                 {
                     type: EffectType.Choice,
                     label: "Choose a noncreature, nonland card to discard",
-                    targetIdMapping: TargetMapping.Target1HandRevealPick,
+                    selectionPool: TargetMapping.Target1HandRevealPick,
                     restrictions: [
                         Restriction.NonCreature,
                         Restriction.NonLand

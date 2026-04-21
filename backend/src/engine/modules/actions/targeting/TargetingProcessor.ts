@@ -237,6 +237,11 @@ export class TargetingProcessor {
         }
 
         const validTargets = actionData.targets || [];
+        if (actionData.isCopyTargeting || action.sourceId?.includes('copy')) {
+            console.log(`[TARGETING-DEBUG] User clicked ${targetId}. Valid targets count: ${validTargets.length}. Included? ${validTargets.includes(targetId)}`);
+            if (validTargets.length < 10) console.log(`[TARGETING-DEBUG] Valid IDs:`, JSON.stringify(validTargets));
+        }
+
         if (!validTargets.includes(targetId)) {
             log(`Invalid target selected.`);
             return false;
@@ -395,8 +400,18 @@ export class TargetingProcessor {
         }
 
         if (stackObj) {
-            stackObj.targets = resolvedTargets;
-            state.stack.push(stackObj);
+            const finalTargets = (actionData.isCopyTargeting && (resolvedTargets === null || resolvedTargets.length === 0))
+                ? (actionData._backupTargets || [])
+                : resolvedTargets;
+
+            stackObj.targets = finalTargets;
+            
+            // BUG FIX: Prevent double-pushing triggers that were already added to the stack by TriggerProcessor
+            const isAlreadyOnStack = state.stack.some(s => s === stackObj || s.id === stackObj.id);
+            if (!isAlreadyOnStack) {
+                state.stack.push(stackObj);
+            }
+            
             state.consecutivePasses = 0;
 
             engine.log(`--------------------------------------------------`);
@@ -422,6 +437,7 @@ export class TargetingProcessor {
                 cardId: sourceId!,
                 abilityIndex,
                 targets: resolvedTargets,
+                xValue: actionData?.xValue,
                 bypassPriority: true,
                 bypassTargeting: true
             });
@@ -434,6 +450,7 @@ export class TargetingProcessor {
                 playerId,
                 cardId: sourceId!,
                 targets: resolvedTargets,
+                xValue: actionData?.xValue,
                 bypassPriority: true,
                 bypassTargeting: true
             });

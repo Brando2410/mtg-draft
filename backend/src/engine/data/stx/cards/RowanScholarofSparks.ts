@@ -51,7 +51,12 @@ export const RowanScholarofSparks: CardDefinition = {
                                     choices: [{
                                         label: "Pay {2}",
                                         costs: [{ type: CostType.Mana, value: '{2}' }],
-                                        effects: [{ type: EffectType.CopySpellOnStack, targetMapping: TargetMapping.TriggerEventSource }]
+                                        effects: [{
+                                            type: EffectType.CopySpellOnStack,
+                                            targetMapping: TargetMapping.TriggerEventSource,
+                                            chooseNewTargets: true,
+                                            isCopyTargeting: true
+                                        }]
                                     }]
                                 }]
                             }]

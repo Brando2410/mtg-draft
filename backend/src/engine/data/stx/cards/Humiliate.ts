@@ -19,7 +19,7 @@ export const Humiliate: CardDefinition = {
                 {
                     type: EffectType.Choice,
                     label: "Choose a nonland card to discard",
-                    targetIdMapping: 'TARGET_1_HAND_REVEAL_PICK',
+                    selectionPool: 'TARGET_1_HAND_REVEAL_PICK',
                     restrictions: [Restriction.NonLand],
                     effects: [{ type: EffectType.MoveToZone, zone: Zone.Graveyard, isDiscard: true }]
                 },

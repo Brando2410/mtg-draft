@@ -20,15 +20,21 @@ export const ZealousLorecaster: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
-                type: TargetType.CardInGraveyard,
-                restrictions: [Restriction.InstantOrSorcery, Restriction.YouOwn],
-                count: 1
-            },
             effects: [
                 {
-                    type: EffectType.PutInHand,
-                    targetMapping: TargetMapping.Target1
+                    type: EffectType.Choice,
+                    label: "Return an instant or sorcery card",
+                    selectionPool: TargetMapping.ControllerGraveyard,
+                    targetDefinition: {
+                        type: TargetType.CardInGraveyard,
+                        restrictions: [Restriction.InstantOrSorcery],
+                        count: 1
+                    },
+                    effects: [
+                        {
+                            type: EffectType.PutInHand
+                        }
+                    ]
                 }
             ]
         }

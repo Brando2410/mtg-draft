@@ -27,7 +27,7 @@ export const VastlandsScavengerBindtoLife: CardDefinition = {
                     {
                         type: EffectType.Choice,
                         label: 'Choose a creature card to return to the battlefield',
-                        targetIdMapping: TargetMapping.LastMilledIds,
+                        selectionPool: TargetMapping.LastMilledIds,
                         targetDefinition: {
                             count: 1,
                             minCount: 0,

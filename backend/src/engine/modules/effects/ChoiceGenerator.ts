@@ -42,7 +42,7 @@ export class ChoiceGenerator {
         
         let options = cards.map(c => {
             const isMatch = TargetingProcessor.matchesRestrictions(state, c, restrictions, {
-                playerId,
+                controllerId: playerId,
                 sourceId,
                 stackObject: config.stackObj
             } as any);

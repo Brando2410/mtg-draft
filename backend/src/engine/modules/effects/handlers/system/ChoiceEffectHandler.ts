@@ -7,6 +7,7 @@ import {
   Zone,
   ModalEffect,
   EffectDefinition,
+  TargetMapping,
   StackObject
 } from "@shared/engine_types";
 import { ActionProcessor } from "../../../actions/ActionProcessor";
@@ -78,6 +79,16 @@ export class ChoiceEffectHandler {
         log(
           `[RESOLVING CHOICE] Auto-resolved pre-selected modes: ${rawIndices.join(", ")}`,
         );
+
+        // Pay costs for pre-selected choices if any
+        const { CostProcessor: CP } = require("../../../magic/CostProcessor");
+        rawIndices.forEach((idx) => {
+          const choice = dynamicChoices[idx];
+          if (choice && choice.costs) {
+            CP.pay(state, choice.costs, sourceId, controllerId, (m: string) => log(m));
+          }
+        });
+
         const { EffectProcessor: EP } = require("../../EffectProcessor");
         EP.resolveEffects({
           state,
@@ -93,26 +104,26 @@ export class ChoiceEffectHandler {
     }
 
     // --- HAND-PICKING OR GRAVEYARD-PICKING ---
-    const targetZoneMapping = (effect as any).targetIdMapping as string;
+    const targetZoneMapping = effect.selectionPool as string;
     const mappingPlayerId = controllerId;
 
-    const isStandardMapping = [
-      "TARGET_1_HAND",
-      "TARGET_1_HAND_REVEAL_PICK",
-      "TARGET_1_GRAVEYARD",
-      "TARGET_1_BATTLEFIELD",
-      "ALL_BATTLEFIELD",
-      "CONTROLLER_HAND",
-      "CONTROLLER_GRAVEYARD",
-      "CONTROLLER_BATTLEFIELD",
-      "CONTROLLER_SIDEBOARD",
-      "NAME_A_CARD",
-      "OPPONENT_HAND_REVEAL_PICK",
-      "LAST_MILLED_IDS",
-      "LAST_EXILED_IDS",
-      "PARENT_CONTEXT_EXILED_IDS",
-      "LAST_DISCARDED_CARDS",
-    ].includes(targetZoneMapping);
+    const isStandardMapping = ([
+      TargetMapping.Target1Hand,
+      TargetMapping.Target1HandRevealPick,
+      TargetMapping.Target1Graveyard,
+      TargetMapping.Target1Battlefield,
+      TargetMapping.AllBattlefield,
+      TargetMapping.ControllerHand,
+      TargetMapping.ControllerGraveyard,
+      TargetMapping.ControllerBattlefield,
+      TargetMapping.ControllerSideboard,
+      TargetMapping.NameACard,
+      TargetMapping.OpponentHandRevealPick,
+      TargetMapping.LastMilledIds,
+      TargetMapping.LastExiledIds,
+      TargetMapping.ParentContextExiledIds,
+      TargetMapping.LastDiscardedCards,
+    ] as string[]).includes(targetZoneMapping);
 
     if (isStandardMapping) {
       let workingMappingPlayerId = mappingPlayerId;

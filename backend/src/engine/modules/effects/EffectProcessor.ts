@@ -68,6 +68,29 @@ export class EffectProcessor {
         lookingCards
     } = options;
 
+    // CR 608.2b: Check target legality on resolution (Fizzle check)
+    // MTG Rule: The check is made once as the spell or ability starts to resolve from the stack.
+    // If all its targets are now illegal, the spell or ability is countered.
+    // We only run this on the ROOT resolution (parentContext === null) to avoid nested sub-effects triggering it.
+    if (startIndex === 0 && !parentContext && targets.length > 0 && effects.some(e => (e as any).targetMapping?.toString().startsWith('TARGET_'))) {
+        const { TargetingProcessor: TP } = require('../actions/targeting/TargetingProcessor');
+        const legalTargets = targets.filter(tid => {
+            // We use the first effect's target definition as a proxy for the spell's targeting requirements
+            const isLegal = TP.isLegalTarget(state, {
+                sourceId,
+                controllerId: controllerIdOverride || (state as any).activePlayerId,
+                stackObject,
+                targetDef: (effects[0] as any).targetDefinition || (stackObject as any)?.data?.targetDefinition
+            }, tid);
+            return isLegal;
+        });
+
+        if (legalTargets.length === 0) {
+            log(`[FIZZLE] ${stackObject?.card?.definition.name || "Spell"}: All targets have become illegal.`);
+            return true; // Return true as fully resolved (but fizzled)
+        }
+    }
+
     for (let i = startIndex; i < effects.length; i++) {
       const effect = effects[i];
 
@@ -109,7 +132,7 @@ export class EffectProcessor {
           ...(state.pendingAction.data || {}),
           effects: effects.map((e) => ({ ...e })),
           nextEffectIndex: i + 1,
-          targets: targets,
+          targets: state.pendingAction.data?.targets || targets,
           stackObj: slimStackObj,
           parentContext: pruneContext(parentContext),
         } as any;
@@ -293,23 +316,9 @@ export class EffectProcessor {
       ? resolveMapping((effect as any).target2Mapping, 1)
       : [];
 
-    // CR 608.2b: Check target legality on resolution (Fizzle check)
-    // If the effect had targets and they are all now illegal, the effect does not resolve.
-    if (targets.length > 0 && effect.targetMapping && (effect.targetMapping as string).startsWith('TARGET_')) {
-        const { TargetingProcessor: TP } = require('../actions/targeting/TargetingProcessor');
-        const legalTargets = targets.filter(tid => TP.isLegalTarget(state, {
-            sourceId,
-            controllerId,
-            stackObject,
-            targetDef: (effect as any).targetDefinition || (stackObject as any)?.data?.targetDefinition
-        }, tid));
-
-        if (legalTargets.length === 0) {
-            log(`[FIZZLE] ${effect.type}: All targets have become illegal.`);
-            return;
-        }
-    }
-
+    // CR 608.2b: Legality check moved to resolveEffects to prevent middle-of-resolution fizzling
+    // (e.g. when an effect moves its own target, like Destroy)
+    
     if (
       ((effect as any).targetMapping &&
         validTargetIds.length === 0 &&
@@ -669,7 +678,7 @@ export class EffectProcessor {
         .find((o) => o.id === id) ||
       state.exile.find((o) => o.id === id) ||
       state.limbo?.find((o) => o.id === id) ||
-      (stackObject?.card?.id === id ? stackObject.card : undefined) ||
+      (stackObject?.card?.id === id ? stackObject?.card : undefined) ||
       ((state as any).paradigmCopies && (state as any).paradigmCopies[id]) ||
       ((state.pendingAction?.data?.lookingCards as unknown) as GameObject[])?.find(
         (o) => o.id === id,

@@ -290,7 +290,7 @@ export const ChoiceModal = ({
                                                           onDragEnd={(_, info) => { if (Math.abs(info.offset.y) > 50) { const el = document.elementFromPoint(info.point.x, info.point.y); const zone = el?.closest('[data-zone]'); const targetZone = zone?.getAttribute('data-zone'); if (targetZone && targetZone !== 'bottom') moveCard(card, 'bottom', targetZone as any); } }}
                                                           onClick={() => moveCard(card, 'bottom', 'top')}>
                                                           <div className="relative group/card">
-                                                              <GameCard obj={card} variant="small" hideHeader={true} onHoverStart={() => onHoverStart?.(card)} onHoverEnd={onHoverEnd} />
+                                                              <GameCard obj={card} variant="small" onHoverStart={() => onHoverStart?.(card)} onHoverEnd={onHoverEnd} />
                                                               {scryState.bottom.length > 1 && (
                                                                   <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-amber-600 border-2 border-[#0b0f1a] flex items-center justify-center text-[10px] font-black text-white shadow-2xl z-50">
                                                                       {scryState.bottom.indexOf(card) + 1}
@@ -319,7 +319,7 @@ export const ChoiceModal = ({
                                   {orderedTriggers.map((trigger, idx) => (
                                       <Reorder.Item key={trigger.id || `trigger-${idx}`} value={trigger} className="relative group/trigger cursor-grab active:cursor-grabbing">
                                           <div className="relative transform transition-transform group-hover/trigger:scale-[1.05] scale-90 -my-6">
-                                              <GameCard obj={{ id: trigger.id, definition: trigger.definition || { name: trigger.name, image_url: trigger.image_url, types: ['Ability'] } } as any} variant="small" hideHeader={true} />
+                                              <GameCard obj={{ id: trigger.id, definition: trigger.definition || { name: trigger.name, image_url: trigger.image_url, types: ['Ability'] } } as any} variant="small" />
                                               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 p-2 bg-black/60 backdrop-blur-md rounded-full border border-white/10 opacity-0 group-hover/trigger:opacity-100 transition-all shadow-xl">
                                                 <GripVertical className="w-4 h-4 text-indigo-400" />
                                               </div>
@@ -342,7 +342,7 @@ export const ChoiceModal = ({
                                   return (
                                       <motion.div key={choice.cardData.id || `choice-card-${idx}`} className={`relative cursor-pointer transition-all hover:translate-y-[-5px] ${isSelected ? 'z-20 scale-105' : 'z-10'}`} onClick={() => handleChoiceClick(originalIdx)}>
                                           <div className="w-[calc(var(--u)*26)] h-[calc(var(--u)*18.7)]">
-                                              <GameCard obj={choice.cardData} variant="battlefield" hideHeader={true} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} isSelected={false} disableHoverAnim={true} />
+                                              <GameCard obj={choice.cardData} variant="battlefield" onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} isSelected={false} disableHoverAnim={true} />
                                           </div>
                                           {isSelected && (
                                               <>

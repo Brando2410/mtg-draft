@@ -5,18 +5,9 @@ export const AzizaMageTowerCaptain: CardDefinition = {
     scryfall_id: "6261e89a-dbf1-481a-823e-6bb00be57195",
     rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/6/2/6261e89a-dbf1-481a-823e-6bb00be57195.jpg?1775938194",
-    colors: [
-        "R",
-        "W"
-    ],
-    types: [
-        "Legendary",
-        "Creature"
-    ],
-    subtypes: [
-        "Djinn",
-        "Sorcerer"
-    ],
+    colors: ["R", "W"],
+    types: ["Legendary", "Creature"],
+    subtypes: ["Djinn", "Sorcerer"],
     keywords: [],
     power: "2",
     toughness: "2",
@@ -24,8 +15,8 @@ export const AzizaMageTowerCaptain: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.CastInstantOrSorcery,
-            condition: "CONTROL_COUNT_GE:creature,untapped,3",
+            eventMatch: TriggerEvent.Magecraft,
+            condition: "CONTROL_COUNT_GE:CREATURE,UNTAPPED,3",
             effects: [
                 {
                     type: EffectType.Choice,
@@ -43,7 +34,8 @@ export const AzizaMageTowerCaptain: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.CopySpellOnStack,
-                                    targetMapping: TargetMapping.TriggerEventSource
+                                    targetMapping: TargetMapping.TriggerEventSource,
+                                    chooseNewTargets: true
                                 }
                             ]
                         },

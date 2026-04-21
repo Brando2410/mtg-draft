@@ -58,18 +58,18 @@ export const StackView = ({ stack, pendingAction, me, opponent, battlefield, exi
 
     // Check Players (Avatars)
     if (me?.id === id) {
-        return {
-            id: me.id,
-            definition: { name: me.name, image_url: me.avatar_url || '/avatars/default.png', types: ['Player'], colors: [], manaCost: '', oracleText: 'Player' },
-            counters: { life: me.life }, keywords: [], zone: 'Battlefield'
-        } as any;
+      return {
+        id: me.id,
+        definition: { name: me.name, image_url: me.avatar || '/avatars/default.png', types: ['Player'], colors: [], manaCost: '', oracleText: 'Player' },
+        counters: { life: me.life }, keywords: [], zone: 'Battlefield'
+      } as any;
     }
     if (opponent?.id === id) {
-        return {
-            id: opponent.id,
-            definition: { name: opponent.name, image_url: opponent.avatar_url || '/avatars/default.png', types: ['Player'], colors: [], manaCost: '', oracleText: 'Player' },
-            counters: { life: opponent.life }, keywords: [], zone: 'Battlefield'
-        } as any;
+      return {
+        id: opponent.id,
+        definition: { name: opponent.name, image_url: opponent.avatar || '/avatars/default.png', types: ['Player'], colors: [], manaCost: '', oracleText: 'Player' },
+        counters: { life: opponent.life }, keywords: [], zone: 'Battlefield'
+      } as any;
     }
 
     return undefined;
@@ -160,7 +160,7 @@ export const StackView = ({ stack, pendingAction, me, opponent, battlefield, exi
                 key={sobj.id || `stack-${index}`} 
                 layout
                 id={`stack-obj-${sobj.id}`}
-                initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+                initial={false} 
                 animate={{ 
                     opacity: 1, 
                     scale: 1,
@@ -168,7 +168,6 @@ export const StackView = ({ stack, pendingAction, me, opponent, battlefield, exi
                     zIndex: index + 10,
                     filter: isPending ? 'drop-shadow(0 0 15px rgba(34,211,238,0.6)) grayscale(0)' : 'none'
                 }} 
-                exit={{ opacity: 0, scale: 0.95 }} 
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                 className={`flex justify-center transition-all duration-300 ${isPending ? 'brightness-110' : ''}`}
               >

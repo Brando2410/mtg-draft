@@ -95,6 +95,16 @@ export const TargetMapping = {
   AllPlaneswalkers: "ALL_PLANESWALKERS",
   AllMatchingCards: "ALL_MATCHING_CARDS",
   ChoiceFromExiled: "CHOICE_FROM_EXILED",
+  ControllerGraveyard: "CONTROLLER_GRAVEYARD",
+  ControllerSideboard: "CONTROLLER_SIDEBOARD",
+  Target1Hand: "TARGET_1_HAND",
+  Target1Graveyard: "TARGET_1_GRAVEYARD",
+  Target1Battlefield: "TARGET_1_BATTLEFIELD",
+  AllBattlefield: "ALL_BATTLEFIELD",
+  ControllerHand: "CONTROLLER_HAND",
+  ControllerBattlefield: "CONTROLLER_BATTLEFIELD",
+  OpponentHandRevealPick: "OPPONENT_HAND_REVEAL_PICK",
+  ParentContextExiledIds: "PARENT_CONTEXT_EXILED_IDS",
 } as const;
 export type TargetMapping = (typeof TargetMapping)[keyof typeof TargetMapping];
 

@@ -27,7 +27,7 @@ export const EcologicalAppreciation: CardDefinition = {
                             type: EffectType.Choice,
                             label: "Opponent chooses two to shuffle back",
                             playerIdMapping: TargetMapping.TargetOpponent,
-                            targetIdMapping: TargetMapping.SelectedCards,
+                            selectionPool: TargetMapping.SelectedCards,
                             minChoices: 2,
                             maxChoices: 2,
                             effects: [
