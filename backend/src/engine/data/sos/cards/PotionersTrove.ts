@@ -15,6 +15,7 @@ export const PotionersTrove: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
+            id: "{T}: Add one mana of any color",
             costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [
@@ -33,6 +34,7 @@ export const PotionersTrove: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
+            id: "{T}: You gain 2 life. (Activate only if you've cast an instant or sorcery spell this turn.)",
             costs: [{ type: CostType.Tap }],
             condition: ConditionType.CastInstantSorceryThisTurn,
             effects: [

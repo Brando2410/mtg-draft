@@ -336,8 +336,30 @@ export class CombatProcessor {
 
     // 3. APPLY ALL DAMAGE SIMULTANEOUSLY (Rule 510.2)
     // "Damage assigned by all creatures is dealt at the same time."
+    const damageToPlayers: Record<string, { sources: any[], amount: number }> = {};
+
     for (const a of assignments) {
         DamageProcessor.dealDamage(state, a.sourceId, a.targetId, a.amount, true, log);
+        
+        // Track combat damage to players for grouped triggers (Rule 510.2 / 700.1)
+        if (state.players[a.targetId]) {
+            if (!damageToPlayers[a.targetId]) damageToPlayers[a.targetId] = { sources: [], amount: 0 };
+            const sourceObj = state.battlefield.find(o => o.id === a.sourceId);
+            if (sourceObj) damageToPlayers[a.targetId].sources.push(sourceObj);
+            damageToPlayers[a.targetId].amount += a.amount;
+        }
+    }
+
+    // Fire grouped combat damage events (e.g. "Whenever one or more creatures you control deal combat damage to a player...")
+    for (const [playerId, data] of Object.entries(damageToPlayers)) {
+        if (data.amount > 0 && data.sources.length > 0) {
+            TriggerProcessor.onEvent(state, {
+                type: 'ON_COMBAT_DAMAGE_PLAYER',
+                targetId: playerId,
+                amount: data.amount,
+                data: { sources: data.sources, isCombat: true }
+            }, log);
+        }
     }
 
     // 4. Trigger State-Based Actions (Rule 704)

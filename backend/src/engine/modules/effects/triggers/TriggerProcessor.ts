@@ -28,7 +28,7 @@ export class TriggerProcessor {
     log: (msg: string) => void,
   ) {
     // 1. Identify all triggered abilities that match this event (Rule 603.2)
-    const matchingTriggers = this.collectMatchingTriggers(state, event);
+    const matchingTriggers = this.collectMatchingTriggers(state, event, log);
 
     // 2. Process system-recognized keywords (Prowess, Ward, etc.)
     this.processSystemKeywords(state, event, matchingTriggers, log);
@@ -162,6 +162,9 @@ export class TriggerProcessor {
   ): boolean {
     if (!state.pendingTriggers || state.pendingTriggers.length === 0)
       return false;
+
+    // If an action is already pending (like ordering triggers or a modal choice), wait for it to finish.
+    if (state.pendingAction) return false;
 
     // Rule 101.4: APNAP Order
     const apId = state.activePlayerId;
@@ -435,7 +438,7 @@ export class TriggerProcessor {
     );
     if (activeZone === Zone.Hand) return isInHand;
 
-    const isInStack = state.stack.some((o) => o.id === sourceId);
+    const isInStack = state.stack.some((o) => o.id === sourceId || (o as any).sourceId === sourceId);
     if (activeZone === Zone.Stack) return isInStack;
 
     return false;
@@ -444,6 +447,7 @@ export class TriggerProcessor {
   private static collectMatchingTriggers(
     state: GameState,
     event: GameEvent,
+    log?: (m: string) => void,
   ): TriggeredAbility[] {
     const triggers: any[] = [];
 
@@ -485,7 +489,6 @@ export class TriggerProcessor {
         });
       }
     });
-
     // 3. Registered Triggered Abilities (Rule 603.2, 603.7)
     // This includes permanent battlefield triggers and delayed triggers
     if (state.ruleRegistry.triggeredAbilities) {
@@ -494,9 +497,19 @@ export class TriggerProcessor {
       });
     }
 
+    if (event.type === TriggerEvent.CastSpell || event.type === 'ON_CAST_SPELL') {
+      if (log) log(`[TRIGGER-DEBUG] Event ${event.type} for source ${event.payload?.sourceId}. Found ${triggers.length} registered triggers.`);
+    }
+
     return triggers.filter((t) => {
       const tEvent = t.eventMatch;
       const tEvents = Array.isArray(tEvent) ? tEvent : [tEvent];
+
+      if (event.type === TriggerEvent.CastSpell || event.type === 'ON_CAST_SPELL') {
+        if (tEvents.includes(TriggerEvent.CastSpell) || tEvents.includes('ON_CAST_SPELL')) {
+          if (log) log(`[TRIGGER-DEBUG] Checking trigger ${t.id} from ${t.sourceId}. Global: ${t.isGlobal}. Zone: ${t.activeZone}`);
+        }
+      }
 
       const matchesPrimary = tEvents.some((type: any) => {
         const isMatch = (
@@ -535,16 +548,11 @@ export class TriggerProcessor {
       // Identity Filtering (Rule 603.2)
       if (event.type === TriggerEvent.EnterBattlefield) {
         const enteringId = event.data?.object?.id || event.payload?.object?.id || event.payload?.sourceId || event.sourceId;
-        if (
-          tEvents.includes(TriggerEvent.EnterBattlefield) &&
-          enteringId !== t.sourceId
-        )
-          return false;
-        if (
-          tEvents.includes(TriggerEvent.EnterBattlefieldOther) &&
-          enteringId === t.sourceId
-        )
-          return false;
+        const expectsSelf = tEvents.includes(TriggerEvent.EnterBattlefield);
+        const expectsOther = tEvents.includes(TriggerEvent.EnterBattlefieldOther);
+        
+        if (expectsSelf && !expectsOther && enteringId !== t.sourceId) return false;
+        if (expectsOther && !expectsSelf && enteringId === t.sourceId) return false;
       }
       if (event.type === TriggerEvent.Death) {
         const deadId = event.targetId;
@@ -582,6 +590,21 @@ export class TriggerProcessor {
           )
             return false;
         }
+      }
+
+      if (
+        event.type === TriggerEvent.CastSpell ||
+        event.type === 'ON_CAST_SPELL'
+      ) {
+          const castId = event.payload?.sourceId || event.sourceId;
+          // Standard trigger (source is card/object itself)
+          if (tEvents.includes(TriggerEvent.CastSpell)) {
+              if (t.isGlobal) {
+                  // Global triggers don't need identity match
+              } else if (castId !== t.sourceId) {
+                  return false;
+              }
+          }
       }
 
       if (!this.checkZone(state, t, event.type)) return false;

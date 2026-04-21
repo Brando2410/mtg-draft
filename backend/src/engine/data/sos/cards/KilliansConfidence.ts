@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
-    export const KilliansConfidence: CardDefinition = {
+export const KilliansConfidence: CardDefinition = {
     name: "Killian's Confidence",
     manaCost: "{W}{B}",
     scryfall_id: "55ff776a-fc3b-4338-8864-d57a85b3f123",
@@ -39,21 +39,21 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.DamageDealtToPlayer,
+            eventMatch: TriggerEvent.CombatDamagePlayer,
             activeZone: Zone.Graveyard,
             condition: (state: any, event: any, trigger: any) => {
-                const source = state.battlefield.find((o: any) => o.id === event.sourceId);
-                return event.data?.isCombat && source && source.controllerId === trigger.controllerId;
+                const sources = event.data?.sources || [];
+                return sources.some((source: any) => source.controllerId === trigger.controllerId);
             },
             effects: [
                 {
-                    type: CostType.Choice,
+                    type: EffectType.Choice,
                     label: "Return Killian's Confidence to hand?",
                     choices: [
                         {
                             label: "Pay {W/B}",
+                            costs: [{ type: CostType.Mana, value: '{W/B}' }],
                             effects: [
-                                { type: EffectType.PayMana, value: '{W/B}' } as any,
                                 { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Self }
                             ]
                         },
@@ -64,4 +64,4 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         }
     ]
 };
-    
+

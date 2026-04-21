@@ -35,6 +35,7 @@ export interface CardDefinition {
     abilities?: (AbilityDefinition | string)[];
     exileOnResolution?: boolean;
     rarity?: 'common' | 'uncommon' | 'rare' | 'mythic' | 'basic';
+    cannotBeCopied?: boolean;
 }
 
 export interface GameObject {
@@ -93,6 +94,7 @@ export interface StackObject {
     exileOnResolution?: boolean;
     isFlashbackCast?: boolean;
     definition?: CardDefinition;
+    cannotBeCopied?: boolean;
 }
 
 export interface PlayerState {

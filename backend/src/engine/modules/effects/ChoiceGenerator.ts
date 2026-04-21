@@ -287,6 +287,30 @@ export class ChoiceGenerator {
     }
 
     /**
+     * Build an interactive choice for X value.
+     */
+    public static createXChoice(state: GameState, sourceId: string, playerId: PlayerId, choice: any, data: any): any {
+        return {
+            type: ActionType.ChooseX,
+            playerId,
+            sourceId,
+            data: {
+                label: choice.label || "Choose a value for X",
+                sourceId,
+                isResolutionX: true,
+                stackObj: data?.stackObj,
+                parentContext: pruneContext(data?.parentContext),
+                nextEffectIndex: data?.nextEffectIndex,
+                choiceEffects: choice.effects,
+                choiceCosts: choice.costs,
+                // These are needed for ChoiceProcessor to resume
+                selectedChoice: choice,
+                originalActionData: data
+            }
+        };
+    }
+
+    /**
      * Wraps data into the standard engine pendingAction format.
      */
     private static wrap(playerId: string, sourceId: string, data: any, type: ActionType | string = ActionType.ResolutionChoice): any {

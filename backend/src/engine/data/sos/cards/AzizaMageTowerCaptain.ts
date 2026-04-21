@@ -15,8 +15,7 @@ export const AzizaMageTowerCaptain: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Magecraft,
-            condition: "CONTROL_COUNT_GE:CREATURE,UNTAPPED,3",
+            eventMatch: TriggerEvent.CastInstantOrSorcery,
             effects: [
                 {
                     type: EffectType.Choice,

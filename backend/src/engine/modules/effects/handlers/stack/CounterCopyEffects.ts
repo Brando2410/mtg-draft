@@ -43,6 +43,15 @@ export const CopySpellHandler: IEffectHandler = {
             }
 
             if (!stackObj) return;
+
+            const definition = stackObj.definition || stackObj.card?.definition;
+            const cannotCopy = stackObj.cannotBeCopied || definition?.cannotBeCopied;
+            
+            if (cannotCopy) {
+                log(`[COPY] ${definition?.name || 'Spell'} cannot be copied.`);
+                return;
+            }
+
             const copy = JSON.parse(JSON.stringify(stackObj));
             copy.id = `copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
             (copy as any).isCopy = true;

@@ -28,6 +28,13 @@ export class PlayerActionProcessor {
       if (state.pendingAction.type === 'DECLARE_BLOCKERS') {
         return engine.handleBlockSelection(playerId, cardId);
       }
+      if (state.pendingAction.type === 'LEGEND_RULE') {
+        const involvedIds = (state.pendingAction.data?.involvedIds || []) as string[];
+        if (involvedIds.includes(cardId)) {
+          const { ChoiceProcessor } = require('./ChoiceProcessor');
+          return ChoiceProcessor.resolveChoice(state, playerId, cardId, log, engine);
+        }
+      }
     }
 
     if (obj.controllerId !== playerId) return false;
@@ -107,8 +114,14 @@ export class PlayerActionProcessor {
     const allActivated = [...(logic?.abilities || [])];
     if (obj.definition.abilities) {
       obj.definition.abilities.forEach((a: any) => {
-        if (!allActivated.some(existing => existing.id === a.id && a.id !== undefined)) {
-          allActivated.push(a);
+        if (a.id !== undefined) {
+          if (!allActivated.some(existing => existing.id === a.id)) {
+            allActivated.push(a);
+          }
+        } else {
+          if (!allActivated.includes(a)) {
+            allActivated.push(a);
+          }
         }
       });
     }
@@ -160,14 +173,14 @@ export class PlayerActionProcessor {
       }
 
       // If multiple abilities (common for creatures with utility + mana or multiple utilities)
-      if (allActivated.length > 1) {
+      if (filtered.length > 1) {
         state.pendingAction = {
           type: ActionType.ModalSelection,
           playerId: playerId,
           sourceId: cardId,
           data: {
             label: `Choose an ability to activate for ${obj.definition.name}`,
-            choices: allActivated.map((entry: any) => ({
+            choices: filtered.map((entry: any) => ({
               label: entry.ability.oracleText || entry.ability.id || 'Activate Ability',
               value: entry.index
             }))
@@ -470,6 +483,7 @@ export class PlayerActionProcessor {
     // index N-1 -> First to resolve (Top of stack)
     const orderedTriggers = orderedIds.map(id => triggers.find((t: any) => t.id === id)).filter(Boolean);
 
+    // Remove these from pending triggers
     if (state.pendingTriggers) {
       state.pendingTriggers = state.pendingTriggers.filter(t => !orderedIds.includes(t.id));
     }
@@ -477,8 +491,22 @@ export class PlayerActionProcessor {
     state.pendingAction = undefined;
 
     const { TriggerProcessor } = require('./../effects/triggers/TriggerProcessor');
-    for (const t of orderedTriggers) {
-      TriggerProcessor.stackTrigger(state, t, log);
+    
+    for (let i = 0; i < orderedTriggers.length; i++) {
+        const t = orderedTriggers[i];
+        TriggerProcessor.stackTrigger(state, t, log);
+        
+        const pendingAfter = state.pendingAction as any;
+        // If stacking this trigger caused a targeting prompt,
+        // we must save the REMAINING triggers to be stacked after targeting is done.
+        if (pendingAfter && i < orderedTriggers.length - 1) {
+            const remaining = orderedTriggers.slice(i + 1);
+            if (pendingAfter.data) {
+                pendingAfter.data.nextTriggersToStack = remaining;
+            }
+            log(`[TRIGGER] Pausing trigger stacking for ${t.id} target selection. ${remaining.length} triggers remaining in queue.`);
+            return true;
+        }
     }
 
     // Process remaining if anyone else has triggers

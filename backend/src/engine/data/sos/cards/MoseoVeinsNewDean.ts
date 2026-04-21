@@ -29,11 +29,16 @@ export const MoseoVeinsNewDean: CardDefinition = {
                         power: 1,
                         toughness: 1,
                         oracleText: "Whenever this token attacks, you gain 1 life.",
+                        image_url: "https://cards.scryfall.io/normal/front/d/0/d0ddbe3e-4a66-494d-9304-7471232549bf.jpg?1682693901",
                         abilities: [
                             {
                                 type: AbilityType.Triggered,
                                 eventMatch: TriggerEvent.Attack,
-                                effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
+                                effects: [{
+                                    type: EffectType.GainLife,
+                                    amount: 1,
+                                    targetMapping: TargetMapping.Controller
+                                }]
                             }
                         ]
                     }

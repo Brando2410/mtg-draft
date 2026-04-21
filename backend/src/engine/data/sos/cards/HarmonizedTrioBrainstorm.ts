@@ -15,6 +15,7 @@ export const HarmonizedTrioBrainstorm: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
+            id: "HarmonizedTrioBrainstorm",
             costs: [
                 {
                     type: CostType.TapSelection,

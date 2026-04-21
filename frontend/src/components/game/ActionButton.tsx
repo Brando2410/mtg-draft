@@ -253,12 +253,12 @@ export const ActionButton = memo(({
                     const minCount = pendingAction.data?.minCount ?? (targetDef?.minCount ?? (targetDef?.optional ? 0 : (targetDef?.count ?? 1)));
                     const totalCount = pendingAction.data?.count ?? (targetDef?.count ?? 1);
                     const isOptional = minCount === 0;
-                    const isInteractive = pendingAction.data?.isSpellCasting || pendingAction.data?.abilityIndex !== undefined;
+                    const isInteractive = pendingAction.data?.isSpellCasting || pendingAction.data?.abilityIndex !== undefined || pendingAction.data?.isCopyTargeting;
                     
                     // Show secondary if:
                     // 1. Multiple targets (need Clear Selection vs Confirm)
                     // 2. Optional target (need Cancel Cast vs Confirm-without-targets)
-                    // 3. Interactive action (need Cancel Cast/Activation)
+                    // 3. Interactive action (need Cancel Cast/Activation/Copy)
                     const showSecondary = totalCount > 1 || isOptional || isInteractive;
                     
                     if (!showSecondary) return null;
@@ -273,12 +273,12 @@ export const ActionButton = memo(({
                                 (pendingAction.data?.selectedTargets || []).length > 0
                                     ? "bg-slate-800/60 text-slate-300 border border-slate-500/30 hover:bg-slate-600/40"
                                     : "bg-red-950/40 text-red-100 border border-red-500/30 hover:bg-red-500/30"
-                            } ${(pendingAction.data?.selectedTargets || []).length === 0 && !pendingAction.data?.isSpellCasting && pendingAction.data?.abilityIndex === undefined ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                            } ${(pendingAction.data?.selectedTargets || []).length === 0 && !pendingAction.data?.isSpellCasting && pendingAction.data?.abilityIndex === undefined && !pendingAction.data?.isCopyTargeting ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                         >
                             <span>
                                 {(pendingAction.data?.selectedTargets || []).length > 0 
                                     ? "Clear Selection" 
-                                    : (pendingAction.data?.isSpellCasting ? "Cancel Cast" : "Cancel Activation")}
+                                    : (pendingAction.data?.isSpellCasting ? "Cancel Cast" : (pendingAction.data?.isCopyTargeting ? "Cancel Copy" : "Cancel Activation"))}
                             </span>
                         </motion.button>
                         </div>

@@ -97,28 +97,50 @@ export class StateBasedActionsProcessor {
 
     // 3. Rule 704.5j: Legend Rule
     // "If a player controls two or more legendary permanents with the same name..."
-    const legendaryPermanents = state.battlefield.filter((o) =>
-      o.definition.supertypes?.includes("Legendary"),
-    );
-    const namesByController: Record<string, string[]> = {};
+    const legendaryPermanents = state.battlefield.filter((o) => {
+      const isLegendary = (o.definition.supertypes || []).some(s => s.toLowerCase() === "legendary") ||
+                          (o.definition.types || []).some(t => t.toLowerCase() === "legendary");
+      return isLegendary;
+    });
+    const groups: Record<string, GameObject[]> = {};
 
     for (const legend of legendaryPermanents) {
-      const key = `${legend.controllerId}_${legend.definition.name}`;
-      if (!namesByController[key]) {
-        namesByController[key] = [legend.id];
+      const key = `${legend.controllerId}_${legend.definition.name.toLowerCase()}`;
+      if (!groups[key]) {
+        groups[key] = [legend];
       } else {
-        // Player controls multiple. Must choose one to keep (simplified: keep the first).
-        log(
-          `[SBA] Legend Rule: ${legend.definition.name} redundant copy removed.`,
-        );
-        ActionProcessor.moveCard(
-          state,
-          legend,
-          Zone.Graveyard,
-          legend.ownerId,
-          log,
-        );
-        actionTaken = true;
+        groups[key].push(legend);
+      }
+    }
+
+    for (const key in groups) {
+      if (groups[key].length > 1) {
+        const controllerId = groups[key][0].controllerId;
+        const name = groups[key][0].definition.name;
+
+        // If we don't have a pending action already, create one
+        if (!state.pendingAction) {
+          log(`[SBA] Legend Rule: ${name} clash. Choose one to keep.`);
+          state.pendingAction = {
+            type: "LEGEND_RULE" as any,
+            playerId: controllerId,
+            sourceId: "system",
+            data: {
+              label: `Legend Rule: Choose which ${name} to KEEP`,
+              choices: groups[key].map((obj, idx) => ({
+                label: obj.definition.name,
+                id: obj.id,
+                value: obj.id,
+                idx: idx,
+                selectable: true,
+                cardData: obj
+              })),
+              involvedIds: groups[key].map(o => o.id),
+              isContextual: true
+            }
+          };
+          return true; // Action taken, need to resolve choice first
+        }
       }
     }
 

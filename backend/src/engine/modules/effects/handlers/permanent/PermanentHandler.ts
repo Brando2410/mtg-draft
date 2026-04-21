@@ -158,7 +158,8 @@ export class PermanentHandler {
             const obj = state.battlefield.find((o: GameObject) => o.id === tid);
             if (obj) {
                 const finalType = (type.toLowerCase() === 'p1p1' || type === '+1/+1') ? '+1/+1' : type;
-                const amount = typeof counterEff.amount === 'number' ? counterEff.amount : (EffectProcessor.resolveAmount(state, counterEff.amount, context, [tid]));
+                const amountStr = counterEff.amount !== undefined ? counterEff.amount : (effect as any).value;
+                const amount = typeof amountStr === 'number' ? amountStr : (EffectProcessor.resolveAmount(state, amountStr, context, [tid]));
                 
                 obj.counters[finalType] = (obj.counters[finalType] || 0) + amount;
                 if (amount > 0) {
@@ -216,7 +217,15 @@ export class PermanentHandler {
         const counterTypes = inputType ? [inputType] : Object.keys(sourceObj.counters);
 
         counterTypes.forEach((ctype: string) => {
-            const amount = sourceObj!.counters[ctype] || 0;
+            const available = sourceObj!.counters[ctype] || 0;
+            if (available <= 0) return;
+
+            const { EffectProcessor } = require('../../EffectProcessor');
+            const requestedAmount = counterEff.amount !== undefined 
+                ? EffectProcessor.resolveAmount(state, counterEff.amount, context, targets)
+                : available;
+            
+            const amount = Math.min(available, requestedAmount);
             if (amount <= 0) return;
 
             targets.forEach((tid: string) => {
@@ -227,7 +236,7 @@ export class PermanentHandler {
                     TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: targetObj.id, amount, counterType: ctype, data: { object: targetObj } }, log);
                 }
             });
-            sourceObj!.counters[ctype] = 0;
+            sourceObj!.counters[ctype] -= amount;
         });
     }
 
@@ -271,10 +280,29 @@ export class PermanentHandler {
     public static handleCreateTokenCopy(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
         const { targets } = context;
         const tokenEff = effect as any;
-        const sourceCardId = (tokenEff as any).originalCardId || (tokenEff as any).sourceCardId;
-        const sourceObj = state.battlefield.find((o: GameObject) => o.id === sourceCardId) || state.exile.find((o: GameObject) => o.id === sourceCardId) || Object.values(state.players).flatMap((p: PlayerState) => p.graveyard).find((o: GameObject) => o.id === sourceCardId);
+        const { TargetingProcessor } = require('../../../actions/targeting/TargetingProcessor');
+        
+        const sourceCardId = (tokenEff as any).sourceCardId || 
+                             (tokenEff as any).originalCardId || 
+                             ((tokenEff as any).sourceMapping ? TargetingProcessor.resolveTargetMapping(state, (tokenEff as any).sourceMapping, context, effect)[0] : undefined);
 
-        if (!sourceObj) return;
+        const sourceObj = state.battlefield.find((o: GameObject) => o.id === sourceCardId) || 
+                         state.exile.find((o: GameObject) => o.id === sourceCardId) || 
+                         Object.values(state.players).flatMap((p: PlayerState) => p.graveyard).find((o: GameObject) => o.id === sourceCardId) ||
+                         state.stack.find((s: any) => s.id === sourceCardId || s.card?.id === sourceCardId)?.card ||
+                         (state.stack.find((s: any) => s.id === sourceCardId || s.card?.id === sourceCardId) as any);
+
+        console.log(`[DEBUG-TOKEN] sourceCardId: ${sourceCardId}`);
+        if (sourceObj) {
+            console.log(`[DEBUG-TOKEN] Found source object: ${sourceObj.definition?.name} in zone: ${sourceObj.zone || 'Stack'}`);
+        } else {
+            console.log(`[DEBUG-TOKEN] Could not find source object for ID: ${sourceCardId}`);
+        }
+
+        if (!sourceObj || !sourceObj.definition) {
+            if (sourceObj && !sourceObj.definition) console.log(`[DEBUG-TOKEN] Source object found but has no definition!`);
+            return;
+        }
 
         targets.forEach((pid: string) => {
             const blueprint = {
@@ -282,6 +310,7 @@ export class PermanentHandler {
                 types: [...(sourceObj.definition.types || []), ...((tokenEff as any).typesToAdd || [])],
                 subtypes: [...(sourceObj.definition.subtypes || []), ...((tokenEff as any).subtypesToAdd || [])],
                 abilities: [...(sourceObj.definition.abilities || []), ...((tokenEff as any).abilitiesToAdd || [])],
+                keywords: [...(sourceObj.definition.keywords || []), ...((tokenEff as any).keywordsToAdd || [])],
                 image_url: sourceObj.definition.image_url
             };
             const token = this.createToken(state, blueprint, pid as PlayerId, (tokenEff as any).powerOverride, (tokenEff as any).toughnessOverride, effect);
@@ -325,7 +354,7 @@ export class PermanentHandler {
                     return map[c.toUpperCase()] || c.toLowerCase();
                 }),
                 supertypes: blueprint.supertypes || [],
-                types: [...(blueprint.types || []), "Token"],
+                types: [...(blueprint.types || [])],
                 subtypes: blueprint.subtypes || [],
                 power: pOverride !== undefined ? String(pOverride) : String(blueprint.power || "0"),
                 toughness: tOverride !== undefined ? String(tOverride) : String(blueprint.toughness || "0"),

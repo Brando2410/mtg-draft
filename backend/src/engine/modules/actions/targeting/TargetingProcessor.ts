@@ -424,6 +424,26 @@ export class TargetingProcessor {
             engine.log(`--------------------------------------------------`);
 
             state.pendingAction = undefined;
+
+            // Handle queued triggers from a multi-trigger ordering session
+            if (actionData.nextTriggersToStack && Array.isArray(actionData.nextTriggersToStack)) {
+                const { TriggerProcessor } = require('../../effects/triggers/TriggerProcessor');
+                const nextTriggers = actionData.nextTriggersToStack;
+                for (let i = 0; i < nextTriggers.length; i++) {
+                    const t = nextTriggers[i];
+                    TriggerProcessor.stackTrigger(state, t, engine.log);
+                    
+                    const pendingAfter = state.pendingAction as any;
+                    if (pendingAfter && i < nextTriggers.length - 1) {
+                        const remaining = nextTriggers.slice(i + 1);
+                        if (pendingAfter.data) {
+                            pendingAfter.data.nextTriggersToStack = remaining;
+                        }
+                        return true;
+                    }
+                }
+            }
+
             state.priorityPlayerId = playerId;
             engine.checkAutoPass(playerId);
             return true;

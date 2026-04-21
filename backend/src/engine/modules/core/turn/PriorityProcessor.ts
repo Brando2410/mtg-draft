@@ -499,10 +499,18 @@ export class PriorityProcessor {
       return false;
     }
 
-    // Requirement Check (Rule 602.5b)
+    // Requirement Check (Rule 602.5b/Activation conditions)
     if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) {
       console.log(`Illegal Activation: Activation requirements for ${obj.definition.name} are not met.`);
       return false;
+    }
+
+    // Explicit Condition check
+    if (ability.condition) {
+      const { ConditionProcessor } = require('../logic/ConditionProcessor');
+      if (!ConditionProcessor.matchesCondition(state, ability.condition, { sourceId: obj.id, controllerId: playerId })) {
+        return false;
+      }
     }
 
     // Limit Check
@@ -610,9 +618,9 @@ export class PriorityProcessor {
       // 1. Basic Type/Owner check
       const eType = e.type as string;
       const effectiveControllerId = (e as any).targetControllerId || e.controllerId;
-      
+
       const matchesType = eType === effectType || (effectType === EffectType.AllowPlayExiled && (e as any).canPlayExiled);
-      
+
       if (!matchesType) return false;
       if (effectiveControllerId !== playerId) return false;
 

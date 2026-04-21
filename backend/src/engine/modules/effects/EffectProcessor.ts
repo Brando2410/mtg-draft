@@ -810,6 +810,47 @@ export class EffectProcessor {
           ? 0
           : resolvedMax;
 
+    const isBattlefieldTarget = [
+      TargetType.Permanent,
+      TargetType.Creature,
+      TargetType.Artifact,
+      TargetType.Enchantment,
+      TargetType.Planeswalker,
+      TargetType.Land,
+      TargetType.AnyTarget,
+      TargetType.Player,
+      TargetType.Opponent,
+      "PERMANENT",
+      "CREATURE",
+      "ARTIFACT",
+      "ENCHANTMENT",
+      "PLANESWALKER",
+      "LAND",
+      "PLAYER",
+      "OPPONENT",
+      "ANY_TARGET"
+    ].some(t => String(targetDef.type).toUpperCase().includes(String(t).toUpperCase()));
+
+    if (isBattlefieldTarget) {
+      state.pendingAction = {
+        type: ActionType.Targeting,
+        playerId: controllerId,
+        sourceId: sourceId,
+        data: {
+          label: effect.label || `Choose target for ${sourceId}`,
+          targetDefinition: targetDef,
+          targets: validCandidates.map(c => c.id),
+          stackObj: stackObject,
+          parentContext: pruneContext(parentContext),
+          nextEffectIndex: parentContext?.nextEffectIndex,
+          effects: parentContext?.effects || [effect],
+          xValue: (stackObject as any)?.xValue
+        }
+      };
+      log(`[TARGETING] Prompting for battlefield targeting for effect resolution...`);
+      return;
+    }
+
     state.pendingAction = ChoiceGenerator.createCardChoice(state, pool, {
       label: effect.label || `Select up to ${resolvedMax} target(s)`,
       playerId: controllerId,

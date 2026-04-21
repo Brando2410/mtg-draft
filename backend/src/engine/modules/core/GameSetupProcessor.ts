@@ -33,7 +33,7 @@ export class GameSetupProcessor {
         pendingDiscardCount: 0,
         virtualHand: [],
         stops: {},
-        autoOrderTriggers: true,
+        autoOrderTriggers: false,
         passUntilEndOfTurn: false,
         extraTurns: 0,
         turnsToSkip: 0
@@ -83,7 +83,8 @@ export class GameSetupProcessor {
         entersTappedCondition: (logicData as any)?.entersTappedCondition,
         entersPrepared: (logicData as any)?.entersPrepared,
         preparedFace: (logicData as any)?.preparedFace,
-        faces: (logicData as any)?.faces
+        faces: (logicData as any)?.faces,
+        cannotBeCopied: (logicData as any)?.cannotBeCopied
       },
       isTapped: false,
       damageMarked: 0,

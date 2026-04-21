@@ -338,6 +338,7 @@ export class ActionProcessor {
       // Rule 405: The Stack
       // Note: High-level processors (SpellProcessor) handle pushing the complex StackObject.
       // We just ensure abilities are registered for the card in this zone.
+      card.controllerId = targetPlayerId;
       RegistryProcessor.registerAbilities(state, card);
     } else if (to === Zone.Exile) {
       state.exile.push(card);

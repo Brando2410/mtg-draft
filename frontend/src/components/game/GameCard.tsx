@@ -46,10 +46,10 @@ export const GameCard = memo(({
   damagePreview = 0,
   hideHeader = false
 }: GameCardProps) => {
-  const { definition, effectiveStats, counters, isTapped, isPhasedOut, damageMarked, summoningSickness, isPrepared } = obj;
+  const { definition, effectiveStats, counters = {}, isTapped, isPhasedOut, damageMarked = 0, summoningSickness, isPrepared } = obj;
   const stats = effectiveStats;
-  const isCreature = definition.types.includes('Creature');
-  const isPlaneswalker = definition.types.includes('Planeswalker');
+  const isCreature = definition.types?.includes('Creature') || false;
+  const isPlaneswalker = definition.types?.includes('Planeswalker') || false;
 
   // SOS: Image logic for Prepared spells and DFCs
   let displayImageUrl = definition.image_url;
@@ -123,7 +123,8 @@ export const GameCard = memo(({
     colorless: 'border-slate-500 shadow-slate-500/5',
   };
 
-  const cardColor = definition.colors.length > 1 ? 'multicolor' : (definition.colors[0] || 'colorless');
+  const objColors = definition.colors || [];
+  const cardColor = objColors.length > 1 ? 'multicolor' : (objColors[0] || 'colorless');
   const borderClass = colorMap[cardColor] || colorMap.colorless;
 
   // MANA SYMBOLS (Official Scryfall SVGs)
@@ -255,7 +256,7 @@ export const GameCard = memo(({
       onMouseLeave={() => onHoverEnd?.()}
       onClick={() => onClick?.(obj.id)}
       className={`relative shrink-0 cursor-pointer
-        flex flex-col
+        flex flex-col [container-type:inline-size]
         ${dimensions.rounded} ${variant !== 'zoom' ? `border-[1.5px] ${borderClass} shadow-xl` : ''}
         ${variant === 'battlefield' ? 'hover:ring-2 hover:ring-indigo-400/50 hover:shadow-[0_0_20px_rgba(129,140,248,0.4)]' : ''} 
         ${isTargetable ? 'ring-4 ring-red-500 ring-offset-2 ring-offset-slate-900 shadow-[0_0_20px_rgba(239,68,68,0.8)]' : ''} 
@@ -419,13 +420,13 @@ export const GameCard = memo(({
                           const tColor = (damagePreview > 0 || damageMarked > 0 || currentT < origT) ? 'text-red-400' : currentT > origT ? 'text-emerald-400' : 'text-white';
 
                           return (
-                              <div className="bg-black shadow-2xl z-30 flex items-center justify-center absolute bottom-0 right-0 px-[calc(var(--u)*1.5*var(--local-scale,1))] py-[calc(var(--u)*0.7*var(--local-scale,1))] border-t border-l border-white/30 rounded-tl-md">
-                                  <div className="flex items-center gap-[calc(var(--u)*0.7*var(--local-scale,1))]">
-                                      <span className={`font-black tracking-normal text-[calc(var(--u)*1.8*var(--local-scale,1))] ${pColor}`}>
+                              <div className="bg-black shadow-2xl z-30 flex items-center justify-center absolute bottom-0 right-0 px-[6cqw] py-[2.5cqw] border-t-[1.5px] border-l-[1.5px] border-white/30 rounded-tl-[10%] min-w-[38cqw] min-h-[26cqw]">
+                                  <div className="flex items-center gap-[3.5cqw]">
+                                      <span className={`font-black tracking-tighter text-[10cqw] ${pColor}`}>
                                           {currentP}
                                       </span>
-                                      <span className="text-[calc(var(--u)*1.2*var(--local-scale,1))] text-white/40 font-bold">/</span>
-                                      <span className={`font-black tracking-normal text-[calc(var(--u)*1.8*var(--local-scale,1))] ${tColor} ${damagePreview > 0 ? 'drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]' : ''}`}>
+                                      <span className="text-[7.5cqw] text-white/40 font-bold -mx-[0.5cqw]">/</span>
+                                      <span className={`font-black tracking-tighter text-[10cqw] ${tColor} ${damagePreview > 0 ? 'drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]' : ''}`}>
                                           {previewT}
                                       </span>
                                   </div>

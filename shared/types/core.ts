@@ -193,6 +193,7 @@ export const ActionType = {
   Surveil: "SURVEIL",
   ChooseX: "CHOOSE_X",
   OrderTriggers: "ORDER_TRIGGERS",
+  LegendRule: "LEGEND_RULE",
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 

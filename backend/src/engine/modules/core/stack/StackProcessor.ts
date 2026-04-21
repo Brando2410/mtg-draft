@@ -67,12 +67,6 @@ export class StackProcessor {
         const objectName = (objectToResolve as any).name || objectToResolve.card?.definition.name || 'Effect';
         log(`[RESOLVING] >>> ${objectName} is resolving <<<`);
 
-        // --- DIAGNOSTIC TRACING ---
-        if (state.stack.length > 5) {
-          const { EffectProcessor } = require('../../effects/EffectProcessor');
-          EffectProcessor.troubleshoot(state, objectToResolve.sourceId);
-        }
-
         const effects = StackProcessor.getEffectsForResolution(state, objectToResolve);
         const startIndex = (objectToResolve as any).data?.nextEffectIndex || 0;
         const completed = resolver.resolveObject(objectToResolve, effects, startIndex);

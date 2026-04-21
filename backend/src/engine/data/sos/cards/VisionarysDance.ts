@@ -21,20 +21,13 @@ export const VisionarysDance: CardDefinition = {
                     amount: 2,
                     tokenBlueprint: {
                         name: 'Elemental',
-                        colors: [
-                            'U',
-                            'R'
-                        ],
-                        types: [
-                            'Creature'
-                        ],
-                        subtypes: [
-                            'Elemental'
-                        ],
+                        colors: ['U', 'R'],
+                        types: ['Creature'],
+                        subtypes: ['Elemental'],
                         power: 3,
                         toughness: 3,
                         keywords: ['Flying'],
-                        image_url: 'https://cards.scryfall.io/png/front/3/d/3d0b9b88-705e-4df0-8a93-3e240b81355b.png?1682693891'
+                        image_url: 'https://cards.scryfall.io/normal/front/3/d/3d0b9b88-705e-4df0-8a93-3e240b81355b.jpg?1682693891'
                     }
                 }
             ]

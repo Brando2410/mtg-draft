@@ -411,31 +411,47 @@ export class TargetMapper {
       }
       case "LAST_MILLED_IDS":
         return (state as any).lastMilledIds || [];
-      case "TARGET_1":
-        return targets[0] ? [targets[0]] : [];
-      case "SELF_AND_TARGET_1":
-        return targets[0] ? [sourceId, targets[0]] : [sourceId];
-      case "TARGET_2":
-        return targets[1] ? [targets[1]] : [];
-      case "TARGET_3":
-        return targets[2] ? [targets[2]] : [];
-      case "TARGET_4":
-        return targets[3] ? [targets[3]] : [];
-      case "TARGET_5":
-        return targets[4] ? [targets[4]] : [];
-      case "TARGET_6":
-        return targets[5] ? [targets[5]] : [];
-      case "TARGET_7":
-        return targets[6] ? [targets[6]] : [];
-      case "TARGET_8":
-        return targets[7] ? [targets[7]] : [];
+      case "TARGET_1": {
+        const actualTargets = (stackData as any)?.targets || targets;
+        return actualTargets[0] ? [actualTargets[0]] : [];
+      }
+      case "SELF_AND_TARGET_1": {
+        const actualTargets = (stackData as any)?.targets || targets;
+        return actualTargets[0] ? [sourceId, actualTargets[0]] : [sourceId];
+      }
+      case "TARGET_2": {
+        const actualTargets = (stackData as any)?.targets || targets;
+        return actualTargets[1] ? [actualTargets[1]] : [];
+      }
+      case "TARGET_3": {
+        const actualTargets = (stackData as any)?.targets || targets;
+        return actualTargets[2] ? [actualTargets[2]] : [];
+      }
+      case "TARGET_4": {
+        const actualTargets = (stackData as any)?.targets || targets;
+        return actualTargets[3] ? [actualTargets[3]] : [];
+      }
+      case "TARGET_5": {
+        const actualTargets = (stackData as any)?.targets || targets;
+        return actualTargets[4] ? [actualTargets[4]] : [];
+      }
+      case "TARGET_6": {
+        const actualTargets = (stackData as any)?.targets || targets;
+        return actualTargets[5] ? [actualTargets[5]] : [];
+      }
+      case "TARGET_7": {
+        const actualTargets = (stackData as any)?.targets || targets;
+        return actualTargets[6] ? [actualTargets[6]] : [];
+      }
+      case "TARGET_8": {
+        const actualTargets = (stackData as any)?.targets || targets;
+        return actualTargets[7] ? [actualTargets[7]] : [];
+      }
       case "TARGET_ALL":
-        return (targets || []).filter(Boolean);
-      case "TRIGGER_EVENT_SOURCE":
-        return [context.event?.sourceId || context.event?.data?.sourceId || context.event?.payload?.sourceId || ""];
-      case "EVENT_SOURCE":
-        return [context.event?.sourceId || context.event?.data?.sourceId || context.event?.payload?.sourceId || ""];
+        return ((stackData as any)?.targets || targets || []).filter(Boolean);
+
       case "MATCHING_PERMANENTS_YOU_CONTROL":
+      case "ALL_MATCHING_PERMANENTS_YOU_CONTROL":
         if (!effect?.restrictions) return [];
         return state.battlefield
           .filter(
@@ -484,14 +500,17 @@ export class TargetMapper {
             ),
           )
           .map((o) => o.id);
-
       case "TRIGGER_EVENT_SOURCE":
       case "EVENT_SOURCE":
       case "TRIGGER_SOURCE": {
         const eData =
           eventData ||
           parentContext?.eventData ||
-          (stackData as any)?.eventData;
+          parentContext?.event ||
+          (stackData as any)?.data?.eventData ||
+          (stackData as any)?.data?.event ||
+          (stackData as any)?.eventData ||
+          (stackData as any)?.event;
         const pSourceId = eData?.payload?.sourceId || eData?.sourceId;
         return pSourceId
           ? [pSourceId]
@@ -762,31 +781,6 @@ export class TargetMapper {
           )
           .map((o) => o.id);
       }
-      case "EVENT_PLAYER":
-      case "TRIGGER_CONTROLLER":
-        return eventData?.playerId ? [eventData.playerId] : [];
-      case "EVENT_SOURCE":
-      case "TRIGGER_SOURCE":
-      case "TRIGGER_EVENT_SOURCE":
-      case "WARD_SPELL":
-        return eventData?.sourceId
-          ? [eventData.sourceId]
-          : eventData?.data?.sourceId
-            ? [eventData.data.sourceId]
-            : eventData?.data?.sourceCard?.id
-              ? [eventData.data.sourceCard.id]
-              : [];
-      case "EVENT_TARGET":
-      case "TRIGGER_TARGET":
-        return eventData?.targetId
-          ? [eventData.targetId]
-          : eventData?.data?.targetId
-            ? [eventData.data.targetId]
-            : eventData?.data?.object?.id
-              ? [eventData.data.object.id]
-              : [];
-      case "EVENT_OBJECT":
-        return eventData?.object?.id ? [eventData.object.id] : [];
       case "EXILED_CARD": {
         // Return the ID of the object that was just exiled by this effect chain
         return parentContext?.exiledIds || [];

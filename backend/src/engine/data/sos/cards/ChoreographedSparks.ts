@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 export const ChoreographedSparks: CardDefinition = {
     name: "Choreographed Sparks",
     manaCost: "{R}{R}",
@@ -14,6 +14,7 @@ export const ChoreographedSparks: CardDefinition = {
     subtypes: [],
     keywords: [],
     oracleText: "This spell can't be copied.\nChoose one or both —\n• Copy target instant or sorcery spell you control. You may choose new targets for the copy.\n• Copy target creature spell you control. The copy gains haste and \"At the beginning of the end step, sacrifice this token.\"",
+    cannotBeCopied: true,
     abilities: [
         {
             type: AbilityType.Spell,
@@ -24,9 +25,9 @@ export const ChoreographedSparks: CardDefinition = {
                 {
                     label: "Copy target instant or sorcery spell you control",
                     targetDefinition: {
-                        type: AbilityType.Spell, count: 1, restrictions: [
-                            "InstantOrSorcery",
-                            "youcontrol"
+                        type: TargetType.Spell, count: 1, restrictions: [
+                            Restriction.InstantOrSorcery,
+                            Restriction.YouControl
                         ]
                     },
                     effects: [
@@ -34,23 +35,23 @@ export const ChoreographedSparks: CardDefinition = {
                     ]
                 },
                 {
-                    label: "Copy target creature spell you control",
+                    label: "Copy target creature you control",
                     targetDefinition: {
-                        type: TargetType.Creature, count: 1, restrictions: [
-
-                            "youcontrol"
+                        type: TargetType.Spell, count: 1, restrictions: [
+                            Restriction.YouControl, Restriction.Creature
                         ]
                     },
                     effects: [
                         {
-                            type: EffectType.CopySpellOnStack,
-                            targetMapping: TargetMapping.Target1,
+                            type: EffectType.CreateTokenCopy,
+                            targetMapping: TargetMapping.Controller,
+                            sourceMapping: TargetMapping.Target1,
                             keywordsToAdd: ['Haste'],
                             abilitiesToAdd: [
                                 {
                                     type: AbilityType.Triggered,
                                     eventMatch: TriggerEvent.EndStep,
-                                    effects: [{ type: CostType.Sacrifice, targetMapping: TargetMapping.Self }]
+                                    effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Self }]
                                 }
                             ]
                         }

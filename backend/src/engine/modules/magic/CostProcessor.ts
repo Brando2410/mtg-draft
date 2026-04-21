@@ -16,7 +16,7 @@ export class CostProcessor {
    * Returns true if all costs in the list are currently payable.
    * Checks for restrictions like "Cannot Tap" (Rule 101.1).
    */
-  public static canPay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId, playerId: PlayerId): boolean {
+  public static canPay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId, playerId: PlayerId, stackObject?: any): boolean {
     let source = this.findObject(state, sourceId);
     
     // Fallback for resolving objects in transition
@@ -26,7 +26,7 @@ export class CostProcessor {
 
     const validSource = source as GameObject;
     for (const cost of costs) {
-      if (!this.canPaySingle(state, cost, validSource, playerId)) {
+      if (!this.canPaySingle(state, cost, validSource, playerId, stackObject)) {
         return false;
       }
     }
@@ -50,7 +50,7 @@ export class CostProcessor {
     }
   }
 
-  private static canPaySingle(state: GameState, cost: AbilityCost, source: GameObject, playerId: PlayerId): boolean {
+  private static canPaySingle(state: GameState, cost: AbilityCost, source: GameObject, playerId: PlayerId, stackObject?: any): boolean {
     const player = state.players[playerId];
     if (!player) return false;
 
@@ -75,7 +75,7 @@ export class CostProcessor {
         return true;
 
       case CostType.Mana:
-        const effectiveMana = this.getEffectiveManaCost(state, cost, source);
+        const effectiveMana = this.getEffectiveManaCost(state, cost as any, source, stackObject);
         return ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveMana);
 
       case CostType.Loyalty: {
@@ -298,13 +298,18 @@ export class CostProcessor {
     if (cost.type !== CostType.Mana) return cost.value;
 
 
-    let costStr = cost.value;
+    let costStr = cost.value || (cost as any).manaCost;
+    if (!costStr) return "";
     
+    const originalCostStr = costStr;
+
     // Rule 107.3: Handle X cost substitution
     const xValue = (source as any).xValue !== undefined ? (source as any).xValue : (stackObject?.xValue || 0);
     if (costStr.includes('{X}')) {
         costStr = costStr.replace(/\{X\}/g, `{${xValue}}`);
     }
+
+    console.log(`[COST-RESOLVE] source=${source.definition.name}, xValue=${xValue}, original=${originalCostStr}, effective=${costStr}`);
 
     if (cost.costModifiers) {
         let reduction = 0;

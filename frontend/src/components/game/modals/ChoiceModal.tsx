@@ -63,7 +63,8 @@ export const ChoiceModal = ({
     ActionType.ResolutionChoice,
     ActionType.OptionalAction,
     ActionType.Scry,
-    ActionType.Surveil
+    ActionType.Surveil,
+    ActionType.LegendRule
   ].includes(pendingAction?.type) || isOrderTriggers;
 
   useEffect(() => {
@@ -153,6 +154,7 @@ export const ChoiceModal = ({
       <AnimatePresence>
         {!minimized && (
           <motion.div 
+            key="choice-modal-overlay"
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
@@ -363,7 +365,7 @@ export const ChoiceModal = ({
                       {/* BUTTON LIST */}
                       {!isOrderTriggers && !isScrySurveil && buttonChoices.length > 0 && (
                           <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto py-4">
-                                  {buttonChoices.map((choice: any) => {
+                                  {buttonChoices.map((choice: any, idx: number) => {
                                       const originalIdx = choices.indexOf(choice);
                                       const isSelected = selectedIndices.includes(originalIdx);
                                       const isSelectable = choice.selectable !== false;
@@ -374,7 +376,7 @@ export const ChoiceModal = ({
                                       
                                       return (
                                           <button 
-                                              key={originalIdx} 
+                                              key={`choice-button-${originalIdx}-${idx}`} 
                                               onClick={() => isSelectable && handleChoiceClick(originalIdx)} 
                                               className={`w-full rounded-[2rem] border font-black uppercase italic tracking-[0.2em] transition-all shadow-2xl ${fontSize}
                                                   ${!isSelectable 
@@ -428,6 +430,7 @@ export const ChoiceModal = ({
       <AnimatePresence>
         {minimized && (
           <motion.div 
+            key="minimized-choice-button"
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[1001]"

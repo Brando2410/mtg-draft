@@ -309,7 +309,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "OWN_CREATURE_ENTERS": {
         matches(state, params, context) {
             const { event, controllerId } = context;
-            const obj = event?.data?.object || (event as any)?.gameObject;
+            const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || (event as any)?.gameObject;
             if (!obj) return false;
             return obj.controllerId === controllerId && obj.definition.types.map((t: string) => t.toLowerCase()).includes("creature");
         }
@@ -317,7 +317,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "OWN_TOKEN_ENTERS": {
         matches(state, params, context) {
             const { event, controllerId } = context;
-            const obj = event?.data?.object || (event as any)?.gameObject;
+            const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || (event as any)?.gameObject;
             if (!obj) return false;
             return obj.controllerId === controllerId && !!obj.isToken;
         }
@@ -325,7 +325,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "OWN_CREATURE_DIES": {
         matches(state, params, context) {
             const { event, controllerId } = context;
-            const obj = event?.data?.object || (event as any)?.gameObject;
+            const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || (event as any)?.gameObject;
             if (!obj) return false;
             return obj.controllerId === controllerId && obj.definition.types.map((t: string) => t.toLowerCase()).includes("creature");
         }

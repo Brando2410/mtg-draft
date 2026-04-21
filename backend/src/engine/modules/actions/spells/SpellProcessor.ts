@@ -576,6 +576,7 @@ export class SpellProcessor {
             targets: declaredTargets || [],
             card: cardToPlay,
             definition: cardToPlay.definition,
+            cannotBeCopied: cardToPlay.definition.cannotBeCopied,
             xValue: cardToPlay.xValue,
             exileOnResolution: exileOnResolution,
             isFlashbackCast: (cardToPlay as any).isFlashbackCast,
@@ -617,9 +618,8 @@ export class SpellProcessor {
 
         log(`--------------------------------------------------`);
         log(`[STACK] + ${state.players[playerId].name} cast ${cardToPlay.definition.name}${declaredTargets?.length ? ' targeting ' + declaredTargets.join(', ') : ''}`);
-        log(`--------------------------------------------------`);
-
-        engine.checkAutoPass(playerId);
+        engine.checkStateBasedActions();
+        engine.resetPriorityToActivePlayer();
         return true;
     }
 
@@ -706,7 +706,8 @@ export class SpellProcessor {
         });
 
         state.consecutivePasses = 0;
-        engine.checkAutoPass(playerId);
+        engine.checkStateBasedActions();
+        engine.resetPriorityToActivePlayer();
         return true;
     }
 

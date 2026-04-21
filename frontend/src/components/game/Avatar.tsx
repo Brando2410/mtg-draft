@@ -169,7 +169,7 @@ export const Avatar = memo(({
               <div className="w-8 h-px bg-gradient-to-r from-transparent to-white/10 mx-1" />
           </div>
 
-          <div className="relative group/avatar">
+          <div className="relative group/avatar w-[9vh] h-[9vh]">
               {/* PREMIUM SHOCKWAVE PULSE */}
               <AnimatePresence>
                 {showPulse && (
@@ -261,7 +261,7 @@ export const Avatar = memo(({
                     : (isActive ? '0 0 30px rgba(99, 102, 241, 0.2)' : '0 0 20px rgba(0,0,0,0.5)')
                 }}
                 transition={{ duration: 0.1 }}
-                className={`w-[9vh] h-[9vh] rounded-full border-2 overflow-hidden transition-all cursor-pointer relative z-10
+                className={`w-full h-full rounded-full border-2 overflow-hidden transition-all cursor-pointer relative z-10
                   ${isPriority ? 'border-indigo-400' : (isActive ? 'border-white/40' : 'border-white/20')}
                   ${targetable ? 'ring-4 ring-red-500 animate-pulse border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : ''}
                   bg-slate-950 flex items-center justify-center`}
@@ -296,9 +296,59 @@ export const Avatar = memo(({
                           {player.life}
                       </span>
                   </motion.div>
-
-
               </motion.div>
+
+              {/* SCRY/SURVEIL SPEECH BUBBLE */}
+              <AnimatePresence>
+                {scryNotice && (
+                  <motion.div
+                    initial={{ opacity: 0, x: "-50%", y: isOpponent ? 20 : -20, scale: 0.8 }}
+                    animate={{ opacity: 1, x: "-50%", y: isOpponent ? 80 : -80, scale: 1 }}
+                    exit={{ opacity: 0, x: "-50%", scale: 0.8, transition: { duration: 0.2 } }}
+                    className={`absolute left-1/2 z-[600] pointer-events-none
+                        bg-slate-950/95 border border-indigo-500/40 backdrop-blur-xl px-4 py-2.5 rounded-2xl
+                        shadow-[0_15px_40px_rgba(0,0,0,0.7),0_0_30px_rgba(99,102,241,0.2)]
+                        flex flex-col items-center gap-1.5 min-w-fit whitespace-nowrap`}
+                  >
+                    {/* Speech bubble arrow */}
+                    <div className={`absolute left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-950 rotate-45 border-r border-b border-indigo-500/40
+                        ${isOpponent ? '-top-1.5 border-r-0 border-b-0 border-l border-t' : '-bottom-1.5'}`} 
+                    />
+
+                    <span className="text-[11px] font-black uppercase tracking-[0.25em] text-indigo-400 italic leading-none">
+                        {scryNotice.type}
+                    </span>
+
+                    <div className="h-px w-full bg-white/10 my-0.5" />
+
+                    <div className="flex items-center gap-4 text-white">
+                        {scryNotice.type.toLowerCase() === 'surveil' ? (
+                          <>
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-[8px] font-bold text-slate-500 tracking-tighter">GRAVE:</span>
+                                <span className="text-[12px] font-black leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">{scryNotice.graveyard}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-[8px] font-bold text-slate-500 tracking-tighter">TOP:</span>
+                                <span className="text-[12px] font-black leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">{scryNotice.top}</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-[8px] font-bold text-slate-500 tracking-tighter">TOP:</span>
+                                <span className="text-[12px] font-black leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">{scryNotice.top}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-[8px] font-bold text-slate-500 tracking-tighter">BOTTOM:</span>
+                                <span className="text-[12px] font-black leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">{scryNotice.bottom}</span>
+                            </div>
+                          </>
+                        )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
           </div>
 
           <div className="flex gap-4 items-center">
@@ -306,54 +356,6 @@ export const Avatar = memo(({
               <Stopper {...commonProps} id="main2" label="Main 2" />
               <Stopper {...commonProps} id="end" label="End Step" />
           </div>
-
-          {/* SCRY/SURVEIL SPEECH BUBBLE */}
-          <AnimatePresence>
-            {scryNotice && (
-              <motion.div
-                initial={{ opacity: 0, y: isOpponent ? 20 : -20, scale: 0.8 }}
-                animate={{ opacity: 1, y: isOpponent ? 90 : -90, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
-                className={`absolute left-1/2 -translate-x-1/2 z-[600] pointer-events-none
-                    bg-slate-900/90 border border-indigo-500/30 backdrop-blur-md px-4 py-2 rounded-2xl
-                    shadow-[0_10px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(99,102,241,0.2)]
-                    flex flex-col items-center gap-0.5 min-w-[120px]`}
-              >
-                {/* Speech bubble arrow */}
-                <div className={`absolute left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 rotate-45 border-r border-b border-indigo-500/30
-                    ${isOpponent ? '-top-1.5 border-r-0 border-b-0 border-l border-t' : '-bottom-1.5'}`} 
-                />
-
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-1 italic">
-                    {scryNotice.type}
-                </span>
-
-                <div className="flex items-center gap-3">
-                    {scryNotice.top > 0 && (
-                        <div className="flex flex-col items-center">
-                            <span className="text-[8px] font-bold text-slate-500 uppercase">Top</span>
-                            <span className="text-sm font-black text-white leading-none">{scryNotice.top}</span>
-                        </div>
-                    )}
-                    {scryNotice.bottom > 0 && (
-                        <div className="flex flex-col items-center">
-                            <span className="text-[8px] font-bold text-slate-500 uppercase">Bottom</span>
-                            <span className="text-sm font-black text-white leading-none">{scryNotice.bottom}</span>
-                        </div>
-                    )}
-                    {scryNotice.graveyard > 0 && (
-                        <div className="flex flex-col items-center">
-                            <span className="text-[8px] font-bold text-slate-500 uppercase">Grave</span>
-                            <span className="text-sm font-black text-white leading-none">{scryNotice.graveyard}</span>
-                        </div>
-                    )}
-                    {scryNotice.top === 0 && scryNotice.bottom === 0 && scryNotice.graveyard === 0 && (
-                        <span className="text-[10px] font-black italic text-slate-400">0 cards moved</span>
-                    )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
       </div>
     </div>
   );

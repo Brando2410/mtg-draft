@@ -19,40 +19,26 @@ export const TesteroftheTangential: CardDefinition = {
             effects: [
                 {
                     type: EffectType.Choice,
-                    label: "Pay {X} to move +1/+1 counters?",
+                    label: "Pay {X} to move X +1/+1 counters onto another target creature?",
                     choices: [
                         {
-                            label: "Yes",
-                            costs: [
-                                {
-                                    type: CostType.Mana,
-                                    value: '{X}'
-                                }
-                            ],
+                            label: "Pay {X}",
+                            costs: [{ type: CostType.Mana, value: '{X}' }],
                             effects: [
                                 {
-                                    type: EffectType.Choice,
-                                    label: "Choose target creature to receive counters",
+                                    type: EffectType.MoveCounters,
+                                    counterType: '+1/+1',
+                                    amount: 'X',
                                     targetDefinition: {
                                         type: TargetType.Creature,
                                         restrictions: [Restriction.Other],
                                         count: 1
                                     },
-                                    effects: [
-                                        {
-                                            type: EffectType.MoveCounters,
-                                            counterType: '+1/+1',
-                                            amount: DynamicAmount.X,
-                                            targetMapping: TargetMapping.Target1
-                                        }
-                                    ]
+                                    targetMapping: TargetMapping.Target1
                                 }
                             ]
                         },
-                        {
-                            label: "No",
-                            effects: []
-                        }
+                        { label: "Decline", effects: [] }
                     ]
                 }
             ]
