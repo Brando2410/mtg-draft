@@ -1,5 +1,4 @@
-// ManaValidator.ts
-import { GameObject, GameState, PlayerState } from '@shared/engine_types';
+import { GameObject, GameState, PlayerState, ContinuousEffect, AbilityDefinition, AbilityType } from '@shared/engine_types';
 import { ManaParser } from './ManaParser';
 import { ManaPoolManager } from './ManaPoolManager';
 
@@ -9,7 +8,7 @@ export class ManaValidator {
     if (!costStr || player.manaCheat) return true;
     
     // Support for Chromatic Orrery / Spend as Any Color
-    const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some((e: any) => 
+    const canSpendAsAnyColor = state?.ruleRegistry.continuousEffects.some((e: ContinuousEffect) => 
         (e.type === 'AllowSpendManaAsAnyColor' || e.spendAnyMana) && 
         e.controllerId === player.id &&
         (!e.targetIds || !payingFor || e.targetIds.includes(payingFor.id))
@@ -17,7 +16,7 @@ export class ManaValidator {
     const pool = ManaPoolManager.getUsableMana(player, payingFor);
 
     if (canSpendAsAnyColor) {
-        const totalFloating = Object.values(pool).reduce((a, b: any) => a + b, 0);
+        const totalFloating = Object.values(pool).reduce((a, b) => a + (b as number), 0);
         const totalRequired = ManaParser.getManaValue(costStr);
         return totalFloating >= totalRequired;
     }
@@ -38,7 +37,7 @@ export class ManaValidator {
       }
     }
 
-    const totalFloating = Object.values(pool).reduce((a, b: any) => a + b, 0);
+    const totalFloating = Object.values(pool).reduce((a, b) => a + (b as number), 0);
     const totalRequired = ManaParser.getManaValue(costStr);
     
     return totalFloating >= totalRequired;
@@ -47,20 +46,20 @@ export class ManaValidator {
   /**
    * Complex check: Can the player pay this cost using floating mana AND untapped sources?
    */
-  public static canPayWithTotal(player: PlayerState, battlefield: any[], costStr: string, payingFor?: GameObject): boolean {
+  public static canPayWithTotal(player: PlayerState, battlefield: GameObject[], costStr: string, payingFor?: GameObject): boolean {
     if (!costStr || player.manaCheat) return true;
     const requirements = ManaParser.parseManaCost(costStr);
     
     // 1. Prepare available sources
-    const pool = ManaPoolManager.getUsableMana(player, payingFor);
-    const untappedSources: any[] = [];
+    const pool = { ...ManaPoolManager.getUsableMana(player, payingFor) };
+    const untappedSources: { id: string, colors: string[], value: number }[] = [];
 
     const { oracle } = require('./../../../OracleLogicMap');
-    battlefield.forEach((obj: any) => {
+    battlefield.forEach((obj: GameObject) => {
       if (obj.controllerId === player.id && !obj.isTapped) {
         const logic = oracle.getCard(obj.definition.name);
-        const abilities = logic?.abilities || obj.definition.abilities || [];
-        const manaAbilities = (abilities as any[]).filter((a: any) => a.isManaAbility);
+        const abilities = (logic?.abilities || obj.definition.abilities || []) as (AbilityDefinition | string)[];
+        const manaAbilities = abilities.filter((a): a is AbilityDefinition => typeof a !== 'string' && !!a.isManaAbility);
         if (manaAbilities.length === 0) return;
 
         const isLegalForSource = (restrictions: string[]) => {
@@ -77,8 +76,8 @@ export class ManaValidator {
           });
         };
 
-        const sourceAbilities: any[] = [];
-        manaAbilities.forEach((a: any) => {
+        const sourceAbilities: { colors: string[], value: number }[] = [];
+        manaAbilities.forEach((a) => {
           const colors = new Set<string>();
           const restrictions: string[] = [];
 
@@ -155,7 +154,7 @@ export class ManaValidator {
     }
 
     // 3. Final generic check
-    const remainingPool = Object.values(pool).reduce((a, b: number) => a + b, 0);
+    const remainingPool = Object.values(pool).reduce((a, b) => a + (b as number), 0);
     const untranslatedSourcesValue = untappedSources
         .filter(s => !usedSources.has(s.id))
         .reduce((sum, s) => sum + s.value, 0);

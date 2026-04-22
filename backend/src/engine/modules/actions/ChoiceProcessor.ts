@@ -1,4 +1,21 @@
-import { AbilityCost, ActionType, EffectDefinition, GameState, PlayerId, Zone, ChoiceOption, PendingAction } from '@shared/engine_types';
+import {
+    AbilityCost,
+    ActionType,
+    EffectDefinition,
+    GameState,
+    PlayerId,
+    Zone,
+    ChoiceOption,
+    PendingAction,
+    ChoicePayload,
+    GameObject,
+    TargetType,
+    TargetMapping,
+    EffectType,
+    StackObject,
+    ResolutionContext,
+    AbilityDefinition
+} from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
 import { ChoiceGenerator } from '../effects/ChoiceGenerator';
 import { EffectProcessor } from '../effects/EffectProcessor';
@@ -7,7 +24,6 @@ import { ActionProcessor } from './ActionProcessor';
 import { PlayerActionProcessor } from './PlayerActionProcessor';
 import { SpellProcessor } from './spells/SpellProcessor';
 import { TargetingProcessor } from './targeting/TargetingProcessor';
-
 import { EngineContext } from '../../interfaces/EngineContext';
 
 /**
@@ -15,7 +31,7 @@ import { EngineContext } from '../../interfaces/EngineContext';
  */
 export class ChoiceProcessor {
 
-    public static normalizePayload(input: number | string | import('@shared/engine_types').ChoicePayload): import('@shared/engine_types').ChoicePayload {
+    public static normalizePayload(input: number | string | ChoicePayload): ChoicePayload {
         if (typeof input === 'object' && input !== null) {
             return input;
         }
@@ -41,12 +57,12 @@ export class ChoiceProcessor {
 
     public static resolveChoice(
         state: GameState,
-        playerId: string,
-        choiceInput: number | string | import('@shared/engine_types').ChoicePayload,
+        playerId: PlayerId,
+        choiceInput: number | string | ChoicePayload,
         log: (m: string) => void,
         engine: EngineContext
     ): boolean {
-        const action = state.pendingAction as PendingAction;
+        const action = state.pendingAction;
         if (!action) return false;
 
         if (action.playerId !== playerId) {
@@ -59,22 +75,20 @@ export class ChoiceProcessor {
 
         console.log(`[CHOICE-DEBUG] Resolving ${action.type} for ${playerId}. Index/Value: ${choiceIndex}`);
 
-        const isModal = action.type === 'MODAL_SELECTION';
-        const isLegendRule = action.type === 'LEGEND_RULE';
-        const isResolution = action.type === 'RESOLUTION_CHOICE' || action.type === 'OPTIONAL_ACTION' || action.type === 'CHOICE' || isLegendRule;
-        const isScry = action.type === 'SCRY' || action.type === 'SURVEIL';
-        const isChoosingX = action.type === 'CHOOSE_X';
+        const isModal = action.type === ActionType.ModalSelection;
+        const isLegendRule = action.type === ActionType.LegendRule;
+        const isResolution = action.type === ActionType.ResolutionChoice || action.type === ActionType.OptionalAction || action.type === ActionType.Choice || isLegendRule;
+        const isScry = action.type === ActionType.Scry || action.type === ActionType.Surveil;
+        const isChoosingX = action.type === ActionType.ChooseX;
         const isOrderTriggers = action.type === ActionType.OrderTriggers;
 
         if (!isModal && !isResolution && !isScry && !isChoosingX && !isOrderTriggers) return false;
 
         // Handle Trigger Ordering
         if (isOrderTriggers) {
-            const orderRaw = payload.indices || (payload.values ? payload.values.map(v => parseInt(v)) : []) || [];
-            // If we only have choiceIndex, it might be a single string for ordering? Wait, ordering is usually an array.
-            // Let's assume order is handled as strings
             let order: string[] = [];
             if (payload.values) order = payload.values;
+            else if (payload.indices) order = payload.indices.map(i => i.toString());
             else if (typeof choiceInput === 'string') order = choiceInput.split('|').map(s => s.replace('CHOICE_', ''));
 
             return PlayerActionProcessor.resolveTriggerOrdering(state, playerId, order, log);
@@ -88,8 +102,6 @@ export class ChoiceProcessor {
         if (isChoosingX) {
             return this.handleXChoice(state, playerId, action, choiceInput, log, engine);
         }
-
-        const isReorder = isScry; // For backward compatibility with the rest of the file
 
 
         // Handle multi-choice (batch selection) separated by '|'
@@ -120,7 +132,7 @@ export class ChoiceProcessor {
 
             // Resolve all effects in the batch
             if (allEffects.length > 0) {
-                const discardEffects = allEffects.filter(e => e.type === 'MoveToZone' && e.isDiscard);
+                const discardEffects = allEffects.filter(e => e.type === EffectType.MoveToZone && e.isDiscard);
                 if (discardEffects.length > 0) {
                     state.turnState.lastDiscardedCount = discardEffects.length;
                     state.turnState.lastDiscardedIds = [];
@@ -145,13 +157,13 @@ export class ChoiceProcessor {
                 state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, action.data?.label || "Discard", action.data?.stackObj, action.data?.parentContext, failureEffects);
             }
 
-            // Resume whatever was happening - CRITICAL: must start from action.data to catch local effects (like Draw after Discard)
-            return this.resumeResolution(state, sourceId as string, action.data?.stackObj, action.data, log, engine);
+            // Resume whatever was happening
+            return this.resumeResolution(state, sourceId as string, action.data?.stackObj as StackObject, action.data?.parentContext as ResolutionContext, log, engine);
         }
 
         // 3. Handle Scry/Surveil Reordering early as payload is not an index
         if (isScry) {
-            return this.handleScrySurveil(state, playerId, action, choiceIndex, log, engine);
+            return this.handleScrySurveil(state, playerId, action, payload, log, engine);
         }
 
         const rawIdx = typeof choiceIndex === 'string' && choiceIndex.startsWith('CHOICE_') ? choiceIndex.substring(7) : choiceIndex;
@@ -161,15 +173,15 @@ export class ChoiceProcessor {
         if (isLegendRule) {
             let choice = idx !== undefined ? action.data?.choices?.[idx as number] : undefined;
             if (!choice && typeof choiceIndex === 'string') {
-                choice = action.data?.choices?.find((c: any) => c.value === choiceIndex || c.id === choiceIndex);
+                choice = action.data?.choices?.find((c: ChoiceOption) => c.value === choiceIndex);
             }
-            const keepId = choice?.value;
-            const involvedIds = action.data?.involvedIds || [];
-            const discardIds = involvedIds.filter((id: string) => id !== keepId);
+            const keepId = choice?.value as string;
+            const involvedIds = (action.data?.involvedIds as string[]) || [];
+            const discardIds = involvedIds.filter((id) => id !== keepId);
 
             console.log(`[LEGEND-RULE] Player chose index ${idx} or ID ${choiceIndex} (Keep: ${keepId}). Involved: ${involvedIds.join(', ')}`);
 
-            discardIds.forEach((id: string) => {
+            discardIds.forEach((id) => {
                 const obj = state.battlefield.find(o => o.id === id);
                 if (obj) {
                     ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.ownerId, log);
@@ -180,7 +192,7 @@ export class ChoiceProcessor {
             return true;
         }
 
-        const sourceId = action.sourceId;
+        const sourceId = action.sourceId as string;
         const choice = idx !== undefined ? action.data?.choices?.[idx as number] : undefined;
 
         if (!choice || !sourceId) return false;
@@ -202,13 +214,12 @@ export class ChoiceProcessor {
 
     private static handleScrySurveil(
         state: GameState,
-        playerId: string,
+        playerId: PlayerId,
         action: PendingAction,
-        payload: any,
+        payload: ChoicePayload | string,
         log: (m: string) => void,
-        engine: any
+        engine: EngineContext
     ): boolean {
-        const { ActionProcessor } = require('./ActionProcessor');
         const { top = [], bottom = [], graveyard = [] } = (typeof payload === 'string' ? JSON.parse(payload) : payload) as { top?: string[], bottom?: string[], graveyard?: string[] };
 
         log(`[RESOLVING ${action.type}] ${state.players[playerId].name} reordered cards.`);
@@ -219,68 +230,60 @@ export class ChoiceProcessor {
             top: top.length,
             bottom: bottom.length,
             graveyard: graveyard.length,
-            type: action.type,
+            type: action.type as string,
             timestamp: Date.now()
         };
 
         // 1. Validate all cards are still in a valid state (optional but good)
-        const cards = action.data?.lookingCards || [];
-
-        // 2. Clear current state ofThese cards (they were pulled from library top)
-        // Actually, in EffectProcessor they were popped from the library.
+        const cards = (action.data?.lookingCards || []) as GameObject[];
 
         // 3. Move cards to Bottom (Scry) or Graveyard (Surveil)
-        bottom.forEach((id: string) => {
-            const card = cards.find((c: any) => c.id === id);
+        bottom.forEach((id) => {
+            const card = cards.find((c) => c.id === id);
             if (card) {
                 ActionProcessor.moveCard(state, card, Zone.Library, playerId, log, 'bottom');
             }
         });
 
-        graveyard.forEach((id: string) => {
-            const card = cards.find((c: any) => c.id === id);
+        graveyard.forEach((id) => {
+            const card = cards.find((c) => c.id === id);
             if (card) {
                 ActionProcessor.moveCard(state, card, Zone.Graveyard, playerId, log);
             }
         });
 
         // 4. Move cards to Top (Reverse order to maintain stack order)
-        [...top].reverse().forEach((id: string) => {
-            const card = cards.find((c: any) => c.id === id);
+        [...top].reverse().forEach((id) => {
+            const card = cards.find((c) => c.id === id);
             if (card) {
                 ActionProcessor.moveCard(state, card, Zone.Library, playerId, log, 'top');
             }
         });
 
         // 5. Cleanup
-        const stackObj = action.data?.stackObj;
+        const stackObj = action.data?.stackObj as StackObject;
         state.pendingAction = undefined;
 
-        // 6. Resume resolution if needed - CRITICAL: must start from action.data to catch local effects
+        // 6. Resume resolution if needed
         if (stackObj) {
             log(`[RESOLVING] Resuming resolution after ${action.type}...`);
-            return this.resumeResolution(state, action.sourceId!, stackObj, action.data, log, engine);
+            return this.resumeResolution(state, action.sourceId!, stackObj, action.data?.parentContext as ResolutionContext, log, engine);
         }
 
         engine.resetPriorityToActivePlayer();
         return true;
     }
 
-    private static resumeResolution(state: GameState, sourceId: string, stackObj: any, parentContext: any, log: (m: string) => void, engine: any): boolean {
-        // This logic is mostly copied from handleResolutionChoice to be DRY
-        let currentCtx = { ...parentContext, stackObj }; // Wrap to start resuming
-
-        // First, check if the object we are resuming is actually done
-        // Cleanup moved to end to support multi-effect spells
-
+    private static resumeResolution(state: GameState, sourceId: string, stackObj: StackObject, parentContext: ResolutionContext, log: (m: string) => void, engine: EngineContext): boolean {
+        let currentCtx: ResolutionContext | undefined = { ...parentContext, stackObject: stackObj }; // Wrap to start resuming
 
         // Then resume parent contexts
-        while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex < currentCtx.effects.length) {
+        while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex !== undefined && currentCtx.nextEffectIndex < currentCtx.effects.length) {
             log(`[RESOLVING] Resuming parent resolution context for ${sourceId}...`);
             const nextIdx = currentCtx.nextEffectIndex;
             const effs = currentCtx.effects;
             const parentTargets = currentCtx.targets || [];
-            const nextParentCtx = currentCtx.parentContext;
+            const nextParentCtx: ResolutionContext | undefined = currentCtx.parentContext;
 
             currentCtx = nextParentCtx;
             const completed = EffectProcessor.resolveEffects({
@@ -294,8 +297,8 @@ export class ChoiceProcessor {
                 parentContext: nextParentCtx,
             });
 
-            if (stackObj && !completed && state.pendingAction) {
-                stackObj.data = { ...stackObj.data, nextEffectIndex: (state.pendingAction as any).data.nextEffectIndex };
+            if (stackObj && !completed && (state as GameState).pendingAction) {
+                (stackObj as any).data = { ...(stackObj as any).data, nextEffectIndex: (state as GameState).pendingAction?.data?.nextEffectIndex };
             }
         }
 
@@ -309,7 +312,6 @@ export class ChoiceProcessor {
                         const isPermanent = types.includes('creature') || types.includes('artifact') || types.includes('enchantment') || types.includes('planeswalker');
 
                         if (card.zone === Zone.Stack) {
-                            const { oracle } = require("../../OracleLogicMap");
                             const freshDef = oracle.getCard(card.definition.name);
                             const shouldExile = fullStackObj.exileOnResolution || (fullStackObj as any).isCopy || (card as any).isPreparedCopy || freshDef?.exileOnResolution;
 
@@ -327,20 +329,20 @@ export class ChoiceProcessor {
                         }
                     } else {
                         // Clean up ability/trigger
-                        ActionProcessor.removeFromCurrentZone(state, { id: fullStackObj.id, zone: Zone.Stack } as any);
+                        ActionProcessor.removeFromCurrentZone(state, { id: fullStackObj.id, zone: Zone.Stack } as GameObject);
                     }
                     log(`[STACK] Completed resolution of ${stackObj.type} for ${sourceId}.`);
                 }
             }
             engine.resetPriorityToActivePlayer();
         } else {
-            state.priorityPlayerId = (state as any).pendingAction.playerId || null;
+            state.priorityPlayerId = state.pendingAction.playerId || null;
         }
         return true;
     }
 
-    private static handleUndo(state: GameState, playerId: string, action: PendingAction, log: (m: string) => void): boolean {
-        if (action.data?.hideUndo || action.type === 'RESOLUTION_CHOICE') {
+    private static handleUndo(state: GameState, playerId: PlayerId, action: PendingAction, log: (m: string) => void): boolean {
+        if (action.data?.hideUndo || action.type === ActionType.ResolutionChoice) {
             log(`Undo not available for this mandatory action.`);
             return false;
         }
@@ -351,16 +353,14 @@ export class ChoiceProcessor {
         // A. Revert Battlefield source (Activated Ability/Planeswalker)
         const objOnBattlefield = state.battlefield.find(o => o.id === sourceId);
         if (objOnBattlefield) {
-            // ONLY decrement usage and refund if the ability was actually finalized (paid for)
-            // increments happen in SpellProcessor.finalizeAbilityActivation
-            const abilityIndex = savedActionData?.abilityIndex;
+            const abilityIndex = savedActionData?.abilityIndex as number;
             if (objOnBattlefield.abilitiesUsedThisTurn > 0 && abilityIndex !== undefined) {
                 objOnBattlefield.abilitiesUsedThisTurn--;
 
                 // Refund Loyalty
                 const logic = oracle.getCard(objOnBattlefield.definition.name);
-                const ability = (logic?.abilities as any)?.[abilityIndex];
-                const lCost = ability?.costs?.find((c: any) => c.type === 'Loyalty')?.value;
+                const ability = (logic?.abilities as AbilityDefinition[])?.[abilityIndex];
+                const lCost = ability?.costs?.find((c: AbilityCost) => c.type === 'Loyalty')?.value as number;
                 if (lCost !== undefined) {
                     objOnBattlefield.counters['loyalty'] = (objOnBattlefield.counters['loyalty'] || 0) - lCost;
                     log(`Refunded loyalty for ${objOnBattlefield.definition.name}: ${lCost > 0 ? '+' : ''}${lCost}`);
@@ -388,7 +388,7 @@ export class ChoiceProcessor {
         const player = state.players[playerId];
         const cardInHand = player?.hand.find(c => c.id === sourceId);
         if (cardInHand) {
-            (cardInHand as any).selectedFaceDefinition = undefined;
+            cardInHand.selectedFaceDefinition = undefined;
         }
 
         const { ManaProcessor } = require('../magic/ManaProcessor');
@@ -397,23 +397,20 @@ export class ChoiceProcessor {
         if (savedActionData?.tappedLandIds && Array.isArray(savedActionData.tappedLandIds)) {
             ManaProcessor.untapLands(state, savedActionData.tappedLandIds);
 
-            if (savedActionData.manaSnapshot) {
-                // Precise cleanup: Restore EXACT state before auto-tap
+            if (player && savedActionData.manaSnapshot) {
                 player.manaPool = savedActionData.manaSnapshot;
                 player.restrictedMana = savedActionData.restrictedSnapshot || [];
                 log(`Undo: Untapped ${savedActionData.tappedLandIds.length} lands and restored mana pool.`);
-            } else if (savedActionData.producedMana) {
-                // Precision cleanup (via tracked production)
-                const pm = savedActionData.producedMana;
+            } else if (player && savedActionData.producedMana) {
+                const pm = savedActionData.producedMana as Record<string, number>;
                 Object.entries(pm).forEach(([color, amount]) => {
-                    if ((amount as number) > 0) {
-                        player.manaPool[color as keyof typeof player.manaPool] -= (amount as number);
+                    if (amount > 0) {
+                        player.manaPool[color as keyof typeof player.manaPool] -= amount;
                     }
                 });
                 log(`Undo: Untapped ${savedActionData.tappedLandIds.length} lands and cleared auto-tapped mana.`);
-            } else if (savedActionData.totalMana) {
-                // Fallback (older actions)
-                ManaProcessor.refundManaCost(player, savedActionData.totalMana);
+            } else if (player && savedActionData.totalMana) {
+                ManaProcessor.refundManaCost(player, savedActionData.totalMana as string);
                 log(`Undo: Untapped ${savedActionData.tappedLandIds.length} lands and refunded mana.`);
             }
         }
@@ -435,7 +432,7 @@ export class ChoiceProcessor {
         return true;
     }
 
-    private static handleBattlefieldAbilityActivation(state: GameState, playerId: string, obj: any, choice: ChoiceOption, log: (m: string) => void, engine: any): boolean {
+    private static handleBattlefieldAbilityActivation(state: GameState, playerId: PlayerId, obj: GameObject, choice: ChoiceOption, log: (m: string) => void, engine: EngineContext): boolean {
         if (choice.value === 'none') {
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
@@ -443,14 +440,14 @@ export class ChoiceProcessor {
             return true;
         }
 
-        const abilityIndex = typeof choice.value === 'number' ? choice.value : parseInt(choice.value);
+        const abilityIndex = typeof choice.value === 'number' ? choice.value : parseInt(choice.value as string);
         const logic = oracle.getCard(obj.definition.name);
-        const ability = (logic as any)?.abilities?.[abilityIndex];
+        const ability = (logic?.abilities as AbilityDefinition[])?.[abilityIndex];
 
         if (!ability) return false;
 
         if (ability.targetDefinition) {
-            const targetDef = ability.targetDefinition;
+            const targetDef = Array.isArray(ability.targetDefinition) ? ability.targetDefinition[0] : ability.targetDefinition;
             const pool = [
                 ...Object.keys(state.players),
                 ...state.battlefield.map(o => o.id),
@@ -458,7 +455,7 @@ export class ChoiceProcessor {
                 ...state.exile.map(o => o.id),
                 ...state.stack.map(o => o.id)
             ];
-            const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDef, (obj as any).xValue || 0);
+            const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDef, obj.xValue || 0);
             const legalTargetIds = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
                 sourceId: obj.id,
                 controllerId: obj.controllerId,
@@ -496,24 +493,21 @@ export class ChoiceProcessor {
                 }
             }
 
-            const isGraveyardTargeting = targetDef.type === 'CardInGraveyard';
+            const isGraveyardTargeting = targetDef.type === TargetType.CardInGraveyard;
 
             if (isGraveyardTargeting && legalTargetIds.length > 0) {
-                const { ChoiceGenerator } = require('../effects/ChoiceGenerator');
-                const { ActionType: AT } = require('@shared/engine_types');
-
                 const action = ChoiceGenerator.createCardChoice(
                     state,
-                    legalTargetIds.map((id: string) => TargetingProcessor.findObjectInAnyZone(state, id)!),
+                    legalTargetIds.map((id) => TargetingProcessor.findObjectInAnyZone(state, id)!),
                     {
                         label: "Select a card from graveyard",
                         playerId,
                         sourceId: obj.id,
                         optional: targetDef.minCount === 0 || targetDef.optional,
-                        actionType: AT.ModalSelection,
+                        actionType: ActionType.ModalSelection,
                         filterSelectable: true,
                         minChoices: targetDef.minCount !== undefined ? targetDef.minCount : 0,
-                        maxChoices: targetDef.count || 1
+                        maxChoices: targetDef.count as number || 1
                     }
                 );
 
@@ -528,7 +522,7 @@ export class ChoiceProcessor {
             }
 
             state.pendingAction = {
-                type: 'TARGETING',
+                type: ActionType.Targeting,
                 playerId,
                 sourceId: obj.id,
                 data: {
@@ -558,12 +552,11 @@ export class ChoiceProcessor {
         });
     }
 
-    private static handleModalSelection(state: GameState, playerId: string, sourceId: string, choice: ChoiceOption | null, choiceIndex: any, action: PendingAction, log: (m: string) => void, engine: any): boolean {
-        const savedTargets = action.data?.declaredTargets || [];
-        const costType = action.data?.costType;
+    private static handleModalSelection(state: GameState, playerId: PlayerId, sourceId: string, choice: ChoiceOption | null, choiceIndex: any, action: PendingAction, log: (m: string) => void, engine: EngineContext): boolean {
+        const savedTargets = (action.data?.declaredTargets as string[]) || [];
+        const costType = action.data?.costType as string;
         if (log) log(`[DEBUG] handleModalSelection: costType=${costType}, choiceIndex=${choiceIndex}, choiceValue=${choice?.value}`);
 
-        // Robustly resolve 'choice' if it's null (e.g. from batch selects)
         if (!choice && choiceIndex !== undefined) {
             let idxStr = String(choiceIndex);
             if (idxStr.includes('|')) idxStr = idxStr.split('|')[0];
@@ -577,36 +570,35 @@ export class ChoiceProcessor {
         state.pendingAction = undefined;
 
         if (costType === 'Sacrifice') {
-            (state as any).lastChosenSacrificeId = choice?.value;
+            state.interaction.lastChosenSacrificeId = choice?.value as string;
         } else if (costType === 'Discard') {
-            (state as any).lastChosenDiscardId = choice?.value;
+            state.interaction.lastChosenDiscardId = choice?.value as string;
             log(`[DEBUG] ChoiceProcessor: Set lastChosenDiscardId to ${choice?.value}`);
         } else if (costType === 'TapSelection' || costType === 'Exile') {
             if (log) log(`[DEBUG] handleModalSelection: Processing ${costType} cost...`);
-            // Multi-select might have been passed as choiceIndex batch or single
-            if (action.data?.maxChoices && action.data.maxChoices > 1) {
+            if (action.data?.maxChoices && (action.data.maxChoices as number) > 1) {
                 const batchIds = typeof choiceIndex === 'string' && choiceIndex.includes('|')
                     ? choiceIndex.split('|').map(s => {
                         const i = parseInt(s.startsWith('CHOICE_') ? s.substring(7) : s);
-                        return action.data?.choices?.[i]?.value;
+                        return action.data?.choices?.[i]?.value as string;
                     }).filter(v => v)
-                    : [choice?.value].filter(v => v);
+                    : [choice?.value as string].filter(v => v);
 
-                if (costType === 'TapSelection') (state as any).lastChosenTapSelectionIds = batchIds;
-                else (state as any).lastChosenExileIds = batchIds;
+                if (costType === 'TapSelection') state.interaction.lastChosenTapSelectionIds = batchIds;
+                else state.interaction.lastChosenExileIds = batchIds;
             } else {
-                if (costType === 'TapSelection') (state as any).lastChosenTapSelectionIds = [choice?.value].filter(v => v);
-                else (state as any).lastChosenExileIds = [choice?.value].filter(v => v);
+                if (costType === 'TapSelection') state.interaction.lastChosenTapSelectionIds = [choice?.value as string].filter(v => v);
+                else state.interaction.lastChosenExileIds = [choice?.value as string].filter(v => v);
             }
         } else if (choice && String(choice.value).startsWith('FACE_SELECTION_')) {
             const faceIdx = parseInt(String(choice.value).substring(15));
             const card = TargetingProcessor.findObjectInAnyZone(state, sourceId);
             if (card && card.definition.faces) {
-                (card as any).selectedFaceDefinition = card.definition.faces[faceIdx];
+                card.selectedFaceDefinition = card.definition.faces[faceIdx];
             }
         } else if (choice && String(choice.value).startsWith('COST_CHOICE_')) {
             const choiceIdx = parseInt(String(choice.value).substring(12));
-            (state as any).lastChosenCostChoiceIndex = choiceIdx;
+            state.interaction.lastChosenCostChoiceIndex = choiceIdx;
         } else if (choice && String(choice.value).startsWith('MODE_SELECTION_')) {
             if (typeof choiceIndex === 'string' && choiceIndex.includes('|')) {
                 const indices = choiceIndex.split('|').map(s => {
@@ -614,13 +606,13 @@ export class ChoiceProcessor {
                     const val = action.data?.choices?.[i]?.value;
                     return parseInt(String(val).substring(15));
                 });
-                (state as any).lastChosenModeIndex = indices;
+                state.interaction.lastChosenModeIndex = indices;
             } else {
                 const modeIdx = parseInt(String(choice.value).substring(15));
-                (state as any).lastChosenModeIndex = [modeIdx];
+                state.interaction.lastChosenModeIndex = [modeIdx];
             }
         } else {
-            (state as any).lastChoiceIndex = choiceIndex;
+            state.interaction.lastChoiceIndex = choiceIndex as number;
         }
 
         log(`Selected ${costType ? costType + ' item' : 'choice'}: ${choice.label}`);
@@ -628,7 +620,7 @@ export class ChoiceProcessor {
         if (action.data?.abilityIndex !== undefined) {
             let targets = savedTargets;
             if (action.data.isTargetingModal) {
-                targets = choice.value === 'none' ? [] : (Array.isArray(choice.value) ? choice.value : [choice.value]);
+                targets = choice.value === 'none' ? [] : (Array.isArray(choice.value) ? choice.value : [choice.value as string]);
             }
 
             return SpellProcessor.activateAbility(
@@ -638,50 +630,45 @@ export class ChoiceProcessor {
                 {
                     playerId,
                     cardId: sourceId,
-                    abilityIndex: action.data.abilityIndex,
+                    abilityIndex: action.data.abilityIndex as number,
                     targets,
-                    xValue: action.data.xValue,
+                    xValue: action.data.xValue as number,
                     bypassPriority: true,
-                    bypassTargeting: false
+                    bypassTargeting: false,
+                    parentContext: action.data.parentContext as ResolutionContext,
+                    isFreeCast: action.data.isFreeCast as boolean
                 }
             );
         }
 
-        // --- RESUME AFTER INTERACTIVE COST ---
         if (action.data?.isCostChoice && (action.data?.stackObj || action.data?.nextEffectIndex !== undefined)) {
             log(`[RESOLVING] Resuming resolution after interactive cost ${costType}...`);
-            const { EffectProcessor } = require('./../effects/EffectProcessor');
 
-            // 1. Pay the interactive cost (IDs already in state)
-            // We create a dummy cost object to trigger the payment logic in CostProcessor
-            const costToPay = { type: action.data.costType, amount: action.data.maxChoices, value: action.data.maxChoices } as any;
+            const costToPay = { type: action.data.costType, amount: action.data.maxChoices, value: action.data.maxChoices } as AbilityCost;
             CostProcessor.pay(state, [costToPay], sourceId, playerId, log);
 
-            // 2. Pay any remaining costs that were part of the same choice
-            if (action.data.remainingCosts && action.data.remainingCosts.length > 0) {
-                CostProcessor.pay(state, action.data.remainingCosts, sourceId, playerId, log);
+            if (action.data.remainingCosts && (action.data.remainingCosts as AbilityCost[]).length > 0) {
+                CostProcessor.pay(state, action.data.remainingCosts as AbilityCost[], sourceId, playerId, log);
             }
 
-            // 3. Resolve the effects of the choice
-            if (action.data.choiceEffects && action.data.choiceEffects.length > 0) {
+            if (action.data.choiceEffects && (action.data.choiceEffects as EffectDefinition[]).length > 0) {
                 EffectProcessor.resolveEffects({
                     state,
-                    effects: action.data.choiceEffects,
+                    effects: action.data.choiceEffects as EffectDefinition[],
                     sourceId,
                     targets: savedTargets,
                     log,
                     startIndex: 0,
-                    stackObject: action.data.stackObj,
-                    parentContext: action.data.parentContext,
+                    stackObject: action.data.stackObj as StackObject,
+                    parentContext: action.data.parentContext as ResolutionContext,
                     controllerIdOverride: playerId,
-                    lookingCards: action.data.lookingCards,
+                    lookingCards: action.data.lookingCards as GameObject[],
                 });
             }
 
-            // 4. Resume parent resolution
-            const stackObj = action.data.stackObj;
-            let currentCtx = action.data.parentContext;
-            while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex < currentCtx.effects.length) {
+            const stackObj = action.data.stackObj as StackObject;
+            let currentCtx: ResolutionContext | undefined = action.data.parentContext;
+            while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex !== undefined && currentCtx.nextEffectIndex < currentCtx.effects.length) {
                 log(`[RESOLVING] Resuming parent resolution context for ${sourceId}...`);
                 const nextIdx = currentCtx.nextEffectIndex;
                 const effs = currentCtx.effects;
@@ -698,11 +685,11 @@ export class ChoiceProcessor {
                     startIndex: nextIdx,
                     stackObject: stackObj,
                     parentContext: parentCtx,
-                    lookingCards: action.data.lookingCards,
+                    lookingCards: action.data.lookingCards as GameObject[],
                 });
 
-                if (stackObj && !completed && state.pendingAction) {
-                    stackObj.data = { ...stackObj.data, nextEffectIndex: (state.pendingAction as any).data.nextEffectIndex };
+                if (stackObj && !completed && (state as GameState).pendingAction) {
+                    (stackObj as any).data = { ...(stackObj as any).data, nextEffectIndex: (state as GameState).pendingAction?.data?.nextEffectIndex };
                 }
             }
 
@@ -711,34 +698,41 @@ export class ChoiceProcessor {
         }
 
         if (action.data?.confirmedAutoTap) {
-            (state as any).confirmedAutoTap = true;
+            state.interaction.confirmedAutoTap = true;
         }
 
         let finalTargets = savedTargets;
         if (action.data?.isTargetingModal) {
-            // Resolve target(s) from choice(s)
             if (typeof choiceIndex === 'string' && choiceIndex.includes('|')) {
                 finalTargets = choiceIndex.split('|').map(s => {
                     const i = parseInt(s.startsWith('CHOICE_') ? s.substring(7) : s);
-                    return action.data?.choices?.[i]?.value;
+                    return action.data?.choices?.[i]?.value as string;
                 }).filter(v => v);
             } else {
-                finalTargets = choice?.value ? [choice.value] : [];
+                finalTargets = choice?.value ? [choice.value as string] : [];
             }
-            log(`[DEBUG] ChoiceProcessor: Mapping targeting modal selection to targets: ${JSON.stringify(finalTargets)}`);
         }
 
+        const isTargeting = !!action.data?.isTargetingModal;
+        const cardToPlayId = (action.data?.isSpellCasting && !isTargeting && choice?.value && typeof choice.value === 'string') ? choice.value : sourceId;
+
+        // ARCHITECTURAL NOTE: Metadata Propagation
+        // We propagate isFreeCast and exileOnResolution (e.g. from Flashback or Dawning Archaic)
+        // into SpellProcessor.playCard to ensure correct zone movement upon final resolution.
         return SpellProcessor.playCard(
             state,
             log,
             engine,
             {
                 playerId,
-                cardId: sourceId,
+                cardId: cardToPlayId,
                 targets: finalTargets,
-                xValue: action.data?.xValue,
+                xValue: action.data?.xValue as number,
                 bypassPriority: true,
-                bypassTargeting: false
+                bypassTargeting: false,
+                parentContext: action.data?.parentContext as ResolutionContext,
+                isFreeCast: action.data?.isFreeCast as boolean,
+                exileOnResolution: action.data?.exileOnResolution as boolean
             }
         );
     }
@@ -746,8 +740,8 @@ export class ChoiceProcessor {
     private static handleResolutionChoice(state: GameState, sourceId: string, choice: ChoiceOption, action: PendingAction, log: (m: string) => void, engine: EngineContext): boolean {
         log(`Option selected: ${choice.label}`);
         const savedActionData = action.data;
-        const stackObj = savedActionData?.stackObj;
-        const parentTargets = (action.data?.targets || savedActionData?.targets || action.data?.parentContext?.targets || savedActionData?.parentContext?.targets || []);
+        const stackObj = savedActionData?.stackObj as StackObject;
+        const parentTargets = (action.data?.targets || savedActionData?.targets || action.data?.parentContext?.targets || savedActionData?.parentContext?.targets || []) as string[];
         let targetsForResolution = parentTargets;
         if (choice.value && typeof choice.value === 'string' && choice.value.length > 20) {
             targetsForResolution = [choice.value, ...parentTargets];
@@ -765,26 +759,23 @@ export class ChoiceProcessor {
 
             state.pendingAction = undefined;
 
-            // INTERACTIVE COST TRIGGER
             const interactiveCost = costs.find((c: AbilityCost) =>
-                (c.type === 'TapSelection' && !(state as any).lastChosenTapSelectionIds) ||
-                (c.type === 'Discard' && !(state as any).lastChosenDiscardId) ||
-                (c.type === 'Sacrifice' && !(state as any).lastChosenSacrificeId && !ChoiceProcessor.isSelfSac(c, sourceId)) ||
-                (c.type === 'Exile' && !(state as any).lastChosenExileIds)
+                (c.type === 'TapSelection' && !state.interaction.lastChosenTapSelectionIds) ||
+                (c.type === 'Discard' && !state.interaction.lastChosenDiscardId) ||
+                (c.type === 'Sacrifice' && !state.interaction.lastChosenSacrificeId && !ChoiceProcessor.isSelfSac(c, sourceId)) ||
+                (c.type === 'Exile' && !state.interaction.lastChosenExileIds)
             );
 
             if (interactiveCost) {
-                const { ChoiceGenerator } = require('./../effects/ChoiceGenerator');
                 state.pendingAction = ChoiceGenerator.createCostInteractionChoice(state, interactiveCost, sourceId, action.playerId, choice, action.data);
                 log(`[INTERACTIVE-COST] Prompting for ${interactiveCost.type} cost selection...`);
                 return true;
             }
 
-            // X COST TRIGGER
             const alreadyChosen = action.data?.xValueConfirmed === true;
             const needsX = costs.some((c: AbilityCost) => {
                 const isManaCost = String(c.type).toLowerCase() === 'mana';
-                const hasX = String(c.manaCost || "").includes('{X}') || String(c.value || "").includes('{X}');
+                const hasX = String((c as any).manaCost || "").includes('{X}') || String((c as any).value || "").includes('{X}');
 
                 return isManaCost && hasX && !alreadyChosen;
             });
@@ -792,16 +783,24 @@ export class ChoiceProcessor {
             log(`[X-COST-DEBUG] sourceId=${sourceId}, xValue=${sourceObj?.xValue}, alreadyChosen=${alreadyChosen}, needsX=${needsX}`);
 
             if (needsX) {
-                const { ChoiceGenerator } = require('./../effects/ChoiceGenerator');
                 state.pendingAction = ChoiceGenerator.createXChoice(state, sourceId, action.playerId, choice, action.data);
                 log(`[CHOOSE_X] Prompting for X value for resolution cost...`);
                 return true;
             }
 
             CostProcessor.pay(state, costs, sourceId, action.playerId, log);
-        } else {
-            state.pendingAction = undefined;
+
+            state.interaction = {
+                lastChosenCostChoiceIndex: undefined,
+                lastChosenSacrificeId: undefined,
+                lastChosenDiscardId: undefined,
+                lastChosenExileIds: undefined,
+                lastChosenModeIndex: undefined,
+                lastChoiceIndex: undefined
+            };
         }
+
+        state.pendingAction = undefined;
 
         if (choice.effects && choice.effects.length > 0) {
             EffectProcessor.resolveEffects({
@@ -812,72 +811,19 @@ export class ChoiceProcessor {
                 log,
                 startIndex: 0,
                 stackObject: stackObj,
-                parentContext: savedActionData as any,
+                parentContext: savedActionData?.parentContext as ResolutionContext,
                 controllerIdOverride: action.playerId,
-                lookingCards: savedActionData?.lookingCards,
+                lookingCards: savedActionData?.lookingCards as GameObject[],
             });
         }
 
-        // Cleanup block removed from here and moved to the end
-
-
-        // Resume Parent Contexts
-        this.resumeContexts(state, sourceId, savedActionData, stackObj, log);
-
-        // --- ENQUEUE NEXT PLAYERS ---
-        if (!state.pendingAction) {
-            const nextPlayerIds = action.data?.nextPlayerIds || action.data?.stackObj?.data?.nextPlayerIds || [];
-            if (nextPlayerIds.length > 0) {
-                if (!state.choiceQueue) state.choiceQueue = [];
-                state.choiceQueue.push({
-                    type: action.type,
-                    playerId: nextPlayerIds[0],
-                    sourceId: sourceId as string,
-                    data: {
-                        ...action.data,
-                        nextPlayerIds: nextPlayerIds.slice(1)
-                    }
-                });
-            }
-        }
-
-        this.finalizeResolution(state, sourceId, stackObj, action, log, engine);
-        return true;
+        return this.finalizeResolution(state, sourceId, stackObj, action, log, engine);
     }
 
-    private static resumeContexts(state: GameState, sourceId: string, savedActionData: any, stackObj: any, log: (m: string) => void) {
-        let currentCtx = savedActionData;
-        while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex !== undefined && currentCtx.nextEffectIndex < currentCtx.effects.length) {
-            log(`[RESOLVING] Resuming parent resolution context for ${sourceId}...`);
-            const nextIdx = currentCtx.nextEffectIndex;
-            const effs = currentCtx.effects;
-            const parentTargets = currentCtx.targets || currentCtx.parentContext?.targets || [];
-            const parentCtx = currentCtx.parentContext;
-
-            currentCtx = parentCtx;
-            const completed = EffectProcessor.resolveEffects({
-                state,
-                effects: effs,
-                sourceId,
-                targets: parentTargets,
-                log,
-                startIndex: nextIdx,
-                stackObject: stackObj,
-                parentContext: parentCtx,
-                lookingCards: savedActionData?.lookingCards,
-            });
-
-            if (stackObj && !completed && state.pendingAction) {
-                stackObj.data = { ...stackObj.data, nextEffectIndex: (state.pendingAction as any).data.nextEffectIndex };
-            }
-        }
-    }
-
-    private static finalizeResolution(state: GameState, sourceId: string, stackObj: any, action: PendingAction, log: (m: string) => void, engine: any) {
+    private static finalizeResolution(state: GameState, sourceId: string, stackObj: any, action: PendingAction, log: (m: string) => void, engine: EngineContext): boolean {
+        // 1. Process Choice Queue (highest priority)
         if (!state.pendingAction && state.choiceQueue && state.choiceQueue.length > 0) {
             const nextItem = state.choiceQueue.shift()!;
-
-            // Generate the next action based on type
             if (nextItem.type === 'RESOLUTION_CHOICE' && nextItem.data?.choices && !nextItem.data.lookingCards) {
                 state.pendingAction = ChoiceGenerator.createModalChoice(
                     state,
@@ -927,8 +873,31 @@ export class ChoiceProcessor {
                     log
                 );
             }
-            return;
+            return true;
         }
+
+        // 2. ENQUEUE NEXT PLAYERS (Legacy path)
+        if (!state.pendingAction) {
+            const nextPlayerIds = action.data?.nextPlayerIds || action.data?.stackObj?.data?.nextPlayerIds || [];
+            if (nextPlayerIds.length > 0) {
+                const discardAmount = action.data?.discardAmount || action.data?.stackObj?.data?.discardAmount || 1;
+                const failureEffects = action.data?.onFailureEffects || action.data?.stackObj?.data?.onFailureEffects;
+                state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, action.data?.label || "Discard", action.data?.stackObj, action.data?.parentContext, failureEffects);
+                return true;
+            }
+        }
+
+        // 3. Resume Parent Resolution
+        if (!state.pendingAction) {
+            log(`[RESOLVING] Resolution of ${sourceId} finalized.`);
+            const currentStackObj = state.stack.find(s => s.id === (stackObj?.id || sourceId));
+            const savedActionData = action.data;
+            let currentCtx: ResolutionContext | undefined = savedActionData?.parentContext;
+
+            // Parent context resumption handled by engine loop
+        }
+
+        // 4. Clean up stack object if done
         if (!state.pendingAction) {
             if (stackObj) {
                 const fullStackObj = state.stack.find(s => s.id === stackObj.id);
@@ -938,10 +907,7 @@ export class ChoiceProcessor {
                         const types = card.definition.types.map(t => (t as string).toLowerCase());
                         const isPermanent = types.includes('creature') || types.includes('artifact') || types.includes('enchantment') || types.includes('planeswalker');
 
-                        if (card.zone !== Zone.Stack) {
-                            log(`[STACK] Spell card ${card.definition.name} already moved to ${card.zone}. Skipping cleanup.`);
-                        } else {
-                            const { oracle } = require("../../OracleLogicMap");
+                        if (card.zone === Zone.Stack) {
                             const freshDef = oracle.getCard(card.definition.name);
                             const shouldExile = fullStackObj.exileOnResolution || (fullStackObj as any).isCopy || (card as any).isPreparedCopy || freshDef?.exileOnResolution;
 
@@ -957,21 +923,15 @@ export class ChoiceProcessor {
                                 ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId, log);
                             }
                         }
-                    } else {
-                        // Clean up ability/trigger
+                    } else if (fullStackObj) {
                         ActionProcessor.removeFromCurrentZone(state, { id: fullStackObj.id, zone: Zone.Stack } as any);
                     }
-                    log(`[STACK] Completed resolution of ${stackObj.type} for ${sourceId}.`);
                 }
             }
             engine.resetPriorityToActivePlayer();
-        } else {
-            state.priorityPlayerId = (state as any).pendingAction.playerId || null;
+            return true;
         }
-    }
-
-    private static isSelfSac(cost: any, sourceId: string): boolean {
-        return cost.targetMapping === 'SELF' || (cost.restrictions || []).some((r: any) => typeof r === 'string' && r.toLowerCase() === 'self');
+        return false;
     }
 
     public static resolveTargeting(
@@ -991,13 +951,10 @@ export class ChoiceProcessor {
         let x = 0;
         if (typeof xValue === 'object' && xValue !== null && 'x' in xValue) {
             x = parseInt(String(xValue.x));
-        } else {
-            x = parseInt(String(xValue));
-        }
-
-        if (isNaN(x) || x < 0) {
-            log(`Invalid value for X: ${JSON.stringify(xValue)}`);
-            return false;
+        } else if (typeof xValue === 'number') {
+            x = xValue;
+        } else if (typeof xValue === 'string') {
+            x = parseInt(xValue);
         }
 
         const sourceId = action.sourceId!;
@@ -1022,7 +979,7 @@ export class ChoiceProcessor {
             }
 
             // Resume resolution choice with the chosen X
-            return this.handleResolutionChoice(
+            return (this as any).handleResolutionChoice(
                 state,
                 action.sourceId!,
                 action.data.selectedChoice,
@@ -1047,7 +1004,10 @@ export class ChoiceProcessor {
                     targets: action.data?.declaredTargets || [],
                     xValue: x,
                     bypassPriority: true,
-                    bypassTargeting: false
+                    bypassTargeting: false,
+                    parentContext: action.data?.parentContext as ResolutionContext,
+                    isFreeCast: action.data?.isFreeCast as boolean,
+                    exileOnResolution: action.data?.exileOnResolution as boolean
                 }
             );
         } else {
@@ -1061,7 +1021,10 @@ export class ChoiceProcessor {
                     targets: action.data?.declaredTargets || [],
                     xValue: x,
                     bypassPriority: true,
-                    bypassTargeting: false
+                    bypassTargeting: false,
+                    parentContext: action.data?.parentContext as ResolutionContext,
+                    isFreeCast: action.data?.isFreeCast as boolean,
+                    exileOnResolution: action.data?.exileOnResolution as boolean
                 }
             );
         }
@@ -1070,5 +1033,11 @@ export class ChoiceProcessor {
             card.xValue = undefined;
         }
         return success;
+    }
+
+    private static isSelfSac(cost: AbilityCost, sourceId: string): boolean {
+        if (cost.type !== 'Sacrifice') return false;
+        if (cost.restrictions && cost.restrictions.some((r: any) => r.type === 'Self' || (r.type === 'ObjectId' && r.value === sourceId))) return true;
+        return false;
     }
 }

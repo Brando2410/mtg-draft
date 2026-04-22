@@ -11,6 +11,11 @@ export interface ChoiceConfig {
     stackObj?: any;
     parentContext?: any;
     targets?: string[];
+    isSpellCasting?: boolean;
+    isCostChoice?: boolean;
+    costType?: string;
+    isFreeCast?: boolean;
+    exileOnResolution?: boolean;
 }
 
 export interface CardChoiceConfig extends ChoiceConfig {
@@ -83,6 +88,11 @@ export class ChoiceGenerator {
             stackObj: config.stackObj,
             parentContext: pruneContext(config.parentContext),
             targets: config.targets,
+            isSpellCasting: config.isSpellCasting,
+            isCostChoice: config.isCostChoice,
+            costType: config.costType,
+            isFreeCast: config.isFreeCast,
+            exileOnResolution: config.exileOnResolution,
             minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.data?.minChoices || 1),
             maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.data?.maxChoices || 1),
         }, config.actionType);
@@ -108,6 +118,11 @@ export class ChoiceGenerator {
             stackObj: config.stackObj,
             parentContext: pruneContext(config.parentContext),
             targets: config.targets,
+            isSpellCasting: config.isSpellCasting,
+            isCostChoice: config.isCostChoice,
+            costType: config.costType,
+            isFreeCast: config.isFreeCast,
+            exileOnResolution: config.exileOnResolution,
             minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.data?.minChoices || 1),
             maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.data?.maxChoices || 1),
         }, config.actionType);
@@ -173,7 +188,12 @@ export class ChoiceGenerator {
             return this.createDiscardChoice(state, nextPlayerIds, sourceId, amount, label, stackObj, parentContext, failureEffects, log);
         }
 
-        const resolvedAmount = (typeof amount === 'number' || amount === 'ANY' || amount === 'ALL') ? amount : (require('./EffectProcessor').EffectProcessor.resolveAmount(state, amount, sourceId, currentPlayerId, stackObj, [currentPlayerId]));
+        const resolvedAmount = (typeof amount === 'number' || amount === 'ANY' || amount === 'ALL') ? amount : (require('./EffectProcessor').EffectProcessor.resolveAmount(state, amount, {
+            sourceId,
+            controllerId: currentPlayerId,
+            stackObject: stackObj,
+            targets: [currentPlayerId]
+        }, [currentPlayerId]));
         
         const isAny = resolvedAmount === 'ANY' || resolvedAmount === 'Any';
         const isAll = resolvedAmount === 'ALL' || resolvedAmount === 'All';
@@ -316,7 +336,6 @@ export class ChoiceGenerator {
      * Wraps data into the standard engine pendingAction format.
      */
     private static wrap(state: GameState, playerId: string, sourceId: string, data: any, type: ActionType | string = ActionType.ResolutionChoice): any {
-        console.log(`[CHOICE-DEBUG] Creating pendingAction: type=${type}, sourceId=${sourceId}`);
         const { ActionProcessor } = require('../actions/ActionProcessor');
         return ActionProcessor.prepareAction(state, {
             type,

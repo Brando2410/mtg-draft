@@ -115,6 +115,16 @@ export const NumericRestrictions: Record<string, IRestrictionHandler> = {
             const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
             return mv <= lifeGained;
         }
+    },
+    "MV_LT_SOURCE": {
+        matches(state, targetObj: any, r, context) {
+            return NumericRestrictions["NUMERIC_REGEX"].matches(state, targetObj, "mv < source_mv", context);
+        }
+    },
+    "MV_LE_SOURCE": {
+        matches(state, targetObj: any, r, context) {
+            return NumericRestrictions["NUMERIC_REGEX"].matches(state, targetObj, "mv <= source_mv", context);
+        }
     }
 };
 

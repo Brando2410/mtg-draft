@@ -1,6 +1,7 @@
 import {
     AbilityCost,
-    EffectDefinition, GameObject, GameState, PlayerId, ResolutionContext, StackObject
+    AbilityDefinition,
+    EffectDefinition, GameObject, GameState, PlayerId, ResolutionContext, StackObject, TargetDefinition
 } from '@shared/engine_types';
 
 export interface PlayCardOptions {
@@ -11,6 +12,7 @@ export interface PlayCardOptions {
     bypassPriority?: boolean;
     bypassTargeting?: boolean;
     isFreeCast?: boolean;
+    exileOnResolution?: boolean;
     parentContext?: ResolutionContext;
 }
 
@@ -24,17 +26,18 @@ export interface ActivateAbilityOptions {
     bypassPriority?: boolean;
     bypassTargeting?: boolean;
     isFreeCast?: boolean;
+    exileOnResolution?: boolean;
     parentContext?: ResolutionContext;
 }
 
 export interface FinalizeCastOptions {
-    playerId: string;
+    playerId: PlayerId;
     cardToPlay: GameObject;
     totalMana: string;
     additionalCosts: AbilityCost[];
     declaredTargets: string[];
     spellEffects: EffectDefinition[];
-    targetDefinition: any; // Targeting can still be complex, keeping as any for now or checking if there's a TargetDefinition
+    targetDefinition: TargetDefinition | TargetDefinition[] | null;
     isFirstInstantOrSorcery: boolean;
     isInstantOrSorcery: boolean;
     isFreeCast?: boolean;
@@ -42,13 +45,14 @@ export interface FinalizeCastOptions {
 }
 
 export interface FinalizeAbilityOptions {
-    playerId: string;
+    playerId: PlayerId;
     obj: GameObject;
-    ability: any; // Ability is often specific to the card, but could be ParsedAbility
+    ability: AbilityDefinition;
     abilityIndex: number;
     declaredTargets: string[];
     preSelectedChoice?: number;
     parentContext?: ResolutionContext;
+    exileOnResolution?: boolean;
 }
 
 export interface EffectExecutionOptions {
@@ -60,7 +64,7 @@ export interface EffectExecutionOptions {
     stackObject?: StackObject;
     parentContext?: ResolutionContext;
     controllerIdOverride?: PlayerId;
-    lookingCards?: any[];
+    lookingCards?: GameObject[];
 }
 
 export interface ResolveEffectsOptions {
@@ -73,7 +77,7 @@ export interface ResolveEffectsOptions {
     stackObject?: StackObject;
     parentContext?: ResolutionContext;
     controllerIdOverride?: PlayerId;
-    lookingCards?: any[];
+    lookingCards?: GameObject[];
 }
 
 export interface EngineContext {
@@ -99,10 +103,10 @@ export interface EngineContext {
     checkStateBasedActions(): void;
 
     // Combat Methods
-    declareAttacker(pId: string, cId: string): boolean;
-    handleBlockSelection(pId: string, cId: string): boolean;
-    confirmAttackers(pId: string): void;
-    confirmBlockers(pId: string): void;
+    declareAttacker(pId: PlayerId, cId: string): boolean;
+    handleBlockSelection(pId: PlayerId, cId: string): boolean;
+    confirmAttackers(pId: PlayerId): void;
+    confirmBlockers(pId: PlayerId): void;
 
     // Targeting
     finaliseTargeting?(pId: PlayerId, targets: string[]): boolean;

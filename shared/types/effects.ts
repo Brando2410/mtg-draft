@@ -4,7 +4,7 @@
 import type { AbilityDefinition } from './abilities';
 import type { GameObjectId, PlayerId } from './core';
 import { Step, TargetMapping, Zone } from './core';
-import type { StackObject } from './state';
+import type { StackObject, GameObject } from './state';
 import type { AbilityRestriction } from './targeting';
 
 export const EffectType = {
@@ -25,7 +25,6 @@ export const EffectType = {
     ConditionalEffect: 'ConditionalEffect',
     SearchLibrary: 'SearchLibrary',
     PutOnBattlefield: 'PutOnBattlefield',
-    PutInHand: 'PutInHand',
     ShuffleLibrary: 'ShuffleLibrary',
     ReturnToHand: 'ReturnToHand',
     GainLife: 'GainLife',
@@ -113,7 +112,10 @@ export const EffectType = {
     Dig: 'Dig',
     MustBeBlocked: 'MustBeBlocked',
     CantAttackUnless: 'CantAttackUnless',
-    ApplyDelayedTrigger: 'ApplyDelayedTrigger'
+    ApplyDelayedTrigger: 'ApplyDelayedTrigger',
+    CounterTarget: 'CounterTarget',
+    Cascade: 'Cascade',
+    PutInGraveyard: 'PutInGraveyard',
 } as const;
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
 
@@ -182,6 +184,8 @@ export interface ContinuousEffect {
         canPlayFromTop?: boolean;
         lifeModifier?: number;
     };
+    multiplier?: number | string;
+    isNotLegendary?: boolean;
 }
 
 /**
@@ -256,6 +260,7 @@ export interface BaseEffect {
     restrictions?: any[];
     effects?: EffectDefinition[]; // Nested effects for chaining/conditionals
     onFailureEffects?: EffectDefinition[];
+    isFreeCast?: boolean;
     [key: string]: any; // Transitional compatibility
 }
 
@@ -271,7 +276,7 @@ export interface LifeEffect extends BaseEffect {
 }
 
 export interface MoveEffect extends BaseEffect {
-    type: typeof EffectType.MoveToZone | typeof EffectType.PutOnBattlefield | typeof EffectType.PutInHand | typeof EffectType.ReturnToHand | typeof EffectType.Exile | typeof EffectType.ExileTopCard | typeof EffectType.ExileAllCards | typeof EffectType.ShuffleLibrary;
+    type: typeof EffectType.MoveToZone | typeof EffectType.PutOnBattlefield | typeof EffectType.ReturnToHand | typeof EffectType.Exile | typeof EffectType.ExileTopCard | typeof EffectType.ExileAllCards | typeof EffectType.ShuffleLibrary | typeof EffectType.DiscardCards;
     zone?: Zone | string;
     sourceZones?: Zone[] | string[];
     libraryPosition?: number | 'top' | 'bottom';

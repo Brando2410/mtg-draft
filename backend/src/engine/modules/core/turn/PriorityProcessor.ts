@@ -1,4 +1,4 @@
-import { AbilityType, EffectType, GameState, Phase, PlayerId, Step, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, EffectType, GameState, Phase, PlayerId, Step, TargetMapping, Zone, AbilityCost, GameEvent } from '@shared/engine_types';
 import { oracle } from '../../../OracleLogicMap';
 import { SpellProcessor } from '../../actions/spells/SpellProcessor';
 import { ConditionProcessor } from '../logic/ConditionProcessor';

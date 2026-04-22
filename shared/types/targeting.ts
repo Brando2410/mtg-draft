@@ -231,6 +231,9 @@ export const Restriction = {
     Power3OrGreater: 'power3orgreater',
     Power3OrLess: 'power_le_3',
     SameNameAsSource: 'samenameassource',
+    Aura: 'aura',
+    NonAura: 'nonaura',
+    NotAura: 'not_aura',
 } as const;
 
 export type TargetRestriction = (typeof Restriction)[keyof typeof Restriction] | {

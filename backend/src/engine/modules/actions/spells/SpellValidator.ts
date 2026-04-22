@@ -25,7 +25,7 @@ export class SpellValidator {
             else if (obj.zone === Zone.Exile) permissionType = EffectType.AllowPlayExiled;
             else if (obj.zone === Zone.Library) permissionType = EffectType.AllowPlayFromTop;
 
-            const LayerProcessor = require('../../state/LayerProcessor').LayerProcessor as typeof LayerProcessorType;
+            const { LayerProcessor } = require('../../state/LayerProcessor');
             const stats = LayerProcessor.getEffectiveStats(obj, state);
             const hasFlashback = obj.zone === Zone.Graveyard && (stats.keywords?.includes('Flashback') || obj.definition.keywords?.includes('Flashback'));
 
@@ -43,11 +43,18 @@ export class SpellValidator {
             if (hasGraveAbility) return obj;
 
             if (permissionType) {
-                if (bypassPermission) return obj;
+                if (bypassPermission) {
+                    log(`[RESOLVE-DEBUG] Found ${obj.definition.name} in ${obj.zone} (Bypassing permission check).`);
+                    return obj;
+                }
                 const hasPermission = PriorityProcessor.findPermissionEffect(state, playerId, permissionType, obj.id);
                 if (hasPermission) return obj;
-                log(`[DEBUG] No ${permissionType} permission found for ${obj.definition.name} in ${obj.zone}.`);
+                log(`[RESOLVE-DEBUG] No ${permissionType} permission found for ${obj.definition.name} in ${obj.zone}. (bypass=${bypassPermission})`);
+            } else {
+                log(`[RESOLVE-DEBUG] Found ${obj.definition.name} in ${obj.zone} but no permission type defined.`);
             }
+        } else {
+            log(`[RESOLVE-DEBUG] Object ${cardInstanceId} not found or wrong controller (objFound=${!!obj}, controllerMatch=${obj?.controllerId === playerId}).`);
         }
 
         // 3. Search for Prepared Creatures on Battlefield

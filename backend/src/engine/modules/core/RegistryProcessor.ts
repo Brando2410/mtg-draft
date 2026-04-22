@@ -135,6 +135,13 @@ export class RegistryProcessor {
         const effId = `${id}_eff_${eId}`;
         const continuousTypes = ['ApplyContinuousEffect', 'AdditionalCost', 'SpellTax', 'CostReduction', 'AllowCastFromGraveyard', 'AllowPlayFromTop', 'AllowPlayExiled', 'AllowOutOfTurnActivation', 'AdditionalLandPlays'];
         if (continuousTypes.includes(eff.type)) {
+            const restrictions = (eff.restrictionsToAdd || []).map((r: any) => ({
+                id: `${effId}_rest`,
+                sourceId: card.id,
+                type: typeof r === 'string' ? r : r.type,
+                duration: { type: DurationType.Static }
+            }));
+
             state.ruleRegistry.continuousEffects.push({
                 id: effId,
                 sourceId: card.id,
@@ -145,6 +152,7 @@ export class RegistryProcessor {
                 duration: { type: DurationType.Static },
                 targetMapping: eff.targetMapping,
                 targetIds: eff.targetMapping === 'SELF' ? [card.id] : undefined,
+                restrictions: restrictions.length > 0 ? restrictions : (eff.restrictions || []),
                 ...eff
             } as ContinuousEffect);
         }

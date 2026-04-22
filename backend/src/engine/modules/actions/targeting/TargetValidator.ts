@@ -139,9 +139,9 @@ export class TargetValidator {
         const restrictions = [...(targetDefForIndex?.restrictions || [])];
         const primaryType = (targetDefForIndex?.type || '').toUpperCase();
         if (primaryType && primaryType !== 'ANY' && primaryType !== 'PLAYER' && primaryType !== 'ANYTARGET') {
-             if (!restrictions.some(r => typeof r === 'string' && r.toUpperCase() === primaryType)) {
-                 restrictions.push(primaryType);
-             }
+            if (!restrictions.some(r => typeof r === 'string' && r.toUpperCase() === primaryType)) {
+                restrictions.push(primaryType);
+            }
         }
 
         const result = !!this.matchesRestrictions(state, targetObj, restrictions, context);
@@ -238,6 +238,7 @@ export class TargetValidator {
                 } else {
                     if ((r.type === 'Any' || r.type === 'any') && r.restrictions) return !!r.restrictions.some((subR: any) => this.matchesRestrictions(state, targetObj, [subR], context));
                     if ((r.type === 'All' || r.type === 'all') && r.restrictions) return !!r.restrictions.every((subR: any) => this.matchesRestrictions(state, targetObj, [subR], context));
+                    if ((r.type === 'Not' || r.type === 'not') && r.restriction) return !this.matchesRestrictions(state, targetObj, [r.restriction], context);
 
                     let match = true;
                     const restrictionType = (r.type || "").toLowerCase();
@@ -318,16 +319,16 @@ export class TargetValidator {
 
     public static hasLegalTargets(state: GameState, sourceId: string, targetDef: any, controllerId: string): boolean {
         if (!targetDef) return true;
-        
+
         if (Array.isArray(targetDef)) {
             let currentIndex = 0;
             return targetDef.every((def) => {
                 const count = typeof def.count === 'number' ? def.count : 1;
                 const minCount = def.minCount !== undefined ? def.minCount : (def.optional ? 0 : count);
-                
+
                 if (minCount === 0) {
-                     currentIndex += count;
-                     return true;
+                    currentIndex += count;
+                    return true;
                 }
 
                 const pool = this.getLegalTargetPool(state, sourceId, targetDef, controllerId, currentIndex);

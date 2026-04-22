@@ -220,11 +220,16 @@ export class ChoiceEffectHandler {
               return effect.effects || [];
             },
             hideUndo: true,
+            isSpellCasting: !!(effect as any).isSpellCasting,
+            isFreeCast: !!(effect as any).isFreeCast || (effect.effects || []).some((e: any) => e.isFreeCast),
+            exileOnResolution: !!(effect as any).exileOnResolution || (effect.effects || []).some((e: any) => e.exileOnResolution),
             stackObj: stackObject,
             parentContext: context,
             targets: originalTargets,
           },
         );
+        const data = state.pendingAction?.data as any;
+        console.log(`[CHOICE-HANDLER-DEBUG] Created choice for ${effect.label}. isFreeCast=${data?.isFreeCast}, exileOnResolution=${data?.exileOnResolution}`);
         return;
       }
 
@@ -298,6 +303,9 @@ export class ChoiceEffectHandler {
               targetId: c.id,
             })),
           hideUndo: true,
+          isSpellCasting: !!(effect as any).isSpellCasting,
+          isFreeCast: !!(effect as any).isFreeCast || (effect.effects || []).some((e: any) => e.isFreeCast),
+          exileOnResolution: !!(effect as any).exileOnResolution || (effect.effects || []).some((e: any) => e.exileOnResolution),
           stackObj: stackObject,
           parentContext: context,
           targets: originalTargets,
@@ -372,6 +380,7 @@ export class ChoiceEffectHandler {
         lookingCards,
         minChoices: (effect as any).minChoices,
         maxChoices: (effect as any).maxChoices,
+        exileOnResolution: !!(effect as any).exileOnResolution || (effect.effects || []).some((e: any) => e.exileOnResolution),
         stackObj: stackObject,
         parentContext: context,
         targets: originalTargets,

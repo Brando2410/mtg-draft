@@ -32,7 +32,7 @@ export const ZealousLorecaster: CardDefinition = {
                     },
                     effects: [
                         {
-                            type: EffectType.PutInHand
+                            type: EffectType.ReturnToHand
                         }
                     ]
                 }

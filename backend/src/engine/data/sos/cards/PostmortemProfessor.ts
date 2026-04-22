@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, Restriction, RestrictionType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, RestrictionType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const PostmortemProfessor: CardDefinition = {
     name: "Postmortem Professor",
@@ -14,7 +14,6 @@ export const PostmortemProfessor: CardDefinition = {
     oracleText: "This creature can't block.\nWhenever this creature attacks, each opponent loses 1 life and you gain 1 life.\n{1}{B}, Exile an instant or sorcery card from your graveyard: Return this card from your graveyard to the battlefield.",
     abilities: [
         {
-            id: "postmortem_professor_no_block",
             type: AbilityType.Static,
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
@@ -24,17 +23,15 @@ export const PostmortemProfessor: CardDefinition = {
             }]
         },
         {
-            id: "postmortem_professor_attack_trigger",
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Attack,
-            condition: 'EVENT_SOURCE_IS_SELF',
+            condition: ConditionType.EventSourceIsSelf,
             effects: [
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.EachOpponent },
                 { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }
             ]
         },
         {
-            id: "postmortem_professor_recursion",
             type: AbilityType.Activated,
             activeZone: Zone.Graveyard,
             costs: [

@@ -122,7 +122,7 @@ export class TargetingProcessor {
                     // increments happen in SpellProcessor.finalizeAbilityActivation
                     if (sourceOnField.abilitiesUsedThisTurn > 0 && abilityIndex !== undefined) {
                         sourceOnField.abilitiesUsedThisTurn--;
-                        
+
                         const { oracle } = require('../../../OracleLogicMap');
                         const logic = oracle.getCard(sourceOnField.definition.name);
                         const ability = (logic as any)?.abilities?.[abilityIndex];
@@ -317,11 +317,14 @@ export class TargetingProcessor {
      * CR 603: Finalize a targeting sequence and resume the effect chain.
      */
     public static finaliseTargeting(state: GameState, playerId: PlayerId, resolvedTargets: string[], engine: EngineContext): boolean {
-        const actionData = state.pendingAction?.data;
+        const actionData = state.pendingAction?.data as any;
         const sourceId = state.pendingAction?.sourceId;
         const abilityIndex = actionData?.abilityIndex;
         const stackObj = actionData?.stackObj;
         const stackId = actionData?.stackId;
+
+        const { log } = require('../../core/turn/TurnProcessor'); // Fallback log if needed or use the one from state if available
+        console.log(`[TARGET-FINAL] Finalizing for ${sourceId}. isFreeCast=${actionData?.isFreeCast}, hasParent=${!!actionData?.parentContext}, hasStackObj=${!!actionData?.stackObj}`);
 
         if (actionData?.isCostTargeting) {
             if (actionData.costType === 'Sacrifice') {
@@ -329,7 +332,14 @@ export class TargetingProcessor {
             }
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
-            return engine.playCard({ playerId, cardId: sourceId!, targets: actionData.declaredTargets || [], bypassPriority: false });
+            return engine.playCard({
+                playerId,
+                cardId: sourceId!,
+                targets: actionData.declaredTargets || [],
+                bypassPriority: false,
+                isFreeCast: actionData.isFreeCast,
+                parentContext: actionData.parentContext
+            });
         }
 
         if (actionData?.nextEffectIndex !== undefined) {
@@ -369,30 +379,6 @@ export class TargetingProcessor {
                 parentContext: actionData.parentContext,
             });
 
-            // --- RESUME PARENT CONTEXTS (NESTED RESOLUTION) ---
-            let currentCtx = actionData.parentContext;
-            while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex < currentCtx.effects.length) {
-                engine.log(`[RESOLVING] Returning to parent context for ${useSourceId}...`);
-                const pEffs = currentCtx.effects;
-                const pNext = currentCtx.nextEffectIndex;
-                const pSource = currentCtx.sourceId || sourceId!;
-                const pTargets = currentCtx.targets || [];
-                const pStackObj = currentCtx.stackObj;
-                const pGrantContext = currentCtx.parentContext;
-
-                currentCtx = pGrantContext;
-                EffectProcessor.resolveEffects({
-                    state,
-                    effects: pEffs,
-                    sourceId: pSource,
-                    targets: pTargets,
-                    log: (m: string) => engine.log(m),
-                    startIndex: pNext,
-                    stackObject: pStackObj,
-                    parentContext: pGrantContext,
-                });
-            }
-
             if (!state.pendingAction) {
                 engine.resetPriorityToActivePlayer();
             }
@@ -405,13 +391,13 @@ export class TargetingProcessor {
                 : resolvedTargets;
 
             stackObj.targets = finalTargets;
-            
+
             // BUG FIX: Prevent double-pushing triggers that were already added to the stack by TriggerProcessor
             const isAlreadyOnStack = state.stack.some(s => s === stackObj || s.id === stackObj.id);
             if (!isAlreadyOnStack) {
                 state.stack.push(stackObj);
             }
-            
+
             state.consecutivePasses = 0;
 
             engine.log(`--------------------------------------------------`);
@@ -432,7 +418,7 @@ export class TargetingProcessor {
                 for (let i = 0; i < nextTriggers.length; i++) {
                     const t = nextTriggers[i];
                     TriggerProcessor.stackTrigger(state, t, engine.log);
-                    
+
                     const pendingAfter = state.pendingAction as any;
                     if (pendingAfter && i < nextTriggers.length - 1) {
                         const remaining = nextTriggers.slice(i + 1);
@@ -474,7 +460,8 @@ export class TargetingProcessor {
                 xValue: actionData?.xValue,
                 bypassPriority: true,
                 bypassTargeting: true,
-                parentContext: actionData?.parentContext
+                parentContext: actionData?.parentContext,
+                isFreeCast: actionData?.isFreeCast
             });
             engine.checkAutoPass(playerId);
             return success;

@@ -57,6 +57,12 @@ export const TriggerEvent = {
   ResolveSpell: "ON_RESOLVE_SPELL",
   Opus: "ON_OPUS",
   Repartee: "ON_REPARTEE",
+  Exile: "ON_EXILE",
+  Discard: "ON_DISCARD",
+  LifeLoss: "ON_LIFE_LOSS",
+  OnTrigger: "ON_TRIGGER",
+  OnShrineTrigger: "ON_SHRINE_TRIGGER",
+  OnTriggerQueued: "ON_TRIGGER_QUEUED",
 } as const;
 export type TriggerEvent = (typeof TriggerEvent)[keyof typeof TriggerEvent];
 

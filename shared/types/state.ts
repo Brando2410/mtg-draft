@@ -36,6 +36,8 @@ export interface CardDefinition {
     exileOnResolution?: boolean;
     rarity?: 'common' | 'uncommon' | 'rare' | 'mythic' | 'basic';
     cannotBeCopied?: boolean;
+    targetDefinition?: import('./targeting').TargetDefinition;
+    auraRestriction?: import('./targeting').TargetDefinition;
 }
 
 export interface GameObject {
@@ -57,6 +59,14 @@ export interface GameObject {
     xValue?: number;
     isFlashbackCast?: boolean;
     isRevealed?: boolean;
+    isFreeCast?: boolean;
+    usedAlternativeCostId?: string;
+    paidCost?: string;
+    isPreparedCopy?: boolean;
+    sourceCreatureId?: string;
+    colorsSpent?: string[];
+    originalDefinition?: CardDefinition;
+    selectedFaceDefinition?: CardDefinition;
     counters: Record<string, number>;
     attachedTo?: GameObjectId;
     data?: any;
@@ -67,16 +77,26 @@ export interface GameObject {
         restrictions?: RestrictionObject[];
         isPlayable?: boolean;
         manaCost?: string;
+        isFlashback?: boolean;
+        isActivation?: boolean;
+        isVirtual?: boolean;
+        colors?: string[];
+        types?: string[];
+        subtypes?: string[];
+        supertypes?: string[];
+        flashbackCostOverride?: string;
     };
     isToken?: boolean;
     isAttacking?: boolean;
     isBlocking?: boolean;
     isGoaded?: boolean;
     cannotUntapThisTurn?: boolean;
-    selectedFaceDefinition?: CardDefinition;
-    originalDefinition?: CardDefinition;
     modifierSnapshot?: any;
     convergeAmount?: number;
+    isVirtual?: boolean;
+    isPTSwitched?: boolean;
+    paidManaValue?: number;
+    controllerHistory?: PlayerId[];
 }
 
 export interface StackObject {
@@ -95,6 +115,8 @@ export interface StackObject {
     isFlashbackCast?: boolean;
     definition?: CardDefinition;
     cannotBeCopied?: boolean;
+    convergeAmount?: number;
+    originalControllerId?: PlayerId;
 }
 
 export interface PlayerState {
@@ -134,6 +156,7 @@ export interface PlayerState {
     passUntilEndOfTurn: boolean;
     extraTurns: number;
     turnsToSkip: number;
+    canActivateAbilities?: boolean;
 }
 
 export interface CombatState {
@@ -170,6 +193,8 @@ export interface TurnState {
     triggeredAbilitiesUsedThisTurn: Record<string, number>;
     lastDiscardedCount: number;
     lastDiscardedIds?: string[];
+    lastDestroyedCount?: number;
+    lastSacrificedObject?: GameObject;
     cardsExiledThisTurn: Record<PlayerId, boolean>;
     namedCards?: Record<string, string>;
     countersAddedThisTurnIds: GameObjectId[];
@@ -211,6 +236,9 @@ export interface InteractionState {
     lastChosenModeIndex?: number[];
     lastChoiceIndex?: number | string;
     confirmedAutoTap?: boolean;
+    paidCasualtyFor?: string;
+    consumedModeIndex?: number[];
+    lastChoiceX?: number;
 }
 
 export interface ChoiceQueueItem {
@@ -228,6 +256,8 @@ export interface BaseActionData {
     hideUndo?: boolean;
     isContextual?: boolean;
     abilityIndex?: number;
+    isSpellCasting?: boolean;
+    isFreeCast?: boolean;
     [key: string]: any;
 }
 

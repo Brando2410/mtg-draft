@@ -785,15 +785,27 @@ export class TargetMapper {
         // Return the ID of the object that was just exiled by this effect chain
         return parentContext?.exiledIds || [];
       }
+      case TargetMapping.AllMatchingCards:
       case "MATCHING_CARDS": {
         if (!effect?.restrictions) return [];
-        const pool = [
-          ...state.battlefield.map((o: any) => o.id),
-          ...state.exile.map((o: any) => o.id),
-          ...(Object.values(state.players) as any[])
-            .flatMap((p) => [...p.hand, ...p.graveyard, ...p.library])
-            .map((c: any) => c.id),
-        ];
+        const sourceZones = effect.sourceZones || [Zone.Battlefield, Zone.Graveyard, Zone.Hand, Zone.Exile, Zone.Library];
+        const zones = Array.isArray(sourceZones) ? (sourceZones as any[]) : [sourceZones];
+        
+        const pool: string[] = [];
+        zones.forEach(z => {
+          if (z === Zone.Battlefield) pool.push(...state.battlefield.map(o => o.id));
+          else if (z === Zone.Exile) pool.push(...state.exile.map(o => o.id));
+          else if (z === Zone.Stack) pool.push(...state.stack.map(s => s.id));
+          else {
+            // Hand, Graveyard, Library
+            Object.values(state.players).forEach(p => {
+              if (z === Zone.Hand) pool.push(...p.hand.map(c => c.id));
+              else if (z === Zone.Graveyard) pool.push(...p.graveyard.map(c => c.id));
+              else if (z === Zone.Library) pool.push(...p.library.map(c => c.id));
+            });
+          }
+        });
+
         return pool.filter((tid) => {
           const obj = TargetValidator.findObjectInAnyZone(state, tid);
           return (

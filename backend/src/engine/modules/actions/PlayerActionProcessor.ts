@@ -1,4 +1,4 @@
-import { AbilityType, ActionType, GameState, PlayerId, Zone } from '@shared/engine_types';
+import { AbilityDefinition, AbilityType, ActionType, EffectType, GameState, PlayerId, TriggerEvent, Zone } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
 import { CombatProcessor } from '../combat/CombatProcessor';
 import { PriorityProcessor } from '../core/turn/PriorityProcessor';
@@ -28,13 +28,13 @@ export class PlayerActionProcessor {
 
     // 1. Intercept for special actions (Combat)
     if (state.pendingAction?.playerId === playerId) {
-      if (state.pendingAction.type === 'DECLARE_ATTACKERS') {
+      if (state.pendingAction.type === ActionType.DeclareAttackers) {
         return engine.declareAttacker(playerId, cardId);
       }
-      if (state.pendingAction.type === 'DECLARE_BLOCKERS') {
+      if (state.pendingAction.type === ActionType.DeclareBlockers) {
         return engine.handleBlockSelection(playerId, cardId);
       }
-      if (state.pendingAction.type === 'LEGEND_RULE') {
+      if (state.pendingAction.type === ActionType.LegendRule) {
         const involvedIds = (state.pendingAction.data?.involvedIds || []) as string[];
         if (involvedIds.includes(cardId)) {
           const ChoiceProcessor = require('./ChoiceProcessor').ChoiceProcessor as typeof ChoiceProcessorType;
@@ -59,7 +59,7 @@ export class PlayerActionProcessor {
       const logic = oracle.getCard(obj.definition.name);
       if (!logic || !logic.abilities) return false;
 
-      const canActivateAnyTime = logic.abilities.some((a: any) => a.type === 'Static' && String(a.id || "").includes('any_turn'));
+      const canActivateAnyTime = (logic.abilities as AbilityDefinition[]).some((a) => a.type === AbilityType.Static && String(a.id || "").includes('any_turn'));
 
       if (!canActivateAnyTime && (!isMyTurn || !isMainPhase || !stackEmpty)) {
         log(`Cannot activate Planeswalker: Sorcery speed only.`);
@@ -71,14 +71,14 @@ export class PlayerActionProcessor {
         return false;
       }
 
-      const abilities = (logic.abilities as any[]);
+      const abilities = (logic.abilities as AbilityDefinition[]);
       const filteredEntries = abilities
-        .map((a: any, originalIndex: number) => ({ ability: a, originalIndex }))
-        .filter((entry: any) => {
+        .map((a, idx) => ({ ability: a, originalIndex: idx }))
+        .filter((entry) => {
           const a = entry.ability;
           const typeStr = String(a.type || "").toLowerCase();
           const isActivated = typeStr.includes('activated');
-          const hasLoyalty = a.costs?.some((c: any) => String(c.type || "").toLowerCase().includes('loyalty'));
+          const hasLoyalty = a.costs?.some((c) => String(c.type || "").toLowerCase().includes('loyalty'));
           
           return isActivated && hasLoyalty;
         });
@@ -89,9 +89,9 @@ export class PlayerActionProcessor {
         sourceId: cardId,
         data: {
           label: `Choose a loyalty ability for ${obj.definition.name}`,
-          choices: filteredEntries.map((entry: any) => {
-            const a = entry.ability;
-            const lCostObj = a.costs?.find((c: any) => String(c.type || "").toLowerCase().includes('loyalty'));
+          choices: filteredEntries.map((entry) => {
+            const a = entry.ability as AbilityDefinition;
+            const lCostObj = a.costs?.find((c) => String(c.type || "").toLowerCase().includes('loyalty'));
             const lCostVal = parseInt(String(lCostObj?.value || 0));
             const lCostSign = lCostVal > 0 ? `+${lCostVal}` : `${lCostVal}`;
             
@@ -121,10 +121,11 @@ export class PlayerActionProcessor {
     
     // --- SUPPORT FOR IN-LINE ABILITIES (Tokens, Virtual Spells) ---
     if (obj.definition.abilities) {
-      obj.definition.abilities.forEach((a: any) => {
+      obj.definition.abilities.forEach((a) => {
+        if (typeof a === 'string') return;
         const isDuplicate = allActivated.some(existing => {
-          if (a.id !== undefined && a.id === existing.id) return true;
-          if (a.oracleText !== undefined && a.oracleText === existing.oracleText && a.type === existing.type) return true;
+          if (a.id !== undefined && a.id === (existing as AbilityDefinition).id) return true;
+          if (a.oracleText !== undefined && a.oracleText === (existing as AbilityDefinition).oracleText && a.type === (existing as AbilityDefinition).type) return true;
           return false;
         });
         if (!isDuplicate) {
@@ -134,8 +135,8 @@ export class PlayerActionProcessor {
     }
 
     const filtered = allActivated
-      .map((a: any, index: number) => ({ ability: a, index }))
-      .filter((entry: any) => entry.ability.type === AbilityType.Activated && PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, true));
+      .map((a, index) => ({ ability: a as AbilityDefinition, index }))
+      .filter((entry) => entry.ability.type === AbilityType.Activated && PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, true));
 
     console.log(`[DEBUG] interactWithPermanent: ${obj.definition.name} (${cardId}) found ${allActivated.length} intrinsic abilities, ${filtered.length} are currently legal activated abilities.`);
 
@@ -150,7 +151,7 @@ export class PlayerActionProcessor {
 
         if (ability.isManaAbility) {
           // Determine if this mana ability requires choices (like Add {B} or {G})
-          const hasChoices = ability.effects.some((e: any) => e.type === 'AddMana' && e.choices);
+          const hasChoices = ability.effects?.some((e) => e.type === EffectType.AddMana && e.choices);
 
           // If it has no choices and only costs Tap, we just fire it immediate
           // Rules 605.3a: Mana abilities don't use the stack and are resolved immediately.
@@ -189,7 +190,7 @@ export class PlayerActionProcessor {
           sourceId: cardId,
           data: {
             label: `Choose an ability to activate for ${obj.definition.name}`,
-            choices: filtered.map((entry: any) => ({
+            choices: filtered.map((entry) => ({
               label: entry.ability.oracleText || entry.ability.id || 'Activate Ability',
               value: entry.index
             }))
@@ -220,10 +221,10 @@ export class PlayerActionProcessor {
     const logic = oracle.getCard(obj.definition.name);
     if (!logic || !logic.abilities) return false;
 
-    let manaAbilityIdx = abilityIndex !== undefined ? abilityIndex : logic.abilities.findIndex((a: any) => a.isManaAbility);
+    let manaAbilityIdx = abilityIndex !== undefined ? abilityIndex : (logic.abilities as AbilityDefinition[]).findIndex((a) => a.isManaAbility);
     if (manaAbilityIdx === -1) {
       // Fallback for cases where index might be wrong or wasn't provided accurately
-      manaAbilityIdx = logic.abilities.findIndex((a: any) => a.isManaAbility);
+      manaAbilityIdx = (logic.abilities as AbilityDefinition[]).findIndex((a) => a.isManaAbility);
     }
     if (manaAbilityIdx === -1) return false;
 
@@ -258,11 +259,11 @@ export class PlayerActionProcessor {
     if (!logic) return false;
 
     // GENERIC UNDO LOGIC: If a land has exactly one mana ability, we can try to undo it
-    const manaAbilities = logic.abilities.filter((a: any) => a.isManaAbility);
+    const manaAbilities = (logic.abilities as AbilityDefinition[]).filter((a) => a.isManaAbility);
     if (manaAbilities.length !== 1) return false;
 
     const ability = manaAbilities[0];
-    const addManaEffect = ability.effects.find((e: any) => e.type === 'AddMana');
+    const addManaEffect = ability.effects?.find((e) => e.type === EffectType.AddMana);
     if (!addManaEffect) return false;
 
     const player = state.players[playerId];
@@ -321,7 +322,7 @@ export class PlayerActionProcessor {
     if (existingIndex >= 0) {
       // Requirement Check: MustAttack (Rule 508.1d)
       const mustAttack = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'MustAttack') ||
-        stats.restrictions?.includes('MustAttack');
+        (stats.restrictions || []).some((r: any) => r.type === 'MustAttack');
       if (mustAttack) {
         const canAttack = !card.isTapped && !card.summoningSickness && !stats.keywords.includes('Defender');
         const cannotAttackFlags = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'CannotAttack');
@@ -434,12 +435,12 @@ export class PlayerActionProcessor {
 
     const sourceId = state.pendingAction?.sourceId;
     const TriggerProcessor = require('./../effects/triggers/TriggerProcessor').TriggerProcessor as typeof TriggerProcessorType;
-    TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card, sourceId } }, log);
+    TriggerProcessor.onEvent(state, { type: TriggerEvent.Discard, playerId, data: { card, sourceId } }, log);
 
     if (player.pendingDiscardCount > 0) {
       player.pendingDiscardCount--;
-      if (state.pendingAction && (state.pendingAction as any).count) {
-        (state.pendingAction as any).count--;
+      if (state.pendingAction && (state.pendingAction.data as any)?.count) {
+        (state.pendingAction.data as any).count--;
       }
       log(`${player.name} discarded ${card.definition.name} (${player.pendingDiscardCount} more to go).`);
 
@@ -482,10 +483,10 @@ export class PlayerActionProcessor {
     }
   }
 
-  public static resolveTriggerOrdering(state: GameState, playerId: string, orderedIds: string[], log: (m: string) => void): boolean {
-    if (!state.pendingAction || (state.pendingAction.type as any) !== 'ORDER_TRIGGERS' || state.pendingAction.playerId !== playerId) return false;
+  public static resolveTriggerOrdering(state: GameState, playerId: PlayerId, orderedIds: string[], log: (m: string) => void): boolean {
+    if (!state.pendingAction || state.pendingAction.type !== ActionType.OrderTriggers || state.pendingAction.playerId !== playerId) return false;
 
-    const { triggers } = state.pendingAction.data as any;
+    const triggers = state.pendingAction.data?.triggers as any[];
 
     // The player sends us the IDs in "Stacking Order" (MTGA UI)
     // index 0 -> Last to resolve (Bottom of stack)

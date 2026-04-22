@@ -120,6 +120,8 @@ export class StackResolver {
         const freshDef = oracle.getCard(card.definition.name);
         const shouldExile = stackObj.exileOnResolution || (stackObj as any).isCopy || (card as any).isPreparedCopy || freshDef?.exileOnResolution;
 
+        console.log(`[RESOLVE-DEBUG] ${card.definition.name} cleanup: shouldExile=${shouldExile} (stackObj.exileOnRes=${stackObj.exileOnResolution})`);
+
         if (shouldExile) {
           const reason = (card as any).isPreparedCopy ? 'Prepared spell' : ((stackObj as any).isCopy ? 'Copy' : (freshDef?.exileOnResolution ? 'Card Definition' : 'Effect'));
           this.log(`[RULE 701.5] ${card.definition.name} (${reason}) ceases to exist after resolution.`);

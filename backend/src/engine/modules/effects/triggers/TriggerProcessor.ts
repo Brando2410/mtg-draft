@@ -12,9 +12,13 @@ import {
   TargetMapping,
   TriggeredAbility,
   DurationType,
-  Zone
+  Zone,
+  TriggerEvent,
+  EffectDefinition,
+  StackObject,
+  AbilityDefinition,
+  EffectDuration
 } from "@shared/engine_types";
-import { TriggerEvent } from "@shared/types/events";
 import { oracle } from "../../../OracleLogicMap";
 import { LayerProcessor } from "../../state/LayerProcessor";
 
@@ -848,6 +852,8 @@ export class TriggerProcessor {
               remainderZone: Zone.Library,
               remainderPosition: "bottom",
               shuffleRemainder: true,
+              isSpellCasting: true,
+              isFreeCast: true,
               next: {
                 type: EffectType.Choice,
                 label: "Cast the revealed card?",

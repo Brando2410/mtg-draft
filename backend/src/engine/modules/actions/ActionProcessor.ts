@@ -1,11 +1,16 @@
 import {
-  AbilityDefinition, AbilityType,
+  AbilityDefinition,
+  AbilityType,
   ActionResult,
   DurationType,
   EffectType,
   GameObject,
-  GameState, PlayerId, PendingAction,
-  Zone
+  GameState,
+  PlayerId,
+  PendingAction,
+  StackObject,
+  Zone,
+  TriggerEvent
 } from "@shared/engine_types";
 import { Mutation, MutationType } from "@shared/types/mutations";
 import { RegistryProcessor } from "../core/RegistryProcessor";
@@ -13,7 +18,6 @@ import { TriggerProcessor } from "../effects/triggers/TriggerProcessor";
 
 import type { ReplacementProcessor as ReplacementProcessorType } from "../effects/replacements/ReplacementProcessor";
 import type { LayerProcessor as LayerProcessorType } from "../state/LayerProcessor";
-
 
 /**
  * Physical Actions Handling (Rule 400/103)
@@ -77,7 +81,7 @@ export class ActionProcessor {
     to: Zone,
     targetPlayerId: PlayerId,
     log?: (m: string) => void,
-    libraryPosition: "top" | "bottom" = "top",
+    libraryPosition: number | "top" | "bottom" = "top",
     isDraw: boolean = false,
     isDiscard: boolean = false,
   ): ActionResult {
@@ -98,7 +102,7 @@ export class ActionProcessor {
       TriggerProcessor.onEvent(
         state,
         {
-          type: "ON_DISCARD",
+          type: TriggerEvent.Discard,
           playerId: card.ownerId,
           payload: {
             card,
@@ -195,7 +199,7 @@ export class ActionProcessor {
       state.turnState.lastCardsDrawnAmount = 1;
       TriggerProcessor.onEvent(
         state,
-        { type: "ON_DRAW", playerId: effectiveTargetId, data: { card } },
+        { type: TriggerEvent.Draw, playerId: effectiveTargetId, data: { card } },
         log || (() => { }),
       );
 
@@ -204,7 +208,7 @@ export class ActionProcessor {
         TriggerProcessor.onEvent(
           state,
           {
-            type: "ON_SECOND_DRAW",
+            type: TriggerEvent.SecondDraw,
             playerId: effectiveTargetId,
             data: { card },
           },
@@ -219,7 +223,7 @@ export class ActionProcessor {
       TriggerProcessor.onEvent(
         state,
         {
-          type: "ON_LEAVE_GRAVEYARD",
+          type: TriggerEvent.LeaveGraveyard,
           playerId: card.ownerId,
           payload: { card, object: card, fromZone, toZone: to },
         },
@@ -253,11 +257,11 @@ export class ActionProcessor {
     to: Zone,
     log?: (m: string) => void,
   ) {
-    const types = card.definition.types.map((t) => t.toLowerCase());
+    const types = card.definition.types.map((t) => (t as string).toLowerCase());
 
     // CR 603.10: "Leaves-the-battlefield" events MUST look back in time.
     // We capture a snapshot of the card (especially counters) to support triggers like Modular, Scolding Administrator, etc.
-    const snapshot = {
+    const snapshot: GameObject = {
       ...card,
       definition: { ...card.definition },
       counters: { ...card.counters },
@@ -269,7 +273,7 @@ export class ActionProcessor {
       TriggerProcessor.onEvent(
         state,
         {
-          type: "ON_DEATH",
+          type: TriggerEvent.Death,
           playerId: card.controllerId,
           payload: {
             object: snapshot,
@@ -287,7 +291,7 @@ export class ActionProcessor {
     TriggerProcessor.onEvent(
       state,
       {
-        type: "ON_LEAVE_BATTLEFIELD",
+        type: TriggerEvent.LeaveBattlefield,
         playerId: card.controllerId,
         payload: {
           object: snapshot,
@@ -300,21 +304,15 @@ export class ActionProcessor {
     );
   }
 
-  public static removeFromCurrentZone(state: GameState, card: GameObject) {
+  public static removeFromCurrentZone(state: GameState, card: { id: string, zone: Zone }) {
     if (!state) {
       console.error('[ActionProcessor] removeFromCurrentZone: state is undefined!');
       return;
     }
     RegistryProcessor.unregisterAbilities(state, card.id);
     const cid = card.id;
-    const beforeCount = state.battlefield.length;
 
     state.battlefield = state.battlefield.filter((c) => c.id !== cid);
-
-    const afterCount = state.battlefield.length;
-    if (afterCount < beforeCount) {
-      // Successfully removed
-    }
 
     // Rule 113.7a: Abilities on the stack exist independently of their source.
     // We only remove the object from the stack if it IS the card (e.g. a Spell being countered/moved).
@@ -327,10 +325,10 @@ export class ActionProcessor {
       const isFromGrave = p.graveyard.some((c) => c.id === cid);
       p.graveyard = p.graveyard.filter((c) => c.id !== cid);
       if (isFromGrave) {
-        state.turnState.cardLeftGraveyardThisTurn[pid] = true;
+        state.turnState.cardLeftGraveyardThisTurn[pid as PlayerId] = true;
         TriggerProcessor.onEvent(
           state,
-          { type: "ON_LEAVE_GRAVEYARD", targetId: cid, sourceId: cid },
+          { type: TriggerEvent.LeaveGraveyard, targetId: cid, sourceId: cid },
           () => { },
         );
       }
@@ -348,7 +346,7 @@ export class ActionProcessor {
     isToken: boolean,
     from: Zone,
     log?: (m: string) => void,
-    libraryPosition: "top" | "bottom" = "top",
+    libraryPosition: number | "top" | "bottom" = "top",
   ) {
     if (to === Zone.Battlefield) {
       state.battlefield.push(card);
@@ -374,8 +372,8 @@ export class ActionProcessor {
             {
               sourceId: card.id,
               controllerId: targetPlayerId,
-              event: { xValue: card.xValue } as any,
-              stackObject: card as any, // StackObject interface mismatch, using cast for now
+              event: { xValue: card.xValue } as unknown as TriggerEvent,
+              stackObject: card as unknown as StackObject,
             },
           )
         ) {
@@ -408,8 +406,14 @@ export class ActionProcessor {
 
       if (to === Zone.Hand && !isToken) player.hand.push(card);
       else if (to === Zone.Library && !isToken) {
-        if (libraryPosition === "bottom") player.library.unshift(card);
-        else player.library.push(card);
+        if (typeof libraryPosition === "number") {
+          // Rule 400.1: Add at specific index from top (0-indexed)
+          player.library.splice(libraryPosition, 0, card);
+        } else if (libraryPosition === "bottom") {
+          player.library.unshift(card);
+        } else {
+          player.library.push(card);
+        }
       } else if (to === Zone.Graveyard) {
         player.graveyard.push(card);
         this.handleEnteringGraveyard(state, card, from, log);
@@ -434,8 +438,7 @@ export class ActionProcessor {
       RegistryProcessor.unregisterAbilities(state, card.id);
       if (to === Zone.Hand) {
         state.turnState.permanentReturnedToHandThisTurn = true;
-        state.turnState.playersWithPermanentReturnedThisTurn[card.ownerId] =
-          true;
+        state.turnState.playersWithPermanentReturnedThisTurn[card.ownerId] = true;
       }
     }
 
@@ -510,10 +513,12 @@ export class ActionProcessor {
     // to allow ETB triggers to know where the spell was cast from.
     if (to !== Zone.Battlefield && to !== Zone.Stack) {
       delete card.lastNonStackZone;
+      delete (card as any).isFreeCast;
+      delete (card as any).isSpellCasting;
     }
 
     // 3. Wipe calculated stats (they will be recalculated for the new zone)
-    card.effectiveStats = undefined as any;
+    card.effectiveStats = undefined;
     card.modifierSnapshot = null;
   }
 
@@ -524,7 +529,7 @@ export class ActionProcessor {
     log?: (m: string) => void,
   ) {
     // Replacement-style entry counters for X costs (Rule 122.6)
-    if (card.xValue && (card.definition as any).entersWithXCounters) {
+    if (card.xValue && card.definition.entersWithXCounters) {
       card.counters["+1/+1"] = (card.counters["+1/+1"] || 0) + card.xValue;
       if (log)
         log(
@@ -537,15 +542,14 @@ export class ActionProcessor {
       (a) => typeof a !== "string" && a.type === AbilityType.Static,
     ) as AbilityDefinition[];
     staticAbilities.forEach((a) => {
-      a.effects?.forEach((e: any) => {
+      a.effects?.forEach((e) => {
         if (
-          e.type === "EntersWithCounters" ||
           e.type === EffectType.EntersWithCounters
         ) {
           const type = e.counterType || "P1P1";
           let amount = 0;
           if (e.amount === "CONVERGE_AMOUNT") {
-            amount = (card as any).convergeAmount || 0;
+            amount = card.convergeAmount || 0;
           } else if (e.amount === "THREE_MINUS_X") {
             amount = Math.max(0, 3 - (card.xValue || 0));
           } else if (e.amount === "X") {
@@ -571,7 +575,7 @@ export class ActionProcessor {
     TriggerProcessor.onEvent(
       state,
       {
-        type: "ON_ETB",
+        type: TriggerEvent.EnterBattlefield,
         playerId: card.controllerId,
         payload: {
           object: card,
@@ -652,7 +656,6 @@ export class ActionProcessor {
     state.battlefield.forEach((obj) => {
       if (obj.controllerId === playerId) {
         // Rule 502.1: Check for restrictions that prevent untapping
-        const { TriggerProcessor } = require('../effects/triggers/TriggerProcessor');
         const LayerProcessor = require("../state/LayerProcessor").LayerProcessor as typeof LayerProcessorType;
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         if (
@@ -686,7 +689,7 @@ export class ActionProcessor {
     if (log && count > 0) log(`${count} permanents untapped.`);
   }
 
-  public static shuffle(array: any[]) {
+  public static shuffle<T>(array: T[]): void {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [array[i], array[j]] = [array[j], array[i]];

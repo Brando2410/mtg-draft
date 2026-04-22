@@ -53,7 +53,6 @@ export const EffectRegistry: Partial<Record<EffectType | string, IEffectHandler>
     [EffectType.LookAtTopAndPick]: MovementHandler,
     [EffectType.MoveToZone]: MovementHandler,
     [EffectType.PutRemainderOnBottomRandom]: MovementHandler,
-    [EffectType.PutInHand]: MovementHandler,
     [EffectType.PutOnBattlefield]: MovementHandler,
     [EffectType.Mill]: MovementHandler,
     [EffectType.RevealUntilCondition]: MovementHandler,

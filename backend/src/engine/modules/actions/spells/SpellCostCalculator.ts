@@ -75,7 +75,10 @@ export class SpellCostCalculator {
         }
 
         const parsed = ManaProcessor.parseManaCost(baseCost);
-        if ((card as any).isFreeCast) return { totalMana: "{0}", additionalCosts: [] };
+        if ((card as any).isFreeCast) {
+            console.log(`[COST-DEBUG] ${card.definition.name} is free because card.isFreeCast is true.`);
+            return { totalMana: "{0}", additionalCosts: [] };
+        }
 
         let extraGeneric = 0;
         let additionalCosts: AbilityCost[] = [];
@@ -105,6 +108,7 @@ export class SpellCostCalculator {
             if ((isFree as any).value === "ALLOW_SPELLS_FROM_HAND_WITHOUT_PAYING" && card.zone !== Zone.Hand) {
                 // Keep looking
             } else {
+                console.log(`[COST-DEBUG] ${card.definition.name} is free because of continuous effect ${isFree.id}.`);
                 effectiveCost = "{0}";
             }
         }
@@ -181,7 +185,12 @@ export class SpellCostCalculator {
             }
             if (type === 'CostReduction') {
                 const { EffectProcessor } = require('../../effects/EffectProcessor');
-                const redAmt = EffectProcessor.resolveAmount(state, (mod as any).amount, card.controllerId, mod.sourceId, targets, undefined);
+                const redAmt = EffectProcessor.resolveAmount(state, (mod as any).amount, {
+                    sourceId: mod.sourceId,
+                    controllerId: card.controllerId,
+                    targets: targets,
+                    effects: [mod] as any
+                } as any, targets);
                 extraGeneric -= redAmt || 0;
                 if ((mod as any).manaReduction) {
                     const red = ManaProcessor.parseManaCost((mod as any).manaReduction);
@@ -232,6 +241,10 @@ export class SpellCostCalculator {
 
         if (finalGeneric > 0 || (costStr === '' && finalGeneric === 0)) {
             costStr = `{${finalGeneric}}` + costStr;
+        }
+
+        if (extraGeneric !== 0) {
+            console.log(`[COST-CALC] ${card.definition.name}: Base=${parsed.generic}, Modifiers=${extraGeneric}, FinalGeneric=${finalGeneric}`);
         }
 
         return { totalMana: costStr, additionalCosts };

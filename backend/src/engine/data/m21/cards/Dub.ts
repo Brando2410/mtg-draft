@@ -10,11 +10,8 @@ export const Dub: CardDefinition = {
     types: ["Enchantment"],
     subtypes: ["Aura"],
     keywords: ["Enchant"],
+    auraRestriction: { type: TargetType.Creature, count: 1 },
     abilities: [
-        {
-            type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Creature, count: 1 }
-        },
         {
             type: AbilityType.Static,
             effects: [

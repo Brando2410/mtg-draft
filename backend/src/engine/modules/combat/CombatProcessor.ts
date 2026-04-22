@@ -490,7 +490,7 @@ export class CombatProcessor {
     const aStats = LayerProcessor.getEffectiveStats(attacker, state);
 
     // restriction Check (CannotBeBlocked)
-    if (aStats.keywords.includes('CannotBeBlocked') || aStats.restrictions?.includes('CannotBeBlocked')) {
+    if (aStats.keywords.includes('CannotBeBlocked') || aStats.restrictions?.some((r) => r.type === 'CannotBeBlocked')) {
         return { legal: false, reason: "attacker is unblockable" };
     }
 

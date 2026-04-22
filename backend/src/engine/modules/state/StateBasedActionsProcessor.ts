@@ -1,4 +1,4 @@
-import { GameObject, GameState, Zone } from "@shared/engine_types";
+import { GameObject, GameState, Zone, ActionType, TriggerEvent, CardDefinition } from "@shared/engine_types";
 import { ActionProcessor } from "../actions/ActionProcessor";
 import { TargetingProcessor } from "../actions/targeting/TargetingProcessor";
 import { LayerProcessor } from "../state/LayerProcessor";
@@ -122,16 +122,14 @@ export class StateBasedActionsProcessor {
         if (!state.pendingAction) {
           log(`[SBA] Legend Rule: ${name} clash. Choose one to keep.`);
           state.pendingAction = {
-            type: "LEGEND_RULE" as any,
+            type: ActionType.LegendRule,
             playerId: controllerId,
             sourceId: "system",
             data: {
               label: `Legend Rule: Choose which ${name} to KEEP`,
               choices: groups[key].map((obj, idx) => ({
                 label: obj.definition.name,
-                id: obj.id,
                 value: obj.id,
-                idx: idx,
                 selectable: true,
                 cardData: obj
               })),
@@ -154,12 +152,12 @@ export class StateBasedActionsProcessor {
     ];
 
     // Global zones
-    const exileTokens = state.exile.filter((o) => (o as any).isToken);
+    const exileTokens = state.exile.filter((o) => o.isToken || o.id.startsWith("token_"));
     if (exileTokens.length > 0) {
       exileTokens.forEach((t) =>
         log(`[SBA] Token ${t.definition.name} ceased to exist in Exile.`),
       );
-      state.exile = state.exile.filter((o) => !(o as any).isToken);
+      state.exile = state.exile.filter((o) => !(o.isToken || o.id.startsWith("token_")));
       actionTaken = true;
     }
 
@@ -174,7 +172,7 @@ export class StateBasedActionsProcessor {
         else if (zoneName === Zone.Library) list = player.library;
 
         if (list.length > 0) {
-          const tokens = list.filter((o) => (o as any).isToken);
+          const tokens = list.filter((o) => o.isToken || o.id.startsWith("token_"));
           if (tokens.length > 0) {
             tokens.forEach((t) =>
               log(
@@ -183,13 +181,13 @@ export class StateBasedActionsProcessor {
             );
             if (zoneName === Zone.Graveyard)
               player.graveyard = player.graveyard.filter(
-                (o) => !(o as any).isToken,
+                (o) => !(o.isToken || o.id.startsWith("token_")),
               );
             if (zoneName === Zone.Hand)
-              player.hand = player.hand.filter((o) => !(o as any).isToken);
+              player.hand = player.hand.filter((o) => !(o.isToken || o.id.startsWith("token_")));
             if (zoneName === Zone.Library)
               player.library = player.library.filter(
-                (o) => !(o as any).isToken,
+                (o) => !(o.isToken || o.id.startsWith("token_")),
               );
             actionTaken = true;
           }
@@ -218,7 +216,8 @@ export class StateBasedActionsProcessor {
     );
     for (const saga of sagas) {
       const lore = saga.counters["lore"] || 0;
-      const chapters = (saga.definition as any).chapters || [];
+      // We assume CardDefinition has a standard structure for sagas or we check oracle
+      const chapters = (saga.definition as any).chapters || []; 
       if (lore >= chapters.length && chapters.length > 0) {
         // CR 704.5q: Sacrifice if it's not the source of a triggered ability on the stack.
         const isOnStack = state.stack.some((s) => s.sourceId === saga.id);
@@ -240,7 +239,6 @@ export class StateBasedActionsProcessor {
 
     // 7. Rule 704.5n & 704.5p: Aura/Equipment detachment (Protection "E" in DEBT)
     const attachments = state.battlefield.filter((o) => {
-      const types = o.definition.types.map((t) => t.toLowerCase());
       const subtypes = (o.definition.subtypes || []).map((s) =>
         s.toLowerCase(),
       );
@@ -248,7 +246,7 @@ export class StateBasedActionsProcessor {
     });
 
     for (const attach of attachments) {
-      const targetId = (attach as any).attachedTo;
+      const targetId = attach.attachedTo;
       const subtypes = (attach.definition.subtypes || []).map((s) =>
         s.toLowerCase(),
       );
@@ -272,7 +270,7 @@ export class StateBasedActionsProcessor {
       }
 
       // Check if the target is still legal
-      const targetDef = (attach.definition as any).targetDefinition || {
+      const targetDef = attach.definition.auraRestriction || attach.definition.targetDefinition || {
         type: "creature",
       };
       if (
@@ -302,7 +300,7 @@ export class StateBasedActionsProcessor {
           log(
             `[SBA] Equipment ${attach.definition.name} detached from illegal target.`,
           );
-          (attach as any).attachedTo = undefined;
+          attach.attachedTo = undefined;
           actionTaken = true;
         }
       }

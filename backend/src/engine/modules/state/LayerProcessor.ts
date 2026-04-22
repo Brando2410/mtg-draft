@@ -1,7 +1,7 @@
 import {
-    AbilityType,
-    ContinuousEffect,
-    GameObject, GameState, Zone
+  AbilityType,
+  ContinuousEffect,
+  GameObject, GameState, Zone, EffectType, AbilityDefinition, RestrictionObject, RestrictionType
 } from "@shared/engine_types";
 import { TargetingProcessor } from "../actions/targeting/TargetingProcessor";
 import { ConditionProcessor } from "../core/logic/ConditionProcessor";
@@ -36,7 +36,8 @@ export class LayerProcessor {
         subtypes: obj.definition.subtypes || [],
         isPlayable: false,
         supertypes: obj.definition.supertypes || [],
-      } as any;
+        restrictions: [] as RestrictionObject[],
+      };
     }
 
     this.calculationStack.add(obj.id);
@@ -75,7 +76,7 @@ export class LayerProcessor {
             (currentDefinition.supertypes || []).forEach((s) =>
               supertypes.add(s),
             );
-            if ((effect as any).isNotLegendary) {
+            if (effect.isNotLegendary) {
               supertypes.delete("Legendary");
             }
           }
@@ -142,7 +143,7 @@ export class LayerProcessor {
           }
           e.abilitiesToAdd?.forEach((k: any) => {
             const keyword =
-              typeof k === "string" ? k : (k as any).name || "Unknown";
+              typeof k === "string" ? k : k.name || "Unknown";
             keywords.add(keyword);
           });
           e.abilitiesToRemove?.forEach((k) => keywords.delete(k));
@@ -188,7 +189,7 @@ export class LayerProcessor {
             pMod = EffectProcessor.resolveAmount(
               state,
               e.powerModifier,
-              { sourceId: e.sourceId, controllerId: e.controllerId } as any,
+              { sourceId: e.sourceId, controllerId: e.controllerId, targets: e.targetIds || [obj.id], effects: [] },
               e.targetIds || [obj.id],
             );
           }
@@ -196,15 +197,15 @@ export class LayerProcessor {
             tMod = EffectProcessor.resolveAmount(
               state,
               e.toughnessModifier,
-              { sourceId: e.sourceId, controllerId: e.controllerId } as any,
+              { sourceId: e.sourceId, controllerId: e.controllerId, targets: e.targetIds || [obj.id], effects: [] },
               e.targetIds || [obj.id],
             );
           }
 
-          const multiplier =
-            (e as any).multiplier !== undefined ? (e as any).multiplier : 1;
-          power += pMod * multiplier;
-          toughness += tMod * multiplier;
+          const multiplierValue =
+            e.multiplier !== undefined ? (typeof e.multiplier === 'number' ? e.multiplier : Number(e.multiplier)) : 1;
+          power += pMod * multiplierValue;
+          toughness += tMod * multiplierValue;
         });
 
       // Plus/Minus Counters in 7c
@@ -220,7 +221,7 @@ export class LayerProcessor {
       toughness += counterBonus;
 
       // 7d: Switching (Rule 613.4d)
-      if ((obj as any).isPTSwitched) {
+      if (obj.isPTSwitched) {
         const temp = power;
         power = toughness;
         toughness = temp;
@@ -230,11 +231,11 @@ export class LayerProcessor {
       const structuredRestrictions = activeEffects
         .filter((e) => this.isTarget(state, e, obj.id))
         .flatMap((e) => e.restrictions || [])
-        .map((r: any) => {
-            if (typeof r === "string") {
-                return { type: r } as any;
-            }
-            return r;
+        .map((r: string | RestrictionObject) => {
+          if (typeof r === "string") {
+            return { type: r as RestrictionType };
+          }
+          return r;
         });
 
       return {
@@ -247,7 +248,7 @@ export class LayerProcessor {
         restrictions: structuredRestrictions,
         flashbackCostOverride: activeEffects.find(
           (e) =>
-            this.isTarget(state, e, obj.id) && (e as any).flashbackCostOverride,
+            this.isTarget(state, e, obj.id) && e.flashbackCostOverride,
         )?.flashbackCostOverride,
         isPlayable: false,
         supertypes: Array.from(supertypes),
@@ -265,7 +266,7 @@ export class LayerProcessor {
   ) {
     // Sublayer 7a: Characteristic-defining abilities
     if (
-      (effect as any).powerDynamic === "INSTANTS_AND_SORCERIES_IN_GRAVEYARD"
+      effect.powerDynamic === "INSTANTS_AND_SORCERIES_IN_GRAVEYARD"
     ) {
       const player = state.players[obj.controllerId];
       if (player) {
@@ -279,7 +280,7 @@ export class LayerProcessor {
       }
     }
 
-    if ((effect as any).powerDynamic === "GREATEST_POWER_IN_GRAVEYARD") {
+    if (effect.powerDynamic === "GREATEST_POWER_IN_GRAVEYARD") {
       const player = state.players[obj.controllerId];
       if (player) {
         const powers = player.graveyard
@@ -404,11 +405,11 @@ export class LayerProcessor {
           const source = state.battlefield.find(
             (o) => o.id === effect.sourceId,
           );
-          return !!source && (source as any).attachedTo === objId;
+          return !!source && source.attachedTo === objId;
         }
         case "PARENT_CONTEXT_EXILED_IDS": {
-           // For floating effects resolving this dynamically if snapshot missing
-           return Array.isArray(effect.targetIds) && (effect.targetIds as any[]).includes(objId);
+          // For floating effects resolving this dynamically if snapshot missing
+          return Array.isArray(effect.targetIds) && (effect.targetIds as string[]).includes(objId);
         }
         default:
           return false;
@@ -507,7 +508,7 @@ export class LayerProcessor {
     });
 
     // 2. Update Hand, Graveyard, and Library cards
-    (Object.values(state.players) as any[]).forEach((player) => {
+    Object.values(state.players).forEach((player) => {
       player.virtualHand = [];
       player.graveyard.forEach((card: GameObject) => {
         const stats = this.getEffectiveStats(card, state);
@@ -525,12 +526,12 @@ export class LayerProcessor {
             (k: string) => k.toLowerCase() === "flashback",
           );
 
-        const hasGraveyardAbility = card.definition.abilities?.some(
-          (a: any) =>
-            (a.type === AbilityType.Activated || a.type === "Activated") &&
-            (a.zone === Zone.Graveyard ||
-              a.activeZone === Zone.Graveyard ||
-              a.activeZone === Zone.Graveyard),
+        const hasGraveyardAbility = (card.definition.abilities || []).some(
+          (a) => {
+            if (typeof a === 'string') return false;
+            return (a.type === AbilityType.Activated) &&
+              a.activeZone === Zone.Graveyard;
+          }
         );
 
         if (hasPermission || hasFlashback || hasGraveyardAbility) {
@@ -539,15 +540,15 @@ export class LayerProcessor {
       });
 
       state.exile.forEach((card) => {
-          const hasPermission = PriorityProcessor.findPermissionEffect(
-            state,
-            player.id,
-            "AllowPlayExiled",
-            card.id,
-          );
-          if (hasPermission) {
-            player.virtualHand.push(card);
-          }
+        const hasPermission = PriorityProcessor.findPermissionEffect(
+          state,
+          player.id,
+          "AllowPlayExiled",
+          card.id,
+        );
+        if (hasPermission) {
+          player.virtualHand.push(card);
+        }
       });
 
       // Revealed status for public information
@@ -579,7 +580,7 @@ export class LayerProcessor {
         ) {
           const face = o.definition.preparedFace || o.definition.faces![1];
           // Create a virtual spell copy in the hand
-          const virtualSpell = {
+          const virtualSpell: GameObject = {
             ...o,
             id: `virtual_prepared_${o.id}`,
             definition: {
@@ -589,9 +590,8 @@ export class LayerProcessor {
             zone: Zone.Hand,
             isVirtual: true,
             isRevealed: true,
-            sourceCreatureId: o.id,
           };
-          player.virtualHand.push(virtualSpell as any);
+          player.virtualHand.push(virtualSpell);
         }
       });
     });
@@ -599,9 +599,9 @@ export class LayerProcessor {
     // 3. Update effective stats for all objects in all zones (to set isPlayable correctly)
     const SpellProcessor = require("../actions/spells/SpellProcessor").SpellProcessor as typeof SpellProcessorType;
     [
-      ...state.stack.map((s) => s.card).filter(Boolean),
+      ...state.stack.map((s) => s.card).filter((c): c is GameObject => !!c),
       ...state.battlefield,
-      ...(Object.values(state.players) as any[]).flatMap((p) => [
+      ...Object.values(state.players).flatMap((p) => [
         ...p.hand,
         ...p.graveyard,
         ...p.library,
@@ -615,13 +615,13 @@ export class LayerProcessor {
         PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id);
 
       // Determine if this object is currently a Flashback candidate for cost display
-      const isVirtual = (Object.values(state.players) as any[]).some((p) =>
-        p.virtualHand.some((v: any) => v.id === obj.id),
+      const isVirtual = Object.values(state.players).some((p) =>
+        p.virtualHand.some((v) => v.id === obj.id),
       );
       const inGraveyard =
         obj.zone === Zone.Graveyard ||
-        (Object.values(state.players) as any[]).some((p) =>
-          p.graveyard.some((g: any) => g.id === obj.id),
+        Object.values(state.players).some((p) =>
+          p.graveyard.some((g) => g.id === obj.id),
         );
 
       const hasFlashbackKeyword =
@@ -633,15 +633,15 @@ export class LayerProcessor {
         ) ||
         obj.definition.oracleText?.toLowerCase().includes("flashback");
 
-      const graveyardAbility = obj.definition.abilities?.find(
-        (a: any) =>
-          (a.type === AbilityType.Activated || a.type === "Activated") &&
-          (a.zone === Zone.Graveyard ||
-            a.activeZone === Zone.Graveyard ||
-            a.activeZone === Zone.Graveyard),
+      const graveyardAbility = (obj.definition.abilities || []).find(
+        (a): a is AbilityDefinition => {
+          if (typeof a === 'string') return false;
+          return (a.type === AbilityType.Activated) &&
+            a.activeZone === Zone.Graveyard;
+        }
       );
 
-      const isFlashback = hasFlashbackKeyword && (inGraveyard || isVirtual);
+      const isFlashback = !!hasFlashbackKeyword && (inGraveyard || isVirtual);
       const isActivation = !!graveyardAbility && (inGraveyard || isVirtual);
 
       // Calculate effective mana cost for display
@@ -653,8 +653,8 @@ export class LayerProcessor {
           obj.definition.manaCost;
       } else if (isActivation && graveyardAbility) {
         displayCost =
-          (graveyardAbility as any).manaCost ||
-          (graveyardAbility as any).costs?.find((c: any) => c.type === "Mana")
+          graveyardAbility.manaCost ||
+          graveyardAbility.costs?.find((c) => c.type === "Mana")
             ?.value ||
           obj.definition.manaCost;
       }
@@ -682,7 +682,7 @@ export class LayerProcessor {
         isActivation,
         isVirtual,
       };
-      (obj as any).isVirtual = isVirtual;
+      obj.isVirtual = isVirtual;
     });
   }
 }

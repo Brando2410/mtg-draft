@@ -1,13 +1,13 @@
-import { GameState, ConditionContext, PlayerId } from "@shared/engine_types";
+import { ConditionType, Phase } from "@shared/engine_types";
 import { IConditionHandler } from "../IConditionHandler";
 
 export const TurnConditions: Record<string, IConditionHandler> = {
-    "IS_YOUR_TURN": {
+    [ConditionType.IsYourTurn]: {
         matches(state, params, context) {
             return state.activePlayerId === context.controllerId;
         }
     },
-    "IS_OPPONENT_TURN": {
+    [ConditionType.IsOpponentTurn]: {
         matches(state, params, context) {
             return state.activePlayerId !== context.controllerId;
         }
@@ -24,7 +24,7 @@ export const TurnConditions: Record<string, IConditionHandler> = {
             return amount >= threshold;
         }
     },
-    "GAINED_LIFE_THIS_TURN": {
+    [ConditionType.GainedLifeThisTurn]: {
         matches(state, params, context) {
             return (state.turnState.lifeGainedThisTurn[context.controllerId] || 0) > 0;
         }
@@ -34,43 +34,43 @@ export const TurnConditions: Record<string, IConditionHandler> = {
             return (state.turnState.lifeGainedThisTurn[context.controllerId] || 0) > 0;
         }
     },
-    "LIFE_GAINED_2_OR_MORE_THIS_TURN": {
+    [ConditionType.LifeGained2OrMoreThisTurn]: {
         matches(state, params, context) {
             return (state.turnState.lifeGainedThisTurn[context.controllerId] || 0) >= 2;
         }
     },
-    "LIFE_GAINED_3_OR_MORE_THIS_TURN": {
+    [ConditionType.LifeGained3OrMoreThisTurn]: {
         matches(state, params, context) {
             return (state.turnState.lifeGainedThisTurn[context.controllerId] || 0) >= 3;
         }
     },
-    "CARDS_LEFT_YOUR_GRAVEYARD_THIS_TURN": {
+    [ConditionType.CardsLeftYourGraveyardThisTurn]: {
         matches(state, params, context) {
             return state.turnState.cardLeftGraveyardThisTurn[context.controllerId] || false;
         }
     },
-    "CARDS_EXILED_THIS_TURN": {
+    [ConditionType.CardsExiledThisTurn]: {
         matches(state, params, context) {
             return state.turnState.cardsExiledThisTurn[context.controllerId] || false;
         }
     },
-    "CREATURE_DIED_UNDER_YOUR_CONTROL_THIS_TURN": {
+    [ConditionType.CreatureDiedUnderYourControlThisTurn]: {
         matches(state, params, context) {
             return state.turnState.creaturesDiedThisTurn.some(c => c.controllerId === context.controllerId);
         }
     },
-    "CREATURE_DIED_THIS_TURN": {
+    [ConditionType.CreatureDiedThisTurn]: {
         matches(state, params, context) {
             return state.turnState.creaturesDiedThisTurn.length > 0;
         }
     },
-    "CREATURES_DIED_COUNT_GE": {
+    [ConditionType.CreaturesDiedCountGe]: {
         matches(state, params, context) {
             const threshold = parseInt(params[0]);
             return (state.turnState.creaturesDiedThisTurn.length || 0) >= threshold;
         }
     },
-    "CAST_INSTANT_SORCERY_THIS_TURN": {
+    [ConditionType.CastInstantSorceryThisTurn]: {
         matches(state, params, context) {
             return state.turnState.instantOrSorceryCastThisTurn[context.controllerId] || false;
         }
@@ -80,7 +80,7 @@ export const TurnConditions: Record<string, IConditionHandler> = {
             return (state.turnState.spellsCastThisTurn[context.controllerId] || 0) > 1;
         }
     },
-    "DRAWN_CARDS_GE": {
+    [ConditionType.DrawnCardsGe]: {
         matches(state, params, context) {
             const threshold = parseInt(params[0]);
             return (state.turnState.cardsDrawnThisTurn[context.controllerId] || 0) >= threshold;
@@ -91,18 +91,17 @@ export const TurnConditions: Record<string, IConditionHandler> = {
             return state.turnState.countersAddedThisTurnIds?.includes(context.sourceId) || false;
         }
     },
-    "OUR_TURN": {
+    [ConditionType.OurTurn]: {
         matches(state, params, context) {
             return state.activePlayerId === context.controllerId;
         }
     },
-    "CAST_DURING_MAIN_PHASE": {
+    [ConditionType.CastDuringMainPhase]: {
         matches(state, params, context) {
-            const { Phase } = require("@shared/engine_types");
             return state.activePlayerId === context.controllerId && (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain);
         }
     },
-    "NEXT_SPELL_THIS_TURN": {
+    [ConditionType.NextSpellThisTurn]: {
         matches(state, params, context) {
             // This is usually used in Delayed Triggers that trigger on CastSpell.
             // Under existing logic, if we are in this handler, it means the trigger just went off.

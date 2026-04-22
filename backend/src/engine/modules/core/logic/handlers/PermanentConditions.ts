@@ -1,8 +1,8 @@
-import { GameState, ConditionContext, PlayerId, GameObject } from "@shared/engine_types";
+import { GameState, ConditionContext, PlayerId, GameObject, ConditionType } from "@shared/engine_types";
 import { IConditionHandler } from "../IConditionHandler";
 
 export const PermanentConditions: Record<string, IConditionHandler> = {
-    "HAS_PERMANENT": {
+    [ConditionType.HasPermanent]: {
         matches(state, params, context) {
             const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
             const { sourceId, controllerId, stackObject } = context;
@@ -12,12 +12,12 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             );
         }
     },
-    "NOT_HAS_PERMANENT": {
+    [ConditionType.NotHasPermanent]: {
         matches(state, params, context) {
-            return !PermanentConditions["HAS_PERMANENT"].matches(state, params, context);
+            return !PermanentConditions[ConditionType.HasPermanent].matches(state, params, context);
         }
     },
-    "CONTROL_COUNT_GE": {
+    [ConditionType.ControlCountGe]: {
         matches(state, params, context) {
             const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
             const { sourceId, controllerId, stackObject } = context;
@@ -34,7 +34,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             return count >= threshold;
         }
     },
-    "CONTROL_SUBTYPE_GE": {
+    [ConditionType.ControlSubtypeGe]: {
         matches(state, params, context) {
             const { controllerId } = context;
             const subtype = params[0];
@@ -45,7 +45,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             ).length >= threshold;
         }
     },
-    "ARTIFACT_COUNT_GE": {
+    [ConditionType.ArtifactCountGe]: {
         matches(state, params, context) {
             const { controllerId } = context;
             const threshold = parseInt(params[0]);
@@ -55,7 +55,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             ).length >= threshold;
         }
     },
-    "LAND_COUNT_GE": {
+    [ConditionType.LandCountGe]: {
         matches(state, params, context) {
             const { controllerId } = context;
             const threshold = parseInt(params[0]);
@@ -65,7 +65,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             ).length >= threshold;
         }
     },
-    "OTHER_LANDS_LE": {
+    [ConditionType.OtherLandsLe]: {
         matches(state, params, context) {
             const { controllerId, sourceId } = context;
             const threshold = parseInt(params[0]);
@@ -77,14 +77,14 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             return count <= threshold;
         }
     },
-    "HAS_COUNTERS": {
+    [ConditionType.HasCounters]: {
         matches(state, params, context) {
             const { sourceId, event } = context;
             const obj = state.battlefield.find(o => o.id === sourceId) || event?.data?.object;
             return obj ? Object.values(obj.counters || {}).some(v => (v as number) > 0) : false;
         }
     },
-    "TOTAL_TOUGHNESS_GE": {
+    [ConditionType.TotalToughnessGe]: {
         matches(state, params, context) {
             const { controllerId } = context;
             const threshold = parseInt(params[0]);
@@ -95,7 +95,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             return total >= threshold;
         }
     },
-    "HAS_CREATURE_POWER_4_PLUS": {
+    [ConditionType.HasCreaturePower4Plus]: {
         matches(state, params, context) {
             const { controllerId } = context;
             return state.battlefield.some(obj =>

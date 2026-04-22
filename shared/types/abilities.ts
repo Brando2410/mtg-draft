@@ -91,7 +91,11 @@ export const ConditionType = {
     OpponentControlsMoreCreatures: 'OPPONENT_CONTROLS_MORE_CREATURES',
     CreaturesDiedCountGe: 'CREATURES_DIED_COUNT_GE',
     CardsExiledThisTurn: 'CARDS_EXILED_THIS_TURN',
-    CreatureDiedUnderYourControlThisTurn: 'CREATURE_DIED_UNDER_YOUR_CONTROL_THIS_TURN'
+    CreatureDiedUnderYourControlThisTurn: 'CREATURE_DIED_UNDER_YOUR_CONTROL_THIS_TURN',
+    ControlCountGe: 'CONTROL_COUNT_GE',
+    ControlSubtypeGe: 'CONTROL_SUBTYPE_GE',
+    ArtifactCountGe: 'ARTIFACT_COUNT_GE',
+    LandCountGe: 'LAND_COUNT_GE',
 } as const;
 export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType] | string;
 
@@ -168,6 +172,13 @@ export interface TriggeredAbility {
     isGlobal?: boolean;
     type?: AbilityType;
     payload?: any;
+    data?: any;
+    isDelayed?: boolean;
+    oneShot?: boolean;
+    firesOnce?: boolean;
+    targetDefinition?: TargetDefinition;
+    abilityIndex?: number;
+    targetIds?: string[];
 }
 
 /**
@@ -206,12 +217,22 @@ export interface BaseAbilityDefinition {
     optional?: boolean;
     /** Costs that must be paid in addition to the primary cost (Rule 601.2f) */
     additionalCosts?: AbilityCost[];
+    /** Primary costs to pay for activation or casting */
+    costs?: AbilityCost[];
+    /** Effects executed when this ability resolves */
+    effects?: any[];
+    /** Choices for modal abilities */
+    modes?: any[];
     /** Shortcut mana cost for display or complex resolution hooks */
     manaCost?: string;
     /** Specific cost override for Flashback implementation */
     flashbackCost?: string;
     /** Inherent cost reduction logic (used by some specialized cards) */
     costReduction?: any;
+    /** Activation requirement logic */
+    triggerCondition?: (state: import('./state').GameState, event: import('./events').GameEvent, context: { sourceId: string, controllerId: string }) => boolean;
+    /** Whether this is a mana ability (doesn't use stack, Rule 605) */
+    isManaAbility?: boolean;
 }
 
 /**
@@ -247,6 +268,8 @@ export interface ActivatedAbilityDefinition extends BaseAbilityDefinition {
     activatedOnlyAsSorcery?: boolean;
     /** Whether this is a mana ability (doesn't use stack, Rule 605) */
     isManaAbility?: boolean;
+    /** Modal choices for activated ability */
+    modes?: any[];
     /** Usage limits per turn */
     limitPerTurn?: number;
     /** Activation condition (e.g. "only if you have 27+ life") */

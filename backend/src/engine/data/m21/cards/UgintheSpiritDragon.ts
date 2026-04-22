@@ -48,7 +48,10 @@ export const UgintheSpiritDragon: CardDefinition = {
                         minCount: 0,
                         restrictions: [Restriction.Permanent]
                     },
-                    effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.SelectedTargets }]
+                    effects: [{
+                        type: EffectType.PutOnBattlefield,
+                        targetMapping: TargetMapping.SelectedTargets
+                    }]
                 }
             ]
         }

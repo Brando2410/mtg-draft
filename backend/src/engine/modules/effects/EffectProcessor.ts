@@ -1,15 +1,16 @@
 import {
-    ActionType,
-    ConditionType, DurationType,
-    EffectDefinition,
-    EffectType, GameObject, GameState, PlayerId,
-    ResolutionContext, TargetMapping, TargetType, Zone,
-    StackObject
+  ActionType,
+  ConditionType, DurationType,
+  EffectDefinition,
+  EffectType, GameObject, GameState, PlayerId,
+  ResolutionContext, TargetMapping, TargetType, Zone,
+  StackObject,
+  TriggerEvent,
+  TargetDefinition
 } from "@shared/engine_types";
 import {
-    EffectExecutionOptions
+  EffectExecutionOptions
 } from "../../interfaces/EngineContext";
-import { ActionProcessor } from "../actions/ActionProcessor";
 import { EffectRegistry } from "./EffectRegistry";
 import { Targetable } from "@shared/types/targeting";
 
@@ -41,54 +42,54 @@ export const pruneContext = (ctx: ResolutionContext | undefined): ResolutionCont
  * DESIGN: Strategy-based architecture. Logic delegated to handlers/.
  */
 export interface ResolveEffectsOptions {
-    state: GameState;
-    effects: EffectDefinition[];
-    sourceId: string;
-    targets: string[];
-    log: (m: string) => void;
-    startIndex?: number;
-    stackObject?: StackObject;
-    parentContext?: ResolutionContext;
-    controllerIdOverride?: string;
-    lookingCards?: any[];
+  state: GameState;
+  effects: EffectDefinition[];
+  sourceId: string;
+  targets: string[];
+  log: (m: string) => void;
+  startIndex?: number;
+  stackObject?: StackObject;
+  parentContext?: ResolutionContext;
+  controllerIdOverride?: PlayerId;
+  lookingCards?: GameObject[];
 }
 
 export class EffectProcessor {
   public static resolveEffects(options: ResolveEffectsOptions): boolean {
     const {
-        state,
-        effects,
-        sourceId,
-        targets,
-        log,
-        startIndex = 0,
-        stackObject,
-        parentContext,
-        controllerIdOverride,
-        lookingCards
+      state,
+      effects,
+      sourceId,
+      targets,
+      log,
+      startIndex = 0,
+      stackObject,
+      parentContext,
+      controllerIdOverride,
+      lookingCards
     } = options;
 
     // CR 608.2b: Check target legality on resolution (Fizzle check)
     // MTG Rule: The check is made once as the spell or ability starts to resolve from the stack.
     // If all its targets are now illegal, the spell or ability is countered.
     // We only run this on the ROOT resolution (parentContext === null) to avoid nested sub-effects triggering it.
-    if (startIndex === 0 && !parentContext && targets.length > 0 && effects.some(e => (e as any).targetMapping?.toString().startsWith('TARGET_'))) {
-        const { TargetingProcessor: TP } = require('../actions/targeting/TargetingProcessor');
-        const legalTargets = targets.filter(tid => {
-            // We use the first effect's target definition as a proxy for the spell's targeting requirements
-            const isLegal = TP.isLegalTarget(state, {
-                sourceId,
-                controllerId: controllerIdOverride || (state as any).activePlayerId,
-                stackObject,
-                targetDef: (effects[0] as any).targetDefinition || (stackObject as any)?.data?.targetDefinition
-            }, tid);
-            return isLegal;
-        });
+    if (startIndex === 0 && !parentContext && targets.length > 0 && effects.some(e => e.targetMapping?.toString().startsWith('TARGET_'))) {
+      const { TargetingProcessor: TP } = require('../actions/targeting/TargetingProcessor');
+      const legalTargets = targets.filter(tid => {
+        // We use the first effect's target definition as a proxy for the spell's targeting requirements
+        const isLegal = TP.isLegalTarget(state, {
+          sourceId,
+          controllerId: controllerIdOverride || state.activePlayerId,
+          stackObject,
+          targetDef: effects[0].targetDefinition || stackObject?.data?.targetDefinition
+        }, tid);
+        return isLegal;
+      });
 
-        if (legalTargets.length === 0) {
-            log(`[FIZZLE] ${stackObject?.card?.definition.name || "Spell"}: All targets have become illegal.`);
-            return true; // Return true as fully resolved (but fizzled)
-        }
+      if (legalTargets.length === 0) {
+        log(`[FIZZLE] ${stackObject?.card?.definition.name || "Spell"}: All targets have become illegal.`);
+        return true; // Return true as fully resolved (but fizzled)
+      }
     }
 
     for (let i = startIndex; i < effects.length; i++) {
@@ -107,11 +108,6 @@ export class EffectProcessor {
         lookingCards,
       });
 
-      // After execution, if context updated transient fields, sync them to stackObject.data
-      if (stackObject && stackObject.data) {
-          // This ensures that if resolveEffects is called recursively or in steps, we keep the state
-      }
-
       if (state.pendingAction) {
         // Rule 603.3: Prune the stored objects to avoid recursion depth and circular references in sockets.
         const slimStackObj = this.slimStackObj(state, stackObject);
@@ -120,6 +116,7 @@ export class EffectProcessor {
           state.pendingAction.data?.stackObj &&
           state.pendingAction.data?.effects
         ) {
+          // If we already have a suspended state, do not overwrite it.
           return false;
         }
 
@@ -134,19 +131,20 @@ export class EffectProcessor {
           effects: effects.map((e) => ({ ...e })),
           nextEffectIndex: i + 1,
           targets: state.pendingAction.data?.targets || targets,
-          stackObj: slimStackObj,
+          stackObj: slimStackObj || undefined,
           parentContext: pruneContext(parentContext),
-        } as any;
+        };
         state.priorityPlayerId = state.pendingAction.playerId;
         return false;
       }
     }
     if (stackObject && stackObject.data)
       stackObject.data.nextEffectIndex = effects.length;
+    
     return true;
   }
 
-  private static slimStackObj(state: GameState, stackObject: StackObject | undefined): any {
+  private static slimStackObj(state: GameState, stackObject: StackObject | undefined): StackObject | null {
     if (stackObject) {
       // Recover name/image if missing (triggers often lose metadata in engine internals)
       let name = stackObject.name;
@@ -177,12 +175,12 @@ export class EffectProcessor {
         definition: source?.definition, // Pass the definition for clean rendering
         targets: stackObject.targets || [],
         data: stackObject.data,
-      };
+      } as unknown as StackObject;
     }
     return null;
   }
 
-   public static executeEffect(options: EffectExecutionOptions) {
+  public static executeEffect(options: EffectExecutionOptions) {
     const {
       state,
       effect,
@@ -198,7 +196,7 @@ export class EffectProcessor {
       this.findObject(state, sourceId, stackObject, parentContext) ||
       (stackObject?.card ? stackObject.card : stackObject);
     const controllerId =
-      (controllerIdOverride || (sourceObj as any)?.controllerId || state.activePlayerId) as PlayerId;
+      (controllerIdOverride || (sourceObj as GameObject)?.controllerId || state.activePlayerId) as PlayerId;
     const { TargetingProcessor } = require("../actions/targeting/TargetingProcessor");
 
     // Create a ResolutionContext for handlers that expect it
@@ -212,7 +210,7 @@ export class EffectProcessor {
       startIndex: stackObject?.data?.startIndex || 0,
       event: stackObject?.data?.eventData,
       exiledIds: stackObject?.data?.exiledIds,
-      lookingCards: stackObject?.data?.lookingCards || parentContext?.lookingCards,
+      lookingCards: (stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
       nextEffectIndex: stackObject?.data?.nextEffectIndex,
       xValue: stackObject?.xValue || parentContext?.xValue,
       isCopy: stackObject?.data?.isCopy || parentContext?.isCopy
@@ -234,10 +232,10 @@ export class EffectProcessor {
     if (effect.condition) {
       const met = this.checkCondition(state, effect.condition, context);
       if (!met) {
-        if ((effect as any).onFailureEffects) {
+        if (effect.onFailureEffects) {
           return this.resolveEffects({
             state,
-            effects: (effect as any).onFailureEffects,
+            effects: effect.onFailureEffects,
             sourceId,
             targets,
             log,
@@ -299,23 +297,23 @@ export class EffectProcessor {
       return ids;
     };
 
-    let validTargetIds = resolveMapping((effect as any).targetMapping, 0);
+    let validTargetIds = resolveMapping(effect.targetMapping, 0);
     if (
-      (effect as any).targetId &&
-      !validTargetIds.includes((effect as any).targetId)
+      effect.targetId &&
+      !validTargetIds.includes(effect.targetId)
     ) {
-      validTargetIds.push((effect as any).targetId);
+      validTargetIds.push(effect.targetId);
     }
-    if ((effect as any).targetIds && Array.isArray((effect as any).targetIds)) {
-      (effect as any).targetIds.forEach((tid: string) => {
+    if (effect.targetIds && Array.isArray(effect.targetIds)) {
+      effect.targetIds.forEach((tid: string) => {
         if (!validTargetIds.includes(tid)) validTargetIds.push(tid);
       });
     }
 
     // CR 608.2c: If an effect has no target mapping specified, it defaults to the controller for player-centric actions
-    if (!(effect as any).targetMapping && validTargetIds.length === 0) {
+    if (!effect.targetMapping && validTargetIds.length === 0) {
       if (
-        [
+        ([
           EffectType.CreateToken,
           EffectType.DrawCards,
           EffectType.Scry,
@@ -323,55 +321,55 @@ export class EffectProcessor {
           EffectType.AddMana,
           EffectType.Learn,
           EffectType.Mill,
-        ].includes(effect.type as any)
+        ] as EffectType[]).includes(effect.type)
       ) {
         validTargetIds = [controllerId];
       }
     }
-    const validTarget2Ids = (effect as any).target2Mapping
-      ? resolveMapping((effect as any).target2Mapping, 1)
+    const validTarget2Ids = effect.target2Mapping
+      ? resolveMapping(effect.target2Mapping, 1)
       : [];
 
     // CR 608.2b: Legality check moved to resolveEffects to prevent middle-of-resolution fizzling
     // (e.g. when an effect moves its own target, like Destroy)
-    
+
     if (
-      ((effect as any).targetMapping &&
+      (effect.targetMapping &&
         validTargetIds.length === 0 &&
-        !(effect as any).targetId &&
-        !(effect as any).targetDefinition) ||
-      ((effect as any).target2Mapping &&
+        !effect.targetId &&
+        !effect.targetDefinition) ||
+      (effect.target2Mapping &&
         validTarget2Ids.length === 0 &&
-        !(effect as any).targetDefinition)
+        !effect.targetDefinition)
     ) {
       if (effect.type === EffectType.Fight) return;
       return;
     }
 
     const amount =
-      (effect as any).amount !== undefined
+      effect.amount !== undefined
         ? this.resolveAmount(
-            state,
-            (effect as any).amount,
-            context,
-            validTargetIds,
-          )
+          state,
+          effect.amount,
+          context,
+          validTargetIds,
+        )
         : 1;
 
     // Generic Interactive Selection support
     if (
-      (effect as any).targetDefinition &&
+      effect.targetDefinition &&
       validTargetIds.length === 0 &&
-      !(effect as any).targetMapping &&
-      ![
+      !effect.targetMapping &&
+      !([
         EffectType.SearchLibrary,
         EffectType.Choice,
         EffectType.LookAtTopAndPick,
         EffectType.Scry,
         EffectType.Surveil,
-      ].includes(effect.type as any)
+      ] as EffectType[]).includes(effect.type)
     ) {
-      return (this as any).resolveInteractiveEffectSelection(
+      return this.resolveInteractiveEffectSelection(
         state,
         effect,
         sourceId,
@@ -416,7 +414,7 @@ export class EffectProcessor {
 
       // Choice and SearchLibrary often use mappings to players/zones that shouldn't be matched against the main target definition
       if (
-        [
+        ([
           EffectType.Choice,
           EffectType.SearchLibrary,
           EffectType.Scry,
@@ -424,16 +422,15 @@ export class EffectProcessor {
           EffectType.MoveToZone,
           EffectType.Exile,
           EffectType.PutOnBattlefield,
-          EffectType.PutInHand,
           EffectType.ReturnToHand,
-        ].includes(effect.type as any)
+        ] as EffectType[]).includes(effect.type)
       )
         return true;
 
-      if (["SELECTED_CARD", "EVENT_TARGET"].includes((effect as any).targetMapping))
+      if ([TargetMapping.SelectedCard, TargetMapping.EventTarget].includes(effect.targetMapping as any))
         return true;
       const targetDef =
-        (effect as any).targetDefinition ||
+        effect.targetDefinition ||
         (stackObject || parentContext?.stackObject)?.data?.targetDefinition;
       if (!targetDef) return true;
 
@@ -466,7 +463,7 @@ export class EffectProcessor {
     return ConditionProcessor.matchesCondition(state, condition, {
       sourceId,
       controllerId,
-      event: extendedEvent as any,
+      event: extendedEvent as unknown as TriggerEvent,
       stackObject,
       targets,
     });
@@ -481,14 +478,14 @@ export class EffectProcessor {
     const { sourceId, controllerId, stackObject, parentContext } = context;
     if (amount === undefined) return 0;
     if (typeof amount === "number") {
-        // LEGACY: -1 represents last damage amount in some old card definitions
-        return amount === -1 ? state.turnState.lastDamageAmount || 0 : amount;
+      // LEGACY: -1 represents last damage amount in some old card definitions
+      return amount === -1 ? state.turnState.lastDamageAmount || 0 : amount;
     }
     if (typeof amount === "string" && !isNaN(Number(amount))) return Number(amount);
-    
+
     // Keywords for specific selection modes
     if (typeof amount === "string" && ["ANY", "ALL", "Any", "All"].includes(amount)) {
-        return amount as any;
+      return amount as unknown as number;
     }
 
     // Dynamic counter lookups
@@ -508,15 +505,15 @@ export class EffectProcessor {
       );
     }
 
-    const obj = this.findObject(state, sourceId, stackObject);
+    const obj = this.findObject(state, sourceId, stackObject) as GameObject;
     let result = 0;
 
     switch (amount) {
       case "POWER":
-        result = (obj as GameObject)?.effectiveStats?.power ?? Number((obj as GameObject)?.definition?.power || 0);
+        result = obj?.effectiveStats?.power ?? Number(obj?.definition?.power || 0);
         break;
       case "TOUGHNESS":
-        result = (obj as GameObject)?.effectiveStats?.toughness ?? Number((obj as GameObject)?.definition?.toughness || 0);
+        result = obj?.effectiveStats?.toughness ?? Number(obj?.definition?.toughness || 0);
         break;
       case "X":
         result =
@@ -549,13 +546,13 @@ export class EffectProcessor {
         result = state.players[controllerId]?.hand.length || 0;
         break;
       case "TARGET_1_HAND_SIZE": {
-        const tid = (stackObject as any)?.targets?.[0] || targetIds[0];
+        const tid = stackObject?.targets?.[0] || targetIds[0];
         const pid = tid as PlayerId;
         result = state.players[pid]?.hand.length || 0;
         break;
       }
       case "OTHER_ATTACKING_CREATURES_COUNT":
-        result = state.battlefield.filter((p) => (p as GameObject).isAttacking && p.id !== sourceId).length;
+        result = state.battlefield.filter((p) => p.isAttacking && p.id !== sourceId).length;
         break;
       case "EVENT_OBJECT_POWER":
       case "EVENT_OBJECT_TOUGHNESS": {
@@ -569,7 +566,7 @@ export class EffectProcessor {
       }
       case "TARGET_1_POWER":
       case "TARGET_1_TOUGHNESS": {
-        const tid = (stackObject as any)?.targets?.[0] || targetIds[0];
+        const tid = stackObject?.targets?.[0] || targetIds[0];
         const tObj = state.battlefield.find((o) => o.id === tid) || state.turnState.creaturesDiedThisTurn.find((o) => o.id === tid) || Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === tid);
         if (tObj) {
           const { LayerProcessor } = require("./../state/LayerProcessor");
@@ -579,7 +576,7 @@ export class EffectProcessor {
         break;
       }
       case "DESTROYED_COUNT":
-        result = (state.turnState as any).lastDestroyedCount || 0;
+        result = state.turnState.lastDestroyedCount || 0;
         break;
       case "DISCARDED_COUNT":
         result = state.turnState.lastDiscardedCount || 0;
@@ -598,15 +595,16 @@ export class EffectProcessor {
         break;
       case "CONVERGE_AMOUNT":
         result =
-          (stackObject as any)?.convergeAmount ??
-          (stackObject as any)?.card?.convergeAmount ??
+          stackObject?.convergeAmount ??
+          stackObject?.card?.convergeAmount ??
           stackObject?.data?.eventData?.payload?.card?.convergeAmount ??
           stackObject?.data?.convergeAmount ??
           0;
         break;
       case "CAPTURED_AMOUNT":
-        result = stackObject?.data?.amount || (stackObject as any)?.data?.capturedMV || 0;
+        result = stackObject?.data?.amount || stackObject?.data?.capturedMV || 0;
         break;
+      case "INSTANTS_SORCERIES_IN_GRAVEYARD":
       case "INSTANT_SORCERY_IN_GRAVEYARD_COUNT": {
         const gy = state.players[controllerId]?.graveyard || [];
         result = gy.filter((c) => {
@@ -629,24 +627,24 @@ export class EffectProcessor {
           0;
         break;
       case "SACRIFICED_OBJECT_POWER": {
-        const lastSac = (state.turnState as any).lastSacrificedObject;
+        const lastSac = state.turnState.lastSacrificedObject;
         result = lastSac?.effectiveStats?.power || Number(lastSac?.definition.power || 0);
         break;
       }
       case "EVENT_PAID_MANA": {
-        const pObj = (stackObject as any)?.data?.object || (stackObject as any)?.card;
-        result = pObj?.paidManaValue || (stackObject as any)?.data?.card?.paidManaValue || 0;
+        const pObj = stackObject?.data?.object || stackObject?.card;
+        result = (pObj as GameObject)?.paidManaValue || stackObject?.data?.card?.paidManaValue || 0;
         break;
       }
       case "TARGET_1_MANA_VALUE": {
         const { ManaProcessor } = require("../magic/ManaProcessor");
-        const tId = (stackObject as any)?.targets?.[0] || targetIds[0];
+        const tId = stackObject?.targets?.[0] || targetIds[0];
         const mObj = this.findObject(state, tId, stackObject, parentContext) as GameObject;
         result = mObj ? ManaProcessor.getManaValue(mObj.definition.manaCost) : 0;
         break;
       }
       case "TARGET_1_COUNTERS_P1P1": {
-        const tId = (stackObject as any)?.targets?.[0] || targetIds[0];
+        const tId = stackObject?.targets?.[0] || targetIds[0];
         const cObj = state.battlefield.find((o) => o.id === tId);
         result = (cObj?.counters?.["p1p1"] || 0) + (cObj?.counters?.["+1/+1"] || 0);
         break;
@@ -665,7 +663,7 @@ export class EffectProcessor {
         break;
       }
       case "TARGET_1_GRAVEYARD_CREATURE_COUNT_X2": {
-        const tid = (stackObject as any)?.targets?.[0] || targetIds[0];
+        const tid = stackObject?.targets?.[0] || targetIds[0];
         const pid = tid as PlayerId;
         const gy = state.players[pid]?.graveyard || [];
         result = gy.filter((c) => (c.definition.types || []).some((t) => t.toLowerCase() === "creature")).length * 2;
@@ -673,7 +671,7 @@ export class EffectProcessor {
       }
       case "GRAVEYARD_NAME_COUNT_PLUS_1": {
         const gy = state.players[controllerId]?.graveyard || [];
-        const name = (obj as GameObject)?.definition?.name;
+        const name = obj?.definition?.name;
         result = gy.filter((c) => c.definition.name === name).length + 1;
         break;
       }
@@ -703,12 +701,11 @@ export class EffectProcessor {
       state.exile.find((o) => o.id === id) ||
       state.limbo?.find((o) => o.id === id) ||
       (stackObject?.card?.id === id ? stackObject?.card : undefined) ||
-      ((state as any).paradigmCopies && (state as any).paradigmCopies[id]) ||
-      ((state.pendingAction?.data?.lookingCards as unknown) as GameObject[])?.find(
+      ((state.pendingAction?.data as any)?.lookingCards as GameObject[])?.find(
         (o) => o.id === id,
       ) ||
-      ((parentContext?.lookingCards as unknown) as GameObject[])?.find((o) => o.id === id) ||
-      ((stackObject?.data?.lookingCards as unknown) as GameObject[])?.find(
+      (parentContext?.lookingCards as GameObject[])?.find((o) => o.id === id) ||
+      (stackObject?.data?.lookingCards as GameObject[])?.find(
         (o) => o.id === id,
       )
     );
@@ -725,9 +722,9 @@ export class EffectProcessor {
   ) {
     const { ChoiceGenerator } = require("./ChoiceGenerator");
     const { TargetingProcessor } = require("../actions/targeting/TargetingProcessor");
-    const targetDef = Array.isArray((effect as any).targetDefinition)
-      ? (effect as any).targetDefinition[0]
-      : (effect as any).targetDefinition!;
+    const targetDef = Array.isArray(effect.targetDefinition)
+      ? effect.targetDefinition[0]
+      : effect.targetDefinition!;
     if (!targetDef) return;
 
     const player = state.players[controllerId];
@@ -735,13 +732,11 @@ export class EffectProcessor {
 
     let pool: GameObject[] = [];
     if (
-      targetDef.type === TargetType.CardInHand ||
-      (targetDef.type as string) === "CARD_IN_HAND"
+      targetDef.type === TargetType.CardInHand
     ) {
       pool = player.hand;
     } else if (
-      targetDef.type === TargetType.CardInGraveyard ||
-      (targetDef.type as string) === "CARD_IN_GRAVEYARD"
+      targetDef.type === TargetType.CardInGraveyard
     ) {
       pool = Object.values(state.players).flatMap((p) => p.graveyard);
     } else if (
@@ -766,7 +761,7 @@ export class EffectProcessor {
       ];
     }
 
-    const getRestrictions = (td: any) => {
+    const getRestrictions = (td: TargetDefinition) => {
       if (!td) return [];
       const res = [...(td.restrictions || [])];
       const typeStr = td.type as string;
@@ -809,9 +804,7 @@ export class EffectProcessor {
     );
 
     if (validCandidates.length === 0) {
-      log(
-        `[INFO] EffectProcessor: No valid targets in zone for "${effect.label || "Selection"}". Auto-skipping.`,
-      );
+      log(`[INFO] EffectProcessor: No valid targets for interactive selection. Skipping.`);
       return;
     }
 
@@ -824,7 +817,7 @@ export class EffectProcessor {
     };
     const resolvedMax = this.resolveAmount(
       state,
-      targetDef.count || 1,
+      targetDef.count as unknown as number || 1,
       resolvedContext,
     );
     const resolvedMin =
@@ -844,15 +837,6 @@ export class EffectProcessor {
       TargetType.AnyTarget,
       TargetType.Player,
       TargetType.Opponent,
-      "PERMANENT",
-      "CREATURE",
-      "ARTIFACT",
-      "ENCHANTMENT",
-      "PLANESWALKER",
-      "LAND",
-      "PLAYER",
-      "OPPONENT",
-      "ANY_TARGET"
     ].some(t => String(targetDef.type).toUpperCase().includes(String(t).toUpperCase()));
 
     if (isBattlefieldTarget) {
@@ -868,7 +852,7 @@ export class EffectProcessor {
           parentContext: pruneContext(parentContext),
           nextEffectIndex: parentContext?.nextEffectIndex,
           effects: parentContext?.effects || [effect],
-          xValue: (stackObject as any)?.xValue
+          xValue: stackObject?.xValue
         }
       };
       log(`[TARGETING] Prompting for battlefield targeting for effect resolution...`);
@@ -885,13 +869,13 @@ export class EffectProcessor {
       minChoices: resolvedMin,
       maxChoices: resolvedMax,
       actionType:
-        targetDef.optional || (effect as any).optional
+        targetDef.optional || effect.optional
           ? ActionType.OptionalAction
           : ActionType.ResolutionChoice,
-      onSelected: (selected: any) => {
+      onSelected: (selected: GameObject | GameObject[]) => {
         const selectedIds = Array.isArray(selected)
-          ? selected.map((s: any) => (typeof s === "string" ? s : s.id))
-          : [typeof selected === "string" ? selected : selected.id];
+          ? selected.map((s) => s.id)
+          : [selected.id];
 
         return [
           {

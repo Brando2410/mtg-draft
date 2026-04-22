@@ -1,4 +1,4 @@
-import { GameState, Phase, PlayerId, Step } from '@shared/engine_types';
+import { EffectType, GameState, Phase, PlayerId, Step } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { ActivateAbilityOptions, EngineContext, PlayCardOptions } from './interfaces/EngineContext';
 import { ChoiceProcessor, CombatProcessor, GameSetupProcessor, LayerProcessor, PlayerActionProcessor, PriorityProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor } from './modules';
@@ -151,7 +151,7 @@ export class GameEngine implements EngineContext {
     const MoveEffectHandler = require('./modules/effects/handlers/zone/MoveEffectHandler').MoveEffectHandler as typeof MoveEffectHandlerType;
     MoveEffectHandler.handle(
       this.state,
-      { type: 'DrawCards', amount: 1 },
+      { type: EffectType.DrawCards, amount: 1 },
       (m: string) => this.log(m),
       {
         sourceId: 'system',
@@ -198,37 +198,37 @@ export class GameEngine implements EngineContext {
   /**
    * CR 508: Declare Attackers Step
    */
-  public declareAttacker(playerId: string, cardId: string, targetId?: string): boolean {
+  public declareAttacker(playerId: PlayerId, cardId: string, targetId?: string): boolean {
     return PlayerActionProcessor.declareAttacker(this.state, playerId, cardId, targetId, (m: string) => this.log(m));
   }
 
   /**
    * CR 508.2: Confirming the Attacker Declaration Action
    */
-  public confirmAttackers(playerId: string) {
+  public confirmAttackers(playerId: PlayerId) {
     CombatProcessor.confirmAttackers(this.state, playerId as PlayerId, this);
   }
 
   /**
    * CR 509: Declare Blockers Step
    */
-  public handleBlockSelection(playerId: string, cardId: string): boolean {
+  public handleBlockSelection(playerId: PlayerId, cardId: string): boolean {
     return PlayerActionProcessor.handleBlockSelection(this.state, playerId, cardId, (m: string) => this.log(m));
   }
 
   /**
    * CR 509.2: Confirming the Blocker Declaration Action
    */
-  public confirmBlockers(playerId: string) {
+  public confirmBlockers(playerId: PlayerId) {
     CombatProcessor.confirmBlockers(this.state, playerId as PlayerId, this);
   }
 
-  public clearAttackers(playerId: string) {
-    CombatProcessor.clearAttackers(this.state, playerId as PlayerId, this);
+  public clearAttackers(playerId: PlayerId) {
+    CombatProcessor.clearAttackers(this.state, playerId, this);
   }
 
-  public clearBlockers(playerId: string) {
-    CombatProcessor.clearBlockers(this.state, playerId as PlayerId, this);
+  public clearBlockers(playerId: PlayerId) {
+    CombatProcessor.clearBlockers(this.state, playerId, this);
   }
 
   /**
@@ -296,7 +296,7 @@ export class GameEngine implements EngineContext {
     PriorityProcessor.checkAutoPass(this.state, playerId, this);
   }
 
-  public togglePassTurn(playerId: string) {
+  public togglePassTurn(playerId: PlayerId) {
     PriorityProcessor.togglePassTurn(this.state, playerId, this);
   }
 
@@ -334,9 +334,9 @@ export class GameEngine implements EngineContext {
     const LifeDamageHandler = require('./modules/effects/handlers/life/LifeDamageHandler').LifeDamageHandler as typeof LifeDamageHandlerType;
     LifeDamageHandler.handleGainLife(
       this.state,
-      { type: 'GainLife', amount } as any,
+      { type: EffectType.GainLife, amount },
       (m: string) => this.log(m),
-      { targets: [playerId], sourceId: 'system', controllerId: playerId } as any
+      { targets: [playerId], sourceId: 'system', controllerId: playerId, effects: [] }
     );
   }
 
@@ -346,11 +346,11 @@ export class GameEngine implements EngineContext {
     return this.state;
 }
 
-  public resolveChoice(playerId: string, choiceIndex: any): boolean {
+  public resolveChoice(playerId: PlayerId, choiceIndex: string | number | string[]): boolean {
     const success = ChoiceProcessor.resolveChoice(
       this.state,
       playerId,
-      choiceIndex,
+      choiceIndex as any,
       (m: string) => this.log(m),
       this
     );
@@ -365,7 +365,7 @@ export class GameEngine implements EngineContext {
     return PlayerActionProcessor.resolveTargeting(this.state, playerId, targetId, this);
   }
 
-  public resolveCombatOrdering(playerId: string, order: string[]): boolean {
+  public resolveCombatOrdering(playerId: PlayerId, order: string[]): boolean {
     return CombatProcessor.resolveCombatOrdering(this.state, playerId, order, this);
   }
 

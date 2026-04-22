@@ -19,9 +19,9 @@ export const AppliedGeometry: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { 
-                type: TargetType.Permanent, 
-                restrictions: [Restriction.YouControl, "not_aura"] 
+            targetDefinition: {
+                type: TargetType.Permanent,
+                restrictions: [Restriction.YouControl, Restriction.NotAura]
             },
             effects: [
                 {

@@ -2,12 +2,8 @@ import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, Tar
 export const WisdomofAges: CardDefinition = {
     name: "Wisdom of Ages",
     manaCost: "{4}{U}{U}{U}",
-    colors: [
-        "U"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["U"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "Return all instant and sorcery cards from your graveyard to your hand. You have no maximum hand size for the rest of the game.\nExile Wisdom of Ages.",
@@ -19,12 +15,8 @@ export const WisdomofAges: CardDefinition = {
                     type: EffectType.MoveToZone,
                     label: "Return all instant and sorcery cards from your graveyard to your hand",
                     zone: Zone.Hand,
-                    sourceZones: TargetMapping.ControllerGraveyard,
-                    targetDefinition: {
-                        restrictions: [
-                            Restriction.InstantOrSorcery
-                        ]
-                    },
+                    sourceZones: [Zone.Graveyard],
+                    restrictions: [Restriction.InstantOrSorcery, Restriction.YouOwn],
                     targetMapping: TargetMapping.AllMatchingCards
                 },
                 {

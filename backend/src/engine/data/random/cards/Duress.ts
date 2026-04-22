@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const Duress: CardDefinition = {
   name: 'Duress',
@@ -11,20 +11,14 @@ export const Duress: CardDefinition = {
       type: AbilityType.Spell,
       targetDefinition: {
         count: 1,
-        type: TargetType.Player,
-        restrictions: [{ type: 'Opponent' }]
+        type: TargetType.Opponent,
       },
       effects: [
         {
           type: EffectType.Choice,
           label: "Choose a noncreature, nonland card to discard",
           selectionPool: TargetMapping.Target1HandRevealPick,
-          restrictions: [
-            {
-              type: 'Not',
-              restriction: { type: 'Any', restrictions: [{ type: 'Type', value: 'Creature' }, { type: 'Type', value: 'Land' }] }
-            }
-          ],
+          restrictions: [Restriction.NonCreature, Restriction.NonLand],
           effects: [{ type: EffectType.MoveToZone, zone: Zone.Graveyard, isDiscard: true }]
         }
       ]

@@ -10,11 +10,8 @@ export const FaithsFetters: CardDefinition = {
     types: ["Enchantment"],
     subtypes: ["Aura"],
     keywords: ["Enchant"],
+    auraRestriction: { type: TargetType.Permanent, count: 1 },
     abilities: [
-        {
-            type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Permanent, count: 1 }
-        },
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,

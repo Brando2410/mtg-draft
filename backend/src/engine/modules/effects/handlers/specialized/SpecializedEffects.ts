@@ -1,5 +1,5 @@
 import { IEffectHandler } from "../../IEffectHandler";
-import { Zone, DurationType, EffectType } from "@shared/engine_types";
+import { Zone, DurationType, EffectType, GameObject } from "@shared/engine_types";
 
 export const CastSpellHandler: IEffectHandler = {
   handle(state, effect, log, context) {
@@ -40,9 +40,14 @@ export const CastSpellHandler: IEffectHandler = {
     }
 
     if (targetId) {
-      const castObj = EffectProcessor.findObject(state, targetId, stackObject, parentContext);
-      if (castObj && isFree) {
-        (castObj as any).isFreeCast = true;
+      const castObj = EffectProcessor.findObject(state, targetId, stackObject, parentContext) as GameObject;
+      if (castObj) {
+        if (isFree) {
+          (castObj as any).isFreeCast = true;
+        }
+        if ((effect as any).exileOnResolution) {
+          (castObj as any).exileOnResolution = true;
+        }
       }
       const oldPriority = state.priorityPlayerId;
       state.priorityPlayerId = controllerId;
@@ -95,7 +100,7 @@ export const ExileTopCardsExcessDamageHandler: IEffectHandler = {
       const exiledIds = (state as any).lastExiledIds || [];
       if (exiledIds.length > 0) {
         ContinuousEffectHandler.handle(state, {
-          type: "ApplyContinuousEffect",
+          type: EffectType.ApplyContinuousEffect,
           canPlayExiled: true,
           targetIds: exiledIds,
           duration: effect.duration || {

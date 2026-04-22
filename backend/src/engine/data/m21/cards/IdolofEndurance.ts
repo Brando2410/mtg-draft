@@ -35,7 +35,7 @@ export const IdolofEndurance: CardDefinition = {
                 {
                     type: EffectType.AllowCastFromExile,
                     restrictions: [Restriction.ExiledWithSource],
-                    free: true,
+                    isFreeCast: true,
                     duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Controller
                 }
