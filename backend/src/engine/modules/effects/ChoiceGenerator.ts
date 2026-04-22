@@ -202,12 +202,17 @@ export class ChoiceGenerator {
         const minChoices = isAny ? 0 : discardAmount;
         const maxChoices = (isAny || isAll) ? player.hand.length : discardAmount;
 
+        // Initialize player's discard state for the unified UI
+        player.pendingDiscardCount = discardAmount;
+
         const finalAction = this.createCardChoice(state, player.hand, {
             label: isAny ? `${label} (Any number)` : `${label} (${discardAmount})`,
             playerId: currentPlayerId,
             sourceId,
             optional: isAny,
-            actionType: ActionType.ResolutionChoice,
+            // If discarding from OWN hand, use DISCARD type for interactive UI.
+            // If Duress style (not implemented here but for future proofing), keep RESOLUTION_CHOICE.
+            actionType: ActionType.Discard, 
             stackObj: {
                 ...stackObj,
                 data: {
@@ -220,16 +225,18 @@ export class ChoiceGenerator {
             parentContext: pruneContext(parentContext),
             targets: [currentPlayerId],
             onSelected: (card: GameObject) => {
-                // This is now called for each card in the batch by ChoiceProcessor
                 return [{ type: 'MoveToZone', targetId: card.id, zone: Zone.Graveyard, isDiscard: true }];
             }
         });
 
-        // Inject sequence metadata directly into the data payload
-        if (finalAction && finalAction.data) {
-            finalAction.data.nextPlayerIds = nextPlayerIds;
-            finalAction.data.discardAmount = amount;
-            finalAction.data.onFailureEffects = onFailureEffects;
+        // Inject sequence metadata and ensure top-level count exists for UI decrementing
+        if (finalAction) {
+            finalAction.count = discardAmount;
+            if (finalAction.data) {
+                finalAction.data.nextPlayerIds = nextPlayerIds;
+                finalAction.data.discardAmount = amount;
+                finalAction.data.onFailureEffects = onFailureEffects;
+            }
         }
 
         return finalAction;

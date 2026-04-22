@@ -124,9 +124,25 @@ export class PlayerActionProcessor {
       obj.definition.abilities.forEach((a) => {
         if (typeof a === 'string') return;
         const isDuplicate = allActivated.some(existing => {
-          if (a.id !== undefined && a.id === (existing as AbilityDefinition).id) return true;
-          if (a.oracleText !== undefined && a.oracleText === (existing as AbilityDefinition).oracleText && a.type === (existing as AbilityDefinition).type) return true;
-          return false;
+          const ex = existing as AbilityDefinition;
+          
+          // 0. Reference check (fastest)
+          if (a === ex) return true;
+
+          // 1. Primary check: ID match
+          if (a.id !== undefined && ex.id !== undefined) return a.id === ex.id;
+          
+          // 2. Secondary check: Oracle text match
+          if (a.oracleText !== undefined && ex.oracleText !== undefined) {
+             return a.oracleText === ex.oracleText && a.type === ex.type;
+          }
+
+          // 3. Fallback check: Structural match for costs and effects (if IDs are missing)
+          const sameType = a.type === ex.type;
+          const sameCosts = JSON.stringify(a.costs) === JSON.stringify(ex.costs);
+          const sameEffects = JSON.stringify(a.effects) === JSON.stringify(ex.effects);
+          
+          return sameType && sameCosts && sameEffects;
         });
         if (!isDuplicate) {
           allActivated.push(a);
@@ -418,8 +434,11 @@ export class PlayerActionProcessor {
 
     // BUG FIX: Prevent race condition where rapid clicking discards more than required.
     // We only allow discard if there's a pending DISCARD action for this player.
-    if (state.pendingAction?.type !== 'DISCARD' || state.pendingAction.playerId !== playerId) {
-      return { finished: false, success: false };
+    if (state.pendingAction?.type !== 'DISCARD' && state.pendingAction?.type !== ActionType.Discard) {
+        return { finished: false, success: false };
+    }
+    if (state.pendingAction?.playerId !== playerId) {
+        return { finished: false, success: false };
     }
 
     if (player.pendingDiscardCount <= 0) {
@@ -439,13 +458,48 @@ export class PlayerActionProcessor {
 
     if (player.pendingDiscardCount > 0) {
       player.pendingDiscardCount--;
-      if (state.pendingAction && (state.pendingAction.data as any)?.count) {
+      
+      // Update top-level count (Cleanup phase and unified Discard UI)
+      if (state.pendingAction && state.pendingAction.count !== undefined) {
+        state.pendingAction.count--;
+      }
+      // Also update data.count for legacy effects if it exists
+      if (state.pendingAction && (state.pendingAction.data as any)?.count !== undefined) {
         (state.pendingAction.data as any).count--;
       }
+      
       log(`${player.name} discarded ${card.definition.name} (${player.pendingDiscardCount} more to go).`);
 
       if (player.pendingDiscardCount === 0) {
         log(`${player.name} finished discarding.`);
+        
+        // Handle sequential discards (Next players)
+        const nextPlayerIds = (state.pendingAction.data as any)?.nextPlayerIds || [];
+        if (nextPlayerIds.length > 0) {
+            const discardAmount = (state.pendingAction.data as any)?.discardAmount || 1;
+            const label = (state.pendingAction.data as any)?.label || "Discard";
+            const stackObj = state.pendingAction.data?.stackObj;
+            const parentContext = state.pendingAction.data?.parentContext;
+            const onFailureEffects = (state.pendingAction.data as any)?.onFailureEffects;
+            
+            const { ChoiceGenerator } = require('../effects/ChoiceGenerator').ChoiceGenerator;
+            state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, label, stackObj, parentContext, onFailureEffects, log);
+            return { finished: false, success: true };
+        }
+
+        // Increment effect index on stack object to avoid infinite loops when resuming resolution
+        const stackObj = state.pendingAction.data?.stackObj;
+        if (stackObj) {
+            const realStackObj = state.stack.find(s => s.id === stackObj.id);
+            if (realStackObj && realStackObj.data) {
+                const currentIndex = (state.pendingAction.data as any)?.nextEffectIndex;
+                if (currentIndex !== undefined) {
+                    realStackObj.data.nextEffectIndex = currentIndex + 1;
+                    console.log(`[DISCARD-RESOLUTION] Incremented nextEffectIndex to ${realStackObj.data.nextEffectIndex} for ${realStackObj.id}`);
+                }
+            }
+        }
+
         state.pendingAction = undefined;
         return { finished: true, success: true };
       }

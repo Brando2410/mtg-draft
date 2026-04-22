@@ -233,11 +233,22 @@ export class SpellProcessor {
 
         // Step 0.5: Check for X in cost or inherent logic
         const costStr = (currentDefinition.manaCost || '').split('//')[0].trim();
+        
+        // Safely check for X in pre-selected modal modes
+        let modeHasX = false;
+        if (hasPreSelectedMode && modalAbility?.modes) {
+            const index = (Array.isArray(lastChosenModeIndex) ? lastChosenModeIndex[0] : lastChosenModeIndex) as number;
+            const chosenMode = modalAbility.modes[index];
+            if (chosenMode) {
+                modeHasX = JSON.stringify(chosenMode).includes('"X"');
+            }
+        }
+
         // X-Value Selection
         const needsX = costStr.includes('{X}') ||
             logic?.abilities?.some((a: any) => a.costs?.some((c: any) => c.value === 'X')) ||
             logic?.effects?.some((e: any) => JSON.stringify(e).includes('"X"')) ||
-            (hasPreSelectedMode && JSON.stringify(modalAbility?.modes?.[(Array.isArray(lastChosenModeIndex) ? lastChosenModeIndex[0] : lastChosenModeIndex) as number]).includes('"X"'));
+            modeHasX;
 
         if (needsX && cardToPlay.xValue === undefined) {
             if (isFreeCast) {

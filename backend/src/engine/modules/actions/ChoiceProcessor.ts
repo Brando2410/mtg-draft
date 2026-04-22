@@ -82,7 +82,7 @@ export class ChoiceProcessor {
 
         const isModal = action.type === ActionType.ModalSelection;
         const isLegendRule = action.type === ActionType.LegendRule;
-        const isResolution = action.type === ActionType.ResolutionChoice || action.type === ActionType.OptionalAction || action.type === ActionType.Choice || isLegendRule;
+        const isResolution = action.type === ActionType.ResolutionChoice || action.type === ActionType.OptionalAction || action.type === ActionType.Choice || isLegendRule || action.type === ActionType.Discard;
         const isScry = action.type === ActionType.Scry || action.type === ActionType.Surveil;
         const isChoosingX = action.type === ActionType.ChooseX;
         const isOrderTriggers = action.type === ActionType.OrderTriggers;
