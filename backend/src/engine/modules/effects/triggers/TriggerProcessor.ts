@@ -1,13 +1,18 @@
 import {
-    AbilityType,
-    ActionType, EffectType,
-    GameEvent,
-    GameObjectId,
-    GameState,
-    PlayerId,
-    TargetMapping,
-    TriggeredAbility,
-    Zone
+  AbilityType,
+  ActionType,
+  ConditionType,
+  CostType,
+  EffectType,
+  GameEvent,
+  GameObjectId,
+  GameState,
+  PlayerId,
+  Restriction,
+  TargetMapping,
+  TriggeredAbility,
+  DurationType,
+  Zone
 } from "@shared/engine_types";
 import { TriggerEvent } from "@shared/types/events";
 import { oracle } from "../../../OracleLogicMap";
@@ -57,54 +62,54 @@ export class TriggerProcessor {
 
     for (const trigger of uniqueTriggers) {
       let triggerCount = 1;
-      const sourceObj = state.battlefield.find(o => o.id === trigger.sourceId) || 
-                       Object.values(state.players).flatMap(p => p.graveyard).find((o: any) => o.id === trigger.sourceId);
+      const sourceObj = state.battlefield.find(o => o.id === trigger.sourceId) ||
+        Object.values(state.players).flatMap(p => p.graveyard).find((o: any) => o.id === trigger.sourceId);
 
       // --- TRIGGER DOUBLING (CR 603.2c / 614.16) ---
       // 1. Check Replacement Effects (Standardized for specific event buckets)
       // Standard events: 'ON_TRIGGER', 'ON_SHRINE_TRIGGER' (legacy/specific)
       const triggerEvents = ['ON_TRIGGER'];
       if (sourceObj && (sourceObj.definition.subtypes || []).includes('Shrine')) {
-          triggerEvents.push('ON_SHRINE_TRIGGER');
+        triggerEvents.push('ON_SHRINE_TRIGGER');
       }
 
       for (const eventName of triggerEvents) {
-          const tEvent = { 
-              type: eventName, 
-              sourceId: trigger.sourceId, 
-              playerId: trigger.controllerId,
-              data: { trigger, object: sourceObj } 
-          };
-          
-          const replacements = (state.ruleRegistry.replacementEffects || [])
-            .filter(r => r.replacesEvent === eventName);
-          
-          for (const r of replacements) {
-              const conditionMet = typeof r.condition === 'function' ? r.condition(state, tEvent, r) : true;
-              if (conditionMet && r.effects?.some((e: any) => e.type === EffectType.AddAdditionalTrigger)) {
-                  triggerCount++;
-                  log(`[DOUBLED] ${sourceObj?.definition.name || 'Ability'} triggers an additional time via replacement effect (${eventName}).`);
-              }
+        const tEvent = {
+          type: eventName,
+          sourceId: trigger.sourceId,
+          playerId: trigger.controllerId,
+          data: { trigger, object: sourceObj }
+        };
+
+        const replacements = (state.ruleRegistry.replacementEffects || [])
+          .filter(r => r.replacesEvent === eventName);
+
+        for (const r of replacements) {
+          const conditionMet = typeof r.condition === 'function' ? r.condition(state, tEvent, r) : true;
+          if (conditionMet && r.effects?.some((e: any) => e.type === EffectType.AddAdditionalTrigger)) {
+            triggerCount++;
+            log(`[DOUBLED] ${sourceObj?.definition.name || 'Ability'} triggers an additional time via replacement effect (${eventName}).`);
           }
+        }
       }
 
       // 2. Check Continuous Effects (Generic 'triggers an additional time' modifiers)
       const doublingEffects = state.ruleRegistry.continuousEffects.filter(e => e.type === EffectType.AddAdditionalTrigger);
       for (const eff of doublingEffects) {
-          if (eff.controllerId !== trigger.controllerId) continue;
-          
-          // Check restrictions (e.g. "Whenever an artifact... triggers twice")
-          if (eff.restrictions && sourceObj) {
-              const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
-              const matches = TargetingProcessor.matchesRestrictions(state, sourceObj, eff.restrictions, { 
-                  sourceId: eff.sourceId, 
-                  controllerId: eff.controllerId 
-              });
-              if (!matches) continue;
-          }
+        if (eff.controllerId !== trigger.controllerId) continue;
 
-          triggerCount++;
-          log(`[DOUBLED] ${sourceObj?.definition.name || 'Ability'} triggers an additional time via continuous effect.`);
+        // Check restrictions (e.g. "Whenever an artifact... triggers twice")
+        if (eff.restrictions && sourceObj) {
+          const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
+          const matches = TargetingProcessor.matchesRestrictions(state, sourceObj, eff.restrictions, {
+            sourceId: eff.sourceId,
+            controllerId: eff.controllerId
+          });
+          if (!matches) continue;
+        }
+
+        triggerCount++;
+        log(`[DOUBLED] ${sourceObj?.definition.name || 'Ability'} triggers an additional time via continuous effect.`);
       }
 
       for (let i = 0; i < triggerCount; i++) {
@@ -120,12 +125,12 @@ export class TriggerProcessor {
         // --- TRIGGER INTERCEPTION (Strict Proctor / Ward / etc.) ---
         // Emit ON_TRIGGER_QUEUED to allow other abilities to respond to this trigger entering the stack.
         if (event.type !== 'ON_TRIGGER_QUEUED') {
-            this.onEvent(state, {
-                type: 'ON_TRIGGER_QUEUED',
-                sourceId: stackObj.id, // We use the stack ID so it can be targeted/countered
-                playerId: trigger.controllerId,
-                data: { trigger, stackObj, originalEvent: event }
-            }, log);
+          this.onEvent(state, {
+            type: 'ON_TRIGGER_QUEUED',
+            sourceId: stackObj.id, // We use the stack ID so it can be targeted/countered
+            playerId: trigger.controllerId,
+            data: { trigger, stackObj, originalEvent: event }
+          }, log);
         }
       }
     }
@@ -231,13 +236,13 @@ export class TriggerProcessor {
       controllerId,
       eventMatch: effect.eventMatch,
       effects: effect.effects,
-      duration: effect.duration || "UNTIL_END_OF_TURN",
+      duration: effect.duration || DurationType.UntilEndOfTurn,
       condition: effect.condition,
       data: effect.data,
       isDelayed: true,
       oneShot: effect.oneShot,
       firesOnce: effect.firesOnce,
-      activeZone: "Battlefield", // Virtual zone for registry
+      activeZone: Zone.Battlefield, // Virtual zone for registry
       type: AbilityType.Triggered,
     };
 
@@ -256,7 +261,7 @@ export class TriggerProcessor {
     state.ruleRegistry.triggeredAbilities =
       state.ruleRegistry.triggeredAbilities.filter(
         (t) =>
-          !(t as any).isDelayed || (t as any).duration !== "UNTIL_END_OF_TURN",
+          !(t as any).isDelayed || (t as any).duration !== DurationType.UntilEndOfTurn,
       );
     const removedCount =
       initialCount - state.ruleRegistry.triggeredAbilities.length;
@@ -275,13 +280,13 @@ export class TriggerProcessor {
       eventObj && eventObj.id === trigger.sourceId
         ? eventObj
         : state.battlefield.find((o) => o.id === trigger.sourceId) ||
-          state.exile.find((o) => o.id === trigger.sourceId) ||
-          state.stack.find(
-            (s) => s.id === trigger.sourceId || s.sourceId === trigger.sourceId,
-          )?.card ||
-          Object.values(state.players)
-            .flatMap((p) => p.graveyard)
-            .find((o) => o.id === trigger.sourceId);
+        state.exile.find((o) => o.id === trigger.sourceId) ||
+        state.stack.find(
+          (s) => s.id === trigger.sourceId || s.sourceId === trigger.sourceId,
+        )?.card ||
+        Object.values(state.players)
+          .flatMap((p) => p.graveyard)
+          .find((o) => o.id === trigger.sourceId);
 
     const emblemSource = !sourceObj
       ? state.emblems?.find((e) => e.id === trigger.sourceId)
@@ -292,7 +297,7 @@ export class TriggerProcessor {
       sourceObj?.definition.image_url || emblemSource?.image_url;
 
     const stackId = `trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-    
+
     // CR 603.3: Store event snapshot for ResolutionContext (LKI)
     const contextPayload: any = {
       sourceId: trigger.sourceId,
@@ -391,13 +396,13 @@ export class TriggerProcessor {
       type: ActionType.Targeting,
       playerId: stackObj.controllerId,
       sourceId: stackObj.sourceId,
-        data: {
-          label: "ChooseTargets",
-          targetDefinition: targetDef,
-          targets: legalTargetIds,
-          stackId: stackObj.id,
-          stackObj: stackObj,
-        },
+      data: {
+        label: "ChooseTargets",
+        targetDefinition: targetDef,
+        targets: legalTargetIds,
+        stackId: stackObj.id,
+        stackObj: stackObj,
+      },
     };
     state.priorityPlayerId = stackObj.controllerId;
     log(
@@ -411,16 +416,16 @@ export class TriggerProcessor {
     eventType: string,
   ): boolean {
     // Rule 603.10: "Leaves-the-battlefield" abilities look back in time.
-    if (eventType === "ON_DEATH" || eventType === "ON_LEAVE_BATTLEFIELD")
+    if (eventType === TriggerEvent.Death || eventType === TriggerEvent.LeaveBattlefield)
       return true;
 
     const activeZone = trigger.activeZone || Zone.Battlefield;
-    if (activeZone === "Any") return true;
+    if (activeZone === Zone.Any) return true;
 
     const sourceId = trigger.sourceId;
 
     // CR 114: Emblem abilities function from the Command Zone (always active)
-    if (activeZone === "Command") {
+    if (activeZone === Zone.Command) {
       return state.emblems?.some((e) => e.id === sourceId) ?? false;
     }
 
@@ -462,7 +467,7 @@ export class TriggerProcessor {
                 id: `emblem_trigger_${emblem.id}_${index}`,
                 sourceId: emblem.id,
                 controllerId: emblem.controllerId,
-                activeZone: "Command",
+                activeZone: Zone.Command,
                 abilityIndex: index,
               });
             }
@@ -497,7 +502,7 @@ export class TriggerProcessor {
       });
     }
 
-    if (event.type === TriggerEvent.CastSpell || event.type === 'ON_CAST_SPELL') {
+    if (event.type === TriggerEvent.CastSpell) {
       if (log) log(`[TRIGGER-DEBUG] Event ${event.type} for source ${event.payload?.sourceId}. Found ${triggers.length} registered triggers.`);
     }
 
@@ -505,13 +510,13 @@ export class TriggerProcessor {
       const tEvent = t.eventMatch;
       const tEvents = Array.isArray(tEvent) ? tEvent : [tEvent];
 
-      if (event.type === TriggerEvent.CastSpell || event.type === 'ON_CAST_SPELL') {
-        if (tEvents.includes(TriggerEvent.CastSpell) || tEvents.includes('ON_CAST_SPELL')) {
+      if (event.type === TriggerEvent.CastSpell) {
+        if (tEvents.includes(TriggerEvent.CastSpell)) {
           if (log) log(`[TRIGGER-DEBUG] Checking trigger ${t.id} from ${t.sourceId}. Global: ${t.isGlobal}. Zone: ${t.activeZone}`);
         }
       }
 
-      const matchesPrimary = tEvents.some((type: any) => {
+      const matchesPrimary = tEvents.some((type) => {
         const isMatch = (
           type === event.type ||
           (type === TriggerEvent.EnterBattlefieldOther &&
@@ -522,8 +527,7 @@ export class TriggerProcessor {
           (type === TriggerEvent.DamageDealtToCreature &&
             event.type === TriggerEvent.DamageTaken) ||
           (type === TriggerEvent.DamageDealtToPlayer &&
-            (event.type === TriggerEvent.DamageDealtToPlayer ||
-              event.type === "ON_DAMAGE_DEALT_TO_PLAYER")) ||
+            event.type === TriggerEvent.DamageDealtToPlayer) ||
           (type === TriggerEvent.DeathOther &&
             event.type === TriggerEvent.Death) ||
           (type === TriggerEvent.CountersAddedOther &&
@@ -550,7 +554,7 @@ export class TriggerProcessor {
         const enteringId = event.data?.object?.id || event.payload?.object?.id || event.payload?.sourceId || event.sourceId;
         const expectsSelf = tEvents.includes(TriggerEvent.EnterBattlefield);
         const expectsOther = tEvents.includes(TriggerEvent.EnterBattlefieldOther);
-        
+
         if (expectsSelf && !expectsOther && enteringId !== t.sourceId) return false;
         if (expectsOther && !expectsSelf && enteringId === t.sourceId) return false;
       }
@@ -592,19 +596,16 @@ export class TriggerProcessor {
         }
       }
 
-      if (
-        event.type === TriggerEvent.CastSpell ||
-        event.type === 'ON_CAST_SPELL'
-      ) {
-          const castId = event.payload?.sourceId || event.sourceId;
-          // Standard trigger (source is card/object itself)
-          if (tEvents.includes(TriggerEvent.CastSpell)) {
-              if (t.isGlobal) {
-                  // Global triggers don't need identity match
-              } else if (castId !== t.sourceId) {
-                  return false;
-              }
+      if (event.type === TriggerEvent.CastSpell) {
+        const castId = event.payload?.sourceId || event.sourceId;
+        // Standard trigger (source is card/object itself)
+        if (tEvents.includes(TriggerEvent.CastSpell)) {
+          if (t.isGlobal) {
+            // Global triggers don't need identity match
+          } else if (castId !== t.sourceId) {
+            return false;
           }
+        }
       }
 
       if (!this.checkZone(state, t, event.type)) return false;
@@ -627,7 +628,7 @@ export class TriggerProcessor {
           }
         }
       }
-      
+
       if (!this.checkZone(state, t, event.type)) return false;
 
       if (t.limitPerTurn) {
@@ -651,6 +652,7 @@ export class TriggerProcessor {
     this.processWard(state, event, matchingTriggers, log);
     this.processCascadeAndStorm(state, event, matchingTriggers, log);
     this.processRepartee(state, event, matchingTriggers);
+    this.processParadigm(state, event, matchingTriggers, log);
     this.processLandfall(state, event, matchingTriggers);
     this.processOpus(state, event, matchingTriggers);
   }
@@ -660,7 +662,7 @@ export class TriggerProcessor {
     event: GameEvent,
     matchingTriggers: TriggeredAbility[],
   ) {
-    if (event.type === "ON_CAST_NON_CREATURE" && event.playerId) {
+    if (event.type === TriggerEvent.CastNonCreature && event.playerId) {
       state.battlefield.forEach((obj) => {
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         if (
@@ -671,18 +673,20 @@ export class TriggerProcessor {
             id: `prowess_system_${obj.id}_${Date.now()}`,
             sourceId: obj.id,
             controllerId: obj.controllerId,
-            eventMatch: "ON_CAST_NON_CREATURE",
+            eventMatch: TriggerEvent.CastNonCreature,
             effects: [
               {
-                type: "ApplyContinuousEffect",
-                duration: "UNTIL_END_OF_TURN",
+                type: EffectType.ApplyContinuousEffect,
+                duration: {
+                  type: DurationType.UntilEndOfTurn,
+                },
                 powerModifier: 1,
                 toughnessModifier: 1,
                 layer: 7,
-                targetMapping: "SELF",
+                targetMapping: TargetMapping.Self,
               },
             ],
-          } as any);
+          });
         }
       });
     }
@@ -726,7 +730,7 @@ export class TriggerProcessor {
                   targetMapping: TargetMapping.Self,
                 },
               ],
-            } as any);
+            });
           }
         }
       });
@@ -739,7 +743,7 @@ export class TriggerProcessor {
     matchingTriggers: TriggeredAbility[],
     log: (m: string) => void,
   ) {
-    if (event.type === "ON_BECOME_TARGET" && event.targetId) {
+    if (event.type === TriggerEvent.BecomeTarget && event.targetId) {
       const targetObj = state.battlefield.find((o) => o.id === event.targetId);
       if (targetObj) {
         const stats = LayerProcessor.getEffectiveStats(targetObj, state);
@@ -762,17 +766,17 @@ export class TriggerProcessor {
 
             if (costStr.toLowerCase().includes("life")) {
               const amount = parseInt(costStr.replace(/\D/g, "")) || 0;
-              choiceCosts.push({ type: "PayLife", value: String(amount) });
+              choiceCosts.push({ type: CostType.PayLife, value: String(amount) });
               labelStr = `Pay ${amount} life`;
             } else if (costStr.toLowerCase().includes("discard")) {
               const amount = parseInt(costStr.replace(/\D/g, "")) || 1;
-              choiceCosts.push({ type: "Discard", amount: amount });
+              choiceCosts.push({ type: CostType.Discard, amount: amount });
               labelStr = `Discard ${amount} card${amount > 1 ? "s" : ""}`;
             } else if (costStr.includes("{") || !isNaN(parseInt(costStr))) {
               const manaVal = costStr.startsWith("{")
                 ? costStr
                 : `{${costStr}}`;
-              choiceCosts.push({ type: "Mana", value: manaVal });
+              choiceCosts.push({ type: CostType.Mana, value: manaVal });
               labelStr = `Pay ${manaVal}`;
             }
 
@@ -784,11 +788,11 @@ export class TriggerProcessor {
               id: `ward_gen_${targetObj.id}_${Date.now()}`,
               sourceId: targetObj.id,
               controllerId: targetObj.controllerId,
-              eventMatch: "ON_BECOME_TARGET",
-              activeZone: "Battlefield",
+              eventMatch: TriggerEvent.BecomeTarget,
+              activeZone: Zone.Battlefield,
               effects: [
                 {
-                  type: "Choice",
+                  type: EffectType.Choice,
                   label: `Ward Trigger: ${labelStr} or spell/ability will be countered.`,
                   targetMapping: "EVENT_PLAYER",
                   choices: [
@@ -798,14 +802,14 @@ export class TriggerProcessor {
                       effects: [
                         {
                           type: EffectType.CounterSpellOrAbility,
-                          targetMapping: "TRIGGER_EVENT_SOURCE",
+                          targetMapping: TargetMapping.TriggerEventSource,
                         },
                       ],
                     },
                   ],
                 },
               ],
-            } as any);
+            });
           });
         }
       }
@@ -818,8 +822,8 @@ export class TriggerProcessor {
     matchingTriggers: TriggeredAbility[],
     log: (m: string) => void,
   ) {
-    if (event.type === "ON_CAST_SPELL" && event.data?.card) {
-      const card = event.data.card;
+    const card = event.payload?.card || event.data?.card || event.card;
+    if (event.type === TriggerEvent.CastSpell && card) {
       const stats = LayerProcessor.getEffectiveStats(card, state, log);
       const { keywords } = stats;
 
@@ -831,29 +835,29 @@ export class TriggerProcessor {
         matchingTriggers.push({
           id: `cascade_system_${card.id}_${Date.now()}_${i}`,
           sourceId: card.id,
-          controllerId: event.playerId,
-          eventMatch: "ON_CAST_SPELL",
+          controllerId: event.playerId!,
+          eventMatch: TriggerEvent.CastSpell,
           effects: [
             {
-              type: "RevealUntilCondition",
+              type: EffectType.RevealUntilCondition,
               restrictions: [
-                "Nonland",
-                { type: "ManaValueLess", value: "SOURCE_MV" },
+                Restriction.NonLand,
+                Restriction.ManaValueLessThanSource,
               ],
               zone: Zone.Exile,
               remainderZone: Zone.Library,
               remainderPosition: "bottom",
               shuffleRemainder: true,
               next: {
-                type: "Choice",
+                type: EffectType.Choice,
                 label: "Cast the revealed card?",
                 choices: [
                   {
                     label: "Yes",
                     effects: [
                       {
-                        type: "CastSpell",
-                        targetMapping: "TARGET_1",
+                        type: EffectType.CastSpell,
+                        targetMapping: TargetMapping.Target1,
                         isFreeCast: true,
                       },
                     ],
@@ -862,10 +866,10 @@ export class TriggerProcessor {
                     label: "No",
                     effects: [
                       {
-                        type: "MoveToZone",
+                        type: EffectType.MoveToZone,
                         zone: Zone.Library,
                         libraryPosition: "bottom",
-                        targetMapping: "TARGET_1",
+                        targetMapping: TargetMapping.Target1,
                       },
                     ],
                   },
@@ -873,11 +877,11 @@ export class TriggerProcessor {
               },
             },
           ],
-        } as any);
+        });
       });
 
       // Storm
-      if (keywords.includes("Storm")) {
+      if (keywords.some((k: string) => k.toLowerCase() === "storm")) {
         const totalSpells = Object.values(
           state.turnState.spellsCastThisTurn,
         ).reduce((a, b) => a + (b as number), 0);
@@ -887,18 +891,87 @@ export class TriggerProcessor {
             matchingTriggers.push({
               id: `storm_copy_${card.id}_${i}_${Date.now()}`,
               sourceId: card.id,
-              controllerId: event.playerId,
-              eventMatch: "ON_CAST_SPELL",
+              controllerId: event.playerId!,
+              eventMatch: TriggerEvent.CastSpell,
               effects: [
                 {
-                  type: "CopySpellOnStack",
-                  targetMapping: "TRIGGER_EVENT_SOURCE",
+                  type: EffectType.CopySpellOnStack,
+                  targetMapping: TargetMapping.TriggerEventSource,
                   chooseNewTargets: true,
                 },
               ],
-            } as any);
+            });
           }
         }
+      }
+    }
+  }
+
+  private static processParadigm(
+    state: GameState,
+    event: GameEvent,
+    matchingTriggers: TriggeredAbility[],
+    log: (m: string) => void,
+  ) {
+    const card = event.payload?.card || event.data?.card || event.card;
+    if (!card) return;
+
+    const stats = LayerProcessor.getEffectiveStats(card, state, log);
+    const { keywords } = stats;
+    if (!keywords.some((k: string) => k.toLowerCase() === "paradigm")) return;
+
+    if (event.type === TriggerEvent.CastSpell) {
+      // 1. Ensure the spell exiles on resolution
+      const stackObj = state.stack.find((s) => s.sourceId === card.id);
+      if (stackObj) {
+        stackObj.exileOnResolution = true;
+        log(
+          `[PARADIGM] Marked ${card.definition.name} to exile on resolution.`,
+        );
+      }
+    } else if (event.type === TriggerEvent.ResolveSpell) {
+      // 2. Register recurring trigger if it's the first time
+      const spellName = card.definition.name;
+      const playerId = event.playerId!;
+
+      const existingTriggerId = `paradigm_${playerId}_${spellName}`;
+      const alreadyRegistered = state.ruleRegistry.triggeredAbilities.some(
+        (t) => t.id === existingTriggerId,
+      );
+
+      if (!alreadyRegistered) {
+        state.ruleRegistry.triggeredAbilities.push({
+          type: AbilityType.Triggered,
+          eventMatch: TriggerEvent.PreCombatMainPhaseStart,
+          condition: ConditionType.IsYourTurn,
+          id: existingTriggerId,
+          sourceId: card.id,
+          controllerId: playerId,
+          activeZone: Zone.Command, // Global rule
+          effects: [
+            {
+              type: EffectType.Choice,
+              label: `Paradigm: Cast ${spellName}?`,
+              choices: [
+                {
+                  label: `Cast copy of ${spellName}`,
+                  effects: [
+                    {
+                      type: EffectType.CastSpell,
+                      isFreeCast: true,
+                      isParadigmCopy: true,
+                      value: spellName,
+                    },
+                  ],
+                },
+                { label: "Decline", effects: [] },
+              ],
+            },
+          ],
+        });
+        log(
+          `[PARADIGM] Registered recurring recast trigger for ${spellName}.`,
+        );
       }
     }
   }
@@ -908,7 +981,7 @@ export class TriggerProcessor {
     event: GameEvent,
     matchingTriggers: TriggeredAbility[],
   ) {
-    if (event.type === "ON_CAST_INSTANT_SORCERY" && event.playerId) {
+    if (event.type === TriggerEvent.CastInstantOrSorcery && event.playerId) {
       const stackObj = event.payload?.stackSnapshot || event.data?.stackSnapshot;
       const targets = stackObj?.targets || [];
       if (
@@ -928,7 +1001,7 @@ export class TriggerProcessor {
               ?.abilities?.find(
                 (a: any) =>
                   a.id?.includes("repartee") ||
-                  a.eventMatch === "ON_REPARTEE" ||
+                  a.eventMatch === TriggerEvent.Repartee ||
                   a.name === "Repartee",
               );
             if (reparteeAbility) {
@@ -937,7 +1010,7 @@ export class TriggerProcessor {
                 id: `repartee_gen_${obj.id}_${Date.now()}`,
                 sourceId: obj.id,
                 controllerId: obj.controllerId,
-              } as any);
+              });
             }
           }
         });
@@ -952,7 +1025,7 @@ export class TriggerProcessor {
   ) {
     const obj = event.payload?.object || event.data?.object;
     if (
-      event.type === "ON_ETB" &&
+      event.type === TriggerEvent.EnterBattlefield &&
       obj?.definition.types.some((t: string) => t.toLowerCase() === "land")
     ) {
       state.battlefield.forEach((p) => {
@@ -961,7 +1034,7 @@ export class TriggerProcessor {
             .getCard(p.definition.name)
             ?.abilities?.find(
               (a: any) =>
-                a.eventMatch === "ON_LANDFALL" || a.name === "Landfall",
+                a.eventMatch === TriggerEvent.Landfall || a.name === "Landfall",
             );
           if (landfallAbility) {
             matchingTriggers.push({
@@ -969,7 +1042,7 @@ export class TriggerProcessor {
               id: `landfall_${p.id}_${Date.now()}`,
               sourceId: p.id,
               controllerId: p.controllerId,
-            } as any);
+            });
           }
         }
       });
@@ -981,13 +1054,13 @@ export class TriggerProcessor {
     event: GameEvent,
     matchingTriggers: TriggeredAbility[],
   ) {
-    if (event.type === "ON_CAST_INSTANT_SORCERY" && event.playerId) {
+    if (event.type === TriggerEvent.CastInstantOrSorcery && event.playerId) {
       state.battlefield.forEach((p) => {
         if (String(p.controllerId) === String(event.playerId)) {
           const opusAbility = oracle
             .getCard(p.definition.name)
             ?.abilities?.find(
-              (a: any) => a.eventMatch === "ON_OPUS" || a.name === "Opus",
+              (a: any) => a.eventMatch === TriggerEvent.Opus || a.name === "Opus",
             );
           if (opusAbility) {
             // Avoid adding duplicate trigger if collectMatchingTriggers already found it
@@ -1002,13 +1075,13 @@ export class TriggerProcessor {
                 id: `opus_sys_${p.id}_${Date.now()}`,
                 sourceId: p.id,
                 controllerId: p.controllerId,
-                event: {
+                payload: {
                   spent:
                     (event.payload?.card as any)?.data?.paidManaValue ||
                     event.data?.card?.paidManaValue ||
                     0,
                 },
-              } as any);
+              });
             }
           }
         }

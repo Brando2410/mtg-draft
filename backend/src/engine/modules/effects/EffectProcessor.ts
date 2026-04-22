@@ -93,6 +93,7 @@ export class EffectProcessor {
 
     for (let i = startIndex; i < effects.length; i++) {
       const effect = effects[i];
+      if (log) log(`[DEBUG] EffectProcessor: Executing effect ${i}/${effects.length}: ${effect.type}. Targets: ${JSON.stringify(targets)}`);
 
       this.executeEffect({
         state,
@@ -170,6 +171,7 @@ export class EffectProcessor {
         id: stackObject.id,
         name: name,
         image_url: imageUrl,
+        type: stackObject.type,
         sourceId: stackObject.sourceId,
         controllerId: stackObject.controllerId,
         definition: source?.definition, // Pass the definition for clean rendering
@@ -211,8 +213,22 @@ export class EffectProcessor {
       event: stackObject?.data?.eventData,
       exiledIds: stackObject?.data?.exiledIds,
       lookingCards: stackObject?.data?.lookingCards || parentContext?.lookingCards,
-      nextEffectIndex: stackObject?.data?.nextEffectIndex
+      nextEffectIndex: stackObject?.data?.nextEffectIndex,
+      xValue: stackObject?.xValue || parentContext?.xValue,
+      isCopy: stackObject?.data?.isCopy || parentContext?.isCopy
     };
+
+    if (!state.executionTrace) state.executionTrace = [];
+    state.executionTrace.push({
+      type: effect.type,
+      sourceId,
+      controllerId,
+      targets,
+      timestamp: Date.now(),
+      xValue: context.xValue,
+      nextEffectIndex: context.nextEffectIndex
+    });
+
 
     // Rule 608.2: Evaluate conditions
     if (effect.condition) {
@@ -400,9 +416,17 @@ export class EffectProcessor {
 
       // Choice and SearchLibrary often use mappings to players/zones that shouldn't be matched against the main target definition
       if (
-        [EffectType.Choice, EffectType.SearchLibrary, EffectType.Scry, EffectType.Surveil, EffectType.MoveToZone].includes(
-          effect.type as any,
-        )
+        [
+          EffectType.Choice,
+          EffectType.SearchLibrary,
+          EffectType.Scry,
+          EffectType.Surveil,
+          EffectType.MoveToZone,
+          EffectType.Exile,
+          EffectType.PutOnBattlefield,
+          EffectType.PutInHand,
+          EffectType.ReturnToHand,
+        ].includes(effect.type as any)
       )
         return true;
 

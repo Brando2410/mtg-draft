@@ -3,6 +3,9 @@ import { Card } from '@shared/types';
 import { ActivateAbilityOptions, EngineContext, PlayCardOptions } from './interfaces/EngineContext';
 import { ChoiceProcessor, CombatProcessor, GameSetupProcessor, LayerProcessor, PlayerActionProcessor, PriorityProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor } from './modules';
 
+import type { MoveEffectHandler as MoveEffectHandlerType } from './modules/effects/handlers/zone/MoveEffectHandler';
+import type { LifeDamageHandler as LifeDamageHandlerType } from './modules/effects/handlers/life/LifeDamageHandler';
+
 /**
  * CENTRALIZED MTG RULE ENGINE (Orchestrator)
  * -----------------------------------------
@@ -13,6 +16,7 @@ import { ChoiceProcessor, CombatProcessor, GameSetupProcessor, LayerProcessor, P
  * Each module handles a specific Chapter of the Comprehensive Rules (CR).
  */
 export class GameEngine implements EngineContext {
+  public shouldLog: boolean = true;
   private state: GameState;
   private playerOrder: PlayerId[];
   private resolver: StackResolver;
@@ -74,7 +78,11 @@ export class GameEngine implements EngineContext {
         cardsExiledThisTurn: {},
         countersAddedThisTurnIds: [],
         turnStartTime: Date.now()
-      }
+      },
+      executionTrace: [],
+      mutationStack: [],
+      choiceQueue: [],
+      interaction: {}
     };
 
     GameSetupProcessor.initializePlayers(this.state, players, names, decks, avatars);
@@ -140,10 +148,10 @@ export class GameEngine implements EngineContext {
       player.hasLostDueToEmptyLibrary = true;
       return false;
     }
-    const { MoveEffectHandler } = require('./modules/effects/handlers/zone/MoveEffectHandler');
+    const MoveEffectHandler = require('./modules/effects/handlers/zone/MoveEffectHandler').MoveEffectHandler as typeof MoveEffectHandlerType;
     MoveEffectHandler.handle(
       this.state,
-      { type: 'DrawCards', amount: 1 } as any,
+      { type: 'DrawCards', amount: 1 },
       (m: string) => this.log(m),
       {
         sourceId: 'system',
@@ -323,8 +331,13 @@ export class GameEngine implements EngineContext {
    * Core Action: Player Gain Life (Rule 119.3)
    */
   public gainLife(playerId: PlayerId, amount: number) {
-    const { LifeDamageHandler } = require('./modules/effects/handlers/life/LifeDamageHandler');
-    LifeDamageHandler.handleGainLife(this.state, [playerId], amount, (m: string) => this.log(m));
+    const LifeDamageHandler = require('./modules/effects/handlers/life/LifeDamageHandler').LifeDamageHandler as typeof LifeDamageHandlerType;
+    LifeDamageHandler.handleGainLife(
+      this.state,
+      { type: 'GainLife', amount } as any,
+      (m: string) => this.log(m),
+      { targets: [playerId], sourceId: 'system', controllerId: playerId } as any
+    );
   }
 
   public getState(): GameState {

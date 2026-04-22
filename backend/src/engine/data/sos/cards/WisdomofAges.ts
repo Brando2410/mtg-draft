@@ -19,8 +19,8 @@ export const WisdomofAges: CardDefinition = {
                     type: EffectType.MoveToZone,
                     label: "Return all instant and sorcery cards from your graveyard to your hand",
                     zone: Zone.Hand,
+                    sourceZones: TargetMapping.ControllerGraveyard,
                     targetDefinition: {
-                        type: TargetType.CardInGraveyard,
                         restrictions: [
                             Restriction.InstantOrSorcery
                         ]

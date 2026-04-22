@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 export const Daydream: CardDefinition = {
     name: "Daydream",
     manaCost: "{W}",
@@ -26,13 +26,21 @@ export const Daydream: CardDefinition = {
             },
             effects: [
                 {
-                    type: CostType.Exile,
+                    type: EffectType.Exile,
                     targetMapping: TargetMapping.Target1,
-                    next: {
-                        type: EffectType.PutOnBattlefield,
-                        targetMapping: TargetMapping.Target1,
-                        startingCounters: { counterType: 'p1p1', amount: 1 }
-                    }
+                    effects: [
+                        {
+                            type: EffectType.PutOnBattlefield,
+                            targetMapping: TargetMapping.Target1,
+                            ownerControl: true
+                        },
+                        {
+                            type: EffectType.AddCounters,
+                            targetMapping: TargetMapping.Target1,
+                            counterType: 'p1p1',
+                            amount: 1
+                        }
+                    ]
                 }
             ]
         }

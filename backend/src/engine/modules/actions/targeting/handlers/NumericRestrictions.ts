@@ -20,8 +20,10 @@ export const NumericRestrictions: Record<string, IRestrictionHandler> = {
                 const source = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId);
                 val = source ? LayerProcessor.getEffectiveStats(source, state).power : 0;
             } else if (valPart === 'source_mv' || valPart === 'source_cmc') {
-                const source = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId);
-                val = source ? ManaProcessor.getManaValue(source.definition.manaCost || '') : 0;
+                const source = state.battlefield.find(o => o.id === sourceId) || 
+                               state.exile.find(o => o.id === sourceId) ||
+                               state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
+                val = source ? ManaProcessor.getManaValue(source.definition?.manaCost || '') : 0;
             } else if (valPart === 'converge_amount') {
                 const source = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId);
                 val = (source as any)?.convergeAmount || 0;

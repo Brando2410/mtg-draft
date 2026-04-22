@@ -6,18 +6,16 @@ export class EngineTestHarness {
     public engine: GameEngine;
 
     constructor() {
-        // Construct decks to prevent instant deck-out loss on turn 1
         const decks: Record<string, any[]> = {
             'Player1': new Array(60).fill({ name: 'Plains' }),
             'Player2': new Array(60).fill({ name: 'Plains' })
         };
         this.engine = new GameEngine(['Player1', 'Player2'], decks);
-        this.engine.shouldLog = false; // Disable global spam during tests
+        this.engine.shouldLog = false;
     }
 
     public setupGame() {
         this.engine.startGame();
-
         return {
             engine: this.engine,
             state: this.engine.getState(),
@@ -32,10 +30,7 @@ export class EngineTestHarness {
 
     public createCardObject(cardName: string, ownerId: PlayerId, zone: Zone): GameObject | null {
         const def = oracle.getCard(cardName);
-        if (!def) {
-            console.error(`[TestHarness] Card definition not found: ${cardName}`);
-            return null;
-        }
+        if (!def) return null;
 
         return {
             id: `card_${this.generateId()}`,
@@ -87,26 +82,32 @@ export class EngineTestHarness {
         if (config.C) pool.C += config.C;
     }
 
-    public castSpell(playerId: string, cardId: string, targets: string[] = []) {
-        this.engine.playCard({
-            playerId: playerId as PlayerId,
-            cardId,
-            targets
-        });
-    }
-
     public resolveStack() {
         const state = this.engine.getState();
         let loopLimit = 100;
-        
         while (state.stack.length > 0 && !state.pendingAction && loopLimit > 0) {
-            // Force resolution by passing priority twice
             this.engine.passPriority(state.priorityPlayerId as PlayerId, true);
             loopLimit--;
         }
+    }
 
-        if (loopLimit <= 0) {
-            console.error('[TestHarness] resolveStack exceeded loop limit. Stack might be stuck or waiting for UI.');
+    public chooseOption(label: string) {
+        const state = this.engine.getState();
+        if (!state.pendingAction || !state.pendingAction.data?.choices) return;
+        const choices = state.pendingAction.data.choices;
+        const index = choices.findIndex((c: any) => c.label === label || c.value === label);
+        if (index !== -1) {
+            this.engine.resolveChoice(state.pendingAction.playerId as PlayerId, index);
+        }
+    }
+
+    public chooseTarget(targetId: string) {
+        const state = this.engine.getState();
+        if (!state.pendingAction) return;
+        if (state.pendingAction.type === 'TARGETING') {
+            this.engine.resolveTargeting(state.pendingAction.playerId as PlayerId, targetId);
+        } else if (state.pendingAction.type === 'ModalSelection' && state.pendingAction.data?.choices) {
+            this.chooseOption(targetId);
         }
     }
 }

@@ -10,6 +10,8 @@ export interface PlayCardOptions {
     xValue?: number;
     bypassPriority?: boolean;
     bypassTargeting?: boolean;
+    isFreeCast?: boolean;
+    parentContext?: ResolutionContext;
 }
 
 export interface ActivateAbilityOptions {
@@ -21,6 +23,8 @@ export interface ActivateAbilityOptions {
     choiceIndex?: number;
     bypassPriority?: boolean;
     bypassTargeting?: boolean;
+    isFreeCast?: boolean;
+    parentContext?: ResolutionContext;
 }
 
 export interface FinalizeCastOptions {
@@ -33,6 +37,8 @@ export interface FinalizeCastOptions {
     targetDefinition: any; // Targeting can still be complex, keeping as any for now or checking if there's a TargetDefinition
     isFirstInstantOrSorcery: boolean;
     isInstantOrSorcery: boolean;
+    isFreeCast?: boolean;
+    parentContext?: ResolutionContext;
 }
 
 export interface FinalizeAbilityOptions {
@@ -42,6 +48,7 @@ export interface FinalizeAbilityOptions {
     abilityIndex: number;
     declaredTargets: string[];
     preSelectedChoice?: number;
+    parentContext?: ResolutionContext;
 }
 
 export interface EffectExecutionOptions {

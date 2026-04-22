@@ -5,7 +5,6 @@ describe('GameEngine - Core Loop & Spells', () => {
     let harness: EngineTestHarness;
 
     beforeEach(() => {
-        jest.spyOn(console, 'log').mockImplementation(() => {});
         harness = new EngineTestHarness();
     });
 

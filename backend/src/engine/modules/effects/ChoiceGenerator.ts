@@ -74,7 +74,7 @@ export class ChoiceGenerator {
             } as any);
         }
 
-        return this.wrap(playerId, sourceId, {
+        return this.wrap(state, playerId, sourceId, {
             label: config.label,
             choices: options,
             reveal: config.reveal,
@@ -97,7 +97,7 @@ export class ChoiceGenerator {
         choices: { label: string, value: any, costs?: any[], effects?: any[] }[]
     ) {
         const { CostProcessor } = require('../magic/CostProcessor');
-        return this.wrap(config.playerId, config.sourceId, {
+        return this.wrap(state, config.playerId, config.sourceId, {
             label: config.label,
             choices: choices.map(c => ({
                 ...c,
@@ -117,7 +117,7 @@ export class ChoiceGenerator {
      * Build interactive Scry action.
      */
     public static createScryChoice(state: GameState, cards: GameObject[], config: ChoiceConfig) {
-        return this.wrap(config.playerId, config.sourceId, {
+        return this.wrap(state, config.playerId, config.sourceId, {
             label: config.label || `Scry ${cards.length}`,
             lookingCards: cards,
             destinations: ['top', 'bottom'],
@@ -131,7 +131,7 @@ export class ChoiceGenerator {
      * Build interactive Surveil action.
      */
     public static createSurveilChoice(state: GameState, cards: GameObject[], config: ChoiceConfig) {
-        return this.wrap(config.playerId, config.sourceId, {
+        return this.wrap(state, config.playerId, config.sourceId, {
             label: config.label || `Surveil ${cards.length}`,
             lookingCards: cards,
             destinations: ['top', 'graveyard'],
@@ -257,7 +257,8 @@ export class ChoiceGenerator {
 
         const amount = Number(cost.value || cost.amount || 1);
         
-        return {
+        const { ActionProcessor } = require('../actions/ActionProcessor');
+        return ActionProcessor.prepareAction(state, {
             type: ActionType.ModalSelection,
             playerId,
             sourceId,
@@ -274,7 +275,7 @@ export class ChoiceGenerator {
                 choiceEffects: choice.effects,
                 remainingCosts: choice.costs.filter((c: any) => c !== cost),
                 lookingCards: candidates, // Required for UI to render card grid
-                choices: candidates.map(c => ({
+                choices: candidates.map((c: any) => ({
                     label: c.definition.name,
                     value: c.id,
                     imageUrl: c.definition.image_url || `https://api.scryfall.com/cards/${c.definition.scryfall_id}?format=image&version=normal`,
@@ -283,14 +284,15 @@ export class ChoiceGenerator {
                     selectable: true
                 }))
             }
-        };
+        });
     }
 
     /**
      * Build an interactive choice for X value.
      */
     public static createXChoice(state: GameState, sourceId: string, playerId: PlayerId, choice: any, data: any): any {
-        return {
+        const { ActionProcessor } = require('../actions/ActionProcessor');
+        return ActionProcessor.prepareAction(state, {
             type: ActionType.ChooseX,
             playerId,
             sourceId,
@@ -307,21 +309,21 @@ export class ChoiceGenerator {
                 selectedChoice: choice,
                 originalActionData: data
             }
-        };
+        });
     }
 
     /**
      * Wraps data into the standard engine pendingAction format.
      */
-    private static wrap(playerId: string, sourceId: string, data: any, type: ActionType | string = ActionType.ResolutionChoice): any {
+    private static wrap(state: GameState, playerId: string, sourceId: string, data: any, type: ActionType | string = ActionType.ResolutionChoice): any {
         console.log(`[CHOICE-DEBUG] Creating pendingAction: type=${type}, sourceId=${sourceId}`);
-        return {
-
+        const { ActionProcessor } = require('../actions/ActionProcessor');
+        return ActionProcessor.prepareAction(state, {
             type,
             playerId,
             sourceId,
             data
-        };
+        });
     }
 }
 

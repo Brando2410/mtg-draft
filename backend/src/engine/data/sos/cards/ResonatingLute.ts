@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const ResonatingLute: CardDefinition = {
+export const ResonatingLute: CardDefinition = {
     name: "Resonating Lute",
     manaCost: "{2}{U}{R}",
     colors: [
@@ -38,6 +38,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
         },
         {
             type: AbilityType.Activated,
+            id: "{T}: Draw a card. Activate only if you have seven or more cards in your hand.",
             costs: [{ type: CostType.Tap }],
             condition: 'HAND_COUNT_GE:7',
             effects: [
@@ -50,4 +51,4 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
         }
     ]
 };
-    
+

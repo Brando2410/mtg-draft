@@ -6,6 +6,9 @@ import {
 import { TargetingProcessor } from "../actions/targeting/TargetingProcessor";
 import { ConditionProcessor } from "../core/logic/ConditionProcessor";
 
+import type { EffectProcessor as EffectProcessorType } from "../effects/EffectProcessor";
+import type { SpellProcessor as SpellProcessorType } from "../actions/spells/SpellProcessor";
+
 /**
  * CR 613: Interaction of Continuous Effects
  * This is the "Pipeline" that calculates effective stats based on the "Whiteboard" (Registry).
@@ -177,7 +180,7 @@ export class LayerProcessor {
         )
         .forEach((e) => {
           if (!this.isTarget(state, e, obj.id)) return;
-          const { EffectProcessor } = require("../effects/EffectProcessor");
+          const EffectProcessor = require("../effects/EffectProcessor").EffectProcessor as typeof EffectProcessorType;
           let pMod = 0;
           let tMod = 0;
 
@@ -185,9 +188,7 @@ export class LayerProcessor {
             pMod = EffectProcessor.resolveAmount(
               state,
               e.powerModifier,
-              e.sourceId,
-              e.controllerId,
-              undefined,
+              { sourceId: e.sourceId, controllerId: e.controllerId } as any,
               e.targetIds || [obj.id],
             );
           }
@@ -195,9 +196,7 @@ export class LayerProcessor {
             tMod = EffectProcessor.resolveAmount(
               state,
               e.toughnessModifier,
-              e.sourceId,
-              e.controllerId,
-              undefined,
+              { sourceId: e.sourceId, controllerId: e.controllerId } as any,
               e.targetIds || [obj.id],
             );
           }
@@ -598,7 +597,7 @@ export class LayerProcessor {
     });
 
     // 3. Update effective stats for all objects in all zones (to set isPlayable correctly)
-    const { SpellProcessor } = require("../actions/spells/SpellProcessor");
+    const SpellProcessor = require("../actions/spells/SpellProcessor").SpellProcessor as typeof SpellProcessorType;
     [
       ...state.stack.map((s) => s.card).filter(Boolean),
       ...state.battlefield,

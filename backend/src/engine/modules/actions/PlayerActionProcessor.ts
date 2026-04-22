@@ -5,6 +5,12 @@ import { PriorityProcessor } from '../core/turn/PriorityProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { EngineContext } from '../../interfaces/EngineContext';
 
+import type { ChoiceProcessor as ChoiceProcessorType } from './ChoiceProcessor';
+import type { CombatProcessor as CombatProcessorType } from '../combat/CombatProcessor';
+import type { ManaProcessor as ManaProcessorType } from '../magic/ManaProcessor';
+import type { TriggerProcessor as TriggerProcessorType } from '../effects/triggers/TriggerProcessor';
+import type { TargetingProcessor as TargetingProcessorType } from './targeting/TargetingProcessor';
+
 // Need to safely interact with Rule registries without causing circular dependencies.
 export class PlayerActionProcessor {
   /**
@@ -31,7 +37,7 @@ export class PlayerActionProcessor {
       if (state.pendingAction.type === 'LEGEND_RULE') {
         const involvedIds = (state.pendingAction.data?.involvedIds || []) as string[];
         if (involvedIds.includes(cardId)) {
-          const { ChoiceProcessor } = require('./ChoiceProcessor');
+          const ChoiceProcessor = require('./ChoiceProcessor').ChoiceProcessor as typeof ChoiceProcessorType;
           return ChoiceProcessor.resolveChoice(state, playerId, cardId, log, engine);
         }
       }
@@ -112,16 +118,17 @@ export class PlayerActionProcessor {
     const isLand = typeLine.includes('land');
 
     const allActivated = [...(logic?.abilities || [])];
+    
+    // --- SUPPORT FOR IN-LINE ABILITIES (Tokens, Virtual Spells) ---
     if (obj.definition.abilities) {
       obj.definition.abilities.forEach((a: any) => {
-        if (a.id !== undefined) {
-          if (!allActivated.some(existing => existing.id === a.id)) {
-            allActivated.push(a);
-          }
-        } else {
-          if (!allActivated.includes(a)) {
-            allActivated.push(a);
-          }
+        const isDuplicate = allActivated.some(existing => {
+          if (a.id !== undefined && a.id === existing.id) return true;
+          if (a.oracleText !== undefined && a.oracleText === existing.oracleText && a.type === existing.type) return true;
+          return false;
+        });
+        if (!isDuplicate) {
+          allActivated.push(a);
         }
       });
     }
@@ -129,6 +136,8 @@ export class PlayerActionProcessor {
     const filtered = allActivated
       .map((a: any, index: number) => ({ ability: a, index }))
       .filter((entry: any) => entry.ability.type === AbilityType.Activated && PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, true));
+
+    console.log(`[DEBUG] interactWithPermanent: ${obj.definition.name} (${cardId}) found ${allActivated.length} intrinsic abilities, ${filtered.length} are currently legal activated abilities.`);
 
     if (filtered.length > 0) {
       if (state.priorityPlayerId !== playerId) {
@@ -207,7 +216,7 @@ export class PlayerActionProcessor {
     if (!obj || obj.controllerId !== playerId || obj.isTapped) return false;
 
     // We use a simplified check for the first mana ability to ensure synchronous tapping
-    const { oracle } = require('../../OracleLogicMap');
+    const oracle = require('../../OracleLogicMap').oracle;
     const logic = oracle.getCard(obj.definition.name);
     if (!logic || !logic.abilities) return false;
 
@@ -244,7 +253,7 @@ export class PlayerActionProcessor {
     // We only handle "Undo" here now. Tapping for mana is handled via ActivateAbility (Step 3 above)
     if (!card.isTapped) return false;
 
-    const { m21: mLogic } = require('../../data/m21');
+    const mLogic = require('../../data/m21').m21;
     const logic = mLogic[card.definition.name];
     if (!logic) return false;
 
@@ -257,7 +266,7 @@ export class PlayerActionProcessor {
     if (!addManaEffect) return false;
 
     const player = state.players[playerId];
-    const { ManaProcessor } = require('../magic/ManaProcessor');
+    const ManaProcessor = require('../magic/ManaProcessor').ManaProcessor as typeof ManaProcessorType;
 
     const manaStr = addManaEffect.value || '{C}';
     const requirements = ManaProcessor.parseManaCost(manaStr.startsWith('{') ? manaStr : `{${manaStr}}`);
@@ -395,7 +404,7 @@ export class PlayerActionProcessor {
     state.combat.blockers.push({ blockerId, attackerId: cardId });
     log(`${state.battlefield.find(c => c.id === blockerId)?.definition.name} blocking ${card.definition.name}`);
 
-    const { TriggerProcessor } = require('../effects/triggers/TriggerProcessor');
+    const TriggerProcessor = require('../effects/triggers/TriggerProcessor').TriggerProcessor as typeof TriggerProcessorType;
     TriggerProcessor.onEvent(state, { type: 'ON_BLOCK', targetId: blockerId, sourceId: blockerId, data: { object: blockerObj, attackerId: cardId } }, log);
 
     state.pendingAction!.sourceId = undefined;
@@ -424,7 +433,7 @@ export class PlayerActionProcessor {
     player.graveyard.push(card);
 
     const sourceId = state.pendingAction?.sourceId;
-    const { TriggerProcessor } = require('./../effects/triggers/TriggerProcessor');
+    const TriggerProcessor = require('./../effects/triggers/TriggerProcessor').TriggerProcessor as typeof TriggerProcessorType;
     TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card, sourceId } }, log);
 
     if (player.pendingDiscardCount > 0) {
@@ -467,7 +476,7 @@ export class PlayerActionProcessor {
 
     // Check if more ordering is needed
     // We use a dynamic import or require to avoid circular dependency since CombatProcessor uses this class
-    const { CombatProcessor } = require('../combat/CombatProcessor');
+    const CombatProcessor = require('../combat/CombatProcessor').CombatProcessor as typeof CombatProcessorType;
     if (CombatProcessor.needsOrdering(state)) {
       CombatProcessor.setupNextOrderingAction(state, log);
     }
@@ -490,7 +499,7 @@ export class PlayerActionProcessor {
 
     state.pendingAction = undefined;
 
-    const { TriggerProcessor } = require('./../effects/triggers/TriggerProcessor');
+    const TriggerProcessor = require('./../effects/triggers/TriggerProcessor').TriggerProcessor as typeof TriggerProcessorType;
     
     for (let i = 0; i < orderedTriggers.length; i++) {
         const t = orderedTriggers[i];
@@ -518,7 +527,7 @@ export class PlayerActionProcessor {
    * CR 603: Resolve a specific target selection from the UI.
    */
   public static resolveTargeting(state: GameState, playerId: PlayerId, targetId: string, engine: EngineContext): boolean {
-    const { TargetingProcessor } = require('./targeting/TargetingProcessor');
+    const TargetingProcessor = require('./targeting/TargetingProcessor').TargetingProcessor as typeof TargetingProcessorType;
 
     return TargetingProcessor.resolveInteractiveTargeting(
       state,

@@ -412,39 +412,39 @@ export class TargetMapper {
       case "LAST_MILLED_IDS":
         return (state as any).lastMilledIds || [];
       case "TARGET_1": {
-        const actualTargets = (stackData as any)?.targets || targets;
+        const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[0] ? [actualTargets[0]] : [];
       }
       case "SELF_AND_TARGET_1": {
-        const actualTargets = (stackData as any)?.targets || targets;
+        const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[0] ? [sourceId, actualTargets[0]] : [sourceId];
       }
       case "TARGET_2": {
-        const actualTargets = (stackData as any)?.targets || targets;
+        const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[1] ? [actualTargets[1]] : [];
       }
       case "TARGET_3": {
-        const actualTargets = (stackData as any)?.targets || targets;
+        const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[2] ? [actualTargets[2]] : [];
       }
       case "TARGET_4": {
-        const actualTargets = (stackData as any)?.targets || targets;
+        const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[3] ? [actualTargets[3]] : [];
       }
       case "TARGET_5": {
-        const actualTargets = (stackData as any)?.targets || targets;
+        const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[4] ? [actualTargets[4]] : [];
       }
       case "TARGET_6": {
-        const actualTargets = (stackData as any)?.targets || targets;
+        const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[5] ? [actualTargets[5]] : [];
       }
       case "TARGET_7": {
-        const actualTargets = (stackData as any)?.targets || targets;
+        const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[6] ? [actualTargets[6]] : [];
       }
       case "TARGET_8": {
-        const actualTargets = (stackData as any)?.targets || targets;
+        const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[7] ? [actualTargets[7]] : [];
       }
       case "TARGET_ALL":

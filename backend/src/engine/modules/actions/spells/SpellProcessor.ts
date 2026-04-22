@@ -30,7 +30,7 @@ export class SpellProcessor {
         engine: EngineContext,
         options: PlayCardOptions
     ): boolean {
-        const { playerId, cardId: cardInstanceId, bypassPriority = false, bypassTargeting = false, xValue } = options;
+        const { playerId, cardId: cardInstanceId, bypassPriority = false, bypassTargeting = false, xValue, isFreeCast, parentContext } = options;
         let declaredTargets = options.targets || [];
         const activeId = String(state.activePlayerId).trim();
         const callerId = String(playerId).trim();
@@ -57,6 +57,10 @@ export class SpellProcessor {
         // Apply incoming xValue if provided (for resuming after targeting)
         if (xValue !== undefined) {
             cardToPlay.xValue = xValue;
+        }
+
+        if (isFreeCast) {
+            (cardToPlay as any).isFreeCast = true;
         }
 
         // --- ACTIVATED ABILITY REDIRECTION (Graveyard) ---
@@ -90,7 +94,8 @@ export class SpellProcessor {
         if (cardToPlay.definition.faces && !bypassPriority && !(cardToPlay as any).selectedFaceDefinition) {
             const { ChoiceGenerator } = require('../../../effects/ChoiceGenerator');
             const { ActionType } = require('@shared/engine_types');
-            state.pendingAction = ChoiceGenerator.createModalChoice({
+            const { ActionProcessor } = require('../ActionProcessor');
+            state.pendingAction = ActionProcessor.prepareAction(state, ChoiceGenerator.createModalChoice({
                 label: `Cast ${cardToPlay.definition.name}: Choose Face`,
                 playerId: playerId,
                 sourceId: cardToPlay.id,
@@ -98,7 +103,7 @@ export class SpellProcessor {
             }, cardToPlay.definition.faces.map((face: any, idx: number) => ({
                 label: `${face.name} (${face.type_line})`,
                 value: `FACE_SELECTION_${idx}`
-            })));
+            }))));
             state.priorityPlayerId = null;
             return true;
         }
@@ -188,10 +193,10 @@ export class SpellProcessor {
             if (combinedEffects.length > 0) spellEffects = combinedEffects;
         }
 
-        const choiceEffectIndex = spellEffects.findIndex((e: any, idx: number) => 
-            e.type === 'Choice' && 
-            e.choices && 
-            !e.targetMapping && 
+        const choiceEffectIndex = spellEffects.findIndex((e: any, idx: number) =>
+            e.type === 'Choice' &&
+            e.choices &&
+            !e.targetMapping &&
             idx === 0 &&
             (!e.choices.some((c: any) => c.costs && c.costs.length > 0))
         );
@@ -205,7 +210,7 @@ export class SpellProcessor {
             (hasPreSelectedMode && JSON.stringify(modalAbility.modes[lastChosenModeIndex]).includes('"X"'));
 
         if (needsX && cardToPlay.xValue === undefined) {
-            return SpellInteractiveManager.handleXValueChoice(state, playerId, cardToPlay, declaredTargets, log);
+            return SpellInteractiveManager.handleXValueChoice(state, playerId, cardToPlay, declaredTargets, log, parentContext);
         }
 
         // CR 601.2f: Determine total cost
@@ -216,13 +221,13 @@ export class SpellProcessor {
 
         // Step 1: Check Targeting
         if (targetDefinition && (!declaredTargets || declaredTargets.length === 0) && !bypassTargeting) {
-            const result = SpellInteractiveManager.handleTargetingChoice(state, playerId, cardToPlay, targetDefinition, totalMana, cardInstanceId, log, engine);
+            const result = SpellInteractiveManager.handleTargetingChoice(state, playerId, cardToPlay, targetDefinition, totalMana, cardInstanceId, log, engine, parentContext);
             if (result === true || result === false) return result;
             declaredTargets = result;
         }
 
         // Step 1.5: Check Additional Costs (e.g. Goremand's sacrifice)
-        const interactiveResult = SpellInteractiveManager.handleInteractiveCosts(state, playerId, cardToPlay, additionalCosts, declaredTargets, cardInstanceId, log);
+        const interactiveResult = SpellInteractiveManager.handleInteractiveCosts(state, playerId, cardToPlay, additionalCosts, declaredTargets, cardInstanceId, log, parentContext);
         if (interactiveResult === true) return true; // Flow paused for input
         if (interactiveResult === null) return false; // Illegal play, stop
 
@@ -242,7 +247,8 @@ export class SpellProcessor {
             });
 
             const { ActionType } = require('@shared/engine_types');
-            state.pendingAction = {
+            const { ActionProcessor } = require('../ActionProcessor');
+            state.pendingAction = ActionProcessor.prepareAction(state, {
                 type: ActionType.ModalSelection,
                 playerId: playerId,
                 sourceId: cardToPlay.id,
@@ -255,7 +261,7 @@ export class SpellProcessor {
                     isModeSelection: true,
                     declaredTargets: declaredTargets || []
                 }
-            };
+            });
             log(`[MODAL] Selecting mode for ${cardToPlay.definition.name}...`);
             return true;
         }
@@ -292,7 +298,9 @@ export class SpellProcessor {
             spellEffects,
             targetDefinition,
             isFirstInstantOrSorcery,
-            isInstantOrSorcery
+            isInstantOrSorcery,
+            isFreeCast,
+            parentContext
         });
     }
 
@@ -302,7 +310,7 @@ export class SpellProcessor {
         engine: EngineContext,
         options: ActivateAbilityOptions
     ): boolean {
-        const { playerId, cardId, abilityIndex, targets: declaredTargets = [], bypassPriority = false, choiceIndex, bypassTargeting = false, xValue } = options;
+        const { playerId, cardId, abilityIndex, targets: declaredTargets = [], bypassPriority = false, choiceIndex, bypassTargeting = false, xValue, parentContext } = options;
         const { TargetingProcessor } = require('../targeting/TargetingProcessor');
         const obj = TargetingProcessor.findObjectInAnyZone(state, cardId);
         if (!obj) return false;
@@ -332,11 +340,11 @@ export class SpellProcessor {
         const cardLogic = oracle.getCard(obj.definition.name);
         let abilities = [...(cardLogic?.abilities || [])];
         if (obj.definition.abilities) {
-          obj.definition.abilities.forEach((a: any) => {
-            if (!abilities.some(existing => existing.id === a.id && a.id !== undefined)) {
-              abilities.push(a);
-            }
-          });
+            obj.definition.abilities.forEach((a: any) => {
+                if (!abilities.some(existing => existing.id === a.id && a.id !== undefined)) {
+                    abilities.push(a);
+                }
+            });
         }
 
         if (!abilities[abilityIndex]) {
@@ -372,7 +380,7 @@ export class SpellProcessor {
 
         // Step 3: Targeting (Rule 602.2b)
         if (ability.targetDefinition && (declaredTargets === undefined || declaredTargets.length === 0) && !bypassTargeting) {
-            const targetingResult = SpellInteractiveManager.handleAbilityTargeting(state, playerId, cardId, obj, ability, abilityIndex, log, engine, choiceIndex);
+            const targetingResult = SpellInteractiveManager.handleAbilityTargeting(state, playerId, cardId, obj, ability, abilityIndex, log, engine, choiceIndex, parentContext);
             if (targetingResult) return true; // Handled pending action or single target recursion
         }
 
@@ -383,7 +391,8 @@ export class SpellProcessor {
             ability,
             abilityIndex,
             declaredTargets: declaredTargets || [],
-            preSelectedChoice: choiceIndex
+            preSelectedChoice: choiceIndex,
+            parentContext
         });
     }
 
@@ -393,7 +402,7 @@ export class SpellProcessor {
         engine: EngineContext,
         options: FinalizeCastOptions
     ): boolean {
-        const { playerId, cardToPlay, totalMana, additionalCosts, declaredTargets, spellEffects, targetDefinition, isFirstInstantOrSorcery, isInstantOrSorcery } = options;
+        const { playerId, cardToPlay, totalMana, additionalCosts, declaredTargets, spellEffects, targetDefinition, isFirstInstantOrSorcery, isInstantOrSorcery, isFreeCast, parentContext } = options;
         const player = state.players[playerId];
         const { ActionProcessor } = require('../ActionProcessor');
         const { TargetingProcessor } = require('../targeting/TargetingProcessor');
@@ -401,10 +410,10 @@ export class SpellProcessor {
         const { AbilityType, Zone, CostType } = require('@shared/engine_types');
 
         // Modal Choice check (modes like "Choose one")
-        const choiceEffectIndex = spellEffects.findIndex((e: any, idx: number) => 
-            e.type === 'Choice' && 
-            e.choices && 
-            !e.targetMapping && 
+        const choiceEffectIndex = spellEffects.findIndex((e: any, idx: number) =>
+            e.type === 'Choice' &&
+            e.choices &&
+            !e.targetMapping &&
             (!e.choices.some((c: any) => c.costs && c.costs.length > 0))
         );
         const hasPreSelectedChoice = (state as any).lastChoiceIndex !== undefined;
@@ -437,7 +446,9 @@ export class SpellProcessor {
         const hasConfirmedAutoTap = (state as any).confirmedAutoTap;
         delete (state as any).confirmedAutoTap;
 
-        if (!ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
+        if (isFreeCast) {
+            log(`[DEBUG] Finalizing free cast for ${cardToPlay.definition.name}. Bypassing mana check.`);
+        } else if (!ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
             if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, cardToPlay)) {
                 if (hasConfirmedAutoTap) {
                     log(`Using pre-confirmed auto-tap for ${totalMana}...`);
@@ -478,8 +489,8 @@ export class SpellProcessor {
             }
         }
 
-        log(`Paying ${totalMana} for ${cardToPlay.definition.name}...`);
-        const colorsSpent = ManaProcessor.deductManaCost(player, totalMana, state, cardToPlay);
+        log(isFreeCast ? `Casting ${cardToPlay.definition.name} for free...` : `Paying ${totalMana} for ${cardToPlay.definition.name}...`);
+        const colorsSpent = isFreeCast ? [] : ManaProcessor.deductManaCost(player, totalMana, state, cardToPlay);
         (cardToPlay as any).colorsSpent = colorsSpent;
         (cardToPlay as any).convergeAmount = colorsSpent.length;
 
@@ -584,6 +595,21 @@ export class SpellProcessor {
         };
 
         state.stack.push(stackObj);
+        
+        // --- RESUME RESOLUTION ---
+        if (!state.pendingAction && parentContext) {
+            const { EffectProcessor } = require('../../effects/EffectProcessor');
+            EffectProcessor.resolveEffects({
+                state,
+                effects: parentContext.effects || [],
+                sourceId: parentContext.sourceId || '',
+                targets: parentContext.targets || [],
+                log,
+                startIndex: parentContext.nextEffectIndex || 0,
+                stackObject: parentContext.stackObject,
+                parentContext: parentContext.parentContext,
+            });
+        }
 
         // Casualty
         if ((state as any).paidCasualtyFor === cardToPlay.id) {
@@ -618,8 +644,10 @@ export class SpellProcessor {
 
         log(`--------------------------------------------------`);
         log(`[STACK] + ${state.players[playerId].name} cast ${cardToPlay.definition.name}${declaredTargets?.length ? ' targeting ' + declaredTargets.join(', ') : ''}`);
-        engine.checkStateBasedActions();
-        engine.resetPriorityToActivePlayer();
+        if (!state.pendingAction) {
+            engine.checkStateBasedActions();
+            engine.resetPriorityToActivePlayer();
+        }
         return true;
     }
 
@@ -629,7 +657,7 @@ export class SpellProcessor {
         engine: EngineContext,
         options: FinalizeAbilityOptions
     ): boolean {
-        const { playerId, obj, ability, abilityIndex, declaredTargets, preSelectedChoice } = options;
+        const { playerId, obj, ability, abilityIndex, declaredTargets, preSelectedChoice, parentContext } = options;
         const { AbilityType } = require('@shared/engine_types');
         const { TriggerProcessor } = require('../../effects/triggers/TriggerProcessor');
         const playerObj = state.players[playerId];
@@ -706,8 +734,26 @@ export class SpellProcessor {
         });
 
         state.consecutivePasses = 0;
-        engine.checkStateBasedActions();
-        engine.resetPriorityToActivePlayer();
+        
+        // --- RESUME RESOLUTION ---
+        if (!state.pendingAction && parentContext) {
+            const { EffectProcessor } = require('../../effects/EffectProcessor');
+            EffectProcessor.resolveEffects({
+                state,
+                effects: parentContext.effects || [],
+                sourceId: parentContext.sourceId || '',
+                targets: parentContext.targets || [],
+                log,
+                startIndex: parentContext.nextEffectIndex || 0,
+                stackObject: parentContext.stackObject,
+                parentContext: parentContext.parentContext,
+            });
+        }
+
+        if (!state.pendingAction) {
+            engine.checkStateBasedActions();
+            engine.resetPriorityToActivePlayer();
+        }
         return true;
     }
 

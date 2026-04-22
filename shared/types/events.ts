@@ -54,6 +54,9 @@ export const TriggerEvent = {
   Untap: "ON_UNTAP",
   Upkeep: "ON_UPKEEP_STEP",
   ValentinReplacementSuccess: "ON_VALENTIN_REPLACEMENT_SUCCESS",
+  ResolveSpell: "ON_RESOLVE_SPELL",
+  Opus: "ON_OPUS",
+  Repartee: "ON_REPARTEE",
 } as const;
 export type TriggerEvent = (typeof TriggerEvent)[keyof typeof TriggerEvent];
 

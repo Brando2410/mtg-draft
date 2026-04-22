@@ -81,6 +81,16 @@ export class StackProcessor {
           state.priorityPlayerId = state.pendingAction?.playerId || null;
           return;
         }
+        
+        // --- KEYWORD HOOK: ON RESOLUTION ---
+        if (completed && objectToResolve.type === AbilityType.Spell) {
+            const { TriggerProcessor } = require('../../effects/triggers/TriggerProcessor');
+            TriggerProcessor.onEvent(state, { 
+                type: 'ON_RESOLVE_SPELL', 
+                playerId: objectToResolve.controllerId,
+                payload: { card: objectToResolve.card, sourceId: objectToResolve.sourceId }
+            }, log);
+        }
 
         const stackRemaining = state.stack.map(s => s.card?.definition.name || 'Effect').join(', ');
         if (stackRemaining) {

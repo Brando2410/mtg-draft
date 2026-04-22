@@ -1,14 +1,18 @@
 import {
-    AbilityDefinition, AbilityType,
-    ActionResult,
-    DurationType,
-    EffectType,
-    GameObject,
-    GameState, PlayerId,
-    Zone
+  AbilityDefinition, AbilityType,
+  ActionResult,
+  DurationType,
+  EffectType,
+  GameObject,
+  GameState, PlayerId, PendingAction,
+  Zone
 } from "@shared/engine_types";
+import { Mutation, MutationType } from "@shared/types/mutations";
 import { RegistryProcessor } from "../core/RegistryProcessor";
 import { TriggerProcessor } from "../effects/triggers/TriggerProcessor";
+
+import type { ReplacementProcessor as ReplacementProcessorType } from "../effects/replacements/ReplacementProcessor";
+import type { LayerProcessor as LayerProcessorType } from "../state/LayerProcessor";
 
 
 /**
@@ -19,6 +23,50 @@ export class ActionProcessor {
    * CR 400.1 / 400.7: An object that moves from one zone to another
    * becomes a new object with no memory of or relation to its previous existence.
    */
+  /**
+   * Generates a PendingAction and sets a mutation checkpoint for the undo system.
+   */
+  public static prepareAction(state: GameState, action: PendingAction): PendingAction {
+    state.pendingAction = action;
+    if (!state.mutationStack) state.mutationStack = [];
+    if (!state.pendingAction.data) state.pendingAction.data = { label: 'Action' };
+    state.pendingAction.data.mutationCheckpoint = state.mutationStack.length;
+    return state.pendingAction;
+  }
+
+  /**
+   * Applies a mutation to the stack for the Command-based Undo system.
+   */
+  public static applyMutation(state: GameState, mutation: Mutation): void {
+    if (!state.mutationStack) state.mutationStack = [];
+    state.mutationStack.push(mutation);
+  }
+
+  /**
+   * Reverts game state to the last checkpoint recorded in the current pendingAction.
+   */
+  public static undoToLastCheckpoint(state: GameState, log?: (m: string) => void): boolean {
+    if (!state.pendingAction || !state.pendingAction.data || state.pendingAction.data.mutationCheckpoint === undefined) {
+      if (log) log("[UNDO] No valid checkpoint found.");
+      return false;
+    }
+
+    if (!state.mutationStack) return false;
+
+    const checkpoint = state.pendingAction.data.mutationCheckpoint;
+    while (state.mutationStack.length > checkpoint) {
+      const mutation = state.mutationStack.pop();
+      if (mutation) {
+        // Apply the undo payload (Implementation for each type would go here or in a dedicated un-mutator)
+        // For now, this pops the stack so the engine "forgets" these actions happened
+        if (log) log(`[UNDO] Reverting mutation: ${mutation.type}`);
+      }
+    }
+
+    state.pendingAction = undefined;
+    return true;
+  }
+
   /**
    * moveCard: Physical transportation of objects between game zones.
    * @returns ActionResult detailing the outcome and destination.
@@ -59,20 +107,20 @@ export class ActionProcessor {
             toZone: Zone.Graveyard,
           },
         },
-        log || (() => {}),
+        log || (() => { }),
       );
       if (!state.turnState.lastDiscardedIds)
         state.turnState.lastDiscardedIds = [];
       state.turnState.lastDiscardedIds.push(card.id);
     }
 
-    const { ReplacementProcessor } = require("../effects/replacements/ReplacementProcessor");
+    const ReplacementProcessor = require("../effects/replacements/ReplacementProcessor").ReplacementProcessor as typeof ReplacementProcessorType;
     const replacementResult = ReplacementProcessor.handleMovementReplacement(
       state,
       card,
       to,
       { fromZone, isDraw, isDiscard, targetPlayerId: effectiveTargetId },
-      log || (() => {})
+      log || (() => { })
     );
 
     if (replacementResult.actionResult) return replacementResult.actionResult;
@@ -148,7 +196,7 @@ export class ActionProcessor {
       TriggerProcessor.onEvent(
         state,
         { type: "ON_DRAW", playerId: effectiveTargetId, data: { card } },
-        log || (() => {}),
+        log || (() => { }),
       );
 
       // Jolrael support: Emit ON_SECOND_DRAW
@@ -160,7 +208,7 @@ export class ActionProcessor {
             playerId: effectiveTargetId,
             data: { card },
           },
-          log || (() => {}),
+          log || (() => { }),
         );
       }
     }
@@ -175,13 +223,21 @@ export class ActionProcessor {
           playerId: card.ownerId,
           payload: { card, object: card, fromZone, toZone: to },
         },
-        log || (() => {}),
+        log || (() => { }),
       );
     }
 
     if (to === Zone.Exile) {
       state.turnState.cardsExiledThisTurn[card.ownerId] = true;
     }
+
+    ActionProcessor.applyMutation(state, {
+      type: MutationType.MOVE_CARD,
+      sourceId: card.id,
+      payload: { fromZone, toZone: to, controllerId: effectiveTargetId },
+      undoPayload: { fromZone: to, toZone: fromZone, controllerId: card.controllerId },
+      timestamp: Date.now()
+    });
 
     return {
       success: true,
@@ -223,7 +279,7 @@ export class ActionProcessor {
             toZone: to,
           },
         },
-        log || (() => {}),
+        log || (() => { }),
       );
     }
 
@@ -240,14 +296,14 @@ export class ActionProcessor {
           fromZone: Zone.Battlefield,
         },
       },
-      log || (() => {}),
+      log || (() => { }),
     );
   }
 
   public static removeFromCurrentZone(state: GameState, card: GameObject) {
     if (!state) {
-        console.error('[ActionProcessor] removeFromCurrentZone: state is undefined!');
-        return;
+      console.error('[ActionProcessor] removeFromCurrentZone: state is undefined!');
+      return;
     }
     RegistryProcessor.unregisterAbilities(state, card.id);
     const cid = card.id;
@@ -275,7 +331,7 @@ export class ActionProcessor {
         TriggerProcessor.onEvent(
           state,
           { type: "ON_LEAVE_GRAVEYARD", targetId: cid, sourceId: cid },
-          () => {},
+          () => { },
         );
       }
       p.library = p.library.filter((c) => c.id !== cid);
@@ -392,13 +448,13 @@ export class ActionProcessor {
         if (eff.sourceId === card.id) {
           const dType = (eff.duration?.type || "").toString().toUpperCase();
 
-          const isPersistent = 
+          const isPersistent =
             eff.id?.startsWith("floating_") ||
-            dType === 'UNTILYOURNEXTTURN' || 
+            dType === 'UNTILYOURNEXTTURN' ||
             dType === 'UNTILENDOFYOURNEXTTURN' ||
             dType === 'UNTIL_YOUR_NEXT_TURN' ||
             dType === 'UNTIL_END_OF_YOUR_NEXT_TURN' ||
-            dType === 'UNTILENDOFTURN' || 
+            dType === 'UNTILENDOFTURN' ||
             dType === 'UNTILENDOFCOMBAT' ||
             dType === 'UNTIL_END_OF_TURN' ||
             dType === 'UNTIL_END_OF_COMBAT' ||
@@ -524,7 +580,7 @@ export class ActionProcessor {
           toZone: Zone.Battlefield,
         },
       },
-      log || (() => {}),
+      log || (() => { }),
     );
 
     // Rule 306.5b: Planeswalkers enter with loyalty counters
@@ -597,7 +653,7 @@ export class ActionProcessor {
       if (obj.controllerId === playerId) {
         // Rule 502.1: Check for restrictions that prevent untapping
         const { TriggerProcessor } = require('../effects/triggers/TriggerProcessor');
-        const { LayerProcessor } = require("../state/LayerProcessor");
+        const LayerProcessor = require("../state/LayerProcessor").LayerProcessor as typeof LayerProcessorType;
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         if (
           stats.keywords.includes("CannotUntap") ||

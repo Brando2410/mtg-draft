@@ -160,11 +160,14 @@ export interface TriggeredAbility {
     name?: string;
     eventMatch: string | string[];
     activeZone?: Zone;
-    condition?: (state: any, event: any, ability: TriggeredAbility) => boolean;
+    condition?: string | ConditionType | ((state: any, event: any, ability: TriggeredAbility) => boolean);
     limitPerTurn?: number;
     duration?: EffectDuration;
     oracleText?: string;
     effects?: EffectDefinition[];
+    isGlobal?: boolean;
+    type?: AbilityType;
+    payload?: any;
 }
 
 /**

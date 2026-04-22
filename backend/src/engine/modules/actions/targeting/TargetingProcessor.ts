@@ -459,7 +459,8 @@ export class TargetingProcessor {
                 targets: resolvedTargets,
                 xValue: actionData?.xValue,
                 bypassPriority: true,
-                bypassTargeting: true
+                bypassTargeting: true,
+                parentContext: actionData?.parentContext
             });
             engine.checkAutoPass(playerId);
             return success;
@@ -472,7 +473,8 @@ export class TargetingProcessor {
                 targets: resolvedTargets,
                 xValue: actionData?.xValue,
                 bypassPriority: true,
-                bypassTargeting: true
+                bypassTargeting: true,
+                parentContext: actionData?.parentContext
             });
             engine.checkAutoPass(playerId);
             return success;

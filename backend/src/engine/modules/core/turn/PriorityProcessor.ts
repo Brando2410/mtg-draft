@@ -455,7 +455,12 @@ export class PriorityProcessor {
     // --- SUPPORT FOR IN-LINE ABILITIES (Tokens, Virtual Spells) ---
     if (obj.definition.abilities) {
       obj.definition.abilities.forEach((a: any) => {
-        if (!abilities.some(existing => existing.id === a.id && a.id !== undefined)) {
+        const isDuplicate = abilities.some(existing => {
+          if (a.id !== undefined && a.id === existing.id) return true;
+          if (a.oracleText !== undefined && a.oracleText === existing.oracleText && a.type === existing.type) return true;
+          return false;
+        });
+        if (!isDuplicate) {
           abilities.push(a);
         }
       });

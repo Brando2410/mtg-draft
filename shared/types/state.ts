@@ -195,34 +195,79 @@ export interface ChoiceOption {
     type_line?: string;
 }
 
+export interface ChoicePayload {
+    index?: number;
+    indices?: number[];
+    value?: string;
+    values?: string[];
+}
+
+export interface InteractionState {
+    lastChosenSacrificeId?: string;
+    lastChosenDiscardId?: string;
+    lastChosenTapSelectionIds?: string[];
+    lastChosenExileIds?: string[];
+    lastChosenCostChoiceIndex?: number;
+    lastChosenModeIndex?: number[];
+    lastChoiceIndex?: number | string;
+    confirmedAutoTap?: boolean;
+}
+
+export interface ChoiceQueueItem {
+    type: string;
+    playerId: PlayerId;
+    sourceId: string;
+    data: any;
+}
+
+export interface BaseActionData {
+    label: string;
+    stackObj?: StackObject;
+    parentContext?: any;
+    mutationCheckpoint?: number;
+    hideUndo?: boolean;
+    isContextual?: boolean;
+    abilityIndex?: number;
+    [key: string]: any;
+}
+
+export interface ModalActionData extends BaseActionData {
+    choices: ChoiceOption[];
+    isCostChoice?: boolean;
+    costType?: 'Sacrifice' | 'Discard' | 'TapSelection' | 'Exile';
+    minChoices?: number;
+    maxChoices?: number;
+}
+
+export interface XChoiceActionData extends BaseActionData {
+    isResolutionX: boolean;
+    originalActionData: PendingAction;
+}
+
+export interface TargetingActionData extends BaseActionData {
+    isTargetingModal?: boolean;
+    declaredTargets?: string[];
+    targets?: string[];
+}
+
+export interface BatchActionData extends BaseActionData {
+    lookingCards?: GameObject[];
+    nextPlayerIds?: PlayerId[];
+    discardAmount?: number | string;
+    onFailureEffects?: any[];
+}
+
+export type ActionData = ModalActionData | XChoiceActionData | TargetingActionData | BatchActionData | BaseActionData;
+
 export interface PendingAction {
     type: string;
     playerId: PlayerId;
     count?: number;
     sourceId?: string;
-    data?: {
-        label: string;
-        choices?: ChoiceOption[];
-        isCostChoice?: boolean;
-        costType?: string;
-        minChoices?: number;
-        maxChoices?: number;
-        stackObj?: StackObject;
-        parentContext?: any;
-        lookingCards?: GameObject[];
-        nextPlayerIds?: PlayerId[];
-        discardAmount?: number | string;
-        onFailureEffects?: any[];
-        isContextual?: boolean;
-        hideUndo?: boolean;
-        abilityIndex?: number;
-        isTargetingModal?: boolean;
-        declaredTargets?: string[];
-        targets?: string[];
-        confirmedAutoTap?: boolean;
-        [key: string]: any; // Allow for dynamic extension but prefer typed keys above
-    };
+    data?: ActionData;
 }
+
+import type { Mutation } from './mutations';
 
 export interface GameState {
     players: Record<PlayerId, PlayerState>;
@@ -242,8 +287,20 @@ export interface GameState {
     limbo: GameObject[];
     consecutivePasses: number;
     logs: string[];
+    executionTrace?: {
+        type: string;
+        sourceId: string;
+        controllerId: string;
+        targets: string[];
+        timestamp: number;
+        xValue?: number;
+        nextEffectIndex?: number;
+    }[];
+    mutationStack?: Mutation[];
+    choiceQueue?: ChoiceQueueItem[];
     turnState: TurnState;
     playerOrder: PlayerId[];
+    interaction: InteractionState;
 }
 
 export interface RuleRegistry {

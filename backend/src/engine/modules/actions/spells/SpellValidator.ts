@@ -1,37 +1,17 @@
-import { AbilityType, EffectType, GameObject, GameState, Phase, PlayerId, Zone } from '@shared/engine_types';
+import { AbilityType, EffectType, GameObject, GameState, Phase, PlayerId, Zone, TargetMapping } from '@shared/engine_types';
 import { CostProcessor } from '../../magic/CostProcessor';
 import { RestrictionValidator } from '../../core/RestrictionValidator';
+import { TargetingProcessor } from '../targeting/TargetingProcessor';
+import { PriorityProcessor } from '../../core/turn/PriorityProcessor';
+import { ActionProcessor } from '../ActionProcessor';
 
-/**
- * SpellValidator - Pure rules validation for spell casting and ability activation.
- *
- * Responsibilities:
- *   - Resolving which card object is being played (hand, graveyard, exile, library).
- *   - Evaluating timing restrictions (sorcery speed, priority checks).
- *   - Validating ability activation prerequisites (zone, costs, limits, speed).
- *   - Processing land plays as a special action (Rule 305).
- *
- * Design: Every method is a pure static function that reads GameState and returns
- * a boolean pass/fail or a resolved object. No side-effects on pendingAction or UI.
- */
+import type { LayerProcessor as LayerProcessorType } from '../../state/LayerProcessor';
+
+
 export class SpellValidator {
-    /**
-     * Resolves the actual GameObject to play from a client-provided card instance ID.
-     *
-     * Search priority (CR 400.1):
-     *   1. Player's hand (most common case).
-     *   2. Non-hand zones (graveyard, exile, library) with permission check via
-     *      continuous effects (AllowCastFromGraveyard, AllowPlayExiled, AllowPlayFromTop).
-     *   3. Flashback keyword override (Rule 702.34) bypasses permission checks.
-     *   4. Prepared creatures on the battlefield (SOS mechanic, virtual face casting).
-     *   5. Paradigm virtual copies (special engine construct).
-     *
-     * @returns The resolved GameObject, or null if the card cannot be found/played.
-     */
+
     public static resolveCardToPlay(state: GameState, playerId: PlayerId, cardInstanceId: string, log: (m: string) => void, bypassPermission = false): GameObject | null {
         const player = state.players[playerId];
-        const { PriorityProcessor } = require('../../core/turn/PriorityProcessor');
-        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
 
         // 1. Search in Hand
         const cardInHand = player.hand.find((c: any) => c.id === cardInstanceId);
@@ -45,7 +25,7 @@ export class SpellValidator {
             else if (obj.zone === Zone.Exile) permissionType = EffectType.AllowPlayExiled;
             else if (obj.zone === Zone.Library) permissionType = EffectType.AllowPlayFromTop;
 
-            const { LayerProcessor } = require('../../state/LayerProcessor');
+            const LayerProcessor = require('../../state/LayerProcessor').LayerProcessor as typeof LayerProcessorType;
             const stats = LayerProcessor.getEffectiveStats(obj, state);
             const hasFlashback = obj.zone === Zone.Graveyard && (stats.keywords?.includes('Flashback') || obj.definition.keywords?.includes('Flashback'));
 
@@ -87,7 +67,6 @@ export class SpellValidator {
                 const face = preparedObj.definition.preparedFace || preparedObj.definition.faces![1];
                 const copyId = isCopy ? cardInstanceId : `copy_${preparedObj.id}_${Date.now()}`;
 
-                // Cache check: prevents losing X values and targets between interaction steps
                 if ((state as any).dynamicCopies && (state as any).dynamicCopies[copyId]) {
                     return (state as any).dynamicCopies[copyId];
                 }
@@ -107,7 +86,6 @@ export class SpellValidator {
             }
         }
 
-        // 4. Search for Paradigm/Dynamic Virtual Copies
         if ((state as any).paradigmCopies && (state as any).paradigmCopies[cardInstanceId]) {
             return (state as any).paradigmCopies[cardInstanceId];
         }
@@ -118,26 +96,13 @@ export class SpellValidator {
         return null;
     }
 
-    /**
-     * Validates whether the current game state allows this card to be cast.
-     *
-     * Checks two layers:
-     *   1. RestrictionProcessor.isCastAllowed (Rule 101.2 - "Cannot" wins).
-     *   2. Sorcery-speed timing: active player, main phase, empty stack (Rules 305/307).
-     *
-     * Instant-speed spells and Flash bypass the timing check entirely.
-     *
-     * @returns true if the cast is legal at this moment, false otherwise.
-     */
-    public static validateCardTiming(state: GameState, playerId: PlayerId, cardToPlay: GameObject, isInstantOrFlash: boolean, bypassTargeting: boolean, log: (m: string) => void): boolean {
-        // Rule 101.2: "Cannot" wins
+    public static validateCardTiming(state: GameState, playerId: PlayerId, cardToPlay: GameObject, isInstantOrFlash: boolean, bypassPriority: boolean, log: (m: string) => void): boolean {
         if (!RestrictionValidator.canCastSpells(state, playerId, cardToPlay)) {
             log(`Illegal Action: Casting ${cardToPlay.definition.name} is currently restricted.`);
             return false;
         }
 
-        // Rule 305/307: Timing
-        if (!isInstantOrFlash && !bypassTargeting) {
+        if (!isInstantOrFlash && !bypassPriority) {
             const activeId = String(state.activePlayerId).trim();
             const callerId = String(playerId).trim();
             if (activeId !== callerId || (state.currentPhase !== Phase.PreCombatMain && state.currentPhase !== Phase.PostCombatMain) || state.stack.length > 0) {
@@ -148,22 +113,9 @@ export class SpellValidator {
         return true;
     }
 
-    /**
-     * Processes a land play as a Special Action (Rule 305).
-     *
-     * Lands are NOT spells - they bypass the stack entirely. This method:
-     *   1. Calculates the maximum land plays per turn (default 1, modified by
-     *      AdditionalLandPlays continuous effects like Azusa).
-     *   2. Checks if the player has remaining land drops.
-     *   3. Moves the card directly to the battlefield.
-     *   4. Triggers state-based actions after the land enters.
-     *
-     * @returns true if the land was successfully played, false if the limit was reached.
-     */
     public static handleLandPlay(state: GameState, playerId: PlayerId, cardToPlay: GameObject, engine: any, log: (m: string) => void): boolean {
         const player = state.players[playerId];
         let maxLands = 1;
-        // Support for cards like Azusa that add additional land plays
         state.ruleRegistry.continuousEffects.forEach(effect => {
             if ((effect as any).type === 'AdditionalLandPlays' && effect.targetMapping === 'CONTROLLER' && effect.controllerId === playerId) {
                 maxLands += ((effect as any).amount as number) || 0;
@@ -177,8 +129,6 @@ export class SpellValidator {
             return false;
         }
 
-        // Rule 305: Playing a land is a special action, not a spell.
-        const { ActionProcessor } = require('../ActionProcessor');
         ActionProcessor.moveCard(state, cardToPlay, Zone.Battlefield, playerId, log);
 
         state.turnState.landsPlayedThisTurn[playerId] = currentLandsPlayed + 1;
@@ -187,19 +137,8 @@ export class SpellValidator {
         return true;
     }
 
-    /**
-     * Validates the prerequisites for activating an ability (Rule 602.2).
-     *
-     * Checks:
-     *   - Zone legality: the object must be in the ability's activeZone (default: Battlefield).
-     *   - Cost payability: CostProcessor.canPay verifies mana, tap, sacrifice costs.
-     *   - Trigger conditions: function-based activation requirements (e.g., "only if you control 3+ creatures").
-     *   - Per-turn limits: tracked via turnState.triggeredAbilitiesUsedThisTurn.
-     *
-     * @returns true if all activation prerequisites are met.
-     */
+
     public static validateAbilityActivation(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, abilityIndex: number, log: (m: string) => void): boolean {
-        const { Zone } = require('@shared/engine_types');
         const activeZone = ability.activeZone || Zone.Battlefield;
         if (activeZone !== Zone.Any && activeZone !== (obj.zone as any)) {
             log(`Illegal Activation: ${obj.definition.name}'s ability cannot be activated from ${obj.zone}.`);
@@ -231,18 +170,8 @@ export class SpellValidator {
         return true;
     }
 
-    /**
-     * Checks sorcery-speed restrictions for Planeswalker loyalties and abilities
-     * marked with activatedOnlyAsSorcery / isSorcerySpeed (Rule 606.3).
-     *
-     * Planeswalker loyalty abilities are limited to once per turn and require
-     * sorcery-speed timing unless an AllowOutOfTurnActivation continuous effect
-     * is active (e.g., Teferi, Master of Time).
-     *
-     * @returns true if the ability can be activated at the current speed.
-     */
+
     public static validateAbilitySpeed(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, cardLogic: any, log: (m: string) => void): boolean {
-        const { Phase, EffectType, TargetMapping } = require('@shared/engine_types');
         const isPlaneswalker = obj.definition.types.includes('Planeswalker');
         const isSorceryOnly = ability.activatedOnlyAsSorcery || (ability as any).isSorcerySpeed;
 

@@ -1,17 +1,17 @@
 import {
-    ActionType,
-    DrawEffect,
-    EffectDefinition,
-    EffectType,
-    GameObject,
-    GameState,
-    MoveEffect,
-    PlayerId,
-    PlayerState,
-    ResolutionContext,
-    SearchEffect,
-    TargetType,
-    Zone
+  ActionType,
+  DrawEffect,
+  EffectDefinition,
+  EffectType,
+  GameObject,
+  GameState,
+  MoveEffect,
+  PlayerId,
+  PlayerState,
+  ResolutionContext,
+  SearchEffect,
+  TargetType,
+  Zone
 } from "@shared/engine_types";
 import { ActionProcessor } from "../../../actions/ActionProcessor";
 import { TargetingProcessor } from "../../../actions/targeting/TargetingProcessor";
@@ -761,6 +761,7 @@ export class MoveEffectHandler {
       }
 
       const obj = this.findObject(state, tid, context);
+      if (log) log(`[DEBUG] MoveEffectHandler.resolveMoveTargets: findObject for ${tid} returned ${obj ? obj.definition.name + " in " + obj.zone : "null"}`);
       if (obj) {
         const from = obj.zone;
         const destPlayerId = moveEff.ownerControl ? obj.ownerId : controllerId;
@@ -782,20 +783,20 @@ export class MoveEffectHandler {
         }
         if (zone === Zone.Exile) {
           (state as any).lastExiledIds = [tid];
-          
+
           if (stackObject) {
             if (!stackObject.data) stackObject.data = {};
             if (!stackObject.data.exiledIds) stackObject.data.exiledIds = [];
             if (!stackObject.data.exiledIds.includes(tid)) {
-                stackObject.data.exiledIds.push(tid);
-                console.log(`[DEBUG] MoveEffectHandler: Added ${tid} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
+              stackObject.data.exiledIds.push(tid);
+              console.log(`[DEBUG] MoveEffectHandler: Added ${tid} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
             }
           }
 
           if (parentContext) {
             if (!parentContext.exiledIds) parentContext.exiledIds = [];
             if (!parentContext.exiledIds.includes(tid)) {
-                parentContext.exiledIds.push(tid);
+              parentContext.exiledIds.push(tid);
             }
           }
           TriggerProcessor.onEvent(
@@ -808,6 +809,34 @@ export class MoveEffectHandler {
             },
             log,
           );
+        }
+
+        // Handle starting counters (Rule 614.1c replacement-style entry)
+        if ((effect as any).startingCounters && zone === Zone.Battlefield) {
+          const sc = (effect as any).startingCounters;
+          const cType = sc.type || sc.counterType || sc.countersType || "p1p1";
+          const finalType =
+            cType.toLowerCase() === "p1p1" || cType === "+1/+1"
+              ? "+1/+1"
+              : cType;
+          const { EffectProcessor } = require("../../EffectProcessor");
+          const resolvedAmount = EffectProcessor.resolveAmount(
+            state,
+            sc.amount,
+            context,
+            [tid],
+          );
+
+          if (resolvedAmount > 0) {
+            const obj = state.battlefield.find((o) => o.id === tid);
+            if (obj) {
+              obj.counters[finalType] =
+                (obj.counters[finalType] || 0) + resolvedAmount;
+              log(
+                `[COUNTERS] ${obj.definition.name} enters with ${resolvedAmount} ${finalType} counter(s).`,
+              );
+            }
+          }
         }
 
         // --- NESTED EFFECTS SUPPORT ---
@@ -847,8 +876,8 @@ export class MoveEffectHandler {
 
     // CR 121.2: If a player is forbidden from drawing cards, draw effects are ignored.
     if ((effect as any).isDraw && !RestrictionValidator.canDrawCards(state, controllerId)) {
-        log(`${player.name} cannot draw cards due to a restriction.`);
-        return;
+      log(`${player.name} cannot draw cards due to a restriction.`);
+      return;
     }
 
     // Pop from library to temporary 'Looking' pool
@@ -872,7 +901,7 @@ export class MoveEffectHandler {
             : 1,
         maxChoices:
           (effect as any).selectionType === "AnyNumber" ||
-          (effect as any).amount === "ANY"
+            (effect as any).amount === "ANY"
             ? cards.length
             : (effect as any).amount || 1,
         actionType:
@@ -981,10 +1010,10 @@ export class MoveEffectHandler {
 
     // Default: Automatic move (Draw, Mill, Exile)
     if (zone === Zone.Exile) {
-        (state as any).lastExiledIds = cards.map((c) => c.id);
+      (state as any).lastExiledIds = cards.map((c) => c.id);
     }
     if (effect.type === EffectType.Mill) {
-        (state as any).lastMilledIds = cards.map((c) => c.id);
+      (state as any).lastMilledIds = cards.map((c) => c.id);
     }
     cards.forEach((c) => {
       const from = c.zone;
@@ -1002,12 +1031,12 @@ export class MoveEffectHandler {
       }
       if (zone === Zone.Exile) {
         if (stackObject) {
-            if (!stackObject.data) stackObject.data = {};
-            if (!stackObject.data.exiledIds) stackObject.data.exiledIds = [];
-            if (!stackObject.data.exiledIds.includes(c.id)) {
-                stackObject.data.exiledIds.push(c.id);
-                console.log(`[DEBUG] MoveEffectHandler: Added library card ${c.id} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
-            }
+          if (!stackObject.data) stackObject.data = {};
+          if (!stackObject.data.exiledIds) stackObject.data.exiledIds = [];
+          if (!stackObject.data.exiledIds.includes(c.id)) {
+            stackObject.data.exiledIds.push(c.id);
+            console.log(`[DEBUG] MoveEffectHandler: Added library card ${c.id} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
+          }
         }
 
         if (parentContext) {
@@ -1276,6 +1305,7 @@ export class MoveEffectHandler {
 
     idsToMove.forEach((tid) => {
       const obj = this.findObject(state, tid, context);
+      if (log) log(`[DEBUG] MoveEffectHandler: findObject for ${tid} returned ${obj ? obj.definition.name + " in " + obj.zone : "null"}`);
       if (!obj) return;
 
       const from = obj.zone;

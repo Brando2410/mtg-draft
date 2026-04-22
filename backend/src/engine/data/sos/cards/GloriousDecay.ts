@@ -17,60 +17,57 @@ export const GloriousDecay: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            effects: [
+            modes: [
                 {
-                    type: CostType.Choice,
-                    label: "Choose a mode",
-                    choices: [
+                    label: "Destroy target artifact",
+                    targetDefinition: {
+                        type: TargetType.Artifact,
+                        count: 1,
+                    },
+                    effects: [
                         {
-                            label: "Destroy target artifact",
-                            targetDefinition: {
-                                type: TargetType.Artifact,
-                                count: 1,
-                            },
-                            effects: [
-                                {
-                                    type: EffectType.Destroy,
-                                    targetMapping: TargetMapping.Target1
-                                }
-                            ]
+                            type: EffectType.Destroy,
+                            targetMapping: TargetMapping.Target1
+                        }
+                    ]
+                },
+                {
+                    label: "Deals 4 damage to target creature with flying",
+                    targetDefinition: {
+                        type: TargetType.Creature,
+                        count: 1,
+                        restrictions: [Restriction.Flying]
+                    },
+                    effects: [
+                        {
+                            type: EffectType.DealDamage,
+                            amount: 4,
+                            targetMapping: TargetMapping.Target1
+                        }
+                    ]
+                },
+                {
+                    label: "Exile target card from a graveyard. Draw a card",
+                    type: EffectType.Choice,
+                    targetDefinition: {
+                        type: TargetType.CardInGraveyard,
+                        count: 1
+                    },
+                    effects: [
+                        {
+                            type: EffectType.Exile,
+                            targetMapping: TargetMapping.Target1
                         },
                         {
-                            label: "Deals 4 damage to target creature with flying",
-                            targetDefinition: {
-                                type: TargetType.Creature,
-                                count: 1,
-                                restrictions: [Restriction.Flying]
-                            },
-                            effects: [
-                                {
-                                    type: EffectType.DealDamage,
-                                    amount: 4,
-                                    targetMapping: TargetMapping.Target1
-                                }
-                            ]
-                        },
-                        {
-                            label: "Exile target card from a graveyard. Draw a card",
-                            targetDefinition: {
-                                type: TargetType.CardInGraveyard,
-                                count: 1
-                            },
-                            effects: [
-                                {
-                                    type: EffectType.Exile,
-                                    targetMapping: TargetMapping.Target1
-                                },
-                                {
-                                    type: EffectType.DrawCards,
-                                    targetMapping: TargetMapping.Controller,
-                                    amount: 1
-                                }
-                            ]
+                            type: EffectType.DrawCards,
+                            targetMapping: TargetMapping.Controller,
+                            amount: 1
                         }
                     ]
                 }
             ]
         }
     ]
+
+
 };

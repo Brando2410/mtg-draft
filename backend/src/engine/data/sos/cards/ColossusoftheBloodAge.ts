@@ -35,11 +35,13 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
                     type: EffectType.DiscardCards,
                     amount: TargetType.Any,
                     targetMapping: TargetMapping.Controller,
-                    next: {
-                        type: EffectType.DrawCards,
-                        amount: DynamicAmount.DiscardedCountPlus1,
-                        targetMapping: TargetMapping.Controller
-                    }
+                    effects: [
+                        {
+                            type: EffectType.DrawCards,
+                            amount: DynamicAmount.DiscardedCountPlus1,
+                            targetMapping: TargetMapping.Controller
+                        }
+                    ]
                 }
             ]
         }
@@ -47,4 +49,3 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
     power: "6",
     toughness: "6"
 };
-    

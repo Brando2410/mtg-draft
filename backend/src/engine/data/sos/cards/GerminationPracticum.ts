@@ -1,20 +1,14 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-    export const GerminationPracticum: CardDefinition = {
+export const GerminationPracticum: CardDefinition = {
     name: "Germination Practicum",
     manaCost: "{3}{G}{G}",
     scryfall_id: "abe8332f-c76e-44e2-9427-d1228453abec",
     rarity: "mythic",
     image_url: "https://cards.scryfall.io/normal/front/a/b/abe8332f-c76e-44e2-9427-d1228453abec.jpg?1775938016",
-    colors: [
-        "G"
-    ],
-    types: [
-        "Sorcery"
-    ],
-    subtypes: [
-        "Lesson"
-    ],
-    keywords: [],
+    colors: ["G"],
+    types: ["Sorcery"],
+    subtypes: ["Lesson"],
+    keywords: ["Paradigm"],
     oracleText: "Put two +1/+1 counters on each creature you control.\nParadigm (Then exile this spell. After you first resolve a spell with this name, you may cast a copy of it from exile without paying its mana cost at the beginning of each of your first main phases.)",
     abilities: [
         {
@@ -25,10 +19,8 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
                     amount: 2,
                     counterType: '+1/+1',
                     targetMapping: TargetMapping.AllCreaturesYouControl
-                },
-                { type: EffectType.Paradigm }
+                }
             ]
         }
     ]
 };
-    

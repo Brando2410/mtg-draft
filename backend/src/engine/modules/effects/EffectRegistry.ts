@@ -10,7 +10,7 @@ import {
 import { MovementHandler } from "./handlers/zone/MovementEffects";
 import { ChoiceHandler, LearnHandler } from "./handlers/system/ChoiceEffects";
 import { ContinuousEffectHandler } from "./handlers/system/ContinuousEffects";
-import { CastSpellHandler, ParadigmHandler, ExileTopCardsExcessDamageHandler, ConditionalEffectHandler } from "./handlers/specialized/SpecializedEffects";
+import { CastSpellHandler, ExileTopCardsExcessDamageHandler, ConditionalEffectHandler } from "./handlers/specialized/SpecializedEffects";
 import { CounterSpellHandler, CounterAbilityHandler, CopySpellHandler, CopyAbilityHandler, CounterSpellOrAbilityHandler } from "./handlers/stack/CounterCopyEffects";
 import { ExchangeHandAndGraveyardHandler, DisableDamagePreventionHandler, PendingActionHandler, NecromentiaHandler } from "./handlers/system/MiscEffects";
 import { ControlEffectsHandler } from "./handlers/system/ControlEffects";
@@ -69,7 +69,6 @@ export const EffectRegistry: Partial<Record<EffectType | string, IEffectHandler>
 
     // Specialized Logic
     [EffectType.CastSpell]: CastSpellHandler,
-    [EffectType.Paradigm]: ParadigmHandler,
     [EffectType.ExileTopCardsExcessDamage]: ExileTopCardsExcessDamageHandler,
     [EffectType.ConditionalEffect]: ConditionalEffectHandler,
 

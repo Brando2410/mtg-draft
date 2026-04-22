@@ -15,10 +15,34 @@ import { EngineContext } from '../../interfaces/EngineContext';
  */
 export class ChoiceProcessor {
 
+    public static normalizePayload(input: number | string | import('@shared/engine_types').ChoicePayload): import('@shared/engine_types').ChoicePayload {
+        if (typeof input === 'object' && input !== null) {
+            return input;
+        }
+        if (typeof input === 'number') {
+            return { index: input };
+        }
+        if (typeof input === 'string') {
+            if (input === 'undo' || input === 'none') return { value: input };
+            if (input.includes('|')) {
+                return { indices: input.split('|').map(s => parseInt(s.replace('CHOICE_', ''))) };
+            }
+            if (input.startsWith('CHOICE_')) {
+                return { index: parseInt(input.replace('CHOICE_', '')) };
+            }
+            // Check if it's a number string
+            if (!isNaN(parseInt(input))) {
+                return { index: parseInt(input) };
+            }
+            return { value: input };
+        }
+        return {};
+    }
+
     public static resolveChoice(
         state: GameState,
         playerId: string,
-        choiceIndex: number | string,
+        choiceInput: number | string | import('@shared/engine_types').ChoicePayload,
         log: (m: string) => void,
         engine: EngineContext
     ): boolean {
@@ -29,6 +53,9 @@ export class ChoiceProcessor {
             console.log(`[CHOICE-DEBUG] resolveChoice failed: Player ID mismatch. Expected ${action.playerId}, got ${playerId}.`);
             return false;
         }
+
+        const payload = this.normalizePayload(choiceInput);
+        const choiceIndex = payload.index !== undefined ? payload.index : payload.value;
 
         console.log(`[CHOICE-DEBUG] Resolving ${action.type} for ${playerId}. Index/Value: ${choiceIndex}`);
 
@@ -43,18 +70,23 @@ export class ChoiceProcessor {
 
         // Handle Trigger Ordering
         if (isOrderTriggers) {
-            const orderRaw = typeof choiceIndex === 'string' ? choiceIndex.split('|') : [];
-            const order = orderRaw.map(s => s.replace('CHOICE_', ''));
+            const orderRaw = payload.indices || (payload.values ? payload.values.map(v => parseInt(v)) : []) || [];
+            // If we only have choiceIndex, it might be a single string for ordering? Wait, ordering is usually an array.
+            // Let's assume order is handled as strings
+            let order: string[] = [];
+            if (payload.values) order = payload.values;
+            else if (typeof choiceInput === 'string') order = choiceInput.split('|').map(s => s.replace('CHOICE_', ''));
+
             return PlayerActionProcessor.resolveTriggerOrdering(state, playerId, order, log);
         }
 
         // Handle "Back/Undo"
-        if (String(choiceIndex) === 'undo' || choiceIndex === -1) {
+        if (payload.value === 'undo' || payload.index === -1) {
             return this.handleUndo(state, playerId, action, log);
         }
 
         if (isChoosingX) {
-            return this.handleXChoice(state, playerId, action, choiceIndex, log, engine);
+            return this.handleXChoice(state, playerId, action, choiceInput, log, engine);
         }
 
         const isReorder = isScry; // For backward compatibility with the rest of the file
@@ -127,7 +159,7 @@ export class ChoiceProcessor {
 
         // Handle Legend Rule Choice
         if (isLegendRule) {
-            let choice = action.data?.choices?.[idx];
+            let choice = idx !== undefined ? action.data?.choices?.[idx as number] : undefined;
             if (!choice && typeof choiceIndex === 'string') {
                 choice = action.data?.choices?.find((c: any) => c.value === choiceIndex || c.id === choiceIndex);
             }
@@ -149,7 +181,7 @@ export class ChoiceProcessor {
         }
 
         const sourceId = action.sourceId;
-        const choice = action.data?.choices?.[idx];
+        const choice = idx !== undefined ? action.data?.choices?.[idx as number] : undefined;
 
         if (!choice || !sourceId) return false;
 
@@ -391,12 +423,14 @@ export class ChoiceProcessor {
         state.priorityPlayerId = playerId;
 
         // CLEANUP TEMPORARY CASTING STATE
-        delete (state as any).lastChosenCostChoiceIndex;
-        delete (state as any).lastChosenSacrificeId;
-        delete (state as any).lastChosenDiscardId;
-        delete (state as any).lastChosenExileIds;
-        delete (state as any).lastChosenModeIndex;
-        delete (state as any).lastChoiceIndex;
+        state.interaction = {
+            lastChosenCostChoiceIndex: undefined,
+            lastChosenSacrificeId: undefined,
+            lastChosenDiscardId: undefined,
+            lastChosenExileIds: undefined,
+            lastChosenModeIndex: undefined,
+            lastChoiceIndex: undefined
+        };
 
         return true;
     }
@@ -751,7 +785,7 @@ export class ChoiceProcessor {
             const needsX = costs.some((c: AbilityCost) => {
                 const isManaCost = String(c.type).toLowerCase() === 'mana';
                 const hasX = String(c.manaCost || "").includes('{X}') || String(c.value || "").includes('{X}');
-                
+
                 return isManaCost && hasX && !alreadyChosen;
             });
 
@@ -788,8 +822,32 @@ export class ChoiceProcessor {
 
 
         // Resume Parent Contexts
-        let currentCtx = savedActionData as any;
-        while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex < currentCtx.effects.length) {
+        this.resumeContexts(state, sourceId, savedActionData, stackObj, log);
+
+        // --- ENQUEUE NEXT PLAYERS ---
+        if (!state.pendingAction) {
+            const nextPlayerIds = action.data?.nextPlayerIds || action.data?.stackObj?.data?.nextPlayerIds || [];
+            if (nextPlayerIds.length > 0) {
+                if (!state.choiceQueue) state.choiceQueue = [];
+                state.choiceQueue.push({
+                    type: action.type,
+                    playerId: nextPlayerIds[0],
+                    sourceId: sourceId as string,
+                    data: {
+                        ...action.data,
+                        nextPlayerIds: nextPlayerIds.slice(1)
+                    }
+                });
+            }
+        }
+
+        this.finalizeResolution(state, sourceId, stackObj, action, log, engine);
+        return true;
+    }
+
+    private static resumeContexts(state: GameState, sourceId: string, savedActionData: any, stackObj: any, log: (m: string) => void) {
+        let currentCtx = savedActionData;
+        while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex !== undefined && currentCtx.nextEffectIndex < currentCtx.effects.length) {
             log(`[RESOLVING] Resuming parent resolution context for ${sourceId}...`);
             const nextIdx = currentCtx.nextEffectIndex;
             const effs = currentCtx.effects;
@@ -813,78 +871,64 @@ export class ChoiceProcessor {
                 stackObj.data = { ...stackObj.data, nextEffectIndex: (state.pendingAction as any).data.nextEffectIndex };
             }
         }
-
-        // --- NEXT PLAYER DISCARD CHECK ---
-        if (!state.pendingAction) {
-            const nextPlayerIds = action.data?.nextPlayerIds || action.data?.stackObj?.data?.nextPlayerIds || [];
-            log(`[DISCARD-DEBUG] Resolution finished for current player. Checking queue...`);
-            log(`[DISCARD-DEBUG] Is nextPlayerIds present? ${!!nextPlayerIds}. Length: ${nextPlayerIds.length}`);
-
-            if (nextPlayerIds.length > 0) {
-                log(`[CHOICE-SEQUENCE] Advancing to next player: ${nextPlayerIds[0]}`);
-                const discardAmount = action.data?.discardAmount || action.data?.stackObj?.data?.discardAmount || 1;
-                const failureEffects = action.data?.onFailureEffects || action.data?.stackObj?.data?.onFailureEffects;
-
-                if (action.type === 'RESOLUTION_CHOICE' && action.data?.choices && !action.data.lookingCards) {
-                    // Sequenced Modal Choice
-                    state.pendingAction = ChoiceGenerator.createModalChoice(
-                        state,
-                        {
-                            label: action.data.label,
-                            playerId: nextPlayerIds[0],
-                            sourceId: sourceId as string,
-                            actionType: action.type as ActionType,
-                            hideUndo: action.data.hideUndo,
-                            stackObj: action.data.stackObj,
-                            parentContext: action.data.parentContext
-                        },
-                        (action.data.choices as any[]).map(c => ({ label: c.label, value: c.value, costs: c.costs, effects: c.effects }))
-                    );
-                    if (state.pendingAction && state.pendingAction.data) {
-                        state.pendingAction.data.nextPlayerIds = nextPlayerIds.slice(1);
-                    }
-                } else if (action.data?.isSacrificeSequence) {
-                    // Sequenced Sacrifice Choice
-                    const { PermanentHandler } = require('../effects/handlers/permanent/PermanentHandler');
-                    const realEffect = action.data.parentContext?.effects?.[action.data.parentContext?.nextEffectIndex];
-                    PermanentHandler.handleSacrifice(state, realEffect || { label: action.data.label }, log, {
-                        sourceId: sourceId as string,
-                        controllerId: nextPlayerIds[0],
-                        targets: nextPlayerIds,
-                        stackObject: action.data.stackObj,
-                        parentContext: action.data.parentContext
-                    });
-                } else if (action.data?.isChoiceSequence) {
-                    // Sequenced Choice (Auto-Sequence)
-                    const { ChoiceEffectHandler } = require('../effects/handlers/system/ChoiceEffectHandler');
-                    ChoiceEffectHandler.handleChoice(state, action.data.sequencedEffect, log, {
-                        sourceId: sourceId as string,
-                        controllerId: nextPlayerIds[0],
-                        targets: nextPlayerIds,
-                        stackObject: action.data.stackObj,
-                        parentContext: action.data.parentContext
-                    });
-                } else {
-                    // Sequenced Discard Choice
-                    state.pendingAction = ChoiceGenerator.createDiscardChoice(
-                        state,
-                        nextPlayerIds,
-                        sourceId as string,
-                        discardAmount,
-                        action.data!.label || "Discard",
-                        action.data!.stackObj,
-                        action.data!.parentContext,
-                        failureEffects,
-                        log
-                    );
-                }
-            }
-        }
-        this.finalizeResolution(state, sourceId, stackObj, action, log, engine);
-        return true;
     }
 
     private static finalizeResolution(state: GameState, sourceId: string, stackObj: any, action: PendingAction, log: (m: string) => void, engine: any) {
+        if (!state.pendingAction && state.choiceQueue && state.choiceQueue.length > 0) {
+            const nextItem = state.choiceQueue.shift()!;
+
+            // Generate the next action based on type
+            if (nextItem.type === 'RESOLUTION_CHOICE' && nextItem.data?.choices && !nextItem.data.lookingCards) {
+                state.pendingAction = ChoiceGenerator.createModalChoice(
+                    state,
+                    {
+                        label: nextItem.data.label,
+                        playerId: nextItem.playerId,
+                        sourceId: nextItem.sourceId,
+                        actionType: nextItem.type as ActionType,
+                        hideUndo: nextItem.data.hideUndo,
+                        stackObj: nextItem.data.stackObj,
+                        parentContext: nextItem.data.parentContext
+                    },
+                    (nextItem.data.choices as any[]).map((c: any) => ({ label: c.label, value: c.value, costs: c.costs, effects: c.effects }))
+                );
+                if (state.pendingAction && state.pendingAction.data) {
+                    state.pendingAction.data.nextPlayerIds = nextItem.data.nextPlayerIds;
+                }
+            } else if (nextItem.data?.isSacrificeSequence) {
+                const { PermanentHandler } = require('../effects/handlers/permanent/PermanentHandler');
+                const realEffect = nextItem.data.parentContext?.effects?.[nextItem.data.parentContext?.nextEffectIndex];
+                PermanentHandler.handleSacrifice(state, realEffect || { label: nextItem.data.label }, log, {
+                    sourceId: nextItem.sourceId,
+                    controllerId: nextItem.playerId,
+                    targets: [nextItem.playerId, ...nextItem.data.nextPlayerIds],
+                    stackObject: nextItem.data.stackObj,
+                    parentContext: nextItem.data.parentContext
+                });
+            } else if (nextItem.data?.isChoiceSequence) {
+                const { ChoiceEffectHandler } = require('../effects/handlers/system/ChoiceEffectHandler');
+                ChoiceEffectHandler.handleChoice(state, nextItem.data.sequencedEffect, log, {
+                    sourceId: nextItem.sourceId,
+                    controllerId: nextItem.playerId,
+                    targets: [nextItem.playerId, ...nextItem.data.nextPlayerIds],
+                    stackObject: nextItem.data.stackObj,
+                    parentContext: nextItem.data.parentContext
+                });
+            } else {
+                state.pendingAction = ChoiceGenerator.createDiscardChoice(
+                    state,
+                    [nextItem.playerId, ...nextItem.data.nextPlayerIds],
+                    nextItem.sourceId,
+                    nextItem.data.discardAmount || 1,
+                    nextItem.data.label || "Discard",
+                    nextItem.data.stackObj,
+                    nextItem.data.parentContext,
+                    nextItem.data.onFailureEffects,
+                    log
+                );
+            }
+            return;
+        }
         if (!state.pendingAction) {
             if (stackObj) {
                 const fullStackObj = state.stack.find(s => s.id === stackObj.id);

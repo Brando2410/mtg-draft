@@ -5,7 +5,7 @@ export const RestorationSeminar: CardDefinition = {
     colors: ["W"],
     types: ["Sorcery"],
     subtypes: ["Lesson"],
-    keywords: [],
+    keywords: ["Paradigm"],
     oracleText: "Return target nonland permanent card from your graveyard to the battlefield.\nParadigm (Then exile this spell. After you first resolve a spell with this name, you may cast a copy of it from exile without paying its mana cost at the beginning of each of your first main phases.)",
     abilities: [
         {
@@ -16,17 +16,13 @@ export const RestorationSeminar: CardDefinition = {
                 restrictions: [Restriction.NonLandPermanent]
             },
             effects: [
+
                 {
                     type: EffectType.PutOnBattlefield,
                     targetMapping: TargetMapping.Target1,
                     label: "Return target nonland permanent card from your graveyard to the battlefield"
-                },
-                {
-                    type: EffectType.Paradigm,
-                    targetMapping: TargetMapping.Self
                 }
             ]
         }
     ]
 };
-

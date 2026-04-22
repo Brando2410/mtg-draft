@@ -1,4 +1,4 @@
-import { AbilityCost, ActionType, CostType, GameObject, GameState, PlayerId, TargetType, Zone } from '@shared/engine_types';
+import { AbilityCost, ActionType, CostType, GameObject, GameState, PlayerId, ResolutionContext, TargetType, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 
 import { SpellProcessor } from './SpellProcessor';
@@ -23,7 +23,7 @@ export class SpellInteractiveManager {
      * The player must choose a numeric value before mana can be calculated (Rule 107.3b).
      * @returns Always true (flow is paused for UI input).
      */
-    public static handleXValueChoice(state: GameState, playerId: PlayerId, cardToPlay: GameObject, declaredTargets: string[], log: (m: string) => void): boolean {
+    public static handleXValueChoice(state: GameState, playerId: PlayerId, cardToPlay: GameObject, declaredTargets: string[], log: (m: string) => void, parentContext?: ResolutionContext): boolean {
         const { ActionType } = require('@shared/engine_types');
         state.pendingAction = {
             type: ActionType.ChooseX,
@@ -32,6 +32,7 @@ export class SpellInteractiveManager {
             data: {
                 label: `Choose a value for X for ${cardToPlay.definition.name}`,
                 declaredTargets: declaredTargets || [],
+                parentContext
             }
         };
         log(`[CHOOSE_X] ${state.players[playerId].name} is choosing X for ${cardToPlay.definition.name}...`);
@@ -60,7 +61,8 @@ export class SpellInteractiveManager {
         totalMana: string,
         cardInstanceId: string,
         log: (m: string) => void,
-        engine: any
+        engine: any,
+        parentContext?: ResolutionContext
     ): boolean | string[] {
         const { TargetingProcessor } = require('../targeting/TargetingProcessor');
         const player = state.players[playerId];
@@ -208,7 +210,8 @@ export class SpellInteractiveManager {
                 count,
                 prompt,
                 isOptional: minCount === 0,
-                canSkip: minCount === 0
+                canSkip: minCount === 0,
+                parentContext
             }
         };
         log(`[TARGETING] ${state.players[playerId].name} is selecting targets for ${cardToPlay.definition.name}...`);
@@ -237,7 +240,8 @@ export class SpellInteractiveManager {
         additionalCosts: AbilityCost[],
         declaredTargets: string[],
         cardInstanceId: string,
-        log: (m: string) => void
+        log: (m: string) => void,
+        parentContext?: ResolutionContext
     ): boolean | null {
         const { TargetingProcessor } = require('../targeting/TargetingProcessor');
         const player = state.players[playerId];
@@ -397,7 +401,8 @@ export class SpellInteractiveManager {
                     choices: legalExileIds.map((id: string) => {
                         const obj = pool.find((o: GameObject) => o.id === id);
                         return { label: `Exile ${obj?.definition?.name || id}`, value: id, cardData: obj, selectable: true }
-                    })
+                    }),
+                    parentContext
                 }
             };
             log(`[EXILE] ${state.players[playerId].name} must choose objects to exile.`);
@@ -413,7 +418,7 @@ export class SpellInteractiveManager {
      * Also assigns the selected X value to the object after the player chooses.
      * @returns true if a ChooseX pendingAction was injected, false if X is not needed or already set.
      */
-    public static handleAbilityXChoice(state: GameState, playerId: PlayerId, obj: GameObject, abilityIndex: number, declaredTargets: string[] | undefined, log: (m: string) => void): boolean {
+    public static handleAbilityXChoice(state: GameState, playerId: PlayerId, obj: GameObject, abilityIndex: number, declaredTargets: string[] | undefined, log: (m: string) => void, parentContext?: ResolutionContext): boolean {
         const { ActionType } = require('@shared/engine_types');
         const ability = (obj.definition.abilities as any)?.[abilityIndex];
         if (!ability) return false;
@@ -429,6 +434,7 @@ export class SpellInteractiveManager {
                     abilityIndex: abilityIndex,
                     label: `Choose a value for X for ${obj.definition.name}'s ability`,
                     declaredTargets: declaredTargets || [],
+                    parentContext
                 }
             };
             log(`[CHOOSE_X] ${state.players[playerId].name} is choosing X for ${obj.definition.name}'s ability...`);
@@ -450,7 +456,7 @@ export class SpellInteractiveManager {
      *
      * @returns true (pendingAction injected), false (can't pay), or null (no interactive costs needed).
      */
-    public static handleAbilityInteractiveCosts(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, abilityIndex: number, declaredTargets: string[] | undefined, log: (m: string) => void): boolean | null {
+    public static handleAbilityInteractiveCosts(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, abilityIndex: number, declaredTargets: string[] | undefined, log: (m: string) => void, parentContext?: ResolutionContext): boolean | null {
         const { ActionType, Zone } = require('@shared/engine_types');
         const { TargetingProcessor } = require('../targeting/TargetingProcessor');
         const player = state.players[playerId];
@@ -606,7 +612,8 @@ export class SpellInteractiveManager {
                     choices: legalExileIds.map((id: string) => {
                         const c = pool.find((o: GameObject) => o.id === id)!;
                         return { label: `Exile ${c.definition.name}`, value: id, cardData: c, selectable: true }
-                    })
+                    }),
+                    parentContext
                 }
             };
             log(`[EXILE] ${player.name} must choose a card to exile to activate ${obj.definition.name}.`);
@@ -625,7 +632,7 @@ export class SpellInteractiveManager {
      *
      * @returns true if targeting was handled (either pendingAction or direct finalization).
      */
-    public static handleAbilityTargeting(state: GameState, playerId: PlayerId, cardId: string, obj: GameObject, ability: any, abilityIndex: number, log: (m: string) => void, engine: any, preSelectedChoice?: number): boolean {
+    public static handleAbilityTargeting(state: GameState, playerId: PlayerId, cardId: string, obj: GameObject, ability: any, abilityIndex: number, log: (m: string) => void, engine: any, preSelectedChoice?: number, parentContext?: ResolutionContext): boolean {
         const { TargetingProcessor } = require('../targeting/TargetingProcessor');
         const pool = [
             ...Object.keys(state.players),
@@ -773,7 +780,8 @@ export class SpellInteractiveManager {
                 count,
                 prompt,
                 isOptional: minCount === 0,
-                canSkip: minCount === 0
+                canSkip: minCount === 0,
+                parentContext
             }
         };
         log(`[TARGETING] Player must choose targets for ${obj.definition.name}'s ability.`);

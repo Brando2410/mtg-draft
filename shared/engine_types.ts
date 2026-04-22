@@ -7,3 +7,4 @@ export * from './types/effects';
 export * from './types/events';
 export * from './types/state';
 export * from './types/targeting';
+export * from './types/mutations';

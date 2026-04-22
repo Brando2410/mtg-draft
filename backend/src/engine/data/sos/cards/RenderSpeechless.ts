@@ -18,13 +18,11 @@ export const RenderSpeechless: CardDefinition = {
             targetDefinition: [
                 {
                     type: TargetType.Opponent,
-                    label: "target opponent"
                 },
                 {
                     type: TargetType.Creature,
                     count: 1,
                     minCount: 0,
-                    label: "up to one target creature"
                 }
             ],
             effects: [

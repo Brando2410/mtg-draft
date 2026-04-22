@@ -81,7 +81,6 @@ export const EffectType = {
     EndTurn: 'EndTurn',
     PlayWithTopCardRevealed: 'PlayWithTopCardRevealed',
     AllowPlayFromTop: 'AllowPlayFromTop',
-    Paradigm: 'Paradigm',
     AllowSpendManaAsAnyColor: 'AllowSpendManaAsAnyColor',
     AllowLookAtTop: 'AllowLookAtTop',
     AllowPlayExiled: 'AllowPlayExiled',
@@ -201,6 +200,8 @@ export interface ResolutionContext {
     exiledIds?: string[];        // Track objects moved to exile during this resolution
     lookingCards?: any[];        // Track cards revealed/looked at during this resolution (e.g. Scry/Search)
     nextEffectIndex?: number;    // Pointer for resuming multi-step effects
+    xValue?: number;             // Bound X value for this resolution chain
+    isCopy?: boolean;            // Flag if this resolution is for a copied spell/ability
     eventData?: any;             // Alias for backward compatibility
 }
 

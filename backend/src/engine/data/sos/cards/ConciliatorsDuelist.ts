@@ -36,11 +36,13 @@ export const ConciliatorsDuelist: CardDefinition = {
                                 {
                                     type: EffectType.Exile,
                                     targetMapping: TargetMapping.Target1,
-                                    next: {
-                                        type: EffectType.CreateDelayedTrigger,
-                                        eventMatch: TriggerEvent.EndStep,
-                                        effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 }]
-                                    }
+                                    effects: [
+                                        {
+                                            type: EffectType.CreateDelayedTrigger,
+                                            eventMatch: TriggerEvent.EndStep,
+                                            effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 }]
+                                        }
+                                    ]
                                 }
                             ]
                         },
