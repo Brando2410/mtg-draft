@@ -71,7 +71,12 @@ export class ChoiceProcessor {
         }
 
         const payload = this.normalizePayload(choiceInput);
-        const choiceIndex = payload.index !== undefined ? payload.index : payload.value;
+        let choiceIndex = payload.index !== undefined ? payload.index : payload.value;
+
+        // If payload has indices (multi-select), join them into a string choiceIndex for compatibility
+        if (choiceIndex === undefined && payload.indices && payload.indices.length > 0) {
+            choiceIndex = payload.indices.map(i => `CHOICE_${i}`).join('|');
+        }
 
         console.log(`[CHOICE-DEBUG] Resolving ${action.type} for ${playerId}. Index/Value: ${choiceIndex}`);
 
@@ -105,7 +110,7 @@ export class ChoiceProcessor {
 
 
         // Handle multi-choice (batch selection) separated by '|'
-        if (typeof choiceIndex === 'string' && choiceIndex.includes('|')) {
+        if (typeof choiceIndex === 'string' && choiceIndex.includes('|') && !action.data?.isTargetingModal) {
             // If it's a cost choice (TapSelection), we skip the resolution-of-effects logic
             if (action.data?.isCostChoice) {
                 return this.handleModalSelection(state, playerId, action.sourceId as string, null, choiceIndex, action, log, engine);
@@ -714,11 +719,11 @@ export class ChoiceProcessor {
         }
 
         const isTargeting = !!action.data?.isTargetingModal;
-        const cardToPlayId = (action.data?.isSpellCasting && !isTargeting && choice?.value && typeof choice.value === 'string') ? choice.value : sourceId;
+        const metadata = action.data?.metadata;
+        const isSpellCasting = metadata?.isSpellCasting ?? action.data?.isSpellCasting;
+        const cardToPlayId = (isSpellCasting && !isTargeting && choice?.value && typeof choice.value === 'string') ? choice.value : sourceId;
 
         // ARCHITECTURAL NOTE: Metadata Propagation
-        // We propagate isFreeCast and exileOnResolution (e.g. from Flashback or Dawning Archaic)
-        // into SpellProcessor.playCard to ensure correct zone movement upon final resolution.
         return SpellProcessor.playCard(
             state,
             log,
@@ -730,15 +735,14 @@ export class ChoiceProcessor {
                 xValue: action.data?.xValue as number,
                 bypassPriority: true,
                 bypassTargeting: false,
-                parentContext: action.data?.parentContext as ResolutionContext,
-                isFreeCast: action.data?.isFreeCast as boolean,
-                exileOnResolution: action.data?.exileOnResolution as boolean
+                parentContext: (metadata?.parentContext ?? action.data?.parentContext) as ResolutionContext,
+                isFreeCast: (metadata?.isFreeCast ?? action.data?.isFreeCast) as boolean,
+                exileOnResolution: (metadata?.exileOnResolution ?? action.data?.exileOnResolution) as boolean
             }
         );
     }
 
     private static handleResolutionChoice(state: GameState, sourceId: string, choice: ChoiceOption, action: PendingAction, log: (m: string) => void, engine: EngineContext): boolean {
-        log(`Option selected: ${choice.label}`);
         const savedActionData = action.data;
         const stackObj = savedActionData?.stackObj as StackObject;
         const parentTargets = (action.data?.targets || savedActionData?.targets || action.data?.parentContext?.targets || savedActionData?.parentContext?.targets || []) as string[];
@@ -750,7 +754,6 @@ export class ChoiceProcessor {
         if (choice.costs && choice.costs.length > 0) {
             const costs = choice.costs as AbilityCost[];
             const sourceObj = TargetingProcessor.findObjectInAnyZone(state, sourceId);
-            log(`[COST-CHECK] sourceId=${sourceId}, sourceFound=${!!sourceObj}, zone=${sourceObj?.zone}, xValue=${sourceObj?.xValue}`);
 
             if (!CostProcessor.canPay(state, costs, sourceId, action.playerId, stackObj)) {
                 log(`Insufficient resources to select: ${choice.label}`);
@@ -768,7 +771,6 @@ export class ChoiceProcessor {
 
             if (interactiveCost) {
                 state.pendingAction = ChoiceGenerator.createCostInteractionChoice(state, interactiveCost, sourceId, action.playerId, choice, action.data);
-                log(`[INTERACTIVE-COST] Prompting for ${interactiveCost.type} cost selection...`);
                 return true;
             }
 

@@ -683,7 +683,7 @@ export class TargetMapper {
           .map((o) => o.id);
       }
       case "SELECTED_CARD":
-        return [targets[0]];
+        return targets;
       case "LAST_CREATED_TOKEN":
         return (state as any).lastCreatedTokenId
           ? [(state as any).lastCreatedTokenId]

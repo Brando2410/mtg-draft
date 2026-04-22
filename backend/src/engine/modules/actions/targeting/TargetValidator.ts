@@ -210,9 +210,16 @@ export class TargetValidator {
                 continue;
             }
 
+            // Fallback to name/subtype check (Rule 109.2)
             const targetName = (definition.name || (targetObj as any).name || "").toLowerCase();
             const objSubtypes = (definition.subtypes || []).map((s: string) => s.toLowerCase());
             if (targetName !== lr && !objSubtypes.includes(lr)) {
+                // ARCHITECTURAL NOTE: If we reach here, we are doing a fuzzy name/subtype match.
+                // If the intention was a specialized restriction, a handler should have been registered.
+                if (lr.includes('_') || lr.includes('source') || lr.includes('greater')) {
+                    console.warn(`[TARGET-WARN] Potential missing restriction handler for: "${lr}". Falling back to name check.`);
+                }
+                
                 if (sourceId?.includes('copy')) console.log(`[TARGET-DEBUG] Restriction FAILED: ${r} (Fallback: Name/Subtype mismatch)`);
                 return false;
             }

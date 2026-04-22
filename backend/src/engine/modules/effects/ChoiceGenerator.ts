@@ -16,6 +16,7 @@ export interface ChoiceConfig {
     costType?: string;
     isFreeCast?: boolean;
     exileOnResolution?: boolean;
+    metadata?: any;
 }
 
 export interface CardChoiceConfig extends ChoiceConfig {
@@ -337,6 +338,21 @@ export class ChoiceGenerator {
      */
     private static wrap(state: GameState, playerId: string, sourceId: string, data: any, type: ActionType | string = ActionType.ResolutionChoice): any {
         const { ActionProcessor } = require('../actions/ActionProcessor');
+        
+        // ARCHITECTURAL NOTE: Metadata Threading
+        // We ensure that critical metadata is preserved in a standardized 'metadata' object.
+        // This prevents flag loss during complex resolution chains (e.g. Cascade -> Choice -> Cast).
+        if (data && !data.metadata) {
+            data.metadata = {
+                isSpellCasting: data.isSpellCasting,
+                isFreeCast: data.isFreeCast,
+                exileOnResolution: data.exileOnResolution,
+                parentContext: data.parentContext,
+                stackObj: data.stackObj,
+                targets: data.targets
+            };
+        }
+
         return ActionProcessor.prepareAction(state, {
             type,
             playerId,

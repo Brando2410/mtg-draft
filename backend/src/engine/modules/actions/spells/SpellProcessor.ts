@@ -240,7 +240,12 @@ export class SpellProcessor {
             (hasPreSelectedMode && JSON.stringify(modalAbility?.modes?.[(Array.isArray(lastChosenModeIndex) ? lastChosenModeIndex[0] : lastChosenModeIndex) as number]).includes('"X"'));
 
         if (needsX && cardToPlay.xValue === undefined) {
-            return SpellInteractiveManager.handleXValueChoice(state, playerId, cardToPlay, declaredTargets, log, parentContext, isFreeCast, exileOnResolution);
+            if (isFreeCast) {
+                cardToPlay.xValue = 0;
+                log(`[DEBUG] ${cardToPlay.definition.name} cast for free: X is 0 (Rule 107.3b).`);
+            } else {
+                return SpellInteractiveManager.handleXValueChoice(state, playerId, cardToPlay, declaredTargets, log, parentContext, isFreeCast, exileOnResolution);
+            }
         }
 
         // CR 601.2f: Determine total cost

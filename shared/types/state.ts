@@ -248,6 +248,20 @@ export interface ChoiceQueueItem {
     data: any;
 }
 
+/**
+ * InteractionMetadata - Structured cross-cutting data that must persist across interaction boundaries.
+ * Used to ensure flags like 'exileOnResolution' or 'isFreeCast' are not lost between choice creation and action resolution.
+ */
+export interface InteractionMetadata {
+    isSpellCasting?: boolean;
+    isFreeCast?: boolean;
+    exileOnResolution?: boolean;
+    sourceMV?: number;
+    parentContext?: any; // ResolutionContext from EffectProcessor
+    stackObj?: StackObject;
+    targets?: string[];
+}
+
 export interface BaseActionData {
     label: string;
     stackObj?: StackObject;
@@ -258,6 +272,7 @@ export interface BaseActionData {
     abilityIndex?: number;
     isSpellCasting?: boolean;
     isFreeCast?: boolean;
+    metadata?: InteractionMetadata; // NEW: Standardized metadata container
     [key: string]: any;
 }
 

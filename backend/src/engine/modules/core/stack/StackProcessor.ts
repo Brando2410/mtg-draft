@@ -55,6 +55,12 @@ export class StackProcessor {
     resolver: import('./StackResolver').StackResolver,
     log: (m: string) => void
   ) {
+    const { EngineValidator } = require('../logic/EngineValidator');
+    if (EngineValidator.isSuspended(state)) {
+      console.log(`[STACK-PROC] resolveTopOrAdvanceStep BLOCKED: Engine is suspended for ${state.pendingAction?.type}`);
+      return;
+    }
+
     if (state.stack.length > 0) {
       const objectToResolve = state.stack.pop();
       if (objectToResolve) {

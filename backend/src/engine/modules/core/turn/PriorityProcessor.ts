@@ -44,9 +44,10 @@ export class PriorityProcessor {
     }
 
     // CR 117.1: A player must resolve pending mandatory actions before passing
-    if (state.pendingAction && String(state.pendingAction.playerId) === String(playerId)) {
-      console.log(`[PRIORITY-PROC] passPriority BLOCKED: ${playerId} has pending ${state.pendingAction.type}.`);
-      engine.log(`Invalid Action: Player must resolve pending ${state.pendingAction.type} first.`);
+    const { EngineValidator } = require('../logic/EngineValidator');
+    if (EngineValidator.isSuspended(state) && EngineValidator.isPlayerRequiredToAct(state, playerId)) {
+      console.log(`[PRIORITY-PROC] passPriority BLOCKED: ${playerId} has pending ${state.pendingAction?.type}.`);
+      engine.log(`Invalid Action: Player must resolve pending ${state.pendingAction?.type} first.`);
       return;
     }
 
@@ -194,7 +195,8 @@ export class PriorityProcessor {
     if (!player) return false;
 
     // Rule 117.1: If player has a pending mandatory action, they MUST act.
-    if (state.pendingAction && String(state.pendingAction.playerId) === String(playerId)) {
+    const { EngineValidator } = require('../logic/EngineValidator');
+    if (EngineValidator.isPlayerRequiredToAct(state, playerId)) {
       return true;
     }
     if (player.pendingDiscardCount > 0) return true;
