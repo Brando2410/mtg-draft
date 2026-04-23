@@ -2,8 +2,18 @@ import fs from 'fs';
 import path from 'path';
 
 export class AssetService {
-  private static AVATARS_DIR = path.resolve(process.cwd(), '../frontend/public/avatars');
-  private static WALLPAPERS_DIR = path.resolve(process.cwd(), '../frontend/public/wallpapers');
+  private static DATA_ROOT = (() => {
+    const possiblePaths = [
+      path.resolve(process.cwd(), 'data'),
+      path.resolve(process.cwd(), '../data'),
+      path.join(__dirname, '../../data'),
+      path.join(__dirname, '../../../../data')
+    ];
+    return possiblePaths.find(p => fs.existsSync(p)) || path.resolve(process.cwd(), 'data');
+  })();
+
+  private static AVATARS_DIR = path.join(AssetService.DATA_ROOT, 'avatars');
+  private static WALLPAPERS_DIR = path.join(AssetService.DATA_ROOT, 'wallpapers');
 
   static async listAvatars(): Promise<string[]> {
     if (!fs.existsSync(this.AVATARS_DIR)) return [];

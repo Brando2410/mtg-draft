@@ -8,6 +8,8 @@ backend/.active_rooms.json
 frontend/dist/
 backend/node_modules/
 backend/src/engine/__tests__
+backend/test-registry.ts
+backend/vitest.config.mts
 frontend/node_modules/
 
 # IDEs

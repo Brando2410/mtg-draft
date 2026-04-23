@@ -5,10 +5,20 @@ import path from 'path';
 import { LoggerService } from './LoggerService';
 
 export class PersistenceService {
-  private static CUBES_DIR = path.join(__dirname, '../../cubes');
-  private static DECKS_DIR = path.join(__dirname, '../../decks');
-  private static LOGS_DIR = path.join(__dirname, '../../draft_logs');
-  private static ROOMS_FILE = path.join(__dirname, '../../.active_rooms.json');
+  private static DATA_ROOT = (() => {
+    const possiblePaths = [
+      path.resolve(process.cwd(), 'data'),
+      path.resolve(process.cwd(), '../data'),
+      path.join(__dirname, '../../data'),
+      path.join(__dirname, '../../../../data')
+    ];
+    return possiblePaths.find(p => existsSync(p)) || path.resolve(process.cwd(), 'data');
+  })();
+
+  private static CUBES_DIR = path.join(PersistenceService.DATA_ROOT, 'cubes');
+  private static DECKS_DIR = path.join(PersistenceService.DATA_ROOT, 'decks');
+  private static LOGS_DIR = path.join(PersistenceService.DATA_ROOT, 'draft_logs');
+  private static ROOMS_FILE = path.join(PersistenceService.DATA_ROOT, '.active_rooms.json');
 
   static init() {
     if (!existsSync(this.CUBES_DIR)) mkdirSync(this.CUBES_DIR, { recursive: true });

@@ -9,8 +9,12 @@ import { PersistenceService } from './services/PersistenceService';
 const app = express();
 
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '50mb' }));
+
+// --- Servizio Asset (Avatars/Wallpapers) ---
+app.use('/avatars', express.static(AssetService.getAvatarsDir()));
+app.use('/wallpapers', express.static(AssetService.getWallpapersDir()));
 
 // --- API REST per Salvataggio Cubi ---
 app.post('/api/cubes', async (req, res) => {

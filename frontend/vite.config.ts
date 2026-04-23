@@ -9,5 +9,12 @@ export default defineConfig({
     alias: {
       '@shared': path.resolve(__dirname, '../shared')
     }
+  },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:4000',
+      '/avatars': 'http://localhost:4000',
+      '/wallpapers': 'http://localhost:4000'
+    }
   }
 })
