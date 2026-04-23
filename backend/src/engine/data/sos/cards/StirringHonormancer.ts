@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const StirringHonormancer: CardDefinition = {
     name: "Stirring Honormancer",
