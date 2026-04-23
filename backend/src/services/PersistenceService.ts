@@ -10,9 +10,14 @@ export class PersistenceService {
       path.resolve(process.cwd(), 'data'),
       path.resolve(process.cwd(), '../data'),
       path.join(__dirname, '../../data'),
-      path.join(__dirname, '../../../../data')
+      path.join(__dirname, '../../../data'),
+      path.join(__dirname, '../../../../data'),
+      path.join(__dirname, '../../../../../data')
     ];
-    return possiblePaths.find(p => existsSync(p)) || path.resolve(process.cwd(), 'data');
+    const found = possiblePaths.find(p => existsSync(p));
+    const finalPath = found || path.resolve(process.cwd(), 'data');
+    console.log(`[PERSISTENCE] Data root resolved to: ${finalPath} (Found: ${!!found})`);
+    return finalPath;
   })();
 
   private static CUBES_DIR = path.join(PersistenceService.DATA_ROOT, 'cubes');

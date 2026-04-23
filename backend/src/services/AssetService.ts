@@ -7,9 +7,16 @@ export class AssetService {
       path.resolve(process.cwd(), 'data'),
       path.resolve(process.cwd(), '../data'),
       path.join(__dirname, '../../data'),
-      path.join(__dirname, '../../../../data')
+      path.join(__dirname, '../../../data'),
+      path.join(__dirname, '../../../../data'),
+      path.join(__dirname, '../../../../../data')
     ];
-    return possiblePaths.find(p => fs.existsSync(p)) || path.resolve(process.cwd(), 'data');
+    const found = possiblePaths.find(p => {
+      try { return fs.existsSync(p); } catch (e) { return false; }
+    });
+    const finalPath = found || path.resolve(process.cwd(), 'data');
+    console.log(`[ASSETS] Data root resolved to: ${finalPath} (Found: ${!!found})`);
+    return finalPath;
   })();
 
   private static AVATARS_DIR = path.join(AssetService.DATA_ROOT, 'avatars');

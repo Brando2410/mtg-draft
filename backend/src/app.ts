@@ -141,6 +141,21 @@ app.delete('/api/assets/:type/:filename', async (req, res) => {
   }
 });
 
+// --- Debug API ---
+app.get('/api/debug/paths', (req, res) => {
+  res.json({
+    processCwd: process.cwd(),
+    dataRoot: (PersistenceService as any).DATA_ROOT,
+    avatarsDir: AssetService.getAvatarsDir(),
+    wallpapersDir: AssetService.getWallpapersDir(),
+    exists: {
+      dataRoot: fs.existsSync((PersistenceService as any).DATA_ROOT),
+      avatarsDir: fs.existsSync(AssetService.getAvatarsDir()),
+      wallpapersDir: fs.existsSync(AssetService.getWallpapersDir())
+    }
+  });
+});
+
 import { CardRegistryService } from './services/CardRegistryService';
 
 // --- Implemented Cards Registry ---
