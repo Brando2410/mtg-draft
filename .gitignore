@@ -7,6 +7,7 @@ build/
 backend/.active_rooms.json
 frontend/dist/
 backend/node_modules/
+backend/src/engine/__tests__
 frontend/node_modules/
 
 # IDEs

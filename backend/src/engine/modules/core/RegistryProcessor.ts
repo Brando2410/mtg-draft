@@ -92,6 +92,7 @@ export class RegistryProcessor {
         eventMatch: ability.eventMatch,
         condition: ability.condition,
         activeZone,
+        image_url: card.image_url || card.definition.image_url,
         oracleText: ability.oracleText || card.definition.oracleText || 'Triggered ability',
         ...ability
     } as TriggeredAbility);
@@ -103,6 +104,7 @@ export class RegistryProcessor {
         sourceId: card.id,
         controllerId: card.controllerId,
         activeZone,
+        image_url: card.image_url || card.definition.image_url,
         costs: ability.costs,
         effects: ability.effects,
         isManaAbility: ability.isManaAbility || false,

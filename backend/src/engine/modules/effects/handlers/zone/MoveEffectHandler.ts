@@ -907,11 +907,14 @@ export class MoveEffectHandler {
           effect.selectionType === SelectionType.AnyNumber || (effect as any).amount === "ANY"
             ? 0
             : 1,
-        maxChoices:
-          effect.selectionType === SelectionType.AnyNumber ||
-            (effect as any).amount === "ANY"
-            ? cards.length
-            : (effect as any).amount || 1,
+        maxChoices: (() => {
+            if (effect.selectionType === SelectionType.AnyNumber || (effect as any).amount === "ANY") {
+                return cards.length;
+            }
+            const { EffectProcessor } = require("../../EffectProcessor");
+            const resolved = EffectProcessor.resolveAmount(state, (effect as any).amount || 1, context, cards.map(c => c.id));
+            return Math.min(cards.length, resolved);
+        })(),
         actionType:
           effect.optional || effect.selectionType === SelectionType.AnyNumber
             ? ActionType.OptionalAction
@@ -944,6 +947,22 @@ export class MoveEffectHandler {
 
           if ((effect as any).additionalEffectPerCard) {
             subEffects.push((effect as any).additionalEffectPerCard);
+          }
+
+          // Handle remainder for LookAtTopAndPick
+          if (effect.type === EffectType.LookAtTopAndPick) {
+            const remaining = cards.filter(c => c.id !== selectedCard.id);
+            if (remaining.length > 0) {
+              const remZone = (effect as any).remainderZone || Zone.Library;
+              remaining.forEach(c => {
+                subEffects.push({
+                  type: EffectType.MoveToZone,
+                  targetId: c.id,
+                  zone: remZone,
+                  targetPlayerId: controllerId
+                } as MoveEffect);
+              });
+            }
           }
 
           return subEffects;
@@ -1327,10 +1346,14 @@ export class MoveEffectHandler {
     idsToMove.forEach((tid) => {
       const obj = this.findObject(state, tid, context);
       if (log) log(`[DEBUG] MoveEffectHandler: findObject for ${tid} returned ${obj ? obj.definition.name + " in " + obj.zone : "null"}`);
-      if (!obj) return;
+      if (!obj) {
+        if (log) log(`[WARNING] MoveEffectHandler: Could not find object with id ${tid} to move.`);
+        return;
+      }
 
       const from = obj.zone;
       const destPlayerId = moveEff.ownerControl ? obj.ownerId : controllerId;
+      if (log) log(`[DEBUG] MoveEffectHandler: Moving ${obj.definition.name} from ${from} to ${zone} for player ${destPlayerId}`);
       ActionProcessor.moveCard(
         state,
         obj,
@@ -1390,7 +1413,7 @@ export class MoveEffectHandler {
     context: ResolutionContext,
   ): GameObject | undefined {
     const { stackObject } = context;
-    if (stackObject && (stackObject.id === id || stackObject.sourceId === id)) {
+    if (stackObject && stackObject.id === id) {
       if (stackObject.card) return stackObject.card;
       if (stackObject.definition) return stackObject as any;
     }

@@ -108,6 +108,16 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return targetObj.zone === Zone.Graveyard;
         }
     },
+    "GRAVEYARD": {
+        matches(state, targetObj: any) {
+            return targetObj.zone === Zone.Graveyard;
+        }
+    },
+    "CARD": {
+        matches(state, targetObj: any) {
+            return !!targetObj.id && !state.players[targetObj.id];
+        }
+    },
     "CARD_IN_EXILE": {
         matches(state, targetObj: any) {
             return targetObj.zone === Zone.Exile;
@@ -130,18 +140,7 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return !types.includes('land') && ['artifact', 'creature', 'enchantment', 'planeswalker'].some(t => types.includes(t));
         }
     },
-    "CARD": {
-        matches() { return true; }
-    },
-    "ANY": {
-        matches() { return true; }
-    },
-    "ANYTARGET": {
-        matches() { return true; }
-    },
-    "ANY_TARGET": {
-        matches() { return true; }
-    },
+
     "NONAURA": {
         matches(state, targetObj: any) {
             const subtypes = (targetObj.definition?.subtypes || []).map((s: string) => s.toLowerCase());

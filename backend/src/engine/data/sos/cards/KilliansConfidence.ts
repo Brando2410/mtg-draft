@@ -54,7 +54,7 @@ export const KilliansConfidence: CardDefinition = {
                             label: "Pay {W/B}",
                             costs: [{ type: CostType.Mana, value: '{W/B}' }],
                             effects: [
-                                { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Self }
+                                { type: EffectType.ReturnToHand, targetMapping: TargetMapping.Self }
                             ]
                         },
                         { label: "Decline", effects: [] }

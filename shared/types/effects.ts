@@ -214,6 +214,8 @@ export interface ResolutionContext {
  */
 export interface ConditionContext {
     sourceId: GameObjectId;
+    targetId?: GameObjectId;
+    effectSourceId?: GameObjectId;
     controllerId: PlayerId;
     event?: import('./events').GameEvent;
     stackObject?: StackObject;

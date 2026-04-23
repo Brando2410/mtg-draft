@@ -94,12 +94,19 @@ export class ConditionProcessor {
         params = rest.split(",").map(p => p.trim());
     }
 
+    let effectiveContext = context;
+    if (token.startsWith("SOURCE_") && context.effectSourceId) {
+        token = token.substring(7);
+        effectiveContext = { ...context, sourceId: context.effectSourceId };
+    }
+
     const { ConditionRegistry } = require("./ConditionRegistry");
     const handler = ConditionRegistry[token] || ConditionRegistry[token.toUpperCase()];
 
     if (handler) {
         try {
-            return handler.matches(state, params, context);
+            const result = handler.matches(state, params, effectiveContext);
+            return result;
         } catch (e) {
             console.error(`[ConditionProcessor] Error evaluating condition "${token}":`, e);
             return false;

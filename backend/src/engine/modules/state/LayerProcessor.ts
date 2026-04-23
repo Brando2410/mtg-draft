@@ -323,7 +323,9 @@ export class LayerProcessor {
     // 0. Condition check (can be global or target-dependent)
     if (effect.condition) {
         if (!ConditionProcessor.matchesCondition(state, effect.condition, {
-            sourceId: objId, // Use the object being checked as the context for conditions
+            sourceId: objId,
+            targetId: objId,
+            effectSourceId: effect.sourceId,
             controllerId: effect.controllerId,
             stackObject: state.stack.find(s => s.id === effect.id) as any
         })) {

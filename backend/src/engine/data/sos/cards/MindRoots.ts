@@ -28,10 +28,10 @@ export const MindRoots: CardDefinition = {
                     label: "Put a land card discarded this way onto the battlefield",
                     selectionPool: TargetMapping.LastDiscardedCards,
                     targetDefinition: {
-                        type: TargetType.CardInGraveyard,
+                        type: TargetType.Card,
                         count: 1,
                         minCount: 0,
-                        restrictions: [Restriction.Land]
+                        restrictions: [Restriction.Land, 'graveyard']
                     },
                     effects: [
                         {

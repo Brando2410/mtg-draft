@@ -36,7 +36,7 @@ export const StrifeScholarAwakentheAges: CardDefinition = {
                         subtypes: ["Spirit"],
                         power: "2",
                         toughness: "2",
-                        image_url: "https://cards.scryfall.io/png/front/f/9/f98c0167-7434-4607-87c4-315fa8b6972e.png?1682693862"
+                        image_url: "https://cards.scryfall.io/normal/front/d/0/d0f3bd3d-08cf-4783-ae31-03770c8be69c.jpg?1775864773"
                     },
                     targetMapping: TargetMapping.Controller
                 }

@@ -42,6 +42,7 @@ export interface CardDefinition {
 
 export interface GameObject {
     id: GameObjectId;
+    image_url?: string;
     ownerId: PlayerId;
     controllerId: PlayerId;
     zone: Zone;
@@ -57,12 +58,14 @@ export interface GameObject {
     isPhasedOut?: boolean;
     lastNonStackZone?: Zone;
     xValue?: number;
+    exileOnResolution?: boolean;
     isFlashbackCast?: boolean;
     isRevealed?: boolean;
     isFreeCast?: boolean;
     usedAlternativeCostId?: string;
     paidCost?: string;
     isPreparedCopy?: boolean;
+    isCopy?: boolean;
     sourceCreatureId?: string;
     colorsSpent?: string[];
     originalDefinition?: CardDefinition;
@@ -112,6 +115,8 @@ export interface StackObject {
     image_url?: string;
     xValue?: number;
     exileOnResolution?: boolean;
+    isCopy?: boolean;
+    isPreparedCopy?: boolean;
     isFlashbackCast?: boolean;
     definition?: CardDefinition;
     cannotBeCopied?: boolean;

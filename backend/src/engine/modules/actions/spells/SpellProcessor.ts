@@ -643,9 +643,9 @@ export class SpellProcessor {
 
         const exileOnResolution = (state.ruleRegistry.continuousEffects.some(e =>
             e.exileOnMoveToGraveyard && (e.targetIds?.includes(cardToPlay.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === playerId))
-        )) || cardToPlay.isFlashbackCast || cardToPlay.definition?.exileOnResolution || (cardToPlay as any).exileOnResolution;
+        )) || cardToPlay.isFlashbackCast || cardToPlay.definition?.exileOnResolution || cardToPlay.exileOnResolution;
 
-        console.log(`[FINALIZE-DEBUG] ${cardToPlay.definition.name}: cardToPlay.exileOnRes=${(cardToPlay as any).exileOnResolution}, final=${exileOnResolution}`);
+        console.log(`[FINALIZE-DEBUG] ${cardToPlay.definition.name}: cardToPlay.exileOnRes=${cardToPlay.exileOnResolution}, final=${exileOnResolution}`);
 
         const targetsControllers = (declaredTargets || []).map((tid) => {
             const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
@@ -665,6 +665,8 @@ export class SpellProcessor {
             xValue: cardToPlay.xValue,
             image_url: cardToPlay.definition.image_url,
             exileOnResolution: exileOnResolution,
+            isCopy: cardToPlay.isCopy,
+            isPreparedCopy: cardToPlay.isPreparedCopy,
             isFlashbackCast: cardToPlay.isFlashbackCast,
             data: { 
                 effects: spellEffects, 
@@ -749,6 +751,8 @@ export class SpellProcessor {
             targets: declaredTargets,
             abilityIndex: abilityIndex,
             exileOnResolution: exileOnResolution,
+            isCopy: obj.isCopy,
+            isPreparedCopy: obj.isPreparedCopy,
             xValue: obj.xValue,
             card: obj,
             definition: obj.definition,

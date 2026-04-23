@@ -41,11 +41,26 @@ export class ChoiceProcessor {
         }
         if (typeof input === 'string') {
             if (input === 'undo' || input === 'none') return { value: input };
+            if (input.startsWith('{')) {
+                try {
+                    return JSON.parse(input);
+                } catch (e) {
+                    console.error("[CHOICE-ERROR] Failed to parse raw JSON payload:", e);
+                }
+            }
             if (input.includes('|')) {
                 return { indices: input.split('|').map(s => parseInt(s.replace('CHOICE_', ''))) };
             }
             if (input.startsWith('CHOICE_')) {
-                return { index: parseInt(input.replace('CHOICE_', '')) };
+                const raw = input.replace('CHOICE_', '');
+                if (raw.startsWith('{')) {
+                    try {
+                        return JSON.parse(raw);
+                    } catch (e) {
+                        console.error("[CHOICE-ERROR] Failed to parse complex payload:", e);
+                    }
+                }
+                return { index: parseInt(raw) };
             }
             // Check if it's a number string
             if (!isNaN(parseInt(input))) {
@@ -142,6 +157,7 @@ export class ChoiceProcessor {
                 if (discardEffects.length > 0) {
                     state.turnState.lastDiscardedCount = discardEffects.length;
                     state.turnState.lastDiscardedIds = [];
+                    console.log(`[CHOICE-DEBUG] Reset lastDiscardedIds for new batch of ${discardEffects.length} discards.`);
                 }
                 EffectProcessor.resolveEffects({
                     state,
@@ -229,7 +245,7 @@ export class ChoiceProcessor {
     ): boolean {
         const { top = [], bottom = [], graveyard = [] } = (typeof payload === 'string' ? JSON.parse(payload) : payload) as { top?: string[], bottom?: string[], graveyard?: string[] };
 
-        log(`[RESOLVING ${action.type}] ${state.players[playerId].name} reordered cards.`);
+
 
         // Track result for UI
         state.turnState.lastScrySurveilResult = {
@@ -240,6 +256,7 @@ export class ChoiceProcessor {
             type: action.type as string,
             timestamp: Date.now()
         };
+
 
         // 1. Validate all cards are still in a valid state (optional but good)
         const cards = (action.data?.lookingCards || []) as GameObject[];
@@ -290,6 +307,7 @@ export class ChoiceProcessor {
             const nextIdx = currentCtx.nextEffectIndex;
             const effs = currentCtx.effects;
             const parentTargets = currentCtx.targets || [];
+            const lookingCards = currentCtx.lookingCards;
             const nextParentCtx: ResolutionContext | undefined = currentCtx.parentContext;
 
             currentCtx = nextParentCtx;
@@ -302,6 +320,7 @@ export class ChoiceProcessor {
                 startIndex: nextIdx,
                 stackObject: stackObj,
                 parentContext: nextParentCtx,
+                lookingCards: lookingCards,
             });
 
             if (stackObj && !completed && (state as GameState).pendingAction) {

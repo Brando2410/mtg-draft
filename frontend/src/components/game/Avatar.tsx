@@ -107,6 +107,7 @@ export const Avatar = memo(({
 
   useEffect(() => {
     if (scrySurveilResult && scrySurveilResult.playerId === player.id && scrySurveilResult.timestamp > prevScryTime.current) {
+
         setScryNotice({
             top: scrySurveilResult.top,
             bottom: scrySurveilResult.bottom,

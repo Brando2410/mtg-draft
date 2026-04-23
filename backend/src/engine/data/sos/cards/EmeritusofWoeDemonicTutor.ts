@@ -5,7 +5,7 @@ export const EmeritusofWoeDemonicTutor: CardDefinition = {
     manaCost: "{3}{B}",
     scryfall_id: "7eb9e83d-515d-4911-a06b-9982200277b2",
     rarity: "mythic",
-    image_url: "https://cards.scryfall.io/normal/front/7/eb/7eb9e83d-515d-4911-a06b-9982200277b2.jpg?1776269683",
+    image_url: "https://cards.scryfall.io/normal/front/7/e/7eb9e83d-515d-4911-a06b-9982200277b2.jpg?1776269683",
     colors: ["B"],
     types: ["Creature"],
     subtypes: ["Vampire", "Warlock"],
@@ -29,7 +29,7 @@ export const EmeritusofWoeDemonicTutor: CardDefinition = {
     ],
     preparedFace: {
         name: "Demonic Tutor",
-        image_url: "https://cards.scryfall.io/normal/front/7/eb/7eb9e83d-515d-4911-a06b-9982200277b2.jpg?1776269683",
+        image_url: "https://cards.scryfall.io/normal/front/7/e/7eb9e83d-515d-4911-a06b-9982200277b2.jpg?1776269683",
         manaCost: "{1}{B}",
         colors: ["B"],
         types: ["Sorcery"],

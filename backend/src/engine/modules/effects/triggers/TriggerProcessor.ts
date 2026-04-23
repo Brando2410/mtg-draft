@@ -301,7 +301,7 @@ export class TriggerProcessor {
     const sourceName =
       sourceObj?.definition.name || emblemSource?.name || "Unknown Source";
     const sourceImage =
-      sourceObj?.definition.image_url || emblemSource?.image_url || (trigger as any).data?.definition?.image_url;
+      sourceObj?.definition.image_url || emblemSource?.image_url || (trigger as any).image_url || (trigger as any).data?.definition?.image_url;
 
     const stackId = `trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
 

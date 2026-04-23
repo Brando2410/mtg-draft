@@ -94,7 +94,7 @@ export class EffectProcessor {
 
     for (let i = startIndex; i < effects.length; i++) {
       const effect = effects[i];
-      if (log) log(`[DEBUG] EffectProcessor: Executing effect ${i}/${effects.length}: ${effect.type}. Targets: ${JSON.stringify(targets)}`);
+      if (log) log(`[DEBUG] EffectProcessor: Executing effect ${i}/${effects.length}: ${effect.type}. Targets: ${JSON.stringify(targets)}. Index: ${i}, StartIndex: ${startIndex}`);
 
       this.executeEffect({
         state,
@@ -189,6 +189,7 @@ export class EffectProcessor {
       stackObject,
       parentContext,
       controllerIdOverride,
+      lookingCards,
     } = options;
     const targets = options.validTargetIds || [];
 
@@ -210,7 +211,7 @@ export class EffectProcessor {
       startIndex: stackObject?.data?.startIndex || 0,
       event: stackObject?.data?.eventData || (stackObject?.data as any)?.event,
       exiledIds: stackObject?.data?.exiledIds,
-      lookingCards: (stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
+      lookingCards: (lookingCards || stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
       nextEffectIndex: stackObject?.data?.nextEffectIndex,
       xValue: stackObject?.xValue || parentContext?.xValue,
       isCopy: stackObject?.data?.isCopy || parentContext?.isCopy
@@ -466,6 +467,7 @@ export class EffectProcessor {
       event: event as any,
       stackObject,
       targets,
+      effectSourceId: sourceId,
     });
   }
 

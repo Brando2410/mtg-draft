@@ -172,11 +172,16 @@ export class ChoiceEffectHandler {
           context,
           effect,
         ) as string[];
+        console.log(`[CHOICE-HANDLER-DEBUG] Mapping: ${targetZoneMapping}, poolIds: ${JSON.stringify(poolIds)}`);
         sourceCards = poolIds
-          .map((id: string) =>
-            TargetingProcessor.findObjectInAnyZone(state, id),
-          )
+          .map((id: string) => {
+            const obj = TargetingProcessor.findObjectInAnyZone(state, id);
+            if (!obj) console.log(`[CHOICE-HANDLER-DEBUG] findObjectInAnyZone FAILED for id: ${id}`);
+            else console.log(`[CHOICE-HANDLER-DEBUG] Found object: ${obj.definition?.name} in zone ${obj.zone}`);
+            return obj;
+          })
           .filter(Boolean) as GameObject[];
+        console.log(`[CHOICE-HANDLER-DEBUG] sourceCards count: ${sourceCards.length}`);
       } else if (
         targetPlayer ||
         targetZoneMapping === "TARGET_1_HAND_REVEAL_PICK" ||
@@ -253,8 +258,8 @@ export class ChoiceEffectHandler {
           ]
           : []);
 
-      const validCandidates = sourceCards.filter((c: GameObject) =>
-        TargetingProcessor.matchesRestrictions(
+      const validCandidates = sourceCards.filter((c: GameObject) => {
+        const matched = TargetingProcessor.matchesRestrictions(
           state,
           c,
           restrictions,
@@ -263,8 +268,12 @@ export class ChoiceEffectHandler {
             controllerId: workingMappingPlayerId as PlayerId,
             stackObject
           }
-        ),
-      );
+        );
+        console.log(`[CHOICE-HANDLER-DEBUG] Card ${c.definition?.name} (${c.id}) matches restrictions ${JSON.stringify(restrictions)}: ${matched}`);
+        return matched;
+      });
+
+      console.log(`[CHOICE-HANDLER-DEBUG] Total validCandidates: ${validCandidates.length}`);
 
       if (validCandidates.length === 0) {
         log(
@@ -294,11 +303,8 @@ export class ChoiceEffectHandler {
           sourceId: sourceId,
           restrictions: restrictions,
           filterSelectable: true,
-          minChoices:
-            (effect as any).minChoices ||
-            targetDef?.minCount ||
-            (targetDef?.optional ? 0 : targetDef?.count || 1),
-          maxChoices: (effect as any).maxChoices || targetDef?.count || 1,
+          minChoices: EffectProcessor.resolveAmount(state, (effect as any).minChoices || targetDef?.minCount || (targetDef?.optional ? 0 : targetDef?.count || 1), context, sourceCards.map(c => c.id)),
+          maxChoices: EffectProcessor.resolveAmount(state, (effect as any).maxChoices || targetDef?.count || 1, context, sourceCards.map(c => c.id)),
           optional: (effect as any).optional !== false,
           actionType: (effect as any).optional
             ? ActionType.OptionalAction
@@ -384,8 +390,8 @@ export class ChoiceEffectHandler {
           : ActionType.ResolutionChoice,
         hideUndo: true,
         lookingCards,
-        minChoices: (effect as any).minChoices,
-        maxChoices: (effect as any).maxChoices,
+        minChoices: EffectProcessor.resolveAmount(state, (effect as any).minChoices || 1, context, targets),
+        maxChoices: EffectProcessor.resolveAmount(state, (effect as any).maxChoices || 1, context, targets),
         exileOnResolution: !!(effect as any).exileOnResolution || (effect.effects || []).some((e: any) => e.exileOnResolution),
         stackObj: stackObject,
         parentContext: context,

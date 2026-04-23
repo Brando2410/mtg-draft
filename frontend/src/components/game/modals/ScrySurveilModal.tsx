@@ -41,6 +41,7 @@ export const ScrySurveilModal = ({ pendingAction, me, onResolve }: ScrySurveilMo
   };
 
   const handleConfirm = () => {
+
     onResolve({ top, bottom, graveyard });
   };
 

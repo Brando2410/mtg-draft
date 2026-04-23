@@ -116,6 +116,7 @@ export class ActionProcessor {
       if (!state.turnState.lastDiscardedIds)
         state.turnState.lastDiscardedIds = [];
       state.turnState.lastDiscardedIds.push(card.id);
+      console.log(`[DISCARD-DEBUG] Card ${card.definition.name} (${card.id}) added to lastDiscardedIds. Current count: ${state.turnState.lastDiscardedIds.length}`);
     }
 
     const ReplacementProcessor = require("../effects/replacements/ReplacementProcessor").ReplacementProcessor as typeof ReplacementProcessorType;
