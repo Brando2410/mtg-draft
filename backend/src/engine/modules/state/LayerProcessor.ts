@@ -51,12 +51,6 @@ export class LayerProcessor {
           return true;
         const source = state.battlefield.find((o) => o.id === e.sourceId);
         if (!source || !e.activeZones.includes(source.zone)) return false;
-        if (e.condition) {
-          return ConditionProcessor.matchesCondition(state, e.condition, {
-            sourceId: e.sourceId,
-            controllerId: e.controllerId,
-          });
-        }
         return true;
       });
 
@@ -326,6 +320,17 @@ export class LayerProcessor {
     objId: string,
     log?: (m: string) => void,
   ): boolean {
+    // 0. Condition check (can be global or target-dependent)
+    if (effect.condition) {
+        if (!ConditionProcessor.matchesCondition(state, effect.condition, {
+            sourceId: objId, // Use the object being checked as the context for conditions
+            controllerId: effect.controllerId,
+            stackObject: state.stack.find(s => s.id === effect.id) as any
+        })) {
+            return false;
+        }
+    }
+
     // 1. Explicit target list (snapshotted spells)
     if (Array.isArray(effect.targetIds))
       return effect.targetIds.includes(objId);
@@ -411,6 +416,17 @@ export class LayerProcessor {
           // For floating effects resolving this dynamically if snapshot missing
           return Array.isArray(effect.targetIds) && (effect.targetIds as string[]).includes(objId);
         }
+        case "CONTROLLER":
+          return (
+            obj.controllerId === effect.controllerId &&
+            TargetingProcessor.matchesRestrictions(
+              state,
+              obj,
+              effect.restrictions || [],
+              { sourceId: effect.sourceId, controllerId: effect.controllerId },
+              log,
+            )
+          );
         default:
           return false;
       }

@@ -1,16 +1,12 @@
-﻿import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
+﻿import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
 export const GroupProject: CardDefinition = {
     name: "Group Project",
     manaCost: "{1}{W}",
     scryfall_id: "e8abc1eb-6225-4b18-8502-b5324b818aed",
     rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/e/8/e8abc1eb-6225-4b18-8502-b5324b818aed.jpg?1775937026",
-    colors: [
-        "W"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["W"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: ["Flashback"],
     oracleText: "Create a 2/2 red and white Spirit creature token.\nFlashbackâ€”Tap three untapped creatures you control. (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
@@ -29,6 +25,7 @@ export const GroupProject: CardDefinition = {
                         subtypes: ["Spirit"],
                         power: "2",
                         toughness: "2",
+                        image_url: "https://cards.scryfall.io/normal/front/d/0/d0f3bd3d-08cf-4783-ae31-03770c8be69c.jpg?1775864773"
                     },
                     targetMapping: TargetMapping.Controller
                 }
@@ -40,7 +37,7 @@ export const GroupProject: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AdditionalCost,
-                    condition: 'IS_FLASHBACK_CAST',
+                    condition: ConditionType.IsFlashbackCast,
                     targetMapping: TargetMapping.Self,
                     additionalCosts: [{
                         type: CostType.TapSelection, value: 3, restrictions: [Restriction.Creature, Restriction.Untapped]

@@ -383,4 +383,8 @@ export class GameEngine implements EngineContext {
     // VERY IMPORTANT: Re-link resolver to the newest state reference
     this.resolver = new StackResolver(this.state);
   }
+  
+  public resumeResolution(sourceId: string, stackObj: any, parentContext: any): boolean {
+    return ChoiceProcessor.resumeResolution(this.state, sourceId, stackObj, parentContext, (m: string) => this.log(m), this);
+  }
 }

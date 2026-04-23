@@ -219,6 +219,7 @@ export interface ConditionContext {
     stackObject?: StackObject;
     targets?: string[];
     eventData?: any;
+    cardToPlay?: GameObject;
 }
 
 /**

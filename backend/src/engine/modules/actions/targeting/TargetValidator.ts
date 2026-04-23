@@ -128,7 +128,7 @@ export class TargetValidator {
                 expectedZone = Zone.Graveyard;
             else if (targetDefForIndex?.restrictions?.some((r: any) => typeof r === 'string' && ['exile', 'in_exile'].includes(r.toLowerCase())))
                 expectedZone = Zone.Exile;
-            else expectedZone = Zone.Battlefield;
+            else expectedZone = targetDefForIndex ? Zone.Battlefield : 'Any';
         }
 
         if (expectedZone !== 'Any' && targetZone !== expectedZone) {
@@ -262,17 +262,20 @@ export class TargetValidator {
                     if (restrictionType === 'control' && restrictionValue && !this.matchesRestrictions(state, targetObj, [restrictionValue], context)) match = false;
                     if (['manavalue', 'mv', 'cmc'].includes(restrictionType)) {
                         const { ManaProcessor } = require('../../../magic/ManaProcessor');
-                        const mv = ManaProcessor.getManaValue(definition.manaCost || '');
+                        const mv = ManaProcessor.getManaValue(definition.manaCost || '', (targetObj as any).xValue || 0);
                         let val = r.value;
                         if (val === 'X') val = stackObject?.xValue || (state.pendingAction as any)?.data?.xValue || 0;
                         else if (val === 'SOURCE_POWER') {
                             const src = this.findObjectInAnyZone(state, sourceId);
                             val = src ? (require('../../../state/LayerProcessor').LayerProcessor.getEffectiveStats(src, state).power || 0) : 0;
                         }
+                        
                         const comp = r.comparison || 'Equal';
                         if (comp === 'LessOrEqual' && mv > val) match = false;
                         if (comp === 'GreaterOrEqual' && mv < val) match = false;
                         if (comp === 'Equal' && mv !== val) match = false;
+                        if (comp === 'Less' && mv >= val) match = false;
+                        if (comp === 'Greater' && mv <= val) match = false;
                     }
 
                     if (restrictionType === 'color') {

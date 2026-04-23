@@ -110,4 +110,5 @@ export interface EngineContext {
 
     // Targeting
     finaliseTargeting?(pId: PlayerId, targets: string[]): boolean;
+    resumeResolution(sourceId: string, stackObj: StackObject, parentContext: ResolutionContext): boolean;
 }

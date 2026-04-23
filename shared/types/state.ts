@@ -117,6 +117,7 @@ export interface StackObject {
     cannotBeCopied?: boolean;
     convergeAmount?: number;
     originalControllerId?: PlayerId;
+    condition?: any;
 }
 
 export interface PlayerState {

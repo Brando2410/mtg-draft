@@ -79,7 +79,7 @@ export class PlayerActionProcessor {
           const typeStr = String(a.type || "").toLowerCase();
           const isActivated = typeStr.includes('activated');
           const hasLoyalty = a.costs?.some((c) => String(c.type || "").toLowerCase().includes('loyalty'));
-          
+
           return isActivated && hasLoyalty;
         });
 
@@ -94,7 +94,7 @@ export class PlayerActionProcessor {
             const lCostObj = a.costs?.find((c) => String(c.type || "").toLowerCase().includes('loyalty'));
             const lCostVal = parseInt(String(lCostObj?.value || 0));
             const lCostSign = lCostVal > 0 ? `+${lCostVal}` : `${lCostVal}`;
-            
+
             // Truncate if extreme length for modal safety
             let labelText = a.id || "Ability";
             if (labelText.length > 120) labelText = labelText.substring(0, 117) + "...";
@@ -118,31 +118,18 @@ export class PlayerActionProcessor {
     const isLand = typeLine.includes('land');
 
     const allActivated = [...(logic?.abilities || [])];
-    
+
     // --- SUPPORT FOR IN-LINE ABILITIES (Tokens, Virtual Spells) ---
     if (obj.definition.abilities) {
       obj.definition.abilities.forEach((a) => {
         if (typeof a === 'string') return;
         const isDuplicate = allActivated.some(existing => {
           const ex = existing as AbilityDefinition;
-          
-          // 0. Reference check (fastest)
-          if (a === ex) return true;
-
-          // 1. Primary check: ID match
           if (a.id !== undefined && ex.id !== undefined) return a.id === ex.id;
-          
-          // 2. Secondary check: Oracle text match
-          if (a.oracleText !== undefined && ex.oracleText !== undefined) {
-             return a.oracleText === ex.oracleText && a.type === ex.type;
-          }
 
-          // 3. Fallback check: Structural match for costs and effects (if IDs are missing)
-          const sameType = a.type === ex.type;
-          const sameCosts = JSON.stringify(a.costs) === JSON.stringify(ex.costs);
-          const sameEffects = JSON.stringify(a.effects) === JSON.stringify(ex.effects);
-          
-          return sameType && sameCosts && sameEffects;
+          return a.type === ex.type &&
+            JSON.stringify(a.effects) === JSON.stringify(ex.effects) &&
+            JSON.stringify(a.costs) === JSON.stringify(ex.costs);
         });
         if (!isDuplicate) {
           allActivated.push(a);
@@ -435,10 +422,10 @@ export class PlayerActionProcessor {
     // BUG FIX: Prevent race condition where rapid clicking discards more than required.
     // We only allow discard if there's a pending DISCARD action for this player.
     if (state.pendingAction?.type !== 'DISCARD' && state.pendingAction?.type !== ActionType.Discard) {
-        return { finished: false, success: false };
+      return { finished: false, success: false };
     }
     if (state.pendingAction?.playerId !== playerId) {
-        return { finished: false, success: false };
+      return { finished: false, success: false };
     }
 
     if (player.pendingDiscardCount <= 0) {
@@ -458,7 +445,7 @@ export class PlayerActionProcessor {
 
     if (player.pendingDiscardCount > 0) {
       player.pendingDiscardCount--;
-      
+
       // Update top-level count (Cleanup phase and unified Discard UI)
       if (state.pendingAction && state.pendingAction.count !== undefined) {
         state.pendingAction.count--;
@@ -467,37 +454,37 @@ export class PlayerActionProcessor {
       if (state.pendingAction && (state.pendingAction.data as any)?.count !== undefined) {
         (state.pendingAction.data as any).count--;
       }
-      
+
       log(`${player.name} discarded ${card.definition.name} (${player.pendingDiscardCount} more to go).`);
 
       if (player.pendingDiscardCount === 0) {
         log(`${player.name} finished discarding.`);
-        
+
         // Handle sequential discards (Next players)
         const nextPlayerIds = (state.pendingAction.data as any)?.nextPlayerIds || [];
         if (nextPlayerIds.length > 0) {
-            const discardAmount = (state.pendingAction.data as any)?.discardAmount || 1;
-            const label = (state.pendingAction.data as any)?.label || "Discard";
-            const stackObj = state.pendingAction.data?.stackObj;
-            const parentContext = state.pendingAction.data?.parentContext;
-            const onFailureEffects = (state.pendingAction.data as any)?.onFailureEffects;
-            
-            const { ChoiceGenerator } = require('../effects/ChoiceGenerator').ChoiceGenerator;
-            state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, label, stackObj, parentContext, onFailureEffects, log);
-            return { finished: false, success: true };
+          const discardAmount = (state.pendingAction.data as any)?.discardAmount || 1;
+          const label = (state.pendingAction.data as any)?.label || "Discard";
+          const stackObj = state.pendingAction.data?.stackObj;
+          const parentContext = state.pendingAction.data?.parentContext;
+          const onFailureEffects = (state.pendingAction.data as any)?.onFailureEffects;
+
+          const { ChoiceGenerator } = require('../effects/ChoiceGenerator').ChoiceGenerator;
+          state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, label, stackObj, parentContext, onFailureEffects, log);
+          return { finished: false, success: true };
         }
 
         // Increment effect index on stack object to avoid infinite loops when resuming resolution
         const stackObj = state.pendingAction.data?.stackObj;
         if (stackObj) {
-            const realStackObj = state.stack.find(s => s.id === stackObj.id);
-            if (realStackObj && realStackObj.data) {
-                const currentIndex = (state.pendingAction.data as any)?.nextEffectIndex;
-                if (currentIndex !== undefined) {
-                    realStackObj.data.nextEffectIndex = currentIndex + 1;
-                    console.log(`[DISCARD-RESOLUTION] Incremented nextEffectIndex to ${realStackObj.data.nextEffectIndex} for ${realStackObj.id}`);
-                }
+          const realStackObj = state.stack.find(s => s.id === stackObj.id);
+          if (realStackObj && realStackObj.data) {
+            const currentIndex = (state.pendingAction.data as any)?.nextEffectIndex;
+            if (currentIndex !== undefined) {
+              realStackObj.data.nextEffectIndex = currentIndex + 1;
+              console.log(`[DISCARD-RESOLUTION] Incremented nextEffectIndex to ${realStackObj.data.nextEffectIndex} for ${realStackObj.id}`);
             }
+          }
         }
 
         state.pendingAction = undefined;
@@ -519,12 +506,12 @@ export class PlayerActionProcessor {
       const attacker = state.combat.attackers.find(a => a.attackerId === sourceId);
       if (attacker) {
         attacker.order = order;
-        log(`[FLOW] ${state.players[playerId].name} established damage assignment order for ${state.battlefield.find(o => o.id === sourceId)?.definition.name}.`);
+        //  log(`[FLOW] ${state.players[playerId].name} established damage assignment order for ${state.battlefield.find(o => o.id === sourceId)?.definition.name}.`);
       }
     } else if (state.pendingAction.type === 'ORDER_ATTACKERS') {
       const entries = state.combat.blockers.filter(b => b.blockerId === sourceId);
       entries.forEach(e => e.order = order);
-      log(`[FLOW] ${state.players[playerId].name} established damage assignment order for their blocker ${state.battlefield.find(o => o.id === sourceId)?.definition.name}.`);
+      //log(`[FLOW] ${state.players[playerId].name} established damage assignment order for their blocker ${state.battlefield.find(o => o.id === sourceId)?.definition.name}.`);
     }
 
     state.pendingAction = undefined;
@@ -546,22 +533,22 @@ export class PlayerActionProcessor {
     // index 0 -> Last to resolve (Bottom of stack)
     // index N-1 -> First to resolve (Top of stack)
     let orderedTriggers = orderedIds.map(id => triggers.find((t: any) => t.id === id)).filter(Boolean);
-    
+
     // FALLBACK: If no triggers were found by ID, check if the payload contained indices
     if (orderedTriggers.length === 0 && orderedIds.length > 0) {
-        orderedTriggers = orderedIds
-            .map(id => {
-                const idx = parseInt(id);
-                return !isNaN(idx) ? triggers[idx] : null;
-            })
-            .filter(Boolean);
+      orderedTriggers = orderedIds
+        .map(id => {
+          const idx = parseInt(id);
+          return !isNaN(idx) ? triggers[idx] : null;
+        })
+        .filter(Boolean);
     }
 
     // If we still have no triggers to stack, something is wrong
     if (orderedTriggers.length === 0 && (triggers?.length || 0) > 0) {
-        console.warn(`[TRIGGER-ORDERING] Failed to resolve any triggers from IDs: ${orderedIds.join(', ')}`);
-        // Emergency fallback: stack them in default order to avoid stalling the game
-        orderedTriggers = [...triggers];
+      console.warn(`[TRIGGER-ORDERING] Failed to resolve any triggers from IDs: ${orderedIds.join(', ')}`);
+      // Emergency fallback: stack them in default order to avoid stalling the game
+      orderedTriggers = [...triggers];
     }
 
     // Get the IDs of the triggers we are actually stacking to clean up pendingTriggers
@@ -575,22 +562,22 @@ export class PlayerActionProcessor {
     state.pendingAction = undefined;
 
     const TriggerProcessor = require('./../effects/triggers/TriggerProcessor').TriggerProcessor as typeof TriggerProcessorType;
-    
+
     for (let i = 0; i < orderedTriggers.length; i++) {
-        const t = orderedTriggers[i];
-        TriggerProcessor.stackTrigger(state, t, log);
-        
-        const pendingAfter = state.pendingAction as any;
-        // If stacking this trigger caused a targeting prompt,
-        // we must save the REMAINING triggers to be stacked after targeting is done.
-        if (pendingAfter && i < orderedTriggers.length - 1) {
-            const remaining = orderedTriggers.slice(i + 1);
-            if (pendingAfter.data) {
-                pendingAfter.data.nextTriggersToStack = remaining;
-            }
-            log(`[TRIGGER] Pausing trigger stacking for ${t.id} target selection. ${remaining.length} triggers remaining in queue.`);
-            return true;
+      const t = orderedTriggers[i];
+      TriggerProcessor.stackTrigger(state, t, log);
+
+      const pendingAfter = state.pendingAction as any;
+      // If stacking this trigger caused a targeting prompt,
+      // we must save the REMAINING triggers to be stacked after targeting is done.
+      if (pendingAfter && i < orderedTriggers.length - 1) {
+        const remaining = orderedTriggers.slice(i + 1);
+        if (pendingAfter.data) {
+          pendingAfter.data.nextTriggersToStack = remaining;
         }
+        log(`[TRIGGER] Pausing trigger stacking for ${t.id} target selection. ${remaining.length} triggers remaining in queue.`);
+        return true;
+      }
     }
 
     // Process remaining if anyone else has triggers

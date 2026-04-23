@@ -1,20 +1,13 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 export const ForumNecroscribe: CardDefinition = {
     name: "Forum Necroscribe",
     manaCost: "{5}{B}",
     scryfall_id: "67504a12-7414-4209-bf1c-624b4db19d52",
     rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/6/7/67504a12-7414-4209-bf1c-624b4db19d52.jpg?1775937497",
-    colors: [
-        "B"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Troll",
-        "Warlock"
-    ],
+    colors: ["B"],
+    types: ["Creature"],
+    subtypes: ["Troll", "Warlock"],
     power: "5",
     toughness: "4",
     keywords: ["Ward—Discard a card"],
@@ -23,18 +16,22 @@ export const ForumNecroscribe: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastInstantOrSorcery,
-            targets: [{
-                type: TargetType.CardInGraveyard, restrictions: [
-                    "Creature",
-                    "youcontrol"
-                ]
-            }],
             condition: ConditionType.ReparteeTrigger,
             effects: [
                 {
-                    type: EffectType.MoveToZone,
-                    zone: Zone.Battlefield,
-                    targetMapping: TargetMapping.Target1
+                    type: EffectType.Choice,
+                    label: "Choose a creature card to return on the battlefield",
+                    selectionPool: TargetMapping.ControllerGraveyard,
+                    targetDefinition: {
+                        type: TargetType.CardInGraveyard,
+                        restrictions: [Restriction.Creature, Restriction.YouOwn]
+                    },
+                    effects: [
+                        {
+                            type: EffectType.MoveToZone,
+                            zone: Zone.Battlefield
+                        }
+                    ]
                 }
             ]
         }

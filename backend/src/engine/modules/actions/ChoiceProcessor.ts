@@ -14,7 +14,8 @@ import {
     EffectType,
     StackObject,
     ResolutionContext,
-    AbilityDefinition
+    AbilityDefinition,
+    AbilityType
 } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
 import { ChoiceGenerator } from '../effects/ChoiceGenerator';
@@ -209,7 +210,8 @@ export class ChoiceProcessor {
         }
 
         // 2. Handle Casting-Phase Choices (Modes, Additional Costs)
-        if (isModal || action.data?.isSpellCasting || action.data?.isCostChoice) {
+        // If it's a resolution-phase choice (Cascade, etc.), we fall through to handleResolutionChoice
+        if ((isModal || action.data?.isSpellCasting || action.data?.isCostChoice) && !isResolution) {
             return this.handleModalSelection(state, playerId, sourceId, choice, choiceIndex, action, log, engine);
         }
 
@@ -279,7 +281,7 @@ export class ChoiceProcessor {
         return true;
     }
 
-    private static resumeResolution(state: GameState, sourceId: string, stackObj: StackObject, parentContext: ResolutionContext, log: (m: string) => void, engine: EngineContext): boolean {
+    public static resumeResolution(state: GameState, sourceId: string, stackObj: StackObject, parentContext: ResolutionContext, log: (m: string) => void, engine: EngineContext): boolean {
         let currentCtx: ResolutionContext | undefined = { ...parentContext, stackObject: stackObj }; // Wrap to start resuming
 
         // Then resume parent contexts
@@ -337,6 +339,17 @@ export class ChoiceProcessor {
                         ActionProcessor.removeFromCurrentZone(state, { id: fullStackObj.id, zone: Zone.Stack } as GameObject);
                     }
                     log(`[STACK] Completed resolution of ${stackObj.type} for ${sourceId}.`);
+                    
+                    // --- KEYWORD HOOK: ON RESOLUTION ---
+                    if (fullStackObj.type === AbilityType.Spell) {
+                        const { TriggerProcessor } = require('../effects/triggers/TriggerProcessor');
+                        console.log(`[CHOICE-DEBUG] Firing ON_RESOLVE_SPELL for ${fullStackObj.card?.definition.name}`);
+                        TriggerProcessor.onEvent(state, { 
+                            type: 'ON_RESOLVE_SPELL', 
+                            playerId: fullStackObj.controllerId,
+                            payload: { card: fullStackObj.card, sourceId: fullStackObj.sourceId }
+                        }, log);
+                    }
                 }
             }
             engine.resetPriorityToActivePlayer();
@@ -894,51 +907,12 @@ export class ChoiceProcessor {
             }
         }
 
-        // 3. Resume Parent Resolution
+        // 3. Resume/Finalize Resolution
         if (!state.pendingAction) {
-            log(`[RESOLVING] Resolution of ${sourceId} finalized.`);
-            const currentStackObj = state.stack.find(s => s.id === (stackObj?.id || sourceId));
-            const savedActionData = action.data;
-            let currentCtx: ResolutionContext | undefined = savedActionData?.parentContext;
-
-            // Parent context resumption handled by engine loop
+            return this.resumeResolution(state, sourceId, stackObj, action.data?.parentContext, log, engine);
         }
 
-        // 4. Clean up stack object if done
-        if (!state.pendingAction) {
-            if (stackObj) {
-                const fullStackObj = state.stack.find(s => s.id === stackObj.id);
-                if (fullStackObj) {
-                    if (fullStackObj.type === 'Spell' && fullStackObj.card) {
-                        const card = fullStackObj.card;
-                        const types = card.definition.types.map(t => (t as string).toLowerCase());
-                        const isPermanent = types.includes('creature') || types.includes('artifact') || types.includes('enchantment') || types.includes('planeswalker');
-
-                        if (card.zone === Zone.Stack) {
-                            const freshDef = oracle.getCard(card.definition.name);
-                            const shouldExile = fullStackObj.exileOnResolution || (fullStackObj as any).isCopy || (card as any).isPreparedCopy || freshDef?.exileOnResolution;
-
-                            if (shouldExile) {
-                                log(`[RULE 701.5] ${card.definition.name} was exiled instead of being put into graveyard.`);
-                                ActionProcessor.removeFromCurrentZone(state, card);
-                                if (!(fullStackObj as any).isCopy) {
-                                    ActionProcessor.moveCard(state, card, Zone.Exile, card.ownerId, log);
-                                }
-                            } else if (isPermanent) {
-                                ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId, log);
-                            } else {
-                                ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId, log);
-                            }
-                        }
-                    } else if (fullStackObj) {
-                        ActionProcessor.removeFromCurrentZone(state, { id: fullStackObj.id, zone: Zone.Stack } as any);
-                    }
-                }
-            }
-            engine.resetPriorityToActivePlayer();
-            return true;
-        }
-        return false;
+        return true;
     }
 
     public static resolveTargeting(
@@ -990,7 +964,7 @@ export class ChoiceProcessor {
                 state,
                 action.sourceId!,
                 action.data.selectedChoice,
-                action.data.originalActionData,
+                { ...action, data: action.data.originalActionData },
                 log,
                 engine
             );

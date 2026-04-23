@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 export const MindintoMatter: CardDefinition = {
     name: "Mind into Matter",
     manaCost: "{X}{G}{U}",
@@ -40,11 +40,9 @@ export const MindintoMatter: CardDefinition = {
                                         type: TargetType.CardInHand,
                                         count: 1,
                                         restrictions: [
-                                            "Permanent",
-                                            {
-                                                type: 'ManaValueLe',
-                                                value: DynamicAmount.X
-                                            }
+                                            Restriction.Permanent,
+                                            Restriction.ManaValueLessOrEqualToX
+
                                         ]
                                     },
                                 }

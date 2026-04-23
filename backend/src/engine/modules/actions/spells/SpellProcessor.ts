@@ -22,6 +22,7 @@ import { ManaProcessor } from '../../magic/ManaProcessor';
 import { SpellCostCalculator } from './SpellCostCalculator';
 import { SpellInteractiveManager } from './SpellInteractiveManager';
 import { SpellValidator } from './SpellValidator';
+import { TargetingProcessor } from '../targeting/TargetingProcessor';
 
 /**
  * SpellProcessor - Orchestrator Facade for Casting Spells and Activating Abilities.
@@ -246,7 +247,8 @@ export class SpellProcessor {
 
         // X-Value Selection
         const needsX = costStr.includes('{X}') ||
-            logic?.abilities?.some((a: any) => a.costs?.some((c: any) => c.value === 'X')) ||
+            logic?.abilities?.some((a: any) => (a.costs || a.additionalCosts)?.some((c: any) => c.value === 'X')) ||
+            currentDefinition.abilities?.some((a: any) => typeof a !== 'string' && (a.costs || a.additionalCosts)?.some((c: any) => c.value === 'X')) ||
             logic?.effects?.some((e: any) => JSON.stringify(e).includes('"X"')) ||
             modeHasX;
 
@@ -260,8 +262,9 @@ export class SpellProcessor {
         }
 
         // CR 601.2f: Determine total cost
-        const { totalMana, additionalCosts, usedAlternativeCostId } = SpellCostCalculator.getEffectiveCosts(state, cardToPlay, declaredTargets, currentDefinition);
+        const { totalMana, additionalCosts, usedAlternativeCostId, isFlashback } = SpellCostCalculator.getEffectiveCosts(state, cardToPlay, declaredTargets, currentDefinition);
         cardToPlay.usedAlternativeCostId = usedAlternativeCostId;
+        if (isFlashback) (cardToPlay as any).isFlashbackCast = true;
 
         // --- SETUP SEQUENCE: TARGETING -> CHOICE -> FINALIZATION ---
 
@@ -387,7 +390,14 @@ export class SpellProcessor {
         if (obj.definition.abilities) {
             obj.definition.abilities.forEach((a: AbilityDefinition | string) => {
                 if (typeof a === 'string') return;
-                if (!abilities.some(existing => existing.id === a.id && a.id !== undefined)) {
+                const isDuplicate = abilities.some(existing => {
+                    if (existing.id !== undefined && a.id !== undefined) return existing.id === a.id;
+                    // Fallback for abilities without IDs (check type and structural effects)
+                    return existing.type === a.type && 
+                           JSON.stringify(existing.effects) === JSON.stringify(a.effects) &&
+                           JSON.stringify(existing.costs) === JSON.stringify(a.costs);
+                });
+                if (!isDuplicate) {
                     abilities.push(a);
                 }
             });
@@ -575,6 +585,16 @@ export class SpellProcessor {
                         log(`Paid additional cost: Exiled ${obj.definition?.name || cid}.`);
                     }
                 });
+            } else if (cost.type === 'TapSelection') {
+                const chosenIds = state.interaction?.lastChosenTapSelectionIds || [];
+                chosenIds.forEach((cid: string) => {
+                    const obj = state.battlefield.find(o => o.id === cid);
+                    if (obj) {
+                        obj.isTapped = true;
+                        TriggerProcessor.onEvent(state, { type: TriggerEvent.Tap, sourceId: obj.id, playerId: playerId, data: { object: obj } }, log);
+                        log(`Paid additional cost: Tapped ${obj.definition.name}.`);
+                    }
+                });
             }
         });
 
@@ -583,6 +603,7 @@ export class SpellProcessor {
             delete state.interaction.lastChosenSacrificeId;
             delete state.interaction.lastChosenDiscardId;
             delete state.interaction.lastChosenExileIds;
+            delete state.interaction.lastChosenTapSelectionIds;
             delete state.interaction.lastChosenCostChoiceIndex;
             delete state.interaction.lastChosenModeIndex;
         }
@@ -639,17 +660,27 @@ export class SpellProcessor {
             targets: declaredTargets || [],
             card: cardToPlay,
             definition: cardToPlay.definition,
+            name: cardToPlay.definition.name + (cardToPlay.xValue !== undefined ? ` (X=${cardToPlay.xValue})` : ""),
             cannotBeCopied: cardToPlay.definition.cannotBeCopied,
             xValue: cardToPlay.xValue,
+            image_url: cardToPlay.definition.image_url,
             exileOnResolution: exileOnResolution,
             isFlashbackCast: cardToPlay.isFlashbackCast,
-            data: { effects: spellEffects, targetDefinition, preSelectedChoice, targetsControllers }
+            data: { 
+                effects: spellEffects, 
+                targetDefinition, 
+                preSelectedChoice, 
+                targetsControllers,
+                declaredXValue: cardToPlay.xValue,
+                summary: cardToPlay.xValue !== undefined ? `X = ${cardToPlay.xValue}` : undefined,
+                choices: cardToPlay.xValue !== undefined ? [{ label: "X", value: cardToPlay.xValue }] : []
+            }
         };
 
         state.stack.push(stackObj);
         console.log(`[STACK-PUSH] Pushed ${stackObj.definition?.name} to stack. ID: ${stackObj.id}. Current stack size: ${state.stack.length}`);
         log(`--------------------------------------------------`);
-        log(`[STACK] + ${player.name} cast ${cardToPlay.definition.name}`);
+        log(`[STACK] + ${player.name} cast ${cardToPlay.definition.name}${cardToPlay.xValue !== undefined ? ` (X=${cardToPlay.xValue})` : ''}`);
         log(`--------------------------------------------------`);
 
         // Casualty
@@ -684,9 +715,11 @@ export class SpellProcessor {
             TriggerProcessor.onEvent(state, { type: TriggerEvent.CastNonCreature, playerId, payload: { card: cardToPlay, sourceId: cardToPlay.id } }, log);
         }
 
-        log(`--------------------------------------------------`);
-        log(`[STACK] + ${state.players[playerId].name} cast ${cardToPlay.definition.name}${declaredTargets?.length ? ' targeting ' + declaredTargets.join(', ') : ''}`);
+        log(`[STACK] + ${state.players[playerId].name} cast ${cardToPlay.definition.name}${cardToPlay.xValue !== undefined ? ` (X=${cardToPlay.xValue})` : ''}${declaredTargets?.length ? ' targeting ' + declaredTargets.join(', ') : ''}`);
         if (!state.pendingAction) {
+            if (options.parentContext) {
+                return engine.resumeResolution(cardToPlay.id, stackObj, options.parentContext);
+            }
             engine.checkStateBasedActions();
             engine.resetPriorityToActivePlayer();
         }
@@ -711,7 +744,7 @@ export class SpellProcessor {
             controllerId: playerId,
             sourceId: obj.id,
             type: AbilityType.Activated,
-            name: `${obj.definition.name} Ability`,
+            name: `${obj.definition.name} Ability${obj.xValue !== undefined ? ` (X=${obj.xValue})` : ""}`,
             image_url: obj.definition.image_url,
             targets: declaredTargets,
             abilityIndex: abilityIndex,
@@ -720,9 +753,13 @@ export class SpellProcessor {
             card: obj,
             definition: obj.definition,
             preSelectedChoice: preSelectedChoice,
-            data: {
-                effects: ability.effects || [],
-                targetDefinition: ability.targetDefinition
+            data: { 
+                effects: (ability as any).effects || [], 
+                targetDefinition: (ability as any).targetDefinition, 
+                preSelectedChoice,
+                declaredXValue: obj.xValue,
+                summary: obj.xValue !== undefined ? `X = ${obj.xValue}` : undefined,
+                choices: obj.xValue !== undefined ? [{ label: "X", value: obj.xValue }] : []
             }
         };
 
@@ -769,27 +806,16 @@ export class SpellProcessor {
         }
 
         state.stack.push(stackObj);
-        log(`Activated ability of ${obj.definition.name}: ${ability.id}`);
+        log(`Activated ability of ${obj.definition.name}${obj.xValue !== undefined ? ` (X=${obj.xValue})` : ''}`);
         declaredTargets.forEach((tid) => {
             const { TriggerProcessor: TriggerProc } = require('../../effects/triggers/TriggerProcessor');
             TriggerProc.onEvent(state, { type: TriggerEvent.BecomeTarget, playerId, targetId: tid, sourceId: stackId, data: { sourceId: stackId, sourceCard: obj } }, log);
         });
 
         state.consecutivePasses = 0;
-
         // --- RESUME RESOLUTION ---
-        if (!state.pendingAction && parentContext) {
-            const { EffectProcessor } = require('../../effects/EffectProcessor');
-            EffectProcessor.resolveEffects({
-                state,
-                effects: parentContext.effects || [],
-                sourceId: parentContext.sourceId || '',
-                targets: parentContext.targets || [],
-                log,
-                startIndex: parentContext.nextEffectIndex || 0,
-                stackObject: parentContext.stackObject,
-                parentContext: parentContext.parentContext,
-            });
+        if (!state.pendingAction && options.parentContext) {
+            return engine.resumeResolution(obj.id, stackObj, options.parentContext);
         }
 
         if (!state.pendingAction) {

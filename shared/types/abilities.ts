@@ -96,6 +96,7 @@ export const ConditionType = {
     ControlSubtypeGe: 'CONTROL_SUBTYPE_GE',
     ArtifactCountGe: 'ARTIFACT_COUNT_GE',
     LandCountGe: 'LAND_COUNT_GE',
+    IsFlashbackCast: 'IS_FLASHBACK_CAST',
 } as const;
 export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType] | string;
 

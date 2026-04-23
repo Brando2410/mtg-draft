@@ -23,8 +23,8 @@ export const EventConditions: Record<string, IConditionHandler> = {
     },
     "IS_FLASHBACK_CAST": {
         matches(state, params, context) {
-            const { event } = context;
-            const obj = event?.data?.object || event?.data?.card || event?.card || (event as any)?.gameObject;
+            const { event, cardToPlay } = context;
+            const obj = cardToPlay || event?.data?.object || event?.data?.card || event?.card || (event as any)?.gameObject;
             if (obj) return (obj as any)?.isFlashbackCast === true;
             return (event as any)?.isFlashbackCast === true;
         }
@@ -76,6 +76,21 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "EVENT_PLAYER_IS_YOU": {
         matches(state, params, context) {
             return String(context.event?.playerId) === String(context.controllerId);
+        }
+    },
+    "PLAYER_IS_CONTROLLER": {
+        matches(state, params, context) {
+            const { event, controllerId } = context;
+            const eventPlayerId = event?.playerId || event?.data?.playerId || (event as any)?.payload?.playerId;
+            if (eventPlayerId) {
+                return String(eventPlayerId) === String(controllerId);
+            }
+            // Fallback for object-based events
+            const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || (event as any)?.gameObject || event?.object;
+            if (obj) {
+                return String(obj.controllerId) === String(controllerId);
+            }
+            return false;
         }
     },
     "EVENT_SOURCE_IS_SELF": {
@@ -156,7 +171,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, stackObject } = context;
             const threshold = parseInt(params[0]);
-            const spent = event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.data?.paidManaValue || 0;
+            const spent = event?.amount || event?.payload?.card?.paidManaValue || event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.data?.paidManaValue || 0;
             return spent >= threshold;
         }
     },
@@ -164,7 +179,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, stackObject } = context;
             const threshold = parseInt(params[0]);
-            const spent = event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.data?.paidManaValue || 0;
+            const spent = event?.amount || event?.payload?.card?.paidManaValue || event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.data?.paidManaValue || 0;
             return spent < threshold;
         }
     },
@@ -172,7 +187,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, stackObject } = context;
             const threshold = parseInt(params[0]);
-            const spent = event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.data?.paidManaValue || 0;
+            const spent = event?.amount || event?.payload?.card?.paidManaValue || event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.data?.paidManaValue || 0;
             return spent <= threshold;
         }
     },
@@ -235,6 +250,28 @@ export const EventConditions: Record<string, IConditionHandler> = {
             return targets.some((tid: string) => {
                 const obj = state.battlefield.find((o) => o.id === tid);
                 return obj && obj.definition.types.some((t: string) => t.toLowerCase() === "creature");
+            });
+        }
+    },
+    "REPARTEE_TRIGGER": {
+        matches(state, params, context) {
+            const { event, controllerId } = context;
+            
+            // Check if the player casting the spell is the controller of this trigger.
+            const castingPlayerId = event?.playerId || (event as any)?.data?.playerId;
+            if (String(castingPlayerId) !== String(controllerId)) return false;
+
+            // Use stackSnapshot from payload (emitted by SpellProcessor)
+            const stackObj = event?.payload?.stackSnapshot || (event as any)?.data?.stackSnapshot;
+            const targets = stackObj?.targets || [];
+            if (!targets.length) return false;
+
+            const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
+            return targets.some((tid: string) => {
+                const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
+                if (!obj) return false;
+                // CR 109.2: "Creature" in rules text refers to a creature permanent on the battlefield.
+                return obj.zone === Zone.Battlefield && obj.definition.types.some((t: string) => t.toLowerCase() === "creature");
             });
         }
     },

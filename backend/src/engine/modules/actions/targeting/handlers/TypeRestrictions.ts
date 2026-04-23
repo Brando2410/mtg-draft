@@ -124,6 +124,12 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return !types.includes('land') && ['artifact', 'creature', 'enchantment', 'planeswalker'].some(t => types.includes(t));
         }
     },
+    "NONLANDPERMANENT": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            return !types.includes('land') && ['artifact', 'creature', 'enchantment', 'planeswalker'].some(t => types.includes(t));
+        }
+    },
     "CARD": {
         matches() { return true; }
     },

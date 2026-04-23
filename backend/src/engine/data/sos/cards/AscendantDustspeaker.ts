@@ -1,4 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { TargetMapper } from 'src/engine/modules/actions/targeting/TargetMapper';
 
 export const AscendantDustspeaker: CardDefinition = {
     name: "Ascendant Dustspeaker",
@@ -39,16 +40,25 @@ export const AscendantDustspeaker: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.BeginningOfCombatStep,
             condition: ConditionType.IsYourTurn,
-            targetDefinition: {
-                type: TargetType.CardInGraveyard,
-                optional: true,
-                count: 1,
-                minCount: 0
-            },
+
             effects: [
+
                 {
-                    type: EffectType.Exile,
-                    targetMapping: TargetMapping.Target1
+                    type: EffectType.Choice,
+                    selectionPool: TargetMapping.AnyGraveyard,
+                    targetDefinition: {
+                        type: TargetType.CardInGraveyard,
+                        optional: true,
+                        count: 1,
+                        minCount: 0
+                    },
+                    effects: [
+                        {
+                            type: EffectType.Exile,
+                            targetMapping: TargetMapping.Target1
+                        }
+                    ]
+
                 }
             ]
         }

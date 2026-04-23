@@ -1,20 +1,12 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const InformedInkwright: CardDefinition = {
+export const InformedInkwright: CardDefinition = {
     name: "Informed Inkwright",
     manaCost: "{1}{W}",
     scryfall_id: "5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6",
     rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/5/d/5defb2d1-d0fb-4e7f-a5c7-3df99fe675d6.jpg?1775937046",
-    colors: [
-        "W"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Human",
-        "Wizard"
-    ],
+    colors: ["W"], types: ["Creature"],
+    subtypes: ["Human", "Wizard"],
     keywords: ["Vigilance"],
     oracleText: "Vigilance\nRepartee — Whenever you cast an instant or sorcery spell that targets a creature, create a 1/1 white and black Inkling creature token with flying.",
     abilities: [
@@ -44,4 +36,4 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
     power: "2",
     toughness: "2"
 };
-    
+

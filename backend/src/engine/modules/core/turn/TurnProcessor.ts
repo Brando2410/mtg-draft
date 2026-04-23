@@ -115,7 +115,7 @@ export class TurnProcessor {
     }
 
     if (next.turnEnded) {
-      log(`[FLOW] Turn is ending on request: ${next.phase}/${next.step}`);
+      // log(`[FLOW] Turn is ending on request: ${next.phase}/${next.step}`);
       this.cleanupEndOfTurn(state, log);
       this.rotateActivePlayer(state, log);
       state.turnNumber++;
@@ -131,7 +131,7 @@ export class TurnProcessor {
       state.priorityPlayerId = null;
     }
 
-    log(`[PHASE] >>> Entering ${state.currentPhase}: ${state.currentStep} <<<`);
+    //  log(`[PHASE] >>> Entering ${state.currentPhase}: ${state.currentStep} <<<`);
 
     // CR 603.6: Phase/Step Transition Triggers
     const phaseName = state.currentPhase.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
@@ -169,7 +169,7 @@ export class TurnProcessor {
     }
 
     if (state.currentStep === Step.Untap || state.currentStep === Step.Cleanup) {
-      log(`[FLOW] Auto-advancing from administrative step ${state.currentStep}`);
+      // log(`[FLOW] Auto-advancing from administrative step ${state.currentStep}`);
       this.advanceStep(state, engine, log);
     } else {
       engine.resetPriorityToActivePlayer();

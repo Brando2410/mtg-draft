@@ -15,6 +15,7 @@ export const FieldsofStrife: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
+            id: "T: Add {R} or {W}",
             costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [
@@ -30,6 +31,7 @@ export const FieldsofStrife: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
+            id: "Surveil 1",
             manaCost: "{2}{R}{W}",
             costs: [{ type: CostType.Tap }],
             effects: [

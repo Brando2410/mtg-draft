@@ -1,15 +1,10 @@
-import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
 
 export const ViciousRivalry: CardDefinition = {
     name: "Vicious Rivalry",
     manaCost: "{2}{B}{G}",
-    colors: [
-        "B",
-        "G"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["B", "G"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "As an additional cost to cast this spell, pay X life.\nDestroy all artifacts and creatures with mana value X or less.",
@@ -17,17 +12,19 @@ export const ViciousRivalry: CardDefinition = {
         {
             type: AbilityType.Spell,
             additionalCosts: [
-                { type: CostType.PayLife, value: DynamicAmount.X } as any
+                {
+                    type: CostType.PayLife,
+                    value: DynamicAmount.X
+                }
             ],
             effects: [
                 {
                     type: EffectType.Destroy,
-                    selectionType: 'All' as any,
+                    targetMapping: TargetMapping.AllMatchingPermanents,
                     restrictions: [
-                        "mv <= X",
-                        "ArtifactOrCreature"
-                    ],
-                    targetMapping: 'MATCHING_PERMANENTS' as any
+                        Restriction.ArtifactOrCreature,
+                        Restriction.ManaValueLessOrEqualToX
+                    ]
                 }
             ]
         }

@@ -370,6 +370,12 @@ export class TargetMapper {
         const opponentId = Object.keys(state.players).find((pid) => pid !== controllerId);
         return opponentId ? state.players[opponentId].graveyard.map((o) => o.id) : [];
       }
+      case "ANY_GRAVEYARD": {
+        return Object.values(state.players).flatMap(p => p.graveyard.map(o => o.id));
+      }
+      case "ANY_EXILE": {
+        return state.exile.map(o => o.id);
+      }
       case "LINKED_OBJECT":
         const linkKey = effect.linkKey || "linkedCardId";
         const lSource =

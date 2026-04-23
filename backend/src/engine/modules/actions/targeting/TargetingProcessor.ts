@@ -380,6 +380,9 @@ export class TargetingProcessor {
             });
 
             if (!state.pendingAction) {
+                if (actionData.parentContext) {
+                    return engine.resumeResolution(useSourceId, stackObj, actionData.parentContext);
+                }
                 engine.resetPriorityToActivePlayer();
             }
             return true;
@@ -428,6 +431,10 @@ export class TargetingProcessor {
                         return true;
                     }
                 }
+            }
+            
+            if (actionData.parentContext) {
+                return engine.resumeResolution(sourceId || stackObj.sourceId, stackObj, actionData.parentContext);
             }
 
             state.priorityPlayerId = playerId;

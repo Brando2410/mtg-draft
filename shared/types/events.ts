@@ -51,6 +51,7 @@ export const TriggerEvent = {
   StartOfCombat: "ON_START_OF_COMBAT",
   ThirdSpellCast: "ON_THIRD_SPELL_CAST",
   TriggerQueued: "ON_TRIGGER_QUEUED",
+  Tap: "ON_TAP",
   Untap: "ON_UNTAP",
   Upkeep: "ON_UPKEEP_STEP",
   ValentinReplacementSuccess: "ON_VALENTIN_REPLACEMENT_SUCCESS",

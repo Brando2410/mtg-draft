@@ -32,6 +32,23 @@ export class StackResolver {
       this.log(`Resuming: ${this.getObjectName(stackObj)}...`);
     }
 
+    // 0. Rule 603.4: Intervening "if" clause re-check
+    if (startIndex === 0 && stackObj.condition) {
+      const { ConditionProcessor } = require('../../core/logic/ConditionProcessor');
+      const context = {
+        sourceId: stackObj.sourceId,
+        controllerId: stackObj.controllerId,
+        event: stackObj.data?.event,
+        stackObject: stackObj
+      };
+      
+      if (!ConditionProcessor.matchesCondition(this.state, stackObj.condition, context)) {
+        this.log(`${this.getObjectName(stackObj)} failed to resolve: condition "${stackObj.condition}" no longer met.`);
+        this.fizzle(stackObj);
+        return true;
+      }
+    }
+
     // 1. Re-evaluate Targets (Rule 608.2b)
     // Only on initial resolution
     if (startIndex === 0 && this.areAllTargetsIllegal(stackObj)) {

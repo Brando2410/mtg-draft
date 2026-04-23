@@ -14,7 +14,7 @@ export const CastSpellHandler: IEffectHandler = {
     log(`[DEBUG] SpecializedEffects: CastSpell for ${targetId} (Free: ${isFree})`);
 
     if (spellName && !targetId) {
-      const { oracle } = require("../../../OracleLogicMap");
+      const { oracle } = require("../../../../OracleLogicMap");
       const cardDef = oracle.getCard(spellName);
       if (!cardDef) {
         log(`[ERROR] CastSpell: Could not find definition for ${spellName}.`);
@@ -25,6 +25,7 @@ export const CastSpellHandler: IEffectHandler = {
       const copy = {
         id: copyId,
         definition: cardDef,
+        image_url: cardDef.image_url,
         controllerId: controllerId,
         ownerId: controllerId,
         zone: Zone.Exile,

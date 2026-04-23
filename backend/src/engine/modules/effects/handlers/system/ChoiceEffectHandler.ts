@@ -123,6 +123,8 @@ export class ChoiceEffectHandler {
       TargetMapping.LastExiledIds,
       TargetMapping.ParentContextExiledIds,
       TargetMapping.LastDiscardedCards,
+      TargetMapping.AnyGraveyard,
+      TargetMapping.AnyExile,
     ] as string[]).includes(targetZoneMapping);
 
     if (isStandardMapping) {
@@ -152,6 +154,10 @@ export class ChoiceEffectHandler {
 
       if (isNameACard) {
         sourceCards = state.players[controllerId].library;
+      } else if (targetZoneMapping === "ANY_GRAVEYARD") {
+        sourceCards = Object.values(state.players).flatMap(p => p.graveyard);
+      } else if (targetZoneMapping === "ANY_EXILE") {
+        sourceCards = state.exile;
       } else if (isBattlefield) {
         sourceCards =
           targetZoneMapping === "ALL_BATTLEFIELD"

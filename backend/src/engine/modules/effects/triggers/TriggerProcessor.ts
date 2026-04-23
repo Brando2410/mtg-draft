@@ -36,6 +36,9 @@ export class TriggerProcessor {
     event: GameEvent,
     log: (msg: string) => void,
   ) {
+    if (event.type === TriggerEvent.ResolveSpell || event.type === TriggerEvent.PreCombatMainPhaseStart) {
+        console.log(`[TRIGGER-DEBUG] Processing event: ${event.type}`);
+    }
     // 1. Identify all triggered abilities that match this event (Rule 603.2)
     const matchingTriggers = this.collectMatchingTriggers(state, event, log);
 
@@ -298,7 +301,7 @@ export class TriggerProcessor {
     const sourceName =
       sourceObj?.definition.name || emblemSource?.name || "Unknown Source";
     const sourceImage =
-      sourceObj?.definition.image_url || emblemSource?.image_url;
+      sourceObj?.definition.image_url || emblemSource?.image_url || (trigger as any).data?.definition?.image_url;
 
     const stackId = `trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
 
@@ -309,6 +312,7 @@ export class TriggerProcessor {
       targets: [],
       effects: (trigger as any).effects || [],
       event: event,
+      eventData: event,
       eventAmount: (event as any).amount,
       targetDefinition: (trigger as any).targetDefinition,
       sourceName: sourceName,
@@ -321,9 +325,11 @@ export class TriggerProcessor {
       sourceId: trigger.sourceId,
       type: AbilityType.Triggered,
       name: `${sourceName}'s Trigger`,
-      image_url: sourceImage,
       targets: [],
+      definition: sourceObj?.definition || (trigger as any).data?.definition,
+      image_url: sourceImage,
       abilityIndex: (trigger as any).abilityIndex,
+      condition: (trigger as any).condition,
       data: contextPayload
     };
     return stackObj;
@@ -428,6 +434,8 @@ export class TriggerProcessor {
 
     const sourceId = trigger.sourceId;
 
+    if (trigger.isGlobal) return true;
+
     // CR 114: Emblem abilities function from the Command Zone (always active)
     if (activeZone === Zone.Command) {
       return state.emblems?.some((e) => e.id === sourceId) ?? false;
@@ -449,6 +457,9 @@ export class TriggerProcessor {
 
     const isInStack = state.stack.some((o) => o.id === sourceId || (o as any).sourceId === sourceId);
     if (activeZone === Zone.Stack) return isInStack;
+
+    const isInExile = state.exile.some((o) => o.id === sourceId);
+    if (activeZone === Zone.Exile) return isInExile;
 
     return false;
   }
@@ -514,9 +525,9 @@ export class TriggerProcessor {
       const tEvent = t.eventMatch;
       const tEvents = Array.isArray(tEvent) ? tEvent : [tEvent];
 
-      if (event.type === TriggerEvent.CastSpell) {
-        if (tEvents.includes(TriggerEvent.CastSpell)) {
-          if (log) log(`[TRIGGER-DEBUG] Checking trigger ${t.id} from ${t.sourceId}. Global: ${t.isGlobal}. Zone: ${t.activeZone}`);
+      if (event.type === TriggerEvent.CastSpell || event.type === TriggerEvent.ResolveSpell || event.type === TriggerEvent.PreCombatMainPhaseStart) {
+        if (tEvents.includes(event.type)) {
+          console.log(`[TRIGGER-DEBUG] Potential match: trigger ${t.id} from ${t.sourceId}. Event: ${event.type}. Global: ${t.isGlobal}. Zone: ${t.activeZone}`);
         }
       }
 
@@ -628,11 +639,14 @@ export class TriggerProcessor {
             stackObject: t,
           };
           if (!ConditionProcessor.matchesCondition(state, condition, matchesInfo)) {
+            if (event.type === TriggerEvent.PreCombatMainPhaseStart) console.log(`[TRIGGER-DEBUG] Trigger ${t.id} failed condition ${condition}.`);
             return false;
           }
         }
       }
 
+      if (event.type === TriggerEvent.PreCombatMainPhaseStart) console.log(`[TRIGGER-DEBUG] Trigger ${t.id} successfully matched event ${event.type}!`);
+      
       if (!this.checkZone(state, t, event.type)) return false;
 
       if (t.limitPerTurn) {
@@ -920,11 +934,20 @@ export class TriggerProcessor {
     log: (m: string) => void,
   ) {
     const card = event.payload?.card || event.data?.card || event.card;
-    if (!card) return;
+    if (!card) {
+        if (event.type === TriggerEvent.ResolveSpell) console.log(`[PARADIGM-DEBUG] No card found in event ${event.type}`);
+        return;
+    }
 
     const stats = LayerProcessor.getEffectiveStats(card, state, log);
     const { keywords } = stats;
-    if (!keywords.some((k: string) => k.toLowerCase() === "paradigm")) return;
+    const hasParadigm = keywords.some((k: string) => k.toLowerCase() === "paradigm");
+    
+    if (event.type === TriggerEvent.ResolveSpell || event.type === TriggerEvent.CastSpell) {
+        console.log(`[PARADIGM-DEBUG] Checking ${card.definition.name} for Paradigm. hasParadigm=${hasParadigm}`);
+    }
+
+    if (!hasParadigm) return;
 
     if (event.type === TriggerEvent.CastSpell) {
       // 1. Ensure the spell exiles on resolution
@@ -945,6 +968,8 @@ export class TriggerProcessor {
         (t) => t.id === existingTriggerId,
       );
 
+      console.log(`[PARADIGM-DEBUG] Resolution event for ${spellName}. alreadyRegistered=${alreadyRegistered}`);
+
       if (!alreadyRegistered) {
         state.ruleRegistry.triggeredAbilities.push({
           type: AbilityType.Triggered,
@@ -953,7 +978,7 @@ export class TriggerProcessor {
           id: existingTriggerId,
           sourceId: card.id,
           controllerId: playerId,
-          activeZone: Zone.Command, // Global rule
+          isGlobal: true, // Paradigm persists regardless of the card's zone
           effects: [
             {
               type: EffectType.Choice,
@@ -974,6 +999,7 @@ export class TriggerProcessor {
               ],
             },
           ],
+          data: { definition: card.definition },
         });
         log(
           `[PARADIGM] Registered recurring recast trigger for ${spellName}.`,

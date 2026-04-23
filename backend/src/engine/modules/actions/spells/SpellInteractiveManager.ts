@@ -425,6 +425,50 @@ export class SpellInteractiveManager {
             log(`[EXILE] ${state.players[playerId].name} must choose objects to exile.`);
             return true;
         }
+        
+        // 5. TapSelection Cost
+        const tapSelectionCost = additionalCosts.find(c => c.type === CostType.TapSelection);
+        const hasChosenTapSelection = state.interaction?.lastChosenTapSelectionIds !== undefined;
+
+        if (tapSelectionCost && !hasChosenTapSelection) {
+            const legalTapIds = state.battlefield.filter(o => 
+                o.controllerId === playerId && 
+                !o.isTapped && 
+                TargetingProcessor.matchesRestrictions(state, o, tapSelectionCost.restrictions || [], {
+                    sourceId: cardToPlay.id,
+                    controllerId: playerId
+                })
+            ).map(o => o.id);
+
+            const amount = Number(tapSelectionCost.value || tapSelectionCost.amount || 1);
+            if (legalTapIds.length < amount) {
+                log(`Illegal Play: Not enough valid permanents to tap for ${cardToPlay.definition.name}.`);
+                return null; // FAILURE
+            }
+
+            state.pendingAction = {
+                type: ActionType.ModalSelection,
+                playerId: playerId,
+                sourceId: cardToPlay.id,
+                data: {
+                    label: `Tap ${amount} permanents to cast ` + cardToPlay.definition.name,
+                    hideUndo: false,
+                    isCostChoice: true,
+                    costType: 'TapSelection',
+                    minChoices: amount,
+                    maxChoices: amount,
+                    declaredTargets: declaredTargets || [],
+                    choices: legalTapIds.map(id => {
+                        const sObj = state.battlefield.find(o => o.id === id);
+                        return { label: `Tap ${sObj?.definition.name || id}`, value: id, cardData: sObj, selectable: true }
+                    }),
+                    isFreeCast,
+                    parentContext
+                }
+            };
+            log(`[TAP] ${state.players[playerId].name} must choose ${amount} objects to tap.`);
+            return true;
+        }
 
         return false;
     }

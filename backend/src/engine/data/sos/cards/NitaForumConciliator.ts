@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const NitaForumConciliator: CardDefinition = {
     name: "Nita, Forum Conciliator",
@@ -6,18 +6,9 @@ export const NitaForumConciliator: CardDefinition = {
     scryfall_id: "fd80a87d-35d3-4ad1-8172-c85e93032d1d",
     rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/f/d/fd80a87d-35d3-4ad1-8172-c85e93032d1d.jpg?1775938431",
-    colors: [
-        "B",
-        "W"
-    ],
-    types: [
-        "Legendary",
-        "Creature"
-    ],
-    subtypes: [
-        "Human",
-        "Advisor"
-    ],
+    colors: ["B", "W"],
+    types: ["Legendary", "Creature"],
+    subtypes: ["Human", "Advisor"],
     keywords: [],
     power: "2",
     toughness: "3",
@@ -26,11 +17,15 @@ export const NitaForumConciliator: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
-            condition: 'EVENT_OBJECT_OWNER_NOT_YOU',
+            condition: (state: any, event: any, t: any) => {
+                const casterId = event.playerId;
+                const spell = event.payload?.card;
+                return String(casterId) === String(t.controllerId) && spell && String(spell.ownerId) !== String(casterId);
+            },
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    counterType: 'P1P1',
+                    counterType: "P1P1",
                     amount: 1,
                     targetMapping: TargetMapping.AllCreaturesYouControl
                 }
@@ -40,19 +35,13 @@ export const NitaForumConciliator: CardDefinition = {
             type: AbilityType.Activated,
             activatedOnlyAsSorcery: true,
             costs: [
-                { type: CostType.Mana, value: '{2}' },
-                {
-                    type: CostType.Sacrifice,
-                    targetMapping: TargetMapping.OtherCreaturesYouControl
-                }
+                { type: CostType.Mana, value: "{2}" },
+                { type: CostType.Sacrifice, restrictions: [Restriction.Other, Restriction.Creature], amount: 1 }
             ],
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
-                count: 1,
-                restrictions: [
-                    Restriction.OpponentControl,
-                    Restriction.InstantOrSorcery
-                ]
+                restrictions: [Restriction.InstantOrSorcery, Restriction.OpponentOwns],
+                count: 1
             },
             effects: [
                 {
@@ -61,14 +50,13 @@ export const NitaForumConciliator: CardDefinition = {
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    duration: { type: DurationType.UntilEndOfTurn },
-                    targetMapping: TargetMapping.LastExiledObject,
+                    duration: DurationType.UntilEndOfTurn,
+                    targetMapping: TargetMapping.Target1,
                     canPlayExiled: true,
                     spendAnyMana: true,
-                    exileOnMoveToGraveyard: true,
-                    redirectConditions: { zone: Zone.Exile } // Simplified from original weird redirect
+                    exileOnMoveToGraveyard: true
                 }
-            ],
-    }
+            ]
+        }
     ]
 };

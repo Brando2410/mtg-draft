@@ -89,8 +89,10 @@ export class StackProcessor {
         }
         
         // --- KEYWORD HOOK: ON RESOLUTION ---
+        console.log(`[STACK-DEBUG] ${objectName} resolved. type=${objectToResolve.type}, completed=${completed}`);
         if (completed && objectToResolve.type === AbilityType.Spell) {
             const { TriggerProcessor } = require('../../effects/triggers/TriggerProcessor');
+            console.log(`[STACK-DEBUG] Firing ON_RESOLVE_SPELL for ${objectName}`);
             TriggerProcessor.onEvent(state, { 
                 type: 'ON_RESOLVE_SPELL', 
                 playerId: objectToResolve.controllerId,

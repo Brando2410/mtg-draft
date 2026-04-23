@@ -38,7 +38,7 @@ export class SpellCostCalculator {
      * @param overrideStats - Pre-computed LayerProcessor stats to avoid re-calculation.
      * @returns Object containing totalMana string, list of additionalCosts, and optional usedAlternativeCostId.
      */
-    public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: any, forceFlashback?: boolean, overrideStats?: any): { totalMana: string, additionalCosts: AbilityCost[], usedAlternativeCostId?: string } {
+    public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: any, forceFlashback?: boolean, overrideStats?: any): { totalMana: string, additionalCosts: AbilityCost[], usedAlternativeCostId?: string, isFlashback?: boolean } {
         const currentDef = overrideDefinition || card.definition;
         let baseCost = currentDef.manaCost;
 
@@ -77,7 +77,7 @@ export class SpellCostCalculator {
         const parsed = ManaProcessor.parseManaCost(baseCost);
         if ((card as any).isFreeCast) {
             console.log(`[COST-DEBUG] ${card.definition.name} is free because card.isFreeCast is true.`);
-            return { totalMana: "{0}", additionalCosts: [] };
+            return { totalMana: "{0}", additionalCosts: [], isFlashback };
         }
 
         let extraGeneric = 0;
@@ -122,38 +122,82 @@ export class SpellCostCalculator {
 
             const source = TargetingProcessor.findObjectInAnyZone(state, e.sourceId);
             if (source && e.activeZones && !e.activeZones.includes(source.zone)) return false;
+            
+            // SKIP SELF: We scan the card's own abilities manually below to ensure 
+            // consistency and avoid double-counting with the rule registry.
+            if (e.sourceId === card.id) return false;
+
             return true;
         });
 
         // 2. Add the card's OWN static additional costs (e.g. Goremand) OR inherent spell costs (e.g. Village Rites)
-        const cardLogic = oracle.getCard(currentDef.name);
-        if (cardLogic) {
-            cardLogic.abilities?.forEach((a: any) => {
-                // Case A: Static abilities that apply costs to the card itself (creatures)
-                if (a.type === AbilityType.Static && a.activeZone === Zone.Hand) {
-                    if (a.additionalCosts) {
-                        additionalCosts = [...additionalCosts, ...a.additionalCosts];
-                    }
-                    a.effects?.forEach((e: any) => {
-                        if (e.type === 'AdditionalCost' && e.targetMapping === 'SELF') {
-                            if (e.additionalCosts) additionalCosts = [...additionalCosts, ...e.additionalCosts];
-                        }
-                        if (e.type === 'CostReduction' && e.targetMapping === 'SELF') {
-                            modifiers.push({ ...e, sourceId: card.id, controllerId: card.controllerId } as any);
-                        }
-                    });
+        const abilitiesToScan = currentDef.abilities || [];
+
+        abilitiesToScan.forEach((a: any) => {
+            if (typeof a === 'string') return;
+
+            // Case A: Static abilities that apply costs to the card itself
+            if (a.type === AbilityType.Static) {
+                // Rule 113.6c: Cost-modifying abilities function in any zone from which the card can be played.
+                const isCostModifying = a.additionalCosts || a.effects?.some((e: any) => ['CostReduction', 'AdditionalCost', 'SpellTax'].includes(e.type));
+                const activeZone = a.activeZone || (isCostModifying ? card.zone : Zone.Battlefield);
+
+                if (activeZone !== 'Any' && activeZone !== card.zone) return;
+
+                if (a.additionalCosts) {
+                    additionalCosts = [...additionalCosts, ...a.additionalCosts];
                 }
-                // Case B: Inherent Costs/Reductions inside the Spell ability itself (Instants/Sorceries)
-                if ((a.type === AbilityType.Spell || a.type === 'SpellAbility')) {
-                    if (a.costs) {
-                        additionalCosts = [...additionalCosts, ...a.costs];
+                a.effects?.forEach((e: any) => {
+                    if (e.type === 'AdditionalCost' && e.targetMapping === 'SELF') {
+                        const { ConditionProcessor } = require('../../core/logic/ConditionProcessor');
+                        const conditionMatches = !e.condition || ConditionProcessor.matchesCondition(state, e.condition, {
+                            sourceId: card.id,
+                            controllerId: card.controllerId,
+                            event: { data: { card: { ...card, isFlashbackCast: isFlashback }, targets } } as any
+                        });
+                        if (conditionMatches && e.additionalCosts) {
+                            additionalCosts = [...additionalCosts, ...e.additionalCosts];
+                        }
                     }
-                    if (a.costReduction) {
-                        modifiers.push({ ...a.costReduction, sourceId: card.id, controllerId: card.controllerId } as any);
+                    if (e.type === 'CostReduction' && e.targetMapping === 'SELF') {
+                        modifiers.push({ ...e, sourceId: card.id, controllerId: card.controllerId } as any);
                     }
+                });
+            }
+            // Case B: Inherent Costs/Reductions inside the Spell ability itself (Instants/Sorceries)
+            if ((a.type === AbilityType.Spell || a.type === 'SpellAbility')) {
+                if (a.costs) {
+                    additionalCosts = [...additionalCosts, ...a.costs];
                 }
-            });
-        }
+                if (a.additionalCosts) {
+                    additionalCosts = [...additionalCosts, ...a.additionalCosts];
+                }
+                if (a.costReduction) {
+                    modifiers.push({ ...a.costReduction, sourceId: card.id, controllerId: card.controllerId } as any);
+                }
+            }
+        });
+
+        // 2.5 Scan keywords for Affinity
+        const keywords = [...new Set([...(stats?.keywords || []), ...(currentDef.keywords || [])])];
+        keywords.forEach((k: string) => {
+            if (k.toLowerCase().startsWith('affinity for ')) {
+                const condition = k.substring(13).toLowerCase();
+                // Map condition to DynamicAmount
+                let amount: string = "";
+                if (condition === 'creatures') amount = "CREATURES_YOU_CONTROL";
+                else if (condition === 'artifacts') amount = "COUNT_Artifact";
+                else amount = `COUNT_${condition.charAt(0).toUpperCase() + condition.slice(1)}`;
+
+                modifiers.push({
+                    type: 'CostReduction',
+                    amount: amount,
+                    sourceId: card.id,
+                    controllerId: card.controllerId || card.ownerId,
+                    targetMapping: 'SELF'
+                } as any);
+            }
+        });
 
         for (const mod of modifiers) {
             const type = (mod as any).type;
@@ -169,12 +213,13 @@ export class SpellCostCalculator {
 
             const matches = TargetingProcessor.matchesRestrictions(state, card, (restrictions as any[] || []), {
                 sourceId: mod.sourceId,
-                controllerId: card.controllerId
+                controllerId: card.controllerId || card.ownerId
             });
             const conditionMatches = !mod.condition || ConditionProcessor.matchesCondition(state, mod.condition, {
                 sourceId: mod.sourceId,
                 controllerId: card.controllerId,
-                event: { data: { card: card, targets } } as any
+                cardToPlay: { ...card, isFlashbackCast: isFlashback },
+                event: { data: { card: { ...card, isFlashbackCast: isFlashback }, targets } } as any
             });
 
             if (!matches || !conditionMatches) continue;
@@ -187,7 +232,7 @@ export class SpellCostCalculator {
                 const { EffectProcessor } = require('../../effects/EffectProcessor');
                 const redAmt = EffectProcessor.resolveAmount(state, (mod as any).amount, {
                     sourceId: mod.sourceId,
-                    controllerId: card.controllerId,
+                    controllerId: card.controllerId || card.ownerId,
                     targets: targets,
                     effects: [mod] as any
                 } as any, targets);
@@ -247,6 +292,6 @@ export class SpellCostCalculator {
             console.log(`[COST-CALC] ${card.definition.name}: Base=${parsed.generic}, Modifiers=${extraGeneric}, FinalGeneric=${finalGeneric}`);
         }
 
-        return { totalMana: costStr, additionalCosts };
+        return { totalMana: costStr, additionalCosts, isFlashback };
     }
 }

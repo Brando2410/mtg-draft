@@ -1,32 +1,24 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } from "@shared/engine_types";
+
 export const WitherbloomtheBalancer: CardDefinition = {
-    name: "Witherbloom, the Balancer",
+    name: "Witherbloom the Balancer",
     manaCost: "{6}{B}{G}",
+    image_url: "https://cards.scryfall.io/normal/front/d/a/da336d33-3d33-4d33-9d33-da336d33da33.jpg", // Placeholder URL
     colors: ["B", "G"],
-    types: ["Legendary", "Creature"],
+    types: ["Creature"],
     subtypes: ["Elder", "Dragon"],
     power: "5",
     toughness: "5",
-    keywords: ["Flying", "Deathtouch"],
+    keywords: ["Affinity for creatures", "Flying", "Deathtouch"],
     oracleText: "Affinity for creatures (This spell costs {1} less to cast for each creature you control.)\nFlying, deathtouch\nInstant and sorcery spells you cast have affinity for creatures.",
     abilities: [
         {
             type: AbilityType.Static,
             effects: [
                 {
-                    type: EffectType.CostReduction,
-                    targetMapping: TargetMapping.Self,
-                    amount: DynamicAmount.CreaturesYouControl
-                }
-            ]
-        },
-        {
-            type: AbilityType.Static,
-            effects: [
-                {
-                    type: EffectType.CostReduction,
+                    type: EffectType.ApplyContinuousEffect,
                     targetMapping: TargetMapping.Controller,
-                    amount: DynamicAmount.CreaturesYouControl,
+                    abilitiesToAdd: ["Affinity for creatures"],
                     restrictions: [Restriction.InstantOrSorcery]
                 }
             ]

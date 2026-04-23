@@ -116,6 +116,18 @@ SpecializedRestrictions["POWER4ORGREATER"] = {
         return (stats.power || 0) >= 4;
     }
 };
+SpecializedRestrictions["POWER3ORGREATER"] = {
+    matches(state, targetObj: any) {
+        const stats = LayerProcessor.getEffectiveStats(targetObj, state);
+        return (stats.power || 0) >= 3;
+    }
+};
+SpecializedRestrictions["POWER_LE_2"] = {
+    matches(state, targetObj: any) {
+        const stats = LayerProcessor.getEffectiveStats(targetObj, state);
+        return (stats.power || 0) <= 2;
+    }
+};
 [5, 6].forEach(mv => {
     SpecializedRestrictions[`MV${mv}ORGREATER`] = {
         matches(state, targetObj: any) {

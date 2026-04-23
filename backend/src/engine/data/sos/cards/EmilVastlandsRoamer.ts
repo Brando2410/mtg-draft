@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, CostType, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
-    export const EmilVastlandsRoamer: CardDefinition = {
+export const EmilVastlandsRoamer: CardDefinition = {
     name: "Emil, Vastlands Roamer",
     manaCost: "{2}{G}",
     scryfall_id: "3654416d-8558-4af2-9e10-18dbc8f2b376",
@@ -24,7 +24,7 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DynamicAmount, Ef
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    sublayer: 'AbilityAdding',
+                    layer: 6,
                     abilitiesToAdd: ['Trample'],
                     targetMapping: TargetMapping.AllCreaturesYouControl,
                     condition: ConditionType.HasCounters
@@ -48,13 +48,11 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DynamicAmount, Ef
                         power: 0,
                         toughness: 0,
                         image_url: 'https://cards.scryfall.io/png/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.png?1682693894'
+                    },
+                    startingCounters: {
+                        type: '+1/+1',
+                        amount: DynamicAmount.DifferentlyNamedLandsCount
                     }
-                },
-                {
-                    type: EffectType.AddCounters,
-                    targetMapping: TargetMapping.LastCreatedToken,
-                    amount: DynamicAmount.DifferentlyNamedLandsCount,
-                    counterType: '+1/+1'
                 }
             ]
         }
@@ -62,4 +60,4 @@ import { AbilityType, CardDefinition, ConditionType, CostType, DynamicAmount, Ef
     power: "3",
     toughness: "3"
 };
-    
+

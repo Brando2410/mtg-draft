@@ -23,14 +23,14 @@ export const NumericRestrictions: Record<string, IRestrictionHandler> = {
                 const source = state.battlefield.find(o => o.id === sourceId) || 
                                state.exile.find(o => o.id === sourceId) ||
                                state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
-                val = source ? ManaProcessor.getManaValue(source.definition?.manaCost || '') : 0;
+                val = source ? ManaProcessor.getManaValue(source.definition?.manaCost || '', (source as any).xValue || 0) : 0;
             } else if (valPart === 'converge_amount') {
                 const source = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId);
                 val = (source as any)?.convergeAmount || 0;
             }
 
             let currentVal = 0;
-            if (field === 'cmc' || field === 'mv') currentVal = ManaProcessor.getManaValue(targetObj.definition.manaCost || '');
+            if (field === 'cmc' || field === 'mv') currentVal = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '', (targetObj as any).xValue || 0);
             else if (field === 'power') currentVal = LayerProcessor.getEffectiveStats(targetObj, state).power;
             else if (field === 'toughness') currentVal = LayerProcessor.getEffectiveStats(targetObj, state).toughness;
 
@@ -48,7 +48,7 @@ export const NumericRestrictions: Record<string, IRestrictionHandler> = {
             const { sourceId } = context;
             const source = state.battlefield.find(o => o.id === sourceId);
             const sourcePower = source ? LayerProcessor.getEffectiveStats(source, state).power : 0;
-            const targetMV = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            const targetMV = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '', (targetObj as any).xValue || 0);
             return targetMV <= sourcePower;
         }
     },
@@ -56,49 +56,49 @@ export const NumericRestrictions: Record<string, IRestrictionHandler> = {
         matches(state, targetObj: any, r, context) {
             const { stackObject } = context;
             const xValue = (stackObject?.xValue) || (state.pendingAction as any)?.data?.xValue || (state.pendingAction as any)?.xValue || 0;
-            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '', (targetObj as any).xValue || 0);
             return mv <= xValue;
         }
     },
     "MV_GE_1": {
         matches(state, targetObj: any) {
-            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '', (targetObj as any).xValue || 0);
             return mv >= 1;
         }
     },
     "MV_GE_4": {
         matches(state, targetObj: any) {
-            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '', (targetObj as any).xValue || 0);
             return mv >= 4;
         }
     },
     "MV_LE_3": {
         matches(state, targetObj: any) {
-            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '', (targetObj as any).xValue || 0);
             return mv <= 3;
         }
     },
     "MV_LE_4": {
         matches(state, targetObj: any) {
-            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '', (targetObj as any).xValue || 0);
             return mv <= 4;
         }
     },
     "MV_GE_6": {
         matches(state, targetObj: any) {
-            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '', (targetObj as any).xValue || 0);
             return mv >= 6;
         }
     },
     "MV_LE_1": {
         matches(state, targetObj: any) {
-            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '', (targetObj as any).xValue || 0);
             return mv <= 1;
         }
     },
     "MV_LE_2": {
         matches(state, targetObj: any) {
-            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '', (targetObj as any).xValue || 0);
             return mv <= 2;
         }
     },
@@ -112,7 +112,7 @@ export const NumericRestrictions: Record<string, IRestrictionHandler> = {
         matches(state, targetObj: any, r, context) {
             const { controllerId } = context;
             const lifeGained = state.turnState.lifeGainedThisTurn[controllerId] || 0;
-            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '');
+            const mv = ManaProcessor.getManaValue(targetObj.definition?.manaCost || '', (targetObj as any).xValue || 0);
             return mv <= lifeGained;
         }
     },

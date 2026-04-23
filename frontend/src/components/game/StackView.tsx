@@ -140,20 +140,23 @@ export const StackView = ({ stack, pendingAction, me, opponent, battlefield, exi
             const isPending = pendingAction?.data?.stackObj?.id === sobj.id;
             const isTop = index === effectiveStack.length - 1;
             
-            const displayObj = sobj.card || (sobj.definition ? { id: sobj.id, definition: sobj.definition, counters: {}, keywords: [], zone: 'Stack' } : null) || (sobj.sourceId ? (battlefield || []).find((o: any) => o.id === sobj.sourceId) : null) || {
-                id: sobj.id,
-                definition: {
-                    name: sobj.name || 'Ability',
-                    image_url: sobj.image_url || '/back.png',
-                    types: [],
-                    colors: [],
-                    manaCost: '',
-                    oracleText: ''
-                },
-                counters: {},
-                keywords: [],
-                zone: 'Stack' as any
-            };
+            const displayObj = sobj.card || 
+                             (sobj.definition ? { id: sobj.id, definition: sobj.definition, counters: {}, keywords: [], zone: 'Stack' } : null) || 
+                             findObject(sobj.sourceId) || 
+                             {
+                                id: sobj.id,
+                                definition: {
+                                    name: sobj.name || 'Ability',
+                                    image_url: sobj.image_url || '/back.png',
+                                    types: [],
+                                    colors: [],
+                                    manaCost: '',
+                                    oracleText: ''
+                                },
+                                counters: {},
+                                keywords: [],
+                                zone: 'Stack' as any
+                            };
 
             return (
               <motion.div 
@@ -200,12 +203,12 @@ export const StackView = ({ stack, pendingAction, me, opponent, battlefield, exi
                     )}
                   </div>
 
-                  {/* ABILITY LABEL OVERLAY - ONLY SHOW IF GENERIC IMAGE OR NO DEF AVAILABLE */}
-                  {(!sobj.card && !sobj.definition && sobj.name) && (
-                    <div className="absolute inset-x-0 bottom-4 px-2 z-40">
-                      <div className="bg-slate-950/90 backdrop-blur-md border border-white/30 rounded-md py-1 px-2 flex items-center justify-center shadow-2xl">
-                        <span className="text-[8px] font-black text-white whitespace-nowrap overflow-hidden text-ellipsis uppercase tracking-tighter">
-                          {sobj.name}
+                  {/* CHOICE/X-VALUE OVERLAY - Shows X=3 or Mode selection prominently on the card */}
+                  {((!sobj.card && !sobj.definition && sobj.name) || (sobj as any).data?.summary) && (
+                    <div className="absolute inset-x-0 bottom-2 px-2 z-40">
+                      <div className="bg-slate-950/90 backdrop-blur-md border border-white/30 rounded-md py-1 px-2 flex items-center justify-center shadow-2xl ring-1 ring-white/10">
+                        <span className="text-[10px] font-black text-cyan-400 whitespace-nowrap overflow-hidden text-ellipsis uppercase tracking-tighter">
+                          {(sobj as any).data?.summary || sobj.name}
                         </span>
                       </div>
                     </div>

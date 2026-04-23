@@ -22,31 +22,31 @@ export class CombatProcessor {
   public static handleStepEntry(state: GameState, log: (m: string) => void) {
     if (state.currentStep === Step.BeginningOfCombat) {
       this.initializeCombat(state);
-    } 
+    }
     else if (state.currentStep === Step.DeclareAttackers) {
       // 508.1: Active player chooses attackers
       if (!state.combat) this.initializeCombat(state);
 
       // Requirement Check: Auto-assign MustAttack (Rule 508.1d)
-      const creatures = state.battlefield.filter(o => 
-          o.controllerId === state.activePlayerId && 
-          o.definition.types.some(t => t.toLowerCase() === 'creature')
+      const creatures = state.battlefield.filter(o =>
+        o.controllerId === state.activePlayerId &&
+        o.definition.types.some(t => t.toLowerCase() === 'creature')
       );
-      
+
       const opponentId = Object.keys(state.players).find(id => id !== state.activePlayerId);
 
       creatures.forEach(creature => {
-          const hasMustAttack = RestrictionValidator.isRestricted(state, creature, RestrictionType.MustAttack);
-          if (hasMustAttack) {
-              const canAttack = !creature.isTapped && !creature.summoningSickness && RestrictionValidator.canAttack(state, creature);
-              if (canAttack && opponentId) {
-                  const alreadyAttacking = state.combat!.attackers.some(a => a.attackerId === creature.id);
-                  if (!alreadyAttacking) {
-                    state.combat!.attackers.push({ attackerId: creature.id, targetId: opponentId });
-                    log(`[AUTO-ATTACK] ${creature.definition.name} must attack.`);
-                  }
-              }
+        const hasMustAttack = RestrictionValidator.isRestricted(state, creature, RestrictionType.MustAttack);
+        if (hasMustAttack) {
+          const canAttack = !creature.isTapped && !creature.summoningSickness && RestrictionValidator.canAttack(state, creature);
+          if (canAttack && opponentId) {
+            const alreadyAttacking = state.combat!.attackers.some(a => a.attackerId === creature.id);
+            if (!alreadyAttacking) {
+              state.combat!.attackers.push({ attackerId: creature.id, targetId: opponentId });
+              log(`[AUTO-ATTACK] ${creature.definition.name} must attack.`);
+            }
           }
+        }
       });
 
       state.pendingAction = {
@@ -82,11 +82,11 @@ export class CombatProcessor {
   public static hasFirstStrikeStep(state: GameState): boolean {
     const attackers = (state.combat?.attackers || []).map(a => state.battlefield.find(o => o.id === a.attackerId)) || [];
     const blockers = (state.combat?.blockers || []).map(b => state.battlefield.find(o => o.id === b.blockerId)) || [];
-    
+
     return [...attackers, ...blockers].some(obj => {
-        if (!obj) return false;
-        const stats = LayerProcessor.getEffectiveStats(obj, state);
-        return stats.keywords.includes('First Strike') || stats.keywords.includes('Double Strike');
+      if (!obj) return false;
+      const stats = LayerProcessor.getEffectiveStats(obj, state);
+      return stats.keywords.includes('First Strike') || stats.keywords.includes('Double Strike');
     });
   }
 
@@ -95,66 +95,66 @@ export class CombatProcessor {
    */
   public static confirmAttackers(state: GameState, playerId: PlayerId, engine: EngineContext) {
     if (state.pendingAction?.type !== 'DECLARE_ATTACKERS' || state.pendingAction.playerId !== playerId) return;
-    
+
     // CR 508.1: Validate global attack requirements (e.g. MustAttack)
     const validation = this.validateAllAttackers(state);
     if (!validation.isValid) {
-        engine.log(`[ATTACK] ERR: ${validation.error}`);
-        return;
+      engine.log(`[ATTACK] ERR: ${validation.error}`);
+      return;
     }
 
     engine.log(`${engine.getPlayerName(playerId)} confirmed attackers.`);
-    
+
     const attackers = state.combat?.attackers || [];
     state.turnState.creaturesAttackedThisTurn += attackers.length;
 
     // Rule 508.1f: Tapping attackers as a cost of declaration (unless they have Vigilance)
     attackers.forEach(a => {
-        const attackerObj = state.battlefield.find(o => o.id === a.attackerId);
-        if (attackerObj) {
-            const stats = LayerProcessor.getEffectiveStats(attackerObj, state);
-            if (!stats.keywords.includes('Vigilance')) {
-                attackerObj.isTapped = true;
-                // rule 508.1m: If a creature becomes tapped this way, it's not a "cost" in the sense of pay(), 
-                // but it still triggers events that care about tapping.
-                TriggerProcessor.onEvent(state, {
-                    type: 'ON_TAP',
-                    playerId: playerId,
-                    targetId: attackerObj.id,
-                    data: { object: attackerObj }
-                }, (m: string) => engine.log(m));
-            }
+      const attackerObj = state.battlefield.find(o => o.id === a.attackerId);
+      if (attackerObj) {
+        const stats = LayerProcessor.getEffectiveStats(attackerObj, state);
+        if (!stats.keywords.includes('Vigilance')) {
+          attackerObj.isTapped = true;
+          // rule 508.1m: If a creature becomes tapped this way, it's not a "cost" in the sense of pay(), 
+          // but it still triggers events that care about tapping.
+          TriggerProcessor.onEvent(state, {
+            type: 'ON_TAP',
+            playerId: playerId,
+            targetId: attackerObj.id,
+            data: { object: attackerObj }
+          }, (m: string) => engine.log(m));
         }
+      }
     });
 
     // Rule 508.1: "Whenever an opponent attacks..." (Mangara support)
     if (attackers.length > 0) {
-        TriggerProcessor.onEvent(state, {
-            type: 'ON_ATTACKERS_DECLARED',
-            playerId: playerId,
-            data: { attackers }
-        }, (m: string) => engine.log(m));
+      TriggerProcessor.onEvent(state, {
+        type: 'ON_ATTACKERS_DECLARED',
+        playerId: playerId,
+        data: { attackers }
+      }, (m: string) => engine.log(m));
 
-        // Rule 508.1m: Individual attack triggers
-        attackers.forEach(a => {
-            const attackerObj = state.battlefield.find(o => o.id === a.attackerId);
-            TriggerProcessor.onEvent(state, { 
-                type: 'ON_ATTACK', 
-                sourceId: a.attackerId, 
-                playerId: playerId,
-                data: { object: attackerObj, targetId: a.targetId }
-            }, (m: string) => engine.log(m));
-        });
+      // Rule 508.1m: Individual attack triggers
+      attackers.forEach(a => {
+        const attackerObj = state.battlefield.find(o => o.id === a.attackerId);
+        TriggerProcessor.onEvent(state, {
+          type: 'ON_ATTACK',
+          sourceId: a.attackerId,
+          playerId: playerId,
+          data: { object: attackerObj, targetId: a.targetId }
+        }, (m: string) => engine.log(m));
+      });
     }
 
     state.pendingAction = undefined;
 
     const attackerCount = (state.combat?.attackers || []).length;
     if (attackerCount === 0) {
-        engine.log("No attackers declared. Speeding to next phase.");
-        engine.advanceStep();
+      engine.log("No attackers declared. Speeding to next phase.");
+      engine.advanceStep();
     } else {
-        engine.resetPriorityToActivePlayer();
+      engine.resetPriorityToActivePlayer();
     }
   }
 
@@ -165,22 +165,22 @@ export class CombatProcessor {
     // Requirement Check: MustAttack (Rule 508.1d)
     // We only clear attackers that are NOT mandated to attack
     const mandatoryAttackers = state.combat.attackers.filter(a => {
-        const card = state.battlefield.find(o => o.id === a.attackerId);
-        if (!card) return false;
-        
-        const hasMustAttack = RestrictionValidator.isRestricted(state, card, RestrictionType.MustAttack);
-        if (!hasMustAttack) return false;
+      const card = state.battlefield.find(o => o.id === a.attackerId);
+      if (!card) return false;
 
-        const canAttack = !card.isTapped && !card.summoningSickness && RestrictionValidator.canAttack(state, card);
-        return canAttack;
+      const hasMustAttack = RestrictionValidator.isRestricted(state, card, RestrictionType.MustAttack);
+      if (!hasMustAttack) return false;
+
+      const canAttack = !card.isTapped && !card.summoningSickness && RestrictionValidator.canAttack(state, card);
+      return canAttack;
     });
 
     state.combat.attackers.forEach(a => {
-        const isMandatory = mandatoryAttackers.some(m => m.attackerId === a.attackerId);
-        if (!isMandatory) {
-            const card = state.battlefield.find(o => o.id === a.attackerId);
-            if (card) card.isTapped = false;
-        }
+      const isMandatory = mandatoryAttackers.some(m => m.attackerId === a.attackerId);
+      if (!isMandatory) {
+        const card = state.battlefield.find(o => o.id === a.attackerId);
+        if (card) card.isTapped = false;
+      }
     });
 
     state.combat.attackers = mandatoryAttackers;
@@ -202,46 +202,46 @@ export class CombatProcessor {
    */
   public static confirmBlockers(state: GameState, playerId: PlayerId, engine: EngineContext) {
     if (state.pendingAction?.type !== 'DECLARE_BLOCKERS' || state.pendingAction.playerId !== playerId) return;
-    
+
     // CR 509.1: Validate global block requirements (e.g. Menace)
     const validation = this.validateAllBlockers(state);
     if (!validation.isValid) {
-        engine.log(`[BLOCK] ERR: ${validation.error}`);
-        // Keep in block declaration mode until fixed
-        return;
+      engine.log(`[BLOCK] ERR: ${validation.error}`);
+      // Keep in block declaration mode until fixed
+      return;
     }
 
     engine.log(`${engine.getPlayerName(playerId)} confirmed blockers.`);
-    
+
     // Rule 509.1: Individual block triggers
     if (state.combat?.blockers) {
-        state.combat.blockers.forEach(b => {
-            const blockerObj = state.battlefield.find(o => o.id === b.blockerId);
-            const attackerObj = state.battlefield.find(o => o.id === b.attackerId);
-            TriggerProcessor.onEvent(state, { 
-                type: 'ON_BLOCK', 
-                sourceId: b.blockerId, 
-                playerId: playerId,
-                data: { object: blockerObj, targetId: b.attackerId }
-            }, (m: string) => engine.log(m));
-            TriggerProcessor.onEvent(state, { 
-                type: 'ON_BECAME_BLOCKED', 
-                sourceId: b.attackerId, 
-                targetId: b.blockerId, 
-                playerId: playerId,
-                data: { object: attackerObj, targetId: b.blockerId }
-            }, (m: string) => engine.log(m));
-        });
+      state.combat.blockers.forEach(b => {
+        const blockerObj = state.battlefield.find(o => o.id === b.blockerId);
+        const attackerObj = state.battlefield.find(o => o.id === b.attackerId);
+        TriggerProcessor.onEvent(state, {
+          type: 'ON_BLOCK',
+          sourceId: b.blockerId,
+          playerId: playerId,
+          data: { object: blockerObj, targetId: b.attackerId }
+        }, (m: string) => engine.log(m));
+        TriggerProcessor.onEvent(state, {
+          type: 'ON_BECAME_BLOCKED',
+          sourceId: b.attackerId,
+          targetId: b.blockerId,
+          playerId: playerId,
+          data: { object: attackerObj, targetId: b.blockerId }
+        }, (m: string) => engine.log(m));
+      });
     }
 
     state.pendingAction = undefined;
-    
+
     // CR 509.2 / 509.3: If multiple blockers/attackers are involved, we need damage assignment order first.
     if (this.needsOrdering(state)) {
-        this.setupNextOrderingAction(state, (m) => engine.log(m));
+      this.setupNextOrderingAction(state, (m) => engine.log(m));
     } else {
-        // CR 509.4: Give priority window in Declare Blockers step.
-        engine.resetPriorityToActivePlayer();
+      // CR 509.4: Give priority window in Declare Blockers step.
+      engine.resetPriorityToActivePlayer();
     }
   }
 
@@ -253,26 +253,26 @@ export class CombatProcessor {
 
     // Check attackers blocked by > 1 creature
     for (const attacker of state.combat.attackers) {
-        const blockerCount = state.combat.blockers.filter(b => b.attackerId === attacker.attackerId).length;
-        if (blockerCount > 1 && (!attacker.order || attacker.order.length < blockerCount)) {
-            return true;
-        }
+      const blockerCount = state.combat.blockers.filter(b => b.attackerId === attacker.attackerId).length;
+      if (blockerCount > 1 && (!attacker.order || attacker.order.length < blockerCount)) {
+        return true;
+      }
     }
 
     // Check blockers blocking > 1 attacker
     const blockerGroups: Record<GameObjectId, GameObjectId[]> = {};
     state.combat.blockers.forEach(b => {
-        if (!blockerGroups[b.blockerId]) blockerGroups[b.blockerId] = [];
-        blockerGroups[b.blockerId].push(b.attackerId);
+      if (!blockerGroups[b.blockerId]) blockerGroups[b.blockerId] = [];
+      blockerGroups[b.blockerId].push(b.attackerId);
     });
 
     for (const [blockerId, attackers] of Object.entries(blockerGroups)) {
-        if (attackers.length > 1) {
-            const bRef = state.combat.blockers.find(b => b.blockerId === blockerId);
-            if (bRef && (!bRef.order || bRef.order.length < attackers.length)) {
-                return true;
-            }
+      if (attackers.length > 1) {
+        const bRef = state.combat.blockers.find(b => b.blockerId === blockerId);
+        if (bRef && (!bRef.order || bRef.order.length < attackers.length)) {
+          return true;
         }
+      }
     }
 
     return false;
@@ -283,47 +283,47 @@ export class CombatProcessor {
 
     // 1. Active Player orders blockers (Rule 509.2)
     for (const attacker of state.combat.attackers) {
-        const blockers = state.combat.blockers.filter(b => b.attackerId === attacker.attackerId);
-        if (blockers.length > 1 && (!attacker.order || attacker.order.length < blockers.length)) {
-            state.pendingAction = {
-                type: 'ORDER_BLOCKERS',
-                playerId: state.activePlayerId,
-                sourceId: attacker.attackerId,
-                data: { label: "OrderBlockers", ids: blockers.map(b => b.blockerId) }
-            };
-            log(`[FLOW] ${state.players[state.activePlayerId].name} must order blockers for ${state.battlefield.find(o => o.id === attacker.attackerId)?.definition.name}.`);
-            return;
-        }
+      const blockers = state.combat.blockers.filter(b => b.attackerId === attacker.attackerId);
+      if (blockers.length > 1 && (!attacker.order || attacker.order.length < blockers.length)) {
+        state.pendingAction = {
+          type: 'ORDER_BLOCKERS',
+          playerId: state.activePlayerId,
+          sourceId: attacker.attackerId,
+          data: { label: "OrderBlockers", ids: blockers.map(b => b.blockerId) }
+        };
+        // log(`[FLOW] ${state.players[state.activePlayerId].name} must order blockers for ${state.battlefield.find(o => o.id === attacker.attackerId)?.definition.name}.`);
+        return;
+      }
     }
 
     // 2. Defending Player orders attackers (Rule 509.3)
     const defenderId = Object.keys(state.players).find(id => id !== state.activePlayerId)!;
     const blockerGroups: Record<GameObjectId, GameObjectId[]> = {};
     state.combat.blockers.forEach(b => {
-        if (!blockerGroups[b.blockerId]) blockerGroups[b.blockerId] = [];
-        blockerGroups[b.blockerId].push(b.attackerId);
+      if (!blockerGroups[b.blockerId]) blockerGroups[b.blockerId] = [];
+      blockerGroups[b.blockerId].push(b.attackerId);
     });
 
     for (const [blockerId, attackers] of Object.entries(blockerGroups)) {
-        if (attackers.length > 1) {
-            const bRef = state.combat.blockers.find(b => b.blockerId === blockerId);
-            if (bRef && (!bRef.order || bRef.order.length < attackers.length)) {
-                state.pendingAction = {
-                    type: 'ORDER_ATTACKERS',
-                    playerId: defenderId,
-                    sourceId: blockerId,
-                    data: { label: "OrderAttackers", ids: attackers }
-                };
-                log(`[FLOW] ${state.players[defenderId].name} must order attackers for ${state.battlefield.find(o => o.id === blockerId)?.definition.name}.`);
-                return;
-            }
+      if (attackers.length > 1) {
+        const bRef = state.combat.blockers.find(b => b.blockerId === blockerId);
+        if (bRef && (!bRef.order || bRef.order.length < attackers.length)) {
+          state.pendingAction = {
+            type: 'ORDER_ATTACKERS',
+            playerId: defenderId,
+            sourceId: blockerId,
+            data: { label: "OrderAttackers", ids: attackers }
+          };
+          //  log(`[FLOW] ${state.players[defenderId].name} must order attackers for ${state.battlefield.find(o => o.id === blockerId)?.definition.name}.`);
+          return;
         }
+      }
     }
   }
 
   public static resolveDamage(state: GameState, log: (m: string) => void) {
     if (!state.combat) return;
-    
+
     // CR 511.1: First Strike / Double Strike Step Filtering
     const isFirstStrikeStep = state.currentStep === Step.FirstStrikeDamage;
     const assignments: { sourceId: string, targetId: string, amount: number }[] = [];
@@ -339,27 +339,27 @@ export class CombatProcessor {
     const damageToPlayers: Record<string, { sources: any[], amount: number }> = {};
 
     for (const a of assignments) {
-        DamageProcessor.dealDamage(state, a.sourceId, a.targetId, a.amount, true, log);
-        
-        // Track combat damage to players for grouped triggers (Rule 510.2 / 700.1)
-        if (state.players[a.targetId]) {
-            if (!damageToPlayers[a.targetId]) damageToPlayers[a.targetId] = { sources: [], amount: 0 };
-            const sourceObj = state.battlefield.find(o => o.id === a.sourceId);
-            if (sourceObj) damageToPlayers[a.targetId].sources.push(sourceObj);
-            damageToPlayers[a.targetId].amount += a.amount;
-        }
+      DamageProcessor.dealDamage(state, a.sourceId, a.targetId, a.amount, true, log);
+
+      // Track combat damage to players for grouped triggers (Rule 510.2 / 700.1)
+      if (state.players[a.targetId]) {
+        if (!damageToPlayers[a.targetId]) damageToPlayers[a.targetId] = { sources: [], amount: 0 };
+        const sourceObj = state.battlefield.find(o => o.id === a.sourceId);
+        if (sourceObj) damageToPlayers[a.targetId].sources.push(sourceObj);
+        damageToPlayers[a.targetId].amount += a.amount;
+      }
     }
 
     // Fire grouped combat damage events (e.g. "Whenever one or more creatures you control deal combat damage to a player...")
     for (const [playerId, data] of Object.entries(damageToPlayers)) {
-        if (data.amount > 0 && data.sources.length > 0) {
-            TriggerProcessor.onEvent(state, {
-                type: 'ON_COMBAT_DAMAGE_PLAYER',
-                targetId: playerId,
-                amount: data.amount,
-                data: { sources: data.sources, isCombat: true }
-            }, log);
-        }
+      if (data.amount > 0 && data.sources.length > 0) {
+        TriggerProcessor.onEvent(state, {
+          type: 'ON_COMBAT_DAMAGE_PLAYER',
+          targetId: playerId,
+          amount: data.amount,
+          data: { sources: data.sources, isCombat: true }
+        }, log);
+      }
     }
 
     // 4. Trigger State-Based Actions (Rule 704)
@@ -376,7 +376,7 @@ export class CombatProcessor {
       if (!attacker) continue;
 
       const aStats = LayerProcessor.getEffectiveStats(attacker, state);
-      
+
       // Filter for First Strike compatibility (Rule 511.1)
       const hasFS = aStats.keywords.includes('First Strike');
       const hasDS = aStats.keywords.includes('Double Strike');
@@ -387,7 +387,7 @@ export class CombatProcessor {
       if (aPower <= 0) continue;
 
       const blockers = state.combat.blockers.filter(b => b.attackerId === attack.attackerId);
-      
+
       if (blockers.length === 0) {
         // UNBLOCKED: Rule 510.1c
         assignments.push({ sourceId: attacker.id, targetId: attack.targetId, amount: aPower });
@@ -399,23 +399,23 @@ export class CombatProcessor {
         const hasTrample = aStats.keywords.includes('Trample');
 
         for (const bId of order) {
-            const blockerObj = state.battlefield.find(c => c.id === bId);
-            if (!blockerObj) continue;
-            
-            const bStats = LayerProcessor.getEffectiveStats(blockerObj, state);
-            const lethalAmount = hasDeathtouch ? 1 : Math.max(0, bStats.toughness - blockerObj.damageMarked);
-            const damageToAssign = Math.min(remainingPower, lethalAmount);
-            
-            assignments.push({ sourceId: attacker.id, targetId: blockerObj.id, amount: damageToAssign });
-            remainingPower -= damageToAssign;
-            if (remainingPower <= 0) break;
+          const blockerObj = state.battlefield.find(c => c.id === bId);
+          if (!blockerObj) continue;
+
+          const bStats = LayerProcessor.getEffectiveStats(blockerObj, state);
+          const lethalAmount = hasDeathtouch ? 1 : Math.max(0, bStats.toughness - blockerObj.damageMarked);
+          const damageToAssign = Math.min(remainingPower, lethalAmount);
+
+          assignments.push({ sourceId: attacker.id, targetId: blockerObj.id, amount: damageToAssign });
+          remainingPower -= damageToAssign;
+          if (remainingPower <= 0) break;
         }
 
         if (hasTrample && remainingPower > 0) {
-            assignments.push({ sourceId: attacker.id, targetId: attack.targetId, amount: remainingPower });
+          assignments.push({ sourceId: attacker.id, targetId: attack.targetId, amount: remainingPower });
         } else if (remainingPower > 0 && order.length > 0) {
-            const lastAssignment = assignments.find(a => a.sourceId === attacker.id && a.targetId === order[order.length - 1]);
-            if (lastAssignment) lastAssignment.amount += remainingPower;
+          const lastAssignment = assignments.find(a => a.sourceId === attacker.id && a.targetId === order[order.length - 1]);
+          if (lastAssignment) lastAssignment.amount += remainingPower;
         }
       }
     }
@@ -425,42 +425,42 @@ export class CombatProcessor {
     if (!state.combat) return;
 
     for (const b of state.combat.blockers) {
-        const blockerObj = state.battlefield.find(c => c.id === b.blockerId);
-        if (!blockerObj) continue;
+      const blockerObj = state.battlefield.find(c => c.id === b.blockerId);
+      if (!blockerObj) continue;
 
-        const bStats = LayerProcessor.getEffectiveStats(blockerObj, state);
-        const hasFS = bStats.keywords.includes('First Strike');
-        const hasDS = bStats.keywords.includes('Double Strike');
-        if (isFS && !hasFS && !hasDS) continue;
-        if (!isFS && this.hasFirstStrikeStep(state) && hasFS && !hasDS) continue;
+      const bStats = LayerProcessor.getEffectiveStats(blockerObj, state);
+      const hasFS = bStats.keywords.includes('First Strike');
+      const hasDS = bStats.keywords.includes('Double Strike');
+      if (isFS && !hasFS && !hasDS) continue;
+      if (!isFS && this.hasFirstStrikeStep(state) && hasFS && !hasDS) continue;
 
-        const bPower = bStats.power;
-        if (bPower <= 0) continue;
+      const bPower = bStats.power;
+      if (bPower <= 0) continue;
 
-        const blockedAttackers = state.combat.blockers.filter(ab => ab.blockerId === b.blockerId);
-        if (blockedAttackers.length === 1) {
-            assignments.push({ sourceId: blockerObj.id, targetId: blockedAttackers[0].attackerId, amount: bPower });
-        } else {
-            const order = b.order || blockedAttackers.map(a => a.attackerId);
-            let remainingPower = bPower;
-            const hasDeathtouch = bStats.keywords.includes('Deathtouch');
+      const blockedAttackers = state.combat.blockers.filter(ab => ab.blockerId === b.blockerId);
+      if (blockedAttackers.length === 1) {
+        assignments.push({ sourceId: blockerObj.id, targetId: blockedAttackers[0].attackerId, amount: bPower });
+      } else {
+        const order = b.order || blockedAttackers.map(a => a.attackerId);
+        let remainingPower = bPower;
+        const hasDeathtouch = bStats.keywords.includes('Deathtouch');
 
-            for (const aId of order) {
-                const attackerObj = state.battlefield.find(c => c.id === aId);
-                if (!attackerObj) continue;
-                const aStats = LayerProcessor.getEffectiveStats(attackerObj, state);
-                const lethalAmount = hasDeathtouch ? 1 : Math.max(0, aStats.toughness - attackerObj.damageMarked);
-                const damageToAssign = Math.min(remainingPower, lethalAmount);
-                assignments.push({ sourceId: blockerObj.id, targetId: attackerObj.id, amount: damageToAssign });
-                remainingPower -= damageToAssign;
-                if (remainingPower <= 0) break;
-            }
-
-            if (remainingPower > 0 && order.length > 0) {
-                const last = assignments.find(a => a.sourceId === blockerObj.id && a.targetId === order[order.length - 1]);
-                if (last) last.amount += remainingPower;
-            }
+        for (const aId of order) {
+          const attackerObj = state.battlefield.find(c => c.id === aId);
+          if (!attackerObj) continue;
+          const aStats = LayerProcessor.getEffectiveStats(attackerObj, state);
+          const lethalAmount = hasDeathtouch ? 1 : Math.max(0, aStats.toughness - attackerObj.damageMarked);
+          const damageToAssign = Math.min(remainingPower, lethalAmount);
+          assignments.push({ sourceId: blockerObj.id, targetId: attackerObj.id, amount: damageToAssign });
+          remainingPower -= damageToAssign;
+          if (remainingPower <= 0) break;
         }
+
+        if (remainingPower > 0 && order.length > 0) {
+          const last = assignments.find(a => a.sourceId === blockerObj.id && a.targetId === order[order.length - 1]);
+          if (last) last.amount += remainingPower;
+        }
+      }
     }
   }
 
@@ -471,12 +471,12 @@ export class CombatProcessor {
   public static resolveCombatOrdering(state: GameState, playerId: string, order: string[], engine: EngineContext): boolean {
     const { PlayerActionProcessor } = require('../actions/PlayerActionProcessor');
     PlayerActionProcessor.resolveCombatOrdering(state, playerId, order, (m: string) => engine.log(m));
-    
+
     // Once ordering is complete (and no more pending actions exist), give priority back to AP.
     engine.resetPriorityToActivePlayer();
     return true;
   }
-  
+
   /**
    * CR 702.16n: A creature with protection from [quality] can’t be blocked by creatures with [quality].
    * Returns { legal: boolean, reason?: string }
@@ -491,7 +491,7 @@ export class CombatProcessor {
 
     // restriction Check (CannotBeBlocked)
     if (aStats.keywords.includes('CannotBeBlocked') || aStats.restrictions?.some((r) => r.type === 'CannotBeBlocked')) {
-        return { legal: false, reason: "attacker is unblockable" };
+      return { legal: false, reason: "attacker is unblockable" };
     }
 
     // 0. Restriction Check (CannotBlock)
@@ -501,13 +501,13 @@ export class CombatProcessor {
     // "A creature with flying can't be blocked except by creatures with flying and/or reach."
     const hasFlying = aStats.keywords.some((k: string) => k.toLowerCase() === 'flying');
     if (hasFlying) {
-        const canBlockFlying = bStats.keywords.some((k: string) => {
-            const lk = k.toLowerCase();
-            return lk === 'flying' || lk === 'reach';
-        });
-        if (!canBlockFlying) {
-            return { legal: false, reason: "flying requirement not met" };
-        }
+      const canBlockFlying = bStats.keywords.some((k: string) => {
+        const lk = k.toLowerCase();
+        return lk === 'flying' || lk === 'reach';
+      });
+      if (!canBlockFlying) {
+        return { legal: false, reason: "flying requirement not met" };
+      }
     }
 
     // 2. Protection check (Blocking) (Rule 702.16n)
@@ -515,14 +515,14 @@ export class CombatProcessor {
     // Blocker's protection from attacker does NOT prevent it from blocking.
     const protectionKeywords = aStats.keywords.filter((k: string) => k.toLowerCase().startsWith('protection from'));
     if (protectionKeywords.length > 0) {
-        const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
-        for (const prot of protectionKeywords) {
-          const qualityStr = prot.toLowerCase().replace('protection from ', '');
-          const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
-          if (TargetingProcessor.sourceHasQualities(blocker, qualities, state)) {
-            return { legal: false, reason: `attacker has ${prot}` };
-          }
+      const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
+      for (const prot of protectionKeywords) {
+        const qualityStr = prot.toLowerCase().replace('protection from ', '');
+        const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
+        if (TargetingProcessor.sourceHasQualities(blocker, qualities, state)) {
+          return { legal: false, reason: `attacker has ${prot}` };
         }
+      }
     }
 
     return { legal: true };
@@ -533,33 +533,33 @@ export class CombatProcessor {
    */
   public static validateAllAttackers(state: GameState): { isValid: boolean, error?: string } {
     if (!state.combat) return { isValid: true };
-    
+
     // 1. Gather all creatures controlled by the active player
-    const creatures = state.battlefield.filter(o => 
-        o.controllerId === state.activePlayerId && 
-        o.definition.types.some(t => t.toLowerCase() === 'creature')
+    const creatures = state.battlefield.filter(o =>
+      o.controllerId === state.activePlayerId &&
+      o.definition.types.some(t => t.toLowerCase() === 'creature')
     );
 
     for (const creature of creatures) {
-        const stats = LayerProcessor.getEffectiveStats(creature, state);
-        const isAttacking = state.combat.attackers.some(a => a.attackerId === creature.id);
-        
-        // Rule 702.3a / 508.1a: Defender & other "Cannot Attack" restrictions
-        if (isAttacking) {
-            if (!RestrictionValidator.canAttack(state, creature)) {
-                return { isValid: false, error: `${creature.definition.name} cannot attack.` };
-            }
-        }
+      const stats = LayerProcessor.getEffectiveStats(creature, state);
+      const isAttacking = state.combat.attackers.some(a => a.attackerId === creature.id);
 
-        // Requirement Check: MustAttack (Rule 508.1d)
-        if (RestrictionValidator.isRestricted(state, creature, RestrictionType.MustAttack) && !isAttacking) {
-            const canAttack = !creature.isTapped && !creature.summoningSickness && RestrictionValidator.canAttack(state, creature);
-            if (canAttack) {
-                return { isValid: false, error: `${creature.definition.name} must attack if able.` };
-            }
+      // Rule 702.3a / 508.1a: Defender & other "Cannot Attack" restrictions
+      if (isAttacking) {
+        if (!RestrictionValidator.canAttack(state, creature)) {
+          return { isValid: false, error: `${creature.definition.name} cannot attack.` };
         }
+      }
+
+      // Requirement Check: MustAttack (Rule 508.1d)
+      if (RestrictionValidator.isRestricted(state, creature, RestrictionType.MustAttack) && !isAttacking) {
+        const canAttack = !creature.isTapped && !creature.summoningSickness && RestrictionValidator.canAttack(state, creature);
+        if (canAttack) {
+          return { isValid: false, error: `${creature.definition.name} must attack if able.` };
+        }
+      }
     }
-    
+
     return { isValid: true };
   }
 
@@ -568,34 +568,34 @@ export class CombatProcessor {
    */
   public static validateAllBlockers(state: GameState): { isValid: boolean, error?: string } {
     if (!state.combat) return { isValid: true };
-    
+
     for (const attackerDef of state.combat.attackers) {
       const attacker = state.battlefield.find(o => o.id === attackerDef.attackerId);
       if (!attacker) continue;
-      
+
       const aStats = LayerProcessor.getEffectiveStats(attacker, state);
       const blockers = state.combat.blockers.filter(b => b.attackerId === attackerDef.attackerId);
-      
+
       // Menace: cannot be blocked by exactly one creature
       if (aStats.keywords.includes('Menace') && blockers.length === 1) {
-          return { isValid: false, error: `${attacker.definition.name} has Menace and must be blocked by at least two creatures.` };
+        return { isValid: false, error: `${attacker.definition.name} has Menace and must be blocked by at least two creatures.` };
       }
 
       // MustBeBlocked requirement (Rule 509.1c)
       const mustBeBlocked = state.ruleRegistry.restrictions.some(r => r.targetId === attacker.id && r.type === 'MustBeBlocked');
       if (mustBeBlocked && blockers.length === 0) {
-          const defenderId = state.pendingAction?.playerId || Object.keys(state.players).find(id => id !== state.activePlayerId)!;
-          const hasLegalBlocker = state.battlefield.some(b => 
-              b.controllerId === defenderId && 
-              !b.isTapped &&
-              this.isLegalBlocker(state, b.id, attacker.id).legal
-          );
-          if (hasLegalBlocker) {
-              return { isValid: false, error: `${attacker.definition.name} must be blocked if able.` };
-          }
+        const defenderId = state.pendingAction?.playerId || Object.keys(state.players).find(id => id !== state.activePlayerId)!;
+        const hasLegalBlocker = state.battlefield.some(b =>
+          b.controllerId === defenderId &&
+          !b.isTapped &&
+          this.isLegalBlocker(state, b.id, attacker.id).legal
+        );
+        if (hasLegalBlocker) {
+          return { isValid: false, error: `${attacker.definition.name} must be blocked if able.` };
+        }
       }
     }
-    
+
     return { isValid: true };
   }
 }

@@ -97,7 +97,7 @@ export class PriorityProcessor {
     engine.checkStateBasedActions();
 
     state.priorityPlayerId = state.playerOrder[nextIndex];
-    engine.log(`[PRIORITY] Shifted to ${engine.getPlayerName(state.priorityPlayerId)}.`);
+    // engine.log(`[PRIORITY] Shifted to ${engine.getPlayerName(state.priorityPlayerId)}.`);
 
     this.checkAutoPass(state, state.priorityPlayerId, engine);
   }
@@ -177,7 +177,7 @@ export class PriorityProcessor {
         return; // Don't auto-pass combat declarations even if Skip is active
       }
 
-      engine.log(`[Auto-Pass] ${engine.getPlayerName(playerId)} skipped${!canAct ? ': no legal actions found' : ' (Pass Turn active)'}.`);
+      //engine.log(`[Auto-Pass] ${engine.getPlayerName(playerId)} skipped${!canAct ? ': no legal actions found' : ' (Pass Turn active)'}.`);
       this.passPriority(state, playerId, engine, true);
     } else if (player && (canAct || hasManualStop)) {
     }
@@ -458,9 +458,10 @@ export class PriorityProcessor {
     if (obj.definition.abilities) {
       obj.definition.abilities.forEach((a: any) => {
         const isDuplicate = abilities.some(existing => {
-          if (a.id !== undefined && a.id === existing.id) return true;
-          if (a.oracleText !== undefined && a.oracleText === existing.oracleText && a.type === existing.type) return true;
-          return false;
+          if (a.id !== undefined && existing.id !== undefined) return a.id === existing.id;
+          return a.type === existing.type &&
+            JSON.stringify(a.effects) === JSON.stringify(existing.effects) &&
+            JSON.stringify(a.costs) === JSON.stringify(existing.costs);
         });
         if (!isDuplicate) {
           abilities.push(a);

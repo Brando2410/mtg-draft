@@ -72,9 +72,10 @@ export class ManaProcessor {
 
   /**
    * Calculates the total Mana Value (MV) of a cost string (Rules 107.4, 202.3).
+   * @param xValue The value chosen for X (only relevant for objects on the stack).
    */
-  public static getManaValue(costStr: string): number {
-    return ManaParser.getManaValue(costStr);
+  public static getManaValue(costStr: string, xValue: number = 0): number {
+    return ManaParser.getManaValue(costStr, xValue);
   }
 
   /**

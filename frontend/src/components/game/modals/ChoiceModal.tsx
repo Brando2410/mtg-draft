@@ -31,6 +31,7 @@ export const ChoiceModal = ({
   const [minimized, setMinimized] = useState(false);
   const [orderedTriggers, setOrderedTriggers] = useState<any[]>([]);
   const [scryState, setScryState] = useState<{ top: any[], bottom: any[], graveyard: any[] }>({ top: [], bottom: [], graveyard: [] });
+  const [viewedPlayerId, setViewedPlayerId] = useState<string | null>(null);
 
   const sourceId = pendingAction?.sourceId;
   const sourceObject = useMemo(() => {
@@ -67,28 +68,10 @@ export const ChoiceModal = ({
     ActionType.LegendRule
   ].includes(pendingAction?.type) || isOrderTriggers;
 
-  useEffect(() => {
-    if (isOrderTriggers && pendingAction.data?.triggers) {
-        setOrderedTriggers(pendingAction.data.triggers);
-    }
-    if (isScrySurveil && pendingAction.data?.lookingCards) {
-        setScryState({
-            top: [...pendingAction.data.lookingCards],
-            bottom: [],
-            graveyard: []
-        });
-    }
-  }, [pendingAction?.data?.triggers, pendingAction?.data?.lookingCards, isOrderTriggers, isScrySurveil]);
-
-  if (!isChoiceAction) return null;
-
-  const isMyChoice = pendingAction.playerId === me?.id;
-  if (!isMyChoice || pendingAction.data?.isContextual) return null;
-
-  const choices = pendingAction.data?.choices || [];
-  const minChoices = pendingAction.data?.minChoices || 1;
-  const maxChoices = pendingAction.data?.maxChoices || 1;
-  const isCostChoice = pendingAction.data?.isCostChoice;
+  const choices = pendingAction?.data?.choices || [];
+  const minChoices = pendingAction?.data?.minChoices || 1;
+  const maxChoices = pendingAction?.data?.maxChoices || 1;
+  const isCostChoice = pendingAction?.data?.isCostChoice;
   const hasCards = choices.some((c: any) => c.cardData);
   
   const noneChoiceIdx = choices.findIndex((c: any) => 
@@ -98,6 +81,47 @@ export const ChoiceModal = ({
   const cardChoices = choices.filter((c: any) => c.cardData);
   const buttonChoices = choices.filter((c: any, i: number) => !c.cardData && i !== noneChoiceIdx);
   const noneChoice = noneChoiceIdx !== -1 ? choices[noneChoiceIdx] : null;
+
+  const availablePlayerIds = useMemo(() => {
+    const ids = new Set<string>();
+    cardChoices.forEach((c: any) => {
+        if (c.cardData?.ownerId) ids.add(c.cardData.ownerId);
+    });
+    const sorted = Array.from(ids);
+    if (me?.id && sorted.includes(me.id)) {
+        return [me.id, ...sorted.filter(id => id !== me.id)];
+    }
+    return sorted;
+  }, [cardChoices, me?.id]);
+
+  const activeViewedPlayerId = viewedPlayerId || me?.id || availablePlayerIds[0];
+
+  const filteredCardChoices = useMemo(() => {
+    if (availablePlayerIds.length <= 1) return cardChoices;
+    return cardChoices.filter((c: any) => c.cardData?.ownerId === activeViewedPlayerId);
+  }, [cardChoices, availablePlayerIds, activeViewedPlayerId]);
+
+  useEffect(() => {
+    if (isOrderTriggers && pendingAction?.data?.triggers) {
+        setOrderedTriggers(pendingAction.data.triggers);
+    }
+    if (isScrySurveil && pendingAction?.data?.lookingCards) {
+        setScryState({
+            top: [...pendingAction.data.lookingCards],
+            bottom: [],
+            graveyard: []
+        });
+    }
+  }, [pendingAction?.data?.triggers, pendingAction?.data?.lookingCards, isOrderTriggers, isScrySurveil]);
+
+  useEffect(() => {
+    if (me?.id) setViewedPlayerId(me.id);
+  }, [pendingAction?.id, pendingAction?.sourceId, me?.id]);
+
+  if (!isChoiceAction) return null;
+
+  const isMyChoice = pendingAction?.playerId === me?.id;
+  if (!isMyChoice || pendingAction?.data?.isContextual) return null;
 
   const handleChoiceClick = (originalIdx: number) => {
       const choice = choices[originalIdx];
@@ -337,29 +361,57 @@ export const ChoiceModal = ({
 
                       {/* CARD GRID */}
                       {!isOrderTriggers && !isScrySurveil && cardChoices.length > 0 && (
-                          <div className="flex flex-wrap justify-center gap-8 p-6">
-                              {cardChoices.map((choice: any, idx: number) => {
-                                  const originalIdx = choices.indexOf(choice);
-                                  const isSelected = selectedIndices.includes(originalIdx);
-                                  return (
-                                      <motion.div key={choice.cardData.id || `choice-card-${idx}`} className={`relative cursor-pointer transition-all hover:translate-y-[-5px] ${isSelected ? 'z-20 scale-105' : 'z-10'}`} onClick={() => handleChoiceClick(originalIdx)}>
-                                          <div className="w-[calc(var(--u)*26)] h-[calc(var(--u)*18.7)]">
-                                              <GameCard obj={choice.cardData} variant="battlefield" onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} isSelected={false} disableHoverAnim={true} />
-                                          </div>
-                                          {isSelected && (
-                                              <>
-                                                  <div className="absolute inset-x-[-4px] inset-y-[-4px] border-[4px] border-yellow-400 rounded-xl shadow-[0_0_30px_rgba(250,204,21,0.8)] pointer-events-none z-10" />
-                                                  {maxChoices > 1 && (
-                                                      <div className="absolute -top-4 -right-4 w-10 h-10 bg-yellow-400 text-slate-950 font-black rounded-full flex items-center justify-center border-4 border-[#0b0f1a] shadow-2xl z-30 text-sm italic">
-                                                          {selectedIndices.indexOf(originalIdx) + 1}
-                                                      </div>
+                          <>
+                              {availablePlayerIds.length > 1 && (
+                                  <div className="flex items-center justify-center gap-4 mb-8 bg-white/5 p-2 rounded-full border border-white/10 backdrop-blur-md">
+                                      {availablePlayerIds.map(pid => {
+                                          const isMe = pid === me?.id;
+                                          const isActive = pid === activeViewedPlayerId;
+                                          const countInTab = cardChoices.filter((c: any) => c.cardData?.ownerId === pid && selectedIndices.includes(choices.indexOf(c))).length;
+                                          const playerName = isMe ? "Your Cards" : (pid === opponent?.id ? `${opponent.name}'s Cards` : "Opponent's Cards");
+
+                                          return (
+                                              <button 
+                                                  key={pid}
+                                                  onClick={() => setViewedPlayerId(pid)}
+                                                  className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 ${isActive ? 'bg-indigo-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.4)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                                              >
+                                                  {playerName}
+                                                  {countInTab > 0 && (
+                                                      <span className="w-5 h-5 bg-yellow-400 text-slate-900 rounded-full flex items-center justify-center text-[10px] shadow-lg animate-in zoom-in duration-300">
+                                                          {countInTab}
+                                                      </span>
                                                   )}
-                                              </>
-                                          )}
-                                      </motion.div>
-                                  );
-                              })}
-                          </div>
+                                              </button>
+                                          );
+                                      })}
+                                  </div>
+                              )}
+                              
+                              <div className="flex flex-wrap justify-center gap-8 p-6">
+                                  {filteredCardChoices.map((choice: any, idx: number) => {
+                                      const originalIdx = choices.indexOf(choice);
+                                      const isSelected = selectedIndices.includes(originalIdx);
+                                      return (
+                                          <motion.div key={choice.cardData.id || `choice-card-${idx}`} className={`relative cursor-pointer transition-all hover:translate-y-[-5px] ${isSelected ? 'z-20 scale-105' : 'z-10'}`} onClick={() => handleChoiceClick(originalIdx)}>
+                                              <div className="w-[calc(var(--u)*26)] h-[calc(var(--u)*18.7)]">
+                                                  <GameCard obj={choice.cardData} variant="battlefield" onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} isSelected={false} disableHoverAnim={true} />
+                                              </div>
+                                              {isSelected && (
+                                                  <>
+                                                      <div className="absolute inset-x-[-4px] inset-y-[-4px] border-[4px] border-yellow-400 rounded-xl shadow-[0_0_30px_rgba(250,204,21,0.8)] pointer-events-none z-10" />
+                                                      {maxChoices > 1 && (
+                                                          <div className="absolute -top-4 -right-4 w-10 h-10 bg-yellow-400 text-slate-950 font-black rounded-full flex items-center justify-center border-4 border-[#0b0f1a] shadow-2xl z-30 text-sm italic">
+                                                              {selectedIndices.indexOf(originalIdx) + 1}
+                                                          </div>
+                                                      )}
+                                                  </>
+                                              )}
+                                          </motion.div>
+                                      );
+                                  })}
+                              </div>
+                          </>
                       )}
 
                       {/* BUTTON LIST */}

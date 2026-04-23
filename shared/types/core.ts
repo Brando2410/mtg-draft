@@ -105,6 +105,8 @@ export const TargetMapping = {
   ControllerBattlefield: "CONTROLLER_BATTLEFIELD",
   OpponentHandRevealPick: "OPPONENT_HAND_REVEAL_PICK",
   ParentContextExiledIds: "PARENT_CONTEXT_EXILED_IDS",
+  AnyGraveyard: "ANY_GRAVEYARD",
+  AnyExile: "ANY_EXILE",
 } as const;
 export type TargetMapping = (typeof TargetMapping)[keyof typeof TargetMapping];
 

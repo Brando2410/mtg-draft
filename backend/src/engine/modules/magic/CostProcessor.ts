@@ -105,8 +105,11 @@ export class CostProcessor {
         );
         return validDiscards.length >= neededDisc;
 
-      case CostType.PayLife:
-        return player.life > (parseInt(cost.value) || 0);
+      case CostType.PayLife: {
+        const xValue = (source as any).xValue !== undefined ? (source as any).xValue : (stackObject?.xValue || 0);
+        const lifeVal = cost.value === 'X' ? xValue : (parseInt(cost.value) || 0);
+        return player.life >= lifeVal; // Rule 119.4: A player can't pay more life than they have.
+      }
 
       case CostType.Exile:
       case CostType.ExileSelf:
@@ -235,12 +238,14 @@ export class CostProcessor {
         delete (state as any).lastChosenDiscardId;
         break;
 
-       case CostType.PayLife:
-         const lifeVal = parseInt(cost.value) || 0;
+       case CostType.PayLife: {
+         const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
+         const lifeVal = cost.value === 'X' ? xValue : (parseInt(cost.value) || 0);
          player.life -= lifeVal;
          TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
          log(`${player.name} pays ${lifeVal} life (${player.life + lifeVal} -> ${player.life})`);
          break;
+       }
 
        case CostType.Exile:
        case CostType.ExileSelf:

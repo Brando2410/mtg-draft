@@ -208,7 +208,7 @@ export class EffectProcessor {
       stackObject,
       parentContext,
       startIndex: stackObject?.data?.startIndex || 0,
-      event: stackObject?.data?.eventData,
+      event: stackObject?.data?.eventData || (stackObject?.data as any)?.event,
       exiledIds: stackObject?.data?.exiledIds,
       lookingCards: (stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
       nextEffectIndex: stackObject?.data?.nextEffectIndex,
@@ -458,12 +458,12 @@ export class EffectProcessor {
     const { sourceId, controllerId, targets, stackObject } = context;
 
     // We wrap the stackObject/parent state into a clean ConditionContext
-    const extendedEvent = { ...(stackObject || {}), targets };
+    const event = context.event || { ...(stackObject || {}), targets };
 
     return ConditionProcessor.matchesCondition(state, condition, {
       sourceId,
       controllerId,
-      event: extendedEvent as unknown as TriggerEvent,
+      event: event as any,
       stackObject,
       targets,
     });
@@ -650,11 +650,20 @@ export class EffectProcessor {
         break;
       }
       case "CREATURE_COUNT_YOU_CONTROL":
-      case "CREATURES_YOU_CONTROL":
+      case "CREATURES_YOU_CONTROL": {
         result = state.battlefield.filter(
-          (o) => o.controllerId === controllerId && o.definition.types.some((t) => t.toLowerCase() === "creature"),
+          (o) => String(o.controllerId) === String(controllerId) && (o.definition.types || []).some((t) => t.toLowerCase() === "creature"),
         ).length;
         break;
+      }
+      case "DIFFERENTLY_NAMED_LANDS_COUNT": {
+        const lands = state.battlefield.filter(
+          (o) => String(o.controllerId) === String(controllerId) && (o.definition.types || []).some((t) => t.toLowerCase() === "land"),
+        );
+        const names = new Set(lands.map((l) => l.definition.name));
+        result = names.size;
+        break;
+      }
       case "TARGET_HAND_SIZE_7_MINUS": {
         const tId = stackObject?.targets?.[0];
         const tObj = state.battlefield.find((o) => o.id === tId);
@@ -675,8 +684,24 @@ export class EffectProcessor {
         result = gy.filter((c) => c.definition.name === name).length + 1;
         break;
       }
-      default:
-        result = 0;
+      default: {
+        if (typeof amount === "string" && (amount.startsWith("COUNT_") || amount.startsWith("AFFINITY_"))) {
+          const prefix = amount.startsWith("COUNT_") ? "COUNT_" : "AFFINITY_";
+          const typeToCount = amount.substring(prefix.length).toLowerCase();
+          const singularType = typeToCount.endsWith("s") ? typeToCount.slice(0, -1) : typeToCount;
+
+          result = state.battlefield.filter(
+            (o) =>
+              o.controllerId === controllerId &&
+              (o.definition.types.some((t) => t.toLowerCase() === typeToCount || t.toLowerCase() === singularType) ||
+                (o.definition.subtypes || []).some(
+                  (s) => s.toLowerCase() === typeToCount || s.toLowerCase() === singularType,
+                )),
+          ).length;
+        } else {
+          result = 0;
+        }
+      }
     }
 
     return result;
