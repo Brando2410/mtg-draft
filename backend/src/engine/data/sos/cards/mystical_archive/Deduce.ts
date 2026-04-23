@@ -9,21 +9,10 @@ export const Deduce: CardDefinition = {
     colors: ["U"],
     types: ["Instant"],
     subtypes: [],
-    keywords: ["Investigate"],
+    keywords: [],
     oracleText: "Draw a card. Investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
     set: "soa",
     abilities: [
-        {
-            type: AbilityType.Spell,
-            effects: [
-                {
-                    type: EffectType.DrawCards,
-                    amount: 1
-                },
-                {
-                    type: EffectType.Investigate
-                }
-            ]
-        }
+
     ]
 };
