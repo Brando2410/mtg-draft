@@ -33,7 +33,7 @@ export const FieldsofStrife: CardDefinition = {
             type: AbilityType.Activated,
             id: "Surveil 1",
             manaCost: "{2}{R}{W}",
-            costs: [{ type: CostType.Tap }],
+            costs: [{ type: CostType.Tap }, { type: CostType.Mana, value: "{2}{R}{W}" }],
             effects: [
                 { type: EffectType.Surveil, amount: 1 }
             ]

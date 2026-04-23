@@ -66,7 +66,7 @@ const CardStack = memo(({
             
             {stack.length > 1 && (
                 <div 
-                    className="absolute -top-4 -left-4 z-[10] bg-black/80 border-2 border-white/40 px-2.5 py-1 rounded-lg shadow-2xl skew-x-[-12deg]"
+                    className="absolute -top-4 -right-4 z-[10] bg-black/80 border-2 border-white/40 px-2.5 py-1 rounded-lg shadow-2xl skew-x-[-12deg]"
                     style={{ transform: `translate(${(visibleDepth-1) * 12}px, ${-(visibleDepth-1) * 12}px)` }}
                 >
                     <span className="text-xs font-black text-white italic tracking-tighter">x{stack.length}</span>

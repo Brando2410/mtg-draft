@@ -31,7 +31,7 @@ export const TitansGrave: CardDefinition = {
             id: "Surveil 1",
             manaCost: "{2}{B}{G}",
             costs: [
-                { type: CostType.Tap }
+                { type: CostType.Tap }, { type: CostType.Mana, value: "{2}{B}{G}" }
             ],
             effects: [
                 {
