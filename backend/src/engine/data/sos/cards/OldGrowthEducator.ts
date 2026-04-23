@@ -8,7 +8,7 @@ export const OldGrowthEducator: CardDefinition = {
     colors: ["B", "G"],
     types: ["Creature"],
     subtypes: ["Treefolk", "Druid"],
-    keywords: ["Vigilance", "Reach", "Infusion"],
+    keywords: ["Vigilance", "Reach"],
     power: "4",
     toughness: "4",
     oracleText: "Vigilance, reach\nInfusion — When this creature enters, put two +1/+1 counters on it if you gained life this turn.",

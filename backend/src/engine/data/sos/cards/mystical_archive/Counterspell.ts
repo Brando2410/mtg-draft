@@ -1,0 +1,24 @@
+import { AbilityType, CardDefinition, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
+
+export const Counterspell: CardDefinition = {
+    name: "Counterspell",
+    manaCost: "{U}{U}",
+    oracleText: "Counter target spell.",
+    colors: ["U"],
+    types: ["Instant"],
+    abilities: [
+        {
+            type: AbilityType.Spell,
+            targetDefinition: {
+                type: TargetType.Spell,
+                count: 1
+            },
+            effects: [
+                {
+                    type: EffectType.CounterSpell,
+                    targetMapping: TargetMapping.Target1
+                }
+            ]
+        }
+    ]
+};

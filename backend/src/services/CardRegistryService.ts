@@ -26,10 +26,22 @@ export class CardRegistryService {
   static initialize() {
     const combined: Record<string, { card: CardDefinition, set: string }> = {};
 
-    // Standardize and merge
-    Object.entries(m21).forEach(([name, card]) => { combined[name] = { card, set: 'M21' }; });
-    Object.entries(sos).forEach(([name, card]) => { combined[name] = { card, set: 'SOS' }; });
-    Object.entries(stx).forEach(([name, card]) => { combined[name] = { card, set: 'STX' }; });
+    console.log(`[REGISTRY] Starting initialization. SOS exists: ${!!sos}, M21 exists: ${!!m21}, STX: ${!!stx}`);
+
+    try {
+      if (m21) Object.entries(m21).forEach(([name, card]) => { combined[name] = { card, set: 'M21' }; });
+      console.log(`[REGISTRY] Loaded M21: ${Object.keys(m21 || {}).length} entries`);
+    } catch (e) { console.error('[REGISTRY] Error loading M21', e); }
+
+    try {
+      if (sos) Object.entries(sos).forEach(([name, card]) => { combined[name] = { card, set: 'SOS' }; });
+      console.log(`[REGISTRY] Loaded SOS: ${Object.keys(sos || {}).length} entries`);
+    } catch (e) { console.error('[REGISTRY] Error loading SOS', e); }
+
+    try {
+      if (stx) Object.entries(stx).forEach(([name, card]) => { combined[name] = { card, set: 'STX' }; });
+      console.log(`[REGISTRY] Loaded STX: ${Object.keys(stx || {}).length} entries`);
+    } catch (e) { console.error('[REGISTRY] Error loading STX', e); }
 
     this.allCards = Object.values(combined).map(({ card, set }) => {
       // Basic check: if it has abilities implemented or custom logic beyond just data
@@ -52,7 +64,7 @@ export class CardRegistryService {
       };
     });
 
-    // Deduplicate by name (sometimes the same card exists in multiple sets or faces)
+    // Deduplicate by name
     const seen = new Set<string>();
     this.allCards = this.allCards.filter(c => {
       if (seen.has(c.name)) return false;
@@ -60,7 +72,7 @@ export class CardRegistryService {
       return true;
     });
 
-    console.log(`CardRegistry initialized: SOS: ${Object.keys(sos).length}, M21: ${Object.keys(m21).length}, STX: ${Object.keys(stx).length}. Total unique cards: ${this.allCards.length}`);
+    console.log(`[REGISTRY] Initialization complete. Total unique cards: ${this.allCards.length}`);
   }
 
   static getAllCards(): RegistryCard[] {

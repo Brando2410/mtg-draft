@@ -135,4 +135,106 @@ export const ConditionalEffectHandler: IEffectHandler = {
   }
 };
 
+export const AdNauseamHandler: IEffectHandler = {
+  handle(state, effect, log, context) {
+    const { ActionProcessor } = require("../../../actions/ActionProcessor");
+    const { ManaProcessor } = require("../../../../magic/ManaProcessor");
+    const { ChoiceGenerator } = require("../../../ChoiceGenerator");
+    const { controllerId } = context;
+    const player = state.players[controllerId];
+    if (!player || player.library.length === 0) return;
+
+    // 1. Reveal and move
+    const card = player.library.pop()!;
+    card.isRevealed = true;
+    player.hand.push(card);
+    card.zone = Zone.Hand;
+    log(`${player.name} reveals ${card.definition.name} and puts it into their hand.`);
+
+    // 2. Lose life
+    const mv = ManaProcessor.getManaValue(card.definition.manaCost || "{0}");
+    ActionProcessor.loseLife(state, controllerId, mv, log);
+
+    // 3. Choice to repeat
+    if (player.library.length > 0) {
+      ChoiceGenerator.createChoice(state, controllerId, {
+        type: 'Choice',
+        label: `Ad Nauseam: Repeat process? (${player.library.length} cards left)`,
+        choices: [
+          {
+            label: "Repeat",
+            effects: [{ type: EffectType.AdNauseam }]
+          },
+          {
+            label: "Stop",
+            effects: []
+          }
+        ]
+      }, context);
+    }
+  }
+};
+
+export const ChaosWarpHandler: IEffectHandler = {
+  handle(state, effect, log, context) {
+    const { ActionProcessor } = require("../../../actions/ActionProcessor");
+    const { TargetingProcessor } = require("../../../../actions/targeting/TargetingProcessor");
+    const { targets } = context;
+    const targetId = targets[0];
+    const targetObj = TargetingProcessor.findObjectInAnyZone(state, targetId);
+    if (!targetObj) return;
+
+    const ownerId = targetObj.ownerId;
+    const player = state.players[ownerId];
+    if (!player) return;
+
+    // 1. Shuffle into library
+    ActionProcessor.moveCard(state, targetObj, Zone.Library, ownerId, log);
+    ActionProcessor.shuffleLibrary(state, ownerId, log);
+
+    // 2. Reveal top
+    if (player.library.length === 0) return;
+    const card = player.library[player.library.length - 1];
+    log(`${player.name} reveals ${card.definition.name} from the top of their library.`);
+
+    // 3. Check if permanent
+    const permanentTypes = ['Creature', 'Artifact', 'Enchantment', 'Land', 'Planeswalker'];
+    const isPermanent = card.definition.types.some(t => permanentTypes.includes(t));
+
+    if (isPermanent) {
+      ActionProcessor.moveCard(state, card, Zone.Battlefield, ownerId, log);
+    } else {
+      ActionProcessor.shuffleLibrary(state, ownerId, log);
+    }
+  }
+};
+
+export const ApproachOfTheSecondSunHandler: IEffectHandler = {
+  handle(state, effect, log, context) {
+    const { ActionProcessor } = require("../../../actions/ActionProcessor");
+    const { controllerId, sourceId } = context;
+    const player = state.players[controllerId];
+    if (!player) return;
+
+    const castFromHand = context.stackObject?.card?.lastNonStackZone === Zone.Hand;
+    const castCount = state.gameStats?.castCounts[controllerId]["Approach of the Second Sun"] || 0;
+
+    if (castFromHand && castCount >= 2) {
+      log(`${player.name} wins the game with Approach of the Second Sun!`);
+      ActionProcessor.winGame(state, controllerId, log);
+    } else {
+      ActionProcessor.gainLife(state, controllerId, 7, log);
+      
+      const stackObj = state.stack.find(s => s.id === sourceId);
+      const card = stackObj?.card;
+      if (card) {
+        const pos = Math.max(0, player.library.length - 6);
+        ActionProcessor.moveCard(state, card, Zone.Library, card.ownerId, log, pos);
+        log(`Approach of the Second Sun put into library at position ${pos} from bottom.`);
+        if (stackObj) stackObj.exileOnResolution = true; 
+      }
+    }
+  }
+};
+
 

@@ -1,22 +1,13 @@
 ﻿import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
+export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
     name: "Abigale, Poet Laureate // Heroic Stanza",
     manaCost: "{1}{W}{B} // {1}{W/B}",
     scryfall_id: "77285d12-e658-4eb3-ba13-ff202afab9c8",
     rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/7/7/77285d12-e658-4eb3-ba13-ff202afab9c8.jpg?1775938164",
-    colors: [
-        "B",
-        "W"
-    ],
-    types: [
-        "Legendary",
-        "Creature"
-    ],
-    subtypes: [
-        "Bird",
-        "Bard"
-    ],
+    colors: ["B", "W"],
+    types: ["Legendary", "Creature"],
+    subtypes: ["Bird", "Bard"],
     keywords: ["Flying", "Prepared"],
     oracleText: "Flying\nWhenever you cast a creature spell, Abigale becomes prepared. (While it's prepared, you may cast a copy of its spell. Doing so unprepares it.)",
     power: "2",
@@ -53,4 +44,4 @@
         ]
     }
 };
-    
+

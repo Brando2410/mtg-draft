@@ -352,6 +352,9 @@ export interface GameState {
     turnState: TurnState;
     playerOrder: PlayerId[];
     interaction: InteractionState;
+    gameStats?: {
+        castCounts: Record<PlayerId, Record<string, number>>;
+    };
 }
 
 export interface RuleRegistry {

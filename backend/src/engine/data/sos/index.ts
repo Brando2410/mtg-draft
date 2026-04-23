@@ -270,6 +270,81 @@ import { WitheringCurse } from './cards/WitheringCurse';
 import { ZaffaiandtheTempests } from './cards/ZaffaiandtheTempests'; //commander to go
 import { ZealousLorecaster } from './cards/ZealousLorecaster';
 import { ZimonesExperiment } from './cards/ZimonesExperiment';
+import { Abrade } from './cards/mystical_archive/Abrade';
+import { AdNauseam } from './cards/mystical_archive/AdNauseam';
+import { AkromasWill } from './cards/mystical_archive/AkromasWill';
+import { AgonizingRemorse } from './cards/mystical_archive/AgonizingRemorse';
+import { BanishingLight } from './cards/mystical_archive/BanishingLight';
+import { AdventurousImpulse } from './cards/mystical_archive/AdventurousImpulse';
+import { Counterspell } from './cards/mystical_archive/Counterspell';
+import { DarkRitual } from './cards/mystical_archive/DarkRitual';
+import { ChaosWarp } from './cards/mystical_archive/ChaosWarp';
+import { BlueSunsZenith } from './cards/mystical_archive/BlueSunsZenith';
+import { Brainstorm } from './cards/mystical_archive/Brainstorm';
+import { ClaimTheFirstborn } from './cards/mystical_archive/ClaimTheFirstborn';
+import { CompulsiveResearch } from './cards/mystical_archive/CompulsiveResearch';
+import { AngelsGrace } from './cards/mystical_archive/AngelsGrace';
+import { Armageddon } from './cards/mystical_archive/Armageddon';
+import { AwakentheWoods } from './cards/mystical_archive/AwakentheWoods';
+import { Berserk } from './cards/mystical_archive/Berserk';
+import { BigScore } from './cards/mystical_archive/BigScore';
+import { BitterTriumph } from './cards/mystical_archive/BitterTriumph';
+import { BrainFreeze } from './cards/mystical_archive/BrainFreeze';
+import { BringtoLight } from './cards/mystical_archive/BringtoLight';
+import { BrotherhoodsEnd } from './cards/mystical_archive/BrotherhoodsEnd';
+import { BulkUp } from './cards/mystical_archive/BulkUp';
+import { BurstLightning } from './cards/mystical_archive/BurstLightning';
+import { CracklewithPower } from './cards/mystical_archive/CracklewithPower';
+import { CropRotation } from './cards/mystical_archive/CropRotation';
+import { CullingRitual } from './cards/mystical_archive/CullingRitual';
+import { CullingtheWeak } from './cards/mystical_archive/CullingtheWeak';
+import { CyclonicRift } from './cards/mystical_archive/CyclonicRift';
+import { Daze } from './cards/mystical_archive/Daze';
+import { Deduce } from './cards/mystical_archive/Deduce';
+import { DeflectingPalm } from './cards/mystical_archive/DeflectingPalm';
+import { DisdainfulStroke } from './cards/mystical_archive/DisdainfulStroke';
+import { Dismember } from './cards/mystical_archive/Dismember';
+import { DutyBeyondDeath } from './cards/mystical_archive/DutyBeyondDeath';
+import { EmptytheWarrens } from './cards/mystical_archive/EmptytheWarrens';
+import { ExpressiveIteration } from './cards/mystical_archive/ExpressiveIteration';
+import { FeedtheSwarm } from './cards/mystical_archive/FeedtheSwarm';
+import { Flusterstorm } from './cards/mystical_archive/Flusterstorm';
+import { ForceofWill } from './cards/mystical_archive/ForceofWill';
+import { Fracture } from './cards/mystical_archive/Fracture';
+import { GiantGrowth } from './cards/mystical_archive/GiantGrowth';
+import { GlimpseofNature } from './cards/mystical_archive/GlimpseofNature';
+import { HelpingHand } from './cards/mystical_archive/HelpingHand';
+import { HoptoIt } from './cards/mystical_archive/HoptoIt';
+import { JeskasWill } from './cards/mystical_archive/JeskasWill';
+import { KnockoutManeuver } from './cards/mystical_archive/KnockoutManeuver';
+import { LivingEnd } from './cards/mystical_archive/LivingEnd';
+import { LocustSpray } from './cards/mystical_archive/LocustSpray';
+import { MonstrousRage } from './cards/mystical_archive/MonstrousRage';
+import { PickYourPoison } from './cards/mystical_archive/PickYourPoison';
+import { Pongify } from './cards/mystical_archive/Pongify';
+import { Preordain } from './cards/mystical_archive/Preordain';
+import { PrismaticEnding } from './cards/mystical_archive/PrismaticEnding';
+import { PyreticRitual } from './cards/mystical_archive/PyreticRitual';
+import { RepelCalamity } from './cards/mystical_archive/RepelCalamity';
+import { Reprieve } from './cards/mystical_archive/Reprieve';
+import { RequisitionRaid } from './cards/mystical_archive/RequisitionRaid';
+import { ReturntheFavor } from './cards/mystical_archive/ReturntheFavor';
+import { ReturntotheRanks } from './cards/mystical_archive/ReturntotheRanks';
+import { RoyalTreatment } from './cards/mystical_archive/RoyalTreatment';
+import { ShamanicRevelation } from './cards/mystical_archive/ShamanicRevelation';
+import { SharedRoots } from './cards/mystical_archive/SharedRoots';
+import { SheoldredsEdict } from './cards/mystical_archive/SheoldredsEdict';
+import { SleightofHand } from './cards/mystical_archive/SleightofHand';
+import { Smallpox } from './cards/mystical_archive/Smallpox';
+import { SpellPierce } from './cards/mystical_archive/SpellPierce';
+import { Stargaze } from './cards/mystical_archive/Stargaze';
+import { StockUp } from './cards/mystical_archive/StockUp';
+import { SubterraneanTremors } from './cards/mystical_archive/SubterraneanTremors';
+import { TriumphoftheHordes } from './cards/mystical_archive/TriumphoftheHordes';
+import { VampiricTutor } from './cards/mystical_archive/VampiricTutor';
+import { VeilofSummer } from './cards/mystical_archive/VeilofSummer';
+import { WindsofAbandon } from './cards/mystical_archive/WindsofAbandon';
+import { Zombify } from './cards/mystical_archive/Zombify';
 
 export const sos: Record<string, CardDefinition> = {
     'Aberrant Manawurm': AberrantManawurm,
@@ -308,7 +383,6 @@ export const sos: Record<string, CardDefinition> = {
     'Bloodletting': (LeechCollectorBloodletting as any).preparedFace,
     'Bogwater Lumaret': BogwaterLumaret,
     'Borrowed Knowledge': BorrowedKnowledge,
-    'Brainstorm': HarmonizedTrioBrainstorm,
     'Brush Off': BrushOff,
     'Burrog Banemaker': BurrogBanemaker,
     'Burrog Barrage': BurrogBarrage,
@@ -614,4 +688,79 @@ export const sos: Record<string, CardDefinition> = {
     'Zealous Lorecaster': ZealousLorecaster,
     'Zimone\'s Experiment': ZimonesExperiment,
     'Striking Palette': (PigmentWranglerStrikingPalette as any).preparedFace,
+    'Abrade': Abrade,
+    'Ad Nauseam': AdNauseam,
+    "Akroma's Will": AkromasWill,
+    "Angel's Grace": AngelsGrace,
+    'Armageddon': Armageddon,
+    'Awaken the Woods': AwakentheWoods,
+    'Berserk': Berserk,
+    'Big Score': BigScore,
+    'Bitter Triumph': BitterTriumph,
+    'Brain Freeze': BrainFreeze,
+    'Bring to Light': BringtoLight,
+    "Brotherhood's End": BrotherhoodsEnd,
+    'Bulk Up': BulkUp,
+    'Burst Lightning': BurstLightning,
+    'Crackle with Power': CracklewithPower,
+    'Crop Rotation': CropRotation,
+    'Culling Ritual': CullingRitual,
+    'Culling the Weak': CullingtheWeak,
+    'Cyclonic Rift': CyclonicRift,
+    'Daze': Daze,
+    'Deduce': Deduce,
+    'Deflecting Palm': DeflectingPalm,
+    'Disdainful Stroke': DisdainfulStroke,
+    'Dismember': Dismember,
+    'Duty Beyond Death': DutyBeyondDeath,
+    'Empty the Warrens': EmptytheWarrens,
+    'Expressive Iteration': ExpressiveIteration,
+    'Feed the Swarm': FeedtheSwarm,
+    'Flusterstorm': Flusterstorm,
+    'Force of Will': ForceofWill,
+    'Fracture': Fracture,
+    'Giant Growth': GiantGrowth,
+    'Glimpse of Nature': GlimpseofNature,
+    'Helping Hand': HelpingHand,
+    'Hop to It': HoptoIt,
+    "Jeska's Will": JeskasWill,
+    'Knockout Maneuver': KnockoutManeuver,
+    'Living End': LivingEnd,
+    'Locust Spray': LocustSpray,
+    'Monstrous Rage': MonstrousRage,
+    'Pick Your Poison': PickYourPoison,
+    'Pongify': Pongify,
+    'Preordain': Preordain,
+    'Prismatic Ending': PrismaticEnding,
+    'Pyretic Ritual': PyreticRitual,
+    'Repel Calamity': RepelCalamity,
+    'Reprieve': Reprieve,
+    'Requisition Raid': RequisitionRaid,
+    'Return the Favor': ReturntheFavor,
+    'Return to the Ranks': ReturntotheRanks,
+    'Royal Treatment': RoyalTreatment,
+    'Shamanic Revelation': ShamanicRevelation,
+    'Shared Roots': SharedRoots,
+    "Sheoldred's Edict": SheoldredsEdict,
+    'Sleight of Hand': SleightofHand,
+    'Smallpox': Smallpox,
+    'Spell Pierce': SpellPierce,
+    'Stargaze': Stargaze,
+    'Stock Up': StockUp,
+    'Subterranean Tremors': SubterraneanTremors,
+    'Triumph of the Hordes': TriumphoftheHordes,
+    'Vampiric Tutor': VampiricTutor,
+    'Veil of Summer': VeilofSummer,
+    'Winds of Abandon': WindsofAbandon,
+    'Zombify': Zombify,
+    'Counterspell': Counterspell,
+    'Dark Ritual': DarkRitual,
+    'Adventurous Impulse': AdventurousImpulse,
+    'Blue Sun\'s Zenith': BlueSunsZenith,
+    'Brainstorm': Brainstorm,
+    'Chaos Warp': ChaosWarp,
+    'Claim the Firstborn': ClaimTheFirstborn,
+    'Compulsive Research': CompulsiveResearch,
+    'Agonizing Remorse': AgonizingRemorse,
+    'Banishing Light': BanishingLight,
 };

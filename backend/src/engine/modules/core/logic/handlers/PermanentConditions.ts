@@ -104,5 +104,17 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
                 (Number(obj.definition.power || 0) >= 4 || (obj.effectiveStats?.power || 0) >= 4)
             );
         }
+    },
+    [ConditionType.CONTROLS_COMMANDER]: {
+        matches(state, params, context) {
+            const { controllerId } = context;
+            // For now, we consider any Legendary Creature or Planeswalker as a commander proxy
+            // In a real Commander engine, this would check for a specific 'isCommander' property
+            return state.battlefield.some(o => 
+                String(o.controllerId) === String(controllerId) &&
+                (o.definition.supertypes || []).some(t => t.toLowerCase() === "legendary") &&
+                (o.definition.types.some(t => t.toLowerCase() === "creature") || o.definition.types.some(t => t.toLowerCase() === "planeswalker"))
+            );
+        }
     }
 };

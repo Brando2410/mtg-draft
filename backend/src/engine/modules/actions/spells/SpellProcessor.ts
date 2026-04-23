@@ -283,6 +283,23 @@ export class SpellProcessor {
         // Step 1.7: Check Mode Selection (Charms/Comands)
         if (modalAbility && !hasPreSelectedMode) {
             const { TargetingProcessor } = require('../targeting/TargetingProcessor');
+            
+            let minChoices = modalAbility.minChoices || 1;
+            let maxChoices = modalAbility.maxChoices || 1;
+
+            if ((modalAbility as any).chooseBothCondition) {
+                const { ConditionProcessor } = require('../../core/logic/ConditionProcessor');
+                const met = ConditionProcessor.matchesCondition(state, (modalAbility as any).chooseBothCondition, {
+                    sourceId: cardToPlay.id,
+                    controllerId: playerId,
+                    stackObject: { id: cardToPlay.id, card: cardToPlay, controllerId: playerId } as any
+                });
+                if (met) {
+                    maxChoices = modalAbility.modes!.length;
+                    log(`[MODAL] Commander condition met: You may choose all ${maxChoices} modes.`);
+                }
+            }
+
             const choices = modalAbility.modes!.map((mode: any, idx: number) => {
                 const isSelectable = !mode.targetDefinition ||
                     (mode.targetDefinition as any).optional ||
@@ -303,8 +320,8 @@ export class SpellProcessor {
                 data: {
                     label: modalAbility.label || 'Choose options',
                     choices: choices,
-                    minChoices: modalAbility.minChoices || 1,
-                    maxChoices: modalAbility.maxChoices || 1,
+                    minChoices: minChoices,
+                    maxChoices: maxChoices,
                     isSpellCasting: true,
                     isModeSelection: true,
                     declaredTargets: declaredTargets || []
@@ -640,6 +657,12 @@ export class SpellProcessor {
         // Triggers: ON_SECOND_SPELL_CAST, etc.
         if (state.turnState.spellsCastThisTurn[playerId] === 2) TriggerProcessor.onEvent(state, { type: TriggerEvent.SecondSpellCast, playerId, data: {} }, log);
         if (state.turnState.spellsCastThisTurn[playerId] === 3) TriggerProcessor.onEvent(state, { type: TriggerEvent.ThirdSpellCast, playerId, data: {} }, log);
+
+        // Track game-wide cast counts
+        if (!state.gameStats) state.gameStats = { castCounts: {} };
+        if (!state.gameStats.castCounts[playerId]) state.gameStats.castCounts[playerId] = {};
+        const cardName = cardToPlay.definition.name;
+        state.gameStats.castCounts[playerId][cardName] = (state.gameStats.castCounts[playerId][cardName] || 0) + 1;
 
         const exileOnResolution = (state.ruleRegistry.continuousEffects.some(e =>
             e.exileOnMoveToGraveyard && (e.targetIds?.includes(cardToPlay.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === playerId))

@@ -1,0 +1,483 @@
+{
+  "name": "Boros",
+  "cards": [
+    {
+      "scryfall_id": "2970683e-e69c-42cb-a067-34abd56fb42b",
+      "name": "Elite Interceptor",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/9/2970683e-e69c-42cb-a067-34abd56fb42b.jpg?1775936992",
+      "cmc": 1,
+      "type_line": "",
+      "mana_cost": "{W}",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "1ebaafe0-3a9a-424c-8698-d26e7be45343",
+      "name": "Joined Researchers // Secret Rendezvous",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/e/1ebaafe0-3a9a-424c-8698-d26e7be45343.jpg?1775937069",
+      "cmc": 2,
+      "type_line": "",
+      "mana_cost": "{1}{W}",
+      "keywords": [
+        "First strike",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "local-Quill-Blade Laureate // Twofold Intent",
+      "name": "Quill-Blade Laureate // Twofold Intent",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/png/front/6/2/62a47835-5719-48c4-a740-a0c5f00dce11.png?1775937102",
+      "cmc": 2,
+      "type_line": "",
+      "mana_cost": "{1}{W}",
+      "keywords": [
+        "Double strike",
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "676ba521-66e4-42cf-a315-70d03cb7334e",
+      "name": "Kirol, History Buff // Pack a Punch",
+      "rarity": "common",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/6/7/676ba521-66e4-42cf-a315-70d03cb7334e.jpg?1775938375",
+      "cmc": 2,
+      "type_line": "",
+      "mana_cost": "{R}{W}",
+      "keywords": [
+        "Prepared"
+      ]
+    },
+    {
+      "scryfall_id": "123f1fde-d8de-4640-baa1-bb3781713168",
+      "name": "Spirit Mascot",
+      "rarity": "common",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/1/2/123f1fde-d8de-4640-baa1-bb3781713168.jpg?1775938605",
+      "cmc": 2,
+      "type_line": "",
+      "mana_cost": "{R}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "5fe99be0-e1ec-485e-82f8-02eba7b82441",
+      "name": "Owlin Historian",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/5/f/5fe99be0-e1ec-485e-82f8-02eba7b82441.jpg?1775937078",
+      "cmc": 3,
+      "type_line": "",
+      "mana_cost": "{2}{W}",
+      "keywords": [
+        "Flying"
+      ]
+    },
+    {
+      "scryfall_id": "afe61957-a9bb-42b0-98e8-b5fa418cbaff",
+      "name": "Rubble Rouser",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/f/afe61957-a9bb-42b0-98e8-b5fa418cbaff.jpg?1775937860",
+      "cmc": 3,
+      "type_line": "",
+      "mana_cost": "{2}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "afe61957-a9bb-42b0-98e8-b5fa418cbaff",
+      "name": "Rubble Rouser",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/a/f/afe61957-a9bb-42b0-98e8-b5fa418cbaff.jpg?1775937860",
+      "cmc": 3,
+      "type_line": "",
+      "mana_cost": "{2}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "bf736de9-9bc4-49df-ae60-672ed4f83f32",
+      "name": "Eager Glyphmage",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/f/bf736de9-9bc4-49df-ae60-672ed4f83f32.jpg?1775936986",
+      "cmc": 4,
+      "type_line": "",
+      "mana_cost": "{3}{W}",
+      "keywords": [
+        "Flying"
+      ]
+    },
+    {
+      "scryfall_id": "bcfac992-9984-4529-b9ff-a42d58832b34",
+      "name": "Inkshape Demonstrator",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/b/c/bcfac992-9984-4529-b9ff-a42d58832b34.jpg?1775937053",
+      "cmc": 4,
+      "type_line": "",
+      "mana_cost": "{3}{W}",
+      "keywords": [
+        "Ward {2}"
+      ]
+    },
+    {
+      "scryfall_id": "f11d2846-f181-4751-82ac-1e1ced6f46c7",
+      "name": "Garrison Excavator",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/1/f11d2846-f181-4751-82ac-1e1ced6f46c7.jpg?1775937750",
+      "cmc": 4,
+      "type_line": "",
+      "mana_cost": "{3}{R}",
+      "keywords": [
+        "Menace"
+      ]
+    },
+    {
+      "scryfall_id": "de3de40b-a7ac-455e-add2-4e451b602d17",
+      "name": "Ascendant Dustspeaker",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/e/de3de40b-a7ac-455e-add2-4e451b602d17.jpg?1776000359",
+      "cmc": 5,
+      "type_line": "",
+      "mana_cost": "{4}{W}",
+      "keywords": [
+        "Flying"
+      ]
+    },
+    {
+      "scryfall_id": "de3de40b-a7ac-455e-add2-4e451b602d17",
+      "name": "Ascendant Dustspeaker",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/d/e/de3de40b-a7ac-455e-add2-4e451b602d17.jpg?1776000359",
+      "cmc": 5,
+      "type_line": "",
+      "mana_cost": "{4}{W}",
+      "keywords": [
+        "Flying"
+      ]
+    },
+    {
+      "scryfall_id": "e8abc1eb-6225-4b18-8502-b5324b818aed",
+      "name": "Group Project",
+      "rarity": "common",
+      "color": [
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/e/8/e8abc1eb-6225-4b18-8502-b5324b818aed.jpg?1775937026",
+      "cmc": 2,
+      "type_line": "",
+      "mana_cost": "{1}{W}",
+      "keywords": [
+        "Flashback"
+      ]
+    },
+    {
+      "scryfall_id": "local-Seize the Spoils",
+      "name": "Seize the Spoils",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/large/front/a/1/a1d9b4c2-9e19-4c8d-8153-97aeab6c55cc.jpg",
+      "cmc": 3,
+      "type_line": "",
+      "mana_cost": "{2}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "2b7cb1a3-761e-470e-a164-6e29dd9448cd",
+      "name": "Unsubtle Mockery",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/b/2b7cb1a3-761e-470e-a164-6e29dd9448cd.jpg?1775937921",
+      "cmc": 3,
+      "type_line": "",
+      "mana_cost": "{2}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "f63f7209-fc0f-400c-8076-125f3131cb32",
+      "name": "Wilt in the Heat",
+      "rarity": "common",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/6/f63f7209-fc0f-400c-8076-125f3131cb32.jpg?1775938697",
+      "cmc": 4,
+      "type_line": "",
+      "mana_cost": "{2}{R}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "f63f7209-fc0f-400c-8076-125f3131cb32",
+      "name": "Wilt in the Heat",
+      "rarity": "common",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/f/6/f63f7209-fc0f-400c-8076-125f3131cb32.jpg?1775938697",
+      "cmc": 4,
+      "type_line": "",
+      "mana_cost": "{2}{R}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "79d01c19-162b-4a12-9e27-18366d95eaa0",
+      "name": "Ark of Hunger",
+      "rarity": "common",
+      "color": [
+        "R",
+        "W"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/7/9/79d01c19-162b-4a12-9e27-18366d95eaa0.jpg?1775938187",
+      "cmc": 4,
+      "type_line": "",
+      "mana_cost": "{2}{R}{W}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "2028792c-fd60-40d4-bff7-3b82dbe1ffb5",
+      "name": "Living History",
+      "rarity": "common",
+      "color": [
+        "R"
+      ],
+      "image_url": "https://cards.scryfall.io/normal/front/2/0/2028792c-fd60-40d4-bff7-3b82dbe1ffb5.jpg?1775937797",
+      "cmc": 2,
+      "type_line": "",
+      "mana_cost": "{1}{R}",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "3dc7a4c3-c356-4fba-bea0-e8788da3eb57",
+      "name": "Fields of Strife",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/3/d/3dc7a4c3-c356-4fba-bea0-e8788da3eb57.jpg?1775938780",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "4be96696-aff8-4ef9-97dc-8221ef745de9",
+      "name": "Plains",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/4/b/4be96696-aff8-4ef9-97dc-8221ef745de9.jpg?1594737767",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    },
+    {
+      "scryfall_id": "b92c8925-ecfc-4ece-b83a-f12e98a938ab",
+      "name": "Mountain",
+      "rarity": "common",
+      "color": [],
+      "image_url": "https://cards.scryfall.io/normal/front/b/9/b92c8925-ecfc-4ece-b83a-f12e98a938ab.jpg?1594737848",
+      "cmc": 0,
+      "type_line": "",
+      "mana_cost": "",
+      "keywords": []
+    }
+  ],
+  "cardCount": 37,
+  "lastUpdated": "2026-04-23T19:02:43.169Z"
+}

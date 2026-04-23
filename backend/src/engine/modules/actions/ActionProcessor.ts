@@ -690,6 +690,27 @@ export class ActionProcessor {
     if (log && count > 0) log(`${count} permanents untapped.`);
   }
 
+  public static winGame(state: GameState, playerId: PlayerId, log?: (m: string) => void) {
+    const player = state.players[playerId];
+    if (player) {
+      player.hasWon = true;
+      if (log) log(`${player.name} wins the game!`);
+      Object.values(state.players).forEach(p => {
+        if (p.id !== playerId) {
+          p.hasLost = true;
+        }
+      });
+    }
+  }
+
+  public static shuffleLibrary(state: GameState, playerId: PlayerId, log?: (m: string) => void) {
+    const player = state.players[playerId];
+    if (player) {
+      this.shuffle(player.library);
+      if (log) log(`${player.name} shuffles their library.`);
+    }
+  }
+
   public static shuffle<T>(array: T[]): void {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));

@@ -116,6 +116,9 @@ export const EffectType = {
     CounterTarget: 'CounterTarget',
     Cascade: 'Cascade',
     PutInGraveyard: 'PutInGraveyard',
+    AdNauseam: 'AdNauseam',
+    ChaosWarp: 'ChaosWarp',
+    ApproachOfTheSecondSun: 'ApproachOfTheSecondSun',
 } as const;
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
 

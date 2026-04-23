@@ -606,6 +606,15 @@ export class EffectProcessor {
       case "CAPTURED_AMOUNT":
         result = stackObject?.data?.amount || stackObject?.data?.capturedMV || 0;
         break;
+      case "LAST_EXILED_MV": {
+        const { ManaProcessor } = require("../magic/ManaProcessor");
+        const lastExiledId = (state as any).lastExiledIds?.[0];
+        if (lastExiledId) {
+          const obj = this.findObject(state, lastExiledId, stackObject, parentContext) as GameObject;
+          result = obj ? ManaProcessor.getManaValue(obj.definition.manaCost) : 0;
+        }
+        break;
+      }
       case "INSTANTS_SORCERIES_IN_GRAVEYARD":
       case "INSTANT_SORCERY_IN_GRAVEYARD_COUNT": {
         const gy = state.players[controllerId]?.graveyard || [];
