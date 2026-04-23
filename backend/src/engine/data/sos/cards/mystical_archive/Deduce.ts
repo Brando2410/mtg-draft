@@ -12,7 +12,5 @@ export const Deduce: CardDefinition = {
     keywords: [],
     oracleText: "Draw a card. Investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
     set: "soa",
-    abilities: [
-
-    ]
+    abilities: []
 };

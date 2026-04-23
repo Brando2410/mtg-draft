@@ -1,7 +1,7 @@
 import type { SimplifiedCard } from './scryfall';
 
 const isDev = window.location.port === '5173';
-const API_URL = import.meta.env.VITE_API_URL || (isDev ? 'http://localhost:4000' : window.location.origin);
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 export interface RegistryCard {
   name: string;

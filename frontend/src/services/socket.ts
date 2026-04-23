@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 
-const URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:4000';
+const URL = import.meta.env.VITE_SOCKET_URL || '';
 
 class SocketService {
   private static instance: SocketService;

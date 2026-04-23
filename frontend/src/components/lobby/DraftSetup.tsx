@@ -51,7 +51,7 @@ export const DraftSetup = ({ onBack, onCreateRoom, isSealed = false }: DraftSetu
     const fetchCubes = async () => {
       try {
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = import.meta.env.VITE_API_URL || (isLocal ? 'http://localhost:4000' : 'https://vibrant-warmth-production-7fe3.up.railway.app');
+        const API_URL = import.meta.env.VITE_API_URL || '';
         const res = await fetch(`${API_URL}/api/cubes`);
         const data = await res.json();
         setCubes(data || []);

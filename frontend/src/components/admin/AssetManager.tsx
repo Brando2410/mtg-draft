@@ -3,7 +3,7 @@ import { X, Upload, Trash2, Image as ImageIcon, User, Loader2 } from 'lucide-rea
 import { motion } from 'framer-motion';
 import { useDraftStore } from '../../store/useDraftStore';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 interface AssetManagerProps {
   onClose: () => void;

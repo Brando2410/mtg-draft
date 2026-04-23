@@ -28,7 +28,7 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
     setLoading(true);
     try {
       const isDev = window.location.port === '5173';
-      const API_URL = import.meta.env.VITE_API_URL || (isDev ? 'http://localhost:4000' : window.location.origin);
+      const API_URL = import.meta.env.VITE_API_URL || '';
       
       // Fetch cubes
       const cubeRes = await fetch(`${API_URL}/api/cubes`);
@@ -62,7 +62,7 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
   const handleLoadItem = async (id: string, type: 'cube' | 'deck') => {
     try {
       const isDev = window.location.port === '5173';
-      const API_URL = import.meta.env.VITE_API_URL || (isDev ? 'http://localhost:4000' : window.location.origin);
+      const API_URL = import.meta.env.VITE_API_URL || '';
       const endpoint = type === 'cube' ? 'cubes' : 'decks';
       const res = await fetch(`${API_URL}/api/${endpoint}/${id}`);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -83,7 +83,7 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
     if (!window.confirm(`Sei sicuro di voler eliminare ${type === 'cube' ? 'il cubo' : 'il mazzo'} "${name}"? L'azione è irreversibile.`)) return;
     try {
       const isDev = window.location.port === '5173';
-      const API_URL = import.meta.env.VITE_API_URL || (isDev ? 'http://localhost:4000' : window.location.origin);
+      const API_URL = import.meta.env.VITE_API_URL || '';
       const endpoint = type === 'cube' ? 'cubes' : 'decks';
       const res = await fetch(`${API_URL}/api/${endpoint}/${id}`, { method: 'DELETE' });
       if (res.ok) fetchData();

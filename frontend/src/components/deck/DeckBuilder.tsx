@@ -188,7 +188,7 @@ export const DeckBuilder = ({ onBack, initialDeck, pool, onConfirm }: DeckBuilde
     setSaveStatus('saving');
     const deckData = { name: deckName, cards: deckCards, cardCount: deckCards.length, lastUpdated: new Date().toISOString() };
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const API_URL = import.meta.env.VITE_API_URL || '';
       const res = await fetch(`${API_URL}/api/decks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

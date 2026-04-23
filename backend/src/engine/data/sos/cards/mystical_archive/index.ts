@@ -17,8 +17,6 @@
  * - Compulsive Research
  * - Counterspell
  * - Culling the Weak
- * - Dark Ritual
- * - Deduce
  * - Feed the Swarm
  * - Flusterstorm
  * - Giant Growth
@@ -52,6 +50,8 @@
  * - Culling Ritual
  * - Cyclonic Rift
  * - Daze
+ * - Dark Ritual
+ * - Deduce
  * - Deflecting Palm
  * - Disdainful Stroke
  * - Dismember

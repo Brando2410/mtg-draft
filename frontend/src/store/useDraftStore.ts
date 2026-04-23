@@ -40,7 +40,7 @@ interface DraftState {
   fetchAssets: () => Promise<void>;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_BASE = import.meta.env.VITE_API_URL || ''; // In produzione usiamo percorsi relativi
 
 // Get or generate persistent player ID
 let currentId = localStorage.getItem('mtg_persistent_id');

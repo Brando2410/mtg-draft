@@ -44,7 +44,7 @@ export const MatchLobby = ({
     // Load decks from Backend API
     const fetchDecks = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+        const API_URL = import.meta.env.VITE_API_URL || '';
         const res = await fetch(`${API_URL}/api/decks`);
         if (res.ok) {
           const decks = await res.json();
@@ -253,7 +253,7 @@ export const MatchLobby = ({
                          <button 
                            key={i}                            onClick={async () => { 
                                try {
-                                 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+                                 const API_URL = import.meta.env.VITE_API_URL || '';
                                  const res = await fetch(`${API_URL}/api/decks/${deck.id}`);
                                  const fullDeck = await res.json();
                                  selectDeck(fullDeck); 
