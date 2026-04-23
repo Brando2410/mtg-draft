@@ -24,12 +24,16 @@ export class AssetService {
 
   static async listAvatars(): Promise<string[]> {
     if (!fs.existsSync(this.AVATARS_DIR)) return [];
-    return fs.readdirSync(this.AVATARS_DIR).filter(file => /\.(png|jpg|jpeg|gif|webp)$/i.test(file));
+    const files = fs.readdirSync(this.AVATARS_DIR).filter(file => /\.(png|jpg|jpeg|gif|webp)$/i.test(file));
+    console.log(`[ASSETS] Found ${files.length} avatars in ${this.AVATARS_DIR}`);
+    return files;
   }
 
   static async listWallpapers(): Promise<string[]> {
     if (!fs.existsSync(this.WALLPAPERS_DIR)) return [];
-    return fs.readdirSync(this.WALLPAPERS_DIR).filter(file => /\.(png|jpg|jpeg|gif|webp)$/i.test(file));
+    const files = fs.readdirSync(this.WALLPAPERS_DIR).filter(file => /\.(png|jpg|jpeg|gif|webp)$/i.test(file));
+    console.log(`[ASSETS] Found ${files.length} wallpapers in ${this.WALLPAPERS_DIR}`);
+    return files;
   }
 
   static async deleteAvatar(filename: string): Promise<boolean> {

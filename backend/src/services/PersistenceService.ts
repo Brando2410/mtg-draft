@@ -29,6 +29,10 @@ export class PersistenceService {
     if (!existsSync(this.CUBES_DIR)) mkdirSync(this.CUBES_DIR, { recursive: true });
     if (!existsSync(this.DECKS_DIR)) mkdirSync(this.DECKS_DIR, { recursive: true });
     if (!existsSync(this.LOGS_DIR)) mkdirSync(this.LOGS_DIR, { recursive: true });
+    
+    const cubeCount = existsSync(this.CUBES_DIR) ? require('fs').readdirSync(this.CUBES_DIR).length : 0;
+    const deckCount = existsSync(this.DECKS_DIR) ? require('fs').readdirSync(this.DECKS_DIR).length : 0;
+    console.log(`[PERSISTENCE] Initialized: ${cubeCount} cubes, ${deckCount} decks found in ${PersistenceService.DATA_ROOT}`);
   }
 
   static async saveRooms(roomsMap: Map<string, Room>) {
@@ -109,6 +113,7 @@ export class PersistenceService {
   static async listDecks() {
     if (!existsSync(this.DECKS_DIR)) return [];
     const files = await fs.readdir(this.DECKS_DIR);
+    console.log(`[PERSISTENCE] Found ${files.length} deck files`);
     const decks = await Promise.all(
       files
         .filter(f => f.endsWith('.json'))

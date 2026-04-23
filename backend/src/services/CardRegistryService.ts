@@ -60,7 +60,7 @@ export class CardRegistryService {
       return true;
     });
 
-    console.log(`CardRegistry initialized with ${this.allCards.length} cards.`);
+    console.log(`CardRegistry initialized: SOS: ${Object.keys(sos).length}, M21: ${Object.keys(m21).length}, STX: ${Object.keys(stx).length}. Total unique cards: ${this.allCards.length}`);
   }
 
   static getAllCards(): RegistryCard[] {
