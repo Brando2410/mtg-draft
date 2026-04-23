@@ -50,7 +50,6 @@ export const DraftSetup = ({ onBack, onCreateRoom, isSealed = false }: DraftSetu
     }
     const fetchCubes = async () => {
       try {
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const API_URL = import.meta.env.VITE_API_URL || '';
         const res = await fetch(`${API_URL}/api/cubes`);
         const data = await res.json();

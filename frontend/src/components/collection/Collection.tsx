@@ -27,7 +27,6 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
   const fetchData = async () => {
     setLoading(true);
     try {
-      const isDev = window.location.port === '5173';
       const API_URL = import.meta.env.VITE_API_URL || '';
       
       // Fetch cubes
@@ -61,7 +60,6 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
 
   const handleLoadItem = async (id: string, type: 'cube' | 'deck') => {
     try {
-      const isDev = window.location.port === '5173';
       const API_URL = import.meta.env.VITE_API_URL || '';
       const endpoint = type === 'cube' ? 'cubes' : 'decks';
       const res = await fetch(`${API_URL}/api/${endpoint}/${id}`);
@@ -82,7 +80,6 @@ export const Collection = ({ onBack, onSelectCube, onSelectDeck, onCreateNewCube
   const handleDeleteItem = async (id: string, name: string, type: 'cube' | 'deck') => {
     if (!window.confirm(`Sei sicuro di voler eliminare ${type === 'cube' ? 'il cubo' : 'il mazzo'} "${name}"? L'azione è irreversibile.`)) return;
     try {
-      const isDev = window.location.port === '5173';
       const API_URL = import.meta.env.VITE_API_URL || '';
       const endpoint = type === 'cube' ? 'cubes' : 'decks';
       const res = await fetch(`${API_URL}/api/${endpoint}/${id}`, { method: 'DELETE' });

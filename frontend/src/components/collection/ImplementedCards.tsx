@@ -11,7 +11,6 @@ export const ImplementedCards = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const isDev = window.location.port === '5173';
       const API_URL = import.meta.env.VITE_API_URL || '';
       const res = await fetch(`${API_URL}/api/implemented`);
       const data = await res.json();
