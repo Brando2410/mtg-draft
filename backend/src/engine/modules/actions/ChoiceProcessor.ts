@@ -721,7 +721,12 @@ export class ChoiceProcessor {
         const isTargeting = !!action.data?.isTargetingModal;
         const metadata = action.data?.metadata;
         const isSpellCasting = metadata?.isSpellCasting ?? action.data?.isSpellCasting;
-        const cardToPlayId = (isSpellCasting && !isTargeting && choice?.value && typeof choice.value === 'string') ? choice.value : sourceId;
+        
+        // Ensure cardToPlayId remains sourceId for modes/costs/targeting. 
+        // Only use choice.value if it's a legitimate card selection (e.g. from a list of faces/cards).
+        const choiceValStr = choice?.value ? String(choice.value) : "";
+        const isSystemValue = choiceValStr.startsWith('MODE_SELECTION_') || choiceValStr.startsWith('COST_CHOICE_') || choiceValStr.startsWith('FACE_SELECTION_');
+        const cardToPlayId = (isSpellCasting && !isTargeting && !isSystemValue && choice?.value && typeof choice.value === 'string' && choice.value.length > 20) ? choice.value : sourceId;
 
         // ARCHITECTURAL NOTE: Metadata Propagation
         return SpellProcessor.playCard(

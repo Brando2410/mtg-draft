@@ -545,11 +545,31 @@ export class PlayerActionProcessor {
     // The player sends us the IDs in "Stacking Order" (MTGA UI)
     // index 0 -> Last to resolve (Bottom of stack)
     // index N-1 -> First to resolve (Top of stack)
-    const orderedTriggers = orderedIds.map(id => triggers.find((t: any) => t.id === id)).filter(Boolean);
+    let orderedTriggers = orderedIds.map(id => triggers.find((t: any) => t.id === id)).filter(Boolean);
+    
+    // FALLBACK: If no triggers were found by ID, check if the payload contained indices
+    if (orderedTriggers.length === 0 && orderedIds.length > 0) {
+        orderedTriggers = orderedIds
+            .map(id => {
+                const idx = parseInt(id);
+                return !isNaN(idx) ? triggers[idx] : null;
+            })
+            .filter(Boolean);
+    }
+
+    // If we still have no triggers to stack, something is wrong
+    if (orderedTriggers.length === 0 && (triggers?.length || 0) > 0) {
+        console.warn(`[TRIGGER-ORDERING] Failed to resolve any triggers from IDs: ${orderedIds.join(', ')}`);
+        // Emergency fallback: stack them in default order to avoid stalling the game
+        orderedTriggers = [...triggers];
+    }
+
+    // Get the IDs of the triggers we are actually stacking to clean up pendingTriggers
+    const resolvedIds = orderedTriggers.map(t => t.id);
 
     // Remove these from pending triggers
     if (state.pendingTriggers) {
-      state.pendingTriggers = state.pendingTriggers.filter(t => !orderedIds.includes(t.id));
+      state.pendingTriggers = state.pendingTriggers.filter(t => !resolvedIds.includes(t.id));
     }
 
     state.pendingAction = undefined;
