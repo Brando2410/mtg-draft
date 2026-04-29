@@ -126,6 +126,7 @@ export interface StackObject {
     convergeAmount?: number;
     originalControllerId?: PlayerId;
     condition?: any;
+    paidManaValue?: number;
 }
 
 export interface PlayerState {

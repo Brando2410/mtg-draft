@@ -3,6 +3,7 @@ import { Card } from '@shared/types';
 import { ActivateAbilityOptions, EngineContext, PlayCardOptions } from './interfaces/EngineContext';
 import { ActionProcessor, ChoiceProcessor, CombatProcessor, DamageProcessor, ConditionProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor } from './modules';
 import { RegistryProcessor } from './modules/core/RegistryProcessor';
+import { CostProcessor } from './modules/magic/CostProcessor';
 import { Profiler } from './utils/Profiler';
 
 import type { LifeDamageHandler as LifeDamageHandlerType } from './modules/effects/handlers/life/LifeDamageHandler';
@@ -109,6 +110,7 @@ export class GameEngine implements EngineContext {
       sba: StateBasedActionsProcessor,
       restriction: require('./modules/core/RestrictionValidator').RestrictionValidator,
       mana: ManaProcessor,
+      cost: CostProcessor,
       registry: RegistryProcessor,
       effect: EffectProcessor,
       condition: ConditionProcessor

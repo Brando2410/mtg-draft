@@ -1,6 +1,5 @@
 import { ActionType, DurationType, EffectType, GameObject, GameState, PlayerId, PlayerState, ResolutionContext, StackObject } from '@shared/engine_types';
-import { ActionProcessor } from '../../../actions/ActionProcessor';
-import { TriggerProcessor } from '../../triggers/TriggerProcessor';
+import { getProcessors } from '../../../ProcessorRegistry';
 
 
 /**
@@ -15,6 +14,7 @@ export class ControlEffectHandler {
         context: ResolutionContext,
         findObject?: any
     ) {
+        const { action: AP, trigger: TrP } = getProcessors(state);
         const { sourceId, controllerId, targets, stackObject, parentContext } = context;
         switch (effect.type) {
             case 'EndTurn':
@@ -26,7 +26,7 @@ export class ControlEffectHandler {
             case EffectType.Shuffle:
                 const playerToShuffle = state.players[targets[0] as PlayerId] || state.players[controllerId];
                 if (playerToShuffle) {
-                    ActionProcessor.shuffle(playerToShuffle.library);
+                    AP.shuffle(playerToShuffle.library);
                     log(`[SHUFFLE] ${playerToShuffle.name} shuffled library.`);
                 }
                 break;
@@ -107,7 +107,7 @@ export class ControlEffectHandler {
                     log(`[COPY] Created copy of ${stackObj.card?.definition.name || 'spell'}.`);
 
                     // Emit copy event for Magecraft
-                    TriggerProcessor.onEvent(state, {
+                    TrP.onEvent(state, {
                         type: 'ON_COPY_SPELL',
                         playerId: controllerId,
                         data: {
@@ -122,13 +122,13 @@ export class ControlEffectHandler {
                     if (effect.chooseNewTargets) {
                         const targetDef = copy.data?.targetDefinition || copy.targetDefinition;
                         if (targetDef) {
-                            const { TargetingProcessor } = require('../../../actions/targeting/TargetingProcessor');
+                            const { targeting: TP } = getProcessors(state);
                             const pool = [
                                 ...Object.keys(state.players),
                                 ...state.battlefield.map((o: GameObject) => o.id),
                                 ...Object.values(state.players).flatMap((p: PlayerState) => p.graveyard.map((c: GameObject) => c.id))
                             ];
-                            const legalTargetIds = pool.filter((tid: string) => TargetingProcessor.isLegalTarget(state, {
+                            const legalTargetIds = pool.filter((tid: string) => TP.isLegalTarget(state, {
                                 sourceId: copy.id,
                                 controllerId: copy.controllerId,
                                 stackObject: copy,
@@ -233,7 +233,7 @@ export class ControlEffectHandler {
                 break;
 
             case 'AddMana': {
-                const { ManaProcessor: MP } = require('../../../magic/ManaProcessor');
+                const { mana: MP } = getProcessors(state);
                 const { ChoiceGenerator: CG } = require('../../ChoiceGenerator');
                 const effectiveTargets = (targets && targets.length > 0) ? targets : [controllerId];
 

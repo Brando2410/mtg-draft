@@ -21,6 +21,7 @@ export class TargetingProcessor {
     public static sourceHasQualities(source: any, qualities: string[], state?: GameState): boolean { return TargetValidator.sourceHasQualities(source, qualities, state); }
     public static resolveTargetMapping(state: GameState, mapping: string, context: ResolutionContext, effect?: any): string[] { return TargetMapper.resolveTargetMapping(state, mapping, context, effect); }
     public static getDefinitionForIndex(targetDef: any, targetIndex: number): any { return TargetMapper.getDefinitionForIndex(targetDef, targetIndex); }
+    public static shouldFizzle(state: GameState, context: TargetingContext, targets: string[], effects: any[]): boolean { return TargetValidator.shouldFizzle(state, context, targets, effects); }
 
     /**
      * CR 603: Resolve a specific target selection from the UI.

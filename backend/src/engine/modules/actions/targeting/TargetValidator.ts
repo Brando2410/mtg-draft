@@ -73,6 +73,30 @@ export class TargetValidator {
         return !!this.matchesRestrictions(state, targetObj, restrictions, context);
     }
 
+    /**
+     * CR 608.2b: A spell or ability is countered if all its targets, for every instance 
+     * of the word 'target', have become illegal.
+     */
+    public static shouldFizzle(state: GameState, context: TargetingContext, targets: string[], effects: any[]): boolean {
+        if (targets.length === 0) return false;
+
+        const { sourceId, controllerId, stackObject } = context;
+        const targetDef = stackObject?.data?.targetDefinition || effects.find(e => e.targetDefinition)?.targetDefinition;
+        
+        // If at least one target is legal for the definition associated with its index, the spell does NOT fizzle.
+        const hasAnyLegalTarget = targets.some((tid, index) => {
+            return this.isLegalTarget(state, {
+                sourceId,
+                controllerId,
+                stackObject,
+                targetDef,
+                targetIndex: index
+            }, tid);
+        });
+
+        return !hasAnyLegalTarget;
+    }
+
     private static isPlayerTargetLegal(state: GameState, context: TargetingContext, targetId: string, targetDef: any): boolean {
         const { controllerId } = context;
         const restrictions = targetDef?.restrictions || [];

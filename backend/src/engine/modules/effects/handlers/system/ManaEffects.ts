@@ -1,9 +1,11 @@
 import { PlayerId } from "@shared/engine_types";
 import { IEffectHandler } from "../../IEffectHandler";
+import { getProcessors } from "../../../ProcessorRegistry";
+import { ChoiceGenerator } from "../../ChoiceGenerator";
 
 export const ManaHandler: IEffectHandler = {
   handle(state, effect, log, context) {
-    const { ManaProcessor } = require("../../../magic/ManaProcessor");
+    const { mana: MP } = getProcessors(state);
     const { controllerId } = context;
     const player = state.players[controllerId as PlayerId];
     if (!player) return;
@@ -11,7 +13,6 @@ export const ManaHandler: IEffectHandler = {
     if (effect.type === "AddMana") {
       const amount = (effect as any).value || (effect as any).manaType || "";
       if (amount.toUpperCase().includes('ANY')) {
-        const { ChoiceGenerator } = require("../../ChoiceGenerator");
         state.pendingAction = ChoiceGenerator.createModalChoice(
           state,
           {
@@ -30,7 +31,7 @@ export const ManaHandler: IEffectHandler = {
         );
         return;
       }
-      const added = ManaProcessor.parseManaCost(amount.startsWith("{") ? amount : `{${amount}}`);
+      const added = MP.parseManaCost(amount.startsWith("{") ? amount : `{${amount}}`);
       player.manaPool.W += added.colored.W || 0;
       player.manaPool.U += added.colored.U || 0;
       player.manaPool.B += added.colored.B || 0;
@@ -42,7 +43,7 @@ export const ManaHandler: IEffectHandler = {
     }
 
     const value = (effect as any).value || "{0}";
-    ManaProcessor.deductManaCost(player, value.startsWith("{") ? value : `{${value}}`, state);
+    MP.deductManaCost(player, value.startsWith("{") ? value : `{${value}}`, state);
     log(`[PAID] ${player.name} paid ${value}.`);
   }
 };

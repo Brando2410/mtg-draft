@@ -26,6 +26,7 @@ import { ManaHandler } from "./handlers/system/ManaEffects";
 import { DisableDamagePreventionHandler, ExchangeHandAndGraveyardHandler, NecromentiaHandler, PendingActionHandler } from "./handlers/system/MiscEffects";
 import { CreateDelayedTriggerHandler } from "./handlers/system/TriggerEffects";
 import { MovementHandler } from "./handlers/zone/MovementEffects";
+import { DiscardHandler, DrawCardsEffectHandler, MillHandler, ScrySurveilEffectHandler, SearchHandler } from "./handlers/zone/ZoneEffects";
 
 export const EffectRegistry: Partial<Record<EffectType | string, IEffectHandler>> = {
     // Life & Damage
@@ -51,22 +52,22 @@ export const EffectRegistry: Partial<Record<EffectType | string, IEffectHandler>
     [EffectType.CreateEmblem]: CreateEmblemHandler,
 
     // Zone Movement
-    [EffectType.DrawCards]: MovementHandler,
+    [EffectType.DrawCards]: DrawCardsEffectHandler,
     [EffectType.Exile]: MovementHandler,
     [EffectType.ExileTopCard]: MovementHandler,
     [EffectType.ExileAllCards]: MovementHandler,
     [EffectType.ExileUntilLeaves]: MovementHandler,
     [EffectType.ReturnToHand]: MovementHandler,
-    [EffectType.SearchLibrary]: MovementHandler,
-    [EffectType.Scry]: MovementHandler,
-    [EffectType.Surveil]: MovementHandler,
+    [EffectType.SearchLibrary]: SearchHandler,
+    [EffectType.Scry]: ScrySurveilEffectHandler,
+    [EffectType.Surveil]: ScrySurveilEffectHandler,
     [EffectType.LookAtTopAndPick]: MovementHandler,
     [EffectType.MoveToZone]: MovementHandler,
     [EffectType.PutRemainderOnBottomRandom]: MovementHandler,
     [EffectType.PutOnBattlefield]: MovementHandler,
-    [EffectType.Mill]: MovementHandler,
+    [EffectType.Mill]: MillHandler,
     [EffectType.RevealUntilCondition]: MovementHandler,
-    [EffectType.DiscardCards]: MovementHandler,
+    [EffectType.DiscardCards]: DiscardHandler,
 
     // Choices
     [EffectType.Choice]: ChoiceHandler,

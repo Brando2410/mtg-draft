@@ -1,10 +1,10 @@
 import { PlayerId } from "@shared/engine_types";
 import { IEffectHandler } from "../../IEffectHandler";
 import { ControlEffectHandler as LegacyHandler } from "./ControlEffectHandler";
+import { ChoiceEffectHandler } from "../system/ChoiceEffectHandler";
 
 export const ControlEffectsHandler: IEffectHandler = {
     handle(state, effect, log, context) {
-        const { ChoiceEffectHandler } = require("../system/ChoiceEffectHandler");
         const { targets, controllerId } = context;
         
         if ((effect as any).choices) {
@@ -15,7 +15,7 @@ export const ControlEffectsHandler: IEffectHandler = {
             
           return ChoiceEffectHandler.handleChoice(
             state,
-            effect,
+            effect as any,
             log,
             { ...context, targets: targets, controllerId: searchingPlayerId }
           );

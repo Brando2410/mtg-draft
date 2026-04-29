@@ -1,5 +1,6 @@
 import {
   ActionType,
+  AmountResolver,
   ConditionType,
   EffectDefinition,
   EffectType, GameObject, GameState, PlayerId,
@@ -83,18 +84,14 @@ export class EffectProcessor {
     if (startIndex === 0 && !parentContext && targets.length > 0 && effects.some(e => e.targetMapping?.toString().startsWith('TARGET_'))) {
       const { targeting: TP } = getProcessors(state);
       TargetingProcessor = TP;
-      const legalTargets = targets.filter(tid => {
-        // We use the first effect's target definition as a proxy for the spell's targeting requirements
-        const isLegal = TP.isLegalTarget(state, {
-          sourceId,
-          controllerId: controllerIdOverride || state.activePlayerId,
-          stackObject,
-          targetDef: effects[0].targetDefinition || stackObject?.data?.targetDefinition
-        }, tid);
-        return isLegal;
-      });
+      
+      const fizzle = TP.shouldFizzle(state, {
+        sourceId,
+        controllerId: controllerIdOverride || state.activePlayerId,
+        stackObject
+      }, targets, effects);
 
-      if (legalTargets.length === 0) {
+      if (fizzle) {
         log(`[FIZZLE] ${stackObject?.card?.definition.name || "Spell"}: All targets have become illegal.`);
         return true; // Return true as fully resolved (but fizzled)
       }
@@ -485,7 +482,7 @@ export class EffectProcessor {
 
   public static resolveAmount(
     state: GameState,
-    amount: number | string | ((...args: any[]) => number) | undefined,
+    amount: number | string | AmountResolver | ((...args: any[]) => number) | undefined,
     context: ResolutionContext,
     targetIds: string[] = [],
   ): number {
@@ -517,6 +514,39 @@ export class EffectProcessor {
         targetIds,
         stackObject,
       );
+    }
+
+    // AmountResolver interface support
+    if (typeof amount === "object" && amount !== null && "type" in amount) {
+        const resolver = amount as AmountResolver;
+        switch (resolver.type) {
+            case "CONSTANT":
+                return (resolver.baseValue || 0) * (resolver.multiplier || 1) + (resolver.offset || 0);
+            case "POWER": {
+                const obj = this.findObject(state, sourceId, stackObject) as GameObject;
+                const val = obj?.effectiveStats?.power ?? Number(obj?.definition?.power || 0);
+                return val * (resolver.multiplier || 1) + (resolver.offset || 0);
+            }
+            case "TOUGHNESS": {
+                const obj = this.findObject(state, sourceId, stackObject) as GameObject;
+                const val = obj?.effectiveStats?.toughness ?? Number(obj?.definition?.toughness || 0);
+                return val * (resolver.multiplier || 1) + (resolver.offset || 0);
+            }
+            case "X_VALUE":
+                return (stackObject?.xValue || 0) * (resolver.multiplier || 1) + (resolver.offset || 0);
+            case "COUNT_PLAYER_PERMANENTS": {
+                const count = state.battlefield.filter(o => 
+                    o.controllerId === (resolver.subtype === 'OPPONENT' ? 
+                        Object.keys(state.players).find(pid => pid !== controllerId) : 
+                        controllerId)
+                ).length;
+                return count * (resolver.multiplier || 1) + (resolver.offset || 0);
+            }
+            case "SCRIPT":
+                return resolver.resolver ? resolver.resolver(state, context) : 0;
+            default:
+                return 0;
+        }
     }
 
     const obj = this.findObject(state, sourceId, stackObject) as GameObject;

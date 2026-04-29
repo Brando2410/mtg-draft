@@ -1,15 +1,16 @@
 import { Zone } from "@shared/engine_types";
 import { IEffectHandler } from "../../IEffectHandler";
+import { getProcessors } from "../../../ProcessorRegistry";
 
 export const CounterSpellHandler: IEffectHandler = {
     handle(state, effect, log, context) {
-        const { ActionProcessor } = require("../../../actions/ActionProcessor");
+        const { action: AP } = getProcessors(state);
         const { targets, controllerId } = context;
         const targetStackId = targets[0];
         const stackObj = state.stack.find((s: any) => s.id === targetStackId);
         if (stackObj && stackObj.card) {
           log(`[COUNTER] ${stackObj.card.definition.name} was countered.`);
-          ActionProcessor.moveCard(state, stackObj.card, Zone.Graveyard, stackObj.card.ownerId, log);
+          AP.moveCard(state, stackObj.card, Zone.Graveyard, stackObj.card.ownerId, log);
           state.stack = state.stack.filter((s: any) => s.id !== targetStackId);
         }
     }
@@ -30,8 +31,8 @@ export const CounterAbilityHandler: IEffectHandler = {
 export const CopySpellHandler: IEffectHandler = {
     handle(state, effect, log, context) {
         const { targets, controllerId, stackObject } = context;
-        const { TriggerProcessor } = require("../../triggers/TriggerProcessor");
-        const { ActionType, GameObject } = require("@shared/engine_types");
+        const { trigger: TrP } = getProcessors(state);
+        const { ActionType } = require("@shared/engine_types");
 
         targets.forEach((tid: string) => {
             let stackObj = state.stack.find((s: any) => s.id === tid || s.sourceId === tid);
@@ -112,7 +113,7 @@ export const CopySpellHandler: IEffectHandler = {
             log(`[COPY] Created copy of ${stackObj.card?.definition.name || 'spell'}.`);
 
             // Emit copy event for Magecraft
-            TriggerProcessor.onEvent(state, {
+            TrP.onEvent(state, {
                 type: 'ON_COPY_SPELL',
                 playerId: controllerId,
                 data: {
@@ -127,13 +128,13 @@ export const CopySpellHandler: IEffectHandler = {
             if (effect.chooseNewTargets) {
                 const targetDef = copy.data?.targetDefinition || copy.targetDefinition;
                 if (targetDef) {
-                    const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
+                    const { targeting: TP } = getProcessors(state);
                     const pool = [
                         ...Object.keys(state.players),
                         ...state.battlefield.map((o: any) => o.id),
                         ...Object.values(state.players).flatMap((p: any) => p.graveyard.map((c: any) => c.id))
                     ];
-                    const legalTargetIds = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
+                    const legalTargetIds = pool.filter(tid => TP.isLegalTarget(state, {
                         sourceId: copy.id,
                         controllerId: copy.controllerId,
                         stackObject: copy,
@@ -170,6 +171,7 @@ export const CopyAbilityHandler: IEffectHandler = {
     handle(state, effect, log, context) {
         const { targets, controllerId } = context;
         const { ActionType } = require("@shared/engine_types");
+        const { targeting: TP } = getProcessors(state);
 
         targets.forEach((tid: string) => {
             const stackObj = state.stack.find((s: any) => s.id === tid);
@@ -187,12 +189,11 @@ export const CopyAbilityHandler: IEffectHandler = {
             if (effect.chooseNewTargets && copy.targets && copy.targets.length > 0) {
                 const targetDef = copy.data?.targetDefinition || copy.targetDefinition;
                 if (targetDef) {
-                    const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
                     const pool = [
                         ...Object.keys(state.players),
                         ...state.battlefield.map((o: any) => o.id)
                     ];
-                    const legalTargetIds = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
+                    const legalTargetIds = pool.filter(tid => TP.isLegalTarget(state, {
                         sourceId: copy.id,
                         controllerId: copy.controllerId,
                         stackObject: copy,
@@ -224,14 +225,14 @@ export const CopyAbilityHandler: IEffectHandler = {
 
 export const CounterSpellOrAbilityHandler: IEffectHandler = {
     handle(state, effect, log, context) {
-        const { ActionProcessor } = require("../../../actions/ActionProcessor");
+        const { action: AP } = getProcessors(state);
         const { targets } = context;
         targets.forEach((tid: string) => {
           const stackObj = state.stack.find((s: any) => s.id === tid);
           if (stackObj) {
             if (stackObj.card) {
               log(`[COUNTER] Countering spell: ${stackObj.card.definition.name} (${tid}).`);
-              ActionProcessor.moveCard(state, stackObj.card, Zone.Graveyard, stackObj.card.ownerId, log);
+              AP.moveCard(state, stackObj.card, Zone.Graveyard, stackObj.card.ownerId, log);
             } else {
               log(`[COUNTER] Removing ability from stack: ${stackObj.name || tid}.`);
               state.stack = state.stack.filter((s: any) => s.id !== stackObj.id);

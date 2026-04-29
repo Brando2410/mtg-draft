@@ -717,4 +717,24 @@ export class ActionProcessor {
       [array[i], array[j]] = [array[j], array[i]];
     }
   }
+
+  public static gainLife(state: GameState, playerId: PlayerId, amount: number, log?: (m: string) => void) {
+    const { LifeDamageHandler } = require("../effects/handlers/life/LifeDamageHandler");
+    LifeDamageHandler.handleGainLife(
+      state,
+      { type: EffectType.GainLife, amount } as any,
+      log || (() => {}),
+      { targets: [playerId], sourceId: "system", controllerId: playerId, effects: [] } as any
+    );
+  }
+
+  public static loseLife(state: GameState, playerId: PlayerId, amount: number, log?: (m: string) => void) {
+    const { LifeDamageHandler } = require("../effects/handlers/life/LifeDamageHandler");
+    LifeDamageHandler.handleLoseLife(
+      state,
+      { type: EffectType.LoseLife, amount } as any,
+      log || (() => {}),
+      { targets: [playerId], sourceId: "system", controllerId: playerId, effects: [] } as any
+    );
+  }
 }

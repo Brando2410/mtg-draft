@@ -9,6 +9,7 @@ import {
   TargetMapping
 } from "@shared/engine_types";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
+import { getProcessors } from "../../../ProcessorRegistry";
 
 /**
  * Strategy for CR 608: Resolution Choices and CR 701: Keyword Actions (Choice-based)
@@ -24,16 +25,16 @@ export class ChoiceEffectHandler {
       context;
     const targets = context.targets || [];
     const originalTargets = stackObject?.targets || targets;
-    const { EffectProcessor } = require("../../EffectProcessor");
+    const { effect: EP } = getProcessors(state);
     const sourceObj =
-      EffectProcessor.findObject(state, sourceId, stackObject) ||
+      EP.findObject(state, sourceId, stackObject) ||
       stackObject?.card ||
       stackObject;
     if (!sourceObj) return;
 
     let dynamicChoices = effect.choices;
     if (dynamicChoices) {
-      const { ConditionProcessor } = require("../../../core/logic/ConditionProcessor");
+      const { condition: ConditionProcessor } = getProcessors(state);
       dynamicChoices = dynamicChoices.filter((c) => {
         if (!c.condition) return true;
         return ConditionProcessor.matchesCondition(state, c.condition as any, {
@@ -77,7 +78,7 @@ export class ChoiceEffectHandler {
         );
 
         // Pay costs for pre-selected choices if any
-        const { CostProcessor: CP } = require("../../../magic/CostProcessor");
+        const { cost: CP } = getProcessors(state);
         rawIndices.forEach((idx) => {
           const choice = dynamicChoices[idx];
           if (choice && choice.costs) {
@@ -85,7 +86,6 @@ export class ChoiceEffectHandler {
           }
         });
 
-        const { EffectProcessor: EP } = require("../../EffectProcessor");
         EP.resolveEffects({
           state,
           effects: allEffects,
@@ -146,7 +146,7 @@ export class ChoiceEffectHandler {
       const isLastDiscarded = targetZoneMapping === "LAST_DISCARDED_CARDS";
 
       let sourceCards: GameObject[] = [];
-      const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
+      const { targeting: TP } = getProcessors(state);
 
       if (isNameACard) {
         sourceCards = state.players[controllerId].library;
@@ -162,7 +162,7 @@ export class ChoiceEffectHandler {
               (o: GameObject) => o.controllerId === workingMappingPlayerId,
             );
       } else if (isLastMilled || isLastExiled || isLastDiscarded) {
-        const poolIds = TargetingProcessor.resolveTargetMapping(
+        const poolIds = TP.resolveTargetMapping(
           state,
           targetZoneMapping,
           context,
@@ -171,7 +171,7 @@ export class ChoiceEffectHandler {
         console.log(`[CHOICE-HANDLER-DEBUG] Mapping: ${targetZoneMapping}, poolIds: ${JSON.stringify(poolIds)}`);
         sourceCards = poolIds
           .map((id: string) => {
-            const obj = TargetingProcessor.findObjectInAnyZone(state, id);
+            const obj = TP.findObjectInAnyZone(state, id);
             if (!obj) console.log(`[CHOICE-HANDLER-DEBUG] findObjectInAnyZone FAILED for id: ${id}`);
             else console.log(`[CHOICE-HANDLER-DEBUG] Found object: ${obj.definition?.name} in zone ${obj.zone}`);
             return obj;
@@ -255,7 +255,7 @@ export class ChoiceEffectHandler {
           : []);
 
       const validCandidates = sourceCards.filter((c: GameObject) => {
-        const matched = TargetingProcessor.matchesRestrictions(
+        const matched = TP.matchesRestrictions(
           state,
           c,
           restrictions,
@@ -299,8 +299,8 @@ export class ChoiceEffectHandler {
           sourceId: sourceId,
           restrictions: restrictions,
           filterSelectable: true,
-          minChoices: EffectProcessor.resolveAmount(state, (effect as any).minChoices || targetDef?.minCount || (targetDef?.optional ? 0 : targetDef?.count || 1), context, sourceCards.map(c => c.id)),
-          maxChoices: EffectProcessor.resolveAmount(state, (effect as any).maxChoices || targetDef?.count || 1, context, sourceCards.map(c => c.id)),
+          minChoices: EP.resolveAmount(state, ((effect as any).minChoices || targetDef?.minCount || (targetDef?.optional ? 0 : targetDef?.count || 1)), context, sourceCards.map(c => c.id)),
+          maxChoices: EP.resolveAmount(state, ((effect as any).maxChoices || targetDef?.count || 1), context, sourceCards.map(c => c.id)),
           optional: (effect as any).optional !== false,
           actionType: (effect as any).optional
             ? ActionType.OptionalAction
@@ -324,10 +324,8 @@ export class ChoiceEffectHandler {
 
     // --- GENERIC MODAL CHOICES OR AUTO-SEQUENCE ---
     if (!effect.choices && effect.effects && targets.length > 0) {
-      const { EffectProcessor: EP } = require("../../EffectProcessor");
       const firstTargetId = targets[0];
       const nextTargets = targets.slice(1);
-
       log(`[AUTO-SEQUENCE] Sequential resolution for target: ${firstTargetId}`);
       EP.resolveEffects({
         state,
@@ -369,8 +367,8 @@ export class ChoiceEffectHandler {
       (tid: string) => !state.players[tid as PlayerId],
     );
     const {
-      TargetingProcessor: TP,
-    } = require("../../../actions/targeting/TargetingProcessor");
+      targeting: TP,
+    } = getProcessors(state);
     const lookingCards = cardTargets
       .map((tid: string) => TP.findObjectInAnyZone(state, tid))
       .filter(Boolean) as GameObject[];
@@ -386,8 +384,8 @@ export class ChoiceEffectHandler {
           : ActionType.ResolutionChoice,
         hideUndo: true,
         lookingCards,
-        minChoices: EffectProcessor.resolveAmount(state, (effect as any).minChoices || 1, context, targets),
-        maxChoices: EffectProcessor.resolveAmount(state, (effect as any).maxChoices || 1, context, targets),
+        minChoices: EP.resolveAmount(state, ((effect as any).minChoices || 1), context, targets),
+        maxChoices: EP.resolveAmount(state, ((effect as any).maxChoices || 1), context, targets),
         exileOnResolution: !!(effect as any).exileOnResolution || (effect.effects || []).some((e: any) => e.exileOnResolution),
         stackObj: stackObject,
         parentContext: context,

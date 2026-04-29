@@ -1,10 +1,10 @@
 import { DurationType, EffectType, GameObject, Zone } from "@shared/engine_types";
 import { IEffectHandler } from "../../IEffectHandler";
+import { getProcessors } from "../../../ProcessorRegistry";
 
 export const CastSpellHandler: IEffectHandler = {
   handle(state, effect, log, context) {
-    const { SpellProcessor } = require("../../../actions/spells/SpellProcessor");
-    const { EffectProcessor } = require("../../EffectProcessor");
+    const { spell: SP, effect: EP } = getProcessors(state);
     const { controllerId, sourceId, stackObject, parentContext, targets } = context;
 
     const spellName = (effect as any).value;
@@ -41,7 +41,7 @@ export const CastSpellHandler: IEffectHandler = {
     }
 
     if (targetId) {
-      const castObj = EffectProcessor.findObject(state, targetId, stackObject, parentContext) as GameObject;
+      const castObj = EP.findObject(state, targetId, stackObject, parentContext) as GameObject;
       if (castObj) {
         if (isFree) {
           (castObj as any).isFreeCast = true;
@@ -52,7 +52,7 @@ export const CastSpellHandler: IEffectHandler = {
       }
       const oldPriority = state.priorityPlayerId;
       state.priorityPlayerId = controllerId;
-      SpellProcessor.playCard(
+      SP.playCard(
         state,
         log,
         state.gameEngine || {
@@ -79,14 +79,14 @@ export const CastSpellHandler: IEffectHandler = {
 
 export const ExileTopCardsExcessDamageHandler: IEffectHandler = {
   handle(state, effect, log, context) {
-    const { MoveEffectHandler } = require("../zone/MoveEffectHandler");
-    const { ContinuousEffectHandler } = require("../system/ContinuousEffectHandler");
+    const { effect: EP } = getProcessors(state);
     const { targets } = context;
 
     const excessAmt = state.turnState.lastExcessDamageAmount;
     log(`[EXILE-EXCESS] Exiling top ${excessAmt} cards due to excess damage.`);
 
-    MoveEffectHandler.handle(state, {
+    const { MoveEffectHandler: MEH } = require("../zone/MoveEffectHandler");
+    MEH.handle(state, {
       ...effect,
       type: "Exile",
       amount: excessAmt,
@@ -100,7 +100,8 @@ export const ExileTopCardsExcessDamageHandler: IEffectHandler = {
     if (excessAmt > 0) {
       const exiledIds = state.turnState.lastExiledIds || [];
       if (exiledIds.length > 0) {
-        ContinuousEffectHandler.handle(state, {
+        const { ContinuousEffectHandler: CEH } = require("../system/ContinuousEffectHandler");
+        CEH.handle(state, {
           type: EffectType.ApplyContinuousEffect,
           canPlayExiled: true,
           targetIds: exiledIds,
@@ -119,10 +120,10 @@ export const ExileTopCardsExcessDamageHandler: IEffectHandler = {
 
 export const ConditionalEffectHandler: IEffectHandler = {
   handle(state, effect, log, context) {
-    const { EffectProcessor } = require("../../EffectProcessor");
+    const { effect: EP } = getProcessors(state);
     const { sourceId, targets } = context;
     const effects = (effect as any).effects || [];
-    return EffectProcessor.resolveEffects({
+    return EP.resolveEffects({
       state,
       effects,
       sourceId,
@@ -137,8 +138,7 @@ export const ConditionalEffectHandler: IEffectHandler = {
 
 export const AdNauseamHandler: IEffectHandler = {
   handle(state, effect, log, context) {
-    const { ActionProcessor } = require("../../../actions/ActionProcessor");
-    const { ManaProcessor } = require("../../../../magic/ManaProcessor");
+    const { action: AP, mana: MP } = getProcessors(state);
     const { ChoiceGenerator } = require("../../../ChoiceGenerator");
     const { controllerId } = context;
     const player = state.players[controllerId];
@@ -152,8 +152,8 @@ export const AdNauseamHandler: IEffectHandler = {
     log(`${player.name} reveals ${card.definition.name} and puts it into their hand.`);
 
     // 2. Lose life
-    const mv = ManaProcessor.getManaValue(card.definition.manaCost || "{0}");
-    ActionProcessor.loseLife(state, controllerId, mv, log);
+    const mv = MP.getManaValue(card.definition.manaCost || "{0}");
+    AP.loseLife(state, controllerId, mv, log);
 
     // 3. Choice to repeat
     if (player.library.length > 0) {
@@ -177,11 +177,10 @@ export const AdNauseamHandler: IEffectHandler = {
 
 export const ChaosWarpHandler: IEffectHandler = {
   handle(state, effect, log, context) {
-    const { ActionProcessor } = require("../../../actions/ActionProcessor");
-    const { TargetingProcessor } = require("../../../../actions/targeting/TargetingProcessor");
+    const { action: AP, targeting: TP } = getProcessors(state);
     const { targets } = context;
     const targetId = targets[0];
-    const targetObj = TargetingProcessor.findObjectInAnyZone(state, targetId);
+    const targetObj = TP.findObjectInAnyZone(state, targetId);
     if (!targetObj) return;
 
     const ownerId = targetObj.ownerId;
@@ -189,8 +188,8 @@ export const ChaosWarpHandler: IEffectHandler = {
     if (!player) return;
 
     // 1. Shuffle into library
-    ActionProcessor.moveCard(state, targetObj, Zone.Library, ownerId, log);
-    ActionProcessor.shuffleLibrary(state, ownerId, log);
+    AP.moveCard(state, targetObj, Zone.Library, ownerId, log);
+    AP.shuffleLibrary(state, ownerId, log);
 
     // 2. Reveal top
     if (player.library.length === 0) return;
@@ -202,16 +201,16 @@ export const ChaosWarpHandler: IEffectHandler = {
     const isPermanent = card.definition.types.some(t => permanentTypes.includes(t));
 
     if (isPermanent) {
-      ActionProcessor.moveCard(state, card, Zone.Battlefield, ownerId, log);
+      AP.moveCard(state, card, Zone.Battlefield, ownerId, log);
     } else {
-      ActionProcessor.shuffleLibrary(state, ownerId, log);
+      AP.shuffleLibrary(state, ownerId, log);
     }
   }
 };
 
 export const ApproachOfTheSecondSunHandler: IEffectHandler = {
   handle(state, effect, log, context) {
-    const { ActionProcessor } = require("../../../actions/ActionProcessor");
+    const { action: AP } = getProcessors(state);
     const { controllerId, sourceId } = context;
     const player = state.players[controllerId];
     if (!player) return;
@@ -221,15 +220,15 @@ export const ApproachOfTheSecondSunHandler: IEffectHandler = {
 
     if (castFromHand && castCount >= 2) {
       log(`${player.name} wins the game with Approach of the Second Sun!`);
-      ActionProcessor.winGame(state, controllerId, log);
+      AP.winGame(state, controllerId, log);
     } else {
-      ActionProcessor.gainLife(state, controllerId, 7, log);
+      AP.gainLife(state, controllerId, 7, log);
       
       const stackObj = state.stack.find(s => s.id === sourceId);
       const card = stackObj?.card;
       if (card) {
         const pos = Math.max(0, player.library.length - 6);
-        ActionProcessor.moveCard(state, card, Zone.Library, card.ownerId, log, pos);
+        AP.moveCard(state, card, Zone.Library, card.ownerId, log, pos);
         log(`Approach of the Second Sun put into library at position ${pos} from bottom.`);
         if (stackObj) stackObj.exileOnResolution = true; 
       }

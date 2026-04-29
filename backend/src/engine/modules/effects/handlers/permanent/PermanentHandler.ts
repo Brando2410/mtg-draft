@@ -3,6 +3,7 @@ import { ActionProcessor } from '../../../actions/ActionProcessor';
 import { LayerProcessor } from '../../../state/LayerProcessor';
 import { ChoiceGenerator } from '../../ChoiceGenerator';
 import { TriggerProcessor } from '../../triggers/TriggerProcessor';
+import { getProcessors } from '../../../ProcessorRegistry';
 
 /**
  * Strategy for CR 110: Permanents and CR 701: Keyword Actions
@@ -32,9 +33,9 @@ export class PermanentHandler {
         const [tid, ...nextTargets] = targets;
         const player = state.players[tid as PlayerId];
         if (player) {
-            const { TargetingProcessor } = require('../../../actions/targeting/TargetingProcessor');
+            const { targeting: TP, effect: EP } = getProcessors(state);
             const resList = effect?.restrictions || ((effect as any)?.restriction ? [(effect as any).restriction] : ['Creature']);
-            let candidates = state.battlefield.filter((o: GameObject) => o.controllerId === tid && TargetingProcessor.matchesRestrictions(state, o, resList, {
+            let candidates = state.battlefield.filter((o: GameObject) => o.controllerId === tid && TP.matchesRestrictions(state, o, resList, {
                 sourceId,
                 controllerId: tid,
                 stackObject
@@ -47,7 +48,7 @@ export class PermanentHandler {
                 candidates = candidates.filter((c: GameObject) => LayerProcessor.getEffectiveStats(c, state).power === maxPower);
             }
 
-            const amount = effect?.amount !== undefined ? (typeof effect.amount === 'number' ? effect.amount : (require('../../EffectProcessor').EffectProcessor.resolveAmount(state, effect.amount, context, [tid]))) : 1;
+            const amount = effect?.amount !== undefined ? (typeof effect.amount === 'number' ? effect.amount : (EP.resolveAmount(state, effect.amount, context, [tid]))) : 1;
 
             if (candidates.length <= amount && amount > 0) {
                 candidates.forEach((c: GameObject) => ActionProcessor.moveCard(state, c, Zone.Graveyard, tid as PlayerId, log));
@@ -143,23 +144,23 @@ export class PermanentHandler {
         const p2 = LayerProcessor.getEffectiveStats(c2, state).power;
         log(`[FIGHT] ${c1.definition.name} fights ${c2.definition.name}.`);
 
-        const { DamageProcessor } = require('../../../combat/DamageProcessor');
-        DamageProcessor.dealDamage(state, c1.id, c2.id, p1, false, log);
-        DamageProcessor.dealDamage(state, c2.id, c1.id, p2, false, log);
+        const { damage: DP } = getProcessors(state);
+        DP.dealDamage(state, c1.id, c2.id, p1, false, log);
+        DP.dealDamage(state, c2.id, c1.id, p2, false, log);
     }
 
     public static handleAddCounters(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
         const { targets } = context;
         const counterEff = effect as CounterEffect;
         const type = counterEff.counterType || (effect as any).value || effect.type || 'p1p1';
-        const { EffectProcessor } = require('../../EffectProcessor');
+        const { effect: EP } = getProcessors(state);
 
         targets.forEach((tid: string) => {
             const obj = state.battlefield.find((o: GameObject) => o.id === tid);
             if (obj) {
                 const finalType = (type.toLowerCase() === 'p1p1' || type === '+1/+1') ? '+1/+1' : type;
                 const amountStr = counterEff.amount !== undefined ? counterEff.amount : (effect as any).value;
-                const amount = typeof amountStr === 'number' ? amountStr : (EffectProcessor.resolveAmount(state, amountStr, context, [tid]));
+                const amount = typeof amountStr === 'number' ? amountStr : (EP.resolveAmount(state, amountStr, context, [tid]));
                 
                 obj.counters[finalType] = (obj.counters[finalType] || 0) + amount;
                 if (amount > 0) {
@@ -200,8 +201,8 @@ export class PermanentHandler {
     public static handleMoveCounters(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
         const { targets, sourceId, stackObject } = context;
         const counterEff = effect as CounterEffect;
-        const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
-        let sourceObj = TargetingProcessor.findObjectInAnyZone(state, sourceId);
+        const { targeting: TP, effect: EP } = getProcessors(state);
+        let sourceObj = TP.findObjectInAnyZone(state, sourceId);
         
         // CR 603.10: If the source is not in a public zone or has no counters (because it died), check the stack object's event snapshot (LKI)
         if (!sourceObj || !sourceObj.counters || Object.keys(sourceObj.counters).length === 0) {
@@ -221,9 +222,8 @@ export class PermanentHandler {
             const available = sourceObj!.counters[ctype] || 0;
             if (available <= 0) return;
 
-            const { EffectProcessor } = require('../../EffectProcessor');
             const requestedAmount = counterEff.amount !== undefined 
-                ? EffectProcessor.resolveAmount(state, counterEff.amount, context, targets)
+                ? EP.resolveAmount(state, counterEff.amount, context, targets)
                 : available;
             
             const amount = Math.min(available, requestedAmount);
@@ -242,7 +242,7 @@ export class PermanentHandler {
     }
 
     public static handleCreateToken(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
-        const { EffectProcessor } = require('../../EffectProcessor');
+        const { effect: EP } = getProcessors(state);
         const { targets } = context;
         const tokenEff = effect as any; // Using any briefly for deep blueprint access
         const blueprint = tokenEff.tokenBlueprint || (tokenEff as any).definition;
@@ -250,9 +250,9 @@ export class PermanentHandler {
 
         targets.forEach((tid: string) => {
             const pid = tid as PlayerId;
-            const pOverride = tokenEff.powerOverride !== undefined ? EffectProcessor.resolveAmount(state, tokenEff.powerOverride, context) : undefined;
-            const tOverride = tokenEff.toughnessOverride !== undefined ? EffectProcessor.resolveAmount(state, tokenEff.toughnessOverride, context) : undefined;
-            const amount = EffectProcessor.resolveAmount(state, tokenEff.amount || 1, context, [pid]);
+            const pOverride = tokenEff.powerOverride !== undefined ? EP.resolveAmount(state, tokenEff.powerOverride, context) : undefined;
+            const tOverride = tokenEff.toughnessOverride !== undefined ? EP.resolveAmount(state, tokenEff.toughnessOverride, context) : undefined;
+            const amount = EP.resolveAmount(state, tokenEff.amount || 1, context, [pid]);
             for (let i = 0; i < amount; i++) {
                 const token = this.createToken(state, blueprint, pid, pOverride, tOverride, effect);
                 state.turnState.lastCreatedTokenId = token.id;
@@ -261,7 +261,7 @@ export class PermanentHandler {
                 if (tokenEff.startingCounters) {
                     const { type, countersType, amount: cAmount } = tokenEff.startingCounters;
                     const finalType = type || countersType;
-                    const resolvedAmount = EffectProcessor.resolveAmount(state, cAmount, context, [pid]);
+                    const resolvedAmount = EP.resolveAmount(state, cAmount, context, [pid]);
                     
                     if (resolvedAmount > 0 && finalType) {
                         const counterKey = (finalType.toLowerCase() === 'p1p1' || finalType === '+1/+1') ? '+1/+1' : finalType;
@@ -281,14 +281,13 @@ export class PermanentHandler {
     public static handleCreateTokenCopy(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
         const { targets } = context;
         const tokenEff = effect as any;
-        const { TargetingProcessor } = require('../../../actions/targeting/TargetingProcessor');
+        const { targeting: TP_LOCAL } = getProcessors(state);
         
         const sourceCardId = (tokenEff as any).sourceCardId || 
                              (tokenEff as any).originalCardId || 
-                             ((tokenEff as any).sourceMapping ? TargetingProcessor.resolveTargetMapping(state, (tokenEff as any).sourceMapping, context, effect)[0] : undefined);
+                             ((tokenEff as any).sourceMapping ? TP_LOCAL.resolveTargetMapping(state, (tokenEff as any).sourceMapping, context, effect)[0] : undefined);
 
-        const { TargetingProcessor: TP } = require("../../../actions/targeting/TargetingProcessor");
-        const sourceObj = TP.findObjectInAnyZone(state, sourceCardId) ||
+        const sourceObj = TP_LOCAL.findObjectInAnyZone(state, sourceCardId) ||
                          (state.stack.find((s: any) => s.id === sourceCardId || s.card?.id === sourceCardId) as any);
 
         console.log(`[DEBUG-TOKEN] sourceCardId: ${sourceCardId}`);
@@ -340,6 +339,7 @@ export class PermanentHandler {
     }
 
     private static createToken(state: GameState, blueprint: any, controllerId: PlayerId, pOverride?: any, tOverride?: any, effect?: any): GameObject {
+        const { mana: MP, registry: RP } = getProcessors(state);
         const token: GameObject = {
             id: `token_${Math.random().toString(36).substr(2, 9)}`,
             ownerId: controllerId,
@@ -347,7 +347,7 @@ export class PermanentHandler {
             definition: {
                 name: blueprint.name,
                 manaCost: blueprint.manaCost ?? "",
-                manaValue: (require('../../../magic/ManaProcessor').ManaProcessor).getManaValue(blueprint.manaCost ?? ""),
+                manaValue: MP.getManaValue(blueprint.manaCost ?? ""),
                 colors: (blueprint.colors || []).map((c: string) => {
                     const map: Record<string, string> = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
                     return map[c.toUpperCase()] || c.toLowerCase();
@@ -381,8 +381,7 @@ export class PermanentHandler {
         token.isToken = true;
         state.turnState.lastCreatedTokenId = token.id;
         state.battlefield.push(token);
-        const { RegistryProcessor } = require('../../../core/RegistryProcessor');
-        RegistryProcessor.registerAbilities(state, token);
+        RP.registerAbilities(state, token);
         TriggerProcessor.onEvent(state, { type: 'ON_ETB', targetId: token.id, sourceId: token.id, data: { object: token } }, () => { });
         return token;
     }
@@ -392,8 +391,8 @@ export class PermanentHandler {
         const blueprint = (effect as any).emblemBlueprint;
         if (!blueprint) return;
         
-        const { EffectProcessor } = require('../../EffectProcessor');
-        const sourceObj = EffectProcessor.findObject(state, sourceId, stackObject);
+        const { effect: EP } = getProcessors(state);
+        const sourceObj = EP.findObject(state, sourceId, stackObject);
 
         const emblemId = `emblem_${controllerId}_${Date.now()}`;
         const emblem: EmblemDefinition = {
@@ -401,7 +400,7 @@ export class PermanentHandler {
             name: blueprint.name || 'Emblem',
             controllerId,
             oracleText: blueprint.oracleText || '',
-            image_url: sourceObj?.definition.image_url,
+            image_url: (sourceObj && 'definition' in sourceObj) ? sourceObj.definition?.image_url : '',
             abilities: blueprint.abilities || []
         };
         if (!state.emblems) state.emblems = [];

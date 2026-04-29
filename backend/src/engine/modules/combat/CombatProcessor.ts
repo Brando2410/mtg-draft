@@ -2,6 +2,11 @@ import { GameObject, GameObjectId, GameState, PlayerId, RestrictionType, Step, A
 import { getProcessors } from '../ProcessorRegistry';
 import { RuleUtils } from '../../utils/RuleUtils';
 import { EngineContext } from '../../interfaces/EngineContext';
+ 
+interface DamageAssignmentRecord {
+  sources: GameObject[];
+  amount: number;
+}
 
 /**
  * Combat Mechanism (Chapter 506-511)
@@ -336,7 +341,7 @@ export class CombatProcessor {
 
     // 3. APPLY ALL DAMAGE SIMULTANEOUSLY (Rule 510.2)
     // "Damage assigned by all creatures is dealt at the same time."
-    const damageToPlayers: Record<string, { sources: any[], amount: number }> = {};
+    const damageToPlayers: Record<PlayerId, DamageAssignmentRecord> = {};
 
     const { damage: DaP } = getProcessors(state);
     for (const a of assignments) {

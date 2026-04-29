@@ -15,6 +15,7 @@ import type { TurnProcessor } from "./core/turn/TurnProcessor";
 import type { EffectProcessor } from "./effects/EffectProcessor";
 import type { TriggerProcessor } from "./effects/triggers/TriggerProcessor";
 import type { ManaProcessor } from "./magic/ManaProcessor";
+import type { CostProcessor } from "./magic/CostProcessor";
 import type { LayerProcessor } from "./state/LayerProcessor";
 import type { StateBasedActionsProcessor } from "./state/StateBasedActionsProcessor";
 
@@ -38,6 +39,7 @@ export interface ProcessorRegistry {
     sba: typeof StateBasedActionsProcessor;
     restriction: typeof RestrictionValidator;
     mana: typeof ManaProcessor;
+    cost: typeof CostProcessor;
     registry: typeof RegistryProcessor;
     effect: typeof EffectProcessor;
     condition: typeof ConditionProcessor;
@@ -75,6 +77,7 @@ export function getProcessors(state: GameState): ProcessorRegistry {
         get sba() { return require("./state/StateBasedActionsProcessor").StateBasedActionsProcessor; },
         get restriction() { return require("./core/RestrictionValidator").RestrictionValidator; },
         get mana() { return require("./magic/ManaProcessor").ManaProcessor; },
+        get cost() { return require("./magic/CostProcessor").CostProcessor; },
         get registry() { return require("./core/RegistryProcessor").RegistryProcessor; },
         get effect() { return require("./effects/EffectProcessor").EffectProcessor; },
         get condition() { return require("./core/logic/ConditionProcessor").ConditionProcessor; },

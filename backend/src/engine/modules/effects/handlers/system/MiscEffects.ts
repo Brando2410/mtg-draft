@@ -1,9 +1,12 @@
 import { PlayerId, Zone } from "@shared/engine_types";
 import { IEffectHandler } from "../../IEffectHandler";
+import { getProcessors } from "../../../ProcessorRegistry";
+import { PermanentHandler } from "../permanent/PermanentHandler";
+import { ChoiceGenerator } from "../../ChoiceGenerator";
 
 export const ExchangeHandAndGraveyardHandler: IEffectHandler = {
     handle(state, effect, log, context) {
-        const { ActionProcessor } = require("../../../actions/ActionProcessor");
+        const { action: AP } = getProcessors(state);
         const { targets } = context;
         const targetPlayerId = targets[0] as PlayerId;
         const player = state.players[targetPlayerId];
@@ -16,10 +19,10 @@ export const ExchangeHandAndGraveyardHandler: IEffectHandler = {
         player.graveyard = [];
 
         oldHand.forEach((c) =>
-          ActionProcessor.moveCard(state, c, Zone.Graveyard, player.id, log),
+          AP.moveCard(state, c, Zone.Graveyard, player.id, log),
         );
         oldGrave.forEach((c) =>
-          ActionProcessor.moveCard(state, c, Zone.Hand, player.id, log),
+          AP.moveCard(state, c, Zone.Hand, player.id, log),
         );
         log(`[EXCHANGE] ${player.name} exchanged hand and graveyard.`);
     }
@@ -45,8 +48,8 @@ export const NecromentiaHandler: IEffectHandler = {
         const targetOpponent = state.players[targetOpponentId];
         if (!targetOpponent) return;
 
-        const { ChoiceGenerator } = require("../../ChoiceGenerator");
-        const { ActionType, Zone } = require("@shared/engine_types");
+        const { action: AP, trigger: TrP } = getProcessors(state);
+        const { ActionType, Zone: ZoneType } = require("@shared/engine_types");
 
         if (!stackObject?.data?.chosenName) {
             state.pendingAction = ChoiceGenerator.createCardChoice(
@@ -74,9 +77,6 @@ export const NecromentiaHandler: IEffectHandler = {
         const chosenName = stackObject?.data?.chosenName;
         if (!chosenName) return;
         
-        const { ActionProcessor } = require("../../../actions/ActionProcessor");
-        const { TriggerProcessor } = require("../../triggers/TriggerProcessor");
-        
         const zones = [Zone.Graveyard, Zone.Hand, Zone.Library];
         let exiledCount = 0;
 
@@ -94,8 +94,8 @@ export const NecromentiaHandler: IEffectHandler = {
 
             toExile.forEach((c: any) => {
                 const from = c.zone as Zone;
-                ActionProcessor.moveCard(state, c, Zone.Exile, c.ownerId, log);
-                TriggerProcessor.onEvent(
+                AP.moveCard(state, c, Zone.Exile, c.ownerId, log);
+                TrP.onEvent(
                     state,
                     { type: "ON_EXILE", targetId: c.id, sourceId, sourceZone: from },
                     log,
@@ -104,7 +104,6 @@ export const NecromentiaHandler: IEffectHandler = {
         });
 
         if (exiledCount > 0) {
-            const { PermanentHandler } = require("../permanent/PermanentHandler");
             PermanentHandler.handleCreateToken(
                 state,
                 {

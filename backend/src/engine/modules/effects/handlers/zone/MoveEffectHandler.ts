@@ -16,22 +16,20 @@ import {
   TriggerEvent,
   Zone
 } from "@shared/engine_types";
+import { TriggerProcessor } from "../../triggers/TriggerProcessor";
+import { getProcessors } from "../../../ProcessorRegistry";
+import { RuleUtils } from "../../../../utils/RuleUtils";
 import { ActionProcessor } from "../../../actions/ActionProcessor";
 import { TargetingProcessor } from "../../../actions/targeting/TargetingProcessor";
-import { RestrictionValidator } from '../../../core/RestrictionValidator';
+import { RestrictionValidator } from "../../../core/RestrictionValidator";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
-import { TriggerProcessor } from "../../triggers/TriggerProcessor";
+import { SearchEffectHandler } from "./SearchEffectHandler";
 
 /**
  * Strategy for CR 701: Keyword Actions (Zone Movement)
  */
 export class MoveEffectHandler {
-  public static handle(
-    state: GameState,
-    effect: EffectDefinition,
-    log: (m: string) => void,
-    context: ResolutionContext,
-  ) {
+  public static handle(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
     const { targets = [], controllerId, stackObject, parentContext } = context || {};
     const moveEff = effect as MoveEffect;
     const drawEff = effect as DrawEffect;
@@ -53,23 +51,11 @@ export class MoveEffectHandler {
 
     // Rule: Resolve default zone for specific movement keywords
     if (!moveEff.zone) {
-      if (
-        effect.type === EffectType.Exile ||
-        effect.type === EffectType.ExileTopCard ||
-        effect.type === EffectType.ExileAllCards
-      ) {
+      if (effect.type === EffectType.Exile || effect.type === EffectType.ExileTopCard || effect.type === EffectType.ExileAllCards) {
         moveEff.zone = Zone.Exile;
-      } else if (
-        effect.type === EffectType.DrawCards ||
-        effect.type === EffectType.ReturnToHand ||
-        effect.type === EffectType.MoveToZone
-      ) {
+      } else if (effect.type === EffectType.DrawCards || effect.type === EffectType.ReturnToHand || effect.type === EffectType.MoveToZone) {
         moveEff.zone = Zone.Hand;
-      } else if (
-        effect.type === EffectType.DiscardCards ||
-        effect.type === EffectType.Mill ||
-        effect.type === EffectType.PutInGraveyard
-      ) {
+      } else if (effect.type === EffectType.DiscardCards || effect.type === EffectType.Mill || effect.type === EffectType.PutInGraveyard) {
         moveEff.zone = Zone.Graveyard;
       } else if (effect.type === EffectType.PutOnBattlefield) {
         moveEff.zone = Zone.Battlefield;
@@ -81,154 +67,30 @@ export class MoveEffectHandler {
     );
 
     // Map legacy effect types to selection modes if needed
-    if (effect.type === EffectType.DrawCards) {
-      return this.resolveDrawCards(state, effect, log, context, finalTargetIds);
-    }
-    if (effect.type === EffectType.Mill) {
-      return this.resolveMill(state, effect, log, context, finalTargetIds);
-    }
-    if (effect.type === EffectType.SearchLibrary) {
-      return this.resolveLibrarySearch(
-        state,
-        {
-          ...effect,
-          type: EffectType.SearchLibrary,
-          sourceZones: effect.sourceZones || [Zone.Library],
-          shuffle: true,
-          reveal: true,
-        } as SearchEffect,
-        log,
-        context,
-        targets,
-      );
-    }
-    if (effect.type === EffectType.Scry) {
-      return this.resolveScry(state, effect, log, context, finalTargetIds);
-    }
-    if (effect.type === EffectType.Surveil) {
-      return this.resolveSurveil(state, effect, log, context, finalTargetIds);
-    }
-    if (effect.type === EffectType.LookAtTopAndPick) {
-      return this.resolveLookAtTopAndPick(
-        state,
-        effect,
-        log,
-        context,
-        finalTargetIds,
-      );
-    }
-    if (effect.type === EffectType.RevealUntilCondition) {
-      return this.resolveRevealUntilCondition(state, effect, log, context);
+    if (effect.type === EffectType.LookAtTopAndPick) return this.resolveLookAtTopAndPick(state, effect, log, context, finalTargetIds);
+    if (effect.type === EffectType.RevealUntilCondition) return this.resolveRevealUntilCondition(state, effect, log, context);
+    if (effect.type === EffectType.ExchangeHandAndGraveyard) return this.resolveExchangeHandAndGraveyard(state, effect, targets, controllerId, log);
+
+    if (effect.type === EffectType.PutRemainderOnBottomRandom && finalTargetIds.length > 1) ActionProcessor.shuffle(finalTargetIds);
+
+    const { effect: EP } = getProcessors(state);
+    const fromTopResolved = EP.resolveAmount(state, effect.fromTop || 0, context, finalTargetIds);
+
+    if (fromTopResolved > 0 && (effect.sourceZones || []).includes(Zone.Library)) {
+      const affectedPlayerId = (finalTargetIds.find((tid: string) => state.players[tid as PlayerId]) as PlayerId) || controllerId;
+      return this.resolveLibraryTopMoves(state, { ...effect, fromTop: fromTopResolved }, affectedPlayerId, log, context);
     }
 
-    if (
-      effect.type === EffectType.DiscardCards
-    ) {
-      const playerIds = finalTargetIds.filter(
-        (id: string) => state.players[id as PlayerId],
-      ) as PlayerId[];
-      const amount = typeof drawEff.amount === "number" ? drawEff.amount : 1;
-      state.pendingAction = ChoiceGenerator.createDiscardChoice(
-        state,
-        playerIds,
-        stackObject?.sourceId || "",
-        amount,
-        effect.label || "Choose a card to discard",
-        stackObject,
-        parentContext,
-        effect.effects,
-        log,
-      );
-      return;
-    }
-
-    if (effect.type === EffectType.ExchangeHandAndGraveyard) {
-      return this.resolveExchangeHandAndGraveyard(
-        state,
-        effect,
-        targets,
-        controllerId,
-        log,
-      );
-    }
-
-    if (
-      effect.type === EffectType.PutRemainderOnBottomRandom &&
-      finalTargetIds.length > 1
-    ) {
-      ActionProcessor.shuffle(finalTargetIds);
-    }
-
-    const { EffectProcessor } = require("../../EffectProcessor");
-    const fromTopResolved = EffectProcessor.resolveAmount(
-      state,
-      effect.fromTop || 0,
-      context,
-      finalTargetIds,
-    );
-    if (
-      fromTopResolved > 0 &&
-      (effect.sourceZones || []).includes(Zone.Library)
-    ) {
-      const affectedPlayerId =
-        (finalTargetIds.find(
-          (tid: string) => state.players[tid as PlayerId],
-        ) as PlayerId) || controllerId;
-      return this.resolveLibraryTopMoves(
-        state,
-        { ...effect, fromTop: fromTopResolved },
-        affectedPlayerId,
-        log,
-        context,
-      );
-    }
-
-    if (selectionType === SelectionType.Target && finalTargetIds.length > 0) {
-      return this.resolveMoveTargets(
-        state,
-        effect,
-        finalTargetIds,
-        log,
-        context,
-      );
-    }
-    if (
-      selectionType === SelectionType.Search &&
-      (effect.sourceZones || []).includes(Zone.Library)
-    ) {
-      return this.resolveLibrarySearch(state, effect, log, context, targets);
-    }
-    if (selectionType === SelectionType.All) {
-      return this.resolveMassMove(state, effect, finalTargetIds, context, log);
-    }
-
-    if (effect.type === EffectType.ExileUntilManaValue) {
-      return this.resolveExileUntilManaValue(
-        state,
-        effect,
-        controllerId,
-        log,
-        context,
-      );
-    }
+    if (selectionType === SelectionType.Target && finalTargetIds.length > 0) return this.resolveMoveTargets(state, effect, finalTargetIds, log, context);
+    if (selectionType === SelectionType.Search && (effect.sourceZones || []).includes(Zone.Library)) return SearchEffectHandler.handle(state, effect, log, context);
+    if (selectionType === SelectionType.All) return this.resolveMassMove(state, effect, finalTargetIds, context, log);
+    if (effect.type === EffectType.ExileUntilManaValue) return this.resolveExileUntilManaValue(state, effect, controllerId, log, context);
 
     if (effect.targetDefinition && finalTargetIds.length === 0 && !effect.targetMapping) {
-      return this.resolveInteractiveMovementSelection(
-        state,
-        effect,
-        controllerId,
-        log,
-        context,
-      );
+      return this.resolveInteractiveMovementSelection(state, effect, controllerId, log, context);
     }
 
-    return this.resolveSingleTargetMove(
-      state,
-      effect,
-      finalTargetIds,
-      log,
-      context,
-    );
+    return this.resolveSingleTargetMove(state, effect, finalTargetIds, log, context);
   }
 
   private static resolveInteractiveMovementSelection(
@@ -298,12 +160,12 @@ export class MoveEffectHandler {
       return;
     }
 
-    const { EffectProcessor } = require("../../EffectProcessor");
+    const { effect: EP } = getProcessors(state);
     const resolvedMin =
       targetDef.minCount !== undefined
-        ? EffectProcessor.resolveAmount(state, targetDef.minCount, context)
-        : EffectProcessor.resolveAmount(state, targetDef.count || 1, context);
-    const resolvedMax = EffectProcessor.resolveAmount(
+        ? getProcessors(state).effect.resolveAmount(state, targetDef.minCount as any, context)
+        : getProcessors(state).effect.resolveAmount(state, targetDef.count || 1 as any, context);
+    const resolvedMax = getProcessors(state).effect.resolveAmount(
       state,
       targetDef.count || 1,
       context,
@@ -356,12 +218,12 @@ export class MoveEffectHandler {
     const threshold = typeof (effect as DrawEffect).amount === "number" ? ((effect as DrawEffect).amount as number) : 4;
     let totalMV = 0;
     const cards: GameObject[] = [];
-    const { ManaProcessor } = require("../../../magic/ManaProcessor");
+    const { mana: MP } = getProcessors(state);
 
     // Rule: Rule 701.12: To exile cards until a condition is met
     while (player.library.length > 0 && totalMV < threshold) {
       const card = player.library.pop()!;
-      const mv = ManaProcessor.getManaValue(card.definition.manaCost || "");
+      const mv = MP.getManaValue(card.definition.manaCost || "");
 
       totalMV += mv;
       cards.push(card);
@@ -394,8 +256,7 @@ export class MoveEffectHandler {
         actionType: ActionType.OptionalAction,
         onSelected: (c: GameObject) => {
           const subEffects: EffectDefinition[] = [];
-          const types = c.definition.types.map((t) => t.toLowerCase());
-          if (!types.includes("land")) {
+          if (!RuleUtils.isLand(c)) {
             subEffects.push({
               type: EffectType.CastSpell,
               targetId: c.id,
@@ -412,150 +273,7 @@ export class MoveEffectHandler {
     }
   }
 
-  private static resolveDrawCards(
-    state: GameState,
-    effect: EffectDefinition,
-    log: (m: string) => void,
-    context: ResolutionContext,
-    targets: string[] = [],
-  ) {
-    const { EffectProcessor } = require("../../EffectProcessor");
-    const drawEff = effect as DrawEffect;
-    const playerIds = targets.filter(
-      (tid) => state.players[tid as PlayerId],
-    ) as PlayerId[];
-    const { controllerId } = context;
-    if (playerIds.length === 0) playerIds.push(controllerId);
 
-    playerIds.forEach((pid) => {
-      const amount = EffectProcessor.resolveAmount(
-        state,
-        drawEff.amount,
-        context,
-        [pid],
-      );
-      this.resolveLibraryTopMoves(
-        state,
-        {
-          ...effect,
-          selectionType: "TopN",
-          sourceZones: [Zone.Library],
-          zone: Zone.Hand,
-          fromTop: amount,
-          isDraw: true,
-        } as any,
-        pid,
-        log,
-        context,
-      );
-    });
-  }
-
-  private static resolveMill(
-    state: GameState,
-    effect: EffectDefinition,
-    log: (m: string) => void,
-    context: ResolutionContext,
-    targets: string[] = [],
-  ) {
-    const { EffectProcessor } = require("../../EffectProcessor");
-    const drawEff = effect as DrawEffect;
-    const playerIds = targets.filter(
-      (tid) => state.players[tid as PlayerId],
-    ) as PlayerId[];
-    const { controllerId } = context;
-    if (playerIds.length === 0) playerIds.push(controllerId);
-
-    playerIds.forEach((pid) => {
-      const amount = EffectProcessor.resolveAmount(
-        state,
-        drawEff.amount,
-        context,
-        [pid],
-      );
-      this.resolveLibraryTopMoves(
-        state,
-        {
-          ...effect,
-          selectionType: "TopN",
-          sourceZones: [Zone.Library],
-          zone: Zone.Graveyard,
-          fromTop: amount,
-        } as any,
-        pid,
-        log,
-        context,
-      );
-    });
-  }
-
-  private static resolveScry(
-    state: GameState,
-    effect: EffectDefinition,
-    log: (m: string) => void,
-    context: ResolutionContext,
-    targets: string[] = [],
-  ) {
-    const { controllerId } = context;
-    const { EffectProcessor } = require("../../EffectProcessor");
-    const drawEff = effect as DrawEffect;
-    const amount = EffectProcessor.resolveAmount(
-      state,
-      drawEff.amount || 1,
-      context,
-      [controllerId],
-    );
-    const affectedPlayerId =
-      (targets.find((tid) => state.players[tid as PlayerId]) as PlayerId) ||
-      controllerId;
-    return this.resolveLibraryTopMoves(
-      state,
-      {
-        ...effect,
-        type: EffectType.Scry,
-        selectionType: "TopN",
-        sourceZones: [Zone.Library],
-        fromTop: amount,
-      } as any,
-      affectedPlayerId,
-      log,
-      context,
-    );
-  }
-
-  private static resolveSurveil(
-    state: GameState,
-    effect: EffectDefinition,
-    log: (m: string) => void,
-    context: ResolutionContext,
-    targets: string[] = [],
-  ) {
-    const { controllerId } = context;
-    const { EffectProcessor } = require("../../EffectProcessor");
-    const drawEff = effect as DrawEffect;
-    const amount = EffectProcessor.resolveAmount(
-      state,
-      drawEff.amount || 1,
-      context,
-      targets,
-    );
-    const affectedPlayerId =
-      (targets.find((tid) => state.players[tid as PlayerId]) as PlayerId) ||
-      controllerId;
-    return this.resolveLibraryTopMoves(
-      state,
-      {
-        ...effect,
-        type: EffectType.Surveil,
-        selectionType: "TopN",
-        sourceZones: [Zone.Library],
-        fromTop: amount,
-      } as any,
-      affectedPlayerId,
-      log,
-      context,
-    );
-  }
 
   private static resolveLookAtTopAndPick(
     state: GameState,
@@ -565,11 +283,11 @@ export class MoveEffectHandler {
     targets: string[] = [],
   ) {
     const { controllerId } = context;
-    const { EffectProcessor } = require("../../EffectProcessor");
+    const { effect: EP } = getProcessors(state);
     const moveEff = effect as MoveEffect;
-    const amount = EffectProcessor.resolveAmount(
+    const amount = getProcessors(state).effect.resolveAmount(
       state,
-      moveEff.fromTop || 1,
+      (moveEff.fromTop || 1) as any,
       context,
       targets,
     );
@@ -591,12 +309,7 @@ export class MoveEffectHandler {
     );
   }
 
-  private static resolveRevealUntilCondition(
-    state: GameState,
-    effect: EffectDefinition,
-    log: (m: string) => void,
-    context: ResolutionContext,
-  ) {
+  private static resolveRevealUntilCondition(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
     const { controllerId, stackObject } = context;
     const player = state.players[controllerId];
     if (!player) return;
@@ -664,7 +377,6 @@ export class MoveEffectHandler {
           nextEffect.type === EffectType.Choice &&
           ((nextEffect as any).choices || (nextEffect as any).choice)
         ) {
-          const { ChoiceGenerator } = require("../../ChoiceGenerator");
           const choicesArr =
             (nextEffect as any).choices || (nextEffect as any).choice?.choices || [];
 
@@ -700,8 +412,8 @@ export class MoveEffectHandler {
           );
           return;
         }
-        const { EffectProcessor } = require("../../EffectProcessor");
-        EffectProcessor.executeEffect({
+        const { effect: EP } = getProcessors(state);
+        EP.executeEffect({
           state,
           effect: nextEffect,
           sourceId: targetCard.id,
@@ -714,13 +426,7 @@ export class MoveEffectHandler {
     }
   }
 
-  private static resolveExchangeHandAndGraveyard(
-    state: GameState,
-    effect: EffectDefinition,
-    targets: string[],
-    controllerId: PlayerId,
-    log: (m: string) => void,
-  ) {
+  private static resolveExchangeHandAndGraveyard(state: GameState, effect: EffectDefinition, targets: string[], controllerId: PlayerId, log: (m: string) => void) {
     const playerIds =
       targets.length > 0 ? targets.map((t) => t as PlayerId) : [controllerId];
     playerIds.forEach((pid) => {
@@ -739,13 +445,7 @@ export class MoveEffectHandler {
     });
   }
 
-  private static resolveMoveTargets(
-    state: GameState,
-    effect: EffectDefinition,
-    targetIds: string[],
-    log: (m: string) => void,
-    context: ResolutionContext,
-  ) {
+  private static resolveMoveTargets(state: GameState, effect: EffectDefinition, targetIds: string[], log: (m: string) => void, context: ResolutionContext) {
     const { controllerId, stackObject } = context;
     const parentContext = context;
     const moveEff = effect as MoveEffect;
@@ -773,16 +473,7 @@ export class MoveEffectHandler {
       if (obj) {
         const from = obj.zone;
         const destPlayerId = moveEff.ownerControl ? obj.ownerId : controllerId;
-        ActionProcessor.moveCard(
-          state,
-          obj,
-          zone as Zone,
-          destPlayerId,
-          log,
-          moveEff.libraryPosition as number | "top" | "bottom",
-          false,
-          isDiscard,
-        );
+        ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId, log, moveEff.libraryPosition as number | "top" | "bottom", false, isDiscard);
         if (zone === Zone.Hand || zone === Zone.Library) {
           obj.isRevealed = true;
         }
@@ -827,10 +518,9 @@ export class MoveEffectHandler {
             cType.toLowerCase() === "p1p1" || cType === "+1/+1"
               ? "+1/+1"
               : cType;
-          const { EffectProcessor } = require("../../EffectProcessor");
-          const resolvedAmount = EffectProcessor.resolveAmount(
+          const resolvedAmount = getProcessors(state).effect.resolveAmount(
             state,
-            sc.amount,
+            sc.amount as any,
             context,
             [tid],
           );
@@ -849,8 +539,8 @@ export class MoveEffectHandler {
 
         // --- NESTED EFFECTS SUPPORT ---
         if (effect.effects && effect.effects.length > 0) {
-          const { EffectProcessor } = require("../../EffectProcessor");
-          EffectProcessor.resolveEffects({
+          const { effect: EP_LOCAL } = getProcessors(state);
+          EP_LOCAL.resolveEffects({
             state,
             effects: effect.effects,
             sourceId: stackObject?.sourceId || tid,
@@ -865,13 +555,7 @@ export class MoveEffectHandler {
     });
   }
 
-  private static resolveLibraryTopMoves(
-    state: GameState,
-    effect: EffectDefinition,
-    controllerId: PlayerId,
-    log: (m: string) => void,
-    context: ResolutionContext,
-  ) {
+  private static resolveLibraryTopMoves(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, context: ResolutionContext) {
     const { stackObject } = context;
     const parentContext = context;
     const player = state.players[controllerId];
@@ -908,12 +592,12 @@ export class MoveEffectHandler {
             ? 0
             : 1,
         maxChoices: (() => {
-            if (effect.selectionType === SelectionType.AnyNumber || (effect as any).amount === "ANY") {
-                return cards.length;
-            }
-            const { EffectProcessor } = require("../../EffectProcessor");
-            const resolved = EffectProcessor.resolveAmount(state, (effect as any).amount || 1, context, cards.map(c => c.id));
-            return Math.min(cards.length, resolved);
+          if (effect.selectionType === SelectionType.AnyNumber || (effect as any).amount === "ANY") {
+            return cards.length;
+          }
+          const { effect: EP_LOCAL } = getProcessors(state);
+          const resolved = getProcessors(state).effect.resolveAmount(state, (effect as any).amount || 1 as any, context, cards.map(c => c.id));
+          return Math.min(cards.length, resolved);
         })(),
         actionType:
           effect.optional || effect.selectionType === SelectionType.AnyNumber
@@ -1050,15 +734,7 @@ export class MoveEffectHandler {
     }
     cards.forEach((c) => {
       const from = c.zone;
-      ActionProcessor.moveCard(
-        state,
-        c,
-        zone as Zone,
-        controllerId,
-        log,
-        "top",
-        effect.type === EffectType.DrawCards,
-      );
+      ActionProcessor.moveCard(state, c, zone as Zone, controllerId, log, "top", effect.type === EffectType.DrawCards);
       if (zone === Zone.Battlefield) {
         if (moveEff.tapped) c.isTapped = true;
       }
@@ -1093,8 +769,8 @@ export class MoveEffectHandler {
 
     // --- NESTED EFFECTS SUPPORT ---
     if (effect.effects && effect.effects.length > 0) {
-      const { EffectProcessor } = require("../../EffectProcessor");
-      EffectProcessor.resolveEffects({
+      const { effect: EP_LOCAL } = getProcessors(state);
+      EP_LOCAL.resolveEffects({
         state,
         effects: effect.effects,
         sourceId: stackObject?.sourceId || controllerId,
@@ -1107,149 +783,8 @@ export class MoveEffectHandler {
     }
   }
 
-  private static resolveLibrarySearch(
-    state: GameState,
-    effect: EffectDefinition,
-    log: (m: string) => void,
-    context: ResolutionContext,
-    targets: string[] = [],
-  ) {
-    const { controllerId, stackObject } = context;
-    const parentContext = context;
-    const player = state.players[controllerId];
-    if (!player) return;
 
-    const searchEff = effect as SearchEffect;
-    const sourceZones = searchEff.sourceZones || [Zone.Library];
-    const pool: GameObject[] = [];
-    sourceZones.forEach((z: Zone) => {
-      if (z === Zone.Library) pool.push(...player.library);
-      if (z === Zone.Graveyard) pool.push(...player.graveyard);
-      if (z === Zone.Hand) pool.push(...player.hand);
-    });
-
-    const sourceId = stackObject?.sourceId || "";
-    const {
-      TargetingProcessor: TP,
-    } = require("../../../actions/targeting/TargetingProcessor");
-    const getRestrictions = (td: any) => {
-      if (!td) return [];
-      const res = [...(td.restrictions || [])];
-      const typeStr = td.type as string;
-      // Only add types that are actual card types, excluding zone/entity indicators
-      if (
-        typeStr &&
-        ![
-          "ANY",
-          "CARD",
-          "PLAYER",
-          "OPPONENT",
-          "ANY_TARGET",
-          "CARD_IN_GRAVEYARD",
-          "CARD_IN_HAND",
-          "CARD_IN_LIBRARY",
-          "SELF",
-        ].includes(typeStr)
-      ) {
-        res.push(typeStr);
-      }
-      return res;
-    };
-
-    const targetRestrictions = Array.isArray(searchEff.targetDefinition)
-      ? (searchEff.targetDefinition as any[]).flatMap(getRestrictions)
-      : getRestrictions(searchEff.targetDefinition);
-
-    const searchRestrictions = [
-      ...(effect.restrictions || []),
-      ...targetRestrictions,
-    ];
-
-    const validCandidates = pool.filter((c) =>
-      TP.matchesRestrictions(
-        state,
-        c,
-        searchRestrictions,
-        {
-          sourceId,
-          controllerId,
-          stackObject
-        }
-      ),
-    );
-
-    if (validCandidates.length === 0) {
-      log(
-        `[INFO] MoveEffectHandler: No valid objects in registry for "${effect.label || "Search"}". Auto-skipping search.`,
-      );
-      if (searchEff.shuffle && context && context.effects) {
-        context.effects.splice((context.nextEffectIndex || 0) + 1, 0, {
-          type: EffectType.Shuffle,
-          targetMapping: TargetMapping.Controller,
-        } as any);
-      }
-      return;
-    }
-
-    state.pendingAction = ChoiceGenerator.createCardChoice(state, pool, {
-      label: `${effect.label || "Search your library"}`,
-      playerId: controllerId,
-      sourceId: sourceId,
-      restrictions: searchRestrictions,
-      reveal: searchEff.reveal,
-      optional: effect.optional || effect.selectionType === SelectionType.AnyNumber,
-      filterSelectable: true,
-      minChoices: effect.selectionType === SelectionType.AnyNumber || (effect as any).amount === "ANY" || sourceZones.includes(Zone.Library) ? 0 : 1,
-      maxChoices:
-        effect.selectionType === SelectionType.AnyNumber || (effect as any).amount === "ANY"
-          ? pool.length
-          : (effect as any).amount || TP.calculateTotalCounts(searchEff.targetDefinition, 0).maxCount || 1,
-      actionType:
-        effect.optional || effect.selectionType === SelectionType.AnyNumber
-          ? ActionType.OptionalAction
-          : ActionType.ResolutionChoice,
-      onSelected: (c: GameObject) => {
-        const subEffects: EffectDefinition[] = [];
-        const zone = (searchEff as any).zone || Zone.Hand;
-        if (log)
-          log(
-            `[DEBUG] resolveLibrarySearch.onSelected: Selected ${c.definition.name}. Zone: ${zone}`,
-          );
-
-        subEffects.push({
-          type: EffectType.MoveToZone,
-          targetId: c.id,
-          targetPlayerId: controllerId,
-          zone: zone,
-          tapped: (searchEff as any).tapped,
-          libraryPosition: (searchEff as any).libraryPosition,
-          reveal: (searchEff as any).reveal,
-          effects: searchEff.effects, // Pass through nested effects (Fabled Passage)
-        } as MoveEffect);
-        return subEffects;
-      },
-      onNone: () => [],
-      stackObj: stackObject,
-      parentContext: parentContext,
-      targets: targets,
-    });
-
-    // In search, we usually shuffle the WHOLE library regardless of selection
-    if (searchEff.shuffle && context && context.effects) {
-      context.effects.splice((context.nextEffectIndex || 0) + 1, 0, {
-        type: EffectType.Shuffle,
-        targetMapping: TargetMapping.Controller,
-      } as any);
-    }
-  }
-
-  private static resolveMassMove(
-    state: GameState,
-    effect: EffectDefinition,
-    targetIds: string[],
-    context: ResolutionContext,
-    log: (m: string) => void,
-  ) {
+  private static resolveMassMove(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext, log: (m: string) => void) {
     const { controllerId, stackObject } = context;
     const moveEff = effect as MoveEffect;
     const zone = moveEff.zone || Zone.Hand;
@@ -1306,8 +841,8 @@ export class MoveEffectHandler {
 
     // 4. --- NESTED EFFECTS SUPPORT ---
     if (effect.effects && effect.effects.length > 0) {
-      const { EffectProcessor } = require("../../EffectProcessor");
-      EffectProcessor.resolveEffects({
+      const { effect: EP_LOCAL } = getProcessors(state);
+      EP_LOCAL.resolveEffects({
         state,
         effects: effect.effects,
         sourceId: stackObject?.sourceId || controllerId,
@@ -1320,13 +855,7 @@ export class MoveEffectHandler {
     }
   }
 
-  private static resolveSingleTargetMove(
-    state: GameState,
-    effect: EffectDefinition,
-    targetIds: string[],
-    log: (m: string) => void,
-    context: ResolutionContext,
-  ) {
+  private static resolveSingleTargetMove(state: GameState, effect: EffectDefinition, targetIds: string[], log: (m: string) => void, context: ResolutionContext) {
     const { controllerId, stackObject } = context;
     const parentContext = context;
     const moveEff = effect as MoveEffect;
@@ -1354,16 +883,7 @@ export class MoveEffectHandler {
       const from = obj.zone;
       const destPlayerId = moveEff.ownerControl ? obj.ownerId : controllerId;
       if (log) log(`[DEBUG] MoveEffectHandler: Moving ${obj.definition.name} from ${from} to ${zone} for player ${destPlayerId}`);
-      ActionProcessor.moveCard(
-        state,
-        obj,
-        zone as Zone,
-        destPlayerId,
-        log,
-        moveEff.libraryPosition as number | "top" | "bottom",
-        false,
-        isDiscard,
-      );
+      ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId, log, moveEff.libraryPosition as number | "top" | "bottom", false, isDiscard);
 
       if (
         (moveEff.reveal || effect.revealed) &&
@@ -1393,8 +913,8 @@ export class MoveEffectHandler {
       // --- CHAINING ---
       const subEffects = effect.next ? [effect.next] : effect.effects;
       if (subEffects && subEffects.length > 0) {
-        const { EffectProcessor } = require("../../EffectProcessor");
-        EffectProcessor.resolveEffects({
+        const { effect: EP_LOCAL } = getProcessors(state);
+        EP_LOCAL.resolveEffects({
           state,
           effects: subEffects,
           log,
@@ -1407,11 +927,7 @@ export class MoveEffectHandler {
     });
   }
 
-  private static findObject(
-    state: GameState,
-    id: string,
-    context: ResolutionContext,
-  ): GameObject | undefined {
+  private static findObject(state: GameState, id: string, context: ResolutionContext): GameObject | undefined {
     const { stackObject } = context;
     if (stackObject && stackObject.id === id) {
       if (stackObject.card) return stackObject.card;
@@ -1429,5 +945,3 @@ export class MoveEffectHandler {
     return TargetingProcessor.findObjectInAnyZone(state, id) || undefined;
   }
 }
-
-
