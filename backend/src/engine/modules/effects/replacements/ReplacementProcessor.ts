@@ -4,6 +4,7 @@ import {
   PlayerId,
   Zone
 } from "@shared/engine_types";
+import { getProcessors } from "../../ProcessorRegistry";
 
 /**
  * Rules Engine Module: Replacement Effects (Rule 614)
@@ -97,7 +98,7 @@ export class ReplacementProcessor {
                     log(`[REPLACED] Teferi's Ageless Insight replaces draw with 2 draws.`);
                     state.isResolvingDrawReplacement = true;
 
-                    const { ActionProcessor } = require("../../actions/ActionProcessor");
+                    const ActionProcessor = getProcessors(state).action;
                     // Perform the double draw sequence
                     ActionProcessor.moveCard(state, card, Zone.Hand, playerId, log, "top", true);
 

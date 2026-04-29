@@ -1,4 +1,4 @@
-import { DrawEffect, EffectDefinition, EffectType, GameState, PlayerId, ResolutionContext, Zone } from '@shared/engine_types';
+import { DrawEffect, EffectDefinition, GameState, PlayerId, ResolutionContext, Zone } from '@shared/engine_types';
 import { getProcessors } from '../../../ProcessorRegistry';
 import { ActionProcessor } from '../../../actions/ActionProcessor';
 import { RestrictionValidator } from '../../../core/RestrictionValidator';

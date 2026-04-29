@@ -1,7 +1,7 @@
 import { IEffectHandler } from "../../IEffectHandler";
+import { DiscardEffectHandler } from "./DiscardEffectHandler";
 import { DrawCardsHandler } from "./DrawCardsHandler";
 import { MillEffectHandler } from "./MillEffectHandler";
-import { DiscardEffectHandler } from "./DiscardEffectHandler";
 import { ScrySurveilHandler } from "./ScrySurveilHandler";
 import { SearchEffectHandler } from "./SearchEffectHandler";
 

@@ -1,7 +1,7 @@
 import { GameObject, GameState, PlayerId, RestrictionObject, RestrictionType } from "@shared/engine_types";
+import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
 import { ConditionProcessor } from "./logic/ConditionProcessor";
-import { RuleUtils } from "../../utils/RuleUtils";
 
 /**
  * Rules Engine Module: Object & Player Restrictions (Rule 613/701)

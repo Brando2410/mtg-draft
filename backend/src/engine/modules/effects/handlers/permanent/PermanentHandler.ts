@@ -1,9 +1,9 @@
 import { ActionType, CounterEffect, EffectDefinition, EmblemDefinition, GameObject, GameState, PlayerId, ResolutionContext, Zone } from '@shared/engine_types';
 import { ActionProcessor } from '../../../actions/ActionProcessor';
+import { getProcessors } from '../../../ProcessorRegistry';
 import { LayerProcessor } from '../../../state/LayerProcessor';
 import { ChoiceGenerator } from '../../ChoiceGenerator';
 import { TriggerProcessor } from '../../triggers/TriggerProcessor';
-import { getProcessors } from '../../../ProcessorRegistry';
 
 /**
  * Strategy for CR 110: Permanents and CR 701: Keyword Actions

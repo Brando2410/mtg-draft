@@ -1,4 +1,4 @@
-import { ActionType, EffectDefinition, EffectType, GameObject, GameState, MoveEffect, PlayerId, ResolutionContext, SearchEffect, SelectionType, TargetMapping, Zone } from '@shared/engine_types';
+import { ActionType, EffectDefinition, EffectType, GameObject, GameState, MoveEffect, ResolutionContext, SearchEffect, SelectionType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 import { getProcessors } from '../../../ProcessorRegistry';
 import { ChoiceGenerator } from '../../ChoiceGenerator';
 
@@ -12,7 +12,7 @@ export class SearchEffectHandler {
         const searchEff = effect as SearchEffect;
         const sourceZones = searchEff.sourceZones || [Zone.Library];
         const pool: GameObject[] = [];
-        
+
         sourceZones.forEach((z: Zone) => {
             if (z === Zone.Library) pool.push(...player.library);
             if (z === Zone.Graveyard) pool.push(...player.graveyard);
@@ -20,12 +20,12 @@ export class SearchEffectHandler {
         });
 
         const sourceId = stackObject?.sourceId || "";
-        
+
         const getRestrictions = (td: any) => {
             if (!td) return [];
             const res = [...(td.restrictions || [])];
             const typeStr = td.type as string;
-            if (typeStr && !["ANY", "CARD", "PLAYER", "OPPONENT", "ANY_TARGET", "CARD_IN_GRAVEYARD", "CARD_IN_HAND", "CARD_IN_LIBRARY", "SELF"].includes(typeStr)) {
+            if (typeStr && !([TargetType.Any, TargetType.Card, TargetType.Player, TargetType.Opponent, TargetType.AnyTarget, TargetType.CardInGraveyard, TargetType.CardInHand, TargetType.CardInLibrary, TargetType.Self] as TargetType[]).includes(typeStr as TargetType)) {
                 res.push(typeStr);
             }
             return res;

@@ -11,6 +11,7 @@ export * from './core/stack/StackResolver';
 export * from './core/turn/PriorityProcessor';
 export * from './core/turn/TurnProcessor';
 export * from './effects/EffectProcessor';
+export * from './effects/replacements/ReplacementProcessor';
 export * from './effects/triggers/TriggerProcessor';
 export * from './magic/CostProcessor';
 export * from './magic/ManaProcessor';

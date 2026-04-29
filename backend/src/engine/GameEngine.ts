@@ -1,7 +1,7 @@
 import { EffectType, GameState, Phase, PlayerId, Step } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { ActivateAbilityOptions, EngineContext, PlayCardOptions } from './interfaces/EngineContext';
-import { ActionProcessor, ChoiceProcessor, CombatProcessor, DamageProcessor, ConditionProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor } from './modules';
+import { ActionProcessor, ChoiceProcessor, CombatProcessor, ConditionProcessor, DamageProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, ReplacementProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor } from './modules';
 import { RegistryProcessor } from './modules/core/RegistryProcessor';
 import { CostProcessor } from './modules/magic/CostProcessor';
 import { Profiler } from './utils/Profiler';
@@ -113,7 +113,8 @@ export class GameEngine implements EngineContext {
       cost: CostProcessor,
       registry: RegistryProcessor,
       effect: EffectProcessor,
-      condition: ConditionProcessor
+      condition: ConditionProcessor,
+      replacement: ReplacementProcessor
     };
 
     // Add non-enumerable reference to avoid circular serialization issues

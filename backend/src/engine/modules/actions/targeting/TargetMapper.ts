@@ -340,33 +340,33 @@ export class TargetMapper {
 
     switch (mapping) {
       case TargetMapping.Self:
-      case "SOURCE_OBJECT":
+      case TargetMapping.SourceObject:
         return [sourceId];
       case TargetMapping.Controller:
         return [controllerId];
-      case "CONTROLLER_HAND":
+      case TargetMapping.ControllerHand:
         return state.players[controllerId]?.hand.map((o) => o.id) || [];
-      case "CONTROLLER_GRAVEYARD":
+      case TargetMapping.ControllerGraveyard:
         return state.players[controllerId]?.graveyard.map((o) => o.id) || [];
-      case "CONTROLLER_SIDEBOARD":
+      case TargetMapping.ControllerSideboard:
         return (state.players[controllerId] as any)?.sideboard?.map((o: any) => o.id) || [];
-      case "CONTROLLER_LIBRARY":
+      case TargetMapping.ControllerLibrary:
         return state.players[controllerId]?.library.map((o) => o.id) || [];
-      case "OPPONENT_HAND": {
+      case TargetMapping.OpponentHand: {
         const opponentId = Object.keys(state.players).find((pid) => pid !== controllerId);
         return opponentId ? state.players[opponentId].hand.map((o) => o.id) : [];
       }
-      case "OPPONENT_GRAVEYARD": {
+      case TargetMapping.OpponentGraveyard: {
         const opponentId = Object.keys(state.players).find((pid) => pid !== controllerId);
         return opponentId ? state.players[opponentId].graveyard.map((o) => o.id) : [];
       }
-      case "ANY_GRAVEYARD": {
+      case TargetMapping.AnyGraveyard: {
         return Object.values(state.players).flatMap(p => p.graveyard.map(o => o.id));
       }
-      case "ANY_EXILE": {
+      case TargetMapping.AnyExile: {
         return state.exile.map(o => o.id);
       }
-      case "LINKED_OBJECT":
+      case TargetMapping.LinkedObject:
         const linkKey = effect.linkKey || "linkedCardId";
         const lSource =
           state.battlefield.find((o: any) => o.id === sourceId) ||
@@ -376,7 +376,7 @@ export class TargetMapper {
           state.exile.find((o: any) => o.id === sourceId);
         return lSource?.data?.[linkKey] ? [lSource.data[linkKey]] : [];
       case TargetMapping.EnchantedCreature:
-      case "ENCHANTED_PERMANENT": {
+      case TargetMapping.EnchantedPermanent: {
         const aura = state.battlefield.find((o) => o.id === sourceId);
         return aura?.attachedTo ? [aura.attachedTo] : [];
       }
@@ -386,11 +386,11 @@ export class TargetMapper {
           : [];
       case TargetMapping.LastExiledIds:
         return state.turnState.lastExiledIds || [];
-      case "PARENT_CONTEXT_EXILED_IDS": {
+      case TargetMapping.ParentContextExiledIds: {
         const result = (context.exiledIds && context.exiledIds.length > 0) ? context.exiledIds : (parentContext?.exiledIds || []);
         return result;
       }
-      case "PARENT_CONTEXT_EXILED_IDS_OWNERS": {
+      case TargetMapping.ParentContextExiledIdsOwners: {
         const ids = (context.exiledIds && context.exiledIds.length > 0) ? context.exiledIds : (parentContext?.exiledIds || []);
         const owners = ids
           .map(
@@ -400,54 +400,54 @@ export class TargetMapper {
           .filter(Boolean) as string[];
         return [...new Set(owners)];
       }
-      case "TARGET_1_OWNER": {
+      case TargetMapping.Target1Owner: {
         const targetId = targets[0];
         const obj = TargetValidator.findObjectInAnyZone(state, targetId);
         return obj ? [obj.ownerId] : [];
       }
-      case "LAST_MILLED_IDS":
+      case TargetMapping.LastMilledIds:
         return state.turnState.lastMilledIds || [];
-      case "TARGET_1": {
+      case TargetMapping.Target1: {
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[0] ? [actualTargets[0]] : [];
       }
-      case "SELF_AND_TARGET_1": {
+      case TargetMapping.SelfAndTarget1: {
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[0] ? [sourceId, actualTargets[0]] : [sourceId];
       }
-      case "TARGET_2": {
+      case TargetMapping.Target2: {
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[1] ? [actualTargets[1]] : [];
       }
-      case "TARGET_3": {
+      case TargetMapping.Target3: {
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[2] ? [actualTargets[2]] : [];
       }
-      case "TARGET_4": {
+      case TargetMapping.Target4: {
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[3] ? [actualTargets[3]] : [];
       }
-      case "TARGET_5": {
+      case TargetMapping.Target5: {
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[4] ? [actualTargets[4]] : [];
       }
-      case "TARGET_6": {
+      case TargetMapping.Target6: {
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[5] ? [actualTargets[5]] : [];
       }
-      case "TARGET_7": {
+      case TargetMapping.Target7: {
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[6] ? [actualTargets[6]] : [];
       }
-      case "TARGET_8": {
+      case TargetMapping.Target8: {
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[7] ? [actualTargets[7]] : [];
       }
-      case "TARGET_ALL":
+      case TargetMapping.TargetAll:
         return ((stackData as any)?.targets || targets || []).filter(Boolean);
 
-      case "MATCHING_PERMANENTS_YOU_CONTROL":
-      case "ALL_MATCHING_PERMANENTS_YOU_CONTROL":
+      case TargetMapping.MatchingPermanentsYouControl:
+      case TargetMapping.AllMatchingPermanentsYouControl:
         if (!effect?.restrictions) return [];
         return state.battlefield
           .filter(
@@ -461,7 +461,7 @@ export class TargetMapper {
               ),
           )
           .map((o) => o.id);
-      case "ALL_PLANESWALKERS_YOU_CONTROL":
+      case TargetMapping.AllPlaneswalkersYouControl:
         return state.battlefield
           .filter(
             (o) =>
@@ -471,20 +471,20 @@ export class TargetMapper {
               ),
           )
           .map((o) => o.id);
-      case "ALL_CREATURES":
+      case TargetMapping.AllCreatures:
         return state.battlefield
           .filter((o) =>
             o.definition.types.some((t) => t.toLowerCase() === "creature"),
           )
           .map((o) => o.id);
-      case "ALL_PLANESWALKERS":
+      case TargetMapping.AllPlaneswalkers:
         return state.battlefield
           .filter((o) =>
             o.definition.types.some((t) => t.toLowerCase() === "planeswalker"),
           )
           .map((o) => o.id);
-      case "MATCHING_PERMANENTS":
-      case "ALL_MATCHING_PERMANENTS":
+      case TargetMapping.MatchingPermanents:
+      case TargetMapping.AllMatchingPermanents:
         if (!effect?.restrictions) return [];
         return state.battlefield
           .filter((o) =>
@@ -496,9 +496,9 @@ export class TargetMapper {
             ),
           )
           .map((o) => o.id);
-      case "TRIGGER_EVENT_SOURCE":
-      case "EVENT_SOURCE":
-      case "TRIGGER_SOURCE": {
+      case TargetMapping.TriggerEventSource:
+      case TargetMapping.EventSource:
+      case TargetMapping.TriggerSource: {
         const eData =
           eventData ||
           parentContext?.eventData ||
@@ -514,7 +514,7 @@ export class TargetMapper {
             ? [stackData.sourceId]
             : [];
       }
-      case "TRIGGER_TARGET": {
+      case TargetMapping.TriggerTarget: {
         const eData =
           eventData ||
           parentContext?.eventData ||
@@ -526,7 +526,7 @@ export class TargetMapper {
             ? [(stackData as any).targetId]
             : [];
       }
-      case "EVENT_TARGET": {
+      case TargetMapping.EventTarget: {
         const eData =
           eventData ||
           parentContext?.eventData ||
@@ -538,7 +538,7 @@ export class TargetMapper {
           eData?.targetId;
         return pObjId ? [pObjId] : [];
       }
-      case "EVENT_PLAYER": {
+      case TargetMapping.EventPlayer: {
         const eData =
           eventData ||
           parentContext?.eventData ||
@@ -547,7 +547,7 @@ export class TargetMapper {
           ? [eData?.payload?.playerId || eData?.playerId]
           : [];
       }
-      case "EVENT_OBJECT_CONTROLLER": {
+      case TargetMapping.EventObjectController: {
         const eData =
           eventData ||
           parentContext?.eventData ||
@@ -560,7 +560,7 @@ export class TargetMapper {
           (eData as any)?.gameObject;
         return obj?.controllerId ? [obj.controllerId] : [];
       }
-      case "TARGET_1_CONTROLLER": {
+      case TargetMapping.Target1Controller: {
         const targetId = targets[0];
         // Check if we have persisted controller information first
         if (
@@ -584,7 +584,7 @@ export class TargetMapper {
           state.exile.find((o) => o.id === targetId);
         return obj ? [obj.controllerId] : [];
       }
-      case "TRIGGER_TARGET_CONTROLLER": {
+      case TargetMapping.TriggerTargetController: {
         const tId = eventData?.targetId || stackData?.data?.eventData?.targetId;
         const obj =
           state.battlefield.find((o) => o.id === tId) ||
@@ -593,7 +593,7 @@ export class TargetMapper {
             .find((o: any) => o.id === tId);
         return obj ? [obj.controllerId] : [];
       }
-      case "ALL_CREATURES_YOU_CONTROL":
+      case TargetMapping.AllCreaturesYouControl:
         return state.battlefield
           .filter(
             (o) =>
@@ -601,7 +601,7 @@ export class TargetMapper {
               o.definition.types.some((t) => t.toLowerCase() === "creature"),
           )
           .map((o) => o.id);
-      case "OTHER_CREATURES_YOU_CONTROL":
+      case TargetMapping.OtherCreaturesYouControl:
         return state.battlefield
           .filter(
             (o) =>
@@ -610,7 +610,7 @@ export class TargetMapper {
               o.definition.types.some((t) => t.toLowerCase() === "creature"),
           )
           .map((o) => o.id);
-      case "OTHER_SPIRITS_YOU_CONTROL":
+      case TargetMapping.OtherSpiritsYouControl:
         return state.battlefield
           .filter(
             (o) =>
@@ -619,11 +619,11 @@ export class TargetMapper {
               o.definition.subtypes?.some((t) => t.toLowerCase() === "spirit"),
           )
           .map((o) => o.id);
-      case "ALL_PERMANENTS_YOU_CONTROL":
+      case TargetMapping.AllPermanentsYouControl:
         return state.battlefield
           .filter((o) => o.controllerId === controllerId)
           .map((o) => o.id);
-      case "ALL_FRACTALS_YOU_CONTROL":
+      case TargetMapping.AllFractalsYouControl:
         return state.battlefield
           .filter(
             (o) =>
@@ -631,8 +631,8 @@ export class TargetMapper {
               o.definition.subtypes?.some((s) => s.toLowerCase() === "fractal"),
           )
           .map((o) => o.id);
-      case "OTHER_CREATURES":
-      case "ALL_OTHER_CREATURES":
+      case TargetMapping.OtherCreatures:
+      case TargetMapping.AllOtherCreatures:
         return state.battlefield
           .filter(
             (o) =>
@@ -640,7 +640,7 @@ export class TargetMapper {
               o.definition.types.some((t) => t.toLowerCase() === "creature"),
           )
           .map((o) => o.id);
-      case "EACH_CREATURE_YOU_CONTROL":
+      case TargetMapping.EachCreatureYouControl:
         return state.battlefield
           .filter(
             (o) =>
@@ -648,16 +648,16 @@ export class TargetMapper {
               o.definition.types.some((t) => t.toLowerCase() === "creature"),
           )
           .map((o) => o.id);
-      case "OPPONENT":
-      case "OPPONENTS":
-      case "EACH_OPPONENT":
+      case TargetMapping.Opponent:
+      case TargetMapping.EachOpponent:
+      case TargetMapping.Opponents:
         return Object.keys(state.players).filter((pid) => pid !== controllerId);
-      case "OPPONENT_1":
-      case "TARGET_OPPONENT":
+      case TargetMapping.Opponent1:
+      case TargetMapping.TargetOpponent:
         return [
           Object.keys(state.players).filter((pid) => pid !== controllerId)[0],
         ];
-      case "EACH_OPPONENT_CREATURE":
+      case TargetMapping.EachOpponentCreature:
         return state.battlefield
           .filter(
             (o) =>
@@ -665,9 +665,9 @@ export class TargetMapper {
               o.definition.types.some((t) => t.toLowerCase() === "creature"),
           )
           .map((o) => o.id);
-      case "EACH_PLAYER":
+      case TargetMapping.EachPlayer:
         return Object.keys(state.players);
-      case "ALL_CREATURES_CONTROLLED_BY_TARGET_1": {
+      case TargetMapping.AllCreaturesControlledByTarget1: {
         const targetPlayerId = targets[0] as PlayerId;
         if (!targetPlayerId) return [];
         return state.battlefield
@@ -678,29 +678,23 @@ export class TargetMapper {
           )
           .map((o) => o.id);
       }
-      case "SELECTED_CARD":
+      case TargetMapping.SelectedCard:
+      case TargetMapping.SelectedCards:
         return targets;
-      case "LAST_CREATED_TOKEN":
-        return state.turnState.lastCreatedTokenId
-          ? [state.turnState.lastCreatedTokenId]
-          : [];
-      case "CONTROLLER_GRAVEYARD":
-        const cp = state.players[controllerId];
-        return cp ? cp.graveyard.map((c) => c.id) : [];
-      case "CONTROLLER_GRAVEYARD_AND_LIBRARY":
+      case TargetMapping.ControllerGraveyardAndLibrary:
         const pc = state.players[controllerId];
         return pc
           ? [...pc.graveyard.map((c) => c.id), ...pc.library.map((c) => c.id)]
           : [];
-      case "LAST_EXILED_OBJECT":
+      case TargetMapping.LastExiledObject:
         return state.turnState.lastExiledIds || [];
-      case "LAST_DISCARDED_CARDS":
+      case TargetMapping.LastDiscardedCards:
         return state.turnState.lastDiscardedIds || [];
-      case "ALL_PLAYERS":
+      case TargetMapping.AllPlayers:
         return Object.keys(state.players);
-      case "ANY_TARGET":
+      case TargetMapping.AnyTarget:
         return targets;
-      case "OTHER_CREATURES_AND_PLANESWALKERS":
+      case TargetMapping.OtherCreaturesAndPlaneswalkers:
         const chosenId = targets[0];
         return state.battlefield
           .filter(
@@ -712,7 +706,7 @@ export class TargetMapper {
                 )),
           )
           .map((o) => o.id);
-      case "ALL_CREATURES_AND_PLANESWALKERS":
+      case TargetMapping.AllCreaturesAndPlaneswalkers:
         return state.battlefield
           .filter(
             (o) =>
@@ -744,7 +738,7 @@ export class TargetMapper {
               ),
           )
           .map((o) => o.id);
-      case "OTHER_PLANESWALKERS_YOU_CONTROL":
+      case TargetMapping.OtherPlaneswalkersYouControl:
         return state.battlefield
           .filter(
             (o) =>
@@ -755,7 +749,7 @@ export class TargetMapper {
               ),
           )
           .map((o) => o.id);
-      case "TARGET_1_HIGHEST_MV_CREATURE_PLANESWALKER": {
+      case TargetMapping.Target1HighestMVCreaturePlaneswalker: {
         const targetPlayerId = targets[0];
         const candidates = state.battlefield.filter(
           (o) =>
@@ -777,7 +771,7 @@ export class TargetMapper {
           )
           .map((o) => o.id);
       }
-      case "EXILED_CARD": {
+      case TargetMapping.ExiledCard: {
         // Return the ID of the object that was just exiled by this effect chain
         return parentContext?.exiledIds || [];
       }
@@ -815,8 +809,8 @@ export class TargetMapper {
           );
         });
       }
-      case "REMAINDER_OF_POOL":
-      case "REMAINDER_OF_LOOKING_CARDS": {
+      case TargetMapping.RemainderOfPool:
+      case TargetMapping.RemainderOfLookingCards: {
         const pool = (parentContext?.lookingCards ||
           (stackData as any)?.lookingCards ||
           state.pendingAction?.data?.lookingCards ||

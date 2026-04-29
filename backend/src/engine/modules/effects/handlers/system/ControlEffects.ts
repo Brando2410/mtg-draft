@@ -1,7 +1,7 @@
 import { PlayerId } from "@shared/engine_types";
 import { IEffectHandler } from "../../IEffectHandler";
-import { ControlEffectHandler as LegacyHandler } from "./ControlEffectHandler";
 import { ChoiceEffectHandler } from "../system/ChoiceEffectHandler";
+import { ControlEffectHandler as LegacyHandler } from "./ControlEffectHandler";
 
 export const ControlEffectsHandler: IEffectHandler = {
     handle(state, effect, log, context) {

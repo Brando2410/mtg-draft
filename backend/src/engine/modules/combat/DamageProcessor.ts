@@ -4,8 +4,8 @@ import {
   GameState,
   PlayerId
 } from "@shared/engine_types";
-import { getProcessors } from "../ProcessorRegistry";
 import { RuleUtils } from "../../utils/RuleUtils";
+import { getProcessors } from "../ProcessorRegistry";
 
 /**
  * Rules Engine Module: Damage Handling (Rule 120)

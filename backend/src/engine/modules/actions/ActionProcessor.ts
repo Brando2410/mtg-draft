@@ -16,9 +16,8 @@ import {
 import { Mutation, MutationType } from "@shared/types/mutations";
 import { RegistryProcessor } from "../core/RegistryProcessor";
 import { TriggerProcessor } from "../effects/triggers/TriggerProcessor";
+import { getProcessors } from "../ProcessorRegistry";
 
-import type { ReplacementProcessor as ReplacementProcessorType } from "../effects/replacements/ReplacementProcessor";
-import type { LayerProcessor as LayerProcessorType } from "../state/LayerProcessor";
 
 /**
  * Physical Actions Handling (Rule 400/103)
@@ -120,7 +119,7 @@ export class ActionProcessor {
       console.log(`[DISCARD-DEBUG] Card ${card.definition.name} (${card.id}) added to lastDiscardedIds. Current count: ${state.turnState.lastDiscardedIds.length}`);
     }
 
-    const ReplacementProcessor = require("../effects/replacements/ReplacementProcessor").ReplacementProcessor as typeof ReplacementProcessorType;
+    const ReplacementProcessor = getProcessors(state).replacement;
     const replacementResult = ReplacementProcessor.handleMovementReplacement(
       state,
       card,
@@ -366,7 +365,7 @@ export class ActionProcessor {
 
       let entersTapped = card.definition.entersTapped || false;
       if (card.definition.entersTappedCondition) {
-        const { ConditionProcessor } = require("./../core/logic/ConditionProcessor");
+        const ConditionProcessor = getProcessors(state).condition;
         if (
           ConditionProcessor.matchesCondition(
             state,
@@ -374,7 +373,7 @@ export class ActionProcessor {
             {
               sourceId: card.id,
               controllerId: targetPlayerId,
-              event: { xValue: card.xValue } as unknown as TriggerEvent,
+              event: { xValue: card.xValue } as any,
               stackObject: card as unknown as StackObject,
             },
           )
@@ -657,7 +656,7 @@ export class ActionProcessor {
     state.battlefield.forEach((obj) => {
       if (obj.controllerId === playerId) {
         // Rule 502.1: Check for restrictions that prevent untapping
-        const LayerProcessor = require("../state/LayerProcessor").LayerProcessor as typeof LayerProcessorType;
+        const LayerProcessor = getProcessors(state).layer;
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         if (
           stats.keywords.includes("CannotUntap") ||

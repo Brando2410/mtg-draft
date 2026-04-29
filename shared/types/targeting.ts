@@ -26,6 +26,7 @@ export const TargetType = {
     CardInGraveyard: 'CARD_IN_GRAVEYARD',
     CardInExile: 'CARD_IN_EXILE',
     CardInHand: 'CARD_IN_HAND',
+    CardInLibrary: 'CARD_IN_LIBRARY',
     Opponent: 'OPPONENT',
     Self: 'SELF',
     PlayerOrPlaneswalker: 'PLAYER_OR_PLANESWALKER',

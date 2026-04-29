@@ -1,7 +1,7 @@
 import { PlayerId } from "@shared/engine_types";
-import { IEffectHandler } from "../../IEffectHandler";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
+import { IEffectHandler } from "../../IEffectHandler";
 
 export const ManaHandler: IEffectHandler = {
   handle(state, effect, log, context) {

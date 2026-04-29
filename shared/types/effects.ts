@@ -267,6 +267,7 @@ export interface BaseEffect {
     effects?: EffectDefinition[]; // Nested effects for chaining/conditionals
     onFailureEffects?: EffectDefinition[];
     isFreeCast?: boolean;
+    metadata?: Record<string, any>;
     [key: string]: any; // Transitional compatibility
 }
 

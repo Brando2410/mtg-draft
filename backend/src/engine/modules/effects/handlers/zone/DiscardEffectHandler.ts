@@ -1,4 +1,4 @@
-import { DrawEffect, EffectDefinition, GameState, PlayerId, ResolutionContext, Zone } from '@shared/engine_types';
+import { EffectDefinition, GameState, PlayerId, ResolutionContext } from '@shared/engine_types';
 import { getProcessors } from '../../../ProcessorRegistry';
 import { ChoiceGenerator } from '../../ChoiceGenerator';
 

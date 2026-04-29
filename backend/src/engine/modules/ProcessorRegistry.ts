@@ -1,11 +1,11 @@
 import { GameState } from "@shared/engine_types";
 import type { ActionProcessor } from "./actions/ActionProcessor";
-import type { DamageProcessor } from "./combat/DamageProcessor";
 import type { ChoiceProcessor } from "./actions/ChoiceProcessor";
 import type { PlayerActionProcessor } from "./actions/PlayerActionProcessor";
 import type { SpellProcessor } from "./actions/spells/SpellProcessor";
 import type { TargetingProcessor } from "./actions/targeting/TargetingProcessor";
 import type { CombatProcessor } from "./combat/CombatProcessor";
+import type { DamageProcessor } from "./combat/DamageProcessor";
 import type { ConditionProcessor } from "./core/logic/ConditionProcessor";
 import type { RegistryProcessor } from "./core/RegistryProcessor";
 import type { RestrictionValidator } from "./core/RestrictionValidator";
@@ -13,9 +13,10 @@ import type { StackProcessor } from "./core/stack/StackProcessor";
 import type { PriorityProcessor } from "./core/turn/PriorityProcessor";
 import type { TurnProcessor } from "./core/turn/TurnProcessor";
 import type { EffectProcessor } from "./effects/EffectProcessor";
+import type { ReplacementProcessor as ReplacementProcessorType } from "./effects/replacements/ReplacementProcessor";
 import type { TriggerProcessor } from "./effects/triggers/TriggerProcessor";
-import type { ManaProcessor } from "./magic/ManaProcessor";
 import type { CostProcessor } from "./magic/CostProcessor";
+import type { ManaProcessor } from "./magic/ManaProcessor";
 import type { LayerProcessor } from "./state/LayerProcessor";
 import type { StateBasedActionsProcessor } from "./state/StateBasedActionsProcessor";
 
@@ -43,6 +44,7 @@ export interface ProcessorRegistry {
     registry: typeof RegistryProcessor;
     effect: typeof EffectProcessor;
     condition: typeof ConditionProcessor;
+    replacement: typeof ReplacementProcessorType;
 }
 
 /**
@@ -81,5 +83,6 @@ export function getProcessors(state: GameState): ProcessorRegistry {
         get registry() { return require("./core/RegistryProcessor").RegistryProcessor; },
         get effect() { return require("./effects/EffectProcessor").EffectProcessor; },
         get condition() { return require("./core/logic/ConditionProcessor").ConditionProcessor; },
+        get replacement() { return require("./effects/replacements/ReplacementProcessor").ReplacementProcessor; },
     } as unknown as ProcessorRegistry;
 }

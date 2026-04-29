@@ -81,7 +81,10 @@ export class EffectProcessor {
     // MTG Rule: The check is made once as the spell or ability starts to resolve from the stack.
     // If all its targets are now illegal, the spell or ability is countered.
     // We only run this on the ROOT resolution (parentContext === null) to avoid nested sub-effects triggering it.
-    if (startIndex === 0 && !parentContext && targets.length > 0 && effects.some(e => e.targetMapping?.toString().startsWith('TARGET_'))) {
+    if (startIndex === 0 && !parentContext && targets.length > 0 && effects.some(e => {
+      const tm = (e.targetMapping || "").toString();
+      return tm.startsWith('TARGET_') || tm === TargetMapping.TargetOpponent || tm === TargetMapping.TargetPlayer;
+    })) {
       const { targeting: TP } = getProcessors(state);
       TargetingProcessor = TP;
       
@@ -272,34 +275,19 @@ export class EffectProcessor {
       }
 
       const mStr = (m || "").toString().toUpperCase();
-      const isDirectTargetMapping =
-        mStr.startsWith("TARGET_") &&
-        !isNaN(parseInt(mStr.substring(7))) &&
-        mStr.split("_").length === 2;
-
+      const isDirectTargetMapping = mStr.startsWith("TARGET_") && !isNaN(parseInt(mStr.substring(7))) && mStr.split("_").length === 2;
       let validationIndex = index;
-      if (isDirectTargetMapping) {
-        validationIndex = parseInt(mStr.substring(7)) - 1;
-      }
+      if (isDirectTargetMapping) validationIndex = parseInt(mStr.substring(7)) - 1;
 
-      if (
-        isDirectTargetMapping ||
-        (
+      if (isDirectTargetMapping || (
           [
             TargetMapping.TargetOpponent,
             TargetMapping.TargetPlayer,
             TargetMapping.TargetCreature,
             TargetMapping.TargetPermanent,
           ] as string[]
-        ).includes(mStr)
-      ) {
-        return this.getValidTargetIds(
-          state,
-          effect,
-          ids,
-          context,
-          validationIndex,
-        );
+        ).includes(mStr)) {
+        return this.getValidTargetIds(state, effect, ids, context, validationIndex);
       }
 
       return ids;
@@ -468,7 +456,7 @@ export class EffectProcessor {
     const { sourceId, controllerId, targets, stackObject } = context;
 
     // We wrap the stackObject/parent state into a clean ConditionContext
-    const event = context.event || { ...(stackObject || {}), targets };
+    const event = (context.event || { ...(stackObject || {}), targets }) as any;
 
     return ConditionProcessor.matchesCondition(state, condition, {
       sourceId,

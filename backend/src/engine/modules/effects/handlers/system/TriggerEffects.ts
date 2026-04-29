@@ -1,5 +1,5 @@
-import { IEffectHandler } from "../../IEffectHandler";
 import { getProcessors } from "../../../ProcessorRegistry";
+import { IEffectHandler } from "../../IEffectHandler";
 
 export const CreateDelayedTriggerHandler: IEffectHandler = {
     handle(state, effect, log, context) {

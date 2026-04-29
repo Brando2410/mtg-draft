@@ -1,7 +1,7 @@
-import { GameObject, GameObjectId, GameState, PlayerId, RestrictionType, Step, ActionType } from '@shared/engine_types';
-import { getProcessors } from '../ProcessorRegistry';
-import { RuleUtils } from '../../utils/RuleUtils';
+import { ActionType, GameObject, GameObjectId, GameState, PlayerId, RestrictionType, Step } from '@shared/engine_types';
 import { EngineContext } from '../../interfaces/EngineContext';
+import { RuleUtils } from '../../utils/RuleUtils';
+import { getProcessors } from '../ProcessorRegistry';
  
 interface DamageAssignmentRecord {
   sources: GameObject[];

@@ -9,20 +9,19 @@ import {
   PlayerId,
   PlayerState,
   ResolutionContext,
-  SearchEffect,
   SelectionType,
   TargetMapping,
   TargetType,
   TriggerEvent,
   Zone
 } from "@shared/engine_types";
-import { TriggerProcessor } from "../../triggers/TriggerProcessor";
-import { getProcessors } from "../../../ProcessorRegistry";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { ActionProcessor } from "../../../actions/ActionProcessor";
 import { TargetingProcessor } from "../../../actions/targeting/TargetingProcessor";
 import { RestrictionValidator } from "../../../core/RestrictionValidator";
+import { getProcessors } from "../../../ProcessorRegistry";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
+import { TriggerProcessor } from "../../triggers/TriggerProcessor";
 import { SearchEffectHandler } from "./SearchEffectHandler";
 
 /**
@@ -127,17 +126,17 @@ export class MoveEffectHandler {
       // Only add types that are actual card types, excluding zone/entity indicators
       if (
         typeStr &&
-        ![
-          "ANY",
-          "CARD",
-          "PLAYER",
-          "OPPONENT",
-          "ANY_TARGET",
-          "CARD_IN_GRAVEYARD",
-          "CARD_IN_HAND",
-          "CARD_IN_LIBRARY",
-          "SELF",
-        ].includes(typeStr)
+        !([
+          TargetType.Any,
+          TargetType.Card,
+          TargetType.Player,
+          TargetType.Opponent,
+          TargetType.AnyTarget,
+          TargetType.CardInGraveyard,
+          TargetType.CardInHand,
+          TargetType.CardInLibrary,
+          TargetType.Self,
+        ] as TargetType[]).includes(typeStr as TargetType)
       ) {
         res.push(typeStr);
       }

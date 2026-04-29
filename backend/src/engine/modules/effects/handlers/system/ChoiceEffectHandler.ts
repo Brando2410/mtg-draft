@@ -8,8 +8,8 @@ import {
   ResolutionContext,
   TargetMapping
 } from "@shared/engine_types";
-import { ChoiceGenerator } from "../../ChoiceGenerator";
 import { getProcessors } from "../../../ProcessorRegistry";
+import { ChoiceGenerator } from "../../ChoiceGenerator";
 
 /**
  * Strategy for CR 608: Resolution Choices and CR 701: Keyword Actions (Choice-based)
@@ -121,13 +121,13 @@ export class ChoiceEffectHandler {
       TargetMapping.LastDiscardedCards,
       TargetMapping.AnyGraveyard,
       TargetMapping.AnyExile,
-    ] as string[]).includes(targetZoneMapping);
+    ] as TargetMapping[]).includes(targetZoneMapping as TargetMapping);
 
     if (isStandardMapping) {
       let workingMappingPlayerId = mappingPlayerId;
       if (targetZoneMapping.startsWith("TARGET_1_")) {
         workingMappingPlayerId =
-          targetZoneMapping === "TARGET_1_HAND_REVEAL_PICK"
+          targetZoneMapping === TargetMapping.Target1HandRevealPick
             ? controllerId
             : (targets[0] as PlayerId) || controllerId;
       }
@@ -137,26 +137,26 @@ export class ChoiceEffectHandler {
       const isSideboard = targetZoneMapping.endsWith("_SIDEBOARD");
       const isBattlefield =
         targetZoneMapping.endsWith("_BATTLEFIELD") ||
-        targetZoneMapping === "ALL_BATTLEFIELD";
-      const isNameACard = targetZoneMapping === "NAME_A_CARD";
-      const isLastMilled = targetZoneMapping === "LAST_MILLED_IDS";
+        targetZoneMapping === TargetMapping.AllBattlefield;
+      const isNameACard = targetZoneMapping === TargetMapping.NameACard;
+      const isLastMilled = targetZoneMapping === TargetMapping.LastMilledIds;
       const isLastExiled =
-        targetZoneMapping === "LAST_EXILED_IDS" ||
-        targetZoneMapping === "PARENT_CONTEXT_EXILED_IDS";
-      const isLastDiscarded = targetZoneMapping === "LAST_DISCARDED_CARDS";
+        targetZoneMapping === TargetMapping.LastExiledIds ||
+        targetZoneMapping === TargetMapping.ParentContextExiledIds;
+      const isLastDiscarded = targetZoneMapping === TargetMapping.LastDiscardedCards;
 
       let sourceCards: GameObject[] = [];
       const { targeting: TP } = getProcessors(state);
 
       if (isNameACard) {
         sourceCards = state.players[controllerId].library;
-      } else if (targetZoneMapping === "ANY_GRAVEYARD") {
+      } else if (targetZoneMapping === TargetMapping.AnyGraveyard) {
         sourceCards = Object.values(state.players).flatMap(p => p.graveyard);
-      } else if (targetZoneMapping === "ANY_EXILE") {
+      } else if (targetZoneMapping === TargetMapping.AnyExile) {
         sourceCards = state.exile;
       } else if (isBattlefield) {
         sourceCards =
-          targetZoneMapping === "ALL_BATTLEFIELD"
+          targetZoneMapping === TargetMapping.AllBattlefield
             ? state.battlefield
             : state.battlefield.filter(
               (o: GameObject) => o.controllerId === workingMappingPlayerId,
@@ -180,15 +180,15 @@ export class ChoiceEffectHandler {
         console.log(`[CHOICE-HANDLER-DEBUG] sourceCards count: ${sourceCards.length}`);
       } else if (
         targetPlayer ||
-        targetZoneMapping === "TARGET_1_HAND_REVEAL_PICK" ||
-        targetZoneMapping === "OPPONENT_HAND_REVEAL_PICK"
+        targetZoneMapping === TargetMapping.Target1HandRevealPick ||
+        targetZoneMapping === TargetMapping.OpponentHandRevealPick
       ) {
         if (
-          targetZoneMapping === "TARGET_1_HAND_REVEAL_PICK" ||
-          targetZoneMapping === "OPPONENT_HAND_REVEAL_PICK"
+          targetZoneMapping === TargetMapping.Target1HandRevealPick ||
+          targetZoneMapping === TargetMapping.OpponentHandRevealPick
         ) {
           const targetOppId =
-            targetZoneMapping === "TARGET_1_HAND_REVEAL_PICK"
+            targetZoneMapping === TargetMapping.Target1HandRevealPick
               ? (targets[0] as PlayerId)
               : (Object.keys(state.players).find(
                 (pid: string) => pid !== controllerId,
@@ -240,7 +240,7 @@ export class ChoiceEffectHandler {
         return;
       }
 
-      if (targetZoneMapping === "TARGET_1_HAND") {
+      if (targetZoneMapping === TargetMapping.Target1Hand) {
         targetPlayer!.hand.forEach((c: GameObject) => (c.isRevealed = true));
       }
 
