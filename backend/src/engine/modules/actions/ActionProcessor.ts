@@ -17,6 +17,8 @@ import { Mutation, MutationType } from "@shared/types/mutations";
 import { RegistryProcessor } from "../core/RegistryProcessor";
 import { TriggerProcessor } from "../effects/triggers/TriggerProcessor";
 import { getProcessors } from "../ProcessorRegistry";
+import { oracle } from "../../OracleLogicMap";
+import { LifeDamageHandler } from "../effects/handlers/life/LifeDamageHandler";
 
 
 /**
@@ -599,7 +601,6 @@ export class ActionProcessor {
 
       // Fallback to Oracle if missing
       if (loyaltyValue === undefined || loyaltyValue === null) {
-        const { oracle } = require("../../OracleLogicMap");
         const logic = oracle.getCard(card.definition.name);
         if (logic) {
           loyaltyValue = logic.loyalty;
@@ -718,7 +719,6 @@ export class ActionProcessor {
   }
 
   public static gainLife(state: GameState, playerId: PlayerId, amount: number, log?: (m: string) => void) {
-    const { LifeDamageHandler } = require("../effects/handlers/life/LifeDamageHandler");
     LifeDamageHandler.handleGainLife(
       state,
       { type: EffectType.GainLife, amount } as any,
@@ -728,7 +728,6 @@ export class ActionProcessor {
   }
 
   public static loseLife(state: GameState, playerId: PlayerId, amount: number, log?: (m: string) => void) {
-    const { LifeDamageHandler } = require("../effects/handlers/life/LifeDamageHandler");
     LifeDamageHandler.handleLoseLife(
       state,
       { type: EffectType.LoseLife, amount } as any,

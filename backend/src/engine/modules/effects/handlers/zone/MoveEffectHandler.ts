@@ -72,8 +72,8 @@ export class MoveEffectHandler {
 
     if (effect.type === EffectType.PutRemainderOnBottomRandom && finalTargetIds.length > 1) ActionProcessor.shuffle(finalTargetIds);
 
-    const { effect: EP } = getProcessors(state);
-    const fromTopResolved = EP.resolveAmount(state, effect.fromTop || 0, context, finalTargetIds);
+    const processors = getProcessors(state);
+    const fromTopResolved = processors.effect.resolveAmount(state, effect.fromTop || 0, context, finalTargetIds);
 
     if (fromTopResolved > 0 && (effect.sourceZones || []).includes(Zone.Library)) {
       const affectedPlayerId = (finalTargetIds.find((tid: string) => state.players[tid as PlayerId]) as PlayerId) || controllerId;
@@ -159,12 +159,12 @@ export class MoveEffectHandler {
       return;
     }
 
-    const { effect: EP } = getProcessors(state);
+    const processors = getProcessors(state);
     const resolvedMin =
       targetDef.minCount !== undefined
-        ? getProcessors(state).effect.resolveAmount(state, targetDef.minCount as any, context)
-        : getProcessors(state).effect.resolveAmount(state, targetDef.count || 1 as any, context);
-    const resolvedMax = getProcessors(state).effect.resolveAmount(
+        ? processors.effect.resolveAmount(state, targetDef.minCount as any, context)
+        : processors.effect.resolveAmount(state, targetDef.count || 1 as any, context);
+    const resolvedMax = processors.effect.resolveAmount(
       state,
       targetDef.count || 1,
       context,
@@ -282,9 +282,9 @@ export class MoveEffectHandler {
     targets: string[] = [],
   ) {
     const { controllerId } = context;
-    const { effect: EP } = getProcessors(state);
     const moveEff = effect as MoveEffect;
-    const amount = getProcessors(state).effect.resolveAmount(
+    const processors = getProcessors(state);
+    const amount = processors.effect.resolveAmount(
       state,
       (moveEff.fromTop || 1) as any,
       context,
@@ -517,7 +517,8 @@ export class MoveEffectHandler {
             cType.toLowerCase() === "p1p1" || cType === "+1/+1"
               ? "+1/+1"
               : cType;
-          const resolvedAmount = getProcessors(state).effect.resolveAmount(
+          const processors = getProcessors(state);
+          const resolvedAmount = processors.effect.resolveAmount(
             state,
             sc.amount as any,
             context,
@@ -594,8 +595,8 @@ export class MoveEffectHandler {
           if (effect.selectionType === SelectionType.AnyNumber || (effect as any).amount === "ANY") {
             return cards.length;
           }
-          const { effect: EP_LOCAL } = getProcessors(state);
-          const resolved = getProcessors(state).effect.resolveAmount(state, (effect as any).amount || 1 as any, context, cards.map(c => c.id));
+          const processors = getProcessors(state);
+          const resolved = processors.effect.resolveAmount(state, (effect as any).amount || 1 as any, context, cards.map(c => c.id));
           return Math.min(cards.length, resolved);
         })(),
         actionType:

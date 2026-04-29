@@ -1,10 +1,6 @@
 import { AbilityCost, CardType, CostType, CrewCost, DiscardCost, ExileCost, GameObject, GameObjectId, GameState, LifeCost, LoyaltyCost, ManaCost, PlayerId, RestrictionType, SacrificeCost, StackObject, TapSelectionCost, Zone } from '@shared/engine_types';
 
-import { ActionProcessor } from '../actions/ActionProcessor';
-import { TargetingProcessor } from '../actions/targeting/TargetingProcessor';
-import { TriggerProcessor } from '../effects/triggers/TriggerProcessor';
-import { LayerProcessor } from '../state/LayerProcessor';
-import { ManaProcessor } from './ManaProcessor';
+import { getProcessors } from '../ProcessorRegistry';
 
 /**
  * Rules Engine Module: Cost Processing (Rule 601.2h / 101.1)
@@ -61,6 +57,7 @@ export class CostProcessor {
         // Rule 302.6: Summoning Sickness applies to tap abilities of creatures
         const isCreature = (source.typeMask || 0) & CardType.Creature;
         if (isCreature && source.summoningSickness) {
+          const { layer: LayerProcessor } = getProcessors(state);
           const stats = LayerProcessor.getEffectiveStats(source, state);
           if (!stats.keywords.includes('Haste')) {
             return false;
@@ -76,6 +73,7 @@ export class CostProcessor {
 
       case CostType.Mana:
         const effectiveMana = this.getEffectiveManaCost(state, cost, source, stackObject);
+        const { mana: ManaProcessor } = getProcessors(state);
         return ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveMana);
 
       case CostType.Loyalty: {
@@ -90,6 +88,7 @@ export class CostProcessor {
       case CostType.Sacrifice: {
         const sacCost = cost as SacrificeCost;
         const neededSac = (sacCost.amount !== undefined) ? sacCost.amount : 1;
+        const { targeting: TargetingProcessor } = getProcessors(state);
         const validSacrifices = state.battlefield.filter(c =>
           String(c.controllerId) === String(playerId) &&
           (!sacCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, sacCost.restrictions, { controllerId: playerId, sourceId: source.id }))
@@ -103,6 +102,7 @@ export class CostProcessor {
       case CostType.Discard: {
         const discCost = cost as DiscardCost;
         const neededDisc = discCost.amount || 1;
+        const { targeting: TargetingProcessor } = getProcessors(state);
         const validDiscards = player.hand.filter(c =>
           (!discCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, discCost.restrictions, { controllerId: playerId, sourceId: source.id }))
         );
@@ -131,6 +131,7 @@ export class CostProcessor {
           return [];
         });
         const neededExile = exileCost.amount || 1;
+        const { targeting: TargetingProcessor } = getProcessors(state);
         const validExiles = pool.filter((c: GameObject) =>
           (!exileCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, exileCost.restrictions, { controllerId: playerId, sourceId: source.id }))
         );
@@ -147,6 +148,7 @@ export class CostProcessor {
           o.definition.types.some(t => t.toLowerCase() === 'creature') &&
           !o.isTapped
         );
+        const { layer: LayerProcessor } = getProcessors(state);
         const totalPowerAvailable = candidates.reduce((sum, c) => sum + LayerProcessor.getEffectiveStats(c, state).power, 0);
         return totalPowerAvailable >= amount;
       }
@@ -157,7 +159,10 @@ export class CostProcessor {
         const candidates = state.battlefield.filter(o =>
           String(o.controllerId) === String(playerId) &&
           !o.isTapped &&
-          (!tapCost.restrictions || TargetingProcessor.matchesRestrictions(state, o, tapCost.restrictions, { controllerId: playerId, sourceId: source.id }))
+          (() => {
+            const { targeting: TargetingProcessor } = getProcessors(state);
+            return (!tapCost.restrictions || TargetingProcessor.matchesRestrictions(state, o, tapCost.restrictions, { controllerId: playerId, sourceId: source.id }));
+          })()
         );
         // console.log(`[DEBUG] TapSelection canPay: amount=${amount}, candidates=${candidates.length}, sourceId=${source.id}`);
         return candidates.length >= amount;
@@ -176,6 +181,7 @@ export class CostProcessor {
     switch (cost.type) {
       case CostType.Tap:
         source.isTapped = true;
+        const { trigger: TriggerProcessor } = getProcessors(state);
         TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: source.id, data: { object: source } }, log);
         break;
 
@@ -183,6 +189,7 @@ export class CostProcessor {
         // Auto-tap logic is usually handled before calling pay() or inside playCard/activateAbility
         // If we reach here, we assume mana is in the pool or we deduct it directly
         const effectiveManaStr = this.getEffectiveManaCost(state, cost, source);
+        const { mana: ManaProcessor } = getProcessors(state);
         ManaProcessor.deductManaCost(player, effectiveManaStr);
         break;
 
@@ -195,7 +202,7 @@ export class CostProcessor {
         source.counters = source.counters || {};
         source.counters.loyalty = oldL + lVal;
         log(`${source.definition.name} loyalty: ${oldL} -> ${source.counters.loyalty}`);
-
+        const { trigger: TriggerProcessor } = getProcessors(state);
         TriggerProcessor.onEvent(state, { type: 'ON_ACTIVATE_LOYALTY', playerId, sourceId: source.id, data: { object: source } }, log);
         break;
       }
@@ -215,12 +222,14 @@ export class CostProcessor {
             toSac = state.battlefield.find(c => String(c.id) === String(chosenId));
           } else {
             // Fallback for auto-order/automated effects (not recommended for complex costs)
+            const { targeting: TargetingProcessor } = getProcessors(state);
             toSac = state.battlefield.find(c => String(c.controllerId) === String(playerId) && (!sacCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, sacCost.restrictions, { controllerId: playerId, sourceId: source.id })));
           }
         }
 
         if (toSac) {
           log(`[SACRIFICE] Processor executing moveCard for ${toSac.definition.name}...`);
+          const { trigger: TriggerProcessor, action: ActionProcessor } = getProcessors(state);
           TriggerProcessor.onEvent(state, {
             type: 'ON_SACRIFICE',
             playerId,
@@ -244,6 +253,7 @@ export class CostProcessor {
         const discardId = state.interaction.lastChosenDiscardId;
         const cardToDiscard = player.hand.find(c => c.id === discardId);
         if (cardToDiscard) {
+          const { trigger: TriggerProcessor, action: ActionProcessor } = getProcessors(state);
           TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card: cardToDiscard, sourceId: source.id } }, log);
           ActionProcessor.moveCard(state, cardToDiscard, Zone.Graveyard, playerId, log);
           log(`${player.name} discarded ${cardToDiscard.definition.name} as a cost.`);
@@ -257,6 +267,7 @@ export class CostProcessor {
         const xValue = source.xValue ?? 0;
         const lifeVal = lifeCost.value === 'X' ? xValue : (parseInt(lifeCost.value) || 0);
         player.life -= lifeVal;
+        const { trigger: TriggerProcessor } = getProcessors(state);
         TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
         log(`${player.name} pays ${lifeVal} life (${player.life + lifeVal} -> ${player.life})`);
         break;
@@ -277,6 +288,7 @@ export class CostProcessor {
         }
 
         exiles.forEach(obj => {
+          const { action: ActionProcessor } = getProcessors(state);
           ActionProcessor.moveCard(state, obj, Zone.Exile, playerId, log);
           log(`${player.name} exiled ${obj.definition?.name || 'an object'} as a cost.`);
         });
@@ -290,6 +302,7 @@ export class CostProcessor {
           const c = state.battlefield.find(o => o.id === cid);
           if (c) {
             c.isTapped = true;
+            const { trigger: TriggerProcessor } = getProcessors(state);
             TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, data: { object: c } }, log);
           }
         });
@@ -305,6 +318,7 @@ export class CostProcessor {
           if (c) {
             c.isTapped = true;
             log(`${c.definition.name} tapped.`);
+            const { trigger: TriggerProcessor } = getProcessors(state);
             TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, data: { object: c } }, log);
           }
         });
@@ -334,6 +348,7 @@ export class CostProcessor {
           }
 
           if (reduction > 0) {
+            const { mana: ManaProcessor } = getProcessors(state);
             const parsed = ManaProcessor.parseManaCost(costStr);
             parsed.generic = Math.max(0, parsed.generic - reduction);
 
@@ -384,6 +399,7 @@ export class CostProcessor {
     }
 
     // Fallback to legacy linear search (O(N))
+    const { targeting: TargetingProcessor } = getProcessors(state);
     return TargetingProcessor.findObjectInAnyZone(state, id) || undefined;
   }
 }

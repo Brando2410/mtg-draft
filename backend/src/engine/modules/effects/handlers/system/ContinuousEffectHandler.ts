@@ -1,4 +1,5 @@
-import { ContinuousEffectDefinition, DurationType, EffectDefinition, EffectDuration, EffectType, GameState, PlayerId, ResolutionContext, Zone } from '@shared/engine_types';
+import { ContinuousEffectDefinition, DurationType, EffectDefinition, EffectDuration, EffectType, GameState, PlayerId, ResolutionContext, TargetMapping, Zone } from '@shared/engine_types';
+import { getProcessors } from '../../../ProcessorRegistry';
 import { TargetingProcessor } from '../../../actions/targeting/TargetingProcessor';
 
 /**
@@ -12,7 +13,7 @@ export class ContinuousEffectHandler {
         log: (m: string) => void,
         context: ResolutionContext
     ) {
-        const { EffectProcessor } = require('../../EffectProcessor');
+        const { effect: EffectProcessor, targeting: TP_FROM_REG } = getProcessors(state);
         const ceDef = effect as ContinuousEffectDefinition;
         const { sourceId, targets: resolvedTargetIds, controllerId, stackObject } = context;
         log(`[CE_HANDLER] Resolving effect for source ${sourceId}. Targets: ${resolvedTargetIds.join(', ')}`);
@@ -53,11 +54,11 @@ export class ContinuousEffectHandler {
         const mapping = effect.targetMapping;
 
         if (!finalTargetIds && mapping) {
-            if (mapping === 'SELF') {
+            if (mapping === TargetMapping.Self) {
                 finalTargetIds = [sourceId];
             } else {
                 // Re-resolve mapping if not provided (safety fallback)
-                finalTargetIds = TargetingProcessor.resolveTargetMapping(state, mapping, context, effect);
+                finalTargetIds = TP_FROM_REG.resolveTargetMapping(state, mapping, context, effect);
             }
         }
 
@@ -84,8 +85,7 @@ export class ContinuousEffectHandler {
 
         let targetControllerIds = [(effect as any).targetControllerId || controllerId];
         if (effect.targetControllerMapping) {
-            const { TargetingProcessor: TP } = require('../../../actions/targeting/TargetingProcessor');
-            const resolvedIds = TP.resolveTargetMapping(state, effect.targetControllerMapping, context, effect);
+            const resolvedIds = TP_FROM_REG.resolveTargetMapping(state, effect.targetControllerMapping, context, effect);
             if (resolvedIds.length > 0) {
                 targetControllerIds = resolvedIds as PlayerId[];
             }
@@ -95,7 +95,7 @@ export class ContinuousEffectHandler {
             // Filter targets by owner for each controller if using owner-specific mapping
             const playerSpecificTargetIds = (effect.targetControllerMapping === 'PARENT_CONTEXT_EXILED_IDS_OWNERS')
                 ? finalTargetIds!.filter(tid => {
-                    const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
+                    const obj = TP_FROM_REG.findObjectInAnyZone(state, tid);
                     return obj?.ownerId === targetCID;
                 })
                 : finalTargetIds;
@@ -149,7 +149,7 @@ export class ContinuousEffectHandler {
                     type: typeof r === 'string' ? r as any : r.type,
                     targetControllerId: targetCID,
                     duration: effDuration
-                })) : (effect.restrictions && !(["MATCHING_PERMANENTS", "MATCHING_CARDS", "MATCHING_PERMANENTS_YOU_CONTROL"].includes(effect.targetMapping)) ? effect.restrictions.map((r: any) => ({
+                })) : (effect.restrictions && !([TargetMapping.MatchingPermanents, TargetMapping.MatchingCards, TargetMapping.MatchingPermanentsYouControl] as string[]).includes(effect.targetMapping as any) ? effect.restrictions.map((r: any) => ({
                     id: `rest_${effId}`,
                     sourceId,
                     type: typeof r === 'string' ? r as any : r.type,
@@ -159,8 +159,7 @@ export class ContinuousEffectHandler {
             };
 
             if (effect.copyFromIdMapping) {
-                const { TargetingProcessor: TP } = require('../../../actions/targeting/TargetingProcessor');
-                const ids = TP.resolveTargetMapping(state, effect.copyFromIdMapping, playerSpecificTargetIds, sourceId, controllerId, stackObject, effect, context);
+                const ids = TP_FROM_REG.resolveTargetMapping(state, effect.copyFromIdMapping, { ...context, targets: playerSpecificTargetIds }, effect);
                 if (ids.length > 0) {
                     continuousEff.copyFromId = ids[0];
                 }

@@ -22,6 +22,7 @@ import { ManaProcessor } from '../../magic/ManaProcessor';
 import { SpellCostCalculator } from './SpellCostCalculator';
 import { SpellInteractiveManager } from './SpellInteractiveManager';
 import { SpellValidator } from './SpellValidator';
+import { getProcessors } from '../../ProcessorRegistry';
 
 /**
  * SpellProcessor - Orchestrator Facade for Casting Spells and Activating Abilities.
@@ -94,7 +95,7 @@ export class SpellProcessor {
         // --- ACTIVATED ABILITY REDIRECTION (Graveyard) ---
         // If the card is in the graveyard and we're trying to "play" it, check if it's actually an activated ability card
         if (cardToPlay.zone === Zone.Graveyard && (state.players[playerId].hand.find((c) => c.id === cardInstanceId) === undefined)) {
-            const { LayerProcessor } = require('../../state/LayerProcessor');
+            const { layer: LayerProcessor } = getProcessors(state);
             const stats = LayerProcessor.getEffectiveStats(cardToPlay, state);
             const hasFlashback = stats.keywords?.includes('Flashback') || cardToPlay.definition.keywords?.includes('Flashback');
 
@@ -122,9 +123,8 @@ export class SpellProcessor {
 
         // --- MDFC FACE SELECTION (CR 711.1) ---
         if (cardToPlay.definition.faces && !bypassPriority && !cardToPlay.selectedFaceDefinition) {
-            const { ChoiceGenerator } = require('../../../effects/ChoiceGenerator');
-            const { ActionProcessor } = require('../ActionProcessor');
-            state.pendingAction = ActionProcessor.prepareAction(state, ChoiceGenerator.createModalChoice({
+            const { choiceGenerator: ChoiceGenerator, action: ActionProcessor } = getProcessors(state);
+            state.pendingAction = ActionProcessor.prepareAction(state, ChoiceGenerator.createModalChoice(state, {
                 label: `Cast ${cardToPlay.definition.name}: Choose Face`,
                 playerId: playerId,
                 sourceId: cardToPlay.id,
@@ -281,13 +281,13 @@ export class SpellProcessor {
 
         // Step 1.7: Check Mode Selection (Charms/Comands)
         if (modalAbility && !hasPreSelectedMode) {
-            const { TargetingProcessor } = require('../targeting/TargetingProcessor');
+            const { targeting: TargetingProcessor } = getProcessors(state);
             
             let minChoices = modalAbility.minChoices || 1;
             let maxChoices = modalAbility.maxChoices || 1;
 
             if ((modalAbility as any).chooseBothCondition) {
-                const { ConditionProcessor } = require('../../core/logic/ConditionProcessor');
+                const { condition: ConditionProcessor } = getProcessors(state);
                 const met = ConditionProcessor.matchesCondition(state, (modalAbility as any).chooseBothCondition, {
                     sourceId: cardToPlay.id,
                     controllerId: playerId,
@@ -311,7 +311,7 @@ export class SpellProcessor {
                 };
             });
 
-            const { ActionProcessor } = require('../ActionProcessor');
+            const { action: ActionProcessor } = getProcessors(state);
             state.pendingAction = ActionProcessor.prepareAction(state, {
                 type: ActionType.ModalSelection,
                 playerId: playerId,
@@ -374,8 +374,7 @@ export class SpellProcessor {
         options: ActivateAbilityOptions
     ): boolean {
         const { playerId, cardId, abilityIndex, targets: declaredTargets = [], bypassPriority = false, choiceIndex, bypassTargeting = false, xValue, parentContext, exileOnResolution } = options;
-        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
-        const { TriggerProcessor } = require('../../effects/triggers/TriggerProcessor');
+        const { targeting: TargetingProcessor, trigger: TriggerProcessor } = getProcessors(state);
         const obj = TargetingProcessor.findObjectInAnyZone(state, cardId);
         if (!obj) return false;
 
@@ -477,9 +476,7 @@ export class SpellProcessor {
     ): boolean {
         const { playerId, cardToPlay, totalMana, additionalCosts, declaredTargets, spellEffects, targetDefinition, isFirstInstantOrSorcery, isInstantOrSorcery, isFreeCast, parentContext } = options;
         const player = state.players[playerId];
-        const { ActionProcessor } = require('../ActionProcessor');
-        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
-        const { TriggerProcessor } = require('../../effects/triggers/TriggerProcessor');
+        const { action: ActionProcessor, targeting: TargetingProcessor, trigger: TriggerProcessor } = getProcessors(state);
 
         // Modal Choice check (modes like "Choose one")
         const choiceEffectIndex = spellEffects.findIndex((e, idx) =>
@@ -629,7 +626,7 @@ export class SpellProcessor {
         if (!cardToPlay.isPreparedCopy) {
             ActionProcessor.moveCard(state, cardToPlay, Zone.Stack, playerId, log);
         } else {
-            const { RegistryProcessor } = require('../../core/RegistryProcessor');
+            const { registry: RegistryProcessor } = getProcessors(state);
             log(`[PREPARED-DEBUG] Casting ${cardToPlay.definition.name} from virtual origin: ${lastZone}`);
             cardToPlay.zone = Zone.Stack;
             cardToPlay.lastNonStackZone = lastZone;

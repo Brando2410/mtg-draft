@@ -1,5 +1,6 @@
 import { AbilityCost, AbilityDefinition, ActionType, CostType, DiscardCost, ExileCost, GameObject, GameState, PlayerId, ResolutionContext, Restriction, SacrificeCost, TapSelectionCost, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
+import { getProcessors } from '../../ProcessorRegistry';
 
 import { SpellProcessor } from './SpellProcessor';
 
@@ -67,7 +68,7 @@ export class SpellInteractiveManager {
         isFreeCast?: boolean,
         exileOnResolution?: boolean
     ): boolean | string[] {
-        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
+        const { targeting: TargetingProcessor } = getProcessors(state);
         const player = state.players[playerId];
         cardToPlay.controllerId = cardToPlay.controllerId || playerId;
 
@@ -253,7 +254,7 @@ export class SpellInteractiveManager {
         isFreeCast?: boolean,
         exileOnResolution?: boolean
     ): boolean | null {
-        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
+        const { targeting: TargetingProcessor } = getProcessors(state);
 
         log(`[DEBUG] Additional costs found: ${additionalCosts.length} -> ${JSON.stringify(additionalCosts)}`);
 
@@ -262,7 +263,7 @@ export class SpellInteractiveManager {
         const hasChosenCostChoice = state.interaction?.lastChosenCostChoiceIndex !== undefined;
 
         if (choiceCost && !hasChosenCostChoice) {
-            const { CostProcessor } = require('../../magic/CostProcessor');
+            const { cost: CostProcessor } = getProcessors(state);
             const choices = choiceCost.choices?.map((c: any, idx: number) => {
                 const isPayable = CostProcessor.canPay(state, c.costs, cardToPlay.id, playerId);
                 return {
@@ -516,7 +517,7 @@ export class SpellInteractiveManager {
      * @returns true (pendingAction injected), false (can't pay), or null (no interactive costs needed).
      */
     public static handleAbilityInteractiveCosts(state: GameState, playerId: PlayerId, obj: GameObject, ability: AbilityDefinition, abilityIndex: number, declaredTargets: string[] | undefined, log: (m: string) => void, parentContext?: ResolutionContext): boolean | null {
-        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
+        const { targeting: TargetingProcessor } = getProcessors(state);
         const player = state.players[playerId];
         const additionalCosts = ability.costs || [];
 
@@ -691,7 +692,7 @@ export class SpellInteractiveManager {
      * @returns true if targeting was handled (either pendingAction or direct finalization).
      */
     public static handleAbilityTargeting(state: GameState, playerId: PlayerId, cardId: string, obj: GameObject, ability: AbilityDefinition, abilityIndex: number, log: (m: string) => void, engine: any, preSelectedChoice?: number, parentContext?: ResolutionContext, exileOnResolution?: boolean): boolean {
-        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
+        const { targeting: TargetingProcessor } = getProcessors(state);
         const pool = [
             ...Object.keys(state.players),
             ...state.battlefield.map(o => o.id),

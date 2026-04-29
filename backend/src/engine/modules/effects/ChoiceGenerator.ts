@@ -1,4 +1,5 @@
 import { ActionType, GameObject, GameState, PlayerId, Zone } from '@shared/engine_types';
+import { getProcessors } from '../ProcessorRegistry';
 import { pruneContext } from './EffectProcessor';
 
 export interface ChoiceConfig {
@@ -44,7 +45,7 @@ export class ChoiceGenerator {
         config: CardChoiceConfig
     ) {
         const { playerId, sourceId, restrictions = [], onSelected, onNone } = config;
-        const { TargetingProcessor } = require('../actions/targeting/TargetingProcessor');
+        const { targeting: TargetingProcessor } = getProcessors(state);
         
         let options = cards.map(c => {
             const isMatch = TargetingProcessor.matchesRestrictions(state, c, restrictions, {
@@ -107,7 +108,7 @@ export class ChoiceGenerator {
         config: ChoiceConfig & { minChoices?: number, maxChoices?: number, lookingCards?: GameObject[] },
         choices: { label: string, value: any, costs?: any[], effects?: any[] }[]
     ) {
-        const { CostProcessor } = require('../magic/CostProcessor');
+        const { cost: CostProcessor } = getProcessors(state);
         return this.wrap(state, config.playerId, config.sourceId, {
             label: config.label,
             choices: choices.map(c => ({
@@ -173,7 +174,7 @@ export class ChoiceGenerator {
         if (!player || player.hand.length === 0) {
             const failureEffects = onFailureEffects || (stackObj?.data?.onFailureEffects);
             if (failureEffects) {
-                const { EffectProcessor } = require('./EffectProcessor');
+                const { effect: EffectProcessor } = getProcessors(state);
                 if (log) log(`[DISCARD-DEBUG] ${currentPlayerId} cannot discard. Triggering failure effects.`);
                 EffectProcessor.resolveEffects({
                     state,
@@ -189,11 +190,12 @@ export class ChoiceGenerator {
             return this.createDiscardChoice(state, nextPlayerIds, sourceId, amount, label, stackObj, parentContext, failureEffects, log);
         }
 
-        const resolvedAmount = (typeof amount === 'number' || amount === 'ANY' || amount === 'ALL') ? amount : (require('./EffectProcessor').EffectProcessor.resolveAmount(state, amount, {
+        const resolvedAmount = (typeof amount === 'number' || amount === 'ANY' || amount === 'ALL') ? amount : (getProcessors(state).effect.resolveAmount(state, amount, {
             sourceId,
             controllerId: currentPlayerId,
             stackObject: stackObj,
-            targets: [currentPlayerId]
+            targets: [currentPlayerId],
+            effects: []
         }, [currentPlayerId]));
         
         const isAny = resolvedAmount === 'ANY' || resolvedAmount === 'Any';
@@ -246,8 +248,7 @@ export class ChoiceGenerator {
      * Build an interactive choice for a specific cost (e.g. TapSelection).
      */
     public static createCostInteractionChoice(state: GameState, cost: any, sourceId: string, playerId: PlayerId, choice: any, data: any): any {
-        const { TargetingProcessor } = require('../actions/targeting/TargetingProcessor');
-        const { ActionType } = require('@shared/engine_types');
+        const { targeting: TargetingProcessor } = getProcessors(state);
         
         let candidates: GameObject[] = [];
         let label = "Choose targets for cost";
@@ -285,7 +286,7 @@ export class ChoiceGenerator {
 
         const amount = Number(cost.value || cost.amount || 1);
         
-        const { ActionProcessor } = require('../actions/ActionProcessor');
+        const { action: ActionProcessor } = getProcessors(state);
         return ActionProcessor.prepareAction(state, {
             type: ActionType.ModalSelection,
             playerId,
@@ -319,7 +320,7 @@ export class ChoiceGenerator {
      * Build an interactive choice for X value.
      */
     public static createXChoice(state: GameState, sourceId: string, playerId: PlayerId, choice: any, data: any): any {
-        const { ActionProcessor } = require('../actions/ActionProcessor');
+        const { action: ActionProcessor } = getProcessors(state);
         return ActionProcessor.prepareAction(state, {
             type: ActionType.ChooseX,
             playerId,
@@ -344,7 +345,7 @@ export class ChoiceGenerator {
      * Wraps data into the standard engine pendingAction format.
      */
     private static wrap(state: GameState, playerId: string, sourceId: string, data: any, type: ActionType | string = ActionType.ResolutionChoice): any {
-        const { ActionProcessor } = require('../actions/ActionProcessor');
+        const { action: ActionProcessor } = getProcessors(state);
         
         // ARCHITECTURAL NOTE: Metadata Threading
         // We ensure that critical metadata is preserved in a standardized 'metadata' object.

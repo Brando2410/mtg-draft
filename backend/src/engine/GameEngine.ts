@@ -1,13 +1,16 @@
 import { EffectType, GameState, Phase, PlayerId, Step } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { ActivateAbilityOptions, EngineContext, PlayCardOptions } from './interfaces/EngineContext';
-import { ActionProcessor, ChoiceProcessor, CombatProcessor, ConditionProcessor, DamageProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, ReplacementProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor } from './modules';
+import { ActionProcessor, ChoiceGenerator, ChoiceProcessor, CombatProcessor, DamageProcessor, ConditionProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, ReplacementProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor, TargetingProcessor, RestrictionValidator } from './modules';
 import { RegistryProcessor } from './modules/core/RegistryProcessor';
 import { CostProcessor } from './modules/magic/CostProcessor';
 import { Profiler } from './utils/Profiler';
+import { LifeDamageHandler } from './modules/effects/handlers/life/LifeDamageHandler';
+import { MoveEffectHandler } from './modules/effects/handlers/zone/MoveEffectHandler';
+import { SpellValidator } from './modules/actions/spells/SpellValidator';
+import { SpellCostCalculator } from './modules/actions/spells/SpellCostCalculator';
+import { SpellInteractiveManager } from './modules/actions/spells/SpellInteractiveManager';
 
-import type { LifeDamageHandler as LifeDamageHandlerType } from './modules/effects/handlers/life/LifeDamageHandler';
-import type { MoveEffectHandler as MoveEffectHandlerType } from './modules/effects/handlers/zone/MoveEffectHandler';
 
 /**
  * CENTRALIZED MTG RULE ENGINE (Orchestrator)
@@ -105,16 +108,20 @@ export class GameEngine implements EngineContext {
       stack: StackProcessor,
       trigger: TriggerProcessor,
       turn: TurnProcessor,
-      targeting: require('./modules/actions/targeting/TargetingProcessor').TargetingProcessor,
+      targeting: TargetingProcessor,
       layer: LayerProcessor,
       sba: StateBasedActionsProcessor,
-      restriction: require('./modules/core/RestrictionValidator').RestrictionValidator,
+      restriction: RestrictionValidator,
       mana: ManaProcessor,
       cost: CostProcessor,
       registry: RegistryProcessor,
       effect: EffectProcessor,
       condition: ConditionProcessor,
-      replacement: ReplacementProcessor
+      replacement: ReplacementProcessor,
+      choiceGenerator: ChoiceGenerator,
+      spellValidator: SpellValidator,
+      spellCostCalculator: SpellCostCalculator,
+      spellInteractiveManager: SpellInteractiveManager
     };
 
     // Add non-enumerable reference to avoid circular serialization issues
@@ -181,7 +188,6 @@ export class GameEngine implements EngineContext {
       player.hasLostDueToEmptyLibrary = true;
       return false;
     }
-    const MoveEffectHandler = require('./modules/effects/handlers/zone/MoveEffectHandler').MoveEffectHandler as typeof MoveEffectHandlerType;
     MoveEffectHandler.handle(
       this.state,
       { type: EffectType.DrawCards, amount: 1 },
@@ -381,7 +387,6 @@ export class GameEngine implements EngineContext {
    * Core Action: Player Gain Life (Rule 119.3)
    */
   public gainLife(playerId: PlayerId, amount: number) {
-    const LifeDamageHandler = require('./modules/effects/handlers/life/LifeDamageHandler').LifeDamageHandler as typeof LifeDamageHandlerType;
     LifeDamageHandler.handleGainLife(
       this.state,
       { type: EffectType.GainLife, amount },

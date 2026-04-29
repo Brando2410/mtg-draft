@@ -16,11 +16,7 @@ import {
 import { getProcessors } from "../ProcessorRegistry";
 import { EffectRegistry } from "./EffectRegistry";
 
-// Static imports for performance
-let TargetingProcessor: any;
-let ConditionProcessor: any;
-let LayerProcessor: any;
-let ManaProcessor: any;
+// Static imports for performance - DEPRECATED: use getProcessors(state)
 
 /**
  * Prunes a context to avoid infinite depth serialization issues in Socket.io
@@ -86,7 +82,6 @@ export class EffectProcessor {
       return tm.startsWith('TARGET_') || tm === TargetMapping.TargetOpponent || tm === TargetMapping.TargetPlayer;
     })) {
       const { targeting: TP } = getProcessors(state);
-      TargetingProcessor = TP;
       
       const fizzle = TP.shouldFizzle(state, {
         sourceId,
@@ -159,8 +154,7 @@ export class EffectProcessor {
       let imageUrl = stackObject.image_url;
 
       const { targeting: TP } = getProcessors(state);
-      TargetingProcessor = TP;
-      const source = TargetingProcessor.findObjectInAnyZone(
+      const source = TP.findObjectInAnyZone(
         state,
         stackObject.sourceId,
       ) as GameObject | undefined;
@@ -207,8 +201,7 @@ export class EffectProcessor {
       (stackObject?.card ? stackObject.card : stackObject);
     const controllerId =
       (controllerIdOverride || (sourceObj as GameObject)?.controllerId || state.activePlayerId) as PlayerId;
-    const { targeting: TP } = getProcessors(state);
-    TargetingProcessor = TP;
+    const { targeting: TP, condition: CP, choiceGenerator: ChoiceGenerator } = getProcessors(state);
 
     // Create a ResolutionContext for handlers that expect it
     const context: ResolutionContext = {
@@ -262,7 +255,7 @@ export class EffectProcessor {
 
     // Resolve Target Mappings
     const resolveMapping = (m: string | TargetMapping | undefined, index: number) => {
-      const ids = TargetingProcessor.resolveTargetMapping(
+      const ids = TP.resolveTargetMapping(
         state,
         m || "",
         context,
@@ -431,8 +424,7 @@ export class EffectProcessor {
       if (!targetDef) return true;
 
       const { targeting: TP } = getProcessors(state);
-      TargetingProcessor = TP;
-      return TargetingProcessor.isLegalTarget(
+      return TP.isLegalTarget(
         state,
         {
           sourceId,
@@ -452,13 +444,12 @@ export class EffectProcessor {
     context: ResolutionContext,
   ): boolean {
     const { condition: CP } = getProcessors(state);
-    ConditionProcessor = CP;
     const { sourceId, controllerId, targets, stackObject } = context;
 
     // We wrap the stackObject/parent state into a clean ConditionContext
     const event = (context.event || { ...(stackObject || {}), targets }) as any;
 
-    return ConditionProcessor.matchesCondition(state, condition, {
+    return CP.matchesCondition(state, condition, {
       sourceId,
       controllerId,
       event: event as any,
@@ -591,8 +582,7 @@ export class EffectProcessor {
         const eObj = stackObject?.data?.eventData?.payload?.object || parentContext?.event?.payload?.object;
         if (eObj) {
           const { layer: LP } = getProcessors(state);
-          LayerProcessor = LP;
-          const stats = LayerProcessor.getEffectiveStats(eObj, state);
+          const stats = LP.getEffectiveStats(eObj, state);
           result = amount === "EVENT_OBJECT_POWER" ? stats.power : stats.toughness;
         }
         break;
@@ -601,11 +591,9 @@ export class EffectProcessor {
       case "TARGET_1_TOUGHNESS": {
         const tid = stackObject?.targets?.[0] || targetIds[0];
         const { targeting: TP, layer: LP } = getProcessors(state);
-        TargetingProcessor = TP;
-        LayerProcessor = LP;
-        const tObj = TargetingProcessor.findObjectInAnyZone(state, tid) || state.turnState.creaturesDiedThisTurn.find((o: any) => o.id === tid);
+        const tObj = TP.findObjectInAnyZone(state, tid) || state.turnState.creaturesDiedThisTurn.find((o: any) => o.id === tid);
         if (tObj) {
-          const stats = LayerProcessor.getEffectiveStats(tObj, state);
+          const stats = LP.getEffectiveStats(tObj, state);
           result = amount === "TARGET_1_POWER" ? stats.power : stats.toughness;
         }
         break;
@@ -641,11 +629,10 @@ export class EffectProcessor {
         break;
       case "LAST_EXILED_MV": {
         const { mana: MP } = getProcessors(state);
-        ManaProcessor = MP;
         const lastExiledId = state.turnState.lastExiledIds?.[0];
         if (lastExiledId) {
           const obj = this.findObject(state, lastExiledId, stackObject, parentContext) as GameObject;
-          result = obj ? ManaProcessor.getManaValue(obj.definition.manaCost) : 0;
+          result = obj ? MP.getManaValue(obj.definition.manaCost) : 0;
         }
         break;
       }
@@ -683,10 +670,9 @@ export class EffectProcessor {
       }
       case "TARGET_1_MANA_VALUE": {
         const { mana: MP } = getProcessors(state);
-        ManaProcessor = MP;
         const tId = stackObject?.targets?.[0] || targetIds[0];
         const mObj = this.findObject(state, tId, stackObject, parentContext) as GameObject;
-        result = mObj ? ManaProcessor.getManaValue(mObj.definition.manaCost) : 0;
+        result = mObj ? MP.getManaValue(mObj.definition.manaCost) : 0;
         break;
       }
       case "TARGET_1_COUNTERS_P1P1": {
@@ -785,9 +771,7 @@ export class EffectProcessor {
     stackObject?: StackObject,
     parentContext?: ResolutionContext,
   ) {
-    const { ChoiceGenerator } = require("./ChoiceGenerator");
-    const { targeting: TP } = getProcessors(state);
-    TargetingProcessor = TP;
+    const { choiceGenerator: ChoiceGenerator, targeting: TP } = getProcessors(state);
     const targetDef = Array.isArray(effect.targetDefinition)
       ? effect.targetDefinition[0]
       : effect.targetDefinition!;
@@ -857,7 +841,7 @@ export class EffectProcessor {
       ...getRestrictions(targetDef),
     ];
     const validCandidates = pool.filter((c) =>
-      TargetingProcessor.matchesRestrictions(
+      TP.matchesRestrictions(
         state,
         c,
         searchRestrictions,

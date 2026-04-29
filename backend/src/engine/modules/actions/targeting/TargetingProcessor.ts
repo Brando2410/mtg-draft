@@ -1,4 +1,5 @@
 import { CostType, GameObject, GameState, PlayerId, ResolutionContext, TargetingContext, Zone } from '@shared/engine_types';
+import { getProcessors } from '../../ProcessorRegistry';
 import { EngineContext } from '../../../interfaces/EngineContext';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { ActionProcessor } from '../ActionProcessor';
@@ -324,7 +325,7 @@ export class TargetingProcessor {
         const stackObj = actionData?.stackObj;
         const stackId = actionData?.stackId;
 
-        const { log } = require('../../core/turn/TurnProcessor'); // Fallback log if needed or use the one from state if available
+        const { turn: TurnProcessor, effect: EffectProcessor, trigger: TriggerProcessor } = getProcessors(state);
         console.log(`[TARGET-FINAL] Finalizing for ${sourceId}. isFreeCast=${actionData?.isFreeCast}, hasParent=${!!actionData?.parentContext}, hasStackObj=${!!actionData?.stackObj}`);
 
         if (actionData?.isCostTargeting) {
@@ -368,7 +369,6 @@ export class TargetingProcessor {
                 }
             }
 
-            const { EffectProcessor } = require('./../../effects/EffectProcessor');
             EffectProcessor.resolveEffects({
                 state,
                 effects: savedEffects,
@@ -417,7 +417,6 @@ export class TargetingProcessor {
 
             // Handle queued triggers from a multi-trigger ordering session
             if (actionData.nextTriggersToStack && Array.isArray(actionData.nextTriggersToStack)) {
-                const { TriggerProcessor } = require('../../effects/triggers/TriggerProcessor');
                 const nextTriggers = actionData.nextTriggersToStack;
                 for (let i = 0; i < nextTriggers.length; i++) {
                     const t = nextTriggers[i];

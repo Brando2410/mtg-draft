@@ -6,11 +6,10 @@ import { CostProcessor } from '../../magic/CostProcessor';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { LayerProcessor } from '../../state/LayerProcessor';
 import { ConditionProcessor } from '../logic/ConditionProcessor';
+import { EngineValidator } from '../logic/EngineValidator';
 import { TurnProcessor } from './TurnProcessor';
+import { getProcessors } from '../../ProcessorRegistry';
 
-// Static imports for performance
-let EngineValidator: any;
-let TargetingProcessor: any;
 
 
 /**
@@ -48,9 +47,6 @@ export class PriorityProcessor {
     }
 
     // CR 117.1: A player must resolve pending mandatory actions before passing
-    if (!EngineValidator) {
-      EngineValidator = require('../logic/EngineValidator').EngineValidator;
-    }
     if (EngineValidator.isSuspended(state) && EngineValidator.isPlayerRequiredToAct(state, playerId)) {
       console.log(`[PRIORITY-PROC] passPriority BLOCKED: ${playerId} has pending ${state.pendingAction?.type}.`);
       engine.log(`Invalid Action: Player must resolve pending ${state.pendingAction?.type} first.`);
@@ -105,7 +101,7 @@ export class PriorityProcessor {
     state.priorityPlayerId = state.playerOrder[nextIndex];
     
     // CR 613: Refresh playability NOW that priority is shifted.
-    const { LayerProcessor } = require('../../state/LayerProcessor');
+    const { layer: LayerProcessor } = getProcessors(state);
     LayerProcessor.updateDerivedStats(state, PriorityProcessor);
 
     this.checkAutoPass(state, state.priorityPlayerId, engine);
@@ -125,7 +121,7 @@ export class PriorityProcessor {
 
     // CR 613: Refresh playability NOW that priority is assigned.
     // This ensures auto-pass and UI highlighting are based on the new priority state.
-    const { LayerProcessor } = require('../../state/LayerProcessor');
+    const { layer: LayerProcessor } = getProcessors(state);
     LayerProcessor.updateDerivedStats(state, PriorityProcessor);
 
     if (state.priorityPlayerId) {
@@ -209,9 +205,6 @@ export class PriorityProcessor {
     if (!player) return false;
 
     // Rule 117.1: If player has a pending mandatory action, they MUST act.
-    if (!EngineValidator) {
-      EngineValidator = require('../logic/EngineValidator').EngineValidator;
-    }
     if (EngineValidator.isPlayerRequiredToAct(state, playerId)) {
       return true;
     }
@@ -291,10 +284,7 @@ export class PriorityProcessor {
   public static canObjectBePlayed(state: GameState, playerId: string, objId: string, checkPriority = true, preComputedStats?: any, preComputedCost?: string): boolean {
     const player = state.players[playerId];
     if (!player) return false;
-
-    if (!TargetingProcessor) {
-      TargetingProcessor = require('../../actions/targeting/TargetingProcessor').TargetingProcessor;
-    }
+    const { targeting: TargetingProcessor } = getProcessors(state);
 
     // Check hand
     let cardToPlay = player.hand.find(o => o.id === objId);
@@ -440,9 +430,7 @@ export class PriorityProcessor {
    */
   public static canAbilityBeActivated(state: GameState, playerId: string, objId: string, abilityIndex: number, checkPriority = true): boolean {
     const player = state.players[playerId];
-    if (!TargetingProcessor) {
-      TargetingProcessor = require('../../actions/targeting/TargetingProcessor').TargetingProcessor;
-    }
+    const { targeting: TargetingProcessor } = getProcessors(state);
     const obj = TargetingProcessor.findObjectInAnyZone(state, objId);
     if (!player || !obj) return false;
 
@@ -632,6 +620,7 @@ export class PriorityProcessor {
       // 2. Active Zone check (Static abilities only)
       const isStatic = (e.duration?.type || "").toString().toUpperCase() === 'STATIC';
       if (isStatic) {
+        const { targeting: TargetingProcessor } = getProcessors(state);
         const source = TargetingProcessor.findObjectInAnyZone(state, e.sourceId);
         if (!source || (e.activeZones && !e.activeZones.includes(source.zone))) return false;
       }

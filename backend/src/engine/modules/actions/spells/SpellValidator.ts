@@ -4,6 +4,7 @@ import { PriorityProcessor } from '../../core/turn/PriorityProcessor';
 import { CostProcessor } from '../../magic/CostProcessor';
 import { ActionProcessor } from '../ActionProcessor';
 import { TargetingProcessor } from '../targeting/TargetingProcessor';
+import { getProcessors } from '../../ProcessorRegistry';
 
 
 
@@ -24,7 +25,7 @@ export class SpellValidator {
             else if (obj.zone === Zone.Exile) permissionType = EffectType.AllowPlayExiled;
             else if (obj.zone === Zone.Library) permissionType = EffectType.AllowPlayFromTop;
 
-            const { LayerProcessor } = require('../../state/LayerProcessor');
+            const { layer: LayerProcessor } = getProcessors(state);
             const stats = LayerProcessor.getEffectiveStats(obj, state);
             const hasFlashback = obj.zone === Zone.Graveyard && (stats.keywords?.includes(Keyword.Flashback) || obj.definition.keywords?.includes(Keyword.Flashback));
 

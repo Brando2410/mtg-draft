@@ -15,8 +15,12 @@ import type { TurnProcessor } from "./core/turn/TurnProcessor";
 import type { EffectProcessor } from "./effects/EffectProcessor";
 import type { ReplacementProcessor as ReplacementProcessorType } from "./effects/replacements/ReplacementProcessor";
 import type { TriggerProcessor } from "./effects/triggers/TriggerProcessor";
+import type { ChoiceGenerator } from "./effects/ChoiceGenerator";
 import type { CostProcessor } from "./magic/CostProcessor";
-import type { ManaProcessor } from "./magic/ManaProcessor";
+import { ManaProcessor } from "./magic/ManaProcessor";
+import { SpellValidator } from "./actions/spells/SpellValidator";
+import { SpellCostCalculator } from "./actions/spells/SpellCostCalculator";
+import { SpellInteractiveManager } from "./actions/spells/SpellInteractiveManager";
 import type { LayerProcessor } from "./state/LayerProcessor";
 import type { StateBasedActionsProcessor } from "./state/StateBasedActionsProcessor";
 
@@ -45,6 +49,10 @@ export interface ProcessorRegistry {
     effect: typeof EffectProcessor;
     condition: typeof ConditionProcessor;
     replacement: typeof ReplacementProcessorType;
+    choiceGenerator: typeof ChoiceGenerator;
+    spellValidator: typeof SpellValidator;
+    spellCostCalculator: typeof SpellCostCalculator;
+    spellInteractiveManager: typeof SpellInteractiveManager;
 }
 
 /**
@@ -84,5 +92,9 @@ export function getProcessors(state: GameState): ProcessorRegistry {
         get effect() { return require("./effects/EffectProcessor").EffectProcessor; },
         get condition() { return require("./core/logic/ConditionProcessor").ConditionProcessor; },
         get replacement() { return require("./effects/replacements/ReplacementProcessor").ReplacementProcessor; },
+        get choiceGenerator() { return require("./effects/ChoiceGenerator").ChoiceGenerator; },
+        get spellValidator() { return require("./actions/spells/SpellValidator").SpellValidator; },
+        get spellCostCalculator() { return require("./actions/spells/SpellCostCalculator").SpellCostCalculator; },
+        get spellInteractiveManager() { return require("./actions/spells/SpellInteractiveManager").SpellInteractiveManager; },
     } as unknown as ProcessorRegistry;
 }

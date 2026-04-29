@@ -5,6 +5,7 @@ import { CombatProcessor } from '../combat/CombatProcessor';
 import { PriorityProcessor } from '../core/turn/PriorityProcessor';
 import { getProcessors } from '../ProcessorRegistry';
 import { LayerProcessor } from '../state/LayerProcessor';
+import { m21 as m21Data } from '../../data/m21/index';
 
 import type { ManaProcessor as ManaProcessorType } from '../magic/ManaProcessor';
 
@@ -216,7 +217,6 @@ export class PlayerActionProcessor {
     if (!obj || obj.controllerId !== playerId || obj.isTapped) return false;
 
     // We use a simplified check for the first mana ability to ensure synchronous tapping
-    const oracle = require('../../OracleLogicMap').oracle;
     const logic = oracle.getCard(obj.definition.name);
     if (!logic || !logic.abilities) return false;
 
@@ -253,8 +253,7 @@ export class PlayerActionProcessor {
     // We only handle "Undo" here now. Tapping for mana is handled via ActivateAbility (Step 3 above)
     if (!card.isTapped) return false;
 
-    const mLogic = require('../../data/m21').m21;
-    const logic = mLogic[card.definition.name];
+    const logic = m21Data[card.definition.name];
     if (!logic) return false;
 
     // GENERIC UNDO LOGIC: If a land has exactly one mana ability, we can try to undo it
@@ -266,7 +265,7 @@ export class PlayerActionProcessor {
     if (!addManaEffect) return false;
 
     const player = state.players[playerId];
-    const ManaProcessor = require('../magic/ManaProcessor').ManaProcessor as typeof ManaProcessorType;
+    const { mana: ManaProcessor } = getProcessors(state);
 
     const manaStr = addManaEffect.value || '{C}';
     const requirements = ManaProcessor.parseManaCost(manaStr.startsWith('{') ? manaStr : `{${manaStr}}`);
@@ -463,7 +462,7 @@ export class PlayerActionProcessor {
           const parentContext = state.pendingAction.data?.parentContext;
           const onFailureEffects = (state.pendingAction.data as any)?.onFailureEffects;
 
-          const { ChoiceGenerator } = require('../effects/ChoiceGenerator').ChoiceGenerator;
+          const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
           state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, label, stackObj, parentContext, onFailureEffects, log);
           return { finished: false, success: true };
         }
