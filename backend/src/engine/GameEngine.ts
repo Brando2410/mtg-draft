@@ -1,7 +1,8 @@
 import { EffectType, GameState, Phase, PlayerId, Step } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { ActivateAbilityOptions, EngineContext, PlayCardOptions } from './interfaces/EngineContext';
-import { ChoiceProcessor, CombatProcessor, GameSetupProcessor, LayerProcessor, PlayerActionProcessor, PriorityProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor } from './modules';
+import { ActionProcessor, ChoiceProcessor, CombatProcessor, ConditionProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor } from './modules';
+import { RegistryProcessor } from './modules/core/RegistryProcessor';
 import { Profiler } from './utils/Profiler';
 
 import type { MoveEffectHandler as MoveEffectHandlerType } from './modules/effects/handlers/zone/MoveEffectHandler';
@@ -24,6 +25,7 @@ export class GameEngine implements EngineContext {
   private decks: Record<string, Card[]>;
   private names: Record<string, string>;
   private avatars: Record<string, string>;
+  public processors: EngineContext['processors'];
 
   /**
    * CR 103: Starting the Game
@@ -90,6 +92,27 @@ export class GameEngine implements EngineContext {
     GameSetupProcessor.initializePlayers(this.state, players, names, decks, avatars);
     this.resolver = new StackResolver(this.state);
     
+    // Initialize Processor Registry for peer access
+    this.processors = {
+      action: ActionProcessor,
+      playerAction: PlayerActionProcessor,
+      combat: CombatProcessor,
+      choice: ChoiceProcessor,
+      priority: PriorityProcessor,
+      spell: SpellProcessor,
+      stack: StackProcessor,
+      trigger: TriggerProcessor,
+      turn: TurnProcessor,
+      targeting: require('./modules/actions/targeting/TargetingProcessor').TargetingProcessor,
+      layer: LayerProcessor,
+      sba: StateBasedActionsProcessor,
+      restriction: require('./modules/core/RestrictionValidator').RestrictionValidator,
+      mana: ManaProcessor,
+      registry: RegistryProcessor,
+      effect: EffectProcessor,
+      condition: ConditionProcessor
+    };
+
     // Add non-enumerable reference to avoid circular serialization issues
     Object.defineProperty(this.state, 'gameEngine', {
       value: this,

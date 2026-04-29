@@ -69,16 +69,8 @@ export class TurnProcessor {
       const hasHaste = keywords.some(k => k.toLowerCase() === 'haste');
       if (obj.summoningSickness && !hasHaste) return false;
 
-      // Rule 702.3: Defender (with 702.3b override check)
-      if (keywords.some(k => k.toLowerCase() === 'defender')) {
-        const effectiveRestrictions = obj.effectiveStats?.restrictions || [];
-        const canAttackWithDefender = effectiveRestrictions.some((r: any) => r.type === RestrictionType.CanAttackWithDefender);
-        if (!canAttackWithDefender) return false;
-      }
-
-      // Registry Restrictions
-      const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === obj.id && r.type === 'CannotAttack');
-      if (cannotAttack) return false;
+      // Rule 702.3: Defender (with 702.3b override check) and other restrictions
+      if (!engine.processors.restriction.canAttack(state, obj)) return false;
 
       return true;
     });
@@ -112,8 +104,7 @@ export class TurnProcessor {
 
     // 3. Skip First Strike Damage if no First Strike scorers (Rule 510.4)
     if (next.step === Step.FirstStrikeDamage) {
-      const { CombatProcessor } = require('../../combat/CombatProcessor');
-      if (!CombatProcessor.hasFirstStrikeStep(state)) {
+      if (!engine.processors.combat.hasFirstStrikeStep(state)) {
         next = { phase: Phase.Combat, step: Step.CombatDamage, turnEnded: false };
       }
     }
@@ -147,8 +138,7 @@ export class TurnProcessor {
       playerId: state.activePlayerId,
       data: { phase: state.currentPhase, step: state.currentStep }
     };
-    const { TriggerProcessor } = require('../../effects/triggers/TriggerProcessor');
-    TriggerProcessor.onEvent(state, stepEvent, log);
+    engine.processors.trigger.onEvent(state, stepEvent, log);
     this.cleanupExpiredEffectsByEvent(state, stepEvent.type, log, state.activePlayerId);
 
 
@@ -158,11 +148,10 @@ export class TurnProcessor {
       playerId: state.activePlayerId,
       data: { phase: state.currentPhase, step: state.currentStep }
     };
-    TriggerProcessor.onEvent(state, phaseEvent, log);
+    engine.processors.trigger.onEvent(state, phaseEvent, log);
     this.cleanupExpiredEffectsByEvent(state, phaseEvent.type, log, state.activePlayerId);
 
-    const { ManaProcessor } = require('../../magic/ManaProcessor');
-    ManaProcessor.emptyAllManaPools(state);
+    engine.processors.mana.emptyAllManaPools(state);
 
     this.handleStepEntryRules(state, engine, log);
 
@@ -251,10 +240,8 @@ export class TurnProcessor {
     const { DurationType } = require('@shared/engine_types');
 
     if (state.currentStep === Step.Untap) {
-      const { RegistryProcessor } = require('../RegistryProcessor');
-      const { ActionProcessor } = require('../../actions/ActionProcessor');
-      state.battlefield.filter(c => c.controllerId === activeId).forEach(c => RegistryProcessor.registerAbilities(state, c));
-      ActionProcessor.untapAll(state, activeId, log);
+      state.battlefield.filter(c => c.controllerId === activeId).forEach(c => engine.processors.registry.registerAbilities(state, c));
+      engine.processors.action.untapAll(state, activeId, log);
 
       // CR 611.2: Expire "Until Next Untap Step" effects
       state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
@@ -270,8 +257,7 @@ export class TurnProcessor {
       });
     }
     else if (state.currentPhase === Phase.Combat) {
-      const { CombatProcessor } = require('../../combat/CombatProcessor');
-      CombatProcessor.handleStepEntry(state, log);
+      engine.processors.combat.handleStepEntry(state, log);
     }
     else if (state.currentStep === Step.Draw) {
       const skipDraw = state.turnNumber === 1 && state.playerOrder[0] === activeId;

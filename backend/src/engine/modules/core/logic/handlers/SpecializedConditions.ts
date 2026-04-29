@@ -1,5 +1,6 @@
 import { GameState, ConditionContext, TriggerEvent, Zone } from "@shared/engine_types";
 import { IConditionHandler } from "../IConditionHandler";
+import { getProcessors } from "../../../ProcessorRegistry";
 
 export const SpecializedConditions: Record<string, IConditionHandler> = {
     "REPARTEE_TRIGGER": {
@@ -12,7 +13,7 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
                            event?.data?.targets || [];
             if (!targets.length) return false;
             
-            const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
+            const { targeting: TargetingProcessor } = getProcessors(state);
             return targets.some((tid: string) => {
                 const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
                 return obj && obj.definition.types.some((t: any) => t.toLowerCase() === "creature");
@@ -37,7 +38,7 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
             const spent = (event as any)?.data?.spent || 0;
             const obj = state.battlefield.find((o) => o.id === sourceId);
             if (!obj) return false;
-            const { LayerProcessor } = require("../../../state/LayerProcessor");
+            const { layer: LayerProcessor } = getProcessors(state);
             const stats = LayerProcessor.getEffectiveStats(obj, state);
             return spent > stats.power || spent > stats.toughness;
         }
@@ -48,7 +49,7 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
             const spent = (event as any)?.data?.card?.paidManaValue ?? (event as any)?.amount ?? 0;
             const obj = state.battlefield.find((o) => o.id === sourceId);
             if (!obj) return false;
-            const { LayerProcessor } = require("../../../state/LayerProcessor");
+            const { layer: LayerProcessor } = getProcessors(state);
             const stats = LayerProcessor.getEffectiveStats(obj, state);
             return spent > stats.power || spent > stats.toughness;
         }

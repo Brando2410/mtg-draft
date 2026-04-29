@@ -1,10 +1,11 @@
-import { GameState, ConditionContext, PlayerId, GameObject, ConditionType } from "@shared/engine_types";
+import { ConditionType } from "@shared/engine_types";
 import { IConditionHandler } from "../IConditionHandler";
+import { getProcessors } from "../../../ProcessorRegistry";
 
 export const PermanentConditions: Record<string, IConditionHandler> = {
     [ConditionType.HasPermanent]: {
         matches(state, params, context) {
-            const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
+            const { targeting: TargetingProcessor } = getProcessors(state);
             const { sourceId, controllerId, stackObject } = context;
             const targetingContext = { sourceId, controllerId, stackObject };
             return state.battlefield.some((obj) =>
@@ -19,7 +20,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
     },
     [ConditionType.ControlCountGe]: {
         matches(state, params, context) {
-            const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
+            const { targeting: TargetingProcessor } = getProcessors(state);
             const { sourceId, controllerId, stackObject } = context;
             const targetingContext = { sourceId, controllerId, stackObject };
 
@@ -88,21 +89,49 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { controllerId } = context;
             const threshold = parseInt(params[0]);
-            const { LayerProcessor } = require("../../../state/LayerProcessor");
+            const { layer: LayerProcessor } = getProcessors(state);
             const total = state.battlefield
                 .filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === "creature"))
                 .reduce((sum, obj) => sum + LayerProcessor.getEffectiveStats(obj, state).toughness, 0);
             return total >= threshold;
         }
     },
-    [ConditionType.HasCreaturePower4Plus]: {
+    "HAS_CREATURE_POWER_GE": {
         matches(state, params, context) {
             const { controllerId } = context;
+            const threshold = parseInt(params[0]) || 4;
             return state.battlefield.some(obj =>
                 obj.controllerId === controllerId &&
                 obj.definition.types.some(t => t.toLowerCase() === "creature") &&
-                (Number(obj.definition.power || 0) >= 4 || (obj.effectiveStats?.power || 0) >= 4)
+                (Number(obj.definition.power || 0) >= threshold || (obj.effectiveStats?.power || 0) >= threshold)
             );
+        }
+    },
+    "HAS_CREATURE_TOUGHNESS_GE": {
+        matches(state, params, context) {
+            const { controllerId } = context;
+            const threshold = parseInt(params[0]) || 4;
+            return state.battlefield.some(obj =>
+                obj.controllerId === controllerId &&
+                obj.definition.types.some(t => t.toLowerCase() === "creature") &&
+                (Number(obj.definition.toughness || 0) >= threshold || (obj.effectiveStats?.toughness || 0) >= threshold)
+            );
+        }
+    },
+    "HAS_CREATURE_MANA_VALUE_GE": {
+        matches(state, params, context) {
+            const { controllerId } = context;
+            const threshold = parseInt(params[0]) || 4;
+            return state.battlefield.some(obj =>
+                obj.controllerId === controllerId &&
+                obj.definition.types.some(t => t.toLowerCase() === "creature") &&
+                (obj.definition.manaValue || 0) >= threshold
+            );
+        }
+    },
+    [ConditionType.HasCreaturePower4Plus]: {
+        matches(state, params, context) {
+            return PermanentConditions["HAS_CREATURE_POWER_GE"].matches(state, ["4"], context);
         }
     },
     [ConditionType.CONTROLS_COMMANDER]: {
@@ -110,7 +139,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             const { controllerId } = context;
             // For now, we consider any Legendary Creature or Planeswalker as a commander proxy
             // In a real Commander engine, this would check for a specific 'isCommander' property
-            return state.battlefield.some(o => 
+            return state.battlefield.some(o =>
                 String(o.controllerId) === String(controllerId) &&
                 (o.definition.supertypes || []).some(t => t.toLowerCase() === "legendary") &&
                 (o.definition.types.some(t => t.toLowerCase() === "creature") || o.definition.types.some(t => t.toLowerCase() === "planeswalker"))

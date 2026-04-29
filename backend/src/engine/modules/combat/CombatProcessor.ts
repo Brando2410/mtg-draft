@@ -515,7 +515,7 @@ export class CombatProcessor {
     // Blocker's protection from attacker does NOT prevent it from blocking.
     const protectionKeywords = aStats.keywords.filter((k: string) => k.toLowerCase().startsWith('protection from'));
     if (protectionKeywords.length > 0) {
-      const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
+      const TargetingProcessor = (state as any).gameEngine?.processors?.targeting || require('../../actions/targeting/TargetingProcessor').TargetingProcessor;
       for (const prot of protectionKeywords) {
         const qualityStr = prot.toLowerCase().replace('protection from ', '');
         const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);

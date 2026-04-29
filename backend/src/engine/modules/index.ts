@@ -15,3 +15,4 @@ export * from './magic/CostProcessor';
 export * from './magic/ManaProcessor';
 export * from './state/LayerProcessor';
 export * from './state/StateBasedActionsProcessor';
+export * from './core/logic/ConditionProcessor';

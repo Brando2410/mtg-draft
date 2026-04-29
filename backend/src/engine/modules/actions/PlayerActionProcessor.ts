@@ -4,6 +4,7 @@ import { CombatProcessor } from '../combat/CombatProcessor';
 import { PriorityProcessor } from '../core/turn/PriorityProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { EngineContext } from '../../interfaces/EngineContext';
+import { getProcessors } from '../ProcessorRegistry';
 
 import type { ChoiceProcessor as ChoiceProcessorType } from './ChoiceProcessor';
 import type { CombatProcessor as CombatProcessorType } from '../combat/CombatProcessor';
@@ -37,8 +38,7 @@ export class PlayerActionProcessor {
       if (state.pendingAction.type === ActionType.LegendRule) {
         const involvedIds = (state.pendingAction.data?.involvedIds || []) as string[];
         if (involvedIds.includes(cardId)) {
-          const ChoiceProcessor = require('./ChoiceProcessor').ChoiceProcessor as typeof ChoiceProcessorType;
-          return ChoiceProcessor.resolveChoice(state, playerId, cardId, log, engine);
+          return engine.processors.choice.resolveChoice(state, playerId, cardId, log, engine);
         }
       }
     }
@@ -327,9 +327,8 @@ export class PlayerActionProcessor {
       const mustAttack = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'MustAttack') ||
         (stats.restrictions || []).some((r: any) => r.type === 'MustAttack');
       if (mustAttack) {
-        const hasDefender = stats.keywords.includes('Defender');
-        const canAttackWithDefender = hasDefender && (stats.restrictions || []).some((r: any) => r.type === RestrictionType.CanAttackWithDefender);
-        const canAttack = !card.isTapped && !card.summoningSickness && (!hasDefender || canAttackWithDefender);
+        const { restriction: RP } = getProcessors(state);
+        const canAttack = !card.isTapped && !card.summoningSickness && RP.canAttack(state, card);
         const cannotAttackFlags = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'CannotAttack');
 
         if (canAttack && !cannotAttackFlags) {
@@ -342,19 +341,8 @@ export class PlayerActionProcessor {
     } else {
       if (card.isTapped) return false;
 
-      // Rule 702.3a: Defender prevents attacking.
-      // Rule 702.3b: "Can attack as though it didn't have defender" overrides the restriction.
-      if (stats.keywords.includes('Defender')) {
-        const canAttackWithDefender = (stats.restrictions || []).some((r: any) => r.type === RestrictionType.CanAttackWithDefender);
-        if (!canAttackWithDefender) {
-          log(`[ATTACK] ERR: ${card.definition.name} has Defender and cannot attack.`);
-          return false;
-        }
-      }
-
-      // Check for external "CannotAttack" restrictions
-      const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'CannotAttack');
-      if (cannotAttack) {
+      const { restriction: RP } = getProcessors(state);
+      if (!RP.canAttack(state, card)) {
         log(`[ATTACK] ERR: ${card.definition.name} cannot attack.`);
         return false;
       }
@@ -408,14 +396,18 @@ export class PlayerActionProcessor {
 
     if (!state.combat) state.combat = { attackers: [], blockers: [] };
 
+    const { targeting: TP } = getProcessors(state);
+    const attacker = TP.findObjectInAnyZone(state, cardId) as any;
+    const blocker = TP.findObjectInAnyZone(state, blockerId) as any;
+
     const oldIdx = state.combat.blockers.findIndex(b => b.blockerId === blockerId);
     if (oldIdx >= 0) state.combat.blockers.splice(oldIdx, 1);
 
     state.combat.blockers.push({ blockerId, attackerId: cardId });
     log(`${state.battlefield.find(c => c.id === blockerId)?.definition.name} blocking ${card.definition.name}`);
 
-    const TriggerProcessor = require('../effects/triggers/TriggerProcessor').TriggerProcessor as typeof TriggerProcessorType;
-    TriggerProcessor.onEvent(state, { type: 'ON_BLOCK', targetId: blockerId, sourceId: blockerId, data: { object: blockerObj, attackerId: cardId } }, log);
+    const { trigger: TrP } = getProcessors(state);
+    TrP.onEvent(state, { type: 'ON_BLOCK', targetId: blockerId, sourceId: blockerId, data: { object: blockerObj, attackerId: cardId } }, log);
 
     state.pendingAction!.sourceId = undefined;
     return true;
@@ -446,8 +438,8 @@ export class PlayerActionProcessor {
     player.graveyard.push(card);
 
     const sourceId = state.pendingAction?.sourceId;
-    const TriggerProcessor = require('./../effects/triggers/TriggerProcessor').TriggerProcessor as typeof TriggerProcessorType;
-    TriggerProcessor.onEvent(state, { type: TriggerEvent.Discard, playerId, data: { card, sourceId } }, log);
+    const { trigger: TrP } = getProcessors(state);
+    TrP.onEvent(state, { type: TriggerEvent.Discard, playerId, data: { card, sourceId } }, log);
 
     if (player.pendingDiscardCount > 0) {
       player.pendingDiscardCount--;
@@ -523,10 +515,9 @@ export class PlayerActionProcessor {
     state.pendingAction = undefined;
 
     // Check if more ordering is needed
-    // We use a dynamic import or require to avoid circular dependency since CombatProcessor uses this class
-    const CombatProcessor = require('../combat/CombatProcessor').CombatProcessor as typeof CombatProcessorType;
-    if (CombatProcessor.needsOrdering(state)) {
-      CombatProcessor.setupNextOrderingAction(state, log);
+    const { combat: CP } = getProcessors(state);
+    if (CP.needsOrdering(state)) {
+      CP.setupNextOrderingAction(state, log);
     }
   }
 
@@ -567,11 +558,10 @@ export class PlayerActionProcessor {
 
     state.pendingAction = undefined;
 
-    const TriggerProcessor = require('./../effects/triggers/TriggerProcessor').TriggerProcessor as typeof TriggerProcessorType;
-
+    const { trigger: TrP } = getProcessors(state);
     for (let i = 0; i < orderedTriggers.length; i++) {
       const t = orderedTriggers[i];
-      TriggerProcessor.stackTrigger(state, t, log);
+      TrP.stackTrigger(state, t, log);
 
       const pendingAfter = state.pendingAction as any;
       // If stacking this trigger caused a targeting prompt,
@@ -585,9 +575,8 @@ export class PlayerActionProcessor {
         return true;
       }
     }
-
     // Process remaining if anyone else has triggers
-    TriggerProcessor.processPendingTriggers(state, log);
+    TrP.processPendingTriggers(state, log);
     return true;
   }
 
@@ -595,9 +584,7 @@ export class PlayerActionProcessor {
    * CR 603: Resolve a specific target selection from the UI.
    */
   public static resolveTargeting(state: GameState, playerId: PlayerId, targetId: string, engine: EngineContext): boolean {
-    const TargetingProcessor = require('./targeting/TargetingProcessor').TargetingProcessor as typeof TargetingProcessorType;
-
-    return TargetingProcessor.resolveInteractiveTargeting(
+    return engine.processors.targeting.resolveInteractiveTargeting(
       state,
       playerId,
       targetId,
@@ -605,7 +592,10 @@ export class PlayerActionProcessor {
       {
         ...engine,
         resetPriorityToActivePlayer: () => engine.resetPriorityToActivePlayer(),
-        finaliseTargeting: (p: PlayerId, t: string[]) => TargetingProcessor.finaliseTargeting(state, p, t, engine)
+        finaliseTargeting: (p: PlayerId, t: string[]) => {
+          const { targeting: TP } = getProcessors(state);
+          return TP.finaliseTargeting(state, p, t, engine);
+        }
       }
     );
   }

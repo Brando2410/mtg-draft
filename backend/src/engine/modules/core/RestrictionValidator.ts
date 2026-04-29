@@ -1,5 +1,6 @@
 import { GameState, GameObject, RestrictionObject, RestrictionType, PlayerId } from "@shared/engine_types";
 import { ConditionProcessor } from "./logic/ConditionProcessor";
+import { getProcessors } from "../ProcessorRegistry";
 
 /**
  * Rules Engine Module: Object & Player Restrictions (Rule 613/701)
@@ -10,11 +11,18 @@ export class RestrictionValidator {
      * Checks if a creature can attack based on its current restrictions.
      */
     public static canAttack(state: GameState, obj: GameObject): boolean {
-        const { LayerProcessor } = require('./../state/LayerProcessor');
+        const { layer: LayerProcessor } = getProcessors(state);
         const stats = LayerProcessor.getEffectiveStats(obj, state);
 
-        // 1. Check legacy Keywords
-        if (stats.keywords.some((k: string) => k.toLowerCase() === 'defender' || k.toLowerCase() === 'cannotattack')) {
+        // 1. Check Keywords (Defender restriction with "as though" override)
+        if (stats.keywords.some((k: string) => k.toLowerCase() === 'defender')) {
+            const canAttackWithDefender = (stats.restrictions || []).some((r: any) => r.type === RestrictionType.CanAttackWithDefender);
+            if (!canAttackWithDefender) {
+                return false;
+            }
+        }
+
+        if (stats.keywords.some((k: string) => k.toLowerCase() === 'cannotattack')) {
             return false;
         }
 
@@ -36,7 +44,7 @@ export class RestrictionValidator {
      * Checks if a creature can block.
      */
     public static canBlock(state: GameState, obj: GameObject): boolean {
-        const { LayerProcessor } = require('./../state/LayerProcessor');
+        const { layer: LayerProcessor } = getProcessors(state);
         const stats = LayerProcessor.getEffectiveStats(obj, state);
 
         if (stats.keywords.some((k: string) => k.toLowerCase() === 'cannotblock')) {
@@ -60,7 +68,7 @@ export class RestrictionValidator {
      * Checks if an object can activate abilities.
      */
     public static canActivateAbilities(state: GameState, obj: GameObject, isManaAbility: boolean = false): boolean {
-        const { LayerProcessor } = require('./../state/LayerProcessor');
+        const { layer: LayerProcessor } = getProcessors(state);
         const stats = LayerProcessor.getEffectiveStats(obj, state);
 
         if (stats.restrictions) {
@@ -94,7 +102,7 @@ export class RestrictionValidator {
      * Checks if an action is prevented by a broader rule (e.g. Cannot Untap).
      */
     public static isRestricted(state: GameState, obj: GameObject, type: RestrictionType): boolean {
-        const { LayerProcessor } = require('./../state/LayerProcessor');
+        const { layer: LayerProcessor } = getProcessors(state);
         const stats = LayerProcessor.getEffectiveStats(obj, state);
 
         if (stats.restrictions) {
@@ -175,7 +183,7 @@ export class RestrictionValidator {
     private static getPlayerRestrictions(state: GameState, playerId: PlayerId): RestrictionObject[] {
         // Player restrictions can come from global static effects targeting the player
         const effects = state.ruleRegistry.continuousEffects || [];
-        const { LayerProcessor } = require('./../state/LayerProcessor');
+        const { layer: LayerProcessor } = getProcessors(state);
 
         return effects
             .filter(e => LayerProcessor.isTarget(state, e, playerId))

@@ -3,6 +3,7 @@ import {
   ConditionType,
   ConditionContext,
 } from "@shared/engine_types";
+import { getProcessors } from "../../ProcessorRegistry";
 
 export class ConditionProcessor {
   /**

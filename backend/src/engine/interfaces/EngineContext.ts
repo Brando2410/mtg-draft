@@ -3,6 +3,7 @@ import {
     AbilityDefinition,
     EffectDefinition, GameObject, GameState, PlayerId, ResolutionContext, StackObject, TargetDefinition
 } from '@shared/engine_types';
+import { ProcessorRegistry } from '../modules/ProcessorRegistry';
 
 export interface PlayCardOptions {
     playerId: PlayerId;
@@ -110,5 +111,8 @@ export interface EngineContext {
 
     // Targeting
     finaliseTargeting?(pId: PlayerId, targets: string[]): boolean;
+    // Processors (Service Registry to avoid circular dependencies)
+    processors: ProcessorRegistry;
+
     resumeResolution(sourceId: string, stackObj: StackObject, parentContext: ResolutionContext): boolean;
 }

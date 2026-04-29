@@ -4,8 +4,9 @@ import {
   GameObject, GameState, Zone, EffectType, AbilityDefinition, RestrictionObject, RestrictionType,
   CardType
 } from "@shared/engine_types";
-import { TargetingProcessor } from "../actions/targeting/TargetingProcessor";
-import { ConditionProcessor } from "../core/logic/ConditionProcessor";
+import { getProcessors } from "../ProcessorRegistry";
+let TargetingProcessor: any;
+let ConditionProcessor: any;
 
 import type { EffectProcessor as EffectProcessorType } from "../effects/EffectProcessor";
 import type { SpellProcessor as SpellProcessorType } from "../actions/spells/SpellProcessor";
@@ -53,8 +54,11 @@ export class LayerProcessor {
 
     this.calculationStack.add(obj.id);
 
-    if (!EffectProcessor) {
-      EffectProcessor = require("../effects/EffectProcessor").EffectProcessor;
+    if (!EffectProcessor || !TargetingProcessor || !ConditionProcessor) {
+      const { effect, targeting, condition } = getProcessors(state);
+      EffectProcessor = effect;
+      TargetingProcessor = targeting;
+      ConditionProcessor = condition;
     }
 
     try {
@@ -340,6 +344,11 @@ export class LayerProcessor {
     objId: string,
     log?: (m: string) => void,
   ): boolean {
+    if (!ConditionProcessor || !TargetingProcessor) {
+      const { condition, targeting } = getProcessors(state);
+      ConditionProcessor = condition;
+      TargetingProcessor = targeting;
+    }
     // 0. Condition check (can be global or target-dependent)
     if (effect.condition) {
         if (!ConditionProcessor.matchesCondition(state, effect.condition, {
@@ -721,7 +730,8 @@ export class LayerProcessor {
 
     // 3. Evaluate playability ONLY for objects the player can interact with (Hand, Virtual Hand)
     if (!SpellProcessor) {
-      SpellProcessor = require("../actions/spells/SpellProcessor").SpellProcessor;
+      const { spell: SP } = getProcessors(state);
+      SpellProcessor = SP;
     }
 
     [

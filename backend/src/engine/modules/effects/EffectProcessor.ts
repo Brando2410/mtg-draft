@@ -13,6 +13,7 @@ import {
 } from "../../interfaces/EngineContext";
 import { EffectRegistry } from "./EffectRegistry";
 import { Targetable } from "@shared/types/targeting";
+import { getProcessors } from "../ProcessorRegistry";
 
 // Static imports for performance
 let TargetingProcessor: any;
@@ -80,8 +81,8 @@ export class EffectProcessor {
     // If all its targets are now illegal, the spell or ability is countered.
     // We only run this on the ROOT resolution (parentContext === null) to avoid nested sub-effects triggering it.
     if (startIndex === 0 && !parentContext && targets.length > 0 && effects.some(e => e.targetMapping?.toString().startsWith('TARGET_'))) {
-      if (!TargetingProcessor) TargetingProcessor = require('../actions/targeting/TargetingProcessor').TargetingProcessor;
-      const TP = TargetingProcessor;
+      const { targeting: TP } = getProcessors(state);
+      TargetingProcessor = TP;
       const legalTargets = targets.filter(tid => {
         // We use the first effect's target definition as a proxy for the spell's targeting requirements
         const isLegal = TP.isLegalTarget(state, {
@@ -157,7 +158,8 @@ export class EffectProcessor {
       let name = stackObject.name;
       let imageUrl = stackObject.image_url;
 
-      if (!TargetingProcessor) TargetingProcessor = require("./../actions/targeting/TargetingProcessor").TargetingProcessor;
+      const { targeting: TP } = getProcessors(state);
+      TargetingProcessor = TP;
       const source = TargetingProcessor.findObjectInAnyZone(
         state,
         stackObject.sourceId,
@@ -205,7 +207,8 @@ export class EffectProcessor {
       (stackObject?.card ? stackObject.card : stackObject);
     const controllerId =
       (controllerIdOverride || (sourceObj as GameObject)?.controllerId || state.activePlayerId) as PlayerId;
-    if (!TargetingProcessor) TargetingProcessor = require("../actions/targeting/TargetingProcessor").TargetingProcessor;
+    const { targeting: TP } = getProcessors(state);
+    TargetingProcessor = TP;
 
     // Create a ResolutionContext for handlers that expect it
     const context: ResolutionContext = {
@@ -442,7 +445,8 @@ export class EffectProcessor {
         (stackObject || parentContext?.stackObject)?.data?.targetDefinition;
       if (!targetDef) return true;
 
-      if (!TargetingProcessor) TargetingProcessor = require("../actions/targeting/TargetingProcessor").TargetingProcessor;
+      const { targeting: TP } = getProcessors(state);
+      TargetingProcessor = TP;
       return TargetingProcessor.isLegalTarget(
         state,
         {
@@ -462,7 +466,8 @@ export class EffectProcessor {
     condition: ConditionType,
     context: ResolutionContext,
   ): boolean {
-    if (!ConditionProcessor) ConditionProcessor = require("../core/logic/ConditionProcessor").ConditionProcessor;
+    const { condition: CP } = getProcessors(state);
+    ConditionProcessor = CP;
     const { sourceId, controllerId, targets, stackObject } = context;
 
     // We wrap the stackObject/parent state into a clean ConditionContext
@@ -567,7 +572,8 @@ export class EffectProcessor {
       case "EVENT_OBJECT_TOUGHNESS": {
         const eObj = stackObject?.data?.eventData?.payload?.object || parentContext?.event?.payload?.object;
         if (eObj) {
-          if (!LayerProcessor) LayerProcessor = require("./../state/LayerProcessor").LayerProcessor;
+          const { layer: LP } = getProcessors(state);
+          LayerProcessor = LP;
           const stats = LayerProcessor.getEffectiveStats(eObj, state);
           result = amount === "EVENT_OBJECT_POWER" ? stats.power : stats.toughness;
         }
@@ -576,10 +582,11 @@ export class EffectProcessor {
       case "TARGET_1_POWER":
       case "TARGET_1_TOUGHNESS": {
         const tid = stackObject?.targets?.[0] || targetIds[0];
-        const { TargetingProcessor: TP } = require("../actions/targeting/TargetingProcessor");
-        const tObj = TP.findObjectInAnyZone(state, tid) || state.turnState.creaturesDiedThisTurn.find((o: any) => o.id === tid);
+        const { targeting: TP, layer: LP } = getProcessors(state);
+        TargetingProcessor = TP;
+        LayerProcessor = LP;
+        const tObj = TargetingProcessor.findObjectInAnyZone(state, tid) || state.turnState.creaturesDiedThisTurn.find((o: any) => o.id === tid);
         if (tObj) {
-          if (!LayerProcessor) LayerProcessor = require("./../state/LayerProcessor").LayerProcessor;
           const stats = LayerProcessor.getEffectiveStats(tObj, state);
           result = amount === "TARGET_1_POWER" ? stats.power : stats.toughness;
         }
@@ -615,7 +622,8 @@ export class EffectProcessor {
         result = stackObject?.data?.amount || stackObject?.data?.capturedMV || 0;
         break;
       case "LAST_EXILED_MV": {
-        if (!ManaProcessor) ManaProcessor = require("../magic/ManaProcessor").ManaProcessor;
+        const { mana: MP } = getProcessors(state);
+        ManaProcessor = MP;
         const lastExiledId = state.turnState.lastExiledIds?.[0];
         if (lastExiledId) {
           const obj = this.findObject(state, lastExiledId, stackObject, parentContext) as GameObject;
@@ -656,7 +664,8 @@ export class EffectProcessor {
         break;
       }
       case "TARGET_1_MANA_VALUE": {
-        if (!ManaProcessor) ManaProcessor = require("../magic/ManaProcessor").ManaProcessor;
+        const { mana: MP } = getProcessors(state);
+        ManaProcessor = MP;
         const tId = stackObject?.targets?.[0] || targetIds[0];
         const mObj = this.findObject(state, tId, stackObject, parentContext) as GameObject;
         result = mObj ? ManaProcessor.getManaValue(mObj.definition.manaCost) : 0;
@@ -736,7 +745,7 @@ export class EffectProcessor {
     const snapshot = stackObject?.data?.eventData?.payload?.object as GameObject | undefined;
     if (snapshot && snapshot.id === id) return snapshot;
 
-    const { TargetingProcessor: TP } = require("../actions/targeting/TargetingProcessor");
+    const { targeting: TP } = getProcessors(state);
     return (
       TP.findObjectInAnyZone(state, id) ||
       ((state.pendingAction?.data as any)?.lookingCards as GameObject[])?.find(
@@ -759,7 +768,8 @@ export class EffectProcessor {
     parentContext?: ResolutionContext,
   ) {
     const { ChoiceGenerator } = require("./ChoiceGenerator");
-    const { TargetingProcessor } = require("../actions/targeting/TargetingProcessor");
+    const { targeting: TP } = getProcessors(state);
+    TargetingProcessor = TP;
     const targetDef = Array.isArray(effect.targetDefinition)
       ? effect.targetDefinition[0]
       : effect.targetDefinition!;

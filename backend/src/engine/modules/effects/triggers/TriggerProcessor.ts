@@ -21,6 +21,7 @@ import {
 } from "@shared/engine_types";
 import { oracle } from "../../../OracleLogicMap";
 import { LayerProcessor } from "../../state/LayerProcessor";
+import { getProcessors } from "../../ProcessorRegistry";
 
 /**
  * Rules Engine Module: Triggered Abilities (Rule 603)
@@ -69,7 +70,7 @@ export class TriggerProcessor {
 
     for (const trigger of uniqueTriggers) {
       let triggerCount = 1;
-      const { TargetingProcessor } = require("../../actions/targeting/TargetingProcessor");
+      const { targeting: TargetingProcessor } = getProcessors(state);
       const sourceObj = TargetingProcessor.findObjectInAnyZone(state, trigger.sourceId);
 
       // --- TRIGGER DOUBLING (CR 603.2c / 614.16) ---
@@ -107,7 +108,7 @@ export class TriggerProcessor {
 
         // Check restrictions (e.g. "Whenever an artifact... triggers twice")
         if (eff.restrictions && sourceObj) {
-          const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
+          const { targeting: TargetingProcessor } = getProcessors(state);
           const matches = TargetingProcessor.matchesRestrictions(state, sourceObj, eff.restrictions, {
             sourceId: eff.sourceId,
             controllerId: eff.controllerId
@@ -290,7 +291,7 @@ export class TriggerProcessor {
     log: (msg: string) => void,
   ): StackObject {
     const eventObj = event.payload?.object || event.data?.object;
-    const { TargetingProcessor } = require("../../actions/targeting/TargetingProcessor");
+    const { targeting: TargetingProcessor } = getProcessors(state);
     const sourceObj =
       eventObj && eventObj.id === trigger.sourceId
         ? eventObj
@@ -369,7 +370,7 @@ export class TriggerProcessor {
     log: (m: string) => void,
     stackObj: any,
   ) {
-    const { TargetingProcessor } = require("../../actions/targeting/TargetingProcessor");
+    const { targeting: TargetingProcessor } = getProcessors(state);
     const legalTargetIds = [
       ...state.battlefield.map((o: any) => o.id),
       ...(Object.values(state.players) as any[]).flatMap((p) =>
@@ -521,7 +522,6 @@ export class TriggerProcessor {
 
         // Gather Continuous Effect (Granted) Triggers
         state.ruleRegistry.continuousEffects.forEach((effect) => {
-          const { EffectType } = require("@shared/engine_types");
           if (effect.type === EffectType.AddTriggeredAbility && (effect as any).value) {
             const targetIds = effect.targetIds || [];
             targetIds.forEach((tid) => {
@@ -656,7 +656,7 @@ export class TriggerProcessor {
         if (typeof condition === "function") {
           if (!condition(state, event, t)) return false;
         } else {
-          const { ConditionProcessor } = require("../../core/logic/ConditionProcessor");
+          const { condition: ConditionProcessor } = getProcessors(state);
           const matchesInfo = {
             sourceId: t.sourceId,
             controllerId: t.controllerId,
@@ -706,6 +706,7 @@ export class TriggerProcessor {
     matchingTriggers: TriggeredAbility[],
   ) {
     if (event.type === TriggerEvent.CastNonCreature && event.playerId) {
+      const { layer: LayerProcessor } = getProcessors(state);
       state.battlefield.forEach((obj) => {
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         if (
@@ -741,13 +742,13 @@ export class TriggerProcessor {
     matchingTriggers: TriggeredAbility[],
   ) {
     if (event.type === TriggerEvent.CastSpell && event.playerId) {
+      const { layer: LayerProcessor, condition: ConditionProcessor } = getProcessors(state);
       state.battlefield.forEach((obj) => {
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         if (
           stats.keywords.includes("Increment") &&
           obj.controllerId === event.playerId
         ) {
-          const { ConditionProcessor } = require("../../core/logic/ConditionProcessor");
           if (
             ConditionProcessor.matchesCondition(
               state,
@@ -787,6 +788,7 @@ export class TriggerProcessor {
     log: (m: string) => void,
   ) {
     if (event.type === TriggerEvent.BecomeTarget && event.targetId) {
+      const { layer: LayerProcessor } = getProcessors(state);
       const targetObj = state.battlefield.find((o) => o.id === event.targetId);
       if (targetObj) {
         const stats = LayerProcessor.getEffectiveStats(targetObj, state);

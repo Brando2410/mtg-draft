@@ -1,10 +1,11 @@
 import { GameState, ConditionContext, TriggerEvent, Zone, GameObject, CounterType } from "@shared/engine_types";
 import { IConditionHandler } from "../IConditionHandler";
+import { getProcessors } from "../../../ProcessorRegistry";
 
 export const EventConditions: Record<string, IConditionHandler> = {
     "EVENT_OBJECT_MATCHES": {
         matches(state, params, context) {
-            const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
+            const { targeting: TargetingProcessor } = getProcessors(state);
             const { event, sourceId, controllerId, stackObject } = context;
             const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || event?.data?.card || (event as any)?.gameObject || event?.object || state.battlefield.find((o: any) => o.id === event?.sourceId);
             if (!obj) return false;
@@ -17,7 +18,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { event } = context;
             const obj = event?.data?.object || event?.data?.card || event?.data?.copy || (event as any)?.gameObject;
             if (!obj) return false;
-            const { ManaProcessor } = require("../../../magic/ManaProcessor");
+            const { mana: ManaProcessor } = getProcessors(state);
             return ManaProcessor.getManaValue(obj.definition.manaCost) >= threshold;
         }
     },
@@ -100,7 +101,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     },
     "EVENT_SPELL_TARGET_MATCHES": {
         matches(state, params, context) {
-            const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
+            const { targeting: TargetingProcessor } = getProcessors(state);
             const { event, sourceId, controllerId, stackObject } = context;
             const targets = event?.data?.stackSnapshot?.targets || [];
             if (!targets.length) return false;
@@ -131,7 +132,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     },
     "_TARGET_MATCHES": {
         matches(state, params, context) {
-            const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
+            const { targeting: TargetingProcessor } = getProcessors(state);
             const { event, sourceId, controllerId, stackObject } = context;
             const targetIdx = parseInt(params[0] as string);
             const restrictions = params.slice(1) as string[];
@@ -266,7 +267,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const targets = stackObj?.targets || [];
             if (!targets.length) return false;
 
-            const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
+            const { targeting: TargetingProcessor } = getProcessors(state);
             return targets.some((tid: string) => {
                 const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
                 if (!obj) return false;
@@ -394,7 +395,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const tid = event?.data?.object?.id || event?.targetId;
             const obj = state.battlefield.find((o) => o.id === tid);
             if (!obj) return false;
-            const { LayerProcessor } = require("../../../state/LayerProcessor");
+            const { layer: LayerProcessor } = getProcessors(state);
             const stats = LayerProcessor.getEffectiveStats(obj, state);
             return stats.power <= 1 || stats.toughness <= 1;
         }
@@ -411,7 +412,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const tId = (event as any)?.targetId || sourceId;
             const obj = state.battlefield.find((o) => o.id === tId);
             if (!obj) return false;
-            const { LayerProcessor } = require("../../../state/LayerProcessor");
+            const { layer: LayerProcessor } = getProcessors(state);
             const stats = LayerProcessor.getEffectiveStats(obj, state);
             return stats.types.some((t: string) => t.toLowerCase() === "creature");
         }
