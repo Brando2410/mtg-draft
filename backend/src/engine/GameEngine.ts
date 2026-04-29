@@ -1,7 +1,7 @@
 import { EffectType, GameState, Phase, PlayerId, Step } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { ActivateAbilityOptions, EngineContext, PlayCardOptions } from './interfaces/EngineContext';
-import { ActionProcessor, ChoiceProcessor, CombatProcessor, ConditionProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor } from './modules';
+import { ActionProcessor, ChoiceProcessor, CombatProcessor, DamageProcessor, ConditionProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor } from './modules';
 import { RegistryProcessor } from './modules/core/RegistryProcessor';
 import { Profiler } from './utils/Profiler';
 
@@ -97,6 +97,7 @@ export class GameEngine implements EngineContext {
       action: ActionProcessor,
       playerAction: PlayerActionProcessor,
       combat: CombatProcessor,
+      damage: DamageProcessor,
       choice: ChoiceProcessor,
       priority: PriorityProcessor,
       spell: SpellProcessor,

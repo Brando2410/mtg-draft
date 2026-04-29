@@ -1,4 +1,5 @@
 import { GameState, Phase, PlayerId, Step } from '@shared/engine_types';
+import { getProcessors } from '../../ProcessorRegistry';
 
 /**
  * Handle Turn Architecture (Chapter 5)
@@ -70,7 +71,8 @@ export class TurnProcessor {
       if (obj.summoningSickness && !hasHaste) return false;
 
       // Rule 702.3: Defender (with 702.3b override check) and other restrictions
-      if (!engine.processors.restriction.canAttack(state, obj)) return false;
+      const { restriction: RP } = getProcessors(state);
+      if (!RP.canAttack(state, obj)) return false;
 
       return true;
     });

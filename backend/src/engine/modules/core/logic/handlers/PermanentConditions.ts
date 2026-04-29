@@ -1,6 +1,7 @@
 import { ConditionType } from "@shared/engine_types";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { IConditionHandler } from "../IConditionHandler";
+import { RuleUtils } from "../../../../utils/RuleUtils";
 
 export const PermanentConditions: Record<string, IConditionHandler> = {
     [ConditionType.HasPermanent]: {
@@ -52,7 +53,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             const threshold = parseInt(params[0]);
             return state.battlefield.filter(o =>
                 o.controllerId === controllerId &&
-                (o.definition.types || []).some(t => t.toLowerCase() === "artifact")
+                (o.definition.types || []).some(t => String(t).toLowerCase() === "artifact")
             ).length >= threshold;
         }
     },
@@ -61,8 +62,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             const { controllerId } = context;
             const threshold = parseInt(params[0]);
             return state.battlefield.filter(o =>
-                o.controllerId === controllerId &&
-                (o.definition.types || []).some(t => t.toLowerCase() === "land")
+                o.controllerId === controllerId && RuleUtils.isLand(o)
             ).length >= threshold;
         }
     },
@@ -72,8 +72,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             const threshold = parseInt(params[0]);
             const count = state.battlefield.filter(o =>
                 o.id !== sourceId &&
-                o.controllerId === controllerId &&
-                o.definition.types.some(t => t.toLowerCase() === "land")
+                o.controllerId === controllerId && RuleUtils.isLand(o)
             ).length;
             return count <= threshold;
         }
@@ -91,7 +90,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             const threshold = parseInt(params[0]);
             const { layer: LayerProcessor } = getProcessors(state);
             const total = state.battlefield
-                .filter(o => o.controllerId === controllerId && o.definition.types.some(t => t.toLowerCase() === "creature"))
+                .filter(o => o.controllerId === controllerId && RuleUtils.isCreature(o))
                 .reduce((sum, obj) => sum + LayerProcessor.getEffectiveStats(obj, state).toughness, 0);
             return total >= threshold;
         }
@@ -100,10 +99,10 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { controllerId } = context;
             const threshold = parseInt(params[0]) || 4;
+            const { layer: LP } = getProcessors(state);
             return state.battlefield.some(obj =>
-                obj.controllerId === controllerId &&
-                obj.definition.types.some(t => t.toLowerCase() === "creature") &&
-                (Number(obj.definition.power || 0) >= threshold || (obj.effectiveStats?.power || 0) >= threshold)
+                obj.controllerId === controllerId && RuleUtils.isCreature(obj) &&
+                LP.getEffectiveStats(obj, state).power >= threshold
             );
         }
     },
@@ -111,10 +110,10 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { controllerId } = context;
             const threshold = parseInt(params[0]) || 4;
+            const { layer: LP } = getProcessors(state);
             return state.battlefield.some(obj =>
-                obj.controllerId === controllerId &&
-                obj.definition.types.some(t => t.toLowerCase() === "creature") &&
-                (Number(obj.definition.toughness || 0) >= threshold || (obj.effectiveStats?.toughness || 0) >= threshold)
+                obj.controllerId === controllerId && RuleUtils.isCreature(obj) &&
+                LP.getEffectiveStats(obj, state).toughness >= threshold
             );
         }
     },
@@ -123,8 +122,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             const { controllerId } = context;
             const threshold = parseInt(params[0]) || 4;
             return state.battlefield.some(obj =>
-                obj.controllerId === controllerId &&
-                obj.definition.types.some(t => t.toLowerCase() === "creature") &&
+                obj.controllerId === controllerId && RuleUtils.isCreature(obj) &&
                 (obj.definition.manaValue || 0) >= threshold
             );
         }
@@ -136,14 +134,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
     },
     [ConditionType.CONTROLS_COMMANDER]: {
         matches(state, params, context) {
-            const { controllerId } = context;
-            // For now, we consider any Legendary Creature or Planeswalker as a commander proxy
-            // In a real Commander engine, this would check for a specific 'isCommander' property
-            return state.battlefield.some(o =>
-                String(o.controllerId) === String(controllerId) &&
-                (o.definition.supertypes || []).some(t => t.toLowerCase() === "legendary") &&
-                (o.definition.types.some(t => t.toLowerCase() === "creature") || o.definition.types.some(t => t.toLowerCase() === "planeswalker"))
-            );
+            return false;
         }
     }
 };

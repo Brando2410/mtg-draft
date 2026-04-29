@@ -1,6 +1,7 @@
 import { GameObject, GameState, PlayerId, RestrictionObject, RestrictionType } from "@shared/engine_types";
 import { getProcessors } from "../ProcessorRegistry";
 import { ConditionProcessor } from "./logic/ConditionProcessor";
+import { RuleUtils } from "../../utils/RuleUtils";
 
 /**
  * Rules Engine Module: Object & Player Restrictions (Rule 613/701)
@@ -140,10 +141,7 @@ export class RestrictionValidator {
         if (card) {
             for (const r of playerRestrictions) {
                 if (r.type === RestrictionType.CannotCastPermanentSpells) {
-                    const isPermanent = card.definition.types.some(t => 
-                        ['Creature', 'Artifact', 'Enchantment', 'Planeswalker'].includes(t)
-                    );
-                    if (isPermanent && this.isPlayerRestrictionActive(state, playerId, r)) return false;
+                    if (RuleUtils.isPermanent(card) && this.isPlayerRestrictionActive(state, playerId, r)) return false;
                 }
 
                 if (r.type === RestrictionType.CannotCastNamedCard) {

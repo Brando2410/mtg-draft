@@ -4,7 +4,8 @@ import {
   GameState,
   PlayerId
 } from "@shared/engine_types";
-import { TriggerProcessor } from "../effects/triggers/TriggerProcessor";
+import { getProcessors } from "../ProcessorRegistry";
+import { RuleUtils } from "../../utils/RuleUtils";
 
 /**
  * Rules Engine Module: Damage Handling (Rule 120)
@@ -58,12 +59,12 @@ export class DamageProcessor {
       };
     }
 
-    const { LayerProcessor } = require("../state/LayerProcessor");
+    const { layer: LP } = getProcessors(state);
     const sourceObj =
       state.battlefield.find((o) => o.id === sourceId) ||
       state.stack.find((s) => s.id === sourceId)?.card;
     const sourceStats = sourceObj
-      ? LayerProcessor.getEffectiveStats(sourceObj, state)
+      ? LP.getEffectiveStats(sourceObj, state)
       : null;
 
     // 1. Resolve Damage to Permanents (Battlefield)
@@ -114,7 +115,8 @@ export class DamageProcessor {
         log(
           `[LIFELINK] ${player.name} gains ${amount} life (Total: ${player.life}).`,
         );
-        TriggerProcessor.onEvent(
+        const { trigger: TrP } = getProcessors(state);
+        TrP.onEvent(
           state,
           {
             type: "ON_LIFE_GAIN",
@@ -143,17 +145,15 @@ export class DamageProcessor {
     isCombat: boolean,
     log: (m: string) => void,
   ) {
-    const types = target.definition.types.map((t) => t.toLowerCase());
-
-    if (types.includes("planeswalker")) {
+    if (RuleUtils.isPlaneswalker(target)) {
       // Rule 120.3c: Damage to planeswalker removes loyalty
       const currentLoyalty = target.counters["loyalty"] || 0;
       target.counters["loyalty"] = Math.max(0, currentLoyalty - amount);
       log(`[DAMAGE] ${target.definition.name} loses ${amount} loyalty.`);
     } else {
       // Rule 120.3: Damage to creature marks damage
-      const { LayerProcessor } = require("../state/LayerProcessor");
-      const targetStats = LayerProcessor.getEffectiveStats(target, state);
+      const { layer: LP } = getProcessors(state);
+      const targetStats = LP.getEffectiveStats(target, state);
       const lethalNeeded = Math.max(
         0,
         targetStats.toughness - target.damageMarked,
@@ -177,7 +177,8 @@ export class DamageProcessor {
       }
     }
 
-    TriggerProcessor.onEvent(
+    const { trigger: TrP } = getProcessors(state);
+    TrP.onEvent(
       state,
       {
         type: "ON_DAMAGE_TAKED",
@@ -198,6 +199,7 @@ export class DamageProcessor {
     isCombat: boolean,
     log: (m: string) => void,
   ) {
+    const { trigger: TrP } = getProcessors(state);
     player.life -= amount;
     log(
       `[DAMAGE] Player ${player.name} takes ${amount} damage (Life: ${player.life}).`,
@@ -211,7 +213,8 @@ export class DamageProcessor {
       state.turnState.noncombatDamageDealtToOpponents[sourceControllerId] =
         (state.turnState.noncombatDamageDealtToOpponents[sourceControllerId] ||
           0) + amount;
-      TriggerProcessor.onEvent(
+
+      TrP.onEvent(
         state,
         {
           type: "ON_NONCOMBAT_DAMAGE_OPPONENT",
@@ -223,7 +226,7 @@ export class DamageProcessor {
       );
     }
 
-    TriggerProcessor.onEvent(
+    TrP.onEvent(
       state,
       {
         type: "ON_LIFE_LOSS",
@@ -233,7 +236,7 @@ export class DamageProcessor {
       },
       log,
     );
-    TriggerProcessor.onEvent(
+    TrP.onEvent(
       state,
       {
         type: "ON_DAMAGE_PLAYER",
@@ -258,18 +261,21 @@ export class DamageProcessor {
     const targetObj = state.battlefield.find((o) => o.id === targetId);
     if (!targetObj) return false;
 
-    // Import EffectProcessor dynamically here if needed to avoid cycles
-    const { EffectProcessor } = require("./../effects/EffectProcessor");
+    const { targeting: TP } = getProcessors(state);
 
     for (const eff of effects) {
       if (eff.damageType === "CombatDamage" && !isCombat) continue;
 
-      const validIds = EffectProcessor.resolveTargetMapping(
+      const validIds = TP.resolveTargetMapping(
         state,
         eff.targetMapping,
-        [],
-        eff.sourceId,
-        eff.controllerId,
+        {
+          sourceId: eff.sourceId,
+          controllerId: eff.controllerId,
+          targets: [],
+          effects: [],
+        } as any,
+        eff,
       );
       if (validIds.includes(targetId)) return true;
     }
@@ -292,8 +298,8 @@ export class DamageProcessor {
     const source = sourceStack || (sourceBattlefield as any);
     if (!source) return false;
 
-    const { LayerProcessor } = require("./../state/LayerProcessor");
-    const keywords = LayerProcessor.getEffectiveStats(
+    const { layer: LP } = getProcessors(state);
+    const keywords = LP.getEffectiveStats(
       targetObj,
       state,
     ).keywords;
@@ -302,11 +308,11 @@ export class DamageProcessor {
     );
 
     if (protectionKeywords.length > 0) {
-      const { TargetingProcessor } = require("../../actions/targeting/TargetingProcessor");
+      const { targeting: TP } = getProcessors(state);
       for (const prot of protectionKeywords) {
         const qualityStr = prot.toLowerCase().replace("protection from ", "");
         const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
-        if (TargetingProcessor.sourceHasQualities(source, qualities, state)) {
+        if (TP.sourceHasQualities(source, qualities, state)) {
           return true;
         }
       }

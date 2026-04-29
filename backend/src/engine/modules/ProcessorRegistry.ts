@@ -1,5 +1,6 @@
 import { GameState } from "@shared/engine_types";
 import type { ActionProcessor } from "./actions/ActionProcessor";
+import type { DamageProcessor } from "./combat/DamageProcessor";
 import type { ChoiceProcessor } from "./actions/ChoiceProcessor";
 import type { PlayerActionProcessor } from "./actions/PlayerActionProcessor";
 import type { SpellProcessor } from "./actions/spells/SpellProcessor";
@@ -25,6 +26,7 @@ export interface ProcessorRegistry {
     action: typeof ActionProcessor;
     playerAction: typeof PlayerActionProcessor;
     combat: typeof CombatProcessor;
+    damage: typeof DamageProcessor;
     choice: typeof ChoiceProcessor;
     priority: typeof PriorityProcessor;
     spell: typeof SpellProcessor;
@@ -61,6 +63,7 @@ export function getProcessors(state: GameState): ProcessorRegistry {
         get action() { return require("./actions/ActionProcessor").ActionProcessor; },
         get playerAction() { return require("./actions/PlayerActionProcessor").PlayerActionProcessor; },
         get combat() { return require("./combat/CombatProcessor").CombatProcessor; },
+        get damage() { return require("./combat/DamageProcessor").DamageProcessor; },
         get choice() { return require("./actions/ChoiceProcessor").ChoiceProcessor; },
         get priority() { return require("./core/turn/PriorityProcessor").PriorityProcessor; },
         get spell() { return require("./actions/spells/SpellProcessor").SpellProcessor; },
