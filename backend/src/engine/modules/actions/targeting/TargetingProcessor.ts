@@ -1,4 +1,4 @@
-import { GameObject, GameState, PlayerId, ResolutionContext, TargetingContext, Zone } from '@shared/engine_types';
+import { GameObject, GameState, PlayerId, ResolutionContext, TargetingContext, Zone, CostType, TargetType, Restriction } from '@shared/engine_types';
 import { EngineContext } from '../../../interfaces/EngineContext';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { ActionProcessor } from '../ActionProcessor';
@@ -126,7 +126,7 @@ export class TargetingProcessor {
                         const { oracle } = require('../../../OracleLogicMap');
                         const logic = oracle.getCard(sourceOnField.definition.name);
                         const ability = (logic as any)?.abilities?.[abilityIndex];
-                        const lCost = ability?.costs?.find((c: any) => String(c.type).toLowerCase() === 'loyalty')?.value;
+                        const lCost = ability?.costs?.find((c: any) => c.type === CostType.Loyalty)?.value;
                         if (lCost !== undefined) {
                             const val = parseInt(String(lCost));
                             sourceOnField.counters['loyalty'] = (sourceOnField.counters['loyalty'] || 0) - val;

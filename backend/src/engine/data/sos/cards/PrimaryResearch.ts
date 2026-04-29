@@ -19,7 +19,7 @@ export const PrimaryResearch: CardDefinition = {
         restrictions: [
           Restriction.NonLand,
           Restriction.Permanent,
-          "mv <= 3",
+          Restriction.ManaValue3OrLess,
           Restriction.YouOwn
         ],
         count: 1

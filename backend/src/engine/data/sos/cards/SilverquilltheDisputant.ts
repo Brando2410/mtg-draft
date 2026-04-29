@@ -18,7 +18,7 @@ export const SilverquilltheDisputant: CardDefinition = {
                     additionalCosts: [
                         {
                             type: CostType.Sacrifice,
-                            restrictions: ["power>=1"],
+                            restrictions: [Restriction.Power1OrGreater],
                             isCasualty: true,
                             optional: true,
                             label: 'Casualty 1'

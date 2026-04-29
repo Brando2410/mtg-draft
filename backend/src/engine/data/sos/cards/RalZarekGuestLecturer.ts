@@ -44,7 +44,7 @@ export const RalZarekGuestLecturer: CardDefinition = {
             targetDefinition: {
                 type: TargetType.CardInGraveyard,
                 count: 1,
-                restrictions: [Restriction.Creature, "mv <= 3", Restriction.YouOwn]
+                restrictions: [Restriction.Creature, Restriction.ManaValue3OrLess, Restriction.YouOwn]
             },
             effects: [
                 {

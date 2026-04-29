@@ -1,4 +1,4 @@
-import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, EffectType, GameState, PlayerId, RemoveCounterCost, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, EffectType, GameState, PlayerId, RemoveCounterCost, RestrictionType, TriggerEvent, Zone } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
 import { CombatProcessor } from '../combat/CombatProcessor';
 import { PriorityProcessor } from '../core/turn/PriorityProcessor';
@@ -327,7 +327,9 @@ export class PlayerActionProcessor {
       const mustAttack = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'MustAttack') ||
         (stats.restrictions || []).some((r: any) => r.type === 'MustAttack');
       if (mustAttack) {
-        const canAttack = !card.isTapped && !card.summoningSickness && !stats.keywords.includes('Defender');
+        const hasDefender = stats.keywords.includes('Defender');
+        const canAttackWithDefender = hasDefender && (stats.restrictions || []).some((r: any) => r.type === RestrictionType.CanAttackWithDefender);
+        const canAttack = !card.isTapped && !card.summoningSickness && (!hasDefender || canAttackWithDefender);
         const cannotAttackFlags = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'CannotAttack');
 
         if (canAttack && !cannotAttackFlags) {
@@ -341,9 +343,13 @@ export class PlayerActionProcessor {
       if (card.isTapped) return false;
 
       // Rule 702.3a: Defender prevents attacking.
+      // Rule 702.3b: "Can attack as though it didn't have defender" overrides the restriction.
       if (stats.keywords.includes('Defender')) {
-        log(`[ATTACK] ERR: ${card.definition.name} has Defender and cannot attack.`);
-        return false;
+        const canAttackWithDefender = (stats.restrictions || []).some((r: any) => r.type === RestrictionType.CanAttackWithDefender);
+        if (!canAttackWithDefender) {
+          log(`[ATTACK] ERR: ${card.definition.name} has Defender and cannot attack.`);
+          return false;
+        }
       }
 
       // Check for external "CannotAttack" restrictions

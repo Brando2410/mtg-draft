@@ -1,4 +1,4 @@
-import { GameState, Phase, PlayerId, Step } from '@shared/engine_types';
+import { GameState, Phase, PlayerId, RestrictionType, Step } from '@shared/engine_types';
 
 /**
  * Handle Turn Architecture (Chapter 5)
@@ -69,8 +69,12 @@ export class TurnProcessor {
       const hasHaste = keywords.some(k => k.toLowerCase() === 'haste');
       if (obj.summoningSickness && !hasHaste) return false;
 
-      // Rule 702.3: Defender
-      if (keywords.some(k => k.toLowerCase() === 'defender')) return false;
+      // Rule 702.3: Defender (with 702.3b override check)
+      if (keywords.some(k => k.toLowerCase() === 'defender')) {
+        const effectiveRestrictions = obj.effectiveStats?.restrictions || [];
+        const canAttackWithDefender = effectiveRestrictions.some((r: any) => r.type === RestrictionType.CanAttackWithDefender);
+        if (!canAttackWithDefender) return false;
+      }
 
       // Registry Restrictions
       const cannotAttack = state.ruleRegistry.restrictions.some(r => r.targetId === obj.id && r.type === 'CannotAttack');

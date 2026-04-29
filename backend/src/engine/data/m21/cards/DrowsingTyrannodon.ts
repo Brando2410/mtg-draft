@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, RestrictionType, TargetMapping } from '@shared/engine_types';
 
 export const DrowsingTyrannodon: CardDefinition = {
     name: "Drowsing Tyrannodon",
@@ -17,10 +17,10 @@ export const DrowsingTyrannodon: CardDefinition = {
             type: AbilityType.Static,
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
-                layer: 6,
-                abilitiesToRemove: ['Defender'],
-                condition: 'HAS_PERMANENT:creature,youcontrol,power>=4',
-                targetMapping: TargetMapping.Self
+                targetMapping: TargetMapping.Self,
+                condition: ConditionType.HasCreaturePower4Plus,
+                duration: { type: DurationType.Static },
+                restrictions: [{ type: RestrictionType.CanAttackWithDefender }]
             }]
         }
     ]

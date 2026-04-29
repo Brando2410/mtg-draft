@@ -228,6 +228,8 @@ export const Restriction = {
     ControlledByTarget1: 'controlled_by_target_1',
     ManaValueLessThanSource: 'mv_lt_source',
     Power2OrLess: 'power_le_2',
+    Power1OrGreater: 'power1orgreater',
+    Power2OrGreater: 'power2orgreater',
     Power3OrGreater: 'power3orgreater',
     Power3OrLess: 'power_le_3',
     SameNameAsSource: 'samenameassource',

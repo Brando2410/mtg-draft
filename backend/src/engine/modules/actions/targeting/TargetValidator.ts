@@ -63,7 +63,7 @@ export class TargetValidator {
         const expectedZone = this.getExpectedZone(targetObj, targetDefForIndex);
         if (expectedZone !== 'Any' && targetObj.zone !== expectedZone) return false;
 
-        if ((targetDefForIndex?.type || '').toLowerCase() === 'player') return false;
+        if (targetDefForIndex?.type === TargetType.Player) return false;
 
         // 4. PROTECTION / HEXPROOF / SHROUD (Rule 702)
         if (!this.checkKeywords(state, context, targetObj)) return false;
@@ -75,19 +75,18 @@ export class TargetValidator {
 
     private static isPlayerTargetLegal(state: GameState, context: TargetingContext, targetId: string, targetDef: any): boolean {
         const { controllerId } = context;
-        const type = (targetDef?.type || '').toLowerCase();
-        const restrictions = (targetDef?.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
+        const restrictions = targetDef?.restrictions || [];
 
         const isPlayerAllowed =
-            type === TargetType.Player.toLowerCase() ||
-            type === TargetType.Opponent.toLowerCase() ||
-            type === TargetType.AnyTarget.toLowerCase() ||
-            type === TargetType.PlayerOrPlaneswalker.toLowerCase() ||
+            targetDef?.type === TargetType.Player ||
+            targetDef?.type === TargetType.Opponent ||
+            targetDef?.type === TargetType.AnyTarget ||
+            targetDef?.type === TargetType.PlayerOrPlaneswalker ||
             restrictions.some((r: any) => [Restriction.Player, Restriction.AnyTarget, Restriction.Opponent, Restriction.You].includes(r));
 
         if (!isPlayerAllowed) return false;
 
-        if (restrictions.includes(Restriction.Opponent) || type === TargetType.Opponent.toLowerCase()) {
+        if (restrictions.includes(Restriction.Opponent) || targetDef?.type === TargetType.Opponent) {
             if (controllerId && targetId === controllerId) return false;
         }
         if (restrictions.includes(Restriction.You)) {

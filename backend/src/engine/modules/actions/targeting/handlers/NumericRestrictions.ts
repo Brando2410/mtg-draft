@@ -108,6 +108,18 @@ export const NumericRestrictions: Record<string, IRestrictionHandler> = {
             return power <= 3;
         }
     },
+    "POWER1ORGREATER": {
+        matches(state, targetObj: any) {
+            const power = LayerProcessor.getEffectiveStats(targetObj, state).power;
+            return power >= 1;
+        }
+    },
+    "POWER2ORGREATER": {
+        matches(state, targetObj: any) {
+            const power = LayerProcessor.getEffectiveStats(targetObj, state).power;
+            return power >= 2;
+        }
+    },
     "MV_LE_LIFE_GAINED": {
         matches(state, targetObj: any, r, context) {
             const { controllerId } = context;

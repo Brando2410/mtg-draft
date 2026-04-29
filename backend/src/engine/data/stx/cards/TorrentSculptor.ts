@@ -32,7 +32,7 @@ export const TorrentSculptor: CardDefinition = {
                         label: "Exile",
                         effects: [{
                             type: EffectType.Exile,
-                            sourceZone: Zone.Graveyard,
+                            sourceZones: [Zone.Graveyard],
                             restrictions: [Restriction.InstantOrSorcery],
                             storeMV: 'SAVED_MV'
                         }, {

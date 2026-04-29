@@ -1,4 +1,4 @@
-import { AbilityCost, ActionType, CostType, GameObject, GameState, PlayerId, ResolutionContext, TargetType, Zone, AbilityType, AbilityDefinition, DiscardCost, ExileCost, SacrificeCost, TapSelectionCost } from '@shared/engine_types';
+import { AbilityCost, ActionType, CostType, GameObject, GameState, PlayerId, ResolutionContext, TargetType, Zone, AbilityType, AbilityDefinition, DiscardCost, ExileCost, SacrificeCost, TapSelectionCost, Restriction, TargetMapping } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 
 import { SpellProcessor } from './SpellProcessor';
@@ -94,9 +94,8 @@ export class SpellInteractiveManager {
         }, tid));
         log(`[DEBUG] Found ${legalForFirst.length} legal targets for ${cardToPlay.definition.name}: [${legalForFirst.join(', ')}]`);
 
-        const firstType = (firstDef.type || '').toLowerCase();
-        const firstRestrictions = (firstDef.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
-        const isOpponentTarget = firstType === 'opponent' || (firstType === 'player' && firstRestrictions.includes('opponent'));
+        const firstRestrictions = firstDef.restrictions || [];
+        const isOpponentTarget = firstDef.type === TargetType.Opponent || (firstDef.type === TargetType.Player && firstRestrictions.includes(Restriction.Opponent));
 
         const isSingleOpponentTarget = isOpponentTarget && legalForFirst.length === 1;
 
@@ -525,7 +524,7 @@ export class SpellInteractiveManager {
         const sacrificeCost = additionalCosts.find((cost) => cost.type === CostType.Sacrifice);
         const hasChosenSacrifice = state.interaction?.lastChosenSacrificeId !== undefined;
         if (sacrificeCost && !hasChosenSacrifice) {
-            const isSelfSac = (sacrificeCost as SacrificeCost).targetMapping === 'SELF' || ((sacrificeCost as SacrificeCost).restrictions || []).some((r: any) => typeof r === 'string' && r.toLowerCase() === 'self');
+            const isSelfSac = (sacrificeCost as SacrificeCost).targetMapping === TargetMapping.Self || ((sacrificeCost as SacrificeCost).restrictions || []).some((r: any) => r === Restriction.Self);
             const legalSacrificeIds = state.battlefield.filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, (sacrificeCost as SacrificeCost).restrictions || [], {
                 sourceId: obj.id,
                 controllerId: playerId
@@ -709,9 +708,8 @@ export class SpellInteractiveManager {
         }, tid));
         log(`[DEBUG] Found ${legalForFirst.length} legal targets for ${obj.definition.name} ability: [${legalForFirst.join(', ')}]`);
 
-        const firstType = (firstDef.type || '').toLowerCase();
-        const firstRestrictions = (firstDef.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
-        const isOpponentTarget = firstType === 'opponent' || (firstType === 'player' && firstRestrictions.includes('opponent'));
+        const firstRestrictions = firstDef.restrictions || [];
+        const isOpponentTarget = firstDef.type === TargetType.Opponent || (firstDef.type === TargetType.Player && firstRestrictions.includes(Restriction.Opponent));
 
         const isSingleOpponentTarget = isOpponentTarget &&
             legalForFirst.length === 1;

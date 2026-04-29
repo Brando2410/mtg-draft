@@ -63,7 +63,7 @@ export class SpellCostCalculator {
         if (isFlashback) {
             let override = stats.flashbackCostOverride;
             if (override === 'SOURCE_MANA_COST') override = currentDef.manaCost;
-            baseCost = currentDef.flashbackCost || (currentDef as any).flashback_cost || override || baseCost;
+            baseCost = currentDef.flashbackCost || override || baseCost;
         } else if (card.zone === Zone.Graveyard || (Object.values(state.players) as any[]).some(p => p.virtualHand.some((v: any) => v.id === card.id))) {
             const graveyardAbility = currentDef.abilities?.find((a: any) =>
                 a.type === AbilityType.Activated &&

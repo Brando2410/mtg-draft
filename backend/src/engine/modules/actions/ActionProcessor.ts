@@ -10,7 +10,9 @@ import {
   PendingAction,
   StackObject,
   Zone,
-  TriggerEvent
+  TriggerEvent,
+  Keyword,
+  CounterType
 } from "@shared/engine_types";
 import { Mutation, MutationType } from "@shared/types/mutations";
 import { RegistryProcessor } from "../core/RegistryProcessor";
@@ -356,10 +358,10 @@ export class ActionProcessor {
 
       // CR 302.6: Creature enters the battlefield with summoning sickness
       const hasHasteInDefinition = (card.definition.keywords || []).some(
-        (k) => k.toLowerCase() === "haste",
+        (k) => k === Keyword.Haste,
       );
       const hasHasteOnCard = (card.keywords || []).some(
-        (k) => k.toLowerCase() === "haste",
+        (k) => k === Keyword.Haste,
       );
       card.summoningSickness = !hasHasteInDefinition && !hasHasteOnCard;
 
@@ -591,8 +593,7 @@ export class ActionProcessor {
     // Rule 306.5b: Planeswalkers enter with loyalty counters
     if (
       card.definition.types.some((t) => {
-        const type = String(t).toLowerCase();
-        return type === "planeswalker";
+        return t === "Planeswalker" || t === "planeswalker";
       })
     ) {
       const def = card.definition;
@@ -616,7 +617,7 @@ export class ActionProcessor {
         log(`[DEBUG-DEF] Keys: ${Object.keys(def).join(", ")}`);
       }
 
-      card.counters["loyalty"] = startingLoyalty;
+      card.counters[CounterType.Loyalty] = startingLoyalty;
       if (log)
         log(
           `[ETB] ${card.definition.name} enters with ${startingLoyalty} loyalty.`,

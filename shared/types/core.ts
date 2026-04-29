@@ -273,6 +273,7 @@ export const RestrictionType = {
   MustAttack: "MustAttack",
   MustBlock: "MustBlock",
   MustBeBlocked: "MustBeBlocked",
+  CanAttackWithDefender: "CanAttackWithDefender",
   // Player restrictions
   CannotCastSpells: "CannotCastSpells",
   CannotDrawCards: "CannotDrawCards",

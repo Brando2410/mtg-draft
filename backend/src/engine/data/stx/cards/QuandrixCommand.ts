@@ -45,7 +45,7 @@ export const QuandrixCommand: CardDefinition = {
                         count: 3,
                         minCount: 0,
                         optional: true,
-                        restrictions: [Restriction.Graveyard, 'CONTROLLED_BY_TARGET_1'],
+                        restrictions: [Restriction.Graveyard, Restriction.ControlledByTarget1],
                         label: 'Choose up to three target cards from their graveyard'
                     }
                 ],

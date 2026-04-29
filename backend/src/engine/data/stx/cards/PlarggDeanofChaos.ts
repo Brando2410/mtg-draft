@@ -35,7 +35,7 @@ export const PlarggDeanofChaos: CardDefinition = {
                         fromTop: -1,
                         restrictions: [
                             Restriction.NonLand,
-                            "mv <= 3"
+                            Restriction.ManaValue3OrLess
                         ],
                         zone: Zone.Exile,
                         effects: [{
@@ -69,8 +69,8 @@ export const PlarggDeanofChaos: CardDefinition = {
                         powerModifier: 1,
                         targetMapping: TargetMapping.AllCreaturesYouControl,
                         restrictions: [
-                            "attacking",
-                            "other"
+                            Restriction.Attacking,
+                            Restriction.Other
                         ]
                     }]
                 },
