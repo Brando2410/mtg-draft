@@ -75,9 +75,9 @@ export class TriggerProcessor {
       // --- TRIGGER DOUBLING (CR 603.2c / 614.16) ---
       // 1. Check Replacement Effects (Standardized for specific event buckets)
       // Standard events: 'ON_TRIGGER', 'ON_SHRINE_TRIGGER' (legacy/specific)
-      const triggerEvents = ['ON_TRIGGER'];
-      if (sourceObj && (sourceObj.definition.subtypes || []).includes('Shrine')) {
-        triggerEvents.push('ON_SHRINE_TRIGGER');
+      const triggerEvents = [TriggerEvent.OnTrigger];
+      if (sourceObj && (sourceObj.definition.subtypes || []).includes(Restriction.Shrine)) {
+        triggerEvents.push(TriggerEvent.OnShrineTrigger);
       }
 
       for (const eventName of triggerEvents) {

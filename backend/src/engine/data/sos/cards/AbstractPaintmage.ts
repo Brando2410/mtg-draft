@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } from '@shared/engine_types';
+import { Restriction, AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } from '@shared/engine_types';
     export const AbstractPaintmage: CardDefinition = {
     name: "Abstract Paintmage",
     manaCost: "{U}{U/R}{R}",
@@ -30,10 +30,11 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } 
                 {
                     type: EffectType.AddMana,
                     value: '{U}{R}',
-                    manaRestrictions: ['InstantOrSorcery']
+                    manaRestrictions: [Restriction.InstantOrSorcery]
                 }
             ]
         }
     ],
 };
     
+

@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } from '@shared/engine_types';
     export const GarrisonExcavator: CardDefinition = {
     name: "Garrison Excavator",
     manaCost: "{3}{R}",

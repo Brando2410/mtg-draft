@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+import { Restriction, AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
 export const ResonatingLute: CardDefinition = {
     name: "Resonating Lute",
     manaCost: "{2}{U}{R}",
@@ -28,7 +28,7 @@ export const ResonatingLute: CardDefinition = {
                                 {
                                     type: EffectType.AddMana,
                                     value: '{ANY}{ANY}',
-                                    manaRestrictions: ['InstantOrSorcery']
+                                    manaRestrictions: [Restriction.InstantOrSorcery]
                                 }
                             ]
                         }
@@ -51,4 +51,5 @@ export const ResonatingLute: CardDefinition = {
         }
     ]
 };
+
 

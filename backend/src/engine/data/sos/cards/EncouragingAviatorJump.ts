@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 export const EncouragingAviatorJump: CardDefinition = {
     name: "Encouraging Aviator // Jump",
     manaCost: "{2}{U} // {U}",

@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
     export const HonorboundPageForumsFavor: CardDefinition = {
     name: "Honorbound Page // Forum's Favor",
     manaCost: "{3}{W}",

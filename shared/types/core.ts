@@ -28,6 +28,47 @@ export const CardType = {
 } as const;
 export type CardType = number;
 
+export const Keyword = {
+  Haste: 'Haste',
+  Flashback: 'Flashback',
+  Flying: 'Flying',
+  Deathtouch: 'Deathtouch',
+  Lifelink: 'Lifelink',
+  Vigilance: 'Vigilance',
+  Trample: 'Trample',
+  Indestructible: 'Indestructible',
+  Ward: 'Ward',
+  Hexproof: 'Hexproof',
+  Shroud: 'Shroud',
+  Menace: 'Menace',
+  Reach: 'Reach',
+  FirstStrike: 'FirstStrike',
+  DoubleStrike: 'DoubleStrike',
+  Defender: 'Defender'
+} as const;
+export type Keyword = (typeof Keyword)[keyof typeof Keyword];
+
+export const CounterType = {
+  P1P1: "+1/+1",
+  M1M1: "-1/-1",
+  Loyalty: "loyalty",
+  Charge: "charge",
+  Lore: "lore",
+  Poison: "poison",
+  Energy: "energy",
+  Experience: "experience",
+  Time: "time",
+  Suspect: "suspect",
+  Blood: "blood"
+} as const;
+export type CounterType = (typeof CounterType)[keyof typeof CounterType];
+
+export const EnginePrefix = {
+  VirtualPrepared: "virtual_prepared_",
+  Copy: "copy_",
+  Token: "token_"
+} as const;
+
 export const SelectionType = {
   Target: "Target",
   Choice: "Choice",

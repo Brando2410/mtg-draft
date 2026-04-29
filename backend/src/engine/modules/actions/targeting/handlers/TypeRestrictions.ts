@@ -1,4 +1,4 @@
-import { Zone, CardType } from "@shared/engine_types";
+import { Zone, CardType, Restriction } from "@shared/engine_types";
 import { IRestrictionHandler } from "../IRestrictionHandler";
 
 const PERMANENT_MASK = CardType.Artifact | CardType.Creature | CardType.Enchantment | CardType.Land | CardType.Planeswalker | CardType.Battle;
@@ -10,7 +10,7 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return !!targetObj.isToken;
         }
     },
-    "NONTOKEN": {
+    "NON_TOKEN": {
         matches(state, targetObj: any) {
             return !targetObj.isToken;
         }
@@ -27,7 +27,7 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return supertypes.includes("basic");
         }
     },
-    "NONBASIC": {
+    "NON_BASIC": {
         matches(state, targetObj: any) {
             const supertypes = (targetObj.definition?.supertypes || []).map((t: string) => t.toLowerCase());
             return !supertypes.includes("basic");
@@ -50,16 +50,10 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return type.includes('Ability');
         }
     },
-    "ARTIFACTORCREATURE": {
+    "ARTIFACT_OR_CREATURE": {
         matches(state, targetObj: any) {
             const mask = targetObj.typeMask || 0;
             return (mask & (CardType.Artifact | CardType.Creature)) !== 0;
-        }
-    },
-    "INSTANTORSORCERY": {
-        matches(state, targetObj: any) {
-            const mask = targetObj.typeMask || 0;
-            return (mask & (CardType.Instant | CardType.Sorcery)) !== 0;
         }
     },
     "INSTANT_OR_SORCERY": {
@@ -68,22 +62,10 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return (mask & (CardType.Instant | CardType.Sorcery)) !== 0;
         }
     },
-    "CREATUREORPLANESWALKER": {
-        matches(state, targetObj: any) {
-            const mask = targetObj.typeMask || 0;
-            return (mask & (CardType.Creature | CardType.Planeswalker)) !== 0;
-        }
-    },
     "CREATURE_OR_PLANESWALKER": {
         matches(state, targetObj: any) {
             const mask = targetObj.typeMask || 0;
             return (mask & (CardType.Creature | CardType.Planeswalker)) !== 0;
-        }
-    },
-    "ANYTARGET": {
-        matches(state, targetObj: any) {
-            const mask = targetObj.typeMask || 0;
-            return (mask & ANY_TARGET_MASK) !== 0;
         }
     },
     "ANY_TARGET": {
@@ -92,22 +74,10 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return (mask & ANY_TARGET_MASK) !== 0;
         }
     },
-    "CREATUREORLAND": {
-        matches(state, targetObj: any) {
-            const mask = targetObj.typeMask || 0;
-            return (mask & (CardType.Creature | CardType.Land)) !== 0;
-        }
-    },
     "CREATURE_OR_LAND": {
         matches(state, targetObj: any) {
             const mask = targetObj.typeMask || 0;
             return (mask & (CardType.Creature | CardType.Land)) !== 0;
-        }
-    },
-    "ARTIFACTORENCHANTMENT": {
-        matches(state, targetObj: any) {
-            const mask = targetObj.typeMask || 0;
-            return (mask & (CardType.Artifact | CardType.Enchantment)) !== 0;
         }
     },
     "ARTIFACT_OR_ENCHANTMENT": {
@@ -147,19 +117,7 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return !(mask & CardType.Land) && (mask & PERMANENT_MASK) !== 0;
         }
     },
-    "NONLANDPERMANENT": {
-        matches(state, targetObj: any) {
-            const mask = targetObj.typeMask || 0;
-            return !(mask & CardType.Land) && (mask & PERMANENT_MASK) !== 0;
-        }
-    },
-    "NONAURA": {
-        matches(state, targetObj: any) {
-            const subtypes = (targetObj.definition?.subtypes || []).map((s: string) => s.toLowerCase());
-            return !subtypes.includes("aura");
-        }
-    },
-    "NOT_AURA": {
+    "NON_AURA": {
         matches(state, targetObj: any) {
             const subtypes = (targetObj.definition?.subtypes || []).map((s: string) => s.toLowerCase());
             return !subtypes.includes("aura");
@@ -169,14 +127,14 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
 
 // Common base types mapper
 const typeToMask: Record<string, number> = {
-    'creature': CardType.Creature,
-    'planeswalker': CardType.Planeswalker,
-    'land': CardType.Land,
-    'artifact': CardType.Artifact,
-    'enchantment': CardType.Enchantment,
-    'instant': CardType.Instant,
-    'sorcery': CardType.Sorcery,
-    'player': CardType.Player,
+    [Restriction.Creature]: CardType.Creature,
+    [Restriction.Planeswalker]: CardType.Planeswalker,
+    [Restriction.Land]: CardType.Land,
+    [Restriction.Artifact]: CardType.Artifact,
+    [Restriction.Enchantment]: CardType.Enchantment,
+    [Restriction.Instant]: CardType.Instant,
+    [Restriction.Sorcery]: CardType.Sorcery,
+    [Restriction.Player]: CardType.Player,
     'battle': CardType.Battle,
     'tribal': CardType.Tribal
 };
@@ -195,7 +153,7 @@ Object.entries(typeToMask).forEach(([type, bit]) => {
     };
 
     // Negative check
-    TypeRestrictions[`NON${upperType}`] = {
+    TypeRestrictions[`NON_${upperType}`] = {
         matches(state, targetObj: any) {
             if (bit === CardType.Player) {
                 return !state.players[targetObj.id];

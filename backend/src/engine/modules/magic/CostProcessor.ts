@@ -1,4 +1,4 @@
-import { AbilityCost, CostType, GameObject, GameObjectId, GameState, PlayerId, RestrictionType, Zone } from '@shared/engine_types';
+import { AbilityCost, CardType, CostType, GameObject, GameObjectId, GameState, Keyword, PlayerId, Restriction, RestrictionType, Zone } from '@shared/engine_types';
 
 import { ActionProcessor } from '../actions/ActionProcessor';
 import { TargetingProcessor } from '../actions/targeting/TargetingProcessor';
@@ -59,7 +59,7 @@ export class CostProcessor {
         if (source.isTapped) return false;
 
         // Rule 302.6: Summoning Sickness applies to tap abilities of creatures
-        const isCreature = source.definition.types.some(t => t.toLowerCase() === 'creature');
+        const isCreature = (source.typeMask || 0) & CardType.Creature;
         if (isCreature && source.summoningSickness) {
           const stats = LayerProcessor.getEffectiveStats(source, state);
           if (!stats.keywords.includes('Haste')) {

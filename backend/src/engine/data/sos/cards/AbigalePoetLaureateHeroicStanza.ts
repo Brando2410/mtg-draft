@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
     name: "Abigale, Poet Laureate // Heroic Stanza",
     manaCost: "{1}{W}{B} // {1}{W/B}",

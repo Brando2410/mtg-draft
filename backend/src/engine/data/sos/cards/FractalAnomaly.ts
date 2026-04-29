@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
     export const FractalAnomaly: CardDefinition = {
     name: "Fractal Anomaly",
     manaCost: "{U}",

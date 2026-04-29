@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
     export const LandscapePainterVibrantIdea: CardDefinition = {
     name: "Landscape Painter",
     manaCost: "{1}{U}",

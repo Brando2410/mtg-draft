@@ -1,4 +1,4 @@
-import { AbilityType, EffectType, GameObject, GameState, Phase, PlayerId, Zone, TargetMapping } from '@shared/engine_types';
+import { AbilityType, EffectType, GameObject, GameState, Phase, PlayerId, Zone, TargetMapping, Keyword, EnginePrefix } from '@shared/engine_types';
 import { CostProcessor } from '../../magic/CostProcessor';
 import { RestrictionValidator } from '../../core/RestrictionValidator';
 import { TargetingProcessor } from '../targeting/TargetingProcessor';
@@ -27,7 +27,7 @@ export class SpellValidator {
 
             const { LayerProcessor } = require('../../state/LayerProcessor');
             const stats = LayerProcessor.getEffectiveStats(obj, state);
-            const hasFlashback = obj.zone === Zone.Graveyard && (stats.keywords?.includes('Flashback') || obj.definition.keywords?.includes('Flashback'));
+            const hasFlashback = obj.zone === Zone.Graveyard && (stats.keywords?.includes(Keyword.Flashback) || obj.definition.keywords?.includes(Keyword.Flashback));
 
             if (hasFlashback) {
                 (obj as any).isFlashbackCast = true;
@@ -58,12 +58,12 @@ export class SpellValidator {
         }
 
         // 3. Search for Prepared Creatures on Battlefield
-        const isVirtual = cardInstanceId.startsWith('virtual_prepared_');
-        const isCopy = cardInstanceId.startsWith('copy_');
+        const isVirtual = cardInstanceId.startsWith(EnginePrefix.VirtualPrepared);
+        const isCopy = cardInstanceId.startsWith(EnginePrefix.Copy);
 
         if (isVirtual || isCopy) {
             let realId = cardInstanceId;
-            if (isVirtual) realId = cardInstanceId.replace('virtual_prepared_', '');
+            if (isVirtual) realId = cardInstanceId.replace(EnginePrefix.VirtualPrepared, '');
             if (isCopy) {
                 const parts = cardInstanceId.split('_');
                 if (parts.length >= 2) realId = parts[1];
@@ -72,7 +72,7 @@ export class SpellValidator {
             const preparedObj = state.battlefield.find(o => o.id === realId && o.controllerId === playerId && o.isPrepared);
             if (preparedObj && (preparedObj.definition.preparedFace || preparedObj.definition.faces?.[1])) {
                 const face = preparedObj.definition.preparedFace || preparedObj.definition.faces![1];
-                const copyId = isCopy ? cardInstanceId : `copy_${preparedObj.id}_${Date.now()}`;
+                const copyId = isCopy ? cardInstanceId : `${EnginePrefix.Copy}${preparedObj.id}_${Date.now()}`;
 
                 if ((state as any).dynamicCopies && (state as any).dynamicCopies[copyId]) {
                     return (state as any).dynamicCopies[copyId];

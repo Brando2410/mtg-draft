@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 export const LivingHistory: CardDefinition = {
     name: "Living History",
     manaCost: "{1}{R}",

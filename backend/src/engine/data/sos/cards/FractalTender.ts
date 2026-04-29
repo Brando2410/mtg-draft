@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/engine_types';
     export const FractalTender: CardDefinition = {
     name: "Fractal Tender",
     manaCost: "{3}{G}{U}",

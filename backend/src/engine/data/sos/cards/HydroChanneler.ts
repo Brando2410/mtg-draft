@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+import { Restriction, AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
 
 export const HydroChanneler: CardDefinition = {
     name: "Hydro-Channeler",
@@ -21,7 +21,7 @@ export const HydroChanneler: CardDefinition = {
                 {
                     type: EffectType.AddMana,
                     value: '{U}',
-                    manaRestrictions: ['InstantOrSorcery'],
+                    manaRestrictions: [Restriction.InstantOrSorcery],
                     targetMapping: TargetMapping.Controller
                 }
             ]
@@ -34,11 +34,11 @@ export const HydroChanneler: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Choose a color of mana to add",
                     choices: [
-                        { label: "White", value: "{W}", effects: [{ type: EffectType.AddMana, value: '{W}', manaRestrictions: ['InstantOrSorcery'], targetMapping: TargetMapping.Controller }] },
-                        { label: "Blue", value: "{U}", effects: [{ type: EffectType.AddMana, value: '{U}', manaRestrictions: ['InstantOrSorcery'], targetMapping: TargetMapping.Controller }] },
-                        { label: "Black", value: "{B}", effects: [{ type: EffectType.AddMana, value: '{B}', manaRestrictions: ['InstantOrSorcery'], targetMapping: TargetMapping.Controller }] },
-                        { label: "Red", value: "{R}", effects: [{ type: EffectType.AddMana, value: '{R}', manaRestrictions: ['InstantOrSorcery'], targetMapping: TargetMapping.Controller }] },
-                        { label: "Green", value: "{G}", effects: [{ type: EffectType.AddMana, value: '{G}', manaRestrictions: ['InstantOrSorcery'], targetMapping: TargetMapping.Controller }] }
+                        { label: "White", value: "{W}", effects: [{ type: EffectType.AddMana, value: '{W}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
+                        { label: "Blue", value: "{U}", effects: [{ type: EffectType.AddMana, value: '{U}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
+                        { label: "Black", value: "{B}", effects: [{ type: EffectType.AddMana, value: '{B}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
+                        { label: "Red", value: "{R}", effects: [{ type: EffectType.AddMana, value: '{R}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
+                        { label: "Green", value: "{G}", effects: [{ type: EffectType.AddMana, value: '{G}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] }
                     ],
                     targetMapping: TargetMapping.Controller
                 }
@@ -46,3 +46,4 @@ export const HydroChanneler: CardDefinition = {
         }
     ]
 };
+

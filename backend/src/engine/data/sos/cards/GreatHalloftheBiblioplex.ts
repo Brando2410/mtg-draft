@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { Restriction, AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const GreatHalloftheBiblioplex: CardDefinition = {
     name: "Great Hall of the Biblioplex",
@@ -25,7 +25,7 @@ export const GreatHalloftheBiblioplex: CardDefinition = {
             effects: [{
                 type: EffectType.AddMana,
                 manaType: '{ANY}',
-                manaRestrictions: ['InstantOrSorcery']
+                manaRestrictions: [Restriction.InstantOrSorcery]
             }]
         },
         {
@@ -64,3 +64,4 @@ export const GreatHalloftheBiblioplex: CardDefinition = {
         }
     ]
 };
+

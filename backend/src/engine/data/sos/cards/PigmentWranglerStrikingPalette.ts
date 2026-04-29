@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
     export const PigmentWranglerStrikingPalette: CardDefinition = {
     name: "Pigment Wrangler // Striking Palette",
     manaCost: "{4}{R}",

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent, Zone } from '@shared/engine_types';
+import { Restriction, AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const VelomachusLorehold: CardDefinition = {
     name: "Velomachus Lorehold",
@@ -21,7 +21,7 @@ export const VelomachusLorehold: CardDefinition = {
                 fromTop: 7,
                 optional: true,
                 restrictions: [
-                    'InstantOrSorcery',
+                    Restriction.InstantOrSorcery,
                     'mv_le_power'
                 ],
                 zone: Zone.Stack,
@@ -33,3 +33,4 @@ export const VelomachusLorehold: CardDefinition = {
         }
     ]
 };
+

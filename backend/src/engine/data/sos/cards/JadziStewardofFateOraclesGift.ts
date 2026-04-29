@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 export const JadziStewardofFateOraclesGift: CardDefinition = {
     name: "Jadzi, Steward of Fate // Oracle's Gift",
     manaCost: "{2}{U}",

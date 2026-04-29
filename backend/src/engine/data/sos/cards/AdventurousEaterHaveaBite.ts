@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
     export const AdventurousEaterHaveaBite: CardDefinition = {
     name: "Adventurous Eater // Have a Bite",
     manaCost: "{2}{B} // {B}",

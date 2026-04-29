@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
 export const GroupProject: CardDefinition = {
     name: "Group Project",
     manaCost: "{1}{W}",
@@ -9,7 +9,7 @@ export const GroupProject: CardDefinition = {
     types: ["Sorcery"],
     subtypes: [],
     keywords: ["Flashback"],
-    oracleText: "Create a 2/2 red and white Spirit creature token.\nFlashbackâ€”Tap three untapped creatures you control. (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    oracleText: "Create a 2/2 red and white Spirit creature token.\nFlashback—Tap three untapped creatures you control. (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
     flashbackCost: "{0}",
     abilities: [
         {

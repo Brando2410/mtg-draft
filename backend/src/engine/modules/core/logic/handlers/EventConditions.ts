@@ -1,4 +1,4 @@
-import { GameState, ConditionContext, TriggerEvent, Zone, GameObject } from "@shared/engine_types";
+import { GameState, ConditionContext, TriggerEvent, Zone, GameObject, CounterType } from "@shared/engine_types";
 import { IConditionHandler } from "../IConditionHandler";
 
 export const EventConditions: Record<string, IConditionHandler> = {
@@ -40,9 +40,9 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "EVENT_COUNTER_TYPE_MATCHES": {
         matches(state, params, context) {
             const { event } = context;
-            const expectedType = params[0] === "p1p1" ? "+1/+1" : params[0];
+            const expectedType = params[0] === "p1p1" ? CounterType.P1P1 : params[0];
             const actualType = (event as any)?.counterType || (event as any)?.data?.counterType;
-            const normalizedActualType = actualType === "p1p1" ? "+1/+1" : actualType;
+            const normalizedActualType = actualType === "p1p1" ? CounterType.P1P1 : actualType;
             return normalizedActualType === expectedType;
         }
     },

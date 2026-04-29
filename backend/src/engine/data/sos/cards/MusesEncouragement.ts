@@ -1,4 +1,4 @@
-﻿import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 export const MusesEncouragement: CardDefinition = {
     name: "Muse's Encouragement",
     manaCost: "{4}{U}",
