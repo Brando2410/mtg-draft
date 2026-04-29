@@ -160,7 +160,7 @@ export class TargetValidator {
         return restrictions;
     }
 
-    public static matchesRestrictions(state: GameState, targetObj: Targetable, restrictions: (TargetRestriction | string)[], context: TargetingContext): boolean {
+    public static matchesRestrictions(state: GameState, targetObj: Targetable, restrictions: (TargetRestriction | string)[], context: TargetingContext, log?: (msg: string) => void): boolean {
         if (!targetObj) return false;
         const definition = (targetObj as GameObject).definition || (targetObj as any).card?.definition;
 
@@ -225,20 +225,20 @@ export class TargetValidator {
         });
 
         if (alternatives.length > 0) {
-            return alternatives.every(r => this.evaluateComplexRestriction(state, targetObj, r, context));
+            return alternatives.every(r => this.evaluateComplexRestriction(state, targetObj, r, context, log));
         }
 
         return true;
     }
 
-    private static evaluateComplexRestriction(state: GameState, targetObj: Targetable, r: TargetRestriction | string, context: TargetingContext): boolean {
+    private static evaluateComplexRestriction(state: GameState, targetObj: Targetable, r: TargetRestriction | string, context: TargetingContext, log?: (msg: string) => void): boolean {
         if (typeof r === 'string') {
             const lr = r.toLowerCase();
             const token = r.toUpperCase();
             if (RestrictionRegistry[token]) return !!RestrictionRegistry[token].matches(state, targetObj, lr, context);
-            if (lr.includes('_or_')) return lr.split('_or_').some(p => this.matchesRestrictions(state, targetObj, [p.trim()], context));
-            if (lr.includes('orsorcery') || lr === 'instant_or_sorcery') return this.matchesRestrictions(state, targetObj, ['instant'], context) || this.matchesRestrictions(state, targetObj, ['sorcery'], context);
-            return this.matchesRestrictions(state, targetObj, [r], context);
+            if (lr.includes('_or_')) return lr.split('_or_').some(p => this.matchesRestrictions(state, targetObj, [p.trim()], context, log));
+            if (lr.includes('orsorcery') || lr === 'instant_or_sorcery') return this.matchesRestrictions(state, targetObj, ['instant'], context, log) || this.matchesRestrictions(state, targetObj, ['sorcery'], context, log);
+            return this.matchesRestrictions(state, targetObj, [r], context, log);
         }
 
         const definition = (targetObj as GameObject).definition;

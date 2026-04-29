@@ -79,7 +79,7 @@ export class CostProcessor {
         return ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveMana);
 
       case CostType.Loyalty: {
-        const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
+        const xValue = source.xValue ?? 0;
         const valStr = String(cost.value);
         const val = (valStr === 'X' || valStr === '-X') ? -Math.abs(xValue) : parseInt(valStr);
         const current = source.counters.loyalty || 0;
@@ -106,7 +106,7 @@ export class CostProcessor {
         return validDiscards.length >= neededDisc;
 
       case CostType.PayLife: {
-        const xValue = (source as any).xValue !== undefined ? (source as any).xValue : (stackObject?.xValue || 0);
+        const xValue = source.xValue ?? (stackObject?.xValue || 0);
         const lifeVal = cost.value === 'X' ? xValue : (parseInt(cost.value) || 0);
         return player.life >= lifeVal; // Rule 119.4: A player can't pay more life than they have.
       }
@@ -131,7 +131,7 @@ export class CostProcessor {
         return validExiles.length >= neededExile;
 
       case CostType.Crew: {
-        const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
+        const xValue = source.xValue ?? 0;
         const amountStr = String(cost.amount || cost.value || 0);
         const amount = amountStr === 'X' ? xValue : Number(amountStr);
         const candidates = state.battlefield.filter(o =>
@@ -178,7 +178,7 @@ export class CostProcessor {
         break;
 
       case CostType.Loyalty: {
-        const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
+        const xValue = source.xValue ?? 0;
         const valStr = String(cost.value);
         const lVal = (valStr === 'X' || valStr === '-X') ? -Math.abs(xValue) : parseInt(valStr);
         const oldL = source.counters.loyalty || 0;
@@ -239,7 +239,7 @@ export class CostProcessor {
         break;
 
       case CostType.PayLife: {
-        const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
+        const xValue = source.xValue ?? 0;
         const lifeVal = cost.value === 'X' ? xValue : (parseInt(cost.value) || 0);
         player.life -= lifeVal;
         TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
@@ -310,7 +310,7 @@ export class CostProcessor {
     const originalCostStr = costStr;
 
     // Rule 107.3: Handle X cost substitution
-    const xValue = (source as any).xValue !== undefined ? (source as any).xValue : (stackObject?.xValue || 0);
+    const xValue = source.xValue ?? (stackObject?.xValue || 0);
     if (costStr.includes('{X}')) {
       costStr = costStr.replace(/\{X\}/g, `{${xValue}}`);
     }
