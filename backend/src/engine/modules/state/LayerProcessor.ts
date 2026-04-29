@@ -527,8 +527,22 @@ export class LayerProcessor {
     // 0. Initial Cache Setup
     this.rebuildObjectCache(state);
     
-    // Clear the stats cache for the new version
-    (state as any)._statsCache = new Map();
+    // 0.5. Partial Cache Invalidation: Only clear cache if layer-relevant state changed
+    let layerHash = `${state.ruleRegistry.continuousEffects.length}:${state.stack.length}`;
+    state.battlefield.forEach(o => {
+      layerHash += `|${o.id}:${o.isTapped ? 1 : 0}:${o.isAttacking ? 1 : 0}:${Object.values(o.counters || {}).join(',')}`;
+    });
+    Object.values(state.players).forEach(p => {
+      layerHash += `|${p.life}:${p.hand.length}:${p.graveyard.length}:${Object.values(p.manaPool || {}).join(',')}`;
+    });
+
+    const canReuseCache = (state as any)._statsCache && (state as any)._lastLayerHash === layerHash;
+
+    if (!canReuseCache) {
+      (state as any)._statsCache = new Map();
+      (state as any)._lastLayerHash = layerHash;
+    }
+    // Always update version to current state version to allow hits in getEffectiveStats
     (state as any)._statsCache.version = state.stateVersion;
 
     const effects = state.ruleRegistry.continuousEffects || [];
