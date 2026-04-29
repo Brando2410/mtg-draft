@@ -21,7 +21,7 @@ export const LoreholdExcavation: CardDefinition = {
                 { type: CostType.Mana, value: '{5}' },
                 {
                     type: CostType.Exile,
-                    zone: Zone.Graveyard,
+                    sourceZones: [Zone.Graveyard],
                     restrictions: [Restriction.Creature]
                 }
             ],

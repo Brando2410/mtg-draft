@@ -21,7 +21,7 @@ export const RestorationSeminar: CardDefinition = {
                     targetDefinition: {
                         type: TargetType.CardInGraveyard,
                         count: 1,
-                        restrictions: [Restriction.NonlandPermanent]
+                        restrictions: [Restriction.NonLandPermanent]
                     },
                     effects: [
                         {

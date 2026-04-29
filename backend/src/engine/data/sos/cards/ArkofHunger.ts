@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const ArkofHunger: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+export const ArkofHunger: CardDefinition = {
     name: "Ark of Hunger",
     manaCost: "{2}{R}{W}",
     scryfall_id: "79d01c19-162b-4a12-9e27-18366d95eaa0",
@@ -18,7 +18,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.LeaveGraveyard,
+            eventMatch: TriggerEvent.LeaveGraveyard,
             effects: [
                 {
                     type: EffectType.DealDamage,
@@ -34,7 +34,7 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Tap, targetMapping: TargetMapping.Self }],
+            costs: [{ type: CostType.Tap }],
             effects: [
                 { type: EffectType.Mill, amount: 1 },
                 { type: EffectType.AllowPlayMilledCard, duration: { type: DurationType.UntilEndOfTurn } }
@@ -42,4 +42,4 @@ import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Target
         }
     ]
 };
-    
+

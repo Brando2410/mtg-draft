@@ -42,7 +42,7 @@ export const RubbleRouser: CardDefinition = {
             type: AbilityType.Activated,
             costs: [
                 { type: CostType.Tap },
-                { type: CostType.Exile, value: 1, sourceZone: Zone.Graveyard, restrictions: [Restriction.Card] }
+                { type: CostType.Exile, amount: 1, sourceZones: [Zone.Graveyard], restrictions: [Restriction.Card] }
             ],
             effects: [
                 { type: EffectType.AddMana, manaType: 'R' },

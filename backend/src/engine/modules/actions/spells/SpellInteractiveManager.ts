@@ -1,4 +1,4 @@
-import { AbilityCost, ActionType, CostType, GameObject, GameState, PlayerId, ResolutionContext, TargetType, Zone, AbilityType, AbilityDefinition } from '@shared/engine_types';
+import { AbilityCost, ActionType, CostType, GameObject, GameState, PlayerId, ResolutionContext, TargetType, Zone, AbilityType, AbilityDefinition, DiscardCost, ExileCost, SacrificeCost, TapSelectionCost } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 
 import { SpellProcessor } from './SpellProcessor';
@@ -296,13 +296,13 @@ export class SpellInteractiveManager {
 
         if (sacrificeCost && !hasChosenSacrifice) {
             const legalSacrificeIds = state.battlefield
-                .filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, sacrificeCost.restrictions || [], {
+                .filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, (sacrificeCost as SacrificeCost).restrictions || [], {
                     sourceId: cardToPlay.id,
                     controllerId: playerId
                 }))
                 .map(o => o.id);
 
-            const amount = sacrificeCost.amount || 1;
+            const amount = (sacrificeCost as SacrificeCost).amount || 1;
             if (legalSacrificeIds.length < amount) {
                 log(`Illegal Play: No valid objects to sacrifice for ${cardToPlay.definition.name}.`);
                 return null; // FAILURE
@@ -339,7 +339,7 @@ export class SpellInteractiveManager {
         if (discardCost && !hasChosenDiscard) {
             const player = state.players[playerId];
             const legalDiscardIds = player.hand
-                .filter(c => c.id !== cardInstanceId && TargetingProcessor.matchesRestrictions(state, c, discardCost.restrictions || [], {
+                .filter(c => c.id !== cardInstanceId && TargetingProcessor.matchesRestrictions(state, c, (discardCost as DiscardCost).restrictions || [], {
                     sourceId: cardToPlay.id,
                     controllerId: playerId
                 }))
@@ -381,7 +381,7 @@ export class SpellInteractiveManager {
 
         if (exileCost && !hasChosenExile) {
             const player = state.players[playerId];
-            const zones = exileCost.sourceZones || (exileCost.sourceZone ? [exileCost.sourceZone] : [Zone.Battlefield]);
+            const zones: Zone[] = (exileCost as ExileCost).sourceZones || [Zone.Battlefield];
             const pool = zones.flatMap((z: Zone) => {
                 if (z === Zone.Battlefield) return state.battlefield.filter(o => o.controllerId === playerId);
                 if (z === Zone.Graveyard) return player.graveyard;
@@ -390,13 +390,13 @@ export class SpellInteractiveManager {
             });
 
             const legalExileIds = pool
-                .filter((c: GameObject) => TargetingProcessor.matchesRestrictions(state, c, exileCost.restrictions || [], {
+                .filter((c: GameObject) => TargetingProcessor.matchesRestrictions(state, c, (exileCost as ExileCost).restrictions || [], {
                     sourceId: cardToPlay.id,
                     controllerId: playerId
                 }))
                 .map((c: GameObject) => c.id);
 
-            const amount = exileCost.amount || 1;
+            const amount = (exileCost as ExileCost).amount || 1;
             if (legalExileIds.length < amount) {
                 log(`Illegal Play: Not enough valid objects to exile for ${cardToPlay.definition.name}.`);
                 return null; // FAILURE
@@ -440,7 +440,7 @@ export class SpellInteractiveManager {
                 })
             ).map(o => o.id);
 
-            const amount = Number(tapSelectionCost.value || tapSelectionCost.amount || 1);
+            const amount = Number((tapSelectionCost as TapSelectionCost).value || (tapSelectionCost as TapSelectionCost).amount || 1);
             if (legalTapIds.length < amount) {
                 log(`Illegal Play: Not enough valid permanents to tap for ${cardToPlay.definition.name}.`);
                 return null; // FAILURE
@@ -525,8 +525,8 @@ export class SpellInteractiveManager {
         const sacrificeCost = additionalCosts.find((cost) => cost.type === CostType.Sacrifice);
         const hasChosenSacrifice = state.interaction?.lastChosenSacrificeId !== undefined;
         if (sacrificeCost && !hasChosenSacrifice) {
-            const isSelfSac = sacrificeCost.targetMapping === 'SELF' || (sacrificeCost.restrictions || []).some((r: any) => typeof r === 'string' && r.toLowerCase() === 'self');
-            const legalSacrificeIds = state.battlefield.filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, sacrificeCost.restrictions || [], {
+            const isSelfSac = (sacrificeCost as SacrificeCost).targetMapping === 'SELF' || ((sacrificeCost as SacrificeCost).restrictions || []).some((r: any) => typeof r === 'string' && r.toLowerCase() === 'self');
+            const legalSacrificeIds = state.battlefield.filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, (sacrificeCost as SacrificeCost).restrictions || [], {
                 sourceId: obj.id,
                 controllerId: playerId
             })).map(o => o.id);
@@ -567,7 +567,7 @@ export class SpellInteractiveManager {
         const discardCost = additionalCosts.find((cost) => cost.type === CostType.Discard);
         const hasChosenDiscard = state.interaction?.lastChosenDiscardId !== undefined;
         if (discardCost && !hasChosenDiscard) {
-            const legalDiscardIds = player.hand.filter(c => TargetingProcessor.matchesRestrictions(state, c, discardCost.restrictions || [], {
+            const legalDiscardIds = player.hand.filter(c => TargetingProcessor.matchesRestrictions(state, c, (discardCost as DiscardCost).restrictions || [], {
                 sourceId: obj.id,
                 controllerId: playerId
             })).map(c => c.id);
@@ -602,11 +602,11 @@ export class SpellInteractiveManager {
         const tapSelectionCost = additionalCosts.find((cost) => cost.type === CostType.TapSelection);
         const hasChosenTapSelection = state.interaction?.lastChosenTapSelectionIds !== undefined;
         if (tapSelectionCost && !hasChosenTapSelection) {
-            const legalTapIds = state.battlefield.filter(o => o.controllerId === playerId && !o.isTapped && TargetingProcessor.matchesRestrictions(state, o, tapSelectionCost.restrictions || [], {
+            const legalTapIds = state.battlefield.filter(o => o.controllerId === playerId && !o.isTapped && TargetingProcessor.matchesRestrictions(state, o, (tapSelectionCost as TapSelectionCost).restrictions || [], {
                 sourceId: obj.id,
                 controllerId: playerId
             })).map(o => o.id);
-            const amount = Number(tapSelectionCost.value || tapSelectionCost.amount || 1);
+            const amount = Number((tapSelectionCost as TapSelectionCost).value || (tapSelectionCost as TapSelectionCost).amount || 1);
             if (legalTapIds.length < amount) {
                 log(`Illegal Activation: Not enough valid permanents to tap for ${obj.definition.name}.`);
                 return false;
@@ -638,7 +638,7 @@ export class SpellInteractiveManager {
         const exileCost = additionalCosts.find((cost) => cost.type === CostType.Exile);
         const hasChosenExile = state.interaction?.lastChosenExileIds !== undefined;
         if (exileCost && !hasChosenExile) {
-            const zones = exileCost.sourceZones || (exileCost.sourceZone ? [exileCost.sourceZone] : [Zone.Battlefield]);
+            const zones: Zone[] = (exileCost as ExileCost).sourceZones || [Zone.Battlefield];
             const pool = zones.flatMap((z: Zone) => {
                 if (z === Zone.Battlefield) return state.battlefield.filter((o: GameObject) => o.controllerId === playerId);
                 if (z === Zone.Graveyard) return player.graveyard;
@@ -647,7 +647,7 @@ export class SpellInteractiveManager {
                 if (z === Zone.Library) return player.library;
                 return [];
             });
-            const legalExileIds = pool.filter((o: GameObject) => TargetingProcessor.matchesRestrictions(state, o, exileCost.restrictions || [], {
+            const legalExileIds = pool.filter((o: GameObject) => TargetingProcessor.matchesRestrictions(state, o, (exileCost as ExileCost).restrictions || [], {
                 sourceId: obj.id,
                 controllerId: playerId
             })).map((o: GameObject) => o.id);

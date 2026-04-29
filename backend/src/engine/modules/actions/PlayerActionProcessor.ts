@@ -1,4 +1,4 @@
-import { AbilityDefinition, AbilityType, ActionType, EffectType, GameState, PlayerId, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, EffectType, GameState, PlayerId, RemoveCounterCost, TriggerEvent, Zone } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
 import { CombatProcessor } from '../combat/CombatProcessor';
 import { PriorityProcessor } from '../core/turn/PriorityProcessor';
@@ -92,7 +92,7 @@ export class PlayerActionProcessor {
           choices: filteredEntries.map((entry) => {
             const a = entry.ability as AbilityDefinition;
             const lCostObj = a.costs?.find((c) => String(c.type || "").toLowerCase().includes('loyalty'));
-            const lCostVal = parseInt(String(lCostObj?.value || 0));
+            const lCostVal = parseInt(String((lCostObj as AddCounterCost | RemoveCounterCost)?.value || 0));
             const lCostSign = lCostVal > 0 ? `+${lCostVal}` : `${lCostVal}`;
 
             // Truncate if extreme length for modal safety

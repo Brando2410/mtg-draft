@@ -26,7 +26,7 @@ export const JadziOracleofArcavios: CardDefinition = {
             abilities: [
                 {
                     type: AbilityType.Activated,
-                    costs: [{ type: CostType.Discard, value: 1 }],
+                    costs: [{ type: CostType.Discard, amount: 1 }],
                     effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Self }]
                 },
                 {
@@ -75,7 +75,7 @@ export const JadziOracleofArcavios: CardDefinition = {
                     {
                         type: EffectType.MoveToZone,
                         zone: Zone.Battlefield,
-                        sourceZone: Zone.Hand,
+                        sourceZones: [Zone.Hand],
                         targetDefinition: {
                             type: TargetType.Card,
                             count: 99, // "Any number"
@@ -91,7 +91,7 @@ export const JadziOracleofArcavios: CardDefinition = {
                         optional: true,
                         choices: [{
                             label: "Discard & Return",
-                            costs: [{ type: CostType.Discard, value: 1 }],
+                            costs: [{ type: CostType.Discard, amount: 1 }],
                             effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Self }]
                         }]
                     }

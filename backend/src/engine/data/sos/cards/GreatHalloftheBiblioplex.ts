@@ -15,16 +15,16 @@ export const GreatHalloftheBiblioplex: CardDefinition = {
         {
             type: AbilityType.Activated,
             isManaAbility: true,
-            costs: [{ type: CostType.Tap, targetMapping: TargetMapping.Self }],
-            effects: [{ type: EffectType.AddMana, value: '{C}' }]
+            costs: [{ type: CostType.Tap }],
+            effects: [{ type: EffectType.AddMana, manaType: 'C' }]
         },
         {
             type: AbilityType.Activated,
             isManaAbility: true,
-            costs: [{ type: CostType.Tap, targetMapping: TargetMapping.Self }, { type: CostType.PayLife, amount: 1 }],
+            costs: [{ type: CostType.Tap }, { type: CostType.PayLife, value: '1' }],
             effects: [{
                 type: EffectType.AddMana,
-                manaType: '{ANY}',
+                manaType: 'ANY',
                 manaRestrictions: [Restriction.InstantOrSorcery]
             }]
         },

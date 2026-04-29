@@ -17,7 +17,7 @@ export const GoBlank: CardDefinition = {
                 },
                 effects: [
                     { type: EffectType.DiscardCards, amount: 2, targetMapping: TargetMapping.Target1 },
-                    { type: EffectType.Exile, targetMapping: TargetMapping.Target1, sourceZone: Zone.Graveyard }
+                    { type: EffectType.Exile, targetMapping: TargetMapping.Target1, sourceZones: [Zone.Graveyard] }
                 ]
             }
         ]

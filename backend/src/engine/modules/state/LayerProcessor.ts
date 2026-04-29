@@ -533,7 +533,7 @@ export class LayerProcessor {
     });
 
     (cache as any).version = state.stateVersion;
-    state._objectCache = cache;
+    state._objectCache = cache as any;
     return cache;
   }
 

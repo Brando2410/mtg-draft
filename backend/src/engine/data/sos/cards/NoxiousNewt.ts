@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const NoxiousNewt: CardDefinition = {
+export const NoxiousNewt: CardDefinition = {
     name: "Noxious Newt",
     manaCost: "{1}{G}",
     scryfall_id: "3a028306-c5d7-4f8f-b6f4-0d103fd47000",
@@ -19,12 +19,12 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
     abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Tap, value: true }],
+            costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [
                 {
                     type: EffectType.AddMana,
-                    mana: '{G}',
+                    manaType: 'G',
                     targetMapping: TargetMapping.Controller
                 }
             ]
@@ -33,4 +33,4 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
     power: "1",
     toughness: "2"
 };
-    
+

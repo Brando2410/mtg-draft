@@ -6,18 +6,9 @@ export const BertaWiseExtrapolator: CardDefinition = {
     scryfall_id: "75f89c36-c81d-4580-9a5c-218fed0c5c9a",
     rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/7/5/75f89c36-c81d-4580-9a5c-218fed0c5c9a.jpg?1775938201",
-    colors: [
-        "G",
-        "U"
-    ],
-    types: [
-        "Legendary",
-        "Creature"
-    ],
-    subtypes: [
-        "Frog",
-        "Druid"
-    ],
+    colors: ["G", "U"],
+    types: ["Legendary", "Creature"],
+    subtypes: ["Frog", "Druid"],
     keywords: ["Increment"],
     oracleText: "Increment (Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.)\nWhenever one or more +1/+1 counters are put on Berta, add one mana of any color.\n{X}, {T}: Create a 0/0 green and blue Fractal creature token and put X +1/+1 counters on it.",
     abilities: [
@@ -37,7 +28,7 @@ export const BertaWiseExtrapolator: CardDefinition = {
             type: AbilityType.Activated,
             costs: [
                 { type: CostType.Mana, value: '{X}' },
-                { type: CostType.Tap, targetMapping: TargetMapping.Self }
+                { type: CostType.Tap }
             ],
             effects: [
                 {

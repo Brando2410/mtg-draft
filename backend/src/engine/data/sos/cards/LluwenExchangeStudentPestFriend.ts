@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const LluwenExchangeStudentPestFriend: CardDefinition = {
     name: "Lluwen, Exchange Student // Pest Friend",
@@ -21,11 +21,9 @@ export const LluwenExchangeStudentPestFriend: CardDefinition = {
             costs: [
                 {
                     type: CostType.Exile,
-                    targetDefinition: {
-                        type: TargetType.CardInGraveyard,
-                        count: 1,
-                        restrictions: [Restriction.Creature, Restriction.YouOwn]
-                    }
+                    sourceZones: [Zone.Graveyard],
+                    amount: 1,
+                    restrictions: [Restriction.Creature, Restriction.YouOwn]
                 }
             ],
             effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Self }]

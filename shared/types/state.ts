@@ -43,6 +43,7 @@ export interface CardDefinition {
 
 export interface GameObject {
     id: GameObjectId;
+    version?: number;
     image_url?: string;
     ownerId: PlayerId;
     controllerId: PlayerId;
@@ -364,10 +365,8 @@ export interface GameState {
     };
 
     // Performance & Engine Extensions
-    _objectCache?: {
+    _objectCache?: Map<string, any> & {
         version: number;
-        has: (id: string) => boolean;
-        get: (id: string) => any;
     };
     dynamicCopies?: Record<string, GameObject>;
     paradigmCopies?: Record<string, GameObject>;

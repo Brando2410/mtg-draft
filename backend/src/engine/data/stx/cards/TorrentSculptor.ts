@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const TorrentSculptor: CardDefinition = {
     name: "Torrent Sculptor",
@@ -23,7 +23,7 @@ export const TorrentSculptor: CardDefinition = {
             oracleText: "Ward {2}\nWhen Torrent Sculptor enters the battlefield, you may exile an instant or sorcery card from your graveyard. If you do, put a +1/+1 counter on Torrent Sculptor for each mana value of the exiled card.",
             abilities: [{
                 type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+                eventMatch: TriggerEvent.EnterBattlefield,
                 effects: [{
                     type: EffectType.Choice,
                     label: "Exile instant/sorcery for counters?",
@@ -53,7 +53,7 @@ export const TorrentSculptor: CardDefinition = {
             oracleText: "As an additional cost to cast this spell, discard a card. Flamethrower Sonata deals damage to target creature or planeswalker equal to 2 plus the mana value of the discarded card. If an instant or sorcery card was discarded this way, draw a card.",
             abilities: [{
                 type: AbilityType.Spell,
-                costs: [{ type: 'Discard', value: 1 }],
+                costs: [{ type: CostType.Discard, amount: 1 }],
                 targetDefinition: { count: 1, type: TargetType.CreatureOrPlaneswalker },
                 effects: [
                     { type: EffectType.DealDamage, amount: DynamicAmount.TwoPlusDiscardedMV, targetMapping: TargetMapping.Target1 },

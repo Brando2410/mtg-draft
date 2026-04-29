@@ -32,7 +32,7 @@ export const LocustSpray: CardDefinition = {
             type: AbilityType.Activated,
             costs: [
                 { type: CostType.Mana, value: "{B}" },
-                { type: CostType.Discard, targetMapping: TargetMapping.Self }
+                { type: CostType.Discard, amount: 1 }
             ],
             effects: [
                 { type: EffectType.DrawCards, amount: 1 }

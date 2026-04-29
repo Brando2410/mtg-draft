@@ -1,4 +1,4 @@
-import { AbilityCost, AbilityType, ActivatedAbilityDefinition, CostType, GameObject, GameState, Zone } from '@shared/engine_types';
+import { AbilityCost, AbilityType, ActivatedAbilityDefinition, CostType, GameObject, GameState, Zone, ChoiceCost, ManaCost } from '@shared/engine_types';
 import { oracle } from '../../../OracleLogicMap';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 
@@ -57,7 +57,7 @@ export class SpellCostCalculator {
             card.definition.keywords?.some((k: string) => k.toLowerCase() === 'flashback');
 
         const isFlashback = forceFlashback ||
-            (card as any).isFlashbackCast ||
+            card.isFlashbackCast ||
             (card.zone === Zone.Graveyard && hasFlashbackKeyword);
 
         if (isFlashback) {
@@ -70,7 +70,7 @@ export class SpellCostCalculator {
                 (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
             ) as ActivatedAbilityDefinition;
             if (graveyardAbility) {
-                baseCost = graveyardAbility.manaCost || graveyardAbility.costs?.find((c: any) => c.type === CostType.Mana)?.value || baseCost;
+                baseCost = graveyardAbility.manaCost || (graveyardAbility.costs?.find((c) => c.type === CostType.Mana) as ManaCost | undefined)?.value || baseCost;
             }
 
         }
@@ -81,7 +81,7 @@ export class SpellCostCalculator {
         }
 
         const parsed = ManaProcessor.parseManaCost(baseCost);
-        if ((card as any).isFreeCast) {
+        if (card.isFreeCast) {
             console.log(`[COST-DEBUG] ${card.definition.name} is free because card.isFreeCast is true.`);
             return { totalMana: "{0}", additionalCosts: [], isFlashback };
         }
@@ -264,8 +264,8 @@ export class SpellCostCalculator {
         if (choiceCostIndex !== -1) {
             const choice = additionalCosts[choiceCostIndex];
             const chosenIndex = state.interaction.lastChosenCostChoiceIndex;
-            if (chosenIndex !== undefined && choice.choices?.[chosenIndex]) {
-                const chosenCosts = choice.choices[chosenIndex].costs;
+            if (chosenIndex !== undefined && (choice as ChoiceCost).choices?.[chosenIndex]) {
+                const chosenCosts = (choice as ChoiceCost).choices[chosenIndex].costs;
                 // Remove the choice and insert its components
                 additionalCosts.splice(choiceCostIndex, 1, ...chosenCosts);
 

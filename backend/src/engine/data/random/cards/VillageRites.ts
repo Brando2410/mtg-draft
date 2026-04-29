@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction } from '@shared/engine_types';
 
 export const VillageRites: CardDefinition = {
     name: 'Village Rites',
@@ -11,12 +11,11 @@ export const VillageRites: CardDefinition = {
         type: AbilityType.Spell,
         additionalCosts: [
             {
-                type: 'Sacrifice',
-                restriction: { type: 'Type', value: 'Creature' }
+                type: CostType.Sacrifice,
+                restrictions: [Restriction.Creature]
             }
         ],
         effects: [{ type: EffectType.DrawCards, amount: 2 }]
       }
     ]
-  };
-
+};

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const PlarggDeanofChaos: CardDefinition = {
     name: "Plargg, Dean of Chaos",
@@ -24,7 +24,7 @@ export const PlarggDeanofChaos: CardDefinition = {
             abilities: [
                 {
                     type: AbilityType.Activated,
-                    costs: [{ type: CostType.Tap }, { type: CostType.Discard, value: 1 }],
+                    costs: [{ type: CostType.Tap }, { type: CostType.Discard, amount: 1 }],
                     effects: [{ type: EffectType.DrawCards, amount: 1 }]
                 },
                 {
@@ -34,7 +34,7 @@ export const PlarggDeanofChaos: CardDefinition = {
                         type: EffectType.SearchLibrary,
                         fromTop: -1,
                         restrictions: [
-                            "nonland",
+                            Restriction.NonLand,
                             "mv <= 3"
                         ],
                         zone: Zone.Exile,

@@ -108,7 +108,6 @@ export interface BaseAbilityCost {
     type: CostType;
     label?: string;
     optional?: boolean;
-    [key: string]: any; // Transitional compatibility
 }
 
 export interface ManaCost extends BaseAbilityCost {
@@ -124,19 +123,48 @@ export interface TapCost extends BaseAbilityCost {
 export interface SacrificeCost extends BaseAbilityCost {
     type: typeof CostType.Sacrifice | typeof CostType.SacrificeSelf;
     amount?: number;
+    targetMapping?: 'SELF' | string;
     targetDefinition?: TargetDefinition;
-    restrictions?: (string | any)[];
+    restrictions?: any[];
 }
 
 export interface DiscardCost extends BaseAbilityCost {
     type: typeof CostType.Discard;
     amount?: number;
+    restrictions?: any[];
     targetDefinition?: TargetDefinition;
 }
 
 export interface LifeCost extends BaseAbilityCost {
     type: typeof CostType.PayLife;
-    amount: number;
+    value: string; // Can be 'X' or numeric string
+    amount?: number;
+}
+
+export interface LoyaltyCost extends BaseAbilityCost {
+    type: typeof CostType.Loyalty;
+    value: string | number;
+}
+
+export interface ExileCost extends BaseAbilityCost {
+    type: typeof CostType.Exile | typeof CostType.ExileSelf;
+    amount?: number;
+    sourceZones?: Zone[];
+    restrictions?: any[];
+    targetMapping?: 'SELF' | string;
+}
+
+export interface CrewCost extends BaseAbilityCost {
+    type: typeof CostType.Crew;
+    value?: string | number;
+    amount?: number;
+}
+
+export interface TapSelectionCost extends BaseAbilityCost {
+    type: typeof CostType.TapSelection;
+    value?: string | number;
+    amount?: number;
+    restrictions?: any[];
 }
 
 /**
@@ -149,7 +177,36 @@ export type AbilityCost =
     | SacrificeCost 
     | DiscardCost 
     | LifeCost 
-    | BaseAbilityCost;
+    | LoyaltyCost
+    | ExileCost
+    | CrewCost
+    | TapSelectionCost
+    | ChoiceCost
+    | RemoveCounterCost
+    | AddCounterCost;
+
+export interface ChoiceCost extends BaseAbilityCost {
+    type: typeof CostType.Choice;
+    choices: {
+        label: string;
+        costs: AbilityCost[];
+    }[];
+    label?: string;
+}
+
+export interface RemoveCounterCost extends BaseAbilityCost {
+    type: typeof CostType.RemoveCounter;
+    counterType: string;
+    amount?: number;
+    value?: number | string;
+}
+
+export interface AddCounterCost extends BaseAbilityCost {
+    type: typeof CostType.AddCounter;
+    counterType: string;
+    amount?: number;
+    value?: number | string;
+}
 
 export interface ActivatedAbility {
     id: string;

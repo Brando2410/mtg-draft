@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const DinaSoulSteeper: CardDefinition = {
     name: 'Dina, Soul Steeper',
@@ -23,7 +23,7 @@ export const DinaSoulSteeper: CardDefinition = {
             type: AbilityType.Activated,
             costs: [
                 { type: CostType.Mana, value: '{1}' },
-                { type: CostType.Sacrifice, restriction: ['Other'] }
+                { type: CostType.Sacrifice, restrictions: [Restriction.Creature, Restriction.Other] }
             ],
             effects: [
                 {

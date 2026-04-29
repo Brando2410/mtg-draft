@@ -25,7 +25,7 @@ export const SeetheTruth: CardDefinition = {
                 {
                     type: EffectType.MoveToZone,
                     fromTop: 3,
-                    sourceZone: Zone.Library,
+                    sourceZones: [Zone.Library],
                     zone: Zone.Hand,
                     condition: 'NOT_CAST_FROM_HAND',
                     targetMapping: TargetMapping.Controller

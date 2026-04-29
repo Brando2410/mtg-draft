@@ -20,7 +20,7 @@ export const ChandraHeartofFire: CardDefinition = {
                 {
                     type: EffectType.Exile,
                     selectionType: 'TopN',
-                    sourceZone: Zone.Library,
+                    sourceZones: [Zone.Library],
                     amount: 3,
                     targetMapping: TargetMapping.Controller,
                     applyToExiled: { type: EffectType.AllowPlayExiled, duration: { type: DurationType.UntilEndOfTurn } }

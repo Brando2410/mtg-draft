@@ -75,7 +75,7 @@ export class TriggerProcessor {
       // --- TRIGGER DOUBLING (CR 603.2c / 614.16) ---
       // 1. Check Replacement Effects (Standardized for specific event buckets)
       // Standard events: 'ON_TRIGGER', 'ON_SHRINE_TRIGGER' (legacy/specific)
-      const triggerEvents = [TriggerEvent.OnTrigger];
+      const triggerEvents: string[] = [TriggerEvent.OnTrigger];
       if (sourceObj && (sourceObj.definition.subtypes || []).includes(Restriction.Shrine)) {
         triggerEvents.push(TriggerEvent.OnShrineTrigger);
       }
@@ -288,7 +288,7 @@ export class TriggerProcessor {
     trigger: TriggeredAbility,
     event: GameEvent,
     log: (msg: string) => void,
-  ): any {
+  ): StackObject {
     const eventObj = event.payload?.object || event.data?.object;
     const { TargetingProcessor } = require("../../actions/targeting/TargetingProcessor");
     const sourceObj =
@@ -465,12 +465,6 @@ export class TriggerProcessor {
     return false;
   }
 
-  private static collectMatchingTriggers(
-    state: GameState,
-    event: GameEvent,
-    log?: (m: string) => void,
-  ): TriggeredAbility[] {
-    const triggers: any[] = [];
 
   private static getEventBuckets(eventMatch: string | string[]): string[] {
     const matches = Array.isArray(eventMatch) ? eventMatch : [eventMatch];
@@ -570,7 +564,7 @@ export class TriggerProcessor {
         log(`[TRIGGER-DEBUG] Event ${event.type} for source ${event.payload?.sourceId}. Found ${candidates.length} candidate triggers in bucket.`);
     }
 
-    return candidates.filter((t) => {
+    return candidates.filter((t: any) => {
       const tEvent = t.eventMatch;
       const tEvents = Array.isArray(tEvent) ? tEvent : [tEvent];
 
