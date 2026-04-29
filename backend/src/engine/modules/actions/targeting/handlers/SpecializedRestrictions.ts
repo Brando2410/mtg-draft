@@ -1,6 +1,6 @@
 import { Zone } from "@shared/engine_types";
-import { IRestrictionHandler } from "../IRestrictionHandler";
 import { LayerProcessor } from "../../../state/LayerProcessor";
+import { IRestrictionHandler } from "../IRestrictionHandler";
 
 const FROMHAND: IRestrictionHandler = {
     matches(state, targetObj: any) {

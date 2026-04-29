@@ -1,4 +1,4 @@
-import { GameState, EffectDefinition, ResolutionContext } from "@shared/engine_types";
+import { EffectDefinition, GameState, ResolutionContext } from "@shared/engine_types";
 
 export interface IEffectHandler {
     /**

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TargetMapping, Zone, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const BlueSunsZenith: CardDefinition = {
     name: "Blue Sun's Zenith",

@@ -1,5 +1,5 @@
 
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engine_types';
 
 export const Plains: CardDefinition = {
     name: "Plains",

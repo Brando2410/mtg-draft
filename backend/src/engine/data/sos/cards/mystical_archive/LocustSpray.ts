@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, DurationType, CostType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetType } from '@shared/engine_types';
 
 export const LocustSpray: CardDefinition = {
     name: "Locust Spray",

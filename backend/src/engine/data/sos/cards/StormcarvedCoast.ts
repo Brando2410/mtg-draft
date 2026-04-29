@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engine_types';
 export const StormcarvedCoast: CardDefinition = {
     name: "Stormcarved Coast",
     manaCost: "",

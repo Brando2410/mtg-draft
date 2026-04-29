@@ -1,8 +1,8 @@
 import { IRestrictionHandler } from "./IRestrictionHandler";
-import { TypeRestrictions } from "./handlers/TypeRestrictions";
-import { StateRestrictions } from "./handlers/StateRestrictions";
 import { NumericRestrictions } from "./handlers/NumericRestrictions";
 import { SpecializedRestrictions } from "./handlers/SpecializedRestrictions";
+import { StateRestrictions } from "./handlers/StateRestrictions";
+import { TypeRestrictions } from "./handlers/TypeRestrictions";
 
 export const RestrictionRegistry: Record<string, IRestrictionHandler> = {
     ...TypeRestrictions,

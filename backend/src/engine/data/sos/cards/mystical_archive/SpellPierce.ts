@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, Restriction } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetType } from '@shared/engine_types';
 
 export const SpellPierce: CardDefinition = {
     name: "Spell Pierce",

@@ -1,7 +1,7 @@
+import { EffectDefinition, EffectType, GameObject, ModalEffect, TargetMapping, Zone } from "@shared/engine_types";
+import { ChoiceGenerator } from "../../ChoiceGenerator";
 import { IEffectHandler } from "../../IEffectHandler";
 import { ChoiceEffectHandler as LegacyChoiceHandler } from "./ChoiceEffectHandler";
-import { ChoiceGenerator } from "../../ChoiceGenerator";
-import { Zone, ModalEffect, TargetMapping, GameObject, EffectDefinition, EffectType } from "@shared/engine_types";
 
 export const ChoiceHandler: IEffectHandler = {
   handle(state, effect, log, context) {

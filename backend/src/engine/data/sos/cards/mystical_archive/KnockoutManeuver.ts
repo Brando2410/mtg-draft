@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, Restriction, DynamicAmount, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const KnockoutManeuver: CardDefinition = {
     name: "Knockout Maneuver",

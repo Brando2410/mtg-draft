@@ -1,4 +1,4 @@
-import { ContinuousEffectDefinition, DurationType, EffectDefinition, EffectType, EffectDuration, GameObject, GameState, PlayerId, ResolutionContext, Zone } from '@shared/engine_types';
+import { ContinuousEffectDefinition, DurationType, EffectDefinition, EffectDuration, EffectType, GameState, PlayerId, ResolutionContext, Zone } from '@shared/engine_types';
 import { TargetingProcessor } from '../../../actions/targeting/TargetingProcessor';
 
 /**

@@ -1,20 +1,20 @@
 import {
-    AbilityDefinition,
-    AbilityCost,
-    AbilityType,
-    ActionType,
-    EffectType,
-    GameObject,
-    GameState,
-    TriggerEvent,
-    Zone
+  AbilityCost,
+  AbilityDefinition,
+  AbilityType,
+  ActionType,
+  EffectType,
+  GameObject,
+  GameState,
+  TriggerEvent,
+  Zone
 } from '@shared/engine_types';
 import {
-    ActivateAbilityOptions,
-    EngineContext,
-    FinalizeAbilityOptions,
-    FinalizeCastOptions,
-    PlayCardOptions
+  ActivateAbilityOptions,
+  EngineContext,
+  FinalizeAbilityOptions,
+  FinalizeCastOptions,
+  PlayCardOptions
 } from '../../../interfaces/EngineContext';
 import { oracle } from '../../../OracleLogicMap';
 import { CostProcessor } from '../../magic/CostProcessor';
@@ -22,7 +22,6 @@ import { ManaProcessor } from '../../magic/ManaProcessor';
 import { SpellCostCalculator } from './SpellCostCalculator';
 import { SpellInteractiveManager } from './SpellInteractiveManager';
 import { SpellValidator } from './SpellValidator';
-import { TargetingProcessor } from '../targeting/TargetingProcessor';
 
 /**
  * SpellProcessor - Orchestrator Facade for Casting Spells and Activating Abilities.

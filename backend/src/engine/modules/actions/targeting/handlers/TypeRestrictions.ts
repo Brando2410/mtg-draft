@@ -1,4 +1,4 @@
-import { Zone, CardType, Restriction } from "@shared/engine_types";
+import { CardType, Restriction, Zone } from "@shared/engine_types";
 import { IRestrictionHandler } from "../IRestrictionHandler";
 
 const PERMANENT_MASK = CardType.Artifact | CardType.Creature | CardType.Enchantment | CardType.Land | CardType.Planeswalker | CardType.Battle;

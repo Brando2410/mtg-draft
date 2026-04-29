@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, DurationType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetType } from '@shared/engine_types';
 
 export const GiantGrowth: CardDefinition = {
     name: "Giant Growth",

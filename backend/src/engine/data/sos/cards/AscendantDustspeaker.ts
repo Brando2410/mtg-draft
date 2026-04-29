@@ -1,5 +1,4 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-import { TargetMapper } from 'src/engine/modules/actions/targeting/TargetMapper';
 
 export const AscendantDustspeaker: CardDefinition = {
     name: "Ascendant Dustspeaker",

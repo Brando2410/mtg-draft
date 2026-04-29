@@ -1,18 +1,14 @@
 import {
   ActionType,
+  EffectDefinition,
   GameObject,
   GameState,
+  ModalEffect,
   PlayerId,
   ResolutionContext,
-  Zone,
-  ModalEffect,
-  EffectDefinition,
-  TargetMapping,
-  StackObject
+  TargetMapping
 } from "@shared/engine_types";
-import { ActionProcessor } from "../../../actions/ActionProcessor";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
-import { TriggerProcessor } from "../../triggers/TriggerProcessor";
 
 /**
  * Strategy for CR 608: Resolution Choices and CR 701: Keyword Actions (Choice-based)

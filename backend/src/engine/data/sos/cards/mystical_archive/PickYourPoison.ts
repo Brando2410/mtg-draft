@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, Restriction } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
 
 export const PickYourPoison: CardDefinition = {
     name: "Pick Your Poison",

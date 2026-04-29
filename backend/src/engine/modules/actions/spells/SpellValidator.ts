@@ -1,11 +1,10 @@
-import { AbilityType, EffectType, GameObject, GameState, Phase, PlayerId, Zone, TargetMapping, Keyword, EnginePrefix } from '@shared/engine_types';
-import { CostProcessor } from '../../magic/CostProcessor';
+import { AbilityType, EffectType, EnginePrefix, GameObject, GameState, Keyword, Phase, PlayerId, TargetMapping, Zone } from '@shared/engine_types';
 import { RestrictionValidator } from '../../core/RestrictionValidator';
-import { TargetingProcessor } from '../targeting/TargetingProcessor';
 import { PriorityProcessor } from '../../core/turn/PriorityProcessor';
+import { CostProcessor } from '../../magic/CostProcessor';
 import { ActionProcessor } from '../ActionProcessor';
+import { TargetingProcessor } from '../targeting/TargetingProcessor';
 
-import type { LayerProcessor as LayerProcessorType } from '../../state/LayerProcessor';
 
 
 export class SpellValidator {

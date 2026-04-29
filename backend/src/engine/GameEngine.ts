@@ -5,8 +5,8 @@ import { ActionProcessor, ChoiceProcessor, CombatProcessor, ConditionProcessor, 
 import { RegistryProcessor } from './modules/core/RegistryProcessor';
 import { Profiler } from './utils/Profiler';
 
-import type { MoveEffectHandler as MoveEffectHandlerType } from './modules/effects/handlers/zone/MoveEffectHandler';
 import type { LifeDamageHandler as LifeDamageHandlerType } from './modules/effects/handlers/life/LifeDamageHandler';
+import type { MoveEffectHandler as MoveEffectHandlerType } from './modules/effects/handlers/zone/MoveEffectHandler';
 
 /**
  * CENTRALIZED MTG RULE ENGINE (Orchestrator)

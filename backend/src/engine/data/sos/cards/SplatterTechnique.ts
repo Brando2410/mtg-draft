@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
 export const SplatterTechnique: CardDefinition = {
     name: "Splatter Technique",
     manaCost: "{1}{U}{U}{R}{R}",

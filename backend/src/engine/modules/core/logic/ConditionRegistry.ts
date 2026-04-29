@@ -1,9 +1,9 @@
 import { IConditionHandler } from "./IConditionHandler";
-import { PermanentConditions } from "./handlers/PermanentConditions";
-import { TurnConditions } from "./handlers/TurnConditions";
 import { EventConditions } from "./handlers/EventConditions";
+import { PermanentConditions } from "./handlers/PermanentConditions";
 import { PlayerConditions } from "./handlers/PlayerConditions";
 import { SpecializedConditions } from "./handlers/SpecializedConditions";
+import { TurnConditions } from "./handlers/TurnConditions";
 
 export const ConditionRegistry: Record<string, IConditionHandler> = {
     ...PermanentConditions,

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetType } from '@shared/engine_types';
 
 export const ChaosWarp: CardDefinition = {
     name: "Chaos Warp",

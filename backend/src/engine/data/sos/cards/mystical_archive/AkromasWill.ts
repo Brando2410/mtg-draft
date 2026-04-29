@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, ConditionType, DurationType } from '@shared/engine_types';
+import { CardDefinition } from '@shared/engine_types';
 
 export const AkromasWill: CardDefinition = {
     name: "Akroma's Will",

@@ -2,20 +2,30 @@ import { EffectType } from "@shared/engine_types";
 import { IEffectHandler } from "./IEffectHandler";
 import { DamageHandler, GainLifeHandler, LoseLifeHandler } from "./handlers/life/LifeEffects";
 import {
-    DestroyHandler, SacrificeHandler, UntapHandler, TapHandler,
-    FightHandler, AddCountersHandler, DoubleCountersHandler,
-    MoveCountersHandler, CreateTokenHandler, CreateTokenCopyHandler,
-    AttachHandler, PrepareHandler, UnprepareHandler, CreateEmblemHandler
+  AddCountersHandler,
+  AttachHandler,
+  CreateEmblemHandler,
+  CreateTokenCopyHandler,
+  CreateTokenHandler,
+  DestroyHandler,
+  DoubleCountersHandler,
+  FightHandler,
+  MoveCountersHandler,
+  PrepareHandler,
+  SacrificeHandler,
+  TapHandler,
+  UnprepareHandler,
+  UntapHandler
 } from "./handlers/permanent/PermanentEffects";
-import { MovementHandler } from "./handlers/zone/MovementEffects";
+import { AdNauseamHandler, ApproachOfTheSecondSunHandler, CastSpellHandler, ChaosWarpHandler, ConditionalEffectHandler, ExileTopCardsExcessDamageHandler } from "./handlers/specialized/SpecializedEffects";
+import { CopyAbilityHandler, CopySpellHandler, CounterAbilityHandler, CounterSpellHandler, CounterSpellOrAbilityHandler } from "./handlers/stack/CounterCopyEffects";
 import { ChoiceHandler, LearnHandler } from "./handlers/system/ChoiceEffects";
 import { ContinuousEffectHandler } from "./handlers/system/ContinuousEffects";
-import { CastSpellHandler, ExileTopCardsExcessDamageHandler, ConditionalEffectHandler, AdNauseamHandler, ChaosWarpHandler, ApproachOfTheSecondSunHandler } from "./handlers/specialized/SpecializedEffects";
-import { CounterSpellHandler, CounterAbilityHandler, CopySpellHandler, CopyAbilityHandler, CounterSpellOrAbilityHandler } from "./handlers/stack/CounterCopyEffects";
-import { ExchangeHandAndGraveyardHandler, DisableDamagePreventionHandler, PendingActionHandler, NecromentiaHandler } from "./handlers/system/MiscEffects";
 import { ControlEffectsHandler } from "./handlers/system/ControlEffects";
 import { ManaHandler } from "./handlers/system/ManaEffects";
+import { DisableDamagePreventionHandler, ExchangeHandAndGraveyardHandler, NecromentiaHandler, PendingActionHandler } from "./handlers/system/MiscEffects";
 import { CreateDelayedTriggerHandler } from "./handlers/system/TriggerEffects";
+import { MovementHandler } from "./handlers/zone/MovementEffects";
 
 export const EffectRegistry: Partial<Record<EffectType | string, IEffectHandler>> = {
     // Life & Damage

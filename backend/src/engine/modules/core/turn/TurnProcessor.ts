@@ -1,4 +1,4 @@
-import { GameState, Phase, PlayerId, RestrictionType, Step } from '@shared/engine_types';
+import { GameState, Phase, PlayerId, Step } from '@shared/engine_types';
 
 /**
  * Handle Turn Architecture (Chapter 5)

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TriggerEvent, ConditionType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const GhostlyPilferer: CardDefinition = {
     name: "Ghostly Pilferer",

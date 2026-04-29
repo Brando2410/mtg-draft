@@ -1,21 +1,21 @@
 import { GameState } from "@shared/engine_types";
 import type { ActionProcessor } from "./actions/ActionProcessor";
-import type { PlayerActionProcessor } from "./actions/PlayerActionProcessor";
-import type { CombatProcessor } from "./combat/CombatProcessor";
 import type { ChoiceProcessor } from "./actions/ChoiceProcessor";
-import type { PriorityProcessor } from "./core/turn/PriorityProcessor";
+import type { PlayerActionProcessor } from "./actions/PlayerActionProcessor";
 import type { SpellProcessor } from "./actions/spells/SpellProcessor";
-import type { StackProcessor } from "./core/stack/StackProcessor";
-import type { TriggerProcessor } from "./effects/triggers/TriggerProcessor";
-import type { TurnProcessor } from "./core/turn/TurnProcessor";
 import type { TargetingProcessor } from "./actions/targeting/TargetingProcessor";
+import type { CombatProcessor } from "./combat/CombatProcessor";
+import type { ConditionProcessor } from "./core/logic/ConditionProcessor";
+import type { RegistryProcessor } from "./core/RegistryProcessor";
+import type { RestrictionValidator } from "./core/RestrictionValidator";
+import type { StackProcessor } from "./core/stack/StackProcessor";
+import type { PriorityProcessor } from "./core/turn/PriorityProcessor";
+import type { TurnProcessor } from "./core/turn/TurnProcessor";
+import type { EffectProcessor } from "./effects/EffectProcessor";
+import type { TriggerProcessor } from "./effects/triggers/TriggerProcessor";
+import type { ManaProcessor } from "./magic/ManaProcessor";
 import type { LayerProcessor } from "./state/LayerProcessor";
 import type { StateBasedActionsProcessor } from "./state/StateBasedActionsProcessor";
-import type { RestrictionValidator } from "./core/RestrictionValidator";
-import type { ManaProcessor } from "./magic/ManaProcessor";
-import type { RegistryProcessor } from "./core/RegistryProcessor";
-import type { EffectProcessor } from "./effects/EffectProcessor";
-import type { ConditionProcessor } from "./core/logic/ConditionProcessor";
 
 /**
  * ProcessorRegistry: Standardized interface for accessing core engine modules

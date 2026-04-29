@@ -10,17 +10,17 @@ import {
   PlayerState,
   ResolutionContext,
   SearchEffect,
-  TargetType,
+  SelectionType,
   TargetMapping,
+  TargetType,
   TriggerEvent,
-  Zone,
-  SelectionType
+  Zone
 } from "@shared/engine_types";
 import { ActionProcessor } from "../../../actions/ActionProcessor";
 import { TargetingProcessor } from "../../../actions/targeting/TargetingProcessor";
+import { RestrictionValidator } from '../../../core/RestrictionValidator';
 import { ChoiceGenerator } from "../../ChoiceGenerator";
 import { TriggerProcessor } from "../../triggers/TriggerProcessor";
-import { RestrictionValidator } from '../../../core/RestrictionValidator';
 
 /**
  * Strategy for CR 701: Keyword Actions (Zone Movement)

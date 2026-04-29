@@ -1,6 +1,6 @@
 import { ConditionType } from "@shared/engine_types";
-import { IConditionHandler } from "../IConditionHandler";
 import { getProcessors } from "../../../ProcessorRegistry";
+import { IConditionHandler } from "../IConditionHandler";
 
 export const PermanentConditions: Record<string, IConditionHandler> = {
     [ConditionType.HasPermanent]: {

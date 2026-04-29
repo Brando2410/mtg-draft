@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const SanctumofShatteredHeights: CardDefinition = {
     name: "Sanctum of Shattered Heights",

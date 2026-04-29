@@ -1,4 +1,4 @@
-import { AbilityCost, ActionType, CostType, GameObject, GameState, PlayerId, ResolutionContext, TargetType, Zone, AbilityType, AbilityDefinition, DiscardCost, ExileCost, SacrificeCost, TapSelectionCost, Restriction, TargetMapping } from '@shared/engine_types';
+import { AbilityCost, AbilityDefinition, ActionType, CostType, DiscardCost, ExileCost, GameObject, GameState, PlayerId, ResolutionContext, Restriction, SacrificeCost, TapSelectionCost, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 
 import { SpellProcessor } from './SpellProcessor';

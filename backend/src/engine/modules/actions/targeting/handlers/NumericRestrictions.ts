@@ -1,6 +1,6 @@
-import { IRestrictionHandler } from "../IRestrictionHandler";
-import { LayerProcessor } from "../../../state/LayerProcessor";
 import { ManaProcessor } from "../../../magic/ManaProcessor";
+import { LayerProcessor } from "../../../state/LayerProcessor";
+import { IRestrictionHandler } from "../IRestrictionHandler";
 
 export const NumericRestrictions: Record<string, IRestrictionHandler> = {
     "NUMERIC_REGEX": {

@@ -1,5 +1,4 @@
-import { AbilityCost, AbilityType, ActivatedAbilityDefinition, CostType, GameObject, GameState, Zone, ChoiceCost, ManaCost } from '@shared/engine_types';
-import { oracle } from '../../../OracleLogicMap';
+import { AbilityCost, AbilityType, ActivatedAbilityDefinition, ChoiceCost, CostType, GameObject, GameState, ManaCost, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 
 // Static imports for performance

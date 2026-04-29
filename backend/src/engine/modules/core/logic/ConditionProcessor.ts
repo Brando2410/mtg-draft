@@ -1,9 +1,8 @@
 import {
-  GameState,
-  ConditionType,
   ConditionContext,
+  ConditionType,
+  GameState,
 } from "@shared/engine_types";
-import { getProcessors } from "../../ProcessorRegistry";
 
 export class ConditionProcessor {
   /**

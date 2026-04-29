@@ -1,11 +1,11 @@
 import {
-    AbilityType,
-    CardDefinition, DurationType,
-    EffectType,
-    Restriction,
-    RestrictionType,
-    TargetMapping,
-    TargetType
+  AbilityType,
+  CardDefinition, DurationType,
+  EffectType,
+  Restriction,
+  RestrictionType,
+  TargetMapping,
+  TargetType
 } from '@shared/engine_types';
 
 /**

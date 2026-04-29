@@ -1,4 +1,4 @@
-import { GameState, ConditionContext } from "@shared/engine_types";
+import { ConditionContext, GameState } from "@shared/engine_types";
 
 export interface IConditionHandler {
     /**

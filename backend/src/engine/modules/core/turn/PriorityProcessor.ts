@@ -1,11 +1,11 @@
-import { AbilityType, EffectType, GameState, Phase, PlayerId, Step, TargetMapping, Zone, AbilityCost, GameEvent } from '@shared/engine_types';
+import { AbilityType, EffectType, GameState, Phase, PlayerId, Step, TargetMapping, Zone } from '@shared/engine_types';
 import { oracle } from '../../../OracleLogicMap';
 import { SpellProcessor } from '../../actions/spells/SpellProcessor';
-import { ConditionProcessor } from '../logic/ConditionProcessor';
+import { RestrictionValidator } from '../../core/RestrictionValidator';
 import { CostProcessor } from '../../magic/CostProcessor';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { LayerProcessor } from '../../state/LayerProcessor';
-import { RestrictionValidator } from '../../core/RestrictionValidator';
+import { ConditionProcessor } from '../logic/ConditionProcessor';
 import { TurnProcessor } from './TurnProcessor';
 
 // Static imports for performance

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, Restriction, DynamicAmount } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, TargetType } from '@shared/engine_types';
 
 export const FeedtheSwarm: CardDefinition = {
     name: "Feed the Swarm",

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
 export const QuandrixtheProof: CardDefinition = {
     name: "Quandrix, the Proof",
     manaCost: "{4}{G}{U}",

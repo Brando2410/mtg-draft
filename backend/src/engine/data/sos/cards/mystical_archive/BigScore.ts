@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, CostType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType } from '@shared/engine_types';
 
 export const BigScore: CardDefinition = {
     name: "Big Score",

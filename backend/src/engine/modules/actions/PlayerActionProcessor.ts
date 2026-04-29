@@ -1,16 +1,12 @@
-import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, EffectType, GameState, PlayerId, RemoveCounterCost, RestrictionType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, EffectType, GameState, PlayerId, RemoveCounterCost, TriggerEvent, Zone } from '@shared/engine_types';
+import { EngineContext } from '../../interfaces/EngineContext';
 import { oracle } from '../../OracleLogicMap';
 import { CombatProcessor } from '../combat/CombatProcessor';
 import { PriorityProcessor } from '../core/turn/PriorityProcessor';
-import { LayerProcessor } from '../state/LayerProcessor';
-import { EngineContext } from '../../interfaces/EngineContext';
 import { getProcessors } from '../ProcessorRegistry';
+import { LayerProcessor } from '../state/LayerProcessor';
 
-import type { ChoiceProcessor as ChoiceProcessorType } from './ChoiceProcessor';
-import type { CombatProcessor as CombatProcessorType } from '../combat/CombatProcessor';
 import type { ManaProcessor as ManaProcessorType } from '../magic/ManaProcessor';
-import type { TriggerProcessor as TriggerProcessorType } from '../effects/triggers/TriggerProcessor';
-import type { TargetingProcessor as TargetingProcessorType } from './targeting/TargetingProcessor';
 
 // Need to safely interact with Rule registries without causing circular dependencies.
 export class PlayerActionProcessor {

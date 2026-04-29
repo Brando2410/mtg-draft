@@ -1,4 +1,4 @@
-import { GameObject, GameState, PlayerId, ResolutionContext, TargetingContext, Zone, CostType, TargetType, Restriction } from '@shared/engine_types';
+import { CostType, GameObject, GameState, PlayerId, ResolutionContext, TargetingContext, Zone } from '@shared/engine_types';
 import { EngineContext } from '../../../interfaces/EngineContext';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { ActionProcessor } from '../ActionProcessor';

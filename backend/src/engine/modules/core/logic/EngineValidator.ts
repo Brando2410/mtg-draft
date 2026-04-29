@@ -1,4 +1,4 @@
-import { GameState, ActionType } from '@shared/engine_types';
+import { GameState } from '@shared/engine_types';
 
 /**
  * EngineValidator - Centralized logic for verifying the operational state of the engine.

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, SelectionType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const DivergentEquation: CardDefinition = {
     name: "Divergent Equation",

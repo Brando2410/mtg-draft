@@ -1,9 +1,8 @@
-import { GameObjectId, GameState, PlayerId, Step } from '@shared/engine_types';
+import { GameObjectId, GameState, PlayerId, RestrictionType, Step } from '@shared/engine_types';
 import { DamageProcessor } from '../combat/DamageProcessor';
+import { RestrictionValidator } from '../core/RestrictionValidator';
 import { TriggerProcessor } from '../effects/triggers/TriggerProcessor';
 import { LayerProcessor } from '../state/LayerProcessor';
-import { RestrictionValidator } from '../core/RestrictionValidator';
-import { RestrictionType } from '@shared/engine_types';
 
 import { EngineContext } from '../../interfaces/EngineContext';
 

@@ -3,25 +3,22 @@ import {
   ActionType,
   ConditionType,
   CostType,
+  DurationType,
   EffectType,
   GameEvent,
   GameObjectId,
   GameState,
   PlayerId,
   Restriction,
+  StackObject,
   TargetMapping,
   TriggeredAbility,
-  DurationType,
-  Zone,
   TriggerEvent,
-  EffectDefinition,
-  StackObject,
-  AbilityDefinition,
-  EffectDuration
+  Zone
 } from "@shared/engine_types";
 import { oracle } from "../../../OracleLogicMap";
-import { LayerProcessor } from "../../state/LayerProcessor";
 import { getProcessors } from "../../ProcessorRegistry";
+import { LayerProcessor } from "../../state/LayerProcessor";
 
 /**
  * Rules Engine Module: Triggered Abilities (Rule 603)

@@ -1,5 +1,5 @@
+import { DurationType, EffectType, GameObject, Zone } from "@shared/engine_types";
 import { IEffectHandler } from "../../IEffectHandler";
-import { Zone, DurationType, EffectType, GameObject } from "@shared/engine_types";
 
 export const CastSpellHandler: IEffectHandler = {
   handle(state, effect, log, context) {

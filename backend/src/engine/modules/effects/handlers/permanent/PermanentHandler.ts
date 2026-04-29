@@ -1,4 +1,4 @@
-import { ActionType, CounterEffect, EffectDefinition, EmblemDefinition, GameObject, GameState, PlayerId, PlayerState, ResolutionContext, Zone } from '@shared/engine_types';
+import { ActionType, CounterEffect, EffectDefinition, EmblemDefinition, GameObject, GameState, PlayerId, ResolutionContext, Zone } from '@shared/engine_types';
 import { ActionProcessor } from '../../../actions/ActionProcessor';
 import { LayerProcessor } from '../../../state/LayerProcessor';
 import { ChoiceGenerator } from '../../ChoiceGenerator';

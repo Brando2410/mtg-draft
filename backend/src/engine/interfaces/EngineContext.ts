@@ -1,7 +1,7 @@
 import {
-    AbilityCost,
-    AbilityDefinition,
-    EffectDefinition, GameObject, GameState, PlayerId, ResolutionContext, StackObject, TargetDefinition
+  AbilityCost,
+  AbilityDefinition,
+  EffectDefinition, GameObject, GameState, PlayerId, ResolutionContext, StackObject, TargetDefinition
 } from '@shared/engine_types';
 import { ProcessorRegistry } from '../modules/ProcessorRegistry';
 

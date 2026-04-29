@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, CostType, Restriction } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction } from '@shared/engine_types';
 
 export const CullingtheWeak: CardDefinition = {
     name: "Culling the Weak",

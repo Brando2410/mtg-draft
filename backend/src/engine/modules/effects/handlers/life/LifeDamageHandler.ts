@@ -1,7 +1,7 @@
-import { DamageEffect, EffectDefinition, EffectType, GameState, LifeEffect, ResolutionContext } from '@shared/engine_types';
+import { DamageEffect, EffectDefinition, GameState, LifeEffect, ResolutionContext } from '@shared/engine_types';
 import { DamageProcessor } from "../../../combat/DamageProcessor";
-import { TriggerProcessor } from "../../triggers/TriggerProcessor";
 import { RestrictionValidator } from '../../../core/RestrictionValidator';
+import { TriggerProcessor } from "../../triggers/TriggerProcessor";
 
 /**
  * Strategy for CR 119: Damage and CR 120: Life

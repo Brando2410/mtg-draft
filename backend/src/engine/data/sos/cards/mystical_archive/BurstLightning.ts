@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetType, CostType } from '@shared/engine_types';
+import { CardDefinition } from '@shared/engine_types';
 
 export const BurstLightning: CardDefinition = {
     name: "Burst Lightning",

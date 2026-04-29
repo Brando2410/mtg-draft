@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, SelectionType, Zone, Restriction } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, Zone } from '@shared/engine_types';
 
 export const AdventurousImpulse: CardDefinition = {
     name: "Adventurous Impulse",

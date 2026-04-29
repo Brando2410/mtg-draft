@@ -1,4 +1,4 @@
-import { Restriction, AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const GreatHalloftheBiblioplex: CardDefinition = {
     name: "Great Hall of the Biblioplex",

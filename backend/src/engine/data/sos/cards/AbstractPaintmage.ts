@@ -1,4 +1,4 @@
-import { Restriction, AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TriggerEvent } from '@shared/engine_types';
     export const AbstractPaintmage: CardDefinition = {
     name: "Abstract Paintmage",
     manaCost: "{U}{U/R}{R}",

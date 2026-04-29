@@ -1,8 +1,8 @@
 import {
-    GameObject,
-    GameObjectId,
-    GameState,
-    PlayerId
+  GameObject,
+  GameObjectId,
+  GameState,
+  PlayerId
 } from "@shared/engine_types";
 import { TriggerProcessor } from "../effects/triggers/TriggerProcessor";
 

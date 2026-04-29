@@ -1,15 +1,17 @@
 import {
   AbilityType,
+  CardType,
   ContinuousEffect,
-  GameObject, GameState, Zone, EffectType, AbilityDefinition, RestrictionObject, RestrictionType,
-  CardType
+  GameObject, GameState,
+  RestrictionObject, RestrictionType,
+  Zone
 } from "@shared/engine_types";
 import { getProcessors } from "../ProcessorRegistry";
 let TargetingProcessor: any;
 let ConditionProcessor: any;
 
-import type { EffectProcessor as EffectProcessorType } from "../effects/EffectProcessor";
 import type { SpellProcessor as SpellProcessorType } from "../actions/spells/SpellProcessor";
+import type { EffectProcessor as EffectProcessorType } from "../effects/EffectProcessor";
 
 // Static imports for performance (avoids require in loops)
 let EffectProcessor: typeof EffectProcessorType;

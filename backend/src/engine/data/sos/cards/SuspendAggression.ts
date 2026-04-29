@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const SuspendAggression: CardDefinition = {
     name: "Suspend Aggression",

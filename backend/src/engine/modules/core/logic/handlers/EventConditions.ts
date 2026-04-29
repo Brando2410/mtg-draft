@@ -1,6 +1,6 @@
-import { GameState, ConditionContext, TriggerEvent, Zone, GameObject, CounterType } from "@shared/engine_types";
-import { IConditionHandler } from "../IConditionHandler";
+import { CounterType, TriggerEvent, Zone } from "@shared/engine_types";
 import { getProcessors } from "../../../ProcessorRegistry";
+import { IConditionHandler } from "../IConditionHandler";
 
 export const EventConditions: Record<string, IConditionHandler> = {
     "EVENT_OBJECT_MATCHES": {

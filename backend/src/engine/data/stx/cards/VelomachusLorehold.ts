@@ -1,4 +1,4 @@
-import { Restriction, AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const VelomachusLorehold: CardDefinition = {
     name: "Velomachus Lorehold",

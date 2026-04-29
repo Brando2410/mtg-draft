@@ -1,5 +1,6 @@
 import { GameState, PlayerId, Zone } from '@shared/engine_types';
 import { Room } from '@shared/types';
+import * as jsonpatch from 'fast-json-patch';
 import { Server, Socket } from 'socket.io';
 import { BotLogic } from '../../bots/BotLogic';
 import { GameEngine } from '../../engine/GameEngine';
@@ -9,7 +10,6 @@ import { DraftService } from '../../services/DraftService';
 import { LoggerService } from '../../services/LoggerService';
 import { PersistenceService } from '../../services/PersistenceService';
 import { SealedService } from '../../services/SealedService';
-import * as jsonpatch from 'fast-json-patch';
 
 
 export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<string, Room>) => {

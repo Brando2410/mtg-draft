@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType } from '@shared/engine_types';
+import { CardDefinition } from '@shared/engine_types';
 
 export const Deduce: CardDefinition = {
     name: "Deduce",

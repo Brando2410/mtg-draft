@@ -1,8 +1,8 @@
 import {
-    ActionResult, GameObject,
-    GameState,
-    PlayerId,
-    Zone
+  ActionResult, GameObject,
+  GameState,
+  PlayerId,
+  Zone
 } from "@shared/engine_types";
 
 /**

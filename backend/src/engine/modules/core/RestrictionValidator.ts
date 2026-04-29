@@ -1,6 +1,6 @@
-import { GameState, GameObject, RestrictionObject, RestrictionType, PlayerId } from "@shared/engine_types";
-import { ConditionProcessor } from "./logic/ConditionProcessor";
+import { GameObject, GameState, PlayerId, RestrictionObject, RestrictionType } from "@shared/engine_types";
 import { getProcessors } from "../ProcessorRegistry";
+import { ConditionProcessor } from "./logic/ConditionProcessor";
 
 /**
  * Rules Engine Module: Object & Player Restrictions (Rule 613/701)
