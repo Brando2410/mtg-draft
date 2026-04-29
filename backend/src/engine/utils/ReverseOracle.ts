@@ -1,4 +1,4 @@
-import { AbilityType, EffectType } from '../../../../shared/engine_types';
+import { AbilityType, EffectType, Restriction, TriggerEvent } from '../../../../shared/engine_types';
 
 /**
  * ReverseOracle Utility
@@ -59,15 +59,15 @@ export class ReverseOracle {
             trigger = meta.triggerDescription;
         } else {
             switch (event) {
-                case 'ON_ETB': trigger = "When this creature enters, "; break;
-                case 'ON_ETB_OTHER': trigger = `Whenever another ${meta.restrictions?.join(" ") || "permanent"} enters, `; break;
-                case 'ON_DEATH': trigger = "When this creature dies, "; break;
-                case 'ON_ATTACK': trigger = "Whenever this creature attacks, "; break;
-                case 'ON_DRAW': trigger = `Whenever ${subject} draw${subject === 'you' ? "" : "s"} a card, `; break;
-                case 'ON_LIFE_GAIN': trigger = `Whenever ${subject} gain${subject === 'you' ? "" : "s"} life, `; break;
-                case 'ON_UNTAP': trigger = `Whenever a permanent ${subject} control${subject === 'you' ? "" : "s"} becomes untapped, `; break;
-                case 'ON_END_STEP': trigger = `At the beginning of ${subjectPossessive} end step, `; break;
-                case 'ON_BEGINNING_OF_COMBAT_STEP': trigger = `At the beginning of combat on ${subjectPossessive} turn, `; break;
+                case TriggerEvent.EnterBattlefield: trigger = "When this creature enters, "; break;
+                case TriggerEvent.EnterBattlefieldOther: trigger = `Whenever another ${meta.restrictions?.join(" ") || "permanent"} enters, `; break;
+                case TriggerEvent.Death: trigger = "When this creature dies, "; break;
+                case TriggerEvent.Attack: trigger = "Whenever this creature attacks, "; break;
+                case TriggerEvent.Draw: trigger = `Whenever ${subject} draw${subject === 'you' ? "" : "s"} a card, `; break;
+                case TriggerEvent.LifeGain: trigger = `Whenever ${subject} gain${subject === 'you' ? "" : "s"} life, `; break;
+                case TriggerEvent.Untap: trigger = `Whenever a permanent ${subject} control${subject === 'you' ? "" : "s"} becomes untapped, `; break;
+                case TriggerEvent.EndStep: trigger = `At the beginning of ${subjectPossessive} end step, `; break;
+                case TriggerEvent.BeginningOfCombatStep: trigger = `At the beginning of combat on ${subjectPossessive} turn, `; break;
                 default: trigger = `Whenever ${event || 'event'} triggers, `;
             }
         }
@@ -256,10 +256,10 @@ export class ReverseOracle {
             restrictions = abilityContext.targetDefinition.restrictions || [];
         }
 
-        const filteredRestr = (restrictions || []).filter((r: string) => r !== 'YouControl' && r !== 'OpponentControl' && r !== 'Other') || [];
+        const filteredRestr = (restrictions || []).filter((r: string) => r !== Restriction.YouControl && r !== Restriction.OpponentControl && r !== Restriction.Other) || [];
         const restrText = filteredRestr.length > 0 ? this.reconstructRestrictions(filteredRestr) : "";
-        const controlSuffix = (restrictions || []).includes('YouControl') ? " you control" : ((restrictions || []).includes('OpponentControl') ? " an opponent controls" : "");
-        const other = (restrictions || []).includes('Other') ? "other " : "";
+        const controlSuffix = (restrictions || []).includes(Restriction.YouControl) ? " you control" : ((restrictions || []).includes(Restriction.OpponentControl) ? " an opponent controls" : "");
+        const other = (restrictions || []).includes(Restriction.Other) ? "other " : "";
 
         switch (mapping) {
             case 'SELF': return "this creature";
@@ -299,7 +299,7 @@ export class ReverseOracle {
             const [field, val] = r.split('<=');
             return `with ${field} ${val} or less`;
         }
-        if (r.toLowerCase() === 'youcontrol') return ""; // Handled by mapping
+        if (r.toLowerCase() === Restriction.YouControl) return ""; // Handled by mapping
         return r;
     }
 
@@ -343,7 +343,7 @@ export class ReverseOracle {
             const lower = r.toLowerCase();
             if (['creature', 'artifact', 'land', 'enchantment', 'planeswalker'].includes(lower)) {
                 subject = `a${['artifact', 'enchantment'].includes(lower) ? 'n' : ''} ${lower}`;
-            } else if (r === 'youcontrol') {
+            } else if (r === Restriction.YouControl) {
                 // Ignore, handled by verb
             } else {
                 parts.push(this.translateRestriction(r));

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
     export const MasterfulFlourish: CardDefinition = {
     name: "Masterful Flourish",
     manaCost: "{B}",
@@ -18,7 +18,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         {
             type: AbilityType.Spell,
             targetDefinition: { type: TargetType.Creature, restrictions: [
-                "youcontrol"
+                Restriction.YouControl
             ], count: 1 },
             effects: [
                 {

@@ -33,7 +33,7 @@ export class ManaPoolManager {
             matches = m.restrictions.every((r: string) => {
               const lowR = r.toLowerCase();
               // Handle common STX restrictions
-              if (lowR === 'instantorsorcery' || lowR === 'instant_or_sorcery') {
+              if (lowR === 'instant_or_sorcery') {
                 return typeLine.includes('instant') || typeLine.includes('sorcery') || types.includes('instant') || types.includes('sorcery');
               }
               return typeLine.includes(lowR) || oracleText.includes(lowR) || types.includes(lowR);
@@ -83,7 +83,7 @@ export class ManaPoolManager {
                 const types = (payingFor.definition.types || []).map(t => t.toLowerCase());
                 matches = rm.restrictions.every((r: string) => {
                   const lowR = r.toLowerCase();
-                  if (lowR === 'instantorsorcery' || lowR === 'instant_or_sorcery') {
+                  if (lowR === 'instant_or_sorcery') {
                     return typeLine.includes('instant') || typeLine.includes('sorcery') || types.includes('instant') || types.includes('sorcery');
                   }
                   return typeLine.includes(lowR) || types.includes(lowR);

@@ -1,13 +1,9 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-    export const RabidAttack: CardDefinition = {
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+export const RabidAttack: CardDefinition = {
     name: "Rabid Attack",
     manaCost: "{1}{B}",
-    colors: [
-        "B"
-    ],
-    types: [
-        "Instant"
-    ],
+    colors: ["B"],
+    types: ["Instant"],
     subtypes: [],
     keywords: [],
     oracleText: "Until end of turn, any number of target creatures you control each get +1/+0 and gain \"When this creature dies, draw a card.\"",
@@ -16,9 +12,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
             type: AbilityType.Spell,
             targetDefinition: {
                 type: TargetType.Creature,
-                restrictions: [
-                "youcontrol"
-            ],
+                restrictions: [Restriction.YouControl],
                 count: 'AnyNumber' //missing why to express any number
             },
             effects: [
@@ -31,7 +25,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
                     abilitiesToAdd: [
                         {
                             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Death,
+                            eventMatch: TriggerEvent.Death,
                             effects: [
                                 {
                                     type: EffectType.DrawCards,
@@ -46,4 +40,4 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         }
     ]
 };
-    
+

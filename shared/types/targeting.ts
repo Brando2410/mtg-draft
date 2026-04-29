@@ -113,6 +113,7 @@ export const Restriction = {
     NonEnchantment: 'non_enchantment',
     NonPlaneswalker: 'non_planeswalker',
     Other: 'other',
+    Another: 'another',
     Self: 'self',
     Graveyard: 'graveyard',
     FromHand: 'from_hand',

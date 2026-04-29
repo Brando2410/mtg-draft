@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping } from '@shared/engine_types';
 export const SilverquilltheDisputant: CardDefinition = {
     name: "Silverquill, the Disputant",
     manaCost: "{2}{W}{B}",
@@ -14,15 +14,11 @@ export const SilverquilltheDisputant: CardDefinition = {
                 {
                     type: EffectType.AdditionalCost,
                     targetMapping: TargetMapping.Controller,
-                    restrictions: [
-                        "InstantOrSorcery"
-                    ],
+                    restrictions: [Restriction.InstantOrSorcery],
                     additionalCosts: [
                         {
                             type: CostType.Sacrifice,
-                            restrictions: [
-                                "power>=1"
-                            ],
+                            restrictions: ["power>=1"],
                             isCasualty: true,
                             optional: true,
                             label: 'Casualty 1'

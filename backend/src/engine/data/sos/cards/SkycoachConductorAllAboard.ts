@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone } from '@shared/engine_types';
-    export const SkycoachConductorAllAboard: CardDefinition = {
+import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+export const SkycoachConductorAllAboard: CardDefinition = {
     name: "Skycoach Conductor // All Aboard",
     manaCost: "{2}{U}",
     colors: ["U"],
@@ -23,12 +23,12 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone 
             {
                 type: AbilityType.Spell,
                 targetDefinition: {
-                    type: 'Creature',
+                    type: TargetType.Creature,
                     count: 1,
                     restrictions: [
-                "youcontrol",
-                { not: { subtype: 'Pilot' } }
-            ]
+                        Restriction.YouControl,
+                        { not: { subtype: 'Pilot' } }
+                    ]
                 },
                 effects: [
                     { type: CostType.Exile, targetMapping: TargetMapping.Target1 },
@@ -38,4 +38,4 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Zone 
         ]
     }
 };
-    
+

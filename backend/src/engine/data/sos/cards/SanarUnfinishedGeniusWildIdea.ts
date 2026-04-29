@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
     name: "Sanar, Unfinished Genius // Wild Idea",
     manaCost: "{U}{R}",
@@ -65,7 +65,7 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
                             type: TargetType.Card,
                             count: 1,
                             restrictions: [
-                                "InstantOrSorcery"
+                                Restriction.InstantOrSorcery
                             ]
                         },
                         zone: Zone.Hand,

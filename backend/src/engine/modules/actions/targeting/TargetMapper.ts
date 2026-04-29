@@ -1,7 +1,8 @@
 import {
   GameObject, GameState,
   PlayerId, ResolutionContext,
-  TargetingContext, TargetMapping, Zone
+  Restriction,
+  TargetingContext, TargetMapping, TargetType, Zone
 } from "@shared/engine_types";
 import { ManaProcessor } from "../../magic/ManaProcessor";
 import { TargetValidator } from "./TargetValidator";
@@ -94,34 +95,24 @@ export class TargetMapper {
 
       // Mapping for base types (handles both shorthand strings and internal enum names)
       const baseTypeMap: Record<string, string> = {
-        creature: "creature",
-        artifact: "artifact",
-        land: "land",
-        enchantment: "enchantment",
-        planeswalker: "planeswalker",
-        permanent: "permanent",
-        spell: "spell",
-        card: "card",
-        cardingraveyard: "card",
-        card_in_graveyard: "card",
-        cardinhand: "card",
-        card_in_hand: "card",
-        cardinexile: "card",
-        card_in_exile: "card",
-        spellonstack: "spell",
-        spell_on_stack: "spell",
-        non_land_permanent: "nonland permanent",
-        nonland_permanent: "nonland permanent",
-        nonlandpermanent: "nonland permanent",
-        instant_or_sorcery: "instant or sorcery card",
-        instantorsorcery: "instant or sorcery card",
-        player_or_planeswalker: "player or planeswalker",
-        artifact_or_creature: "artifact or creature",
-        artifactorcreature: "artifact or creature",
-        artifact_or_enchantment: "artifact or enchantment",
-        artifactorenchantment: "artifact or enchantment",
-        creature_or_planeswalker: "creature or planeswalker",
-        creatureorplaneswalker: "creature or planeswalker",
+        [Restriction.Creature]: "creature",
+        [Restriction.Artifact]: "artifact",
+        [Restriction.Land]: "land",
+        [Restriction.Enchantment]: "enchantment",
+        [Restriction.Planeswalker]: "planeswalker",
+        [Restriction.Permanent]: "permanent",
+        [Restriction.Spell]: "spell",
+        [Restriction.Card]: "card",
+        [TargetType.CardInGraveyard.toLowerCase()]: "card",
+        [TargetType.CardInHand.toLowerCase()]: "card",
+        [TargetType.CardInExile.toLowerCase()]: "card",
+        [TargetType.SpellOrPermanent.toLowerCase()]: "spell or permanent",
+        [TargetType.NonlandPermanent.toLowerCase()]: "nonland permanent",
+        [Restriction.InstantOrSorcery]: "instant or sorcery card",
+        [TargetType.PlayerOrPlaneswalker.toLowerCase()]: "player or planeswalker",
+        [Restriction.ArtifactOrCreature]: "artifact or creature",
+        [Restriction.ArtifactOrEnchantment]: "artifact or enchantment",
+        [Restriction.CreatureOrPlaneswalker]: "creature or planeswalker",
       };
 
       mainNoun = baseTypeMap[type] || type;
@@ -131,34 +122,33 @@ export class TargetMapper {
       if (type.includes("exile")) location = "in exile";
 
       const knownAdjectives = [
-        "other",
-        "another",
-        "nonland",
-        "noncreature",
-        "token",
-        "nontoken",
-        "legendary",
-        "tapped",
-        "untapped",
-        "monocolored",
-        "multicolored",
-        "colorless",
-        "white",
-        "blue",
-        "black",
-        "red",
-        "green",
+        Restriction.Other,
+        Restriction.NonLand,
+        Restriction.NonCreature,
+        Restriction.Token,
+        Restriction.NonToken,
+        Restriction.Legendary,
+        Restriction.Tapped,
+        Restriction.Untapped,
+        Restriction.Monocolored,
+        Restriction.Multicolored,
+        Restriction.Colorless,
+        Restriction.White,
+        Restriction.Blue,
+        Restriction.Black,
+        Restriction.Red,
+        Restriction.Green,
       ];
 
       const baseTypes = [
-        "creature",
-        "artifact",
-        "land",
-        "enchantment",
-        "planeswalker",
-        "permanent",
-        "spell",
-        "card",
+        Restriction.Creature,
+        Restriction.Artifact,
+        Restriction.Land,
+        Restriction.Enchantment,
+        Restriction.Planeswalker,
+        Restriction.Permanent,
+        Restriction.Spell,
+        Restriction.Card,
       ];
 
       for (const r of restrictions) {
@@ -166,15 +156,15 @@ export class TargetMapper {
         const lr = r.toLowerCase();
 
         // 1. Basic Adjectives
-        if (knownAdjectives.includes(lr)) {
-          if (lr === "other" || lr === "another")
+        if ((knownAdjectives as string[]).includes(lr)) {
+          if (lr === Restriction.Other || lr === Restriction.Another)
             adjectives.unshift("another"); // "Another" always comes first
           else adjectives.push(lr);
           continue;
         }
 
         // 2. Type overrides or subtype as adjective
-        if (baseTypes.includes(lr)) {
+        if ((baseTypes as string[]).includes(lr)) {
           if (
             mainNoun === "card" ||
             mainNoun === "target" ||
@@ -182,9 +172,9 @@ export class TargetMapper {
           ) {
             mainNoun = lr + (mainNoun === "card" ? " card" : "");
           }
-        } else if (lr === "instant" || lr === "sorcery") {
+        } else if (lr === Restriction.Instant || lr === Restriction.Sorcery) {
           mainNoun = lr + " card";
-        } else if (lr === "instantorsorcery" || lr === "instant_or_sorcery") {
+        } else if (lr === Restriction.InstantOrSorcery) {
           mainNoun = "instant or sorcery card";
         } else if (
           !lr.includes("control") &&
@@ -197,13 +187,13 @@ export class TargetMapper {
         }
 
         // 3. Ownership / Specific location
-        if (lr === "youcontrol" || lr === "yours" || lr === "youown") {
+        if (lr === Restriction.YouControl || lr === "yours" || lr === "youown") {
           if (location.includes("graveyard")) location = "in your graveyard";
           else if (location.includes("hand")) location = "in your hand";
           else if (location.includes("exile")) location = "in your exile";
           else location = "you control";
         } else if (
-          lr === "opponentcontrol" ||
+          lr === Restriction.OpponentControl ||
           lr === "opponents" ||
           lr === "opponentcontrols" ||
           lr === "opponentowns"
@@ -796,7 +786,7 @@ export class TargetMapper {
         if (!effect?.restrictions) return [];
         const sourceZones = effect.sourceZones || [Zone.Battlefield, Zone.Graveyard, Zone.Hand, Zone.Exile, Zone.Library];
         const zones = Array.isArray(sourceZones) ? (sourceZones as any[]) : [sourceZones];
-        
+
         const pool: string[] = [];
         zones.forEach(z => {
           if (z === Zone.Battlefield) pool.push(...state.battlefield.map(o => o.id));
@@ -848,16 +838,16 @@ export class TargetMapper {
   ): any {
     if (!targetDef) return null;
     const def = (() => {
-        if (!Array.isArray(targetDef)) return targetDef;
-        let cumulative = 0;
-        for (const d of targetDef) {
-            const count = typeof d.count === "number" ? d.count : 1;
-            if (targetIndex >= cumulative && targetIndex < cumulative + count) {
-                return d;
-            }
-            cumulative += count;
+      if (!Array.isArray(targetDef)) return targetDef;
+      let cumulative = 0;
+      for (const d of targetDef) {
+        const count = typeof d.count === "number" ? d.count : 1;
+        if (targetIndex >= cumulative && targetIndex < cumulative + count) {
+          return d;
         }
-        return targetDef[targetDef.length - 1];
+        cumulative += count;
+      }
+      return targetDef[targetDef.length - 1];
     })();
     // console.log(`[MAPPER-DEBUG] targetIndex ${targetIndex} resolved to:`, JSON.stringify(def));
     return def;

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
 export const FixWhatsBroken: CardDefinition = {
     name: "Fix What's Broken",
     manaCost: "{2}{W}{B}",
@@ -20,9 +20,9 @@ export const FixWhatsBroken: CardDefinition = {
                     zone: Zone.Battlefield,
                     targetMapping: TargetMapping.MatchingCards,
                     restrictions: [
-                        "ArtifactOrCreature",
-                        "graveyard",
-                        "youcontrol",
+                        Restriction.ArtifactOrCreature,
+                        Restriction.Graveyard,
+                        Restriction.YouControl,
                         "mv == x"
                     ]
                 }

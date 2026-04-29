@@ -1,4 +1,4 @@
-import { GameObject, GameState, PlayerId, PlayerState, StackObject, Targetable, TargetRestriction, TargetingContext, TargetType, Zone, CardType, Restriction } from '@shared/engine_types';
+import { GameObject, GameState, PlayerId, PlayerState, StackObject, Targetable, TargetRestriction, TargetingContext, TargetType, Zone, CardType, Restriction, AbilityType } from '@shared/engine_types';
 import { LayerProcessor } from '../../state/LayerProcessor';
 import { TargetMapper } from './TargetMapper';
 
@@ -78,7 +78,7 @@ export class TargetValidator {
         const type = (targetDef?.type || '').toLowerCase();
         const restrictions = (targetDef?.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
 
-        const isPlayerAllowed = 
+        const isPlayerAllowed =
             type === TargetType.Player.toLowerCase() ||
             type === TargetType.Opponent.toLowerCase() ||
             type === TargetType.AnyTarget.toLowerCase() ||
@@ -104,13 +104,13 @@ export class TargetValidator {
         const targetZone = targetObj.zone;
 
         if (targetZone === Zone.Stack) return Zone.Stack;
-        if (['instant', 'sorcery', 'instant_or_sorcery', 'spell', 'spell_on_stack'].includes(typeLineCheck)) return Zone.Stack;
-        if (['card_in_graveyard'].includes(typeLineCheck)) return Zone.Graveyard;
-        if (['card_in_exile'].includes(typeLineCheck)) return Zone.Exile;
+        if ([Restriction.Instant, Restriction.Sorcery, Restriction.InstantOrSorcery, Restriction.Spell, 'spell_on_stack'].includes(typeLineCheck)) return Zone.Stack;
+        if ([TargetType.CardInGraveyard.toLowerCase()].includes(typeLineCheck)) return Zone.Graveyard;
+        if ([TargetType.CardInExile.toLowerCase()].includes(typeLineCheck)) return Zone.Exile;
 
         const restrictions = (targetDef?.restrictions || []);
-        if (restrictions.some((r: any) => typeof r === 'string' && [Restriction.Graveyard, 'in_graveyard'].includes(r.toLowerCase()))) return Zone.Graveyard;
-        if (restrictions.some((r: any) => typeof r === 'string' && ['exile', 'in_exile'].includes(r.toLowerCase()))) return Zone.Exile;
+        if (restrictions.some((r: any) => typeof r === 'string' && TargetType.CardInGraveyard.toLowerCase() === r.toLowerCase())) return Zone.Graveyard;
+        if (restrictions.some((r: any) => typeof r === 'string' && TargetType.CardInExile.toLowerCase() === r.toLowerCase())) return Zone.Exile;
 
         return targetDef ? Zone.Battlefield : 'Any';
     }
@@ -170,10 +170,13 @@ export class TargetValidator {
                 return !!(restrictions.includes(Restriction.Player) || restrictions.includes(Restriction.AnyTarget));
             }
             const targetAsStack = targetObj as StackObject;
-            if (targetAsStack.type && (targetAsStack.type.includes('Ability') || targetAsStack.type === 'Spell')) {
+            if (targetAsStack.type && (targetAsStack.type.includes('Ability') || targetAsStack.type === AbilityType.Spell)) {
                 return !!restrictions.some(r => {
                     const rv = (typeof r === 'string' ? r : (r.value || '')).toLowerCase();
-                    return (rv === Restriction.Ability && targetAsStack.type.includes('Ability')) || (rv === Restriction.Spell && targetAsStack.type === 'Spell');
+                    if (targetAsStack) {
+                        return (rv === Restriction.Ability && targetAsStack.type.includes('Ability')) || (rv === Restriction.Spell && targetAsStack.type === AbilityType.Spell);
+                    }
+                    return false;
                 });
             }
             return false;
@@ -199,7 +202,7 @@ export class TargetValidator {
             // 2. Registry Handlers
             let handler = RestrictionRegistry[token];
             if (!handler && lr.startsWith("hascounter_")) handler = RestrictionRegistry["HASCOUNTER"];
-            if (!handler && (lr === "other" || lr === "another")) handler = RestrictionRegistry["OTHER"];
+            if (!handler && lr === Restriction.Other) handler = RestrictionRegistry["OTHER"];
 
             if (handler) {
                 if (!handler.matches(state, targetObj, lr, context)) return false;
@@ -207,7 +210,7 @@ export class TargetValidator {
             }
 
             // 3. Complex / Legacy Fallback
-            if (lr.includes('_or_') || lr.includes('orsorcery') || lr === Restriction.OneOrMoreColors || lr === Restriction.ManaValueLessOrEqualToX) {
+            if (lr.includes('_or_') || lr === Restriction.OneOrMoreColors || lr === Restriction.ManaValueLessOrEqualToX) {
                 continue; // Handled in alternatives pass
             }
 
@@ -221,7 +224,7 @@ export class TargetValidator {
         const alternatives = restrictions.filter(r => {
             if (typeof r !== 'string') return true;
             const lr = r.toLowerCase();
-            return lr.includes('_or_') || lr.includes('orsorcery') || lr === Restriction.OneOrMoreColors || lr === Restriction.ManaValueLessOrEqualToX;
+            return lr.includes('_or_') || lr === Restriction.OneOrMoreColors || lr === Restriction.ManaValueLessOrEqualToX;
         });
 
         if (alternatives.length > 0) {
@@ -237,7 +240,6 @@ export class TargetValidator {
             const token = r.toUpperCase();
             if (RestrictionRegistry[token]) return !!RestrictionRegistry[token].matches(state, targetObj, lr, context);
             if (lr.includes('_or_')) return lr.split('_or_').some(p => this.matchesRestrictions(state, targetObj, [p.trim()], context, log));
-            if (lr.includes('orsorcery') || lr === 'instant_or_sorcery') return this.matchesRestrictions(state, targetObj, ['instant'], context, log) || this.matchesRestrictions(state, targetObj, ['sorcery'], context, log);
             return this.matchesRestrictions(state, targetObj, [r], context, log);
         }
 
@@ -288,7 +290,7 @@ export class TargetValidator {
     public static hasLegalTargets(state: GameState, sourceId: string, targetDef: any, controllerId: string): boolean {
         if (!targetDef) return true;
         const defs = Array.isArray(targetDef) ? targetDef : [targetDef];
-        
+
         let currentIndex = 0;
         return defs.every(def => {
             const count = typeof def.count === 'number' ? def.count : 1;

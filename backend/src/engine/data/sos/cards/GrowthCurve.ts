@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 export const GrowthCurve: CardDefinition = {
     name: "Growth Curve",
     manaCost: "{G}{U}",
@@ -22,7 +22,7 @@ export const GrowthCurve: CardDefinition = {
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [
-                    "youcontrol"
+                    Restriction.YouControl
                 ]
             },
             effects: [

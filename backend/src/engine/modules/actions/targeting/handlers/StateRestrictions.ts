@@ -67,14 +67,14 @@ const OTHER: IRestrictionHandler = {
 export const StateRestrictions: Record<string, IRestrictionHandler> = {
     TAPPED,
     UNTAPPED,
-    YOUCONTROL,
-    YOUOWN,
-    OPPONENTOWNS,
-    NOTCONTROLLED,
-    OPPONENTCONTROL: NOTCONTROLLED,
+    YOU_CONTROL: YOUCONTROL,
+    YOU_OWN: YOUOWN,
+    OPPONENT_OWNS: OPPONENTOWNS,
+    NOT_CONTROLLED: NOTCONTROLLED,
+    OPPONENT_CONTROL: NOTCONTROLLED,
     ATTACKING,
     BLOCKING,
-    ATTACKINGORBLOCKING: {
+    ATTACKING_OR_BLOCKING: {
         matches(state, targetObj: any, r, context) {
             return ATTACKING.matches(state, targetObj, r, context) || BLOCKING.matches(state, targetObj, r, context);
         }

@@ -69,7 +69,7 @@ export class ManaValidator {
           const types = (payingFor.definition.types || []).map(t => t.toLowerCase());
           return restrictions.every(r => {
             const lowR = r.toLowerCase();
-            if (lowR === 'instantorsorcery' || lowR === 'instant_or_sorcery') {
+            if (lowR === 'instant_or_sorcery') {
               return typeLine.includes('instant') || typeLine.includes('sorcery') || types.includes('instant') || types.includes('sorcery');
             }
             return typeLine.includes(lowR) || types.includes(lowR);

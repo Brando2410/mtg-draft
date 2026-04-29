@@ -31,7 +31,7 @@ export const MindRoots: CardDefinition = {
                         type: TargetType.Card,
                         count: 1,
                         minCount: 0,
-                        restrictions: [Restriction.Land, 'graveyard']
+                        restrictions: [Restriction.Land, Restriction.Graveyard]
                     },
                     effects: [
                         {

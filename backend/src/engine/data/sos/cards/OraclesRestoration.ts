@@ -1,16 +1,12 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 export const OraclesRestoration: CardDefinition = {
     name: "Oracle's Restoration",
     manaCost: "{G}",
     scryfall_id: "0863a19d-4511-4a78-98dd-d194afd1c39b",
     rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/0/8/0863a19d-4511-4a78-98dd-d194afd1c39b.jpg?1775938067",
-    colors: [
-        "G"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["G"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "Target creature you control gets +1/+1 until end of turn. You draw a card and gain 1 life.",
@@ -20,9 +16,7 @@ export const OraclesRestoration: CardDefinition = {
             targetDefinition: {
                 type: TargetType.Creature,
                 count: 1,
-                restrictions: [
-                    "youcontrol"
-                ]
+                restrictions: [Restriction.YouControl]
             },
             effects: [
                 {
