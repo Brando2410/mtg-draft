@@ -74,8 +74,8 @@ export class SpellValidator {
                 const face = preparedObj.definition.preparedFace || preparedObj.definition.faces![1];
                 const copyId = isCopy ? cardInstanceId : `${EnginePrefix.Copy}${preparedObj.id}_${Date.now()}`;
 
-                if ((state as any).dynamicCopies && (state as any).dynamicCopies[copyId]) {
-                    return (state as any).dynamicCopies[copyId];
+                if (state.dynamicCopies && state.dynamicCopies[copyId]) {
+                    return state.dynamicCopies[copyId];
                 }
 
                 const copy = {
@@ -87,17 +87,17 @@ export class SpellValidator {
                     sourceCreatureId: preparedObj.id
                 } as any;
 
-                if (!(state as any).dynamicCopies) (state as any).dynamicCopies = {};
-                (state as any).dynamicCopies[copyId] = copy;
+                if (!state.dynamicCopies) state.dynamicCopies = {};
+                state.dynamicCopies[copyId] = copy;
                 return copy;
             }
         }
 
-        if ((state as any).paradigmCopies && (state as any).paradigmCopies[cardInstanceId]) {
-            return (state as any).paradigmCopies[cardInstanceId];
+        if (state.paradigmCopies && state.paradigmCopies[cardInstanceId]) {
+            return state.paradigmCopies[cardInstanceId];
         }
-        if ((state as any).dynamicCopies && (state as any).dynamicCopies[cardInstanceId]) {
-            return (state as any).dynamicCopies[cardInstanceId];
+        if (state.dynamicCopies && state.dynamicCopies[cardInstanceId]) {
+            return state.dynamicCopies[cardInstanceId];
         }
 
         return null;

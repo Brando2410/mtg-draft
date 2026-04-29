@@ -268,7 +268,7 @@ export class CostProcessor {
         break;
 
       case CostType.Crew: {
-        const crewIds = (state as any).lastChosenCrewIds || [];
+        const crewIds = state.interaction.lastChosenCrewIds || [];
         crewIds.forEach((cid: string) => {
           const c = state.battlefield.find(o => o.id === cid);
           if (c) {
@@ -276,7 +276,7 @@ export class CostProcessor {
             TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, data: { object: c } }, log);
           }
         });
-        delete (state as any).lastChosenCrewIds;
+        delete state.interaction.lastChosenCrewIds;
         break;
       }
 
@@ -345,8 +345,8 @@ export class CostProcessor {
     if (!id) return undefined;
 
     // FAST PATH: Leverage the O(1) cache if it exists and is fresh
-    if ((state as any)._objectCache && (state as any)._objectCache.version === state.stateVersion) {
-        return (state as any)._objectCache.get(id);
+    if (state._objectCache && state._objectCache.version === state.stateVersion) {
+        return state._objectCache.get(id);
     }
 
     // Fallback to legacy linear search (O(N))

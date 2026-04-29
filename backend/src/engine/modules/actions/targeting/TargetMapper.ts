@@ -391,11 +391,11 @@ export class TargetMapper {
         return aura?.attachedTo ? [aura.attachedTo] : [];
       }
       case TargetMapping.LastCreatedToken:
-        return (state as any).lastCreatedTokenId
-          ? [(state as any).lastCreatedTokenId]
+        return state.turnState.lastCreatedTokenId
+          ? [state.turnState.lastCreatedTokenId]
           : [];
       case TargetMapping.LastExiledIds:
-        return (state as any).lastExiledIds || [];
+        return state.turnState.lastExiledIds || [];
       case "PARENT_CONTEXT_EXILED_IDS": {
         const result = (context.exiledIds && context.exiledIds.length > 0) ? context.exiledIds : (parentContext?.exiledIds || []);
         return result;
@@ -416,7 +416,7 @@ export class TargetMapper {
         return obj ? [obj.ownerId] : [];
       }
       case "LAST_MILLED_IDS":
-        return (state as any).lastMilledIds || [];
+        return state.turnState.lastMilledIds || [];
       case "TARGET_1": {
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
         return actualTargets[0] ? [actualTargets[0]] : [];
@@ -691,8 +691,8 @@ export class TargetMapper {
       case "SELECTED_CARD":
         return targets;
       case "LAST_CREATED_TOKEN":
-        return (state as any).lastCreatedTokenId
-          ? [(state as any).lastCreatedTokenId]
+        return state.turnState.lastCreatedTokenId
+          ? [state.turnState.lastCreatedTokenId]
           : [];
       case "CONTROLLER_GRAVEYARD":
         const cp = state.players[controllerId];
@@ -703,7 +703,7 @@ export class TargetMapper {
           ? [...pc.graveyard.map((c) => c.id), ...pc.library.map((c) => c.id)]
           : [];
       case "LAST_EXILED_OBJECT":
-        return (state as any).lastExiledIds || [];
+        return state.turnState.lastExiledIds || [];
       case "LAST_DISCARDED_CARDS":
         return state.turnState.lastDiscardedIds || [];
       case "ALL_PLAYERS":

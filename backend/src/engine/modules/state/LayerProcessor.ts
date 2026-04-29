@@ -32,8 +32,8 @@ export class LayerProcessor {
     providedActiveEffects?: ContinuousEffect[],
   ) {
     // FAST PATH: Check the state-level stats cache
-    if ((state as any)._statsCache && (state as any)._statsCache.version === state.stateVersion && (state as any)._statsCache.has(obj.id)) {
-        return (state as any)._statsCache.get(obj.id);
+    if (state._statsCache && state._statsCache.version === state.stateVersion && state._statsCache.has(obj.id)) {
+        return state._statsCache.get(obj.id);
     }
 
     // RECURSION GUARD: Prevent infinite loops where conditions depend on effective stats
@@ -260,11 +260,11 @@ export class LayerProcessor {
       };
 
       // CACHE RESULT
-      if (!(state as any)._statsCache || (state as any)._statsCache.version !== state.stateVersion) {
-        (state as any)._statsCache = new Map();
-        (state as any)._statsCache.version = state.stateVersion;
+      if (!state._statsCache || state._statsCache.version !== state.stateVersion) {
+        state._statsCache = new Map();
+        state._statsCache.version = state.stateVersion;
       }
-      (state as any)._statsCache.set(obj.id, stats);
+      state._statsCache.set(obj.id, stats);
 
       return stats;
     } finally {
@@ -533,7 +533,7 @@ export class LayerProcessor {
     });
 
     (cache as any).version = state.stateVersion;
-    (state as any)._objectCache = cache;
+    state._objectCache = cache;
     return cache;
   }
 
@@ -554,20 +554,20 @@ export class LayerProcessor {
       layerHash += `|${p.life}:${p.hand.length}:${p.graveyard.length}:${Object.values(p.manaPool || {}).join(',')}`;
     });
 
-    const canReuseCache = (state as any)._statsCache && (state as any)._lastLayerHash === layerHash;
+    const canReuseCache = state._statsCache && state._lastLayerHash === layerHash;
 
     if (!canReuseCache) {
-      (state as any)._statsCache = new Map();
-      (state as any)._lastLayerHash = layerHash;
+      state._statsCache = new Map();
+      state._lastLayerHash = layerHash;
     }
     // Always update version to current state version to allow hits in getEffectiveStats
-    (state as any)._statsCache.version = state.stateVersion;
+    state._statsCache!.version = state.stateVersion;
 
     const effects = state.ruleRegistry.continuousEffects || [];
     const activeEffects = effects.filter((e) => {
         if (e.id?.startsWith("floating_") || e.sourceId === "global")
           return true;
-        const cache = (state as any)._objectCache;
+        const cache = state._objectCache;
         const source = (cache && cache.version === state.stateVersion) 
             ? cache.get(e.sourceId) 
             : state.battlefield.find((o) => o.id === e.sourceId);

@@ -263,7 +263,7 @@ export class SpellCostCalculator {
         const choiceCostIndex = additionalCosts.findIndex(c => (c.type as string) === 'Choice');
         if (choiceCostIndex !== -1) {
             const choice = additionalCosts[choiceCostIndex];
-            const chosenIndex = (state as any).lastChosenCostChoiceIndex;
+            const chosenIndex = state.interaction.lastChosenCostChoiceIndex;
             if (chosenIndex !== undefined && choice.choices?.[chosenIndex]) {
                 const chosenCosts = choice.choices[chosenIndex].costs;
                 // Remove the choice and insert its components

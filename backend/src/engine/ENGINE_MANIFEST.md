@@ -48,6 +48,6 @@ When resolving effects, you must carry these payloads:
 ---
 
 ## 🛠️ 5. Troubleshooting Flags
-*   `(state as any).isResolvingDrawReplacement`: Prevents infinite loops when a draw-replacement effect draws more cards.
+*   `state.isResolvingDrawReplacement`: Prevents infinite loops when a draw-replacement effect draws more cards.
 *   `card.lastNonStackZone`: Crucial for triggers like "If you cast this spell from your hand."
 *   `state.turnState.cardsDrawnThisTurn`: Used to track "Second draw" triggers (*Jolrael*).

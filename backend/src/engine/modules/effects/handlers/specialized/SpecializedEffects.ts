@@ -34,9 +34,9 @@ export const CastSpellHandler: IEffectHandler = {
         counters: {},
       } as any;
 
-      if (!(state as any).paradigmCopies)
-        (state as any).paradigmCopies = {};
-      (state as any).paradigmCopies[copyId] = copy;
+      if (!state.paradigmCopies)
+        state.paradigmCopies = {};
+      state.paradigmCopies[copyId] = copy;
       targetId = copyId;
     }
 
@@ -55,7 +55,7 @@ export const CastSpellHandler: IEffectHandler = {
       SpellProcessor.playCard(
         state,
         log,
-        (state as any).gameEngine || {
+        state.gameEngine || {
           tapForMana: () => { },
           passPriority: () => { },
           checkAutoPass: () => { },
@@ -98,7 +98,7 @@ export const ExileTopCardsExcessDamageHandler: IEffectHandler = {
 
     // Add permission to play exiled cards
     if (excessAmt > 0) {
-      const exiledIds = (state as any).lastExiledIds || [];
+      const exiledIds = state.turnState.lastExiledIds || [];
       if (exiledIds.length > 0) {
         ContinuousEffectHandler.handle(state, {
           type: EffectType.ApplyContinuousEffect,

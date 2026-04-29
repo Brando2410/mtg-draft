@@ -790,7 +790,7 @@ export class MoveEffectHandler {
           obj.isTapped = true;
         }
         if (zone === Zone.Exile) {
-          (state as any).lastExiledIds = [tid];
+          state.turnState.lastExiledIds = [tid];
 
           if (stackObject) {
             if (!stackObject.data) stackObject.data = {};
@@ -1043,10 +1043,10 @@ export class MoveEffectHandler {
 
     // Default: Automatic move (Draw, Mill, Exile)
     if (zone === Zone.Exile) {
-      (state as any).lastExiledIds = cards.map((c) => c.id);
+      state.turnState.lastExiledIds = cards.map((c) => c.id);
     }
     if (effect.type === EffectType.Mill) {
-      (state as any).lastMilledIds = cards.map((c) => c.id);
+      state.turnState.lastMilledIds = cards.map((c) => c.id);
     }
     cards.forEach((c) => {
       const from = c.zone;

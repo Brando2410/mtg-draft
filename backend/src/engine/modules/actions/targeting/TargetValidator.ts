@@ -15,8 +15,8 @@ export class TargetValidator {
      */
     public static findObjectInAnyZone(state: GameState, id: string): GameObject | null {
         // FAST PATH: Check the state-level lookup cache
-        if ((state as any)._objectCache && (state as any)._objectCache.version === state.stateVersion && (state as any)._objectCache.has(id)) {
-            return (state as any)._objectCache.get(id);
+        if (state._objectCache && state._objectCache.version === state.stateVersion && state._objectCache.has(id)) {
+            return state._objectCache.get(id);
         }
 
         const bf = state.battlefield.find(o => o.id === id);
@@ -40,8 +40,8 @@ export class TargetValidator {
         const lb = state.limbo?.find(o => o.id === id);
         if (lb) return lb;
 
-        if ((state as any).dynamicCopies && (state as any).dynamicCopies[id]) return (state as any).dynamicCopies[id];
-        if ((state as any).paradigmCopies && (state as any).paradigmCopies[id]) return (state as any).paradigmCopies[id];
+        if (state.dynamicCopies && state.dynamicCopies[id]) return state.dynamicCopies[id];
+        if (state.paradigmCopies && state.paradigmCopies[id]) return state.paradigmCopies[id];
 
         return null;
     }

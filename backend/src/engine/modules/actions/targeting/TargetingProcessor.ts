@@ -328,7 +328,7 @@ export class TargetingProcessor {
 
         if (actionData?.isCostTargeting) {
             if (actionData.costType === 'Sacrifice') {
-                (state as any).lastChosenSacrificeId = resolvedTargets[0];
+                state.interaction.lastChosenSacrificeId = resolvedTargets[0];
             }
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;

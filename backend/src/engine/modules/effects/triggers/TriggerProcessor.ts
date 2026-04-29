@@ -258,7 +258,7 @@ export class TriggerProcessor {
     state.ruleRegistry.triggeredAbilities.push(delayedTrigger);
     
     // Invalidate trigger cache
-    if ((state as any)._triggerCache) (state as any)._triggerCache.version = -1;
+    if (state._triggerCache) state._triggerCache.version = -1;
 
     log(`[DELAYED TRIGGER] Registered: triggered on ${effect.eventMatch}.`);
   }
@@ -279,7 +279,7 @@ export class TriggerProcessor {
     if (removedCount > 0) {
       log(`[CLEANUP] Removed ${removedCount} expired delayed triggers.`);
       // Invalidate trigger cache
-      if ((state as any)._triggerCache) (state as any)._triggerCache.version = -1;
+      if (state._triggerCache) state._triggerCache.version = -1;
     }
   }
 
@@ -502,7 +502,7 @@ export class TriggerProcessor {
     log?: (m: string) => void,
   ): TriggeredAbility[] {
     // 1. REBUILD TRIGGER CACHE IF STALE (O(N) rebuild, but only once per state version)
-    if (!(state as any)._triggerCache || (state as any)._triggerCache.version !== state.stateVersion) {
+    if (!state._triggerCache || state._triggerCache.version !== state.stateVersion) {
         const allTriggers: any[] = [];
 
         // Gather Emblems
@@ -556,14 +556,14 @@ export class TriggerProcessor {
             });
         });
 
-        (state as any)._triggerCache = {
+        state._triggerCache = {
             version: state.stateVersion,
             buckets,
             allTriggers
         };
     }
 
-    const cache = (state as any)._triggerCache;
+    const cache = state._triggerCache;
     const candidates = cache.buckets.get(event.type) || [];
 
     if (event.type === TriggerEvent.CastSpell && log) {

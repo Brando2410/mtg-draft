@@ -58,7 +58,7 @@ export class ReplacementProcessor {
             isDraw &&
             fromZone === Zone.Library &&
             finalDestination === Zone.Hand &&
-            !(state as any).isResolvingDrawReplacement
+            !state.isResolvingDrawReplacement
         ) {
             const result = this.handleDrawReplacements(state, card, targetPlayerId, log);
             if (result) return result;
@@ -89,13 +89,13 @@ export class ReplacementProcessor {
             // Teferi's Ageless Insight Logic
             if (replacement.id.includes("teferi_ageless_insight")) {
                 const isYourTurn = state.activePlayerId === playerId;
-                const isYourDrawStep = isYourTurn && (state as any).currentStep === "Draw";
+                const isYourDrawStep = isYourTurn && state.currentStep === "Draw";
                 const cardsDrawn = state.turnState.cardsDrawnThisTurn[playerId] || 0;
                 const skipFirstDrawInDrawStep = isYourDrawStep && cardsDrawn === 0;
 
                 if (!skipFirstDrawInDrawStep) {
                     log(`[REPLACED] Teferi's Ageless Insight replaces draw with 2 draws.`);
-                    (state as any).isResolvingDrawReplacement = true;
+                    state.isResolvingDrawReplacement = true;
 
                     const { ActionProcessor } = require("../../actions/ActionProcessor");
                     // Perform the double draw sequence
@@ -107,7 +107,7 @@ export class ReplacementProcessor {
                         ActionProcessor.moveCard(state, nextCard, Zone.Hand, playerId, log, "top", true);
                     }
 
-                    (state as any).isResolvingDrawReplacement = false;
+                    state.isResolvingDrawReplacement = false;
                     return {
                         destination: Zone.Hand,
                         replaced: true,

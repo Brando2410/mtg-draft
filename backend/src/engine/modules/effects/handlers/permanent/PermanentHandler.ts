@@ -255,7 +255,7 @@ export class PermanentHandler {
             const amount = EffectProcessor.resolveAmount(state, tokenEff.amount || 1, context, [pid]);
             for (let i = 0; i < amount; i++) {
                 const token = this.createToken(state, blueprint, pid, pOverride, tOverride, effect);
-                (state as any).lastCreatedTokenId = token.id;
+                state.turnState.lastCreatedTokenId = token.id;
 
                 // Manage starting counters (e.g. Fractal tokens)
                 if (tokenEff.startingCounters) {
@@ -331,10 +331,10 @@ export class PermanentHandler {
         targets.forEach((tid: string) => {
             const target = state.battlefield.find((o: GameObject) => o.id === tid);
             if (target) {
-                (source as any).attachedTo = tid;
+                source.attachedTo = tid;
                 log(`[ATTACH] ${source.definition.name} attached to ${target.definition.name}.`);
             } else {
-                (source as any).attachedTo = undefined;
+                source.attachedTo = undefined;
             }
         });
     }
@@ -378,8 +378,8 @@ export class PermanentHandler {
                 ? { loyalty: parseInt(blueprint.loyalty, 10) }
                 : {}
         };
-        (token as any).isToken = true;
-        (state as any).lastCreatedTokenId = token.id;
+        token.isToken = true;
+        state.turnState.lastCreatedTokenId = token.id;
         state.battlefield.push(token);
         const { RegistryProcessor } = require('../../../core/RegistryProcessor');
         RegistryProcessor.registerAbilities(state, token);

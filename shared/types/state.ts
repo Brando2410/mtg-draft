@@ -215,6 +215,9 @@ export interface TurnState {
         type: string;
         timestamp: number;
     };
+    lastExiledIds?: string[];
+    lastMilledIds?: string[];
+    lastCreatedTokenId?: string;
 }
 
 export interface ChoiceOption {
@@ -247,6 +250,7 @@ export interface InteractionState {
     paidCasualtyFor?: string;
     consumedModeIndex?: number[];
     lastChoiceX?: number;
+    lastChosenCrewIds?: string[];
 }
 
 export interface ChoiceQueueItem {
@@ -358,6 +362,20 @@ export interface GameState {
     gameStats?: {
         castCounts: Record<PlayerId, Record<string, number>>;
     };
+
+    // Performance & Engine Extensions
+    _objectCache?: {
+        version: number;
+        has: (id: string) => boolean;
+        get: (id: string) => any;
+    };
+    dynamicCopies?: Record<string, GameObject>;
+    paradigmCopies?: Record<string, GameObject>;
+    _statsCache?: Map<string, any> & { version?: number };
+    _lastLayerHash?: string;
+    _triggerCache?: any;
+    isResolvingDrawReplacement?: boolean;
+    gameEngine?: any;
 }
 
 export interface RuleRegistry {

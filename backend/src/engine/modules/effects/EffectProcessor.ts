@@ -616,7 +616,7 @@ export class EffectProcessor {
         break;
       case "LAST_EXILED_MV": {
         if (!ManaProcessor) ManaProcessor = require("../magic/ManaProcessor").ManaProcessor;
-        const lastExiledId = (state as any).lastExiledIds?.[0];
+        const lastExiledId = state.turnState.lastExiledIds?.[0];
         if (lastExiledId) {
           const obj = this.findObject(state, lastExiledId, stackObject, parentContext) as GameObject;
           result = obj ? ManaProcessor.getManaValue(obj.definition.manaCost) : 0;
