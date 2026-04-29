@@ -15,7 +15,6 @@ export class AssetService {
       try { return fs.existsSync(p); } catch (e) { return false; }
     });
     const finalPath = found || path.resolve(process.cwd(), 'data');
-    console.log(`[ASSETS] Data root resolved to: ${finalPath} (Found: ${!!found})`);
     return finalPath;
   })();
 
@@ -25,14 +24,12 @@ export class AssetService {
   static async listAvatars(): Promise<string[]> {
     if (!fs.existsSync(this.AVATARS_DIR)) return [];
     const files = fs.readdirSync(this.AVATARS_DIR).filter(file => /\.(png|jpg|jpeg|gif|webp)$/i.test(file));
-    console.log(`[ASSETS] Found ${files.length} avatars in ${this.AVATARS_DIR}`);
     return files;
   }
 
   static async listWallpapers(): Promise<string[]> {
     if (!fs.existsSync(this.WALLPAPERS_DIR)) return [];
     const files = fs.readdirSync(this.WALLPAPERS_DIR).filter(file => /\.(png|jpg|jpeg|gif|webp)$/i.test(file));
-    console.log(`[ASSETS] Found ${files.length} wallpapers in ${this.WALLPAPERS_DIR}`);
     return files;
   }
 

@@ -594,5 +594,53 @@ export const GameCard = memo(({
       )}
     </motion.div>
   );
+}, (prevProps, nextProps) => {
+  if (prevProps.variant !== nextProps.variant) return false;
+  if (prevProps.isTargetable !== nextProps.isTargetable) return false;
+  if (prevProps.isSelected !== nextProps.isSelected) return false;
+  if (prevProps.isPlayable !== nextProps.isPlayable) return false;
+  if (prevProps.stackSize !== nextProps.stackSize) return false;
+  if (prevProps.isAttacking !== nextProps.isAttacking) return false;
+  if (prevProps.isDeclaringAttacks !== nextProps.isDeclaringAttacks) return false;
+  if (prevProps.isBlocking !== nextProps.isBlocking) return false;
+  if (prevProps.isOpponent !== nextProps.isOpponent) return false;
+  if (prevProps.damagePreview !== nextProps.damagePreview) return false;
+  if (prevProps.hideHeader !== nextProps.hideHeader) return false;
+  if (prevProps.disableHoverAnim !== nextProps.disableHoverAnim) return false;
+
+  const pPending = prevProps.pendingAction;
+  const nPending = nextProps.pendingAction;
+  if (pPending?.sourceId !== nPending?.sourceId) return false;
+  if (pPending?.data?.isContextual !== nPending?.data?.isContextual) return false;
+
+  const pObj = prevProps.obj;
+  const nObj = nextProps.obj;
+  if (pObj.id !== nObj.id) return false;
+  if (pObj.isTapped !== nObj.isTapped) return false;
+  if (pObj.isPhasedOut !== nObj.isPhasedOut) return false;
+  if (pObj.damageMarked !== nObj.damageMarked) return false;
+  if (pObj.summoningSickness !== nObj.summoningSickness) return false;
+  if (pObj.isPrepared !== nObj.isPrepared) return false;
+  if ((pObj as any).isRevealed !== (nObj as any).isRevealed) return false;
+  if ((pObj as any).isVirtual !== (nObj as any).isVirtual) return false;
+
+  const pStats = pObj.effectiveStats;
+  const nStats = nObj.effectiveStats;
+  if (!!pStats !== !!nStats) return false;
+  if (pStats && nStats) {
+      if (pStats.power !== nStats.power) return false;
+      if (pStats.toughness !== nStats.toughness) return false;
+      if (pStats.isPlayable !== nStats.isPlayable) return false;
+      if (pStats.keywords?.length !== nStats.keywords?.length) return false;
+  }
+
+  const pC = pObj.counters || {};
+  const nC = nObj.counters || {};
+  const cKeys = new Set([...Object.keys(pC), ...Object.keys(nC)]);
+  for (let k of cKeys) {
+      if (pC[k] !== nC[k]) return false;
+  }
+
+  return true;
 });
 

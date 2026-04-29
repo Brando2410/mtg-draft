@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { type GameObject } from '@shared/engine_types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GameCard } from './GameCard';
@@ -6,13 +7,14 @@ interface OpponentHandProps {
   hand: GameObject[];
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: () => void;
+  stateVersion?: number;
 }
 
 /**
  * Opponent's Hand tucked at the top of the screen.
  * Cards are inverted and sit slightly below the top edge.
  */
-export const OpponentHand = ({ hand, onHoverStart, onHoverEnd }: OpponentHandProps) => {
+export const OpponentHand = memo(({ hand, onHoverStart, onHoverEnd }: OpponentHandProps) => {
   const cardCount = hand.length;
 
   const getCardRotation = (index: number) => {
@@ -110,4 +112,14 @@ export const OpponentHand = ({ hand, onHoverStart, onHoverEnd }: OpponentHandPro
       </div>
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+    if (prevProps.stateVersion !== undefined && nextProps.stateVersion !== undefined) {
+        return prevProps.stateVersion === nextProps.stateVersion;
+    }
+    if (prevProps.hand.length !== nextProps.hand.length) return false;
+    for (let i = 0; i < prevProps.hand.length; i++) {
+        if (prevProps.hand[i].id !== nextProps.hand[i].id) return false;
+        if ((prevProps.hand[i] as any).isRevealed !== (nextProps.hand[i] as any).isRevealed) return false;
+    }
+    return true;
+});

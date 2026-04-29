@@ -352,6 +352,7 @@ export interface GameState {
     turnState: TurnState;
     playerOrder: PlayerId[];
     interaction: InteractionState;
+    stateVersion: number;
     gameStats?: {
         castCounts: Record<PlayerId, Record<string, number>>;
     };

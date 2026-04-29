@@ -631,6 +631,7 @@ export class SpellProcessor {
             ActionProcessor.moveCard(state, cardToPlay, Zone.Stack, playerId, log);
         } else {
             const { RegistryProcessor } = require('../../core/RegistryProcessor');
+            log(`[PREPARED-DEBUG] Casting ${cardToPlay.definition.name} from virtual origin: ${lastZone}`);
             cardToPlay.zone = Zone.Stack;
             cardToPlay.lastNonStackZone = lastZone;
             RegistryProcessor.registerAbilities(state, cardToPlay);

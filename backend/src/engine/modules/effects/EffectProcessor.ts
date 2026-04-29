@@ -14,6 +14,12 @@ import {
 import { EffectRegistry } from "./EffectRegistry";
 import { Targetable } from "@shared/types/targeting";
 
+// Static imports for performance
+let TargetingProcessor: any;
+let ConditionProcessor: any;
+let LayerProcessor: any;
+let ManaProcessor: any;
+
 /**
  * Prunes a context to avoid infinite depth serialization issues in Socket.io
  */
@@ -74,7 +80,8 @@ export class EffectProcessor {
     // If all its targets are now illegal, the spell or ability is countered.
     // We only run this on the ROOT resolution (parentContext === null) to avoid nested sub-effects triggering it.
     if (startIndex === 0 && !parentContext && targets.length > 0 && effects.some(e => e.targetMapping?.toString().startsWith('TARGET_'))) {
-      const { TargetingProcessor: TP } = require('../actions/targeting/TargetingProcessor');
+      if (!TargetingProcessor) TargetingProcessor = require('../actions/targeting/TargetingProcessor').TargetingProcessor;
+      const TP = TargetingProcessor;
       const legalTargets = targets.filter(tid => {
         // We use the first effect's target definition as a proxy for the spell's targeting requirements
         const isLegal = TP.isLegalTarget(state, {
@@ -150,7 +157,7 @@ export class EffectProcessor {
       let name = stackObject.name;
       let imageUrl = stackObject.image_url;
 
-      const { TargetingProcessor } = require("./../actions/targeting/TargetingProcessor");
+      if (!TargetingProcessor) TargetingProcessor = require("./../actions/targeting/TargetingProcessor").TargetingProcessor;
       const source = TargetingProcessor.findObjectInAnyZone(
         state,
         stackObject.sourceId,
@@ -198,7 +205,7 @@ export class EffectProcessor {
       (stackObject?.card ? stackObject.card : stackObject);
     const controllerId =
       (controllerIdOverride || (sourceObj as GameObject)?.controllerId || state.activePlayerId) as PlayerId;
-    const { TargetingProcessor } = require("../actions/targeting/TargetingProcessor");
+    if (!TargetingProcessor) TargetingProcessor = require("../actions/targeting/TargetingProcessor").TargetingProcessor;
 
     // Create a ResolutionContext for handlers that expect it
     const context: ResolutionContext = {
@@ -435,7 +442,7 @@ export class EffectProcessor {
         (stackObject || parentContext?.stackObject)?.data?.targetDefinition;
       if (!targetDef) return true;
 
-      const { TargetingProcessor } = require("../actions/targeting/TargetingProcessor");
+      if (!TargetingProcessor) TargetingProcessor = require("../actions/targeting/TargetingProcessor").TargetingProcessor;
       return TargetingProcessor.isLegalTarget(
         state,
         {
@@ -455,7 +462,7 @@ export class EffectProcessor {
     condition: ConditionType,
     context: ResolutionContext,
   ): boolean {
-    const { ConditionProcessor } = require("../core/logic/ConditionProcessor");
+    if (!ConditionProcessor) ConditionProcessor = require("../core/logic/ConditionProcessor").ConditionProcessor;
     const { sourceId, controllerId, targets, stackObject } = context;
 
     // We wrap the stackObject/parent state into a clean ConditionContext
@@ -560,7 +567,7 @@ export class EffectProcessor {
       case "EVENT_OBJECT_TOUGHNESS": {
         const eObj = stackObject?.data?.eventData?.payload?.object || parentContext?.event?.payload?.object;
         if (eObj) {
-          const { LayerProcessor } = require("./../state/LayerProcessor");
+          if (!LayerProcessor) LayerProcessor = require("./../state/LayerProcessor").LayerProcessor;
           const stats = LayerProcessor.getEffectiveStats(eObj, state);
           result = amount === "EVENT_OBJECT_POWER" ? stats.power : stats.toughness;
         }
@@ -571,7 +578,7 @@ export class EffectProcessor {
         const tid = stackObject?.targets?.[0] || targetIds[0];
         const tObj = state.battlefield.find((o) => o.id === tid) || state.turnState.creaturesDiedThisTurn.find((o) => o.id === tid) || Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === tid);
         if (tObj) {
-          const { LayerProcessor } = require("./../state/LayerProcessor");
+          if (!LayerProcessor) LayerProcessor = require("./../state/LayerProcessor").LayerProcessor;
           const stats = LayerProcessor.getEffectiveStats(tObj, state);
           result = amount === "TARGET_1_POWER" ? stats.power : stats.toughness;
         }
@@ -607,7 +614,7 @@ export class EffectProcessor {
         result = stackObject?.data?.amount || stackObject?.data?.capturedMV || 0;
         break;
       case "LAST_EXILED_MV": {
-        const { ManaProcessor } = require("../magic/ManaProcessor");
+        if (!ManaProcessor) ManaProcessor = require("../magic/ManaProcessor").ManaProcessor;
         const lastExiledId = (state as any).lastExiledIds?.[0];
         if (lastExiledId) {
           const obj = this.findObject(state, lastExiledId, stackObject, parentContext) as GameObject;
@@ -648,7 +655,7 @@ export class EffectProcessor {
         break;
       }
       case "TARGET_1_MANA_VALUE": {
-        const { ManaProcessor } = require("../magic/ManaProcessor");
+        if (!ManaProcessor) ManaProcessor = require("../magic/ManaProcessor").ManaProcessor;
         const tId = stackObject?.targets?.[0] || targetIds[0];
         const mObj = this.findObject(state, tId, stackObject, parentContext) as GameObject;
         result = mObj ? ManaProcessor.getManaValue(mObj.definition.manaCost) : 0;

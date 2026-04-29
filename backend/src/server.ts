@@ -89,7 +89,7 @@ async function start() {
       if (changed) await PersistenceService.saveRooms(rooms);
    }, 1000);
 
-   server.listen(PORT, () => {
+   server.listen(Number(PORT), '127.0.0.1', () => {
       LoggerService.info('SERVER', '─────────────────────────────────────────────');
       LoggerService.info('SERVER', `Backend Realtime listening on port ${PORT}`);
       LoggerService.info('SERVER', `Socket.io Hub Proxy Active (TypeScript)`);

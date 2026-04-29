@@ -79,6 +79,18 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
             return types.includes('creature') || types.includes('planeswalker');
         }
     },
+    "ANYTARGET": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            return types.includes('creature') || types.includes('planeswalker');
+        }
+    },
+    "ANY_TARGET": {
+        matches(state, targetObj: any) {
+            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
+            return types.includes('creature') || types.includes('planeswalker');
+        }
+    },
     "CREATUREORLAND": {
         matches(state, targetObj: any) {
             const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { type GameObject } from '@shared/engine_types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GameCard } from './GameCard';
@@ -9,6 +10,7 @@ interface PlayerHandProps {
   onHoverStart?: (obj: GameObject) => void;
   onHoverEnd?: () => void;
   targetableIds?: Set<string>;
+  stateVersion?: number;
 }
 
 /**
@@ -17,7 +19,7 @@ interface PlayerHandProps {
  * - Higher baseline to keep names above screen edge.
  * - Dynamic z-index for natural overlapping.
  */
-export const PlayerHand = ({ 
+export const PlayerHand = memo(({ 
   hand, 
   virtualHand = [], 
   onPlayCard, 
@@ -110,4 +112,40 @@ export const PlayerHand = ({
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent pointer-events-none z-[-1]" />
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+    if (prevProps.hand.length !== nextProps.hand.length) return false;
+    if ((prevProps.virtualHand?.length || 0) !== (nextProps.virtualHand?.length || 0)) return false;
+    if (prevProps.targetableIds?.size !== nextProps.targetableIds?.size) return false;
+
+    if (prevProps.targetableIds && nextProps.targetableIds) {
+        for (let id of prevProps.targetableIds) {
+            if (!nextProps.targetableIds.has(id)) return false;
+        }
+    }
+
+    // 3. Check if playability or versions changed for any card
+    const anyPlayabilityChanged = prevProps.hand.some((c, i) => {
+        const nextCard = nextProps.hand[i];
+        return c.effectiveStats?.isPlayable !== nextCard.effectiveStats?.isPlayable || 
+               c.version !== nextCard.version;
+    });
+
+    if (anyPlayabilityChanged) return false;
+
+    for (let i = 0; i < prevProps.hand.length; i++) {
+        if (prevProps.hand[i].id !== nextProps.hand[i].id) return false;
+    }
+
+    const pv = prevProps.virtualHand || [];
+    const nv = nextProps.virtualHand || [];
+    for (let i = 0; i < pv.length; i++) {
+        if (pv[i].id !== nv[i].id) return false;
+    }
+
+    // 4. Fallback to stateVersion if provided
+    if (prevProps.stateVersion !== undefined && nextProps.stateVersion !== undefined) {
+        return prevProps.stateVersion === nextProps.stateVersion;
+    }
+
+    return true;
+});

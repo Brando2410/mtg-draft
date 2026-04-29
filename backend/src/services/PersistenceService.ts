@@ -24,11 +24,18 @@ export class PersistenceService {
   private static DECKS_DIR = path.join(PersistenceService.DATA_ROOT, 'decks');
   private static LOGS_DIR = path.join(PersistenceService.DATA_ROOT, 'draft_logs');
   private static ROOMS_FILE = path.join(PersistenceService.DATA_ROOT, '.active_rooms.json');
+  public static PERF_LOG_FILE = path.join(PersistenceService.DATA_ROOT, 'performance.log');
 
   static init() {
     if (!existsSync(this.CUBES_DIR)) mkdirSync(this.CUBES_DIR, { recursive: true });
     if (!existsSync(this.DECKS_DIR)) mkdirSync(this.DECKS_DIR, { recursive: true });
     if (!existsSync(this.LOGS_DIR)) mkdirSync(this.LOGS_DIR, { recursive: true });
+    
+    // Create empty perf log if it doesn't exist
+    if (!existsSync(this.PERF_LOG_FILE)) {
+      require('fs').writeFileSync(this.PERF_LOG_FILE, '', 'utf8');
+    }
+    LoggerService.setPerfLogPath(this.PERF_LOG_FILE);
     
     const cubeCount = existsSync(this.CUBES_DIR) ? require('fs').readdirSync(this.CUBES_DIR).length : 0;
     const deckCount = existsSync(this.DECKS_DIR) ? require('fs').readdirSync(this.DECKS_DIR).length : 0;

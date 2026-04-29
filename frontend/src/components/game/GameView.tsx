@@ -240,6 +240,7 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
 
       <OpponentHand 
           hand={[...(opponent?.hand || []), ...(opponent?.virtualHand || [])]} 
+          stateVersion={gameState.stateVersion}
           onHoverStart={startZoom}
           onHoverEnd={stopZoom}
       />
@@ -352,6 +353,7 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
       <PlayerHand 
           hand={me?.hand || []} 
           virtualHand={me?.virtualHand || []}
+          stateVersion={gameState.stateVersion}
           onPlayCard={(cardId) => {
             if (me?.pendingDiscardCount && me.pendingDiscardCount > 0) {
               socket.emit('discard_card', { roomId: room.id, playerId: effectivePlayerId, cardId });

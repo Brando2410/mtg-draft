@@ -42,16 +42,21 @@ export const MatchLobby = ({
 
   useEffect(() => {
     // Load decks from Backend API
-    const fetchDecks = async () => {
+    const fetchDecks = async (retries = 5) => {
       try {
         const API_URL = import.meta.env.VITE_API_URL || '';
         const res = await fetch(`${API_URL}/api/decks`);
         if (res.ok) {
           const decks = await res.json();
           setSavedDecks(decks);
+        } else if (retries > 0) {
+          setTimeout(() => fetchDecks(retries - 1), 3000);
         }
       } catch (err) {
         console.error('Error fetching decks in lobby:', err);
+        if (retries > 0) {
+          setTimeout(() => fetchDecks(retries - 1), 3000);
+        }
       }
     };
 
@@ -245,8 +250,14 @@ export const MatchLobby = ({
                 </div>
                 <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
                    {savedDecks.length === 0 ? (
-                      <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
+                      <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10 flex flex-col items-center gap-4">
                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Nessun mazzo trovato</span>
+                         <button 
+                           onClick={() => window.location.reload()}
+                           className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-indigo-400 text-[10px] font-black uppercase rounded-lg transition-colors"
+                         >
+                            Aggiorna Pagina
+                         </button>
                       </div>
                    ) : (
                       savedDecks.map((deck, i) => (

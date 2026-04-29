@@ -12,9 +12,23 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:4000',
-      '/avatars': 'http://localhost:4000',
-      '/wallpapers': 'http://localhost:4000'
+      '/api': {
+        target: 'http://127.0.0.1:4000',
+        changeOrigin: true
+      },
+      '/socket.io': {
+        target: 'http://127.0.0.1:4000',
+        ws: true,
+        changeOrigin: true
+      },
+      '/avatars': {
+        target: 'http://127.0.0.1:4000',
+        changeOrigin: true
+      },
+      '/wallpapers': {
+        target: 'http://127.0.0.1:4000',
+        changeOrigin: true
+      }
     }
   }
 })

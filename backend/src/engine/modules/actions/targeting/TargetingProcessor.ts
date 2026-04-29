@@ -139,12 +139,12 @@ export class TargetingProcessor {
                 state.priorityPlayerId = playerId;
 
                 // CLEANUP TEMPORARY CASTING STATE
-                delete (state as any).lastChosenCostChoiceIndex;
-                delete (state as any).lastChosenSacrificeId;
-                delete (state as any).lastChosenDiscardId;
-                delete (state as any).lastChosenExileIds;
-                delete (state as any).lastChosenModeIndex;
-                delete (state as any).lastChoiceIndex;
+                delete state.interaction.lastChosenCostChoiceIndex;
+                delete state.interaction.lastChosenSacrificeId;
+                delete state.interaction.lastChosenDiscardId;
+                delete state.interaction.lastChosenExileIds;
+                delete state.interaction.lastChosenModeIndex;
+                delete state.interaction.lastChoiceIndex;
 
                 return true;
             }

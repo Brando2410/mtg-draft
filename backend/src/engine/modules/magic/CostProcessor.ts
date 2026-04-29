@@ -18,10 +18,10 @@ export class CostProcessor {
    */
   public static canPay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId, playerId: PlayerId, stackObject?: any): boolean {
     let source = this.findObject(state, sourceId);
-    
+
     // Fallback for resolving objects in transition
     if (!source) {
-        source = { id: sourceId, ownerId: playerId, controllerId: playerId, definition: { name: 'Resolving Object' }, zone: Zone.Stack } as any;
+      source = { id: sourceId, ownerId: playerId, controllerId: playerId, definition: { name: 'Resolving Object' }, zone: Zone.Stack } as any;
     }
 
     const validSource = source as GameObject;
@@ -39,9 +39,9 @@ export class CostProcessor {
    */
   public static pay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId, playerId: PlayerId, log: (m: string) => void) {
     let source = this.findObject(state, sourceId);
-    
+
     if (!source) {
-        source = { id: sourceId, ownerId: playerId, controllerId: playerId, definition: { name: 'Resolving Object' }, zone: Zone.Stack } as any;
+      source = { id: sourceId, ownerId: playerId, controllerId: playerId, definition: { name: 'Resolving Object' }, zone: Zone.Stack } as any;
     }
 
     const validSource = source as GameObject;
@@ -61,14 +61,14 @@ export class CostProcessor {
         // Rule 302.6: Summoning Sickness applies to tap abilities of creatures
         const isCreature = source.definition.types.some(t => t.toLowerCase() === 'creature');
         if (isCreature && source.summoningSickness) {
-           const stats = LayerProcessor.getEffectiveStats(source, state);
-           if (!stats.keywords.includes('Haste')) {
-                return false; 
-           }
+          const stats = LayerProcessor.getEffectiveStats(source, state);
+          if (!stats.keywords.includes('Haste')) {
+            return false;
+          }
         }
 
-        const hasRestriction = state.ruleRegistry.restrictions.some(r => 
-          r.type === RestrictionType.CannotTap && 
+        const hasRestriction = state.ruleRegistry.restrictions.some(r =>
+          r.type === RestrictionType.CannotTap &&
           (r.targetId === source.id || (r.targetControllerId === source.controllerId && !r.targetId))
         );
         if (hasRestriction) return false;
@@ -88,9 +88,9 @@ export class CostProcessor {
 
       case CostType.Sacrifice: {
         const neededSac = (cost.amount !== undefined) ? cost.amount : 1;
-        const validSacrifices = state.battlefield.filter(c => 
-            String(c.controllerId) === String(playerId) && 
-            (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }))
+        const validSacrifices = state.battlefield.filter(c =>
+          String(c.controllerId) === String(playerId) &&
+          (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }))
         );
         return validSacrifices.length >= neededSac;
       }
@@ -100,8 +100,8 @@ export class CostProcessor {
 
       case CostType.Discard:
         const neededDisc = cost.amount || 1;
-        const validDiscards = player.hand.filter(c => 
-            (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }))
+        const validDiscards = player.hand.filter(c =>
+          (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }))
         );
         return validDiscards.length >= neededDisc;
 
@@ -114,19 +114,19 @@ export class CostProcessor {
       case CostType.Exile:
       case CostType.ExileSelf:
         if (cost.targetMapping === 'SELF' || cost.type === CostType.ExileSelf) {
-           return !!this.findObject(state, source.id);
+          return !!this.findObject(state, source.id);
         }
         const zones = cost.sourceZones || (cost.sourceZone ? [cost.sourceZone] : [Zone.Battlefield]);
         const pool = zones.flatMap((z: Zone) => {
-            if (z === Zone.Battlefield) return state.battlefield.filter(o => o.controllerId === playerId);
-            if (z === Zone.Graveyard) return player.graveyard;
-            if (z === Zone.Hand) return player.hand;
-            if (z === Zone.Exile) return state.exile; 
-            return [];
+          if (z === Zone.Battlefield) return state.battlefield.filter(o => o.controllerId === playerId);
+          if (z === Zone.Graveyard) return player.graveyard;
+          if (z === Zone.Hand) return player.hand;
+          if (z === Zone.Exile) return state.exile;
+          return [];
         });
         const neededExile = cost.amount || 1;
-        const validExiles = pool.filter((c: GameObject) => 
-            (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }))
+        const validExiles = pool.filter((c: GameObject) =>
+          (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions, { controllerId: playerId, sourceId: source.id }))
         );
         return validExiles.length >= neededExile;
 
@@ -134,10 +134,10 @@ export class CostProcessor {
         const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
         const amountStr = String(cost.amount || cost.value || 0);
         const amount = amountStr === 'X' ? xValue : Number(amountStr);
-        const candidates = state.battlefield.filter(o => 
-            o.controllerId === playerId && 
-            o.definition.types.some(t => t.toLowerCase() === 'creature') && 
-            !o.isTapped
+        const candidates = state.battlefield.filter(o =>
+          o.controllerId === playerId &&
+          o.definition.types.some(t => t.toLowerCase() === 'creature') &&
+          !o.isTapped
         );
         const totalPowerAvailable = candidates.reduce((sum, c) => sum + LayerProcessor.getEffectiveStats(c, state).power, 0);
         return totalPowerAvailable >= amount;
@@ -145,10 +145,10 @@ export class CostProcessor {
 
       case CostType.TapSelection: {
         const amount = Number(cost.value || cost.amount || 1);
-        const candidates = state.battlefield.filter(o => 
-            String(o.controllerId) === String(playerId) && 
-            !o.isTapped &&
-            (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, { controllerId: playerId, sourceId: source.id }))
+        const candidates = state.battlefield.filter(o =>
+          String(o.controllerId) === String(playerId) &&
+          !o.isTapped &&
+          (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, o, cost.restrictions, { controllerId: playerId, sourceId: source.id }))
         );
         // console.log(`[DEBUG] TapSelection canPay: amount=${amount}, candidates=${candidates.length}, sourceId=${source.id}`);
         return candidates.length >= amount;
@@ -184,7 +184,7 @@ export class CostProcessor {
         const oldL = source.counters.loyalty || 0;
         source.counters.loyalty = oldL + lVal;
         log(`${source.definition.name} loyalty: ${oldL} -> ${source.counters.loyalty}`);
-        
+
         const { TriggerProcessor } = require('./../effects/triggers/TriggerProcessor');
         TriggerProcessor.onEvent(state, { type: 'ON_ACTIVATE_LOYALTY', playerId, sourceId: source.id, data: { object: source } }, log);
         break;
@@ -195,106 +195,107 @@ export class CostProcessor {
         // CR 701.17: To sacrifice a permanent, move it to its owner's graveyard.
         let toSac;
         if (cost.targetMapping === 'SELF' || cost.type === CostType.SacrificeSelf) {
-            toSac = source;
-            log(`[SACRIFICE] Identified source ${source.definition.name} as SELF sacrifice target.`);
+          toSac = source;
+          log(`[SACRIFICE] Identified source ${source.definition.name} as SELF sacrifice target.`);
         } else {
-            // Check for pre-selected target from modal choice
-            const chosenId = (state as any).lastChosenSacrificeId;
-            if (chosenId) {
-                toSac = state.battlefield.find(c => String(c.id) === String(chosenId));
-            } else {
-                // Fallback for auto-order/automated effects (not recommended for complex costs)
-                toSac = state.battlefield.find(c => String(c.controllerId) === String(playerId) && (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions!, { controllerId: playerId, sourceId: source.id })));
-            }
+          // Check for pre-selected target from modal choice
+          const chosenId = state.interaction.lastChosenSacrificeId;
+          if (chosenId) {
+            toSac = state.battlefield.find(c => String(c.id) === String(chosenId));
+          } else {
+            // Fallback for auto-order/automated effects (not recommended for complex costs)
+            toSac = state.battlefield.find(c => String(c.controllerId) === String(playerId) && (!cost.restrictions || TargetingProcessor.matchesRestrictions(state, c, cost.restrictions!, { controllerId: playerId, sourceId: source.id })));
+          }
         }
-        
+
         if (toSac) {
-            log(`[SACRIFICE] Processor executing moveCard for ${toSac.definition.name}...`);
-            TriggerProcessor.onEvent(state, { 
-                type: 'ON_SACRIFICE', 
-                playerId, 
-                sourceId: toSac.id, 
-                data: { object: toSac } 
-            }, log);
-            ActionProcessor.moveCard(state, toSac, Zone.Graveyard, playerId, log);
-            log(`${player.name} sacrificed ${toSac.definition.name} as a cost.`);
+          log(`[SACRIFICE] Processor executing moveCard for ${toSac.definition.name}...`);
+          TriggerProcessor.onEvent(state, {
+            type: 'ON_SACRIFICE',
+            playerId,
+            sourceId: toSac.id,
+            data: { object: toSac }
+          }, log);
+          ActionProcessor.moveCard(state, toSac, Zone.Graveyard, playerId, log);
+          log(`${player.name} sacrificed ${toSac.definition.name} as a cost.`);
         } else {
-            log(`[SACRIFICE] Error: No valid object found to sacrifice for cost.`);
+          log(`[SACRIFICE] Error: No valid object found to sacrifice for cost.`);
         }
-        delete (state as any).lastChosenSacrificeId;
+        delete state.interaction.lastChosenSacrificeId;
         break;
 
       case CostType.Discard:
         // CR 701.8: To discard a card, move it from hand to graveyard.
         // If it's a cost, we typically expect a pre-selected cardId in state.lastChosenDiscardId
         // or we need to trigger a choice if it's not present.
-        const discardId = (state as any).lastChosenDiscardId;
-        const cardToDiscard = player.hand.find(c => c.id === discardId); 
+        const discardId = state.interaction.lastChosenDiscardId;
+        const cardToDiscard = player.hand.find(c => c.id === discardId);
         if (cardToDiscard) {
-            TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card: cardToDiscard, sourceId: source.id } }, log);
-            ActionProcessor.moveCard(state, cardToDiscard, Zone.Graveyard, playerId, log);
-            log(`${player.name} discarded ${cardToDiscard.definition.name} as a cost.`);
+          TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card: cardToDiscard, sourceId: source.id } }, log);
+          ActionProcessor.moveCard(state, cardToDiscard, Zone.Graveyard, playerId, log);
+          log(`${player.name} discarded ${cardToDiscard.definition.name} as a cost.`);
         }
-        delete (state as any).lastChosenDiscardId;
+        delete state.interaction.lastChosenDiscardId;
         break;
 
-       case CostType.PayLife: {
-         const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
-         const lifeVal = cost.value === 'X' ? xValue : (parseInt(cost.value) || 0);
-         player.life -= lifeVal;
-         TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
-         log(`${player.name} pays ${lifeVal} life (${player.life + lifeVal} -> ${player.life})`);
-         break;
-       }
+      case CostType.PayLife: {
+        const xValue = (source as any).xValue !== undefined ? (source as any).xValue : 0;
+        const lifeVal = cost.value === 'X' ? xValue : (parseInt(cost.value) || 0);
+        player.life -= lifeVal;
+        TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
+        log(`${player.name} pays ${lifeVal} life (${player.life + lifeVal} -> ${player.life})`);
+        break;
+      }
 
-       case CostType.Exile:
-       case CostType.ExileSelf:
-         let exiles: GameObject[] = [];
-         if (cost.targetMapping === 'SELF' || cost.type === CostType.ExileSelf) {
-             exiles = [source];
-         } else {
-             const chosenIds = (state as any).lastChosenExileIds || ((state as any).lastChosenExileId ? [(state as any).lastChosenExileId] : []);
-             chosenIds.forEach((id: string) => {
-                 const obj = this.findObject(state, id);
-                 if (obj) exiles.push(obj);
-             });
-         }
-         
-         exiles.forEach(obj => {
-             ActionProcessor.moveCard(state, obj, Zone.Exile, playerId, log);
-             log(`${player.name} exiled ${obj.definition?.name || 'an object'} as a cost.`);
-         });
-         delete (state as any).lastChosenExileId;
-         delete (state as any).lastChosenExileIds;
-         break;
+      case CostType.Exile:
+      case CostType.ExileSelf:
+        let exiles: GameObject[] = [];
+        if (cost.targetMapping === 'SELF' || cost.type === CostType.ExileSelf) {
+          exiles = [source];
+        } else {
+          const chosenIds = state.interaction.lastChosenExileIds || [];
+          chosenIds.forEach((id: string) => {
+            const obj = this.findObject(state, id);
+            if (obj) exiles.push(obj);
+          });
+        }
 
-       case CostType.Crew: {
-         const crewIds = (state as any).lastChosenCrewIds || [];
-         crewIds.forEach((cid: string) => {
-             const c = state.battlefield.find(o => o.id === cid);
-             if (c) {
-                 c.isTapped = true;
-                 TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, data: { object: c } }, log);
-             }
-         });
-         delete (state as any).lastChosenCrewIds;
-         break;
-       }
+        exiles.forEach(obj => {
+          ActionProcessor.moveCard(state, obj, Zone.Exile, playerId, log);
+          log(`${player.name} exiled ${obj.definition?.name || 'an object'} as a cost.`);
+        });
+        delete state.interaction.lastChosenExileIds;
+        break;
 
-       case CostType.TapSelection: {
-         const chosenIds = (state as any).lastChosenTapSelectionIds || [];
-         chosenIds.forEach((cid: string) => {
-             const c = state.battlefield.find(o => o.id === cid);
-             if (c) {
-                 c.isTapped = true;
-                 TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, data: { object: c } }, log);
-             }
-         });
-         delete (state as any).lastChosenTapSelectionIds;
-         break;
-       }
+      case CostType.Crew: {
+        const crewIds = (state as any).lastChosenCrewIds || [];
+        crewIds.forEach((cid: string) => {
+          const c = state.battlefield.find(o => o.id === cid);
+          if (c) {
+            c.isTapped = true;
+            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, data: { object: c } }, log);
+          }
+        });
+        delete (state as any).lastChosenCrewIds;
+        break;
+      }
 
-       default:
+      case CostType.TapSelection: {
+        const chosenIds = state.interaction.lastChosenTapSelectionIds || [];
+        log(`[COST-DEBUG] Executing TapSelection for ${chosenIds.length} creatures. IDs: ${chosenIds.join(', ')}`);
+        chosenIds.forEach((cid: string) => {
+          const c = state.battlefield.find(o => o.id === cid);
+          if (c) {
+            c.isTapped = true;
+            log(`${c.definition.name} tapped.`);
+            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, data: { object: c } }, log);
+          }
+        });
+        delete state.interaction.lastChosenTapSelectionIds;
+        break;
+      }
+
+      default:
         return true;
     }
   }
@@ -305,37 +306,37 @@ export class CostProcessor {
 
     let costStr = cost.value || (cost as any).manaCost;
     if (!costStr) return "";
-    
+
     const originalCostStr = costStr;
 
     // Rule 107.3: Handle X cost substitution
     const xValue = (source as any).xValue !== undefined ? (source as any).xValue : (stackObject?.xValue || 0);
     if (costStr.includes('{X}')) {
-        costStr = costStr.replace(/\{X\}/g, `{${xValue}}`);
+      costStr = costStr.replace(/\{X\}/g, `{${xValue}}`);
     }
 
-    console.log(`[COST-RESOLVE] source=${source.definition.name}, xValue=${xValue}, original=${originalCostStr}, effective=${costStr}`);
+    // console.log(`[COST-RESOLVE] source=${source.definition.name}, xValue=${xValue}, original=${originalCostStr}, effective=${costStr}`);
 
     if (cost.costModifiers) {
-        let reduction = 0;
-        for (const mod of cost.costModifiers) {
-            if (mod.type === 'REDUCE_GENERIC_PER_COUNTER') {
-                reduction += (source.counters[mod.counterType] || 0) * (mod.amount || 1);
-            }
+      let reduction = 0;
+      for (const mod of cost.costModifiers) {
+        if (mod.type === 'REDUCE_GENERIC_PER_COUNTER') {
+          reduction += (source.counters[mod.counterType] || 0) * (mod.amount || 1);
         }
-        
-        if (reduction > 0) {
-            const parsed = ManaProcessor.parseManaCost(costStr);
-            parsed.generic = Math.max(0, parsed.generic - reduction);
-            
-            // Reconstruct mana string
-            let newCost = "";
-            if (parsed.generic > 0) newCost += `{${parsed.generic}}`;
-            Object.entries(parsed.colored).forEach(([symbol, amount]) => {
-                for (let i = 0; i < (amount as number); i++) newCost += `{${symbol}}`;
-            });
-            costStr = newCost || "{0}";
-        }
+      }
+
+      if (reduction > 0) {
+        const parsed = ManaProcessor.parseManaCost(costStr);
+        parsed.generic = Math.max(0, parsed.generic - reduction);
+
+        // Reconstruct mana string
+        let newCost = "";
+        if (parsed.generic > 0) newCost += `{${parsed.generic}}`;
+        Object.entries(parsed.colored).forEach(([symbol, amount]) => {
+          for (let i = 0; i < (amount as number); i++) newCost += `{${symbol}}`;
+        });
+        costStr = newCost || "{0}";
+      }
     }
     return costStr;
   }
@@ -343,28 +344,12 @@ export class CostProcessor {
   private static findObject(state: GameState, id: GameObjectId): GameObject | undefined {
     if (!id) return undefined;
 
-    // 1. Battlefield
-    let found = state.battlefield.find(o => o.id === id);
-    if (found) return found;
-
-    // 2. Stack (Checking instance ID, source ID, and card ID)
-    const stackEntry = state.stack.find(o => o.id === id || o.sourceId === id || o.card?.id === id);
-    if (stackEntry?.card) return stackEntry.card;
-
-    // 3. Player Zones
-    for (const pid in state.players) {
-        const p = state.players[pid as PlayerId];
-        found = p.hand.find(o => o.id === id) || 
-                p.graveyard.find(o => o.id === id) || 
-                p.library.find(o => o.id === id);
-        if (found) return found;
+    // FAST PATH: Leverage the O(1) cache if it exists and is fresh
+    if ((state as any)._objectCache && (state as any)._objectCache.version === state.stateVersion) {
+        return (state as any)._objectCache.get(id);
     }
 
-    // 4. Exile
-    found = state.exile.find(o => o.id === id);
-    if (found) return found;
-
-    return undefined;
+    // Fallback to legacy linear search (O(N))
+    return TargetingProcessor.findObjectInAnyZone(state, id) || undefined;
   }
 }
-

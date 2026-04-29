@@ -2,6 +2,12 @@ import { AbilityCost, AbilityType, ActivatedAbilityDefinition, CostType, GameObj
 import { oracle } from '../../../OracleLogicMap';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 
+// Static imports for performance
+let LayerProcessor: any;
+let TargetingProcessor: any;
+let ConditionProcessor: any;
+let EffectProcessor: any;
+
 /**
  * SpellCostCalculator - Derives the effective mana cost for spells and abilities.
  *
@@ -44,7 +50,7 @@ export class SpellCostCalculator {
 
         // Flashback cost override (Rule 702.34)
         // If explicitly forced or if it's a Flashback card in the graveyard, use the alternative cost
-        const { LayerProcessor } = require('../../state/LayerProcessor');
+        if (!LayerProcessor) LayerProcessor = require('../../state/LayerProcessor').LayerProcessor;
         const stats = overrideStats || LayerProcessor.getEffectiveStats(card, state);
 
         const hasFlashbackKeyword = stats.keywords?.some((k: string) => k.toLowerCase() === 'flashback') ||
@@ -100,7 +106,7 @@ export class SpellCostCalculator {
             }
 
             // Use LayerProcessor to verify the card is actually a target (checking restrictions)
-            const { LayerProcessor } = require('../../state/LayerProcessor');
+            if (!LayerProcessor) LayerProcessor = require('../../state/LayerProcessor').LayerProcessor;
             return LayerProcessor.isTarget(state, e, card.id);
         });
 
@@ -116,7 +122,7 @@ export class SpellCostCalculator {
         if (effectiveCost !== null) return { totalMana: effectiveCost, additionalCosts, usedAlternativeCostId: isFree?.id };
 
         // 1. Gather global modifiers
-        const { TargetingProcessor } = require('../targeting/TargetingProcessor');
+        if (!TargetingProcessor) TargetingProcessor = require('../targeting/TargetingProcessor').TargetingProcessor;
         const modifiers = state.ruleRegistry.continuousEffects.filter(e => {
             if (!['SpellTax', 'CostReduction', 'AdditionalCost', 'AllowCastFromGraveyard', 'AllowPlayFromTop', 'AllowPlayExiled'].includes((e as any).type)) return false;
 
@@ -149,7 +155,7 @@ export class SpellCostCalculator {
                 }
                 a.effects?.forEach((e: any) => {
                     if (e.type === 'AdditionalCost' && e.targetMapping === 'SELF') {
-                        const { ConditionProcessor } = require('../../core/logic/ConditionProcessor');
+                        if (!ConditionProcessor) ConditionProcessor = require('../../core/logic/ConditionProcessor').ConditionProcessor;
                         const conditionMatches = !e.condition || ConditionProcessor.matchesCondition(state, e.condition, {
                             sourceId: card.id,
                             controllerId: card.controllerId,
@@ -209,7 +215,7 @@ export class SpellCostCalculator {
             if (!impacts) continue;
 
             const restrictions = (mod as any).restrictions || [];
-            const { ConditionProcessor } = require('../../core/logic/ConditionProcessor');
+            if (!ConditionProcessor) ConditionProcessor = require('../../core/logic/ConditionProcessor').ConditionProcessor;
 
             const matches = TargetingProcessor.matchesRestrictions(state, card, (restrictions as any[] || []), {
                 sourceId: mod.sourceId,
@@ -229,7 +235,7 @@ export class SpellCostCalculator {
                 additionalCosts = [...additionalCosts, ...(mod as any).additionalCosts];
             }
             if (type === 'CostReduction') {
-                const { EffectProcessor } = require('../../effects/EffectProcessor');
+                if (!EffectProcessor) EffectProcessor = require('../../effects/EffectProcessor').EffectProcessor;
                 const redAmt = EffectProcessor.resolveAmount(state, (mod as any).amount, {
                     sourceId: mod.sourceId,
                     controllerId: card.controllerId || card.ownerId,
@@ -288,8 +294,9 @@ export class SpellCostCalculator {
             costStr = `{${finalGeneric}}` + costStr;
         }
 
+
         if (extraGeneric !== 0) {
-            console.log(`[COST-CALC] ${card.definition.name}: Base=${parsed.generic}, Modifiers=${extraGeneric}, FinalGeneric=${finalGeneric}`);
+            console.log(`[COST-CALC] ${card.definition.name} (${card.zone}): Base=${parsed.generic}, Modifiers=${extraGeneric}, FinalGeneric=${finalGeneric}`);
         }
 
         return { totalMana: costStr, additionalCosts, isFlashback };

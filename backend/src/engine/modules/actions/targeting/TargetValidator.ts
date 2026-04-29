@@ -2,14 +2,27 @@ import { GameObject, GameState, PlayerId, PlayerState, StackObject, Targetable, 
 import { LayerProcessor } from '../../state/LayerProcessor';
 import { TargetMapper } from './TargetMapper';
 
+// Static imports for performance
+let RestrictionRegistry: any;
+let isNumericRestriction: any;
+let ManaProcessor: any;
+let CachedLayerProcessor: any;
+
 export class TargetValidator {
 
     /**
      * CR 608.2b: Checks if a target is still legal as a spell or ability attempts to resolve.
      */
     public static findObjectInAnyZone(state: GameState, id: string): GameObject | null {
+        // FAST PATH: Check the state-level lookup cache if it exists and is fresh
+        if ((state as any)._objectCache && (state as any)._objectCache.version === state.stateVersion && (state as any)._objectCache.has(id)) {
+            return (state as any)._objectCache.get(id);
+        }
+
         const bf = state.battlefield.find(o => o.id === id);
         if (bf) return bf;
+        const st = state.stack.find(s => s.id === id || s.card?.id === id);
+        if (st && st.card) return st.card;
         const ex = state.exile.find(o => o.id === id);
         if (ex) return ex;
 
@@ -23,9 +36,6 @@ export class TargetValidator {
             const v = p.virtualHand?.find(o => o.id === id);
             if (v) return v;
         }
-
-        const st = state.stack.find(s => s.id === id || s.card?.id === id);
-        if (st && st.card) return st.card;
 
         const lb = state.limbo?.find(o => o.id === id);
         if (lb) return lb;
@@ -79,6 +89,30 @@ export class TargetValidator {
         if (targetObj.isPhasedOut) return false;
 
         const targetZone = targetObj.zone;
+        const typeLineCheck = (targetDefForIndex?.type || '').toLowerCase();
+        
+        // 1. ZONE CHECK (FAST PATH)
+        let expectedZone = targetDefForIndex?.zone;
+        if (!expectedZone) {
+            if (targetZone === Zone.Stack) expectedZone = Zone.Stack;
+            else if (['instant', 'sorcery', 'instant_or_sorcery', 'spell', 'spellonstack'].includes(typeLineCheck)) expectedZone = Zone.Stack;
+            else if (['card_in_graveyard', 'cardingraveyard'].includes(typeLineCheck)) expectedZone = Zone.Graveyard;
+            else if (['card_in_exile', 'cardinexile'].includes(typeLineCheck)) expectedZone = Zone.Exile;
+            else if (targetDefForIndex?.restrictions?.some((r: any) => typeof r === 'string' && ['graveyard', 'in_graveyard'].includes(r.toLowerCase())))
+                expectedZone = Zone.Graveyard;
+            else if (targetDefForIndex?.restrictions?.some((r: any) => typeof r === 'string' && ['exile', 'in_exile'].includes(r.toLowerCase())))
+                expectedZone = Zone.Exile;
+            else expectedZone = targetDefForIndex ? Zone.Battlefield : 'Any';
+        }
+
+        if (expectedZone !== 'Any' && targetZone !== expectedZone) {
+            if (sourceId?.includes('copy')) console.log(`[TARGET-DEBUG] FAILED: Zone mismatch for ${targetId}. Expected ${expectedZone}, got ${targetZone}.`);
+            return false;
+        }
+
+        if (typeLineCheck === 'player') return false;
+
+        // 2. EXPENSIVE CHECKS (Stats, Keywords, Protections)
         const stats = LayerProcessor.getEffectiveStats(targetObj, state);
         const keywords = stats.keywords;
         const isOpponentTarget = controllerId && targetObj.controllerId !== controllerId;
@@ -113,27 +147,6 @@ export class TargetValidator {
                     return false;
                 }
             }
-        }
-
-        const typeLineCheck = (targetDefForIndex?.type || '').toLowerCase();
-        if (typeLineCheck === 'player') return false;
-
-        let expectedZone = targetDefForIndex?.zone;
-        if (!expectedZone) {
-            if (targetZone === Zone.Stack) expectedZone = Zone.Stack;
-            else if (['instant', 'sorcery', 'instant_or_sorcery', 'spell', 'spellonstack'].includes(typeLineCheck)) expectedZone = Zone.Stack;
-            else if (['card_in_graveyard', 'cardingraveyard'].includes(typeLineCheck)) expectedZone = Zone.Graveyard;
-            else if (['card_in_exile', 'cardinexile'].includes(typeLineCheck)) expectedZone = Zone.Exile;
-            else if (targetDefForIndex?.restrictions?.some((r: any) => typeof r === 'string' && ['graveyard', 'in_graveyard'].includes(r.toLowerCase())))
-                expectedZone = Zone.Graveyard;
-            else if (targetDefForIndex?.restrictions?.some((r: any) => typeof r === 'string' && ['exile', 'in_exile'].includes(r.toLowerCase())))
-                expectedZone = Zone.Exile;
-            else expectedZone = targetDefForIndex ? Zone.Battlefield : 'Any';
-        }
-
-        if (expectedZone !== 'Any' && targetZone !== expectedZone) {
-            if (sourceId?.includes('copy')) console.log(`[TARGET-DEBUG] FAILED: Zone mismatch for ${targetId}. Expected ${expectedZone}, got ${targetZone}.`);
-            return false;
         }
 
         const restrictions = [...(targetDefForIndex?.restrictions || [])];
@@ -175,7 +188,11 @@ export class TargetValidator {
 
         if (!definition) return false;
 
-        const { RestrictionRegistry, isNumericRestriction } = require("./RestrictionRegistry");
+        if (!RestrictionRegistry) {
+            const registry = require("./RestrictionRegistry");
+            RestrictionRegistry = registry.RestrictionRegistry;
+            isNumericRestriction = registry.isNumericRestriction;
+        }
 
         for (const r of restrictions) {
             if (typeof r !== "string") continue;
@@ -261,13 +278,18 @@ export class TargetValidator {
                     }
                     if (restrictionType === 'control' && restrictionValue && !this.matchesRestrictions(state, targetObj, [restrictionValue], context)) match = false;
                     if (['manavalue', 'mv', 'cmc'].includes(restrictionType)) {
-                        const { ManaProcessor } = require('../../../magic/ManaProcessor');
+                        if (!ManaProcessor) {
+                            ManaProcessor = require('../../../magic/ManaProcessor').ManaProcessor;
+                        }
                         const mv = ManaProcessor.getManaValue(definition.manaCost || '', (targetObj as any).xValue || 0);
                         let val = r.value;
                         if (val === 'X') val = stackObject?.xValue || (state.pendingAction as any)?.data?.xValue || 0;
                         else if (val === 'SOURCE_POWER') {
                             const src = this.findObjectInAnyZone(state, sourceId);
-                            val = src ? (require('../../../state/LayerProcessor').LayerProcessor.getEffectiveStats(src, state).power || 0) : 0;
+                            if (!CachedLayerProcessor) {
+                                CachedLayerProcessor = require('../../state/LayerProcessor').LayerProcessor;
+                            }
+                            val = src ? (CachedLayerProcessor.getEffectiveStats(src, state).power || 0) : 0;
                         }
                         
                         const comp = r.comparison || 'Equal';

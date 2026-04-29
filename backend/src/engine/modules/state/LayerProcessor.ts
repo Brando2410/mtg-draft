@@ -9,6 +9,10 @@ import { ConditionProcessor } from "../core/logic/ConditionProcessor";
 import type { EffectProcessor as EffectProcessorType } from "../effects/EffectProcessor";
 import type { SpellProcessor as SpellProcessorType } from "../actions/spells/SpellProcessor";
 
+// Static imports for performance (avoids require in loops)
+let EffectProcessor: typeof EffectProcessorType;
+let SpellProcessor: typeof SpellProcessorType;
+
 /**
  * CR 613: Interaction of Continuous Effects
  * This is the "Pipeline" that calculates effective stats based on the "Whiteboard" (Registry).
@@ -24,7 +28,13 @@ export class LayerProcessor {
     obj: GameObject,
     state: GameState,
     log?: (m: string) => void,
+    providedActiveEffects?: ContinuousEffect[],
   ) {
+    // FAST PATH: Check the state-level stats cache
+    if ((state as any)._statsCache && (state as any)._statsCache.version === state.stateVersion && (state as any)._statsCache.has(obj.id)) {
+        return (state as any)._statsCache.get(obj.id);
+    }
+
     // RECURSION GUARD: Prevent infinite loops where conditions depend on effective stats
     if (this.calculationStack.has(obj.id)) {
       return {
@@ -42,11 +52,15 @@ export class LayerProcessor {
 
     this.calculationStack.add(obj.id);
 
+    if (!EffectProcessor) {
+      EffectProcessor = require("../effects/EffectProcessor").EffectProcessor;
+    }
+
     try {
-      const effects = state.ruleRegistry.continuousEffects || [];
+      const effects = providedActiveEffects || state.ruleRegistry.continuousEffects || [];
 
       // 1. FILTER RELEVANT EFFECTS (Rule 613.1)
-      const activeEffects = effects.filter((e) => {
+      const activeEffects = providedActiveEffects || effects.filter((e) => {
         if (e.id?.startsWith("floating_") || e.sourceId === "global")
           return true;
         const source = state.battlefield.find((o) => o.id === e.sourceId);
@@ -58,8 +72,20 @@ export class LayerProcessor {
       let currentDefinition = { ...obj.definition };
       const supertypes = new Set<string>(currentDefinition.supertypes || []);
 
-      const copyEffects = activeEffects.filter((e) => e.layer === 1);
-      for (const effect of copyEffects) {
+      // Pre-group effects by layer to avoid filtering in every iteration
+      const layerMap: Record<number, ContinuousEffect[]> = {
+        1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: []
+      };
+      activeEffects.forEach(e => {
+        if (e.layer && layerMap[e.layer]) layerMap[e.layer].push(e);
+        // Fallback for effects with implicit layers
+        else if (e.typesToAdd || e.typesSet) layerMap[4].push(e);
+        else if (e.colorsToAdd || e.colorSet) layerMap[5].push(e);
+        else if (e.abilitiesToAdd || e.abilitiesToRemove || e.removeAllAbilities) layerMap[6].push(e);
+        else if (e.powerDynamic || e.toughnessDynamic || e.powerSet !== undefined || e.toughnessSet !== undefined || e.powerModifier !== undefined || e.toughnessModifier !== undefined) layerMap[7].push(e);
+      });
+
+      for (const effect of layerMap[1]) {
         if (this.isTarget(state, effect, obj.id, log) && effect.copyFromId) {
           const sourceObj =
             state.battlefield.find((o) => o.id === effect.copyFromId) ||
@@ -86,67 +112,52 @@ export class LayerProcessor {
       const subtypes = new Set<string>(currentDefinition.subtypes || []);
 
       // 2. LAYER 2: Control-changing effects (Rule 613.1b)
-      // Note: In this engine, Layer 2 is often handled directly in ActionProcessor,
-      // but we maintain the order for future standardization.
-
       // 3. LAYER 3: Text-changing effects (Rule 613.1c)
-      // (Reserved for future implementation)
 
       // 4. LAYER 4: Type-changing effects (Rule 613.1d)
-      activeEffects
-        .filter((e) => e.layer === 4 || e.typesToAdd || e.typesSet)
-        .forEach((e) => {
-          if (!this.isTarget(state, e, obj.id)) return;
-          e.typesToAdd?.forEach((t) => types.add(t));
-          if (e.typesSet) {
-            types.clear();
-            e.typesSet.forEach((t) => types.add(t));
-          }
-          e.subtypesToAdd?.forEach((s) => subtypes.add(s));
-          if (e.subtypesSet) {
-            subtypes.clear();
-            e.subtypesSet.forEach((s) => subtypes.add(s));
-          }
-        });
+      layerMap[4].forEach((e) => {
+        if (!this.isTarget(state, e, obj.id)) return;
+        e.typesToAdd?.forEach((t) => types.add(t));
+        if (e.typesSet) {
+          types.clear();
+          e.typesSet.forEach((t) => types.add(t));
+        }
+        e.subtypesToAdd?.forEach((s) => subtypes.add(s));
+        if (e.subtypesSet) {
+          subtypes.clear();
+          e.subtypesSet.forEach((s) => subtypes.add(s));
+        }
+      });
 
       // 5. LAYER 5: Color-changing effects (Rule 613.1e)
-      activeEffects
-        .filter((e) => e.layer === 5 || e.colorsToAdd || e.colorSet)
-        .forEach((e) => {
-          if (!this.isTarget(state, e, obj.id)) return;
-          e.colorsToAdd?.forEach((c) => colors.add(c));
-          if (e.colorSet) {
-            colors.clear();
-            e.colorSet.forEach((c) => colors.add(c));
-          }
-        });
+      layerMap[5].forEach((e) => {
+        if (!this.isTarget(state, e, obj.id)) return;
+        e.colorsToAdd?.forEach((c) => colors.add(c));
+        if (e.colorSet) {
+          colors.clear();
+          e.colorSet.forEach((c) => colors.add(c));
+        }
+      });
 
       // 6. LAYER 6: Ability Adding/Removing (Rule 613.1f)
-      activeEffects
-        .filter(
-          (e) =>
-            e.layer === 6 ||
-            e.abilitiesToAdd ||
-            e.abilitiesToRemove ||
-            e.removeAllAbilities,
-        )
-        .forEach((e) => {
-          if (!this.isTarget(state, e, obj.id)) return;
-          if (e.removeAllAbilities) {
-            keywords.clear();
-          }
-          e.abilitiesToAdd?.forEach((k: any) => {
-            const keyword =
-              typeof k === "string" ? k : k.name || "Unknown";
-            keywords.add(keyword);
-          });
-          e.abilitiesToRemove?.forEach((k) => keywords.delete(k));
+      layerMap[6].forEach((e) => {
+        if (!this.isTarget(state, e, obj.id)) return;
+        if (e.removeAllAbilities) {
+          keywords.clear();
+        }
+        e.abilitiesToAdd?.forEach((k: any) => {
+          const keyword =
+            typeof k === "string" ? k : k.name || "Unknown";
+          keywords.add(keyword);
         });
+        e.abilitiesToRemove?.forEach((k) => keywords.delete(k));
+      });
 
       // 7. LAYER 7: Power and/or toughness-changing effects (Rule 613.1g)
+      const layer7Effects = layerMap[7];
 
       // 7a: Characteristic-defining abilities (Rule 613.4a)
-      activeEffects
+      layer7Effects
         .filter((e) => e.powerDynamic || e.toughnessDynamic)
         .forEach((e) => {
           if (!this.isTarget(state, e, obj.id)) return;
@@ -157,7 +168,7 @@ export class LayerProcessor {
         });
 
       // 7b: Effects that set P/T (Rule 613.4b)
-      activeEffects
+      layer7Effects
         .filter((e) => e.powerSet !== undefined || e.toughnessSet !== undefined)
         .forEach((e) => {
           if (!this.isTarget(state, e, obj.id)) return;
@@ -168,14 +179,13 @@ export class LayerProcessor {
         });
 
       // 7c: Modifiers and Counters (Rule 613.4c)
-      activeEffects
+      layer7Effects
         .filter(
           (e) =>
             e.powerModifier !== undefined || e.toughnessModifier !== undefined,
         )
         .forEach((e) => {
           if (!this.isTarget(state, e, obj.id)) return;
-          const EffectProcessor = require("../effects/EffectProcessor").EffectProcessor as typeof EffectProcessorType;
           let pMod = 0;
           let tMod = 0;
 
@@ -232,7 +242,7 @@ export class LayerProcessor {
           return r;
         });
 
-      return {
+      const stats = {
         power,
         toughness,
         keywords: Array.from(keywords),
@@ -247,6 +257,15 @@ export class LayerProcessor {
         isPlayable: false,
         supertypes: Array.from(supertypes),
       };
+
+      // CACHE RESULT
+      if (!(state as any)._statsCache || (state as any)._statsCache.version !== state.stateVersion) {
+        (state as any)._statsCache = new Map();
+        (state as any)._statsCache.version = state.stateVersion;
+      }
+      (state as any)._statsCache.set(obj.id, stats);
+
+      return stats;
     } finally {
       this.calculationStack.delete(obj.id);
     }
@@ -465,11 +484,65 @@ export class LayerProcessor {
   ): boolean {
     return this.getEffectiveKeywords(obj, state).some(k => k.toLowerCase() === keyword.toLowerCase());
   }
+
+  /**
+   * Rebuilds a Map of all objects in all zones for O(1) lookup during processing.
+   */
+  public static rebuildObjectCache(state: GameState) {
+    const cache = new Map<string, GameObject>();
+    
+    // Add Battlefield
+    state.battlefield.forEach(o => cache.set(o.id, o));
+    
+    // Add Stack
+    state.stack.forEach(s => {
+      if (s.card) cache.set(s.card.id, s.card);
+      cache.set(s.id, s as any); // Also index by stack ID
+    });
+    
+    // Add Exile
+    state.exile.forEach(o => cache.set(o.id, o));
+    
+    // Add Players' zones
+    Object.values(state.players).forEach(p => {
+      p.hand.forEach(o => cache.set(o.id, o));
+      p.graveyard.forEach(o => cache.set(o.id, o));
+      p.library.forEach(o => cache.set(o.id, o));
+      p.virtualHand?.forEach(o => cache.set(o.id, o));
+    });
+    
+    // Add Limbo
+    state.limbo?.forEach(o => cache.set(o.id, o));
+
+    (cache as any).version = state.stateVersion;
+    (state as any)._objectCache = cache;
+    return cache;
+  }
+
   /**
    * Batch updates all derived fields (P/T, Keywords, isPlayable) for all relevant objects.
    * This should be called after any rule-changing event or zone transition.
    */
   public static updateDerivedStats(state: GameState, PriorityProcessor: any) {
+    // 0. Initial Cache Setup
+    this.rebuildObjectCache(state);
+    
+    // Clear the stats cache for the new version
+    (state as any)._statsCache = new Map();
+    (state as any)._statsCache.version = state.stateVersion;
+
+    const effects = state.ruleRegistry.continuousEffects || [];
+    const activeEffects = effects.filter((e) => {
+        if (e.id?.startsWith("floating_") || e.sourceId === "global")
+          return true;
+        const cache = (state as any)._objectCache;
+        const source = (cache && cache.version === state.stateVersion) 
+            ? cache.get(e.sourceId) 
+            : state.battlefield.find((o) => o.id === e.sourceId);
+        if (!source || !e.activeZones.includes(source.zone)) return false;
+        return true;
+    });
+
     // 1. Update Player stats (maxHandSize, etc)
     Object.values(state.players).forEach((player) => {
       // Reset to base
@@ -499,7 +572,7 @@ export class LayerProcessor {
 
     // 2. Update Battlefield objects
     state.battlefield.forEach((obj) => {
-      const stats = this.getEffectiveStats(obj, state);
+      const stats = this.getEffectiveStats(obj, state, undefined, activeEffects);
 
       // --- SUMMONING SICKNESS & HASTE FIX ---
       // CR 302.6: Haste allows creatures to bypass summoning sickness.
@@ -529,7 +602,7 @@ export class LayerProcessor {
     Object.values(state.players).forEach((player) => {
       player.virtualHand = [];
       player.graveyard.forEach((card: GameObject) => {
-        const stats = this.getEffectiveStats(card, state);
+        const stats = this.getEffectiveStats(card, state, undefined, activeEffects);
         const hasPermission = PriorityProcessor.findPermissionEffect(
           state,
           player.id,
@@ -614,28 +687,26 @@ export class LayerProcessor {
       });
     });
 
-    // 3. Update effective stats for all objects in all zones (to set isPlayable correctly)
-    const SpellProcessor = require("../actions/spells/SpellProcessor").SpellProcessor as typeof SpellProcessorType;
+    // 3. Evaluate playability ONLY for objects the player can interact with (Hand, Virtual Hand)
+    if (!SpellProcessor) {
+      SpellProcessor = require("../actions/spells/SpellProcessor").SpellProcessor;
+    }
+
     [
-      ...state.stack.map((s) => s.card).filter((c): c is GameObject => !!c),
-      ...state.battlefield,
       ...Object.values(state.players).flatMap((p) => [
         ...p.hand,
-        ...p.graveyard,
-        ...p.library,
         ...p.virtualHand,
+        ...p.graveyard,
       ]),
-      ...state.exile,
+      ...state.exile
     ].forEach((obj) => {
-      const stats = this.getEffectiveStats(obj, state);
-      const isPlayable =
-        state.priorityPlayerId === obj.controllerId &&
-        PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id);
+      // NOTE: We pass activeEffects to avoid O(N^2) continuous effect scanning
+      const stats = this.getEffectiveStats(obj, state, undefined, activeEffects);
 
-      // Determine if this object is currently a Flashback candidate for cost display
       const isVirtual = Object.values(state.players).some((p) =>
         p.virtualHand.some((v) => v.id === obj.id),
       );
+      
       const inGraveyard =
         obj.zone === Zone.Graveyard ||
         Object.values(state.players).some((p) =>
@@ -652,9 +723,9 @@ export class LayerProcessor {
         obj.definition.oracleText?.toLowerCase().includes("flashback");
 
       const graveyardAbility = (obj.definition.abilities || []).find(
-        (a): a is AbilityDefinition => {
+        (a): a is any => {
           if (typeof a === 'string') return false;
-          return (a.type === AbilityType.Activated) &&
+          return (a.type === "ActivatedAbility") &&
             a.activeZone === Zone.Graveyard;
         }
       );
@@ -662,34 +733,41 @@ export class LayerProcessor {
       const isFlashback = !!hasFlashbackKeyword && (inGraveyard || isVirtual);
       const isActivation = !!graveyardAbility && (inGraveyard || isVirtual);
 
-      // Calculate effective mana cost for display
+      let isPlayable = false;
       let displayCost = obj.definition.manaCost;
-      if (isFlashback) {
-        displayCost =
-          obj.definition.flashbackCost ||
-          (obj.definition as any).flashback_cost ||
-          obj.definition.manaCost;
-      } else if (isActivation && graveyardAbility) {
-        displayCost =
-          graveyardAbility.manaCost ||
-          graveyardAbility.costs?.find((c) => c.type === "Mana")
-            ?.value ||
-          obj.definition.manaCost;
-      }
 
-      // Try to get more accurate cost from SpellProcessor if available
-      try {
-        const { totalMana } = SpellProcessor.getEffectiveCosts(
-          state,
-          obj,
-          [],
-          undefined,
-          isFlashback,
-          stats,
-        );
-        displayCost = totalMana;
-      } catch (e) {
-        // fallback to base displayCost calculated above
+      // FAST PATH: isPlayable requires expensive restriction matching, only do it if the object is owned by the active player
+      if (state.priorityPlayerId === obj.controllerId) {
+          let currentDisplayCost = obj.definition.manaCost;
+          if (isFlashback) {
+            currentDisplayCost =
+              obj.definition.flashbackCost ||
+              (obj.definition as any).flashback_cost ||
+              obj.definition.manaCost;
+          } else if (isActivation && graveyardAbility) {
+            currentDisplayCost =
+              graveyardAbility.manaCost ||
+              graveyardAbility.costs?.find((c: any) => c.type === "Mana")?.value ||
+              obj.definition.manaCost;
+          }
+
+          try {
+            if (SpellProcessor) {
+              const { totalMana } = SpellProcessor.getEffectiveCosts(
+                state,
+                obj,
+                [],
+                undefined,
+                isFlashback,
+                stats,
+              );
+              currentDisplayCost = totalMana;
+            }
+          } catch (e) {
+          }
+
+          displayCost = currentDisplayCost;
+          isPlayable = PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id, true, stats, displayCost);
       }
 
       obj.effectiveStats = {
@@ -700,7 +778,6 @@ export class LayerProcessor {
         isActivation,
         isVirtual,
       };
-      obj.isVirtual = isVirtual;
     });
   }
 }

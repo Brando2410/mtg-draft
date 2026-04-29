@@ -2,6 +2,7 @@ import { EffectType, GameState, Phase, PlayerId, Step } from '@shared/engine_typ
 import { Card } from '@shared/types';
 import { ActivateAbilityOptions, EngineContext, PlayCardOptions } from './interfaces/EngineContext';
 import { ChoiceProcessor, CombatProcessor, GameSetupProcessor, LayerProcessor, PlayerActionProcessor, PriorityProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor } from './modules';
+import { Profiler } from './utils/Profiler';
 
 import type { MoveEffectHandler as MoveEffectHandlerType } from './modules/effects/handlers/zone/MoveEffectHandler';
 import type { LifeDamageHandler as LifeDamageHandlerType } from './modules/effects/handlers/life/LifeDamageHandler';
@@ -82,7 +83,8 @@ export class GameEngine implements EngineContext {
       executionTrace: [],
       mutationStack: [],
       choiceQueue: [],
-      interaction: {}
+      interaction: {},
+      stateVersion: 1
     };
 
     GameSetupProcessor.initializePlayers(this.state, players, names, decks, avatars);
@@ -105,6 +107,10 @@ export class GameEngine implements EngineContext {
     const newLogs = [...(this.state.logs || []), formattedMessage];
     this.state.logs = newLogs.slice(-40);
     console.log(`[GameEngine] ${message}`);
+  }
+
+  public incrementVersion() {
+    this.state.stateVersion++;
   }
 
   /**
@@ -249,21 +255,25 @@ export class GameEngine implements EngineContext {
    * @param declaredTargets Array of GameObject IDs for targeted spells
    */
   public playCard(options: PlayCardOptions): boolean {
-    return SpellProcessor.playCard(
+    const res = SpellProcessor.playCard(
       this.state,
       (m) => this.log(m),
       this,
       options
     );
+    if (res) this.incrementVersion();
+    return res;
   }
 
   public activateAbility(options: ActivateAbilityOptions): boolean {
-    return SpellProcessor.activateAbility(
+    const res = SpellProcessor.activateAbility(
       this.state,
       (m) => this.log(m),
       this,
       options
     );
+    if (res) this.incrementVersion();
+    return res;
   }
 
   // --- Core Mechanics (Rule 117.4) ---
@@ -273,11 +283,14 @@ export class GameEngine implements EngineContext {
    * Handles the passing of priority and automatic resolution of the stack.
    */
   public passPriority(playerId: PlayerId, isAuto = false) {
-    PriorityProcessor.passPriority(this.state, playerId, this, isAuto);
+    Profiler.wrap('PriorityProcessor.passPriority', () => {
+      PriorityProcessor.passPriority(this.state, playerId, this, isAuto);
+    });
   }
 
   public resolveTopOrAdvanceStep() {
     StackProcessor.resolveTopOrAdvanceStep(this.state, this, this.resolver, (m) => this.log(m));
+    this.incrementVersion();
   }
 
   public advanceStep() {
@@ -313,18 +326,28 @@ export class GameEngine implements EngineContext {
    * and no new abilities trigger."
    */
   public checkStateBasedActions() {
-    let sbaPerformed = false;
-    let anyTriggersStacked = false;
+    Profiler.wrap('checkStateBasedActions.total', () => {
+      let sbaPerformed = false;
+      let anyTriggersStacked = false;
 
-    do {
-      // 1. Resolve SBAs until stable (Rule 704.3)
-      sbaPerformed = StateBasedActionsProcessor.resolveSBAs(this.state, (m: string) => this.log(m));
+      do {
+        // 1. Resolve SBAs until stable (Rule 704.3)
+        sbaPerformed = Profiler.wrap('StateBasedActionsProcessor.resolveSBAs', () => 
+          StateBasedActionsProcessor.resolveSBAs(this.state, (m: string) => this.log(m))
+        );
 
-      // 2. Resolve Triggers (Rule 603.3)
-      anyTriggersStacked = TriggerProcessor.processPendingTriggers(this.state, (m: string) => this.log(m));
+        // 2. Resolve Triggers (Rule 603.3)
+        anyTriggersStacked = Profiler.wrap('TriggerProcessor.processPendingTriggers', () =>
+          TriggerProcessor.processPendingTriggers(this.state, (m: string) => this.log(m))
+        );
 
-      // 3. Repeat if either step did work (Rule 117.5)
-    } while (sbaPerformed || anyTriggersStacked);
+        // 3. Repeat if either step did work (Rule 117.5)
+      } while (sbaPerformed || anyTriggersStacked);
+
+      // CR 613: Refresh playability for the player who is about to receive priority
+      // This ensures that auto-pass logic uses the most recent information.
+      LayerProcessor.updateDerivedStats(this.state, PriorityProcessor);
+    });
   }
 
   /**
@@ -342,9 +365,11 @@ export class GameEngine implements EngineContext {
 
   public getState(): GameState {
     // CR 613: Re-evaluate the "Derived State" (P/T, Keywords, isPlayable) before returning to the UI.
-    LayerProcessor.updateDerivedStats(this.state, PriorityProcessor);
+    Profiler.wrap('LayerProcessor.updateDerivedStats', () => {
+      LayerProcessor.updateDerivedStats(this.state, PriorityProcessor);
+    });
     return this.state;
-}
+  }
 
   public resolveChoice(playerId: PlayerId, choiceIndex: string | number | string[]): boolean {
     const success = ChoiceProcessor.resolveChoice(

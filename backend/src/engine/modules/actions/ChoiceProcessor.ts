@@ -461,6 +461,7 @@ export class ChoiceProcessor {
             lastChosenCostChoiceIndex: undefined,
             lastChosenSacrificeId: undefined,
             lastChosenDiscardId: undefined,
+            lastChosenTapSelectionIds: undefined,
             lastChosenExileIds: undefined,
             lastChosenModeIndex: undefined,
             lastChoiceIndex: undefined
@@ -617,10 +618,12 @@ export class ChoiceProcessor {
                 const batchIds = typeof choiceIndex === 'string' && choiceIndex.includes('|')
                     ? choiceIndex.split('|').map(s => {
                         const i = parseInt(s.startsWith('CHOICE_') ? s.substring(7) : s);
-                        return action.data?.choices?.[i]?.value as string;
+                        const val = action.data?.choices?.[i]?.value as string;
+                        return val;
                     }).filter(v => v)
                     : [choice?.value as string].filter(v => v);
 
+                if (log) log(`[CHOICE-DEBUG] Modal selection IDs for ${costType}: ${batchIds.join(', ')} (Max: ${action.data.maxChoices})`);
                 if (costType === 'TapSelection') state.interaction.lastChosenTapSelectionIds = batchIds;
                 else state.interaction.lastChosenExileIds = batchIds;
             } else {
@@ -807,6 +810,12 @@ export class ChoiceProcessor {
             );
 
             if (interactiveCost) {
+                // Clear any stale interaction data for this cost type before prompting
+                if (interactiveCost.type === 'TapSelection') delete state.interaction.lastChosenTapSelectionIds;
+                if (interactiveCost.type === 'Discard') delete state.interaction.lastChosenDiscardId;
+                if (interactiveCost.type === 'Sacrifice') delete state.interaction.lastChosenSacrificeId;
+                if (interactiveCost.type === 'Exile') delete state.interaction.lastChosenExileIds;
+
                 state.pendingAction = ChoiceGenerator.createCostInteractionChoice(state, interactiveCost, sourceId, action.playerId, choice, action.data);
                 return true;
             }
@@ -833,6 +842,7 @@ export class ChoiceProcessor {
                 lastChosenCostChoiceIndex: undefined,
                 lastChosenSacrificeId: undefined,
                 lastChosenDiscardId: undefined,
+                lastChosenTapSelectionIds: undefined,
                 lastChosenExileIds: undefined,
                 lastChosenModeIndex: undefined,
                 lastChoiceIndex: undefined

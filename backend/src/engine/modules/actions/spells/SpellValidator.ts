@@ -82,7 +82,7 @@ export class SpellValidator {
                     ...preparedObj,
                     id: copyId,
                     definition: face,
-                    zone: Zone.Battlefield,
+                    zone: Zone.Exile,
                     isPreparedCopy: true,
                     sourceCreatureId: preparedObj.id
                 } as any;

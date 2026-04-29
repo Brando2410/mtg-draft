@@ -8,6 +8,10 @@ import { LayerProcessor } from '../../state/LayerProcessor';
 import { RestrictionValidator } from '../../core/RestrictionValidator';
 import { TurnProcessor } from './TurnProcessor';
 
+// Static imports for performance
+let EngineValidator: any;
+let TargetingProcessor: any;
+
 
 /**
  * Priority Handling (Rule 117)
@@ -44,7 +48,9 @@ export class PriorityProcessor {
     }
 
     // CR 117.1: A player must resolve pending mandatory actions before passing
-    const { EngineValidator } = require('../logic/EngineValidator');
+    if (!EngineValidator) {
+      EngineValidator = require('../logic/EngineValidator').EngineValidator;
+    }
     if (EngineValidator.isSuspended(state) && EngineValidator.isPlayerRequiredToAct(state, playerId)) {
       console.log(`[PRIORITY-PROC] passPriority BLOCKED: ${playerId} has pending ${state.pendingAction?.type}.`);
       engine.log(`Invalid Action: Player must resolve pending ${state.pendingAction?.type} first.`);
@@ -97,7 +103,10 @@ export class PriorityProcessor {
     engine.checkStateBasedActions();
 
     state.priorityPlayerId = state.playerOrder[nextIndex];
-    // engine.log(`[PRIORITY] Shifted to ${engine.getPlayerName(state.priorityPlayerId)}.`);
+    
+    // CR 613: Refresh playability NOW that priority is shifted.
+    const { LayerProcessor } = require('../../state/LayerProcessor');
+    LayerProcessor.updateDerivedStats(state, PriorityProcessor);
 
     this.checkAutoPass(state, state.priorityPlayerId, engine);
   }
@@ -113,6 +122,11 @@ export class PriorityProcessor {
     if (!state.pendingAction) {
       state.priorityPlayerId = state.activePlayerId;
     }
+
+    // CR 613: Refresh playability NOW that priority is assigned.
+    // This ensures auto-pass and UI highlighting are based on the new priority state.
+    const { LayerProcessor } = require('../../state/LayerProcessor');
+    LayerProcessor.updateDerivedStats(state, PriorityProcessor);
 
     if (state.priorityPlayerId) {
       this.checkAutoPass(state, state.priorityPlayerId, engine);
@@ -195,7 +209,9 @@ export class PriorityProcessor {
     if (!player) return false;
 
     // Rule 117.1: If player has a pending mandatory action, they MUST act.
-    const { EngineValidator } = require('../logic/EngineValidator');
+    if (!EngineValidator) {
+      EngineValidator = require('../logic/EngineValidator').EngineValidator;
+    }
     if (EngineValidator.isPlayerRequiredToAct(state, playerId)) {
       return true;
     }
@@ -220,35 +236,14 @@ export class PriorityProcessor {
       return false;
     }
 
-    // 1. Check hand for castable spells
-    const hasCastableHand = player.hand.some(card => {
-      const playable = this.canObjectBePlayed(state, playerId, card.id, false);
-      return playable;
+    // 1. Check hand and virtual hand (Graveyard/Exile permissions) for castable spells
+    // We leverage the pre-computed isPlayable flag from LayerProcessor to make this O(N)
+    const hasCastableSpell = [...player.hand, ...player.virtualHand].some(card => {
+      return card.effectiveStats?.isPlayable;
     });
-    if (hasCastableHand) return true;
+    if (hasCastableSpell) return true;
 
-    // 2. Check Graveyard for castable spells (Flashback) or activated abilities
-    const hasGraveAction = player.graveyard.some(card => {
-      const playable = this.canObjectBePlayed(state, playerId, card.id, false);
-      return playable;
-    });
-    if (hasGraveAction) return true;
-
-    // 3. Check Exile for castable spells
-    const hasExileAction = state.exile.some(card => {
-      if (card.controllerId !== playerId) return false;
-      const playable = this.canObjectBePlayed(state, playerId, card.id, false);
-      return playable;
-    });
-    if (hasExileAction) return true;
-
-    // 4. Check Top of Library (permission)
-    if (player.library.length > 0) {
-      const topCard = player.library[player.library.length - 1];
-      if (this.canObjectBePlayed(state, playerId, topCard.id, false)) {
-        return true;
-      }
-    }
+    
 
     // 5. Chapter 3 Check: Battlefield Activated Abilities
     const hasBattlefieldAction = state.battlefield.some(obj => {
@@ -293,11 +288,13 @@ export class PriorityProcessor {
    * Used for highlighting in the UI.
    * @param checkPriority If true, returns false if player doesn't have priority. Use false for engine availability checks.
    */
-  public static canObjectBePlayed(state: GameState, playerId: string, objId: string, checkPriority = true): boolean {
+  public static canObjectBePlayed(state: GameState, playerId: string, objId: string, checkPriority = true, preComputedStats?: any, preComputedCost?: string): boolean {
     const player = state.players[playerId];
     if (!player) return false;
 
-    const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
+    if (!TargetingProcessor) {
+      TargetingProcessor = require('../../actions/targeting/TargetingProcessor').TargetingProcessor;
+    }
 
     // Check hand
     let cardToPlay = player.hand.find(o => o.id === objId);
@@ -341,7 +338,10 @@ export class PriorityProcessor {
         return false;
       }
 
-      const { totalMana: effectiveCost, additionalCosts } = SpellProcessor.getEffectiveCosts(state, cardToPlay);
+      // Optimization: Use cached stats if available
+      const stats = preComputedStats || cardToPlay.effectiveStats || LayerProcessor.getEffectiveStats(cardToPlay, state);
+      const effectiveCost = preComputedCost || stats.manaCost || SpellProcessor.getEffectiveCosts(state, cardToPlay).totalMana;
+      const additionalCosts = (cardToPlay.definition as any).additionalCosts || [];
 
       // Modular Timing Check
       const timingOk = this.validateTiming(state, playerId, cardToPlay);
@@ -359,9 +359,8 @@ export class PriorityProcessor {
       }
 
       // --- CHECK ADDITIONAL COSTS ---
-      if (canPlay && additionalCosts.length > 0) {
-        const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
-        const canPayAllExtras = additionalCosts.every(cost => {
+      if (canPlay && additionalCosts && additionalCosts.length > 0) {
+        const canPayAllExtras = (additionalCosts as any[]).every(cost => {
           if (cost.type === 'Sacrifice') {
             const candidates = state.battlefield.filter(o =>
               o.controllerId === playerId &&
@@ -385,7 +384,6 @@ export class PriorityProcessor {
         if (spellAbility?.modes) {
           const hasValidMode = spellAbility.modes.some((mode: any) => {
             if (!mode.targetDefinition || mode.targetDefinition.optional) return true;
-            const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
             return TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, mode.targetDefinition, playerId);
           });
           if (!hasValidMode) canPlay = false;
@@ -393,7 +391,6 @@ export class PriorityProcessor {
           const targetDefinition = (logic as any)?.targetDefinition || spellAbility?.targetDefinition;
 
           if (targetDefinition && !targetDefinition.optional) {
-            const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
             if (!TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, targetDefinition, playerId)) {
               canPlay = false;
             }
@@ -443,7 +440,9 @@ export class PriorityProcessor {
    */
   public static canAbilityBeActivated(state: GameState, playerId: string, objId: string, abilityIndex: number, checkPriority = true): boolean {
     const player = state.players[playerId];
-    const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
+    if (!TargetingProcessor) {
+      TargetingProcessor = require('../../actions/targeting/TargetingProcessor').TargetingProcessor;
+    }
     const obj = TargetingProcessor.findObjectInAnyZone(state, objId);
     if (!player || !obj) return false;
 
@@ -515,7 +514,6 @@ export class PriorityProcessor {
 
     // Explicit Condition check
     if (ability.condition) {
-      const { ConditionProcessor } = require('../logic/ConditionProcessor');
       if (!ConditionProcessor.matchesCondition(state, ability.condition, { sourceId: obj.id, controllerId: playerId })) {
         return false;
       }
@@ -620,7 +618,6 @@ export class PriorityProcessor {
    * Helper to find an active permission effect in the registry.
    */
   public static findPermissionEffect(state: GameState, playerId: string, effectType: string, targetId: string): any {
-    const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
 
     const found = state.ruleRegistry.continuousEffects.find(e => {
       // 1. Basic Type/Owner check
@@ -635,7 +632,6 @@ export class PriorityProcessor {
       // 2. Active Zone check (Static abilities only)
       const isStatic = (e.duration?.type || "").toString().toUpperCase() === 'STATIC';
       if (isStatic) {
-        const { TargetingProcessor } = require('../../actions/targeting/TargetingProcessor');
         const source = TargetingProcessor.findObjectInAnyZone(state, e.sourceId);
         if (!source || (e.activeZones && !e.activeZones.includes(source.zone))) return false;
       }
@@ -674,6 +670,3 @@ export class PriorityProcessor {
     }
   }
 }
-
-
-
