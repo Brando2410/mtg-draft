@@ -576,7 +576,8 @@ export class EffectProcessor {
       case "TARGET_1_POWER":
       case "TARGET_1_TOUGHNESS": {
         const tid = stackObject?.targets?.[0] || targetIds[0];
-        const tObj = state.battlefield.find((o) => o.id === tid) || state.turnState.creaturesDiedThisTurn.find((o) => o.id === tid) || Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === tid);
+        const { TargetingProcessor: TP } = require("../actions/targeting/TargetingProcessor");
+        const tObj = TP.findObjectInAnyZone(state, tid) || state.turnState.creaturesDiedThisTurn.find((o: any) => o.id === tid);
         if (tObj) {
           if (!LayerProcessor) LayerProcessor = require("./../state/LayerProcessor").LayerProcessor;
           const stats = LayerProcessor.getEffectiveStats(tObj, state);
@@ -735,15 +736,9 @@ export class EffectProcessor {
     const snapshot = stackObject?.data?.eventData?.payload?.object as GameObject | undefined;
     if (snapshot && snapshot.id === id) return snapshot;
 
+    const { TargetingProcessor: TP } = require("../actions/targeting/TargetingProcessor");
     return (
-      state.battlefield.find((o) => o.id === id) ||
-      state.stack.find((s) => s.id === id || s.sourceId === id)?.card ||
-      Object.values(state.players)
-        .flatMap((p) => [...p.graveyard, ...p.hand, ...p.library])
-        .find((o) => o.id === id) ||
-      state.exile.find((o) => o.id === id) ||
-      state.limbo?.find((o) => o.id === id) ||
-      (stackObject?.card?.id === id ? stackObject?.card : undefined) ||
+      TP.findObjectInAnyZone(state, id) ||
       ((state.pendingAction?.data as any)?.lookingCards as GameObject[])?.find(
         (o) => o.id === id,
       ) ||

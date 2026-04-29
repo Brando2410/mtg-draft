@@ -139,7 +139,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const targetId = event?.payload?.targetIds?.[targetIdx] || event?.payload?.targetId || (event as any)?.targetIds?.[targetIdx] || (event as any)?.targets?.[targetIdx] || (event as any)?.targetId;
             if (!targetId) return false;
 
-            const targetObj = state.battlefield.find((o) => o.id === targetId) || state.exile.find((o) => o.id === targetId) || Object.values(state.players).flatMap((p) => [...p.hand, ...p.graveyard, ...p.library]).find((o) => o.id === targetId);
+            const targetObj = TargetingProcessor.findObjectInAnyZone(state, targetId);
             if (!targetObj) return false;
 
             return TargetingProcessor.matchesRestrictions(state, targetObj, restrictions, { sourceId, controllerId, stackObject });

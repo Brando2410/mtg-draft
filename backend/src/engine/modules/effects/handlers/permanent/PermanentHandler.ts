@@ -200,7 +200,8 @@ export class PermanentHandler {
     public static handleMoveCounters(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
         const { targets, sourceId, stackObject } = context;
         const counterEff = effect as CounterEffect;
-        let sourceObj = state.battlefield.find((o: GameObject) => o.id === sourceId) || state.exile.find((o: GameObject) => o.id === sourceId) || Object.values(state.players).flatMap((p: PlayerState) => p.graveyard).find((o: GameObject) => o.id === sourceId);
+        const { TargetingProcessor } = require("../../../actions/targeting/TargetingProcessor");
+        let sourceObj = TargetingProcessor.findObjectInAnyZone(state, sourceId);
         
         // CR 603.10: If the source is not in a public zone or has no counters (because it died), check the stack object's event snapshot (LKI)
         if (!sourceObj || !sourceObj.counters || Object.keys(sourceObj.counters).length === 0) {
@@ -286,10 +287,8 @@ export class PermanentHandler {
                              (tokenEff as any).originalCardId || 
                              ((tokenEff as any).sourceMapping ? TargetingProcessor.resolveTargetMapping(state, (tokenEff as any).sourceMapping, context, effect)[0] : undefined);
 
-        const sourceObj = state.battlefield.find((o: GameObject) => o.id === sourceCardId) || 
-                         state.exile.find((o: GameObject) => o.id === sourceCardId) || 
-                         Object.values(state.players).flatMap((p: PlayerState) => p.graveyard).find((o: GameObject) => o.id === sourceCardId) ||
-                         state.stack.find((s: any) => s.id === sourceCardId || s.card?.id === sourceCardId)?.card ||
+        const { TargetingProcessor: TP } = require("../../../actions/targeting/TargetingProcessor");
+        const sourceObj = TP.findObjectInAnyZone(state, sourceCardId) ||
                          (state.stack.find((s: any) => s.id === sourceCardId || s.card?.id === sourceCardId) as any);
 
         console.log(`[DEBUG-TOKEN] sourceCardId: ${sourceCardId}`);

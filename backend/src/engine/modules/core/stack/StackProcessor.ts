@@ -22,8 +22,8 @@ export class StackProcessor {
         effects = logic?.effects || (spellAbility as any)?.effects || [];
       }
       else if (objectToResolve.type === AbilityType.Activated) {
-        const sourceObj = state.battlefield.find(o => o.id === objectToResolve.sourceId) ||
-          (Object.values(state.players)).flatMap(p => p.graveyard).find(o => o.id === objectToResolve.sourceId);
+        const { TargetingProcessor: TP } = require("../../actions/targeting/TargetingProcessor");
+        const sourceObj = TP.findObjectInAnyZone(state, objectToResolve.sourceId);
 
         if (sourceObj) {
           const cardLogic = oracle.getCard(sourceObj.definition.name);

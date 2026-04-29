@@ -69,8 +69,8 @@ export class TriggerProcessor {
 
     for (const trigger of uniqueTriggers) {
       let triggerCount = 1;
-      const sourceObj = state.battlefield.find(o => o.id === trigger.sourceId) ||
-        Object.values(state.players).flatMap(p => p.graveyard).find((o: any) => o.id === trigger.sourceId);
+      const { TargetingProcessor } = require("../../actions/targeting/TargetingProcessor");
+      const sourceObj = TargetingProcessor.findObjectInAnyZone(state, trigger.sourceId);
 
       // --- TRIGGER DOUBLING (CR 603.2c / 614.16) ---
       // 1. Check Replacement Effects (Standardized for specific event buckets)
@@ -256,6 +256,10 @@ export class TriggerProcessor {
     if (!state.ruleRegistry.triggeredAbilities)
       state.ruleRegistry.triggeredAbilities = [];
     state.ruleRegistry.triggeredAbilities.push(delayedTrigger);
+    
+    // Invalidate trigger cache
+    if ((state as any)._triggerCache) (state as any)._triggerCache.version = -1;
+
     log(`[DELAYED TRIGGER] Registered: triggered on ${effect.eventMatch}.`);
   }
 
@@ -272,8 +276,11 @@ export class TriggerProcessor {
       );
     const removedCount =
       initialCount - state.ruleRegistry.triggeredAbilities.length;
-    if (removedCount > 0)
+    if (removedCount > 0) {
       log(`[CLEANUP] Removed ${removedCount} expired delayed triggers.`);
+      // Invalidate trigger cache
+      if ((state as any)._triggerCache) (state as any)._triggerCache.version = -1;
+    }
   }
 
   private static createStackObject(
@@ -283,17 +290,11 @@ export class TriggerProcessor {
     log: (msg: string) => void,
   ): any {
     const eventObj = event.payload?.object || event.data?.object;
+    const { TargetingProcessor } = require("../../actions/targeting/TargetingProcessor");
     const sourceObj =
       eventObj && eventObj.id === trigger.sourceId
         ? eventObj
-        : state.battlefield.find((o) => o.id === trigger.sourceId) ||
-        state.exile.find((o) => o.id === trigger.sourceId) ||
-        state.stack.find(
-          (s) => s.id === trigger.sourceId || s.sourceId === trigger.sourceId,
-        )?.card ||
-        Object.values(state.players)
-          .flatMap((p) => p.graveyard)
-          .find((o) => o.id === trigger.sourceId);
+        : TargetingProcessor.findObjectInAnyZone(state, trigger.sourceId);
 
     const emblemSource = !sourceObj
       ? state.emblems?.find((e) => e.id === trigger.sourceId)
@@ -471,95 +472,125 @@ export class TriggerProcessor {
   ): TriggeredAbility[] {
     const triggers: any[] = [];
 
-    // 1. Emblems (Rule 114)
-    if (state.emblems) {
-      state.emblems.forEach((emblem) => {
-        if (emblem.abilities) {
-          emblem.abilities.forEach((ability: any, index: number) => {
-            if (ability.type === AbilityType.Triggered) {
-              triggers.push({
-                ...ability,
-                id: `emblem_trigger_${emblem.id}_${index}`,
-                sourceId: emblem.id,
-                controllerId: emblem.controllerId,
-                activeZone: Zone.Command,
-                abilityIndex: index,
+  private static getEventBuckets(eventMatch: string | string[]): string[] {
+    const matches = Array.isArray(eventMatch) ? eventMatch : [eventMatch];
+    const buckets = new Set<string>();
+    
+    matches.forEach(m => {
+      buckets.add(m);
+      // Add aliases: These ensure that a trigger caring about 'X_Other' is placed in the 'X' bucket.
+      if (m === TriggerEvent.EnterBattlefieldOther) buckets.add(TriggerEvent.EnterBattlefield);
+      if (m === TriggerEvent.AttackOrBlock) {
+        buckets.add(TriggerEvent.Attack);
+        buckets.add(TriggerEvent.Block);
+      }
+      if (m === TriggerEvent.DamageDealtToCreature) buckets.add(TriggerEvent.DamageTaken);
+      if (m === TriggerEvent.DeathOther) buckets.add(TriggerEvent.Death);
+      if (m === TriggerEvent.CountersAddedOther) buckets.add(TriggerEvent.CountersAdded);
+      if (m === TriggerEvent.Magecraft || m === TriggerEvent.MagecraftOpponent) {
+        buckets.add(TriggerEvent.CastInstantOrSorcery);
+        buckets.add(TriggerEvent.CopySpell);
+      }
+    });
+    
+    return Array.from(buckets);
+  }
+
+  private static collectMatchingTriggers(
+    state: GameState,
+    event: GameEvent,
+    log?: (m: string) => void,
+  ): TriggeredAbility[] {
+    // 1. REBUILD TRIGGER CACHE IF STALE (O(N) rebuild, but only once per state version)
+    if (!(state as any)._triggerCache || (state as any)._triggerCache.version !== state.stateVersion) {
+        const allTriggers: any[] = [];
+
+        // Gather Emblems
+        if (state.emblems) {
+          state.emblems.forEach((emblem) => {
+            if (emblem.abilities) {
+              emblem.abilities.forEach((ability: any, index: number) => {
+                if (ability.type === AbilityType.Triggered) {
+                  allTriggers.push({
+                    ...ability,
+                    id: `emblem_trigger_${emblem.id}_${index}`,
+                    sourceId: emblem.id,
+                    controllerId: emblem.controllerId,
+                    activeZone: Zone.Command,
+                    abilityIndex: index,
+                  });
+                }
               });
             }
           });
         }
-      });
-    }
 
-    // 2. Continuous Effects (Granted Abilities - Rule 611.3)
-    state.ruleRegistry.continuousEffects.forEach((effect) => {
-      const { EffectType } = require("@shared/engine_types");
-      if (
-        effect.type === EffectType.AddTriggeredAbility &&
-        (effect as any).value
-      ) {
-        const targetIds = effect.targetIds || [];
-        targetIds.forEach((tid) => {
-          triggers.push({
-            ...(effect as any).value,
-            id: `granted_trigger_${effect.id}_${tid}`,
-            sourceId: tid,
-            controllerId: effect.controllerId,
-          });
+        // Gather Continuous Effect (Granted) Triggers
+        state.ruleRegistry.continuousEffects.forEach((effect) => {
+          const { EffectType } = require("@shared/engine_types");
+          if (effect.type === EffectType.AddTriggeredAbility && (effect as any).value) {
+            const targetIds = effect.targetIds || [];
+            targetIds.forEach((tid) => {
+              allTriggers.push({
+                ...(effect as any).value,
+                id: `granted_trigger_${effect.id}_${tid}`,
+                sourceId: tid,
+                controllerId: effect.controllerId,
+              });
+            });
+          }
         });
-      }
-    });
-    // 3. Registered Triggered Abilities (Rule 603.2, 603.7)
-    // This includes permanent battlefield triggers and delayed triggers
-    if (state.ruleRegistry.triggeredAbilities) {
-      state.ruleRegistry.triggeredAbilities.forEach((t) => {
-        triggers.push(t);
-      });
+
+        // Gather Registry Triggers
+        if (state.ruleRegistry.triggeredAbilities) {
+          state.ruleRegistry.triggeredAbilities.forEach((t) => allTriggers.push(t));
+        }
+
+        // Index by bucket
+        const buckets = new Map<string, any[]>();
+        allTriggers.forEach(t => {
+            const tBuckets = this.getEventBuckets(t.eventMatch);
+            tBuckets.forEach(b => {
+                if (!buckets.has(b)) buckets.set(b, []);
+                buckets.get(b)!.push(t);
+            });
+        });
+
+        (state as any)._triggerCache = {
+            version: state.stateVersion,
+            buckets,
+            allTriggers
+        };
     }
 
-    if (event.type === TriggerEvent.CastSpell) {
-      if (log) log(`[TRIGGER-DEBUG] Event ${event.type} for source ${event.payload?.sourceId}. Found ${triggers.length} registered triggers.`);
+    const cache = (state as any)._triggerCache;
+    const candidates = cache.buckets.get(event.type) || [];
+
+    if (event.type === TriggerEvent.CastSpell && log) {
+        log(`[TRIGGER-DEBUG] Event ${event.type} for source ${event.payload?.sourceId}. Found ${candidates.length} candidate triggers in bucket.`);
     }
 
-    return triggers.filter((t) => {
+    return candidates.filter((t) => {
       const tEvent = t.eventMatch;
       const tEvents = Array.isArray(tEvent) ? tEvent : [tEvent];
 
-      if (event.type === TriggerEvent.CastSpell || event.type === TriggerEvent.ResolveSpell || event.type === TriggerEvent.PreCombatMainPhaseStart) {
-        if (tEvents.includes(event.type)) {
-          console.log(`[TRIGGER-DEBUG] Potential match: trigger ${t.id} from ${t.sourceId}. Event: ${event.type}. Global: ${t.isGlobal}. Zone: ${t.activeZone}`);
-        }
-      }
-
+      // Identity and Logic Filtering (replaces matchesPrimary block)
       const matchesPrimary = tEvents.some((type) => {
-        const isMatch = (
+        return (
           type === event.type ||
-          (type === TriggerEvent.EnterBattlefieldOther &&
-            event.type === TriggerEvent.EnterBattlefield) ||
-          (type === TriggerEvent.AttackOrBlock &&
-            (event.type === TriggerEvent.Attack ||
-              event.type === TriggerEvent.Block)) ||
-          (type === TriggerEvent.DamageDealtToCreature &&
-            event.type === TriggerEvent.DamageTaken) ||
-          (type === TriggerEvent.DamageDealtToPlayer &&
-            event.type === TriggerEvent.DamageDealtToPlayer) ||
-          (type === TriggerEvent.DeathOther &&
-            event.type === TriggerEvent.Death) ||
-          (type === TriggerEvent.CountersAddedOther &&
-            event.type === TriggerEvent.CountersAdded) ||
+          (type === TriggerEvent.EnterBattlefieldOther && event.type === TriggerEvent.EnterBattlefield) ||
+          (type === TriggerEvent.AttackOrBlock && (event.type === TriggerEvent.Attack || event.type === TriggerEvent.Block)) ||
+          (type === TriggerEvent.DamageDealtToCreature && event.type === TriggerEvent.DamageTaken) ||
+          (type === TriggerEvent.DamageDealtToPlayer && event.type === TriggerEvent.DamageDealtToPlayer) ||
+          (type === TriggerEvent.DeathOther && event.type === TriggerEvent.Death) ||
+          (type === TriggerEvent.CountersAddedOther && event.type === TriggerEvent.CountersAdded) ||
           (type === TriggerEvent.Magecraft &&
             String(event.playerId) === String(t.controllerId) &&
-            (event.type === TriggerEvent.CastInstantOrSorcery ||
-              (event.type === TriggerEvent.CopySpell &&
-                event.data?.isInstantOrSorcery))) ||
+            (event.type === TriggerEvent.CastInstantOrSorcery || (event.type === TriggerEvent.CopySpell && event.data?.isInstantOrSorcery))) ||
           (type === TriggerEvent.MagecraftOpponent &&
             String(event.playerId) !== String(t.controllerId) &&
-            (event.type === TriggerEvent.CastInstantOrSorcery ||
-              (event.type === TriggerEvent.CopySpell &&
-                event.data?.isInstantOrSorcery)))
+            (event.type === TriggerEvent.CastInstantOrSorcery || (event.type === TriggerEvent.CopySpell && event.data?.isInstantOrSorcery)))
         );
-
-        return isMatch;
       });
 
       if (!matchesPrimary) return false;
