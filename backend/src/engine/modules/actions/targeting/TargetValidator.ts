@@ -109,8 +109,8 @@ export class TargetValidator {
         if ([TargetType.CardInExile.toLowerCase()].includes(typeLineCheck)) return Zone.Exile;
 
         const restrictions = (targetDef?.restrictions || []);
-        if (restrictions.some((r: any) => typeof r === 'string' && TargetType.CardInGraveyard.toLowerCase() === r.toLowerCase())) return Zone.Graveyard;
-        if (restrictions.some((r: any) => typeof r === 'string' && TargetType.CardInExile.toLowerCase() === r.toLowerCase())) return Zone.Exile;
+        if (restrictions.some((r: any) => typeof r === 'string' && [Restriction.Graveyard, TargetType.CardInGraveyard.toLowerCase()].includes(r.toLowerCase()))) return Zone.Graveyard;
+        if (restrictions.some((r: any) => typeof r === 'string' && [Restriction.Exile, TargetType.CardInExile.toLowerCase()].includes(r.toLowerCase()))) return Zone.Exile;
 
         return targetDef ? Zone.Battlefield : 'Any';
     }

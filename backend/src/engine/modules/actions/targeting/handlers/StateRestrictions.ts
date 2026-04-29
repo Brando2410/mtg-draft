@@ -80,7 +80,6 @@ export const StateRestrictions: Record<string, IRestrictionHandler> = {
         }
     },
     OTHER,
-    ANOTHER: OTHER,
     SELF: {
         matches(state, targetObj: any, r, context) {
             return targetObj.id === context.sourceId;

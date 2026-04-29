@@ -1,27 +1,19 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, DynamicAmount, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 export const BurrogBarrage: CardDefinition = {
     name: "Burrog Barrage",
     manaCost: "{1}{G}",
     scryfall_id: "95d5b0a8-2b66-418e-9e5e-ecf7b304c31e",
     rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/9/5/95d5b0a8-2b66-418e-9e5e-ecf7b304c31e.jpg?1775937957",
-    colors: [
-        "G"
-    ],
-    types: [
-        "Instant"
-    ],
+    colors: ["G"],
+    types: ["Instant"],
     subtypes: [],
     keywords: [],
     oracleText: "Target creature you control gets +1/+0 until end of turn if you've cast another instant or sorcery spell this turn. Then it deals damage equal to its power to up to one target creature an opponent controls.",
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
-                type: TargetType.Creature, count: 1, restrictions: [
-                    "youcontrol"
-                ]
-            },
+            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [Restriction.YouControl] },
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -37,11 +29,7 @@ export const BurrogBarrage: CardDefinition = {
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: {
-                                type: TargetType.Creature, count: 1, restrictions: [
-                                    "opponentcontrol"
-                                ]
-                            },
+                            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [Restriction.OpponentControl] },
                             effects: [
                                 {
                                     type: EffectType.DealDamage,

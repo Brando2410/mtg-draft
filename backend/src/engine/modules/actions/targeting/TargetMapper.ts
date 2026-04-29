@@ -157,7 +157,7 @@ export class TargetMapper {
 
         // 1. Basic Adjectives
         if ((knownAdjectives as string[]).includes(lr)) {
-          if (lr === Restriction.Other || lr === Restriction.Another)
+          if (lr === Restriction.Other)
             adjectives.unshift("another"); // "Another" always comes first
           else adjectives.push(lr);
           continue;
