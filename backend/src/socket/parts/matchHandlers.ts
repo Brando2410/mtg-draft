@@ -9,6 +9,7 @@ import { DraftService } from '../../services/DraftService';
 import { LoggerService } from '../../services/LoggerService';
 import { PersistenceService } from '../../services/PersistenceService';
 import { SealedService } from '../../services/SealedService';
+import * as jsonpatch from 'fast-json-patch';
 
 
 export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<string, Room>) => {
@@ -41,6 +42,9 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
       const engine = new GameEngine(playerIds as any, {}, playerNames);
       engine.setState(gameState);
 
+      // Take a snapshot for delta calculation
+      const previousRoomSnapshot = JSON.parse(JSON.stringify(room));
+
       // Execute the action (most engine actions are synchronous)
       callback(engine, room, matchIndex);
 
@@ -68,7 +72,17 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
         room.gameState = newState;
       }
 
-      io.to(roomId).emit('room_update', room);
+      // 4. DELTA SYNC: Calculate and emit patch instead of full state
+      const patch = jsonpatch.compare(previousRoomSnapshot, room);
+      
+      if (patch.length > 0) {
+        // We only send the patch to save bandwidth
+        io.to(roomId).emit('room_patch', patch);
+      } else {
+        // Fallback for cases where no delta was detected but update was requested
+        io.to(roomId).emit('room_update', room);
+      }
+      
       PersistenceService.saveRooms(rooms).catch(e => LoggerService.error('SAVE', `Save failed: ${e.message}`));
     } catch (err: any) {
       LoggerService.error('SOCKET', `Error in withMatch: ${err.message}`, { roomId, playerId });

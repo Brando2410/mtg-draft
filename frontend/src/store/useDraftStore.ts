@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { socket } from '../services/socket';
 import type { Room } from '@shared/types';
 import { logger } from '../services/clientLogger';
+import { applyPatch } from 'fast-json-patch';
 
 interface DraftState {
   // State
@@ -109,6 +110,20 @@ export const useDraftStore = create<DraftState>((set, get) => ({
 
     socket.on('room_update', (room: Room) => {
       set({ room });
+    });
+    
+    socket.on('room_patch', (patch: any) => {
+      const currentRoom = get().room;
+      if (!currentRoom) return;
+      
+      try {
+        const result = applyPatch(currentRoom, patch, false, false);
+        set({ room: result.newDocument as Room });
+      } catch (err) {
+        logger.error('PATCH', 'Failed to apply room patch', { err, patch });
+        // Fallback or request full state? 
+        // For now just log, full state usually arrives eventually or on manual refresh
+      }
     });
 
     socket.on('draft_started', (room: Room) => {
