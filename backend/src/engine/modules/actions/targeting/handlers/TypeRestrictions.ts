@@ -1,5 +1,8 @@
-import { Zone } from "@shared/engine_types";
+import { Zone, CardType } from "@shared/engine_types";
 import { IRestrictionHandler } from "../IRestrictionHandler";
+
+const PERMANENT_MASK = CardType.Artifact | CardType.Creature | CardType.Enchantment | CardType.Land | CardType.Planeswalker | CardType.Battle;
+const ANY_TARGET_MASK = CardType.Creature | CardType.Planeswalker | CardType.Player;
 
 export const TypeRestrictions: Record<string, IRestrictionHandler> = {
     "TOKEN": {
@@ -14,28 +17,26 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
     },
     "LEGENDARY": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.supertypes || []).map((t: string) => t.toLowerCase());
-            return types.includes("legendary");
+            const supertypes = (targetObj.definition?.supertypes || []).map((t: string) => t.toLowerCase());
+            return supertypes.includes("legendary");
         }
     },
     "BASIC": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.supertypes || []).map((t: string) => t.toLowerCase());
-            return types.includes("basic");
+            const supertypes = (targetObj.definition?.supertypes || []).map((t: string) => t.toLowerCase());
+            return supertypes.includes("basic");
         }
     },
     "NONBASIC": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.supertypes || []).map((t: string) => t.toLowerCase());
-            return !types.includes("basic");
+            const supertypes = (targetObj.definition?.supertypes || []).map((t: string) => t.toLowerCase());
+            return !supertypes.includes("basic");
         }
     },
     "PERMANENT": {
         matches(state, targetObj: any) {
-            const definition = targetObj.definition || targetObj.card?.definition || (targetObj as any).cardData?.definition;
-            const types = (definition?.types || []).map((t: string) => t.toLowerCase());
-            const permTypes = ['artifact', 'creature', 'enchantment', 'land', 'planeswalker'];
-            return types.some((t: string) => permTypes.includes(t));
+            const mask = targetObj.typeMask || 0;
+            return (mask & PERMANENT_MASK) !== 0;
         }
     },
     "SPELL": {
@@ -51,68 +52,68 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
     },
     "ARTIFACTORCREATURE": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return types.includes('artifact') || types.includes('creature');
+            const mask = targetObj.typeMask || 0;
+            return (mask & (CardType.Artifact | CardType.Creature)) !== 0;
         }
     },
     "INSTANTORSORCERY": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return types.includes('instant') || types.includes('sorcery');
+            const mask = targetObj.typeMask || 0;
+            return (mask & (CardType.Instant | CardType.Sorcery)) !== 0;
         }
     },
     "INSTANT_OR_SORCERY": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return types.includes('instant') || types.includes('sorcery');
+            const mask = targetObj.typeMask || 0;
+            return (mask & (CardType.Instant | CardType.Sorcery)) !== 0;
         }
     },
     "CREATUREORPLANESWALKER": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return types.includes('creature') || types.includes('planeswalker');
+            const mask = targetObj.typeMask || 0;
+            return (mask & (CardType.Creature | CardType.Planeswalker)) !== 0;
         }
     },
     "CREATURE_OR_PLANESWALKER": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return types.includes('creature') || types.includes('planeswalker');
+            const mask = targetObj.typeMask || 0;
+            return (mask & (CardType.Creature | CardType.Planeswalker)) !== 0;
         }
     },
     "ANYTARGET": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return types.includes('creature') || types.includes('planeswalker');
+            const mask = targetObj.typeMask || 0;
+            return (mask & ANY_TARGET_MASK) !== 0;
         }
     },
     "ANY_TARGET": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return types.includes('creature') || types.includes('planeswalker');
+            const mask = targetObj.typeMask || 0;
+            return (mask & ANY_TARGET_MASK) !== 0;
         }
     },
     "CREATUREORLAND": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return types.includes('creature') || types.includes('land');
+            const mask = targetObj.typeMask || 0;
+            return (mask & (CardType.Creature | CardType.Land)) !== 0;
         }
     },
     "CREATURE_OR_LAND": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return types.includes('creature') || types.includes('land');
+            const mask = targetObj.typeMask || 0;
+            return (mask & (CardType.Creature | CardType.Land)) !== 0;
         }
     },
     "ARTIFACTORENCHANTMENT": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return types.includes('artifact') || types.includes('enchantment');
+            const mask = targetObj.typeMask || 0;
+            return (mask & (CardType.Artifact | CardType.Enchantment)) !== 0;
         }
     },
     "ARTIFACT_OR_ENCHANTMENT": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return types.includes('artifact') || types.includes('enchantment');
+            const mask = targetObj.typeMask || 0;
+            return (mask & (CardType.Artifact | CardType.Enchantment)) !== 0;
         }
     },
     "CARD_IN_GRAVEYARD": {
@@ -142,17 +143,16 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
     },
     "NON_LAND_PERMANENT": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return !types.includes('land') && ['artifact', 'creature', 'enchantment', 'planeswalker'].some(t => types.includes(t));
+            const mask = targetObj.typeMask || 0;
+            return !(mask & CardType.Land) && (mask & PERMANENT_MASK) !== 0;
         }
     },
     "NONLANDPERMANENT": {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return !types.includes('land') && ['artifact', 'creature', 'enchantment', 'planeswalker'].some(t => types.includes(t));
+            const mask = targetObj.typeMask || 0;
+            return !(mask & CardType.Land) && (mask & PERMANENT_MASK) !== 0;
         }
     },
-
     "NONAURA": {
         matches(state, targetObj: any) {
             const subtypes = (targetObj.definition?.subtypes || []).map((s: string) => s.toLowerCase());
@@ -167,24 +167,40 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
     }
 };
 
-// Common base types mapper (Positive and Negative)
-const baseTypes = ['creature', 'planeswalker', 'land', 'artifact', 'enchantment', 'instant', 'sorcery', 'player'];
+// Common base types mapper
+const typeToMask: Record<string, number> = {
+    'creature': CardType.Creature,
+    'planeswalker': CardType.Planeswalker,
+    'land': CardType.Land,
+    'artifact': CardType.Artifact,
+    'enchantment': CardType.Enchantment,
+    'instant': CardType.Instant,
+    'sorcery': CardType.Sorcery,
+    'player': CardType.Player,
+    'battle': CardType.Battle,
+    'tribal': CardType.Tribal
+};
 
-baseTypes.forEach(type => {
+Object.entries(typeToMask).forEach(([type, bit]) => {
     const upperType = type.toUpperCase();
     
-    // Positive check (e.g., CREATURE)
+    // Positive check
     TypeRestrictions[upperType] = {
         matches(state, targetObj: any) {
-            const types = (targetObj.definition?.types || []).map((t: string) => t.toLowerCase());
-            return types.includes(type) || (type === 'player' && !!state.players[targetObj.id]);
+            if (bit === CardType.Player) {
+                return !!state.players[targetObj.id];
+            }
+            return (targetObj.typeMask & bit) !== 0;
         }
     };
 
-    // Negative check (e.g., NONCREATURE)
+    // Negative check
     TypeRestrictions[`NON${upperType}`] = {
-        matches(state, targetObj: any, r, context) {
-            return !TypeRestrictions[upperType].matches(state, targetObj, "", context);
+        matches(state, targetObj: any) {
+            if (bit === CardType.Player) {
+                return !state.players[targetObj.id];
+            }
+            return (targetObj.typeMask & bit) === 0;
         }
     };
 });

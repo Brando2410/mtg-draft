@@ -1,4 +1,4 @@
-import { GameObject, GameState, PlayerId, PlayerState, StackObject, Targetable, TargetRestriction, TargetingContext, TargetType, Zone } from '@shared/engine_types';
+import { GameObject, GameState, PlayerId, PlayerState, StackObject, Targetable, TargetRestriction, TargetingContext, TargetType, Zone, CardType } from '@shared/engine_types';
 import { LayerProcessor } from '../../state/LayerProcessor';
 import { TargetMapper } from './TargetMapper';
 
@@ -63,13 +63,15 @@ export class TargetValidator {
             const type = (targetDefForIndex?.type || '').toLowerCase();
             const restrictions = (targetDefForIndex?.restrictions || []).map((r: any) => typeof r === 'string' ? r.toLowerCase() : r);
 
-            if (type === TargetType.Player.toLowerCase() ||
+            // Unified Player Match logic (Rules 102.1)
+            const isPlayerAllowed = 
+                type === TargetType.Player.toLowerCase() ||
                 type === TargetType.Opponent.toLowerCase() ||
                 type === TargetType.AnyTarget.toLowerCase() ||
                 type === TargetType.PlayerOrPlaneswalker.toLowerCase() ||
-                restrictions.includes('player') ||
-                restrictions.includes('anytarget')) {
+                restrictions.some(r => ['player', 'anytarget', 'any_target', 'opponent', 'you'].includes(r));
 
+            if (isPlayerAllowed) {
                 if (restrictions.includes('opponent') || type === TargetType.Opponent.toLowerCase()) {
                     if (controllerId && targetId === controllerId) return false;
                 }
@@ -222,8 +224,9 @@ export class TargetValidator {
                 continue;
             }
 
-            // Skip strict fallback for complex/alternative restrictions that are handled below
-            if (lr.includes('_or_') || lr.includes('orsorcery') || lr === 'oneormorecolors' || lr === 'mv_le_x' || lr === 'anytarget') {
+            // Skip strict fallback for complex/alternative restrictions that are handled manually below
+            const isHandledLater = lr === 'oneormorecolors' || lr === 'mv_le_x' || (lr.includes('_or_') && !RestrictionRegistry[token]);
+            if (isHandledLater) {
                 continue;
             }
 
@@ -233,7 +236,8 @@ export class TargetValidator {
             if (targetName !== lr && !objSubtypes.includes(lr)) {
                 // ARCHITECTURAL NOTE: If we reach here, we are doing a fuzzy name/subtype match.
                 // If the intention was a specialized restriction, a handler should have been registered.
-                if (lr.includes('_') || lr.includes('source') || lr.includes('greater')) {
+                const isSpecialized = lr.includes('_') || lr.includes('source') || lr.includes('greater') || lr.includes('target');
+                if (isSpecialized) {
                     console.warn(`[TARGET-WARN] Potential missing restriction handler for: "${lr}". Falling back to name check.`);
                 }
                 

@@ -16,6 +16,7 @@ export interface CardDefinition {
     supertypes?: string[];
     types: string[];
     subtypes?: string[];
+    typeMask?: number;
     power?: string | number;
     toughness?: string | number;
     keywords?: string[];
@@ -47,6 +48,7 @@ export interface GameObject {
     controllerId: PlayerId;
     zone: Zone;
     definition: CardDefinition;
+    typeMask?: number;
     isTapped: boolean;
     damageMarked: number;
     summoningSickness: boolean;

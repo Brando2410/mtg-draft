@@ -14,6 +14,20 @@ export const Zone = {
 } as const;
 export type Zone = (typeof Zone)[keyof typeof Zone];
 
+export const CardType = {
+  Creature: 0x01,
+  Land: 0x02,
+  Artifact: 0x04,
+  Enchantment: 0x08,
+  Planeswalker: 0x10,
+  Instant: 0x20,
+  Sorcery: 0x40,
+  Player: 0x80,
+  Battle: 0x100,
+  Tribal: 0x200,
+} as const;
+export type CardType = number;
+
 export const SelectionType = {
   Target: "Target",
   Choice: "Choice",

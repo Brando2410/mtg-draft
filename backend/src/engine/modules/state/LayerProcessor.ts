@@ -1,7 +1,8 @@
 import {
   AbilityType,
   ContinuousEffect,
-  GameObject, GameState, Zone, EffectType, AbilityDefinition, RestrictionObject, RestrictionType
+  GameObject, GameState, Zone, EffectType, AbilityDefinition, RestrictionObject, RestrictionType,
+  CardType
 } from "@shared/engine_types";
 import { TargetingProcessor } from "../actions/targeting/TargetingProcessor";
 import { ConditionProcessor } from "../core/logic/ConditionProcessor";
@@ -485,34 +486,51 @@ export class LayerProcessor {
     return this.getEffectiveKeywords(obj, state).some(k => k.toLowerCase() === keyword.toLowerCase());
   }
 
+  public static calculateTypeMask(types: string[]): number {
+    let mask = 0;
+    if (!types) return 0;
+    const lowerTypes = types.map(t => t.toLowerCase());
+    if (lowerTypes.includes('creature')) mask |= CardType.Creature;
+    if (lowerTypes.includes('land')) mask |= CardType.Land;
+    if (lowerTypes.includes('artifact')) mask |= CardType.Artifact;
+    if (lowerTypes.includes('enchantment')) mask |= CardType.Enchantment;
+    if (lowerTypes.includes('planeswalker')) mask |= CardType.Planeswalker;
+    if (lowerTypes.includes('instant')) mask |= CardType.Instant;
+    if (lowerTypes.includes('sorcery')) mask |= CardType.Sorcery;
+    if (lowerTypes.includes('battle')) mask |= CardType.Battle;
+    if (lowerTypes.includes('tribal')) mask |= CardType.Tribal;
+    return mask;
+  }
+
   /**
    * Rebuilds a Map of all objects in all zones for O(1) lookup during processing.
    */
   public static rebuildObjectCache(state: GameState) {
     const cache = new Map<string, GameObject>();
     
-    // Add Battlefield
-    state.battlefield.forEach(o => cache.set(o.id, o));
-    
-    // Add Stack
+    const allObjects = [
+      ...state.battlefield,
+      ...state.exile,
+      ...state.limbo || [],
+      ...Object.values(state.players).flatMap(p => [
+        ...p.hand,
+        ...p.graveyard,
+        ...p.library,
+        ...p.virtualHand || []
+      ]),
+      ...state.stack.map(s => s.card).filter(Boolean) as GameObject[]
+    ];
+
+    allObjects.forEach(o => {
+      if (!o.typeMask) {
+        o.typeMask = this.calculateTypeMask(o.definition.types);
+      }
+      cache.set(o.id, o);
+    });
+
     state.stack.forEach(s => {
-      if (s.card) cache.set(s.card.id, s.card);
       cache.set(s.id, s as any); // Also index by stack ID
     });
-    
-    // Add Exile
-    state.exile.forEach(o => cache.set(o.id, o));
-    
-    // Add Players' zones
-    Object.values(state.players).forEach(p => {
-      p.hand.forEach(o => cache.set(o.id, o));
-      p.graveyard.forEach(o => cache.set(o.id, o));
-      p.library.forEach(o => cache.set(o.id, o));
-      p.virtualHand?.forEach(o => cache.set(o.id, o));
-    });
-    
-    // Add Limbo
-    state.limbo?.forEach(o => cache.set(o.id, o));
 
     (cache as any).version = state.stateVersion;
     (state as any)._objectCache = cache;
