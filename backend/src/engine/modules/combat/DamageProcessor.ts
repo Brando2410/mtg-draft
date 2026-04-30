@@ -103,7 +103,7 @@ export class DamageProcessor {
     }
 
     // 3. Handle Lifelink (Rule 702.15)
-    if (sourceObj && sourceStats?.keywords.includes("Lifelink")) {
+    if (sourceObj && RuleUtils.hasLifelink(sourceObj)) {
       const controllerId = sourceObj.controllerId;
       const player = state.players[controllerId];
       if (player) {
@@ -168,7 +168,7 @@ export class DamageProcessor {
       );
 
       // Rule 702.2: Deathtouch
-      if (sourceStats?.keywords.includes("Deathtouch")) {
+      if (RuleUtils.hasDeathtouch(sourceObj)) {
         target.deathtouchMarked = true;
         log(
           `[DEATHTOUCH] ${target.definition.name} is marked by lethal poison.`,

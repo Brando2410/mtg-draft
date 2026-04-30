@@ -60,7 +60,7 @@ export class StateBasedActionsProcessor {
       const isLethal =
         obj.damageMarked >= stats.toughness || obj.deathtouchMarked;
       if (RuleUtils.isCreature(obj) && isLethal) {
-        if (!stats.keywords.includes("Indestructible")) {
+        if (!RuleUtils.hasIndestructible(obj)) {
           log(`[SBA] ${obj.definition.name} destroyed by lethal damage.`);
           ActionProcessor.moveCard(
             state,

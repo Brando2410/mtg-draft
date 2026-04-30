@@ -706,7 +706,7 @@ export class TriggerProcessor {
       state.battlefield.forEach((obj) => {
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         if (
-          stats.keywords.includes("Prowess") &&
+          RuleUtils.hasKeyword(obj, "Prowess") &&
           obj.controllerId === event.playerId
         ) {
           matchingTriggers.push({
@@ -742,7 +742,7 @@ export class TriggerProcessor {
       state.battlefield.forEach((obj) => {
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         if (
-          stats.keywords.includes("Increment") &&
+          RuleUtils.hasKeyword(obj, "Increment") &&
           obj.controllerId === event.playerId
         ) {
           if (

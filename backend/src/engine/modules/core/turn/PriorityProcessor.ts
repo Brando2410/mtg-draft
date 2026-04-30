@@ -574,9 +574,7 @@ export class PriorityProcessor {
   public static validateTiming(state: GameState, playerId: string, objOrAbility: any, isActivatedAbility = false): boolean {
     const def = objOrAbility?.definition || objOrAbility;
     // For dual-faced or prepared cards, we only consider the first face's types for timing unless it's a virtual spell
-    const isInstantOrFlash = RuleUtils.isType(def, 'instant') ||
-      (def.keywords || []).some((k: string) => k.toLowerCase() === 'flash') ||
-      /\bFlash\b/.test(def.oracleText || '');
+    const isInstantOrFlash = RuleUtils.isType(def, 'instant') || RuleUtils.hasFlash(objOrAbility);
 
     const isLand = RuleUtils.isLand(def);
 

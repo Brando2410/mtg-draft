@@ -10,6 +10,7 @@ import { MoveEffectHandler } from './modules/effects/handlers/zone/MoveEffectHan
 import { SpellValidator } from './modules/actions/spells/SpellValidator';
 import { SpellCostCalculator } from './modules/actions/spells/SpellCostCalculator';
 import { SpellInteractiveManager } from './modules/actions/spells/SpellInteractiveManager';
+import { oracle } from './OracleLogicMap';
 
 
 /**
@@ -121,7 +122,8 @@ export class GameEngine implements EngineContext {
       choiceGenerator: ChoiceGenerator,
       spellValidator: SpellValidator,
       spellCostCalculator: SpellCostCalculator,
-      spellInteractiveManager: SpellInteractiveManager
+      spellInteractiveManager: SpellInteractiveManager,
+      oracle: oracle
     };
 
     // Add non-enumerable reference to avoid circular serialization issues

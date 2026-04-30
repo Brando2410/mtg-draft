@@ -105,15 +105,14 @@ export class TargetValidator {
     private static checkKeywords(state: GameState, context: TargetingContext, targetObj: GameObject): boolean {
         const stats = LayerProcessor.getEffectiveStats(targetObj, state);
         const keywords = stats.keywords;
-        if (keywords.includes('Shroud')) return false;
+        if (RuleUtils.hasShroud(targetObj)) return false;
 
         const isOpponentTarget = context.controllerId && targetObj.controllerId !== context.controllerId;
         const source = RuleUtils.findObject(state, context.sourceId);
 
         // Hexproof
         if (isOpponentTarget) {
-            const hasHexproof = keywords.some((k: string) => k.toLowerCase() === 'hexproof');
-            if (hasHexproof) return false;
+            if (RuleUtils.hasHexproof(targetObj)) return false;
 
             if (source) {
                 const hexproofFrom = keywords.filter((k: string) => k.toLowerCase().startsWith('hexproof from '));

@@ -88,7 +88,7 @@ export class CombatProcessor {
     return [...attackers, ...blockers].some(obj => {
       if (!obj) return false;
       const stats = LP.getEffectiveStats(obj, state);
-      return RuleUtils.hasKeyword(obj, 'First Strike') || RuleUtils.hasKeyword(obj, 'Double Strike');
+      return RuleUtils.hasFirstStrike(obj) || RuleUtils.hasDoubleStrike(obj);
     });
   }
 
@@ -116,7 +116,7 @@ export class CombatProcessor {
       const attackerObj = state.battlefield.find(o => o.id === a.attackerId);
       if (attackerObj) {
         const stats = LP.getEffectiveStats(attackerObj, state);
-        if (!RuleUtils.hasKeyword(attackerObj, 'Vigilance')) {
+        if (!RuleUtils.hasVigilance(attackerObj)) {
           attackerObj.isTapped = true;
           // rule 508.1m: If a creature becomes tapped this way, it's not a "cost" in the sense of pay(), 
           // but it still triggers events that care about tapping.
@@ -386,8 +386,8 @@ export class CombatProcessor {
       const aStats = LP.getEffectiveStats(attacker, state);
 
       // Filter for First Strike compatibility (Rule 511.1)
-      const hasFS = RuleUtils.hasKeyword(attacker, 'First Strike');
-      const hasDS = RuleUtils.hasKeyword(attacker, 'Double Strike');
+      const hasFS = RuleUtils.hasFirstStrike(attacker);
+      const hasDS = RuleUtils.hasDoubleStrike(attacker);
       if (isFS && !hasFS && !hasDS) continue;
       if (!isFS && this.hasFirstStrikeStep(state) && hasFS && !hasDS) continue;
 
@@ -403,8 +403,8 @@ export class CombatProcessor {
         // BLOCKED: Rule 510.1c
         const order = attack.order || blockers.map(b => b.blockerId);
         let remainingPower = aPower;
-        const hasDeathtouch = RuleUtils.hasKeyword(attacker, 'Deathtouch');
-        const hasTrample = RuleUtils.hasKeyword(attacker, 'Trample');
+        const hasDeathtouch = RuleUtils.hasDeathtouch(attacker);
+        const hasTrample = RuleUtils.hasTrample(attacker);
 
         for (const bId of order) {
           const blockerObj = state.battlefield.find(c => c.id === bId);
@@ -438,8 +438,8 @@ export class CombatProcessor {
       if (!blockerObj) continue;
 
       const bStats = LP.getEffectiveStats(blockerObj, state);
-      const hasFS = RuleUtils.hasKeyword(blockerObj, 'First Strike');
-      const hasDS = RuleUtils.hasKeyword(blockerObj, 'Double Strike');
+      const hasFS = RuleUtils.hasFirstStrike(blockerObj);
+      const hasDS = RuleUtils.hasDoubleStrike(blockerObj);
       if (isFS && !hasFS && !hasDS) continue;
       if (!isFS && this.hasFirstStrikeStep(state) && hasFS && !hasDS) continue;
 
@@ -452,7 +452,7 @@ export class CombatProcessor {
       } else {
         const order = b.order || blockedAttackers.map(a => a.attackerId);
         let remainingPower = bPower;
-        const hasDeathtouch = RuleUtils.hasKeyword(blockerObj, 'Deathtouch');
+        const hasDeathtouch = RuleUtils.hasDeathtouch(blockerObj);
 
         for (const aId of order) {
           const attackerObj = state.battlefield.find(c => c.id === aId);
@@ -510,9 +510,9 @@ export class CombatProcessor {
 
     // 1. CR 702.9: Flying check
     // "A creature with flying can't be blocked except by creatures with flying and/or reach."
-    const hasFlying = RuleUtils.hasKeyword(attacker, 'flying');
+    const hasFlying = RuleUtils.hasFlying(attacker);
     if (hasFlying) {
-      const canBlockFlying = RuleUtils.hasKeyword(blocker, 'flying') || RuleUtils.hasKeyword(blocker, 'reach');
+      const canBlockFlying = RuleUtils.hasFlying(blocker) || RuleUtils.hasReach(blocker);
       if (!canBlockFlying) {
         return { legal: false, reason: "flying requirement not met" };
       }
@@ -587,7 +587,7 @@ export class CombatProcessor {
       const blockers = state.combat.blockers.filter(b => b.attackerId === attackerDef.attackerId);
 
       // Menace: cannot be blocked by exactly one creature
-      if (RuleUtils.hasKeyword(attacker, 'Menace') && blockers.length === 1) {
+      if (RuleUtils.hasMenace(attacker) && blockers.length === 1) {
         return { isValid: false, error: `${attacker.definition.name} has Menace and must be blocked by at least two creatures.` };
       }
 

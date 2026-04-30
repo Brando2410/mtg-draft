@@ -58,7 +58,7 @@ export class CostProcessor {
         if (RuleUtils.isCreature(source) && source.summoningSickness) {
           const { layer: LayerProcessor } = getProcessors(state);
           const stats = LayerProcessor.getEffectiveStats(source, state);
-          if (!stats.keywords.includes('Haste')) {
+          if (!RuleUtils.hasHaste(source)) {
             return false;
           }
         }
