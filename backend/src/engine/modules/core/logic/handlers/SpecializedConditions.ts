@@ -49,7 +49,7 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
     "SPENT_MANA_GT_POWER_OR_TOUGHNESS": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            const spent = event?.payload?.card?.paidManaValue || (event as any)?.data?.card?.paidManaValue ?? (event as any)?.amount ?? 0;
+            const spent = (event?.payload?.card?.paidManaValue || (event as any)?.data?.card?.paidManaValue) ?? (event as any)?.amount ?? 0;
             const obj = state.battlefield.find((o) => o.id === sourceId);
             if (!obj) return false;
             const { layer: LayerProcessor } = getProcessors(state);

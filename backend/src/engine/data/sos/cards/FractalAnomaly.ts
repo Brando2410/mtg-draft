@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
-    export const FractalAnomaly: CardDefinition = {
+export const FractalAnomaly: CardDefinition = {
     name: "Fractal Anomaly",
     manaCost: "{U}",
     scryfall_id: "e1975a61-aef0-49a6-a6d6-c3a37e2e2b22",
@@ -29,6 +29,7 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping }
                         subtypes: ["Fractal"],
                         power: 0,
                         toughness: 0,
+                        image_url: "https://cards.scryfall.io/normal/front/d/e/de564776-9d88-4533-8717-842eecdd0594.jpg?1775828279"
                     },
                     startingCounters: {
                         type: 'p1p1',
@@ -39,4 +40,4 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping }
         }
     ]
 };
-    
+

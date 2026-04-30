@@ -30,7 +30,12 @@ export class DrawCardsHandler {
             return;
         }
 
-        for (let i = 0; i < amount && player.library.length > 0; i++) {
+        for (let i = 0; i < amount; i++) {
+            if (player.library.length === 0) {
+                player.hasLostDueToEmptyLibrary = true;
+                logger.info(state, LogCategory.ACTION, `${player.name} attempted to draw from an empty library.`);
+                break;
+            }
             const card = player.library.pop()!;
             ActionProcessor.moveCard(state, card, Zone.Hand, playerId, 'top', true);
         }

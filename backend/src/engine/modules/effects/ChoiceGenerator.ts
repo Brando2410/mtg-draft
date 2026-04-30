@@ -207,7 +207,9 @@ export class ChoiceGenerator {
 
         // Initialize player's discard state for the unified UI
         player.pendingDiscardCount = discardAmount;
-
+        state.turnState.lastDiscardedCount = discardAmount;
+        state.turnState.lastDiscardedIds = [];
+        
         const finalAction = this.createCardChoice(state, player.hand, {
             label: isAny ? `${label} (Any number)` : `${label} (${discardAmount})`,
             playerId: currentPlayerId,

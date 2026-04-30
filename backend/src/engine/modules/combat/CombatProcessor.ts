@@ -97,15 +97,15 @@ export class CombatProcessor {
   /**
    * CR 508.2: Confirming the Attacker Declaration Action
    */
-  public static confirmAttackers(state: GameState, playerId: PlayerId, engine: EngineContext) {
+  public static confirmAttackers(state: GameState, playerId: PlayerId, engine: EngineContext): boolean {
     const { logger } = getProcessors(state);
-    if (state.pendingAction?.type !== 'DECLARE_ATTACKERS' || state.pendingAction.playerId !== playerId) return;
+    if (state.pendingAction?.type !== 'DECLARE_ATTACKERS' || state.pendingAction.playerId !== playerId) return false;
 
     // CR 508.1: Validate global attack requirements (e.g. MustAttack)
     const validation = this.validateAllAttackers(state);
     if (!validation.isValid) {
       logger.warn(state, LogCategory.COMBAT, `[ATTACK] ERR: ${validation.error}`);
-      return;
+      return false;
     }
 
     logger.info(state, LogCategory.COMBAT, `${engine.getPlayerName(playerId)} confirmed attackers.`);
@@ -162,6 +162,7 @@ export class CombatProcessor {
     } else {
       engine.resetPriorityToActivePlayer();
     }
+    return true;
   }
 
   public static clearAttackers(state: GameState, playerId: PlayerId, engine: EngineContext) {
@@ -209,16 +210,16 @@ export class CombatProcessor {
   /**
    * CR 509.2: Confirming the Blocker Declaration Action
    */
-  public static confirmBlockers(state: GameState, playerId: PlayerId, engine: EngineContext) {
+  public static confirmBlockers(state: GameState, playerId: PlayerId, engine: EngineContext): boolean {
     const { logger } = getProcessors(state);
-    if (state.pendingAction?.type !== 'DECLARE_BLOCKERS' || state.pendingAction.playerId !== playerId) return;
+    if (state.pendingAction?.type !== 'DECLARE_BLOCKERS' || state.pendingAction.playerId !== playerId) return false;
 
     // CR 509.1: Validate global block requirements (e.g. Menace)
     const validation = this.validateAllBlockers(state);
     if (!validation.isValid) {
       logger.warn(state, LogCategory.COMBAT, `[BLOCK] ERR: ${validation.error}`);
       // Keep in block declaration mode until fixed
-      return;
+      return false;
     }
 
     logger.info(state, LogCategory.COMBAT, `${engine.getPlayerName(playerId)} confirmed blockers.`);
@@ -254,6 +255,7 @@ export class CombatProcessor {
       // CR 509.4: Give priority window in Declare Blockers step.
       engine.resetPriorityToActivePlayer();
     }
+    return true;
   }
 
   /**

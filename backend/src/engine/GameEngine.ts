@@ -1,4 +1,4 @@
-import { EffectType, GameState, Phase, PlayerId, Step } from '@shared/engine_types';
+import { ChoicePayload, EffectType, GameState, Phase, PlayerId, Step } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { ActivateAbilityOptions, EngineContext, PlayCardOptions } from './interfaces/EngineContext';
 import { ActionProcessor, ChoiceGenerator, ChoiceProcessor, CombatProcessor, DamageProcessor, ConditionProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, ReplacementProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor, TargetingProcessor, RestrictionValidator } from './modules';
@@ -248,8 +248,10 @@ export class GameEngine implements EngineContext {
   /**
    * CR 508.2: Confirming the Attacker Declaration Action
    */
-  public confirmAttackers(playerId: PlayerId) {
-    CombatProcessor.confirmAttackers(this.state, playerId as PlayerId, this);
+  public confirmAttackers(playerId: PlayerId): boolean {
+    const res = CombatProcessor.confirmAttackers(this.state, playerId as PlayerId, this);
+    if (res) this.incrementVersion();
+    return res;
   }
 
   /**
@@ -262,8 +264,10 @@ export class GameEngine implements EngineContext {
   /**
    * CR 509.2: Confirming the Blocker Declaration Action
    */
-  public confirmBlockers(playerId: PlayerId) {
-    CombatProcessor.confirmBlockers(this.state, playerId as PlayerId, this);
+  public confirmBlockers(playerId: PlayerId): boolean {
+    const res = CombatProcessor.confirmBlockers(this.state, playerId as PlayerId, this);
+    if (res) this.incrementVersion();
+    return res;
   }
 
   public clearAttackers(playerId: PlayerId) {
@@ -321,6 +325,7 @@ export class GameEngine implements EngineContext {
     Profiler.wrap('PriorityProcessor.passPriority', () => {
       PriorityProcessor.passPriority(this.state, playerId, this, isAuto);
     });
+    this.incrementVersion();
   }
 
   public resolveTopOrAdvanceStep() {
@@ -330,14 +335,17 @@ export class GameEngine implements EngineContext {
 
   public advanceStep() {
     TurnProcessor.advanceStep(this.state, this);
+    this.incrementVersion();
   }
 
   public givePriorityToNextPlayer() {
     PriorityProcessor.givePriorityToNextPlayer(this.state, this);
+    this.incrementVersion();
   }
 
   public resetPriorityToActivePlayer() {
     PriorityProcessor.resetPriorityToActivePlayer(this.state, this);
+    this.incrementVersion();
   }
 
   public checkAutoPass(playerId: PlayerId) {
@@ -346,6 +354,7 @@ export class GameEngine implements EngineContext {
 
   public togglePassTurn(playerId: PlayerId) {
     PriorityProcessor.togglePassTurn(this.state, playerId, this);
+    this.incrementVersion();
   }
 
   private canPlayerTakeAnyAction(playerId: PlayerId): boolean {
@@ -364,8 +373,15 @@ export class GameEngine implements EngineContext {
     Profiler.wrap('checkStateBasedActions.total', () => {
       let sbaPerformed = false;
       let anyTriggersStacked = false;
+      let loopCount = 0;
+      const MAX_LOOPS = 50;
 
       do {
+        if (loopCount++ > MAX_LOOPS) {
+          console.error('[GameEngine] SBA/Trigger loop limit exceeded!');
+          break;
+        }
+
         // 1. Resolve SBAs until stable (Rule 704.3)
         sbaPerformed = Profiler.wrap('StateBasedActionsProcessor.resolveSBAs', () =>
           StateBasedActionsProcessor.resolveSBAs(this.state)
@@ -376,11 +392,16 @@ export class GameEngine implements EngineContext {
           TriggerProcessor.processPendingTriggers(this.state)
         );
 
-        // 3. Repeat if either step did work (Rule 117.5)
+        // 3. Check if only one player is left
+        const activePlayers = Object.values(this.state.players).filter(p => !p.hasLost);
+        if (activePlayers.length <= 1 && Object.keys(this.state.players).length > 1) {
+          return;
+        }
+
+        // 4. Repeat if either step did work (Rule 117.5)
       } while (sbaPerformed || anyTriggersStacked);
 
       // CR 613: Refresh playability for the player who is about to receive priority
-      // This ensures that auto-pass logic uses the most recent information.
       LayerProcessor.updateDerivedStats(this.state, PriorityProcessor);
     });
   }
@@ -404,22 +425,21 @@ export class GameEngine implements EngineContext {
     return this.state;
   }
 
-  public resolveChoice(playerId: PlayerId, choiceIndex: string | number | string[]): boolean {
-    const success = ChoiceProcessor.resolveChoice(
+  public resolveChoice(playerId: PlayerId, choice: number | string | ChoicePayload): boolean {
+    const res = ChoiceProcessor.resolveChoice(
       this.state,
       playerId,
-      choiceIndex as any,
+      choice as any,
       this
     );
-
-    if (success && !this.state.pendingAction) {
-      // Priority is already handled by ChoiceProcessor (either reset to active or kept by the player)
-    }
-    return success;
+    if (res) this.incrementVersion();
+    return res;
   }
 
   public resolveTargeting(playerId: PlayerId, targetId: string): boolean {
-    return PlayerActionProcessor.resolveTargeting(this.state, playerId, targetId, this);
+    const res = ChoiceProcessor.resolveTargeting(this.state, playerId, targetId, this);
+    if (res) this.incrementVersion();
+    return res;
   }
 
   public resolveCombatOrdering(playerId: PlayerId, order: string[]): boolean {
@@ -450,6 +470,8 @@ export class GameEngine implements EngineContext {
    */
   public finaliseTargeting(playerId: PlayerId, targets: string[]): boolean {
     if (!this.state) return false;
-    return TargetingProcessor.finaliseTargeting(this.state, playerId, targets, this);
+    const res = TargetingProcessor.finaliseTargeting(this.state, playerId, targets, this);
+    if (res) this.incrementVersion();
+    return res;
   }
 }

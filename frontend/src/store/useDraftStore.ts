@@ -66,6 +66,8 @@ export const useDraftStore = create<DraftState>((set, get) => ({
   setIsJoining: (isJoining) => set({ isJoining }),
 
   initSocketListeners: () => {
+    get().cleanupSocketListeners();
+
     socket.on('connect', () => {
       logger.info('Socket connected, attempting re-join...');
       const savedRoomId = localStorage.getItem('mtg_room_id');
@@ -184,11 +186,14 @@ export const useDraftStore = create<DraftState>((set, get) => ({
     socket.off('room_created');
     socket.off('joined_successfully');
     socket.off('room_update');
+    socket.off('room_patch');
     socket.off('draft_started');
     socket.off('draft_update');
     socket.off('kick_player');
     socket.off('room_destroyed');
     socket.off('error_join');
+    socket.off('change_avatar');
+    socket.off('match_started');
   },
 
   joinRoom: (roomId, playerName) => {

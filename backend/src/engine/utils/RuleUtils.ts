@@ -1,6 +1,6 @@
 import { EnginePrefix, GameObject, GameState, GameEvent, ResolutionContext, Zone, PlayerId, StackObject } from "@shared/engine_types";
 import { getProcessors } from "../modules/ProcessorRegistry";
-
+import { LogCategory } from "./EngineLogger";
 /**
  * RuleUtils: Centralized logic for common MTG rule checks.
  * Ensures consistent behavior for type-line parsing and keyword detection.
@@ -195,6 +195,18 @@ export class RuleUtils {
             case "HAND_SIZE":
             case "CARDS_IN_HAND_COUNT":
                 return state.players[controllerId]?.hand.length || 0;
+
+            case "CARDS_DRAWN_THIS_TURN":
+                return state.turnState.cardsDrawnThisTurn[controllerId] || 0;
+
+            case "LIFE_GAINED_THIS_TURN":
+                return state.turnState.lifeGainedThisTurn[controllerId] || 0;
+
+            case "SPELLS_CAST_THIS_TURN":
+                return state.turnState.spellsCastThisTurn[controllerId] || 0;
+
+            case "CREATURES_DIED_THIS_TURN_COUNT":
+                return state.turnState.creaturesDiedThisTurn?.length || 0;
 
             case "EVENT_AMOUNT":
                 return (stackObject?.data as any)?.eventAmount ??

@@ -26,6 +26,9 @@ export class PlayerActionProcessor {
 
     // 1. Intercept for special actions (Combat)
     if (state.pendingAction?.playerId === playerId) {
+      if (state.pendingAction.type === ActionType.Targeting) {
+        return engine.processors.choice.resolveTargeting(state, playerId, cardId, engine);
+      }
       if (state.pendingAction.type === ActionType.DeclareAttackers) {
         return engine.declareAttacker(playerId, cardId);
       }
@@ -425,12 +428,14 @@ export class PlayerActionProcessor {
     const cardIndex = player.hand.findIndex(c => c.id === cardInstanceId);
     if (cardIndex === -1) return { finished: false, success: false };
 
-    const card = player.hand.splice(cardIndex, 1)[0];
-    card.zone = Zone.Graveyard;
-    player.graveyard.push(card);
+    const card = player.hand[cardIndex];
+    if (!card) return { finished: false, success: false };
+    
+    // CR 701.8: To discard a card, move it from hand to graveyard.
+    const { action: ActionProcessor } = getProcessors(state);
+    ActionProcessor.moveCard(state, card, Zone.Graveyard, playerId, "top", false, true);
 
     const sourceId = state.pendingAction?.sourceId;
-    TrP.onEvent(state, { type: TriggerEvent.Discard, playerId, data: { card, sourceId } });
 
     if (player.pendingDiscardCount > 0) {
       player.pendingDiscardCount--;
@@ -463,15 +468,15 @@ export class PlayerActionProcessor {
           return { finished: false, success: true };
         }
 
-        // Increment effect index on stack object to avoid infinite loops when resuming resolution
+        // Restore effect index on stack object to ensure we resume at the correct point
         const stackObj = state.pendingAction.data?.stackObj;
         if (stackObj) {
           const realStackObj = state.stack.find(s => s.id === stackObj.id);
           if (realStackObj && realStackObj.data) {
             const currentIndex = (state.pendingAction.data as any)?.nextEffectIndex;
             if (currentIndex !== undefined) {
-              realStackObj.data.nextEffectIndex = currentIndex + 1;
-              logger.debug(state, LogCategory.ACTION, `[DISCARD-RESOLUTION] Incremented nextEffectIndex to ${realStackObj.data.nextEffectIndex} for ${realStackObj.id}`);
+              realStackObj.data.nextEffectIndex = currentIndex;
+              logger.debug(state, LogCategory.ACTION, `[DISCARD-RESOLUTION] Restored nextEffectIndex to ${realStackObj.data.nextEffectIndex} for ${realStackObj.id}`);
             }
           }
         }

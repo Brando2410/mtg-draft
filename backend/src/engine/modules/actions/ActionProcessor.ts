@@ -99,11 +99,13 @@ export class ActionProcessor {
         : targetPlayerId;
     const effectiveTargetId = destinationPlayerId;
 
+    if (isDiscard) {
+      if (!state.turnState.lastDiscardedIds) state.turnState.lastDiscardedIds = [];
+      state.turnState.lastDiscardedIds.push(card.id);
+    }
+
     // CR 701.8: To discard a card, move it from hand to graveyard.
-    if (
-      (isDiscard || (fromZone === Zone.Hand && to === Zone.Graveyard)) &&
-      !isDraw
-    ) {
+    if (isDiscard) {
       TriggerProcessor.onEvent(
         state,
         {
@@ -111,15 +113,12 @@ export class ActionProcessor {
           playerId: card.ownerId,
           payload: {
             object: card,
-            fromZone: Zone.Hand,
-            toZone: Zone.Graveyard,
+            card: card,
+            fromZone: fromZone,
+            toZone: to,
           },
         },
       );
-      if (!state.turnState.lastDiscardedIds)
-        state.turnState.lastDiscardedIds = [];
-      state.turnState.lastDiscardedIds.push(card.id);
-      console.log(`[DISCARD-DEBUG] Card ${card.definition.name} (${card.id}) added to lastDiscardedIds. Current count: ${state.turnState.lastDiscardedIds.length}`);
     }
 
     const ReplacementProcessor = getProcessors(state).replacement;

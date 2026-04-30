@@ -168,16 +168,9 @@ export class ChoiceEffectHandler {
           context,
           effect,
         ) as string[];
-        logger.debug(state, LogCategory.ACTION, `[CHOICE-HANDLER-DEBUG] Mapping: ${targetZoneMapping}, poolIds: ${JSON.stringify(poolIds)}`);
         sourceCards = poolIds
-          .map((id: string) => {
-            const obj = RuleUtils.findObject(state, id);
-            if (!obj) logger.debug(state, LogCategory.ACTION, `[CHOICE-HANDLER-DEBUG] RuleUtils.findObject FAILED for id: ${id}`);
-            else logger.debug(state, LogCategory.ACTION, `[CHOICE-HANDLER-DEBUG] Found object: ${obj.definition?.name} in zone ${obj.zone}`);
-            return obj;
-          })
+          .map((id: string) => RuleUtils.findObject(state, id))
           .filter(Boolean) as GameObject[];
-        logger.debug(state, LogCategory.ACTION, `[CHOICE-HANDLER-DEBUG] sourceCards count: ${sourceCards.length}`);
       } else if (
         targetPlayer ||
         targetZoneMapping === TargetMapping.Target1HandRevealPick ||

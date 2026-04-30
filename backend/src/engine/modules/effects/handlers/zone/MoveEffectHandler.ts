@@ -24,6 +24,7 @@ import { getProcessors } from "../../../ProcessorRegistry";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
 import { TriggerProcessor } from "../../triggers/TriggerProcessor";
 import { SearchEffectHandler } from "./SearchEffectHandler";
+import { DrawCardsHandler } from "./DrawCardsHandler";
 
 /**
  * Strategy for CR 701: Keyword Actions (Zone Movement)
@@ -68,6 +69,7 @@ export class MoveEffectHandler {
     );
 
     // Map legacy effect types to selection modes if needed
+    if (effect.type === EffectType.DrawCards) return DrawCardsHandler.handle(state, effect, context);
     if (effect.type === EffectType.LookAtTopAndPick) return this.resolveLookAtTopAndPick(state, effect, context, finalTargetIds);
     if (effect.type === EffectType.RevealUntilCondition) return this.resolveRevealUntilCondition(state, effect, context);
     if (effect.type === EffectType.ExchangeHandAndGraveyard) return this.resolveExchangeHandAndGraveyard(state, effect, targets, controllerId);

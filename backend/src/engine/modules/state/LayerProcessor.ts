@@ -36,8 +36,9 @@ export class LayerProcessor {
     providedActiveEffects?: ContinuousEffect[],
   ) {
     // FAST PATH: Check the state-level stats cache
-    if (state._statsCache && state._statsCache.version === state.stateVersion && state._statsCache.has(obj.id)) {
-      return state._statsCache.get(obj.id);
+    const cache = state._statsCache as any;
+    if (cache && (cache instanceof Map) && (cache as any).version === state.stateVersion && cache.has(obj.id)) {
+      return cache.get(obj.id);
     }
 
     // RECURSION GUARD: Prevent infinite loops where conditions depend on effective stats
@@ -267,11 +268,11 @@ export class LayerProcessor {
       };
 
       // CACHE RESULT
-      if (!state._statsCache || state._statsCache.version !== state.stateVersion) {
+      if (!state._statsCache || !(state._statsCache instanceof Map) || (state._statsCache as any).version !== state.stateVersion) {
         state._statsCache = new Map();
-        state._statsCache.version = state.stateVersion;
+        (state._statsCache as any).version = state.stateVersion;
       }
-      state._statsCache.set(obj.id, stats);
+      (state._statsCache as Map<any, any>).set(obj.id, stats);
 
       return stats;
     } finally {
@@ -550,14 +551,14 @@ export class LayerProcessor {
       layerHash += `|${p.life}:${p.hand.length}:${p.graveyard.length}:${Object.values(p.manaPool || {}).join(',')}`;
     });
 
-    const canReuseCache = state._statsCache && state._lastLayerHash === layerHash;
+    const canReuseCache = state._statsCache && (state._statsCache instanceof Map) && state._lastLayerHash === layerHash;
 
     if (!canReuseCache) {
       state._statsCache = new Map();
       state._lastLayerHash = layerHash;
     }
     // Always update version to current state version to allow hits in getEffectiveStats
-    state._statsCache!.version = state.stateVersion;
+    (state._statsCache as any).version = state.stateVersion;
 
     const effects = state.ruleRegistry.continuousEffects || [];
     const activeEffects = effects.filter((e) => {

@@ -6,18 +6,12 @@ export const EssenceknitScholar: CardDefinition = {
     scryfall_id: "2a3cba55-3fae-4d45-ae03-4d662ec13718",
     rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/2/a/2a3cba55-3fae-4d45-ae03-4d662ec13718.jpg?1775938295",
-    colors: [
-        "B",
-        "G"
-    ],
-    types: [
-        "Creature"
-    ],
-    subtypes: [
-        "Dryad",
-        "Warlock"
-    ],
+    colors: ["B", "G"],
+    types: ["Creature"],
+    subtypes: ["Dryad", "Warlock"],
     keywords: [],
+    power: "3",
+    toughness: "1",
     oracleText: "When this creature enters, create a 1/1 black and green Pest creature token with \"Whenever this token attacks, you gain 1 life.\"\nAt the beginning of your end step, if a creature died under your control this turn, draw a card.",
     abilities: [
         {
@@ -34,7 +28,7 @@ export const EssenceknitScholar: CardDefinition = {
                         power: 1,
                         toughness: 1,
                         oracleText: "Whenever this token attacks, you gain 1 life.",
-                        image_url: 'https://cards.scryfall.io/png/front/d/0/d0ddbe3e-4a66-494d-9304-7471232549bf.png?1682693901',
+                        image_url: 'https://cards.scryfall.io/normal/front/4/0/40b22872-7b7b-4a6d-a343-4152e552b00a.jpg?1775828415',
                         abilities: [
                             {
                                 type: AbilityType.Triggered,
@@ -52,7 +46,5 @@ export const EssenceknitScholar: CardDefinition = {
             condition: `${ConditionType.PlayerIsController} && ${ConditionType.CreatureDiedUnderYourControlThisTurn}`,
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }
-    ],
-    power: "3",
-    toughness: "1"
+    ]
 };

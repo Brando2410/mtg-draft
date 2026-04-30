@@ -162,7 +162,7 @@ export class TurnProcessor {
 
     if (state.currentStep === Step.Untap || state.currentStep === Step.Cleanup) {
       // logger.info(state, LogCategory.TURN, `[FLOW] Auto-advancing from administrative step ${state.currentStep}`);
-      this.advanceStep(state, engine);
+      engine.advanceStep();
     } else {
       engine.resetPriorityToActivePlayer();
     }
@@ -283,7 +283,7 @@ export class TurnProcessor {
         if (eff.duration?.type === DurationType.UntilEndOfYourNextTurn && eff.duration.untilTurnOfPlayerId === activeId) {
           if (eff.timestamp < state.turnState.turnStartTime) return false;
         }
-        return eff.duration.type !== DurationType.UntilEndOfTurn;
+        return eff.duration?.type !== DurationType.UntilEndOfTurn;
       });
       state.ruleRegistry.triggeredAbilities = state.ruleRegistry.triggeredAbilities.filter(
         t => !t.duration || t.duration.type !== DurationType.UntilEndOfTurn

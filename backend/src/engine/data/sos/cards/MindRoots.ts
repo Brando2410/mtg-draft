@@ -37,8 +37,7 @@ export const MindRoots: CardDefinition = {
                         {
                             type: EffectType.MoveToZone,
                             zone: Zone.Battlefield,
-                            tapped: true,
-                            targetMapping: TargetMapping.Target1
+                            tapped: true
                         }
                     ]
                 }
