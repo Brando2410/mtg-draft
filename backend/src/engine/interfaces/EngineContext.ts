@@ -61,7 +61,6 @@ export interface EffectExecutionOptions {
     effect: EffectDefinition;
     sourceId: string;
     validTargetIds: string[];
-    log: (m: string) => void;
     stackObject?: StackObject;
     parentContext?: ResolutionContext;
     controllerIdOverride?: PlayerId;
@@ -73,7 +72,6 @@ export interface ResolveEffectsOptions {
     effects: EffectDefinition[];
     sourceId: string;
     targets: string[];
-    log: (m: string) => void;
     startIndex?: number;
     stackObject?: StackObject;
     parentContext?: ResolutionContext;
@@ -82,7 +80,6 @@ export interface ResolveEffectsOptions {
 }
 
 export interface EngineContext {
-    log(m: string): void;
     getPlayerName(id: PlayerId): string;
 
     // Core actions
@@ -110,7 +107,7 @@ export interface EngineContext {
     confirmBlockers(pId: PlayerId): void;
 
     // Targeting
-    finaliseTargeting?(pId: PlayerId, targets: string[]): boolean;
+    finaliseTargeting(pId: PlayerId, targets: string[]): boolean;
     // Processors (Service Registry to avoid circular dependencies)
     processors: ProcessorRegistry;
 

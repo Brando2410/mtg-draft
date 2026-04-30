@@ -2,10 +2,11 @@ import { PlayerId } from "@shared/engine_types";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
 import { IEffectHandler } from "../../IEffectHandler";
+import { LogCategory } from "../../../../utils/EngineLogger";
 
 export const ManaHandler: IEffectHandler = {
-  handle(state, effect, log, context) {
-    const { mana: MP } = getProcessors(state);
+  handle(state, effect, context) {
+    const { logger, mana: MP } = getProcessors(state);
     const { controllerId } = context;
     const player = state.players[controllerId as PlayerId];
     if (!player) return;
@@ -38,12 +39,12 @@ export const ManaHandler: IEffectHandler = {
       player.manaPool.R += added.colored.R || 0;
       player.manaPool.G += added.colored.G || 0;
       player.manaPool.C += added.colored.C || 0;
-      log(`[MANA] ${player.name} added ${amount}.`);
+      logger.info(state, LogCategory.ACTION, `[MANA] ${player.name} added ${amount}.`);
       return;
     }
 
     const value = (effect as any).value || "{0}";
     MP.deductManaCost(player, value.startsWith("{") ? value : `{${value}}`, state);
-    log(`[PAID] ${player.name} paid ${value}.`);
+    logger.info(state, LogCategory.ACTION, `[PAID] ${player.name} paid ${value}.`);
   }
 };

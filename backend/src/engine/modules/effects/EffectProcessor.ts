@@ -9,6 +9,7 @@ import {
   TargetDefinition,
   TargetMapping, TargetType
 } from "@shared/engine_types";
+import { LogCategory } from "../../utils/EngineLogger";
 import { Targetable } from "@shared/types/targeting";
 import {
   EffectExecutionOptions
@@ -51,7 +52,6 @@ export interface ResolveEffectsOptions {
   effects: EffectDefinition[];
   sourceId: string;
   targets: string[];
-  log: (m: string) => void;
   startIndex?: number;
   stackObject?: StackObject;
   parentContext?: ResolutionContext;
@@ -70,13 +70,13 @@ export class EffectProcessor {
       effects,
       sourceId,
       targets,
-      log,
       startIndex = 0,
       stackObject,
       parentContext,
       controllerIdOverride,
       lookingCards
     } = options;
+    const { logger } = getProcessors(state);
 
     // CR 608.2b: Check target legality on resolution (Fizzle check)
     // MTG Rule: The check is made once as the spell or ability starts to resolve from the stack.
@@ -95,21 +95,20 @@ export class EffectProcessor {
       }, targets, effects);
 
       if (fizzle) {
-        log(`[FIZZLE] ${stackObject?.card?.definition.name || "Spell"}: All targets have become illegal.`);
+        logger.info(state, LogCategory.ACTION, `[FIZZLE] ${stackObject?.card?.definition.name || "Spell"}: All targets have become illegal.`);
         return true; // Return true as fully resolved (but fizzled)
       }
     }
 
     for (let i = startIndex; i < effects.length; i++) {
       const effect = effects[i];
-      if (log) log(`[DEBUG] EffectProcessor: Executing effect ${i}/${effects.length}: ${effect.type}. Targets: ${JSON.stringify(targets)}. Index: ${i}, StartIndex: ${startIndex}`);
+      logger.debug(state, LogCategory.ACTION, `[DEBUG] EffectProcessor: Executing effect ${i}/${effects.length}: ${effect.type}. Targets: ${JSON.stringify(targets)}. Index: ${i}, StartIndex: ${startIndex}`);
 
       this.executeEffect({
         state,
         effect,
         sourceId,
         validTargetIds: targets, // Note: targets here is the initial set, executeEffect resolves mappings
-        log,
         stackObject,
         parentContext,
         controllerIdOverride,
@@ -192,12 +191,12 @@ export class EffectProcessor {
       state,
       effect,
       sourceId,
-      log,
       stackObject,
       parentContext,
       controllerIdOverride,
       lookingCards,
     } = options;
+    const { logger } = getProcessors(state);
     const targets = options.validTargetIds || [];
 
     const sourceObj =
@@ -246,7 +245,6 @@ export class EffectProcessor {
             effects: effect.onFailureEffects,
             sourceId,
             targets,
-            log,
             startIndex: 0,
             stackObject,
             parentContext,
@@ -367,7 +365,6 @@ export class EffectProcessor {
         effect,
         sourceId,
         controllerId,
-        log,
         stackObject,
         parentContext,
       );
@@ -376,7 +373,7 @@ export class EffectProcessor {
     // Registry Dispatcher
     const handler = EffectRegistry[effect.type];
     if (handler) {
-      return handler.handle(state, effect, log, {
+      return handler.handle(state, effect, {
         ...context,
         targets: validTargetIds,
       });
@@ -384,7 +381,7 @@ export class EffectProcessor {
 
     // Strategy Dispatcher (Legacy) - DEPRECATED: All effects now use the Registry
     if (!EffectRegistry[effect.type]) {
-      log(`[WARNING] Unknown/Unregistered effect type: ${effect.type}`);
+      logger.info(state, LogCategory.ACTION, `[WARNING] Unknown/Unregistered effect type: ${effect.type}`);
     }
   }
 
@@ -500,11 +497,10 @@ export class EffectProcessor {
     effect: EffectDefinition,
     sourceId: string,
     controllerId: PlayerId,
-    log: (m: string) => void,
     stackObject?: StackObject,
     parentContext?: ResolutionContext,
   ) {
-    const { choiceGenerator: ChoiceGenerator, targeting: TP } = getProcessors(state);
+    const { choiceGenerator: ChoiceGenerator, targeting: TP, logger } = getProcessors(state);
     const targetDef = Array.isArray(effect.targetDefinition)
       ? effect.targetDefinition[0]
       : effect.targetDefinition!;
@@ -587,7 +583,7 @@ export class EffectProcessor {
     );
 
     if (validCandidates.length === 0) {
-      log(`[INFO] EffectProcessor: No valid targets for interactive selection. Skipping.`);
+      logger.info(state, LogCategory.ACTION, `[INFO] EffectProcessor: No valid targets for interactive selection. Skipping.`);
       return;
     }
 
@@ -638,7 +634,7 @@ export class EffectProcessor {
           xValue: stackObject?.xValue
         }
       };
-      log(`[TARGETING] Prompting for battlefield targeting for effect resolution...`);
+      logger.info(state, LogCategory.ACTION, `[TARGETING] Prompting for battlefield targeting for effect resolution...`);
       return;
     }
 

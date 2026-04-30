@@ -8,7 +8,6 @@ export interface IEffectHandler {
     handle(
         state: GameState, 
         effect: EffectDefinition, 
-        log: (m: string) => void, 
         context: ResolutionContext
     ): void | boolean;
 }

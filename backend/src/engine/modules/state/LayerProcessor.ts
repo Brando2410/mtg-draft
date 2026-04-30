@@ -10,6 +10,7 @@ import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
 let TargetingProcessor: any;
 let ConditionProcessor: any;
+import { LogCategory, EngineLogger } from "../../utils/EngineLogger";
 
 import type { SpellProcessor as SpellProcessorType } from "../actions/spells/SpellProcessor";
 import type { EffectProcessor as EffectProcessorType } from "../effects/EffectProcessor";
@@ -32,7 +33,6 @@ export class LayerProcessor {
   public static getEffectiveStats(
     obj: GameObject,
     state: GameState,
-    log?: (m: string) => void,
     providedActiveEffects?: ContinuousEffect[],
   ) {
     // FAST PATH: Check the state-level stats cache
@@ -94,7 +94,7 @@ export class LayerProcessor {
       });
 
       for (const effect of layerMap[1]) {
-        if (this.isTarget(state, effect, obj.id, log) && effect.copyFromId) {
+        if (this.isTarget(state, effect, obj.id) && effect.copyFromId) {
           const sourceObj =
             state.battlefield.find((o) => o.id === effect.copyFromId) ||
             RuleUtils.findObject(state, effect.copyFromId);
@@ -342,7 +342,6 @@ export class LayerProcessor {
     state: GameState,
     effect: ContinuousEffect,
     objId: string,
-    log?: (m: string) => void,
   ): boolean {
     if (!ConditionProcessor || !TargetingProcessor) {
       const { condition, targeting } = getProcessors(state);
@@ -394,8 +393,7 @@ export class LayerProcessor {
               state,
               obj,
               effect.restrictions || [],
-              { sourceId: effect.sourceId, controllerId: effect.controllerId },
-              log,
+              { sourceId: effect.sourceId, controllerId: effect.controllerId }
             )
           );
         case "MATCHING_PERMANENTS":
@@ -403,8 +401,7 @@ export class LayerProcessor {
             state,
             obj,
             effect.restrictions || [],
-            { sourceId: effect.sourceId, controllerId: effect.controllerId },
-            log,
+            { sourceId: effect.sourceId, controllerId: effect.controllerId }
           );
         case "ALL_CREATURES_OPPONENTS_CONTROL":
         case "OPPONENTS_CREATURES":
@@ -425,8 +422,7 @@ export class LayerProcessor {
             state,
             obj,
             effect.restrictions || [],
-            { sourceId: effect.sourceId, controllerId: effect.controllerId },
-            log,
+            { sourceId: effect.sourceId, controllerId: effect.controllerId }
           );
         case "ENCHANTED_CREATURE":
         case "ENCHANTED_PERMANENT": {
@@ -446,8 +442,7 @@ export class LayerProcessor {
               state,
               obj,
               effect.restrictions || [],
-              { sourceId: effect.sourceId, controllerId: effect.controllerId },
-              log,
+              { sourceId: effect.sourceId, controllerId: effect.controllerId }
             )
           );
         default:
@@ -605,7 +600,7 @@ export class LayerProcessor {
 
     // 2. Update Battlefield objects
     state.battlefield.forEach((obj) => {
-      const stats = this.getEffectiveStats(obj, state, undefined, activeEffects);
+      const stats = this.getEffectiveStats(obj, state, activeEffects);
 
       // --- SUMMONING SICKNESS & HASTE FIX ---
       // CR 302.6: Haste allows creatures to bypass summoning sickness.
@@ -630,7 +625,7 @@ export class LayerProcessor {
     Object.values(state.players).forEach((player) => {
       player.virtualHand = [];
       player.graveyard.forEach((card: GameObject) => {
-        const stats = this.getEffectiveStats(card, state, undefined, activeEffects);
+        const stats = this.getEffectiveStats(card, state, activeEffects);
         const hasPermission = PriorityProcessor.findPermissionEffect(
           state,
           player.id,
@@ -730,7 +725,7 @@ export class LayerProcessor {
       ...state.exile
     ].forEach((obj) => {
       // NOTE: We pass activeEffects to avoid O(N^2) continuous effect scanning
-      const stats = this.getEffectiveStats(obj, state, undefined, activeEffects);
+      const stats = this.getEffectiveStats(obj, state, activeEffects);
 
       const isVirtual = Object.values(state.players).some((p) =>
         p.virtualHand.some((v) => v.id === obj.id),

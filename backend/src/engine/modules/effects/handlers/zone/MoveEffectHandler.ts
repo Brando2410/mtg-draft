@@ -15,6 +15,7 @@ import {
   TriggerEvent,
   Zone
 } from "@shared/engine_types";
+import { LogCategory } from "../../../../utils/EngineLogger";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { ActionProcessor } from "../../../actions/ActionProcessor";
 import { TargetingProcessor } from "../../../actions/targeting/TargetingProcessor";
@@ -28,7 +29,8 @@ import { SearchEffectHandler } from "./SearchEffectHandler";
  * Strategy for CR 701: Keyword Actions (Zone Movement)
  */
 export class MoveEffectHandler {
-  public static handle(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
+  public static handle(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    const { logger } = getProcessors(state);
     const { targets = [], controllerId, stackObject, parentContext } = context || {};
     const moveEff = effect as MoveEffect;
     const drawEff = effect as DrawEffect;
@@ -61,14 +63,14 @@ export class MoveEffectHandler {
       }
     }
 
-    log(
+    logger.info(state, LogCategory.ACTION, 
       `[MOVE-ZONE] Type: ${effect.type}, Selection: ${selectionType}, Zone: ${moveEff.zone}`,
     );
 
     // Map legacy effect types to selection modes if needed
-    if (effect.type === EffectType.LookAtTopAndPick) return this.resolveLookAtTopAndPick(state, effect, log, context, finalTargetIds);
-    if (effect.type === EffectType.RevealUntilCondition) return this.resolveRevealUntilCondition(state, effect, log, context);
-    if (effect.type === EffectType.ExchangeHandAndGraveyard) return this.resolveExchangeHandAndGraveyard(state, effect, targets, controllerId, log);
+    if (effect.type === EffectType.LookAtTopAndPick) return this.resolveLookAtTopAndPick(state, effect, context, finalTargetIds);
+    if (effect.type === EffectType.RevealUntilCondition) return this.resolveRevealUntilCondition(state, effect, context);
+    if (effect.type === EffectType.ExchangeHandAndGraveyard) return this.resolveExchangeHandAndGraveyard(state, effect, targets, controllerId);
 
     if (effect.type === EffectType.PutRemainderOnBottomRandom && finalTargetIds.length > 1) ActionProcessor.shuffle(finalTargetIds);
 
@@ -77,26 +79,25 @@ export class MoveEffectHandler {
 
     if (fromTopResolved > 0 && (effect.sourceZones || []).includes(Zone.Library)) {
       const affectedPlayerId = (finalTargetIds.find((tid: string) => state.players[tid as PlayerId]) as PlayerId) || controllerId;
-      return this.resolveLibraryTopMoves(state, { ...effect, fromTop: fromTopResolved }, affectedPlayerId, log, context);
+      return this.resolveLibraryTopMoves(state, { ...effect, fromTop: fromTopResolved }, affectedPlayerId, context);
     }
 
-    if (selectionType === SelectionType.Target && finalTargetIds.length > 0) return this.resolveMoveTargets(state, effect, finalTargetIds, log, context);
-    if (selectionType === SelectionType.Search && (effect.sourceZones || []).includes(Zone.Library)) return SearchEffectHandler.handle(state, effect, log, context);
-    if (selectionType === SelectionType.All) return this.resolveMassMove(state, effect, finalTargetIds, context, log);
-    if (effect.type === EffectType.ExileUntilManaValue) return this.resolveExileUntilManaValue(state, effect, controllerId, log, context);
+    if (selectionType === SelectionType.Target && finalTargetIds.length > 0) return this.resolveMoveTargets(state, effect, finalTargetIds, context);
+    if (selectionType === SelectionType.Search && (effect.sourceZones || []).includes(Zone.Library)) return SearchEffectHandler.handle(state, effect, context);
+    if (selectionType === SelectionType.All) return this.resolveMassMove(state, effect, finalTargetIds, context);
+    if (effect.type === EffectType.ExileUntilManaValue) return this.resolveExileUntilManaValue(state, effect, controllerId, context);
 
     if (effect.targetDefinition && finalTargetIds.length === 0 && !effect.targetMapping) {
-      return this.resolveInteractiveMovementSelection(state, effect, controllerId, log, context);
+      return this.resolveInteractiveMovementSelection(state, effect, controllerId, context);
     }
 
-    return this.resolveSingleTargetMove(state, effect, finalTargetIds, log, context);
+    return this.resolveSingleTargetMove(state, effect, finalTargetIds, context);
   }
 
   private static resolveInteractiveMovementSelection(
     state: GameState,
     effect: EffectDefinition,
     controllerId: PlayerId,
-    log: (m: string) => void,
     context: ResolutionContext,
   ) {
     const { stackObject } = context;
@@ -152,19 +153,20 @@ export class MoveEffectHandler {
       }),
     );
 
+    const { logger, effect: EffectProcessor } = getProcessors(state);
+
     if (validCandidates.length === 0) {
-      log(
+      logger.info(state, LogCategory.ACTION, 
         `[INFO] MoveEffectHandler: No valid objects found for "${effect.label || "Choice"}". Auto-skipping.`,
       );
       return;
     }
 
-    const processors = getProcessors(state);
     const resolvedMin =
       targetDef.minCount !== undefined
-        ? processors.effect.resolveAmount(state, targetDef.minCount as any, context)
-        : processors.effect.resolveAmount(state, targetDef.count || 1 as any, context);
-    const resolvedMax = processors.effect.resolveAmount(
+        ? EffectProcessor.resolveAmount(state, targetDef.minCount as any, context)
+        : EffectProcessor.resolveAmount(state, targetDef.count || 1 as any, context);
+    const resolvedMax = EffectProcessor.resolveAmount(
       state,
       targetDef.count || 1,
       context,
@@ -207,9 +209,9 @@ export class MoveEffectHandler {
     state: GameState,
     effect: EffectDefinition,
     controllerId: PlayerId,
-    log: (m: string) => void,
     context: ResolutionContext,
   ) {
+    const { logger } = getProcessors(state);
     const { stackObject, parentContext } = context;
     const player = state.players[controllerId];
     if (!player) return;
@@ -226,7 +228,7 @@ export class MoveEffectHandler {
 
       totalMV += mv;
       cards.push(card);
-      ActionProcessor.moveCard(state, card, Zone.Exile, controllerId, log);
+      ActionProcessor.moveCard(state, card, Zone.Exile, controllerId);
       TriggerProcessor.onEvent(
         state,
         {
@@ -234,13 +236,11 @@ export class MoveEffectHandler {
           targetId: card.id,
           sourceId: stackObject?.sourceId || "",
           sourceZone: Zone.Library,
-        },
-        log,
-      );
+        });
     }
 
     if (cards.length > 0) {
-      log(
+      logger.info(state, LogCategory.ACTION, 
         `[EXILE-UNTIL] Exiled ${cards.length} cards with total MV ${totalMV} (Threshold: ${threshold}).`,
       );
 
@@ -277,7 +277,6 @@ export class MoveEffectHandler {
   private static resolveLookAtTopAndPick(
     state: GameState,
     effect: EffectDefinition,
-    log: (m: string) => void,
     context: ResolutionContext,
     targets: string[] = [],
   ) {
@@ -303,12 +302,12 @@ export class MoveEffectHandler {
         fromTop: amount,
       } as any,
       affectedPlayerId,
-      log,
       context,
     );
   }
 
-  private static resolveRevealUntilCondition(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
+  private static resolveRevealUntilCondition(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    const { logger } = getProcessors(state);
     const { controllerId, stackObject } = context;
     const player = state.players[controllerId];
     if (!player) return;
@@ -318,7 +317,7 @@ export class MoveEffectHandler {
 
     while (player.library.length > 0) {
       const card = player.library.pop()!;
-      ActionProcessor.moveCard(state, card, Zone.Exile, controllerId, log);
+      ActionProcessor.moveCard(state, card, Zone.Exile, controllerId);
 
       card.isRevealed = true;
       revealed.push(card);
@@ -337,8 +336,8 @@ export class MoveEffectHandler {
     }
 
     const found = !!targetCard;
-    if (log && revealed.length > 0)
-      log(
+    if (revealed.length > 0)
+      logger.info(state, LogCategory.ACTION, 
         `[REVEAL-UNTIL] Exiled ${revealed.length} cards from library. Found match: ${found}`,
       );
 
@@ -359,7 +358,6 @@ export class MoveEffectHandler {
           c,
           remainderZone,
           c.ownerId,
-          log,
           remainderPos as number | "top" | "bottom",
         );
       }
@@ -417,7 +415,6 @@ export class MoveEffectHandler {
           effect: nextEffect,
           sourceId: targetCard.id,
           validTargetIds: [targetCard.id],
-          log,
           parentContext: context,
         });
         if (state.pendingAction) return;
@@ -425,7 +422,8 @@ export class MoveEffectHandler {
     }
   }
 
-  private static resolveExchangeHandAndGraveyard(state: GameState, effect: EffectDefinition, targets: string[], controllerId: PlayerId, log: (m: string) => void) {
+  private static resolveExchangeHandAndGraveyard(state: GameState, effect: EffectDefinition, targets: string[], controllerId: PlayerId) {
+    const { logger } = getProcessors(state);
     const playerIds =
       targets.length > 0 ? targets.map((t) => t as PlayerId) : [controllerId];
     playerIds.forEach((pid) => {
@@ -433,18 +431,19 @@ export class MoveEffectHandler {
       if (player) {
         const oldHand = [...player.hand];
         const oldGY = [...player.graveyard];
-        log(`[EXCHANGE] Swapping hand/graveyard for ${player.name}.`);
+        logger.info(state, LogCategory.ACTION, `[EXCHANGE] Swapping hand/graveyard for ${player.name}.`);
         oldGY.forEach((c) =>
-          ActionProcessor.moveCard(state, c, Zone.Hand, pid, log),
+          ActionProcessor.moveCard(state, c, Zone.Hand, pid),
         );
         oldHand.forEach((c) =>
-          ActionProcessor.moveCard(state, c, Zone.Graveyard, pid, log),
+          ActionProcessor.moveCard(state, c, Zone.Graveyard, pid),
         );
       }
     });
   }
 
-  private static resolveMoveTargets(state: GameState, effect: EffectDefinition, targetIds: string[], log: (m: string) => void, context: ResolutionContext) {
+  private static resolveMoveTargets(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext) {
+    const { logger } = getProcessors(state);
     const { controllerId, stackObject } = context;
     const parentContext = context;
     const moveEff = effect as MoveEffect;
@@ -460,7 +459,6 @@ export class MoveEffectHandler {
             state,
             effect,
             tid as PlayerId,
-            log,
             context,
           );
         }
@@ -468,11 +466,11 @@ export class MoveEffectHandler {
       }
 
       const obj = this.findObject(state, tid, context);
-      if (log) log(`[DEBUG] MoveEffectHandler.resolveMoveTargets: findObject for ${tid} returned ${obj ? obj.definition.name + " in " + obj.zone : "null"}`);
+      logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler.resolveMoveTargets: findObject for ${tid} returned ${obj ? obj.definition.name + " in " + obj.zone : "null"}`);
       if (obj) {
         const from = obj.zone;
         const destPlayerId = moveEff.ownerControl ? obj.ownerId : controllerId;
-        ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId, log, moveEff.libraryPosition as number | "top" | "bottom", false, isDiscard);
+        ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId, moveEff.libraryPosition as number | "top" | "bottom", false, isDiscard);
         if (zone === Zone.Hand || zone === Zone.Library) {
           obj.isRevealed = true;
         }
@@ -487,7 +485,7 @@ export class MoveEffectHandler {
             if (!stackObject.data.exiledIds) stackObject.data.exiledIds = [];
             if (!stackObject.data.exiledIds.includes(tid)) {
               stackObject.data.exiledIds.push(tid);
-              console.log(`[DEBUG] MoveEffectHandler: Added ${tid} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
+              logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: Added ${tid} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
             }
           }
 
@@ -504,9 +502,7 @@ export class MoveEffectHandler {
               targetId: tid,
               sourceId: stackObject?.sourceId || "",
               sourceZone: from,
-            },
-            log,
-          );
+            });
         }
 
         // Handle starting counters (Rule 614.1c replacement-style entry)
@@ -530,7 +526,7 @@ export class MoveEffectHandler {
             if (obj) {
               obj.counters[finalType] =
                 (obj.counters[finalType] || 0) + resolvedAmount;
-              log(
+              logger.info(state, LogCategory.ACTION, 
                 `[COUNTERS] ${obj.definition.name} enters with ${resolvedAmount} ${finalType} counter(s).`,
               );
             }
@@ -545,7 +541,6 @@ export class MoveEffectHandler {
             effects: effect.effects,
             sourceId: stackObject?.sourceId || tid,
             targets: [tid],
-            log,
             startIndex: 0,
             stackObject,
             parentContext: context,
@@ -555,7 +550,8 @@ export class MoveEffectHandler {
     });
   }
 
-  private static resolveLibraryTopMoves(state: GameState, effect: EffectDefinition, controllerId: PlayerId, log: (m: string) => void, context: ResolutionContext) {
+  private static resolveLibraryTopMoves(state: GameState, effect: EffectDefinition, controllerId: PlayerId, context: ResolutionContext) {
+    const { logger } = getProcessors(state);
     const { stackObject } = context;
     const parentContext = context;
     const player = state.players[controllerId];
@@ -568,7 +564,7 @@ export class MoveEffectHandler {
 
     // CR 121.2: If a player is forbidden from drawing cards, draw effects are ignored.
     if (effect.isDraw && !RestrictionValidator.canDrawCards(state, controllerId)) {
-      log(`${player.name} cannot draw cards due to a restriction.`);
+      logger.info(state, LogCategory.ACTION, `${player.name} cannot draw cards due to a restriction.`);
       return;
     }
 
@@ -734,7 +730,7 @@ export class MoveEffectHandler {
     }
     cards.forEach((c) => {
       const from = c.zone;
-      ActionProcessor.moveCard(state, c, zone as Zone, controllerId, log, "top", effect.type === EffectType.DrawCards);
+      ActionProcessor.moveCard(state, c, zone as Zone, controllerId, "top", effect.type === EffectType.DrawCards);
       if (zone === Zone.Battlefield) {
         if (moveEff.tapped) c.isTapped = true;
       }
@@ -744,7 +740,7 @@ export class MoveEffectHandler {
           if (!stackObject.data.exiledIds) stackObject.data.exiledIds = [];
           if (!stackObject.data.exiledIds.includes(c.id)) {
             stackObject.data.exiledIds.push(c.id);
-            console.log(`[DEBUG] MoveEffectHandler: Added library card ${c.id} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
+            logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: Added library card ${c.id} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
           }
         }
 
@@ -761,9 +757,7 @@ export class MoveEffectHandler {
             targetId: c.id,
             sourceId: stackObject?.sourceId || "",
             sourceZone: from,
-          },
-          log,
-        );
+          });
       }
     });
 
@@ -775,7 +769,6 @@ export class MoveEffectHandler {
         effects: effect.effects,
         sourceId: stackObject?.sourceId || controllerId,
         targets: cards.map((c) => c.id),
-        log,
         startIndex: 0,
         stackObject,
         parentContext: context,
@@ -784,7 +777,8 @@ export class MoveEffectHandler {
   }
 
 
-  private static resolveMassMove(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext, log: (m: string) => void) {
+  private static resolveMassMove(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext) {
+    const { logger } = getProcessors(state);
     const { controllerId, stackObject } = context;
     const moveEff = effect as MoveEffect;
     const zone = moveEff.zone || Zone.Hand;
@@ -833,9 +827,9 @@ export class MoveEffectHandler {
     // 3. Move the cards
     cardsToMove.forEach((c) => {
       const from = c.zone;
-      ActionProcessor.moveCard(state, c, zone as Zone, c.ownerId, log, "top", false, isDiscard);
+      ActionProcessor.moveCard(state, c, zone as Zone, c.ownerId, "top", false, isDiscard);
       if (zone === Zone.Exile) {
-        TriggerProcessor.onEvent(state, { type: TriggerEvent.Exile, targetId: c.id, sourceId: stackObject?.sourceId || "", sourceZone: from }, log);
+        TriggerProcessor.onEvent(state, { type: TriggerEvent.Exile, targetId: c.id, sourceId: stackObject?.sourceId || "", sourceZone: from });
       }
     });
 
@@ -847,7 +841,6 @@ export class MoveEffectHandler {
         effects: effect.effects,
         sourceId: stackObject?.sourceId || controllerId,
         targets: cardsToMove.map(c => c.id),
-        log,
         startIndex: 0,
         stackObject,
         parentContext: context,
@@ -855,7 +848,8 @@ export class MoveEffectHandler {
     }
   }
 
-  private static resolveSingleTargetMove(state: GameState, effect: EffectDefinition, targetIds: string[], log: (m: string) => void, context: ResolutionContext) {
+  private static resolveSingleTargetMove(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext) {
+    const { logger } = getProcessors(state);
     const { controllerId, stackObject } = context;
     const parentContext = context;
     const moveEff = effect as MoveEffect;
@@ -874,16 +868,16 @@ export class MoveEffectHandler {
 
     idsToMove.forEach((tid) => {
       const obj = this.findObject(state, tid, context);
-      if (log) log(`[DEBUG] MoveEffectHandler: findObject for ${tid} returned ${obj ? obj.definition.name + " in " + obj.zone : "null"}`);
+      logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: findObject for ${tid} returned ${obj ? obj.definition.name + " in " + obj.zone : "null"}`);
       if (!obj) {
-        if (log) log(`[WARNING] MoveEffectHandler: Could not find object with id ${tid} to move.`);
+        logger.warn(state, LogCategory.ACTION, `[WARNING] MoveEffectHandler: Could not find object with id ${tid} to move.`);
         return;
       }
 
       const from = obj.zone;
       const destPlayerId = moveEff.ownerControl ? obj.ownerId : controllerId;
-      if (log) log(`[DEBUG] MoveEffectHandler: Moving ${obj.definition.name} from ${from} to ${zone} for player ${destPlayerId}`);
-      ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId, log, moveEff.libraryPosition as number | "top" | "bottom", false, isDiscard);
+      logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: Moving ${obj.definition.name} from ${from} to ${zone} for player ${destPlayerId}`);
+      ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId, moveEff.libraryPosition as number | "top" | "bottom", false, isDiscard);
 
       if (
         (moveEff.reveal || effect.revealed) &&
@@ -905,9 +899,7 @@ export class MoveEffectHandler {
             targetId: obj.id,
             sourceId: stackObject?.sourceId || "",
             sourceZone: from,
-          },
-          log,
-        );
+          });
       }
 
       // --- CHAINING ---
@@ -917,7 +909,6 @@ export class MoveEffectHandler {
         EP_LOCAL.resolveEffects({
           state,
           effects: subEffects,
-          log,
           sourceId: stackObject?.sourceId || (context as any).sourceId || "",
           targets: targetIds,
           stackObject,

@@ -1,4 +1,5 @@
 import { ActionType, DurationType, EffectType, GameObject, GameState, PlayerId, PlayerState, ResolutionContext, StackObject, Zone } from '@shared/engine_types';
+import { LogCategory } from '../../../../utils/EngineLogger';
 import { RuleUtils } from '../../../../utils/RuleUtils';
 import { getProcessors } from '../../../ProcessorRegistry';
 
@@ -11,15 +12,13 @@ export class ControlEffectHandler {
     public static handle(
         state: GameState,
         effect: any,
-        log: (m: string) => void,
-        context: ResolutionContext,
-        findObject?: any
+        context: ResolutionContext
     ) {
-        const { action: AP, trigger: TrP } = getProcessors(state);
+        const { logger, action: AP, trigger: TrP, effect: EP } = getProcessors(state);
         const { sourceId, controllerId, targets, stackObject, parentContext } = context;
         switch (effect.type) {
             case 'EndTurn':
-                log(`[END-TURN] Ending the turn. Exiling stack...`);
+                logger.info(state, LogCategory.ACTION, `[END-TURN] Ending the turn. Exiling stack...`);
                 state.stack = [];
                 state.pendingAction = undefined;
                 break;
@@ -28,12 +27,12 @@ export class ControlEffectHandler {
                 const playerToShuffle = state.players[targets[0] as PlayerId] || state.players[controllerId];
                 if (playerToShuffle) {
                     AP.shuffle(playerToShuffle.library);
-                    log(`[SHUFFLE] ${playerToShuffle.name} shuffled library.`);
+                    logger.info(state, LogCategory.ACTION, `[SHUFFLE] ${playerToShuffle.name} shuffled library.`);
                 }
                 break;
 
             case EffectType.Log:
-                log(effect.message || "");
+                logger.info(state, LogCategory.ACTION, effect.message || "");
                 break;
 
             case EffectType.CopySpellOnStack:
@@ -44,7 +43,7 @@ export class ControlEffectHandler {
                     if (!stackObj) {
                         const processors = getProcessors(state);
                         stackObj = processors.lki.getLki(state, tid, Zone.Stack);
-                        if (stackObj) log(`[COPY] Original spell ${tid} not found on stack, using Last Known Information.`);
+                        if (stackObj) logger.info(state, LogCategory.ACTION, `[COPY] Original spell ${tid} not found on stack, using Last Known Information.`);
                     }
 
                     if (!stackObj) return;
@@ -106,7 +105,7 @@ export class ControlEffectHandler {
                     copy.name = `Copy of ${stackObj.name || stackObj.card?.definition.name || 'Spell'}`;
 
                     state.stack.push(copy);
-                    log(`[COPY] Created copy of ${stackObj.card?.definition.name || 'spell'}.`);
+                    logger.info(state, LogCategory.ACTION, `[COPY] Created copy of ${stackObj.card?.definition.name || 'spell'}.`);
 
                     // Emit copy event for Magecraft
                     TrP.onEvent(state, {
@@ -119,7 +118,7 @@ export class ControlEffectHandler {
                             sourceId: copy.id,
                             isInstantOrSorcery: copy.card && (RuleUtils.isType(copy.card, 'instant') || RuleUtils.isType(copy.card, 'sorcery'))
                         }
-                    }, log);
+                    });
 
                     if (effect.chooseNewTargets) {
                         const targetDef = copy.data?.targetDefinition || copy.targetDefinition;
@@ -193,7 +192,7 @@ export class ControlEffectHandler {
                     if (p) {
                         const amount = effect.amount || 1;
                         p.extraTurns += amount;
-                        log(`[TURN] ${p.name} gained ${amount} extra turn(s).`);
+                        logger.info(state, LogCategory.ACTION, `[TURN] ${p.name} gained ${amount} extra turn(s).`);
                     }
                 });
                 break;
@@ -211,14 +210,14 @@ export class ControlEffectHandler {
                                 if (Math.random() < 0.5) heads++;
                             }
                             amount = heads;
-                            log(`[COIN-FLIP] Flipping ${effect.flipCoins} coins... ${heads} heads!`);
+                            logger.info(state, LogCategory.ACTION, `[COIN-FLIP] Flipping ${effect.flipCoins} coins... ${heads} heads!`);
                         }
 
                         if (amount > 0) {
                             p.turnsToSkip += amount;
-                            log(`[TURN] ${p.name} will skip their next ${amount} turn(s).`);
+                            logger.info(state, LogCategory.ACTION, `[TURN] ${p.name} will skip their next ${amount} turn(s).`);
                         } else {
-                            log(`[TURN] No turns skipped for ${p.name}.`);
+                            logger.info(state, LogCategory.ACTION, `[TURN] No turns skipped for ${p.name}.`);
                         }
                     }
                 });
@@ -226,10 +225,10 @@ export class ControlEffectHandler {
 
             case 'PhasedOut':
                 targets.forEach((tid: string) => {
-                    const obj = findObject(state, tid, stackObject, parentContext);
-                    if (obj) {
+                    const obj = EP.findObject(state, tid, stackObject, parentContext);
+                    if (obj && 'zone' in obj) {
                         obj.isPhasedOut = effect.value !== false;
-                        log(`${obj.definition.name} phased ${obj.isPhasedOut ? 'out' : 'in'}.`);
+                        logger.info(state, LogCategory.ACTION, `${obj.definition.name} phased ${obj.isPhasedOut ? 'out' : 'in'}.`);
                     }
                 });
                 break;
@@ -287,13 +286,13 @@ export class ControlEffectHandler {
                                 const total = (a as number) * amount;
                                 if (total > 0) {
                                     newRestricted.push({ color: s as any, amount: total, restrictions: restrictionList });
-                                    log(`[MANA] Produced {${s}} x ${total} (Restricted: ${restrictionList.join(', ')})`);
+                                    logger.info(state, LogCategory.ACTION, `[MANA] Produced {${s}} x ${total} (Restricted: ${restrictionList.join(', ')})`);
                                 }
                             });
                             if (res.generic > 0) {
                                 const total = res.generic * amount;
                                 newRestricted.push({ color: 'C', amount: total, restrictions: restrictionList });
-                                log(`[MANA] Produced {C} x ${total} (Restricted: ${restrictionList.join(', ')})`);
+                                logger.info(state, LogCategory.ACTION, `[MANA] Produced {C} x ${total} (Restricted: ${restrictionList.join(', ')})`);
                             }
                             p.restrictedMana = newRestricted;
                         } else {
@@ -303,13 +302,13 @@ export class ControlEffectHandler {
                                 const total = (a as number) * amount;
                                 if (total > 0) {
                                     (newPool as any)[s] += total;
-                                    log(`[MANA] Produced {${s}} x ${total}`);
+                                    logger.info(state, LogCategory.ACTION, `[MANA] Produced {${s}} x ${total}`);
                                 }
                             });
                             const genericTotal = res.generic * amount;
                             if (genericTotal > 0) {
                                 newPool.C += genericTotal;
-                                log(`[MANA] Produced {C} x ${genericTotal}`);
+                                logger.info(state, LogCategory.ACTION, `[MANA] Produced {C} x ${genericTotal}`);
                             }
                             p.manaPool = newPool;
                         }

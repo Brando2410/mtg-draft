@@ -1,4 +1,5 @@
 import { AbilityType, EffectDefinition, GameState, StackObject, Zone } from '@shared/engine_types';
+import { LogCategory } from '../../../utils/EngineLogger';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { oracle } from '../../../OracleLogicMap';
 import { getProcessors } from '../../ProcessorRegistry';
@@ -55,10 +56,10 @@ export class StackProcessor {
     state: GameState,
     engine: import('../../../interfaces/EngineContext').EngineContext,
     resolver: import('./StackResolver').StackResolver,
-    log: (m: string) => void
   ) {
+    const { logger } = getProcessors(state);
     if (EngineValidator.isSuspended(state)) {
-      console.log(`[STACK-PROC] resolveTopOrAdvanceStep BLOCKED: Engine is suspended for ${state.pendingAction?.type}`);
+      logger.debug(state, LogCategory.STACK, `resolveTopOrAdvanceStep BLOCKED: Engine is suspended for ${state.pendingAction?.type}`);
       return;
     }
 
@@ -69,12 +70,11 @@ export class StackProcessor {
         processors.lki.saveSnapshot(state, objectToResolve, Zone.Stack);
         state.consecutivePasses = 0; // CR 117.4: Resolution or stack changes reset pass count
         if (state.stack.length > 0) {
-          console.log(`[DEBUG] STACK CONTENTS:`, state.stack.map(s => ({ id: s.id, name: (s as any).name || s.card?.definition.name, idx: (s as any).data?.nextEffectIndex })));
+          logger.debug(state, LogCategory.STACK, `STACK CONTENTS: ${state.stack.map(s => (s as any).name || s.card?.definition.name).join(', ')}`);
         }
 
-        log(`--------------------------------------------------`);
         const objectName = (objectToResolve as any).name || objectToResolve.card?.definition.name || 'Effect';
-        log(`[RESOLVING] >>> ${objectName} is resolving <<<`);
+        logger.info(state, LogCategory.STACK, `[RESOLVING] >>> ${objectName} is resolving <<<`);
 
         const effects = StackProcessor.getEffectsForResolution(state, objectToResolve);
         const startIndex = (objectToResolve as any).data?.nextEffectIndex || 0;
@@ -92,24 +92,23 @@ export class StackProcessor {
         }
 
         // --- KEYWORD HOOK: ON RESOLUTION ---
-        console.log(`[STACK-DEBUG] ${objectName} resolved. type=${objectToResolve.type}, completed=${completed}`);
+        logger.debug(state, LogCategory.STACK, `${objectName} resolved. type=${objectToResolve.type}, completed=${completed}`);
         if (completed && objectToResolve.type === AbilityType.Spell) {
           const { trigger: TriggerProcessor } = getProcessors(state);
-          console.log(`[STACK-DEBUG] Firing ON_RESOLVE_SPELL for ${objectName}`);
+          logger.debug(state, LogCategory.STACK, `Firing ON_RESOLVE_SPELL for ${objectName}`);
           TriggerProcessor.onEvent(state, {
             type: 'ON_RESOLVE_SPELL',
             playerId: objectToResolve.controllerId,
             payload: { object: objectToResolve.card, sourceId: objectToResolve.sourceId }
-          }, log);
+          });
         }
 
         const stackRemaining = state.stack.map(s => s.card?.definition.name || 'Effect').join(', ');
         if (stackRemaining) {
-          log(`[STACK-LEFT] Still on stack: [${stackRemaining}]`);
+          logger.info(state, LogCategory.STACK, `[STACK-LEFT] Still on stack: [${stackRemaining}]`);
         } else {
-          log(`[STACK-EMPTY] The stack is now empty.`);
+          logger.info(state, LogCategory.STACK, `[STACK-EMPTY] The stack is now empty.`);
         }
-        log(`--------------------------------------------------`);
         engine.resetPriorityToActivePlayer();
       }
     } else {

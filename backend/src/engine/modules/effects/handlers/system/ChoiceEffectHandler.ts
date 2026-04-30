@@ -6,11 +6,13 @@ import {
   ModalEffect,
   PlayerId,
   ResolutionContext,
+  Restriction,
   TargetMapping
 } from "@shared/engine_types";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
+import { LogCategory } from "../../../../utils/EngineLogger";
 
 /**
  * Strategy for CR 608: Resolution Choices and CR 701: Keyword Actions (Choice-based)
@@ -19,9 +21,9 @@ export class ChoiceEffectHandler {
   public static handleChoice(
     state: GameState,
     effect: ModalEffect,
-    log: (m: string) => void,
     context: ResolutionContext,
   ): void {
+    const { logger } = getProcessors(state);
     const { sourceId, controllerId, stackObject, parentContext } =
       context;
     const targets = context.targets || [];
@@ -74,16 +76,14 @@ export class ChoiceEffectHandler {
       });
 
       if (allEffects.length > 0) {
-        log(
-          `[RESOLVING CHOICE] Auto-resolved pre-selected modes: ${rawIndices.join(", ")}`,
-        );
+        logger.info(state, LogCategory.ACTION, `[RESOLVING CHOICE] Auto-resolved pre-selected modes: ${rawIndices.join(", ")}`);
 
         // Pay costs for pre-selected choices if any
         const { cost: CP } = getProcessors(state);
         rawIndices.forEach((idx) => {
           const choice = dynamicChoices[idx];
           if (choice && choice.costs) {
-            CP.pay(state, choice.costs, sourceId, controllerId, (m: string) => log(m));
+            CP.pay(state, choice.costs, sourceId, controllerId);
           }
         });
 
@@ -92,7 +92,6 @@ export class ChoiceEffectHandler {
           effects: allEffects,
           sourceId,
           targets,
-          log,
           stackObject,
           parentContext,
         });
@@ -169,16 +168,16 @@ export class ChoiceEffectHandler {
           context,
           effect,
         ) as string[];
-        console.log(`[CHOICE-HANDLER-DEBUG] Mapping: ${targetZoneMapping}, poolIds: ${JSON.stringify(poolIds)}`);
+        logger.debug(state, LogCategory.ACTION, `[CHOICE-HANDLER-DEBUG] Mapping: ${targetZoneMapping}, poolIds: ${JSON.stringify(poolIds)}`);
         sourceCards = poolIds
           .map((id: string) => {
             const obj = RuleUtils.findObject(state, id);
-            if (!obj) console.log(`[CHOICE-HANDLER-DEBUG] RuleUtils.findObject FAILED for id: ${id}`);
-            else console.log(`[CHOICE-HANDLER-DEBUG] Found object: ${obj.definition?.name} in zone ${obj.zone}`);
+            if (!obj) logger.debug(state, LogCategory.ACTION, `[CHOICE-HANDLER-DEBUG] RuleUtils.findObject FAILED for id: ${id}`);
+            else logger.debug(state, LogCategory.ACTION, `[CHOICE-HANDLER-DEBUG] Found object: ${obj.definition?.name} in zone ${obj.zone}`);
             return obj;
           })
           .filter(Boolean) as GameObject[];
-        console.log(`[CHOICE-HANDLER-DEBUG] sourceCards count: ${sourceCards.length}`);
+        logger.debug(state, LogCategory.ACTION, `[CHOICE-HANDLER-DEBUG] sourceCards count: ${sourceCards.length}`);
       } else if (
         targetPlayer ||
         targetZoneMapping === TargetMapping.Target1HandRevealPick ||
@@ -216,7 +215,7 @@ export class ChoiceEffectHandler {
             label: "Name a non-land card",
             playerId: workingMappingPlayerId as PlayerId,
             sourceId: sourceId,
-            restrictions: (effect as any).restrictions || ["Nonland"],
+            restrictions: (effect as any).restrictions || [Restriction.NonLand],
             filterSelectable: true,
             optional: false,
             actionType: ActionType.ResolutionChoice,
@@ -237,7 +236,7 @@ export class ChoiceEffectHandler {
           },
         );
         const data = state.pendingAction?.data as any;
-        console.log(`[CHOICE-HANDLER-DEBUG] Created choice for ${effect.label}. isFreeCast=${data?.isFreeCast}, exileOnResolution=${data?.exileOnResolution}`);
+        logger.debug(state, LogCategory.ACTION, `[CHOICE-HANDLER-DEBUG] Created choice for ${effect.label}. isFreeCast=${data?.isFreeCast}, exileOnResolution=${data?.exileOnResolution}`);
         return;
       }
 
@@ -266,16 +265,14 @@ export class ChoiceEffectHandler {
             stackObject
           }
         );
-        console.log(`[CHOICE-HANDLER-DEBUG] Card ${c.definition?.name} (${c.id}) matches restrictions ${JSON.stringify(restrictions)}: ${matched}`);
+        logger.debug(state, LogCategory.ACTION, `[CHOICE-HANDLER-DEBUG] Card ${c.definition?.name} (${c.id}) matches restrictions ${JSON.stringify(restrictions)}: ${matched}`);
         return matched;
       });
 
-      console.log(`[CHOICE-HANDLER-DEBUG] Total validCandidates: ${validCandidates.length}`);
+      logger.debug(state, LogCategory.ACTION, `[CHOICE-HANDLER-DEBUG] Total validCandidates: ${validCandidates.length}`);
 
       if (validCandidates.length === 0) {
-        log(
-          `[INFO] ChoiceEffectHandler: No valid targets in zone for "${effect.label || "Choice"}". Auto-skipping.`,
-        );
+        logger.info(state, LogCategory.ACTION, `[INFO] ChoiceEffectHandler: No valid targets in zone for "${effect.label || "Choice"}". Auto-skipping.`);
         return;
       }
 
@@ -327,11 +324,10 @@ export class ChoiceEffectHandler {
     if (!effect.choices && effect.effects && targets.length > 0) {
       const firstTargetId = targets[0];
       const nextTargets = targets.slice(1);
-      log(`[AUTO-SEQUENCE] Sequential resolution for target: ${firstTargetId}`);
+      logger.info(state, LogCategory.ACTION, `[AUTO-SEQUENCE] Sequential resolution for target: ${firstTargetId}`);
       EP.resolveEffects({
         state,
         effects: effect.effects,
-        log,
         sourceId,
         targets: [firstTargetId],
         stackObject,
@@ -339,7 +335,7 @@ export class ChoiceEffectHandler {
       });
 
       if (!state.pendingAction && nextTargets.length > 0) {
-        return this.handleChoice(state, effect, log, {
+        return this.handleChoice(state, effect, {
           ...context,
           targets: nextTargets,
         });

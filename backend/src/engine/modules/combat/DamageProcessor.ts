@@ -7,6 +7,7 @@ import {
 } from "@shared/engine_types";
 import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
+import { LogCategory, EngineLogger } from "../../utils/EngineLogger";
 
 /**
  * Rules Engine Module: Damage Handling (Rule 120)
@@ -25,7 +26,6 @@ export class DamageProcessor {
     targetId: GameObjectId | PlayerId,
     amount: number,
     isCombat: boolean,
-    log: (msg: string) => void,
   ): import("@shared/engine_types").ActionResult {
     if (amount <= 0)
       return {
@@ -37,7 +37,7 @@ export class DamageProcessor {
 
     // Rule 702.16e: Protection prevents damage
     if (this.shouldPreventProtectionDamage(state, sourceId, targetId)) {
-      log(`[MISS] Damage to ${targetId} prevented by Protection.`);
+      EngineLogger.info(state, LogCategory.ACTION, `[MISS] Damage to ${targetId} prevented by Protection.`);
       return {
         success: false,
         affectedIds: [targetId],
@@ -51,7 +51,7 @@ export class DamageProcessor {
       !state.turnState.damagePreventionDisabled &&
       this.shouldPreventDamage(state, targetId, isCombat)
     ) {
-      log(`[PREVENTED] Damage to ${targetId} was prevented by an effect.`);
+      EngineLogger.info(state, LogCategory.ACTION, `[PREVENTED] Damage to ${targetId} was prevented by an effect.`);
       return {
         success: false,
         affectedIds: [targetId],
@@ -75,8 +75,7 @@ export class DamageProcessor {
         sourceStats,
         battlefieldObj,
         amount,
-        isCombat,
-        log,
+        isCombat
       );
       state.turnState.lastDamageAmount = amount;
     } else {
@@ -88,8 +87,7 @@ export class DamageProcessor {
           sourceObj,
           targetPlayer,
           amount,
-          isCombat,
-          log,
+          isCombat
         );
         state.turnState.lastDamageAmount = amount;
       } else {
@@ -111,7 +109,7 @@ export class DamageProcessor {
         state.turnState.lifeGainedThisTurn[controllerId] =
           (state.turnState.lifeGainedThisTurn[controllerId] || 0) + amount;
         state.turnState.lastLifeGainedAmount = amount;
-        log(
+        EngineLogger.info(state, LogCategory.ACTION, 
           `[LIFELINK] ${player.name} gains ${amount} life (Total: ${player.life}).`,
         );
         const { trigger: TrP } = getProcessors(state);
@@ -122,8 +120,7 @@ export class DamageProcessor {
             playerId: controllerId,
             amount,
             payload: { sourceId: sourceObj.id },
-          },
-          log,
+          }
         );
       }
     }
@@ -141,14 +138,13 @@ export class DamageProcessor {
     sourceStats: any,
     target: GameObject,
     amount: number,
-    isCombat: boolean,
-    log: (m: string) => void,
+    isCombat: boolean
   ) {
     if (RuleUtils.isPlaneswalker(target)) {
       // Rule 120.3c: Damage to planeswalker removes loyalty
       const currentLoyalty = target.counters["loyalty"] || 0;
       target.counters["loyalty"] = Math.max(0, currentLoyalty - amount);
-      log(`[DAMAGE] ${target.definition.name} loses ${amount} loyalty.`);
+      EngineLogger.info(state, LogCategory.ACTION, `[DAMAGE] ${target.definition.name} loses ${amount} loyalty.`);
     } else {
       // Rule 120.3: Damage to creature marks damage
       const { layer: LP } = getProcessors(state);
@@ -163,14 +159,14 @@ export class DamageProcessor {
       );
 
       target.damageMarked += amount;
-      log(
+      EngineLogger.info(state, LogCategory.ACTION, 
         `[DAMAGE] ${target.definition.name} takes ${amount} damage (Total: ${target.damageMarked}).`,
       );
 
       // Rule 702.2: Deathtouch
       if (RuleUtils.hasDeathtouch(sourceObj)) {
         target.deathtouchMarked = true;
-        log(
+        EngineLogger.info(state, LogCategory.ACTION, 
           `[DEATHTOUCH] ${target.definition.name} is marked by lethal poison.`,
         );
       }
@@ -185,8 +181,7 @@ export class DamageProcessor {
         sourceId: sourceObj?.id,
         amount,
         payload: { isCombat },
-      },
-      log,
+      }
     );
   }
 
@@ -195,12 +190,11 @@ export class DamageProcessor {
     sourceObj: any,
     player: any,
     amount: number,
-    isCombat: boolean,
-    log: (m: string) => void,
+    isCombat: boolean
   ) {
     const { trigger: TrP } = getProcessors(state);
     player.life -= amount;
-    log(
+    EngineLogger.info(state, LogCategory.ACTION, 
       `[DAMAGE] Player ${player.name} takes ${amount} damage (Life: ${player.life}).`,
     );
 
@@ -220,8 +214,7 @@ export class DamageProcessor {
           targetId: player.id,
           sourceId: sourceObj?.id,
           amount,
-        },
-        log,
+        }
       );
     }
 
@@ -232,8 +225,7 @@ export class DamageProcessor {
         playerId: player.id,
         amount,
         payload: { sourceId: sourceObj?.id },
-      },
-      log,
+      }
     );
     TrP.onEvent(
       state,
@@ -243,8 +235,7 @@ export class DamageProcessor {
         sourceId: sourceObj?.id,
         amount,
         payload: { isCombat },
-      },
-      log,
+      }
     );
   }
 

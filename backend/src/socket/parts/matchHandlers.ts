@@ -395,7 +395,8 @@ export const registerMatchHandlers = (io: Server, socket: Socket, rooms: Map<str
 
       const card = pState.library.find(c => c.id === cardId);
       if (card) {
-        ActionProcessor.moveCard(state, card, Zone.Hand, playerId, (m: string) => state.logs.push(`>> [DEBUG] ${m}`));
+        state.logs.push(`>> [DEBUG] Moved ${card.definition.name} from library to hand.`);
+        ActionProcessor.moveCard(state, card, Zone.Hand, playerId);
       }
     });
   });

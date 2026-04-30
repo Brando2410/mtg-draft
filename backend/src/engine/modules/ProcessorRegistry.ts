@@ -24,6 +24,7 @@ import { SpellInteractiveManager } from "./actions/spells/SpellInteractiveManage
 import type { LayerProcessor } from "./state/LayerProcessor";
 import type { LkiProcessor } from "./state/LkiProcessor";
 import type { StateBasedActionsProcessor } from "./state/StateBasedActionsProcessor";
+import { EngineLogger } from "../utils/EngineLogger";
 
 /**
  * ProcessorRegistry: Standardized interface for accessing core engine modules
@@ -55,6 +56,7 @@ export interface ProcessorRegistry {
     spellValidator: typeof SpellValidator;
     spellCostCalculator: typeof SpellCostCalculator;
     spellInteractiveManager: typeof SpellInteractiveManager;
+    logger: typeof EngineLogger;
     oracle: any;
 }
 
@@ -100,6 +102,7 @@ export function getProcessors(state: GameState): ProcessorRegistry {
         get spellValidator() { return require("./actions/spells/SpellValidator").SpellValidator; },
         get spellCostCalculator() { return require("./actions/spells/SpellCostCalculator").SpellCostCalculator; },
         get spellInteractiveManager() { return require("./actions/spells/SpellInteractiveManager").SpellInteractiveManager; },
+        get logger() { return require("../utils/EngineLogger").EngineLogger; },
         get oracle() { return require("../OracleLogicMap").oracle; },
     } as unknown as ProcessorRegistry;
 }

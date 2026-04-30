@@ -2,6 +2,7 @@ import { AbilityCost, AbilityDefinition, ActionType, CostType, DiscardCost, Exil
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { getProcessors } from '../../ProcessorRegistry';
+import { LogCategory } from '../../../utils/EngineLogger';
 import { SpellProcessor } from './SpellProcessor';
 
 /**
@@ -24,7 +25,7 @@ export class SpellInteractiveManager {
      * The player must choose a numeric value before mana can be calculated (Rule 107.3b).
      * @returns Always true (flow is paused for UI input).
      */
-    public static handleXValueChoice(state: GameState, playerId: PlayerId, cardToPlay: GameObject, declaredTargets: string[], log: (m: string) => void, parentContext?: ResolutionContext, isFreeCast?: boolean, exileOnResolution?: boolean): boolean {
+    public static handleXValueChoice(state: GameState, playerId: PlayerId, cardToPlay: GameObject, declaredTargets: string[], parentContext?: ResolutionContext, isFreeCast?: boolean, exileOnResolution?: boolean): boolean {
         state.pendingAction = {
             type: ActionType.ChooseX,
             playerId: playerId,
@@ -37,7 +38,8 @@ export class SpellInteractiveManager {
                 exileOnResolution
             }
         };
-        log(`[CHOOSE_X] ${state.players[playerId].name} is choosing X for ${cardToPlay.definition.name}...`);
+        const { logger } = getProcessors(state);
+        logger.info(state, LogCategory.ACTION, `[CHOOSE_X] ${state.players[playerId].name} is choosing X for ${cardToPlay.definition.name}...`);
         return true;
     }
 
@@ -62,18 +64,17 @@ export class SpellInteractiveManager {
         targetDefinition: any,
         totalMana: string,
         cardInstanceId: string,
-        log: (m: string) => void,
         engine: any,
         parentContext?: ResolutionContext,
         isFreeCast?: boolean,
         exileOnResolution?: boolean
     ): boolean | string[] {
-        const { targeting: TargetingProcessor } = getProcessors(state);
+        const { logger, targeting: TargetingProcessor } = getProcessors(state);
         const player = state.players[playerId];
         cardToPlay.controllerId = cardToPlay.controllerId || playerId;
 
         if (!ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana)) {
-            log(`Illegal Play: Not enough mana available to even start casting ${cardToPlay.definition.name}.`);
+            logger.info(state, LogCategory.ACTION, `Illegal Play: Not enough mana available to even start casting ${cardToPlay.definition.name}.`);
             cardToPlay.xValue = undefined; // Cleanup for next attempt
             return false;
         }
@@ -93,7 +94,7 @@ export class SpellInteractiveManager {
             targetDef: targetDefinition,
             targetIndex: 0
         }, tid));
-        log(`[DEBUG] Found ${legalForFirst.length} legal targets for ${cardToPlay.definition.name}: [${legalForFirst.join(', ')}]`);
+        logger.debug(state, LogCategory.ACTION, `[DEBUG] Found ${legalForFirst.length} legal targets for ${cardToPlay.definition.name}: [${legalForFirst.join(', ')}]`);
 
         const firstRestrictions = firstDef.restrictions || [];
         const isOpponentTarget = firstDef.type === TargetType.Opponent || (firstDef.type === TargetType.Player && firstRestrictions.includes(Restriction.Opponent));
@@ -102,7 +103,7 @@ export class SpellInteractiveManager {
 
         if (isSingleOpponentTarget) {
             const opponentId = legalForFirst[0];
-            log(`[AUTO-TARGET] Automatically targeting the only opponent for ${cardToPlay.definition.name}.`);
+            logger.info(state, LogCategory.ACTION, `[AUTO-TARGET] Automatically targeting the only opponent for ${cardToPlay.definition.name}.`);
 
             const totalCounts = TargetingProcessor.calculateTotalCounts(targetDefinition, cardToPlay.xValue || 0);
 
@@ -120,7 +121,7 @@ export class SpellInteractiveManager {
                 targetDef: targetDefinition,
                 targetIndex: nextIndex
             }, tid));
-            log(`[DEBUG] Found ${secondaryPool.length} legal secondary targets for ${cardToPlay.definition.name}: [${secondaryPool.join(', ')}]`);
+            logger.debug(state, LogCategory.ACTION, `[DEBUG] Found ${secondaryPool.length} legal secondary targets for ${cardToPlay.definition.name}: [${secondaryPool.join(', ')}]`);
             const prompt = TargetingProcessor.generateTargetPrompt(targetDefinition, nextIndex, cardToPlay.xValue || 0, true);
 
             state.pendingAction = {
@@ -152,10 +153,10 @@ export class SpellInteractiveManager {
 
         if (precalculatedTargets.length === 0) {
             if (targetDefinition.optional || firstDef.optional || firstDef.minCount === 0) {
-                log(`No legal targets found for first requirement, auto-skipping.`);
+                logger.info(state, LogCategory.ACTION, `No legal targets found for first requirement, auto-skipping.`);
                 return [];
             } else {
-                log(`Illegal Play: No valid targets available for ${cardToPlay.definition.name}.`);
+                logger.info(state, LogCategory.ACTION, `Illegal Play: No valid targets available for ${cardToPlay.definition.name}.`);
                 return false;
             }
         }
@@ -198,7 +199,7 @@ export class SpellInteractiveManager {
                     parentContext
                 }
             };
-            log(`[GRAVEYARD_MODAL] ${state.players[playerId].name} is selecting graveyard targets for ${cardToPlay.definition.name}...`);
+            logger.info(state, LogCategory.ACTION, `[GRAVEYARD_MODAL] ${state.players[playerId].name} is selecting graveyard targets for ${cardToPlay.definition.name}...`);
             return true;
         }
 
@@ -223,7 +224,7 @@ export class SpellInteractiveManager {
                 parentContext
             }
         };
-        log(`[TARGETING] ${state.players[playerId].name} is selecting targets for ${cardToPlay.definition.name}...`);
+        logger.info(state, LogCategory.ACTION, `[TARGETING] ${state.players[playerId].name} is selecting targets for ${cardToPlay.definition.name}...`);
         return true;
     }
 
@@ -249,21 +250,20 @@ export class SpellInteractiveManager {
         additionalCosts: AbilityCost[],
         declaredTargets: string[],
         cardInstanceId: string,
-        log: (m: string) => void,
         parentContext?: ResolutionContext,
         isFreeCast?: boolean,
         exileOnResolution?: boolean
     ): boolean | null {
-        const { targeting: TargetingProcessor } = getProcessors(state);
+        const { logger, targeting: TargetingProcessor } = getProcessors(state);
 
-        log(`[DEBUG] Additional costs found: ${additionalCosts.length} -> ${JSON.stringify(additionalCosts)}`);
+        logger.debug(state, LogCategory.ACTION, `[DEBUG] Additional costs found: ${additionalCosts.length} -> ${JSON.stringify(additionalCosts)}`);
 
         // 1. Choice Cost
         const choiceCost = additionalCosts.find(c => c.type === CostType.Choice);
         const hasChosenCostChoice = state.interaction?.lastChosenCostChoiceIndex !== undefined;
 
         if (choiceCost && !hasChosenCostChoice) {
-            const { cost: CostProcessor } = getProcessors(state);
+            const { logger, cost: CostProcessor } = getProcessors(state);
             const choices = choiceCost.choices?.map((c: any, idx: number) => {
                 const isPayable = CostProcessor.canPay(state, c.costs, cardToPlay.id, playerId);
                 return {
@@ -286,7 +286,7 @@ export class SpellInteractiveManager {
                     choices: choices
                 }
             };
-            log(`[COST_CHOICE] ${state.players[playerId].name} must choose an additional cost for ${cardToPlay.definition.name}.`);
+            logger.info(state, LogCategory.ACTION, `[COST_CHOICE] ${state.players[playerId].name} must choose an additional cost for ${cardToPlay.definition.name}.`);
             return true;
         }
 
@@ -304,7 +304,7 @@ export class SpellInteractiveManager {
 
             const amount = (sacrificeCost as SacrificeCost).amount || 1;
             if (legalSacrificeIds.length < amount) {
-                log(`Illegal Play: No valid objects to sacrifice for ${cardToPlay.definition.name}.`);
+                logger.info(state, LogCategory.ACTION, `Illegal Play: No valid objects to sacrifice for ${cardToPlay.definition.name}.`);
                 return null; // FAILURE
             }
 
@@ -328,7 +328,7 @@ export class SpellInteractiveManager {
                     parentContext
                 }
             };
-            log(`[SACRIFICE] ${state.players[playerId].name} must choose an object to sacrifice.`);
+            logger.info(state, LogCategory.ACTION, `[SACRIFICE] ${state.players[playerId].name} must choose an object to sacrifice.`);
             return true;
         }
 
@@ -347,7 +347,7 @@ export class SpellInteractiveManager {
 
             const amount = discardCost.amount || 1;
             if (legalDiscardIds.length < amount) {
-                log(`Illegal Play: No valid cards to discard for ${cardToPlay.definition.name}.`);
+                logger.info(state, LogCategory.ACTION, `Illegal Play: No valid cards to discard for ${cardToPlay.definition.name}.`);
                 return null; // FAILURE
             }
 
@@ -371,7 +371,7 @@ export class SpellInteractiveManager {
                     parentContext
                 }
             };
-            log(`[DISCARD] ${state.players[playerId].name} must choose a card to discard.`);
+            logger.info(state, LogCategory.ACTION, `[DISCARD] ${state.players[playerId].name} must choose a card to discard.`);
             return true;
         }
 
@@ -398,7 +398,7 @@ export class SpellInteractiveManager {
 
             const amount = (exileCost as ExileCost).amount || 1;
             if (legalExileIds.length < amount) {
-                log(`Illegal Play: Not enough valid objects to exile for ${cardToPlay.definition.name}.`);
+                logger.info(state, LogCategory.ACTION, `Illegal Play: Not enough valid objects to exile for ${cardToPlay.definition.name}.`);
                 return null; // FAILURE
             }
 
@@ -422,7 +422,7 @@ export class SpellInteractiveManager {
                     parentContext
                 }
             };
-            log(`[EXILE] ${state.players[playerId].name} must choose objects to exile.`);
+            logger.info(state, LogCategory.ACTION, `[EXILE] ${state.players[playerId].name} must choose objects to exile.`);
             return true;
         }
 
@@ -442,7 +442,7 @@ export class SpellInteractiveManager {
 
             const amount = Number((tapSelectionCost as TapSelectionCost).value || (tapSelectionCost as TapSelectionCost).amount || 1);
             if (legalTapIds.length < amount) {
-                log(`Illegal Play: Not enough valid permanents to tap for ${cardToPlay.definition.name}.`);
+                logger.info(state, LogCategory.ACTION, `Illegal Play: Not enough valid permanents to tap for ${cardToPlay.definition.name}.`);
                 return null; // FAILURE
             }
 
@@ -466,7 +466,7 @@ export class SpellInteractiveManager {
                     parentContext
                 }
             };
-            log(`[TAP] ${state.players[playerId].name} must choose ${amount} objects to tap.`);
+            logger.info(state, LogCategory.ACTION, `[TAP] ${state.players[playerId].name} must choose ${amount} objects to tap.`);
             return true;
         }
 
@@ -479,7 +479,7 @@ export class SpellInteractiveManager {
      * Also assigns the selected X value to the object after the player chooses.
      * @returns true if a ChooseX pendingAction was injected, false if X is not needed or already set.
      */
-    public static handleAbilityXChoice(state: GameState, playerId: PlayerId, obj: GameObject, abilityIndex: number, declaredTargets: string[] | undefined, log: (m: string) => void, parentContext?: ResolutionContext): boolean {
+    public static handleAbilityXChoice(state: GameState, playerId: PlayerId, obj: GameObject, abilityIndex: number, declaredTargets: string[] | undefined, parentContext?: ResolutionContext): boolean {
         const ability = (obj.definition.abilities as AbilityDefinition[])?.[abilityIndex];
         if (!ability) return false;
         const needsX = (ability.effects || []).some((e: any) => e.value === 'X' || e.amount === 'X' || (e.costs && e.costs.some((c: any) => c.value === 'X')));
@@ -497,7 +497,8 @@ export class SpellInteractiveManager {
                     parentContext
                 }
             };
-            log(`[CHOOSE_X] ${state.players[playerId].name} is choosing X for ${obj.definition.name}'s ability...`);
+            const { logger } = getProcessors(state);
+            logger.info(state, LogCategory.ACTION, `[CHOOSE_X] ${state.players[playerId].name} is choosing X for ${obj.definition.name}'s ability...`);
             return true;
         }
 
@@ -516,8 +517,8 @@ export class SpellInteractiveManager {
      *
      * @returns true (pendingAction injected), false (can't pay), or null (no interactive costs needed).
      */
-    public static handleAbilityInteractiveCosts(state: GameState, playerId: PlayerId, obj: GameObject, ability: AbilityDefinition, abilityIndex: number, declaredTargets: string[] | undefined, log: (m: string) => void, parentContext?: ResolutionContext): boolean | null {
-        const { targeting: TargetingProcessor } = getProcessors(state);
+    public static handleAbilityInteractiveCosts(state: GameState, playerId: PlayerId, obj: GameObject, ability: AbilityDefinition, abilityIndex: number, declaredTargets: string[] | undefined, parentContext?: ResolutionContext): boolean | null {
+        const { logger, targeting: TargetingProcessor } = getProcessors(state);
         const player = state.players[playerId];
         const additionalCosts = ability.costs || [];
 
@@ -532,7 +533,8 @@ export class SpellInteractiveManager {
             })).map(o => o.id);
 
             if (legalSacrificeIds.length === 0 && !isSelfSac) {
-                log(`Illegal Activation: No valid objects to sacrifice for ${obj.definition.name}.`);
+                const { logger } = getProcessors(state);
+                logger.info(state, LogCategory.ACTION, `Illegal Activation: No valid objects to sacrifice for ${obj.definition.name}.`);
                 return false;
             }
 
@@ -558,7 +560,7 @@ export class SpellInteractiveManager {
                         })
                     }
                 };
-                log(`[SACRIFICE] ${player.name} must choose an object to sacrifice to activate ${obj.definition.name}.`);
+                logger.info(state, LogCategory.ACTION, `[SACRIFICE] ${player.name} must choose an object to sacrifice to activate ${obj.definition.name}.`);
                 return true;
             }
         }
@@ -572,7 +574,7 @@ export class SpellInteractiveManager {
                 controllerId: playerId
             })).map(c => c.id);
             if (legalDiscardIds.length === 0) {
-                log(`Illegal Activation: No valid cards to discard for ${obj.definition.name}.`);
+                logger.info(state, LogCategory.ACTION, `Illegal Activation: No valid cards to discard for ${obj.definition.name}.`);
                 return false;
             }
             state.pendingAction = {
@@ -594,7 +596,7 @@ export class SpellInteractiveManager {
                     })
                 }
             };
-            log(`[DISCARD] ${player.name} must choose a card to discard to activate ${obj.definition.name}.`);
+            logger.info(state, LogCategory.ACTION, `[DISCARD] ${player.name} must choose a card to discard to activate ${obj.definition.name}.`);
             return true;
         }
 
@@ -608,7 +610,7 @@ export class SpellInteractiveManager {
             })).map(o => o.id);
             const amount = Number((tapSelectionCost as TapSelectionCost).value || (tapSelectionCost as TapSelectionCost).amount || 1);
             if (legalTapIds.length < amount) {
-                log(`Illegal Activation: Not enough valid permanents to tap for ${obj.definition.name}.`);
+                logger.info(state, LogCategory.ACTION, `Illegal Activation: Not enough valid permanents to tap for ${obj.definition.name}.`);
                 return false;
             }
             state.pendingAction = {
@@ -630,7 +632,7 @@ export class SpellInteractiveManager {
                     })
                 }
             };
-            log(`[TAP] ${player.name} must choose ${amount} objects to tap to activate ${obj.definition.name}.`);
+            logger.info(state, LogCategory.ACTION, `[TAP] ${player.name} must choose ${amount} objects to tap to activate ${obj.definition.name}.`);
             return true;
         }
 
@@ -652,7 +654,7 @@ export class SpellInteractiveManager {
                 controllerId: playerId
             })).map((o: GameObject) => o.id);
             if (legalExileIds.length === 0) {
-                log(`Illegal Activation: No valid cards to exile for ${obj.definition.name}.`);
+                logger.info(state, LogCategory.ACTION, `Illegal Activation: No valid cards to exile for ${obj.definition.name}.`);
                 return false;
             }
             state.pendingAction = {
@@ -675,7 +677,7 @@ export class SpellInteractiveManager {
                     parentContext
                 }
             };
-            log(`[EXILE] ${player.name} must choose a card to exile to activate ${obj.definition.name}.`);
+            logger.info(state, LogCategory.ACTION, `[EXILE] ${player.name} must choose a card to exile to activate ${obj.definition.name}.`);
             return true;
         }
 
@@ -691,8 +693,8 @@ export class SpellInteractiveManager {
      *
      * @returns true if targeting was handled (either pendingAction or direct finalization).
      */
-    public static handleAbilityTargeting(state: GameState, playerId: PlayerId, cardId: string, obj: GameObject, ability: AbilityDefinition, abilityIndex: number, log: (m: string) => void, engine: any, preSelectedChoice?: number, parentContext?: ResolutionContext, exileOnResolution?: boolean): boolean {
-        const { targeting: TargetingProcessor } = getProcessors(state);
+    public static handleAbilityTargeting(state: GameState, playerId: PlayerId, cardId: string, obj: GameObject, ability: AbilityDefinition, abilityIndex: number, engine: any, preSelectedChoice?: number, parentContext?: ResolutionContext, exileOnResolution?: boolean): boolean {
+        const { logger, targeting: TargetingProcessor } = getProcessors(state);
         const pool = [
             ...Object.keys(state.players),
             ...state.battlefield.map(o => o.id),
@@ -707,7 +709,7 @@ export class SpellInteractiveManager {
             targetDef: ability.targetDefinition,
             targetIndex: 0
         }, tid));
-        log(`[DEBUG] Found ${legalForFirst.length} legal targets for ${obj.definition.name} ability: [${legalForFirst.join(', ')}]`);
+        logger.debug(state, LogCategory.ACTION, `[DEBUG] Found ${legalForFirst.length} legal targets for ${obj.definition.name} ability: [${legalForFirst.join(', ')}]`);
 
         const firstRestrictions = firstDef.restrictions || [];
         const isOpponentTarget = firstDef.type === TargetType.Opponent || (firstDef.type === TargetType.Player && firstRestrictions.includes(Restriction.Opponent));
@@ -719,10 +721,10 @@ export class SpellInteractiveManager {
 
         if (isSingleOpponentTarget) {
             const opponentId = legalForFirst[0];
-            log(`[AUTO-TARGET] Automatically targeting the only opponent for ${obj.definition.name}.`);
+            logger.info(state, LogCategory.ACTION, `[AUTO-TARGET] Automatically targeting the only opponent for ${obj.definition.name}.`);
 
             if (maxCount === 1) {
-                return SpellProcessor.finalizeAbilityActivation(state, log, engine, {
+                return SpellProcessor.finalizeAbilityActivation(state, engine, {
                     playerId,
                     obj,
                     ability,
@@ -768,8 +770,8 @@ export class SpellInteractiveManager {
 
         if (legalForFirst.length === 0) {
             if (firstDef.optional || firstDef.minCount === 0) {
-                log(`No legal targets found, skipping.`);
-                return SpellProcessor.finalizeAbilityActivation(state, log, engine, {
+                logger.info(state, LogCategory.ACTION, `No legal targets found, skipping.`);
+                return SpellProcessor.finalizeAbilityActivation(state, engine, {
                     playerId,
                     obj,
                     ability,
@@ -779,7 +781,7 @@ export class SpellInteractiveManager {
                     exileOnResolution
                 });
             } else {
-                log(`Illegal Play: No valid targets available for ${obj.definition.name}'s ability.`);
+                logger.info(state, LogCategory.ACTION, `Illegal Play: No valid targets available for ${obj.definition.name}'s ability.`);
                 return false;
             }
         }
@@ -819,7 +821,7 @@ export class SpellInteractiveManager {
                     preSelectedChoice
                 }
             };
-            log(`[GRAVEYARD_MODAL] Player is selecting graveyard targets for ${obj.definition.name}'s ability...`);
+            logger.info(state, LogCategory.ACTION, `[GRAVEYARD_MODAL] Player is selecting graveyard targets for ${obj.definition.name}'s ability...`);
             return true;
         }
 
@@ -842,7 +844,7 @@ export class SpellInteractiveManager {
                 parentContext
             }
         };
-        log(`[TARGETING] Player must choose targets for ${obj.definition.name}'s ability.`);
+        logger.info(state, LogCategory.ACTION, `[TARGETING] Player must choose targets for ${obj.definition.name}'s ability.`);
         return true;
     }
 }

@@ -46,7 +46,7 @@ export class TargetValidator {
 
         const { sourceId, controllerId, stackObject } = context;
         const targetDef = stackObject?.data?.targetDefinition || effects.find(e => e.targetDefinition)?.targetDefinition;
-        
+
         // If at least one target is legal for the definition associated with its index, the spell does NOT fizzle.
         const hasAnyLegalTarget = targets.some((tid, index) => {
             return this.isLegalTarget(state, {
@@ -145,7 +145,7 @@ export class TargetValidator {
         return restrictions;
     }
 
-    public static matchesRestrictions(state: GameState, targetObj: Targetable, restrictions: (TargetRestriction | string)[], context: TargetingContext, log?: (msg: string) => void): boolean {
+    public static matchesRestrictions(state: GameState, targetObj: Targetable, restrictions: (TargetRestriction | string)[], context: TargetingContext): boolean {
         if (!targetObj) return false;
         const definition = (targetObj as GameObject).definition || (targetObj as any).card?.definition;
 
@@ -206,7 +206,7 @@ export class TargetValidator {
         });
 
         if (alternatives.length > 0) {
-            return alternatives.every(r => this.evaluateComplexRestriction(state, targetObj, r, context, log));
+            return alternatives.every(r => this.evaluateComplexRestriction(state, targetObj, r, context));
         }
 
         return true;
@@ -217,8 +217,8 @@ export class TargetValidator {
             const lr = r.toLowerCase();
             const token = r.toUpperCase();
             if (RestrictionRegistry[token]) return !!RestrictionRegistry[token].matches(state, targetObj, lr, context);
-            if (lr.includes('_or_')) return lr.split('_or_').some(p => this.matchesRestrictions(state, targetObj, [p.trim()], context, log));
-            return this.matchesRestrictions(state, targetObj, [r], context, log);
+            if (lr.includes('_or_')) return lr.split('_or_').some(p => this.matchesRestrictions(state, targetObj, [p.trim()], context));
+            return this.matchesRestrictions(state, targetObj, [r], context);
         }
 
         const definition = (targetObj as GameObject).definition;

@@ -1,4 +1,6 @@
 import { ActionType, GameObject, GameState, Zone } from "@shared/engine_types";
+import { LogCategory } from "../../utils/EngineLogger";
+import { getProcessors } from "../ProcessorRegistry";
 import { ActionProcessor } from "../actions/ActionProcessor";
 import { TargetingProcessor } from "../actions/targeting/TargetingProcessor";
 import { RuleUtils } from "../../utils/RuleUtils";
@@ -15,12 +17,11 @@ export class StateBasedActionsProcessor {
    */
   public static resolveSBAs(
     state: GameState,
-    log: (msg: string) => void,
   ): boolean {
     let globalActionTaken = false;
 
     // Rule 704.3: If any SBAs are performed, the process is repeated until none are performed.
-    while (this.performSBACHybridCycle(state, log)) {
+    while (this.performSBACHybridCycle(state)) {
       globalActionTaken = true;
     }
 
@@ -29,14 +30,14 @@ export class StateBasedActionsProcessor {
 
   private static performSBACHybridCycle(
     state: GameState,
-    log: (msg: string) => void,
   ): boolean {
+    const { logger } = getProcessors(state);
     let actionTaken = false;
 
     // 1. RULE 704.5a: Player loses if Life <= 0
     for (const p of Object.values(state.players)) {
       if ((p.life <= 0 || p.hasLostDueToEmptyLibrary) && !p.hasLost) {
-        log(
+        logger.info(state, LogCategory.ACTION, 
           `[SBA] ${p.name} loses the game (Life: ${p.life}, EmptyLibrary: ${p.hasLostDueToEmptyLibrary}).`,
         );
         p.hasLost = true;
@@ -50,8 +51,8 @@ export class StateBasedActionsProcessor {
       const stats = LayerProcessor.getEffectiveStats(obj, state);
       // Rule 704.5f: 0 Toughness (ignores indestructible)
       if (RuleUtils.isCreature(obj) && stats.toughness <= 0) {
-        log(`[SBA] ${obj.definition.name} has 0 toughness and dies.`);
-        ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.ownerId, log);
+        logger.info(state, LogCategory.ACTION, `[SBA] ${obj.definition.name} has 0 toughness and dies.`);
+        ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.ownerId);
         actionTaken = true;
         continue;
       }
@@ -61,13 +62,12 @@ export class StateBasedActionsProcessor {
         obj.damageMarked >= stats.toughness || obj.deathtouchMarked;
       if (RuleUtils.isCreature(obj) && isLethal) {
         if (!RuleUtils.hasIndestructible(obj)) {
-          log(`[SBA] ${obj.definition.name} destroyed by lethal damage.`);
+          logger.info(state, LogCategory.ACTION, `[SBA] ${obj.definition.name} destroyed by lethal damage.`);
           ActionProcessor.moveCard(
             state,
             obj,
             Zone.Graveyard,
             obj.ownerId,
-            log,
           );
           actionTaken = true;
           continue;
@@ -78,7 +78,7 @@ export class StateBasedActionsProcessor {
       if (RuleUtils.isPlaneswalker(obj)) {
         const loyalty = obj.counters["loyalty"] || 0;
         if (loyalty <= 0) {
-          log(
+          logger.info(state, LogCategory.ACTION, 
             `[SBA] ${obj.definition.name} has 0 loyalty and is put into graveyard.`,
           );
           ActionProcessor.moveCard(
@@ -86,7 +86,6 @@ export class StateBasedActionsProcessor {
             obj,
             Zone.Graveyard,
             obj.ownerId,
-            log,
           );
           actionTaken = true;
           continue;
@@ -115,7 +114,7 @@ export class StateBasedActionsProcessor {
 
         // If we don't have a pending action already, create one
         if (!state.pendingAction) {
-          log(`[SBA] Legend Rule: ${name} clash. Choose one to keep.`);
+          logger.info(state, LogCategory.ACTION, `[SBA] Legend Rule: ${name} clash. Choose one to keep.`);
           state.pendingAction = {
             type: ActionType.LegendRule,
             playerId: controllerId,
@@ -150,7 +149,7 @@ export class StateBasedActionsProcessor {
     const exileTokens = state.exile.filter((o) => o.isToken || o.id.startsWith("token_"));
     if (exileTokens.length > 0) {
       exileTokens.forEach((t) =>
-        log(`[SBA] Token ${t.definition.name} ceased to exist in Exile.`),
+        logger.info(state, LogCategory.ACTION, `[SBA] Token ${t.definition.name} ceased to exist in Exile.`),
       );
       state.exile = state.exile.filter((o) => !(o.isToken || o.id.startsWith("token_")));
       actionTaken = true;
@@ -170,7 +169,7 @@ export class StateBasedActionsProcessor {
           const tokens = list.filter((o) => o.isToken || o.id.startsWith("token_"));
           if (tokens.length > 0) {
             tokens.forEach((t) =>
-              log(
+              logger.info(state, LogCategory.ACTION, 
                 `[SBA] Token ${t.definition.name} ceased to exist in ${zoneName}.`,
               ),
             );
@@ -198,7 +197,7 @@ export class StateBasedActionsProcessor {
         const amount = Math.min(plus, minus);
         obj.counters["+1/+1"] -= amount;
         obj.counters["-1/-1"] -= amount;
-        log(
+        logger.info(state, LogCategory.ACTION, 
           `[SBA] ${obj.definition.name}: ${amount} +1/+1 and -1/-1 counters cancelled each other out.`,
         );
         actionTaken = true;
@@ -215,7 +214,7 @@ export class StateBasedActionsProcessor {
         // CR 704.5q: Sacrifice if it's not the source of a triggered ability on the stack.
         const isOnStack = state.stack.some((s) => s.sourceId === saga.id);
         if (!isOnStack) {
-          log(
+          logger.info(state, LogCategory.ACTION, 
             `[SBA] Saga ${saga.definition.name} reached final chapter and is sacrificed.`,
           );
           ActionProcessor.moveCard(
@@ -223,7 +222,6 @@ export class StateBasedActionsProcessor {
             saga,
             Zone.Graveyard,
             saga.ownerId,
-            log,
           );
           actionTaken = true;
         }
@@ -239,7 +237,7 @@ export class StateBasedActionsProcessor {
 
       if (!targetId) {
         if (isAura) {
-          log(
+          logger.info(state, LogCategory.ACTION, 
             `[SBA] Aura ${attach.definition.name} is not attached to anything and is put into graveyard.`,
           );
           ActionProcessor.moveCard(
@@ -247,7 +245,6 @@ export class StateBasedActionsProcessor {
             attach,
             Zone.Graveyard,
             attach.ownerId,
-            log,
           );
           actionTaken = true;
         }
@@ -270,7 +267,7 @@ export class StateBasedActionsProcessor {
         )
       ) {
         if (isAura) {
-          log(
+          logger.info(state, LogCategory.ACTION, 
             `[SBA] Aura ${attach.definition.name} is attached to an illegal target and is put into graveyard.`,
           );
           ActionProcessor.moveCard(
@@ -278,11 +275,10 @@ export class StateBasedActionsProcessor {
             attach,
             Zone.Graveyard,
             attach.ownerId,
-            log,
           );
           actionTaken = true;
         } else {
-          log(
+          logger.info(state, LogCategory.ACTION, 
             `[SBA] Equipment ${attach.definition.name} detached from illegal target.`,
           );
           attach.attachedTo = undefined;

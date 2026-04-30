@@ -1,6 +1,7 @@
 import { GameObject, GameState, PlayerId, Zone } from '@shared/engine_types';
 import { Card } from '@shared/types';
 import { oracle } from '../../OracleLogicMap';
+import { LogCategory, EngineLogger } from '../../utils/EngineLogger';
 
 export class GameSetupProcessor {
   public static initializePlayers(
@@ -109,10 +110,10 @@ export class GameSetupProcessor {
     };
   }
 
-  public static shuffleLibrary(state: GameState, playerId: PlayerId, log: (msg: string) => void) {
+  public static shuffleLibrary(state: GameState, playerId: PlayerId) {
     const player = state.players[playerId];
     if (!player) return;
-    log(`Shuffling library for: ${player.name}`);
+    EngineLogger.info(state, LogCategory.ACTION, `Shuffling library for: ${player.name}`);
     for (let i = player.library.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [player.library[i], player.library[j]] = [player.library[j], player.library[i]];

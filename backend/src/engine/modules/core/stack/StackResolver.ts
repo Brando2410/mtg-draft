@@ -2,6 +2,7 @@ import { EffectDefinition, GameState, StackObject, Zone } from '@shared/engine_t
 import { ActionProcessor } from '../../actions/ActionProcessor';
 import { TargetingProcessor } from '../../actions/targeting/TargetingProcessor';
 import { EffectProcessor } from '../../effects/EffectProcessor';
+import { LogCategory, EngineLogger } from '../../../utils/EngineLogger';
 import { oracle } from '../../../OracleLogicMap';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { getProcessors } from '../../ProcessorRegistry';
@@ -19,9 +20,7 @@ export class StackResolver {
   }
 
   private log(message: string) {
-    const formattedMessage = `> [Stack] ${message}`;
-    const newLogs = [...(this.state.logs || []), formattedMessage];
-    this.state.logs = newLogs.slice(-40);
+    EngineLogger.info(this.state, LogCategory.ACTION, `[Stack] ${message}`);
   }
 
   /**
@@ -66,7 +65,6 @@ export class StackResolver {
       effects,
       sourceId: stackObj.sourceId,
       targets: stackObj.targets || [],
-      log: (m: string) => this.log(m),
       startIndex,
       stackObject: stackObj
     });
@@ -107,10 +105,10 @@ export class StackResolver {
           this.log(`[RULE 701.5] ${card.definition.name} (fizzled) was exiled instead of being put into graveyard.`);
           ActionProcessor.removeFromCurrentZone(this.state, card);
           if (!(stackObj as any).isCopy) {
-            ActionProcessor.moveCard(this.state, card, Zone.Exile, card.ownerId, (m: string) => this.log(m));
+            ActionProcessor.moveCard(this.state, card, Zone.Exile, card.ownerId);
           }
         } else {
-          ActionProcessor.moveCard(this.state, card, Zone.Graveyard, card.ownerId, (m: string) => this.log(m));
+          ActionProcessor.moveCard(this.state, card, Zone.Graveyard, card.ownerId);
         }
         return;
       }
@@ -129,7 +127,7 @@ export class StackResolver {
 
         // Rule 110.2: Permanent enters under controller's control
         card.xValue = stackObj.xValue;
-        ActionProcessor.moveCard(this.state, card, Zone.Battlefield, stackObj.controllerId, (m: string) => this.log(m));
+        ActionProcessor.moveCard(this.state, card, Zone.Battlefield, stackObj.controllerId);
       } else if (card.zone === Zone.Stack) {
         const freshDef = oracle.getCard(card.definition.name);
         const shouldExile = stackObj.exileOnResolution || stackObj.isCopy || card.isPreparedCopy || freshDef?.exileOnResolution;
@@ -142,10 +140,10 @@ export class StackResolver {
 
           ActionProcessor.removeFromCurrentZone(this.state, card);
           if (!(stackObj.isCopy || card.isPreparedCopy)) {
-            ActionProcessor.moveCard(this.state, card, Zone.Exile, card.ownerId, (m: string) => this.log(m));
+            ActionProcessor.moveCard(this.state, card, Zone.Exile, card.ownerId);
           }
         } else {
-          ActionProcessor.moveCard(this.state, card, Zone.Graveyard, card.ownerId, (m: string) => this.log(m));
+          ActionProcessor.moveCard(this.state, card, Zone.Graveyard, card.ownerId);
         }
       }
     }

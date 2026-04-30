@@ -5,14 +5,14 @@ import { ChoiceEffectHandler as LegacyChoiceHandler } from "./ChoiceEffectHandle
 import { RuleUtils } from "../../../../utils/RuleUtils";
 
 export const ChoiceHandler: IEffectHandler = {
-  handle(state, effect, log, context) {
-    return LegacyChoiceHandler.handleChoice(state, effect as ModalEffect, log, context);
+  handle(state, effect, context) {
+    return LegacyChoiceHandler.handleChoice(state, effect as ModalEffect, context);
   }
 };
 
 
 export const LearnHandler: IEffectHandler = {
-  handle(state, effect, log, context) {
+  handle(state, effect, context) {
     const { controllerId, sourceId, stackObject, parentContext } = context;
     const player = state.players[controllerId];
     const lessons = (player?.sideboard || []).filter((c: GameObject) =>

@@ -1,5 +1,14 @@
-import { CostType, GameObject, GameState, PlayerId, ResolutionContext, TargetingContext, Zone } from '@shared/engine_types';
+import {
+    GameObject,
+    GameState,
+    PlayerId,
+    TargetingContext,
+    ResolutionContext,
+    Zone,
+    CostType
+} from '@shared/engine_types';
 import { getProcessors } from '../../ProcessorRegistry';
+import { LogCategory } from '../../../utils/EngineLogger';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { EngineContext } from '../../../interfaces/EngineContext';
 import { ManaProcessor } from '../../magic/ManaProcessor';
@@ -21,7 +30,7 @@ export class TargetingProcessor {
     public static findObjectInAnyZone(state: GameState, id: string): GameObject | null { return RuleUtils.findObject(state, id) || null; }
     public static isLegalTarget(state: GameState, context: TargetingContext, targetId: string): boolean { return TargetValidator.isLegalTarget(state, context, targetId); }
     public static hasLegalTargets(state: GameState, sourceId: string, targetDef: any, controllerId: string): boolean { return TargetValidator.hasLegalTargets(state, sourceId, targetDef, controllerId); }
-    public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], context: TargetingContext, log?: (msg: string) => void): boolean { return TargetValidator.matchesRestrictions(state, targetObj, restrictions, context, log); }
+    public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], context: TargetingContext): boolean { return TargetValidator.matchesRestrictions(state, targetObj, restrictions, context); }
     public static sourceHasQualities(source: any, qualities: string[], state?: GameState): boolean { return TargetValidator.sourceHasQualities(source, qualities, state); }
     public static getColors(obj: any, state?: GameState): string[] { return TargetValidator.getColors(obj, state); }
     public static getLegalTargetPool(state: GameState, sourceId: string, targetDef: any, controllerId: string, targetIndex: number = 0): string[] { return TargetValidator.getLegalTargetPool(state, sourceId, targetDef, controllerId, targetIndex); }
@@ -36,7 +45,6 @@ export class TargetingProcessor {
         state: GameState,
         playerId: PlayerId,
         targetId: string,
-        log: (m: string) => void,
         engine: {
             resetPriorityToActivePlayer: () => void;
             finaliseTargeting: (p: PlayerId, targets: string[]) => boolean;
@@ -71,6 +79,7 @@ export class TargetingProcessor {
 
         updatePrompt();
 
+        const { logger } = getProcessors(state);
         if (isUndoing) {
             if (actionData.selectedTargets.length > 0) {
                 const removed = actionData.selectedTargets.pop();
@@ -97,10 +106,10 @@ export class TargetingProcessor {
                 }, tid));
 
                 updatePrompt();
-                log(`Removed last target: ${removed}`);
+                logger.info(state, LogCategory.ACTION, `Removed last target: ${removed}`);
                 return true;
             } else {
-                log(`Targeting cancelled.`);
+                logger.info(state, LogCategory.ACTION, `Targeting cancelled.`);
                 const sourceId = action.sourceId;
                 const stackId = actionData.stackId;
                 const stackObj = actionData.stackObj;
@@ -109,9 +118,9 @@ export class TargetingProcessor {
                     const player = state.players[stackObj.controllerId];
                     if (player) {
                         stackObj.card.xValue = undefined; // Explicitly clear before move
-                        ActionProcessor.moveCard(state, stackObj.card, Zone.Hand, stackObj.controllerId, log);
+                        ActionProcessor.moveCard(state, stackObj.card, Zone.Hand, stackObj.controllerId);
                         ManaProcessor.refundManaCost(player, stackObj.card.definition.manaCost);
-                        log(`Refunding mana for ${stackObj.card.definition.name}: ${stackObj.card.definition.manaCost}`);
+                        logger.info(state, LogCategory.ACTION, `Refunding mana for ${stackObj.card.definition.name}: ${stackObj.card.definition.manaCost}`);
                     }
                 } else if (sourceId) {
                     // Fallback for spells that haven't entered the stack yet (targeting phase)
@@ -135,7 +144,7 @@ export class TargetingProcessor {
                         if (lCost !== undefined) {
                             const val = parseInt(String(lCost));
                             sourceOnField.counters['loyalty'] = (sourceOnField.counters['loyalty'] || 0) - val;
-                            log(`Refunding loyalty for ${sourceOnField.definition.name}: ${val > 0 ? '+' : ''}${val}`);
+                            logger.info(state, LogCategory.ACTION, `Refunding loyalty for ${sourceOnField.definition.name}: ${val > 0 ? '+' : ''}${val}`);
                         }
                     }
                 }
@@ -173,7 +182,7 @@ export class TargetingProcessor {
                 targetIndex: firstIndex
             }, tid));
             updatePrompt();
-            log(`Targeting selection cleared.`);
+            logger.info(state, LogCategory.ACTION, `Targeting selection cleared.`);
             return true;
         }
 
@@ -229,13 +238,13 @@ export class TargetingProcessor {
                         targetIndex: newNextIndex
                     }, tid));
 
-                    log(`Skipped optional target slot ${newNextIndex}.`);
+                    logger.info(state, LogCategory.ACTION, `Skipped optional target slot ${newNextIndex}.`);
                     return true;
                 }
             }
 
             if (minCount > 0 && (actionData.selectedTargets?.filter((t: any) => t !== null).length || 0) < minCount) {
-                log(`Targeting requirement not met: ${actionData.selectedTargets?.filter((t: any) => t !== null).length || 0}/${minCount}. Please select more targets.`);
+                logger.info(state, LogCategory.ACTION, `Targeting requirement not met: ${actionData.selectedTargets?.filter((t: any) => t !== null).length || 0}/${minCount}. Please select more targets.`);
                 return false;
             }
             return engine.finaliseTargeting(playerId, actionData.selectedTargets);
@@ -248,7 +257,7 @@ export class TargetingProcessor {
         }
 
         if (!validTargets.includes(targetId)) {
-            log(`Invalid target selected.`);
+            logger.info(state, LogCategory.ACTION, `Invalid target selected.`);
             return false;
         }
 
@@ -278,19 +287,19 @@ export class TargetingProcessor {
         }
 
         if (isDuplicate) {
-            log(`Target already selected for this instance of the word 'target'.`);
+            logger.info(state, LogCategory.ACTION, `Target already selected for this instance of the word 'target'.`);
             return false;
         }
 
         // Prevent adding more than the max allowed targets
         if (actionData.selectedTargets.length >= maxCount) {
-            log(`Maximum targets (${maxCount}) reached. Please confirm your selection.`);
+            logger.info(state, LogCategory.ACTION, `Maximum targets (${maxCount}) reached. Please confirm your selection.`);
             return false;
         }
 
         actionData.selectedTargets = [...actionData.selectedTargets, targetId];
         updatePrompt();
-        log(`Target ${actionData.selectedTargets.length}/${maxCount} selected: ${targetId}`);
+        logger.info(state, LogCategory.ACTION, `Target ${actionData.selectedTargets.length}/${maxCount} selected: ${targetId}`);
 
         // Update legal targets for the next index if there are more targets to select
         if (actionData.selectedTargets.length < maxCount) {
@@ -327,7 +336,7 @@ export class TargetingProcessor {
         const abilityIndex = actionData?.abilityIndex;
         const stackObj = actionData?.stackObj;
 
-        const { effect: EffectProcessor, trigger: TriggerProcessor } = getProcessors(state);
+        const { logger, effect: EffectProcessor, trigger: TriggerProcessor } = getProcessors(state);
         console.log(`[TARGET-FINAL] Finalizing for ${sourceId}. isFreeCast=${actionData?.isFreeCast}, hasParent=${!!actionData?.parentContext}, hasStackObj=${!!actionData?.stackObj}`);
 
         if (actionData?.isCostTargeting) {
@@ -367,7 +376,7 @@ export class TargetingProcessor {
                         const obj = RuleUtils.findObject(state, tid);
                         return obj ? obj.controllerId : null;
                     });
-                    engine.log(`[TARGETING] Targets confirmed for ${existingObject.type === 'TriggeredAbility' ? 'Trigger' : 'Spell'}: ${finalTargets.join(', ')}`);
+                    logger.info(state, LogCategory.TARGETING, `[TARGETING] Targets confirmed for ${existingObject.type === 'TriggeredAbility' ? 'Trigger' : 'Spell'}: ${finalTargets.join(', ')}`);
                 }
             }
 
@@ -376,7 +385,6 @@ export class TargetingProcessor {
                 effects: savedEffects,
                 sourceId: useSourceId,
                 targets: savedTargets,
-                log: (m: string) => engine.log(m),
                 startIndex: actionData.nextEffectIndex,
                 stackObject: stackObj,
                 parentContext: actionData.parentContext,
@@ -406,14 +414,14 @@ export class TargetingProcessor {
 
             state.consecutivePasses = 0;
 
-            engine.log(`--------------------------------------------------`);
-            engine.log(`[STACK] + ${engine.getPlayerName(stackObj.controllerId)} cast/activated ${stackObj.card?.definition.name || stackObj.type}`);
+            logger.info(state, LogCategory.STACK, `--------------------------------------------------`);
+            logger.info(state, LogCategory.STACK, `[STACK] + ${engine.getPlayerName(stackObj.controllerId)} cast/activated ${stackObj.card?.definition.name || stackObj.type}`);
             const targetNames = resolvedTargets.map(tid => {
                 const obj = RuleUtils.findObject(state, tid);
                 return obj?.definition?.name || (state.players[tid as any] ? state.players[tid as any].name : tid);
             });
-            engine.log(`[STACK] Target(s): ${targetNames.join(', ')}`);
-            engine.log(`--------------------------------------------------`);
+            logger.info(state, LogCategory.STACK, `[STACK] Target(s): ${targetNames.join(', ')}`);
+            logger.info(state, LogCategory.STACK, `--------------------------------------------------`);
 
             state.pendingAction = undefined;
 
@@ -422,7 +430,7 @@ export class TargetingProcessor {
                 const nextTriggers = actionData.nextTriggersToStack;
                 for (let i = 0; i < nextTriggers.length; i++) {
                     const t = nextTriggers[i];
-                    TriggerProcessor.stackTrigger(state, t, engine.log);
+                    TriggerProcessor.stackTrigger(state, t);
 
                     const pendingAfter = state.pendingAction as any;
                     if (pendingAfter && i < nextTriggers.length - 1) {

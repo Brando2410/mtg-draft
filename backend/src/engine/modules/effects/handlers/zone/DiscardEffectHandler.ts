@@ -3,7 +3,7 @@ import { getProcessors } from '../../../ProcessorRegistry';
 import { ChoiceGenerator } from '../../ChoiceGenerator';
 
 export class DiscardEffectHandler {
-    public static handle(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
+    public static handle(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
         const { effect: EP } = getProcessors(state);
         const { targets, controllerId, stackObject, parentContext } = context;
         const discardEff = effect as any;
@@ -26,7 +26,6 @@ export class DiscardEffectHandler {
                 stackObject,
                 parentContext,
                 effect.effects,
-                log,
             );
         }
     }

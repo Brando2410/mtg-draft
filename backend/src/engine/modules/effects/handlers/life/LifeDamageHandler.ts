@@ -1,4 +1,5 @@
 import { DamageEffect, EffectDefinition, GameState, LifeEffect, ResolutionContext } from '@shared/engine_types';
+import { LogCategory } from '../../../../utils/EngineLogger';
 import { getProcessors } from '../../../ProcessorRegistry';
 
 /**
@@ -6,7 +7,7 @@ import { getProcessors } from '../../../ProcessorRegistry';
  */
 export class LifeDamageHandler {
 
-  public static handleDamage(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
+  public static handleDamage(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
     const { effect: EP, targeting: TP, damage: DP } = getProcessors(state);
     const { targets, sourceId } = context;
     const damageEff = effect as DamageEffect;
@@ -15,19 +16,19 @@ export class LifeDamageHandler {
       const sourceMappingIds = damageEff.damageSourceMapping ? TP.resolveTargetMapping(state, damageEff.damageSourceMapping, context, effect) : [];
       const usedSourceId = sourceMappingIds[0] || (damageEff as any).damageSourceId || sourceId;
       const amt = EP.resolveAmount(state, damageEff.amount, context, [tid]);
-      DP.dealDamage(state, usedSourceId, tid, amt, false, log);
+      DP.dealDamage(state, usedSourceId, tid, amt, false);
     });
   }
 
-  public static handleGainLife(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
-    const { effect: EP, restriction: RV, trigger: TrP } = getProcessors(state);
+  public static handleGainLife(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    const { logger, effect: EP, restriction: RV, trigger: TrP } = getProcessors(state);
     const { targets } = context;
     const lifeEff = effect as LifeEffect;
 
     targets.forEach(pid => {
       if (state.players[pid]) {
         if (!RV.canGainLife(state, pid)) {
-          log(`${state.players[pid].name} cannot gain life due to a restriction.`);
+          logger.info(state, LogCategory.ACTION, `${state.players[pid].name} cannot gain life due to a restriction.`);
           return;
         }
         const amount = EP.resolveAmount(state, lifeEff.amount, context, [pid]);
@@ -35,20 +36,20 @@ export class LifeDamageHandler {
         state.players[pid].life += amount;
         state.turnState.lastLifeGainedAmount = amount;
         state.turnState.lifeGainedThisTurn[pid] = (state.turnState.lifeGainedThisTurn[pid] || 0) + amount;
-        log(`${state.players[pid].name} gains ${amount} life (${oldLife} -> ${state.players[pid].life})`);
+        logger.info(state, LogCategory.ACTION, `${state.players[pid].name} gains ${amount} life (${oldLife} -> ${state.players[pid].life})`);
 
         TrP.onEvent(state, {
           type: 'ON_LIFE_GAIN',
           playerId: pid,
           amount,
           data: { amount }
-        }, log);
+        });
       }
     });
   }
 
-  public static handleLoseLife(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
-    const { effect: EP, trigger: TrP } = getProcessors(state);
+  public static handleLoseLife(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+    const { logger, effect: EP, trigger: TrP } = getProcessors(state);
     const { targets } = context;
     const lifeEff = effect as LifeEffect;
 
@@ -56,8 +57,8 @@ export class LifeDamageHandler {
       if (state.players[pid]) {
         const amount = EP.resolveAmount(state, lifeEff.amount, context, [pid]);
         state.players[pid].life -= amount;
-        TrP.onEvent(state, { type: 'ON_LIFE_LOSS', playerId: pid, amount }, log);
-        log(`${state.players[pid].name} loses ${amount} life.`);
+        TrP.onEvent(state, { type: 'ON_LIFE_LOSS', playerId: pid, amount });
+        logger.info(state, LogCategory.ACTION, `${state.players[pid].name} loses ${amount} life.`);
       }
     });
   }

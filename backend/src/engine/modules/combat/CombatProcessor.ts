@@ -1,4 +1,5 @@
 import { ActionType, GameObject, GameObjectId, GameState, PlayerId, RestrictionType, Step } from '@shared/engine_types';
+import { LogCategory } from '../../utils/EngineLogger';
 import { EngineContext } from '../../interfaces/EngineContext';
 import { RuleUtils } from '../../utils/RuleUtils';
 import { getProcessors } from '../ProcessorRegistry';
@@ -20,7 +21,8 @@ export class CombatProcessor {
     };
   }
 
-  public static handleStepEntry(state: GameState, log: (m: string) => void) {
+  public static handleStepEntry(state: GameState) {
+    const { logger } = getProcessors(state);
     if (state.currentStep === Step.BeginningOfCombat) {
       this.initializeCombat(state);
     }
@@ -44,7 +46,7 @@ export class CombatProcessor {
             const alreadyAttacking = state.combat!.attackers.some(a => a.attackerId === creature.id);
             if (!alreadyAttacking) {
               state.combat!.attackers.push({ attackerId: creature.id, targetId: opponentId });
-              log(`[AUTO-ATTACK] ${creature.definition.name} must attack.`);
+              logger.info(state, LogCategory.COMBAT, `[AUTO-ATTACK] ${creature.definition.name} must attack.`);
             }
           }
         }
@@ -58,7 +60,7 @@ export class CombatProcessor {
     }
     else if (state.currentStep === Step.DeclareBlockers) {
       if (!state.combat?.attackers || state.combat.attackers.length === 0) {
-        log("No attackers declared. Skipping to End of Combat.");
+        logger.info(state, LogCategory.COMBAT, "No attackers declared. Skipping to End of Combat.");
         return;
       }
 
@@ -72,7 +74,7 @@ export class CombatProcessor {
       }
     }
     else if (state.currentStep === Step.CombatDamage || state.currentStep === Step.FirstStrikeDamage) {
-      this.resolveDamage(state, log);
+      this.resolveDamage(state);
     }
     else if (state.currentStep === Step.EndOfCombat) {
       // Rule 511.3: Creatures stop being attacking/blocking when End of Combat starts
@@ -96,16 +98,17 @@ export class CombatProcessor {
    * CR 508.2: Confirming the Attacker Declaration Action
    */
   public static confirmAttackers(state: GameState, playerId: PlayerId, engine: EngineContext) {
+    const { logger } = getProcessors(state);
     if (state.pendingAction?.type !== 'DECLARE_ATTACKERS' || state.pendingAction.playerId !== playerId) return;
 
     // CR 508.1: Validate global attack requirements (e.g. MustAttack)
     const validation = this.validateAllAttackers(state);
     if (!validation.isValid) {
-      engine.log(`[ATTACK] ERR: ${validation.error}`);
+      logger.warn(state, LogCategory.COMBAT, `[ATTACK] ERR: ${validation.error}`);
       return;
     }
 
-    engine.log(`${engine.getPlayerName(playerId)} confirmed attackers.`);
+    logger.info(state, LogCategory.COMBAT, `${engine.getPlayerName(playerId)} confirmed attackers.`);
 
     const attackers = state.combat?.attackers || [];
     state.turnState.creaturesAttackedThisTurn += attackers.length;
@@ -125,7 +128,7 @@ export class CombatProcessor {
             playerId: playerId,
             targetId: attackerObj.id,
             data: { object: attackerObj }
-          }, (m: string) => engine.log(m));
+          });
         }
       }
     });
@@ -136,7 +139,7 @@ export class CombatProcessor {
         type: 'ON_ATTACKERS_DECLARED',
         playerId: playerId,
         data: { attackers }
-      }, (m: string) => engine.log(m));
+      });
 
       // Rule 508.1m: Individual attack triggers
       attackers.forEach(a => {
@@ -146,7 +149,7 @@ export class CombatProcessor {
           sourceId: a.attackerId,
           playerId: playerId,
           data: { object: attackerObj, targetId: a.targetId }
-        }, (m: string) => engine.log(m));
+        });
       });
     }
 
@@ -154,7 +157,7 @@ export class CombatProcessor {
 
     const attackerCount = (state.combat?.attackers || []).length;
     if (attackerCount === 0) {
-      engine.log("No attackers declared. Speeding to next phase.");
+      logger.info(state, LogCategory.COMBAT, "No attackers declared. Speeding to next phase.");
       engine.advanceStep();
     } else {
       engine.resetPriorityToActivePlayer();
@@ -162,6 +165,7 @@ export class CombatProcessor {
   }
 
   public static clearAttackers(state: GameState, playerId: PlayerId, engine: EngineContext) {
+    const { logger } = getProcessors(state);
     if (state.pendingAction?.type !== 'DECLARE_ATTACKERS' || state.pendingAction.playerId !== playerId) return;
     if (!state.combat) return;
 
@@ -188,16 +192,17 @@ export class CombatProcessor {
     });
 
     state.combat.attackers = mandatoryAttackers;
-    engine.log(`${engine.getPlayerName(playerId)} cleared non-mandatory attackers.`);
+    logger.info(state, LogCategory.COMBAT, `${engine.getPlayerName(playerId)} cleared non-mandatory attackers.`);
     engine.resetPriorityToActivePlayer();
   }
 
   public static clearBlockers(state: GameState, playerId: PlayerId, engine: EngineContext) {
+    const { logger } = getProcessors(state);
     if (state.pendingAction?.type !== 'DECLARE_BLOCKERS' || state.pendingAction.playerId !== playerId) return;
     if (!state.combat) return;
 
     state.combat.blockers = [];
-    engine.log(`${engine.getPlayerName(playerId)} cleared all blockers.`);
+    logger.info(state, LogCategory.COMBAT, `${engine.getPlayerName(playerId)} cleared all blockers.`);
     engine.resetPriorityToActivePlayer();
   }
 
@@ -205,17 +210,18 @@ export class CombatProcessor {
    * CR 509.2: Confirming the Blocker Declaration Action
    */
   public static confirmBlockers(state: GameState, playerId: PlayerId, engine: EngineContext) {
+    const { logger } = getProcessors(state);
     if (state.pendingAction?.type !== 'DECLARE_BLOCKERS' || state.pendingAction.playerId !== playerId) return;
 
     // CR 509.1: Validate global block requirements (e.g. Menace)
     const validation = this.validateAllBlockers(state);
     if (!validation.isValid) {
-      engine.log(`[BLOCK] ERR: ${validation.error}`);
+      logger.warn(state, LogCategory.COMBAT, `[BLOCK] ERR: ${validation.error}`);
       // Keep in block declaration mode until fixed
       return;
     }
 
-    engine.log(`${engine.getPlayerName(playerId)} confirmed blockers.`);
+    logger.info(state, LogCategory.COMBAT, `${engine.getPlayerName(playerId)} confirmed blockers.`);
 
     // Rule 509.1: Individual block triggers
     if (state.combat?.blockers) {
@@ -228,14 +234,14 @@ export class CombatProcessor {
           sourceId: b.blockerId,
           playerId: playerId,
           data: { object: blockerObj, targetId: b.attackerId }
-        }, (m: string) => engine.log(m));
+        });
         TrP.onEvent(state, {
           type: 'ON_BECAME_BLOCKED',
           sourceId: b.attackerId,
           targetId: b.blockerId,
           playerId: playerId,
           data: { object: attackerObj, targetId: b.blockerId }
-        }, (m: string) => engine.log(m));
+        });
       });
     }
 
@@ -243,7 +249,7 @@ export class CombatProcessor {
 
     // CR 509.2 / 509.3: If multiple blockers/attackers are involved, we need damage assignment order first.
     if (this.needsOrdering(state)) {
-      this.setupNextOrderingAction(state, (m) => engine.log(m));
+      this.setupNextOrderingAction(state);
     } else {
       // CR 509.4: Give priority window in Declare Blockers step.
       engine.resetPriorityToActivePlayer();
@@ -283,7 +289,8 @@ export class CombatProcessor {
     return false;
   }
 
-  public static setupNextOrderingAction(state: GameState, log: (m: string) => void) {
+  public static setupNextOrderingAction(state: GameState) {
+    const { logger } = getProcessors(state);
     if (!state.combat) return;
 
     // 1. Active Player orders blockers (Rule 509.2)
@@ -326,7 +333,8 @@ export class CombatProcessor {
     }
   }
 
-  public static resolveDamage(state: GameState, log: (m: string) => void) {
+  public static resolveDamage(state: GameState) {
+    const { logger } = getProcessors(state);
     if (!state.combat) return;
 
     // CR 511.1: First Strike / Double Strike Step Filtering
@@ -334,10 +342,10 @@ export class CombatProcessor {
     const assignments: { sourceId: string, targetId: string, amount: number }[] = [];
 
     // 1. Assign Attacker Damage (Rule 510.1c)
-    this.assignAttackerDamage(state, isFirstStrikeStep, assignments, log);
+    this.assignAttackerDamage(state, isFirstStrikeStep, assignments);
 
     // 2. Assign Blocker Damage (Rule 510.1d)
-    this.assignBlockerDamage(state, isFirstStrikeStep, assignments, log);
+    this.assignBlockerDamage(state, isFirstStrikeStep, assignments);
 
     // 3. APPLY ALL DAMAGE SIMULTANEOUSLY (Rule 510.2)
     // "Damage assigned by all creatures is dealt at the same time."
@@ -345,7 +353,7 @@ export class CombatProcessor {
 
     const { damage: DaP } = getProcessors(state);
     for (const a of assignments) {
-      DaP.dealDamage(state, a.sourceId, a.targetId, a.amount, true, log);
+      DaP.dealDamage(state, a.sourceId, a.targetId, a.amount, true);
 
       // Track combat damage to players for grouped triggers (Rule 510.2 / 700.1)
       if (state.players[a.targetId]) {
@@ -365,17 +373,17 @@ export class CombatProcessor {
           targetId: playerId,
           amount: data.amount,
           data: { sources: data.sources, isCombat: true }
-        }, log);
+        });
       }
     }
 
     // 4. Trigger State-Based Actions (Rule 704)
     // Critical: If in FS, dead creatures must be removed BEFORE Regular Damage Step
     const { sba: SBA } = getProcessors(state);
-    SBA.resolveSBAs(state, log);
+    SBA.resolveSBAs(state);
   }
 
-  private static assignAttackerDamage(state: GameState, isFS: boolean, assignments: { sourceId: string, targetId: string, amount: number }[], log: (m: string) => void) {
+  private static assignAttackerDamage(state: GameState, isFS: boolean, assignments: { sourceId: string, targetId: string, amount: number }[]) {
     if (!state.combat) return;
 
     const { layer: LP } = getProcessors(state);
@@ -429,7 +437,7 @@ export class CombatProcessor {
     }
   }
 
-  private static assignBlockerDamage(state: GameState, isFS: boolean, assignments: { sourceId: string, targetId: string, amount: number }[], log: (m: string) => void) {
+  private static assignBlockerDamage(state: GameState, isFS: boolean, assignments: { sourceId: string, targetId: string, amount: number }[]) {
     if (!state.combat) return;
 
     const { layer: LP } = getProcessors(state);
@@ -479,7 +487,7 @@ export class CombatProcessor {
    */
   public static resolveCombatOrdering(state: GameState, playerId: string, order: string[], engine: EngineContext): boolean {
     const { playerAction: PAP } = getProcessors(state);
-    PAP.resolveCombatOrdering(state, playerId, order, (m: string) => engine.log(m));
+    PAP.resolveCombatOrdering(state, playerId, order);
 
     // Once ordering is complete (and no more pending actions exist), give priority back to AP.
     engine.resetPriorityToActivePlayer();

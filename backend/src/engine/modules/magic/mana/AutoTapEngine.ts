@@ -6,13 +6,13 @@ import { ManaPoolManager } from './ManaPoolManager';
 import { ManaColor, ManaPoolRecord } from './ManaTypes';
 import { oracle } from './../../../OracleLogicMap';
 import { RuleUtils } from '../../../utils/RuleUtils';
+import { LogCategory, EngineLogger } from '../../../utils/EngineLogger';
 
 export class AutoTapEngine {
     public static autoTapLandsForCost(
         state: GameState,
         playerId: PlayerId,
         costStr: string,
-        log: (m: string) => void,
         engine: EngineContext,
         payingFor?: GameObject
     ): { tappedIds: string[], producedMana: ManaPoolRecord } {
@@ -20,7 +20,7 @@ export class AutoTapEngine {
         if (!player) return { tappedIds: [], producedMana: { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 } };
         const requirements = ManaParser.parseManaCost(costStr);
         // Essential log: confirms what we are trying to satisfy
-        log(`[AUTOTAP] Auto-taping sources for cost: ${costStr}`);
+        EngineLogger.info(state, LogCategory.MANA, `[AUTOTAP] Auto-taping sources for cost: ${costStr}`);
 
         const tappedIds: string[] = [];
         const producedMana: ManaPoolRecord = { W: 0, U: 0, B: 0, R: 0, G: 0, C: 0 };
@@ -292,7 +292,7 @@ export class AutoTapEngine {
         while (genericNeeded > 0) {
             const source = findBestSource(null);
             if (!source) {
-                log(`[AUTOTAP-DEBUG] Generic satisfaction failed: No more sources. Still needed: ${genericNeeded}`);
+                EngineLogger.debug(state, LogCategory.MANA, `[AUTOTAP-DEBUG] Generic satisfaction failed: No more sources. Still needed: ${genericNeeded}`);
                 break;
             }
 

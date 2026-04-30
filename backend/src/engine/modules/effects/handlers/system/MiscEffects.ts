@@ -1,12 +1,13 @@
 import { ActionType, PlayerId, Zone } from "@shared/engine_types";
+import { LogCategory } from "../../../../utils/EngineLogger";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
 import { IEffectHandler } from "../../IEffectHandler";
 import { PermanentHandler } from "../permanent/PermanentHandler";
 
 export const ExchangeHandAndGraveyardHandler: IEffectHandler = {
-    handle(state, effect, log, context) {
-        const { action: AP } = getProcessors(state);
+    handle(state, effect, context) {
+        const { logger, action: AP } = getProcessors(state);
         const { targets } = context;
         const targetPlayerId = targets[0] as PlayerId;
         const player = state.players[targetPlayerId];
@@ -19,36 +20,37 @@ export const ExchangeHandAndGraveyardHandler: IEffectHandler = {
         player.graveyard = [];
 
         oldHand.forEach((c) =>
-          AP.moveCard(state, c, Zone.Graveyard, player.id, log),
+          AP.moveCard(state, c, Zone.Graveyard, player.id),
         );
         oldGrave.forEach((c) =>
-          AP.moveCard(state, c, Zone.Hand, player.id, log),
+          AP.moveCard(state, c, Zone.Hand, player.id),
         );
-        log(`[EXCHANGE] ${player.name} exchanged hand and graveyard.`);
+        logger.info(state, LogCategory.ACTION, `[EXCHANGE] ${player.name} exchanged hand and graveyard.`);
     }
 };
 
 export const DisableDamagePreventionHandler: IEffectHandler = {
-    handle(state, effect, log, context) {
+    handle(state, effect, context) {
+        const { logger } = getProcessors(state);
         state.turnState.damagePreventionDisabled = true;
-        log(`[SYSTEM] Damage can't be prevented this turn.`);
+        logger.info(state, LogCategory.ACTION, `[SYSTEM] Damage can't be prevented this turn.`);
     }
 };
 
 export const PendingActionHandler: IEffectHandler = {
-    handle(state, effect, log, context) {
+    handle(state, effect, context) {
         state.pendingAction = (effect as any).action;
     }
 };
 
 export const NecromentiaHandler: IEffectHandler = {
-    handle(state, effect, log, context) {
+    handle(state, effect, context) {
         const { sourceId, controllerId, targets, stackObject } = context;
         const targetOpponentId = targets[0] as PlayerId;
         const targetOpponent = state.players[targetOpponentId];
         if (!targetOpponent) return;
 
-        const { action: AP, trigger: TrP } = getProcessors(state);
+        const { logger, action: AP, trigger: TrP } = getProcessors(state);
 
         if (!stackObject?.data?.chosenName) {
             state.pendingAction = ChoiceGenerator.createCardChoice(
@@ -93,11 +95,10 @@ export const NecromentiaHandler: IEffectHandler = {
 
             toExile.forEach((c: any) => {
                 const from = c.zone as Zone;
-                AP.moveCard(state, c, Zone.Exile, c.ownerId, log);
+                AP.moveCard(state, c, Zone.Exile, c.ownerId);
                 TrP.onEvent(
                     state,
-                    { type: "ON_EXILE", targetId: c.id, sourceId, sourceZone: from },
-                    log,
+                    { type: "ON_EXILE", targetId: c.id, sourceId, sourceZone: from }
                 );
             });
         });
@@ -115,7 +116,6 @@ export const NecromentiaHandler: IEffectHandler = {
                     image_url: "https://cards.scryfall.io/large/front/d/e/ded254ec-1d94-4458-944c-329a4305ee4c.jpg",
                     amount: exiledCount
                 } as any,
-                log,
                 { ...context, targets: [targetOpponentId] }
             );
         }

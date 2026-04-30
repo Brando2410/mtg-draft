@@ -1,6 +1,8 @@
 import { ContinuousEffectDefinition, DurationType, EffectDefinition, EffectDuration, EffectType, GameState, PlayerId, ResolutionContext, TargetMapping, Zone } from '@shared/engine_types';
+import { LogCategory } from '../../../../utils/EngineLogger';
 import { RuleUtils } from '../../../../utils/RuleUtils';
 import { getProcessors } from '../../../ProcessorRegistry';
+
 /**
  * Strategy for CR 611: Continuous Effects from Spells and Abilities
  */
@@ -9,13 +11,12 @@ export class ContinuousEffectHandler {
     public static handle(
         state: GameState,
         effect: EffectDefinition,
-        log: (m: string) => void,
         context: ResolutionContext
     ) {
-        const { effect: EffectProcessor, targeting: TP_FROM_REG } = getProcessors(state);
+        const { logger, effect: EffectProcessor, targeting: TP_FROM_REG } = getProcessors(state);
         const ceDef = effect as ContinuousEffectDefinition;
         const { sourceId, targets: resolvedTargetIds, controllerId, stackObject } = context;
-        log(`[CE_HANDLER] Resolving effect for source ${sourceId}. Targets: ${resolvedTargetIds.join(', ')}`);
+        logger.info(state, LogCategory.ACTION, `[CE_HANDLER] Resolving effect for source ${sourceId}. Targets: ${resolvedTargetIds.join(', ')}`);
 
         // 1. Resolve Duration
         const rawDuration = effect.duration;
@@ -62,7 +63,7 @@ export class ContinuousEffectHandler {
         }
 
         if (!finalTargetIds || finalTargetIds.length === 0) {
-            log(`[CE_HANDLER] [WARNING] No targets found for continuous effect. Source: ${sourceId}, Mapping: ${mapping}`);
+            logger.info(state, LogCategory.ACTION, `[CE_HANDLER] [WARNING] No targets found for continuous effect. Source: ${sourceId}, Mapping: ${mapping}`);
             return;
         }
 
@@ -185,7 +186,7 @@ export class ContinuousEffectHandler {
             }
 
             state.ruleRegistry.continuousEffects.push(finalEffect);
-            log(`[CE_HANDLER] Registered Layer ${layer} effect: ${finalEffect.label || finalEffect.type} for ${targetCID}. Duration: ${effDuration.type}.`);
+            logger.info(state, LogCategory.ACTION, `[CE_HANDLER] Registered Layer ${layer} effect: ${finalEffect.label || finalEffect.type} for ${targetCID}. Duration: ${effDuration.type}.`);
         });
     }
 }

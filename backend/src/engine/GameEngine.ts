@@ -2,16 +2,17 @@ import { EffectType, GameState, Phase, PlayerId, Step } from '@shared/engine_typ
 import { Card } from '@shared/types';
 import { ActivateAbilityOptions, EngineContext, PlayCardOptions } from './interfaces/EngineContext';
 import { ActionProcessor, ChoiceGenerator, ChoiceProcessor, CombatProcessor, DamageProcessor, ConditionProcessor, EffectProcessor, GameSetupProcessor, LayerProcessor, ManaProcessor, PlayerActionProcessor, PriorityProcessor, ReplacementProcessor, SpellProcessor, StackProcessor, StackResolver, StateBasedActionsProcessor, TriggerProcessor, TurnProcessor, TargetingProcessor, RestrictionValidator } from './modules';
+import { LkiProcessor } from './modules/state/LkiProcessor';
 import { RegistryProcessor } from './modules/core/RegistryProcessor';
 import { CostProcessor } from './modules/magic/CostProcessor';
 import { Profiler } from './utils/Profiler';
+import { EngineLogger } from './utils/EngineLogger';
 import { LifeDamageHandler } from './modules/effects/handlers/life/LifeDamageHandler';
 import { MoveEffectHandler } from './modules/effects/handlers/zone/MoveEffectHandler';
 import { SpellValidator } from './modules/actions/spells/SpellValidator';
 import { SpellCostCalculator } from './modules/actions/spells/SpellCostCalculator';
 import { SpellInteractiveManager } from './modules/actions/spells/SpellInteractiveManager';
 import { oracle } from './OracleLogicMap';
-
 
 /**
  * CENTRALIZED MTG RULE ENGINE (Orchestrator)
@@ -52,6 +53,7 @@ export class GameEngine implements EngineContext {
       battlefield: [],
       exile: [],
       stack: [],
+      lki: {},
       ruleRegistry: {
         continuousEffects: [],
         activatedAbilities: [],
@@ -96,7 +98,7 @@ export class GameEngine implements EngineContext {
 
     GameSetupProcessor.initializePlayers(this.state, players, names, decks, avatars);
     this.resolver = new StackResolver(this.state);
-    
+
     // Initialize Processor Registry for peer access
     this.processors = {
       action: ActionProcessor,
@@ -123,6 +125,8 @@ export class GameEngine implements EngineContext {
       spellValidator: SpellValidator,
       spellCostCalculator: SpellCostCalculator,
       spellInteractiveManager: SpellInteractiveManager,
+      lki: LkiProcessor,
+      logger: EngineLogger,
       oracle: oracle
     };
 
@@ -176,7 +180,7 @@ export class GameEngine implements EngineContext {
    * Randomizes the order of a player's library using Fisher-Yates.
    */
   public shuffleLibrary(playerId: PlayerId) {
-    GameSetupProcessor.shuffleLibrary(this.state, playerId, (m) => this.log(m));
+    GameSetupProcessor.shuffleLibrary(this.state, playerId);
   }
 
   /**
@@ -193,7 +197,6 @@ export class GameEngine implements EngineContext {
     MoveEffectHandler.handle(
       this.state,
       { type: EffectType.DrawCards, amount: 1 },
-      (m: string) => this.log(m),
       {
         sourceId: 'system',
         controllerId: playerId,
@@ -213,21 +216,20 @@ export class GameEngine implements EngineContext {
    */
   public interactWithPermanent(playerId: PlayerId, cardId: string): boolean {
     if (!this.state) {
-        console.error('[GameEngine] interactWithPermanent called but state is undefined');
-        return false;
+      console.error('[GameEngine] interactWithPermanent called but state is undefined');
+      return false;
     }
     return PlayerActionProcessor.interactWithPermanent(
       this.state,
       playerId,
       cardId,
-      (m: string) => this.log(m),
       this
     );
   }
 
   public autoTapLand(playerId: PlayerId, cardId: string, abilityIndex?: number, choiceIndex?: number): boolean {
     if (!this.state) {
-        return false;
+      return false;
     }
     return PlayerActionProcessor.autoTapLand(this.state, playerId, cardId, this, abilityIndex, choiceIndex);
   }
@@ -240,7 +242,7 @@ export class GameEngine implements EngineContext {
    * CR 508: Declare Attackers Step
    */
   public declareAttacker(playerId: PlayerId, cardId: string, targetId?: string): boolean {
-    return PlayerActionProcessor.declareAttacker(this.state, playerId, cardId, targetId, (m: string) => this.log(m));
+    return PlayerActionProcessor.declareAttacker(this.state, playerId, cardId, targetId);
   }
 
   /**
@@ -254,7 +256,7 @@ export class GameEngine implements EngineContext {
    * CR 509: Declare Blockers Step
    */
   public handleBlockSelection(playerId: PlayerId, cardId: string): boolean {
-    return PlayerActionProcessor.handleBlockSelection(this.state, playerId, cardId, (m: string) => this.log(m));
+    return PlayerActionProcessor.handleBlockSelection(this.state, playerId, cardId);
   }
 
   /**
@@ -276,7 +278,7 @@ export class GameEngine implements EngineContext {
    * MANUAL DISCARD ACTION (e.g. for Cleanup phase or spells)
    */
   public discardCard(playerId: PlayerId, cardInstanceId: string): boolean {
-    const res = PlayerActionProcessor.discardCard(this.state, playerId, cardInstanceId, (m: string) => this.log(m));
+    const res = PlayerActionProcessor.discardCard(this.state, playerId, cardInstanceId);
     if (res.finished) {
       // CR 608.2: If discarding was part of a spell resolution, we must resume resolution immediately.
       // resolveTopOrAdvanceStep handles both resuming the stack and advancing steps (like Cleanup).
@@ -292,7 +294,6 @@ export class GameEngine implements EngineContext {
   public playCard(options: PlayCardOptions): boolean {
     const res = SpellProcessor.playCard(
       this.state,
-      (m) => this.log(m),
       this,
       options
     );
@@ -303,7 +304,6 @@ export class GameEngine implements EngineContext {
   public activateAbility(options: ActivateAbilityOptions): boolean {
     const res = SpellProcessor.activateAbility(
       this.state,
-      (m) => this.log(m),
       this,
       options
     );
@@ -324,12 +324,12 @@ export class GameEngine implements EngineContext {
   }
 
   public resolveTopOrAdvanceStep() {
-    StackProcessor.resolveTopOrAdvanceStep(this.state, this, this.resolver, (m) => this.log(m));
+    StackProcessor.resolveTopOrAdvanceStep(this.state, this, this.resolver);
     this.incrementVersion();
   }
 
   public advanceStep() {
-    TurnProcessor.advanceStep(this.state, this, (m) => this.log(m));
+    TurnProcessor.advanceStep(this.state, this);
   }
 
   public givePriorityToNextPlayer() {
@@ -367,13 +367,13 @@ export class GameEngine implements EngineContext {
 
       do {
         // 1. Resolve SBAs until stable (Rule 704.3)
-        sbaPerformed = Profiler.wrap('StateBasedActionsProcessor.resolveSBAs', () => 
-          StateBasedActionsProcessor.resolveSBAs(this.state, (m: string) => this.log(m))
+        sbaPerformed = Profiler.wrap('StateBasedActionsProcessor.resolveSBAs', () =>
+          StateBasedActionsProcessor.resolveSBAs(this.state)
         );
 
         // 2. Resolve Triggers (Rule 603.3)
         anyTriggersStacked = Profiler.wrap('TriggerProcessor.processPendingTriggers', () =>
-          TriggerProcessor.processPendingTriggers(this.state, (m: string) => this.log(m))
+          TriggerProcessor.processPendingTriggers(this.state)
         );
 
         // 3. Repeat if either step did work (Rule 117.5)
@@ -392,7 +392,6 @@ export class GameEngine implements EngineContext {
     LifeDamageHandler.handleGainLife(
       this.state,
       { type: EffectType.GainLife, amount },
-      (m: string) => this.log(m),
       { targets: [playerId], sourceId: 'system', controllerId: playerId, effects: [] }
     );
   }
@@ -410,7 +409,6 @@ export class GameEngine implements EngineContext {
       this.state,
       playerId,
       choiceIndex as any,
-      (m: string) => this.log(m),
       this
     );
 
@@ -442,8 +440,16 @@ export class GameEngine implements EngineContext {
     // VERY IMPORTANT: Re-link resolver to the newest state reference
     this.resolver = new StackResolver(this.state);
   }
-  
+
   public resumeResolution(sourceId: string, stackObj: any, parentContext: any): boolean {
-    return ChoiceProcessor.resumeResolution(this.state, sourceId, stackObj, parentContext, (m: string) => this.log(m), this);
+    return ChoiceProcessor.resumeResolution(this.state, sourceId, stackObj, parentContext, this);
+  }
+
+  /**
+   * CR 601.2c: Target selection
+   */
+  public finaliseTargeting(playerId: PlayerId, targets: string[]): boolean {
+    if (!this.state) return false;
+    return TargetingProcessor.finaliseTargeting(this.state, playerId, targets, this);
   }
 }

@@ -1,9 +1,11 @@
+import { LogCategory } from "../../../../utils/EngineLogger";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { IEffectHandler } from "../../IEffectHandler";
 import { ContinuousEffectHandler as LegacyHandler } from "./ContinuousEffectHandler";
 
 export const ContinuousEffectHandler: IEffectHandler = {
-    handle(state, effect, log, context) {
+    handle(state, effect, context) {
+        const { logger } = getProcessors(state);
         const { sourceId, controllerId, targets, stackObject, parentContext } = context;
         
         if (effect.targetDefinition && targets.length === 0) {
@@ -14,13 +16,12 @@ export const ContinuousEffectHandler: IEffectHandler = {
               effect,
               sourceId,
               controllerId,
-              log,
               stackObject,
               parentContext,
             );
         }
         
-        return LegacyHandler.handle(state, effect, log, context);
+        return LegacyHandler.handle(state, effect, context);
     }
 };
 

@@ -1,10 +1,11 @@
 import { ActionType, EffectDefinition, EffectType, GameObject, GameState, MoveEffect, ResolutionContext, SearchEffect, SelectionType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { LogCategory } from '../../../../utils/EngineLogger';
 import { getProcessors } from '../../../ProcessorRegistry';
 import { ChoiceGenerator } from '../../ChoiceGenerator';
 
 export class SearchEffectHandler {
-    public static handle(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
-        const { targeting: TP } = getProcessors(state);
+    public static handle(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+        const { logger, targeting: TP } = getProcessors(state);
         const { controllerId, stackObject, targets = [] } = context;
         const player = state.players[controllerId];
         if (!player) return;
@@ -45,7 +46,7 @@ export class SearchEffectHandler {
         );
 
         if (validCandidates.length === 0) {
-            log(`[INFO] SearchEffectHandler: No valid objects found. Auto-skipping search.`);
+            logger.info(state, LogCategory.ACTION, `[INFO] SearchEffectHandler: No valid objects found. Auto-skipping search.`);
             if (searchEff.shuffle && context.effects) {
                 context.effects.splice((context.nextEffectIndex || 0) + 1, 0, {
                     type: EffectType.Shuffle,

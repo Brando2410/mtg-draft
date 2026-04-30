@@ -31,6 +31,8 @@ export class PriorityProcessor {
     engine: EngineContext,
     isAuto = false
   ) {
+    const { logger } = getProcessors(state);
+
     // 1. Intercept for special actions
     if (state.pendingAction?.playerId === playerId) {
       if (state.pendingAction.type === 'DECLARE_ATTACKERS') {
@@ -51,13 +53,13 @@ export class PriorityProcessor {
     // CR 117.1: A player must resolve pending mandatory actions before passing
     if (EngineValidator.isSuspended(state) && EngineValidator.isPlayerRequiredToAct(state, playerId)) {
       console.log(`[PRIORITY-PROC] passPriority BLOCKED: ${playerId} has pending ${state.pendingAction?.type}.`);
-      engine.log(`Invalid Action: Player must resolve pending ${state.pendingAction?.type} first.`);
+      logger.info(state, 'PRIORITY' as any, `Invalid Action: Player must resolve pending ${state.pendingAction?.type} first.`);
       return;
     }
 
     const player = state.players[playerId];
     if (player && player.pendingDiscardCount > 0) {
-      if (!isAuto) engine.log(`${engine.getPlayerName(playerId)} must finish discarding first.`);
+      if (!isAuto) logger.info(state, 'PRIORITY' as any, `${engine.getPlayerName(playerId)} must finish discarding first.`);
       return;
     }
 
@@ -74,14 +76,14 @@ export class PriorityProcessor {
         if (isBeginning && player.stops[beginKey]) player.stops[beginKey] = false;
 
         console.log(`[STOPPER] Untoggled stop for ${stopKey}/beginning after manual pass.`);
-        engine.log(`Stop cleared for ${state.currentStep}.`);
+        logger.info(state, 'PRIORITY' as any, `Stop cleared for ${state.currentStep}.`);
       }
     }
 
     state.consecutivePasses++;
 
     const prefix = isAuto ? '[Auto-Pass] ' : '[Manual-Pass] ';
-    engine.log(`${prefix}${engine.getPlayerName(playerId)} passed. (${state.consecutivePasses}/${state.playerOrder.length} passes)`);
+    logger.info(state, 'PRIORITY' as any, `${prefix}${engine.getPlayerName(playerId)} passed. (${state.consecutivePasses}/${state.playerOrder.length} passes)`);
 
     if (state.consecutivePasses >= state.playerOrder.length) {
       engine.resolveTopOrAdvanceStep();
@@ -642,7 +644,8 @@ export class PriorityProcessor {
     if (!player) return;
 
     player.passUntilEndOfTurn = !player.passUntilEndOfTurn;
-    engine.log(`[PASS-TURN] ${player.name} ${player.passUntilEndOfTurn ? 'enabled' : 'disabled'} Pass Turn.`);
+    const { logger } = getProcessors(state);
+    logger.info(state, 'PRIORITY' as any, `[PASS-TURN] ${player.name} ${player.passUntilEndOfTurn ? 'enabled' : 'disabled'} Pass Turn.`);
 
     // Immediately check if we should auto-pass now that it's toggled
     if (player.passUntilEndOfTurn && state.priorityPlayerId === playerId) {

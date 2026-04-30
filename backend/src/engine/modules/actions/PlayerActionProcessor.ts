@@ -1,8 +1,8 @@
 import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, EffectType, GameState, PlayerId, RemoveCounterCost, TriggerEvent, Zone } from '@shared/engine_types';
+import { LogCategory } from '../../utils/EngineLogger';
 import { EngineContext } from '../../interfaces/EngineContext';
 import { oracle } from '../../OracleLogicMap';
 import { CombatProcessor } from '../combat/CombatProcessor';
-import { ActionProcessor } from "./ActionProcessor";
 import { RuleUtils } from "../../utils/RuleUtils";
 import { PriorityProcessor } from '../core/turn/PriorityProcessor';
 import { getProcessors } from '../ProcessorRegistry';
@@ -18,9 +18,9 @@ export class PlayerActionProcessor {
     state: GameState,
     playerId: PlayerId,
     cardId: string,
-    log: (m: string) => void,
     engine: EngineContext
   ): boolean {
+    const { logger, choice } = getProcessors(state);
     const obj = state.battlefield.find(c => c.id === cardId);
     if (!obj) return false;
 
@@ -35,7 +35,7 @@ export class PlayerActionProcessor {
       if (state.pendingAction.type === ActionType.LegendRule) {
         const involvedIds = (state.pendingAction.data?.involvedIds || []) as string[];
         if (involvedIds.includes(cardId)) {
-          return engine.processors.choice.resolveChoice(state, playerId, cardId, log, engine);
+          return choice.resolveChoice(state, playerId, cardId, engine);
         }
       }
     }
@@ -45,7 +45,7 @@ export class PlayerActionProcessor {
     // 2. Planeswalker Logic: Trigger Ability Choice
     if (RuleUtils.isType(obj, 'planeswalker')) {
       if (state.priorityPlayerId !== playerId) {
-        log(`Player tried to activate PW without priority.`);
+        logger.warn(state, LogCategory.ACTION, `Player tried to activate PW without priority.`);
         return false;
       }
 
@@ -59,12 +59,12 @@ export class PlayerActionProcessor {
       const canActivateAnyTime = (logic.abilities as AbilityDefinition[]).some((a) => a.type === AbilityType.Static && String(a.id || "").includes('any_turn'));
 
       if (!canActivateAnyTime && (!isMyTurn || !isMainPhase || !stackEmpty)) {
-        log(`Cannot activate Planeswalker: Sorcery speed only.`);
+        logger.warn(state, LogCategory.ACTION, `Cannot activate Planeswalker: Sorcery speed only.`);
         return false;
       }
 
       if (obj.abilitiesUsedThisTurn > 0) {
-        log(`Already used a loyalty ability this turn.`);
+        logger.warn(state, LogCategory.ACTION, `Already used a loyalty ability this turn.`);
         return false;
       }
 
@@ -138,11 +138,11 @@ export class PlayerActionProcessor {
       .map((a, index) => ({ ability: a as AbilityDefinition, index }))
       .filter((entry) => entry.ability.type === AbilityType.Activated && PriorityProcessor.canAbilityBeActivated(state, playerId, cardId, entry.index, true));
 
-    console.log(`[DEBUG] interactWithPermanent: ${obj.definition.name} (${cardId}) found ${allActivated.length} intrinsic abilities, ${filtered.length} are currently legal activated abilities.`);
+    logger.debug(state, LogCategory.ACTION, `interactWithPermanent: ${obj.definition.name} (${cardId}) found ${allActivated.length} intrinsic abilities, ${filtered.length} are currently legal activated abilities.`);
 
     if (filtered.length > 0) {
       if (state.priorityPlayerId !== playerId) {
-        log(`Player tried to activate ability without priority.`);
+        logger.warn(state, LogCategory.ACTION, `Player tried to activate ability without priority.`);
         return false;
       }
 
@@ -243,10 +243,10 @@ export class PlayerActionProcessor {
     state: GameState,
     playerId: PlayerId,
     cardId: string,
-    log: (m: string) => void,
     engine: EngineContext
 
   ): boolean {
+    const { logger, mana: ManaProcessor } = getProcessors(state);
     const card = state.battlefield.find(c => c.id === cardId);
     if (!card || card.controllerId !== playerId) return false;
 
@@ -265,7 +265,6 @@ export class PlayerActionProcessor {
     if (!addManaEffect) return false;
 
     const player = state.players[playerId];
-    const { mana: ManaProcessor } = getProcessors(state);
 
     const manaStr = addManaEffect.value || '{C}';
     const requirements = ManaProcessor.parseManaCost(manaStr.startsWith('{') ? manaStr : `{${manaStr}}`);
@@ -276,15 +275,16 @@ export class PlayerActionProcessor {
     if (player.manaPool[color] > 0) {
       card.isTapped = false;
       player.manaPool[color]--;
-      log(`${player.name} untapping ${card.definition.name} (Undo Mana {${color}})`);
+      logger.info(state, LogCategory.MANA, `${player.name} untapping ${card.definition.name} (Undo Mana {${color}})`);
       return true;
     }
 
-    log(`Cannot undo: Mana {${color}} already spent.`);
+    logger.warn(state, LogCategory.MANA, `Cannot undo: Mana {${color}} already spent.`);
     return false;
   }
 
-  public static declareAttacker(state: GameState, playerId: string, cardId: string, targetId: string | undefined, log: (m: string) => void): boolean {
+  public static declareAttacker(state: GameState, playerId: string, cardId: string, targetId: string | undefined): boolean {
+    const { logger, restriction: RP } = getProcessors(state);
     const card = state.battlefield.find(c => c.id === cardId);
 
     const isPlaneswalker = card && RuleUtils.isPlaneswalker(card) && card.controllerId !== playerId;
@@ -294,7 +294,7 @@ export class PlayerActionProcessor {
       if (state.combat?.attackers.length) {
         const last = state.combat.attackers[state.combat.attackers.length - 1];
         last.targetId = cardId;
-        log(`Attack re-targeted to ${isOpponent ? 'Opponent' : card!.definition.name}.`);
+        logger.info(state, LogCategory.COMBAT, `Attack re-targeted to ${isOpponent ? 'Opponent' : card!.definition.name}.`);
         return true;
       }
     }
@@ -324,18 +324,18 @@ export class PlayerActionProcessor {
         const cannotAttackFlags = state.ruleRegistry.restrictions.some(r => r.targetId === cardId && r.type === 'CannotAttack');
 
         if (canAttack && !cannotAttackFlags) {
-          log(`${card.definition.name} must attack and cannot be deselected.`);
+          logger.warn(state, LogCategory.COMBAT, `${card.definition.name} must attack and cannot be deselected.`);
           return false;
         }
       }
       state.combat.attackers.splice(existingIndex, 1);
-      log(`${card.definition.name} removed from attackers.`);
+      logger.info(state, LogCategory.COMBAT, `${card.definition.name} removed from attackers.`);
     } else {
       if (card.isTapped) return false;
 
       const { restriction: RP } = getProcessors(state);
       if (!RP.canAttack(state, card)) {
-        log(`[ATTACK] ERR: ${card.definition.name} cannot attack.`);
+        logger.warn(state, LogCategory.COMBAT, `[ATTACK] ERR: ${card.definition.name} cannot attack.`);
         return false;
       }
 
@@ -344,30 +344,31 @@ export class PlayerActionProcessor {
 
       // Rule 702.24: Vigilance prevents tapping when attacking
       // Note: Tapping now happens upon CONFIRMATION in CombatProcessor
-      log(`${card.definition.name} selected as attacker.`);
+      logger.info(state, LogCategory.COMBAT, `${card.definition.name} selected as attacker.`);
     }
     return true;
   }
 
-  public static handleBlockSelection(state: GameState, playerId: string, cardId: string, log: (m: string) => void): boolean {
+  public static handleBlockSelection(state: GameState, playerId: string, cardId: string): boolean {
+    const { logger, trigger: TrP } = getProcessors(state);
     const card = state.battlefield.find(c => c.id === cardId);
     if (!card) return false;
 
     // A. SELECTION: My creature (the blocker)
     if (card.controllerId === playerId) {
       if (card.isTapped) {
-        log(`[BLOCK] ERR: ${card.definition.name} is tapped and cannot block.`);
+        logger.warn(state, LogCategory.COMBAT, `[BLOCK] ERR: ${card.definition.name} is tapped and cannot block.`);
         return false;
       }
       state.pendingAction!.sourceId = cardId;
-      log(`Selected ${card.definition.name} to block. Now select an attacking creature.`);
+      logger.info(state, LogCategory.COMBAT, `Selected ${card.definition.name} to block. Now select an attacking creature.`);
       return true;
     }
 
     // B. TARGETING: Opponent attacker
     const blockerId = state.pendingAction!.sourceId;
     if (!blockerId) {
-      log("[BLOCK] Choose one of your potential blockers first.");
+      logger.warn(state, LogCategory.COMBAT, "[BLOCK] Choose one of your potential blockers first.");
       return false;
     }
 
@@ -376,13 +377,13 @@ export class PlayerActionProcessor {
     const isAttacking = attackers.some(a => a.attackerId === cardId);
 
     if (!isAttacking) {
-      log(`[BLOCK] ERR: ${card.definition.name} is not an attacking creature.`);
+      logger.warn(state, LogCategory.COMBAT, `[BLOCK] ERR: ${card.definition.name} is not an attacking creature.`);
       return false;
     }
 
     const { legal, reason } = CombatProcessor.isLegalBlocker(state, blockerId, cardId);
     if (!legal) {
-      log(`${blockerObj?.definition.name} cannot block ${card.definition.name}${reason ? ` (${reason})` : ''}.`);
+      logger.warn(state, LogCategory.COMBAT, `${blockerObj?.definition.name} cannot block ${card.definition.name}${reason ? ` (${reason})` : ''}.`);
       return false;
     }
 
@@ -395,16 +396,16 @@ export class PlayerActionProcessor {
     if (oldIdx >= 0) state.combat.blockers.splice(oldIdx, 1);
 
     state.combat.blockers.push({ blockerId, attackerId: cardId });
-    log(`${state.battlefield.find(c => c.id === blockerId)?.definition.name} blocking ${card.definition.name}`);
+    logger.info(state, LogCategory.COMBAT, `${state.battlefield.find(c => c.id === blockerId)?.definition.name} blocking ${card.definition.name}`);
 
-    const { trigger: TrP } = getProcessors(state);
-    TrP.onEvent(state, { type: 'ON_BLOCK', targetId: blockerId, sourceId: blockerId, data: { object: blockerObj, attackerId: cardId } }, log);
+    TrP.onEvent(state, { type: 'ON_BLOCK', targetId: blockerId, sourceId: blockerId, data: { object: blockerObj, attackerId: cardId } });
 
     state.pendingAction!.sourceId = undefined;
     return true;
   }
 
-  public static discardCard(state: GameState, playerId: PlayerId, cardInstanceId: string, log: (m: string) => void): { finished: boolean, success: boolean } {
+  public static discardCard(state: GameState, playerId: PlayerId, cardInstanceId: string): { finished: boolean, success: boolean } {
+    const { logger, trigger: TrP, choiceGenerator: ChoiceGenerator } = getProcessors(state);
     const player = state.players[playerId];
     if (!player) return { finished: false, success: false };
 
@@ -429,8 +430,7 @@ export class PlayerActionProcessor {
     player.graveyard.push(card);
 
     const sourceId = state.pendingAction?.sourceId;
-    const { trigger: TrP } = getProcessors(state);
-    TrP.onEvent(state, { type: TriggerEvent.Discard, playerId, data: { card, sourceId } }, log);
+    TrP.onEvent(state, { type: TriggerEvent.Discard, playerId, data: { card, sourceId } });
 
     if (player.pendingDiscardCount > 0) {
       player.pendingDiscardCount--;
@@ -444,10 +444,10 @@ export class PlayerActionProcessor {
         (state.pendingAction.data as any).count--;
       }
 
-      log(`${player.name} discarded ${card.definition.name} (${player.pendingDiscardCount} more to go).`);
+      logger.info(state, LogCategory.ACTION, `${player.name} discarded ${card.definition.name} (${player.pendingDiscardCount} more to go).`);
 
       if (player.pendingDiscardCount === 0) {
-        log(`${player.name} finished discarding.`);
+        logger.info(state, LogCategory.ACTION, `${player.name} finished discarding.`);
 
         // Handle sequential discards (Next players)
         const nextPlayerIds = (state.pendingAction.data as any)?.nextPlayerIds || [];
@@ -459,7 +459,7 @@ export class PlayerActionProcessor {
           const onFailureEffects = (state.pendingAction.data as any)?.onFailureEffects;
 
           const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
-          state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, label, stackObj, parentContext, onFailureEffects, log);
+          state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, label, stackObj, parentContext, onFailureEffects);
           return { finished: false, success: true };
         }
 
@@ -471,7 +471,7 @@ export class PlayerActionProcessor {
             const currentIndex = (state.pendingAction.data as any)?.nextEffectIndex;
             if (currentIndex !== undefined) {
               realStackObj.data.nextEffectIndex = currentIndex + 1;
-              console.log(`[DISCARD-RESOLUTION] Incremented nextEffectIndex to ${realStackObj.data.nextEffectIndex} for ${realStackObj.id}`);
+              logger.debug(state, LogCategory.ACTION, `[DISCARD-RESOLUTION] Incremented nextEffectIndex to ${realStackObj.data.nextEffectIndex} for ${realStackObj.id}`);
             }
           }
         }
@@ -480,12 +480,13 @@ export class PlayerActionProcessor {
         return { finished: true, success: true };
       }
     } else {
-      log(`${player.name} discarded ${card.definition.name}.`);
+      logger.info(state, LogCategory.ACTION, `${player.name} discarded ${card.definition.name}.`);
     }
 
     return { finished: false, success: true };
   }
-  public static resolveCombatOrdering(state: GameState, playerId: string, order: string[], log: (m: string) => void) {
+  public static resolveCombatOrdering(state: GameState, playerId: string, order: string[]) {
+    const { combat: CP } = getProcessors(state);
     if (!state.combat || !state.pendingAction) return;
 
     const sourceId = state.pendingAction.sourceId;
@@ -506,13 +507,13 @@ export class PlayerActionProcessor {
     state.pendingAction = undefined;
 
     // Check if more ordering is needed
-    const { combat: CP } = getProcessors(state);
     if (CP.needsOrdering(state)) {
-      CP.setupNextOrderingAction(state, log);
+      CP.setupNextOrderingAction(state);
     }
   }
 
-  public static resolveTriggerOrdering(state: GameState, playerId: PlayerId, orderedIds: string[], log: (m: string) => void): boolean {
+  public static resolveTriggerOrdering(state: GameState, playerId: PlayerId, orderedIds: string[]): boolean {
+    const { logger, trigger: TrP } = getProcessors(state);
     if (!state.pendingAction || state.pendingAction.type !== ActionType.OrderTriggers || state.pendingAction.playerId !== playerId) return false;
 
     const triggers = state.pendingAction.data?.triggers as any[];
@@ -534,7 +535,7 @@ export class PlayerActionProcessor {
 
     // If we still have no triggers to stack, something is wrong
     if (orderedTriggers.length === 0 && (triggers?.length || 0) > 0) {
-      console.warn(`[TRIGGER-ORDERING] Failed to resolve any triggers from IDs: ${orderedIds.join(', ')}`);
+      logger.warn(state, LogCategory.TRIGGER, `[TRIGGER-ORDERING] Failed to resolve any triggers from IDs: ${orderedIds.join(', ')}`);
       // Emergency fallback: stack them in default order to avoid stalling the game
       orderedTriggers = [...triggers];
     }
@@ -549,10 +550,9 @@ export class PlayerActionProcessor {
 
     state.pendingAction = undefined;
 
-    const { trigger: TrP } = getProcessors(state);
     for (let i = 0; i < orderedTriggers.length; i++) {
       const t = orderedTriggers[i];
-      TrP.stackTrigger(state, t, log);
+      TrP.stackTrigger(state, t);
 
       const pendingAfter = state.pendingAction as any;
       // If stacking this trigger caused a targeting prompt,
@@ -562,12 +562,12 @@ export class PlayerActionProcessor {
         if (pendingAfter.data) {
           pendingAfter.data.nextTriggersToStack = remaining;
         }
-        log(`[TRIGGER] Pausing trigger stacking for ${t.id} target selection. ${remaining.length} triggers remaining in queue.`);
+        logger.info(state, LogCategory.TRIGGER, `[TRIGGER] Pausing trigger stacking for ${t.id} target selection. ${remaining.length} triggers remaining in queue.`);
         return true;
       }
     }
     // Process remaining if anyone else has triggers
-    TrP.processPendingTriggers(state, log);
+    TrP.processPendingTriggers(state);
     return true;
   }
 
@@ -575,16 +575,15 @@ export class PlayerActionProcessor {
    * CR 603: Resolve a specific target selection from the UI.
    */
   public static resolveTargeting(state: GameState, playerId: PlayerId, targetId: string, engine: EngineContext): boolean {
-    return engine.processors.targeting.resolveInteractiveTargeting(
+    const { targeting: TP } = getProcessors(state);
+    return TP.resolveInteractiveTargeting(
       state,
       playerId,
       targetId,
-      (m: string) => engine.log(m),
       {
         ...engine,
         resetPriorityToActivePlayer: () => engine.resetPriorityToActivePlayer(),
         finaliseTargeting: (p: PlayerId, t: string[]) => {
-          const { targeting: TP } = getProcessors(state);
           return TP.finaliseTargeting(state, p, t, engine);
         }
       }

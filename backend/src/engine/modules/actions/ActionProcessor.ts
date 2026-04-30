@@ -16,6 +16,7 @@ import {
 import { Mutation, MutationType } from "@shared/types/mutations";
 import { RegistryProcessor } from "../core/RegistryProcessor";
 import { TriggerProcessor } from "../effects/triggers/TriggerProcessor";
+import { LogCategory } from "../../utils/EngineLogger";
 import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
 import { oracle } from "../../OracleLogicMap";
@@ -52,9 +53,10 @@ export class ActionProcessor {
   /**
    * Reverts game state to the last checkpoint recorded in the current pendingAction.
    */
-  public static undoToLastCheckpoint(state: GameState, log?: (m: string) => void): boolean {
+  public static undoToLastCheckpoint(state: GameState): boolean {
+    const { logger } = getProcessors(state);
     if (!state.pendingAction || !state.pendingAction.data || state.pendingAction.data.mutationCheckpoint === undefined) {
-      if (log) log("[UNDO] No valid checkpoint found.");
+      logger.info(state, LogCategory.ACTION, "[UNDO] No valid checkpoint found.");
       return false;
     }
 
@@ -66,7 +68,7 @@ export class ActionProcessor {
       if (mutation) {
         // Apply the undo payload (Implementation for each type would go here or in a dedicated un-mutator)
         // For now, this pops the stack so the engine "forgets" these actions happened
-        if (log) log(`[UNDO] Reverting mutation: ${mutation.type}`);
+        logger.info(state, LogCategory.ACTION, `[UNDO] Reverting mutation: ${mutation.type}`);
       }
     }
 
@@ -83,11 +85,11 @@ export class ActionProcessor {
     card: GameObject,
     to: Zone,
     targetPlayerId: PlayerId,
-    log?: (m: string) => void,
     libraryPosition: number | "top" | "bottom" = "top",
     isDraw: boolean = false,
     isDiscard: boolean = false,
   ): ActionResult {
+    const { logger, lki: LkiProcessor, trigger: TrP } = getProcessors(state);
     const fromZone = card.zone;
 
     // Rule 400.3: Objects move to their OWNER'S hand/graveyard/library, not the controller's.
@@ -113,7 +115,6 @@ export class ActionProcessor {
             toZone: Zone.Graveyard,
           },
         },
-        log || (() => { }),
       );
       if (!state.turnState.lastDiscardedIds)
         state.turnState.lastDiscardedIds = [];
@@ -127,7 +128,6 @@ export class ActionProcessor {
       card,
       to,
       { fromZone, isDraw, isDiscard, targetPlayerId: effectiveTargetId },
-      log || (() => { })
     );
 
     if (replacementResult.actionResult) return replacementResult.actionResult;
@@ -140,14 +140,11 @@ export class ActionProcessor {
     // CR 603.10: "Leaves-the-battlefield" events MUST look back in time.
     // Trigger them while we still have the Battlefield state (counters, registered abilities).
     if (fromZone === Zone.Battlefield && to !== Zone.Battlefield) {
-      this.handleLeavingBattlefield(state, card, to, log);
+      this.handleLeavingBattlefield(state, card, to);
     }
 
     // 1. Rule 400.7: Remove from the current zone
-    if (log)
-      log(
-        `[MOVE] ${card.definition.name} (${card.id}) from ${fromZone} to ${to} (isDraw: ${isDraw})...`,
-      );
+    logger.info(state, LogCategory.ACTION, `[MOVE] ${card.definition.name} (${card.id}) from ${fromZone} to ${to} (isDraw: ${isDraw})...`);
 
     // Save LKI snapshot before object changes/wipes (Rule 608.2h)
     const processors = getProcessors(state);
@@ -179,10 +176,7 @@ export class ActionProcessor {
     }
 
     // 4. Rule 400.1: Add to the new zone
-    if (log)
-      log(
-        `[MOVE-DEBUG] Adding ${card.definition.name} to ${to} for player ${effectiveTargetId}`,
-      );
+    logger.debug(state, LogCategory.ACTION, `[MOVE-DEBUG] Adding ${card.definition.name} to ${to} for player ${effectiveTargetId}`);
     this.addToTargetZone(
       state,
       card,
@@ -190,7 +184,6 @@ export class ActionProcessor {
       effectiveTargetId,
       isToken,
       fromZone,
-      log,
       libraryPosition,
     );
 
@@ -202,7 +195,6 @@ export class ActionProcessor {
       TriggerProcessor.onEvent(
         state,
         { type: TriggerEvent.Draw, playerId: effectiveTargetId, payload: { object: card } },
-        log || (() => { }),
       );
 
       // Jolrael support: Emit ON_SECOND_DRAW
@@ -214,7 +206,6 @@ export class ActionProcessor {
             playerId: effectiveTargetId,
             payload: { object: card },
           },
-          log || (() => { }),
         );
       }
     }
@@ -229,7 +220,7 @@ export class ActionProcessor {
           playerId: card.ownerId,
           payload: { object: card, fromZone, toZone: to },
         },
-        log || (() => { }),
+
       );
     }
 
@@ -257,7 +248,6 @@ export class ActionProcessor {
     state: GameState,
     card: GameObject,
     to: Zone,
-    log?: (m: string) => void,
   ) {
     const types = card.definition.types.map((t) => (t as string).toLowerCase());
 
@@ -284,8 +274,7 @@ export class ActionProcessor {
             targetId: card.id,
             toZone: to,
           },
-        },
-        log || (() => { }),
+        }
       );
     }
 
@@ -301,8 +290,7 @@ export class ActionProcessor {
           toZone: to,
           fromZone: Zone.Battlefield,
         },
-      },
-      log || (() => { }),
+      }
     );
   }
 
@@ -330,8 +318,7 @@ export class ActionProcessor {
         state.turnState.cardLeftGraveyardThisTurn[pid as PlayerId] = true;
         TriggerProcessor.onEvent(
           state,
-          { type: TriggerEvent.LeaveGraveyard, targetId: cid, sourceId: cid },
-          () => { },
+          { type: TriggerEvent.LeaveGraveyard, targetId: cid, sourceId: cid }
         );
       }
       p.library = p.library.filter((c) => c.id !== cid);
@@ -347,9 +334,9 @@ export class ActionProcessor {
     targetPlayerId: PlayerId,
     isToken: boolean,
     from: Zone,
-    log?: (m: string) => void,
     libraryPosition: number | "top" | "bottom" = "top",
   ) {
+    const { logger } = getProcessors(state);
     if (to === Zone.Battlefield) {
       state.battlefield.push(card);
       // Rule 110.2: Always sync controllerId when entering battlefield
@@ -383,7 +370,7 @@ export class ActionProcessor {
       card.isRevealed = false; // Always clear when entering public zone
       RegistryProcessor.registerAbilities(state, card);
 
-      this.handleEnteringBattlefield(state, card, from, log);
+      this.handleEnteringBattlefield(state, card, from);
     } else if (to === Zone.Stack) {
       // Rule 405: The Stack
       // Note: High-level processors (SpellProcessor) handle pushing the complex StackObject.
@@ -412,7 +399,7 @@ export class ActionProcessor {
         }
       } else if (to === Zone.Graveyard) {
         player.graveyard.push(card);
-        this.handleEnteringGraveyard(state, card, from, log);
+        this.handleEnteringGraveyard(state, card, from);
       }
 
       if (to === Zone.None) {
@@ -519,15 +506,12 @@ export class ActionProcessor {
     state: GameState,
     card: GameObject,
     fromZone: Zone,
-    log?: (m: string) => void,
   ) {
+    const { logger } = getProcessors(state);
     // Replacement-style entry counters for X costs (Rule 122.6)
     if (card.xValue && card.definition.entersWithXCounters) {
       card.counters["+1/+1"] = (card.counters["+1/+1"] || 0) + card.xValue;
-      if (log)
-        log(
-          `[X-COST] ${card.definition.name} enters with ${card.xValue} +1/+1 counters.`,
-        );
+      logger.info(state, LogCategory.ACTION, `[X-COST] ${card.definition.name} enters with ${card.xValue} +1/+1 counters.`);
     }
 
     // Generic 'Enters with counters' support (Rule 614.1c)
@@ -555,10 +539,7 @@ export class ActionProcessor {
             const counterKey = type === "P1P1" ? "+1/+1" : type;
             card.counters[counterKey] =
               (card.counters[counterKey] || 0) + amount;
-            if (log)
-              log(
-                `[ETB-COUNTERS] ${card.definition.name} enters with ${amount} ${counterKey} counters.`,
-              );
+            logger.info(state, LogCategory.ACTION, `[ETB-COUNTERS] ${card.definition.name} enters with ${amount} ${counterKey} counters.`);
           }
         }
       });
@@ -576,8 +557,7 @@ export class ActionProcessor {
           fromZone,
           toZone: Zone.Battlefield,
         },
-      },
-      log || (() => { }),
+      }
     );
 
     // Rule 306.5b: Planeswalkers enter with loyalty counters
@@ -595,18 +575,10 @@ export class ActionProcessor {
 
       const startingLoyalty = parseInt(String(loyaltyValue || "0"), 10);
 
-      if (log) {
-        log(
-          `[DEBUG-LOYALTY] ${card.definition.name} - Found loyalty: ${loyaltyValue} (Source: ${def.loyalty ? "Definition" : "Oracle Fallback"})`,
-        );
-        log(`[DEBUG-DEF] Keys: ${Object.keys(def).join(", ")}`);
-      }
+      logger.debug(state, LogCategory.ACTION, `[LOYALTY] ${card.definition.name} - Found loyalty: ${loyaltyValue} (Source: ${def.loyalty ? "Definition" : "Oracle Fallback"})`);
 
       card.counters[CounterType.Loyalty] = startingLoyalty;
-      if (log)
-        log(
-          `[ETB] ${card.definition.name} enters with ${startingLoyalty} loyalty.`,
-        );
+      logger.info(state, LogCategory.ACTION, `[ETB] ${card.definition.name} enters with ${startingLoyalty} loyalty.`);
     }
   }
 
@@ -614,7 +586,6 @@ export class ActionProcessor {
     state: GameState,
     card: GameObject,
     from: Zone,
-    log?: (m: string) => void,
   ) {
     this.resetObjectState(state, card, from, Zone.Graveyard);
   }
@@ -628,15 +599,15 @@ export class ActionProcessor {
   public static untapAll(
     state: GameState,
     playerId: PlayerId,
-    log?: (m: string) => void,
   ) {
+    const { logger } = getProcessors(state);
     let count = 0;
 
     // CR 702.26a: All phased-out permanents that player controlled... phase in.
     state.battlefield.forEach((obj) => {
       if (obj.controllerId === playerId && obj.isPhasedOut) {
         obj.isPhasedOut = false;
-        if (log) log(`${obj.definition.name} phased in.`);
+        logger.info(state, LogCategory.ACTION, `${obj.definition.name} phased in.`);
       }
     });
 
@@ -649,7 +620,7 @@ export class ActionProcessor {
           RuleUtils.hasKeyword(obj, "CannotUntap") ||
           obj.cannotUntapThisTurn
         ) {
-          if (log) log(`${obj.definition.name} does not untap.`);
+          logger.info(state, LogCategory.ACTION, `${obj.definition.name} does not untap.`);
           return;
         }
 
@@ -659,10 +630,7 @@ export class ActionProcessor {
         ) {
           if (obj.counters["stun"] && obj.counters["stun"] > 0) {
             obj.counters["stun"]--;
-            if (log)
-              log(
-                `${obj.definition.name} removed a stun counter and remains tapped.`,
-              );
+            logger.info(state, LogCategory.ACTION, `${obj.definition.name} removed a stun counter and remains tapped.`);
             return;
           }
           obj.isTapped = false;
@@ -673,14 +641,15 @@ export class ActionProcessor {
       }
     });
 
-    if (log && count > 0) log(`${count} permanents untapped.`);
+    if (count > 0) logger.info(state, LogCategory.ACTION, `${count} permanents untapped.`);
   }
 
-  public static winGame(state: GameState, playerId: PlayerId, log?: (m: string) => void) {
+  public static winGame(state: GameState, playerId: PlayerId) {
+    const { logger } = getProcessors(state);
     const player = state.players[playerId];
     if (player) {
       player.hasWon = true;
-      if (log) log(`${player.name} wins the game!`);
+      logger.info(state, LogCategory.ACTION, `${player.name} wins the game!`);
       Object.values(state.players).forEach(p => {
         if (p.id !== playerId) {
           p.hasLost = true;
@@ -689,11 +658,12 @@ export class ActionProcessor {
     }
   }
 
-  public static shuffleLibrary(state: GameState, playerId: PlayerId, log?: (m: string) => void) {
+  public static shuffleLibrary(state: GameState, playerId: PlayerId) {
+    const { logger } = getProcessors(state);
     const player = state.players[playerId];
     if (player) {
       this.shuffle(player.library);
-      if (log) log(`${player.name} shuffles their library.`);
+      logger.info(state, LogCategory.ACTION, `${player.name} shuffles their library.`);
     }
   }
 
@@ -704,20 +674,18 @@ export class ActionProcessor {
     }
   }
 
-  public static gainLife(state: GameState, playerId: PlayerId, amount: number, log?: (m: string) => void) {
+  public static gainLife(state: GameState, playerId: PlayerId, amount: number) {
     LifeDamageHandler.handleGainLife(
       state,
       { type: EffectType.GainLife, amount } as any,
-      log || (() => {}),
       { targets: [playerId], sourceId: "system", controllerId: playerId, effects: [] } as any
     );
   }
 
-  public static loseLife(state: GameState, playerId: PlayerId, amount: number, log?: (m: string) => void) {
+  public static loseLife(state: GameState, playerId: PlayerId, amount: number) {
     LifeDamageHandler.handleLoseLife(
       state,
       { type: EffectType.LoseLife, amount } as any,
-      log || (() => {}),
       { targets: [playerId], sourceId: "system", controllerId: playerId, effects: [] } as any
     );
   }

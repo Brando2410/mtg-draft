@@ -4,7 +4,7 @@ import { ChoiceEffectHandler } from "../system/ChoiceEffectHandler";
 import { ControlEffectHandler as LegacyHandler } from "./ControlEffectHandler";
 
 export const ControlEffectsHandler: IEffectHandler = {
-    handle(state, effect, log, context) {
+    handle(state, effect, context) {
         const { targets, controllerId } = context;
         
         if ((effect as any).choices) {
@@ -16,12 +16,11 @@ export const ControlEffectsHandler: IEffectHandler = {
           return ChoiceEffectHandler.handleChoice(
             state,
             effect as any,
-            log,
             { ...context, targets: targets, controllerId: searchingPlayerId }
           );
         }
         
-        return LegacyHandler.handle(state, effect, log, context);
+        return LegacyHandler.handle(state, effect, context);
     }
 };
 

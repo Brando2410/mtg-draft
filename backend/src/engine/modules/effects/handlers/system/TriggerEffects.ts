@@ -3,7 +3,7 @@ import { getProcessors } from "../../../ProcessorRegistry";
 import { IEffectHandler } from "../../IEffectHandler";
 
 export const CreateDelayedTriggerHandler: IEffectHandler = {
-  handle(state, effect, log, context) {
+  handle(state, effect, context) {
     const { trigger: TrP } = getProcessors(state);
     const { sourceId, controllerId, targets } = context;
 
@@ -21,8 +21,7 @@ export const CreateDelayedTriggerHandler: IEffectHandler = {
       state,
       { ...effect, data },
       sourceId,
-      controllerId,
-      log,
+      controllerId
     );
   }
 };

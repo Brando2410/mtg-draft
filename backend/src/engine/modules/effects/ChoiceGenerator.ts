@@ -1,4 +1,5 @@
 import { ActionType, GameObject, GameState, PlayerId, Zone } from '@shared/engine_types';
+import { LogCategory } from '../../utils/EngineLogger';
 import { getProcessors } from '../ProcessorRegistry';
 import { pruneContext } from './EffectProcessor';
 
@@ -162,24 +163,24 @@ export class ChoiceGenerator {
      * Build interactive Discard action.
      * Supports multiple players sequentially, but each player selects all their cards in one go.
      */
-    public static createDiscardChoice(state: GameState, playerIds: PlayerId[], sourceId: string, amount: number | any, label: string, stackObj?: any, parentContext?: any, onFailureEffects?: any[], log?: (m: string) => void): any {
+    public static createDiscardChoice(state: GameState, playerIds: PlayerId[], sourceId: string, amount: number | any, label: string, stackObj?: any, parentContext?: any, onFailureEffects?: any[]): any {
         if (playerIds.length === 0) return null;
         
+        const { logger } = getProcessors(state);
         const [currentPlayerId, ...nextPlayerIds] = playerIds;
         const player = state.players[currentPlayerId];
         
-        if (log) log(`[DISCARD-DEBUG] createDiscardChoice for ${currentPlayerId}. Next: ${JSON.stringify(nextPlayerIds)}`);
+        logger.debug(state, LogCategory.ACTION, `[DISCARD-DEBUG] createDiscardChoice for ${currentPlayerId}. Next: ${JSON.stringify(nextPlayerIds)}`);
         
         // Skip player if hand is empty
         if (!player || player.hand.length === 0) {
             const failureEffects = onFailureEffects || (stackObj?.data?.onFailureEffects);
             if (failureEffects) {
                 const { effect: EffectProcessor } = getProcessors(state);
-                if (log) log(`[DISCARD-DEBUG] ${currentPlayerId} cannot discard. Triggering failure effects.`);
+                logger.debug(state, LogCategory.ACTION, `[DISCARD-DEBUG] ${currentPlayerId} cannot discard. Triggering failure effects.`);
                 EffectProcessor.resolveEffects({
                     state,
                     effects: failureEffects,
-                    log: (m: string) => { if (log) log(m); },
                     sourceId,
                     targets: [currentPlayerId],
                     stackObject: stackObj,
@@ -187,7 +188,7 @@ export class ChoiceGenerator {
                     controllerIdOverride: currentPlayerId // Set controller from the discard context
                 });
             }
-            return this.createDiscardChoice(state, nextPlayerIds, sourceId, amount, label, stackObj, parentContext, failureEffects, log);
+            return this.createDiscardChoice(state, nextPlayerIds, sourceId, amount, label, stackObj, parentContext, failureEffects);
         }
 
         const resolvedAmount = (typeof amount === 'number' || amount === 'ANY' || amount === 'ALL') ? amount : (getProcessors(state).effect.resolveAmount(state, amount, {

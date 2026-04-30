@@ -1,4 +1,5 @@
 import { GameState, Phase, PlayerId, Step, DurationType } from '@shared/engine_types';
+import { LogCategory } from '../../../utils/EngineLogger';
 import { getProcessors } from '../../ProcessorRegistry';
 import { RuleUtils } from '../../../utils/RuleUtils';
 
@@ -93,7 +94,8 @@ export class TurnProcessor {
   /**
    * CR 500: Advancing the turn phase/step
    */
-  public static advanceStep(state: GameState, engine: import('../../../interfaces/EngineContext').EngineContext, log: (m: string) => void) {
+  public static advanceStep(state: GameState, engine: import('../../../interfaces/EngineContext').EngineContext) {
+    const { logger } = getProcessors(state);
     const prevPhase = state.currentPhase;
     const prevStep = state.currentStep;
 
@@ -107,11 +109,11 @@ export class TurnProcessor {
     }
 
     if (next.turnEnded) {
-      // log(`[FLOW] Turn is ending on request: ${next.phase}/${next.step}`);
-      this.cleanupEndOfTurn(state, log);
-      this.rotateActivePlayer(state, log);
+      // logger.info(state, LogCategory.TURN, `[FLOW] Turn is ending on request: ${next.phase}/${next.step}`);
+      this.cleanupEndOfTurn(state);
+      this.rotateActivePlayer(state);
       state.turnNumber++;
-      log(`Turn ${state.turnNumber} - Active: ${engine.getPlayerName(state.activePlayerId)}`);
+      logger.info(state, LogCategory.TURN, `Turn ${state.turnNumber} - Active: ${engine.getPlayerName(state.activePlayerId)}`);
     }
 
     state.currentPhase = next.phase;
@@ -135,8 +137,8 @@ export class TurnProcessor {
       playerId: state.activePlayerId,
       data: { phase: state.currentPhase, step: state.currentStep }
     };
-    engine.processors.trigger.onEvent(state, stepEvent, log);
-    this.cleanupExpiredEffectsByEvent(state, stepEvent.type, log, state.activePlayerId);
+    engine.processors.trigger.onEvent(state, stepEvent);
+    this.cleanupExpiredEffectsByEvent(state, stepEvent.type, state.activePlayerId);
 
 
     // Fire generic event for the phase (e.g., ON_PRE_COMBAT_MAIN_PHASE_START)
@@ -145,22 +147,22 @@ export class TurnProcessor {
       playerId: state.activePlayerId,
       data: { phase: state.currentPhase, step: state.currentStep }
     };
-    engine.processors.trigger.onEvent(state, phaseEvent, log);
-    this.cleanupExpiredEffectsByEvent(state, phaseEvent.type, log, state.activePlayerId);
+    engine.processors.trigger.onEvent(state, phaseEvent);
+    this.cleanupExpiredEffectsByEvent(state, phaseEvent.type, state.activePlayerId);
 
     engine.processors.mana.emptyAllManaPools(state);
 
-    this.handleStepEntryRules(state, engine, log);
+    this.handleStepEntryRules(state, engine);
 
     if (state.pendingAction) {
-      log(`[WAITING] Pending Action: ${state.pendingAction.type} for ${engine.getPlayerName(state.pendingAction.playerId)}`);
+      logger.info(state, LogCategory.TURN, `[WAITING] Pending Action: ${state.pendingAction.type} for ${engine.getPlayerName(state.pendingAction.playerId)}`);
       engine.checkAutoPass(state.pendingAction.playerId);
       return;
     }
 
     if (state.currentStep === Step.Untap || state.currentStep === Step.Cleanup) {
-      // log(`[FLOW] Auto-advancing from administrative step ${state.currentStep}`);
-      this.advanceStep(state, engine, log);
+      // logger.info(state, LogCategory.TURN, `[FLOW] Auto-advancing from administrative step ${state.currentStep}`);
+      this.advanceStep(state, engine);
     } else {
       engine.resetPriorityToActivePlayer();
     }
@@ -169,21 +171,22 @@ export class TurnProcessor {
   /**
    * CR 500: Turn Rotation and Maintenance
    */
-  public static rotateActivePlayer(state: GameState, log: (m: string) => void) {
+  public static rotateActivePlayer(state: GameState) {
+    const { logger } = getProcessors(state);
     const currentIndex = state.playerOrder.indexOf(state.activePlayerId);
 
     // Extra turns logic
     const currentPlayer = state.players[state.activePlayerId];
     if (currentPlayer && currentPlayer.extraTurns > 0) {
       currentPlayer.extraTurns--;
-      log(`[TURN] ${currentPlayer.name} takes an EXTRA turn! (${currentPlayer.extraTurns} remaining)`);
+      logger.info(state, LogCategory.TURN, `[TURN] ${currentPlayer.name} takes an EXTRA turn! (${currentPlayer.extraTurns} remaining)`);
     } else {
       let nextIndex = (currentIndex + 1) % state.playerOrder.length;
       let nextPlayerId = state.playerOrder[nextIndex];
       let nextPlayer = state.players[nextPlayerId];
 
       while (nextPlayer && nextPlayer.turnsToSkip > 0) {
-        log(`[TURN] ${nextPlayer.name} SKIPS a turn! (${nextPlayer.turnsToSkip} remaining)`);
+        logger.info(state, LogCategory.TURN, `[TURN] ${nextPlayer.name} SKIPS a turn! (${nextPlayer.turnsToSkip} remaining)`);
         nextPlayer.turnsToSkip--;
         nextIndex = (nextIndex + 1) % state.playerOrder.length;
         nextPlayerId = state.playerOrder[nextIndex];
@@ -232,12 +235,13 @@ export class TurnProcessor {
   /**
    * CR 502/503/514: Step-specific Entry Rules
    */
-  public static handleStepEntryRules(state: GameState, engine: import('../../../interfaces/EngineContext').EngineContext, log: (m: string) => void) {
+  public static handleStepEntryRules(state: GameState, engine: import('../../../interfaces/EngineContext').EngineContext) {
+    const { logger } = getProcessors(state);
     const activeId = state.activePlayerId;
 
     if (state.currentStep === Step.Untap) {
       state.battlefield.filter(c => c.controllerId === activeId).forEach(c => engine.processors.registry.registerAbilities(state, c));
-      engine.processors.action.untapAll(state, activeId, log);
+      engine.processors.action.untapAll(state, activeId);
 
       // CR 611.2: Expire "Until Next Untap Step" effects
       state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
@@ -253,12 +257,12 @@ export class TurnProcessor {
       });
     }
     else if (state.currentPhase === Phase.Combat) {
-      engine.processors.combat.handleStepEntry(state, log);
+      engine.processors.combat.handleStepEntry(state);
     }
     else if (state.currentStep === Step.Draw) {
       const skipDraw = state.turnNumber === 1 && state.playerOrder[0] === activeId;
       if (!skipDraw && !engine.drawCard(activeId)) {
-        log(`${engine.getPlayerName(activeId)} deck-out loss.`);
+        logger.info(state, LogCategory.TURN, `${engine.getPlayerName(activeId)} deck-out loss.`);
       }
     }
     else if (state.currentStep === Step.Cleanup) {
@@ -270,7 +274,7 @@ export class TurnProcessor {
           playerId: activeId,
           count: player.pendingDiscardCount
         };
-        log(`${player.name} must discard ${player.pendingDiscardCount} card(s) to reach hand size (${player.maxHandSize}).`);
+        logger.info(state, LogCategory.TURN, `${player.name} must discard ${player.pendingDiscardCount} card(s) to reach hand size (${player.maxHandSize}).`);
       }
 
       state.battlefield.forEach(obj => obj.damageMarked = 0);
@@ -290,8 +294,9 @@ export class TurnProcessor {
   /**
    * CR 514: Cleanup Step Maintenance
    */
-  public static cleanupEndOfTurn(state: GameState, log: (m: string) => void) {
-    log(`[CLEANUP] Removing 'Until End of Turn' effects and resetting markers.`);
+  public static cleanupEndOfTurn(state: GameState) {
+    const { logger } = getProcessors(state);
+    logger.info(state, LogCategory.TURN, `[CLEANUP] Removing 'Until End of Turn' effects and resetting markers.`);
 
     state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
       return eff.duration?.type !== DurationType.UntilEndOfTurn;
@@ -307,7 +312,8 @@ export class TurnProcessor {
   /**
    * Clear rule-duration effects conditionally
    */
-  public static cleanupExpiredEffectsByEvent(state: GameState, eventType: string, log: (m: string) => void, activePlayerId?: PlayerId) {
+  public static cleanupExpiredEffectsByEvent(state: GameState, eventType: string, activePlayerId?: PlayerId) {
+    const { logger } = getProcessors(state);
     const previousCount = state.ruleRegistry.continuousEffects.length;
 
     state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
@@ -321,7 +327,7 @@ export class TurnProcessor {
     });
 
     if (state.ruleRegistry.continuousEffects.length < previousCount) {
-      log(`[FLOW] Expired ${previousCount - state.ruleRegistry.continuousEffects.length} continuous effect(s) on event ${eventType}.`);
+      logger.info(state, LogCategory.TURN, `[FLOW] Expired ${previousCount - state.ruleRegistry.continuousEffects.length} continuous effect(s) on event ${eventType}.`);
     }
   }
 }

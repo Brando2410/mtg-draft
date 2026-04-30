@@ -1,4 +1,5 @@
-import { AbilityCost, CardType, CostType, CrewCost, DiscardCost, ExileCost, GameObject, GameObjectId, GameState, LifeCost, LoyaltyCost, ManaCost, PlayerId, RestrictionType, SacrificeCost, StackObject, TapSelectionCost, Zone } from '@shared/engine_types';
+import { AbilityCost, CostType, CrewCost, DiscardCost, ExileCost, GameObject, GameObjectId, GameState, LifeCost, LoyaltyCost, ManaCost, PlayerId, RestrictionType, SacrificeCost, StackObject, TapSelectionCost, Zone } from '@shared/engine_types';
+import { LogCategory } from '../../utils/EngineLogger';
 import { RuleUtils } from '../../utils/RuleUtils';
 import { getProcessors } from '../ProcessorRegistry';
 
@@ -33,7 +34,7 @@ export class CostProcessor {
    * Executes the payment for all costs.
    * Note: This assumes canPay has already been checked.
    */
-  public static pay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId, playerId: PlayerId, log: (m: string) => void) {
+  public static pay(state: GameState, costs: AbilityCost[], sourceId: GameObjectId, playerId: PlayerId) {
     let source = this.findObject(state, sourceId);
 
     if (!source) {
@@ -42,7 +43,7 @@ export class CostProcessor {
 
     const validSource = source as GameObject;
     for (const cost of costs) {
-      this.paySingle(state, cost, validSource, playerId, log);
+      this.paySingle(state, cost, validSource, playerId);
     }
   }
 
@@ -163,7 +164,6 @@ export class CostProcessor {
             return (!tapCost.restrictions || TargetingProcessor.matchesRestrictions(state, o, tapCost.restrictions, { controllerId: playerId, sourceId: source.id }));
           })()
         );
-        // console.log(`[DEBUG] TapSelection canPay: amount=${amount}, candidates=${candidates.length}, sourceId=${source.id}`);
         return candidates.length >= amount;
       }
 
@@ -173,7 +173,8 @@ export class CostProcessor {
     }
   }
 
-  private static paySingle(state: GameState, cost: AbilityCost, source: GameObject, playerId: PlayerId, log: (m: string) => void) {
+  private static paySingle(state: GameState, cost: AbilityCost, source: GameObject, playerId: PlayerId) {
+    const { logger } = getProcessors(state);
     const player = state.players[playerId];
     if (!player) return;
 
@@ -181,7 +182,7 @@ export class CostProcessor {
       case CostType.Tap:
         source.isTapped = true;
         const { trigger: TriggerProcessor } = getProcessors(state);
-        TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: source.id, payload: { object: source } }, log);
+        TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: source.id, payload: { object: source } });
         break;
 
       case CostType.Mana:
@@ -200,9 +201,9 @@ export class CostProcessor {
         const oldL = (source.counters || {}).loyalty || 0;
         source.counters = source.counters || {};
         source.counters.loyalty = oldL + lVal;
-        log(`${source.definition.name} loyalty: ${oldL} -> ${source.counters.loyalty}`);
+        logger.info(state, LogCategory.ACTION, `${source.definition.name} loyalty: ${oldL} -> ${source.counters.loyalty}`);
         const { trigger: TriggerProcessor } = getProcessors(state);
-        TriggerProcessor.onEvent(state, { type: 'ON_ACTIVATE_LOYALTY', playerId, sourceId: source.id, payload: { object: source } }, log);
+        TriggerProcessor.onEvent(state, { type: 'ON_ACTIVATE_LOYALTY', playerId, sourceId: source.id, payload: { object: source } });
         break;
       }
 
@@ -213,7 +214,7 @@ export class CostProcessor {
         let toSac;
         if (sacCost.targetMapping === 'SELF' || sacCost.type === CostType.SacrificeSelf) {
           toSac = source;
-          log(`[SACRIFICE] Identified source ${source.definition.name} as SELF sacrifice target.`);
+          logger.info(state, LogCategory.ACTION, `[SACRIFICE] Identified source ${source.definition.name} as SELF sacrifice target.`);
         } else {
           // Check for pre-selected target from modal choice
           const chosenId = state.interaction.lastChosenSacrificeId;
@@ -227,18 +228,18 @@ export class CostProcessor {
         }
 
         if (toSac) {
-          log(`[SACRIFICE] Processor executing moveCard for ${toSac.definition.name}...`);
+          logger.info(state, LogCategory.ACTION, `[SACRIFICE] Processor executing moveCard for ${toSac.definition.name}...`);
           const { trigger: TriggerProcessor, action: ActionProcessor } = getProcessors(state);
           TriggerProcessor.onEvent(state, {
             type: 'ON_SACRIFICE',
             playerId,
             sourceId: toSac.id,
             payload: { object: toSac }
-          }, log);
-          ActionProcessor.moveCard(state, toSac, Zone.Graveyard, playerId, log);
-          log(`${player.name} sacrificed ${toSac.definition.name} as a cost.`);
+          });
+          ActionProcessor.moveCard(state, toSac, Zone.Graveyard, playerId);
+          logger.info(state, LogCategory.ACTION, `${player.name} sacrificed ${toSac.definition.name} as a cost.`);
         } else {
-          log(`[SACRIFICE] Error: No valid object found to sacrifice for cost.`);
+          logger.info(state, LogCategory.ACTION, `[SACRIFICE] Error: No valid object found to sacrifice for cost.`);
         }
         delete state.interaction.lastChosenSacrificeId;
         break;
@@ -253,9 +254,9 @@ export class CostProcessor {
         const cardToDiscard = player.hand.find(c => c.id === discardId);
         if (cardToDiscard) {
           const { trigger: TriggerProcessor, action: ActionProcessor } = getProcessors(state);
-          TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, payload: { object: cardToDiscard, sourceId: source.id } }, log);
-          ActionProcessor.moveCard(state, cardToDiscard, Zone.Graveyard, playerId, log);
-          log(`${player.name} discarded ${cardToDiscard.definition.name} as a cost.`);
+          TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, payload: { object: cardToDiscard, sourceId: source.id } });
+          ActionProcessor.moveCard(state, cardToDiscard, Zone.Graveyard, playerId);
+          logger.info(state, LogCategory.ACTION, `${player.name} discarded ${cardToDiscard.definition.name} as a cost.`);
         }
         delete state.interaction.lastChosenDiscardId;
         break;
@@ -267,8 +268,8 @@ export class CostProcessor {
         const lifeVal = lifeCost.value === 'X' ? xValue : (parseInt(lifeCost.value) || 0);
         player.life -= lifeVal;
         const { trigger: TriggerProcessor } = getProcessors(state);
-        TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal }, log);
-        log(`${player.name} pays ${lifeVal} life (${player.life + lifeVal} -> ${player.life})`);
+        TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal });
+        logger.info(state, LogCategory.ACTION, `${player.name} pays ${lifeVal} life (${player.life + lifeVal} -> ${player.life})`);
         break;
       }
 
@@ -288,8 +289,8 @@ export class CostProcessor {
 
         exiles.forEach(obj => {
           const { action: ActionProcessor } = getProcessors(state);
-          ActionProcessor.moveCard(state, obj, Zone.Exile, playerId, log);
-          log(`${player.name} exiled ${obj.definition?.name || 'an object'} as a cost.`);
+          ActionProcessor.moveCard(state, obj, Zone.Exile, playerId);
+          logger.info(state, LogCategory.ACTION, `${player.name} exiled ${obj.definition?.name || 'an object'} as a cost.`);
         });
         delete state.interaction.lastChosenExileIds;
         break;
@@ -302,7 +303,7 @@ export class CostProcessor {
           if (c) {
             c.isTapped = true;
             const { trigger: TriggerProcessor } = getProcessors(state);
-            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, payload: { object: c } }, log);
+            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, payload: { object: c } });
           }
         });
         delete state.interaction.lastChosenCrewIds;
@@ -311,14 +312,14 @@ export class CostProcessor {
 
       case CostType.TapSelection: {
         const chosenIds = state.interaction.lastChosenTapSelectionIds || [];
-        log(`[COST-DEBUG] Executing TapSelection for ${chosenIds.length} creatures. IDs: ${chosenIds.join(', ')}`);
+        logger.debug(state, LogCategory.ACTION, `[COST-DEBUG] Executing TapSelection for ${chosenIds.length} creatures. IDs: ${chosenIds.join(', ')}`);
         chosenIds.forEach((cid: string) => {
           const c = state.battlefield.find(o => o.id === cid);
           if (c) {
             c.isTapped = true;
-            log(`${c.definition.name} tapped.`);
+            logger.info(state, LogCategory.ACTION, `${c.definition.name} tapped.`);
             const { trigger: TriggerProcessor } = getProcessors(state);
-            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, payload: { object: c } }, log);
+            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, payload: { object: c } });
           }
         });
         delete state.interaction.lastChosenTapSelectionIds;
@@ -332,7 +333,7 @@ export class CostProcessor {
 
   public static getEffectiveManaCost(state: GameState, cost: AbilityCost, source: GameObject, stackObject?: GameObject | StackObject): string {
     let costStr = "";
-    
+
     switch (cost.type) {
       case CostType.Mana: {
         const manaCost = cost as ManaCost;

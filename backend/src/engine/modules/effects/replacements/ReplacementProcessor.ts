@@ -4,6 +4,7 @@ import {
   PlayerId,
   Zone
 } from "@shared/engine_types";
+import { LogCategory } from "../../../utils/EngineLogger";
 import { getProcessors } from "../../ProcessorRegistry";
 import { RuleUtils } from "../../../utils/RuleUtils";
 
@@ -26,8 +27,8 @@ export class ReplacementProcessor {
             isDiscard: boolean;
             targetPlayerId: PlayerId;
         },
-        log: (m: string) => void
     ): { destination: Zone; replaced: boolean; actionResult?: ActionResult } {
+        const { logger } = getProcessors(state);
         const { fromZone, isDraw, isDiscard, targetPlayerId } = options;
         let finalDestination = destination;
         let replaced = false;
@@ -42,7 +43,7 @@ export class ReplacementProcessor {
                             e.controllerId === card.controllerId))
             );
             if (hasExileReplacement) {
-                log(`[REPLACED] ${card.definition.name} is exiled instead of graveyard due to continuous effect.`);
+                logger.info(state, LogCategory.ACTION, `[REPLACED] ${card.definition.name} is exiled instead of graveyard due to continuous effect.`);
                 finalDestination = Zone.Exile;
                 replaced = true;
             }
@@ -50,7 +51,7 @@ export class ReplacementProcessor {
 
         // 2. RULE 702.34a: Flashback
         if (fromZone === Zone.Stack && finalDestination !== Zone.Exile && card.isFlashbackCast) {
-            log(`[FLASHBACK] ${card.definition.name} was cast via flashback and is being exiled instead of moving to ${finalDestination}.`);
+            logger.info(state, LogCategory.ACTION, `[FLASHBACK] ${card.definition.name} was cast via flashback and is being exiled instead of moving to ${finalDestination}.`);
             finalDestination = Zone.Exile;
             replaced = true;
         }
@@ -62,13 +63,13 @@ export class ReplacementProcessor {
             finalDestination === Zone.Hand &&
             !state.isResolvingDrawReplacement
         ) {
-            const result = this.handleDrawReplacements(state, card, targetPlayerId, log);
+            const result = this.handleDrawReplacements(state, card, targetPlayerId);
             if (result) return result;
         }
 
         // 4. RULE 614: Entry Replacements (Containment Priest, etc.)
         if (finalDestination === Zone.Battlefield && state.ruleRegistry.replacementEffects) {
-            const result = this.handleEntryReplacements(state, card, fromZone, log);
+            const result = this.handleEntryReplacements(state, card, fromZone);
             if (result) finalDestination = result;
         }
 
@@ -82,8 +83,8 @@ export class ReplacementProcessor {
         state: GameState,
         card: GameObject,
         playerId: PlayerId,
-        log: (m: string) => void
     ): any {
+        const { logger } = getProcessors(state);
         const registry = state.ruleRegistry;
         if (!registry.replacementEffects) return null;
 
@@ -96,17 +97,17 @@ export class ReplacementProcessor {
                 const skipFirstDrawInDrawStep = isYourDrawStep && cardsDrawn === 0;
 
                 if (!skipFirstDrawInDrawStep) {
-                    log(`[REPLACED] Teferi's Ageless Insight replaces draw with 2 draws.`);
+                    logger.info(state, LogCategory.ACTION, `[REPLACED] Teferi's Ageless Insight replaces draw with 2 draws.`);
                     state.isResolvingDrawReplacement = true;
 
                     const ActionProcessor = getProcessors(state).action;
                     // Perform the double draw sequence
-                    ActionProcessor.moveCard(state, card, Zone.Hand, playerId, log, "top", true);
+                    ActionProcessor.moveCard(state, card, Zone.Hand, playerId, "top", true);
 
                     const player = state.players[playerId];
                     if (player && player.library.length > 0) {
                         const nextCard = player.library.pop()!;
-                        ActionProcessor.moveCard(state, nextCard, Zone.Hand, playerId, log, "top", true);
+                        ActionProcessor.moveCard(state, nextCard, Zone.Hand, playerId, "top", true);
                     }
 
                     state.isResolvingDrawReplacement = false;
@@ -130,8 +131,8 @@ export class ReplacementProcessor {
         state: GameState,
         card: GameObject,
         fromZone: Zone,
-        log: (m: string) => void
     ): Zone | null {
+        const { logger } = getProcessors(state);
         const isToken = (card as any).isToken || card.id.startsWith("token_");
 
         for (const replacement of state.ruleRegistry.replacementEffects || []) {
@@ -141,7 +142,7 @@ export class ReplacementProcessor {
             // Containment Priest Case
             if (replacement.id.toLowerCase().includes("containment_priest")) {
                 if (RuleUtils.isCreature(card) && !isToken && fromZone !== Zone.Stack) {
-                    log(`[REPLACED] ${source.definition.name} exiles ${card.definition.name} (not cast).`);
+                    logger.info(state, LogCategory.ACTION, `[REPLACED] ${source.definition.name} exiles ${card.definition.name} (not cast).`);
                     return Zone.Exile;
                 }
             }
