@@ -205,10 +205,11 @@ export class PermanentHandler {
         const { effect: EP } = getProcessors(state);
         let sourceObj = RuleUtils.findObject(state, sourceId);
         
-        // CR 603.10: If the source is not in a public zone or has no counters (because it died), check the stack object's event snapshot (LKI)
+        // CR 603.10: If the source is not in a public zone or has no counters (because it died), check LKI
         if (!sourceObj || !sourceObj.counters || Object.keys(sourceObj.counters).length === 0) {
-            const snapshot = stackObject?.data?.event?.payload?.object || stackObject?.data?.event?.data?.object;
-            if (snapshot && snapshot.id === sourceId && snapshot.counters && Object.keys(snapshot.counters).length > 0) {
+            const processors = getProcessors(state);
+            const snapshot = processors.lki.getLki(state, sourceId, Zone.Battlefield);
+            if (snapshot && snapshot.counters && Object.keys(snapshot.counters).length > 0) {
                 sourceObj = snapshot;
             }
         }

@@ -1,4 +1,4 @@
-import { ActionType, DurationType, EffectType, GameObject, GameState, PlayerId, PlayerState, ResolutionContext, StackObject } from '@shared/engine_types';
+import { ActionType, DurationType, EffectType, GameObject, GameState, PlayerId, PlayerState, ResolutionContext, StackObject, Zone } from '@shared/engine_types';
 import { RuleUtils } from '../../../../utils/RuleUtils';
 import { getProcessors } from '../../../ProcessorRegistry';
 
@@ -40,10 +40,11 @@ export class ControlEffectHandler {
                 targets.forEach((tid: string) => {
                     let stackObj = state.stack.find((s: StackObject) => s.id === tid || s.sourceId === tid);
 
-                    // LKI: If spell is gone, use the snapshot provided in the trigger context
-                    if (!stackObj && (stackObject?.data?.event?.payload?.stackSnapshot || stackObject?.data?.eventData?.stackSnapshot)) {
-                        stackObj = stackObject?.data?.event?.payload?.stackSnapshot || stackObject?.data?.eventData?.stackSnapshot;
-                        log(`[COPY] Original spell ${tid} not found on stack, using Last Known Information.`);
+                    // LKI: If spell is gone, use LKI
+                    if (!stackObj) {
+                        const processors = getProcessors(state);
+                        stackObj = processors.lki.getLki(state, tid, Zone.Stack);
+                        if (stackObj) log(`[COPY] Original spell ${tid} not found on stack, using Last Known Information.`);
                     }
 
                     if (!stackObj) return;
@@ -86,7 +87,7 @@ export class ControlEffectHandler {
                     if (effect.chooseNewTargets && copy.targets) {
                         backupTargets = [...copy.targets];
                         copy.targets = [];
-                        
+
                         // Aggressively clear any target-related metadata in copy.data
                         if (copy.data) {
                             copy.data.targets = [];

@@ -1038,8 +1038,9 @@ export class TriggerProcessor {
     matchingTriggers: TriggeredAbility[],
   ) {
     if (event.type === TriggerEvent.CastInstantOrSorcery && event.playerId) {
-      const stackObj = event.payload?.stackSnapshot || event.data?.stackSnapshot;
-      const targets = stackObj?.targets || [];
+      const processors = getProcessors(state);
+      const stackObj = processors.lki.getLki(state, event.sourceId || "", Zone.Stack);
+      const targets = stackObj?.data?.targets || [];
       if (
         targets.some((tid: string) => {
           const obj = RuleUtils.findObject(state, tid);

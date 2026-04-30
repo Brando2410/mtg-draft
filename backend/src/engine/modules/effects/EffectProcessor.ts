@@ -478,8 +478,9 @@ export class EffectProcessor {
     stackObject?: StackObject,
     parentContext?: ResolutionContext,
   ): Targetable | undefined {
-    // Priority 1: Trigger snapshot (for leaves-battlefield triggers like Star Pupil)
-    const snapshot = stackObject?.data?.eventData?.payload?.object as GameObject | undefined;
+    // Priority 1: LKI Snapshot (Rule 608.2h)
+    const processors = getProcessors(state);
+    const snapshot = processors.lki.getLki(state, id);
     if (snapshot && snapshot.id === id) return snapshot;
 
     return (

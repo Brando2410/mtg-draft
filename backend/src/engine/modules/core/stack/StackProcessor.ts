@@ -1,4 +1,4 @@
-import { AbilityType, EffectDefinition, GameState, StackObject } from '@shared/engine_types';
+import { AbilityType, EffectDefinition, GameState, StackObject, Zone } from '@shared/engine_types';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { oracle } from '../../../OracleLogicMap';
 import { getProcessors } from '../../ProcessorRegistry';
@@ -65,6 +65,8 @@ export class StackProcessor {
     if (state.stack.length > 0) {
       const objectToResolve = state.stack.pop();
       if (objectToResolve) {
+        const processors = getProcessors(state);
+        processors.lki.saveSnapshot(state, objectToResolve, Zone.Stack);
         state.consecutivePasses = 0; // CR 117.4: Resolution or stack changes reset pass count
         if (state.stack.length > 0) {
           console.log(`[DEBUG] STACK CONTENTS:`, state.stack.map(s => ({ id: s.id, name: (s as any).name || s.card?.definition.name, idx: (s as any).data?.nextEffectIndex })));
@@ -88,17 +90,17 @@ export class StackProcessor {
           state.priorityPlayerId = state.pendingAction?.playerId || null;
           return;
         }
-        
+
         // --- KEYWORD HOOK: ON RESOLUTION ---
         console.log(`[STACK-DEBUG] ${objectName} resolved. type=${objectToResolve.type}, completed=${completed}`);
         if (completed && objectToResolve.type === AbilityType.Spell) {
-            const { trigger: TriggerProcessor } = getProcessors(state);
-            console.log(`[STACK-DEBUG] Firing ON_RESOLVE_SPELL for ${objectName}`);
-            TriggerProcessor.onEvent(state, { 
-                type: 'ON_RESOLVE_SPELL', 
-                playerId: objectToResolve.controllerId,
-                payload: { object: objectToResolve.card, sourceId: objectToResolve.sourceId }
-            }, log);
+          const { trigger: TriggerProcessor } = getProcessors(state);
+          console.log(`[STACK-DEBUG] Firing ON_RESOLVE_SPELL for ${objectName}`);
+          TriggerProcessor.onEvent(state, {
+            type: 'ON_RESOLVE_SPELL',
+            playerId: objectToResolve.controllerId,
+            payload: { object: objectToResolve.card, sourceId: objectToResolve.sourceId }
+          }, log);
         }
 
         const stackRemaining = state.stack.map(s => s.card?.definition.name || 'Effect').join(', ');

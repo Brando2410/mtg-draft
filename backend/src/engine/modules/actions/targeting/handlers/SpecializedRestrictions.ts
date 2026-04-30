@@ -7,8 +7,10 @@ import { getProcessors } from "../../../ProcessorRegistry";
 const FROMHAND: IRestrictionHandler = {
     matches(state, targetObj: any) {
         const zone = targetObj.zone || targetObj.card?.zone;
-        const lastZone = targetObj.lastNonStackZone || targetObj.card?.lastNonStackZone;
-        return zone === Zone.Hand || lastZone === Zone.Hand;
+        if (zone === Zone.Hand) return true;
+        const processors = getProcessors(state);
+        const lki = processors.lki.getLki(state, targetObj.id, Zone.Hand);
+        return !!lki;
     }
 };
 

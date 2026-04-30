@@ -264,9 +264,10 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const castingPlayerId = event?.playerId || (event as any)?.data?.playerId;
             if (String(castingPlayerId) !== String(controllerId)) return false;
 
-            // Use stackSnapshot from payload (emitted by SpellProcessor)
-            const stackObj = event?.payload?.stackSnapshot || (event as any)?.data?.stackSnapshot;
-            const targets = stackObj?.targets || [];
+            // Use LKI for the spell on the stack
+            const processors = getProcessors(state);
+            const stackObj = processors.lki.getLki(state, event?.sourceId || "", Zone.Stack);
+            const targets = stackObj?.data?.targets || [];
             if (!targets.length) return false;
 
             const { targeting: TargetingProcessor } = getProcessors(state);
@@ -372,22 +373,32 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "NOT_CAST_FROM_HAND": {
         matches(state, params, context) {
             const { event } = context;
-            const zone = (event as any).sourceZone || (event as any).lastNonStackZone || event?.data?.sourceZone || event?.card?.lastNonStackZone;
-            return zone !== Zone.Hand;
+            const objId = event?.payload?.card?.id || event?.data?.card?.id || event?.sourceId;
+            if (!objId) return true;
+            const processors = getProcessors(state);
+            const fromHand = processors.lki.getLki(state, objId, Zone.Hand);
+            return !fromHand;
         }
     },
     "CAST_FROM_GRAVEYARD_OR_EXILE": {
         matches(state, params, context) {
             const { event } = context;
-            const zone = (event as any).sourceZone || (event as any).lastNonStackZone || event?.data?.sourceZone || event?.card?.lastNonStackZone;
-            return zone === Zone.Graveyard || zone === Zone.Exile;
+            const objId = event?.payload?.card?.id || event?.data?.card?.id || event?.sourceId;
+            if (!objId) return false;
+            const processors = getProcessors(state);
+            const fromGY = processors.lki.getLki(state, objId, Zone.Graveyard);
+            const fromExile = processors.lki.getLki(state, objId, Zone.Exile);
+            return !!(fromGY || fromExile);
         }
     },
     "CAST_FROM_HAND": {
         matches(state, params, context) {
             const { event } = context;
-            const zone = (event as any).sourceZone || (event as any).lastNonStackZone || event?.data?.sourceZone || event?.card?.lastNonStackZone;
-            return zone === Zone.Hand;
+            const objId = event?.payload?.card?.id || event?.data?.card?.id || event?.sourceId;
+            if (!objId) return false;
+            const processors = getProcessors(state);
+            const fromHand = processors.lki.getLki(state, objId, Zone.Hand);
+            return !!fromHand;
         }
     },
     "TRIGGER_SOURCE_POW_OR_TOUGH_LE_1": {

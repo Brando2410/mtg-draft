@@ -37,10 +37,11 @@ export const CopySpellHandler: IEffectHandler = {
         targets.forEach((tid: string) => {
             let stackObj = state.stack.find((s: any) => s.id === tid || s.sourceId === tid);
 
-            // LKI: If spell is gone, use the snapshot provided in the trigger context
-            if (!stackObj && (stackObject?.data?.event?.payload?.stackSnapshot || stackObject?.data?.eventData?.stackSnapshot)) {
-                stackObj = stackObject?.data?.event?.payload?.stackSnapshot || stackObject?.data?.eventData?.stackSnapshot;
-                log(`[COPY] Original spell ${tid} not found on stack, using Last Known Information.`);
+            // LKI: If spell is gone, use LKI
+            if (!stackObj) {
+                const processors = getProcessors(state);
+                stackObj = processors.lki.getLki(state, tid, Zone.Stack);
+                if (stackObj) log(`[COPY] Original spell ${tid} not found on stack, using Last Known Information.`);
             }
 
             if (!stackObj) return;

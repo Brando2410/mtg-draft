@@ -375,6 +375,7 @@ export interface GameState {
     _lastLayerHash?: string;
     _triggerCache?: any;
     isResolvingDrawReplacement?: boolean;
+    lki: Record<string, Partial<Record<Zone, GameObject>>>;
     gameEngine?: any;
 }
 

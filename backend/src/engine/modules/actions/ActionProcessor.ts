@@ -149,10 +149,9 @@ export class ActionProcessor {
         `[MOVE] ${card.definition.name} (${card.id}) from ${fromZone} to ${to} (isDraw: ${isDraw})...`,
       );
 
-    // Track original zone if moving to stack (Rule 400.7 memoization)
-    if (to === Zone.Stack && fromZone !== Zone.Stack) {
-      card.lastNonStackZone = fromZone;
-    }
+    // Save LKI snapshot before object changes/wipes (Rule 608.2h)
+    const processors = getProcessors(state);
+    processors.lki.saveSnapshot(state, card, fromZone);
 
     this.removeFromCurrentZone(state, card);
 
@@ -506,10 +505,7 @@ export class ActionProcessor {
     }
 
     // Rule 400.7: Objects leaving the battlefield/stack lose their identity
-    // BUT we preserve lastNonStackZone if moving TO the Battlefield from Stack
-    // to allow ETB triggers to know where the spell was cast from.
     if (to !== Zone.Battlefield && to !== Zone.Stack) {
-      delete card.lastNonStackZone;
       delete (card as any).isFreeCast;
       delete (card as any).isSpellCasting;
     }

@@ -620,10 +620,10 @@ export class SpellProcessor {
         if (!cardToPlay.isPreparedCopy) {
             ActionProcessor.moveCard(state, cardToPlay, Zone.Stack, playerId, log);
         } else {
-            const { registry: RegistryProcessor } = getProcessors(state);
+            const { registry: RegistryProcessor, lki: LkiProcessor } = getProcessors(state);
             log(`[PREPARED-DEBUG] Casting ${cardToPlay.definition.name} from virtual origin: ${lastZone}`);
+            LkiProcessor.saveSnapshot(state, cardToPlay, lastZone);
             cardToPlay.zone = Zone.Stack;
-            cardToPlay.lastNonStackZone = lastZone;
             RegistryProcessor.registerAbilities(state, cardToPlay);
         }
 
@@ -722,10 +722,10 @@ export class SpellProcessor {
         });
 
         state.consecutivePasses = 0;
-        TriggerProcessor.onEvent(state, { type: TriggerEvent.CastSpell, playerId, amount: cardToPlay.paidManaValue || 0, payload: { card: cardToPlay, sourceId: cardToPlay.id, stackSnapshot: JSON.parse(JSON.stringify(stackObj)) } }, log);
+        TriggerProcessor.onEvent(state, { type: TriggerEvent.CastSpell, playerId, amount: cardToPlay.paidManaValue || 0, payload: { card: cardToPlay, sourceId: cardToPlay.id } }, log);
 
-        if (isFirstInstantOrSorcery) TriggerProcessor.onEvent(state, { type: TriggerEvent.CastFirstInstantOrSorcery, playerId, amount: cardToPlay.paidManaValue || 0, payload: { card: cardToPlay, sourceId: cardToPlay.id, stackSnapshot: JSON.parse(JSON.stringify(stackObj)) } }, log);
-        if (isInstantOrSorcery) TriggerProcessor.onEvent(state, { type: TriggerEvent.CastInstantOrSorcery, playerId, amount: cardToPlay.paidManaValue || 0, payload: { card: cardToPlay, sourceId: cardToPlay.id, stackSnapshot: JSON.parse(JSON.stringify(stackObj)) } }, log);
+        if (isFirstInstantOrSorcery) TriggerProcessor.onEvent(state, { type: TriggerEvent.CastFirstInstantOrSorcery, playerId, amount: cardToPlay.paidManaValue || 0, payload: { card: cardToPlay, sourceId: cardToPlay.id } }, log);
+        if (isInstantOrSorcery) TriggerProcessor.onEvent(state, { type: TriggerEvent.CastInstantOrSorcery, playerId, amount: cardToPlay.paidManaValue || 0, payload: { card: cardToPlay, sourceId: cardToPlay.id } }, log);
 
         if (!RuleUtils.isCreature(cardToPlay)) {
             TriggerProcessor.onEvent(state, { type: TriggerEvent.CastNonCreature, playerId, payload: { object: cardToPlay, sourceId: cardToPlay.id } }, log);

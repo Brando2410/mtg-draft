@@ -22,6 +22,7 @@ import { SpellValidator } from "./actions/spells/SpellValidator";
 import { SpellCostCalculator } from "./actions/spells/SpellCostCalculator";
 import { SpellInteractiveManager } from "./actions/spells/SpellInteractiveManager";
 import type { LayerProcessor } from "./state/LayerProcessor";
+import type { LkiProcessor } from "./state/LkiProcessor";
 import type { StateBasedActionsProcessor } from "./state/StateBasedActionsProcessor";
 
 /**
@@ -41,6 +42,7 @@ export interface ProcessorRegistry {
     turn: typeof TurnProcessor;
     targeting: typeof TargetingProcessor;
     layer: typeof LayerProcessor;
+    lki: typeof LkiProcessor;
     sba: typeof StateBasedActionsProcessor;
     restriction: typeof RestrictionValidator;
     mana: typeof ManaProcessor;
@@ -85,6 +87,7 @@ export function getProcessors(state: GameState): ProcessorRegistry {
         get turn() { return require("./core/turn/TurnProcessor").TurnProcessor; },
         get targeting() { return require("./actions/targeting/TargetingProcessor").TargetingProcessor; },
         get layer() { return require("./state/LayerProcessor").LayerProcessor; },
+        get lki() { return require("./state/LkiProcessor").LkiProcessor; },
         get sba() { return require("./state/StateBasedActionsProcessor").StateBasedActionsProcessor; },
         get restriction() { return require("./core/RestrictionValidator").RestrictionValidator; },
         get mana() { return require("./magic/ManaProcessor").ManaProcessor; },
