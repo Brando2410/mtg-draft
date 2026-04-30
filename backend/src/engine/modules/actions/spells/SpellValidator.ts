@@ -1,9 +1,9 @@
 import { AbilityType, EffectType, EnginePrefix, GameObject, GameState, Keyword, Phase, PlayerId, TargetMapping, Zone } from '@shared/engine_types';
+import { RuleUtils } from '../../../utils/RuleUtils';
 import { RestrictionValidator } from '../../core/RestrictionValidator';
 import { PriorityProcessor } from '../../core/turn/PriorityProcessor';
 import { CostProcessor } from '../../magic/CostProcessor';
 import { ActionProcessor } from '../ActionProcessor';
-import { TargetingProcessor } from '../targeting/TargetingProcessor';
 import { getProcessors } from '../../ProcessorRegistry';
 
 
@@ -18,7 +18,7 @@ export class SpellValidator {
         if (cardInHand) return cardInHand;
 
         // 2. Search in Non-hand zones with Permission Check
-        const obj = TargetingProcessor.findObjectInAnyZone(state, cardInstanceId);
+        const obj = RuleUtils.findObject(state, cardInstanceId);
         if (obj && obj.controllerId === playerId) {
             let permissionType: string | undefined;
             if (obj.zone === Zone.Graveyard) permissionType = EffectType.AllowCastFromGraveyard;
@@ -179,7 +179,7 @@ export class SpellValidator {
 
 
     public static validateAbilitySpeed(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, cardLogic: any, log: (m: string) => void): boolean {
-        const isPlaneswalker = obj.definition.types.includes('Planeswalker');
+        const isPlaneswalker = RuleUtils.isPlaneswalker(obj);
         const isSorceryOnly = ability.activatedOnlyAsSorcery || (ability as any).isSorcerySpeed;
 
         if (isPlaneswalker || isSorceryOnly) {

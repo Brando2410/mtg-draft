@@ -1,4 +1,5 @@
 import { ActionType, DurationType, EffectType, GameObject, GameState, PlayerId, PlayerState, ResolutionContext, StackObject } from '@shared/engine_types';
+import { RuleUtils } from '../../../../utils/RuleUtils';
 import { getProcessors } from '../../../ProcessorRegistry';
 
 
@@ -110,12 +111,12 @@ export class ControlEffectHandler {
                     TrP.onEvent(state, {
                         type: 'ON_COPY_SPELL',
                         playerId: controllerId,
-                        data: {
+                        payload: {
                             originalId: tid,
                             copyId: copy.id,
-                            card: copy.card,
+                            object: copy.card,
                             sourceId: copy.id,
-                            isInstantOrSorcery: copy.card?.definition.types.some((t: string) => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery')
+                            isInstantOrSorcery: copy.card && (RuleUtils.isType(copy.card, 'instant') || RuleUtils.isType(copy.card, 'sorcery'))
                         }
                     }, log);
 
@@ -233,8 +234,7 @@ export class ControlEffectHandler {
                 break;
 
             case 'AddMana': {
-                const { mana: MP } = getProcessors(state);
-                const { ChoiceGenerator: CG } = require('../../ChoiceGenerator');
+                const { mana: MP, choiceGenerator: CG } = getProcessors(state);
                 const effectiveTargets = (targets && targets.length > 0) ? targets : [controllerId];
 
                 // Prioritize manaType/mana over amount/value for symbol resolution
@@ -258,7 +258,7 @@ export class ControlEffectHandler {
                             }]
                         }));
 
-                        state.pendingAction = CG.createModalChoice({
+                        state.pendingAction = CG.createModalChoice(state, {
                             label: "Choose a color of mana to add",
                             playerId: tid,
                             sourceId: sourceId,

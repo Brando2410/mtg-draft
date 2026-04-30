@@ -1,4 +1,5 @@
 import { TriggerEvent } from "@shared/engine_types";
+import { RuleUtils } from "../../../../utils/RuleUtils";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { IConditionHandler } from "../IConditionHandler";
 
@@ -9,25 +10,27 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
             if (event?.playerId !== controllerId) return false;
             const targets = event?.payload?.stackSnapshot?.targets || 
                            event?.data?.stackSnapshot?.targets || 
+                           event?.payload?.targets ||
                            event?.targets || 
                            event?.data?.targets || [];
             if (!targets.length) return false;
             
             const { targeting: TargetingProcessor } = getProcessors(state);
             return targets.some((tid: string) => {
-                const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
-                return obj && obj.definition.types.some((t: any) => t.toLowerCase() === "creature");
+                const obj = RuleUtils.findObject(state, tid);
+                return obj && RuleUtils.isCreature(obj);
             });
         }
     },
     "SELF_COMBAT_DAMAGE_PLAYER_OR_PLANESWALKER": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            if (!event || event.sourceId !== sourceId || !event.data?.isCombat) return false;
+            const isCombat = event?.payload?.isCombat || event?.data?.isCombat;
+            if (!event || event.sourceId !== sourceId || !isCombat) return false;
             if (event.type === TriggerEvent.DamageDealtToPlayer || event.type === "ON_DAMAGE_PLAYER") return true;
             if (event.type === TriggerEvent.DamageTaken) {
                 const targetObj = state.battlefield.find((o) => o.id === event.targetId);
-                return !!targetObj && targetObj.definition.types.some((t) => t.toLowerCase() === "planeswalker");
+                return !!targetObj && RuleUtils.isPlaneswalker(targetObj);
             }
             return false;
         }
@@ -35,7 +38,7 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
     "INCREMENT_CHECK": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            const spent = (event as any)?.data?.spent || 0;
+            const spent = event?.payload?.spent || (event as any)?.data?.spent || 0;
             const obj = state.battlefield.find((o) => o.id === sourceId);
             if (!obj) return false;
             const { layer: LayerProcessor } = getProcessors(state);
@@ -46,7 +49,7 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
     "SPENT_MANA_GT_POWER_OR_TOUGHNESS": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            const spent = (event as any)?.data?.card?.paidManaValue ?? (event as any)?.amount ?? 0;
+            const spent = event?.payload?.card?.paidManaValue || (event as any)?.data?.card?.paidManaValue ?? (event as any)?.amount ?? 0;
             const obj = state.battlefield.find((o) => o.id === sourceId);
             if (!obj) return false;
             const { layer: LayerProcessor } = getProcessors(state);

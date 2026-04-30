@@ -16,6 +16,7 @@ import {
 import { Mutation, MutationType } from "@shared/types/mutations";
 import { RegistryProcessor } from "../core/RegistryProcessor";
 import { TriggerProcessor } from "../effects/triggers/TriggerProcessor";
+import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
 import { oracle } from "../../OracleLogicMap";
 import { LifeDamageHandler } from "../effects/handlers/life/LifeDamageHandler";
@@ -107,7 +108,6 @@ export class ActionProcessor {
           type: TriggerEvent.Discard,
           playerId: card.ownerId,
           payload: {
-            card,
             object: card,
             fromZone: Zone.Hand,
             toZone: Zone.Graveyard,
@@ -158,7 +158,7 @@ export class ActionProcessor {
 
     // 2. Rule 400.7: Reset characteristics and update zone
     card.zone = to;
-    const isToken = card.isToken || card.id.startsWith("token_");
+    const isToken = RuleUtils.isToken(card);
 
     // Clear reveal status on ANY zone change (Rule 400.7)
     card.isRevealed = false;
@@ -202,7 +202,7 @@ export class ActionProcessor {
       state.turnState.lastCardsDrawnAmount = 1;
       TriggerProcessor.onEvent(
         state,
-        { type: TriggerEvent.Draw, playerId: effectiveTargetId, data: { card } },
+        { type: TriggerEvent.Draw, playerId: effectiveTargetId, payload: { object: card } },
         log || (() => { }),
       );
 
@@ -213,7 +213,7 @@ export class ActionProcessor {
           {
             type: TriggerEvent.SecondDraw,
             playerId: effectiveTargetId,
-            data: { card },
+            payload: { object: card },
           },
           log || (() => { }),
         );
@@ -228,7 +228,7 @@ export class ActionProcessor {
         {
           type: TriggerEvent.LeaveGraveyard,
           playerId: card.ownerId,
-          payload: { card, object: card, fromZone, toZone: to },
+          payload: { object: card, fromZone, toZone: to },
         },
         log || (() => { }),
       );
@@ -271,7 +271,7 @@ export class ActionProcessor {
     };
 
     // Rule 603.10a: "Dies" triggers (specifically for creatures moving to graveyard)
-    if (to === Zone.Graveyard && types.includes("creature")) {
+    if (to === Zone.Graveyard && RuleUtils.isCreature(card)) {
       state.turnState.creaturesDiedThisTurn.push(snapshot);
       TriggerProcessor.onEvent(
         state,
@@ -357,13 +357,7 @@ export class ActionProcessor {
       card.controllerId = targetPlayerId;
 
       // CR 302.6: Creature enters the battlefield with summoning sickness
-      const hasHasteInDefinition = (card.definition.keywords || []).some(
-        (k) => k === Keyword.Haste,
-      );
-      const hasHasteOnCard = (card.keywords || []).some(
-        (k) => k === Keyword.Haste,
-      );
-      card.summoningSickness = !hasHasteInDefinition && !hasHasteOnCard;
+      card.summoningSickness = !RuleUtils.hasKeyword(card, Keyword.Haste);
 
       let entersTapped = card.definition.entersTapped || false;
       if (card.definition.entersTappedCondition) {
@@ -591,11 +585,7 @@ export class ActionProcessor {
     );
 
     // Rule 306.5b: Planeswalkers enter with loyalty counters
-    if (
-      card.definition.types.some((t) => {
-        return t === "Planeswalker" || t === "planeswalker";
-      })
-    ) {
+    if (RuleUtils.isPlaneswalker(card)) {
       const def = card.definition;
       let loyaltyValue = def.loyalty;
 
@@ -660,7 +650,7 @@ export class ActionProcessor {
         const LayerProcessor = getProcessors(state).layer;
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         if (
-          stats.keywords.includes("CannotUntap") ||
+          RuleUtils.hasKeyword(obj, "CannotUntap") ||
           obj.cannotUntapThisTurn
         ) {
           if (log) log(`${obj.definition.name} does not untap.`);

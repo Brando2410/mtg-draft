@@ -1,5 +1,6 @@
-import { GameState, Phase, PlayerId, Step } from '@shared/engine_types';
+import { GameState, Phase, PlayerId, Step, DurationType } from '@shared/engine_types';
 import { getProcessors } from '../../ProcessorRegistry';
+import { RuleUtils } from '../../../utils/RuleUtils';
 
 /**
  * Handle Turn Architecture (Chapter 5)
@@ -60,15 +61,11 @@ export class TurnProcessor {
     return state.battlefield.some(obj => {
       if (obj.controllerId !== playerId || obj.isTapped) return false;
 
-      const types = (obj.definition.types || []).map(t => t.toLowerCase());
-      const typeLine = (obj.definition.type_line || '').toLowerCase();
-      const isCreature = types.includes('creature') || typeLine.includes('creature') || (obj.definition.types || []).includes('Creature');
+      const isCreature = RuleUtils.isCreature(obj);
       if (!isCreature) return false;
 
       // Rule 302.6: Haste bypasses summoning sickness for attacking
-      const keywords = [...(obj.definition.keywords || []), ...(obj.effectiveStats?.keywords || [])];
-      const hasHaste = keywords.some(k => k.toLowerCase() === 'haste');
-      if (obj.summoningSickness && !hasHaste) return false;
+      if (obj.summoningSickness && !RuleUtils.hasKeyword(obj, 'haste')) return false;
 
       // Rule 702.3: Defender (with 702.3b override check) and other restrictions
       const { restriction: RP } = getProcessors(state);
@@ -82,9 +79,7 @@ export class TurnProcessor {
     return state.battlefield.some(obj => {
       if (obj.controllerId !== playerId || obj.isTapped) return false;
 
-      const types = (obj.definition.types || []).map(t => t.toLowerCase());
-      const typeLine = (obj.definition.type_line || '').toLowerCase();
-      const isCreature = types.includes('creature') || typeLine.includes('creature') || (obj.definition.types || []).includes('Creature');
+      const isCreature = RuleUtils.isCreature(obj);
       if (!isCreature) return false;
 
       // Registry Restrictions
@@ -239,7 +234,6 @@ export class TurnProcessor {
    */
   public static handleStepEntryRules(state: GameState, engine: import('../../../interfaces/EngineContext').EngineContext, log: (m: string) => void) {
     const activeId = state.activePlayerId;
-    const { DurationType } = require('@shared/engine_types');
 
     if (state.currentStep === Step.Untap) {
       state.battlefield.filter(c => c.controllerId === activeId).forEach(c => engine.processors.registry.registerAbilities(state, c));
@@ -298,7 +292,6 @@ export class TurnProcessor {
    */
   public static cleanupEndOfTurn(state: GameState, log: (m: string) => void) {
     log(`[CLEANUP] Removing 'Until End of Turn' effects and resetting markers.`);
-    const { DurationType } = require('@shared/engine_types');
 
     state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {
       return eff.duration?.type !== DurationType.UntilEndOfTurn;
@@ -315,7 +308,6 @@ export class TurnProcessor {
    * Clear rule-duration effects conditionally
    */
   public static cleanupExpiredEffectsByEvent(state: GameState, eventType: string, log: (m: string) => void, activePlayerId?: PlayerId) {
-    const { DurationType } = require('@shared/engine_types');
     const previousCount = state.ruleRegistry.continuousEffects.length;
 
     state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(eff => {

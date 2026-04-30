@@ -1,7 +1,7 @@
 import { AbilityCost, AbilityDefinition, ActionType, CostType, DiscardCost, ExileCost, GameObject, GameState, PlayerId, ResolutionContext, Restriction, SacrificeCost, TapSelectionCost, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
+import { RuleUtils } from '../../../utils/RuleUtils';
 import { getProcessors } from '../../ProcessorRegistry';
-
 import { SpellProcessor } from './SpellProcessor';
 
 /**
@@ -165,13 +165,13 @@ export class SpellInteractiveManager {
 
         // --- ENHANCEMENT: Graveyard/Exile Targeting Modal ---
         // If targeting solely from graveyard or exile, use ModalSelection UI for better UX (requested by user)
-        const isOffBattlefieldTargeting = 
-            firstDef.type === TargetType.CardInGraveyard || 
+        const isOffBattlefieldTargeting =
+            firstDef.type === TargetType.CardInGraveyard ||
             firstDef.type === TargetType.CardInExile;
 
         if (isOffBattlefieldTargeting) {
             const choices = precalculatedTargets.map(id => {
-                const obj = TargetingProcessor.findObjectInAnyZone(state, id);
+                const obj = RuleUtils.findObject(state, id);
                 return {
                     label: obj?.definition?.name || id,
                     value: id,
@@ -425,15 +425,15 @@ export class SpellInteractiveManager {
             log(`[EXILE] ${state.players[playerId].name} must choose objects to exile.`);
             return true;
         }
-        
+
         // 5. TapSelection Cost
         const tapSelectionCost = additionalCosts.find(c => c.type === CostType.TapSelection);
         const hasChosenTapSelection = state.interaction?.lastChosenTapSelectionIds !== undefined;
 
         if (tapSelectionCost && !hasChosenTapSelection) {
-            const legalTapIds = state.battlefield.filter(o => 
-                o.controllerId === playerId && 
-                !o.isTapped && 
+            const legalTapIds = state.battlefield.filter(o =>
+                o.controllerId === playerId &&
+                !o.isTapped &&
                 TargetingProcessor.matchesRestrictions(state, o, tapSelectionCost.restrictions || [], {
                     sourceId: cardToPlay.id,
                     controllerId: playerId
@@ -787,13 +787,13 @@ export class SpellInteractiveManager {
         const prompt = TargetingProcessor.generateTargetPrompt(ability.targetDefinition, 0, obj.xValue || 0, false);
 
         // --- ENHANCEMENT: Graveyard/Exile Targeting Modal ---
-        const isOffBattlefieldTargeting = 
-            firstDef.type === TargetType.CardInGraveyard || 
+        const isOffBattlefieldTargeting =
+            firstDef.type === TargetType.CardInGraveyard ||
             firstDef.type === TargetType.CardInExile;
 
         if (isOffBattlefieldTargeting) {
             const choices = legalForFirst.map(id => {
-                const cObj = TargetingProcessor.findObjectInAnyZone(state, id);
+                const cObj = RuleUtils.findObject(state, id);
                 return {
                     label: cObj?.definition?.name || id,
                     value: id,

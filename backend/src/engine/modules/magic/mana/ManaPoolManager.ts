@@ -2,6 +2,7 @@
 import { GameObject, GameState, PlayerState } from '@shared/engine_types';
 import { ManaParser } from './ManaParser';
 import { ManaPoolRecord } from './ManaTypes';
+import { RuleUtils } from '../../../utils/RuleUtils';
 
 export class ManaPoolManager {
 
@@ -27,16 +28,14 @@ export class ManaPoolManager {
           if (!payingFor) {
             matches = false;
           } else {
-            const typeLine = (payingFor.definition.type_line || '').toLowerCase();
             const oracleText = (payingFor.definition.oracleText || '').toLowerCase();
-            const types = (payingFor.definition.types || []).map(t => t.toLowerCase());
             matches = m.restrictions.every((r: string) => {
               const lowR = r.toLowerCase();
               // Handle common STX restrictions
               if (lowR === 'instant_or_sorcery') {
-                return typeLine.includes('instant') || typeLine.includes('sorcery') || types.includes('instant') || types.includes('sorcery');
+                return RuleUtils.isType(payingFor, 'instant') || RuleUtils.isType(payingFor, 'sorcery');
               }
-              return typeLine.includes(lowR) || oracleText.includes(lowR) || types.includes(lowR);
+              return RuleUtils.isType(payingFor, lowR) || RuleUtils.hasSubtype(payingFor, lowR) || oracleText.includes(lowR);
             });
           }
         }
@@ -79,14 +78,12 @@ export class ManaPoolManager {
               if (!payingFor) {
                 matches = false;
               } else {
-                const typeLine = (payingFor.definition.type_line || '').toLowerCase();
-                const types = (payingFor.definition.types || []).map(t => t.toLowerCase());
                 matches = rm.restrictions.every((r: string) => {
                   const lowR = r.toLowerCase();
                   if (lowR === 'instant_or_sorcery') {
-                    return typeLine.includes('instant') || typeLine.includes('sorcery') || types.includes('instant') || types.includes('sorcery');
+                    return RuleUtils.isType(payingFor, 'instant') || RuleUtils.isType(payingFor, 'sorcery');
                   }
-                  return typeLine.includes(lowR) || types.includes(lowR);
+                  return RuleUtils.isType(payingFor, lowR) || RuleUtils.hasSubtype(payingFor, lowR);
                 });
               }
             }

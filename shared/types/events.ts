@@ -85,6 +85,13 @@ export interface EventPayload {
   toZone?: Zone; // Destination zone for move events
   text?: string; // Chosen name, type, or label
   stackSnapshot?: any; // Reference snapshot for 'look-back' resolution
+  isCombat?: boolean; // True if damage is combat damage
+  playerId?: PlayerId; // Player involved in the event
+  spent?: number; // Mana spent (for Magecraft/Mana spent triggers)
+  targets?: string[]; // Legacy compatibility for target lists
+  originalId?: string; // Original ID before a name/identity change
+  copyId?: string; // ID of a newly created copy
+  isInstantOrSorcery?: boolean; // True if object is instant or sorcery
 }
 
 export interface GameEvent {

@@ -1,5 +1,5 @@
 import { AbilityCost, CardType, CostType, CrewCost, DiscardCost, ExileCost, GameObject, GameObjectId, GameState, LifeCost, LoyaltyCost, ManaCost, PlayerId, RestrictionType, SacrificeCost, StackObject, TapSelectionCost, Zone } from '@shared/engine_types';
-
+import { RuleUtils } from '../../utils/RuleUtils';
 import { getProcessors } from '../ProcessorRegistry';
 
 /**
@@ -55,8 +55,7 @@ export class CostProcessor {
         if (source.isTapped) return false;
 
         // Rule 302.6: Summoning Sickness applies to tap abilities of creatures
-        const isCreature = (source.typeMask || 0) & CardType.Creature;
-        if (isCreature && source.summoningSickness) {
+        if (RuleUtils.isCreature(source) && source.summoningSickness) {
           const { layer: LayerProcessor } = getProcessors(state);
           const stats = LayerProcessor.getEffectiveStats(source, state);
           if (!stats.keywords.includes('Haste')) {
@@ -145,7 +144,7 @@ export class CostProcessor {
         const amount = amountStr === 'X' ? xValue : Number(amountStr);
         const candidates = state.battlefield.filter(o =>
           o.controllerId === playerId &&
-          o.definition.types.some(t => t.toLowerCase() === 'creature') &&
+          RuleUtils.isCreature(o) &&
           !o.isTapped
         );
         const { layer: LayerProcessor } = getProcessors(state);
@@ -182,7 +181,7 @@ export class CostProcessor {
       case CostType.Tap:
         source.isTapped = true;
         const { trigger: TriggerProcessor } = getProcessors(state);
-        TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: source.id, data: { object: source } }, log);
+        TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: source.id, payload: { object: source } }, log);
         break;
 
       case CostType.Mana:
@@ -203,7 +202,7 @@ export class CostProcessor {
         source.counters.loyalty = oldL + lVal;
         log(`${source.definition.name} loyalty: ${oldL} -> ${source.counters.loyalty}`);
         const { trigger: TriggerProcessor } = getProcessors(state);
-        TriggerProcessor.onEvent(state, { type: 'ON_ACTIVATE_LOYALTY', playerId, sourceId: source.id, data: { object: source } }, log);
+        TriggerProcessor.onEvent(state, { type: 'ON_ACTIVATE_LOYALTY', playerId, sourceId: source.id, payload: { object: source } }, log);
         break;
       }
 
@@ -234,7 +233,7 @@ export class CostProcessor {
             type: 'ON_SACRIFICE',
             playerId,
             sourceId: toSac.id,
-            data: { object: toSac }
+            payload: { object: toSac }
           }, log);
           ActionProcessor.moveCard(state, toSac, Zone.Graveyard, playerId, log);
           log(`${player.name} sacrificed ${toSac.definition.name} as a cost.`);
@@ -254,7 +253,7 @@ export class CostProcessor {
         const cardToDiscard = player.hand.find(c => c.id === discardId);
         if (cardToDiscard) {
           const { trigger: TriggerProcessor, action: ActionProcessor } = getProcessors(state);
-          TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, data: { card: cardToDiscard, sourceId: source.id } }, log);
+          TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, payload: { object: cardToDiscard, sourceId: source.id } }, log);
           ActionProcessor.moveCard(state, cardToDiscard, Zone.Graveyard, playerId, log);
           log(`${player.name} discarded ${cardToDiscard.definition.name} as a cost.`);
         }
@@ -303,7 +302,7 @@ export class CostProcessor {
           if (c) {
             c.isTapped = true;
             const { trigger: TriggerProcessor } = getProcessors(state);
-            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, data: { object: c } }, log);
+            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, payload: { object: c } }, log);
           }
         });
         delete state.interaction.lastChosenCrewIds;
@@ -319,7 +318,7 @@ export class CostProcessor {
             c.isTapped = true;
             log(`${c.definition.name} tapped.`);
             const { trigger: TriggerProcessor } = getProcessors(state);
-            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, data: { object: c } }, log);
+            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, payload: { object: c } }, log);
           }
         });
         delete state.interaction.lastChosenTapSelectionIds;
@@ -391,15 +390,6 @@ export class CostProcessor {
   }
 
   private static findObject(state: GameState, id: GameObjectId): GameObject | undefined {
-    if (!id) return undefined;
-
-    // FAST PATH: Leverage the O(1) cache if it exists and is fresh
-    if (state._objectCache && state._objectCache.version === state.stateVersion) {
-      return state._objectCache.get(id);
-    }
-
-    // Fallback to legacy linear search (O(N))
-    const { targeting: TargetingProcessor } = getProcessors(state);
-    return TargetingProcessor.findObjectInAnyZone(state, id) || undefined;
+    return RuleUtils.findObject(state, id) || undefined;
   }
 }

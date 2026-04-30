@@ -1,4 +1,8 @@
 import { AbilityType, EffectDefinition, GameState, StackObject } from '@shared/engine_types';
+import { RuleUtils } from '../../../utils/RuleUtils';
+import { oracle } from '../../../OracleLogicMap';
+import { getProcessors } from '../../ProcessorRegistry';
+import { EngineValidator } from '../logic/EngineValidator';
 
 /**
  * Handles the management and resolution of objects on the stack (Rule 405)
@@ -12,7 +16,6 @@ export class StackProcessor {
     // Priority 1: Effects already stored in stack object data during casting/activation
     let effects: EffectDefinition[] = objectToResolve.data?.effects || [];
     if (effects.length === 0) {
-      const { oracle } = require('../../../OracleLogicMap');
       const logic = oracle.getCard(objectToResolve.definition?.name || objectToResolve.card?.definition?.name || "");
 
       if (objectToResolve.type === AbilityType.Spell) {
@@ -22,8 +25,7 @@ export class StackProcessor {
         effects = logic?.effects || (spellAbility as any)?.effects || [];
       }
       else if (objectToResolve.type === AbilityType.Activated) {
-        const { TargetingProcessor: TP } = require("../../actions/targeting/TargetingProcessor");
-        const sourceObj = TP.findObjectInAnyZone(state, objectToResolve.sourceId);
+        const sourceObj = RuleUtils.findObject(state, objectToResolve.sourceId);
 
         if (sourceObj) {
           const cardLogic = oracle.getCard(sourceObj.definition.name);
@@ -55,7 +57,6 @@ export class StackProcessor {
     resolver: import('./StackResolver').StackResolver,
     log: (m: string) => void
   ) {
-    const { EngineValidator } = require('../logic/EngineValidator');
     if (EngineValidator.isSuspended(state)) {
       console.log(`[STACK-PROC] resolveTopOrAdvanceStep BLOCKED: Engine is suspended for ${state.pendingAction?.type}`);
       return;
@@ -91,12 +92,12 @@ export class StackProcessor {
         // --- KEYWORD HOOK: ON RESOLUTION ---
         console.log(`[STACK-DEBUG] ${objectName} resolved. type=${objectToResolve.type}, completed=${completed}`);
         if (completed && objectToResolve.type === AbilityType.Spell) {
-            const { TriggerProcessor } = require('../../effects/triggers/TriggerProcessor');
+            const { trigger: TriggerProcessor } = getProcessors(state);
             console.log(`[STACK-DEBUG] Firing ON_RESOLVE_SPELL for ${objectName}`);
             TriggerProcessor.onEvent(state, { 
                 type: 'ON_RESOLVE_SPELL', 
                 playerId: objectToResolve.controllerId,
-                payload: { card: objectToResolve.card, sourceId: objectToResolve.sourceId }
+                payload: { object: objectToResolve.card, sourceId: objectToResolve.sourceId }
             }, log);
         }
 

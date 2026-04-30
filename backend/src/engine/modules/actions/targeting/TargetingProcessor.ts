@@ -1,10 +1,12 @@
 import { CostType, GameObject, GameState, PlayerId, ResolutionContext, TargetingContext, Zone } from '@shared/engine_types';
 import { getProcessors } from '../../ProcessorRegistry';
+import { RuleUtils } from '../../../utils/RuleUtils';
 import { EngineContext } from '../../../interfaces/EngineContext';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { ActionProcessor } from '../ActionProcessor';
 import { TargetMapper } from './TargetMapper';
 import { TargetValidator } from './TargetValidator';
+import { oracle } from '../../../OracleLogicMap';
 
 /**
  * Rules Engine Module: Targeting (Rule 115)
@@ -15,11 +17,14 @@ export class TargetingProcessor {
     // --- FACADES FOR EXTRACTED MODULES ---
     public static calculateTotalCounts(targetDef: any, xValue: number = 0) { return TargetMapper.calculateTotalCounts(targetDef, xValue); }
     public static generateTargetPrompt(targetDef: any, selectedCount: number, xValue: number = 0, isSpellCasting: boolean = false) { return TargetMapper.generateTargetPrompt(targetDef, selectedCount, xValue, isSpellCasting); }
-    public static findObjectInAnyZone(state: GameState, id: string): GameObject | null { return TargetValidator.findObjectInAnyZone(state, id); }
+    /** @deprecated Use RuleUtils.findObject instead */
+    public static findObjectInAnyZone(state: GameState, id: string): GameObject | null { return RuleUtils.findObject(state, id) || null; }
     public static isLegalTarget(state: GameState, context: TargetingContext, targetId: string): boolean { return TargetValidator.isLegalTarget(state, context, targetId); }
     public static hasLegalTargets(state: GameState, sourceId: string, targetDef: any, controllerId: string): boolean { return TargetValidator.hasLegalTargets(state, sourceId, targetDef, controllerId); }
     public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], context: TargetingContext, log?: (msg: string) => void): boolean { return TargetValidator.matchesRestrictions(state, targetObj, restrictions, context, log); }
     public static sourceHasQualities(source: any, qualities: string[], state?: GameState): boolean { return TargetValidator.sourceHasQualities(source, qualities, state); }
+    public static getColors(obj: any, state?: GameState): string[] { return TargetValidator.getColors(obj, state); }
+    public static getLegalTargetPool(state: GameState, sourceId: string, targetDef: any, controllerId: string, targetIndex: number = 0): string[] { return TargetValidator.getLegalTargetPool(state, sourceId, targetDef, controllerId, targetIndex); }
     public static resolveTargetMapping(state: GameState, mapping: string, context: ResolutionContext, effect?: any): string[] { return TargetMapper.resolveTargetMapping(state, mapping, context, effect); }
     public static getDefinitionForIndex(targetDef: any, targetIndex: number): any { return TargetMapper.getDefinitionForIndex(targetDef, targetIndex); }
     public static shouldFizzle(state: GameState, context: TargetingContext, targets: string[], effects: any[]): boolean { return TargetValidator.shouldFizzle(state, context, targets, effects); }
@@ -110,7 +115,7 @@ export class TargetingProcessor {
                     }
                 } else if (sourceId) {
                     // Fallback for spells that haven't entered the stack yet (targeting phase)
-                    const card = TargetingProcessor.findObjectInAnyZone(state, sourceId);
+                    const card = RuleUtils.findObject(state, sourceId);
                     if (card && card.zone === Zone.Hand) {
                         card.xValue = undefined; // Reset state
                     }
@@ -124,8 +129,6 @@ export class TargetingProcessor {
                     // increments happen in SpellProcessor.finalizeAbilityActivation
                     if (sourceOnField.abilitiesUsedThisTurn > 0 && abilityIndex !== undefined) {
                         sourceOnField.abilitiesUsedThisTurn--;
-
-                        const { oracle } = require('../../../OracleLogicMap');
                         const logic = oracle.getCard(sourceOnField.definition.name);
                         const ability = (logic as any)?.abilities?.[abilityIndex];
                         const lCost = ability?.costs?.find((c: any) => c.type === CostType.Loyalty)?.value;
@@ -323,9 +326,8 @@ export class TargetingProcessor {
         const sourceId = state.pendingAction?.sourceId;
         const abilityIndex = actionData?.abilityIndex;
         const stackObj = actionData?.stackObj;
-        const stackId = actionData?.stackId;
 
-        const { turn: TurnProcessor, effect: EffectProcessor, trigger: TriggerProcessor } = getProcessors(state);
+        const { effect: EffectProcessor, trigger: TriggerProcessor } = getProcessors(state);
         console.log(`[TARGET-FINAL] Finalizing for ${sourceId}. isFreeCast=${actionData?.isFreeCast}, hasParent=${!!actionData?.parentContext}, hasStackObj=${!!actionData?.stackObj}`);
 
         if (actionData?.isCostTargeting) {
@@ -362,7 +364,7 @@ export class TargetingProcessor {
                     // Persist target controller IDs
                     if (!existingObject.data) existingObject.data = {};
                     existingObject.data.targetsControllers = finalTargets.map((tid: string) => {
-                        const obj = this.findObjectInAnyZone(state, tid);
+                        const obj = RuleUtils.findObject(state, tid);
                         return obj ? obj.controllerId : null;
                     });
                     engine.log(`[TARGETING] Targets confirmed for ${existingObject.type === 'TriggeredAbility' ? 'Trigger' : 'Spell'}: ${finalTargets.join(', ')}`);
@@ -407,7 +409,7 @@ export class TargetingProcessor {
             engine.log(`--------------------------------------------------`);
             engine.log(`[STACK] + ${engine.getPlayerName(stackObj.controllerId)} cast/activated ${stackObj.card?.definition.name || stackObj.type}`);
             const targetNames = resolvedTargets.map(tid => {
-                const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
+                const obj = RuleUtils.findObject(state, tid);
                 return obj?.definition?.name || (state.players[tid as any] ? state.players[tid as any].name : tid);
             });
             engine.log(`[STACK] Target(s): ${targetNames.join(', ')}`);
@@ -432,7 +434,7 @@ export class TargetingProcessor {
                     }
                 }
             }
-            
+
             if (actionData.parentContext) {
                 return engine.resumeResolution(sourceId || stackObj.sourceId, stackObj, actionData.parentContext);
             }

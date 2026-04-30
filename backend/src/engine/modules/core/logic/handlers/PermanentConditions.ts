@@ -43,7 +43,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             const threshold = parseInt(params[1]) || 1;
             return state.battlefield.filter((o) =>
                 String(o.controllerId) === String(controllerId) &&
-                (o.definition.subtypes || []).some(s => s.toLowerCase() === subtype.toLowerCase())
+                RuleUtils.hasSubtype(o, subtype)
             ).length >= threshold;
         }
     },
@@ -52,8 +52,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = {
             const { controllerId } = context;
             const threshold = parseInt(params[0]);
             return state.battlefield.filter(o =>
-                o.controllerId === controllerId &&
-                (o.definition.types || []).some(t => String(t).toLowerCase() === "artifact")
+                o.controllerId === controllerId && RuleUtils.isArtifact(o)
             ).length >= threshold;
         }
     },

@@ -2,12 +2,12 @@ import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, EffectType,
 import { EngineContext } from '../../interfaces/EngineContext';
 import { oracle } from '../../OracleLogicMap';
 import { CombatProcessor } from '../combat/CombatProcessor';
+import { ActionProcessor } from "./ActionProcessor";
+import { RuleUtils } from "../../utils/RuleUtils";
 import { PriorityProcessor } from '../core/turn/PriorityProcessor';
 import { getProcessors } from '../ProcessorRegistry';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { m21 as m21Data } from '../../data/m21/index';
-
-import type { ManaProcessor as ManaProcessorType } from '../magic/ManaProcessor';
 
 // Need to safely interact with Rule registries without causing circular dependencies.
 export class PlayerActionProcessor {
@@ -43,7 +43,7 @@ export class PlayerActionProcessor {
     if (obj.controllerId !== playerId) return false;
 
     // 2. Planeswalker Logic: Trigger Ability Choice
-    if (obj.definition.types.some(t => String(t).toLowerCase() === 'planeswalker')) {
+    if (RuleUtils.isType(obj, 'planeswalker')) {
       if (state.priorityPlayerId !== playerId) {
         log(`Player tried to activate PW without priority.`);
         return false;
@@ -287,7 +287,7 @@ export class PlayerActionProcessor {
   public static declareAttacker(state: GameState, playerId: string, cardId: string, targetId: string | undefined, log: (m: string) => void): boolean {
     const card = state.battlefield.find(c => c.id === cardId);
 
-    const isPlaneswalker = card && card.definition.types.includes('Planeswalker') && card.controllerId !== playerId;
+    const isPlaneswalker = card && RuleUtils.isPlaneswalker(card) && card.controllerId !== playerId;
     const isOpponent = !!state.players[cardId as PlayerId] && cardId !== playerId;
 
     if (isPlaneswalker || isOpponent) {
@@ -303,14 +303,11 @@ export class PlayerActionProcessor {
 
     // CR 302.1: A creature can't attack unless its controller has controlled it... (Summoning Sickness)
     const stats = LayerProcessor.getEffectiveStats(card, state);
-    const types = (card.definition.types || []).map(t => t.toLowerCase());
-    const typeLine = (card.definition.type_line || '').toLowerCase();
-    const isCreature = types.includes('creature') || typeLine.includes('creature');
+    const isCreature = RuleUtils.isCreature(card);
 
     if (!isCreature) return false;
 
-    if (card.summoningSickness && !stats.keywords.includes('Haste')) {
-      log(`${card.definition.name} ha debolezza da evocazione.`);
+    if (card.summoningSickness && !RuleUtils.hasKeyword(card, 'Haste')) {
       return false;
     }
 
@@ -391,9 +388,8 @@ export class PlayerActionProcessor {
 
     if (!state.combat) state.combat = { attackers: [], blockers: [] };
 
-    const { targeting: TP } = getProcessors(state);
-    const attacker = TP.findObjectInAnyZone(state, cardId) as any;
-    const blocker = TP.findObjectInAnyZone(state, blockerId) as any;
+    const attacker = RuleUtils.findObject(state, cardId) as any;
+    const blocker = RuleUtils.findObject(state, blockerId) as any;
 
     const oldIdx = state.combat.blockers.findIndex(b => b.blockerId === blockerId);
     if (oldIdx >= 0) state.combat.blockers.splice(oldIdx, 1);
@@ -414,7 +410,7 @@ export class PlayerActionProcessor {
 
     // BUG FIX: Prevent race condition where rapid clicking discards more than required.
     // We only allow discard if there's a pending DISCARD action for this player.
-    if (state.pendingAction?.type !== 'DISCARD' && state.pendingAction?.type !== ActionType.Discard) {
+    if (state.pendingAction?.type !== ActionType.Discard) {
       return { finished: false, success: false };
     }
     if (state.pendingAction?.playerId !== playerId) {
@@ -595,4 +591,3 @@ export class PlayerActionProcessor {
     );
   }
 }
-

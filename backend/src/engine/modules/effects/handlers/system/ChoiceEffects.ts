@@ -2,6 +2,7 @@ import { EffectDefinition, EffectType, GameObject, ModalEffect, TargetMapping, Z
 import { ChoiceGenerator } from "../../ChoiceGenerator";
 import { IEffectHandler } from "../../IEffectHandler";
 import { ChoiceEffectHandler as LegacyChoiceHandler } from "./ChoiceEffectHandler";
+import { RuleUtils } from "../../../../utils/RuleUtils";
 
 export const ChoiceHandler: IEffectHandler = {
   handle(state, effect, log, context) {
@@ -15,7 +16,7 @@ export const LearnHandler: IEffectHandler = {
     const { controllerId, sourceId, stackObject, parentContext } = context;
     const player = state.players[controllerId];
     const lessons = (player?.sideboard || []).filter((c: GameObject) =>
-      c.definition.subtypes?.some((s: string) => s.toLowerCase() === "lesson"),
+      RuleUtils.hasSubtype(c, "lesson"),
     );
 
     const choices: { label: string; value: string; effects: EffectDefinition[] }[] = [];

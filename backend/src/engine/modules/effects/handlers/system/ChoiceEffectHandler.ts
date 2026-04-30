@@ -8,6 +8,7 @@ import {
   ResolutionContext,
   TargetMapping
 } from "@shared/engine_types";
+import { RuleUtils } from "../../../../utils/RuleUtils";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
 
@@ -171,8 +172,8 @@ export class ChoiceEffectHandler {
         console.log(`[CHOICE-HANDLER-DEBUG] Mapping: ${targetZoneMapping}, poolIds: ${JSON.stringify(poolIds)}`);
         sourceCards = poolIds
           .map((id: string) => {
-            const obj = TP.findObjectInAnyZone(state, id);
-            if (!obj) console.log(`[CHOICE-HANDLER-DEBUG] findObjectInAnyZone FAILED for id: ${id}`);
+            const obj = RuleUtils.findObject(state, id);
+            if (!obj) console.log(`[CHOICE-HANDLER-DEBUG] RuleUtils.findObject FAILED for id: ${id}`);
             else console.log(`[CHOICE-HANDLER-DEBUG] Found object: ${obj.definition?.name} in zone ${obj.zone}`);
             return obj;
           })
@@ -366,11 +367,8 @@ export class ChoiceEffectHandler {
     const cardTargets = targets.filter(
       (tid: string) => !state.players[tid as PlayerId],
     );
-    const {
-      targeting: TP,
-    } = getProcessors(state);
     const lookingCards = cardTargets
-      .map((tid: string) => TP.findObjectInAnyZone(state, tid))
+      .map((tid: string) => RuleUtils.findObject(state, tid))
       .filter(Boolean) as GameObject[];
 
     state.pendingAction = ChoiceGenerator.createModalChoice(

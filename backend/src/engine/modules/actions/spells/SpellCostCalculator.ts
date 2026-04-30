@@ -1,5 +1,6 @@
 import { AbilityCost, AbilityType, ActivatedAbilityDefinition, ChoiceCost, CostType, GameObject, GameState, ManaCost, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
+import { RuleUtils } from '../../../utils/RuleUtils';
 import { getProcessors } from '../../ProcessorRegistry';
 
 
@@ -121,7 +122,7 @@ export class SpellCostCalculator {
         const modifiers = state.ruleRegistry.continuousEffects.filter(e => {
             if (!['SpellTax', 'CostReduction', 'AdditionalCost', 'AllowCastFromGraveyard', 'AllowPlayFromTop', 'AllowPlayExiled'].includes((e as any).type)) return false;
 
-            const source = TargetingProcessor.findObjectInAnyZone(state, e.sourceId);
+            const source = RuleUtils.findObject(state, e.sourceId);
             if (source && e.activeZones && !e.activeZones.includes(source.zone)) return false;
             
             // SKIP SELF: We scan the card's own abilities manually below to ensure 

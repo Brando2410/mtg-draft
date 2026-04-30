@@ -2,6 +2,9 @@ import { EffectDefinition, GameState, StackObject, Zone } from '@shared/engine_t
 import { ActionProcessor } from '../../actions/ActionProcessor';
 import { TargetingProcessor } from '../../actions/targeting/TargetingProcessor';
 import { EffectProcessor } from '../../effects/EffectProcessor';
+import { oracle } from '../../../OracleLogicMap';
+import { RuleUtils } from '../../../utils/RuleUtils';
+import { getProcessors } from '../../ProcessorRegistry';
 
 /**
  * Rules Engine Module: Stack Resolution (Rule 608)
@@ -34,7 +37,7 @@ export class StackResolver {
 
     // 0. Rule 603.4: Intervening "if" clause re-check
     if (startIndex === 0 && stackObj.condition) {
-      const { ConditionProcessor } = require('../../core/logic/ConditionProcessor');
+      const { condition: ConditionProcessor } = getProcessors(this.state);
       const context = {
         sourceId: stackObj.sourceId,
         controllerId: stackObj.controllerId,
@@ -114,16 +117,11 @@ export class StackResolver {
 
       // Rule 608.2m: As the final step of resolution, the spell is put into its owner's graveyard.
       // If it's a permanent spell, it enters the battlefield instead.
-      const types = card.definition.types.map(t => t.toLowerCase());
-      const isPermanent = types.includes('creature') ||
-        types.includes('artifact') ||
-        types.includes('enchantment') ||
-        types.includes('planeswalker') ||
-        types.includes('land');
+      const isPermanent = RuleUtils.isPermanent(card);
 
       if (isPermanent) {
         // Rule 303.4: Auras enter attached to their target
-        const isAura = card.definition.subtypes?.some(s => s.toLowerCase() === 'aura');
+        const isAura = RuleUtils.hasSubtype(card, 'aura');
         if (isAura && stackObj.targets.length > 0) {
           card.attachedTo = stackObj.targets[0];
           this.log(`${card.definition.name} enters attached to ${this.getObjectName({ id: card.attachedTo, sourceId: card.attachedTo } as any)}.`);
@@ -133,7 +131,6 @@ export class StackResolver {
         card.xValue = stackObj.xValue;
         ActionProcessor.moveCard(this.state, card, Zone.Battlefield, stackObj.controllerId, (m: string) => this.log(m));
       } else if (card.zone === Zone.Stack) {
-        const { oracle } = require("../../../OracleLogicMap");
         const freshDef = oracle.getCard(card.definition.name);
         const shouldExile = stackObj.exileOnResolution || stackObj.isCopy || card.isPreparedCopy || freshDef?.exileOnResolution;
 

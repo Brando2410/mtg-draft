@@ -1,4 +1,5 @@
-import { Zone } from "@shared/engine_types";
+import { ActionType, Zone } from "@shared/engine_types";
+import { RuleUtils } from "../../../../utils/RuleUtils";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { IEffectHandler } from "../../IEffectHandler";
 
@@ -32,7 +33,6 @@ export const CopySpellHandler: IEffectHandler = {
     handle(state, effect, log, context) {
         const { targets, controllerId, stackObject } = context;
         const { trigger: TrP } = getProcessors(state);
-        const { ActionType } = require("@shared/engine_types");
 
         targets.forEach((tid: string) => {
             let stackObj = state.stack.find((s: any) => s.id === tid || s.sourceId === tid);
@@ -116,12 +116,12 @@ export const CopySpellHandler: IEffectHandler = {
             TrP.onEvent(state, {
                 type: 'ON_COPY_SPELL',
                 playerId: controllerId,
-                data: {
+                payload: {
                     originalId: tid,
                     copyId: copy.id,
-                    card: copy.card,
+                    object: copy.card,
                     sourceId: copy.id,
-                    isInstantOrSorcery: copy.card?.definition.types.some((t: string) => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery')
+                    isInstantOrSorcery: copy.card && (RuleUtils.isType(copy.card, 'instant') || RuleUtils.isType(copy.card, 'sorcery'))
                 }
             }, log);
 
@@ -170,7 +170,6 @@ export const CopySpellHandler: IEffectHandler = {
 export const CopyAbilityHandler: IEffectHandler = {
     handle(state, effect, log, context) {
         const { targets, controllerId } = context;
-        const { ActionType } = require("@shared/engine_types");
         const { targeting: TP } = getProcessors(state);
 
         targets.forEach((tid: string) => {

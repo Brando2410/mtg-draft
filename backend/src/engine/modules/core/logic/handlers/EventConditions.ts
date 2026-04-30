@@ -1,5 +1,6 @@
 import { CounterType, TriggerEvent, Zone } from "@shared/engine_types";
 import { getProcessors } from "../../../ProcessorRegistry";
+import { RuleUtils } from "../../../../utils/RuleUtils";
 import { IConditionHandler } from "../IConditionHandler";
 
 export const EventConditions: Record<string, IConditionHandler> = {
@@ -7,7 +8,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { targeting: TargetingProcessor } = getProcessors(state);
             const { event, sourceId, controllerId, stackObject } = context;
-            const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || event?.data?.card || (event as any)?.gameObject || event?.object || state.battlefield.find((o: any) => o.id === event?.sourceId);
+            const obj = RuleUtils.getEventObject(event, state);
             if (!obj) return false;
             return TargetingProcessor.matchesRestrictions(state, obj, params, { sourceId, controllerId, stackObject });
         }
@@ -16,7 +17,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const threshold = parseInt(params[0]);
             const { event } = context;
-            const obj = event?.data?.object || event?.data?.card || event?.data?.copy || (event as any)?.gameObject;
+            const obj = RuleUtils.getEventObject(event, state);
             if (!obj) return false;
             const { mana: ManaProcessor } = getProcessors(state);
             return ManaProcessor.getManaValue(obj.definition.manaCost) >= threshold;
@@ -25,7 +26,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "IS_FLASHBACK_CAST": {
         matches(state, params, context) {
             const { event, cardToPlay } = context;
-            const obj = cardToPlay || event?.data?.object || event?.data?.card || event?.card || (event as any)?.gameObject;
+            const obj = cardToPlay || RuleUtils.getEventObject(event, state);
             if (obj) return (obj as any)?.isFlashbackCast === true;
             return (event as any)?.isFlashbackCast === true;
         }
@@ -33,7 +34,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "EVENT_OBJECT_OWNER_NOT_YOU": {
         matches(state, params, context) {
             const { event, controllerId } = context;
-            const card = event?.data?.card || event?.data?.object;
+            const card = RuleUtils.getEventObject(event, state);
             if (!card) return false;
             return card.ownerId !== controllerId;
         }
@@ -42,7 +43,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event } = context;
             const expectedType = params[0] === "p1p1" ? CounterType.P1P1 : params[0];
-            const actualType = (event as any)?.counterType || (event as any)?.data?.counterType;
+            const actualType = event?.payload?.counterType || (event as any)?.counterType || (event as any)?.data?.counterType;
             const normalizedActualType = actualType === "p1p1" ? CounterType.P1P1 : actualType;
             return normalizedActualType === expectedType;
         }
@@ -50,22 +51,23 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "EVENT_OBJECT_IS_TARGET_1": {
         matches(state, params, context) {
             const { event } = context;
-            const objId = event?.data?.object?.id || (event as any)?.gameObject?.id || event?.targetId;
-            const targetId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0];
+            const objId = event?.payload?.object?.id || event?.data?.object?.id || (event as any)?.gameObject?.id || event?.targetId;
+            const targetId = event?.payload?.targetIds?.[0] || (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0];
             return objId === targetId;
         }
     },
     "EVENT_OBJECT_IS_TRIGGER_SOURCE": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            const objId = event?.data?.object?.id || (event as any)?.gameObject?.id;
+            const obj = RuleUtils.getEventObject(event, state);
+            const objId = obj?.id;
             return objId === sourceId;
         }
     },
     "EVENT_OBJECT_CONTROLLER_IS_YOU": {
         matches(state, params, context) {
             const { event, controllerId } = context;
-            const eObj = event?.data?.object || event?.data?.card || (event as any)?.gameObject || event?.object || state.battlefield.find((o: any) => o.id === (event?.sourceId || (event as any)?.sourceId));
+            const eObj = RuleUtils.getEventObject(event, state);
             return String(eObj?.controllerId) === String(controllerId);
         }
     },
@@ -82,12 +84,12 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "PLAYER_IS_CONTROLLER": {
         matches(state, params, context) {
             const { event, controllerId } = context;
-            const eventPlayerId = event?.playerId || event?.data?.playerId || (event as any)?.payload?.playerId;
+            const eventPlayerId = event?.payload?.playerId || event?.playerId || event?.data?.playerId;
             if (eventPlayerId) {
                 return String(eventPlayerId) === String(controllerId);
             }
             // Fallback for object-based events
-            const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || (event as any)?.gameObject || event?.object;
+            const obj = RuleUtils.getEventObject(event, state);
             if (obj) {
                 return String(obj.controllerId) === String(controllerId);
             }
@@ -106,7 +108,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const targets = event?.data?.stackSnapshot?.targets || [];
             if (!targets.length) return false;
             return targets.some((tid: string) => {
-                const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
+                const obj = RuleUtils.findObject(state, tid);
                 if (!obj) return false;
                 return TargetingProcessor.matchesRestrictions(state, obj, params, { sourceId, controllerId, stackObject });
             });
@@ -115,7 +117,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "EVENT_OBJECT_HAS_X": {
         matches(state, params, context) {
             const { event } = context;
-            const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || event?.data?.card || (event as any)?.gameObject;
+            const obj = RuleUtils.getEventObject(event, state);
             if (!obj) return false;
             return (obj.definition.manaCost || "").includes("X");
         }
@@ -140,7 +142,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const targetId = event?.payload?.targetIds?.[targetIdx] || event?.payload?.targetId || (event as any)?.targetIds?.[targetIdx] || (event as any)?.targets?.[targetIdx] || (event as any)?.targetId;
             if (!targetId) return false;
 
-            const targetObj = TargetingProcessor.findObjectInAnyZone(state, targetId);
+            const targetObj = RuleUtils.findObject(state, targetId);
             if (!targetObj) return false;
 
             return TargetingProcessor.matchesRestrictions(state, targetObj, restrictions, { sourceId, controllerId, stackObject });
@@ -150,7 +152,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event } = context;
             const tId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0];
-            const obj = state.battlefield.find((o) => o.id === tId);
+            const obj = RuleUtils.findObject(state, tId);
             return (obj?.counters?.["+1/+1"] || 0) >= parseInt(params[0]);
         }
     },
@@ -196,7 +198,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, sourceId } = context;
             const threshold = parseInt(params[0]);
-            const obj = state.battlefield.find((o) => o.id === sourceId) || (event as any)?.data?.object || (event as any)?.card || (event as any)?.gameObject;
+            const obj = RuleUtils.findObject(state, sourceId) || RuleUtils.getEventObject(event, state);
             const converge = obj?.convergeAmount || (event as any)?.convergeAmount || (event as any)?.data?.convergeAmount || 0;
             return converge >= threshold;
         }
@@ -206,7 +208,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { sourceId } = context;
             const countType = params[0];
             const threshold = parseInt(params[1]);
-            const obj = state.battlefield.find((o) => o.id === sourceId);
+            const obj = RuleUtils.findObject(state, sourceId);
             if (!obj) return false;
             const count = obj.counters?.[countType] || 0;
             return count >= threshold;
@@ -215,7 +217,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "SPELL_IS_MULTICOLORED": {
         matches(state, params, context) {
             const { event } = context;
-            const card = event?.data?.card || event?.data?.object || (event as any)?.gameObject;
+            const card = RuleUtils.getEventObject(event, state);
             if (!card) return false;
             return (card.definition.colors || []).length > 1;
         }
@@ -233,8 +235,8 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const targets = (event as any)?.targets || (event as any)?.data?.targets || (event as any)?.targetIds || [];
             if (targets.length === 0) return false;
             return targets.some((tid: string) => {
-                const obj = state.battlefield.find((o) => o.id === tid);
-                return obj && ["artifact", "creature", "enchantment", "land", "planeswalker"].some((t) => obj.definition.types.some((ot: string) => ot.toLowerCase() === t));
+                const obj = RuleUtils.findObject(state, tid);
+                return obj && obj.zone === Zone.Battlefield && RuleUtils.isPermanent(obj);
             });
         }
     },
@@ -249,8 +251,8 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const targets = (event as any)?.targets || (event as any)?.data?.targets || (event as any)?.targetIds || [];
             if (targets.length === 0) return false;
             return targets.some((tid: string) => {
-                const obj = state.battlefield.find((o) => o.id === tid);
-                return obj && obj.definition.types.some((t: string) => t.toLowerCase() === "creature");
+                const obj = RuleUtils.findObject(state, tid);
+                return obj && obj.zone === Zone.Battlefield && RuleUtils.isCreature(obj);
             });
         }
     },
@@ -269,10 +271,10 @@ export const EventConditions: Record<string, IConditionHandler> = {
 
             const { targeting: TargetingProcessor } = getProcessors(state);
             return targets.some((tid: string) => {
-                const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
+                const obj = RuleUtils.findObject(state, tid);
                 if (!obj) return false;
                 // CR 109.2: "Creature" in rules text refers to a creature permanent on the battlefield.
-                return obj.zone === Zone.Battlefield && obj.definition.types.some((t: string) => t.toLowerCase() === "creature");
+                return obj.zone === Zone.Battlefield && RuleUtils.isCreature(obj);
             });
         }
     },
@@ -280,15 +282,15 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event } = context;
             const targetId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0] || (event as any)?.targetId;
-            const targetObj = state.battlefield.find((o) => o.id === targetId);
+            const targetObj = RuleUtils.findObject(state, targetId);
             return targetObj?.isPrepared || false;
         }
     },
     "SPELL_IS_CREATURE": {
         matches(state, params, context) {
             const { event } = context;
-            const card = event?.data?.card || event?.data?.object;
-            return card?.definition.types.some((t: string) => t.toLowerCase() === "creature") || false;
+            const card = RuleUtils.getEventObject(event, state);
+            return RuleUtils.isCreature(card);
         }
     },
     "TARGET_1_IS_CONTROLLER": {
@@ -331,8 +333,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             if (!tId) return false;
             const targetObj = state.stack.find((s) => s.id === tId)?.card || state.battlefield.find((o) => o.id === tId);
             if (!targetObj) return false;
-            const types = targetObj.definition.types.map((t: string) => t.toLowerCase());
-            return types.includes("instant") || types.includes("sorcery");
+            return RuleUtils.isType(targetObj, "instant") || RuleUtils.isType(targetObj, "sorcery");
         }
     },
     "TARGETS_TAPPED_CREATURE": {
@@ -341,7 +342,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const tId = (event as any)?.targets?.[0] || (event as any)?.targetId;
             if (!tId) return false;
             const obj = state.battlefield.find((o) => o.id === tId);
-            return (obj && obj.isTapped && obj.definition.types.map((t: string) => t.toLowerCase()).includes("creature")) || false;
+            return (obj && obj.isTapped && RuleUtils.isCreature(obj)) || false;
         }
     },
     "OWN_CREATURE_ENTERS": {
@@ -349,7 +350,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { event, controllerId } = context;
             const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || (event as any)?.gameObject;
             if (!obj) return false;
-            return obj.controllerId === controllerId && obj.definition.types.map((t: string) => t.toLowerCase()).includes("creature");
+            return obj.controllerId === controllerId && RuleUtils.isCreature(obj);
         }
     },
     "OWN_TOKEN_ENTERS": {
@@ -365,7 +366,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { event, controllerId } = context;
             const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || (event as any)?.gameObject;
             if (!obj) return false;
-            return obj.controllerId === controllerId && obj.definition.types.map((t: string) => t.toLowerCase()).includes("creature");
+            return obj.controllerId === controllerId && RuleUtils.isCreature(obj);
         }
     },
     "NOT_CAST_FROM_HAND": {
@@ -414,7 +415,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             if (!obj) return false;
             const { layer: LayerProcessor } = getProcessors(state);
             const stats = LayerProcessor.getEffectiveStats(obj, state);
-            return stats.types.some((t: string) => t.toLowerCase() === "creature");
+            return RuleUtils.isCreature(obj); // Using definition for now as types aren't modified in stats yet
         }
     },
     "NOT_CREATURE": {

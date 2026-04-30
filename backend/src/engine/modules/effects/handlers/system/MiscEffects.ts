@@ -1,4 +1,4 @@
-import { PlayerId, Zone } from "@shared/engine_types";
+import { ActionType, PlayerId, Zone } from "@shared/engine_types";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
 import { IEffectHandler } from "../../IEffectHandler";
@@ -49,7 +49,6 @@ export const NecromentiaHandler: IEffectHandler = {
         if (!targetOpponent) return;
 
         const { action: AP, trigger: TrP } = getProcessors(state);
-        const { ActionType, Zone: ZoneType } = require("@shared/engine_types");
 
         if (!stackObject?.data?.chosenName) {
             state.pendingAction = ChoiceGenerator.createCardChoice(

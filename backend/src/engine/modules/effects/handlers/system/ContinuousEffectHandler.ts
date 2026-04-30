@@ -1,7 +1,6 @@
 import { ContinuousEffectDefinition, DurationType, EffectDefinition, EffectDuration, EffectType, GameState, PlayerId, ResolutionContext, TargetMapping, Zone } from '@shared/engine_types';
+import { RuleUtils } from '../../../../utils/RuleUtils';
 import { getProcessors } from '../../../ProcessorRegistry';
-import { TargetingProcessor } from '../../../actions/targeting/TargetingProcessor';
-
 /**
  * Strategy for CR 611: Continuous Effects from Spells and Abilities
  */
@@ -44,7 +43,7 @@ export class ContinuousEffectHandler {
         } else if (rawDuration && typeof rawDuration === 'object') {
             duration = { ...rawDuration as any };
             if (duration.untilTurnOfPlayerId && typeof duration.untilTurnOfPlayerId === 'function') {
-                const source = state.battlefield.find(o => o.id === sourceId) || state.stack.find(o => (o as any).id === sourceId);
+                const source = RuleUtils.findObject(state, sourceId);
                 duration.untilTurnOfPlayerId = duration.untilTurnOfPlayerId(state, source);
             }
         }
@@ -95,7 +94,7 @@ export class ContinuousEffectHandler {
             // Filter targets by owner for each controller if using owner-specific mapping
             const playerSpecificTargetIds = (effect.targetControllerMapping === 'PARENT_CONTEXT_EXILED_IDS_OWNERS')
                 ? finalTargetIds!.filter(tid => {
-                    const obj = TP_FROM_REG.findObjectInAnyZone(state, tid);
+                    const obj = RuleUtils.findObject(state, tid);
                     return obj?.ownerId === targetCID;
                 })
                 : finalTargetIds;

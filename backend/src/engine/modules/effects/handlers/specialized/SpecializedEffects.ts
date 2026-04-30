@@ -1,5 +1,6 @@
 import { DurationType, EffectType, GameObject, Zone } from "@shared/engine_types";
 import { getProcessors } from "../../../ProcessorRegistry";
+import { RuleUtils } from "../../../../utils/RuleUtils";
 import { IEffectHandler } from "../../IEffectHandler";
 
 export const CastSpellHandler: IEffectHandler = {
@@ -14,7 +15,7 @@ export const CastSpellHandler: IEffectHandler = {
     log(`[DEBUG] SpecializedEffects: CastSpell for ${targetId} (Free: ${isFree})`);
 
     if (spellName && !targetId) {
-      const { oracle } = require("../../../../OracleLogicMap");
+      const { oracle } = getProcessors(state);
       const cardDef = oracle.getCard(spellName);
       if (!cardDef) {
         log(`[ERROR] CastSpell: Could not find definition for ${spellName}.`);
@@ -85,7 +86,7 @@ export const ExileTopCardsExcessDamageHandler: IEffectHandler = {
     const excessAmt = state.turnState.lastExcessDamageAmount;
     log(`[EXILE-EXCESS] Exiling top ${excessAmt} cards due to excess damage.`);
 
-    const { MoveEffectHandler: MEH } = require("../zone/MoveEffectHandler");
+    const MEH = EP.getEffectHandler("Exile") as any;
     MEH.handle(state, {
       ...effect,
       type: "Exile",
@@ -100,8 +101,8 @@ export const ExileTopCardsExcessDamageHandler: IEffectHandler = {
     if (excessAmt > 0) {
       const exiledIds = state.turnState.lastExiledIds || [];
       if (exiledIds.length > 0) {
-        const { ContinuousEffectHandler: CEH } = require("../system/ContinuousEffectHandler");
-        CEH.handle(state, {
+        const CEH = EP.getEffectHandler(EffectType.ApplyContinuousEffect);
+        (CEH as any).handle(state, {
           type: EffectType.ApplyContinuousEffect,
           canPlayExiled: true,
           targetIds: exiledIds,
@@ -138,8 +139,7 @@ export const ConditionalEffectHandler: IEffectHandler = {
 
 export const AdNauseamHandler: IEffectHandler = {
   handle(state, effect, log, context) {
-    const { action: AP, mana: MP } = getProcessors(state);
-    const { ChoiceGenerator } = require("../../../ChoiceGenerator");
+    const { action: AP, mana: MP, choiceGenerator: ChoiceGenerator } = getProcessors(state);
     const { controllerId } = context;
     const player = state.players[controllerId];
     if (!player || player.library.length === 0) return;
@@ -157,30 +157,34 @@ export const AdNauseamHandler: IEffectHandler = {
 
     // 3. Choice to repeat
     if (player.library.length > 0) {
-      ChoiceGenerator.createChoice(state, controllerId, {
-        type: 'Choice',
+      state.pendingAction = ChoiceGenerator.createModalChoice(state, {
         label: `Ad Nauseam: Repeat process? (${player.library.length} cards left)`,
-        choices: [
-          {
-            label: "Repeat",
-            effects: [{ type: EffectType.AdNauseam }]
-          },
-          {
-            label: "Stop",
-            effects: []
-          }
-        ]
-      }, context);
+        playerId: controllerId,
+        sourceId: context.sourceId,
+        stackObj: context.stackObject,
+        parentContext: context.parentContext
+      }, [
+        {
+          label: "Repeat",
+          value: "repeat",
+          effects: [{ type: EffectType.AdNauseam }]
+        },
+        {
+          label: "Stop",
+          value: "stop",
+          effects: []
+        }
+      ]);
     }
   }
 };
 
 export const ChaosWarpHandler: IEffectHandler = {
   handle(state, effect, log, context) {
-    const { action: AP, targeting: TP } = getProcessors(state);
+    const { action: AP } = getProcessors(state);
     const { targets } = context;
     const targetId = targets[0];
-    const targetObj = TP.findObjectInAnyZone(state, targetId);
+    const targetObj = RuleUtils.findObject(state, targetId);
     if (!targetObj) return;
 
     const ownerId = targetObj.ownerId;
@@ -197,8 +201,7 @@ export const ChaosWarpHandler: IEffectHandler = {
     log(`${player.name} reveals ${card.definition.name} from the top of their library.`);
 
     // 3. Check if permanent
-    const permanentTypes = ['Creature', 'Artifact', 'Enchantment', 'Land', 'Planeswalker'];
-    const isPermanent = card.definition.types.some(t => permanentTypes.includes(t));
+    const isPermanent = RuleUtils.isPermanent(card);
 
     if (isPermanent) {
       AP.moveCard(state, card, Zone.Battlefield, ownerId, log);
@@ -223,14 +226,14 @@ export const ApproachOfTheSecondSunHandler: IEffectHandler = {
       AP.winGame(state, controllerId, log);
     } else {
       AP.gainLife(state, controllerId, 7, log);
-      
+
       const stackObj = state.stack.find(s => s.id === sourceId);
       const card = stackObj?.card;
       if (card) {
         const pos = Math.max(0, player.library.length - 6);
         AP.moveCard(state, card, Zone.Library, card.ownerId, log, pos);
         log(`Approach of the Second Sun put into library at position ${pos} from bottom.`);
-        if (stackObj) stackObj.exileOnResolution = true; 
+        if (stackObj) stackObj.exileOnResolution = true;
       }
     }
   }

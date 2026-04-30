@@ -1,3 +1,5 @@
+import fs from 'fs';
+
 type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
 
 interface LogContext {
@@ -17,7 +19,6 @@ export class LoggerService {
   private static logToFile(message: string) {
     if (!this.perfLogPath) return;
     try {
-      const fs = require('fs');
       fs.appendFileSync(this.perfLogPath, message + '\n', 'utf8');
     } catch (e) {
       // Fallback if file writing fails

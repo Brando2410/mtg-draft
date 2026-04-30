@@ -88,7 +88,7 @@ export class CombatProcessor {
     return [...attackers, ...blockers].some(obj => {
       if (!obj) return false;
       const stats = LP.getEffectiveStats(obj, state);
-      return stats.keywords.includes('First Strike') || stats.keywords.includes('Double Strike');
+      return RuleUtils.hasKeyword(obj, 'First Strike') || RuleUtils.hasKeyword(obj, 'Double Strike');
     });
   }
 
@@ -116,7 +116,7 @@ export class CombatProcessor {
       const attackerObj = state.battlefield.find(o => o.id === a.attackerId);
       if (attackerObj) {
         const stats = LP.getEffectiveStats(attackerObj, state);
-        if (!stats.keywords.includes('Vigilance')) {
+        if (!RuleUtils.hasKeyword(attackerObj, 'Vigilance')) {
           attackerObj.isTapped = true;
           // rule 508.1m: If a creature becomes tapped this way, it's not a "cost" in the sense of pay(), 
           // but it still triggers events that care about tapping.
@@ -386,8 +386,8 @@ export class CombatProcessor {
       const aStats = LP.getEffectiveStats(attacker, state);
 
       // Filter for First Strike compatibility (Rule 511.1)
-      const hasFS = aStats.keywords.includes('First Strike');
-      const hasDS = aStats.keywords.includes('Double Strike');
+      const hasFS = RuleUtils.hasKeyword(attacker, 'First Strike');
+      const hasDS = RuleUtils.hasKeyword(attacker, 'Double Strike');
       if (isFS && !hasFS && !hasDS) continue;
       if (!isFS && this.hasFirstStrikeStep(state) && hasFS && !hasDS) continue;
 
@@ -403,8 +403,8 @@ export class CombatProcessor {
         // BLOCKED: Rule 510.1c
         const order = attack.order || blockers.map(b => b.blockerId);
         let remainingPower = aPower;
-        const hasDeathtouch = aStats.keywords.includes('Deathtouch');
-        const hasTrample = aStats.keywords.includes('Trample');
+        const hasDeathtouch = RuleUtils.hasKeyword(attacker, 'Deathtouch');
+        const hasTrample = RuleUtils.hasKeyword(attacker, 'Trample');
 
         for (const bId of order) {
           const blockerObj = state.battlefield.find(c => c.id === bId);
@@ -438,8 +438,8 @@ export class CombatProcessor {
       if (!blockerObj) continue;
 
       const bStats = LP.getEffectiveStats(blockerObj, state);
-      const hasFS = bStats.keywords.includes('First Strike');
-      const hasDS = bStats.keywords.includes('Double Strike');
+      const hasFS = RuleUtils.hasKeyword(blockerObj, 'First Strike');
+      const hasDS = RuleUtils.hasKeyword(blockerObj, 'Double Strike');
       if (isFS && !hasFS && !hasDS) continue;
       if (!isFS && this.hasFirstStrikeStep(state) && hasFS && !hasDS) continue;
 
@@ -452,7 +452,7 @@ export class CombatProcessor {
       } else {
         const order = b.order || blockedAttackers.map(a => a.attackerId);
         let remainingPower = bPower;
-        const hasDeathtouch = bStats.keywords.includes('Deathtouch');
+        const hasDeathtouch = RuleUtils.hasKeyword(blockerObj, 'Deathtouch');
 
         for (const aId of order) {
           const attackerObj = state.battlefield.find(c => c.id === aId);
@@ -500,7 +500,7 @@ export class CombatProcessor {
     const aStats = LP.getEffectiveStats(attacker, state);
 
     // restriction Check (CannotBeBlocked)
-    if (aStats.keywords.includes('CannotBeBlocked') || aStats.restrictions?.some((r: any) => r.type === 'CannotBeBlocked')) {
+    if (RuleUtils.hasKeyword(attacker, 'CannotBeBlocked') || aStats.restrictions?.some((r: any) => r.type === 'CannotBeBlocked')) {
       return { legal: false, reason: "attacker is unblockable" };
     }
 
@@ -510,12 +510,9 @@ export class CombatProcessor {
 
     // 1. CR 702.9: Flying check
     // "A creature with flying can't be blocked except by creatures with flying and/or reach."
-    const hasFlying = aStats.keywords.some((k: string) => k.toLowerCase() === 'flying');
+    const hasFlying = RuleUtils.hasKeyword(attacker, 'flying');
     if (hasFlying) {
-      const canBlockFlying = bStats.keywords.some((k: string) => {
-        const lk = k.toLowerCase();
-        return lk === 'flying' || lk === 'reach';
-      });
+      const canBlockFlying = RuleUtils.hasKeyword(blocker, 'flying') || RuleUtils.hasKeyword(blocker, 'reach');
       if (!canBlockFlying) {
         return { legal: false, reason: "flying requirement not met" };
       }
@@ -548,7 +545,7 @@ export class CombatProcessor {
     // 1. Gather all creatures controlled by the active player
     const creatures = state.battlefield.filter(o =>
       o.controllerId === state.activePlayerId &&
-      o.definition.types.some(t => t.toLowerCase() === 'creature')
+      RuleUtils.isCreature(o)
     );
 
     const { layer: LP, restriction: RP } = getProcessors(state);
@@ -590,7 +587,7 @@ export class CombatProcessor {
       const blockers = state.combat.blockers.filter(b => b.attackerId === attackerDef.attackerId);
 
       // Menace: cannot be blocked by exactly one creature
-      if (aStats.keywords.includes('Menace') && blockers.length === 1) {
+      if (RuleUtils.hasKeyword(attacker, 'Menace') && blockers.length === 1) {
         return { isValid: false, error: `${attacker.definition.name} has Menace and must be blocked by at least two creatures.` };
       }
 

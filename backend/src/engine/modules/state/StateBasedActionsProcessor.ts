@@ -1,6 +1,7 @@
 import { ActionType, GameObject, GameState, Zone } from "@shared/engine_types";
 import { ActionProcessor } from "../actions/ActionProcessor";
 import { TargetingProcessor } from "../actions/targeting/TargetingProcessor";
+import { RuleUtils } from "../../utils/RuleUtils";
 import { LayerProcessor } from "../state/LayerProcessor";
 
 /**
@@ -47,10 +48,8 @@ export class StateBasedActionsProcessor {
     const objects = [...state.battlefield];
     for (const obj of objects) {
       const stats = LayerProcessor.getEffectiveStats(obj, state);
-      const objTypes = obj.definition.types.map((t) => t.toLowerCase());
-
       // Rule 704.5f: 0 Toughness (ignores indestructible)
-      if (objTypes.includes("creature") && stats.toughness <= 0) {
+      if (RuleUtils.isCreature(obj) && stats.toughness <= 0) {
         log(`[SBA] ${obj.definition.name} has 0 toughness and dies.`);
         ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.ownerId, log);
         actionTaken = true;
@@ -60,7 +59,7 @@ export class StateBasedActionsProcessor {
       // Rule 704.5g: Lethal Damage
       const isLethal =
         obj.damageMarked >= stats.toughness || obj.deathtouchMarked;
-      if (objTypes.includes("creature") && isLethal) {
+      if (RuleUtils.isCreature(obj) && isLethal) {
         if (!stats.keywords.includes("Indestructible")) {
           log(`[SBA] ${obj.definition.name} destroyed by lethal damage.`);
           ActionProcessor.moveCard(
@@ -76,7 +75,7 @@ export class StateBasedActionsProcessor {
       }
 
       // Rule 704.5i: Planeswalker Loyalty
-      if (objTypes.includes("planeswalker")) {
+      if (RuleUtils.isPlaneswalker(obj)) {
         const loyalty = obj.counters["loyalty"] || 0;
         if (loyalty <= 0) {
           log(
@@ -95,13 +94,9 @@ export class StateBasedActionsProcessor {
       }
     }
 
-    // 3. Rule 704.5j: Legend Rule
+    // Rule 704.5j: Legend Rule
     // "If a player controls two or more legendary permanents with the same name..."
-    const legendaryPermanents = state.battlefield.filter((o) => {
-      const isLegendary = (o.definition.supertypes || []).some(s => s.toLowerCase() === "legendary") ||
-                          (o.definition.types || []).some(t => t.toLowerCase() === "legendary");
-      return isLegendary;
-    });
+    const legendaryPermanents = state.battlefield.filter((o) => RuleUtils.hasSupertype(o, "legendary"));
     const groups: Record<string, GameObject[]> = {};
 
     for (const legend of legendaryPermanents) {
@@ -211,9 +206,7 @@ export class StateBasedActionsProcessor {
     }
 
     // 6. Rule 704.5q: Sagas
-    const sagas = state.battlefield.filter((o) =>
-      o.definition.subtypes?.includes("Saga"),
-    );
+    const sagas = state.battlefield.filter((o) => RuleUtils.hasSubtype(o, "Saga"));
     for (const saga of sagas) {
       const lore = saga.counters["lore"] || 0;
       // We assume CardDefinition has a standard structure for sagas or we check oracle
@@ -238,19 +231,11 @@ export class StateBasedActionsProcessor {
     }
 
     // 7. Rule 704.5n & 704.5p: Aura/Equipment detachment (Protection "E" in DEBT)
-    const attachments = state.battlefield.filter((o) => {
-      const subtypes = (o.definition.subtypes || []).map((s) =>
-        s.toLowerCase(),
-      );
-      return subtypes.includes("aura") || subtypes.includes("equipment");
-    });
+    const attachments = state.battlefield.filter((o) => RuleUtils.hasSubtype(o, "aura") || RuleUtils.hasSubtype(o, "equipment"));
 
     for (const attach of attachments) {
       const targetId = attach.attachedTo;
-      const subtypes = (attach.definition.subtypes || []).map((s) =>
-        s.toLowerCase(),
-      );
-      const isAura = subtypes.includes("aura");
+      const isAura = RuleUtils.hasSubtype(attach, "aura");
 
       if (!targetId) {
         if (isAura) {

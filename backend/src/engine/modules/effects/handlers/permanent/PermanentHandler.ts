@@ -1,4 +1,5 @@
 import { ActionType, CounterEffect, EffectDefinition, EmblemDefinition, GameObject, GameState, PlayerId, ResolutionContext, Zone } from '@shared/engine_types';
+import { RuleUtils } from '../../../../utils/RuleUtils';
 import { ActionProcessor } from '../../../actions/ActionProcessor';
 import { getProcessors } from '../../../ProcessorRegistry';
 import { LayerProcessor } from '../../../state/LayerProcessor';
@@ -13,9 +14,9 @@ export class PermanentHandler {
     public static handleDestroy(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
         const { targets } = context;
         targets.forEach((tid: string) => {
-            const obj = state.battlefield.find((o: GameObject) => o.id === tid);
-            if (obj) {
-                if (LayerProcessor.hasKeyword(obj, state, 'Indestructible')) {
+            const obj = RuleUtils.findObject(state, tid);
+            if (obj && obj.zone === Zone.Battlefield) {
+                if (RuleUtils.hasKeyword(obj, 'Indestructible')) {
                     log(`${obj.definition.name} is indestructible.`);
                     return;
                 }
@@ -80,8 +81,8 @@ export class PermanentHandler {
                 state.pendingAction.data!.isSacrificeSequence = true;
             }
         } else {
-            const obj = state.battlefield.find((o: GameObject) => o.id === tid);
-            if (obj) ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.controllerId, log);
+            const obj = RuleUtils.findObject(state, tid);
+            if (obj && obj.zone === Zone.Battlefield) ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.controllerId, log);
             this.handleSacrifice(state, effect, log, { ...context, targets: nextTargets });
         }
     }
@@ -89,8 +90,8 @@ export class PermanentHandler {
     public static handleUntap(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
         const { targets } = context;
         targets.forEach((tid: string) => {
-            const obj = state.battlefield.find((o: GameObject) => o.id === tid);
-            if (obj) {
+            const obj = RuleUtils.findObject(state, tid);
+            if (obj && obj.zone === Zone.Battlefield) {
                 if (!obj.isTapped) return;
                 obj.isTapped = false;
                 log(`${obj.definition.name} untapped.`);
@@ -101,11 +102,11 @@ export class PermanentHandler {
     public static handlePrepare(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
         const { targets } = context;
         targets.forEach((tid: string) => {
-            const obj = state.battlefield.find((o: GameObject) => o.id === tid);
-            if (obj) {
+            const obj = RuleUtils.findObject(state, tid);
+            if (obj && obj.zone === Zone.Battlefield) {
                 obj.isPrepared = true;
                 log(`${obj.definition.name} is now prepared.`);
-                TriggerProcessor.onEvent(state, { type: 'ON_PREPARE', targetId: obj.id, sourceId: obj.id, data: { object: obj } }, log);
+                TriggerProcessor.onEvent(state, { type: 'ON_PREPARE', targetId: obj.id, sourceId: obj.id, payload: { object: obj } }, log);
             }
         });
     }
@@ -113,8 +114,8 @@ export class PermanentHandler {
     public static handleUnprepare(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
         const { targets } = context;
         targets.forEach((tid: string) => {
-            const obj = state.battlefield.find((o: GameObject) => o.id === tid);
-            if (obj) {
+            const obj = RuleUtils.findObject(state, tid);
+            if (obj && obj.zone === Zone.Battlefield) {
                 obj.isPrepared = false;
                 log(`${obj.definition.name} is now unprepared.`);
             }
@@ -124,8 +125,8 @@ export class PermanentHandler {
     public static handleTap(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
         const { targets } = context;
         targets.forEach((tid: string) => {
-            const obj = state.battlefield.find((o: GameObject) => o.id === tid);
-            if (obj) {
+            const obj = RuleUtils.findObject(state, tid);
+            if (obj && obj.zone === Zone.Battlefield) {
                 if (obj.isTapped) return;
                 obj.isTapped = true;
                 log(`${obj.definition.name} tapped.`);
@@ -136,9 +137,9 @@ export class PermanentHandler {
     public static handleFight(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
         const { targets } = context;
         if (targets.length < 2) return;
-        const c1 = state.battlefield.find((o: GameObject) => o.id === targets[0]);
-        const c2 = state.battlefield.find((o: GameObject) => o.id === targets[1]);
-        if (!c1 || !c2) return;
+        const c1 = RuleUtils.findObject(state, targets[0]);
+        const c2 = RuleUtils.findObject(state, targets[1]);
+        if (!c1 || !c2 || c1.zone !== Zone.Battlefield || c2.zone !== Zone.Battlefield) return;
 
         const p1 = LayerProcessor.getEffectiveStats(c1, state).power;
         const p2 = LayerProcessor.getEffectiveStats(c2, state).power;
@@ -156,8 +157,8 @@ export class PermanentHandler {
         const { effect: EP } = getProcessors(state);
 
         targets.forEach((tid: string) => {
-            const obj = state.battlefield.find((o: GameObject) => o.id === tid);
-            if (obj) {
+            const obj = RuleUtils.findObject(state, tid);
+            if (obj && obj.zone === Zone.Battlefield) {
                 const finalType = (type.toLowerCase() === 'p1p1' || type === '+1/+1') ? '+1/+1' : type;
                 const amountStr = counterEff.amount !== undefined ? counterEff.amount : (effect as any).value;
                 const amount = typeof amountStr === 'number' ? amountStr : (EP.resolveAmount(state, amountStr, context, [tid]));
@@ -170,7 +171,7 @@ export class PermanentHandler {
                     }
                 }
                 log(`[COUNTERS] Added ${amount} ${finalType} counter(s) to ${obj.definition.name}.`);
-                TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: obj.id, amount, counterType: finalType, data: { object: obj } }, log);
+                TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: obj.id, amount, counterType: finalType, payload: { object: obj } }, log);
             }
         });
     }
@@ -182,8 +183,8 @@ export class PermanentHandler {
         const finalType = (type.toLowerCase() === 'p1p1' || type === '+1/+1') ? '+1/+1' : type;
         
         targets.forEach((tid: string) => {
-            const obj = state.battlefield.find((o: GameObject) => o.id === tid);
-            if (obj) {
+            const obj = RuleUtils.findObject(state, tid);
+            if (obj && obj.zone === Zone.Battlefield) {
                 const amount = obj.counters[finalType] || 0;
                 if (amount > 0) {
                     obj.counters[finalType] = amount * 2;
@@ -192,7 +193,7 @@ export class PermanentHandler {
                     if (!state.turnState.countersAddedThisTurnIds.includes(obj.id)) {
                         state.turnState.countersAddedThisTurnIds.push(obj.id);
                     }
-                    TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: obj.id, amount, counterType: finalType, data: { object: obj } }, log);
+                    TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: obj.id, amount, counterType: finalType, payload: { object: obj } }, log);
                 }
             }
         });
@@ -201,8 +202,8 @@ export class PermanentHandler {
     public static handleMoveCounters(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
         const { targets, sourceId, stackObject } = context;
         const counterEff = effect as CounterEffect;
-        const { targeting: TP, effect: EP } = getProcessors(state);
-        let sourceObj = TP.findObjectInAnyZone(state, sourceId);
+        const { effect: EP } = getProcessors(state);
+        let sourceObj = RuleUtils.findObject(state, sourceId);
         
         // CR 603.10: If the source is not in a public zone or has no counters (because it died), check the stack object's event snapshot (LKI)
         if (!sourceObj || !sourceObj.counters || Object.keys(sourceObj.counters).length === 0) {
@@ -230,11 +231,11 @@ export class PermanentHandler {
             if (amount <= 0) return;
 
             targets.forEach((tid: string) => {
-                const targetObj = state.battlefield.find((o: GameObject) => o.id === tid);
-                if (targetObj) {
+                const targetObj = RuleUtils.findObject(state, tid);
+                if (targetObj && targetObj.zone === Zone.Battlefield) {
                     targetObj.counters[ctype] = (targetObj.counters[ctype] || 0) + amount;
                     log(`[MOVE-COUNTERS] Moved ${amount} ${ctype} counters from ${sourceObj!.definition.name} to ${targetObj.definition.name}.`);
-                    TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: targetObj.id, amount, counterType: ctype, data: { object: targetObj } }, log);
+                    TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: targetObj.id, amount, counterType: ctype, payload: { object: targetObj } }, log);
                 }
             });
             sourceObj!.counters[ctype] -= amount;
@@ -287,8 +288,7 @@ export class PermanentHandler {
                              (tokenEff as any).originalCardId || 
                              ((tokenEff as any).sourceMapping ? TP_LOCAL.resolveTargetMapping(state, (tokenEff as any).sourceMapping, context, effect)[0] : undefined);
 
-        const sourceObj = TP_LOCAL.findObjectInAnyZone(state, sourceCardId) ||
-                         (state.stack.find((s: any) => s.id === sourceCardId || s.card?.id === sourceCardId) as any);
+        const sourceObj = RuleUtils.findObject(state, sourceCardId);
 
         console.log(`[DEBUG-TOKEN] sourceCardId: ${sourceCardId}`);
         if (sourceObj) {
@@ -324,12 +324,12 @@ export class PermanentHandler {
 
     public static handleAttach(state: GameState, effect: EffectDefinition, log: (m: string) => void, context: ResolutionContext) {
         const { targets, sourceId } = context;
-        const source = state.battlefield.find((o: GameObject) => o.id === sourceId);
-        if (!source) return;
+        const source = RuleUtils.findObject(state, sourceId);
+        if (!source || source.zone !== Zone.Battlefield) return;
 
         targets.forEach((tid: string) => {
-            const target = state.battlefield.find((o: GameObject) => o.id === tid);
-            if (target) {
+            const target = RuleUtils.findObject(state, tid);
+            if (target && target.zone === Zone.Battlefield) {
                 source.attachedTo = tid;
                 log(`[ATTACH] ${source.definition.name} attached to ${target.definition.name}.`);
             } else {
@@ -369,12 +369,12 @@ export class PermanentHandler {
             isTapped: false,
             damageMarked: 0,
             deathtouchMarked: false,
-            summoningSickness: !(blueprint.keywords || []).some((k: string) => k.toLowerCase() === 'haste'),
+            summoningSickness: !(blueprint.keywords || []).some((k: any) => String(k).toLowerCase() === 'haste'),
             abilitiesUsedThisTurn: 0,
             faceDown: false,
             isPrepared: blueprint.entersPrepared || false,
             keywords: [],
-            counters: (blueprint.types || []).some((t: string) => t.toLowerCase() === 'planeswalker') && blueprint.loyalty
+            counters: (blueprint.types || []).some((t: any) => String(t).toLowerCase() === 'planeswalker') && blueprint.loyalty
                 ? { loyalty: parseInt(blueprint.loyalty, 10) }
                 : {}
         };
@@ -382,7 +382,7 @@ export class PermanentHandler {
         state.turnState.lastCreatedTokenId = token.id;
         state.battlefield.push(token);
         RP.registerAbilities(state, token);
-        TriggerProcessor.onEvent(state, { type: 'ON_ETB', targetId: token.id, sourceId: token.id, data: { object: token } }, () => { });
+        TriggerProcessor.onEvent(state, { type: 'ON_ETB', targetId: token.id, sourceId: token.id, payload: { object: token } }, () => { });
         return token;
     }
 

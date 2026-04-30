@@ -4,6 +4,8 @@ import { EngineContext } from '../../../interfaces/EngineContext';
 import { ManaParser } from './ManaParser';
 import { ManaPoolManager } from './ManaPoolManager';
 import { ManaColor, ManaPoolRecord } from './ManaTypes';
+import { oracle } from './../../../OracleLogicMap';
+import { RuleUtils } from '../../../utils/RuleUtils';
 
 export class AutoTapEngine {
     public static autoTapLandsForCost(
@@ -74,14 +76,12 @@ export class AutoTapEngine {
                     const isLegalForSource = (restrictions: string[]) => {
                         if (!restrictions || restrictions.length === 0) return true;
                         if (!payingFor) return false;
-                        const typeLine = (payingFor.definition.type_line || '').toLowerCase();
-                        const types = (payingFor.definition.types || []).map(t => t.toLowerCase());
                         return restrictions.every(r => {
                             const lowR = r.toLowerCase();
                             if (lowR === 'instant_or_sorcery') {
-                                return typeLine.includes('instant') || typeLine.includes('sorcery') || types.includes('instant') || types.includes('sorcery');
+                                return RuleUtils.isType(payingFor, 'instant') || RuleUtils.isType(payingFor, 'sorcery');
                             }
-                            return typeLine.includes(lowR) || types.includes(lowR);
+                            return RuleUtils.isType(payingFor, lowR) || RuleUtils.hasSubtype(payingFor, lowR);
                         });
                     };
 
@@ -160,10 +160,9 @@ export class AutoTapEngine {
                 if (a.demandScore !== b.demandScore) return a.demandScore - b.demandScore;
 
                 // 3. Lands vs Non-lands (Prefer Lands to keep artifacts/creatures for utility)
-                const aIsLand = a.obj.definition.types.includes('Land');
-                const bIsLand = b.obj.definition.types.includes('Land');
-                if (aIsLand && !bIsLand) return -1;
-                if (!aIsLand && bIsLand) return 1;
+                const aIsLand = RuleUtils.isLand(a.obj);
+                const bIsLand = RuleUtils.isLand(b.obj);
+                if (aIsLand !== bIsLand) return aIsLand ? -1 : 1;
 
                 return 0;
             });
@@ -331,7 +330,6 @@ export class AutoTapEngine {
 
     private static getAvailableManaSources(state: GameState, playerId: string, alreadyTapped: string[]) {
         const sources: any[] = [];
-        const { oracle } = require('./../../../OracleLogicMap');
 
         state.battlefield.forEach((obj: GameObject) => {
             if (obj.controllerId !== playerId || obj.isTapped || alreadyTapped.includes(obj.id)) return;

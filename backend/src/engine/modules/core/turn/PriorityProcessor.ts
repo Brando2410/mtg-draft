@@ -1,9 +1,11 @@
 import { AbilityType, EffectType, GameState, Phase, PlayerId, Step, TargetMapping, Zone } from '@shared/engine_types';
 import { oracle } from '../../../OracleLogicMap';
 import { SpellProcessor } from '../../actions/spells/SpellProcessor';
+import { TargetingProcessor } from '../../actions/targeting/TargetingProcessor';
 import { RestrictionValidator } from '../../core/RestrictionValidator';
 import { CostProcessor } from '../../magic/CostProcessor';
 import { ManaProcessor } from '../../magic/ManaProcessor';
+import { RuleUtils } from '../../../utils/RuleUtils';
 import { LayerProcessor } from '../../state/LayerProcessor';
 import { ConditionProcessor } from '../logic/ConditionProcessor';
 import { EngineValidator } from '../logic/EngineValidator';
@@ -99,7 +101,7 @@ export class PriorityProcessor {
     engine.checkStateBasedActions();
 
     state.priorityPlayerId = state.playerOrder[nextIndex];
-    
+
     // CR 613: Refresh playability NOW that priority is shifted.
     const { layer: LayerProcessor } = getProcessors(state);
     LayerProcessor.updateDerivedStats(state, PriorityProcessor);
@@ -236,7 +238,7 @@ export class PriorityProcessor {
     });
     if (hasCastableSpell) return true;
 
-    
+
 
     // 5. Chapter 3 Check: Battlefield Activated Abilities
     const hasBattlefieldAction = state.battlefield.some(obj => {
@@ -245,8 +247,8 @@ export class PriorityProcessor {
       // SOS: Prepare check
       if (obj.isPrepared && (obj.definition.preparedFace || obj.definition.faces?.[1])) {
         const face = obj.definition.preparedFace || obj.definition.faces![1];
-        const isInstant = face.types.some((t: string) => t.toLowerCase() === 'instant');
-        const isSorcery = face.types.some((t: string) => t.toLowerCase() === 'sorcery');
+        const isInstant = RuleUtils.isType(face, 'instant');
+        const isSorcery = RuleUtils.isType(face, 'sorcery');
 
         let timingOk = isInstant;
         if (isSorcery && isOurTurn && stackEmpty && (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain)) {
@@ -338,9 +340,7 @@ export class PriorityProcessor {
       if (!timingOk) return false;
 
       let canPlay = true;
-      const typeLine = (cardToPlay.definition.type_line || '').toLowerCase();
-      const types = (cardToPlay.definition.types || []).map(t => t.toLowerCase());
-      const isLand = typeLine.includes('land') || types.includes('land');
+      const isLand = RuleUtils.isLand(cardToPlay);
 
       if (isLand) {
         canPlay = !player.hasPlayedLandThisTurn;
@@ -401,8 +401,8 @@ export class PriorityProcessor {
       // --- SOS: Prepared Casting Check ---
       if (objOnField.isPrepared && (objOnField.definition.preparedFace || objOnField.definition.faces?.[1])) {
         const face = objOnField.definition.preparedFace || objOnField.definition.faces![1];
-        const isInstant = face.types.some((t: string) => t.toLowerCase() === 'instant');
-        const isSorcery = face.types.some((t: string) => t.toLowerCase() === 'sorcery');
+        const isInstant = RuleUtils.isType(face, 'instant');
+        const isSorcery = RuleUtils.isType(face, 'sorcery');
         const stackEmpty = state.stack.length === 0;
         const isYourTurn = state.activePlayerId === playerId;
         const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
@@ -430,8 +430,7 @@ export class PriorityProcessor {
    */
   public static canAbilityBeActivated(state: GameState, playerId: string, objId: string, abilityIndex: number, checkPriority = true): boolean {
     const player = state.players[playerId];
-    const { targeting: TargetingProcessor } = getProcessors(state);
-    const obj = TargetingProcessor.findObjectInAnyZone(state, objId);
+    const obj = RuleUtils.findObject(state, objId);
     if (!player || !obj) return false;
 
     if (state.pendingAction) return false;
@@ -521,7 +520,7 @@ export class PriorityProcessor {
       return false;
     }
     // Timing Check (Rule 602.1 / 606.3)
-    const isPlaneswalker = obj.definition.types.some((t: string) => String(t).toLowerCase() === 'planeswalker');
+    const isPlaneswalker = RuleUtils.isPlaneswalker(obj);
     let timingOk = this.validateTiming(state, playerId, ability, true);
 
     if (isPlaneswalker) {
@@ -575,16 +574,11 @@ export class PriorityProcessor {
   public static validateTiming(state: GameState, playerId: string, objOrAbility: any, isActivatedAbility = false): boolean {
     const def = objOrAbility?.definition || objOrAbility;
     // For dual-faced or prepared cards, we only consider the first face's types for timing unless it's a virtual spell
-    const rawTypeLine = (def.type_line || '').toLowerCase();
-    const typeLine = objOrAbility.isVirtual ? rawTypeLine : rawTypeLine.split('//')[0];
-    const types = (def.types || []).map((t: string) => t.toLowerCase());
-
-    const isInstantOrFlash = typeLine.includes('instant') ||
-      types.includes('instant') ||
+    const isInstantOrFlash = RuleUtils.isType(def, 'instant') ||
       (def.keywords || []).some((k: string) => k.toLowerCase() === 'flash') ||
       /\bFlash\b/.test(def.oracleText || '');
 
-    const isLand = typeLine.includes('land') || types.includes('land');
+    const isLand = RuleUtils.isLand(def);
 
     // Rule 602.1: Sorcery-speed abilities
     const onlyAsSorcery = objOrAbility.activatedOnlyAsSorcery || (!isInstantOrFlash && !isActivatedAbility) || (isActivatedAbility && objOrAbility.activatedOnlyAsSorcery);
@@ -620,8 +614,7 @@ export class PriorityProcessor {
       // 2. Active Zone check (Static abilities only)
       const isStatic = (e.duration?.type || "").toString().toUpperCase() === 'STATIC';
       if (isStatic) {
-        const { targeting: TargetingProcessor } = getProcessors(state);
-        const source = TargetingProcessor.findObjectInAnyZone(state, e.sourceId);
+        const source = RuleUtils.findObject(state, e.sourceId);
         if (!source || (e.activeZones && !e.activeZones.includes(source.zone))) return false;
       }
 

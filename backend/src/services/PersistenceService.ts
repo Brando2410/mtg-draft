@@ -1,5 +1,5 @@
 import { Card, Room } from '@shared/types';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, readdirSync } from 'fs';
 import fs from 'fs/promises';
 import path from 'path';
 import { LoggerService } from './LoggerService';
@@ -33,12 +33,12 @@ export class PersistenceService {
     
     // Create empty perf log if it doesn't exist
     if (!existsSync(this.PERF_LOG_FILE)) {
-      require('fs').writeFileSync(this.PERF_LOG_FILE, '', 'utf8');
+      writeFileSync(this.PERF_LOG_FILE, '', 'utf8');
     }
     LoggerService.setPerfLogPath(this.PERF_LOG_FILE);
     
-    const cubeCount = existsSync(this.CUBES_DIR) ? require('fs').readdirSync(this.CUBES_DIR).length : 0;
-    const deckCount = existsSync(this.DECKS_DIR) ? require('fs').readdirSync(this.DECKS_DIR).length : 0;
+    const cubeCount = existsSync(this.CUBES_DIR) ? readdirSync(this.CUBES_DIR).length : 0;
+    const deckCount = existsSync(this.DECKS_DIR) ? readdirSync(this.DECKS_DIR).length : 0;
     console.log(`[PERSISTENCE] Initialized: ${cubeCount} cubes, ${deckCount} decks found in ${PersistenceService.DATA_ROOT}`);
   }
 

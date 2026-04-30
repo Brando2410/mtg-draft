@@ -1,4 +1,5 @@
 import { CardType, Restriction, Zone } from "@shared/engine_types";
+import { RuleUtils } from "../../../../utils/RuleUtils";
 import { IRestrictionHandler } from "../IRestrictionHandler";
 
 const PERMANENT_MASK = CardType.Artifact | CardType.Creature | CardType.Enchantment | CardType.Land | CardType.Planeswalker | CardType.Battle;
@@ -17,20 +18,17 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
     },
     "LEGENDARY": {
         matches(state, targetObj: any) {
-            const supertypes = (targetObj.definition?.supertypes || []).map((t: string) => t.toLowerCase());
-            return supertypes.includes("legendary");
+            return RuleUtils.hasSupertype(targetObj, "legendary");
         }
     },
     "BASIC": {
         matches(state, targetObj: any) {
-            const supertypes = (targetObj.definition?.supertypes || []).map((t: string) => t.toLowerCase());
-            return supertypes.includes("basic");
+            return RuleUtils.hasSupertype(targetObj, "basic");
         }
     },
     "NON_BASIC": {
         matches(state, targetObj: any) {
-            const supertypes = (targetObj.definition?.supertypes || []).map((t: string) => t.toLowerCase());
-            return !supertypes.includes("basic");
+            return !RuleUtils.hasSupertype(targetObj, "basic");
         }
     },
     "PERMANENT": {
@@ -119,8 +117,7 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
     },
     "NON_AURA": {
         matches(state, targetObj: any) {
-            const subtypes = (targetObj.definition?.subtypes || []).map((s: string) => s.toLowerCase());
-            return !subtypes.includes("aura");
+            return !RuleUtils.hasSubtype(targetObj, "aura");
         }
     }
 };

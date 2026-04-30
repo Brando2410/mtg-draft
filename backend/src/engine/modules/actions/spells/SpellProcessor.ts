@@ -17,6 +17,8 @@ import {
   PlayCardOptions
 } from '../../../interfaces/EngineContext';
 import { oracle } from '../../../OracleLogicMap';
+import { CombatProcessor } from "../../combat/CombatProcessor";
+import { RuleUtils } from "../../../utils/RuleUtils";
 import { CostProcessor } from '../../magic/CostProcessor';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { SpellCostCalculator } from './SpellCostCalculator';
@@ -149,19 +151,11 @@ export class SpellProcessor {
             cardToPlay.xValue = undefined;
         }
 
-        // --- TYPE IDENTIFICATION (Type-First Strategy) ---
-        // Prioritize structured arrays; fall back to parsing type_line for legacy/imported cards.
-        const structuredTypes = (currentDefinition.types || []).map((t) => (t as string).toLowerCase());
-        const rawTypeLine = (currentDefinition.type_line || '').toLowerCase();
-        const parsedTypes = rawTypeLine.split('//')[0].split(/[-—]/)[0].trim().split(/\s+/).filter(Boolean).map((t) => t.toLowerCase());
-
-        const types = structuredTypes.length > 0 ? structuredTypes : parsedTypes;
-
-        const isLand = types.includes('land');
-        const isInstant = types.includes('instant');
-        const isSorcery = types.includes('sorcery');
-        const isFlash = (currentDefinition.keywords || []).some((k) => k.toLowerCase() === 'flash') ||
-            /\bFlash\b/.test(currentDefinition.oracleText || '');
+        // --- TYPE IDENTIFICATION ---
+        const isLand = RuleUtils.isType(cardToPlay, 'land');
+        const isInstant = RuleUtils.isType(cardToPlay, 'instant');
+        const isSorcery = RuleUtils.isType(cardToPlay, 'sorcery');
+        const isFlash = RuleUtils.hasKeyword(cardToPlay, 'flash');
 
         const isInstantOrFlash = isInstant || isFlash;
         const isInstantOrSorcery = isInstant || isSorcery;
@@ -375,7 +369,7 @@ export class SpellProcessor {
     ): boolean {
         const { playerId, cardId, abilityIndex, targets: declaredTargets = [], bypassPriority = false, choiceIndex, bypassTargeting = false, xValue, parentContext, exileOnResolution } = options;
         const { targeting: TargetingProcessor, trigger: TriggerProcessor } = getProcessors(state);
-        const obj = TargetingProcessor.findObjectInAnyZone(state, cardId);
+        const obj = RuleUtils.findObject(state, cardId);
         if (!obj) return false;
 
         // Apply incoming xValue if provided
@@ -571,7 +565,7 @@ export class SpellProcessor {
                 const chosenId = state.interaction?.lastChosenSacrificeId;
                 const obj = state.battlefield.find(o => o.id === (chosenId || cardToPlay.id));
                 if (obj) {
-                    TriggerProcessor.onEvent(state, { type: TriggerEvent.Sacrifice, playerId, sourceId: obj.id, data: { object: obj } }, log);
+                    TriggerProcessor.onEvent(state, { type: TriggerEvent.Sacrifice, playerId, sourceId: obj.id, payload: { object: obj } }, log);
                     ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId, log);
                     log(`Paid additional cost: Sacrificed ${obj.definition.name}.`);
                     if ((cost as any).isCasualty && state.interaction) state.interaction.paidCasualtyFor = cardToPlay.id;
@@ -580,7 +574,7 @@ export class SpellProcessor {
                 const chosenId = state.interaction?.lastChosenDiscardId;
                 const obj = player.hand.find(o => o.id === chosenId);
                 if (obj) {
-                    TriggerProcessor.onEvent(state, { type: TriggerEvent.Discard, playerId, data: { card: obj, sourceId: cardToPlay.id } }, log);
+                    TriggerProcessor.onEvent(state, { type: TriggerEvent.Discard, playerId, payload: { object: obj, sourceId: cardToPlay.id } }, log);
                     ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId, log);
                     log(`Paid additional cost: Discarded ${obj.definition.name}.`);
                 }
@@ -592,7 +586,7 @@ export class SpellProcessor {
             } else if (cost.type === 'Exile') {
                 const chosenIds = state.interaction?.lastChosenExileIds || [];
                 chosenIds.forEach((cid: string) => {
-                    const obj = TargetingProcessor.findObjectInAnyZone(state, cid);
+                    const obj = RuleUtils.findObject(state, cid);
                     if (obj) {
                         ActionProcessor.moveCard(state, obj, Zone.Exile, playerId, log);
                         log(`Paid additional cost: Exiled ${obj.definition?.name || cid}.`);
@@ -604,7 +598,7 @@ export class SpellProcessor {
                     const obj = state.battlefield.find(o => o.id === cid);
                     if (obj) {
                         obj.isTapped = true;
-                        TriggerProcessor.onEvent(state, { type: TriggerEvent.Tap, sourceId: obj.id, playerId: playerId, data: { object: obj } }, log);
+                        TriggerProcessor.onEvent(state, { type: TriggerEvent.Tap, sourceId: obj.id, playerId: playerId, payload: { object: obj } }, log);
                         log(`Paid additional cost: Tapped ${obj.definition.name}.`);
                     }
                 });
@@ -652,8 +646,8 @@ export class SpellProcessor {
         state.turnState.spellsCastThisTurn[playerId] = (state.turnState.spellsCastThisTurn[playerId] || 0) + 1;
 
         // Triggers: ON_SECOND_SPELL_CAST, etc.
-        if (state.turnState.spellsCastThisTurn[playerId] === 2) TriggerProcessor.onEvent(state, { type: TriggerEvent.SecondSpellCast, playerId, data: {} }, log);
-        if (state.turnState.spellsCastThisTurn[playerId] === 3) TriggerProcessor.onEvent(state, { type: TriggerEvent.ThirdSpellCast, playerId, data: {} }, log);
+        if (state.turnState.spellsCastThisTurn[playerId] === 2) TriggerProcessor.onEvent(state, { type: TriggerEvent.SecondSpellCast, playerId, payload: {} }, log);
+        if (state.turnState.spellsCastThisTurn[playerId] === 3) TriggerProcessor.onEvent(state, { type: TriggerEvent.ThirdSpellCast, playerId, payload: {} }, log);
 
         // Track game-wide cast counts
         if (!state.gameStats) state.gameStats = { castCounts: {} };
@@ -668,7 +662,7 @@ export class SpellProcessor {
         console.log(`[FINALIZE-DEBUG] ${cardToPlay.definition.name}: cardToPlay.exileOnRes=${cardToPlay.exileOnResolution}, final=${exileOnResolution}`);
 
         const targetsControllers = (declaredTargets || []).map((tid) => {
-            const obj = TargetingProcessor.findObjectInAnyZone(state, tid);
+            const obj = RuleUtils.findObject(state, tid);
             return obj ? obj.controllerId : null;
         });
 
@@ -733,8 +727,8 @@ export class SpellProcessor {
         if (isFirstInstantOrSorcery) TriggerProcessor.onEvent(state, { type: TriggerEvent.CastFirstInstantOrSorcery, playerId, amount: cardToPlay.paidManaValue || 0, payload: { card: cardToPlay, sourceId: cardToPlay.id, stackSnapshot: JSON.parse(JSON.stringify(stackObj)) } }, log);
         if (isInstantOrSorcery) TriggerProcessor.onEvent(state, { type: TriggerEvent.CastInstantOrSorcery, playerId, amount: cardToPlay.paidManaValue || 0, payload: { card: cardToPlay, sourceId: cardToPlay.id, stackSnapshot: JSON.parse(JSON.stringify(stackObj)) } }, log);
 
-        if (!cardToPlay.definition.types.some((t) => (t as string).toLowerCase() === 'creature')) {
-            TriggerProcessor.onEvent(state, { type: TriggerEvent.CastNonCreature, playerId, payload: { card: cardToPlay, sourceId: cardToPlay.id } }, log);
+        if (!RuleUtils.isCreature(cardToPlay)) {
+            TriggerProcessor.onEvent(state, { type: TriggerEvent.CastNonCreature, playerId, payload: { object: cardToPlay, sourceId: cardToPlay.id } }, log);
         }
 
         log(`[STACK] + ${state.players[playerId].name} cast ${cardToPlay.definition.name}${cardToPlay.xValue !== undefined ? ` (X=${cardToPlay.xValue})` : ''}${declaredTargets?.length ? ' targeting ' + declaredTargets.join(', ') : ''}`);
@@ -814,7 +808,7 @@ export class SpellProcessor {
         }
 
         if (ability.isManaAbility) {
-            const { EffectProcessor } = require('../../effects/EffectProcessor');
+            const { effect: EffectProcessor } = getProcessors(state);
             (ability.effects || []).forEach((eff) => {
                 EffectProcessor.executeEffect({
                     state,
@@ -832,7 +826,7 @@ export class SpellProcessor {
         state.stack.push(stackObj);
         log(`Activated ability of ${obj.definition.name}${obj.xValue !== undefined ? ` (X=${obj.xValue})` : ''}`);
         declaredTargets.forEach((tid) => {
-            const { TriggerProcessor: TriggerProc } = require('../../effects/triggers/TriggerProcessor');
+            const { trigger: TriggerProc } = getProcessors(state);
             TriggerProc.onEvent(state, { type: TriggerEvent.BecomeTarget, playerId, targetId: tid, sourceId: stackId, data: { sourceId: stackId, sourceCard: obj } }, log);
         });
 

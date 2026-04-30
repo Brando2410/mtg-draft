@@ -53,6 +53,7 @@ export interface ProcessorRegistry {
     spellValidator: typeof SpellValidator;
     spellCostCalculator: typeof SpellCostCalculator;
     spellInteractiveManager: typeof SpellInteractiveManager;
+    oracle: any;
 }
 
 /**
@@ -96,5 +97,6 @@ export function getProcessors(state: GameState): ProcessorRegistry {
         get spellValidator() { return require("./actions/spells/SpellValidator").SpellValidator; },
         get spellCostCalculator() { return require("./actions/spells/SpellCostCalculator").SpellCostCalculator; },
         get spellInteractiveManager() { return require("./actions/spells/SpellInteractiveManager").SpellInteractiveManager; },
+        get oracle() { return require("../OracleLogicMap").oracle; },
     } as unknown as ProcessorRegistry;
 }

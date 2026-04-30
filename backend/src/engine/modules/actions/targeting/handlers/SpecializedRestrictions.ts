@@ -1,6 +1,8 @@
 import { Zone } from "@shared/engine_types";
 import { LayerProcessor } from "../../../state/LayerProcessor";
 import { IRestrictionHandler } from "../IRestrictionHandler";
+import { RuleUtils } from "../../../../utils/RuleUtils";
+import { getProcessors } from "../../../ProcessorRegistry";
 
 const FROMHAND: IRestrictionHandler = {
     matches(state, targetObj: any) {
@@ -14,8 +16,7 @@ export const SpecializedRestrictions: Record<string, IRestrictionHandler> = {
     "SHARES_COLOR_WITH_SOURCE": {
         matches(state, targetObj: any, r, context) {
             const { sourceId } = context;
-            const { TargetValidator } = require("../TargetValidator");
-            const source = TargetValidator.findObjectInAnyZone(state, sourceId);
+            const source = RuleUtils.findObject(state, sourceId);
             if (source) {
                 const sourceColors = source.definition.colors || [];
                 const targetColors = targetObj.definition.colors || [];
@@ -28,33 +29,32 @@ export const SpecializedRestrictions: Record<string, IRestrictionHandler> = {
     CASTFROMHAND: FROMHAND,
     "MONOCOLORED": {
         matches(state, targetObj: any, r, context) {
-            const { TargetValidator } = require("../TargetValidator");
-            return !!TargetValidator.sourceHasQualities(targetObj, ['monocolored'], state);
+            const { targeting: TP } = getProcessors(state);
+            return !!TP.sourceHasQualities(targetObj, ['monocolored'], state);
         }
     },
     "MULTICOLORED": {
         matches(state, targetObj: any, r, context) {
-            const { TargetValidator } = require("../TargetValidator");
-            return !!TargetValidator.sourceHasQualities(targetObj, ['multicolored'], state);
+            const { targeting: TP } = getProcessors(state);
+            return !!TP.sourceHasQualities(targetObj, ['multicolored'], state);
         }
     },
     "COLORLESS": {
         matches(state, targetObj: any, r, context) {
-            const { TargetValidator } = require("../TargetValidator");
-            return !!TargetValidator.sourceHasQualities(targetObj, ['colorless'], state);
+            const { targeting: TP } = getProcessors(state);
+            return !!TP.sourceHasQualities(targetObj, ['colorless'], state);
         }
     },
     "ONEORMORECOLORS": {
         matches(state, targetObj: any, r, context) {
-            const { TargetValidator } = require("../TargetValidator");
-            return !!TargetValidator.sourceHasQualities(targetObj, ['oneormorecolors'], state);
+            const { targeting: TP } = getProcessors(state);
+            return !!TP.sourceHasQualities(targetObj, ['oneormorecolors'], state);
         }
     },
     "SAMENAMEASSOURCE": {
         matches(state, targetObj: any, r, context) {
             const { sourceId } = context;
-            const { TargetValidator } = require("../TargetValidator");
-            const source = TargetValidator.findObjectInAnyZone(state, sourceId);
+            const source = RuleUtils.findObject(state, sourceId);
             if (source) {
                 const sourceName = source.definition.name;
                 const targetName = targetObj.definition?.name || targetObj.card?.definition?.name;
@@ -68,7 +68,6 @@ export const SpecializedRestrictions: Record<string, IRestrictionHandler> = {
 // --- KEYWORD CHECK ---
 const knownKeywords = ['defender', 'flying', 'haste', 'vigilance', 'lifelink', 'deathtouch', 'trample', 'menace', 'reach', 'first strike', 'double strike', 'indestructible'];
 knownKeywords.forEach(kw => {
-    // Generate a normalized key (e.g., 'FIRSTSTRIKE', 'WITHOUTFLYING') to match toUpperCase() lookups
     const normalizedKw = kw.toUpperCase().replace(/[\s_]/g, '');
 
     SpecializedRestrictions[normalizedKw] = {
@@ -91,23 +90,21 @@ const colors = ['White', 'Blue', 'Black', 'Red', 'Green'];
 colors.forEach(c => {
     SpecializedRestrictions[c.toUpperCase()] = {
         matches(state, targetObj: any) {
-            const { TargetValidator } = require("../TargetValidator");
-            return TargetValidator.getColors(targetObj, state).includes(c.toLowerCase());
+            const { targeting: TP } = getProcessors(state);
+            return TP.getColors(targetObj, state).includes(c.toLowerCase());
         }
     };
     SpecializedRestrictions[`NON${c.toUpperCase()}`] = {
         matches(state, targetObj: any) {
-            const { TargetValidator } = require("../TargetValidator");
-            return !TargetValidator.getColors(targetObj, state).includes(c.toLowerCase());
+            const { targeting: TP } = getProcessors(state);
+            return !TP.getColors(targetObj, state).includes(c.toLowerCase());
         }
     };
 });
 
 SpecializedRestrictions["NONBASIC"] = {
     matches(state, targetObj: any) {
-        const definition = targetObj.definition || targetObj.card?.definition;
-        if (!definition) return false;
-        return (definition.types || []).includes('Land') && !(definition.supertypes || []).includes('Basic');
+        return RuleUtils.isType(targetObj, 'Land') && !RuleUtils.hasSupertype(targetObj, 'Basic');
     }
 };
 SpecializedRestrictions["POWER4ORGREATER"] = {
@@ -133,20 +130,19 @@ SpecializedRestrictions["POWER_LE_2"] = {
         matches(state, targetObj: any) {
             const definition = targetObj.definition || targetObj.card?.definition;
             if (!definition) return false;
-            const { ManaProcessor } = require("../../../magic/ManaProcessor");
-            return ManaProcessor.getManaValue(definition.manaCost || '') >= mv;
+            const { mana: MP } = getProcessors(state);
+            return MP.getManaValue(definition.manaCost || '') >= mv;
         }
     };
 });
-
 
 [1, 2, 3, 4].forEach(mv => {
     SpecializedRestrictions[`MV_LE_${mv}`] = {
         matches(state, targetObj: any) {
             const definition = targetObj.definition || targetObj.card?.definition;
             if (!definition) return false;
-            const { ManaProcessor } = require("../../../magic/ManaProcessor");
-            return ManaProcessor.getManaValue(definition.manaCost || '') <= mv;
+            const { mana: MP } = getProcessors(state);
+            return MP.getManaValue(definition.manaCost || '') <= mv;
         }
     };
 });
@@ -180,8 +176,11 @@ SpecializedRestrictions["WASDEALTDAMAGETHISTURN"] = {
 };
 SpecializedRestrictions["GREATESTPOWER"] = {
     matches(state, targetObj: any, r, context) {
-        const { TargetValidator } = require("../TargetValidator");
-        const pool = TargetValidator.getLegalTargetPool(state, { type: targetObj.type || (targetObj.card?.definition?.types?.includes('Creature') ? 'Creature' : 'Permanent') }, context);
+        const { targeting: TP } = getProcessors(state);
+        const { sourceId, controllerId } = context;
+        const targetDef = { type: targetObj.type || (RuleUtils.isCreature(targetObj) ? 'Creature' : 'Permanent') };
+        const poolIds = TP.getLegalTargetPool(state, sourceId, targetDef, controllerId);
+        const pool = poolIds.map(id => RuleUtils.findObject(state, id)).filter(Boolean);
         const powers = pool.map((o: any) => LayerProcessor.getEffectiveStats(o, state).power || 0);
         const maxPower = powers.length > 0 ? Math.max(...powers) : 0;
         return LayerProcessor.getEffectiveStats(targetObj, state).power === maxPower;
@@ -196,14 +195,11 @@ SpecializedRestrictions["CONTROLLED_BY_TARGET_1"] = {
     }
 };
 
-// --- SUBTYPE CHECK (Planeswalkers and others) ---
 const subtypesToRegister = ['Liliana', 'Garruk', 'Basri', 'Teferi', 'Chandra', 'Zombie', 'Cat', 'Dog', 'Spirit', 'Shrine', 'Forest', 'Island', 'Mountain', 'Plains', 'Swamp', 'Lesson', 'Pest', 'Bat', 'Insect', 'Snake', 'Spider'];
 subtypesToRegister.forEach(st => {
     SpecializedRestrictions[st.toUpperCase()] = {
         matches(state, targetObj: any) {
-            const definition = targetObj.definition || targetObj.card?.definition;
-            if (!definition) return false;
-            return (definition.subtypes || []).includes(st);
+            return RuleUtils.hasSubtype(targetObj, st);
         }
     };
 });

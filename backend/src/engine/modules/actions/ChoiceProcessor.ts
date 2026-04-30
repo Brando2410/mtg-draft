@@ -1,20 +1,20 @@
 import {
-  AbilityCost,
-  AbilityDefinition,
-  AbilityType,
-  ActionType,
-  ChoiceOption,
-  ChoicePayload,
-  EffectDefinition,
-  EffectType,
-  GameObject,
-  GameState,
-  PendingAction,
-  PlayerId,
-  ResolutionContext,
-  StackObject,
-  TargetType,
-  Zone
+    AbilityCost,
+    AbilityDefinition,
+    AbilityType,
+    ActionType,
+    ChoiceOption,
+    ChoicePayload,
+    EffectDefinition,
+    EffectType,
+    GameObject,
+    GameState,
+    PendingAction,
+    PlayerId,
+    ResolutionContext,
+    StackObject,
+    TargetType,
+    Zone
 } from '@shared/engine_types';
 import { EngineContext } from '../../interfaces/EngineContext';
 import { oracle } from '../../OracleLogicMap';
@@ -25,6 +25,8 @@ import { ActionProcessor } from './ActionProcessor';
 import { PlayerActionProcessor } from './PlayerActionProcessor';
 import { SpellProcessor } from './spells/SpellProcessor';
 import { TargetingProcessor } from './targeting/TargetingProcessor';
+import { RuleUtils } from "../../utils/RuleUtils";
+import { getProcessors } from '../ProcessorRegistry';
 
 /**
  * Handles interactive player choices (Targeting, Modal Choices)
@@ -333,8 +335,7 @@ export class ChoiceProcessor {
                 if (fullStackObj) {
                     if (fullStackObj.type === 'Spell' && fullStackObj.card) {
                         const card = fullStackObj.card;
-                        const types = card.definition.types.map(t => (t as string).toLowerCase());
-                        const isPermanent = types.includes('creature') || types.includes('artifact') || types.includes('enchantment') || types.includes('planeswalker');
+                        const isPermanent = RuleUtils.isPermanent(card);
 
                         if (card.zone === Zone.Stack) {
                             const freshDef = oracle.getCard(card.definition.name);
@@ -357,13 +358,13 @@ export class ChoiceProcessor {
                         ActionProcessor.removeFromCurrentZone(state, { id: fullStackObj.id, zone: Zone.Stack } as GameObject);
                     }
                     log(`[STACK] Completed resolution of ${stackObj.type} for ${sourceId}.`);
-                    
+
                     // --- KEYWORD HOOK: ON RESOLUTION ---
                     if (fullStackObj.type === AbilityType.Spell) {
-                        const { TriggerProcessor } = require('../effects/triggers/TriggerProcessor');
+                        const { trigger: TriggerProcessor } = getProcessors(state);
                         console.log(`[CHOICE-DEBUG] Firing ON_RESOLVE_SPELL for ${fullStackObj.card?.definition.name}`);
-                        TriggerProcessor.onEvent(state, { 
-                            type: 'ON_RESOLVE_SPELL', 
+                        TriggerProcessor.onEvent(state, {
+                            type: 'ON_RESOLVE_SPELL',
                             playerId: fullStackObj.controllerId,
                             payload: { card: fullStackObj.card, sourceId: fullStackObj.sourceId }
                         }, log);
@@ -414,7 +415,7 @@ export class ChoiceProcessor {
                 card.xValue = undefined; // Explicitly clear
                 ActionProcessor.moveCard(state, card, Zone.Hand, card.ownerId, log);
 
-                const { ManaProcessor } = require('../magic/ManaProcessor');
+                const { mana: ManaProcessor } = getProcessors(state);
                 ManaProcessor.refundManaCost(player, refundCost);
                 log(`Undo Choice: ${card.definition.name} returned to hand.`);
             }
@@ -427,7 +428,7 @@ export class ChoiceProcessor {
             cardInHand.selectedFaceDefinition = undefined;
         }
 
-        const { ManaProcessor } = require('../magic/ManaProcessor');
+        const { mana: ManaProcessor } = getProcessors(state);
 
         // Revert Auto-tap lands if we were in the confirmation step
         if (savedActionData?.tappedLandIds && Array.isArray(savedActionData.tappedLandIds)) {
@@ -535,7 +536,7 @@ export class ChoiceProcessor {
             if (isGraveyardTargeting && legalTargetIds.length > 0) {
                 const action = ChoiceGenerator.createCardChoice(
                     state,
-                    legalTargetIds.map((id) => TargetingProcessor.findObjectInAnyZone(state, id)!),
+                    legalTargetIds.map((id) => RuleUtils.findObject(state, id)!),
                     {
                         label: "Select a card from graveyard",
                         playerId,
@@ -631,7 +632,7 @@ export class ChoiceProcessor {
             }
         } else if (choice && String(choice.value).startsWith('FACE_SELECTION_')) {
             const faceIdx = parseInt(String(choice.value).substring(15));
-            const card = TargetingProcessor.findObjectInAnyZone(state, sourceId);
+            const card = RuleUtils.findObject(state, sourceId);
             if (card && card.definition.faces) {
                 card.selectedFaceDefinition = card.definition.faces[faceIdx];
             }
@@ -755,7 +756,7 @@ export class ChoiceProcessor {
         const isTargeting = !!action.data?.isTargetingModal;
         const metadata = action.data?.metadata;
         const isSpellCasting = metadata?.isSpellCasting ?? action.data?.isSpellCasting;
-        
+
         // Ensure cardToPlayId remains sourceId for modes/costs/targeting. 
         // Only use choice.value if it's a legitimate card selection (e.g. from a list of faces/cards).
         const choiceValStr = choice?.value ? String(choice.value) : "";
@@ -792,7 +793,7 @@ export class ChoiceProcessor {
 
         if (choice.costs && choice.costs.length > 0) {
             const costs = choice.costs as AbilityCost[];
-            const sourceObj = TargetingProcessor.findObjectInAnyZone(state, sourceId);
+            const sourceObj = RuleUtils.findObject(state, sourceId);
 
             if (!CostProcessor.canPay(state, costs, sourceId, action.playerId, stackObj)) {
                 log(`Insufficient resources to select: ${choice.label}`);
@@ -890,7 +891,8 @@ export class ChoiceProcessor {
                     state.pendingAction.data.nextPlayerIds = nextItem.data.nextPlayerIds;
                 }
             } else if (nextItem.data?.isSacrificeSequence) {
-                const { PermanentHandler } = require('../effects/handlers/permanent/PermanentHandler');
+                const { effect: EP } = getProcessors(state);
+                const PermanentHandler = EP.getEffectHandler('Sacrifice') as any;
                 const realEffect = nextItem.data.parentContext?.effects?.[nextItem.data.parentContext?.nextEffectIndex];
                 PermanentHandler.handleSacrifice(state, realEffect || { label: nextItem.data.label }, log, {
                     sourceId: nextItem.sourceId,
@@ -900,7 +902,8 @@ export class ChoiceProcessor {
                     parentContext: nextItem.data.parentContext
                 });
             } else if (nextItem.data?.isChoiceSequence) {
-                const { ChoiceEffectHandler } = require('../effects/handlers/system/ChoiceEffectHandler');
+                const { effect: EP } = getProcessors(state);
+                const ChoiceEffectHandler = EP.getEffectHandler(EffectType.Choice) as any;
                 ChoiceEffectHandler.handleChoice(state, nextItem.data.sequencedEffect, log, {
                     sourceId: nextItem.sourceId,
                     controllerId: nextItem.playerId,
@@ -967,7 +970,7 @@ export class ChoiceProcessor {
         }
 
         const sourceId = action.sourceId!;
-        const card = TargetingProcessor.findObjectInAnyZone(state, sourceId);
+        const card = RuleUtils.findObject(state, sourceId);
         if (!card) {
             log(`[CHOOSE_X] Error: Could not find card for sourceId ${sourceId}`);
             return false;

@@ -1,4 +1,5 @@
 import { PlayerId } from "@shared/engine_types";
+import { RuleUtils } from "../../../../utils/RuleUtils";
 import { IConditionHandler } from "../IConditionHandler";
 
 export const PlayerConditions: Record<string, IConditionHandler> = {
@@ -36,14 +37,14 @@ export const PlayerConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const threshold = parseInt(params[0] || "0");
             return (state.players[context.controllerId]?.graveyard.filter(c => 
-                (c.definition.types || []).some(t => t.toLowerCase() === "creature")
+                RuleUtils.isCreature(c)
             ).length || 0) >= threshold;
         }
     },
     "GRAVEYARD_CREATURE_COUNT_GE_3": {
         matches(state, params, context) {
             const creatures = state.players[context.controllerId].graveyard.filter(c =>
-                c.definition.types.some(t => t.toLowerCase() === "creature")
+                RuleUtils.isCreature(c)
             );
             return creatures.length >= 3;
         }
@@ -51,8 +52,8 @@ export const PlayerConditions: Record<string, IConditionHandler> = {
     "HAS_INSTANT_AND_SORCERY_IN_GY": {
         matches(state, params, context) {
             const gy = state.players[context.controllerId]?.graveyard || [];
-            const hasInstant = gy.some(c => c.definition.types?.some(t => t.toLowerCase() === "instant"));
-            const hasSorcery = gy.some(c => c.definition.types?.some(t => t.toLowerCase() === "sorcery"));
+            const hasInstant = gy.some(c => RuleUtils.isType(c, "instant"));
+            const hasSorcery = gy.some(c => RuleUtils.isType(c, "sorcery"));
             return hasInstant && hasSorcery;
         }
     },
@@ -67,13 +68,13 @@ export const PlayerConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const myCreatures = state.battlefield.filter(o => 
                 o.controllerId === context.controllerId && 
-                o.definition.types.some(t => t.toLowerCase() === "creature")
+                RuleUtils.isCreature(o)
             ).length;
             const opponentId = Object.keys(state.players).find(id => id !== context.controllerId);
             if (!opponentId) return false;
             const oppCreatures = state.battlefield.filter(o => 
                 o.controllerId === opponentId && 
-                o.definition.types.some(t => t.toLowerCase() === "creature")
+                RuleUtils.isCreature(o)
             ).length;
             return oppCreatures > myCreatures;
         }
@@ -83,7 +84,7 @@ export const PlayerConditions: Record<string, IConditionHandler> = {
             const player = state.players[context.controllerId];
             if (!player || player.library.length === 0) return false;
             const topCard = player.library[player.library.length - 1];
-            return topCard.definition.subtypes?.some((s: string) => s.toLowerCase() === "goblin") || false;
+            return RuleUtils.hasSubtype(topCard, "goblin");
         }
     }
 };

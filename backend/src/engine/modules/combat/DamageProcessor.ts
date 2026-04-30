@@ -2,7 +2,8 @@ import {
   GameObject,
   GameObjectId,
   GameState,
-  PlayerId
+  PlayerId,
+  Zone,
 } from "@shared/engine_types";
 import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
@@ -60,16 +61,14 @@ export class DamageProcessor {
     }
 
     const { layer: LP } = getProcessors(state);
-    const sourceObj =
-      state.battlefield.find((o) => o.id === sourceId) ||
-      state.stack.find((s) => s.id === sourceId)?.card;
+    const sourceObj = RuleUtils.findObject(state, sourceId);
     const sourceStats = sourceObj
       ? LP.getEffectiveStats(sourceObj, state)
       : null;
 
     // 1. Resolve Damage to Permanents (Battlefield)
-    const battlefieldObj = state.battlefield.find((o) => o.id === targetId);
-    if (battlefieldObj) {
+    const battlefieldObj = RuleUtils.findObject(state, targetId);
+    if (battlefieldObj && battlefieldObj.zone === Zone.Battlefield) {
       this.applyDamageToPermanent(
         state,
         sourceObj,
@@ -122,7 +121,7 @@ export class DamageProcessor {
             type: "ON_LIFE_GAIN",
             playerId: controllerId,
             amount,
-            data: { sourceId: sourceObj.id },
+            payload: { sourceId: sourceObj.id },
           },
           log,
         );
@@ -185,7 +184,7 @@ export class DamageProcessor {
         targetId: target.id,
         sourceId: sourceObj?.id,
         amount,
-        data: { isCombat },
+        payload: { isCombat },
       },
       log,
     );
@@ -232,7 +231,7 @@ export class DamageProcessor {
         type: "ON_LIFE_LOSS",
         playerId: player.id,
         amount,
-        data: { sourceId: sourceObj?.id },
+        payload: { sourceId: sourceObj?.id },
       },
       log,
     );
@@ -243,7 +242,7 @@ export class DamageProcessor {
         targetId: player.id,
         sourceId: sourceObj?.id,
         amount,
-        data: { isCombat },
+        payload: { isCombat },
       },
       log,
     );
@@ -258,8 +257,8 @@ export class DamageProcessor {
     if (effects.length === 0) return false;
 
     // We only care if target is a creature for Dog prevention
-    const targetObj = state.battlefield.find((o) => o.id === targetId);
-    if (!targetObj) return false;
+    const targetObj = RuleUtils.findObject(state, targetId);
+    if (!targetObj || targetObj.zone !== Zone.Battlefield) return false;
 
     const { targeting: TP } = getProcessors(state);
 
@@ -290,12 +289,10 @@ export class DamageProcessor {
     sourceId: string,
     targetId: string,
   ): boolean {
-    const targetObj = state.battlefield.find((o) => o.id === targetId);
-    if (!targetObj) return false;
+    const targetObj = RuleUtils.findObject(state, targetId);
+    if (!targetObj || targetObj.zone !== Zone.Battlefield) return false;
 
-    const sourceStack = state.stack.find((s) => s.id === sourceId);
-    const sourceBattlefield = state.battlefield.find((o) => o.id === sourceId);
-    const source = sourceStack || (sourceBattlefield as any);
+    const source = RuleUtils.findObject(state, sourceId);
     if (!source) return false;
 
     const { layer: LP } = getProcessors(state);

@@ -5,6 +5,7 @@ import {
   Zone
 } from "@shared/engine_types";
 import { getProcessors } from "../../ProcessorRegistry";
+import { RuleUtils } from "../../../utils/RuleUtils";
 
 /**
  * Rules Engine Module: Replacement Effects (Rule 614)
@@ -132,7 +133,6 @@ export class ReplacementProcessor {
         log: (m: string) => void
     ): Zone | null {
         const isToken = (card as any).isToken || card.id.startsWith("token_");
-        const types = card.definition.types.map((t) => t.toLowerCase());
 
         for (const replacement of state.ruleRegistry.replacementEffects || []) {
             const source = state.battlefield.find((o) => o.id === replacement.sourceId);
@@ -140,7 +140,7 @@ export class ReplacementProcessor {
 
             // Containment Priest Case
             if (replacement.id.toLowerCase().includes("containment_priest")) {
-                if (types.includes("creature") && !isToken && fromZone !== Zone.Stack) {
+                if (RuleUtils.isCreature(card) && !isToken && fromZone !== Zone.Stack) {
                     log(`[REPLACED] ${source.definition.name} exiles ${card.definition.name} (not cast).`);
                     return Zone.Exile;
                 }

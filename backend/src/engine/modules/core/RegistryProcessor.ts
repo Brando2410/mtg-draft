@@ -1,5 +1,6 @@
 import { AbilityRestriction, ActivatedAbility, ContinuousEffect, DurationType, GameObject, GameState, TriggeredAbility, Zone } from '@shared/engine_types';
 import { oracle } from '../../OracleLogicMap';
+import { RuleUtils } from '../../utils/RuleUtils';
 
 /**
  * Rules Engine Module: Registry Management (Rule 113)
@@ -19,7 +20,7 @@ export class RegistryProcessor {
 
     abilities.forEach((ability: any, index: number) => {
         const id = `${card.id}_ability_${index}`;
-        const isSpellCard = card.definition.types.some(t => ['Instant', 'Sorcery'].includes(t));
+        const isSpellCard = RuleUtils.isType(card, 'Instant') || RuleUtils.isType(card, 'Sorcery');
         const defaultZone = (ability.type === 'Spell' || isSpellCard) ? Zone.Stack : Zone.Battlefield;
         const activeZone = ability.activeZone || defaultZone;
 

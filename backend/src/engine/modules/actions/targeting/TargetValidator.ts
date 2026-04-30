@@ -1,50 +1,14 @@
 import { AbilityType, GameObject, GameState, Restriction, StackObject, Targetable, TargetingContext, TargetRestriction, TargetType, Zone } from '@shared/engine_types';
 import { LayerProcessor } from '../../state/LayerProcessor';
 import { TargetMapper } from './TargetMapper';
+import { oracle } from '../../../OracleLogicMap';
+import { getProcessors } from '../../ProcessorRegistry';
 
-// Static imports for performance
-let RestrictionRegistry: any;
-let isNumericRestriction: any;
-let ManaProcessor: any;
-let CachedLayerProcessor: any;
+import { RuleUtils } from '../../../utils/RuleUtils';
+import { RestrictionRegistry, isNumericRestriction } from './RestrictionRegistry';
 
 export class TargetValidator {
 
-    /**
-     * CR 608.2b: Checks if a target is still legal as a spell or ability attempts to resolve.
-     */
-    public static findObjectInAnyZone(state: GameState, id: string): GameObject | null {
-        // FAST PATH: Check the state-level lookup cache
-        if (state._objectCache && state._objectCache.version === state.stateVersion && state._objectCache.has(id)) {
-            return state._objectCache.get(id);
-        }
-
-        const bf = state.battlefield.find(o => o.id === id);
-        if (bf) return bf;
-        const st = state.stack.find(s => s.id === id || s.card?.id === id);
-        if (st && st.card) return st.card;
-        const ex = state.exile.find(o => o.id === id);
-        if (ex) return ex;
-
-        for (const p of (Object.values(state.players))) {
-            const h = p.hand.find(o => o.id === id);
-            if (h) return h;
-            const g = p.graveyard.find(o => o.id === id);
-            if (g) return g;
-            const l = p.library.find(o => o.id === id);
-            if (l) return l;
-            const v = p.virtualHand?.find(o => o.id === id);
-            if (v) return v;
-        }
-
-        const lb = state.limbo?.find(o => o.id === id);
-        if (lb) return lb;
-
-        if (state.dynamicCopies && state.dynamicCopies[id]) return state.dynamicCopies[id];
-        if (state.paradigmCopies && state.paradigmCopies[id]) return state.paradigmCopies[id];
-
-        return null;
-    }
 
     public static isLegalTarget(state: GameState, context: TargetingContext, targetId: string): boolean {
         const { controllerId, targetDef, targetIndex, sourceId } = context;
@@ -56,7 +20,7 @@ export class TargetValidator {
         }
 
         // 2. OBJECT CHECK
-        const targetObj = this.findObjectInAnyZone(state, targetId);
+        const targetObj = RuleUtils.findObject(state, targetId);
         if (!targetObj || targetObj.isPhasedOut) return false;
 
         // 3. ZONE CHECK
@@ -144,7 +108,7 @@ export class TargetValidator {
         if (keywords.includes('Shroud')) return false;
 
         const isOpponentTarget = context.controllerId && targetObj.controllerId !== context.controllerId;
-        const source = this.findObjectInAnyZone(state, context.sourceId);
+        const source = RuleUtils.findObject(state, context.sourceId);
 
         // Hexproof
         if (isOpponentTarget) {
@@ -205,12 +169,6 @@ export class TargetValidator {
             return false;
         }
 
-        if (!RestrictionRegistry) {
-            const registry = require("./RestrictionRegistry");
-            RestrictionRegistry = registry.RestrictionRegistry;
-            isNumericRestriction = registry.isNumericRestriction;
-        }
-
         for (const r of restrictions) {
             if (typeof r !== "string") continue;
             const lr = r.toLowerCase();
@@ -239,8 +197,7 @@ export class TargetValidator {
 
             // 4. Name / Subtype Fallback
             const targetName = (definition.name || (targetObj as any).name || "").toLowerCase();
-            const objSubtypes = (definition.subtypes || []).map((s: string) => s.toLowerCase());
-            if (targetName !== lr && !objSubtypes.includes(lr)) return false;
+            if (targetName !== lr && !RuleUtils.hasSubtype(targetObj, lr) && !RuleUtils.isType(targetObj, lr)) return false;
         }
 
         // Alternatives pass (Logic OR / Complex types)
@@ -275,8 +232,8 @@ export class TargetValidator {
         if ((r.type === 'Not' || r.type === 'not') && r.restriction) return !this.matchesRestrictions(state, targetObj, [r.restriction], context);
 
         if (restrictionType === 'manavalue' || restrictionType === 'mv') {
-            if (!ManaProcessor) ManaProcessor = require('../../../magic/ManaProcessor').ManaProcessor;
-            const mv = ManaProcessor.getManaValue(definition?.manaCost || '', (targetObj as any).xValue || 0);
+            const { mana: MP } = getProcessors(state);
+            const mv = MP.getManaValue(definition?.manaCost || '', (targetObj as any).xValue || 0);
             let val = r.value === 'X' ? (context.stackObject?.xValue || 0) : parseInt(String(r.value));
             const comp = r.comparison || 'Equal';
             if (comp === 'LessOrEqual') return mv <= val;
@@ -299,7 +256,7 @@ export class TargetValidator {
             if (lowerQ === 'and' || lowerQ === 'from') return false;
             if (lowerQ === 'multicolored') return sourceColors.length > 1;
             if (lowerQ === 'colorless') return sourceColors.length === 0;
-            return sourceTypes.includes(lowerQ) || sourceSubtypes.includes(lowerQ) || sourceColors.includes(lowerQ);
+            return RuleUtils.isType(s, lowerQ) || RuleUtils.hasSubtype(s, lowerQ) || sourceColors.includes(lowerQ);
         });
     }
 

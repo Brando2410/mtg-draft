@@ -16,6 +16,7 @@ import {
   TriggerEvent,
   Zone
 } from "@shared/engine_types";
+import { RuleUtils } from "../../../utils/RuleUtils";
 import { oracle } from "../../../OracleLogicMap";
 import { getProcessors } from "../../ProcessorRegistry";
 import { LayerProcessor } from "../../state/LayerProcessor";
@@ -67,14 +68,13 @@ export class TriggerProcessor {
 
     for (const trigger of uniqueTriggers) {
       let triggerCount = 1;
-      const { targeting: TargetingProcessor } = getProcessors(state);
-      const sourceObj = TargetingProcessor.findObjectInAnyZone(state, trigger.sourceId);
+      const sourceObj = RuleUtils.findObject(state, trigger.sourceId);
 
       // --- TRIGGER DOUBLING (CR 603.2c / 614.16) ---
       // 1. Check Replacement Effects (Standardized for specific event buckets)
       // Standard events: 'ON_TRIGGER', 'ON_SHRINE_TRIGGER' (legacy/specific)
       const triggerEvents: string[] = [TriggerEvent.OnTrigger];
-      if (sourceObj && (sourceObj.definition.subtypes || []).includes(Restriction.Shrine)) {
+      if (sourceObj && RuleUtils.hasSubtype(sourceObj, Restriction.Shrine)) {
         triggerEvents.push(TriggerEvent.OnShrineTrigger);
       }
 
@@ -288,11 +288,10 @@ export class TriggerProcessor {
     log: (msg: string) => void,
   ): StackObject {
     const eventObj = event.payload?.object || event.data?.object;
-    const { targeting: TargetingProcessor } = getProcessors(state);
     const sourceObj =
       eventObj && eventObj.id === trigger.sourceId
         ? eventObj
-        : TargetingProcessor.findObjectInAnyZone(state, trigger.sourceId);
+        : RuleUtils.findObject(state, trigger.sourceId);
 
     const emblemSource = !sourceObj
       ? state.emblems?.find((e) => e.id === trigger.sourceId)
@@ -1041,11 +1040,10 @@ export class TriggerProcessor {
       const stackObj = event.payload?.stackSnapshot || event.data?.stackSnapshot;
       const targets = stackObj?.targets || [];
       if (
-        targets.some((tid: string) =>
-          state.battlefield
-            .find((o) => o.id === tid)
-            ?.definition.types.some((t) => t.toLowerCase() === "creature"),
-        )
+        targets.some((tid: string) => {
+          const obj = RuleUtils.findObject(state, tid);
+          return obj && obj.zone === Zone.Battlefield && RuleUtils.isCreature(obj);
+        })
       ) {
         state.battlefield.forEach((obj) => {
           if (
@@ -1079,10 +1077,10 @@ export class TriggerProcessor {
     event: GameEvent,
     matchingTriggers: TriggeredAbility[],
   ) {
-    const obj = event.payload?.object || event.data?.object;
+    const obj = RuleUtils.getEventObject(event, state);
     if (
       event.type === TriggerEvent.EnterBattlefield &&
-      obj?.definition.types.some((t: string) => t.toLowerCase() === "land")
+      obj && RuleUtils.isType(obj, "land")
     ) {
       state.battlefield.forEach((p) => {
         if (String(p.controllerId) === String(obj.controllerId)) {

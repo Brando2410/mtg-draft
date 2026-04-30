@@ -1,8 +1,5 @@
-import {
-  ConditionContext,
-  ConditionType,
-  GameState,
-} from "@shared/engine_types";
+import { ConditionContext, ConditionType, GameState } from "@shared/engine_types";
+import { ConditionRegistry } from "./ConditionRegistry";
 
 export class ConditionProcessor {
   /**
@@ -34,7 +31,7 @@ export class ConditionProcessor {
     if (typeof condition !== "string") return true;
 
     // --- RECURSIVE LOGICAL PARSER (Supports parentheses, &&, ||, !) ---
-    
+
     // 2. Handle Parentheses
     if (condition.includes("(")) {
       let result = condition;
@@ -82,43 +79,42 @@ export class ConditionProcessor {
     }
 
     // --- REGISTRY-BASED EVALUATION ---
-    
+
     // 7. Extract token and parameters (e.g., "HAS_PERMANENT:creature" -> token: "HAS_PERMANENT", params: ["creature"])
     let token = trimmed;
     let params: string[] = [];
-    
+
     if (trimmed.includes(":")) {
-        const firstColon = trimmed.indexOf(":");
-        token = trimmed.substring(0, firstColon);
-        const rest = trimmed.substring(firstColon + 1);
-        params = rest.split(",").map(p => p.trim());
+      const firstColon = trimmed.indexOf(":");
+      token = trimmed.substring(0, firstColon);
+      const rest = trimmed.substring(firstColon + 1);
+      params = rest.split(",").map(p => p.trim());
     }
 
     let effectiveContext = context;
     if (token.startsWith("SOURCE_") && context.effectSourceId) {
-        token = token.substring(7);
-        effectiveContext = { ...context, sourceId: context.effectSourceId };
+      token = token.substring(7);
+      effectiveContext = { ...context, sourceId: context.effectSourceId };
     }
 
-    const { ConditionRegistry } = require("./ConditionRegistry");
-    const handler = ConditionRegistry[token] || ConditionRegistry[token.toUpperCase()];
+    const handler = ConditionRegistry[token as keyof typeof ConditionRegistry] || ConditionRegistry[token.toUpperCase() as keyof typeof ConditionRegistry];
 
     if (handler) {
-        try {
-            const result = handler.matches(state, params, effectiveContext);
-            return result;
-        } catch (e) {
-            console.error(`[ConditionProcessor] Error evaluating condition "${token}":`, e);
-            return false;
-        }
+      try {
+        const result = handler.matches(state, params, effectiveContext);
+        return result;
+      } catch (e) {
+        console.error(`[ConditionProcessor] Error evaluating condition "${token}":`, e);
+        return false;
+      }
     }
 
     // Fallback for unhandled strings (default to true to avoid breaking legacy logic silently, 
     // but log a warning if possible)
     if (trimmed && !["TRUE_VAL", "FALSE_VAL"].includes(trimmed)) {
-        // console.warn(`[ConditionProcessor] Unhandled condition token: "${token}"`);
+      // console.warn(`[ConditionProcessor] Unhandled condition token: "${token}"`);
     }
-    
+
     return true;
   }
 }

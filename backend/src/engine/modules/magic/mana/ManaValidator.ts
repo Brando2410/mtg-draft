@@ -1,6 +1,8 @@
-import { AbilityDefinition, ContinuousEffect, GameObject, GameState, PlayerState } from '@shared/engine_types';
+import { AbilityDefinition, ContinuousEffect, GameObject, GameState, PlayerState, Restriction, TargetRestriction } from '@shared/engine_types';
+import { RuleUtils } from '../../../utils/RuleUtils';
 import { ManaParser } from './ManaParser';
 import { ManaPoolManager } from './ManaPoolManager';
+import { oracle } from './../../../OracleLogicMap';
 
 export class ManaValidator {
 
@@ -54,7 +56,6 @@ export class ManaValidator {
     const pool = { ...ManaPoolManager.getUsableMana(player, payingFor) };
     const untappedSources: { id: string, colors: string[], value: number }[] = [];
 
-    const { oracle } = require('./../../../OracleLogicMap');
     battlefield.forEach((obj: GameObject) => {
       if (obj.controllerId === player.id && !obj.isTapped) {
         const logic = oracle.getCard(obj.definition.name);
@@ -62,24 +63,24 @@ export class ManaValidator {
         const manaAbilities = abilities.filter((a): a is AbilityDefinition => typeof a !== 'string' && !!a.isManaAbility);
         if (manaAbilities.length === 0) return;
 
-        const isLegalForSource = (restrictions: string[]) => {
+        const isLegalForSource = (restrictions: TargetRestriction[]) => {
           if (!restrictions || restrictions.length === 0) return true;
           if (!payingFor) return false;
-          const typeLine = (payingFor.definition.type_line || '').toLowerCase();
-          const types = (payingFor.definition.types || []).map(t => t.toLowerCase());
+          
           return restrictions.every(r => {
-            const lowR = r.toLowerCase();
-            if (lowR === 'instant_or_sorcery') {
-              return typeLine.includes('instant') || typeLine.includes('sorcery') || types.includes('instant') || types.includes('sorcery');
+            if (r === Restriction.InstantOrSorcery) {
+              return RuleUtils.isType(payingFor, 'instant') || RuleUtils.isType(payingFor, 'sorcery');
             }
-            return typeLine.includes(lowR) || types.includes(lowR);
+            if (typeof r !== 'string') return false;
+            // Check both types and subtypes
+            return RuleUtils.isType(payingFor, r) || RuleUtils.hasSubtype(payingFor, r);
           });
         };
 
         const sourceAbilities: { colors: string[], value: number }[] = [];
         manaAbilities.forEach((a) => {
           const colors = new Set<string>();
-          const restrictions: string[] = [];
+          const restrictions: TargetRestriction[] = [];
 
           const extract = (effects: any[]) => {
             if (!effects) return;

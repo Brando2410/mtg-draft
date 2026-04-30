@@ -6,6 +6,7 @@ import {
   RestrictionObject, RestrictionType,
   Zone
 } from "@shared/engine_types";
+import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
 let TargetingProcessor: any;
 let ConditionProcessor: any;
@@ -36,7 +37,7 @@ export class LayerProcessor {
   ) {
     // FAST PATH: Check the state-level stats cache
     if (state._statsCache && state._statsCache.version === state.stateVersion && state._statsCache.has(obj.id)) {
-        return state._statsCache.get(obj.id);
+      return state._statsCache.get(obj.id);
     }
 
     // RECURSION GUARD: Prevent infinite loops where conditions depend on effective stats
@@ -96,7 +97,7 @@ export class LayerProcessor {
         if (this.isTarget(state, effect, obj.id, log) && effect.copyFromId) {
           const sourceObj =
             state.battlefield.find((o) => o.id === effect.copyFromId) ||
-            TargetingProcessor.findObjectInAnyZone(state, effect.copyFromId);
+            RuleUtils.findObject(state, effect.copyFromId);
           if (sourceObj) {
             currentDefinition = { ...sourceObj.definition };
             supertypes.clear();
@@ -291,10 +292,7 @@ export class LayerProcessor {
       const player = state.players[obj.controllerId];
       if (player) {
         const count = player.graveyard.filter((c) =>
-          c.definition.types.some(
-            (t) =>
-              t.toLowerCase() === "instant" || t.toLowerCase() === "sorcery",
-          ),
+          RuleUtils.isType(c, "instant") || RuleUtils.isType(c, "sorcery"),
         ).length;
         update(count, undefined);
       }
@@ -305,7 +303,7 @@ export class LayerProcessor {
       if (player) {
         const powers = player.graveyard
           .filter((c) =>
-            c.definition.types.some((t) => t.toLowerCase() === "creature"),
+            RuleUtils.isCreature(c),
           )
           .map((c) => Number(c.definition.power || 0));
         const maxPower = powers.length > 0 ? Math.max(...powers) : 0;
@@ -353,15 +351,15 @@ export class LayerProcessor {
     }
     // 0. Condition check (can be global or target-dependent)
     if (effect.condition) {
-        if (!ConditionProcessor.matchesCondition(state, effect.condition, {
-            sourceId: objId,
-            targetId: objId,
-            effectSourceId: effect.sourceId,
-            controllerId: effect.controllerId,
-            stackObject: state.stack.find(s => s.id === effect.id) as any
-        })) {
-            return false;
-        }
+      if (!ConditionProcessor.matchesCondition(state, effect.condition, {
+        sourceId: objId,
+        targetId: objId,
+        effectSourceId: effect.sourceId,
+        controllerId: effect.controllerId,
+        stackObject: state.stack.find(s => s.id === effect.id) as any
+      })) {
+        return false;
+      }
     }
 
     // 1. Explicit target list (snapshotted spells)
@@ -370,7 +368,7 @@ export class LayerProcessor {
 
     // 2. Dynamic target mapping (Static abilities)
     if (effect.targetMapping) {
-      const obj = TargetingProcessor.findObjectInAnyZone(state, objId);
+      const obj = RuleUtils.findObject(state, objId);
       if (!obj) return false;
 
       switch (effect.targetMapping) {
@@ -379,9 +377,7 @@ export class LayerProcessor {
         case "ALL_CREATURES_YOU_CONTROL":
           return (
             obj.controllerId === effect.controllerId &&
-            obj.definition.types.some(
-              (t: string) => t.toLowerCase() === "creature",
-            )
+            RuleUtils.isCreature(obj)
           );
         case "ALL_PERMANENTS_YOU_CONTROL":
           return obj.controllerId === effect.controllerId;
@@ -389,9 +385,7 @@ export class LayerProcessor {
           return (
             obj.id !== effect.sourceId &&
             obj.controllerId === effect.controllerId &&
-            obj.definition.types.some(
-              (t: string) => t.toLowerCase() === "creature",
-            )
+            RuleUtils.isCreature(obj)
           );
         case "MATCHING_PERMANENTS_YOU_CONTROL":
           return (
@@ -416,9 +410,7 @@ export class LayerProcessor {
         case "OPPONENTS_CREATURES":
           return (
             obj.controllerId !== effect.controllerId &&
-            obj.definition.types.some(
-              (t: string) => t.toLowerCase() === "creature",
-            )
+            RuleUtils.isCreature(obj)
           );
         case "ALL_PERMANENTS_OPPONENTS_CONTROL":
           return obj.controllerId !== effect.controllerId;
@@ -426,9 +418,7 @@ export class LayerProcessor {
         case "ALL_OTHER_CREATURES":
           return (
             obj.id !== effect.sourceId &&
-            obj.definition.types.some(
-              (t: string) => t.toLowerCase() === "creature",
-            )
+            RuleUtils.isCreature(obj)
           );
         case "MATCHING_CARDS":
           return TargetingProcessor.matchesRestrictions(
@@ -494,7 +484,7 @@ export class LayerProcessor {
     state: GameState,
     keyword: string,
   ): boolean {
-    return this.getEffectiveKeywords(obj, state).some(k => k.toLowerCase() === keyword.toLowerCase());
+    return RuleUtils.hasKeyword(obj, keyword);
   }
 
   public static calculateTypeMask(types: string[]): number {
@@ -518,7 +508,7 @@ export class LayerProcessor {
    */
   public static rebuildObjectCache(state: GameState) {
     const cache = new Map<string, GameObject>();
-    
+
     const allObjects = [
       ...state.battlefield,
       ...state.exile,
@@ -555,7 +545,7 @@ export class LayerProcessor {
   public static updateDerivedStats(state: GameState, PriorityProcessor: any) {
     // 0. Initial Cache Setup
     this.rebuildObjectCache(state);
-    
+
     // 0.5. Partial Cache Invalidation: Only clear cache if layer-relevant state changed
     let layerHash = `${state.ruleRegistry.continuousEffects.length}:${state.stack.length}`;
     state.battlefield.forEach(o => {
@@ -576,14 +566,14 @@ export class LayerProcessor {
 
     const effects = state.ruleRegistry.continuousEffects || [];
     const activeEffects = effects.filter((e) => {
-        if (e.id?.startsWith("floating_") || e.sourceId === "global")
-          return true;
-        const cache = state._objectCache;
-        const source = (cache && cache.version === state.stateVersion) 
-            ? cache.get(e.sourceId) 
-            : state.battlefield.find((o) => o.id === e.sourceId);
-        if (!source || !e.activeZones.includes(source.zone)) return false;
+      if (e.id?.startsWith("floating_") || e.sourceId === "global")
         return true;
+      const cache = state._objectCache;
+      const source = (cache && cache.version === state.stateVersion)
+        ? cache.get(e.sourceId)
+        : state.battlefield.find((o) => o.id === e.sourceId);
+      if (!source || !e.activeZones.includes(source.zone)) return false;
+      return true;
     });
 
     // 1. Update Player stats (maxHandSize, etc)
@@ -620,14 +610,9 @@ export class LayerProcessor {
       // --- SUMMONING SICKNESS & HASTE FIX ---
       // CR 302.6: Haste allows creatures to bypass summoning sickness.
       // We clear the sickness property so that both backend logic and frontend UI (ZZZ tag)
-      // correctly identify that the creature is ready.
-      const isCreature = obj.definition.types.some(
-        (t) => t.toLowerCase() === "creature",
-      );
+      const isCreature = RuleUtils.isCreature(obj);
       if (isCreature && obj.summoningSickness) {
-        const hasHaste = stats.keywords.some(
-          (k: string) => k.toLowerCase() === "haste",
-        );
+        const hasHaste = RuleUtils.hasKeyword(obj, "haste");
         if (hasHaste) {
           obj.summoningSickness = false;
         }
@@ -750,7 +735,7 @@ export class LayerProcessor {
       const isVirtual = Object.values(state.players).some((p) =>
         p.virtualHand.some((v) => v.id === obj.id),
       );
-      
+
       const inGraveyard =
         obj.zone === Zone.Graveyard ||
         Object.values(state.players).some((p) =>
@@ -782,36 +767,36 @@ export class LayerProcessor {
 
       // FAST PATH: isPlayable requires expensive restriction matching, only do it if the object is owned by the active player
       if (state.priorityPlayerId === obj.controllerId) {
-          let currentDisplayCost = obj.definition.manaCost;
-          if (isFlashback) {
-            currentDisplayCost =
-              obj.definition.flashbackCost ||
-              (obj.definition as any).flashback_cost ||
-              obj.definition.manaCost;
-          } else if (isActivation && graveyardAbility) {
-            currentDisplayCost =
-              graveyardAbility.manaCost ||
-              graveyardAbility.costs?.find((c: any) => c.type === "Mana")?.value ||
-              obj.definition.manaCost;
-          }
+        let currentDisplayCost = obj.definition.manaCost;
+        if (isFlashback) {
+          currentDisplayCost =
+            obj.definition.flashbackCost ||
+            (obj.definition as any).flashback_cost ||
+            obj.definition.manaCost;
+        } else if (isActivation && graveyardAbility) {
+          currentDisplayCost =
+            graveyardAbility.manaCost ||
+            graveyardAbility.costs?.find((c: any) => c.type === "Mana")?.value ||
+            obj.definition.manaCost;
+        }
 
-          try {
-            if (SpellProcessor) {
-              const { totalMana } = SpellProcessor.getEffectiveCosts(
-                state,
-                obj,
-                [],
-                undefined,
-                isFlashback,
-                stats,
-              );
-              currentDisplayCost = totalMana;
-            }
-          } catch (e) {
+        try {
+          if (SpellProcessor) {
+            const { totalMana } = SpellProcessor.getEffectiveCosts(
+              state,
+              obj,
+              [],
+              undefined,
+              isFlashback,
+              stats,
+            );
+            currentDisplayCost = totalMana;
           }
+        } catch (e) {
+        }
 
-          displayCost = currentDisplayCost;
-          isPlayable = PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id, true, stats, displayCost);
+        displayCost = currentDisplayCost;
+        isPlayable = PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id, true, stats, displayCost);
       }
 
       obj.effectiveStats = {

@@ -1,5 +1,6 @@
 import { GameObject, GameState, PlayerId, Zone } from '@shared/engine_types';
 import { Card } from '@shared/types';
+import { oracle } from '../../OracleLogicMap';
 
 export class GameSetupProcessor {
   public static initializePlayers(
@@ -42,7 +43,6 @@ export class GameSetupProcessor {
   }
 
   public static createGameObject(ownerId: PlayerId, cardRef: Card, index: number): GameObject {
-    const { oracle } = require('../../OracleLogicMap');
     const logicData = oracle.getCard(cardRef.name);
     let typeLine = cardRef.typeLine || cardRef.type_line || logicData?.type_line || '';
     
@@ -56,6 +56,15 @@ export class GameSetupProcessor {
 
     const baseKeywords = logicData?.keywords || cardRef.keywords || [];
 
+    // CR 205.4: Supertypes
+    const knownSupertypes = ['basic', 'legendary', 'snow', 'world', 'ongoing'];
+    const parts = typeLine ? typeLine.split('//')[0].split(/[-—]/) : [];
+    const typePart = parts[0] ? parts[0].trim().split(/\s+/) : [];
+    
+    const supertypes = typePart.filter((t: string) => knownSupertypes.includes(t.toLowerCase()));
+    const types = typePart.filter((t: string) => !knownSupertypes.includes(t.toLowerCase()));
+    const subtypes = parts[1] ? parts[1].trim().split(/\s+/).filter(Boolean) : [];
+
     return {
       id: `${ownerId}-lib-${index}`,
       ownerId,
@@ -65,9 +74,9 @@ export class GameSetupProcessor {
         name: cardRef.name || 'Unknown Card',
         manaCost: (cardRef.manaCost || (cardRef as any).mana_cost || logicData?.manaCost || '').split('//')[0].trim(),
         colors: normalizedColors,
-        supertypes: logicData?.supertypes || [],
-        types: typeLine ? typeLine.split('//')[0].split(/[-—]/)[0].trim().split(/\s+/).filter(Boolean) : (logicData?.types || []),
-        subtypes: typeLine ? (typeLine.split('//')[0].includes('—') ? typeLine.split('//')[0].split(/[-—]/)[1].trim().split(/\s+/).filter(Boolean) : []) : (logicData?.subtypes || []),
+        supertypes: supertypes.length > 0 ? supertypes : (logicData?.supertypes || []),
+        types: types.length > 0 ? types : (logicData?.types || []),
+        subtypes: subtypes.length > 0 ? subtypes : (logicData?.subtypes || []),
         oracleText: cardRef.oracleText || logicData?.oracleText || '',
         type_line: typeLine,
         image_url: cardRef.image_url || cardRef.image_uris?.normal || cardRef.image_uris?.large || logicData?.image_url,

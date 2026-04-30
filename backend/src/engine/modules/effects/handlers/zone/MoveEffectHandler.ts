@@ -942,6 +942,6 @@ export class MoveEffectHandler {
     const inPool = looking.find((o: GameObject) => o.id === id);
     if (inPool) return inPool;
 
-    return TargetingProcessor.findObjectInAnyZone(state, id) || undefined;
+    return RuleUtils.findObject(state, id) || undefined;
   }
 }

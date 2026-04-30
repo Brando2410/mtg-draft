@@ -13,6 +13,7 @@ import { Targetable } from "@shared/types/targeting";
 import {
   EffectExecutionOptions
 } from "../../interfaces/EngineContext";
+import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
 import { EffectRegistry } from "./EffectRegistry";
 
@@ -59,6 +60,10 @@ export interface ResolveEffectsOptions {
 }
 
 export class EffectProcessor {
+  public static getEffectHandler(type: EffectType | string) {
+    return EffectRegistry[type];
+  }
+
   public static resolveEffects(options: ResolveEffectsOptions): boolean {
     const {
       state,
@@ -82,7 +87,7 @@ export class EffectProcessor {
       return tm.startsWith('TARGET_') || tm === TargetMapping.TargetOpponent || tm === TargetMapping.TargetPlayer;
     })) {
       const { targeting: TP } = getProcessors(state);
-      
+
       const fizzle = TP.shouldFizzle(state, {
         sourceId,
         controllerId: controllerIdOverride || state.activePlayerId,
@@ -143,7 +148,7 @@ export class EffectProcessor {
     }
     if (stackObject && stackObject.data)
       stackObject.data.nextEffectIndex = effects.length;
-    
+
     return true;
   }
 
@@ -153,8 +158,7 @@ export class EffectProcessor {
       let name = stackObject.name;
       let imageUrl = stackObject.image_url;
 
-      const { targeting: TP } = getProcessors(state);
-      const source = TP.findObjectInAnyZone(
+      const source = RuleUtils.findObject(
         state,
         stackObject.sourceId,
       ) as GameObject | undefined;
@@ -201,7 +205,7 @@ export class EffectProcessor {
       (stackObject?.card ? stackObject.card : stackObject);
     const controllerId =
       (controllerIdOverride || (sourceObj as GameObject)?.controllerId || state.activePlayerId) as PlayerId;
-    const { targeting: TP, condition: CP, choiceGenerator: ChoiceGenerator } = getProcessors(state);
+    const { targeting: TP } = getProcessors(state);
 
     // Create a ResolutionContext for handlers that expect it
     const context: ResolutionContext = {
@@ -273,13 +277,13 @@ export class EffectProcessor {
       if (isDirectTargetMapping) validationIndex = parseInt(mStr.substring(7)) - 1;
 
       if (isDirectTargetMapping || (
-          [
-            TargetMapping.TargetOpponent,
-            TargetMapping.TargetPlayer,
-            TargetMapping.TargetCreature,
-            TargetMapping.TargetPermanent,
-          ] as string[]
-        ).includes(mStr)) {
+        [
+          TargetMapping.TargetOpponent,
+          TargetMapping.TargetPlayer,
+          TargetMapping.TargetCreature,
+          TargetMapping.TargetPermanent,
+        ] as string[]
+      ).includes(mStr)) {
         return this.getValidTargetIds(state, effect, ids, context, validationIndex);
       }
 
@@ -497,35 +501,35 @@ export class EffectProcessor {
 
     // AmountResolver interface support
     if (typeof amount === "object" && amount !== null && "type" in amount) {
-        const resolver = amount as AmountResolver;
-        switch (resolver.type) {
-            case "CONSTANT":
-                return (resolver.baseValue || 0) * (resolver.multiplier || 1) + (resolver.offset || 0);
-            case "POWER": {
-                const obj = this.findObject(state, sourceId, stackObject) as GameObject;
-                const val = obj?.effectiveStats?.power ?? Number(obj?.definition?.power || 0);
-                return val * (resolver.multiplier || 1) + (resolver.offset || 0);
-            }
-            case "TOUGHNESS": {
-                const obj = this.findObject(state, sourceId, stackObject) as GameObject;
-                const val = obj?.effectiveStats?.toughness ?? Number(obj?.definition?.toughness || 0);
-                return val * (resolver.multiplier || 1) + (resolver.offset || 0);
-            }
-            case "X_VALUE":
-                return (stackObject?.xValue || 0) * (resolver.multiplier || 1) + (resolver.offset || 0);
-            case "COUNT_PLAYER_PERMANENTS": {
-                const count = state.battlefield.filter(o => 
-                    o.controllerId === (resolver.subtype === 'OPPONENT' ? 
-                        Object.keys(state.players).find(pid => pid !== controllerId) : 
-                        controllerId)
-                ).length;
-                return count * (resolver.multiplier || 1) + (resolver.offset || 0);
-            }
-            case "SCRIPT":
-                return resolver.resolver ? resolver.resolver(state, context) : 0;
-            default:
-                return 0;
+      const resolver = amount as AmountResolver;
+      switch (resolver.type) {
+        case "CONSTANT":
+          return (resolver.baseValue || 0) * (resolver.multiplier || 1) + (resolver.offset || 0);
+        case "POWER": {
+          const obj = this.findObject(state, sourceId, stackObject) as GameObject;
+          const val = obj?.effectiveStats?.power ?? Number(obj?.definition?.power || 0);
+          return val * (resolver.multiplier || 1) + (resolver.offset || 0);
         }
+        case "TOUGHNESS": {
+          const obj = this.findObject(state, sourceId, stackObject) as GameObject;
+          const val = obj?.effectiveStats?.toughness ?? Number(obj?.definition?.toughness || 0);
+          return val * (resolver.multiplier || 1) + (resolver.offset || 0);
+        }
+        case "X_VALUE":
+          return (stackObject?.xValue || 0) * (resolver.multiplier || 1) + (resolver.offset || 0);
+        case "COUNT_PLAYER_PERMANENTS": {
+          const count = state.battlefield.filter(o =>
+            o.controllerId === (resolver.subtype === 'OPPONENT' ?
+              Object.keys(state.players).find(pid => pid !== controllerId) :
+              controllerId)
+          ).length;
+          return count * (resolver.multiplier || 1) + (resolver.offset || 0);
+        }
+        case "SCRIPT":
+          return resolver.resolver ? resolver.resolver(state, context) : 0;
+        default:
+          return 0;
+      }
     }
 
     const obj = this.findObject(state, sourceId, stackObject) as GameObject;
@@ -590,8 +594,8 @@ export class EffectProcessor {
       case "TARGET_1_POWER":
       case "TARGET_1_TOUGHNESS": {
         const tid = stackObject?.targets?.[0] || targetIds[0];
-        const { targeting: TP, layer: LP } = getProcessors(state);
-        const tObj = TP.findObjectInAnyZone(state, tid) || state.turnState.creaturesDiedThisTurn.find((o: any) => o.id === tid);
+        const { layer: LP } = getProcessors(state);
+        const tObj = RuleUtils.findObject(state, tid) || state.turnState.creaturesDiedThisTurn.find((o: any) => o.id === tid);
         if (tObj) {
           const stats = LP.getEffectiveStats(tObj, state);
           result = amount === "TARGET_1_POWER" ? stats.power : stats.toughness;
@@ -640,8 +644,7 @@ export class EffectProcessor {
       case "INSTANT_SORCERY_IN_GRAVEYARD_COUNT": {
         const gy = state.players[controllerId]?.graveyard || [];
         result = gy.filter((c) => {
-          const types = (c.definition.types || []).map((t) => t.toLowerCase());
-          return types.includes("instant") || types.includes("sorcery");
+          return RuleUtils.isType(c, "instant") || RuleUtils.isType(c, "sorcery");
         }).length;
         break;
       }
@@ -684,13 +687,13 @@ export class EffectProcessor {
       case "CREATURE_COUNT_YOU_CONTROL":
       case "CREATURES_YOU_CONTROL": {
         result = state.battlefield.filter(
-          (o) => String(o.controllerId) === String(controllerId) && (o.definition.types || []).some((t) => t.toLowerCase() === "creature"),
+          (o) => String(o.controllerId) === String(controllerId) && RuleUtils.isCreature(o),
         ).length;
         break;
       }
       case "DIFFERENTLY_NAMED_LANDS_COUNT": {
         const lands = state.battlefield.filter(
-          (o) => String(o.controllerId) === String(controllerId) && (o.definition.types || []).some((t) => t.toLowerCase() === "land"),
+          (o) => String(o.controllerId) === String(controllerId) && RuleUtils.isLand(o),
         );
         const names = new Set(lands.map((l) => l.definition.name));
         result = names.size;
@@ -707,7 +710,7 @@ export class EffectProcessor {
         const tid = stackObject?.targets?.[0] || targetIds[0];
         const pid = tid as PlayerId;
         const gy = state.players[pid]?.graveyard || [];
-        result = gy.filter((c) => (c.definition.types || []).some((t) => t.toLowerCase() === "creature")).length * 2;
+        result = gy.filter((c) => RuleUtils.isCreature(c)).length * 2;
         break;
       }
       case "GRAVEYARD_NAME_COUNT_PLUS_1": {
@@ -725,10 +728,8 @@ export class EffectProcessor {
           result = state.battlefield.filter(
             (o) =>
               o.controllerId === controllerId &&
-              (o.definition.types.some((t) => t.toLowerCase() === typeToCount || t.toLowerCase() === singularType) ||
-                (o.definition.subtypes || []).some(
-                  (s) => s.toLowerCase() === typeToCount || s.toLowerCase() === singularType,
-                )),
+              (RuleUtils.isType(o, typeToCount) || RuleUtils.isType(o, singularType) ||
+                RuleUtils.hasSubtype(o, typeToCount) || RuleUtils.hasSubtype(o, singularType)),
           ).length;
         } else {
           result = 0;
@@ -749,9 +750,8 @@ export class EffectProcessor {
     const snapshot = stackObject?.data?.eventData?.payload?.object as GameObject | undefined;
     if (snapshot && snapshot.id === id) return snapshot;
 
-    const { targeting: TP } = getProcessors(state);
     return (
-      TP.findObjectInAnyZone(state, id) ||
+      RuleUtils.findObject(state, id) ||
       ((state.pendingAction?.data as any)?.lookingCards as GameObject[])?.find(
         (o) => o.id === id,
       ) ||

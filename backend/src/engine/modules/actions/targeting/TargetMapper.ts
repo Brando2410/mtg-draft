@@ -4,6 +4,7 @@ import {
   Restriction,
   TargetingContext, TargetMapping, TargetType, Zone
 } from "@shared/engine_types";
+import { RuleUtils } from "../../../utils/RuleUtils";
 import { ManaProcessor } from "../../magic/ManaProcessor";
 import { TargetValidator } from "./TargetValidator";
 
@@ -395,14 +396,14 @@ export class TargetMapper {
         const owners = ids
           .map(
             (id: string) =>
-              TargetValidator.findObjectInAnyZone(state, id)?.ownerId,
+              RuleUtils.findObject(state, id)?.ownerId,
           )
           .filter(Boolean) as string[];
         return [...new Set(owners)];
       }
       case TargetMapping.Target1Owner: {
         const targetId = targets[0];
-        const obj = TargetValidator.findObjectInAnyZone(state, targetId);
+        const obj = RuleUtils.findObject(state, targetId);
         return obj ? [obj.ownerId] : [];
       }
       case TargetMapping.LastMilledIds:
@@ -466,22 +467,16 @@ export class TargetMapper {
           .filter(
             (o) =>
               o.controllerId === controllerId &&
-              o.definition.types.some(
-                (t) => t.toLowerCase() === "planeswalker",
-              ),
+              RuleUtils.isType(o, "planeswalker"),
           )
           .map((o) => o.id);
       case TargetMapping.AllCreatures:
         return state.battlefield
-          .filter((o) =>
-            o.definition.types.some((t) => t.toLowerCase() === "creature"),
-          )
+          .filter((o) => RuleUtils.isCreature(o))
           .map((o) => o.id);
       case TargetMapping.AllPlaneswalkers:
         return state.battlefield
-          .filter((o) =>
-            o.definition.types.some((t) => t.toLowerCase() === "planeswalker"),
-          )
+          .filter((o) => RuleUtils.isType(o, "planeswalker"))
           .map((o) => o.id);
       case TargetMapping.MatchingPermanents:
       case TargetMapping.AllMatchingPermanents:
@@ -598,7 +593,7 @@ export class TargetMapper {
           .filter(
             (o) =>
               o.controllerId === controllerId &&
-              o.definition.types.some((t) => t.toLowerCase() === "creature"),
+              RuleUtils.isCreature(o),
           )
           .map((o) => o.id);
       case TargetMapping.OtherCreaturesYouControl:
@@ -607,7 +602,7 @@ export class TargetMapper {
             (o) =>
               o.id !== sourceId &&
               o.controllerId === controllerId &&
-              o.definition.types.some((t) => t.toLowerCase() === "creature"),
+              RuleUtils.isCreature(o),
           )
           .map((o) => o.id);
       case TargetMapping.OtherSpiritsYouControl:
@@ -616,7 +611,7 @@ export class TargetMapper {
             (o) =>
               o.id !== sourceId &&
               o.controllerId === controllerId &&
-              o.definition.subtypes?.some((t) => t.toLowerCase() === "spirit"),
+              RuleUtils.hasSubtype(o, "spirit"),
           )
           .map((o) => o.id);
       case TargetMapping.AllPermanentsYouControl:
@@ -628,7 +623,7 @@ export class TargetMapper {
           .filter(
             (o) =>
               o.controllerId === controllerId &&
-              o.definition.subtypes?.some((s) => s.toLowerCase() === "fractal"),
+              RuleUtils.hasSubtype(o, "fractal"),
           )
           .map((o) => o.id);
       case TargetMapping.OtherCreatures:
@@ -637,7 +632,7 @@ export class TargetMapper {
           .filter(
             (o) =>
               o.id !== sourceId &&
-              o.definition.types.some((t) => t.toLowerCase() === "creature"),
+              RuleUtils.isCreature(o),
           )
           .map((o) => o.id);
       case TargetMapping.EachCreatureYouControl:
@@ -645,7 +640,7 @@ export class TargetMapper {
           .filter(
             (o) =>
               o.controllerId === controllerId &&
-              o.definition.types.some((t) => t.toLowerCase() === "creature"),
+              RuleUtils.isCreature(o),
           )
           .map((o) => o.id);
       case TargetMapping.Opponent:
@@ -662,7 +657,7 @@ export class TargetMapper {
           .filter(
             (o) =>
               o.controllerId !== controllerId &&
-              o.definition.types.some((t) => t.toLowerCase() === "creature"),
+              RuleUtils.isCreature(o),
           )
           .map((o) => o.id);
       case TargetMapping.EachPlayer:
@@ -674,7 +669,7 @@ export class TargetMapper {
           .filter(
             (o) =>
               o.controllerId === targetPlayerId &&
-              o.definition.types.some((t) => t.toLowerCase() === "creature"),
+              RuleUtils.isCreature(o),
           )
           .map((o) => o.id);
       }
@@ -700,42 +695,30 @@ export class TargetMapper {
           .filter(
             (o) =>
               o.id !== chosenId &&
-              (o.definition.types.some((t) => t.toLowerCase() === "creature") ||
-                o.definition.types.some(
-                  (t) => t.toLowerCase() === "planeswalker",
-                )),
+              (RuleUtils.isCreature(o) || RuleUtils.isType(o, "planeswalker")),
           )
           .map((o) => o.id);
       case TargetMapping.AllCreaturesAndPlaneswalkers:
         return state.battlefield
           .filter(
             (o) =>
-              o.definition.types.some((t) => t.toLowerCase() === "creature") ||
-              o.definition.types.some(
-                (t) => t.toLowerCase() === "planeswalker",
-              ),
+              RuleUtils.isCreature(o) || RuleUtils.isType(o, "planeswalker"),
           )
           .map((o) => o.id);
       case "ALL_CREATURES":
         return state.battlefield
-          .filter((o) =>
-            o.definition.types.some((t) => t.toLowerCase() === "creature"),
-          )
+          .filter((o) => RuleUtils.isCreature(o))
           .map((o) => o.id);
       case "ALL_PLANESWALKERS":
         return state.battlefield
-          .filter((o) =>
-            o.definition.types.some((t) => t.toLowerCase() === "planeswalker"),
-          )
+          .filter((o) => RuleUtils.isType(o, "planeswalker"))
           .map((o) => o.id);
       case "ALL_PLANESWALKERS_YOU_CONTROL":
         return state.battlefield
           .filter(
             (o) =>
               o.controllerId === controllerId &&
-              o.definition.types.some(
-                (t) => t.toLowerCase() === "planeswalker",
-              ),
+              RuleUtils.isType(o, "planeswalker"),
           )
           .map((o) => o.id);
       case TargetMapping.OtherPlaneswalkersYouControl:
@@ -744,9 +727,7 @@ export class TargetMapper {
             (o) =>
               o.id !== sourceId &&
               o.controllerId === controllerId &&
-              o.definition.types.some(
-                (t) => t.toLowerCase() === "planeswalker",
-              ),
+              RuleUtils.isType(o, "planeswalker"),
           )
           .map((o) => o.id);
       case TargetMapping.Target1HighestMVCreaturePlaneswalker: {
@@ -754,10 +735,7 @@ export class TargetMapper {
         const candidates = state.battlefield.filter(
           (o) =>
             o.controllerId === targetPlayerId &&
-            (o.definition.types.some((t) => t.toLowerCase() === "creature") ||
-              o.definition.types.some(
-                (t) => t.toLowerCase() === "planeswalker",
-              )),
+            (RuleUtils.isCreature(o) || RuleUtils.isType(o, "planeswalker")),
         );
         if (candidates.length === 0) return [];
         const mvs = candidates.map((o) =>
@@ -797,7 +775,7 @@ export class TargetMapper {
         });
 
         return pool.filter((tid) => {
-          const obj = TargetValidator.findObjectInAnyZone(state, tid);
+          const obj = RuleUtils.findObject(state, tid);
           return (
             obj &&
             TargetValidator.matchesRestrictions(

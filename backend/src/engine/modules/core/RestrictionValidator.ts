@@ -16,14 +16,14 @@ export class RestrictionValidator {
         const stats = LayerProcessor.getEffectiveStats(obj, state);
 
         // 1. Check Keywords (Defender restriction with "as though" override)
-        if (stats.keywords.some((k: string) => k.toLowerCase() === 'defender')) {
+        if (RuleUtils.hasKeyword(obj, 'defender')) {
             const canAttackWithDefender = (stats.restrictions || []).some((r: any) => r.type === RestrictionType.CanAttackWithDefender);
             if (!canAttackWithDefender) {
                 return false;
             }
         }
 
-        if (stats.keywords.some((k: string) => k.toLowerCase() === 'cannotattack')) {
+        if (RuleUtils.hasKeyword(obj, 'cannotattack')) {
             return false;
         }
 
@@ -48,7 +48,7 @@ export class RestrictionValidator {
         const { layer: LayerProcessor } = getProcessors(state);
         const stats = LayerProcessor.getEffectiveStats(obj, state);
 
-        if (stats.keywords.some((k: string) => k.toLowerCase() === 'cannotblock')) {
+        if (RuleUtils.hasKeyword(obj, 'cannotblock')) {
             return false;
         }
 
@@ -175,7 +175,7 @@ export class RestrictionValidator {
 
     private static handleSplitSecond(state: GameState): boolean {
         // CR 702.61a: While a spell with split second is on the stack, players can't cast spells or activate nonmana abilities.
-        return state.stack.some(s => s.card?.definition.keywords?.includes('Split Second'));
+        return state.stack.some(s => RuleUtils.hasKeyword(s.card, 'Split Second'));
     }
 
     private static getPlayerRestrictions(state: GameState, playerId: PlayerId): RestrictionObject[] {
