@@ -289,7 +289,7 @@ export class LayerProcessor {
     if (
       effect.powerDynamic === "INSTANTS_AND_SORCERIES_IN_GRAVEYARD"
     ) {
-      const player = state.players[obj.controllerId];
+      const player = state.players[RuleUtils.getController(obj)];
       if (player) {
         const count = player.graveyard.filter((c) =>
           RuleUtils.isType(c, "instant") || RuleUtils.isType(c, "sorcery"),
@@ -299,7 +299,7 @@ export class LayerProcessor {
     }
 
     if (effect.powerDynamic === "GREATEST_POWER_IN_GRAVEYARD") {
-      const player = state.players[obj.controllerId];
+      const player = state.players[RuleUtils.getController(obj)];
       if (player) {
         const powers = player.graveyard
           .filter((c) =>
@@ -376,20 +376,20 @@ export class LayerProcessor {
           return objId === effect.sourceId;
         case "ALL_CREATURES_YOU_CONTROL":
           return (
-            obj.controllerId === effect.controllerId &&
+            RuleUtils.getController(obj) === effect.controllerId &&
             RuleUtils.isCreature(obj)
           );
         case "ALL_PERMANENTS_YOU_CONTROL":
-          return obj.controllerId === effect.controllerId;
+          return RuleUtils.getController(obj) === effect.controllerId;
         case "OTHER_CREATURES_YOU_CONTROL":
           return (
             obj.id !== effect.sourceId &&
-            obj.controllerId === effect.controllerId &&
+            RuleUtils.getController(obj) === effect.controllerId &&
             RuleUtils.isCreature(obj)
           );
         case "MATCHING_PERMANENTS_YOU_CONTROL":
           return (
-            obj.controllerId === effect.controllerId &&
+            RuleUtils.getController(obj) === effect.controllerId &&
             TargetingProcessor.matchesRestrictions(
               state,
               obj,
@@ -409,11 +409,11 @@ export class LayerProcessor {
         case "ALL_CREATURES_OPPONENTS_CONTROL":
         case "OPPONENTS_CREATURES":
           return (
-            obj.controllerId !== effect.controllerId &&
+            RuleUtils.getController(obj) !== effect.controllerId &&
             RuleUtils.isCreature(obj)
           );
         case "ALL_PERMANENTS_OPPONENTS_CONTROL":
-          return obj.controllerId !== effect.controllerId;
+          return RuleUtils.getController(obj) !== effect.controllerId;
         case "OTHER_CREATURES":
         case "ALL_OTHER_CREATURES":
           return (
@@ -441,7 +441,7 @@ export class LayerProcessor {
         }
         case "CONTROLLER":
           return (
-            obj.controllerId === effect.controllerId &&
+            RuleUtils.getController(obj) === effect.controllerId &&
             TargetingProcessor.matchesRestrictions(
               state,
               obj,
@@ -621,7 +621,7 @@ export class LayerProcessor {
       obj.effectiveStats = {
         ...stats,
         isPlayable:
-          state.priorityPlayerId === obj.controllerId &&
+          state.priorityPlayerId === RuleUtils.getController(obj) &&
           PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id),
       };
     });
@@ -766,7 +766,7 @@ export class LayerProcessor {
       let displayCost = obj.definition.manaCost;
 
       // FAST PATH: isPlayable requires expensive restriction matching, only do it if the object is owned by the active player
-      if (state.priorityPlayerId === obj.controllerId) {
+      if (state.priorityPlayerId === RuleUtils.getController(obj)) {
         let currentDisplayCost = obj.definition.manaCost;
         if (isFlashback) {
           currentDisplayCost =

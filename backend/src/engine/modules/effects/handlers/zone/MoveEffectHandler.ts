@@ -114,7 +114,7 @@ export class MoveEffectHandler {
     else if (targetDef.type === TargetType.CardInGraveyard) {
       pool = Object.values(state.players).flatMap((p: PlayerState) => p.graveyard);
     } else if (targetDef.type === TargetType.Permanent)
-      pool = state.battlefield.filter((o: GameObject) => o.controllerId === controllerId);
+      pool = state.battlefield.filter((o: GameObject) => RuleUtils.getController(o) === controllerId);
     else return;
 
     const sourceId = stackObject?.sourceId || "";
@@ -812,7 +812,7 @@ export class MoveEffectHandler {
             if (z === Zone.Graveyard) return [...player.graveyard];
             if (z === Zone.Hand) return [...player.hand];
             if (z === Zone.Library) return [...player.library];
-            if (z === Zone.Battlefield) return state.battlefield.filter((o) => o.controllerId === tid);
+            if (z === Zone.Battlefield) return state.battlefield.filter((o) => RuleUtils.getController(o) === tid);
             return [];
           });
           cardsToMove.push(...playerPool);

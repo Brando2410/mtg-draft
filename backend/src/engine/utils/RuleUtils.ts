@@ -1,4 +1,4 @@
-import { EnginePrefix, GameObject, GameState, GameEvent, ResolutionContext } from "@shared/engine_types";
+import { EnginePrefix, GameObject, GameState, GameEvent, ResolutionContext, Zone, PlayerId, StackObject } from "@shared/engine_types";
 import { getProcessors } from "../modules/ProcessorRegistry";
 
 /**
@@ -6,6 +6,28 @@ import { getProcessors } from "../modules/ProcessorRegistry";
  * Ensures consistent behavior for type-line parsing and keyword detection.
  */
 export class RuleUtils {
+    /**
+     * CR 108.4: Determines the controller of an object.
+     * Objects on the Battlefield or Stack have a controller.
+     * Objects in other zones are controlled by their owner.
+     */
+    public static getController(obj: GameObject | StackObject | any): PlayerId {
+        if (!obj) return "";
+
+        // StackObjects (spells/abilities) are always controlled by their controllerId
+        if (!obj.zone && obj.sourceId) {
+            return obj.controllerId;
+        }
+
+        // GameObjects on the battlefield or stack have a controllerId
+        if (obj.zone === Zone.Battlefield || obj.zone === Zone.Stack) {
+            return obj.controllerId;
+        }
+
+        // Rule 108.4: Objects in other zones are controlled by their owner
+        return obj.ownerId || obj.controllerId || "";
+    }
+
     /**
      * Internal helper to extract definition from various sources.
      */

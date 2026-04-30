@@ -521,11 +521,12 @@ export class TriggerProcessor {
           if (effect.type === EffectType.AddTriggeredAbility && (effect as any).value) {
             const targetIds = effect.targetIds || [];
             targetIds.forEach((tid) => {
+              const obj = RuleUtils.findObject(state, tid);
               allTriggers.push({
                 ...(effect as any).value,
                 id: `granted_trigger_${effect.id}_${tid}`,
                 sourceId: tid,
-                controllerId: effect.controllerId,
+                controllerId: obj ? RuleUtils.getController(obj) : effect.controllerId,
               });
             });
           }
@@ -707,12 +708,12 @@ export class TriggerProcessor {
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         if (
           RuleUtils.hasKeyword(obj, "Prowess") &&
-          obj.controllerId === event.playerId
+          RuleUtils.getController(obj) === event.playerId
         ) {
           matchingTriggers.push({
             id: `prowess_system_${obj.id}_${Date.now()}`,
             sourceId: obj.id,
-            controllerId: obj.controllerId,
+            controllerId: RuleUtils.getController(obj),
             eventMatch: TriggerEvent.CastNonCreature,
             effects: [
               {
@@ -743,7 +744,7 @@ export class TriggerProcessor {
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         if (
           RuleUtils.hasKeyword(obj, "Increment") &&
-          obj.controllerId === event.playerId
+          RuleUtils.getController(obj) === event.playerId
         ) {
           if (
             ConditionProcessor.matchesCondition(
@@ -751,7 +752,7 @@ export class TriggerProcessor {
               "SPENT_MANA_GT_POWER_OR_TOUGHNESS",
               {
                 sourceId: obj.id,
-                controllerId: obj.controllerId,
+                controllerId: RuleUtils.getController(obj),
                 event,
               },
             )
@@ -759,7 +760,7 @@ export class TriggerProcessor {
             matchingTriggers.push({
               id: `increment_system_${obj.id}_${Date.now()}`,
               sourceId: obj.id,
-              controllerId: obj.controllerId,
+              controllerId: RuleUtils.getController(obj),
               eventMatch: TriggerEvent.CastSpell,
               condition: "SPENT_MANA_GT_POWER_OR_TOUGHNESS",
               effects: [
@@ -794,7 +795,7 @@ export class TriggerProcessor {
         const sourceControllerId = event.playerId;
         if (
           sourceControllerId &&
-          sourceControllerId !== targetObj.controllerId
+          sourceControllerId !== RuleUtils.getController(targetObj)
         ) {
           wards.forEach((wardStr: string) => {
             const match = wardStr.match(

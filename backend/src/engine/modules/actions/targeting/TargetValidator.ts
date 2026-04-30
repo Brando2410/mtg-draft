@@ -107,11 +107,10 @@ export class TargetValidator {
         const keywords = stats.keywords;
         if (RuleUtils.hasShroud(targetObj)) return false;
 
-        const isOpponentTarget = context.controllerId && targetObj.controllerId !== context.controllerId;
         const source = RuleUtils.findObject(state, context.sourceId);
 
         // Hexproof
-        if (isOpponentTarget) {
+        if (context.controllerId && RuleUtils.getController(targetObj) !== context.controllerId) {
             if (RuleUtils.hasHexproof(targetObj)) return false;
 
             if (source) {

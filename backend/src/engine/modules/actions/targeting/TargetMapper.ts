@@ -553,7 +553,7 @@ export class TargetMapper {
           eData?.object ||
           eData?.card ||
           (eData as any)?.gameObject;
-        return obj?.controllerId ? [obj.controllerId] : [];
+        return obj ? [RuleUtils.getController(obj)] : [];
       }
       case TargetMapping.Target1Controller: {
         const targetId = targets[0];
@@ -565,28 +565,13 @@ export class TargetMapper {
           return [(stackData as any).targetsControllers[0]];
         }
         if (state.players[targetId as PlayerId]) return [targetId];
-        const obj =
-          state.battlefield.find((o) => o.id === targetId) ||
-          state.stack.find(
-            (s) =>
-              s.id === targetId ||
-              s.card?.id === targetId ||
-              (s as any).targetId === targetId,
-          ) ||
-          Object.values(state.players)
-            .flatMap((p) => p.graveyard)
-            .find((o) => o.id === targetId) ||
-          state.exile.find((o) => o.id === targetId);
-        return obj ? [obj.controllerId] : [];
+        const obj = RuleUtils.findObject(state, targetId);
+        return obj ? [RuleUtils.getController(obj)] : [];
       }
       case TargetMapping.TriggerTargetController: {
         const tId = eventData?.targetId || stackData?.data?.eventData?.targetId;
-        const obj =
-          state.battlefield.find((o) => o.id === tId) ||
-          (Object.values(state.players) as any[])
-            .flatMap((p) => p.graveyard)
-            .find((o: any) => o.id === tId);
-        return obj ? [obj.controllerId] : [];
+        const obj = RuleUtils.findObject(state, tId);
+        return obj ? [RuleUtils.getController(obj)] : [];
       }
       case TargetMapping.AllCreaturesYouControl:
         return state.battlefield
@@ -695,14 +680,14 @@ export class TargetMapper {
           .filter(
             (o) =>
               o.id !== chosenId &&
-              (RuleUtils.isCreature(o) || RuleUtils.isType(o, "planeswalker")),
+              (RuleUtils.isCreature(o) || RuleUtils.isPlaneswalker(o)),
           )
           .map((o) => o.id);
       case TargetMapping.AllCreaturesAndPlaneswalkers:
         return state.battlefield
           .filter(
             (o) =>
-              RuleUtils.isCreature(o) || RuleUtils.isType(o, "planeswalker"),
+              RuleUtils.isCreature(o) || RuleUtils.isPlaneswalker(o),
           )
           .map((o) => o.id);
       case "ALL_CREATURES":
@@ -711,14 +696,14 @@ export class TargetMapper {
           .map((o) => o.id);
       case "ALL_PLANESWALKERS":
         return state.battlefield
-          .filter((o) => RuleUtils.isType(o, "planeswalker"))
+          .filter((o) => RuleUtils.isPlaneswalker(o))
           .map((o) => o.id);
       case "ALL_PLANESWALKERS_YOU_CONTROL":
         return state.battlefield
           .filter(
             (o) =>
               o.controllerId === controllerId &&
-              RuleUtils.isType(o, "planeswalker"),
+              RuleUtils.isPlaneswalker(o),
           )
           .map((o) => o.id);
       case TargetMapping.OtherPlaneswalkersYouControl:
@@ -727,7 +712,7 @@ export class TargetMapper {
             (o) =>
               o.id !== sourceId &&
               o.controllerId === controllerId &&
-              RuleUtils.isType(o, "planeswalker"),
+              RuleUtils.isPlaneswalker(o),
           )
           .map((o) => o.id);
       case TargetMapping.Target1HighestMVCreaturePlaneswalker: {
@@ -735,7 +720,7 @@ export class TargetMapper {
         const candidates = state.battlefield.filter(
           (o) =>
             o.controllerId === targetPlayerId &&
-            (RuleUtils.isCreature(o) || RuleUtils.isType(o, "planeswalker")),
+            (RuleUtils.isCreature(o) || RuleUtils.isPlaneswalker(o)),
         );
         if (candidates.length === 0) return [];
         const mvs = candidates.map((o) =>

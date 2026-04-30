@@ -1,4 +1,5 @@
 import { IRestrictionHandler } from "../IRestrictionHandler";
+import { RuleUtils } from "../../../../utils/RuleUtils";
 
 const TAPPED: IRestrictionHandler = {
     matches(state, targetObj: any) {
@@ -16,7 +17,7 @@ const YOUCONTROL: IRestrictionHandler = {
     matches(state, targetObj: any, r, context) {
         const controllerId = context.controllerId;
         if (!controllerId) return false;
-        return (targetObj.controllerId || targetObj.ownerId) === controllerId;
+        return RuleUtils.getController(targetObj) === controllerId;
     }
 };
 
@@ -24,8 +25,7 @@ const YOUOWN: IRestrictionHandler = {
     matches(state, targetObj: any, r, context) {
         const controllerId = context.controllerId;
         if (!controllerId || !targetObj) return false;
-        const ownerId = targetObj.ownerId || targetObj.controllerId;
-        return String(ownerId) === String(controllerId);
+        return String(targetObj.ownerId || RuleUtils.getController(targetObj)) === String(controllerId);
     }
 };
 
@@ -33,8 +33,7 @@ const OPPONENTOWNS: IRestrictionHandler = {
     matches(state, targetObj: any, r, context) {
         const controllerId = context.controllerId;
         if (!controllerId || !targetObj) return true;
-        const ownerId = targetObj.ownerId || targetObj.controllerId;
-        return String(ownerId) !== String(controllerId);
+        return String(targetObj.ownerId || RuleUtils.getController(targetObj)) !== String(controllerId);
     }
 };
 
@@ -42,7 +41,7 @@ const NOTCONTROLLED: IRestrictionHandler = {
     matches(state, targetObj: any, r, context) {
         const controllerId = context.controllerId;
         if (!controllerId) return true; // If no controller context, it's not controlled by "you"
-        return targetObj.controllerId !== controllerId;
+        return RuleUtils.getController(targetObj) !== controllerId;
     }
 };
 
