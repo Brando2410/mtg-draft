@@ -282,6 +282,7 @@ export interface BaseAbilityDefinition {
     effects?: any[];
     /** Choices for modal abilities */
     modes?: any[];
+    allowDuplicates?: boolean;
     /** Shortcut mana cost for display or complex resolution hooks */
     manaCost?: string;
     /** Specific cost override for Flashback implementation */
@@ -309,6 +310,7 @@ export interface SpellAbilityDefinition extends BaseAbilityDefinition {
     multiTargetMapping?: boolean;
     minChoices?: number;
     maxChoices?: number;
+    allowDuplicates?: boolean;
     modes?: any[];
     /** Alternative costs (e.g. Flashback, Overload) */
     costs?: AbilityCost[];

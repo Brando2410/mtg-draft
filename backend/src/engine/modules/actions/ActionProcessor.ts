@@ -3,6 +3,7 @@ import {
   AbilityType,
   ActionResult,
   CounterType,
+  DurationType,
   EffectType,
   GameObject,
   GameState,
@@ -426,38 +427,33 @@ export class ActionProcessor {
 
     // Rule 400.7: Object changes zones -> becomes a new object
     // 1. Clear floating continuous effects tied to this object
-    state.ruleRegistry.continuousEffects =
-      state.ruleRegistry.continuousEffects.filter((eff) => {
-        // Rule 611.2a: Floating effects (UntilEndOfTurn, UntilEndOfCombat) do NOT depend on the source card staying in the zone.
-        // We only clear effects that are tied to the presence of the object (Static) or reach their natural expiry.
-        if (eff.sourceId === card.id) {
-          const dType = (eff.duration?.type || "").toString().toUpperCase();
+    const { logger } = getProcessors(state);
+    state.ruleRegistry.continuousEffects = (state.ruleRegistry.continuousEffects || []).filter((eff) => {
+      const isSource = eff.sourceId === card.id;
+      const isTarget = eff.targetIds?.includes(card.id);
+      const isFloating = eff.id?.startsWith("floating_");
+      const dType = (eff.duration?.type || "").toString().toUpperCase();
+      const isTemporary = eff.duration && dType !== DurationType.Static;
 
-          const isPersistent =
-            eff.id?.startsWith("floating_") ||
-            dType === 'UNTILYOURNEXTTURN' ||
-            dType === 'UNTILENDOFYOURNEXTTURN' ||
-            dType === 'UNTIL_YOUR_NEXT_TURN' ||
-            dType === 'UNTIL_END_OF_YOUR_NEXT_TURN' ||
-            dType === 'UNTILENDOFTURN' ||
-            dType === 'UNTILENDOFCOMBAT' ||
-            dType === 'UNTIL_END_OF_TURN' ||
-            dType === 'UNTIL_END_OF_COMBAT' ||
-            dType === 'PERMANENT';
-
-          if (isPersistent) {
-            return true; // Keep floating/persistent effects!
-          }
-          // Default: Remove non-floating effects sourced from this object if it leaves the zone (e.g. STATIC)
+      // Rule 400.7: Object changes zones -> becomes a new object
+      // If this object was explicitly targeted by a temporary effect (like Giant Growth or Last Gasp), 
+      // the effect MUST be removed because the object is now "new".
+      // Note: We do NOT remove effects just because their SOURCE moved (Rule 611.2a).
+      if (isTarget && isTemporary) {
           return false;
-        }
+      }
 
-        // Remove this object from target lists
-        if (eff.targetIds && eff.targetIds.includes(card.id)) {
-          eff.targetIds = eff.targetIds.filter((id) => id !== card.id);
-        }
-        return true;
-      });
+      // If it's a multi-target effect and this object is just one of the targets, 
+      // remove this object from the target list but keep the effect for others.
+      if (isTarget && eff.targetIds) {
+          eff.targetIds = eff.targetIds.filter(id => id !== card.id);
+      }
+
+      // Rule 611.2a: Floating effects from OTHER sources (e.g. an anthem from a sorcery that resolved)
+      // stick to the objects they found at resolution. Since this is a "new" object, 
+      // it is no longer one of those objects.
+      return true;
+    });
 
     // 2. Reset dynamic engine properties
     card.isTapped = false;
@@ -468,9 +464,11 @@ export class ActionProcessor {
     card.summoningSickness = false;
     card.isPhasedOut = false;
     card.isRevealed = false; // Rule 400.7: Clear revealed status on zone change
+    card.isGoaded = false;
     card.counters = {};
     card.attachedTo = undefined;
-    card.isGoaded = false;
+    card.effectiveStats = undefined;
+    card.modifierSnapshot = null;
 
     // Rule 711.4a: MDFC reverts to front face in non-battlefield/stack zones
     if (to !== Zone.Battlefield && to !== Zone.Stack) {

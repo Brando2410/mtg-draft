@@ -109,9 +109,9 @@ export class ChoiceProcessor {
         }
 
         // Handle multi-choice (batch selection) separated by '|'
-        if (typeof choiceIndex === 'string' && choiceIndex.includes('|') && !action.data?.isTargetingModal) {
-            // If it's a cost choice (TapSelection), we skip the resolution-of-effects logic
-            if (action.data?.isCostChoice) {
+        if (typeof choiceIndex === 'string' && choiceIndex.includes('|')) {
+            // If it's a cost choice, spell casting mode selection, OR a targeting modal, we go through handleModalSelection
+            if (action.data?.isCostChoice || action.data?.isSpellCasting || action.data?.isTargetingModal) {
                 return this.handleModalSelection(state, playerId, action.sourceId as string, null, choiceIndex, action, engine);
             }
             const indices = choiceIndex.split('|').map(s => {
@@ -121,11 +121,24 @@ export class ChoiceProcessor {
             const sourceId = action.sourceId;
             const allEffects: EffectDefinition[] = [];
             let finalChoice: ChoiceOption | null = null;
-
+            let currentTargetOffset = 0;
             indices.forEach(idx => {
                 const choice = action.data?.choices?.[idx];
                 if (choice) {
-                    if (choice.effects) allEffects.push(...choice.effects);
+                    if (choice.effects) {
+                        // Deep clone and inject targetOffset
+                        const choiceEffects = JSON.parse(JSON.stringify(choice.effects)).map((e: any) => ({
+                            ...e,
+                            targetOffset: currentTargetOffset
+                        }));
+                        allEffects.push(...choiceEffects);
+                    }
+
+                    if (choice.targetDefinition) {
+                        const { targeting: TP } = getProcessors(state);
+                        const counts = TP.calculateTotalCounts(choice.targetDefinition, action.data?.xValue || 0);
+                        currentTargetOffset += counts.maxCount;
+                    }
                     finalChoice = choice; // Use metadata from the last one if needed
                 }
             });
@@ -721,14 +734,17 @@ export class ChoiceProcessor {
 
         let finalTargets = savedTargets;
         if (action.data?.isTargetingModal) {
+            let newTargets: string[] = [];
             if (typeof choiceIndex === 'string' && choiceIndex.includes('|')) {
-                finalTargets = choiceIndex.split('|').map(s => {
+                newTargets = choiceIndex.split('|').map(s => {
                     const i = parseInt(s.startsWith('CHOICE_') ? s.substring(7) : s);
                     return action.data?.choices?.[i]?.value as string;
                 }).filter(v => v);
             } else {
-                finalTargets = choice?.value ? [choice.value as string] : [];
+                newTargets = choice?.value ? [choice.value as string] : [];
             }
+            finalTargets = [...savedTargets, ...newTargets];
+            logger.info(state, LogCategory.ACTION, `[MODAL-TARGET-APPEND] Appended ${newTargets.length} modal targets to ${savedTargets.length} previous ones. Total: ${finalTargets.length}`);
         }
 
         const isTargeting = !!action.data?.isTargetingModal;
@@ -933,8 +949,10 @@ export class ChoiceProcessor {
     private static handleXChoice(state: GameState, playerId: string, action: PendingAction, xValue: any, engine: any): boolean {
         const { logger } = getProcessors(state);
         let x = 0;
-        if (typeof xValue === 'object' && xValue !== null && 'x' in xValue) {
-            x = parseInt(String(xValue.x));
+        if (typeof xValue === 'object' && xValue !== null) {
+            if ('x' in xValue) x = parseInt(String(xValue.x));
+            else if ('index' in xValue) x = parseInt(String(xValue.index));
+            else if ('value' in xValue) x = parseInt(String(xValue.value));
         } else if (typeof xValue === 'number') {
             x = xValue;
         } else if (typeof xValue === 'string') {

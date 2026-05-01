@@ -172,7 +172,8 @@ export class RuleUtils {
                     (parentContext?.event as any)?.payload?.object?.xValue ??
                     0;
             case "X_PLUS_1": return (this.resolveAmount(state, "X", context) || 0) + 1;
-            case "2_POW_X": return Math.pow(2, this.resolveAmount(state, "X", context) || 0);
+            case "X_POWER_OF_2":
+                return Math.pow(2, this.resolveAmount(state, "X", context) || 0);
 
             case "SOURCE_POWER":
             case "SOURCE_TOUGHNESS": {
@@ -207,6 +208,17 @@ export class RuleUtils {
 
             case "CREATURES_DIED_THIS_TURN_COUNT":
                 return state.turnState.creaturesDiedThisTurn?.length || 0;
+
+            case "DISCARDED_COUNT":
+                return state.turnState.lastDiscardedIds?.length || 0;
+
+            case "INSTANT_SORCERY_IN_GRAVEYARD_COUNT": {
+                const player = state.players[controllerId];
+                if (!player) return 0;
+                return player.graveyard.filter(c => 
+                    c.definition.types.some(t => t.toLowerCase() === 'instant' || t.toLowerCase() === 'sorcery')
+                ).length;
+            }
 
             case "EVENT_AMOUNT":
                 return (stackObject?.data as any)?.eventAmount ??

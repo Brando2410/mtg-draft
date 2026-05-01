@@ -268,6 +268,7 @@ export interface BaseEffect {
     onFailureEffects?: EffectDefinition[];
     isFreeCast?: boolean;
     metadata?: Record<string, any>;
+    targetOffset?: number;
     [key: string]: any; // Transitional compatibility
 }
 
@@ -342,6 +343,9 @@ export interface RestrictionDefinition {
 export interface ModalEffect extends BaseEffect {
     type: typeof EffectType.Choice;
     selectionPool?: TargetMapping | string;
+    minChoices?: number;
+    maxChoices?: number;
+    allowDuplicates?: boolean;
     choices: {
         label: string;
         effects?: EffectDefinition[];

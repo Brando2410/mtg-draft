@@ -7,6 +7,8 @@ import {
 import { RuleUtils } from "../../../utils/RuleUtils";
 import { ManaProcessor } from "../../magic/ManaProcessor";
 import { TargetValidator } from "./TargetValidator";
+import { LogCategory } from "../../../utils/EngineLogger";
+import { getProcessors } from "../../ProcessorRegistry";
 
 export class TargetMapper {
   public static calculateTotalCounts(
@@ -409,40 +411,49 @@ export class TargetMapper {
       case TargetMapping.LastMilledIds:
         return state.turnState.lastMilledIds || [];
       case TargetMapping.Target1: {
+        const offset = effect?.targetOffset || 0;
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
-        return actualTargets[0] ? [actualTargets[0]] : [];
+        return actualTargets[offset] ? [actualTargets[offset]] : [];
       }
       case TargetMapping.SelfAndTarget1: {
+        const offset = effect?.targetOffset || 0;
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
-        return actualTargets[0] ? [sourceId, actualTargets[0]] : [sourceId];
+        return actualTargets[offset] ? [sourceId, actualTargets[offset]] : [sourceId];
       }
       case TargetMapping.Target2: {
+        const offset = (effect?.targetOffset || 0) + 1;
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
-        return actualTargets[1] ? [actualTargets[1]] : [];
+        return actualTargets[offset] ? [actualTargets[offset]] : [];
       }
       case TargetMapping.Target3: {
+        const offset = (effect?.targetOffset || 0) + 2;
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
-        return actualTargets[2] ? [actualTargets[2]] : [];
+        return actualTargets[offset] ? [actualTargets[offset]] : [];
       }
       case TargetMapping.Target4: {
+        const offset = (effect?.targetOffset || 0) + 3;
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
-        return actualTargets[3] ? [actualTargets[3]] : [];
+        return actualTargets[offset] ? [actualTargets[offset]] : [];
       }
       case TargetMapping.Target5: {
+        const offset = (effect?.targetOffset || 0) + 4;
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
-        return actualTargets[4] ? [actualTargets[4]] : [];
+        return actualTargets[offset] ? [actualTargets[offset]] : [];
       }
       case TargetMapping.Target6: {
+        const offset = (effect?.targetOffset || 0) + 5;
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
-        return actualTargets[5] ? [actualTargets[5]] : [];
+        return actualTargets[offset] ? [actualTargets[offset]] : [];
       }
       case TargetMapping.Target7: {
+        const offset = (effect?.targetOffset || 0) + 6;
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
-        return actualTargets[6] ? [actualTargets[6]] : [];
+        return actualTargets[offset] ? [actualTargets[offset]] : [];
       }
       case TargetMapping.Target8: {
+        const offset = (effect?.targetOffset || 0) + 7;
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
-        return actualTargets[7] ? [actualTargets[7]] : [];
+        return actualTargets[offset] ? [actualTargets[offset]] : [];
       }
       case TargetMapping.TargetAll:
         return ((stackData as any)?.targets || targets || []).filter(Boolean);
@@ -792,13 +803,15 @@ export class TargetMapper {
   public static getDefinitionForIndex(
     targetDef: any,
     targetIndex: number,
+    xValue: number = 0
   ): any {
     if (!targetDef) return null;
     const def = (() => {
       if (!Array.isArray(targetDef)) return targetDef;
       let cumulative = 0;
       for (const d of targetDef) {
-        const count = typeof d.count === "number" ? d.count : 1;
+        const counts = this.calculateTotalCounts(d, xValue);
+        const count = counts.maxCount;
         if (targetIndex >= cumulative && targetIndex < cumulative + count) {
           return d;
         }
@@ -806,7 +819,6 @@ export class TargetMapper {
       }
       return targetDef[targetDef.length - 1];
     })();
-    // console.log(`[MAPPER-DEBUG] targetIndex ${targetIndex} resolved to:`, JSON.stringify(def));
     return def;
   }
 }

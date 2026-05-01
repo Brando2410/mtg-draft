@@ -13,6 +13,8 @@ export class RegistryProcessor {
      * This method analyzes a card's logic and registers its active abilities to the ruleRegistry.
      */
     public static registerAbilities(state: GameState, card: GameObject) {
+        state._triggerCache = undefined; // Invalidate trigger cache
+        state._statsCache = undefined;   // Invalidate stats cache
         this.unregisterAbilities(state, card.id);
         const logic = oracle.getCard(card.definition.name);
         const abilities = (logic?.abilities || (card.definition as any).abilities || []);
@@ -61,6 +63,8 @@ export class RegistryProcessor {
      * Rule 400.7: Objects leaving zones usually lose their identity.
      */
     public static unregisterAbilities(state: GameState, cardId: string) {
+        state._triggerCache = undefined; // Invalidate trigger cache
+        state._statsCache = undefined;   // Invalidate stats cache
         state.ruleRegistry.triggeredAbilities = state.ruleRegistry.triggeredAbilities.filter(t => t.sourceId !== cardId);
         state.ruleRegistry.activatedAbilities = state.ruleRegistry.activatedAbilities.filter(a => a.sourceId !== cardId);
         state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(c => {

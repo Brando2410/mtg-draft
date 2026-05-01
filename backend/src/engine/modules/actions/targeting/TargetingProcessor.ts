@@ -5,7 +5,9 @@ import {
     TargetingContext,
     ResolutionContext,
     Zone,
-    CostType
+    CostType,
+    TargetType,
+    ActionType
 } from '@shared/engine_types';
 import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
@@ -35,7 +37,7 @@ export class TargetingProcessor {
     public static getColors(obj: any, state?: GameState): string[] { return TargetValidator.getColors(obj, state); }
     public static getLegalTargetPool(state: GameState, sourceId: string, targetDef: any, controllerId: string, targetIndex: number = 0): string[] { return TargetValidator.getLegalTargetPool(state, sourceId, targetDef, controllerId, targetIndex); }
     public static resolveTargetMapping(state: GameState, mapping: string, context: ResolutionContext, effect?: any): string[] { return TargetMapper.resolveTargetMapping(state, mapping, context, effect); }
-    public static getDefinitionForIndex(targetDef: any, targetIndex: number): any { return TargetMapper.getDefinitionForIndex(targetDef, targetIndex); }
+    public static getDefinitionForIndex(targetDef: any, targetIndex: number, xValue: number = 0): any { return TargetMapper.getDefinitionForIndex(targetDef, targetIndex, xValue); }
     public static shouldFizzle(state: GameState, context: TargetingContext, targets: string[], effects: any[]): boolean { return TargetValidator.shouldFizzle(state, context, targets, effects); }
 
     /**
@@ -59,7 +61,8 @@ export class TargetingProcessor {
         const isSkipping = targetId === 'skip' || targetId === 'none' || targetId === 'confirm' || targetId === 'done';
         const isUndoing = targetId === 'undo' || targetId === 'back';
 
-        const counts = TargetingProcessor.calculateTotalCounts(targetDef, (actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0)));
+        const xValue = (actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0));
+        const counts = TargetingProcessor.calculateTotalCounts(targetDef, xValue);
         const { maxCount, minCount, count } = counts;
 
         actionData.selectedTargets = actionData.selectedTargets || [];
@@ -72,11 +75,10 @@ export class TargetingProcessor {
             actionData.prompt = TargetingProcessor.generateTargetPrompt(
                 targetDef,
                 actionData.selectedTargets.length,
-                (actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0)),
+                xValue,
                 actionData.isSpellCasting
             );
         };
-
         updatePrompt();
 
         const { logger } = getProcessors(state);
@@ -86,7 +88,7 @@ export class TargetingProcessor {
 
                 // Refresh prompt and pool for the NEW index after removing
                 const nextIndex = actionData.selectedTargets.length;
-                const currentDef = this.getDefinitionForIndex(targetDef, nextIndex);
+                const currentDef = this.getDefinitionForIndex(targetDef, nextIndex, xValue);
                 if (currentDef?.label) {
                     actionData.label = currentDef.label;
                 }
@@ -304,7 +306,7 @@ export class TargetingProcessor {
         // Update legal targets for the next index if there are more targets to select
         if (actionData.selectedTargets.length < maxCount) {
             const nextIndex = actionData.selectedTargets.length;
-            const currentDef = this.getDefinitionForIndex(targetDef, nextIndex);
+            const currentDef = this.getDefinitionForIndex(targetDef, nextIndex, xValue);
             if (currentDef?.label) {
                 actionData.label = currentDef.label;
             }
@@ -315,13 +317,61 @@ export class TargetingProcessor {
                 ...state.stack.map((o: any) => o.id),
                 ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
             ];
-            actionData.targets = pool.filter(tid => this.isLegalTarget(state, {
+            
+            const legalTargets = pool.filter(tid => this.isLegalTarget(state, {
                 sourceId: action.sourceId || "",
                 controllerId: playerId,
                 stackObject: actionData.stackObj,
                 targetDef: targetDef,
                 targetIndex: nextIndex
             }, tid));
+
+            // ENHANCEMENT: Consecutive Zone Shift
+            // If the current target is off-battlefield, group all consecutive off-battlefield targets into one modal.
+            const isOffBattlefield = currentDef.type === TargetType.CardInGraveyard || currentDef.type === TargetType.CardInExile;
+            
+            if (isOffBattlefield && legalTargets.length > 0) {
+                // Calculate how many consecutive targets from this point share an off-battlefield zone
+                let consecutiveCount = 0;
+                let consecutiveMin = 0;
+                for (let i = nextIndex; i < maxCount; i++) {
+                    const d = this.getDefinitionForIndex(targetDef, i, xValue);
+                    if (d.type === TargetType.CardInGraveyard || d.type === TargetType.CardInExile) {
+                        consecutiveCount++;
+                        if (!d.optional && (d.minCount === undefined || d.minCount > 0)) {
+                            consecutiveMin++;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+
+                const choices = legalTargets.map(tid => {
+                    const obj = RuleUtils.findObject(state, tid);
+                    return {
+                        label: obj?.definition?.name || tid,
+                        value: tid,
+                        cardData: obj,
+                        selectable: true
+                    };
+                });
+
+                logger.info(state, LogCategory.ACTION, `[ZONE-SHIFT] Target ${nextIndex + 1} shifted to Modal. Grouping ${consecutiveCount} consecutive ${currentDef.type} targets. (Min: ${consecutiveMin})`);
+                
+                state.pendingAction.type = ActionType.ModalSelection;
+                actionData.isTargetingModal = true;
+                actionData.choices = choices;
+                
+                // The modal only handles THIS block of targets
+                actionData.minChoices = Math.max(1, consecutiveMin);
+                actionData.maxChoices = consecutiveCount;
+                
+                // Ensure we keep existing targets for ChoiceProcessor to append to
+                actionData.declaredTargets = actionData.selectedTargets;
+                return true;
+            }
+
+            actionData.targets = legalTargets;
         }
 
         return true;

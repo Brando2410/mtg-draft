@@ -374,6 +374,7 @@ export class ChoiceEffectHandler {
         minChoices: EP.resolveAmount(state, ((effect as any).minChoices || 1), context, targets),
         maxChoices: EP.resolveAmount(state, ((effect as any).maxChoices || 1), context, targets),
         exileOnResolution: !!(effect as any).exileOnResolution || (effect.effects || []).some((e: any) => e.exileOnResolution),
+        allowDuplicates: effect.allowDuplicates,
         stackObj: stackObject,
         parentContext: context,
         targets: originalTargets,

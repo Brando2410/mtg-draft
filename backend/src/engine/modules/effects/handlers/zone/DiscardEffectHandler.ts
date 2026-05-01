@@ -14,7 +14,7 @@ export class DiscardEffectHandler {
         const playerIds = finalTargetIds.filter(id => state.players[id as PlayerId]) as PlayerId[];
         if (playerIds.length === 0 && !effect.targetDefinition && !effect.targetMapping) playerIds.push(controllerId);
 
-        const amount = typeof discardEff.amount === "number" ? discardEff.amount : 1;
+        const amount = (typeof discardEff.amount === "number" || typeof discardEff.amount === "string") ? discardEff.amount : 1;
         
         if (playerIds.length > 0) {
             state.pendingAction = ChoiceGenerator.createDiscardChoice(

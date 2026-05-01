@@ -27,8 +27,8 @@ export const SpecializedRestrictions: Record<string, IRestrictionHandler> = {
             return false;
         }
     },
-    FROMHAND,
-    CASTFROMHAND: FROMHAND,
+    FROM_HAND: FROMHAND,
+    CAST_FROM_HAND: FROMHAND,
     "MONOCOLORED": {
         matches(state, targetObj: any, r, context) {
             const { targeting: TP } = getProcessors(state);

@@ -22,7 +22,8 @@ export const PrimaryResearch: CardDefinition = {
           Restriction.ManaValue3OrLess,
           Restriction.YouOwn
         ],
-        count: 1
+        minCount: 0,
+        maxCount: 1
       },
       effects: [
         {

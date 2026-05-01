@@ -33,6 +33,14 @@ export const ChoiceModal = ({
   const [scryState, setScryState] = useState<{ top: any[], bottom: any[], graveyard: any[] }>({ top: [], bottom: [], graveyard: [] });
   const [viewedPlayerId, setViewedPlayerId] = useState<string | null>(null);
 
+  // CRITICAL: Reset state when the action changes (e.g. from mode selection to targeting modal)
+  useEffect(() => {
+    setSelectedIndices([]);
+    setOrderedTriggers([]);
+    setScryState({ top: [], bottom: [], graveyard: [] });
+    setViewedPlayerId(null);
+  }, [pendingAction?.type, pendingAction?.sourceId, pendingAction?.data?.label]);
+
   const sourceId = pendingAction?.sourceId;
   const sourceObject = useMemo(() => {
     if (!sourceId) return null;
@@ -116,7 +124,8 @@ export const ChoiceModal = ({
 
   useEffect(() => {
     if (me?.id) setViewedPlayerId(me.id);
-  }, [pendingAction?.id, pendingAction?.sourceId, me?.id]);
+    setSelectedIndices([]); // Reset selections whenever the action context changes
+  }, [pendingAction?.id, pendingAction?.type, pendingAction?.sourceId, me?.id]);
 
   if (!isChoiceAction) return null;
 
@@ -126,6 +135,7 @@ export const ChoiceModal = ({
   const handleChoiceClick = (originalIdx: number) => {
       const choice = choices[originalIdx];
       if (!choice || choice.selectable === false) return;
+      const allowDuplicates = pendingAction?.data?.allowDuplicates;
 
       if (maxChoices === 1) {
           if (choice.cardData) {
@@ -138,11 +148,30 @@ export const ChoiceModal = ({
               onTapCard?.(`CHOICE_${originalIdx}`);
           }
       } else {
-          if (selectedIndices.includes(originalIdx)) {
-              setSelectedIndices(selectedIndices.filter(i => i !== originalIdx));
-          } else if (selectedIndices.length < maxChoices) {
-              setSelectedIndices([...selectedIndices, originalIdx]);
+          if (allowDuplicates) {
+              if (selectedIndices.length < maxChoices) {
+                  setSelectedIndices([...selectedIndices, originalIdx]);
+              }
+          } else {
+              if (selectedIndices.includes(originalIdx)) {
+                  setSelectedIndices(selectedIndices.filter(i => i !== originalIdx));
+              } else if (selectedIndices.length < maxChoices) {
+                  setSelectedIndices([...selectedIndices, originalIdx]);
+              }
           }
+      }
+  };
+
+  const handleChoiceRightClick = (e: React.MouseEvent, originalIdx: number) => {
+      e.preventDefault();
+      const allowDuplicates = pendingAction?.data?.allowDuplicates;
+      if (!allowDuplicates) return;
+
+      const firstMatch = selectedIndices.indexOf(originalIdx);
+      if (firstMatch !== -1) {
+          const newIndices = [...selectedIndices];
+          newIndices.splice(firstMatch, 1);
+          setSelectedIndices(newIndices);
       }
   };
 
@@ -392,8 +421,10 @@ export const ChoiceModal = ({
                                   {filteredCardChoices.map((choice: any, idx: number) => {
                                       const originalIdx = choices.indexOf(choice);
                                       const isSelected = selectedIndices.includes(originalIdx);
+                                      const allowDuplicates = pendingAction?.data?.allowDuplicates;
+                                      const selectionCount = selectedIndices.filter(i => i === originalIdx).length;
                                       return (
-                                          <motion.div key={choice.cardData.id || `choice-card-${idx}`} className={`relative cursor-pointer transition-all hover:translate-y-[-5px] ${isSelected ? 'z-20 scale-105' : 'z-10'}`} onClick={() => handleChoiceClick(originalIdx)}>
+                                          <motion.div key={choice.cardData.id || `choice-card-${idx}`} className={`relative cursor-pointer transition-all hover:translate-y-[-5px] ${isSelected ? 'z-20 scale-105' : 'z-10'}`} onClick={() => handleChoiceClick(originalIdx)} onContextMenu={(e) => handleChoiceRightClick(e, originalIdx)}>
                                               <div className="w-[calc(var(--u)*26)] h-[calc(var(--u)*18.7)]">
                                                   <GameCard obj={choice.cardData} variant="battlefield" onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} isSelected={false} disableHoverAnim={true} />
                                               </div>
@@ -402,7 +433,7 @@ export const ChoiceModal = ({
                                                       <div className="absolute inset-x-[-4px] inset-y-[-4px] border-[4px] border-yellow-400 rounded-xl shadow-[0_0_30px_rgba(250,204,21,0.8)] pointer-events-none z-10" />
                                                       {maxChoices > 1 && (
                                                           <div className="absolute -top-4 -right-4 w-10 h-10 bg-yellow-400 text-slate-950 font-black rounded-full flex items-center justify-center border-4 border-[#0b0f1a] shadow-2xl z-30 text-sm italic">
-                                                              {selectedIndices.indexOf(originalIdx) + 1}
+                                                              {allowDuplicates ? `x${selectionCount}` : selectedIndices.indexOf(originalIdx) + 1}
                                                           </div>
                                                       )}
                                                   </>
@@ -426,11 +457,15 @@ export const ChoiceModal = ({
                                                      label.length > 50 ? 'text-xs p-5' : 
                                                      label.length > 30 ? 'text-sm p-5' : 'text-base p-6';
                                       
+                                      const allowDuplicates = pendingAction?.data?.allowDuplicates;
+                                      const selectionCount = selectedIndices.filter(i => i === originalIdx).length;
+
                                       return (
                                           <button 
                                               key={`choice-button-${originalIdx}-${idx}`} 
                                               onClick={() => isSelectable && handleChoiceClick(originalIdx)} 
-                                              className={`w-full rounded-[2rem] border font-black uppercase italic tracking-[0.2em] transition-all shadow-2xl ${fontSize}
+                                              onContextMenu={(e) => isSelectable && handleChoiceRightClick(e, originalIdx)}
+                                              className={`w-full rounded-[2rem] border font-black uppercase italic tracking-[0.2em] transition-all shadow-2xl ${fontSize} relative
                                                   ${!isSelectable 
                                                       ? 'bg-slate-900/40 border-white/5 text-slate-600 cursor-not-allowed opacity-50 grayscale' 
                                                       : isSelected 
@@ -438,7 +473,18 @@ export const ChoiceModal = ({
                                                           : 'bg-slate-800/40 hover:bg-slate-800/80 border-white/5 text-slate-400 hover:text-white hover:translate-y-[-4px] active:scale-[0.98]'
                                                   }`}
                                           >
-                                              {label}
+                                              <div className="flex items-center justify-between gap-4">
+                                                <span className="flex-1 text-center">{label}</span>
+                                                {allowDuplicates && selectionCount > 0 && (
+                                                    <motion.span 
+                                                        initial={{ scale: 0.5, opacity: 0 }}
+                                                        animate={{ scale: 1, opacity: 1 }}
+                                                        className="w-10 h-10 bg-yellow-400 text-slate-950 rounded-full flex items-center justify-center text-sm shadow-[0_0_15px_rgba(250,204,21,0.5)] border-2 border-[#0b0f1a]"
+                                                    >
+                                                        x{selectionCount}
+                                                    </motion.span>
+                                                )}
+                                              </div>
                                               {!isSelectable && (
                                                   <div className="text-[9px] mt-1 opacity-60 tracking-normal font-bold">Cannot satisfy costs</div>
                                               )}

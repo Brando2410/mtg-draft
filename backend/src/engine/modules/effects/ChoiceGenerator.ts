@@ -18,6 +18,7 @@ export interface ChoiceConfig {
     costType?: string;
     isFreeCast?: boolean;
     exileOnResolution?: boolean;
+    allowDuplicates?: boolean;
     metadata?: any;
 }
 
@@ -106,7 +107,7 @@ export class ChoiceGenerator {
      */
     public static createModalChoice(
         state: GameState,
-        config: ChoiceConfig & { minChoices?: number, maxChoices?: number, lookingCards?: GameObject[] },
+        config: ChoiceConfig & { minChoices?: number, maxChoices?: number, allowDuplicates?: boolean, lookingCards?: GameObject[] },
         choices: { label: string, value: any, costs?: any[], effects?: any[] }[]
     ) {
         const { cost: CostProcessor } = getProcessors(state);
@@ -118,6 +119,7 @@ export class ChoiceGenerator {
             })),
             hideUndo: config.hideUndo,
             lookingCards: config.lookingCards,
+            allowDuplicates: config.allowDuplicates,
             stackObj: config.stackObj,
             parentContext: pruneContext(config.parentContext),
             targets: config.targets,
