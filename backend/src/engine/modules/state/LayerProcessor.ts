@@ -11,6 +11,7 @@ import { getProcessors } from "../ProcessorRegistry";
 let TargetingProcessor: any;
 let ConditionProcessor: any;
 import { LogCategory, EngineLogger } from "../../utils/EngineLogger";
+import { Profiler } from "../../utils/Profiler";
 
 import type { SpellProcessor as SpellProcessorType } from "../actions/spells/SpellProcessor";
 import type { EffectProcessor as EffectProcessorType } from "../effects/EffectProcessor";
@@ -38,8 +39,11 @@ export class LayerProcessor {
     // FAST PATH: Check the state-level stats cache
     const cache = state._statsCache as any;
     if (cache && (cache instanceof Map) && (cache as any).version === state.stateVersion && cache.has(obj.id)) {
+      Profiler.increment('cache.layer.hit');
       return cache.get(obj.id);
     }
+    
+    Profiler.increment('cache.layer.miss');
 
     // RECURSION GUARD: Prevent infinite loops where conditions depend on effective stats
     if (this.calculationStack.has(obj.id)) {
@@ -56,6 +60,7 @@ export class LayerProcessor {
       };
     }
 
+    Profiler.start(`layer.calc`);
     this.calculationStack.add(obj.id);
 
     if (!EffectProcessor || !TargetingProcessor || !ConditionProcessor) {
@@ -277,6 +282,7 @@ export class LayerProcessor {
       return stats;
     } finally {
       this.calculationStack.delete(obj.id);
+      Profiler.endWithThreshold(`layer.calc`, 2.0); // 2ms threshold for stat calculations
     }
   }
 

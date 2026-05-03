@@ -7,6 +7,7 @@ import { DraftService } from './services/DraftService';
 import { LoggerService } from './services/LoggerService';
 import { PersistenceService } from './services/PersistenceService';
 import { SocketHandlers } from './socket/handlers';
+import { Profiler } from './engine/utils/Profiler';
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -20,6 +21,7 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 4000;
 
 async function start() {
+   Profiler.initLagMonitor();
    PersistenceService.init();
    const rooms = await PersistenceService.loadRooms();
 

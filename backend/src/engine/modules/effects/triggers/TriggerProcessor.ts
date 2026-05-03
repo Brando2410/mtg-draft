@@ -21,6 +21,7 @@ import { RuleUtils } from "../../../utils/RuleUtils";
 import { oracle } from "../../../OracleLogicMap";
 import { getProcessors } from "../../ProcessorRegistry";
 import { LayerProcessor } from "../../state/LayerProcessor";
+import { Profiler } from "../../../utils/Profiler";
 
 /**
  * Rules Engine Module: Triggered Abilities (Rule 603)
@@ -35,125 +36,130 @@ export class TriggerProcessor {
     state: GameState,
     event: GameEvent,
   ) {
-    const { logger } = getProcessors(state);
-    if (event.type === TriggerEvent.ResolveSpell || event.type === TriggerEvent.PreCombatMainPhaseStart) {
-      logger.debug(state, LogCategory.TRIGGER, `Processing event: ${event.type}`);
-    }
-    // 1. Identify all triggered abilities that match this event (Rule 603.2)
-    const matchingTriggers = this.collectMatchingTriggers(state, event);
-
-    // 2. Process system-recognized keywords (Prowess, Ward, etc.)
-    this.processSystemKeywords(state, event, matchingTriggers);
-
-    if (matchingTriggers.length === 0) return;
-
-    // --- DEDUPLICATION (Fix for Issue #2: prevents multiple triggers for the same ability instance) ---
-    // We use a composite key of sourceId + ability name (or type) to ensure we don't fire the same thing twice for one card.
-    const uniqueTriggersMap = new Map<string, any>();
-    matchingTriggers.forEach((t) => {
-      const key = `${t.id || t.sourceId + "_" + ((t as any).abilityIndex || 0)}`;
-      if (!uniqueTriggersMap.has(key)) {
-        uniqueTriggersMap.set(key, t);
+    Profiler.start('trigger.check');
+    try {
+      const { logger } = getProcessors(state);
+      if (event.type === TriggerEvent.ResolveSpell || event.type === TriggerEvent.PreCombatMainPhaseStart) {
+        logger.debug(state, LogCategory.TRIGGER, `Processing event: ${event.type}`);
       }
-    });
-    const uniqueTriggers = Array.from(uniqueTriggersMap.values());
+      // 1. Identify all triggered abilities that match this event (Rule 603.2)
+      const matchingTriggers = this.collectMatchingTriggers(state, event);
 
-    if (uniqueTriggers.length < matchingTriggers.length) {
-      logger.debug(state, LogCategory.TRIGGER, `Deduplicated ${matchingTriggers.length} triggers down to ${uniqueTriggers.length} for event ${event.type}.`);
-    }
+      // 2. Process system-recognized keywords (Prowess, Ward, etc.)
+      this.processSystemKeywords(state, event, matchingTriggers);
 
-    // 2. Queue all triggers in pending state
-    if (!state.pendingTriggers) state.pendingTriggers = [];
+      if (matchingTriggers.length === 0) return;
 
-    for (const trigger of uniqueTriggers) {
-      let triggerCount = 1;
-      const sourceObj = RuleUtils.findObject(state, trigger.sourceId);
+      // --- DEDUPLICATION (Fix for Issue #2: prevents multiple triggers for the same ability instance) ---
+      // We use a composite key of sourceId + ability name (or type) to ensure we don't fire the same thing twice for one card.
+      const uniqueTriggersMap = new Map<string, any>();
+      matchingTriggers.forEach((t) => {
+        const key = `${t.id || t.sourceId + "_" + ((t as any).abilityIndex || 0)}`;
+        if (!uniqueTriggersMap.has(key)) {
+          uniqueTriggersMap.set(key, t);
+        }
+      });
+      const uniqueTriggers = Array.from(uniqueTriggersMap.values());
 
-      // --- TRIGGER DOUBLING (CR 603.2c / 614.16) ---
-      // 1. Check Replacement Effects (Standardized for specific event buckets)
-      // Standard events: 'ON_TRIGGER', 'ON_SHRINE_TRIGGER' (legacy/specific)
-      const triggerEvents: string[] = [TriggerEvent.OnTrigger];
-      if (sourceObj && RuleUtils.hasSubtype(sourceObj, Restriction.Shrine)) {
-        triggerEvents.push(TriggerEvent.OnShrineTrigger);
+      if (uniqueTriggers.length < matchingTriggers.length) {
+        logger.debug(state, LogCategory.TRIGGER, `Deduplicated ${matchingTriggers.length} triggers down to ${uniqueTriggers.length} for event ${event.type}.`);
       }
 
-      for (const eventName of triggerEvents) {
-        const tEvent = {
-          type: eventName,
-          sourceId: trigger.sourceId,
-          playerId: trigger.controllerId,
-          data: { trigger, object: sourceObj }
-        };
+      // 2. Queue all triggers in pending state
+      if (!state.pendingTriggers) state.pendingTriggers = [];
 
-        const replacements = (state.ruleRegistry.replacementEffects || [])
-          .filter(r => r.replacesEvent === eventName);
+      for (const trigger of uniqueTriggers) {
+        let triggerCount = 1;
+        const sourceObj = RuleUtils.findObject(state, trigger.sourceId);
 
-        for (const r of replacements) {
-          const conditionMet = typeof r.condition === 'function' ? r.condition(state, tEvent, r) : true;
-          if (conditionMet && r.effects?.some((e: any) => e.type === EffectType.AddAdditionalTrigger)) {
-            triggerCount++;
-            logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${sourceObj?.definition.name || 'Ability'} triggers an additional time via replacement effect (${eventName}).`);
+        // --- TRIGGER DOUBLING (CR 603.2c / 614.16) ---
+        // 1. Check Replacement Effects (Standardized for specific event buckets)
+        // Standard events: 'ON_TRIGGER', 'ON_SHRINE_TRIGGER' (legacy/specific)
+        const triggerEvents: string[] = [TriggerEvent.OnTrigger];
+        if (sourceObj && RuleUtils.hasSubtype(sourceObj, Restriction.Shrine)) {
+          triggerEvents.push(TriggerEvent.OnShrineTrigger);
+        }
+
+        for (const eventName of triggerEvents) {
+          const tEvent = {
+            type: eventName,
+            sourceId: trigger.sourceId,
+            playerId: trigger.controllerId,
+            data: { trigger, object: sourceObj }
+          };
+
+          const replacements = (state.ruleRegistry.replacementEffects || [])
+            .filter(r => r.replacesEvent === eventName);
+
+          for (const r of replacements) {
+            const conditionMet = typeof r.condition === 'function' ? r.condition(state, tEvent, r) : true;
+            if (conditionMet && r.effects?.some((e: any) => e.type === EffectType.AddAdditionalTrigger)) {
+              triggerCount++;
+              logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${sourceObj?.definition.name || 'Ability'} triggers an additional time via replacement effect (${eventName}).`);
+            }
+          }
+        }
+
+        // 2. Check Continuous Effects (Generic 'triggers an additional time' modifiers)
+        const doublingEffects = state.ruleRegistry.continuousEffects.filter(e => e.type === EffectType.AddAdditionalTrigger);
+        for (const eff of doublingEffects) {
+          if (eff.controllerId !== trigger.controllerId) continue;
+
+          // Check restrictions (e.g. "Whenever an artifact... triggers twice")
+          if (eff.restrictions && sourceObj) {
+            const { targeting: TargetingProcessor } = getProcessors(state);
+            const matches = TargetingProcessor.matchesRestrictions(state, sourceObj, eff.restrictions, {
+              sourceId: eff.sourceId,
+              controllerId: eff.controllerId
+            });
+            if (!matches) continue;
+          }
+
+          triggerCount++;
+          logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${sourceObj?.definition.name || 'Ability'} triggers an additional time via continuous effect.`);
+        }
+
+        for (let i = 0; i < triggerCount; i++) {
+          // Increment usage (only for the first instance of a multi-trigger event)
+          if (trigger.limitPerTurn && i === 0) {
+            state.turnState.triggeredAbilitiesUsedThisTurn[trigger.id] =
+              (state.turnState.triggeredAbilitiesUsedThisTurn[trigger.id] || 0) + 1;
+          }
+
+          const stackObj = this.createStackObject(state, trigger, event);
+          state.pendingTriggers.push(stackObj);
+
+          // --- TRIGGER INTERCEPTION (Strict Proctor / Ward / etc.) ---
+          // Emit ON_TRIGGER_QUEUED to allow other abilities to respond to this trigger entering the stack.
+          if (event.type !== 'ON_TRIGGER_QUEUED') {
+            this.onEvent(state, {
+              type: 'ON_TRIGGER_QUEUED',
+              sourceId: stackObj.id, // We use the stack ID so it can be targeted/countered
+              playerId: trigger.controllerId,
+              data: { trigger, stackObj, originalEvent: event }
+            });
           }
         }
       }
+      // 4. Cleanup single-shot delayed triggers (Rule 603.7)
+      matchingTriggers.forEach((t) => {
+        if ((t as any).isDelayed) {
+          const startsWithUntil =
+            (t as any).duration &&
+            String((t as any).duration).toUpperCase().startsWith("UNTIL");
+          const isOneShot = (t as any).oneShot || (t as any).firesOnce;
 
-      // 2. Check Continuous Effects (Generic 'triggers an additional time' modifiers)
-      const doublingEffects = state.ruleRegistry.continuousEffects.filter(e => e.type === EffectType.AddAdditionalTrigger);
-      for (const eff of doublingEffects) {
-        if (eff.controllerId !== trigger.controllerId) continue;
-
-        // Check restrictions (e.g. "Whenever an artifact... triggers twice")
-        if (eff.restrictions && sourceObj) {
-          const { targeting: TargetingProcessor } = getProcessors(state);
-          const matches = TargetingProcessor.matchesRestrictions(state, sourceObj, eff.restrictions, {
-            sourceId: eff.sourceId,
-            controllerId: eff.controllerId
-          });
-          if (!matches) continue;
+          if (isOneShot || !startsWithUntil) {
+            state.ruleRegistry.triggeredAbilities =
+              state.ruleRegistry.triggeredAbilities.filter(
+                (orig) => orig.id !== t.id,
+              );
+          }
         }
-
-        triggerCount++;
-        logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${sourceObj?.definition.name || 'Ability'} triggers an additional time via continuous effect.`);
-      }
-
-      for (let i = 0; i < triggerCount; i++) {
-        // Increment usage (only for the first instance of a multi-trigger event)
-        if (trigger.limitPerTurn && i === 0) {
-          state.turnState.triggeredAbilitiesUsedThisTurn[trigger.id] =
-            (state.turnState.triggeredAbilitiesUsedThisTurn[trigger.id] || 0) + 1;
-        }
-
-        const stackObj = this.createStackObject(state, trigger, event);
-        state.pendingTriggers.push(stackObj);
-
-        // --- TRIGGER INTERCEPTION (Strict Proctor / Ward / etc.) ---
-        // Emit ON_TRIGGER_QUEUED to allow other abilities to respond to this trigger entering the stack.
-        if (event.type !== 'ON_TRIGGER_QUEUED') {
-          this.onEvent(state, {
-            type: 'ON_TRIGGER_QUEUED',
-            sourceId: stackObj.id, // We use the stack ID so it can be targeted/countered
-            playerId: trigger.controllerId,
-            data: { trigger, stackObj, originalEvent: event }
-          });
-        }
-      }
+      });
+    } finally {
+      Profiler.endWithThreshold('trigger.check', 10.0); // 10ms threshold for heavy trigger storms
     }
-    // 4. Cleanup single-shot delayed triggers (Rule 603.7)
-    matchingTriggers.forEach((t) => {
-      if ((t as any).isDelayed) {
-        const startsWithUntil =
-          (t as any).duration &&
-          String((t as any).duration).toUpperCase().startsWith("UNTIL");
-        const isOneShot = (t as any).oneShot || (t as any).firesOnce;
-
-        if (isOneShot || !startsWithUntil) {
-          state.ruleRegistry.triggeredAbilities =
-            state.ruleRegistry.triggeredAbilities.filter(
-              (orig) => orig.id !== t.id,
-            );
-        }
-      }
-    });
   }
 
   /**

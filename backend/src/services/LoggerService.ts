@@ -42,25 +42,41 @@ export class LoggerService {
   }
 
   static info(module: string, message: string, context?: LogContext) {
-    console.log(this.formatMessage('INFO', module, message, context));
+    const formatted = this.formatMessage('INFO', module, message, context);
+    console.log(formatted);
+    if (module === 'PROFILER') {
+      this.logToFile(`[INFO] [${new Date().toISOString()}] [${module}] ${message}`);
+    }
   }
 
   static warn(module: string, message: string, context?: LogContext) {
-    console.warn(this.formatMessage('WARN', module, message, context));
+    const formatted = this.formatMessage('WARN', module, message, context);
+    console.warn(formatted);
+    if (module === 'PROFILER') {
+      this.logToFile(`[WARN] [${new Date().toISOString()}] [${module}] ${message}`);
+    }
   }
 
   static error(module: string, message: string, error?: any, context?: LogContext) {
     const errMessage = error instanceof Error ? error.message : String(error);
     const fullMessage = error ? `${message} | Error: ${errMessage}` : message;
-    console.error(this.formatMessage('ERROR', module, fullMessage, context));
+    const formatted = this.formatMessage('ERROR', module, fullMessage, context);
+    console.error(formatted);
     if (error instanceof Error && error.stack) {
       console.error(`\x1b[31m${error.stack}\x1b[0m`);
+    }
+    if (module === 'PROFILER') {
+      this.logToFile(`[ERROR] [${new Date().toISOString()}] [${module}] ${fullMessage}`);
     }
   }
 
   static debug(module: string, message: string, context?: LogContext) {
     if (process.env.DEBUG === 'true' || process.env.NODE_ENV === 'development') {
-      console.log(this.formatMessage('DEBUG', module, message, context));
+      const formatted = this.formatMessage('DEBUG', module, message, context);
+      console.log(formatted);
+      if (module === 'PROFILER') {
+        this.logToFile(`[DEBUG] [${new Date().toISOString()}] [${module}] ${message}`);
+      }
     }
   }
 
