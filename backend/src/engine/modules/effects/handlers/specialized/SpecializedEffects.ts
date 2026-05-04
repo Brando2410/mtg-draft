@@ -193,7 +193,7 @@ export const ChaosWarpHandler: IEffectHandler = {
     if (!player) return;
 
     // 1. Shuffle into library
-    AP.moveCard(state, targetObj, Zone.Library, ownerId);
+    AP.moveCard(state, targetObj as GameObject, Zone.Library, ownerId);
     AP.shuffleLibrary(state, ownerId);
 
     // 2. Reveal top
@@ -219,7 +219,7 @@ export const ApproachOfTheSecondSunHandler: IEffectHandler = {
     const player = state.players[controllerId];
     if (!player) return;
 
-    const castFromHand = context.stackObject?.card?.lastNonStackZone === Zone.Hand;
+    const castFromHand = context.stackObject?.sourceObject?.lastNonStackZone === Zone.Hand;
     const castCount = state.gameStats?.castCounts[controllerId]["Approach of the Second Sun"] || 0;
 
     if (castFromHand && castCount >= 2) {
@@ -229,7 +229,7 @@ export const ApproachOfTheSecondSunHandler: IEffectHandler = {
       AP.gainLife(state, controllerId, 7);
 
       const stackObj = state.stack.find(s => s.id === sourceId);
-      const card = stackObj?.card;
+      const card = stackObj?.sourceObject;
       if (card) {
         const pos = Math.max(0, player.library.length - 6);
         AP.moveCard(state, card, Zone.Library, card.ownerId, pos);

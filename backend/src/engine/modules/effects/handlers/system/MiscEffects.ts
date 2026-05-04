@@ -98,7 +98,14 @@ export const NecromentiaHandler: IEffectHandler = {
                 AP.moveCard(state, c, Zone.Exile, c.ownerId);
                 TrP.onEvent(
                     state,
-                    { type: "ON_EXILE", targetId: c.id, sourceId, sourceZone: from }
+                    { 
+                        type: "ON_EXILE", 
+                        payload: { 
+                            sourceId, 
+                            targetIds: [c.id], 
+                            sourceZone: from 
+                        } 
+                    }
                 );
             });
         });

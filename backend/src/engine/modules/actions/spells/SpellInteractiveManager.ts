@@ -131,7 +131,7 @@ export class SpellInteractiveManager {
 
         // 1. Choice Cost
         const choiceCost = additionalCosts.find(c => c.type === CostType.Choice);
-        const hasChosenCostChoice = state.interaction?.lastChosenCostChoiceIndex !== undefined;
+        const hasChosenCostChoice = state.interaction?.lastChoiceIndex !== undefined;
 
         if (choiceCost && !hasChosenCostChoice) {
             const { logger, cost: CostProcessor } = getProcessors(state);
@@ -163,7 +163,7 @@ export class SpellInteractiveManager {
 
         // 2. Sacrifice Cost
         const sacrificeCost = additionalCosts.find(c => c.type === CostType.Sacrifice && !c.targetMapping);
-        const hasChosenSacrifice = state.interaction?.lastChosenSacrificeId !== undefined;
+        const hasChosenSacrifice = state.interaction?.lastSelections['Sacrifice'] !== undefined;
 
         if (sacrificeCost && !hasChosenSacrifice) {
             const legalSacrificeIds = state.battlefield
@@ -207,7 +207,7 @@ export class SpellInteractiveManager {
 
         // 3. Discard Cost
         const discardCost = additionalCosts.find(c => c.type === CostType.Discard);
-        const hasChosenDiscard = state.interaction?.lastChosenDiscardId !== undefined;
+        const hasChosenDiscard = state.interaction?.lastSelections['Discard'] !== undefined;
 
         if (discardCost && !hasChosenDiscard) {
             const player = state.players[playerId];
@@ -252,7 +252,7 @@ export class SpellInteractiveManager {
 
         // 4. Exile Cost
         const exileCost = additionalCosts.find(c => c.type === CostType.Exile && !c.targetMapping);
-        const hasChosenExile = state.interaction?.lastChosenExileIds !== undefined;
+        const hasChosenExile = state.interaction?.lastSelections['Exile'] !== undefined;
 
         if (exileCost && !hasChosenExile) {
             const player = state.players[playerId];
@@ -305,7 +305,7 @@ export class SpellInteractiveManager {
 
         // 5. TapSelection Cost
         const tapSelectionCost = additionalCosts.find(c => c.type === CostType.TapSelection);
-        const hasChosenTapSelection = state.interaction?.lastChosenTapSelectionIds !== undefined;
+        const hasChosenTapSelection = state.interaction?.lastSelections['TapSelection'] !== undefined;
 
         if (tapSelectionCost && !hasChosenTapSelection) {
             const legalTapIds = state.battlefield.filter(o =>
@@ -402,7 +402,7 @@ export class SpellInteractiveManager {
 
         // Sacrifice Cost
         const sacrificeCost = additionalCosts.find((cost) => cost.type === CostType.Sacrifice);
-        const hasChosenSacrifice = state.interaction?.lastChosenSacrificeId !== undefined;
+        const hasChosenSacrifice = state.interaction?.lastSelections['Sacrifice'] !== undefined;
         if (sacrificeCost && !hasChosenSacrifice) {
             const isSelfSac = (sacrificeCost as SacrificeCost).targetMapping === TargetMapping.Self || ((sacrificeCost as SacrificeCost).restrictions || []).some((r: any) => r === Restriction.Self);
             const legalSacrificeIds = state.battlefield.filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, (sacrificeCost as SacrificeCost).restrictions || [], {
@@ -418,9 +418,9 @@ export class SpellInteractiveManager {
             }
 
             if (isSelfSac) {
-                if (state.interaction) state.interaction.lastChosenSacrificeId = obj.id;
+                if (state.interaction) state.interaction.lastSelections['Sacrifice'] = [obj.id];
             } else if (legalSacrificeIds.length === 1) {
-                if (state.interaction) state.interaction.lastChosenSacrificeId = legalSacrificeIds[0];
+                if (state.interaction) state.interaction.lastSelections['Sacrifice'] = [legalSacrificeIds[0]];
             } else {
                 state.pendingAction = {
                     type: ActionType.ModalSelection,
@@ -446,7 +446,7 @@ export class SpellInteractiveManager {
 
         // Discard Cost
         const discardCost = additionalCosts.find((cost) => cost.type === CostType.Discard);
-        const hasChosenDiscard = state.interaction?.lastChosenDiscardId !== undefined;
+        const hasChosenDiscard = state.interaction?.lastSelections['Discard'] !== undefined;
         if (discardCost && !hasChosenDiscard) {
             const legalDiscardIds = player.hand.filter(c => TargetingProcessor.matchesRestrictions(state, c, (discardCost as DiscardCost).restrictions || [], {
                 sourceId: obj.id,
@@ -482,7 +482,7 @@ export class SpellInteractiveManager {
 
         // TapSelection Cost
         const tapSelectionCost = additionalCosts.find((cost) => cost.type === CostType.TapSelection);
-        const hasChosenTapSelection = state.interaction?.lastChosenTapSelectionIds !== undefined;
+        const hasChosenTapSelection = state.interaction?.lastSelections['TapSelection'] !== undefined;
         if (tapSelectionCost && !hasChosenTapSelection) {
             const legalTapIds = state.battlefield.filter(o => o.controllerId === playerId && !o.isTapped && TargetingProcessor.matchesRestrictions(state, o, (tapSelectionCost as TapSelectionCost).restrictions || [], {
                 sourceId: obj.id,
@@ -519,7 +519,7 @@ export class SpellInteractiveManager {
 
         // Exile Cost
         const exileCost = additionalCosts.find((cost) => cost.type === CostType.Exile);
-        const hasChosenExile = state.interaction?.lastChosenExileIds !== undefined;
+        const hasChosenExile = state.interaction?.lastSelections['Exile'] !== undefined;
         if (exileCost && !hasChosenExile) {
             const zones: Zone[] = (exileCost as ExileCost).sourceZones || [Zone.Battlefield];
             const pool = zones.flatMap((z: Zone) => {

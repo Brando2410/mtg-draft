@@ -9,13 +9,17 @@ import {
 } from "@shared/engine_types";
 import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
-let TargetingProcessor: any;
-let ConditionProcessor: any;
+import type { TargetingProcessor as TargetingProcessorType } from "../actions/targeting/TargetingProcessor";
+import type { ConditionProcessor as ConditionProcessorType } from "../core/logic/ConditionProcessor";
+
+let TargetingProcessor: typeof TargetingProcessorType;
+let ConditionProcessor: typeof ConditionProcessorType;
 import { LogCategory, EngineLogger } from "../../utils/EngineLogger";
 import { Profiler } from "../../utils/Profiler";
 
 import type { SpellProcessor as SpellProcessorType } from "../actions/spells/SpellProcessor";
 import type { EffectProcessor as EffectProcessorType } from "../effects/EffectProcessor";
+import type { PriorityProcessor as PriorityProcessorType } from "../core/turn/PriorityProcessor";
 
 // Static imports for performance (avoids require in loops)
 let EffectProcessor: typeof EffectProcessorType;
@@ -43,7 +47,7 @@ export class LayerProcessor {
       Profiler.increment('cache.layer.hit');
       return cache.get(obj.id);
     }
-    
+
     Profiler.increment('cache.layer.miss');
 
     // RECURSION GUARD: Prevent infinite loops where conditions depend on effective stats
@@ -93,7 +97,7 @@ export class LayerProcessor {
       };
       activeEffects.forEach(e => {
         // Support Hybrid Effects (Rule 613.1): An effect can exist in multiple layers simultaneously
-        
+
         // 1. Explicit Layer Attribution
         if (e.layer && layerMap[e.layer]) {
           layerMap[e.layer].push(e);
@@ -237,11 +241,9 @@ export class LayerProcessor {
       // Plus/Minus Counters in 7c
       const plus1 =
         (obj.counters?.["p1p1"] || 0) +
-        (obj.counters?.["p1p1_counter"] || 0) +
-        (obj.counters?.["+1/+1"] || 0) +
-        (obj.counters?.["+1/+1_counter"] || 0);
+        (obj.counters?.["+1/+1"] || 0);
       const minus1 =
-        (obj.counters?.["-1/-1"] || 0) + (obj.counters?.["-1/-1_counter"] || 0);
+        (obj.counters?.["-1/-1"] || 0);
       const counterBonus = plus1 - minus1;
       power += counterBonus;
       toughness += counterBonus;
@@ -528,7 +530,7 @@ export class LayerProcessor {
         ...p.library,
         ...p.virtualHand || []
       ]),
-      ...state.stack.map(s => s.card).filter(Boolean) as GameObject[]
+      ...state.stack.map(s => s.sourceObject).filter(Boolean) as GameObject[]
     ];
 
     allObjects.forEach(o => {
@@ -551,7 +553,7 @@ export class LayerProcessor {
    * Batch updates all derived fields (P/T, Keywords, isPlayable) for all relevant objects.
    * This should be called after any rule-changing event or zone transition.
    */
-  public static updateDerivedStats(state: GameState, PriorityProcessor: any) {
+  public static updateDerivedStats(state: GameState, PriorityProcessor: typeof PriorityProcessorType) {
     // 0. Initial Cache Setup
     this.rebuildObjectCache(state);
 

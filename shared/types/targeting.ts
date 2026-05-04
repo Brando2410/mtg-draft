@@ -270,7 +270,7 @@ export interface ManaValueRestriction {
 }
 
 export interface LogicRestriction {
-    type: 'Any' | 'All' | 'Not' | 'any' | 'all' | 'not';
+    type: 'any' | 'all' | 'not';
     restrictions?: TargetRestriction[];
     restriction?: TargetRestriction;
     [key: string]: any;

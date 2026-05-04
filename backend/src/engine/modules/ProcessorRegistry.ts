@@ -25,6 +25,7 @@ import type { LayerProcessor } from "./state/LayerProcessor";
 import type { LkiProcessor } from "./state/LkiProcessor";
 import type { StateBasedActionsProcessor } from "./state/StateBasedActionsProcessor";
 import { EngineLogger } from "../utils/EngineLogger";
+import type { oracle as oracleInstance } from "../OracleLogicMap";
 
 /**
  * ProcessorRegistry: Standardized interface for accessing core engine modules
@@ -57,7 +58,7 @@ export interface ProcessorRegistry {
     spellCostCalculator: typeof SpellCostCalculator;
     spellInteractiveManager: typeof SpellInteractiveManager;
     logger: typeof EngineLogger;
-    oracle: any;
+    oracle: typeof oracleInstance;
 }
 
 /**

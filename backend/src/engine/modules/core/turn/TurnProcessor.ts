@@ -213,6 +213,7 @@ export class TurnProcessor {
       playersWithPermanentReturnedThisTurn: {},
       noncombatDamageDealtToOpponents: {},
       creaturesAttackedThisTurn: 0,
+      creaturesEnteredThisTurn: {},
       creaturesDiedThisTurn: [],
       lastDamageAmount: 0,
       lastExcessDamageAmount: 0,

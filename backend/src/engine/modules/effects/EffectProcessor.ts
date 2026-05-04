@@ -96,7 +96,7 @@ export class EffectProcessor {
       }, targets, effects);
 
       if (fizzle) {
-        logger.info(state, LogCategory.ACTION, `[FIZZLE] ${stackObject?.card?.definition.name || "Spell"}: All targets have become illegal.`);
+        logger.info(state, LogCategory.ACTION, `[FIZZLE] ${stackObject?.sourceObject?.definition.name || "Spell"}: All targets have become illegal.`);
         return true; // Return true as fully resolved (but fizzled)
       }
     }
@@ -213,7 +213,8 @@ export class EffectProcessor {
 
     const sourceObj =
       this.findObject(state, sourceId, stackObject, parentContext, lookingCards) ||
-      (stackObject?.card ? stackObject.card : stackObject);
+      stackObject?.sourceObject ||
+      stackObject;
     const controllerId =
       (controllerIdOverride || (sourceObj as GameObject)?.controllerId || state.activePlayerId) as PlayerId;
     const { targeting: TP } = getProcessors(state);
@@ -227,7 +228,7 @@ export class EffectProcessor {
       stackObject,
       parentContext,
       startIndex: stackObject?.data?.startIndex || 0,
-      event: stackObject?.data?.eventData || (stackObject?.data as any)?.event,
+      event: stackObject?.data?.event,
       exiledIds: stackObject?.data?.exiledIds,
       lookingCards: (lookingCards || stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
       nextEffectIndex: stackObject?.data?.nextEffectIndex,

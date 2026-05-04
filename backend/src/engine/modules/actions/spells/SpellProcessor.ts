@@ -3,9 +3,11 @@ import {
     AbilityDefinition,
     AbilityType,
     ActionType,
+    BaseEntity,
     EffectType,
     GameObject,
     GameState,
+    StackObject,
     TriggerEvent,
     Zone
 } from '@shared/engine_types';
@@ -179,7 +181,7 @@ export class SpellProcessor {
         }
 
         // Priority: Oracle -> Current Definition on Object (for virtual spells/MDFCs)
-        const modalAbility = logic?.abilities?.find((a: any) => a.modes) || currentDefinition.abilities?.find((a: any) => typeof a !== 'string' && a.modes) as AbilityDefinition | undefined;
+        const modalAbility = logic?.abilities?.find((a) => a.modes) || currentDefinition.abilities?.find((a) => typeof a !== 'string' && (a as any).modes) as AbilityDefinition | undefined;
         const hasPreSelectedChoice = state.interaction?.lastChoiceIndex !== undefined;
         const lastChosenModeIndex = state.interaction?.lastChosenModeIndex;
         const hasPreSelectedMode = lastChosenModeIndex !== undefined;
@@ -192,9 +194,9 @@ export class SpellProcessor {
             (currentDefinition.abilities?.find((a: any) => typeof a !== 'string' && a.type === AbilityType.Spell) as AbilityDefinition | undefined)?.targetDefinitions;
 
         let spellEffects = logic?.effects ||
-            logic?.abilities?.find((a: any) => a.type === AbilityType.Spell)?.effects ||
+            logic?.abilities?.find((a) => a.type === AbilityType.Spell)?.effects ||
             (currentDefinition as any).effects ||
-            (currentDefinition.abilities?.find((a: any) => typeof a !== 'string' && a.type === AbilityType.Spell) as AbilityDefinition | undefined)?.effects || [];
+            (currentDefinition.abilities?.find((a: any) => typeof a !== 'string' && (a as any).type === AbilityType.Spell) as AbilityDefinition | undefined)?.effects || [];
 
         if (hasPreSelectedMode && modalAbility?.modes) {
             const indices = [...(Array.isArray(lastChosenModeIndex) ? lastChosenModeIndex : [lastChosenModeIndex])].sort((a, b) => (a as number) - (b as number));
@@ -278,7 +280,7 @@ export class SpellProcessor {
 
         // Step 1: Check Targeting
         const totalTargetCounts = targetDefinitions ? TargetingProcessor.calculateTotalCounts(targetDefinitions, cardToPlay.xValue || 0) : { maxCount: 0 };
-        
+
         if (targetDefinitions && (!declaredTargets || declaredTargets.length < totalTargetCounts.maxCount) && !bypassTargeting) {
             const result = SpellInteractiveManager.handleTargetingChoice(state, playerId, cardToPlay, targetDefinitions, totalMana, cardInstanceId, engine, parentContext, isFreeCast, exileOnResolution, declaredTargets);
             if (typeof result === 'boolean') return result;
@@ -441,35 +443,35 @@ export class SpellProcessor {
         }
 
         // Step 1: Preliminary Validation (Zone, Costs, Requirements, Limits)
-        if (!SpellValidator.validateAbilityActivation(state, playerId, obj, ability, abilityIndex)) {
+        if (!SpellValidator.validateAbilityActivation(state, playerId, obj as GameObject, ability, abilityIndex)) {
             return false;
         }
 
         // Step 1.5: Choose X
-        if (SpellInteractiveManager.handleAbilityXChoice(state, playerId, obj, abilityIndex, declaredTargets)) {
+        if (SpellInteractiveManager.handleAbilityXChoice(state, playerId, obj as GameObject, abilityIndex, declaredTargets)) {
             return true;
         }
 
         // Step 1.6: Speed/Timing Check
-        if (!SpellValidator.validateAbilitySpeed(state, playerId, obj, ability, cardLogic)) {
+        if (!SpellValidator.validateAbilitySpeed(state, playerId, obj as GameObject, ability, cardLogic)) {
             return false;
         }
 
         // Step 2: Interactive Cost Selection
-        const costResult = SpellInteractiveManager.handleAbilityInteractiveCosts(state, playerId, obj, ability, abilityIndex, declaredTargets);
+        const costResult = SpellInteractiveManager.handleAbilityInteractiveCosts(state, playerId, obj as GameObject, ability, abilityIndex, declaredTargets);
         if (costResult === true) return true;
         if (costResult === false) return false;
 
         // Step 3: Targeting (Rule 602.2b)
         if (ability.targetDefinitions && (declaredTargets === undefined || declaredTargets.length === 0) && !bypassTargeting) {
-            const targetingResult = SpellInteractiveManager.handleAbilityTargeting(state, playerId, cardId, obj, ability, abilityIndex, engine, choiceIndex, parentContext, exileOnResolution);
+            const targetingResult = SpellInteractiveManager.handleAbilityTargeting(state, playerId, cardId, obj as GameObject, ability, abilityIndex, engine, choiceIndex, parentContext, exileOnResolution);
             if (targetingResult) return true; // Handled pending action or single target recursion
         }
 
         // Step 4: Finalization (Rule 602.2h)
         return SpellProcessor.finalizeAbilityActivation(state, engine, {
             playerId,
-            obj,
+            obj: obj as GameObject,
             ability,
             abilityIndex,
             declaredTargets: declaredTargets || [],
@@ -519,12 +521,11 @@ export class SpellProcessor {
         const preSelectedChoice = state.interaction?.lastChoiceIndex;
         if (state.interaction) {
             delete state.interaction.lastChoiceIndex;
-            delete state.interaction.consumedModeIndex;
         }
 
         // Pay Mana
-        const hasConfirmedAutoTap = state.interaction?.confirmedAutoTap;
-        if (state.interaction) delete state.interaction.confirmedAutoTap;
+        const hasConfirmedAutoTap = state.interaction?.flags.confirmedAutoTap;
+        if (state.interaction) delete state.interaction.flags.confirmedAutoTap;
 
         if (isFreeCast) {
             logger.debug(state, LogCategory.ACTION, `[DEBUG] Finalizing free cast for ${cardToPlay.definition.name}. Bypassing mana check.`);
@@ -578,43 +579,43 @@ export class SpellProcessor {
         // Pay Additional Costs
         additionalCosts.forEach((cost) => {
             if (cost.type === 'Sacrifice') {
-                const chosenId = state.interaction?.lastChosenSacrificeId;
+                const chosenId = state.interaction?.lastSelections['Sacrifice']?.[0];
                 const obj = state.battlefield.find(o => o.id === (chosenId || cardToPlay.id));
                 if (obj) {
-                    TriggerProcessor.onEvent(state, { type: TriggerEvent.Sacrifice, playerId, sourceId: obj.id, payload: { object: obj } });
+                    TriggerProcessor.onEvent(state, { type: TriggerEvent.Sacrifice, playerId, payload: { sourceId: obj.id, targetIds: [obj.id], object: obj } });
                     ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId);
                     logger.debug(state, LogCategory.ACTION, `Paid additional cost: Sacrificed ${obj.definition.name}.`);
-                    if ((cost as any).isCasualty && state.interaction) state.interaction.paidCasualtyFor = cardToPlay.id;
+                    if ((cost as any).isCasualty && state.interaction) state.interaction.flags.paidCasualtyFor = cardToPlay.id;
                 }
             } else if (cost.type === 'Discard') {
-                const chosenId = state.interaction?.lastChosenDiscardId;
+                const chosenId = state.interaction?.lastSelections['Discard']?.[0];
                 const obj = player.hand.find(o => o.id === chosenId);
                 if (obj) {
-                    TriggerProcessor.onEvent(state, { type: TriggerEvent.Discard, playerId, payload: { object: obj, sourceId: cardToPlay.id } });
+                    TriggerProcessor.onEvent(state, { type: TriggerEvent.Discard, playerId, payload: { object: obj, sourceId: cardToPlay.id, targetIds: [obj.id] } });
                     ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId);
                     logger.debug(state, LogCategory.ACTION, `Paid additional cost: Discarded ${obj.definition.name}.`);
                 }
             } else if (cost.type === 'PayLife') {
                 const lifeVal = cost.value === 'X' ? (cardToPlay.xValue || 0) : (parseInt(cost.value as string) || 0);
                 player.life -= lifeVal;
-                TriggerProcessor.onEvent(state, { type: TriggerEvent.LifeLoss, playerId, amount: lifeVal });
+                TriggerProcessor.onEvent(state, { type: TriggerEvent.LifeLoss, playerId, payload: { amount: lifeVal, targetIds: [playerId] } });
                 logger.debug(state, LogCategory.ACTION, `Paid additional cost: ${lifeVal} life.`);
             } else if (cost.type === 'Exile') {
-                const chosenIds = state.interaction?.lastChosenExileIds || [];
+                const chosenIds = state.interaction?.lastSelections['Exile'] || [];
                 chosenIds.forEach((cid: string) => {
                     const obj = RuleUtils.findObject(state, cid);
                     if (obj) {
-                        ActionProcessor.moveCard(state, obj, Zone.Exile, playerId);
+                        ActionProcessor.moveCard(state, obj as GameObject, Zone.Exile, playerId);
                         logger.debug(state, LogCategory.ACTION, `Paid additional cost: Exiled ${obj.definition?.name || cid}.`);
                     }
                 });
             } else if (cost.type === 'TapSelection') {
-                const chosenIds = state.interaction?.lastChosenTapSelectionIds || [];
+                const chosenIds = state.interaction?.lastSelections['TapSelection'] || [];
                 chosenIds.forEach((cid: string) => {
                     const obj = state.battlefield.find(o => o.id === cid);
                     if (obj) {
                         obj.isTapped = true;
-                        TriggerProcessor.onEvent(state, { type: TriggerEvent.Tap, sourceId: obj.id, playerId: playerId, payload: { object: obj } });
+                        TriggerProcessor.onEvent(state, { type: TriggerEvent.Tap, playerId, payload: { sourceId: obj.id, targetIds: [obj.id], object: obj } });
                         logger.debug(state, LogCategory.ACTION, `Paid additional cost: Tapped ${obj.definition.name}.`);
                     }
                 });
@@ -623,12 +624,10 @@ export class SpellProcessor {
 
         // Cleanup temporary selection state
         if (state.interaction) {
-            delete state.interaction.lastChosenSacrificeId;
-            delete state.interaction.lastChosenDiscardId;
-            delete state.interaction.lastChosenExileIds;
-            delete state.interaction.lastChosenTapSelectionIds;
-            delete state.interaction.lastChosenCostChoiceIndex;
-            delete state.interaction.lastChosenModeIndex;
+            state.interaction.lastSelections = {};
+            state.interaction.lastChoiceIndex = undefined;
+            state.interaction.lastChosenModeIndex = undefined;
+            state.interaction.flags = {};
         }
 
         // Move to Stack
@@ -684,13 +683,15 @@ export class SpellProcessor {
 
         logger.debug(state, LogCategory.ACTION, `[FINAL-PLAY-LOG] Finalizing ${cardToPlay.definition.name} with ${declaredTargets.length} targets: [${declaredTargets.join(', ')}]`);
 
-        const stackObj = {
+        const stackObj: StackObject = {
             id: `spell_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
             controllerId: playerId,
+            ownerId: cardToPlay.ownerId,
             sourceId: cardToPlay.id,
             type: 'Spell' as const,
+            counters: {},
             targets: declaredTargets || [],
-            card: cardToPlay,
+            sourceObject: cardToPlay,
             definition: cardToPlay.definition,
             name: cardToPlay.definition.name + (cardToPlay.xValue !== undefined && ((cardToPlay.definition.manaCost || "").includes("{X}") || cardToPlay.xValue > 0) ? ` (X=${cardToPlay.xValue})` : ""),
             cannotBeCopied: cardToPlay.definition.cannotBeCopied,
@@ -712,40 +713,46 @@ export class SpellProcessor {
         };
 
         state.stack.push(stackObj);
+        getProcessors(state).action.updateEntityCache(state, stackObj);
         logger.info(state, LogCategory.STACK, `--------------------------------------------------`);
         logger.info(state, LogCategory.STACK, `[STACK] + ${player.name} cast ${cardToPlay.definition.name}${cardToPlay.xValue !== undefined ? ` (X=${cardToPlay.xValue})` : ''} for ${totalMana}`);
         logger.info(state, LogCategory.STACK, `--------------------------------------------------`);
 
         // Casualty
-        if (state.interaction?.paidCasualtyFor === cardToPlay.id) {
-            delete state.interaction.paidCasualtyFor;
-            state.stack.push({
+        if (state.interaction?.flags.paidCasualtyFor === cardToPlay.id) {
+            delete state.interaction.flags.paidCasualtyFor;
+            const casualtyObj = {
                 id: `casualty_trigger_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
                 controllerId: playerId,
+                ownerId: stackObj.ownerId,
                 sourceId: stackObj.id,
                 type: AbilityType.Triggered,
+                counters: {},
+                definition: stackObj.definition,
                 name: `Casualty Copy (${stackObj.definition.name})`,
                 image_url: stackObj.definition.image_url,
                 targets: [],
                 data: { effects: [{ type: EffectType.CopySpellOnStack, targetMapping: 'SOURCE_OBJECT', chooseNewTargets: true }] }
-            });
+            };
+            state.stack.push(casualtyObj);
+            getProcessors(state).action.updateEntityCache(state, casualtyObj);
             logger.info(state, LogCategory.TRIGGER, `[CASUALTY] Copy trigger for ${stackObj.definition.name} placed on stack.`);
         }
 
 
         // Fire targeting triggers
         (declaredTargets || []).forEach((tid) => {
-            TriggerProcessor.onEvent(state, { type: TriggerEvent.BecomeTarget, playerId, targetId: tid, sourceId: stackObj.id, data: { sourceId: stackObj.id, sourceCard: cardToPlay } });
+            TriggerProcessor.onEvent(state, { type: TriggerEvent.BecomeTarget, playerId, payload: { targetIds: [tid], sourceId: stackObj.id, sourceObject: cardToPlay } });
         });
 
         state.consecutivePasses = 0;
-        TriggerProcessor.onEvent(state, { type: TriggerEvent.CastSpell, playerId, amount: cardToPlay.paidManaValue || 0, payload: { card: cardToPlay, sourceId: stackObj.id, targets: declaredTargets } });
+        TriggerProcessor.onEvent(state, { type: TriggerEvent.CastSpell, playerId, payload: { object: cardToPlay, sourceId: stackObj.id, targetIds: declaredTargets || [], amount: cardToPlay.paidManaValue || 0 } });
 
-        if (isFirstInstantOrSorcery) TriggerProcessor.onEvent(state, { type: TriggerEvent.CastFirstInstantOrSorcery, playerId, amount: cardToPlay.paidManaValue || 0, payload: { card: cardToPlay, sourceId: stackObj.id, targets: declaredTargets } });
-        if (isInstantOrSorcery) TriggerProcessor.onEvent(state, { type: TriggerEvent.CastInstantOrSorcery, playerId, amount: cardToPlay.paidManaValue || 0, payload: { card: cardToPlay, sourceId: stackObj.id, targets: declaredTargets } });
+        if (isFirstInstantOrSorcery) TriggerProcessor.onEvent(state, { type: TriggerEvent.CastFirstInstantOrSorcery, playerId, payload: { object: cardToPlay, sourceId: stackObj.id, targetIds: declaredTargets || [], amount: cardToPlay.paidManaValue || 0 } });
+        if (isInstantOrSorcery) TriggerProcessor.onEvent(state, { type: TriggerEvent.CastInstantOrSorcery, playerId, payload: { object: cardToPlay, sourceId: stackObj.id, targetIds: declaredTargets || [], amount: cardToPlay.paidManaValue || 0 } });
 
         if (!RuleUtils.isCreature(cardToPlay)) {
-            TriggerProcessor.onEvent(state, { type: TriggerEvent.CastNonCreature, playerId, payload: { object: cardToPlay, sourceId: cardToPlay.id } });
+            TriggerProcessor.onEvent(state, { type: TriggerEvent.CastNonCreature, playerId, payload: { object: cardToPlay, sourceId: cardToPlay.id, targetIds: [cardToPlay.id] } });
         }
 
         logger.info(state, LogCategory.STACK, `[STACK] + ${state.players[playerId].name} cast ${cardToPlay.definition.name}${cardToPlay.xValue !== undefined ? ` (X=${cardToPlay.xValue})` : ''} for ${totalMana}${declaredTargets?.length ? ' targeting ' + declaredTargets.join(', ') : ''}`);
@@ -772,8 +779,10 @@ export class SpellProcessor {
         const stackObj = {
             id: stackId,
             controllerId: playerId,
+            ownerId: obj.ownerId,
             sourceId: obj.id,
             type: AbilityType.Activated,
+            counters: {},
             name: `${obj.definition.name} Ability${obj.xValue !== undefined && (JSON.stringify(ability).includes('"X"') || obj.xValue > 0) ? ` (X=${obj.xValue})` : ""}`,
             image_url: obj.definition.image_url,
             targets: declaredTargets,
@@ -783,6 +792,7 @@ export class SpellProcessor {
             isPreparedCopy: obj.isPreparedCopy,
             xValue: xValue !== undefined ? xValue : obj.xValue,
             card: obj,
+            sourceObject: obj,
             definition: obj.definition,
             preSelectedChoice: preSelectedChoice,
             data: {
@@ -811,8 +821,7 @@ export class SpellProcessor {
 
         // Clean up choice flags
         if (state.interaction) {
-            delete state.interaction.lastChosenSacrificeId;
-            delete state.interaction.lastChosenDiscardId;
+            state.interaction.lastSelections = {};
         }
 
         obj.abilitiesUsedThisTurn++;
@@ -841,10 +850,15 @@ export class SpellProcessor {
         const costLabel = effectiveMana ? ` for ${effectiveMana}` : "";
 
         state.stack.push(stackObj);
+        getProcessors(state).action.updateEntityCache(state, stackObj);
         logger.info(state, LogCategory.ACTION, `Activated ability of ${obj.definition.name}${obj.xValue !== undefined ? ` (X=${obj.xValue})` : ''}${costLabel}`);
         declaredTargets.forEach((tid) => {
             const { trigger: TriggerProc } = getProcessors(state);
-            TriggerProc.onEvent(state, { type: TriggerEvent.BecomeTarget, playerId, targetId: tid, sourceId: stackId, data: { sourceId: stackId, sourceCard: obj } });
+            TriggerProc.onEvent(state, {
+                type: TriggerEvent.BecomeTarget,
+                playerId,
+                payload: { targetIds: [tid], sourceId: stackId, sourceObject: obj }
+            });
         });
 
         state.consecutivePasses = 0;

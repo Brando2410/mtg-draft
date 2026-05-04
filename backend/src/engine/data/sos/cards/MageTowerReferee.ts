@@ -1,4 +1,6 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { RuleUtils } from '../../../utils/RuleUtils';
+
 export const MageTowerReferee: CardDefinition = {
     name: "Mage Tower Referee",
     manaCost: "{2}",
@@ -18,7 +20,7 @@ export const MageTowerReferee: CardDefinition = {
             eventMatch: TriggerEvent.CastSpell,
             condition: (state, event, ability) => {
                 if (event.playerId !== ability.controllerId) return false;
-                const card = event.data?.card;
+                const card = RuleUtils.getEventObject(event, state);
                 if (!card) return false;
                 const uniqueColors = new Set(card.definition.colors || []);
                 return uniqueColors.size >= 2;
@@ -34,4 +36,3 @@ export const MageTowerReferee: CardDefinition = {
         }
     ]
 };
-

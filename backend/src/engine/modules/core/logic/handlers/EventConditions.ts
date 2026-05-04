@@ -28,7 +28,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { event, cardToPlay } = context;
             const obj = cardToPlay || RuleUtils.getEventObject(event, state);
             if (obj) return (obj as any)?.isFlashbackCast === true;
-            return (event as any)?.isFlashbackCast === true;
+            return event?.payload?.object?.isFlashbackCast === true;
         }
     },
     "EVENT_OBJECT_OWNER_NOT_YOU": {
@@ -43,7 +43,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event } = context;
             const expectedType = params[0] === "p1p1" ? CounterType.P1P1 : params[0];
-            const actualType = event?.payload?.counterType || (event as any)?.counterType || (event as any)?.data?.counterType;
+            const actualType = event?.payload?.counterType;
             const normalizedActualType = actualType === "p1p1" ? CounterType.P1P1 : actualType;
             return normalizedActualType === expectedType;
         }
@@ -51,8 +51,8 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "EVENT_OBJECT_IS_TARGET_1": {
         matches(state, params, context) {
             const { event } = context;
-            const objId = event?.payload?.object?.id || event?.data?.object?.id || (event as any)?.gameObject?.id || event?.targetId;
-            const targetId = event?.payload?.targetIds?.[0] || (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0];
+            const objId = RuleUtils.getEventObject(event, state)?.id;
+            const targetId = RuleUtils.getTargets(event)[0];
             return objId === targetId;
         }
     },
@@ -84,7 +84,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "PLAYER_IS_CONTROLLER": {
         matches(state, params, context) {
             const { event, controllerId } = context;
-            const eventPlayerId = event?.payload?.playerId || event?.playerId || event?.data?.playerId;
+            const eventPlayerId = event?.payload?.playerId || event?.playerId;
             if (eventPlayerId) {
                 return String(eventPlayerId) === String(controllerId);
             }
@@ -98,14 +98,14 @@ export const EventConditions: Record<string, IConditionHandler> = {
     },
     "EVENT_SOURCE_IS_SELF": {
         matches(state, params, context) {
-            return (context.event as any)?.sourceId === context.sourceId;
+            return RuleUtils.getSource(context.event) === context.sourceId;
         }
     },
     "EVENT_SPELL_TARGET_MATCHES": {
         matches(state, params, context) {
             const { targeting: TargetingProcessor } = getProcessors(state);
             const { event, sourceId, controllerId, stackObject } = context;
-            const targets = event?.data?.stackSnapshot?.targets || [];
+            const targets = event?.payload?.stackSnapshot?.targetIds || event?.payload?.targetIds || [];
             if (!targets.length) return false;
             return targets.some((tid: string) => {
                 const obj = RuleUtils.findObject(state, tid);
@@ -139,7 +139,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const targetIdx = parseInt(params[0] as string);
             const restrictions = params.slice(1) as string[];
 
-            const targetId = event?.payload?.targetIds?.[targetIdx] || event?.payload?.targetId || (event as any)?.targetIds?.[targetIdx] || (event as any)?.targets?.[targetIdx] || (event as any)?.targetId;
+            const targetId = RuleUtils.getTargets(event)[targetIdx];
             if (!targetId) return false;
 
             const targetObj = RuleUtils.findObject(state, targetId);
@@ -151,7 +151,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "TARGET_1_COUNTERS_P1P1": {
         matches(state, params, context) {
             const { event } = context;
-            const tId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0];
+            const tId = RuleUtils.getTargets(event)[0];
             const obj = RuleUtils.findObject(state, tId);
             return (obj?.counters?.["+1/+1"] || 0) >= parseInt(params[0]);
         }
@@ -174,7 +174,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, stackObject } = context;
             const threshold = parseInt(params[0]);
-            const spent = event?.amount || event?.payload?.card?.paidManaValue || event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.card?.paidManaValue || (stackObject as any)?.data?.paidManaValue || 0;
+            const spent = event?.payload?.amount || event?.payload?.object?.paidManaValue || event?.payload?.spent || 0;
             return spent >= threshold;
         }
     },
@@ -182,7 +182,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, stackObject } = context;
             const threshold = parseInt(params[0]);
-            const spent = event?.amount || event?.payload?.card?.paidManaValue || event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.card?.paidManaValue || (stackObject as any)?.data?.paidManaValue || 0;
+            const spent = event?.payload?.amount || event?.payload?.object?.paidManaValue || event?.payload?.spent || 0;
             return spent < threshold;
         }
     },
@@ -190,7 +190,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, stackObject } = context;
             const threshold = parseInt(params[0]);
-            const spent = event?.amount || event?.payload?.card?.paidManaValue || event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.card?.paidManaValue || (stackObject as any)?.data?.paidManaValue || 0;
+            const spent = event?.payload?.amount || event?.payload?.object?.paidManaValue || event?.payload?.spent || 0;
             return spent <= threshold;
         }
     },
@@ -225,14 +225,14 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "SPELL_TARGETS_SOURCE": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            const targets = (event?.data as any)?.targets || [];
+            const targets = event?.payload?.targetIds || [];
             return targets.includes(sourceId);
         }
     },
     "TARGETS_PERMANENT": {
         matches(state, params, context) {
             const { event } = context;
-            const targets = (event as any)?.targets || (event as any)?.data?.targets || (event as any)?.targetIds || [];
+            const targets = RuleUtils.getTargets(event);
             if (targets.length === 0) return false;
             return targets.some((tid: string) => {
                 const obj = RuleUtils.findObject(state, tid);
@@ -248,7 +248,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "SPELL_TARGETS_CREATURE": {
         matches(state, params, context) {
             const { event } = context;
-            const targets = (event as any)?.targets || (event as any)?.data?.targets || (event as any)?.targetIds || [];
+            const targets = RuleUtils.getTargets(event);
             if (targets.length === 0) return false;
             return targets.some((tid: string) => {
                 const obj = RuleUtils.findObject(state, tid);
@@ -261,13 +261,14 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { event, controllerId } = context;
             
             // Check if the player casting the spell is the controller of this trigger.
-            const castingPlayerId = event?.playerId || (event as any)?.data?.playerId;
+            const castingPlayerId = event?.playerId || event?.payload?.playerId;
             if (String(castingPlayerId) !== String(controllerId)) return false;
 
             // Use LKI for the spell on the stack
             const processors = getProcessors(state);
-            const stackObj = processors.lki.getLki(state, event?.sourceId || "", Zone.Stack);
-            const targets = stackObj?.data?.targets || [];
+            const stackObjId = RuleUtils.getSource(event) || "";
+            const stackObj = processors.lki.getLki(state, stackObjId, Zone.Stack);
+            const targets = stackObj?.targets || [];
             if (!targets.length) return false;
 
             const { targeting: TargetingProcessor } = getProcessors(state);
@@ -282,7 +283,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "TARGET_1_IS_PREPARED": {
         matches(state, params, context) {
             const { event } = context;
-            const targetId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0] || (event as any)?.targetId;
+            const targetId = RuleUtils.getTargets(event)[0];
             const targetObj = RuleUtils.findObject(state, targetId);
             return targetObj?.isPrepared || false;
         }
@@ -297,32 +298,32 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "TARGET_1_IS_CONTROLLER": {
         matches(state, params, context) {
             const { event, controllerId } = context;
-            const tId = (event as any)?.targetIds?.[0] || (event as any)?.targets?.[0] || (event as any)?.targetId;
+            const tId = RuleUtils.getTargets(event)[0];
             return tId === controllerId;
         }
     },
     "TARGET_1_EXISTS": {
         matches(state, params, context) {
             const { event } = context;
-            return !!((event as any)?.targetIds?.[0] || (event as any)?.targets?.[0] || (event as any)?.targetId);
+            return !!RuleUtils.getTargets(event)[0];
         }
     },
     "TARGET_2_EXISTS": {
         matches(state, params, context) {
             const { event } = context;
-            return !!((event as any)?.targetIds?.[1] || (event as any)?.targets?.[1]);
+            return !!RuleUtils.getTargets(event)[1];
         }
     },
     "TARGET_3_EXISTS": {
         matches(state, params, context) {
             const { event } = context;
-            return !!((event as any)?.targetIds?.[2] || (event as any)?.targets?.[2]);
+            return !!RuleUtils.getTargets(event)[2];
         }
     },
     "TARGET_IS_OPPONENT": {
         matches(state, params, context) {
             const { event, controllerId } = context;
-            const tId = (event as any)?.targets?.[0] || (event as any)?.targetId;
+            const tId = RuleUtils.getTargets(event)[0];
             if (!tId) return false;
             return tId !== controllerId;
         }
@@ -330,9 +331,10 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "TARGET_IS_INSTANT_OR_SORCERY": {
         matches(state, params, context) {
             const { event, state: gameState } = { event: context.event, state };
-            const tId = (event as any)?.targets?.[0] || (event as any)?.targetId;
+            const tId = RuleUtils.getTargets(event)[0];
             if (!tId) return false;
-            const targetObj = state.stack.find((s) => s.id === tId)?.card || state.battlefield.find((o) => o.id === tId);
+            const targetObj = state.stack.find((s) => s.id === tId) || 
+                              Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === tId);
             if (!targetObj) return false;
             return RuleUtils.isType(targetObj, "instant") || RuleUtils.isType(targetObj, "sorcery");
         }
@@ -340,7 +342,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "TARGETS_TAPPED_CREATURE": {
         matches(state, params, context) {
             const { event } = context;
-            const tId = (event as any)?.targets?.[0] || (event as any)?.targetId;
+            const tId = RuleUtils.getTargets(event)[0];
             if (!tId) return false;
             const obj = state.battlefield.find((o) => o.id === tId);
             return (obj && obj.isTapped && RuleUtils.isCreature(obj)) || false;
@@ -349,7 +351,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "OWN_CREATURE_ENTERS": {
         matches(state, params, context) {
             const { event, controllerId } = context;
-            const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || (event as any)?.gameObject;
+            const obj = RuleUtils.getEventObject(event, state);
             if (!obj) return false;
             return obj.controllerId === controllerId && RuleUtils.isCreature(obj);
         }
@@ -357,7 +359,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "OWN_TOKEN_ENTERS": {
         matches(state, params, context) {
             const { event, controllerId } = context;
-            const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || (event as any)?.gameObject;
+            const obj = RuleUtils.getEventObject(event, state);
             if (!obj) return false;
             return obj.controllerId === controllerId && !!obj.isToken;
         }
@@ -365,7 +367,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "OWN_CREATURE_DIES": {
         matches(state, params, context) {
             const { event, controllerId } = context;
-            const obj = event?.payload?.object || event?.payload?.card || event?.data?.object || (event as any)?.gameObject;
+            const obj = RuleUtils.getEventObject(event, state);
             if (!obj) return false;
             return obj.controllerId === controllerId && RuleUtils.isCreature(obj);
         }
@@ -373,7 +375,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "NOT_CAST_FROM_HAND": {
         matches(state, params, context) {
             const { event } = context;
-            const objId = event?.payload?.card?.id || event?.data?.card?.id || event?.sourceId;
+            const objId = event?.payload?.object?.id || RuleUtils.getSource(event);
             if (!objId) return true;
             const processors = getProcessors(state);
             const fromHand = processors.lki.getLki(state, objId, Zone.Hand);
@@ -383,7 +385,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "CAST_FROM_GRAVEYARD_OR_EXILE": {
         matches(state, params, context) {
             const { event } = context;
-            const objId = event?.payload?.card?.id || event?.data?.card?.id || event?.sourceId;
+            const objId = event?.payload?.object?.id || RuleUtils.getSource(event);
             if (!objId) return false;
             const processors = getProcessors(state);
             const fromGY = processors.lki.getLki(state, objId, Zone.Graveyard);
@@ -394,7 +396,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "CAST_FROM_HAND": {
         matches(state, params, context) {
             const { event } = context;
-            const objId = event?.payload?.card?.id || event?.data?.card?.id || event?.sourceId;
+            const objId = event?.payload?.object?.id || RuleUtils.getSource(event);
             if (!objId) return false;
             const processors = getProcessors(state);
             const fromHand = processors.lki.getLki(state, objId, Zone.Hand);
@@ -404,7 +406,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "TRIGGER_SOURCE_POW_OR_TOUGH_LE_1": {
         matches(state, params, context) {
             const { event } = context;
-            const tid = event?.data?.object?.id || event?.targetId;
+            const tid = RuleUtils.getTargets(event)[0];
             const obj = state.battlefield.find((o) => o.id === tid);
             if (!obj) return false;
             const { layer: LayerProcessor } = getProcessors(state);
@@ -415,13 +417,13 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "TRIGGER_TARGET_IS_SELF": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            return event?.targetId === sourceId || event?.data?.targetId === sourceId;
+            return RuleUtils.getTargets(event).includes(sourceId);
         }
     },
     "IS_CREATURE": {
         matches(state, params, context) {
             const { sourceId, event } = context;
-            const tId = (event as any)?.targetId || sourceId;
+            const tId = RuleUtils.getTargets(event)[0] || sourceId;
             const obj = state.battlefield.find((o) => o.id === tId);
             if (!obj) return false;
             const { layer: LayerProcessor } = getProcessors(state);
@@ -439,10 +441,10 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { event, sourceId } = context;
             if (!event) return false;
             if (event.type === TriggerEvent.Attack) {
-                return String(event.sourceId) === String(sourceId);
+                return String(RuleUtils.getSource(event)) === String(sourceId);
             }
             if (event.type === TriggerEvent.EnterBattlefield) {
-                const enteringId = event.data?.object?.id || event.payload?.object?.id || event.payload?.sourceId || event.sourceId;
+                const enteringId = RuleUtils.getEventObject(event, state)?.id;
                 return String(enteringId) === String(sourceId);
             }
             return false;
@@ -451,7 +453,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "OBJECT_IS_SELF": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            const eventObjId = event?.data?.object?.id || event?.sourceId || (event as any)?.payload?.object?.id;
+            const eventObjId = RuleUtils.getEventObject(event, state)?.id;
             return String(sourceId) === String(eventObjId);
         }
     },

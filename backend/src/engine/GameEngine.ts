@@ -72,6 +72,7 @@ export class GameEngine implements EngineContext {
         playersWithPermanentReturnedThisTurn: {},
         noncombatDamageDealtToOpponents: {},
         creaturesAttackedThisTurn: 0,
+        creaturesEnteredThisTurn: {},
         creaturesDiedThisTurn: [],
         lastDamageAmount: 0,
         lastExcessDamageAmount: 0,

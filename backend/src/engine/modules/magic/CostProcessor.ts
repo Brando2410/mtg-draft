@@ -1,4 +1,4 @@
-import { AbilityCost, CostType, CrewCost, DiscardCost, ExileCost, GameObject, GameObjectId, GameState, LifeCost, LoyaltyCost, ManaCost, PlayerId, RestrictionType, SacrificeCost, StackObject, TapSelectionCost, Zone } from '@shared/engine_types';
+import { AbilityCost, CostType, CounterType, CrewCost, DiscardCost, ExileCost, GameObject, GameObjectId, GameState, LifeCost, LoyaltyCost, ManaCost, PlayerId, RestrictionType, SacrificeCost, StackObject, TapSelectionCost, Zone } from '@shared/engine_types';
 import { LogCategory } from '../../utils/EngineLogger';
 import { RuleUtils } from '../../utils/RuleUtils';
 import { getProcessors } from '../ProcessorRegistry';
@@ -186,7 +186,7 @@ export class CostProcessor {
       case CostType.Tap:
         source.isTapped = true;
         const { trigger: TriggerProcessor } = getProcessors(state);
-        TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: source.id, payload: { object: source } });
+        TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, payload: { targetIds: [source.id], sourceId: source.id, object: source } });
         break;
 
       case CostType.Mana:
@@ -207,7 +207,7 @@ export class CostProcessor {
         source.counters.loyalty = oldL + lVal;
         logger.info(state, LogCategory.ACTION, `${source.definition.name} loyalty: ${oldL} -> ${source.counters.loyalty}`);
         const { trigger: TriggerProcessor } = getProcessors(state);
-        TriggerProcessor.onEvent(state, { type: 'ON_ACTIVATE_LOYALTY', playerId, sourceId: source.id, payload: { object: source } });
+        TriggerProcessor.onEvent(state, { type: 'ON_ACTIVATE_LOYALTY', playerId, payload: { sourceId: source.id, targetIds: [source.id], object: source } });
         break;
       }
 
@@ -221,7 +221,7 @@ export class CostProcessor {
           logger.info(state, LogCategory.ACTION, `[SACRIFICE] Identified source ${source.definition.name} as SELF sacrifice target.`);
         } else {
           // Check for pre-selected target from modal choice
-          const chosenId = state.interaction.lastChosenSacrificeId;
+          const chosenId = state.interaction.lastSelections[CostType.Sacrifice]?.[0];
           if (chosenId) {
             toSac = state.battlefield.find(c => String(c.id) === String(chosenId));
           } else {
@@ -237,15 +237,14 @@ export class CostProcessor {
           TriggerProcessor.onEvent(state, {
             type: 'ON_SACRIFICE',
             playerId,
-            sourceId: toSac.id,
-            payload: { object: toSac }
+            payload: { sourceId: toSac.id, targetIds: [toSac.id], object: toSac }
           });
           ActionProcessor.moveCard(state, toSac, Zone.Graveyard, playerId);
           logger.info(state, LogCategory.ACTION, `${player.name} sacrificed ${toSac.definition.name} as a cost.`);
         } else {
           logger.info(state, LogCategory.ACTION, `[SACRIFICE] Error: No valid object found to sacrifice for cost.`);
         }
-        delete state.interaction.lastChosenSacrificeId;
+        delete state.interaction.lastSelections[CostType.Sacrifice];
         break;
       }
 
@@ -254,7 +253,7 @@ export class CostProcessor {
         // CR 701.8: To discard a card, move it from hand to graveyard.
         // If it's a cost, we typically expect a pre-selected cardId in state.lastChosenDiscardId
         // or we need to trigger a choice if it's not present.
-        const discardId = state.interaction.lastChosenDiscardId;
+        const discardId = state.interaction.lastSelections[CostType.Discard]?.[0];
         const cardToDiscard = player.hand.find(c => c.id === discardId);
         if (cardToDiscard) {
           const { trigger: TriggerProcessor, action: ActionProcessor } = getProcessors(state);
@@ -262,7 +261,7 @@ export class CostProcessor {
           ActionProcessor.moveCard(state, cardToDiscard, Zone.Graveyard, playerId);
           logger.info(state, LogCategory.ACTION, `${player.name} discarded ${cardToDiscard.definition.name} as a cost.`);
         }
-        delete state.interaction.lastChosenDiscardId;
+        delete state.interaction.lastSelections[CostType.Discard];
         break;
       }
 
@@ -272,7 +271,7 @@ export class CostProcessor {
         const lifeVal = lifeCost.value === 'X' ? xValue : (parseInt(lifeCost.value) || 0);
         player.life -= lifeVal;
         const { trigger: TriggerProcessor } = getProcessors(state);
-        TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, amount: lifeVal });
+        TriggerProcessor.onEvent(state, { type: 'ON_LIFE_LOSS', playerId, payload: { amount: lifeVal, targetIds: [playerId], sourceId: source.id } });
         logger.info(state, LogCategory.ACTION, `${player.name} pays ${lifeVal} life (${player.life + lifeVal} -> ${player.life})`);
         break;
       }
@@ -284,7 +283,7 @@ export class CostProcessor {
         if (exileCost.targetMapping === 'SELF' || exileCost.type === CostType.ExileSelf) {
           exiles = [source];
         } else {
-          const chosenIds = state.interaction.lastChosenExileIds || [];
+          const chosenIds = state.interaction.lastSelections[CostType.Exile] || [];
           chosenIds.forEach((id: string) => {
             const obj = this.findObject(state, id);
             if (obj) exiles.push(obj);
@@ -296,26 +295,26 @@ export class CostProcessor {
           ActionProcessor.moveCard(state, obj, Zone.Exile, playerId);
           logger.info(state, LogCategory.ACTION, `${player.name} exiled ${obj.definition?.name || 'an object'} as a cost.`);
         });
-        delete state.interaction.lastChosenExileIds;
+        delete state.interaction.lastSelections[CostType.Exile];
         break;
       }
 
       case CostType.Crew: {
-        const crewIds = state.interaction.lastChosenCrewIds || [];
+        const crewIds = state.interaction.lastSelections[CostType.Crew] || [];
         crewIds.forEach((cid: string) => {
           const c = state.battlefield.find(o => o.id === cid);
           if (c) {
             c.isTapped = true;
             const { trigger: TriggerProcessor } = getProcessors(state);
-            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, payload: { object: c } });
+            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, payload: { targetIds: [c.id], sourceId: c.id, object: c } });
           }
         });
-        delete state.interaction.lastChosenCrewIds;
+        delete state.interaction.lastSelections[CostType.Crew];
         break;
       }
 
       case CostType.TapSelection: {
-        const chosenIds = state.interaction.lastChosenTapSelectionIds || [];
+        const chosenIds = state.interaction.lastSelections[CostType.TapSelection] || [];
         logger.debug(state, LogCategory.ACTION, `[COST-DEBUG] Executing TapSelection for ${chosenIds.length} creatures. IDs: ${chosenIds.join(', ')}`);
         chosenIds.forEach((cid: string) => {
           const c = state.battlefield.find(o => o.id === cid);
@@ -323,10 +322,10 @@ export class CostProcessor {
             c.isTapped = true;
             logger.info(state, LogCategory.ACTION, `${c.definition.name} tapped.`);
             const { trigger: TriggerProcessor } = getProcessors(state);
-            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, targetId: c.id, payload: { object: c } });
+            TriggerProcessor.onEvent(state, { type: 'ON_TAP', playerId, payload: { targetIds: [c.id], sourceId: c.id, object: c } });
           }
         });
-        delete state.interaction.lastChosenTapSelectionIds;
+        delete state.interaction.lastSelections[CostType.TapSelection];
         break;
       }
 
@@ -347,7 +346,7 @@ export class CostProcessor {
           let reduction = 0;
           for (const mod of manaCost.costModifiers) {
             if (mod.type === 'REDUCE_GENERIC_PER_COUNTER') {
-              reduction += (source.counters[mod.counterType] || 0) * (mod.amount || 1);
+              reduction += ((source.counters as any)[mod.counterType] || 0) * (mod.amount || 1);
             }
           }
 
@@ -395,6 +394,7 @@ export class CostProcessor {
   }
 
   private static findObject(state: GameState, id: GameObjectId): GameObject | undefined {
-    return RuleUtils.findObject(state, id) || undefined;
+    const obj = RuleUtils.findObject(state, id);
+    return (obj && 'isTapped' in obj) ? obj : undefined;
   }
 }

@@ -8,13 +8,9 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, controllerId } = context;
             if (event?.playerId !== controllerId) return false;
-            const targets = event?.payload?.targets ||
-                           event?.payload?.stackSnapshot?.targets || 
-                           event?.data?.stackSnapshot?.targets || 
-                           event?.targets || 
-                           event?.data?.targets || [];
+            const targets = RuleUtils.getTargets(event);
             if (!targets.length) return false;
-            
+
             return targets.some((tid: string) => {
                 const obj = RuleUtils.findObject(state, tid);
                 return obj && RuleUtils.isCreature(obj);
@@ -24,11 +20,12 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
     "SELF_COMBAT_DAMAGE_PLAYER_OR_PLANESWALKER": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            const isCombat = event?.payload?.isCombat || event?.data?.isCombat;
-            if (!event || event.sourceId !== sourceId || !isCombat) return false;
+            const isCombat = event?.payload?.isCombat;
+            if (!event || RuleUtils.getSource(event) !== sourceId || !isCombat) return false;
             if (event.type === TriggerEvent.DamageDealtToPlayer || event.type === "ON_DAMAGE_PLAYER") return true;
             if (event.type === TriggerEvent.DamageTaken) {
-                const targetObj = state.battlefield.find((o) => o.id === event.targetId);
+                const targetId = RuleUtils.getTargets(event)[0];
+                const targetObj = state.battlefield.find((o) => o.id === targetId);
                 return !!targetObj && RuleUtils.isPlaneswalker(targetObj);
             }
             return false;
@@ -37,15 +34,15 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
     "SELF_COMBAT_DAMAGE_PLAYER": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            const isCombat = event?.payload?.isCombat || event?.data?.isCombat;
-            if (!event || event.sourceId !== sourceId || !isCombat) return false;
-            return event.type === TriggerEvent.DamageDealtToPlayer || event.type === "ON_DAMAGE_PLAYER";
+            const isCombat = event?.payload?.isCombat;
+            if (!event || RuleUtils.getSource(event) !== sourceId || !isCombat) return false;
+            return event.type === TriggerEvent.DamageDealtToPlayer;
         }
     },
     "INCREMENT_CHECK": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            const spent = event?.payload?.spent || (event as any)?.data?.spent || 0;
+            const spent = event?.payload?.object?.paidManaValue ?? 0;
             const obj = state.battlefield.find((o) => o.id === sourceId);
             if (!obj) return false;
             const { layer: LayerProcessor } = getProcessors(state);
@@ -56,7 +53,7 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
     "SPENT_MANA_GT_POWER_OR_TOUGHNESS": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            const spent = (event?.payload?.card?.paidManaValue || (event as any)?.data?.card?.paidManaValue) ?? (event as any)?.amount ?? 0;
+            const spent = (event?.payload?.object?.paidManaValue) ?? (event as any)?.amount ?? 0;
             const obj = state.battlefield.find((o) => o.id === sourceId);
             if (!obj) return false;
             const { layer: LayerProcessor } = getProcessors(state);

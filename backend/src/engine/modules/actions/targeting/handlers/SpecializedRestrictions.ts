@@ -14,8 +14,8 @@ const FROMHAND: IRestrictionHandler = {
             return !!lki;
         }
 
-        if (isStackObject(targetObj) && targetObj.card) {
-            return targetObj.card.zone === Zone.Hand || targetObj.card.lastNonStackZone === Zone.Hand;
+        if (isStackObject(targetObj) && targetObj.sourceObject) {
+            return targetObj.sourceObject.zone === Zone.Hand || targetObj.sourceObject.lastNonStackZone === Zone.Hand;
         }
 
         return false;

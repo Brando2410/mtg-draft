@@ -25,13 +25,13 @@ export class SpellValidator {
             else if (obj.zone === Zone.Library) permissionType = EffectType.AllowPlayFromTop;
 
             const { layer: LayerProcessor } = getProcessors(state);
-            const stats = LayerProcessor.getEffectiveStats(obj, state);
+            const stats = ('isTapped' in obj) ? LayerProcessor.getEffectiveStats(obj as GameObject, state) : { keywords: [] };
             const hasFlashback = obj.zone === Zone.Graveyard && (stats.keywords?.includes(Keyword.Flashback) || obj.definition.keywords?.includes(Keyword.Flashback));
 
             if (hasFlashback) {
                 (obj as any).isFlashbackCast = true;
                 EngineLogger.info(state, LogCategory.ACTION, `[FLASHBACK] Casting ${obj.definition.name} via flashback.`);
-                return obj;
+                return obj as GameObject;
             }
 
             const hasGraveAbility = obj.zone === Zone.Graveyard && obj.definition.abilities?.some((a: any) =>
@@ -39,15 +39,15 @@ export class SpellValidator {
                 (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
             );
 
-            if (hasGraveAbility) return obj;
+            if (hasGraveAbility) return obj as GameObject;
 
             if (permissionType) {
                 if (bypassPermission) {
                     EngineLogger.debug(state, LogCategory.ACTION, `[RESOLVE-DEBUG] Found ${obj.definition.name} in ${obj.zone} (Bypassing permission check).`);
-                    return obj;
+                    return obj as GameObject;
                 }
                 const hasPermission = PriorityProcessor.findPermissionEffect(state, playerId, permissionType, obj.id);
-                if (hasPermission) return obj;
+                if (hasPermission) return obj as GameObject;
                 EngineLogger.debug(state, LogCategory.ACTION, `[RESOLVE-DEBUG] No ${permissionType} permission found for ${obj.definition.name} in ${obj.zone}. (bypass=${bypassPermission})`);
             } else {
                 EngineLogger.debug(state, LogCategory.ACTION, `[RESOLVE-DEBUG] Found ${obj.definition.name} in ${obj.zone} but no permission type defined.`);
@@ -140,7 +140,7 @@ export class SpellValidator {
 
         player.hasPlayedLandThisTurn = true;
         ActionProcessor.moveCard(state, cardToPlay, Zone.Battlefield, playerId);
-        TriggerProcessor.onEvent(state, { type: 'ON_LAND_PLAY', playerId, data: { card: cardToPlay } });
+        TriggerProcessor.onEvent(state, { type: 'ON_LAND_PLAY', playerId, payload: { object: cardToPlay, targetIds: [cardToPlay.id], sourceId: cardToPlay.id } });
         engine.resetPriorityToActivePlayer();
         return true;
     }

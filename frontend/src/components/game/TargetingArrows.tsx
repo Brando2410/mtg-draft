@@ -38,7 +38,7 @@ export const TargetingArrows = memo(({ stack, battlefield, pendingAction, hovere
         
         // Pick a color based on stack index to keep it consistent while on stack
         const spellColor = colors[sIdx % colors.length];
-        const isHovered = hoveredCardId === sobj.id || hoveredCardId === sobj.card?.id;
+        const isHovered = hoveredCardId === sobj.id || hoveredCardId === sobj.sourceObject?.id;
 
         sobj.targets.forEach((targetId, idx) => {
           const targetEl = document.getElementById(`game-card-${targetId}`) || 

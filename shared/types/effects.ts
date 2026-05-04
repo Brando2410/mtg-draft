@@ -209,7 +209,6 @@ export interface ResolutionContext {
     nextEffectIndex?: number;    // Pointer for resuming multi-step effects
     xValue?: number;             // Bound X value for this resolution chain
     isCopy?: boolean;            // Flag if this resolution is for a copied spell/ability
-    eventData?: any;             // Alias for backward compatibility
 }
 
 /**
@@ -223,7 +222,6 @@ export interface ConditionContext {
     event?: import('./events').GameEvent;
     stackObject?: StackObject;
     targets?: string[];
-    eventData?: any;
     cardToPlay?: GameObject;
 }
 

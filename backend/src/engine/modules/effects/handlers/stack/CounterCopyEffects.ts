@@ -10,9 +10,9 @@ export const CounterSpellHandler: IEffectHandler = {
         const { targets, controllerId } = context;
         const targetStackId = targets[0];
         const stackObj = state.stack.find((s: any) => s.id === targetStackId);
-        if (stackObj && stackObj.card) {
-          logger.info(state, LogCategory.ACTION, `[COUNTER] ${stackObj.card.definition.name} was countered.`);
-          AP.moveCard(state, stackObj.card, Zone.Graveyard, stackObj.card.ownerId);
+        if (stackObj && stackObj.sourceObject) {
+          logger.info(state, LogCategory.ACTION, `[COUNTER] ${stackObj.sourceObject.definition.name} was countered.`);
+          AP.moveCard(state, stackObj.sourceObject, Zone.Graveyard, stackObj.sourceObject.ownerId);
           state.stack = state.stack.filter((s: any) => s.id !== targetStackId);
         }
     }
@@ -48,7 +48,7 @@ export const CopySpellHandler: IEffectHandler = {
 
             if (!stackObj) return;
 
-            const definition = stackObj.definition || stackObj.card?.definition;
+            const definition = stackObj.definition || stackObj.sourceObject?.definition;
             const cannotCopy = stackObj.cannotBeCopied || definition?.cannotBeCopied;
             
             if (cannotCopy) {
@@ -62,31 +62,31 @@ export const CopySpellHandler: IEffectHandler = {
             copy.controllerId = controllerId;
 
             // Ensure the card instance itself gets a unique ID to avoid collision during zone movements
-            if (copy.card) {
-                copy.card.id = `card_copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-                copy.sourceId = copy.card.id;
+            if (copy.sourceObject) {
+                copy.sourceObject.id = `card_copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+                copy.sourceId = copy.sourceObject.id;
 
                 // Allow overriding legend status (Double Major)
                 if (effect.isLegendary === false) {
-                    copy.card.definition = {
-                        ...copy.card.definition,
-                        supertypes: (copy.card.definition.supertypes || []).filter((s: string) => s.toLowerCase() !== 'legendary'),
-                        types: (copy.card.definition.types || []).filter((s: string) => s.toLowerCase() !== 'legendary'),
-                        type_line: copy.card.definition.type_line?.replace(/Legendary /i, '')
+                    copy.sourceObject.definition = {
+                        ...copy.sourceObject.definition,
+                        supertypes: (copy.sourceObject.definition.supertypes || []).filter((s: string) => s.toLowerCase() !== 'legendary'),
+                        types: (copy.sourceObject.definition.types || []).filter((s: string) => s.toLowerCase() !== 'legendary'),
+                        type_line: copy.sourceObject.definition.type_line?.replace(/Legendary /i, '')
                     };
                 }
             }
 
-            if (effect.abilitiesToAdd && copy.card) {
-                copy.card.definition = {
-                    ...copy.card.definition,
-                    abilities: [...(copy.card.definition.abilities || []), ...effect.abilitiesToAdd]
+            if (effect.abilitiesToAdd && copy.sourceObject) {
+                copy.sourceObject.definition = {
+                    ...copy.sourceObject.definition,
+                    abilities: [...(copy.sourceObject.definition.abilities || []), ...effect.abilitiesToAdd]
                 };
             }
-            if (effect.keywordsToAdd && copy.card) {
-                copy.card.definition = {
-                    ...copy.card.definition,
-                    keywords: [...(copy.card.definition.keywords || []), ...effect.keywordsToAdd]
+            if (effect.keywordsToAdd && copy.sourceObject) {
+                copy.sourceObject.definition = {
+                    ...copy.sourceObject.definition,
+                    keywords: [...(copy.sourceObject.definition.keywords || []), ...effect.keywordsToAdd]
                 };
             }
 
@@ -105,15 +105,15 @@ export const CopySpellHandler: IEffectHandler = {
                 }
                 
                 // Clear nested card targets to be safe
-                if (copy.card && copy.card.data) {
-                    copy.card.data.targets = [];
-                    copy.card.data.selectedTargets = [];
+                if (copy.sourceObject && copy.sourceObject.data) {
+                    copy.sourceObject.data.targets = [];
+                    copy.sourceObject.data.selectedTargets = [];
                 }
             }
 
-            copy.name = `Copy of ${stackObj.name || stackObj.card?.definition.name || 'Spell'}`;
+            copy.name = `Copy of ${stackObj.name || stackObj.sourceObject?.definition.name || 'Spell'}`;
             state.stack.push(copy);
-            logger.info(state, LogCategory.ACTION, `[COPY] Created copy of ${stackObj.card?.definition.name || 'spell'}.`);
+            logger.info(state, LogCategory.ACTION, `[COPY] Created copy of ${stackObj.sourceObject?.definition.name || 'spell'}.`);
 
             // Emit copy event for Magecraft
             TrP.onEvent(state, {
@@ -122,9 +122,9 @@ export const CopySpellHandler: IEffectHandler = {
                 payload: {
                     originalId: tid,
                     copyId: copy.id,
-                    object: copy.card,
+                    object: copy.sourceObject,
                     sourceId: copy.id,
-                    isInstantOrSorcery: copy.card && (RuleUtils.isType(copy.card, 'instant') || RuleUtils.isType(copy.card, 'sorcery'))
+                    isInstantOrSorcery: copy.sourceObject && (RuleUtils.isType(copy.sourceObject, 'instant') || RuleUtils.isType(copy.sourceObject, 'sorcery'))
                 }
             });
 
@@ -232,9 +232,9 @@ export const CounterSpellOrAbilityHandler: IEffectHandler = {
         targets.forEach((tid: string) => {
           const stackObj = state.stack.find((s: any) => s.id === tid);
           if (stackObj) {
-            if (stackObj.card) {
-              logger.info(state, LogCategory.ACTION, `[COUNTER] Countering spell: ${stackObj.card.definition.name} (${tid}).`);
-              AP.moveCard(state, stackObj.card, Zone.Graveyard, stackObj.card.ownerId);
+            if (stackObj.sourceObject) {
+              logger.info(state, LogCategory.ACTION, `[COUNTER] Countering spell: ${stackObj.sourceObject.definition.name} (${tid}).`);
+              AP.moveCard(state, stackObj.sourceObject, Zone.Graveyard, stackObj.sourceObject.ownerId);
             } else {
               logger.info(state, LogCategory.ACTION, `[COUNTER] Removing ability from stack: ${stackObj.name || tid}.`);
               state.stack = state.stack.filter((s: any) => s.id !== stackObj.id);

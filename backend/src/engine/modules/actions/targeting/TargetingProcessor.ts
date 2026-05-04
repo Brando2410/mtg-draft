@@ -9,7 +9,8 @@ import {
     TargetType,
     ActionType,
     TargetRestriction,
-    TargetDefinition
+    TargetDefinition,
+    Targetable
 } from '@shared/engine_types';
 import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
@@ -33,7 +34,7 @@ export class TargetingProcessor {
     public static generateTargetPrompt(targetDefinitions: TargetDefinition[], selectedCount: number, xValue: number = 0, isSpellCasting: boolean = false) { return TargetMapper.generateTargetPrompt(targetDefinitions, selectedCount, xValue, isSpellCasting); }
     public static isLegalTarget(state: GameState, context: TargetingContext, targetId: string): boolean { return TargetValidator.isLegalTarget(state, context, targetId); }
     public static hasLegalTargets(state: GameState, sourceId: string, targetDefinitions: TargetDefinition[] | undefined, controllerId: string, xValue: number = 0): boolean { return TargetValidator.hasLegalTargets(state, sourceId, targetDefinitions || [], controllerId, xValue); }
-    public static matchesRestrictions(state: GameState, targetObj: GameObject, restrictions: TargetRestriction[], context: TargetingContext): boolean { return TargetValidator.matchesRestrictions(state, targetObj, restrictions, context); }
+    public static matchesRestrictions(state: GameState, targetObj: Targetable, restrictions: (TargetRestriction | string)[], context: TargetingContext): boolean { return TargetValidator.matchesRestrictions(state, targetObj, restrictions, context); }
     public static sourceHasQualities(source: GameObject, qualities: string[], state?: GameState): boolean { return TargetValidator.sourceHasQualities(source, qualities, state); }
     public static getColors(obj: GameObject, state?: GameState): string[] { return TargetValidator.getColors(obj, state); }
     public static getLegalTargetPool(state: GameState, sourceId: string, targetDefinitions: TargetDefinition[], controllerId: string, targetIndex: number = 0, xValue: number = 0): string[] { return TargetValidator.getLegalTargetPool(state, sourceId, targetDefinitions, controllerId, targetIndex, xValue); }
@@ -133,13 +134,13 @@ export class TargetingProcessor {
                 const stackId = actionData.stackId;
                 const stackObj = actionData.stackObj;
 
-                if (stackObj && stackObj.card) {
+                if (stackObj && stackObj.sourceObject) {
                     const player = state.players[stackObj.controllerId];
                     if (player) {
-                        stackObj.card.xValue = undefined; // Explicitly clear before move
-                        ActionProcessor.moveCard(state, stackObj.card, Zone.Hand, stackObj.controllerId);
-                        ManaProcessor.refundManaCost(player, stackObj.card.definition.manaCost);
-                        logger.info(state, LogCategory.ACTION, `Refunding mana for ${stackObj.card.definition.name}: ${stackObj.card.definition.manaCost}`);
+                        stackObj.sourceObject.xValue = undefined; // Explicitly clear before move
+                        ActionProcessor.moveCard(state, stackObj.sourceObject, Zone.Hand, stackObj.controllerId);
+                        ManaProcessor.refundManaCost(player, stackObj.sourceObject.definition.manaCost);
+                        logger.info(state, LogCategory.ACTION, `Refunding mana for ${stackObj.sourceObject.definition.name}: ${stackObj.sourceObject.definition.manaCost}`);
                     }
                 } else if (sourceId) {
                     // Fallback for spells that haven't entered the stack yet (targeting phase)
@@ -158,11 +159,11 @@ export class TargetingProcessor {
                     if (sourceOnField.abilitiesUsedThisTurn > 0 && abilityIndex !== undefined) {
                         sourceOnField.abilitiesUsedThisTurn--;
                         const logic = oracle.getCard(sourceOnField.definition.name);
-                        const ability = (logic as any)?.abilities?.[abilityIndex];
-                        const lCost = ability?.costs?.find((c: any) => c.type === CostType.Loyalty)?.value;
+                        const ability = logic?.abilities?.[abilityIndex];
+                        const lCost = ability?.costs?.find((c) => c.type === CostType.Loyalty)?.value;
                         if (lCost !== undefined) {
                             const val = parseInt(String(lCost));
-                            sourceOnField.counters['loyalty'] = (sourceOnField.counters['loyalty'] || 0) - val;
+                            sourceOnField.counters.loyalty = (sourceOnField.counters.loyalty || 0) - val;
                             logger.info(state, LogCategory.ACTION, `Refunding loyalty for ${sourceOnField.definition.name}: ${val > 0 ? '+' : ''}${val}`);
                         }
                     }
@@ -172,12 +173,12 @@ export class TargetingProcessor {
                 state.priorityPlayerId = playerId;
 
                 // CLEANUP TEMPORARY CASTING STATE
-                delete state.interaction.lastChosenCostChoiceIndex;
-                delete state.interaction.lastChosenSacrificeId;
-                delete state.interaction.lastChosenDiscardId;
-                delete state.interaction.lastChosenExileIds;
+                state.interaction.lastChoiceIndex = undefined;
+                state.interaction.lastChoiceValue = undefined;
+                state.interaction.lastSelections = {};
+                state.interaction.flags = {};
                 delete state.interaction.lastChosenModeIndex;
-                delete state.interaction.lastChoiceIndex;
+                delete state.interaction.lastChoiceX;
 
                 return true;
             }
@@ -186,13 +187,7 @@ export class TargetingProcessor {
         if (targetId === "clear") {
             actionData.selectedTargets = [];
             const firstIndex = 0;
-            const pool = [
-                ...Object.keys(state.players),
-                ...state.battlefield.map((o: any) => o.id),
-                ...state.exile.map((o: any) => o.id),
-                ...state.stack.map((o: any) => o.id),
-                ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
-            ];
+            const pool = RuleUtils.getAllVisibleObjectIds(state);
             actionData.targets = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
                 sourceId: action.sourceId || "",
                 controllerId: playerId,
@@ -411,7 +406,7 @@ export class TargetingProcessor {
 
         if (actionData?.isCostTargeting) {
             if (actionData.costType === 'Sacrifice') {
-                state.interaction.lastChosenSacrificeId = resolvedTargets[0];
+                state.interaction.lastSelections['Sacrifice'] = [resolvedTargets[0]];
             }
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
@@ -485,7 +480,7 @@ export class TargetingProcessor {
             state.consecutivePasses = 0;
 
             logger.info(state, LogCategory.STACK, `--------------------------------------------------`);
-            logger.info(state, LogCategory.STACK, `[STACK] + ${engine.getPlayerName(stackObj.controllerId)} cast/activated ${stackObj.card?.definition.name || stackObj.type}`);
+            logger.info(state, LogCategory.STACK, `[STACK] + ${engine.getPlayerName(stackObj.controllerId)} cast/activated ${stackObj.sourceObject?.definition.name || stackObj.type}`);
             const targetNames = resolvedTargets.map(tid => {
                 const obj = RuleUtils.findObject(state, tid);
                 return obj?.definition?.name || (state.players[tid as any] ? state.players[tid as any].name : tid);

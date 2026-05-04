@@ -1,3 +1,4 @@
+import { CardLogic } from '@shared/engine_types';
 import { m21 } from './data/m21';
 import { random } from './data/random';
 import { sos } from './data/sos';
@@ -8,7 +9,7 @@ import { stx } from './data/stx';
  * Maps card names to their full engine-ready definitions.
  */
 class OracleLogicMap {
-  private registry: Map<string, any> = new Map();
+  private registry: Map<string, CardLogic> = new Map();
 
   constructor() {
     this.initialize();
@@ -22,16 +23,16 @@ class OracleLogicMap {
                 ...setRegistry[name],
                 status: 'IMPLEMENTED'
             };
-            this.registry.set(name.toLowerCase(), enriched);
+            this.registry.set(name.toLowerCase(), enriched as CardLogic);
         });
     });
   }
 
-  public getCard(name: string): any | undefined {
+  public getCard(name: string): CardLogic | undefined {
     return this.registry.get(name.toLowerCase());
   }
 
-  public getAllCards(): any[] {
+  public getAllCards(): CardLogic[] {
     return Array.from(this.registry.values());
   }
 }

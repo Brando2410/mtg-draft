@@ -321,6 +321,10 @@ export interface BaseAbilityDefinition {
     triggerCondition?: (state: import('./state').GameState, event: import('./events').GameEvent, context: { sourceId: string, controllerId: string }) => boolean;
     /** Whether this is a mana ability (doesn't use stack, Rule 605) */
     isManaAbility?: boolean;
+    /** UI metadata for labeling or selection counts */
+    label?: string;
+    minChoices?: number;
+    maxChoices?: number;
 }
 
 /**

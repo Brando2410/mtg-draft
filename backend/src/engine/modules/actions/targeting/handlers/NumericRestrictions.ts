@@ -45,7 +45,7 @@ const StaticNumericRestrictions: Record<string, IRestrictionHandler> = {
                            state.exile.find(o => o.id === sourceId) ||
                            state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
             if (source) {
-                const effectiveObj = isStackObject(source) ? ((source as StackObject).card || source) : source;
+                const effectiveObj = source;
                 val = ManaProcessor.getEffectiveManaValue(effectiveObj);
             }
         } else if (valPart === 'converge_amount') {

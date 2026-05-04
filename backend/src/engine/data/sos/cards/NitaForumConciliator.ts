@@ -19,7 +19,7 @@ export const NitaForumConciliator: CardDefinition = {
             eventMatch: TriggerEvent.CastSpell,
             condition: (state: any, event: any, t: any) => {
                 const casterId = event.playerId;
-                const spell = event.payload?.card;
+                const spell = event.payload?.object;
                 return String(casterId) === String(t.controllerId) && spell && String(spell.ownerId) !== String(casterId);
             },
             effects: [

@@ -1,4 +1,4 @@
-import { AbilityType, GameObject, GameState, Restriction, StackObject, Targetable, TargetingContext, TargetDefinition, TargetRestriction, ObjectRestriction, ManaValueRestriction, LogicRestriction, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, BaseEntity, GameObject, GameState, Restriction, StackObject, Targetable, TargetingContext, TargetDefinition, TargetRestriction, ObjectRestriction, ManaValueRestriction, LogicRestriction, TargetType, Zone } from '@shared/engine_types';
 import { LayerProcessor } from '../../state/LayerProcessor';
 import { TargetMapper } from './TargetMapper';
 import { getProcessors } from '../../ProcessorRegistry';
@@ -21,17 +21,19 @@ export class TargetValidator {
         if (!targetObj || targetObj.isPhasedOut) return false;
 
         // 3. ZONE CHECK
-        const expectedZone = this.getExpectedZone(targetObj, targetDefForIndex);
-        if (expectedZone !== 'Any' && targetObj.zone !== expectedZone) return false;
+        if ('ownerId' in targetObj) {
+            const expectedZone = this.getExpectedZone(targetObj as GameObject, targetDefForIndex);
+            if (expectedZone !== 'Any' && targetObj.zone !== expectedZone) return false;
+        }
 
         if (targetDefForIndex?.type === TargetType.Player) return false;
 
         // 4. PROTECTION / HEXPROOF / SHROUD (Rule 702)
-        if (!this.checkKeywords(state, context, targetObj)) return false;
+        if (!this.checkKeywords(state, context, targetObj as any)) return false;
 
         // 5. RESTRICTION REGISTRY CHECK
         const restrictions = this.normalizeRestrictions(targetDefForIndex);
-        return !!this.matchesRestrictions(state, targetObj, restrictions, context);
+        return !!this.matchesRestrictions(state, targetObj as any, restrictions, context);
     }
 
     /**
@@ -149,7 +151,7 @@ export class TargetValidator {
 
     public static matchesRestrictions(state: GameState, targetObj: Targetable, restrictions: (TargetRestriction | string)[], context: TargetingContext): boolean {
     if (!targetObj) return false;
-    const definition = (targetObj as GameObject).definition || (targetObj as any).card?.definition;
+    const definition = (targetObj as BaseEntity).definition;
 
     // Player / StackObject Fast Paths
     if (!definition) {
@@ -257,7 +259,7 @@ export class TargetValidator {
     }
 
     public static sourceHasQualities(source: Targetable, qualities: string[], state ?: GameState): boolean {
-    const s = (source as any).card || source;
+    const s = source as BaseEntity;
     const definition = (s as GameObject).definition || s;
     const sourceColors = this.getColors(s, state);
     const sourceTypes = (definition.types || []).map((t: string) => t.toLowerCase());

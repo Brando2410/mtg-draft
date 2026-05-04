@@ -1,4 +1,6 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { RuleUtils } from '../../../utils/RuleUtils';
+
 export const MatterbendingMage: CardDefinition = {
     name: "Matterbending Mage",
     manaCost: "{2}{U}",
@@ -34,8 +36,8 @@ export const MatterbendingMage: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
             condition: (state: any, event: any, trigger: any) => {
-                const card = event.data?.card || event.data?.object;
-                return card && card.definition.manaCost?.includes('{X}') && event.playerId === trigger.controllerId;
+                const card = RuleUtils.getEventObject(event, state);
+                return !!(card && card.definition.manaCost?.includes('{X}') && event.playerId === trigger.controllerId);
             },
             effects: [
                 {

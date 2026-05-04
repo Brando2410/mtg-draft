@@ -401,7 +401,11 @@ export class PlayerActionProcessor {
     state.combat.blockers.push({ blockerId, attackerId: cardId });
     logger.info(state, LogCategory.COMBAT, `${state.battlefield.find(c => c.id === blockerId)?.definition.name} blocking ${card.definition.name}`);
 
-    TrP.onEvent(state, { type: 'ON_BLOCK', targetId: blockerId, sourceId: blockerId, data: { object: blockerObj, attackerId: cardId } });
+    TrP.onEvent(state, { 
+      type: 'ON_BLOCK', 
+      playerId: playerId, 
+      payload: { sourceId: blockerId, targetIds: [blockerId], object: blockerObj, attackerId: cardId } 
+    });
 
     state.pendingAction!.sourceId = undefined;
     return true;

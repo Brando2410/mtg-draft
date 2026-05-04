@@ -73,10 +73,8 @@ export type TriggerEvent = (typeof TriggerEvent)[keyof typeof TriggerEvent];
  */
 export interface EventPayload {
   object?: GameObject; // Primary object involved (e.g. thing entering, dying, tapped)
-  card?: GameObject; // Contextual alias for object in non-battlefield zones
-  targetId?: GameObjectId; // ID of an object being targeted or affected
-  targetIds?: string[]; // List of affected IDs (e.g. for mass triggers)
-  sourceId?: GameObjectId; // Source of the action/effect (e.g. damaging source)
+  targetIds?: string[]; // Standardized list of affected IDs
+  sourceId?: GameObjectId; // Standardized source ID
   sourceObject?: GameObject; // Full object reference for the source
   targetObject?: GameObject; // Full object reference for the target
   amount?: number; // Numeric data (damage, life gain, counters)
@@ -88,25 +86,25 @@ export interface EventPayload {
   isCombat?: boolean; // True if damage is combat damage
   playerId?: PlayerId; // Player involved in the event
   spent?: number; // Mana spent (for Magecraft/Mana spent triggers)
-  targets?: string[]; // Legacy compatibility for target lists
   originalId?: string; // Original ID before a name/identity change
   copyId?: string; // ID of a newly created copy
   isInstantOrSorcery?: boolean; // True if object is instant or sorcery
+
+  // Combat Metadata
+  attackerId?: string;
+  blockerId?: string;
+  defenderId?: string;
+  attackers?: any[];
+  sources?: GameObject[];
+
+  // Effect Metadata
+  sourceZone?: Zone;
+
 }
 
 export interface GameEvent {
-  type: string | TriggerEvent;
-  playerId?: PlayerId; // Player who performed the action or is affected
-  payload?: EventPayload; // Structured metadata
+  type: TriggerEvent | string;
+  playerId?: PlayerId;
+  payload?: EventPayload;
 
-  // Legacy support (to be phased out)
-  data?: any;
-  sourceId?: GameObjectId;
-  targetId?: GameObjectId;
-  amount?: number;
-  targets?: string[];
-  counterType?: string;
-  sourceZone?: Zone;
-  card?: GameObject;
-  object?: any;
 }

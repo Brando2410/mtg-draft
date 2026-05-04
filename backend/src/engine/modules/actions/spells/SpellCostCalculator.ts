@@ -123,7 +123,7 @@ export class SpellCostCalculator {
             if (!['SpellTax', 'CostReduction', 'AdditionalCost', 'AllowCastFromGraveyard', 'AllowPlayFromTop', 'AllowPlayExiled'].includes((e as any).type)) return false;
 
             const source = RuleUtils.findObject(state, e.sourceId);
-            if (source && e.activeZones && !e.activeZones.includes(source.zone)) return false;
+            if (source && e.activeZones && source.zone && !e.activeZones.includes(source.zone)) return false;
             
             // SKIP SELF: We scan the card's own abilities manually below to ensure 
             // consistency and avoid double-counting with the rule registry.
@@ -155,7 +155,7 @@ export class SpellCostCalculator {
                         const conditionMatches = !e.condition || ConditionProcessor.matchesCondition(state, e.condition, {
                             sourceId: card.id,
                             controllerId: card.controllerId,
-                            event: { data: { card: { ...card, isFlashbackCast: isFlashback }, targets } } as any
+                            event: { payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } } as any
                         });
                         if (conditionMatches && e.additionalCosts) {
                             additionalCosts = [...additionalCosts, ...e.additionalCosts];
@@ -221,7 +221,7 @@ export class SpellCostCalculator {
                 sourceId: mod.sourceId,
                 controllerId: card.controllerId,
                 cardToPlay: { ...card, isFlashbackCast: isFlashback },
-                event: { data: { card: { ...card, isFlashbackCast: isFlashback }, targets } } as any
+                event: { payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } } as any
             });
 
             if (!matches || !conditionMatches) continue;
@@ -259,7 +259,7 @@ export class SpellCostCalculator {
         const choiceCostIndex = additionalCosts.findIndex(c => (c.type as string) === 'Choice');
         if (choiceCostIndex !== -1) {
             const choice = additionalCosts[choiceCostIndex];
-            const chosenIndex = state.interaction.lastChosenCostChoiceIndex;
+            const chosenIndex = state.interaction.lastChoiceIndex;
             if (chosenIndex !== undefined && (choice as ChoiceCost).choices?.[chosenIndex]) {
                 const chosenCosts = (choice as ChoiceCost).choices[chosenIndex].costs;
                 // Remove the choice and insert its components

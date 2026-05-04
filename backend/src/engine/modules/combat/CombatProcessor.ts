@@ -126,8 +126,11 @@ export class CombatProcessor {
           TrP.onEvent(state, {
             type: 'ON_TAP',
             playerId: playerId,
-            targetId: attackerObj.id,
-            data: { object: attackerObj }
+            payload: {
+              targetIds: [attackerObj.id],
+              sourceId: attackerObj.id,
+              object: attackerObj
+            }
           });
         }
       }
@@ -138,7 +141,10 @@ export class CombatProcessor {
       TrP.onEvent(state, {
         type: 'ON_ATTACKERS_DECLARED',
         playerId: playerId,
-        data: { attackers }
+        payload: {
+          attackers,
+          targetIds: attackers.map(a => a.attackerId)
+        }
       });
 
       // Rule 508.1m: Individual attack triggers
@@ -146,9 +152,13 @@ export class CombatProcessor {
         const attackerObj = state.battlefield.find(o => o.id === a.attackerId);
         TrP.onEvent(state, {
           type: 'ON_ATTACK',
-          sourceId: a.attackerId,
           playerId: playerId,
-          data: { object: attackerObj, targetId: a.targetId }
+          payload: {
+            sourceId: a.attackerId,
+            targetIds: [a.attackerId],
+            object: attackerObj,
+            defenderId: a.targetId
+          }
         });
       });
     }
@@ -232,16 +242,23 @@ export class CombatProcessor {
         const attackerObj = state.battlefield.find(o => o.id === b.attackerId);
         TrP.onEvent(state, {
           type: 'ON_BLOCK',
-          sourceId: b.blockerId,
           playerId: playerId,
-          data: { object: blockerObj, targetId: b.attackerId }
+          payload: {
+            sourceId: b.blockerId,
+            targetIds: [b.blockerId],
+            object: blockerObj,
+            attackerId: b.attackerId
+          }
         });
         TrP.onEvent(state, {
           type: 'ON_BECAME_BLOCKED',
-          sourceId: b.attackerId,
-          targetId: b.blockerId,
           playerId: playerId,
-          data: { object: attackerObj, targetId: b.blockerId }
+          payload: {
+            sourceId: b.attackerId,
+            targetIds: [b.attackerId],
+            blockerId: b.blockerId,
+            object: attackerObj
+          }
         });
       });
     }
@@ -372,9 +389,12 @@ export class CombatProcessor {
       if (data.amount > 0 && data.sources.length > 0) {
         TrP.onEvent(state, {
           type: 'ON_COMBAT_DAMAGE_PLAYER',
-          targetId: playerId,
-          amount: data.amount,
-          data: { sources: data.sources, isCombat: true }
+          payload: {
+            targetIds: [playerId],
+            amount: data.amount,
+            sources: data.sources,
+            isCombat: true
+          }
         });
       }
     }

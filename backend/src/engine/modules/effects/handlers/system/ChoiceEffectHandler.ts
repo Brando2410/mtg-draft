@@ -31,7 +31,7 @@ export class ChoiceEffectHandler {
     const { effect: EP } = getProcessors(state);
     const sourceObj =
       EP.findObject(state, sourceId, stackObject) ||
-      stackObject?.card ||
+      stackObject?.sourceObject ||
       stackObject;
     if (!sourceObj) return;
 

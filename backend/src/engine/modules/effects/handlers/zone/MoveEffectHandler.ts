@@ -235,9 +235,11 @@ export class MoveEffectHandler {
         state,
         {
           type: TriggerEvent.Exile,
-          targetId: card.id,
-          sourceId: stackObject?.sourceId || "",
-          sourceZone: Zone.Library,
+          payload: {
+            targetIds: [card.id],
+            sourceId: stackObject?.sourceId || "",
+            sourceZone: Zone.Library,
+          }
         });
     }
 
@@ -473,7 +475,7 @@ export class MoveEffectHandler {
       if (obj) {
         const from = obj.zone;
         const destPlayerId = moveEff.ownerControl ? obj.ownerId : controllerId;
-        ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId, moveEff.libraryPosition as number | "top" | "bottom", false, isDiscard);
+        ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId!, moveEff.libraryPosition as number | "top" | "bottom", false, isDiscard);
         if (zone === Zone.Hand || zone === Zone.Library) {
           obj.isRevealed = true;
         }
@@ -505,9 +507,11 @@ export class MoveEffectHandler {
             state,
             {
               type: TriggerEvent.Exile,
-              targetId: tid,
-              sourceId: stackObject?.sourceId || "",
-              sourceZone: from,
+              payload: {
+                targetIds: [tid],
+                sourceId: stackObject?.sourceId || "",
+                sourceZone: from,
+              }
             });
         }
 
@@ -530,8 +534,8 @@ export class MoveEffectHandler {
           if (resolvedAmount > 0) {
             const obj = state.battlefield.find((o) => o.id === tid);
             if (obj) {
-              obj.counters[finalType] =
-                (obj.counters[finalType] || 0) + resolvedAmount;
+              if (!obj.counters) obj.counters = {};
+              obj.counters[finalType] = (obj.counters[finalType] || 0) + resolvedAmount;
               logger.info(state, LogCategory.ACTION, 
                 `[COUNTERS] ${obj.definition.name} enters with ${resolvedAmount} ${finalType} counter(s).`,
               );
@@ -744,9 +748,11 @@ export class MoveEffectHandler {
           state,
           {
             type: TriggerEvent.Exile,
-            targetId: c.id,
-            sourceId: stackObject?.sourceId || "",
-            sourceZone: from,
+            payload: {
+              targetIds: [c.id],
+              sourceId: stackObject?.sourceId || "",
+              sourceZone: from,
+            },
           });
       }
     });
@@ -828,7 +834,7 @@ export class MoveEffectHandler {
       const from = c.zone;
       ActionProcessor.moveCard(state, c, zone as Zone, c.ownerId, "top", false, isDiscard);
       if (zone === Zone.Exile) {
-        TriggerProcessor.onEvent(state, { type: TriggerEvent.Exile, targetId: c.id, sourceId: stackObject?.sourceId || "", sourceZone: from });
+        TriggerProcessor.onEvent(state, { type: TriggerEvent.Exile, payload: { targetIds: [c.id], sourceId: stackObject?.sourceId || "", sourceZone: from } });
       }
     });
 
@@ -895,9 +901,11 @@ export class MoveEffectHandler {
           state,
           {
             type: TriggerEvent.Exile,
-            targetId: obj.id,
-            sourceId: stackObject?.sourceId || "",
-            sourceZone: from,
+            payload: {
+              targetIds: [obj.id],
+              sourceId: stackObject?.sourceId || "",
+              sourceZone: from,
+            },
           });
       }
 
@@ -920,7 +928,7 @@ export class MoveEffectHandler {
   private static findObject(state: GameState, id: string, context: ResolutionContext): GameObject | undefined {
     const { stackObject } = context;
     if (stackObject && stackObject.id === id) {
-      if (stackObject.card) return stackObject.card;
+      if (stackObject.sourceObject) return stackObject.sourceObject;
       if (stackObject.definition) return stackObject as any;
     }
 
@@ -932,6 +940,6 @@ export class MoveEffectHandler {
     const inPool = looking.find((o: GameObject) => o.id === id);
     if (inPool) return inPool;
 
-    return RuleUtils.findObject(state, id) || undefined;
+    return RuleUtils.findObject(state, id) as GameObject || undefined;
   }
 }

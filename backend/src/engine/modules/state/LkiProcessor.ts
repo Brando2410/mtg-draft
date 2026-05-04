@@ -37,7 +37,7 @@ export class LkiProcessor {
    * Retrieves LKI for an object from its last known state in a specific zone.
    * If zone is omitted, it returns the most recent LKI from any public zone.
    */
-  public static getLki(state: GameState, objId: string, expectedZone?: Zone): any | null {
+  public static getLki(state: GameState, objId: string, expectedZone?: Zone): GameObject | StackObject | null {
     if (!state.lki || !state.lki[objId]) return null;
 
     const record = state.lki[objId]!;

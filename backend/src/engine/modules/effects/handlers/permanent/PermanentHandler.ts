@@ -24,7 +24,7 @@ export class PermanentHandler {
                 }
                 logger.info(state, LogCategory.ACTION, `${obj.definition.name} was successfully destroyed.`);
                 (state.turnState as any).lastDestroyedCount = ((state.turnState as any).lastDestroyedCount || 0) + 1;
-                ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.ownerId);
+                ActionProcessor.moveCard(state, obj as GameObject, Zone.Graveyard, (obj as GameObject).ownerId);
             }
         });
     }
@@ -84,7 +84,7 @@ export class PermanentHandler {
             }
         } else {
             const obj = RuleUtils.findObject(state, tid);
-            if (obj && obj.zone === Zone.Battlefield) ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.controllerId);
+            if (obj && obj.zone === Zone.Battlefield) ActionProcessor.moveCard(state, obj as GameObject, Zone.Graveyard, (obj as GameObject).controllerId);
             this.handleSacrifice(state, effect, { ...context, targets: nextTargets });
         }
     }
@@ -93,7 +93,7 @@ export class PermanentHandler {
         const { logger } = getProcessors(state);
         const { targets } = context;
         targets.forEach((tid: string) => {
-            const obj = RuleUtils.findObject(state, tid);
+            const obj = RuleUtils.findObject(state, tid) as GameObject | undefined;
             if (obj && obj.zone === Zone.Battlefield) {
                 if (!obj.isTapped) return;
                 obj.isTapped = false;
@@ -106,11 +106,11 @@ export class PermanentHandler {
         const { logger } = getProcessors(state);
         const { targets } = context;
         targets.forEach((tid: string) => {
-            const obj = RuleUtils.findObject(state, tid);
+            const obj = RuleUtils.findObject(state, tid) as GameObject | undefined;
             if (obj && obj.zone === Zone.Battlefield) {
                 obj.isPrepared = true;
                 logger.info(state, LogCategory.ACTION, `${obj.definition.name} is now prepared.`);
-                TriggerProcessor.onEvent(state, { type: 'ON_PREPARE', targetId: obj.id, sourceId: obj.id, payload: { object: obj } });
+                TriggerProcessor.onEvent(state, { type: 'ON_PREPARE', payload: { targetIds: [obj.id], sourceId: obj.id, object: obj } });
             }
         });
     }
@@ -131,7 +131,7 @@ export class PermanentHandler {
         const { logger } = getProcessors(state);
         const { targets } = context;
         targets.forEach((tid: string) => {
-            const obj = RuleUtils.findObject(state, tid);
+            const obj = RuleUtils.findObject(state, tid) as GameObject | undefined;
             if (obj && obj.zone === Zone.Battlefield) {
                 if (obj.isTapped) return;
                 obj.isTapped = true;
@@ -148,8 +148,8 @@ export class PermanentHandler {
         const c2 = RuleUtils.findObject(state, targets[1]);
         if (!c1 || !c2 || c1.zone !== Zone.Battlefield || c2.zone !== Zone.Battlefield) return;
 
-        const p1 = LayerProcessor.getEffectiveStats(c1, state).power;
-        const p2 = LayerProcessor.getEffectiveStats(c2, state).power;
+        const p1 = LayerProcessor.getEffectiveStats(c1 as GameObject, state).power;
+        const p2 = LayerProcessor.getEffectiveStats(c2 as GameObject, state).power;
         logger.info(state, LogCategory.ACTION, `[FIGHT] ${c1.definition.name} fights ${c2.definition.name}.`);
 
         DP.dealDamage(state, c1.id, c2.id, p1, false);
@@ -163,12 +163,12 @@ export class PermanentHandler {
         const type = counterEff.counterType || (effect as any).value || effect.type || 'p1p1';
 
         targets.forEach((tid: string) => {
-            const obj = RuleUtils.findObject(state, tid);
+            const obj = RuleUtils.findObject(state, tid) as GameObject | undefined;
             if (obj && obj.zone === Zone.Battlefield) {
                 const finalType = (type.toLowerCase() === 'p1p1' || type === '+1/+1') ? '+1/+1' : type;
                 const amountStr = counterEff.amount !== undefined ? counterEff.amount : (effect as any).value;
                 const amount = typeof amountStr === 'number' ? amountStr : (EP.resolveAmount(state, amountStr, context, [tid]));
-                
+
                 obj.counters[finalType] = (obj.counters[finalType] || 0) + amount;
                 if (amount > 0) {
                     if (!state.turnState.countersAddedThisTurnIds) state.turnState.countersAddedThisTurnIds = [];
@@ -177,7 +177,7 @@ export class PermanentHandler {
                     }
                 }
                 logger.info(state, LogCategory.ACTION, `[COUNTERS] Added ${amount} ${finalType} counter(s) to ${obj.definition.name}.`);
-                TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: obj.id, amount, counterType: finalType, payload: { object: obj } });
+                TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', payload: { targetIds: [obj.id], amount, counterType: finalType, object: obj } });
             }
         });
     }
@@ -188,9 +188,9 @@ export class PermanentHandler {
         const counterEff = effect as CounterEffect;
         const type = counterEff.counterType || 'p1p1';
         const finalType = (type.toLowerCase() === 'p1p1' || type === '+1/+1') ? '+1/+1' : type;
-        
+
         targets.forEach((tid: string) => {
-            const obj = RuleUtils.findObject(state, tid);
+            const obj = RuleUtils.findObject(state, tid) as GameObject | undefined;
             if (obj && obj.zone === Zone.Battlefield) {
                 const amount = obj.counters[finalType] || 0;
                 if (amount > 0) {
@@ -200,7 +200,7 @@ export class PermanentHandler {
                     if (!state.turnState.countersAddedThisTurnIds.includes(obj.id)) {
                         state.turnState.countersAddedThisTurnIds.push(obj.id);
                     }
-                    TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: obj.id, amount, counterType: finalType, payload: { object: obj } });
+                    TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', payload: { targetIds: [obj.id], amount, counterType: finalType, object: obj } });
                 }
             }
         });
@@ -211,7 +211,7 @@ export class PermanentHandler {
         const { targets, sourceId, stackObject } = context;
         const counterEff = effect as CounterEffect;
         let sourceObj = RuleUtils.findObject(state, sourceId);
-        
+
         // CR 603.10: If the source is not in a public zone or has no counters (because it died), check LKI
         if (!sourceObj || !sourceObj.counters || Object.keys(sourceObj.counters).length === 0) {
             const processors = getProcessors(state);
@@ -231,19 +231,19 @@ export class PermanentHandler {
             const available = sourceObj!.counters[ctype] || 0;
             if (available <= 0) return;
 
-            const requestedAmount = counterEff.amount !== undefined 
+            const requestedAmount = counterEff.amount !== undefined
                 ? EP.resolveAmount(state, counterEff.amount, context, targets)
                 : available;
-            
+
             const amount = Math.min(available, requestedAmount);
             if (amount <= 0) return;
 
             targets.forEach((tid: string) => {
-                const targetObj = RuleUtils.findObject(state, tid);
+                const targetObj = RuleUtils.findObject(state, tid) as GameObject | undefined;
                 if (targetObj && targetObj.zone === Zone.Battlefield) {
                     targetObj.counters[ctype] = (targetObj.counters[ctype] || 0) + amount;
                     logger.info(state, LogCategory.ACTION, `[MOVE-COUNTERS] Moved ${amount} ${ctype} counters from ${sourceObj!.definition.name} to ${targetObj.definition.name}.`);
-                    TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', targetId: targetObj.id, amount, counterType: ctype, payload: { object: targetObj } });
+                    TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', payload: { targetIds: [targetObj.id], amount, counterType: ctype, object: targetObj } });
                 }
             });
             sourceObj!.counters[ctype] -= amount;
@@ -271,7 +271,7 @@ export class PermanentHandler {
                     const { type, countersType, amount: cAmount } = tokenEff.startingCounters;
                     const finalType = type || countersType;
                     const resolvedAmount = EP.resolveAmount(state, cAmount, context, [pid]);
-                    
+
                     if (resolvedAmount > 0 && finalType) {
                         const counterKey = (finalType.toLowerCase() === 'p1p1' || finalType === '+1/+1') ? '+1/+1' : finalType;
                         token.counters[counterKey] = (token.counters[counterKey] || 0) + resolvedAmount;
@@ -292,10 +292,10 @@ export class PermanentHandler {
         const { targets } = context;
         const tokenEff = effect as any;
         const { targeting: TP_LOCAL } = getProcessors(state);
-        
-        const sourceCardId = (tokenEff as any).sourceCardId || 
-                             (tokenEff as any).originalCardId || 
-                             ((tokenEff as any).sourceMapping ? TP_LOCAL.resolveTargetMapping(state, (tokenEff as any).sourceMapping, context, effect)[0] : undefined);
+
+        const sourceCardId = (tokenEff as any).sourceCardId ||
+            (tokenEff as any).originalCardId ||
+            ((tokenEff as any).sourceMapping ? TP_LOCAL.resolveTargetMapping(state, (tokenEff as any).sourceMapping, context, effect)[0] : undefined);
 
         const sourceObj = RuleUtils.findObject(state, sourceCardId);
 
@@ -334,11 +334,11 @@ export class PermanentHandler {
     public static handleAttach(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
         const { logger } = getProcessors(state);
         const { targets, sourceId } = context;
-        const source = RuleUtils.findObject(state, sourceId);
+        const source = RuleUtils.findObject(state, sourceId) as GameObject | undefined;
         if (!source || source.zone !== Zone.Battlefield) return;
 
         targets.forEach((tid: string) => {
-            const target = RuleUtils.findObject(state, tid);
+            const target = RuleUtils.findObject(state, tid) as GameObject | undefined;
             if (target && target.zone === Zone.Battlefield) {
                 source.attachedTo = tid;
                 logger.info(state, LogCategory.ACTION, `[ATTACH] ${source.definition.name} attached to ${target.definition.name}.`);
@@ -373,7 +373,8 @@ export class PermanentHandler {
                 oracleText: blueprint.oracleText || "",
                 image_url: blueprint.image_url || "",
                 preparedFace: blueprint.preparedFace,
-                faces: blueprint.faces
+                faces: blueprint.faces,
+                cannotBeCopied: (blueprint as any).cannotBeCopied
             },
             zone: Zone.Battlefield,
             isTapped: false,
@@ -392,7 +393,7 @@ export class PermanentHandler {
         state.turnState.lastCreatedTokenId = token.id;
         state.battlefield.push(token);
         RP.registerAbilities(state, token);
-        TriggerProcessor.onEvent(state, { type: 'ON_ETB', targetId: token.id, sourceId: token.id, payload: { object: token } });
+        TriggerProcessor.onEvent(state, { type: 'ON_ETB', payload: { targetIds: [token.id], sourceId: token.id, object: token } });
         return token;
     }
 
@@ -401,7 +402,7 @@ export class PermanentHandler {
         const { controllerId, sourceId, stackObject } = context;
         const blueprint = (effect as any).emblemBlueprint;
         if (!blueprint) return;
-        
+
         const sourceObj = EP.findObject(state, sourceId, stackObject);
 
         const emblemId = `emblem_${controllerId}_${Date.now()}`;

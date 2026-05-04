@@ -62,8 +62,8 @@ export class DamageProcessor {
 
     const { layer: LP } = getProcessors(state);
     const sourceObj = RuleUtils.findObject(state, sourceId);
-    const sourceStats = sourceObj
-      ? LP.getEffectiveStats(sourceObj, state)
+    const sourceStats = (sourceObj && 'isTapped' in sourceObj)
+      ? LP.getEffectiveStats(sourceObj as GameObject, state)
       : null;
 
     // 1. Resolve Damage to Permanents (Battlefield)
@@ -73,7 +73,7 @@ export class DamageProcessor {
         state,
         sourceObj,
         sourceStats,
-        battlefieldObj,
+        battlefieldObj as GameObject,
         amount,
         isCombat
       );
@@ -118,8 +118,7 @@ export class DamageProcessor {
           {
             type: "ON_LIFE_GAIN",
             playerId: controllerId,
-            amount,
-            payload: { sourceId: sourceObj.id },
+            payload: { sourceId: sourceObj.id, amount, targetIds: [controllerId] },
           }
         );
       }
@@ -177,10 +176,12 @@ export class DamageProcessor {
       state,
       {
         type: "ON_DAMAGE_TAKED",
-        targetId: target.id,
-        sourceId: sourceObj?.id,
-        amount,
-        payload: { isCombat },
+        payload: {
+          targetIds: [target.id],
+          sourceId: sourceObj?.id,
+          amount,
+          isCombat,
+        },
       }
     );
   }
@@ -211,9 +212,11 @@ export class DamageProcessor {
         state,
         {
           type: "ON_NONCOMBAT_DAMAGE_OPPONENT",
-          targetId: player.id,
-          sourceId: sourceObj?.id,
-          amount,
+          payload: {
+            targetIds: [player.id],
+            sourceId: sourceObj?.id,
+            amount,
+          },
         }
       );
     }
@@ -223,18 +226,19 @@ export class DamageProcessor {
       {
         type: "ON_LIFE_LOSS",
         playerId: player.id,
-        amount,
-        payload: { sourceId: sourceObj?.id },
+        payload: { amount, sourceId: sourceObj?.id, targetIds: [player.id] },
       }
     );
     TrP.onEvent(
       state,
       {
         type: "ON_DAMAGE_PLAYER",
-        targetId: player.id,
-        sourceId: sourceObj?.id,
-        amount,
-        payload: { isCombat },
+        payload: {
+          targetIds: [player.id],
+          sourceId: sourceObj?.id,
+          amount,
+          isCombat,
+        },
       }
     );
   }
@@ -288,7 +292,7 @@ export class DamageProcessor {
 
     const { layer: LP } = getProcessors(state);
     const keywords = LP.getEffectiveStats(
-      targetObj,
+      targetObj as GameObject,
       state,
     ).keywords;
     const protectionKeywords = keywords.filter((k: string) =>
@@ -300,7 +304,7 @@ export class DamageProcessor {
       for (const prot of protectionKeywords) {
         const qualityStr = prot.toLowerCase().replace("protection from ", "");
         const qualities = qualityStr.split(/[\s,]+/).filter(Boolean);
-        if (TP.sourceHasQualities(source, qualities, state)) {
+        if (TP.sourceHasQualities(source as GameObject, qualities, state)) {
           return true;
         }
       }

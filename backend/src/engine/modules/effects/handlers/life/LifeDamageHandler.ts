@@ -41,8 +41,7 @@ export class LifeDamageHandler {
         TrP.onEvent(state, {
           type: 'ON_LIFE_GAIN',
           playerId: pid,
-          amount,
-          data: { amount }
+          payload: { amount }
         });
       }
     });
@@ -57,7 +56,7 @@ export class LifeDamageHandler {
       if (state.players[pid]) {
         const amount = EP.resolveAmount(state, lifeEff.amount, context, [pid]);
         state.players[pid].life -= amount;
-        TrP.onEvent(state, { type: 'ON_LIFE_LOSS', playerId: pid, amount });
+        TrP.onEvent(state, { type: 'ON_LIFE_LOSS', playerId: pid, payload: { amount } });
         logger.info(state, LogCategory.ACTION, `${state.players[pid].name} loses ${amount} life.`);
       }
     });

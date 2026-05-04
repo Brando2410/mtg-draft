@@ -38,13 +38,7 @@ export class TargetingDispatcher {
             return existingTargets;
         }
 
-        const pool = [...new Set([
-            ...Object.keys(state.players),
-            ...state.battlefield.map(o => o.id),
-            ...state.exile.map(o => o.id),
-            ...state.stack.map(o => o.id),
-            ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
-        ])];
+        const pool = RuleUtils.getAllVisibleObjectIds(state);
 
         const nextIndex = existingTargets.length;
         const currentDef = TargetingProcessor.getDefinitionForIndex(targetDefinitions, nextIndex, xValue);
@@ -65,8 +59,6 @@ export class TargetingDispatcher {
         if (isSingleOpponentTarget) {
             const opponentId = legalPool[0];
             logger.info(state, LogCategory.ACTION, `[AUTO-TARGET] Automatically targeting the only opponent for ${sourceObj.definition.name}.`);
-
-            const totalCounts = TargetingProcessor.calculateTotalCounts(targetDefinitions, xValue);
 
             if (totalCounts.maxCount === 1) {
                 return [...existingTargets, opponentId]; // Completely finished targeting
@@ -113,7 +105,7 @@ export class TargetingDispatcher {
         }
 
         if (legalPool.length === 0) {
-            if (currentDef?.optional || (currentDef?.minCount !== undefined && Number(currentDef.minCount) === 0)) {
+            if (currentDef?.optional || currentDef?.minCount === 0) {
                 logger.info(state, LogCategory.ACTION, `No legal targets found for slot ${nextIndex}, auto-skipping.`);
                 return existingTargets; // Return what we have so far
             } else {

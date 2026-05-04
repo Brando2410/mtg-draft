@@ -17,7 +17,7 @@ export class StackProcessor {
     // Priority 1: Effects already stored in stack object data during casting/activation
     let effects: EffectDefinition[] = objectToResolve.data?.effects || [];
     if (effects.length === 0) {
-      const logic = oracle.getCard(objectToResolve.definition?.name || objectToResolve.card?.definition?.name || "");
+      const logic = oracle.getCard(objectToResolve.definition?.name || objectToResolve.sourceObject?.definition?.name || "");
 
       if (objectToResolve.type === AbilityType.Spell) {
         // Priority: Oracle Logic -> Definition Abilities -> Definition Effects
@@ -70,10 +70,10 @@ export class StackProcessor {
         processors.lki.saveSnapshot(state, objectToResolve, Zone.Stack);
         state.consecutivePasses = 0; // CR 117.4: Resolution or stack changes reset pass count
         if (state.stack.length > 0) {
-          logger.debug(state, LogCategory.STACK, `STACK CONTENTS: ${state.stack.map(s => (s as any).name || s.card?.definition.name).join(', ')}`);
+          logger.debug(state, LogCategory.STACK, `STACK CONTENTS: ${state.stack.map(s => (s as any).name || s.sourceObject?.definition.name).join(', ')}`);
         }
 
-        const objectName = (objectToResolve as any).name || objectToResolve.card?.definition.name || 'Effect';
+        const objectName = (objectToResolve as any).name || objectToResolve.sourceObject?.definition.name || 'Effect';
         logger.info(state, LogCategory.STACK, `[RESOLVING] >>> ${objectName} is resolving <<<`);
 
         const effects = StackProcessor.getEffectsForResolution(state, objectToResolve);
@@ -99,11 +99,11 @@ export class StackProcessor {
           TriggerProcessor.onEvent(state, {
             type: 'ON_RESOLVE_SPELL',
             playerId: objectToResolve.controllerId,
-            payload: { object: objectToResolve.card, sourceId: objectToResolve.sourceId }
+            payload: { object: objectToResolve.sourceObject, sourceId: objectToResolve.sourceId }
           });
         }
 
-        const stackRemaining = state.stack.map(s => s.card?.definition.name || 'Effect').join(', ');
+        const stackRemaining = state.stack.map(s => s.sourceObject?.definition.name || 'Effect').join(', ');
         if (stackRemaining) {
           logger.info(state, LogCategory.STACK, `[STACK-LEFT] Still on stack: [${stackRemaining}]`);
         } else {

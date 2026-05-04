@@ -1,4 +1,4 @@
-import { AbilityType, ActionType, EffectType, GameState, Phase, PlayerId, Step, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityDefinition, AbilityType, ActionType, EffectType, GameObject, GameState, Phase, PlayerId, Step, TargetMapping, Zone } from '@shared/engine_types';
 import { oracle } from '../../../OracleLogicMap';
 import { SpellProcessor } from '../../actions/spells/SpellProcessor';
 import { TargetingProcessor } from '../../actions/targeting/TargetingProcessor';
@@ -390,20 +390,20 @@ export class PriorityProcessor {
       if (canPlay) {
         const logic = oracle.getCard(cardToPlay.definition.name);
         // Fallback to definition abilities for spells without dedicated logic (like virtual spells)
-        const spellAbility = logic?.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell) ||
-          cardToPlay.definition.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell);
+        const spellAbility = (logic?.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell) ||
+          cardToPlay.definition.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell)) as AbilityDefinition | undefined;
 
         // Modal check
-        if (spellAbility?.modes) {
-          const hasValidMode = spellAbility.modes.some((mode: any) => {
+        if (spellAbility && (spellAbility as any).modes) {
+          const hasValidMode = (spellAbility as any).modes.some((mode: any) => {
             if (!mode.targetDefinitions || mode.targetDefinitions.optional) return true;
             return TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, mode.targetDefinitions, playerId);
           });
           if (!hasValidMode) canPlay = false;
         } else {
-          const targetDefinitions = (logic as any)?.targetDefinitions || spellAbility?.targetDefinitions;
+          const targetDefinitions = (logic as any)?.targetDefinitions || (spellAbility as any)?.targetDefinitions;
 
-          if (targetDefinitions && !targetDefinitions.optional) {
+          if (targetDefinitions && !(targetDefinitions as any).optional) {
             if (!TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, targetDefinitions, playerId)) {
               canPlay = false;
             }
@@ -442,7 +442,7 @@ export class PriorityProcessor {
       const logic = oracle.getCard(objOnField.definition.name);
       if (!logic || (!logic.abilities && !state.ruleRegistry.continuousEffects.some(e => e.type === EffectType.AddTriggeredAbility))) return false;
 
-      return logic.abilities.some((ability: any, index: number) => this.canAbilityBeActivated(state, playerId, objId, index, checkPriority));
+      return (logic.abilities || []).some((ability: any, index: number) => this.canAbilityBeActivated(state, playerId, objId, index, checkPriority));
     }
 
     return false;
@@ -507,6 +507,7 @@ export class PriorityProcessor {
 
     if (!abilities[abilityIndex]) return false;
     const ability = abilities[abilityIndex];
+    const logic = oracle.getCard(obj.definition.name);
 
     if (ability.type !== AbilityType.Activated) return false;
 
@@ -517,14 +518,15 @@ export class PriorityProcessor {
     }
 
     // Requirement Check (Rule 602.5b/Activation conditions)
-    if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) {
+    const dummyEvent = { type: 'NONE', playerId: playerId } as any;
+    if (ability.triggerCondition && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId })) {
       console.log(`Illegal Activation: Activation requirements for ${obj.definition.name} are not met.`);
       return false;
     }
 
     // Explicit Condition check
     if (ability.condition) {
-      if (!ConditionProcessor.matchesCondition(state, ability.condition, { sourceId: obj.id, controllerId: playerId })) {
+      if (!ConditionProcessor.matchesCondition(state, ability.condition as any, { sourceId: obj.id, controllerId: playerId })) {
         return false;
       }
     }
@@ -539,7 +541,7 @@ export class PriorityProcessor {
     if (!checkPriority && ability.isManaAbility) return false;
 
     // Restriction Check
-    if (!RestrictionValidator.canActivateAbility(state, playerId, ability, obj)) {
+    if ('isTapped' in obj && !RestrictionValidator.canActivateAbility(state, playerId, ability, obj as GameObject)) {
       return false;
     }
     // Timing Check (Rule 602.1 / 606.3)
@@ -555,20 +557,20 @@ export class PriorityProcessor {
         if (!isYourTurn || !isMain || !stackEmpty) timingOk = false;
       }
 
-      const canActivateAnyTime = (cardLogic.abilities || []).some((a: any) => a.type === 'Static' && String(a.id || "").includes('any_turn')) ||
+      const canActivateAnyTime = (logic?.abilities || []).some((a: any) => a.type === 'Static' && String(a.id || "").includes('any_turn')) ||
         state.ruleRegistry.continuousEffects.some(e =>
           e.type === EffectType.AllowOutOfTurnActivation &&
           (e.targetIds?.includes(obj.id) || (e.targetMapping === TargetMapping.Self && e.sourceId === obj.id))
         );
 
       if (!canActivateAnyTime && !timingOk) return false;
-      if (obj.abilitiesUsedThisTurn > 0) return false;
+      if ('abilitiesUsedThisTurn' in obj && (obj as GameObject).abilitiesUsedThisTurn > 0) return false;
     } else if (!timingOk) {
       return false;
     }
 
     // Requirement Check (Rule 602.5b)
-    if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) {
+    if (ability.triggerCondition && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId })) {
       return false;
     }
 
@@ -576,7 +578,7 @@ export class PriorityProcessor {
     if (!CostProcessor.canPay(state, ability.costs || [], obj.id, playerId)) return false;
 
     // Requirement Check (Rule 602.5b) - Double check after costs? (Historical logic)
-    if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) return false;
+    if (ability.triggerCondition && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId })) return false;
 
     // Target Check
     if (ability.modes) {
@@ -585,7 +587,7 @@ export class PriorityProcessor {
         return TargetingProcessor.hasLegalTargets(state, obj.id, mode.targetDefinitions, playerId);
       });
       if (!hasValidMode) return false;
-    } else if (ability.targetDefinitions && !ability.targetDefinitions.optional) {
+    } else if (ability.targetDefinitions && !(ability.targetDefinitions as any).optional) {
       if (!TargetingProcessor.hasLegalTargets(state, obj.id, ability.targetDefinitions, playerId)) {
         return false;
       }
@@ -636,7 +638,7 @@ export class PriorityProcessor {
       const isStatic = (e.duration?.type || "").toString().toUpperCase() === 'STATIC';
       if (isStatic) {
         const source = RuleUtils.findObject(state, e.sourceId);
-        if (!source || (e.activeZones && !e.activeZones.includes(source.zone))) return false;
+        if (!source || (e.activeZones && source.zone && !e.activeZones.includes(source.zone))) return false;
       }
 
       // 3. Condition check

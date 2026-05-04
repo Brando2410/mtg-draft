@@ -13,6 +13,8 @@ import {
   StackObject,
   TargetMapping,
   TriggeredAbility,
+  TriggeredAbilityDefinition,
+  AbilityDefinition,
   TriggerEvent,
   Zone
 } from "@shared/engine_types";
@@ -135,9 +137,8 @@ export class TriggerProcessor {
           if (event.type !== 'ON_TRIGGER_QUEUED') {
             this.onEvent(state, {
               type: 'ON_TRIGGER_QUEUED',
-              sourceId: stackObj.id, // We use the stack ID so it can be targeted/countered
               playerId: trigger.controllerId,
-              data: { trigger, stackObj, originalEvent: event }
+              payload: { sourceId: stackObj.id, targetIds: [stackObj.id], object: stackObj as any, stackSnapshot: { trigger, originalEvent: event } }
             });
           }
         }
@@ -292,7 +293,7 @@ export class TriggerProcessor {
     trigger: TriggeredAbility,
     event: GameEvent,
   ): StackObject {
-    const eventObj = event.payload?.object || event.data?.object;
+    const eventObj = event.payload?.object;
     const sourceObj =
       eventObj && eventObj.id === trigger.sourceId
         ? eventObj
@@ -304,7 +305,7 @@ export class TriggerProcessor {
     const sourceName =
       sourceObj?.definition.name || emblemSource?.name || "Unknown Source";
     const sourceImage =
-      sourceObj?.definition.image_url || emblemSource?.image_url || (trigger as any).image_url || (trigger as any).data?.definition?.image_url;
+      sourceObj?.definition.image_url || emblemSource?.image_url || trigger.payload?.image_url || (trigger as any).image_url;
 
     const stackId = `trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
 
@@ -312,27 +313,29 @@ export class TriggerProcessor {
     const contextPayload: any = {
       sourceId: trigger.sourceId,
       controllerId: trigger.controllerId,
-      targets: (trigger as any).targets || [],
-      effects: (trigger as any).effects || [],
+      targets: trigger.targetIds || (trigger as any).targets || [],
+      effects: trigger.effects || (trigger as any).effects || [],
       event: event,
-      eventData: event,
-      eventAmount: (event as any).amount,
+      eventAmount: event.payload?.amount,
       targetDefinitions: (trigger as any).targetDefinitions,
       sourceName: sourceName,
       startIndex: 0
     };
 
-    const stackObj: any = {
+    const stackObj: StackObject = {
       id: stackId,
       controllerId: trigger.controllerId,
+      ownerId: sourceObj?.ownerId || trigger.controllerId,
       sourceId: trigger.sourceId,
       type: AbilityType.Triggered,
+      counters: {},
       name: `${sourceName}'s Trigger`,
-      targets: (trigger as any).targets || [],
-      definition: sourceObj?.definition || (trigger as any).data?.definition,
+      targets: trigger.targetIds || (trigger as any).targets || [],
+      definition: sourceObj?.definition || (trigger.payload as any)?.definition || (trigger as any).definition || { name: sourceName, types: [], colors: [], oracleText: "" },
       image_url: sourceImage,
       abilityIndex: (trigger as any).abilityIndex,
       condition: (trigger as any).condition,
+      sourceObject: sourceObj || emblemSource as any,
       data: contextPayload
     };
     getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[STACK-OBJ-CREATE] Created stack object ${stackObj.id} with targets: ${stackObj.targets?.join(', ')}`);
@@ -345,6 +348,7 @@ export class TriggerProcessor {
   ) {
     const { logger } = getProcessors(state);
     state.stack.push(stackObj);
+    getProcessors(state).action.updateEntityCache(state, stackObj);
     state.consecutivePasses = 0;
 
     const targetDefinitions = stackObj.data.targetDefinitions;
@@ -587,10 +591,10 @@ export class TriggerProcessor {
           (type === TriggerEvent.CountersAddedOther && event.type === TriggerEvent.CountersAdded) ||
           (type === TriggerEvent.Magecraft &&
             String(event.playerId) === String(t.controllerId) &&
-            (event.type === TriggerEvent.CastInstantOrSorcery || (event.type === TriggerEvent.CopySpell && event.data?.isInstantOrSorcery))) ||
+            (event.type === TriggerEvent.CastInstantOrSorcery || (event.type === TriggerEvent.CopySpell && event.payload?.isInstantOrSorcery))) ||
           (type === TriggerEvent.MagecraftOpponent &&
             String(event.playerId) !== String(t.controllerId) &&
-            (event.type === TriggerEvent.CastInstantOrSorcery || (event.type === TriggerEvent.CopySpell && event.data?.isInstantOrSorcery)))
+            (event.type === TriggerEvent.CastInstantOrSorcery || (event.type === TriggerEvent.CopySpell && event.payload?.isInstantOrSorcery)))
         );
       });
 
@@ -598,7 +602,7 @@ export class TriggerProcessor {
 
       // Identity Filtering (Rule 603.2)
       if (event.type === TriggerEvent.EnterBattlefield) {
-        const enteringId = event.data?.object?.id || event.payload?.object?.id || event.payload?.sourceId || event.sourceId;
+        const enteringId = RuleUtils.getSource(event);
         const expectsSelf = tEvents.includes(TriggerEvent.EnterBattlefield);
         const expectsOther = tEvents.includes(TriggerEvent.EnterBattlefieldOther);
 
@@ -606,14 +610,14 @@ export class TriggerProcessor {
         if (expectsOther && !expectsSelf && enteringId === t.sourceId) return false;
       }
       if (event.type === TriggerEvent.Death) {
-        const deadId = event.targetId || event.payload?.targetId || event.payload?.object?.id || event.sourceId;
+        const deadId = RuleUtils.getTargets(event)[0];
         if (tEvents.includes(TriggerEvent.Death) && deadId !== t.sourceId)
           return false;
         if (tEvents.includes(TriggerEvent.DeathOther) && deadId === t.sourceId)
           return false;
       }
       if (event.type === TriggerEvent.CountersAdded) {
-        const targetId = event.targetId || event.payload?.targetId || event.payload?.object?.id || event.sourceId;
+        const targetId = RuleUtils.getTargets(event)[0];
         if (tEvents.includes(TriggerEvent.CountersAdded) && targetId !== t.sourceId)
           return false;
         if (
@@ -623,7 +627,7 @@ export class TriggerProcessor {
           return false;
       }
       if (event.type === TriggerEvent.DamageDealtToPlayer) {
-        if (!t.isGlobal && event.sourceId !== t.sourceId) return false;
+        if (!t.isGlobal && RuleUtils.getSource(event) !== t.sourceId) return false;
       }
 
       if (
@@ -638,17 +642,17 @@ export class TriggerProcessor {
           // Only check identity if card is not using global condition (convention)
           // Or if the event source is one of the targeted objects for this trigger (granted abilities fallback)
           if (
-            event.sourceId !== t.sourceId &&
+            RuleUtils.getSource(event) !== t.sourceId &&
             !t.isGlobal &&
             !t.condition?.includes("EVENT_SOURCE") &&
-            !t.targetIds?.includes(event.sourceId)
+            !t.targetIds?.includes(RuleUtils.getSource(event))
           )
             return false;
         }
       }
 
       if (event.type === TriggerEvent.CastSpell) {
-        const castId = event.payload?.sourceId || event.sourceId;
+        const castId = RuleUtils.getSource(event);
         // Standard trigger (source is card/object itself)
         if (tEvents.includes(TriggerEvent.CastSpell)) {
           if (t.isGlobal) {
@@ -797,9 +801,10 @@ export class TriggerProcessor {
     matchingTriggers: TriggeredAbility[],
   ) {
     const { logger } = getProcessors(state);
-    if (event.type === TriggerEvent.BecomeTarget && event.targetId) {
+    const targetId = RuleUtils.getTargets(event)[0];
+    if (event.type === TriggerEvent.BecomeTarget && targetId) {
       const { layer: LayerProcessor } = getProcessors(state);
-      const targetObj = state.battlefield.find((o) => o.id === event.targetId);
+      const targetObj = state.battlefield.find((o) => o.id === targetId);
       if (targetObj) {
         const stats = LayerProcessor.getEffectiveStats(targetObj, state);
         const wards = stats.keywords.filter((k: string) =>
@@ -874,7 +879,7 @@ export class TriggerProcessor {
     matchingTriggers: TriggeredAbility[],
   ) {
     const { logger } = getProcessors(state);
-    const card = event.payload?.card || event.data?.card || event.card;
+    const card = event.payload?.object;
     if (event.type === TriggerEvent.CastSpell && card) {
       const stats = LayerProcessor.getEffectiveStats(card, state);
       const { keywords } = stats;
@@ -967,7 +972,7 @@ export class TriggerProcessor {
     matchingTriggers: TriggeredAbility[],
   ) {
     const { logger } = getProcessors(state);
-    const card = event.payload?.card || event.data?.card || event.card;
+    const card = event.payload?.object;
     if (!card) {
       if (event.type === TriggerEvent.ResolveSpell) logger.debug(state, LogCategory.TRIGGER, `[PARADIGM-DEBUG] No card found in event ${event.type}`);
       return;
@@ -1047,9 +1052,10 @@ export class TriggerProcessor {
   ) {
     if (event.type === TriggerEvent.CastInstantOrSorcery && event.playerId) {
       const processors = getProcessors(state);
-      const castSourceId = event.sourceId || (event.payload as any)?.sourceId || (event.data as any)?.sourceId || "";
+      const castSourceId = RuleUtils.getSource(event);
+      if (!castSourceId) return;
       const stackObj = processors.lki.getLki(state, castSourceId, Zone.Stack) || state.stack.find(s => s.id === castSourceId);
-      const targets = stackObj?.targets || (event.payload as any)?.targets || (event.data as any)?.targets || [];
+      const targets = RuleUtils.isStackObject(stackObj) ? stackObj.targets : (event.payload?.targetIds || []);
       
       if (
         targets.length > 0 &&
@@ -1060,17 +1066,14 @@ export class TriggerProcessor {
       ) {
         state.battlefield.forEach((obj) => {
           if (
-            String(obj.controllerId) === String(event.playerId) &&
+            obj.controllerId === event.playerId &&
             obj.definition.keywords?.includes("Repartee")
           ) {
-            const reparteeAbility = oracle
-              .getCard(obj.definition.name)
-              ?.abilities?.find(
-                (a: any) =>
-                  a.id?.includes("repartee") ||
-                  a.eventMatch === TriggerEvent.Repartee ||
-                  a.name === "Repartee",
+            const reparteeAbility = (oracle.getCard(obj.definition.name)?.abilities || [])
+              .find((a: any): a is TriggeredAbilityDefinition =>
+                a.eventMatch === TriggerEvent.Repartee || a.name === "Repartee" || String(a.id || "").includes("repartee")
               );
+
             if (reparteeAbility) {
               matchingTriggers.push({
                 ...reparteeAbility,
@@ -1096,12 +1099,10 @@ export class TriggerProcessor {
       obj && RuleUtils.isType(obj, "land")
     ) {
       state.battlefield.forEach((p) => {
-        if (String(p.controllerId) === String(obj.controllerId)) {
-          const landfallAbility = oracle
-            .getCard(p.definition.name)
-            ?.abilities?.find(
-              (a: any) =>
-                a.eventMatch === TriggerEvent.Landfall || a.name === "Landfall",
+        if (p.controllerId === obj.controllerId) {
+          const landfallAbility = (oracle.getCard(p.definition.name)?.abilities || [])
+            .find((a: any): a is TriggeredAbilityDefinition =>
+              a.eventMatch === TriggerEvent.Landfall || a.name === "Landfall"
             );
           if (landfallAbility) {
             matchingTriggers.push({
@@ -1123,12 +1124,9 @@ export class TriggerProcessor {
   ) {
     if (event.type === TriggerEvent.CastInstantOrSorcery && event.playerId) {
       state.battlefield.forEach((p) => {
-        if (String(p.controllerId) === String(event.playerId)) {
-          const opusAbility = oracle
-            .getCard(p.definition.name)
-            ?.abilities?.find(
-              (a: any) => a.eventMatch === TriggerEvent.Opus || a.name === "Opus",
-            );
+        if (p.controllerId === event.playerId) {
+          const opusAbility = (oracle.getCard(p.definition.name)?.abilities || [])
+            .find((a: any): a is TriggeredAbilityDefinition => a.eventMatch === TriggerEvent.Opus || a.name === "Opus");
           if (opusAbility) {
             // Avoid adding duplicate trigger if collectMatchingTriggers already found it
             const alreadyAdded = matchingTriggers.some(
@@ -1143,10 +1141,7 @@ export class TriggerProcessor {
                 sourceId: p.id,
                 controllerId: p.controllerId,
                 payload: {
-                  spent:
-                    (event.payload?.card as any)?.data?.paidManaValue ||
-                    event.data?.card?.paidManaValue ||
-                    0,
+                  spent: event.payload?.spent || 0,
                 },
               });
             }

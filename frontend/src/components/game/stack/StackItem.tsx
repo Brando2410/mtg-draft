@@ -64,7 +64,7 @@ export const StackItem = memo(({
         </div>
 
         {/* CHOICE/X-VALUE OVERLAY */}
-        {((!sobj.card && !sobj.definition && sobj.name) || (sobj as any).data?.summary) && (
+        {((!sobj.sourceObject && !sobj.definition && sobj.name) || (sobj as any).data?.summary) && (
           <div className="absolute inset-x-0 bottom-2 px-2 z-40">
             <div className="bg-slate-950/90 backdrop-blur-md border border-white/30 rounded-md py-1 px-2 flex items-center justify-center shadow-2xl ring-1 ring-white/10">
               <span className="text-[10px] font-black text-cyan-400 whitespace-nowrap overflow-hidden text-ellipsis uppercase tracking-tighter">

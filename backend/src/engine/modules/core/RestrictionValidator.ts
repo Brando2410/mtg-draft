@@ -175,7 +175,7 @@ export class RestrictionValidator {
 
     private static handleSplitSecond(state: GameState): boolean {
         // CR 702.61a: While a spell with split second is on the stack, players can't cast spells or activate nonmana abilities.
-        return state.stack.some(s => RuleUtils.hasKeyword(s.card, 'Split Second'));
+        return state.stack.some(s => RuleUtils.hasKeyword(s.sourceObject, 'Split Second'));
     }
 
     private static getPlayerRestrictions(state: GameState, playerId: PlayerId): RestrictionObject[] {

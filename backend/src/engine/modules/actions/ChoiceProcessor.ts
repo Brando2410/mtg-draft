@@ -18,42 +18,58 @@ import { getProcessors } from '../ProcessorRegistry';
 export class ChoiceProcessor {
 
     public static normalizePayload(input: number | string | ChoicePayload): ChoicePayload {
-        if (typeof input === 'object' && input !== null) {
+        if (typeof input === 'object' && input !== null && 'selections' in input) {
             return input;
         }
+
+        // Handle legacy/raw string payloads
         if (typeof input === 'number') {
-            return { index: input };
+            return { selections: [input] };
         }
+
         if (typeof input === 'string') {
-            if (input === 'undo' || input === 'none') return { value: input };
+            if (input === 'undo' || input === 'none' || input === 'confirm' || input === 'done') {
+                return { selections: [input] };
+            }
+
             if (input.startsWith('{')) {
                 try {
-                    return JSON.parse(input);
+                    const parsed = JSON.parse(input);
+                    if (parsed.selections) return parsed;
+                    // Backward compatibility for old JSON shapes
+                    if (parsed.index !== undefined) return { ...parsed, selections: [parsed.index] };
+                    if (parsed.value !== undefined) return { ...parsed, selections: [parsed.value] };
+                    if (parsed.indices) return { ...parsed, selections: parsed.indices };
                 } catch (e) {
                     console.error("[CHOICE-ERROR] Failed to parse raw JSON payload:", e);
                 }
             }
+
+            // Handle multi-select strings (1|2|3 or CHOICE_1|CHOICE_2)
             if (input.includes('|')) {
-                return { indices: input.split('|').map(s => parseInt(s.replace('CHOICE_', ''))) };
+                const selections = input.split('|').map(s => {
+                    const raw = s.replace('CHOICE_', '');
+                    return isNaN(parseInt(raw)) ? raw : parseInt(raw);
+                });
+                return { selections };
             }
+
+            // Handle single CHOICE_N string
             if (input.startsWith('CHOICE_')) {
                 const raw = input.replace('CHOICE_', '');
-                if (raw.startsWith('{')) {
-                    try {
-                        return JSON.parse(raw);
-                    } catch (e) {
-                        console.error("[CHOICE-ERROR] Failed to parse complex payload:", e);
-                    }
-                }
-                return { index: parseInt(raw) };
+                return { selections: [isNaN(parseInt(raw)) ? raw : parseInt(raw)] };
             }
+
             // Check if it's a number string
-            if (!isNaN(parseInt(input))) {
-                return { index: parseInt(input) };
+            const num = parseInt(input);
+            if (!isNaN(num) && String(num) === input) {
+                return { selections: [num] };
             }
-            return { value: input };
+
+            return { selections: [input] };
         }
-        return {};
+
+        return { selections: [] };
     }
 
     public static resolveChoice(
@@ -72,14 +88,10 @@ export class ChoiceProcessor {
         }
 
         const payload = this.normalizePayload(choiceInput);
-        let choiceIndex = payload.index !== undefined ? payload.index : payload.value;
+        const selections = payload.selections;
+        const firstSelection = selections[0];
 
-        // If payload has indices (multi-select), join them into a string choiceIndex for compatibility
-        if (choiceIndex === undefined && payload.indices && payload.indices.length > 0) {
-            choiceIndex = payload.indices.map(i => `CHOICE_${i}`).join('|');
-        }
-
-        logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Resolving ${action.type} for ${playerId}. Index/Value: ${choiceIndex}`);
+        logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Resolving ${action.type} for ${playerId}. Selections: ${selections.join(', ')}`);
 
         const isModal = action.type === ActionType.ModalSelection;
         const isLegendRule = action.type === ActionType.LegendRule;
@@ -91,16 +103,12 @@ export class ChoiceProcessor {
         if (!isModal && !isResolution && !isScry && !isChoosingX && !isOrderTriggers) return false;
 
         if (isOrderTriggers) {
-            let order: string[] = [];
-            if (payload.values) order = payload.values;
-            else if (payload.indices) order = payload.indices.map(i => i.toString());
-            else if (typeof choiceInput === 'string') order = choiceInput.split('|').map(s => s.replace('CHOICE_', ''));
-
+            const order = selections.map(s => s.toString());
             return PlayerActionProcessor.resolveTriggerOrdering(state, playerId, order);
         }
 
         // Handle "Back/Undo"
-        if (payload.value === 'undo' || payload.index === -1) {
+        if (firstSelection === 'undo' || firstSelection === -1) {
             return this.handleUndo(state, playerId, action);
         }
 
@@ -108,22 +116,17 @@ export class ChoiceProcessor {
             return this.handleXChoice(state, playerId, action, payload, engine);
         }
 
-        // Handle multi-choice (batch selection) separated by '|' OR empty selection via 'confirm'/'done'
+        // Handle multi-choice (batch selection) or empty selection via 'confirm'/'done'
         const isMultiSelectAction = action.type === ActionType.Discard || action.data?.maxChoices > 1;
-        const isEmptyConfirm = (choiceIndex === 'confirm' || choiceIndex === 'done' || choiceIndex === 'none') && isMultiSelectAction;
+        const isEmptyConfirm = (firstSelection === 'confirm' || firstSelection === 'done' || firstSelection === 'none') && isMultiSelectAction;
 
-        if ((typeof choiceIndex === 'string' && choiceIndex.includes('|')) || isEmptyConfirm) {
+        if (selections.length > 1 || (selections.length === 1 && typeof firstSelection === 'string' && firstSelection.includes('|')) || isEmptyConfirm) {
             // If it's a cost choice, spell casting mode selection, OR a targeting modal, we go through handleModalSelection
             if (action.data?.isCostChoice || action.data?.isSpellCasting || action.data?.isTargetingModal) {
-                return this.handleModalSelection(state, playerId, action.sourceId as string, null, choiceIndex as string, action, engine);
+                // Pass the first selection if it's a legacy string, otherwise pass null as handleModalSelection will use the payload
+                return this.handleModalSelection(state, playerId, action.sourceId as string, null, firstSelection as string, action, engine, payload);
             }
-            const indices = (typeof choiceIndex === 'string' && choiceIndex.includes('|')) 
-                ? choiceIndex.split('|').map(s => {
-                    const raw = s.startsWith('CHOICE_') ? s.substring(7) : s;
-                    return parseInt(raw);
-                })
-                : [];
-            
+
             // Validate min choices for empty confirm
             if (isEmptyConfirm && (action.data?.minChoices || 0) > 0) {
                 logger.info(state, LogCategory.ACTION, `Cannot confirm: Minimum ${(action.data?.minChoices || 0)} choices required.`);
@@ -133,6 +136,9 @@ export class ChoiceProcessor {
             const allEffects: EffectDefinition[] = [];
             let finalChoice: ChoiceOption | null = null;
             let currentTargetOffset = 0;
+            
+            const indices = selections.filter(s => typeof s === 'number') as number[];
+            
             indices.forEach(idx => {
                 const choice = action.data?.choices?.[idx];
                 if (choice) {
@@ -196,20 +202,19 @@ export class ChoiceProcessor {
             return this.handleScrySurveil(state, playerId, action, payload, engine);
         }
 
-        const rawIdx = typeof choiceIndex === 'string' && choiceIndex.startsWith('CHOICE_') ? choiceIndex.substring(7) : choiceIndex;
-        const idx = typeof rawIdx === 'string' ? parseInt(rawIdx) : rawIdx;
+        const choiceIdx = typeof firstSelection === 'number' ? firstSelection : parseInt(String(firstSelection).replace('CHOICE_', ''));
 
         // Handle Legend Rule Choice
         if (action.type === ActionType.LegendRule) {
-            let choice = idx !== undefined ? action.data?.choices?.[idx as number] : undefined;
-            if (!choice && typeof choiceIndex === 'string') {
-                choice = action.data?.choices?.find((c: ChoiceOption) => c.value === choiceIndex);
+            let choice = !isNaN(choiceIdx) ? action.data?.choices?.[choiceIdx as number] : undefined;
+            if (!choice && typeof firstSelection === 'string') {
+                choice = action.data?.choices?.find((c: ChoiceOption) => c.value === firstSelection);
             }
             const keepId = choice?.value as string;
             const involvedIds = (action.data?.involvedIds as string[]) || [];
             const discardIds = involvedIds.filter((id) => id !== keepId);
 
-            logger.info(state, LogCategory.ACTION, `[LEGEND-RULE] Player chose index ${idx} or ID ${choiceIndex} (Keep: ${keepId}). Involved: ${involvedIds.join(', ')}`);
+            logger.info(state, LogCategory.ACTION, `[LEGEND-RULE] Player chose index ${choiceIdx} or ID ${firstSelection} (Keep: ${keepId}). Involved: ${involvedIds.join(', ')}`);
 
             discardIds.forEach((id) => {
                 const obj = state.battlefield.find(o => o.id === id);
@@ -223,7 +228,7 @@ export class ChoiceProcessor {
         }
 
         const sourceId = action.sourceId as string;
-        const choice = idx !== undefined ? action.data?.choices?.[idx as number] : undefined;
+        const choice = !isNaN(choiceIdx) ? action.data?.choices?.[choiceIdx as number] : undefined;
 
         if (!choice || !sourceId) return false;
 
@@ -236,7 +241,7 @@ export class ChoiceProcessor {
         // 2. Handle Casting-Phase Choices (Modes, Additional Costs)
         // If it's a resolution-phase choice (Cascade, etc.), we fall through to handleResolutionChoice
         if ((isModal || action.data?.isSpellCasting || action.data?.isCostChoice) && !isResolution) {
-            return this.handleModalSelection(state, playerId, sourceId, choice, choiceIndex, action, engine);
+            return this.handleModalSelection(state, playerId, sourceId, choice, firstSelection, action, engine, payload);
         }
 
         // 4. Handle Resolution-Phase Choices (Effects, Search, Scry, May)
@@ -247,11 +252,11 @@ export class ChoiceProcessor {
         state: GameState,
         playerId: PlayerId,
         action: PendingAction,
-        payload: ChoicePayload | string,
+        payload: ChoicePayload,
         engine: EngineContext
     ): boolean {
         const { logger } = getProcessors(state);
-        const { top = [], bottom = [], graveyard = [] } = (typeof payload === 'string' ? JSON.parse(payload) : payload) as { top?: string[], bottom?: string[], graveyard?: string[] };
+        const { top = [], bottom = [], graveyard = [] } = payload;
 
         // Track result for UI
         state.turnState.lastScrySurveilResult = {
@@ -337,8 +342,8 @@ export class ChoiceProcessor {
             if (stackObj) {
                 const fullStackObj = state.stack.find(s => s.id === stackObj.id);
                 if (fullStackObj) {
-                    if (fullStackObj.type === 'Spell' && fullStackObj.card) {
-                        const card = fullStackObj.card;
+                    if (fullStackObj.type === 'Spell' && fullStackObj.sourceObject) {
+                        const card = fullStackObj.sourceObject;
                         const isPermanent = RuleUtils.isPermanent(card);
 
                         if (card.zone === Zone.Stack) {
@@ -366,11 +371,11 @@ export class ChoiceProcessor {
                     // --- KEYWORD HOOK: ON RESOLUTION ---
                     if (fullStackObj.type === AbilityType.Spell) {
                         const { trigger: TriggerProcessor } = getProcessors(state);
-                        logger.info(state, LogCategory.ACTION, `[CHOICE-DEBUG] Firing ON_RESOLVE_SPELL for ${fullStackObj.card?.definition.name}`);
+                        logger.info(state, LogCategory.ACTION, `[CHOICE-DEBUG] Firing ON_RESOLVE_SPELL for ${fullStackObj.sourceObject?.definition.name}`);
                         TriggerProcessor.onEvent(state, {
                             type: 'ON_RESOLVE_SPELL',
                             playerId: fullStackObj.controllerId,
-                            payload: { card: fullStackObj.card, sourceId: fullStackObj.sourceId }
+                            payload: { object: fullStackObj.sourceObject, sourceId: fullStackObj.sourceId, targetIds: [fullStackObj.id] }
                         });
                     }
                 }
@@ -412,8 +417,8 @@ export class ChoiceProcessor {
 
         // B. Revert Stack source (Putting a spell back in hand)
         const stackObj = state.stack.find(s => s.id === sourceId || s.sourceId === sourceId);
-        if (stackObj && stackObj.card) {
-            const card = stackObj.card;
+        if (stackObj && stackObj.sourceObject) {
+            const card = stackObj.sourceObject;
             const player = state.players[card.ownerId];
             if (player) {
                 const refundCost = card.definition.manaCost;
@@ -463,13 +468,12 @@ export class ChoiceProcessor {
 
         // CLEANUP TEMPORARY CASTING STATE
         state.interaction = {
-            lastChosenCostChoiceIndex: undefined,
-            lastChosenSacrificeId: undefined,
-            lastChosenDiscardId: undefined,
-            lastChosenTapSelectionIds: undefined,
-            lastChosenExileIds: undefined,
+            lastSelections: {},
+            lastChoiceIndex: undefined,
+            lastChoiceValue: undefined,
             lastChosenModeIndex: undefined,
-            lastChoiceIndex: undefined
+            lastChoiceX: undefined,
+            flags: {}
         };
 
         return true;
@@ -543,7 +547,7 @@ export class ChoiceProcessor {
             if (isGraveyardTargeting && legalTargetIds.length > 0) {
                 const action = ChoiceGenerator.createCardChoice(
                     state,
-                    legalTargetIds.map((id) => RuleUtils.findObject(state, id)!),
+                    legalTargetIds.map((id) => RuleUtils.findObject(state, id) as GameObject),
                     {
                         label: "Select a card from graveyard",
                         playerId,
@@ -597,21 +601,30 @@ export class ChoiceProcessor {
         });
     }
 
-    private static handleModalSelection(state: GameState, playerId: PlayerId, sourceId: string, choice: ChoiceOption | null, choiceIndex: any, action: PendingAction, engine: EngineContext): boolean {
+    private static handleModalSelection(
+        state: GameState,
+        playerId: PlayerId,
+        sourceId: string,
+        choice: ChoiceOption | null,
+        choiceIndex: any,
+        action: PendingAction,
+        engine: EngineContext,
+        payload?: ChoicePayload
+    ): boolean {
         const { logger } = getProcessors(state);
         const savedTargets = (action.data?.declaredTargets as string[]) || [];
         const costType = action.data?.costType as string;
-        logger.info(state, LogCategory.ACTION, `[DEBUG] handleModalSelection: costType=${costType}, choiceIndex=${choiceIndex}, choiceValue=${choice?.value}`);
 
-        const isMultiSelect = action.type === ActionType.Discard || (action.data?.maxChoices && (action.data.maxChoices as number) > 1);
-        const isEmptyConfirm = (choiceIndex === 'confirm' || choiceIndex === 'done' || choiceIndex === 'none') && isMultiSelect;
+        const selections = payload?.selections || [choiceIndex];
+        const firstSelection = selections[0];
         
-        if (!choice && choiceIndex !== undefined && !isEmptyConfirm) {
-            let idxStr = String(choiceIndex);
-            if (idxStr.includes('|')) idxStr = idxStr.split('|')[0];
+        const isMultiSelect = action.type === ActionType.Discard || (action.data?.maxChoices && (action.data.maxChoices as number) > 1);
+        const isEmptyConfirm = (firstSelection === 'confirm' || firstSelection === 'done' || firstSelection === 'none') && isMultiSelect;
+
+        if (!choice && firstSelection !== undefined && !isEmptyConfirm) {
+            let idxStr = String(firstSelection);
             const idx = parseInt(idxStr.startsWith('CHOICE_') ? idxStr.substring(7) : idxStr);
             choice = action.data?.choices?.[idx] || null;
-            logger.debug(state, LogCategory.ACTION, `[DEBUG] handleModalSelection: resolved choice from idx ${idx}: ${choice?.label} (${choice?.value})`);
         }
 
         if (!choice && !isEmptyConfirm) return false;
@@ -625,51 +638,49 @@ export class ChoiceProcessor {
         state.pendingAction = undefined;
 
         if (costType === 'Sacrifice') {
-            state.interaction.lastChosenSacrificeId = choice?.value as string;
+            state.interaction.lastSelections['Sacrifice'] = [choice?.value as string].filter(v => v);
         } else if (costType === 'Discard') {
-            state.interaction.lastChosenDiscardId = choice?.value as string;
-            logger.debug(state, LogCategory.ACTION, `[DEBUG] ChoiceProcessor: Set lastChosenDiscardId to ${choice?.value}`);
+            state.interaction.lastSelections['Discard'] = [choice?.value as string].filter(v => v);
         } else if (costType === 'TapSelection' || costType === 'Exile') {
-            logger.debug(state, LogCategory.ACTION, `[DEBUG] handleModalSelection: Processing ${costType} cost...`);
-            if (action.data?.maxChoices && (action.data.maxChoices as number) > 1) {
-                const batchIds = typeof choiceIndex === 'string' && choiceIndex.includes('|')
-                    ? choiceIndex.split('|').map(s => {
-                        const i = parseInt(s.startsWith('CHOICE_') ? s.substring(7) : s);
-                        const val = action.data?.choices?.[i]?.value as string;
-                        return val;
-                    }).filter(v => v)
-                    : [choice?.value as string].filter(v => v);
+            if (isMultiSelect) {
+                const batchIds = selections.map(s => {
+                    const str = s.toString();
+                    if (str.startsWith('CHOICE_')) {
+                        const idx = parseInt(str.substring(7));
+                        return action.data?.choices?.[idx]?.value as string;
+                    }
+                    if (!isNaN(parseInt(str)) && action.data?.choices?.[parseInt(str)]) {
+                        return action.data?.choices?.[parseInt(str)]?.value as string;
+                    }
+                    return str;
+                }).filter(v => v && v !== 'confirm' && v !== 'done' && v !== 'none');
 
-                logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Modal selection IDs for ${costType}: ${batchIds.join(', ')} (Max: ${action.data.maxChoices})`);
-                if (costType === 'TapSelection') state.interaction.lastChosenTapSelectionIds = batchIds;
-                else state.interaction.lastChosenExileIds = batchIds;
+                logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Modal selection IDs for ${costType}: ${batchIds.join(', ')} (Max: ${action.data?.maxChoices})`);
+                state.interaction.lastSelections[costType] = batchIds;
             } else {
-                if (costType === 'TapSelection') state.interaction.lastChosenTapSelectionIds = [choice?.value as string].filter(v => v);
-                else state.interaction.lastChosenExileIds = [choice?.value as string].filter(v => v);
+                const val = choice?.value as string;
+                state.interaction.lastSelections[costType] = val ? [val] : [];
             }
-        } else if (choice && String(choice.value).startsWith('FACE_SELECTION_')) {
-            const faceIdx = parseInt(String(choice.value).substring(15));
+        } else if (payload?.params?.faceIndex !== undefined || (choice && String(choice.value).startsWith('FACE_SELECTION_'))) {
+            const faceIdx = payload?.params?.faceIndex !== undefined ? payload.params.faceIndex : parseInt(String(choice?.value).substring(15));
             const card = RuleUtils.findObject(state, sourceId);
-            if (card && card.definition.faces) {
+            if (card && 'selectedFaceDefinition' in card && card.definition.faces) {
                 card.selectedFaceDefinition = card.definition.faces[faceIdx];
             }
-        } else if (choice && String(choice.value).startsWith('COST_CHOICE_')) {
-            const choiceIdx = parseInt(String(choice.value).substring(12));
-            state.interaction.lastChosenCostChoiceIndex = choiceIdx;
-        } else if (choice && String(choice.value).startsWith('MODE_SELECTION_')) {
-            if (typeof choiceIndex === 'string' && choiceIndex.includes('|')) {
-                const indices = choiceIndex.split('|').map(s => {
-                    const i = parseInt(s.startsWith('CHOICE_') ? s.substring(7) : s);
-                    const val = action.data?.choices?.[i]?.value;
-                    return parseInt(String(val).substring(15));
-                });
-                state.interaction.lastChosenModeIndex = indices;
-            } else {
-                const modeIdx = parseInt(String(choice.value).substring(15));
-                state.interaction.lastChosenModeIndex = [modeIdx];
-            }
+        } else if (payload?.params?.costChoiceId || (choice && String(choice.value).startsWith('COST_CHOICE_'))) {
+            const choiceIdx = payload?.params?.costChoiceId ? parseInt(payload.params.costChoiceId) : parseInt(String(choice?.value).substring(12));
+            state.interaction.lastChoiceIndex = choiceIdx;
+        } else if (payload?.params?.modeIndices || (choice && String(choice.value).startsWith('MODE_SELECTION_'))) {
+            const modeIndices = payload?.params?.modeIndices || selections.map(s => {
+                const str = s.toString();
+                const i = parseInt(str.startsWith('CHOICE_') ? str.substring(7) : str);
+                const val = action.data?.choices?.[i]?.value;
+                return typeof val === 'number' ? val : parseInt(String(val).substring(15));
+            });
+            state.interaction.lastChosenModeIndex = modeIndices;
         } else {
-            state.interaction.lastChoiceIndex = choiceIndex as number;
+            if (typeof firstSelection === 'number') state.interaction.lastChoiceIndex = firstSelection;
+            else state.interaction.lastChoiceValue = firstSelection as string;
         }
 
         logger.info(state, LogCategory.ACTION, `Selected ${costType ? costType + ' item' : 'choice'}: ${choice?.label || 'none'}`);
@@ -752,7 +763,7 @@ export class ChoiceProcessor {
         }
 
         if (action.data?.confirmedAutoTap) {
-            state.interaction.confirmedAutoTap = true;
+            state.interaction.flags.confirmedAutoTap = true;
         }
 
         let finalTargets = savedTargets;
@@ -820,18 +831,15 @@ export class ChoiceProcessor {
             state.pendingAction = undefined;
 
             const interactiveCost = costs.find((c: AbilityCost) =>
-                (c.type === 'TapSelection' && !state.interaction.lastChosenTapSelectionIds) ||
-                (c.type === 'Discard' && !state.interaction.lastChosenDiscardId) ||
-                (c.type === 'Sacrifice' && !state.interaction.lastChosenSacrificeId && !ChoiceProcessor.isSelfSac(c, sourceId)) ||
-                (c.type === 'Exile' && !state.interaction.lastChosenExileIds)
+                (c.type === 'TapSelection' && !state.interaction.lastSelections['TapSelection']) ||
+                (c.type === 'Discard' && !state.interaction.lastSelections['Discard']) ||
+                (c.type === 'Sacrifice' && !state.interaction.lastSelections['Sacrifice'] && !ChoiceProcessor.isSelfSac(c, sourceId)) ||
+                (c.type === 'Exile' && !state.interaction.lastSelections['Exile'])
             );
 
             if (interactiveCost) {
                 // Clear any stale interaction data for this cost type before prompting
-                if (interactiveCost.type === 'TapSelection') delete state.interaction.lastChosenTapSelectionIds;
-                if (interactiveCost.type === 'Discard') delete state.interaction.lastChosenDiscardId;
-                if (interactiveCost.type === 'Sacrifice') delete state.interaction.lastChosenSacrificeId;
-                if (interactiveCost.type === 'Exile') delete state.interaction.lastChosenExileIds;
+                delete state.interaction.lastSelections[interactiveCost.type];
 
                 state.pendingAction = ChoiceGenerator.createCostInteractionChoice(state, interactiveCost, sourceId, action.playerId, choice, action.data);
                 return true;
@@ -855,13 +863,12 @@ export class ChoiceProcessor {
             CostProcessor.pay(state, costs, sourceId, action.playerId);
 
             state.interaction = {
-                lastChosenCostChoiceIndex: undefined,
-                lastChosenSacrificeId: undefined,
-                lastChosenDiscardId: undefined,
-                lastChosenTapSelectionIds: undefined,
-                lastChosenExileIds: undefined,
+                lastSelections: {},
+                lastChoiceIndex: undefined,
+                lastChoiceValue: undefined,
                 lastChosenModeIndex: undefined,
-                lastChoiceIndex: undefined
+                lastChoiceX: undefined,
+                flags: {}
             };
         }
 
@@ -969,17 +976,14 @@ export class ChoiceProcessor {
         return TargetingProcessor.resolveInteractiveTargeting(state, playerId, targetId, engine);
     }
 
-    private static handleXChoice(state: GameState, playerId: string, action: PendingAction, xValue: any, engine: any): boolean {
+    private static handleXChoice(state: GameState, playerId: string, action: PendingAction, payload: ChoicePayload, engine: any): boolean {
         const { logger } = getProcessors(state);
-        let x = 0;
-        if (typeof xValue === 'object' && xValue !== null) {
-            if ('x' in xValue) x = parseInt(String(xValue.x));
-            else if ('index' in xValue) x = parseInt(String(xValue.index));
-            else if ('value' in xValue) x = parseInt(String(xValue.value));
-        } else if (typeof xValue === 'number') {
-            x = xValue;
-        } else if (typeof xValue === 'string') {
-            x = parseInt(xValue);
+        let x = payload.params?.xValue ?? 0;
+        
+        if (payload.params?.xValue === undefined) {
+            const firstSelection = payload.selections[0];
+            if (typeof firstSelection === 'number') x = firstSelection;
+            else if (typeof firstSelection === 'string') x = parseInt(firstSelection);
         }
 
         const sourceId = action.sourceId!;

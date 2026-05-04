@@ -2,6 +2,7 @@ import {
   AbilityDefinition,
   AbilityType,
   ActionResult,
+  BaseEntity,
   CounterType,
   DurationType,
   EffectType,
@@ -51,6 +52,16 @@ export class ActionProcessor {
     state.mutationStack.push(mutation);
   }
 
+  public static updateEntityCache(state: GameState, entity: string | BaseEntity, remove: boolean = false) {
+    if (!state._entityMap) state._entityMap = {};
+    const id = typeof entity === 'string' ? entity : entity.id;
+    if (remove) {
+      delete state._entityMap[id];
+    } else if (typeof entity !== 'string') {
+      state._entityMap[id] = entity;
+    }
+  }
+
   /**
    * Reverts game state to the last checkpoint recorded in the current pendingAction.
    */
@@ -98,7 +109,7 @@ export class ActionProcessor {
       to === Zone.Hand || to === Zone.Graveyard || to === Zone.Library
         ? card.ownerId
         : targetPlayerId;
-    const effectiveTargetId = destinationPlayerId;
+    const effectiveTargetId = (targetPlayerId || card.controllerId) as PlayerId;
 
     if (isDiscard) {
       if (!state.turnState.lastDiscardedIds) state.turnState.lastDiscardedIds = [];
@@ -115,9 +126,9 @@ export class ActionProcessor {
           playerId: card.ownerId,
           payload: {
             object: card,
-            card: card,
             fromZone: fromZone,
             toZone: to,
+            targetIds: [card.id],
           },
         },
       );
@@ -128,7 +139,7 @@ export class ActionProcessor {
       state,
       card,
       to,
-      { fromZone, isDraw, isDiscard, targetPlayerId: effectiveTargetId },
+      { fromZone, isDraw, isDiscard, targetPlayerId: effectiveTargetId! },
     );
 
     if (replacementResult.actionResult) return replacementResult.actionResult;
@@ -136,7 +147,7 @@ export class ActionProcessor {
 
     // Rule 110.2: A permanent's controller is the player under whose control it entered.
     // Rule 108.4: A card's owner doesn't change, but its controller can.
-    card.controllerId = effectiveTargetId;
+    card.controllerId = effectiveTargetId!;
 
     // CR 603.10: "Leaves-the-battlefield" events MUST look back in time.
     // Trigger them while we still have the Battlefield state (counters, registered abilities).
@@ -177,6 +188,7 @@ export class ActionProcessor {
     }
 
     // 4. Rule 400.1: Add to the new zone
+    this.updateEntityCache(state, card);
     logger.debug(state, LogCategory.ACTION, `[MOVE-DEBUG] Adding ${card.definition.name} to ${to} for player ${effectiveTargetId}`);
     this.addToTargetZone(
       state,
@@ -190,12 +202,12 @@ export class ActionProcessor {
 
     // CR 121: Drawing a card
     if (isDraw && fromZone === Zone.Library && to === Zone.Hand) {
-      state.turnState.cardsDrawnThisTurn[effectiveTargetId] =
-        (state.turnState.cardsDrawnThisTurn[effectiveTargetId] || 0) + 1;
+      state.turnState.cardsDrawnThisTurn[effectiveTargetId!] =
+        (state.turnState.cardsDrawnThisTurn[effectiveTargetId!] || 0) + 1;
       state.turnState.lastCardsDrawnAmount = 1;
       TriggerProcessor.onEvent(
         state,
-        { type: TriggerEvent.Draw, playerId: effectiveTargetId, payload: { object: card } },
+        { type: TriggerEvent.Draw, playerId: effectiveTargetId!, payload: { object: card, targetIds: [card.id] } },
       );
 
       // Jolrael support: Emit ON_SECOND_DRAW
@@ -205,7 +217,7 @@ export class ActionProcessor {
           {
             type: TriggerEvent.SecondDraw,
             playerId: effectiveTargetId,
-            payload: { object: card },
+            payload: { object: card, targetIds: [card.id] },
           },
         );
       }
@@ -219,9 +231,8 @@ export class ActionProcessor {
         {
           type: TriggerEvent.LeaveGraveyard,
           playerId: card.ownerId,
-          payload: { object: card, fromZone, toZone: to },
+          payload: { object: card, fromZone, toZone: to, targetIds: [card.id] },
         },
-
       );
     }
 
@@ -254,11 +265,7 @@ export class ActionProcessor {
 
     // CR 603.10: "Leaves-the-battlefield" events MUST look back in time.
     // We capture a snapshot of the card (especially counters) to support triggers like Modular, Scolding Administrator, etc.
-    const snapshot: GameObject = {
-      ...card,
-      definition: { ...card.definition },
-      counters: { ...card.counters },
-    };
+    const snapshot = RuleUtils.createSnapshot(card);
 
     // Rule 603.10a: "Dies" triggers (specifically for creatures moving to graveyard)
     if (to === Zone.Graveyard && RuleUtils.isCreature(card)) {
@@ -270,9 +277,8 @@ export class ActionProcessor {
           playerId: card.controllerId,
           payload: {
             object: snapshot,
-            card: snapshot,
             sourceId: card.id,
-            targetId: card.id,
+            targetIds: [card.id],
             toZone: to,
           },
         }
@@ -288,6 +294,7 @@ export class ActionProcessor {
         payload: {
           object: snapshot,
           sourceId: card.id,
+          targetIds: [card.id],
           toZone: to,
           fromZone: Zone.Battlefield,
         },
@@ -302,12 +309,19 @@ export class ActionProcessor {
     }
     RegistryProcessor.unregisterAbilities(state, card.id);
     const cid = card.id;
+    this.updateEntityCache(state, cid, true);
 
     state.battlefield = state.battlefield.filter((c) => c.id !== cid);
 
     // Rule 113.7a: Abilities on the stack exist independently of their source.
     // We only remove the object from the stack if it IS the card (e.g. a Spell being countered/moved).
-    state.stack = state.stack.filter((s) => s.id !== cid && s.card?.id !== cid);
+    state.stack = state.stack.filter((s) => {
+      if (s.id === cid || s.sourceObject?.id === cid) {
+        this.updateEntityCache(state, s, true);
+        return false;
+      }
+      return true;
+    });
     state.exile = state.exile.filter((c) => c.id !== cid);
 
     for (const pid in state.players) {
@@ -531,8 +545,7 @@ export class ActionProcessor {
 
           if (amount > 0) {
             const counterKey = type === "P1P1" ? "+1/+1" : type;
-            card.counters[counterKey] =
-              (card.counters[counterKey] || 0) + amount;
+            card.counters[counterKey] = (card.counters[counterKey] || 0) + amount;
             logger.info(state, LogCategory.ACTION, `[ETB-COUNTERS] ${card.definition.name} enters with ${amount} ${counterKey} counters.`);
           }
         }
@@ -548,6 +561,7 @@ export class ActionProcessor {
         payload: {
           object: card,
           sourceId: card.id,
+          targetIds: [card.id],
           fromZone,
           toZone: Zone.Battlefield,
         },
@@ -567,10 +581,10 @@ export class ActionProcessor {
         }
       }
 
+      if (!loyaltyValue && (card.definition.types as any).includes('Planeswalker')) {
+        loyaltyValue = 0;
+      }
       const startingLoyalty = parseInt(String(loyaltyValue || "0"), 10);
-
-      logger.debug(state, LogCategory.ACTION, `[LOYALTY] ${card.definition.name} - Found loyalty: ${loyaltyValue} (Source: ${def.loyalty ? "Definition" : "Oracle Fallback"})`);
-
       card.counters[CounterType.Loyalty] = startingLoyalty;
       logger.info(state, LogCategory.ACTION, `[ETB] ${card.definition.name} enters with ${startingLoyalty} loyalty.`);
     }
@@ -620,9 +634,9 @@ export class ActionProcessor {
 
         if (
           obj.isTapped ||
-          (obj.counters["stun"] && obj.counters["stun"] > 0)
+          (obj.counters && obj.counters["stun"] && obj.counters["stun"] > 0)
         ) {
-          if (obj.counters["stun"] && obj.counters["stun"] > 0) {
+          if (obj.counters && obj.counters["stun"] && obj.counters["stun"] > 0) {
             obj.counters["stun"]--;
             logger.info(state, LogCategory.ACTION, `${obj.definition.name} removed a stun counter and remains tapped.`);
             return;

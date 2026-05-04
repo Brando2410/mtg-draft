@@ -26,7 +26,7 @@ export const useStackLogic = (
 
     const inStack = stack.find(s => s.id === id);
     if (inStack) {
-        return (inStack.card || { 
+        return (inStack.sourceObject || { 
             id: inStack.id, 
             definition: inStack.definition || { name: inStack.name || 'Ability', image_url: '/back.png', types: [], colors: [], manaCost: '', oracleText: '' },
             counters: {}, keywords: [], zone: 'Stack' 
@@ -52,12 +52,12 @@ export const useStackLogic = (
   }, [battlefield, exile, me, opponent, stack]);
 
   const effectiveStack = useMemo(() => {
-    const filteredStack = stack.filter(s => s.sourceId || s.name || s.card || s.definition);
+    const filteredStack = stack.filter(s => s.sourceId || s.name || s.sourceObject || s.definition);
     const result = [...filteredStack];
 
     if (pendingAction?.data?.stackObj) {
       const pObj = pendingAction.data.stackObj;
-      if (pObj.sourceId || pObj.name || pObj.card || pObj.definition) {
+      if (pObj.sourceId || pObj.name || pObj.sourceObject || pObj.definition) {
         const isAlreadyOnStack = filteredStack.some(s => 
           s.id === pObj.id || 
           (s.sourceId && s.sourceId === pObj.sourceId && s.type === pObj.type)
@@ -71,7 +71,7 @@ export const useStackLogic = (
   }, [stack, pendingAction]);
 
   const getDisplayObj = useCallback((sobj: StackObject) => {
-    return sobj.card || 
+    return sobj.sourceObject || 
            (sobj.definition ? { id: sobj.id, definition: sobj.definition, counters: {}, keywords: [], zone: 'Stack' } : null) || 
            findObject(sobj.sourceId) || 
            {

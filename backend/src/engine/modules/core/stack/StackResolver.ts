@@ -99,8 +99,8 @@ export class StackResolver {
   }
 
   private postResolutionCleanup(stackObj: StackObject, fizzled: boolean = false) {
-    if (stackObj.type === 'Spell' && stackObj.card) {
-      const card = stackObj.card;
+    if (stackObj.type === 'Spell' && stackObj.sourceObject) {
+      const card = stackObj.sourceObject;
       if (fizzled) {
         if (stackObj.exileOnResolution || (stackObj as any).isCopy) {
           this.log(`[RULE 701.5] ${card.definition.name} (fizzled) was exiled instead of being put into graveyard.`);
@@ -151,7 +151,7 @@ export class StackResolver {
   }
 
   private getObjectName(stackObj: StackObject): string {
-    if (stackObj.type === 'Spell' && stackObj.card) return stackObj.card.definition.name;
+    if (stackObj.type === 'Spell' && stackObj.sourceObject) return stackObj.sourceObject.definition.name;
     const source = this.state.battlefield.find(o => o.id === stackObj.sourceId);
     return source ? source.definition.name : 'Ability';
   }
