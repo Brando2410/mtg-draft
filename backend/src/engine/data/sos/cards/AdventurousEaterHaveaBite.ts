@@ -37,7 +37,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Tri
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: { type: TargetType.Creature },
+                targetDefinitions: [{ type: TargetType.Creature }],
                 effects: [
                     { type: EffectType.AddCounters, amount: 1, counterType: '+1/+1', targetMapping: TargetMapping.Target1 },
                     { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }

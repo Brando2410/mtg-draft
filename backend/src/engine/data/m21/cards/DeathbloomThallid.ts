@@ -15,7 +15,6 @@ export const DeathbloomThallid: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Death,
-            condition: ConditionType.SelfDied,
             effects: [
                 {
                     type: EffectType.CreateToken,

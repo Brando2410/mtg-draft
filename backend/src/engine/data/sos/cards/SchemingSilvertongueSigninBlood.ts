@@ -33,9 +33,9 @@ export const SchemingSilvertongueSigninBlood: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
+                targetDefinitions: [{
                     type: TargetType.Player
-                },
+                }],
                 effects: [
                     {
                         type: EffectType.DrawCards,

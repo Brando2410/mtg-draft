@@ -12,10 +12,10 @@ export const Erode: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CreatureOrPlaneswalker,
                 count: 1,
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Destroy,
@@ -31,12 +31,12 @@ export const Erode: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.SearchLibrary,
-                                    targetDefinition: {
+                                    targetDefinitions: [{
                                         type: TargetType.Land,
                                         count: 1,
                                         optional: true,
                                         restrictions: [Restriction.Basic]
-                                    },
+                                    }],
                                     zone: Zone.Battlefield,
                                     targetMapping: TargetMapping.Target1Controller,
                                     tapped: true,

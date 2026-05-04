@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } from '@shared/engine_types';
-    export const GarrisonExcavator: CardDefinition = {
+export const GarrisonExcavator: CardDefinition = {
     name: "Garrison Excavator",
     manaCost: "{3}{R}",
     scryfall_id: "f11d2846-f181-4751-82ac-1e1ced6f46c7",
@@ -20,7 +20,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } 
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.LeaveGraveyard,
+            eventMatch: TriggerEvent.LeaveGraveyard,
             condition: ConditionType.PlayerIsController,
             effects: [
                 {
@@ -33,6 +33,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } 
                         power: 2,
                         toughness: 2,
                         keywords: ['Flying'],
+                        image_url: "https://cards.scryfall.io/normal/front/d/0/d0f3bd3d-08cf-4783-ae31-03770c8be69c.jpg?1775864773"
                     }
                 }
             ]
@@ -41,4 +42,4 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TriggerEvent } 
     power: "3",
     toughness: "4"
 };
-    
+

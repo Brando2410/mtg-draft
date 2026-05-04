@@ -12,10 +12,10 @@ export const FieldTrip: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         count: 1,
                         restrictions: [Restriction.Basic, Restriction.Forest]
-                    },
+                    }],
                     zone: Zone.Hand,
                     reveal: true
                 },

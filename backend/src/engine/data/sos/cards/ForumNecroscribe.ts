@@ -22,10 +22,10 @@ export const ForumNecroscribe: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Choose a creature card to return on the battlefield",
                     selectionPool: TargetMapping.ControllerGraveyard,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         restrictions: [Restriction.Creature, Restriction.YouOwn]
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.MoveToZone,

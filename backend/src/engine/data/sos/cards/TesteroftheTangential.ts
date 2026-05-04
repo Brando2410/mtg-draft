@@ -29,11 +29,11 @@ export const TesteroftheTangential: CardDefinition = {
                                     type: EffectType.MoveCounters,
                                     counterType: '+1/+1',
                                     amount: 'X',
-                                    targetDefinition: {
+                                    targetDefinitions: [{
                                         type: TargetType.Creature,
                                         restrictions: [Restriction.Other],
                                         count: 1
-                                    },
+                                    }],
                                     targetMapping: TargetMapping.Target1
                                 }
                             ]

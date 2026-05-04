@@ -12,10 +12,10 @@ export const ExpandedAnatomy: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.Creature
-            },
+            }],
             effects: [
                 {
                     type: EffectType.AddCounters,

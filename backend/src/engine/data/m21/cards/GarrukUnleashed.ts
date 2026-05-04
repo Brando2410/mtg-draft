@@ -15,7 +15,7 @@ export const GarrukUnleashed: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Loyalty, value: 1 }],
-            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0 },
+            targetDefinitions: [{ type: TargetType.Creature, count: 1, minCount: 0 }],
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 duration: { type: DurationType.UntilEndOfTurn },
@@ -67,7 +67,7 @@ export const GarrukUnleashed: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.SearchLibrary,
-                                    targetDefinition: { type: TargetType.Creature, count: 1 },
+                                    targetDefinitions: [{ type: TargetType.Creature, count: 1 }],
                                     zone: Zone.Battlefield,
                                     optional: true,
                                     targetMapping: TargetMapping.Controller

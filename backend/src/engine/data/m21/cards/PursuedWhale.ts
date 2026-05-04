@@ -15,7 +15,7 @@ export const PursuedWhale: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: { type: TargetType.Opponent, count: 1 },
+            targetDefinitions: [{ type: TargetType.Opponent, count: 1 }],
             effects: [{
                 type: EffectType.CreateToken,
                 amount: 1,

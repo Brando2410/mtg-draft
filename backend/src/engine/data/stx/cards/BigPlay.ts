@@ -11,10 +11,10 @@ export const BigPlay: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.Creature
-            },
+            }],
             effects: [
                 { type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: { type: DurationType.UntilEndOfTurn }, powerModifier: 2, toughnessModifier: 2 },
                 { type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Target1 }

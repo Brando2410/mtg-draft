@@ -11,10 +11,10 @@ export const IgneousInspiration: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.AnyTarget,
                 count: 1
-            },
+            }],
             effects: [
                 { type: EffectType.DealDamage, amount: 3, targetMapping: TargetMapping.Target1 },
                 { type: EffectType.Learn }

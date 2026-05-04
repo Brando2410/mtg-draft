@@ -54,7 +54,7 @@ export const TorrentSculptor: CardDefinition = {
             abilities: [{
                 type: AbilityType.Spell,
                 costs: [{ type: CostType.Discard, amount: 1 }],
-                targetDefinition: { count: 1, type: TargetType.CreatureOrPlaneswalker },
+                targetDefinitions: [{ count: 1, type: TargetType.CreatureOrPlaneswalker }],
                 effects: [
                     { type: EffectType.DealDamage, amount: DynamicAmount.TwoPlusDiscardedMV, targetMapping: TargetMapping.Target1 },
                     { type: EffectType.Choice, condition: 'IS_INSTANT_OR_SORCERY_DISCARDED', choices: [{ label: 'Draw', effects: [{ type: EffectType.DrawCards, amount: 1 }] }] }

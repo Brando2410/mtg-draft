@@ -24,12 +24,12 @@ export const ShadrixSilverquill: CardDefinition = {
                 choices: [
                     {
                         label: "Create Inkling",
-                        targetDefinition: { count: 1, type: TargetType.Player },
+                        targetDefinitions: [{ count: 1, type: TargetType.Player }],
                         effects: [{ type: EffectType.CreateToken, targetMapping: TargetMapping.Target1, tokenBlueprint: { name: 'Inkling', power: "2", toughness: "1", keywords: ['Flying'], colors: ['W', 'B'], types: ['Creature', 'Token'], subtypes: ['Inkling'] } }]
                     },
                     {
                         label: "Draw & Lose Life",
-                        targetDefinition: { count: 1, type: TargetType.Player },
+                        targetDefinitions: [{ count: 1, type: TargetType.Player }],
                         effects: [
                             { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Target1 },
                             { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.Target1 }
@@ -37,7 +37,7 @@ export const ShadrixSilverquill: CardDefinition = {
                     },
                     {
                         label: "Counters on all creatures",
-                        targetDefinition: { count: 1, type: TargetType.Player },
+                        targetDefinitions: [{ count: 1, type: TargetType.Player }],
                         effects: [{
                             type: EffectType.AddCounters,
                             counterType: 'P1P1',

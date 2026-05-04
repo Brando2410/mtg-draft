@@ -50,7 +50,7 @@ export const RinandSeriInseparable: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Mana, value: '{R}{G}{W}' }, { type: CostType.Tap }],
-            targetDefinition: { type: TargetType.AnyTarget, count: 1 },
+            targetDefinitions: [{ type: TargetType.AnyTarget, count: 1 }],
             effects: [
                 { type: EffectType.DealDamage, amount: DynamicAmount.DogsYouControlCount, targetMapping: TargetMapping.Target1 },
                 { type: EffectType.GainLife, amount: DynamicAmount.CatsYouControlCount, targetMapping: TargetMapping.Controller }

@@ -154,10 +154,18 @@ export const ActionButton = memo(({
             orange = !isContextual;
             disabled = isContextual;
         } else if (pendingAction.type === ActionType.Discard) {
-            text = "Pending Discard";
-            sub = "";
-            orange = false;
-            disabled = true;
+            const isOptional = pendingAction.data?.isOptionalDiscard;
+            if (isOptional) {
+                text = "Done Discarding";
+                sub = "Click to finish";
+                orange = true;
+                disabled = false;
+            } else {
+                text = "Pending Discard";
+                sub = "";
+                orange = false;
+                disabled = true;
+            }
         } else if (pendingAction.type === ActionType.Targeting || (pendingAction.type as any) === 'TARGETING') {
             const selected = pendingAction.data?.selectedTargets || [];
             const targetDef = pendingAction.data?.targetDefinition;

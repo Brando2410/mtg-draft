@@ -16,10 +16,10 @@ export const GaleSwooper: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

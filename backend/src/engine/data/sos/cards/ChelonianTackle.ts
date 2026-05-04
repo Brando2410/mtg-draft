@@ -13,11 +13,11 @@ export const ChelonianTackle: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature, count: 1, restrictions: [
                     Restriction.YouControl
                 ]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -32,11 +32,11 @@ export const ChelonianTackle: CardDefinition = {
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: {
+                            targetDefinitions: [{
                                 type: TargetType.Creature, count: 1, restrictions: [
                                     Restriction.OpponentControl
                                 ]
-                            },
+                            }],
                             effects: [
                                 {
                                     type: EffectType.Fight,

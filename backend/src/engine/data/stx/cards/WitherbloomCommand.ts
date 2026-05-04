@@ -16,7 +16,7 @@ export const WitherbloomCommand: CardDefinition = {
             choices: [
                 {
                     label: 'Mill 3, return land',
-                    targetDefinition: { count: 1, type: TargetType.Player },
+                    targetDefinitions: [{ count: 1, type: TargetType.Player }],
                     effects: [
                         {
                             type: EffectType.Mill,
@@ -33,11 +33,11 @@ export const WitherbloomCommand: CardDefinition = {
                 },
                 {
                     label: 'Destroy permanent with mana value 2 or less',
-                    targetDefinition: {
+                    targetDefinitions: [{
                         count: 1,
                         type: TargetType.Permanent,
                         restrictions: [Restriction.NonCreature, Restriction.NonLand, Restriction.ManaValue2OrLess]
-                    },
+                    }],
                     effects: [{
                         type: EffectType.Destroy,
                         targetMapping: TargetMapping.Target1
@@ -45,7 +45,7 @@ export const WitherbloomCommand: CardDefinition = {
                 },
                 {
                     label: 'Target creature gets -3/-1',
-                    targetDefinition: { count: 1, type: TargetType.Creature },
+                    targetDefinitions: [{ count: 1, type: TargetType.Creature }],
                     effects: [{
                         type: EffectType.ApplyContinuousEffect,
                         duration: { type: DurationType.UntilEndOfTurn },
@@ -56,7 +56,7 @@ export const WitherbloomCommand: CardDefinition = {
                 },
                 {
                     label: 'Target opponent loses 2, you gain 2',
-                    targetDefinition: { count: 1, type: TargetType.Opponent },
+                    targetDefinitions: [{ count: 1, type: TargetType.Opponent }],
                     effects: [{
                         type: EffectType.LoseLife,
                         amount: 2,

@@ -22,10 +22,10 @@ export const ShatteredAcolyte: CardDefinition = {
                     targetMapping: TargetMapping.Target1
                 }
             ],
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.ArtifactOrEnchantment
-            }
+            }]
         }
     ]
 };

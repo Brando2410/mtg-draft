@@ -17,10 +17,10 @@ export const HarshAnnotation: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Destroy,

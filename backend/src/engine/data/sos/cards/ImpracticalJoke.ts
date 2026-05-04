@@ -13,11 +13,11 @@ export const ImpracticalJoke: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CreatureOrPlaneswalker,
                 count: 1,
                 minCount: 0,
-            },
+            }],
             effects: [
                 {
                     type: EffectType.DisableDamagePrevention

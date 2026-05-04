@@ -15,7 +15,7 @@ export const DuelingCoach: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: { count: 1, type: TargetType.Creature, restrictions: [Restriction.YouControl] },
+            targetDefinitions: [{ count: 1, type: TargetType.Creature, restrictions: [Restriction.YouControl] }],
             effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Target1 }]
         },
         {

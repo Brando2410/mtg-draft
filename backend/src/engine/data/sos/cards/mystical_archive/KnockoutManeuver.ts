@@ -15,7 +15,7 @@ export const KnockoutManeuver: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: [
+            targetDefinitions: [
                 {
                     type: TargetType.Creature,
                     restrictions: [Restriction.YouControl],

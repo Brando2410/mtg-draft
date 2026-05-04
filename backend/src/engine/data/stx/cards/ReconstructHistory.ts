@@ -9,7 +9,7 @@ export const ReconstructHistory: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 5,
                 minCount: 0,
                 optional: true,
@@ -21,7 +21,7 @@ export const ReconstructHistory: CardDefinition = {
                     ['sorcery'],
                     ['planeswalker']
                 ]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.MoveToZone,

@@ -11,11 +11,11 @@ export const FrostBreath: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 2,
                 minCount: 0
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Tap,

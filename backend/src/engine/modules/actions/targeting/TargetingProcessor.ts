@@ -7,7 +7,9 @@ import {
     Zone,
     CostType,
     TargetType,
-    ActionType
+    ActionType,
+    TargetRestriction,
+    TargetDefinition
 } from '@shared/engine_types';
 import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
@@ -26,19 +28,32 @@ import { oracle } from '../../../OracleLogicMap';
 export class TargetingProcessor {
 
     // --- FACADES FOR EXTRACTED MODULES ---
-    public static calculateTotalCounts(targetDef: any, xValue: number = 0) { return TargetMapper.calculateTotalCounts(targetDef, xValue); }
-    public static generateTargetPrompt(targetDef: any, selectedCount: number, xValue: number = 0, isSpellCasting: boolean = false) { return TargetMapper.generateTargetPrompt(targetDef, selectedCount, xValue, isSpellCasting); }
-    /** @deprecated Use RuleUtils.findObject instead */
-    public static findObjectInAnyZone(state: GameState, id: string): GameObject | null { return RuleUtils.findObject(state, id) || null; }
+    public static calculateTotalCounts(targetDefinitions: TargetDefinition[], xValue: number = 0) { return TargetMapper.calculateTotalCounts(targetDefinitions, xValue); }
+    public static getCountsForDefinition(d: TargetDefinition | null, xValue: number = 0) { return TargetMapper.getCountsForDefinition(d, xValue); }
+    public static generateTargetPrompt(targetDefinitions: TargetDefinition[], selectedCount: number, xValue: number = 0, isSpellCasting: boolean = false) { return TargetMapper.generateTargetPrompt(targetDefinitions, selectedCount, xValue, isSpellCasting); }
     public static isLegalTarget(state: GameState, context: TargetingContext, targetId: string): boolean { return TargetValidator.isLegalTarget(state, context, targetId); }
-    public static hasLegalTargets(state: GameState, sourceId: string, targetDef: any, controllerId: string): boolean { return TargetValidator.hasLegalTargets(state, sourceId, targetDef, controllerId); }
-    public static matchesRestrictions(state: GameState, targetObj: any, restrictions: any[], context: TargetingContext): boolean { return TargetValidator.matchesRestrictions(state, targetObj, restrictions, context); }
-    public static sourceHasQualities(source: any, qualities: string[], state?: GameState): boolean { return TargetValidator.sourceHasQualities(source, qualities, state); }
-    public static getColors(obj: any, state?: GameState): string[] { return TargetValidator.getColors(obj, state); }
-    public static getLegalTargetPool(state: GameState, sourceId: string, targetDef: any, controllerId: string, targetIndex: number = 0): string[] { return TargetValidator.getLegalTargetPool(state, sourceId, targetDef, controllerId, targetIndex); }
+    public static hasLegalTargets(state: GameState, sourceId: string, targetDefinitions: TargetDefinition[] | undefined, controllerId: string, xValue: number = 0): boolean { return TargetValidator.hasLegalTargets(state, sourceId, targetDefinitions || [], controllerId, xValue); }
+    public static matchesRestrictions(state: GameState, targetObj: GameObject, restrictions: TargetRestriction[], context: TargetingContext): boolean { return TargetValidator.matchesRestrictions(state, targetObj, restrictions, context); }
+    public static sourceHasQualities(source: GameObject, qualities: string[], state?: GameState): boolean { return TargetValidator.sourceHasQualities(source, qualities, state); }
+    public static getColors(obj: GameObject, state?: GameState): string[] { return TargetValidator.getColors(obj, state); }
+    public static getLegalTargetPool(state: GameState, sourceId: string, targetDefinitions: TargetDefinition[], controllerId: string, targetIndex: number = 0, xValue: number = 0): string[] { return TargetValidator.getLegalTargetPool(state, sourceId, targetDefinitions, controllerId, targetIndex, xValue); }
     public static resolveTargetMapping(state: GameState, mapping: string, context: ResolutionContext, effect?: any): string[] { return TargetMapper.resolveTargetMapping(state, mapping, context, effect); }
-    public static getDefinitionForIndex(targetDef: any, targetIndex: number, xValue: number = 0): any { return TargetMapper.getDefinitionForIndex(targetDef, targetIndex, xValue); }
+    public static getDefinitionForIndex(targetDefinitions: TargetDefinition[], targetIndex: number, xValue: number = 0): TargetDefinition | null { return TargetMapper.getDefinitionForIndex(targetDefinitions, targetIndex, xValue); }
     public static shouldFizzle(state: GameState, context: TargetingContext, targets: string[], effects: any[]): boolean { return TargetValidator.shouldFizzle(state, context, targets, effects); }
+
+    /**
+     * Checks if there are any optional targeting slots remaining that haven't been filled.
+     */
+    public static hasOptionalTargetsRemaining(targetDefinitions: TargetDefinition[], existingTargets: string[], xValue: number = 0): boolean {
+        const total = this.calculateTotalCounts(targetDefinitions, xValue);
+        if (existingTargets.length >= total.maxCount) return false;
+
+        // If we haven't reached the minimum requirement, we definitely have remaining work
+        if (existingTargets.length < total.minCount) return true;
+
+        // If we are between min and max, the remaining slots are by definition optional
+        return true;
+    }
 
     /**
      * CR 603: Resolve a specific target selection from the UI.
@@ -56,14 +71,15 @@ export class TargetingProcessor {
 
         const action = state.pendingAction;
         const actionData = action.data!;
-        const targetDef = actionData.targetDefinition;
-        const isOptional = targetDef?.optional || targetDef?.minCount === 0;
+        const targetDefinitions = actionData.targetDefinitions as TargetDefinition[];
+        const xValue = (actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0));
+        const counts = TargetingProcessor.calculateTotalCounts(targetDefinitions, xValue);
+        const { maxCount, minCount, count } = counts;
+
+        const isOptional = minCount === 0;
+
         const isSkipping = targetId === 'skip' || targetId === 'none' || targetId === 'confirm' || targetId === 'done';
         const isUndoing = targetId === 'undo' || targetId === 'back';
-
-        const xValue = (actionData.xValue !== undefined ? actionData.xValue : (actionData.stackObj?.xValue || 0));
-        const counts = TargetingProcessor.calculateTotalCounts(targetDef, xValue);
-        const { maxCount, minCount, count } = counts;
 
         actionData.selectedTargets = actionData.selectedTargets || [];
         actionData.maxCount = maxCount;
@@ -73,7 +89,7 @@ export class TargetingProcessor {
         // Helper to refresh prompt based on CURRENT selection state
         const updatePrompt = () => {
             actionData.prompt = TargetingProcessor.generateTargetPrompt(
-                targetDef,
+                targetDefinitions,
                 actionData.selectedTargets.length,
                 xValue,
                 actionData.isSpellCasting
@@ -88,7 +104,7 @@ export class TargetingProcessor {
 
                 // Refresh prompt and pool for the NEW index after removing
                 const nextIndex = actionData.selectedTargets.length;
-                const currentDef = this.getDefinitionForIndex(targetDef, nextIndex, xValue);
+                const currentDef = this.getDefinitionForIndex(targetDefinitions, nextIndex, xValue);
                 if (currentDef?.label) {
                     actionData.label = currentDef.label;
                 }
@@ -103,8 +119,9 @@ export class TargetingProcessor {
                     sourceId: action.sourceId || "",
                     controllerId: playerId,
                     stackObject: actionData.stackObj,
-                    targetDef: targetDef,
-                    targetIndex: nextIndex
+                    targetDefinitions: targetDefinitions,
+                    targetIndex: nextIndex,
+                    xValue: xValue
                 }, tid));
 
                 updatePrompt();
@@ -180,8 +197,9 @@ export class TargetingProcessor {
                 sourceId: action.sourceId || "",
                 controllerId: playerId,
                 stackObject: actionData.stackObj,
-                targetDef: targetDef,
-                targetIndex: firstIndex
+                targetDefinitions: targetDefinitions,
+                targetIndex: firstIndex,
+                xValue: xValue
             }, tid));
             updatePrompt();
             logger.info(state, LogCategory.ACTION, `Targeting selection cleared.`);
@@ -190,24 +208,24 @@ export class TargetingProcessor {
 
         if (isSkipping) {
             const nextIndex = actionData.selectedTargets.length;
-            const currentDef = TargetingProcessor.getDefinitionForIndex(targetDef, nextIndex);
+            const currentDef = TargetingProcessor.getDefinitionForIndex(targetDefinitions, nextIndex);
 
             // Sequential skipping: if we are in an array of definitions, 
             // clicking 'skip' on an optional slot should move to the next slot if available.
             const isChunkOptional = currentDef?.optional || currentDef?.minCount === 0;
             const hasMoreSlots = nextIndex < maxCount;
 
-            if (isChunkOptional && Array.isArray(targetDef) && hasMoreSlots) {
+            if (isChunkOptional && Array.isArray(targetDefinitions) && hasMoreSlots) {
                 // Find if there are more definitions after the current index's definition
                 let cumulative = 0;
                 let hasLaterDefinition = false;
-                for (let i = 0; i < targetDef.length; i++) {
-                    const d = targetDef[i];
+                for (let i = 0; i < targetDefinitions.length; i++) {
+                    const d = targetDefinitions[i];
                     const dCount = typeof d.count === 'number' ? d.count : 1;
                     cumulative += dCount;
                     if (nextIndex < cumulative) {
                         // We found the current definition chunk at index i
-                        if (i < targetDef.length - 1 || nextIndex < cumulative - 1) {
+                        if (i < targetDefinitions.length - 1 || nextIndex < cumulative - 1) {
                             hasLaterDefinition = true;
                         }
                         break;
@@ -219,7 +237,7 @@ export class TargetingProcessor {
                     updatePrompt();
 
                     const newNextIndex = actionData.selectedTargets.length;
-                    const newNextDef = TargetingProcessor.getDefinitionForIndex(targetDef, newNextIndex);
+                    const newNextDef = TargetingProcessor.getDefinitionForIndex(targetDefinitions, newNextIndex);
                     if (newNextDef?.label) {
                         actionData.label = newNextDef.label;
                     }
@@ -236,8 +254,9 @@ export class TargetingProcessor {
                         sourceId: action.sourceId || "",
                         controllerId: playerId,
                         stackObject: actionData.stackObj,
-                        targetDef: targetDef,
-                        targetIndex: newNextIndex
+                        targetDefinitions: targetDefinitions,
+                        targetIndex: newNextIndex,
+                        xValue: xValue
                     }, tid));
 
                     logger.info(state, LogCategory.ACTION, `Skipped optional target slot ${newNextIndex}.`);
@@ -266,9 +285,9 @@ export class TargetingProcessor {
         // Duplicate check (Rule 115.3: Allow same target if chosen for DIFFERENT instances of the word 'target')
         const nextIndex = actionData.selectedTargets.length;
         let isDuplicate = false;
-        if (Array.isArray(targetDef)) {
+        if (Array.isArray(targetDefinitions)) {
             let cumulative = 0;
-            for (const d of targetDef) {
+            for (const d of targetDefinitions) {
                 const dCount = typeof d.count === 'number' ? d.count : 1;
                 const endIdx = cumulative + dCount;
                 if (nextIndex >= cumulative && nextIndex < endIdx) {
@@ -306,7 +325,7 @@ export class TargetingProcessor {
         // Update legal targets for the next index if there are more targets to select
         if (actionData.selectedTargets.length < maxCount) {
             const nextIndex = actionData.selectedTargets.length;
-            const currentDef = this.getDefinitionForIndex(targetDef, nextIndex, xValue);
+            const currentDef = this.getDefinitionForIndex(targetDefinitions, nextIndex, xValue);
             if (currentDef?.label) {
                 actionData.label = currentDef.label;
             }
@@ -322,23 +341,24 @@ export class TargetingProcessor {
                 sourceId: action.sourceId || "",
                 controllerId: playerId,
                 stackObject: actionData.stackObj,
-                targetDef: targetDef,
-                targetIndex: nextIndex
+                targetDefinitions: targetDefinitions,
+                targetIndex: nextIndex,
+                xValue: xValue
             }, tid));
 
             // ENHANCEMENT: Consecutive Zone Shift
             // If the current target is off-battlefield, group all consecutive off-battlefield targets into one modal.
-            const isOffBattlefield = currentDef.type === TargetType.CardInGraveyard || currentDef.type === TargetType.CardInExile;
+            const isOffBattlefield = currentDef?.type === TargetType.CardInGraveyard || currentDef?.type === TargetType.CardInExile;
             
             if (isOffBattlefield && legalTargets.length > 0) {
                 // Calculate how many consecutive targets from this point share an off-battlefield zone
                 let consecutiveCount = 0;
                 let consecutiveMin = 0;
                 for (let i = nextIndex; i < maxCount; i++) {
-                    const d = this.getDefinitionForIndex(targetDef, i, xValue);
-                    if (d.type === TargetType.CardInGraveyard || d.type === TargetType.CardInExile) {
+                    const d = this.getDefinitionForIndex(targetDefinitions, i, xValue);
+                    if (d?.type === TargetType.CardInGraveyard || d?.type === TargetType.CardInExile) {
                         consecutiveCount++;
-                        if (!d.optional && (d.minCount === undefined || d.minCount > 0)) {
+                        if (d && !d.optional && (d.minCount === undefined || (typeof d.minCount === 'number' && d.minCount > 0))) {
                             consecutiveMin++;
                         }
                     } else {
@@ -356,7 +376,7 @@ export class TargetingProcessor {
                     };
                 });
 
-                logger.info(state, LogCategory.ACTION, `[ZONE-SHIFT] Target ${nextIndex + 1} shifted to Modal. Grouping ${consecutiveCount} consecutive ${currentDef.type} targets. (Min: ${consecutiveMin})`);
+                logger.info(state, LogCategory.ACTION, `[ZONE-SHIFT] Target ${nextIndex + 1} shifted to Modal. Grouping ${consecutiveCount} consecutive ${currentDef?.type} targets. (Min: ${consecutiveMin})`);
                 
                 state.pendingAction.type = ActionType.ModalSelection;
                 actionData.isTargetingModal = true;

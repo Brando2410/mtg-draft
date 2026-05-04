@@ -27,12 +27,12 @@ export const EnvironmentalScientist: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Land,
                         count: 1,
                         optional: true,
                         restrictions: [Restriction.Basic]
-                    },
+                    }],
                     zone: Zone.Hand,
                     reveal: true,
                     shuffle: true

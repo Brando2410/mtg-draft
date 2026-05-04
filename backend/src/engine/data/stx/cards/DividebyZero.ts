@@ -11,11 +11,11 @@ export const DividebyZero: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.SpellOrPermanent,
                 restrictions: [Restriction.ManaValue1OrGreater]
-            },
+            }],
             effects: [
                 { type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 },
                 { type: EffectType.Learn }

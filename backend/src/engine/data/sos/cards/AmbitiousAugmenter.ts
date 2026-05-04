@@ -27,13 +27,13 @@ export const AmbitiousAugmenter: CardDefinition = {
                         colors: ['G', 'U'],
                         power: '0',
                         toughness: '0',
+                        image_url: "https://cards.scryfall.io/normal/front/8/b/8b5f1fdb-04df-4224-acb4-7819c37565f5.jpg?1775828306",
                     },
                     amount: 1
                 },
                 {
                     type: EffectType.MoveCounters,
-                    targetMapping: TargetMapping.LastCreatedToken,
-                    counterType: '+1/+1'
+                    targetMapping: TargetMapping.LastCreatedToken
                 }
             ]
         }

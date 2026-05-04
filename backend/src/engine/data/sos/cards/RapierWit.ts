@@ -14,10 +14,10 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Targe
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: CostType.Tap,

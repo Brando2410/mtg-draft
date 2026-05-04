@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const IndulgingPatrician: CardDefinition = {
     name: "Indulging Patrician",
@@ -16,7 +16,7 @@ export const IndulgingPatrician: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: 'IS_YOUR_TURN && LIFE_GAINED_GE:3',
+            condition: `${ConditionType.IsYourTurn} && ${ConditionType.LifeGainedGe}:3`,
             effects: [{
                 type: EffectType.LoseLife,
                 amount: 3,

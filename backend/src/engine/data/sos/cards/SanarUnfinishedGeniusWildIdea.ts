@@ -61,13 +61,13 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
                 effects: [
                     {
                         type: EffectType.SearchLibrary,
-                        targetDefinition: {
+                        targetDefinitions: [{
                             type: TargetType.Card,
                             count: 1,
                             restrictions: [
                                 Restriction.InstantOrSorcery
                             ]
-                        },
+                        }],
                         zone: Zone.Hand,
                         reveal: true,
                         targetMapping: TargetMapping.Controller

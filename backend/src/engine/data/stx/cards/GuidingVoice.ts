@@ -11,10 +11,10 @@ export const GuidingVoice: CardDefinition = {
     abilities: [
       {
         type: AbilityType.Spell,
-        targetDefinition: {
+        targetDefinitions: [{
             count: 1,
             type: TargetType.Creature
-        },
+        }],
         effects: [
           { type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Target1 },
           { type: EffectType.Learn }

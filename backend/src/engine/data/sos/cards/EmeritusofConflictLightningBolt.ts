@@ -35,10 +35,10 @@ export const EmeritusofConflictLightningBolt: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
+                targetDefinitions: [{
                     type: TargetType.AnyTarget,
                     count: 1
-                },
+                }],
                 effects: [
                     {
                         type: EffectType.DealDamage,

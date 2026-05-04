@@ -1,11 +1,11 @@
-import { AbilityType, EffectType, Restriction, TriggerEvent } from '../../../../shared/engine_types';
+import { AbilityType, DurationType, EffectType, Restriction, TargetMapping, TriggerEvent } from '../../../../shared/engine_types';
 
 /**
  * ReverseOracle Utility
  * Translates engine-level logic definitions back into human-readable MTG text.
  * 
  * DESIGN PRINCIPLE: Honest Inference
- * - Derives as much text as possible from existing data structures (targetDefinition, restrictions, etc.)
+ * - Derives as much text as possible from existing data structures (targetDefinitions, restrictions, etc.)
  * - Uses a Subject-Verb-Payload semantic model for grammatically correct phrasing.
  * - Avoids "cheating" by not relying on manual description overrides in logic files.
  */
@@ -74,7 +74,7 @@ export class ReverseOracle {
 
         const condition = ability.triggerCondition || ability.condition;
         const conditionText = condition ? (typeof condition === 'string' ? `if ${this.reconstructCondition(condition)}, ` : "[If condition met] ") : "";
-        const isAbilityOptional = ability.optional || ability.targetDefinition?.optional;
+        const isAbilityOptional = ability.optional || ability.targetDefinitions?.optional;
         const effectsStr = this.reconstructEffects(ability.effects, isAbilityOptional ? " and " : ". ", ability);
         const finalEffects = isAbilityOptional ? this.applyYouMay(effectsStr) : effectsStr;
         
@@ -85,14 +85,14 @@ export class ReverseOracle {
         const costs = (ability.costs || []).map((c: any) => {
             if (c.type === 'Mana') return c.value;
             if (c.type === 'Tap') return "{T}";
-            if (c.type === 'Sacrifice') return `Sacrifice ${c.targetMapping === 'SELF' ? 'this creature' : 'a creature'}`;
+            if (c.type === 'Sacrifice') return `Sacrifice ${c.targetMapping === TargetMapping.Self ? 'this creature' : 'a creature'}`;
             return c.type;
         }).join(", ");
 
-        const isAbilityOptional = ability.optional || ability.targetDefinition?.optional;
+        const isAbilityOptional = ability.optional || ability.targetDefinitions?.optional;
         const effectsStr = this.reconstructEffects(ability.effects, isAbilityOptional ? " and " : ". ", ability);
         const finalEffects = isAbilityOptional ? this.applyYouMay(effectsStr) : effectsStr;
-        const target = ability.targetDefinition ? ` target ${this.reconstructTarget(ability.targetDefinition)}` : "";
+        const target = ability.targetDefinitions ? ` target ${this.reconstructTarget(ability.targetDefinitions)}` : "";
 
         return `${costs}: ${finalEffects}${target}.`;
     }
@@ -113,7 +113,7 @@ export class ReverseOracle {
 
     private static reconstructEffect(effect: any, abilityContext?: any, isStatic?: boolean): string {
         const amount = effect.amount === 'EVENT_AMOUNT' ? "that many" : (effect.amount || "");
-        const targetMapping = effect.targetMapping || 'CONTROLLER';
+        const targetMapping = effect.targetMapping || TargetMapping.Controller;
         const target = this.reconstructMapping(targetMapping, effect.restrictions, abilityContext);
         
         // Semantic Components
@@ -145,7 +145,7 @@ export class ReverseOracle {
                 verb = "lose";
                 payload = `${amount} life`;
                 subject = target;
-                isSubjectYou = targetMapping === 'CONTROLLER';
+                isSubjectYou = targetMapping === TargetMapping.Controller;
                 break;
             case EffectType.Destroy:
                 verb = "destroy";
@@ -163,13 +163,13 @@ export class ReverseOracle {
                 verb = "sacrifice";
                 payload = target;
                 subject = target;
-                isSubjectYou = targetMapping === 'CONTROLLER';
+                isSubjectYou = targetMapping === TargetMapping.Controller;
                 break;
             case EffectType.DiscardCards:
                 verb = "discard";
                 payload = `${amount === 'that many' ? 'that many' : (amount || 1)} card${amount === 1 ? "" : "s"}`;
                 subject = target;
-                isSubjectYou = targetMapping === 'CONTROLLER';
+                isSubjectYou = targetMapping === TargetMapping.Controller;
                 break;
             case EffectType.SearchLibrary:
                 const restr = this.reconstructRestrictions(effect.restrictions || []);
@@ -188,7 +188,7 @@ export class ReverseOracle {
                 verb = "mill";
                 payload = `${amount === 1 ? 'a' : amount} card${amount === 1 ? "" : "s"}`;
                 subject = target;
-                isSubjectYou = targetMapping === 'CONTROLLER';
+                isSubjectYou = targetMapping === TargetMapping.Controller;
                 break;
             case EffectType.Shuffle:
                 verb = "shuffle";
@@ -211,11 +211,11 @@ export class ReverseOracle {
                 }
 
                 const dur = (typeof effect.duration === 'string' ? effect.duration : effect.duration?.type) || "";
-                const durationText = (dur === 'UNTIL_END_OF_TURN' && abilityContext?.type !== AbilityType.Static) ? " until end of turn" : "";
+                const durationText = (dur === DurationType.UntilEndOfTurn && abilityContext?.type !== AbilityType.Static) ? " until end of turn" : "";
                 payload += durationText;
                 
                 subject = target;
-                isSubjectYou = targetMapping === 'CONTROLLER';
+                isSubjectYou = targetMapping === TargetMapping.Controller;
                 break;
             case EffectType.CreateToken:
                 const bp = effect.tokenBlueprint;
@@ -252,8 +252,8 @@ export class ReverseOracle {
         let restrictions = currentRestrictions || [];
         
         // Honest Inference: Look at the parent ability's target definition for TARGET_1
-        if (mapping === 'TARGET_1' && abilityContext?.targetDefinition) {
-            restrictions = abilityContext.targetDefinition.restrictions || [];
+        if (mapping === TargetMapping.Target1 && abilityContext?.targetDefinitions) {
+            restrictions = abilityContext.targetDefinitions.restrictions || [];
         }
 
         const filteredRestr = (restrictions || []).filter((r: string) => r !== Restriction.YouControl && r !== Restriction.OpponentControl && r !== Restriction.Other) || [];
@@ -262,14 +262,14 @@ export class ReverseOracle {
         const other = (restrictions || []).includes(Restriction.Other) ? "other " : "";
 
         switch (mapping) {
-            case 'SELF': return "this creature";
-            case 'CONTROLLER': return "you";
-            case 'TARGET_1': return `target ${other}${restrText || "permanent"}${controlSuffix}`;
-            case 'OPPONENT': return "your opponent";
-            case 'EACH_OPPONENT': return "each opponent";
-            case 'EACH_PLAYER': return "each player";
-            case 'ALL_CREATURES_YOU_CONTROL': return "each creature you control";
-            case 'ANY_TARGET': return "any target";
+            case TargetMapping.Self: return "this creature";
+            case TargetMapping.Controller: return "you";
+            case TargetMapping.Target1: return `target ${other}${restrText || "permanent"}${controlSuffix}`;
+            case TargetMapping.Opponent: return "your opponent";
+            case TargetMapping.EachOpponent: return "each opponent";
+            case TargetMapping.EachPlayer: return "each player";
+            case TargetMapping.AllCreaturesYouControl: return "each creature you control";
+            case TargetMapping.AnyTarget: return "any target";
             default: return mapping || "target";
         }
     }

@@ -21,7 +21,7 @@ export const AnimalSanctuary: CardDefinition = {
                 { type: CostType.Mana, value: '{2}' },
                 { type: CostType.Tap }
             ],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [
@@ -32,7 +32,7 @@ export const AnimalSanctuary: CardDefinition = {
                         ] 
                     }
                 ]
-            },
+            }],
             effects: [{ type: EffectType.AddCounters, counterType: '+1/+1', amount: 1, targetMapping: TargetMapping.Target1 }]
         }
     ]

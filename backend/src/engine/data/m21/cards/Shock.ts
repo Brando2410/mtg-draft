@@ -11,7 +11,7 @@ export const Shock: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.AnyTarget, count: 1 },
+            targetDefinitions: [{ type: TargetType.AnyTarget, count: 1 }],
             effects: [{ type: EffectType.DealDamage, amount: 2, targetMapping: TargetMapping.Target1 }]
         }
     ]

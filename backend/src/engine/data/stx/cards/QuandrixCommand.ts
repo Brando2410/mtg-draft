@@ -13,29 +13,29 @@ export const QuandrixCommand: CardDefinition = {
         modes: [
             {
                 label: "Return target creature or planeswalker to owner's hand",
-                targetDefinition: {
+                targetDefinitions: [{
                     count: 1,
                     type: TargetType.CreatureOrPlaneswalker,
-                },
+                }],
                 effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
             },
             {
                 label: 'Counter artifact/enchantment spell',
-                targetDefinition: {
+                targetDefinitions: [{
                     count: 1,
                     type: TargetType.Spell,
                     restrictions: [Restriction.ArtifactOrEnchantment]
-                },
+                }],
                 effects: [{ type: EffectType.CounterSpell, targetMapping: TargetMapping.Target1 }]
             },
             {
                 label: 'Put two +1/+1 counters on target creature',
-                targetDefinition: { count: 1, type: TargetType.Creature },
+                targetDefinitions: [{ count: 1, type: TargetType.Creature }],
                 effects: [{ type: EffectType.AddCounters, counterType: 'p1p1', amount: 2, targetMapping: TargetMapping.Target1 }]
             },
             {
                 label: 'Target player shuffles up to three target cards from their graveyard into their library',
-                targetDefinition: [
+                targetDefinitions: [
                     {
                         type: TargetType.Player,
                         count: 1,

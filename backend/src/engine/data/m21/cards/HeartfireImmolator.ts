@@ -19,7 +19,7 @@ export const HeartfireImmolator: CardDefinition = {
                 { type: CostType.Mana, value: '{R}' },
                 { type: CostType.SacrificeSelf }
             ],
-            targetDefinition: { type: TargetType.CreatureOrPlaneswalker, count: 1 },
+            targetDefinitions: [{ type: TargetType.CreatureOrPlaneswalker, count: 1 }],
             effects: [{
                 type: EffectType.DealDamage,
                 amount: 'POWER',

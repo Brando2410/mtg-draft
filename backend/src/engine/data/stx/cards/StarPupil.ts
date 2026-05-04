@@ -17,11 +17,11 @@ export const StarPupil: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Death,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.Creature,
                 restrictions: [Restriction.YouControl]
-            },
+            }],
             effects: [{ type: EffectType.MoveCounters, targetMapping: TargetMapping.Target1 }]
         }
     ]

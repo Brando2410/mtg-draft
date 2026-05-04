@@ -76,12 +76,12 @@ export const JadziOracleofArcavios: CardDefinition = {
                         type: EffectType.MoveToZone,
                         zone: Zone.Battlefield,
                         sourceZones: [Zone.Hand],
-                        targetDefinition: {
+                        targetDefinitions: [{
                             type: TargetType.Card,
                             count: 99, // "Any number"
                             minCount: 0,
                             restrictions: [Restriction.Land]
-                        },
+                        }],
                         targetMapping: TargetMapping.TargetAll
                     },
                     {

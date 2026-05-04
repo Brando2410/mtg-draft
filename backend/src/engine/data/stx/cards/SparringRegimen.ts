@@ -10,7 +10,7 @@ export const SparringRegimen: CardDefinition = {
         type: AbilityType.Triggered,
         eventMatch: TriggerEvent.Attack,
         condition: ConditionType.IsYourTurn,
-        targetDefinition: { count: 1, type: TargetType.Creature, restrictions: [Restriction.Attacking, Restriction.YouControl] },
+        targetDefinitions: [{ count: 1, type: TargetType.Creature, restrictions: [Restriction.Attacking, Restriction.YouControl] }],
         effects: [
             {
                 type: EffectType.AddCounters,

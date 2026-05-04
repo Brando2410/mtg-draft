@@ -23,23 +23,9 @@ export class ContinuousEffectHandler {
         let duration: EffectDuration = { type: DurationType.UntilEndOfTurn };
 
         if (typeof rawDuration === 'string') {
-            const dStr = rawDuration.toUpperCase();
-            if (dStr === 'UNTIL_END_OF_TURN' || dStr === 'UNTILENDOFTURN' || dStr === 'EOT') {
-                duration.type = DurationType.UntilEndOfTurn;
-            } else if (dStr === 'UNTIL_END_OF_COMBAT' || dStr === 'UNTILENDOFCOMBAT') {
-                duration.type = DurationType.UntilEndOfCombat;
-            } else if (dStr === 'STATIC') {
-                duration.type = DurationType.Static;
-            } else if (dStr === 'PERMANENT') {
-                duration.type = DurationType.Permanent;
-            } else if (dStr === 'UNTILYOURNEXTTURN' || dStr === 'UNTIL_YOUR_NEXT_TURN') {
-                duration.type = DurationType.UntilYourNextTurn;
+            duration.type = rawDuration as DurationType;
+            if (duration.type === DurationType.UntilYourNextTurn || duration.type === DurationType.UntilEndOfYourNextTurn) {
                 duration.untilTurnOfPlayerId = controllerId;
-            } else if (dStr === 'UNTIL_END_OF_YOUR_NEXT_TURN' || dStr === 'UNTILENDOFYOURNEXTTURN') {
-                duration.type = DurationType.UntilEndOfYourNextTurn;
-                duration.untilTurnOfPlayerId = controllerId;
-            } else {
-                duration.type = DurationType.Static;
             }
         } else if (rawDuration && typeof rawDuration === 'object') {
             duration = { ...rawDuration as any };
@@ -112,6 +98,7 @@ export class ContinuousEffectHandler {
 
             const continuousEff: any = {
                 id: effId,
+                type: effect.registeredType || effect.type,
                 sourceId,
                 controllerId,
                 layer: layer,
@@ -177,8 +164,12 @@ export class ContinuousEffectHandler {
             const finalEffect: any = {
                 ...ceDef,         // Inherit all properties from standard definition (label, oracleText, etc.)
                 ...continuousEff, // Apply resolved values (targets, timestamps, resolved amounts)
-                type: ceDef.type === EffectType.ApplyContinuousEffect ? (effect as any).type : ceDef.type, // Use the specific permission type
             };
+
+            // Use the specific permission type if available (from continuousEff.type)
+            if (ceDef.type === EffectType.ApplyContinuousEffect && continuousEff.type) {
+                finalEffect.type = continuousEff.type;
+            }
 
             // Ensure floating ID is set
             if (!finalEffect.id?.startsWith('floating_')) {

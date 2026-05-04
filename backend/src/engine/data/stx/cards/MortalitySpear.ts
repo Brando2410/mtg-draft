@@ -19,11 +19,11 @@ export const MortalitySpear: CardDefinition = {
     },
     {
       type: AbilityType.Spell,
-      targetDefinition: {
+      targetDefinitions: [{
         count: 1,
         type: TargetType.Permanent,
         restrictions: [Restriction.NonLand]
-      },
+      }],
       effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
     }
   ]

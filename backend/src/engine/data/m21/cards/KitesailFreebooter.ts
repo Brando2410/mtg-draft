@@ -16,7 +16,7 @@ export const KitesailFreebooter: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: { type: TargetType.Opponent, count: 1 },
+            targetDefinitions: [{ type: TargetType.Opponent, count: 1 }],
             effects: [
                 {
                     type: EffectType.Choice,

@@ -17,12 +17,12 @@ export const EnnisDebateModerator: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 restrictions: [Restriction.YouControl, Restriction.Other],
                 count: 1,
                 optional: true
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Exile,
@@ -31,7 +31,7 @@ export const EnnisDebateModerator: CardDefinition = {
                         {
                             type: EffectType.CreateDelayedTrigger,
                             eventMatch: TriggerEvent.EndStep,
-                            effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 }]
+                            effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1, ownerControl: true }]
                         }
                     ]
                 }
@@ -40,7 +40,7 @@ export const EnnisDebateModerator: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: `${ConditionType.CardsExiledThisTurn} && ${ConditionType.OurTurn}`,
+            condition: `${ConditionType.CardsExiledThisTurn} && ${ConditionType.IsYourTurn}`,
             effects: [
                 {
                     type: EffectType.AddCounters,

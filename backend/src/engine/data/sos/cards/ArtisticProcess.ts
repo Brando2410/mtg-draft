@@ -15,7 +15,7 @@ export const ArtisticProcess: CardDefinition = {
             modes: [
                 {
                     label: 'Deals 6 damage to target creature',
-                    targetDefinition: { type: TargetType.Creature, count: 1 },
+                    targetDefinitions: [{ type: TargetType.Creature, count: 1 }],
                     effects: [{ type: EffectType.DealDamage, amount: 6, targetMapping: TargetMapping.Target1 }]
                 },
                 {

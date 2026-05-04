@@ -25,11 +25,11 @@ export const ZealousLorecaster: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Return an instant or sorcery card",
                     selectionPool: TargetMapping.ControllerGraveyard,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         restrictions: [Restriction.InstantOrSorcery],
                         count: 1
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.ReturnToHand

@@ -15,7 +15,7 @@ export const UgintheSpiritDragon: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Loyalty, value: 2 }],
-            targetDefinition: { type: TargetType.AnyTarget, count: 1 },
+            targetDefinitions: [{ type: TargetType.AnyTarget, count: 1 }],
             effects: [{ type: EffectType.DealDamage, amount: 3, targetMapping: TargetMapping.Target1 }]
         },
         {
@@ -42,12 +42,12 @@ export const UgintheSpiritDragon: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Put up to seven permanent cards from your hand onto the battlefield.",
                     optional: true,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInHand,
                         count: 7,
                         minCount: 0,
                         restrictions: [Restriction.Permanent]
-                    },
+                    }],
                     effects: [{
                         type: EffectType.PutOnBattlefield,
                         targetMapping: TargetMapping.SelectedTargets

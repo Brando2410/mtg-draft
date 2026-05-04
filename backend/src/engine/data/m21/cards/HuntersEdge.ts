@@ -11,14 +11,14 @@ export const HuntersEdge: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 2,
                 perTargetRestrictions: [
                     [Restriction.YouControl],
                     [Restriction.OpponentControl]
                 ]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.AddCounters,

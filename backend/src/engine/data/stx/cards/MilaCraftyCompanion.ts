@@ -87,11 +87,11 @@ export const MilaCraftyCompanion: CardDefinition = {
                 {
                     type: AbilityType.Activated,
                     costs: [{ type: CostType.Loyalty, value: -2 }],
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         count: 1,
                         restrictions: [Restriction.Creature]
-                    },
+                    }],
                     effects: [
                         { type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 },
                         {
@@ -120,7 +120,7 @@ export const MilaCraftyCompanion: CardDefinition = {
                             abilities: [{
                                 type: AbilityType.Triggered,
                                 eventMatch: TriggerEvent.EnterBattlefield,
-                                targetDefinition: { type: TargetType.AnyTarget, count: 1 },
+                                targetDefinitions: [{ type: TargetType.AnyTarget, count: 1 }],
                                 effects: [{
                                     type: EffectType.DealDamage,
                                     amount: DynamicAmount.TriggerObjectPower,

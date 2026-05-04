@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 export const PrimaryResearch: CardDefinition = {
   name: "Primary Research",
   manaCost: "{4}{W}",
@@ -14,29 +14,29 @@ export const PrimaryResearch: CardDefinition = {
     {
       type: AbilityType.Triggered,
       eventMatch: TriggerEvent.EnterBattlefield,
-      targetDefinition: {
-        type: TargetType.CardInGraveyard,
-        restrictions: [
-          Restriction.NonLand,
-          Restriction.Permanent,
-          Restriction.ManaValue3OrLess,
-          Restriction.YouOwn
-        ],
-        minCount: 0,
-        maxCount: 1
-      },
+
       effects: [
         {
           type: EffectType.MoveToZone,
           zone: Zone.Battlefield,
-          targetMapping: TargetMapping.Target1
+          targetDefinitions: [{
+            type: TargetType.CardInGraveyard,
+            restrictions: [
+              Restriction.NonLand,
+              Restriction.Permanent,
+              Restriction.ManaValue3OrLess,
+              Restriction.YouOwn
+            ],
+            minCount: 0,
+            maxCount: 1
+          }],
         }
       ]
     },
     {
       type: AbilityType.Triggered,
       eventMatch: TriggerEvent.EndStep,
-      condition: 'IS_YOUR_TURN && CARDS_LEFT_YOUR_GRAVEYARD_THIS_TURN',
+      condition: `${ConditionType.IsYourTurn} && ${ConditionType.CardsLeftYourGraveyardThisTurn}`,
       effects: [
         {
           type: EffectType.DrawCards,

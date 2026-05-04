@@ -421,7 +421,9 @@ export class PlayerActionProcessor {
       return { finished: false, success: false };
     }
 
-    if (player.pendingDiscardCount <= 0) {
+    const isOptionalDiscard = state.pendingAction?.type === ActionType.Discard && (state.pendingAction.data as any)?.minChoices === 0;
+
+    if (player.pendingDiscardCount <= 0 && !isOptionalDiscard) {
       return { finished: false, success: false };
     }
 
@@ -544,6 +546,10 @@ export class PlayerActionProcessor {
       // Emergency fallback: stack them in default order to avoid stalling the game
       orderedTriggers = [...triggers];
     }
+
+    orderedTriggers.forEach(t => {
+      logger.debug(state, LogCategory.TRIGGER, `[ORDER-RESOLVED] Ordered trigger ${t.id} has targets: ${t.targets?.join(', ')}`);
+    });
 
     // Get the IDs of the triggers we are actually stacking to clean up pendingTriggers
     const resolvedIds = orderedTriggers.map(t => t.id);

@@ -17,7 +17,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Player },
+            targetDefinitions: [{ type: TargetType.Player }],
             effects: [
                 {
                     type: EffectType.DrawCards,

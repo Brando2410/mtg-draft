@@ -28,11 +28,11 @@ export const VastlandsScavengerBindtoLife: CardDefinition = {
                         type: EffectType.Choice,
                         label: 'Choose a creature card to return to the battlefield',
                         selectionPool: TargetMapping.LastMilledIds,
-                        targetDefinition: {
+                        targetDefinitions: [{
                             count: 1,
                             minCount: 0,
                             type: TargetType.Creature
-                        },
+                        }],
                         effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 }]
                     }
                 ]

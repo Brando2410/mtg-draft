@@ -15,11 +15,11 @@ export const GoblinArsonist: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Death,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.AnyTarget,
                 count: 1,
                 minCount: 0,
-            },
+            }],
             effects: [{
                 type: EffectType.DealDamage,
                 amount: 1,

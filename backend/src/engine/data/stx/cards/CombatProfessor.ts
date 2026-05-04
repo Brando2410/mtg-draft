@@ -17,11 +17,11 @@ export const CombatProfessor: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.BeginningOfCombatStep,
             condition: ConditionType.IsYourTurn,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.Creature,
                 restrictions: [Restriction.YouControl]
-            },
+            }],
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 targetMapping: TargetMapping.Target1,

@@ -17,7 +17,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } fr
         {
             type: AbilityType.Spell,
             flashbackCost: "{4}{R}",
-            targetDefinition: { type: TargetType.AnyTarget },
+            targetDefinitions: [{ type: TargetType.AnyTarget }],
             effects: [
                 {
                     type: EffectType.DealDamage,

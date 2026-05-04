@@ -22,14 +22,14 @@ export const SkycoachConductorAllAboard: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
+                targetDefinitions: [{
                     type: TargetType.Creature,
                     count: 1,
                     restrictions: [
                         Restriction.YouControl,
-                        { not: { subtype: 'Pilot' } }
+                        { type: 'Not', restriction: 'Pilot' }
                     ]
-                },
+                }],
                 effects: [
                     { type: CostType.Exile, targetMapping: TargetMapping.Target1 },
                     { type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.LastExiledObject }

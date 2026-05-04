@@ -50,11 +50,11 @@ export const GraveResearcherReanimate: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
+                targetDefinitions: [{
                     type: TargetType.CardInGraveyard,
                     count: 1,
                     restrictions: [Restriction.Creature]
-                },
+                }],
                 effects: [
                     {
                         type: EffectType.PutOnBattlefield,

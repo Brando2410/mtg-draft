@@ -26,11 +26,11 @@ export const PlanarEngineering: CardDefinition = {
                 },
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Land,
                         count: 4,
                         restrictions: [Restriction.Basic]
-                    },
+                    }],
                     zone: Zone.Battlefield,
                     tapped: true,
                     shuffle: true

@@ -19,7 +19,7 @@ export const CelestialEnforcer: CardDefinition = {
                 { type: CostType.Tap }
             ],
             condition: 'HAS_CREATURE_WITH_FLYING_YOU_CONTROL',
-            targetDefinition: { type: TargetType.Creature, count: 1 },
+            targetDefinitions: [{ type: TargetType.Creature, count: 1 }],
             effects: [{ type: EffectType.Tap, targetMapping: TargetMapping.Target1 }]
         }
     ]

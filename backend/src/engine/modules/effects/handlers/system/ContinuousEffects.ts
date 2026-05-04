@@ -8,7 +8,7 @@ export const ContinuousEffectHandler: IEffectHandler = {
         const { logger } = getProcessors(state);
         const { sourceId, controllerId, targets, stackObject, parentContext } = context;
         
-        if (effect.targetDefinition && targets.length === 0) {
+        if (effect.targetDefinitions && targets.length === 0) {
             // This is effectively resolveInteractiveEffectSelection, but specialized for continuous effects
             const { effect: EP } = getProcessors(state);
             return (EP as any).resolveInteractiveEffectSelection(

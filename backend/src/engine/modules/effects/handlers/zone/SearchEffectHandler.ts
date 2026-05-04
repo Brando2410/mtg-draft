@@ -32,9 +32,9 @@ export class SearchEffectHandler {
             return res;
         };
 
-        const targetRestrictions = Array.isArray(searchEff.targetDefinition)
-            ? (searchEff.targetDefinition as any[]).flatMap(getRestrictions)
-            : getRestrictions(searchEff.targetDefinition);
+        const targetRestrictions = Array.isArray(searchEff.targetDefinitions)
+            ? (searchEff.targetDefinitions as any[]).flatMap(getRestrictions)
+            : getRestrictions(searchEff.targetDefinitions);
 
         const searchRestrictions = [
             ...(effect.restrictions || []),
@@ -62,13 +62,13 @@ export class SearchEffectHandler {
             sourceId: sourceId,
             restrictions: searchRestrictions,
             reveal: searchEff.reveal,
-            optional: effect.optional || effect.selectionType === SelectionType.AnyNumber,
+            optional: effect.optional || effect.selectionType === SelectionType.ANY,
             filterSelectable: true,
-            minChoices: effect.selectionType === SelectionType.AnyNumber || (effect as any).amount === "ANY" || sourceZones.includes(Zone.Library) ? 0 : 1,
-            maxChoices: effect.selectionType === SelectionType.AnyNumber || (effect as any).amount === "ANY"
+            minChoices: effect.selectionType === SelectionType.ANY || (effect as any).amount === "ANY" || sourceZones.includes(Zone.Library) ? 0 : 1,
+            maxChoices: effect.selectionType === SelectionType.ANY || (effect as any).amount === "ANY"
                 ? pool.length
-                : (effect as any).amount || TP.calculateTotalCounts(searchEff.targetDefinition, 0).maxCount || 1,
-            actionType: effect.optional || effect.selectionType === SelectionType.AnyNumber
+                : (effect as any).amount || TP.calculateTotalCounts(searchEff.targetDefinitions, 0).maxCount || 1,
+            actionType: effect.optional || effect.selectionType === SelectionType.ANY
                 ? ActionType.OptionalAction
                 : ActionType.ResolutionChoice,
             onSelected: (c: GameObject) => {

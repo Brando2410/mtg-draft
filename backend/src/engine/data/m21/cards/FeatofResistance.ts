@@ -11,11 +11,11 @@ export const FeatofResistance: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [Restriction.YouControl]
-            },
+            }],
             effects: [
                 { type: EffectType.AddCounters, amount: 1, counterType: 'p1p1', targetMapping: TargetMapping.Target1 },
                 {

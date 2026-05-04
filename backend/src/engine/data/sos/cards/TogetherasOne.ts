@@ -12,7 +12,7 @@ import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, 
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: [
+            targetDefinitions: [
                 { type: TargetType.Player, label: 'Target player' },
                 { type: TargetType.AnyTarget, label: 'Any target' }
             ],

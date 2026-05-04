@@ -19,12 +19,12 @@ export const ConfrontthePast: CardDefinition = {
                     choices: [
                         {
                             label: "Return from Graveyard",
-                            targetDefinition: { count: 1, type: TargetType.CardInGraveyard, restrictions: [Restriction.Planeswalker, Restriction.ManaValueLessOrEqualToX] },
+                            targetDefinitions: [{ count: 1, type: TargetType.CardInGraveyard, restrictions: [Restriction.Planeswalker, Restriction.ManaValueLessOrEqualToX] }],
                             effects: [{ type: EffectType.MoveToZone, zone: Zone.Battlefield, targetMapping: TargetMapping.Target1 }]
                         },
                         {
                             label: "Exile from Battlefield",
-                            targetDefinition: { count: 1, type: TargetType.Planeswalker, restrictions: [Restriction.ManaValueLessOrEqualToX] },
+                            targetDefinitions: [{ count: 1, type: TargetType.Planeswalker, restrictions: [Restriction.ManaValueLessOrEqualToX] }],
                             effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
                         }
                     ]

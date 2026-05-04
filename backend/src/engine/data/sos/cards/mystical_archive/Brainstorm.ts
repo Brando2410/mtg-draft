@@ -26,10 +26,10 @@ export const Brainstorm: CardDefinition = {
                     zone: Zone.Library,
                     libraryPosition: 'top',
                     selectionType: SelectionType.Target,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInHand,
                         count: 2
-                    },
+                    }],
                     targetMapping: TargetMapping.Controller
                 }
             ]

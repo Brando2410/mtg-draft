@@ -8,14 +8,13 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, controllerId } = context;
             if (event?.playerId !== controllerId) return false;
-            const targets = event?.payload?.stackSnapshot?.targets || 
+            const targets = event?.payload?.targets ||
+                           event?.payload?.stackSnapshot?.targets || 
                            event?.data?.stackSnapshot?.targets || 
-                           event?.payload?.targets ||
                            event?.targets || 
                            event?.data?.targets || [];
             if (!targets.length) return false;
             
-            const { targeting: TargetingProcessor } = getProcessors(state);
             return targets.some((tid: string) => {
                 const obj = RuleUtils.findObject(state, tid);
                 return obj && RuleUtils.isCreature(obj);
@@ -33,6 +32,14 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
                 return !!targetObj && RuleUtils.isPlaneswalker(targetObj);
             }
             return false;
+        }
+    },
+    "SELF_COMBAT_DAMAGE_PLAYER": {
+        matches(state, params, context) {
+            const { event, sourceId } = context;
+            const isCombat = event?.payload?.isCombat || event?.data?.isCombat;
+            if (!event || event.sourceId !== sourceId || !isCombat) return false;
+            return event.type === TriggerEvent.DamageDealtToPlayer || event.type === "ON_DAMAGE_PLAYER";
         }
     },
     "INCREMENT_CHECK": {

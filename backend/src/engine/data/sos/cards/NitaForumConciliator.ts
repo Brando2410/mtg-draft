@@ -38,11 +38,11 @@ export const NitaForumConciliator: CardDefinition = {
                 { type: CostType.Mana, value: "{2}" },
                 { type: CostType.Sacrifice, restrictions: [Restriction.Other, Restriction.Creature], amount: 1 }
             ],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
                 restrictions: [Restriction.InstantOrSorcery, Restriction.OpponentOwns],
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Exile,

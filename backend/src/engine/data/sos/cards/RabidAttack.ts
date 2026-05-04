@@ -10,11 +10,11 @@ export const RabidAttack: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 restrictions: [Restriction.YouControl],
-                count: 'AnyNumber' //missing why to express any number
-            },
+                count: 'ANY'
+            }],
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

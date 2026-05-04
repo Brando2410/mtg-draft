@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const AdherentofHope: CardDefinition = {
     name: "Adherent of Hope",
@@ -15,7 +15,7 @@ export const AdherentofHope: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.BeginningOfCombatStep,
-            condition: 'OUR_TURN_AND_CONTROL_BASRI_PLANESWALKER',
+            condition: `${ConditionType.IsYourTurn} && ${ConditionType.ControlsBasriPlaneswalker}`,
             effects: [{
                 type: EffectType.AddCounters,
                 amount: 1,

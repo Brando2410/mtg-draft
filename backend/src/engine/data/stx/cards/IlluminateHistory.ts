@@ -13,7 +13,7 @@ export const IlluminateHistory: CardDefinition = {
             {
                 type: AbilityType.Spell,
                 effects: [
-                    { type: EffectType.DiscardCards, amount: 'ANY_NUMBER', label: 'Discard any number of cards' },
+                    { type: EffectType.DiscardCards, amount: 'ANY', label: 'Discard any number of cards' },
                     { type: EffectType.DrawCards, amount: 'DISCARDED_COUNT', targetMapping: TargetMapping.Controller },
                     {
                         type: EffectType.CreateToken,

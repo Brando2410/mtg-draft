@@ -21,7 +21,6 @@ export const ConclaveMentor: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Death,
-            condition: ConditionType.SelfDied,
             effects: [{
                 type: EffectType.GainLife,
                 amount: DynamicAmount.Power,

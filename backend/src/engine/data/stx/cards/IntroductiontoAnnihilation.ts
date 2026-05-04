@@ -12,10 +12,10 @@ export const IntroductiontoAnnihilation: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.NonlandPermanent
-            },
+            }],
             effects: [
                 { type: EffectType.Exile, targetMapping: TargetMapping.Target1 },
                 { type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Target1Controller }

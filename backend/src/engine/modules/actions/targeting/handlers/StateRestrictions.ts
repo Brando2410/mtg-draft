@@ -1,20 +1,13 @@
 import { IRestrictionHandler } from "../IRestrictionHandler";
 import { RuleUtils } from "../../../../utils/RuleUtils";
+import { Targetable } from "@shared/engine_types";
+import { gameObjectRestriction } from "./HandlerUtils";
 
-const TAPPED: IRestrictionHandler = {
-    matches(state, targetObj: any) {
-        return targetObj && typeof targetObj === 'object' && 'isTapped' in targetObj && !!targetObj.isTapped;
-    }
-};
-
-const UNTAPPED: IRestrictionHandler = {
-    matches(state, targetObj: any) {
-        return targetObj && typeof targetObj === 'object' && 'isTapped' in targetObj && !targetObj.isTapped;
-    }
-};
+const TAPPED = gameObjectRestriction((state, obj) => !!obj.isTapped);
+const UNTAPPED = gameObjectRestriction((state, obj) => !obj.isTapped);
 
 const YOUCONTROL: IRestrictionHandler = {
-    matches(state, targetObj: any, r, context) {
+    matches(state, targetObj, r, context) {
         const controllerId = context.controllerId;
         if (!controllerId) return false;
         return RuleUtils.getController(targetObj) === controllerId;
@@ -22,43 +15,41 @@ const YOUCONTROL: IRestrictionHandler = {
 };
 
 const YOUOWN: IRestrictionHandler = {
-    matches(state, targetObj: any, r, context) {
+    matches(state, targetObj, r, context) {
         const controllerId = context.controllerId;
         if (!controllerId || !targetObj) return false;
-        return String(targetObj.ownerId || RuleUtils.getController(targetObj)) === String(controllerId);
+        const ownerId = (targetObj as any).ownerId || RuleUtils.getController(targetObj);
+        return String(ownerId) === String(controllerId);
     }
 };
 
 const OPPONENTOWNS: IRestrictionHandler = {
-    matches(state, targetObj: any, r, context) {
+    matches(state, targetObj, r, context) {
         const controllerId = context.controllerId;
         if (!controllerId || !targetObj) return true;
-        return String(targetObj.ownerId || RuleUtils.getController(targetObj)) !== String(controllerId);
+        const ownerId = (targetObj as any).ownerId || RuleUtils.getController(targetObj);
+        return String(ownerId) !== String(controllerId);
     }
 };
 
 const NOTCONTROLLED: IRestrictionHandler = {
-    matches(state, targetObj: any, r, context) {
+    matches(state, targetObj, r, context) {
         const controllerId = context.controllerId;
-        if (!controllerId) return true; // If no controller context, it's not controlled by "you"
+        if (!controllerId) return true;
         return RuleUtils.getController(targetObj) !== controllerId;
     }
 };
 
-const ATTACKING: IRestrictionHandler = {
-    matches(state, targetObj: any) {
-        return (state.combat?.attackers || []).some(a => a.attackerId === targetObj.id);
-    }
-};
+const ATTACKING = gameObjectRestriction((state, obj) => {
+    return (state.combat?.attackers || []).some(a => a.attackerId === obj.id);
+});
 
-const BLOCKING: IRestrictionHandler = {
-    matches(state, targetObj: any) {
-        return (state.combat?.blockers || []).some(b => b.blockerId === targetObj.id);
-    }
-};
+const BLOCKING = gameObjectRestriction((state, obj) => {
+    return (state.combat?.blockers || []).some(b => b.blockerId === obj.id);
+});
 
 const OTHER: IRestrictionHandler = {
-    matches(state, targetObj: any, r, context) {
+    matches(state, targetObj, r, context) {
         return targetObj.id !== context.sourceId;
     }
 };
@@ -74,25 +65,24 @@ export const StateRestrictions: Record<string, IRestrictionHandler> = {
     ATTACKING,
     BLOCKING,
     ATTACKING_OR_BLOCKING: {
-        matches(state, targetObj: any, r, context) {
+        matches(state, targetObj, r, context) {
             return ATTACKING.matches(state, targetObj, r, context) || BLOCKING.matches(state, targetObj, r, context);
         }
     },
     OTHER,
     SELF: {
-        matches(state, targetObj: any, r, context) {
+        matches(state, targetObj, r, context) {
             return targetObj.id === context.sourceId;
         }
     },
-    HASCOUNTER: {
-        matches(state, targetObj: any, restriction: string) {
-            if (typeof restriction !== 'string') return false;
-            const parts = restriction.split('_');
-            if (parts.length < 2) return false;
-            const type = parts[1];
-            return !!(targetObj.counters && targetObj.counters[type] && targetObj.counters[type] > 0);
-        }
-    }
+    HASCOUNTER: gameObjectRestriction((state, obj, restriction) => {
+        if (typeof restriction !== 'string') return false;
+        const parts = restriction.split('_');
+        if (parts.length < 2) return false;
+        const type = parts[1];
+        return !!(obj.counters && obj.counters[type] && obj.counters[type] > 0);
+    })
 };
+
 
 

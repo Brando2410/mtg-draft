@@ -57,7 +57,7 @@ export const BlexVexingPest: CardDefinition = {
                     fromTop: 5,
                     zone: Zone.Hand,
                     remainderZone: Zone.Graveyard,
-                    amount: 'ANY' as any
+                    amount: 'ANY'
                 }]
             }]
         }

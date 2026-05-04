@@ -21,11 +21,11 @@ export const QuandrixCultivator: CardDefinition = {
                     effects: [
                         {
                             type: EffectType.SearchLibrary,
-                            targetDefinition: {
+                            targetDefinitions: [{
                                 type: TargetType.Card,
                                 count: 1,
                                 restrictions: [Restriction.Basic, { type: Restriction.Any, restrictions: [Restriction.Forest, Restriction.Island] }]
-                            },
+                            }],
                             zone: Zone.Battlefield,
                             tapped: true
                         }

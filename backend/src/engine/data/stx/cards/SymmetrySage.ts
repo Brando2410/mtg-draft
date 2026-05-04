@@ -16,11 +16,11 @@ export const SymmetrySage: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Magecraft,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.Creature,
                 restrictions: [Restriction.YouControl]
-            },
+            }],
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 targetMapping: TargetMapping.Target1,

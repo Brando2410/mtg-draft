@@ -18,7 +18,7 @@ export const AlpineHoundmaster: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Card,
                         count: 2,
                         optional: true,
@@ -31,7 +31,7 @@ export const AlpineHoundmaster: CardDefinition = {
                                 ] 
                             }
                         ]
-                    },
+                    }],
                     zone: Zone.Hand,
                     reveal: true,
                     targetMapping: TargetMapping.Controller

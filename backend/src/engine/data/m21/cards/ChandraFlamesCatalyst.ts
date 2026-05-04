@@ -24,14 +24,14 @@ export const ChandraFlamesCatalyst: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Loyalty, value: '-2' }],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 restrictions: [
                     Restriction.Red,
                     Restriction.InstantOrSorcery
                 ]
-            },
+            }],
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 duration: { type: DurationType.UntilEndOfTurn },

@@ -14,7 +14,7 @@ export const ChandraHeartofFire: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '+1' }],
+            costs: [{ type: CostType.Loyalty, value: 1 }],
             effects: [
                 { type: EffectType.DiscardCards, amount: -1, targetMapping: TargetMapping.Controller },
                 {
@@ -23,19 +23,19 @@ export const ChandraHeartofFire: CardDefinition = {
                     sourceZones: [Zone.Library],
                     amount: 3,
                     targetMapping: TargetMapping.Controller,
-                    applyToExiled: { type: EffectType.AllowPlayExiled, duration: { type: DurationType.UntilEndOfTurn } }
+                    effects: [{ type: EffectType.AllowPlayExiled, duration: { type: DurationType.UntilEndOfTurn } }]
                 }
             ]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '+1' }],
-            targetDefinition: { type: TargetType.AnyTarget, count: 1 },
+            costs: [{ type: CostType.Loyalty, value: 1 }],
+            targetDefinitions: [{ type: TargetType.AnyTarget, count: 1 }],
             effects: [{ type: EffectType.DealDamage, amount: 2, targetMapping: TargetMapping.Target1 }]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Loyalty, value: '-9' }],
+            costs: [{ type: CostType.Loyalty, value: -9 }],
             effects: [
                 {
                     type: EffectType.SearchLibrary,

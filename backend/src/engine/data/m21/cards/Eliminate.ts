@@ -11,11 +11,11 @@ export const Eliminate: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CreatureOrPlaneswalker,
                 count: 1,
                 restrictions: [Restriction.ManaValue3OrLess]
-            },
+            }],
             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
         }
     ]

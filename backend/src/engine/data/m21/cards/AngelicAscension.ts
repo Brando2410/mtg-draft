@@ -11,7 +11,7 @@ export const AngelicAscension: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.CreatureOrPlaneswalker, count: 1 },
+            targetDefinitions: [{ type: TargetType.CreatureOrPlaneswalker, count: 1 }],
             effects: [
                 { type: EffectType.Exile, targetMapping: TargetMapping.Target1 },
                 {

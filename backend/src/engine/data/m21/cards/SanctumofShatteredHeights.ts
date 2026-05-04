@@ -15,10 +15,10 @@ export const SanctumofShatteredHeights: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.PreCombatMainPhaseStart,
             condition: ConditionType.PlayerIsController,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CreatureOrPlaneswalker,
                 count: 1,
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Choice,

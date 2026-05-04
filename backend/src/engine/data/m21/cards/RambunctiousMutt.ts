@@ -15,11 +15,11 @@ export const RambunctiousMutt: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.ArtifactOrEnchantment,
                 count: 1,
                 restrictions: [Restriction.OpponentControl]
-            },
+            }],
             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
         }
     ]

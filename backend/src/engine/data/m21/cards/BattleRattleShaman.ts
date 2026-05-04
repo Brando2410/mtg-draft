@@ -16,12 +16,12 @@ export const BattleRattleShaman: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.StartOfCombat,
             condition: ConditionType.IsYourTurn,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 minCount: 0,
                 optional: true
-            },
+            }],
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 powerModifier: 2,

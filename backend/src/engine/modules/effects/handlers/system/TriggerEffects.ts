@@ -1,11 +1,13 @@
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { IEffectHandler } from "../../IEffectHandler";
+import { LogCategory } from "../../../../utils/EngineLogger";
 
 export const CreateDelayedTriggerHandler: IEffectHandler = {
   handle(state, effect, context) {
     const { trigger: TrP } = getProcessors(state);
     const { sourceId, controllerId, targets } = context;
+    getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[DELAYED-HANDLER] context targets: ${targets?.join(', ')}`);
 
     // Support for capturing data from the current resolution (like MV of countered spell)
     const data = (effect as any).data || {};
@@ -19,7 +21,7 @@ export const CreateDelayedTriggerHandler: IEffectHandler = {
 
     return TrP.createDelayedTrigger(
       state,
-      { ...effect, data },
+      { ...effect, data, targets },
       sourceId,
       controllerId
     );

@@ -26,11 +26,11 @@ export const CryptLurker: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.Sacrifice,
-                                    targetDefinition: {
+                                    targetDefinitions: [{
                                         type: TargetType.Creature,
                                         count: 1,
                                         restrictions: [Restriction.YouControl]
-                                    },
+                                    }],
                                     effects: [
                                         {
                                             type: EffectType.DrawCards,

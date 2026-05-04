@@ -30,11 +30,11 @@ export const CheerfulOsteomancerRaiseDead: CardDefinition = {
                     label: "Select one creature card to return to your hand",
                     type: EffectType.MoveToZone,
                     zone: Zone.Hand,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         count: 1,
                         restrictions: [Restriction.Creature, Restriction.YouControl]
-                    },
+                    }],
                 }]
             }
         ]

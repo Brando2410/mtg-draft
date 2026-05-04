@@ -50,10 +50,10 @@ export const AcademicProbation: CardDefinition = {
                         },
                         {
                             label: 'Target nonland permanent',
-                            targetDefinition: {
+                            targetDefinitions: [{
                                 type: TargetType.Permanent,
                                 restrictions: [Restriction.NonLand]
-                            },
+                            }],
                             effects: [
                                 {
                                     type: EffectType.ApplyContinuousEffect,

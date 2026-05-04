@@ -18,11 +18,11 @@ export const FierceEmpath: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Creature,
                         count: 1,
                         restrictions: [Restriction.ManaValue6OrGreater]
-                    },
+                    }],
                     zone: Zone.Hand,
                     reveal: true,
                     optional: true,

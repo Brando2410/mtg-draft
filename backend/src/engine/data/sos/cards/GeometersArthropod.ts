@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DynamicAmount, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 export const GeometersArthropod: CardDefinition = {
     name: "Geometer's Arthropod",
     manaCost: "{G}{U}",
@@ -16,7 +16,7 @@ export const GeometersArthropod: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastSpell,
-            condition: 'EVENT_PLAYER_IS_YOU && EVENT_OBJECT_HAS_X',
+            condition: `${ConditionType.EventPlayerIsYou} && ${ConditionType.EventObjectHasX}`,
             effects: [
                 {
                     type: EffectType.LookAtTopAndPick,

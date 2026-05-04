@@ -5,7 +5,7 @@ import type { AbilityDefinition } from './abilities';
 import type { GameObjectId, PlayerId } from './core';
 import { Step, TargetMapping, Zone } from './core';
 import type { StackObject, GameObject } from './state';
-import type { AbilityRestriction } from './targeting';
+import type { AbilityRestriction, TargetDefinition } from './targeting';
 
 export const EffectType = {
     DealDamage: 'DealDamage',
@@ -234,9 +234,10 @@ export interface TargetingContext {
     sourceId: string;
     controllerId: string;
     stackObject?: StackObject;
-    targetDef?: any;
+    targetDefinitions?: TargetDefinition[];
     targetIndex?: number;
     targets?: string[];
+    xValue?: number;
 }
 
 /**
@@ -258,7 +259,7 @@ export interface AmountResolver {
 export interface BaseEffect {
     type: EffectType;
     label?: string;
-    duration?: EffectDuration | string;
+    duration?: EffectDuration | DurationType;
     layer?: number;
     condition?: string | any;
     targetMapping?: any | string;
@@ -306,7 +307,7 @@ export interface SearchEffect extends BaseEffect {
     sourceZones?: Zone[];
     shuffle?: boolean;
     reveal?: boolean;
-    targetDefinition?: any;
+    targetDefinitions?: any;
 }
 
 export interface CounterEffect extends BaseEffect {
@@ -350,7 +351,7 @@ export interface ModalEffect extends BaseEffect {
         label: string;
         effects?: EffectDefinition[];
         costs?: any[];
-        targetDefinition?: any;
+        targetDefinitions?: any;
         value?: string | number;
         condition?: string;
     }[];

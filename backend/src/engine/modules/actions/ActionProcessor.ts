@@ -103,6 +103,7 @@ export class ActionProcessor {
     if (isDiscard) {
       if (!state.turnState.lastDiscardedIds) state.turnState.lastDiscardedIds = [];
       state.turnState.lastDiscardedIds.push(card.id);
+      logger.debug(state, LogCategory.ACTION, `[DISCARD-DEBUG] Added ${card.id} to lastDiscardedIds. New length: ${state.turnState.lastDiscardedIds.length}`);
     }
 
     // CR 701.8: To discard a card, move it from hand to graveyard.
@@ -316,10 +317,6 @@ export class ActionProcessor {
       p.graveyard = p.graveyard.filter((c) => c.id !== cid);
       if (isFromGrave) {
         state.turnState.cardLeftGraveyardThisTurn[pid as PlayerId] = true;
-        TriggerProcessor.onEvent(
-          state,
-          { type: TriggerEvent.LeaveGraveyard, targetId: cid, sourceId: cid }
-        );
       }
       p.library = p.library.filter((c) => c.id !== cid);
     }
@@ -440,13 +437,13 @@ export class ActionProcessor {
       // the effect MUST be removed because the object is now "new".
       // Note: We do NOT remove effects just because their SOURCE moved (Rule 611.2a).
       if (isTarget && isTemporary) {
-          return false;
+        return false;
       }
 
       // If it's a multi-target effect and this object is just one of the targets, 
       // remove this object from the target list but keep the effect for others.
       if (isTarget && eff.targetIds) {
-          eff.targetIds = eff.targetIds.filter(id => id !== card.id);
+        eff.targetIds = eff.targetIds.filter(id => id !== card.id);
       }
 
       // Rule 611.2a: Floating effects from OTHER sources (e.g. an anthem from a sorcery that resolved)

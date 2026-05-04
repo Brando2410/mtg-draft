@@ -28,14 +28,14 @@ export const GarrukSavageHerald: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Loyalty, value: '-2' }],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 2,
                 perTargetRestrictions: [
                     [Restriction.YouControl],
                     [Restriction.Other]
                 ]
-            },
+            }],
             effects: [{
                 type: EffectType.DealDamage,
                 amount: 'TARGET_1_POWER',

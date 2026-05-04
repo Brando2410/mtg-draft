@@ -42,11 +42,11 @@ export const EmeritusofAbundanceRegrowth: CardDefinition = {
                         zone: Zone.Hand,
                         label: "Select target card from your graveyard to return to your hand",
                         selectionType: SelectionType.Search,
-                        targetDefinition: {
+                        targetDefinitions: [{
                             type: TargetType.CardInGraveyard,
                             count: 1,
                             restrictions: [Restriction.YouControl]
-                        }
+                        }]
                     }
                 ]
             }

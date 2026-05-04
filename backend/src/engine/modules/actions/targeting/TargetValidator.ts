@@ -1,18 +1,15 @@
-import { AbilityType, GameObject, GameState, Restriction, StackObject, Targetable, TargetingContext, TargetRestriction, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, GameObject, GameState, Restriction, StackObject, Targetable, TargetingContext, TargetDefinition, TargetRestriction, ObjectRestriction, ManaValueRestriction, LogicRestriction, TargetType, Zone } from '@shared/engine_types';
 import { LayerProcessor } from '../../state/LayerProcessor';
 import { TargetMapper } from './TargetMapper';
-import { oracle } from '../../../OracleLogicMap';
 import { getProcessors } from '../../ProcessorRegistry';
 
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { RestrictionRegistry, isNumericRestriction } from './RestrictionRegistry';
 
 export class TargetValidator {
-
-
     public static isLegalTarget(state: GameState, context: TargetingContext, targetId: string): boolean {
-        const { controllerId, targetDef, targetIndex, sourceId } = context;
-        const targetDefForIndex = TargetMapper.getDefinitionForIndex(targetDef, targetIndex || 0);
+        const { controllerId, targetDefinitions, targetIndex, sourceId } = context;
+        const targetDefForIndex = TargetMapper.getDefinitionForIndex(targetDefinitions || [], targetIndex || 0);
 
         // 1. PLAYER CHECK
         if (state.players[targetId]) {
@@ -41,11 +38,11 @@ export class TargetValidator {
      * CR 608.2b: A spell or ability is countered if all its targets, for every instance 
      * of the word 'target', have become illegal.
      */
-    public static shouldFizzle(state: GameState, context: TargetingContext, targets: string[], effects: any[]): boolean {
+    public static shouldFizzle(state: GameState, context: TargetingContext, targets: string[], effects: import('@shared/engine_types').EffectDefinition[]): boolean {
         if (targets.length === 0) return false;
 
         const { sourceId, controllerId, stackObject } = context;
-        const targetDef = stackObject?.data?.targetDefinition || effects.find(e => e.targetDefinition)?.targetDefinition;
+        const targetDefinitions = (stackObject as any)?.data?.targetDefinitions || effects.find(e => (e as any).targetDefinitions)?.targetDefinitions || [];
 
         // If at least one target is legal for the definition associated with its index, the spell does NOT fizzle.
         const hasAnyLegalTarget = targets.some((tid, index) => {
@@ -53,7 +50,7 @@ export class TargetValidator {
                 sourceId,
                 controllerId,
                 stackObject,
-                targetDef,
+                targetDefinitions,
                 targetIndex: index
             }, tid);
         });
@@ -61,20 +58,20 @@ export class TargetValidator {
         return !hasAnyLegalTarget;
     }
 
-    private static isPlayerTargetLegal(state: GameState, context: TargetingContext, targetId: string, targetDef: any): boolean {
+    private static isPlayerTargetLegal(state: GameState, context: TargetingContext, targetId: string, targetDefinitions: TargetDefinition | null): boolean {
         const { controllerId } = context;
-        const restrictions = targetDef?.restrictions || [];
+        const restrictions = targetDefinitions?.restrictions || [];
 
         const isPlayerAllowed =
-            targetDef?.type === TargetType.Player ||
-            targetDef?.type === TargetType.Opponent ||
-            targetDef?.type === TargetType.AnyTarget ||
-            targetDef?.type === TargetType.PlayerOrPlaneswalker ||
-            restrictions.some((r: any) => [Restriction.Player, Restriction.AnyTarget, Restriction.Opponent, Restriction.You].includes(r));
+            targetDefinitions?.type === TargetType.Player ||
+            targetDefinitions?.type === TargetType.Opponent ||
+            targetDefinitions?.type === TargetType.AnyTarget ||
+            targetDefinitions?.type === TargetType.PlayerOrPlaneswalker ||
+            restrictions.some((r) => [Restriction.Player, Restriction.AnyTarget, Restriction.Opponent, Restriction.You].includes(r as any));
 
-        if (!isPlayerAllowed) return false;
+        if(!isPlayerAllowed) return false;
 
-        if (restrictions.includes(Restriction.Opponent) || targetDef?.type === TargetType.Opponent) {
+        if (restrictions.includes(Restriction.Opponent) || targetDefinitions?.type === TargetType.Opponent) {
             if (controllerId && targetId === controllerId) return false;
         }
         if (restrictions.includes(Restriction.You)) {
@@ -83,61 +80,66 @@ export class TargetValidator {
         return true;
     }
 
-    private static getExpectedZone(targetObj: GameObject, targetDef: any): Zone | 'Any' {
-        let expectedZone = targetDef?.zone;
-        if (expectedZone) return expectedZone;
+    private static getExpectedZone(targetObj: GameObject, targetDefinitions: TargetDefinition | null): Zone | 'Any' {
+        let expectedZone = targetDefinitions?.zone;
+        if(expectedZone) return expectedZone;
 
-        const typeLineCheck = (targetDef?.type || '').toLowerCase();
+        const typeLineCheck = (targetDefinitions?.type || '').toLowerCase();
         const targetZone = targetObj.zone;
 
-        if (targetZone === Zone.Stack) return Zone.Stack;
-        if ([Restriction.Instant, Restriction.Sorcery, Restriction.InstantOrSorcery, Restriction.Spell, 'spell_on_stack'].includes(typeLineCheck)) return Zone.Stack;
+        if(targetZone === Zone.Stack) return Zone.Stack;
+        if (([Restriction.Instant, Restriction.Sorcery, Restriction.InstantOrSorcery, Restriction.Spell] as string[]).includes(typeLineCheck)) return Zone.Stack;
         if ([TargetType.CardInGraveyard.toLowerCase()].includes(typeLineCheck)) return Zone.Graveyard;
         if ([TargetType.CardInExile.toLowerCase()].includes(typeLineCheck)) return Zone.Exile;
 
-        const restrictions = (targetDef?.restrictions || []);
-        if (restrictions.some((r: any) => typeof r === 'string' && [Restriction.Graveyard, TargetType.CardInGraveyard.toLowerCase()].includes(r.toLowerCase()))) return Zone.Graveyard;
-        if (restrictions.some((r: any) => typeof r === 'string' && [Restriction.Exile, TargetType.CardInExile.toLowerCase()].includes(r.toLowerCase()))) return Zone.Exile;
+        const restrictions = (targetDefinitions?.restrictions || []);
+        if (restrictions.some((r) => typeof r === 'string' && [Restriction.Graveyard, TargetType.CardInGraveyard.toLowerCase()].includes(r.toLowerCase()))) return Zone.Graveyard;
+        if (restrictions.some((r) => typeof r === 'string' && [Restriction.Exile, TargetType.CardInExile.toLowerCase()].includes(r.toLowerCase()))) return Zone.Exile;
 
-        return targetDef ? Zone.Battlefield : 'Any';
+        if (typeLineCheck === TargetType.Player.toLowerCase() || 
+            typeLineCheck === TargetType.Opponent.toLowerCase() ||
+            typeLineCheck === TargetType.AnyTarget.toLowerCase() ||
+            typeLineCheck === TargetType.PlayerOrPlaneswalker.toLowerCase()) return 'Any';
+
+        return targetDefinitions ? Zone.Battlefield : 'Any';
     }
 
     private static checkKeywords(state: GameState, context: TargetingContext, targetObj: GameObject): boolean {
-        const stats = LayerProcessor.getEffectiveStats(targetObj, state);
-        const keywords = stats.keywords;
-        if (RuleUtils.hasShroud(targetObj)) return false;
+    const stats = LayerProcessor.getEffectiveStats(targetObj, state);
+    const keywords = stats.keywords;
+    if (RuleUtils.hasShroud(targetObj)) return false;
 
-        const source = RuleUtils.findObject(state, context.sourceId);
+    const source = RuleUtils.findObject(state, context.sourceId);
 
-        // Hexproof
-        if (context.controllerId && RuleUtils.getController(targetObj) !== context.controllerId) {
-            if (RuleUtils.hasHexproof(targetObj)) return false;
+    // Hexproof
+    if (context.controllerId && RuleUtils.getController(targetObj) !== context.controllerId) {
+        if (RuleUtils.hasHexproof(targetObj)) return false;
 
-            if (source) {
-                const hexproofFrom = keywords.filter((k: string) => k.toLowerCase().startsWith('hexproof from '));
-                for (const hp of hexproofFrom) {
-                    const qualities = hp.toLowerCase().replace('hexproof from ', '').split(/[\s,]+/).filter(Boolean);
-                    if (this.sourceHasQualities(source, qualities, state)) return false;
-                }
-            }
-        }
-
-        // Protection
         if (source) {
-            const protections = keywords.filter((k: string) => k.toLowerCase().startsWith('protection from'));
-            for (const prot of protections) {
-                const qualities = prot.toLowerCase().replace('protection from ', '').split(/[\s,]+/).filter(Boolean);
+            const hexproofFrom = keywords.filter((k: string) => k.toLowerCase().startsWith('hexproof from '));
+            for (const hp of hexproofFrom) {
+                const qualities = hp.toLowerCase().replace('hexproof from ', '').split(/[\s,]+/).filter(Boolean);
                 if (this.sourceHasQualities(source, qualities, state)) return false;
             }
         }
-
-        return true;
     }
 
-    private static normalizeRestrictions(targetDef: any): (TargetRestriction | string)[] {
-        const restrictions = [...(targetDef?.restrictions || [])];
-        const primaryType = (targetDef?.type || '').toUpperCase();
-        if (primaryType && primaryType !== 'ANY' && primaryType !== 'PLAYER' && primaryType !== TargetType.AnyTarget) {
+    // Protection
+    if (source) {
+        const protections = keywords.filter((k: string) => k.toLowerCase().startsWith('protection from'));
+        for (const prot of protections) {
+            const qualities = prot.toLowerCase().replace('protection from ', '').split(/[\s,]+/).filter(Boolean);
+            if (this.sourceHasQualities(source, qualities, state)) return false;
+        }
+    }
+
+    return true;
+}
+
+    private static normalizeRestrictions(targetDefinitions: TargetDefinition | null): (string | any)[] {
+        const restrictions = [...(targetDefinitions?.restrictions || [])];
+        const primaryType = (targetDefinitions?.type || '').toUpperCase();
+        if(primaryType && primaryType !== 'ANY' && primaryType !== 'PLAYER' && primaryType !== TargetType.AnyTarget) {
             if (!restrictions.some(r => typeof r === 'string' && r.toUpperCase() === primaryType)) {
                 restrictions.push(primaryType);
             }
@@ -146,73 +148,74 @@ export class TargetValidator {
     }
 
     public static matchesRestrictions(state: GameState, targetObj: Targetable, restrictions: (TargetRestriction | string)[], context: TargetingContext): boolean {
-        if (!targetObj) return false;
-        const definition = (targetObj as GameObject).definition || (targetObj as any).card?.definition;
+    if (!targetObj) return false;
+    const definition = (targetObj as GameObject).definition || (targetObj as any).card?.definition;
 
-        // Player / StackObject Fast Paths
-        if (!definition) {
-            if (state.players[(targetObj as any).id || targetObj]) {
-                return !!(restrictions.includes(Restriction.Player) || restrictions.includes(Restriction.AnyTarget));
-            }
-            const targetAsStack = targetObj as StackObject;
-            if (targetAsStack.type && (targetAsStack.type.includes('Ability') || targetAsStack.type === AbilityType.Spell)) {
-                return !!restrictions.some(r => {
-                    const rv = (typeof r === 'string' ? r : (r.value || '')).toLowerCase();
-                    if (targetAsStack) {
-                        return (rv === Restriction.Ability && targetAsStack.type.includes('Ability')) || (rv === Restriction.Spell && targetAsStack.type === AbilityType.Spell);
-                    }
-                    return false;
-                });
-            }
-            return false;
+    // Player / StackObject Fast Paths
+    if (!definition) {
+        if (state.players[(targetObj as any).id || targetObj]) {
+            return !!(restrictions.includes(Restriction.Player) || restrictions.includes(Restriction.AnyTarget));
         }
-
-        for (const r of restrictions) {
-            if (typeof r !== "string") continue;
-            const lr = r.toLowerCase();
-            const token = r.toUpperCase();
-
-            // 1. Numeric Regex
-            if (isNumericRestriction(lr)) {
-                if (!RestrictionRegistry["NUMERIC_REGEX"].matches(state, targetObj, lr, context)) return false;
-                continue;
-            }
-
-            // 2. Registry Handlers
-            let handler = RestrictionRegistry[token];
-            if (!handler && lr.startsWith("hascounter_")) handler = RestrictionRegistry["HASCOUNTER"];
-            if (!handler && lr === Restriction.Other) handler = RestrictionRegistry["OTHER"];
-
-            if (handler) {
-                if (!handler.matches(state, targetObj, lr, context)) return false;
-                continue;
-            }
-
-            // 3. Complex / Legacy Fallback
-            if (lr.includes('_or_') || lr === Restriction.OneOrMoreColors || lr === Restriction.ManaValueLessOrEqualToX) {
-                continue; // Handled in alternatives pass
-            }
-
-            // 4. Name / Subtype Fallback
-            const targetName = (definition.name || (targetObj as any).name || "").toLowerCase();
-            if (targetName !== lr && !RuleUtils.hasSubtype(targetObj, lr) && !RuleUtils.isType(targetObj, lr)) return false;
+        const targetAsStack = targetObj as StackObject;
+        if (targetAsStack.type && (targetAsStack.type.includes('Ability') || targetAsStack.type === AbilityType.Spell)) {
+            return !!restrictions.some(r => {
+                const resObj = r as any;
+                const rv = (typeof r === 'string' ? r : (resObj.value || '')).toLowerCase();
+                if (targetAsStack) {
+                    return (rv === Restriction.Ability && targetAsStack.type.includes('Ability')) || (rv === Restriction.Spell && targetAsStack.type === AbilityType.Spell);
+                }
+                return false;
+            });
         }
-
-        // Alternatives pass (Logic OR / Complex types)
-        const alternatives = restrictions.filter(r => {
-            if (typeof r !== 'string') return true;
-            const lr = r.toLowerCase();
-            return lr.includes('_or_') || lr === Restriction.OneOrMoreColors || lr === Restriction.ManaValueLessOrEqualToX;
-        });
-
-        if (alternatives.length > 0) {
-            return alternatives.every(r => this.evaluateComplexRestriction(state, targetObj, r, context));
-        }
-
-        return true;
+        return false;
     }
 
-    private static evaluateComplexRestriction(state: GameState, targetObj: Targetable, r: TargetRestriction | string, context: TargetingContext, log?: (msg: string) => void): boolean {
+    for (const r of restrictions) {
+        if (typeof r !== "string") continue;
+        const lr = r.toLowerCase();
+        const token = r.toUpperCase();
+
+        // 1. Numeric Regex
+        if (isNumericRestriction(lr)) {
+            if (!RestrictionRegistry["NUMERIC_REGEX"].matches(state, targetObj, lr, context)) return false;
+            continue;
+        }
+
+        // 2. Registry Handlers
+        let handler = RestrictionRegistry[token];
+        if (!handler && lr.startsWith("hascounter_")) handler = RestrictionRegistry["HASCOUNTER"];
+        if (!handler && lr === Restriction.Other) handler = RestrictionRegistry["OTHER"];
+
+        if (handler) {
+            if (!handler.matches(state, targetObj, lr, context)) return false;
+            continue;
+        }
+
+        // 3. Complex / Legacy Fallback
+        if (lr.includes('_or_') || lr === Restriction.OneOrMoreColors || lr === Restriction.ManaValueLessOrEqualToX) {
+            continue; // Handled in alternatives pass
+        }
+
+        // 4. Name / Subtype Fallback
+        const targetName = (definition.name || (targetObj as any).name || "").toLowerCase();
+        if (targetName !== lr && !RuleUtils.hasSubtype(targetObj, lr) && !RuleUtils.isType(targetObj, lr)) return false;
+    }
+
+    // Alternatives pass (Logic OR / Complex types)
+    const alternatives = restrictions.filter(r => {
+        if (typeof r !== 'string') return true;
+        const lr = r.toLowerCase();
+        return lr.includes('_or_') || lr === Restriction.OneOrMoreColors || lr === Restriction.ManaValueLessOrEqualToX;
+    });
+
+    if (alternatives.length > 0) {
+        return alternatives.every(r => this.evaluateComplexRestriction(state, targetObj, r, context));
+    }
+
+    return true;
+}
+
+    private static evaluateComplexRestriction(state: GameState, targetObj: Targetable, r: TargetRestriction | string, context: TargetingContext, log ?: (msg: string) => void): boolean {
         if (typeof r === 'string') {
             const lr = r.toLowerCase();
             const token = r.toUpperCase();
@@ -221,78 +224,86 @@ export class TargetValidator {
             return this.matchesRestrictions(state, targetObj, [r], context);
         }
 
-        const definition = (targetObj as GameObject).definition;
-        const restrictionType = (r.type || "").toLowerCase();
-        const restrictionValue = r.value !== undefined ? String(r.value) : null;
+        if (typeof r === 'function') {
+            return r(state, targetObj as GameObject, context);
+        }
 
-        if ((r.type === 'Any' || r.type === 'any') && r.restrictions) return r.restrictions.some((subR: any) => this.matchesRestrictions(state, targetObj, [subR], context));
-        if ((r.type === 'All' || r.type === 'all') && r.restrictions) return r.restrictions.every((subR: any) => this.matchesRestrictions(state, targetObj, [subR], context));
-        if ((r.type === 'Not' || r.type === 'not') && r.restriction) return !this.matchesRestrictions(state, targetObj, [r.restriction], context);
+        const resObj = r as ObjectRestriction;
+        const restrictionType = (resObj.type || "").toLowerCase();
+
+        if ((restrictionType === 'any' || restrictionType === 'all' || restrictionType === 'not') && ('restrictions' in resObj || 'restriction' in resObj)) {
+            const logicRes = resObj as LogicRestriction;
+            if (restrictionType === 'any' && logicRes.restrictions) return logicRes.restrictions.some(subR => this.matchesRestrictions(state, targetObj, [subR], context));
+            if (restrictionType === 'all' && logicRes.restrictions) return logicRes.restrictions.every(subR => this.matchesRestrictions(state, targetObj, [subR], context));
+            if (restrictionType === 'not' && logicRes.restriction) return !this.matchesRestrictions(state, targetObj, [logicRes.restriction], context);
+        }
 
         if (restrictionType === 'manavalue' || restrictionType === 'mv') {
+            const mvRes = resObj as ManaValueRestriction;
+            const definition = (targetObj as GameObject).definition;
             const { mana: MP } = getProcessors(state);
             const mv = MP.getManaValue(definition?.manaCost || '', (targetObj as any).xValue || 0);
-            let val = r.value === 'X' ? (context.stackObject?.xValue || 0) : parseInt(String(r.value));
-            const comp = r.comparison || 'Equal';
+            let val = mvRes.value === 'X' ? (context.stackObject?.xValue || 0) : parseInt(String(mvRes.value));
+            const comp = mvRes.comparison || 'Equal';
+            
             if (comp === 'LessOrEqual') return mv <= val;
             if (comp === 'GreaterOrEqual') return mv >= val;
+            if (comp === 'LessThan') return mv < val;
+            if (comp === 'GreaterThan') return mv > val;
             return mv === val;
         }
 
         return true; // Default match
     }
 
-    public static sourceHasQualities(source: Targetable, qualities: string[], state?: GameState): boolean {
-        const s = (source as any).card || source;
-        const definition = (s as GameObject).definition || s;
-        const sourceColors = this.getColors(s, state);
-        const sourceTypes = (definition.types || []).map((t: string) => t.toLowerCase());
-        const sourceSubtypes = (definition.subtypes || []).map((t: string) => t.toLowerCase());
+    public static sourceHasQualities(source: Targetable, qualities: string[], state ?: GameState): boolean {
+    const s = (source as any).card || source;
+    const definition = (s as GameObject).definition || s;
+    const sourceColors = this.getColors(s, state);
+    const sourceTypes = (definition.types || []).map((t: string) => t.toLowerCase());
+    const sourceSubtypes = (definition.subtypes || []).map((t: string) => t.toLowerCase());
 
-        return qualities.some(q => {
-            const lowerQ = q.toLowerCase();
-            if (lowerQ === 'and' || lowerQ === 'from') return false;
-            if (lowerQ === 'multicolored') return sourceColors.length > 1;
-            if (lowerQ === 'colorless') return sourceColors.length === 0;
-            return RuleUtils.isType(s, lowerQ) || RuleUtils.hasSubtype(s, lowerQ) || sourceColors.includes(lowerQ);
-        });
-    }
+    return qualities.some(q => {
+        const lowerQ = q.toLowerCase();
+        if (lowerQ === 'and' || lowerQ === 'from') return false;
+        if (lowerQ === 'multicolored') return sourceColors.length > 1;
+        if (lowerQ === 'colorless') return sourceColors.length === 0;
+        return RuleUtils.isType(s, lowerQ) || RuleUtils.hasSubtype(s, lowerQ) || sourceColors.includes(lowerQ);
+    });
+}
 
-    public static getColors(obj: any, state?: GameState): string[] {
-        const stats = state ? LayerProcessor.getEffectiveStats(obj, state) : null;
-        const colors = stats?.colors || obj.definition?.colors || [];
-        const map: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
-        return colors.map((c: string) => map[c.toUpperCase()] || c.toLowerCase());
-    }
+    public static getColors(obj: any, state ?: GameState): string[] {
+    const stats = state ? LayerProcessor.getEffectiveStats(obj, state) : null;
+    const colors = stats?.colors || obj.definition?.colors || [];
+    const map: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
+    return colors.map((c: string) => map[c.toUpperCase()] || c.toLowerCase());
+}
 
-    public static hasLegalTargets(state: GameState, sourceId: string, targetDef: any, controllerId: string): boolean {
-        if (!targetDef) return true;
-        const defs = Array.isArray(targetDef) ? targetDef : [targetDef];
+    public static hasLegalTargets(state: GameState, sourceId: string, targetDefinitions: TargetDefinition[], controllerId: string, xValue: number = 0): boolean {
+    let currentIndex = 0;
+    return targetDefinitions.every(def => {
+        const count = typeof def.count === 'number' ? def.count : 1;
+        const minCount = def.minCount !== undefined ? def.minCount : (def.optional ? 0 : count);
+        if (minCount === 0) { currentIndex += count; return true; }
 
-        let currentIndex = 0;
-        return defs.every(def => {
-            const count = typeof def.count === 'number' ? def.count : 1;
-            const minCount = def.minCount !== undefined ? def.minCount : (def.optional ? 0 : count);
-            if (minCount === 0) { currentIndex += count; return true; }
+        const pool = this.getLegalTargetPool(state, sourceId, targetDefinitions, controllerId, currentIndex, xValue);
+        currentIndex += count;
+        return pool.length >= (minCount as any);
+    });
+}
 
-            const pool = this.getLegalTargetPool(state, sourceId, def, controllerId, currentIndex);
-            currentIndex += count;
-            return pool.length >= minCount;
-        });
-    }
+    public static getLegalTargetPool(state: GameState, sourceId: string, targetDefinitions: TargetDefinition[], controllerId: string, targetIndex: number = 0, xValue: number = 0): string[] {
+    const targetDefForIndex = TargetMapper.getDefinitionForIndex(targetDefinitions, targetIndex, xValue);
+    const expectedZone = this.getExpectedZone({ zone: Zone.Battlefield } as any, targetDefForIndex);
 
-    public static getLegalTargetPool(state: GameState, sourceId: string, targetDef: any, controllerId: string, targetIndex: number = 0): string[] {
-        const targetDefForIndex = TargetMapper.getDefinitionForIndex(targetDef, targetIndex);
-        const expectedZone = this.getExpectedZone({ zone: Zone.Battlefield } as any, targetDefForIndex);
+    // OPTIMIZATION: Only scan relevant zones
+    let poolIds: string[] = [];
+    if (expectedZone === Zone.Battlefield || expectedZone === 'Any') poolIds.push(...state.battlefield.map(o => o.id));
+    if (expectedZone === Zone.Graveyard || expectedZone === 'Any') poolIds.push(...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id)));
+    if (expectedZone === Zone.Exile || expectedZone === 'Any') poolIds.push(...state.exile.map(o => o.id));
+    if (expectedZone === Zone.Stack || expectedZone === 'Any') poolIds.push(...state.stack.map(o => o.id));
+    if (expectedZone === 'Any') poolIds.push(...Object.keys(state.players));
 
-        // OPTIMIZATION: Only scan relevant zones
-        let poolIds: string[] = [];
-        if (expectedZone === Zone.Battlefield || expectedZone === 'Any') poolIds.push(...state.battlefield.map(o => o.id));
-        if (expectedZone === Zone.Graveyard || expectedZone === 'Any') poolIds.push(...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id)));
-        if (expectedZone === Zone.Exile || expectedZone === 'Any') poolIds.push(...state.exile.map(o => o.id));
-        if (expectedZone === Zone.Stack || expectedZone === 'Any') poolIds.push(...state.stack.map(o => o.id));
-        if (expectedZone === 'Any') poolIds.push(...Object.keys(state.players));
-
-        return poolIds.filter(id => this.isLegalTarget(state, { sourceId, controllerId, targetDef, targetIndex }, id));
-    }
+    return poolIds.filter(id => this.isLegalTarget(state, { sourceId, controllerId, targetDefinitions, targetIndex, xValue }, id));
+}
 }

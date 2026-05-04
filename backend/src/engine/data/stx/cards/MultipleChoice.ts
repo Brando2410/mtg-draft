@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 
 export const MultipleChoice: CardDefinition = {
     name: 'Multiple Choice',
@@ -16,28 +16,28 @@ export const MultipleChoice: CardDefinition = {
                 choices: [
                     {
                         label: "X=1: Return Creature",
-                        condition: 'XIs1',
-                        targetDefinition: { count: 1, type: TargetType.Creature },
+                        condition: `${ConditionType.X_IS}:1`,
+                        targetDefinitions: [{ count: 1, type: TargetType.Creature }],
                         effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
                     },
                     {
                         label: "X=2: Create 2/2 Drake",
-                        condition: 'XIs2',
+                        condition: `${ConditionType.X_IS}:2`,
                         effects: [{ type: EffectType.CreateToken, tokenBlueprint: { name: 'Drake', power: '2', toughness: '2', colors: ['U'], types: ['Creature', 'Token'], subtypes: ['Drake'], keywords: ['Flying'] }, amount: 1 }]
                     },
                     {
                         label: "X=3: Create 4/4 Elemental",
-                        condition: 'XIs3',
+                        condition: `${ConditionType.X_IS}:3`,
                         effects: [{ type: EffectType.CreateToken, tokenBlueprint: { name: 'Elemental', power: '4', toughness: '4', colors: ['U', 'R'], types: ['Creature', 'Token'], subtypes: ['Elemental'] }, amount: 1 }]
                     },
                     {
                         label: "X>=4: All Above + Draw 3",
-                        condition: 'XIs4OrMore',
+                        condition: `${ConditionType.X_IS_GE}:4`,
                         effects: [
                             {
                                 type: EffectType.Choice,
                                 label: "Target creature to return hand (X>=4)",
-                                targetDefinition: { count: 1, type: TargetType.Creature },
+                                targetDefinitions: [{ count: 1, type: TargetType.Creature }],
                                 effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
                             },
                             { type: EffectType.CreateToken, tokenBlueprint: { name: 'Drake', power: '2', toughness: '2', colors: ['U'], types: ['Creature', 'Token'], subtypes: ['Drake'], keywords: ['Flying'] }, amount: 1 },

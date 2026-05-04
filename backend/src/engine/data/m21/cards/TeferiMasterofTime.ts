@@ -27,11 +27,11 @@ export const TeferiMasterofTime: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Loyalty, value: -3 }],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [Restriction.OpponentControl]
-            },
+            }],
             effects: [{ type: EffectType.PhaseOut, targetMapping: TargetMapping.Target1 }]
         },
         {

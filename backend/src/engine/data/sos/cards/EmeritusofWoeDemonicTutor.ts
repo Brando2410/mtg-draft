@@ -18,7 +18,7 @@ export const EmeritusofWoeDemonicTutor: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: `${ConditionType.CreaturesDiedCountGe}:2 && ${ConditionType.OurTurn}`,
+            condition: `${ConditionType.CreaturesDiedCountGe}:2 && ${ConditionType.IsYourTurn}`,
             effects: [
                 {
                     type: EffectType.Prepare,
@@ -40,10 +40,10 @@ export const EmeritusofWoeDemonicTutor: CardDefinition = {
                 effects: [
                     {
                         type: EffectType.SearchLibrary,
-                        targetDefinition: {
+                        targetDefinitions: [{
                             type: TargetType.Card,
                             count: 1
-                        },
+                        }],
                         zone: Zone.Hand,
                         reveal: true,
                         shuffle: true

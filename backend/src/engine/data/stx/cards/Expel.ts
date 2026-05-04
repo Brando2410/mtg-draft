@@ -11,11 +11,11 @@ export const Expel: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.Creature,
                 restrictions: [Restriction.Tapped]
-            },
+            }],
             effects: [{ type: EffectType.Exile, targetMapping: TargetMapping.Target1 }]
         }
     ]

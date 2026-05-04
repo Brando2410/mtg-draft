@@ -13,12 +13,12 @@ export const Flashback: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 restrictions: [
                     Restriction.InstantOrSorcery, Restriction.YouOwn]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

@@ -25,10 +25,10 @@ export const RalZarekGuestLecturer: CardDefinition = {
             type: AbilityType.Activated,
             id: "Any number of target players each discard a card",
             costs: [{ type: CostType.Loyalty, value: -1 }],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Player,
-                count: SelectionType.AnyNumber
-            },
+                count: SelectionType.ANY
+            }],
             effects: [
                 {
                     type: EffectType.DiscardCards,
@@ -41,11 +41,11 @@ export const RalZarekGuestLecturer: CardDefinition = {
             type: AbilityType.Activated,
             id: "Return target creature card with mana value 3 or less from your graveyard to the battlefield",
             costs: [{ type: CostType.Loyalty, value: -2 }],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 restrictions: [Restriction.Creature, Restriction.ManaValue3OrLess, Restriction.YouOwn]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.PutOnBattlefield,
@@ -57,10 +57,10 @@ export const RalZarekGuestLecturer: CardDefinition = {
             type: AbilityType.Activated,
             id: "Flip five coins: Target opponent skips their next X turns, where X is the number of coins that came up heads",
             costs: [{ type: CostType.Loyalty, value: -7 }],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Opponent,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.SkipTurns,

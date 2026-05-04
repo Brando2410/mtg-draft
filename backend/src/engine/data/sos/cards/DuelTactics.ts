@@ -16,7 +16,7 @@ export const DuelTactics: CardDefinition = {
         {
             type: AbilityType.Spell,
             flashbackCost: "{1}{R}",
-            targetDefinition: { type: TargetType.Creature, count: 1 },
+            targetDefinitions: [{ type: TargetType.Creature, count: 1 }],
             effects: [
                 { 
                     type: EffectType.DealDamage, 

@@ -20,10 +20,10 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
                 manaReduction: '{2}',
                 condition: ConditionType.CardsLeftYourGraveyardThisTurn
             } as any,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
-            },
+            }],
             effects: [
                 {
                     type: EffectType.DealDamage,

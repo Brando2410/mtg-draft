@@ -4,6 +4,7 @@ import {
   ContinuousEffect,
   GameObject, GameState,
   RestrictionObject, RestrictionType,
+  TargetMapping,
   Zone
 } from "@shared/engine_types";
 import { RuleUtils } from "../../utils/RuleUtils";
@@ -91,12 +92,19 @@ export class LayerProcessor {
         1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: []
       };
       activeEffects.forEach(e => {
-        if (e.layer && layerMap[e.layer]) layerMap[e.layer].push(e);
-        // Fallback for effects with implicit layers
-        else if (e.typesToAdd || e.typesSet) layerMap[4].push(e);
-        else if (e.colorsToAdd || e.colorSet) layerMap[5].push(e);
-        else if (e.abilitiesToAdd || e.abilitiesToRemove || e.removeAllAbilities) layerMap[6].push(e);
-        else if (e.powerDynamic || e.toughnessDynamic || e.powerSet !== undefined || e.toughnessSet !== undefined || e.powerModifier !== undefined || e.toughnessModifier !== undefined) layerMap[7].push(e);
+        // Support Hybrid Effects (Rule 613.1): An effect can exist in multiple layers simultaneously
+        
+        // 1. Explicit Layer Attribution
+        if (e.layer && layerMap[e.layer]) {
+          layerMap[e.layer].push(e);
+        }
+
+        // 2. Implicit Property-based Attribution (Ensures hybrid effects work even if one layer is explicitly set)
+        if (e.copyFromId && e.layer !== 1) layerMap[1].push(e);
+        if ((e.typesToAdd || e.typesSet || e.subtypesToAdd || e.subtypesSet) && e.layer !== 4) layerMap[4].push(e);
+        if ((e.colorsToAdd || e.colorSet) && e.layer !== 5) layerMap[5].push(e);
+        if ((e.abilitiesToAdd || e.abilitiesToRemove || e.removeAllAbilities) && e.layer !== 6) layerMap[6].push(e);
+        if ((e.powerDynamic || e.toughnessDynamic || e.powerSet !== undefined || e.toughnessSet !== undefined || e.powerModifier !== undefined || e.toughnessModifier !== undefined) && e.layer !== 7) layerMap[7].push(e);
       });
 
       for (const effect of layerMap[1]) {
@@ -296,13 +304,9 @@ export class LayerProcessor {
     if (
       effect.powerDynamic === "INSTANTS_AND_SORCERIES_IN_GRAVEYARD"
     ) {
-      const player = state.players[RuleUtils.getController(obj)];
-      if (player) {
-        const count = player.graveyard.filter((c) =>
-          RuleUtils.isType(c, "instant") || RuleUtils.isType(c, "sorcery"),
-        ).length;
-        update(count, undefined);
-      }
+      const controllerId = RuleUtils.getController(obj);
+      const count = RuleUtils.getInstantSorceryInGraveyardCount(state, controllerId);
+      update(count, undefined);
     }
 
     if (effect.powerDynamic === "GREATEST_POWER_IN_GRAVEYARD") {
@@ -378,22 +382,23 @@ export class LayerProcessor {
       if (!obj) return false;
 
       switch (effect.targetMapping) {
-        case "SELF":
+        case TargetMapping.Self:
           return objId === effect.sourceId;
-        case "ALL_CREATURES_YOU_CONTROL":
+        case TargetMapping.AllCreaturesYouControl:
           return (
             RuleUtils.getController(obj) === effect.controllerId &&
             RuleUtils.isCreature(obj)
           );
-        case "ALL_PERMANENTS_YOU_CONTROL":
+        case TargetMapping.AllPermanentsYouControl:
           return RuleUtils.getController(obj) === effect.controllerId;
-        case "OTHER_CREATURES_YOU_CONTROL":
+        case TargetMapping.OtherCreaturesYouControl:
           return (
             obj.id !== effect.sourceId &&
             RuleUtils.getController(obj) === effect.controllerId &&
             RuleUtils.isCreature(obj)
           );
-        case "MATCHING_PERMANENTS_YOU_CONTROL":
+        case TargetMapping.MatchingPermanentsYouControl:
+        case TargetMapping.AllMatchingPermanentsYouControl:
           return (
             RuleUtils.getController(obj) === effect.controllerId &&
             TargetingProcessor.matchesRestrictions(
@@ -403,46 +408,48 @@ export class LayerProcessor {
               { sourceId: effect.sourceId, controllerId: effect.controllerId }
             )
           );
-        case "MATCHING_PERMANENTS":
+        case TargetMapping.MatchingPermanents:
+        case TargetMapping.AllMatchingPermanents:
           return TargetingProcessor.matchesRestrictions(
             state,
             obj,
             effect.restrictions || [],
             { sourceId: effect.sourceId, controllerId: effect.controllerId }
           );
-        case "ALL_CREATURES_OPPONENTS_CONTROL":
+        case TargetMapping.AllCreaturesOpponentsControl:
         case "OPPONENTS_CREATURES":
           return (
             RuleUtils.getController(obj) !== effect.controllerId &&
             RuleUtils.isCreature(obj)
           );
-        case "ALL_PERMANENTS_OPPONENTS_CONTROL":
+        case TargetMapping.AllPermanentsOpponentsControl:
           return RuleUtils.getController(obj) !== effect.controllerId;
-        case "OTHER_CREATURES":
-        case "ALL_OTHER_CREATURES":
+        case TargetMapping.OtherCreatures:
+        case TargetMapping.AllOtherCreatures:
           return (
             obj.id !== effect.sourceId &&
             RuleUtils.isCreature(obj)
           );
-        case "MATCHING_CARDS":
+        case TargetMapping.MatchingCards:
+        case TargetMapping.AllMatchingCards:
           return TargetingProcessor.matchesRestrictions(
             state,
             obj,
             effect.restrictions || [],
             { sourceId: effect.sourceId, controllerId: effect.controllerId }
           );
-        case "ENCHANTED_CREATURE":
-        case "ENCHANTED_PERMANENT": {
+        case TargetMapping.EnchantedCreature:
+        case TargetMapping.EnchantedPermanent: {
           const source = state.battlefield.find(
             (o) => o.id === effect.sourceId,
           );
           return !!source && source.attachedTo === objId;
         }
-        case "PARENT_CONTEXT_EXILED_IDS": {
+        case TargetMapping.ParentContextExiledIds: {
           // For floating effects resolving this dynamically if snapshot missing
           return Array.isArray(effect.targetIds) && (effect.targetIds as string[]).includes(objId);
         }
-        case "CONTROLLER":
+        case TargetMapping.Controller:
           return (
             RuleUtils.getController(obj) === effect.controllerId &&
             TargetingProcessor.matchesRestrictions(

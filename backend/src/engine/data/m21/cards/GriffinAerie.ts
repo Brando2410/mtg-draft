@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const GriffinAerie: CardDefinition = {
     name: "Griffin Aerie",
@@ -12,7 +12,7 @@ export const GriffinAerie: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: 'OUR_TURN_AND_GAINED_3_OR_MORE_LIFE_THIS_TURN',  //wrong
+            condition: `${ConditionType.IsYourTurn} && ${ConditionType.LifeGained3OrMoreThisTurn}`,
             effects: [
                 {
                     type: EffectType.CreateToken,

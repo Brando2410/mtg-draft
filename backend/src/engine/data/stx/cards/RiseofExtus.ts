@@ -9,10 +9,10 @@ export const RiseofExtus: CardDefinition = {
   abilities: [
     {
       type: AbilityType.Spell,
-      targetDefinition: {
+      targetDefinitions: [{
         count: 1,
         type: TargetType.CreatureOrPlaneswalker,
-      },
+      }],
       effects: [
         { type: EffectType.Exile, targetMapping: TargetMapping.Target1 },
         { type: EffectType.Learn }

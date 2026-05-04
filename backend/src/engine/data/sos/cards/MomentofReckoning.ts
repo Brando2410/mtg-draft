@@ -20,16 +20,16 @@ export const MomentofReckoning: CardDefinition = {
             modes: [
                 {
                     label: "Destroy target nonland permanent",
-                    targetDefinition: { type: TargetType.NonlandPermanent, count: 1 },
+                    targetDefinitions: [{ type: TargetType.NonlandPermanent, count: 1 }],
                     effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
                 },
                 {
                     label: "Return target nonland permanent card from your graveyard",
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         count: 1,
                         restrictions: [Restriction.NonLand, Restriction.Permanent, Restriction.YouOwn]
-                    },
+                    }],
                     effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 }]
                 }
             ]

@@ -11,7 +11,7 @@ export const PeerintotheAbyss: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Player, count: 1 },
+            targetDefinitions: [{ type: TargetType.Player, count: 1 }],
             effects: [
                 { type: EffectType.DrawCards, amount: 'HALF_LIBRARY_ROUND_UP', targetMapping: TargetMapping.Target1 },
                 { type: EffectType.LoseLife, amount: 'HALF_LIFE_ROUND_UP', targetMapping: TargetMapping.Target1 }

@@ -31,7 +31,7 @@ export const AbigalePoetLaureateHeroicStanza: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: { type: TargetType.Creature },
+                targetDefinitions: [{ type: TargetType.Creature }],
                 effects: [
                     {
                         type: EffectType.AddCounters,

@@ -15,7 +15,7 @@ export const EpitaphGolem: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Mana, value: '{2}' }],
-            targetDefinition: { type: TargetType.CardInGraveyard, count: 1, restrictions: [Restriction.YouControl] },
+            targetDefinitions: [{ type: TargetType.CardInGraveyard, count: 1, restrictions: [Restriction.YouControl] }],
             effects: [{ type: EffectType.MoveToZone, zone: Zone.Library, position: 'bottom', targetMapping: TargetMapping.Target1 }]
         }
     ]

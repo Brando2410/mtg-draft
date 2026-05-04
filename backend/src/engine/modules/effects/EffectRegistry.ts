@@ -27,6 +27,7 @@ import { DisableDamagePreventionHandler, ExchangeHandAndGraveyardHandler, Necrom
 import { CreateDelayedTriggerHandler } from "./handlers/system/TriggerEffects";
 import { MovementHandler } from "./handlers/zone/MovementEffects";
 import { DiscardHandler, DrawCardsEffectHandler, MillHandler, ScrySurveilEffectHandler, SearchHandler } from "./handlers/zone/ZoneEffects";
+import { PermissionEffectHandler } from "./handlers/zone/PermissionEffectHandler";
 
 export const EffectRegistry: Partial<Record<EffectType | string, IEffectHandler>> = {
     // Life & Damage
@@ -66,6 +67,10 @@ export const EffectRegistry: Partial<Record<EffectType | string, IEffectHandler>
     [EffectType.PutRemainderOnBottomRandom]: MovementHandler,
     [EffectType.PutOnBattlefield]: MovementHandler,
     [EffectType.Mill]: MillHandler,
+    [EffectType.AllowPlayMilledCard]: PermissionEffectHandler,
+    [EffectType.AllowPlayExiled]: PermissionEffectHandler,
+    [EffectType.AllowPlayFromTop]: PermissionEffectHandler,
+    [EffectType.AllowCastFromGraveyard]: PermissionEffectHandler,
     [EffectType.RevealUntilCondition]: MovementHandler,
     [EffectType.DiscardCards]: DiscardHandler,
 

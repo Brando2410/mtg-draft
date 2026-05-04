@@ -11,11 +11,11 @@ export const Duress: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.Player,
                 restrictions: [Restriction.Opponent]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Choice,

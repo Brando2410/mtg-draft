@@ -18,7 +18,7 @@ export const ZimonesExperiment: CardDefinition = {
                     targetMapping: TargetMapping.Controller,
                     fromTop: 5,
                     reveal: true,
-                    selectionType: 'AnyNumber',
+                    selectionType: 'ANY',
                     amount: 2,
                     restrictions: [Restriction.CreatureOrLand],
                     remainderZone: Zone.Library,

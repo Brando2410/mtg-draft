@@ -11,10 +11,10 @@ export const Fracture: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.ArtifactEnchantmentOrPlaneswalker,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Destroy,

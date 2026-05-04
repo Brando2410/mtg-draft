@@ -14,11 +14,11 @@ export const SpitefulSquad: CardDefinition = {
     {
       type: AbilityType.Triggered,
       eventMatch: TriggerEvent.Death,
-      targetDefinition: {
+      targetDefinitions: [{
         count: 1,
         type: TargetType.Creature,
         restrictions: [Restriction.YouControl]
-      },
+      }],
       effects: [{
         type: EffectType.AddCounters,
         counterType: 'P1P1',

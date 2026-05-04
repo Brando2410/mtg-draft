@@ -13,7 +13,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, R
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.PreCombatMainPhaseStart,
-            condition: ConditionType.OurTurn,
+            condition: ConditionType.IsYourTurn,
             effects: [
                 {
                     type: EffectType.Prepare,
@@ -32,11 +32,11 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, R
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
+                targetDefinitions: [{
                     type: TargetType.Creature,
                     count: 1,
                     restrictions: [Restriction.YouControl],
-    },
+    }],
                 effects: [
                     {
                         type: EffectType.ApplyContinuousEffect,

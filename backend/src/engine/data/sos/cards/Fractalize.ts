@@ -17,10 +17,10 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

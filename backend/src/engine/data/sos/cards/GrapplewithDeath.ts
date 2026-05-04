@@ -13,11 +13,11 @@ export const GrapplewithDeath: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Permanent,
                 count: 1,
                 restrictions: [Restriction.ArtifactOrCreature]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Destroy,

@@ -22,10 +22,10 @@ export const AscendantDustspeaker: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 restrictions: [Restriction.Other, Restriction.YouControl]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.AddCounters,
@@ -45,12 +45,12 @@ export const AscendantDustspeaker: CardDefinition = {
                 {
                     type: EffectType.Choice,
                     selectionPool: TargetMapping.AnyGraveyard,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         optional: true,
                         count: 1,
                         minCount: 0
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.Exile,

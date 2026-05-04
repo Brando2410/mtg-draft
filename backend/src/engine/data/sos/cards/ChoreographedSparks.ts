@@ -24,23 +24,23 @@ export const ChoreographedSparks: CardDefinition = {
             modes: [
                 {
                     label: "Copy target instant or sorcery spell you control",
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Spell, count: 1, restrictions: [
                             Restriction.InstantOrSorcery,
                             Restriction.YouControl
                         ]
-                    },
+                    }],
                     effects: [
                         { type: EffectType.CopySpellOnStack, chooseNewTargets: true, targetMapping: TargetMapping.Target1 }
                     ]
                 },
                 {
                     label: "Copy target creature you control",
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Spell, count: 1, restrictions: [
                             Restriction.YouControl, Restriction.Creature
                         ]
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.CreateTokenCopy,

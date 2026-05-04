@@ -11,10 +11,10 @@ export const InvigoratingSurge: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 restrictions: [Restriction.YouControl]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.AddCounters,

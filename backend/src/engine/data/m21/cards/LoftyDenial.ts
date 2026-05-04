@@ -11,7 +11,7 @@ export const LoftyDenial: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Spell },
+            targetDefinitions: [{ type: TargetType.Spell }],
             effects: [
                 {
                     type: EffectType.Choice,

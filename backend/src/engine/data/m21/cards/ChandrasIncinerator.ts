@@ -28,11 +28,11 @@ export const ChandrasIncinerator: CardDefinition = {
             condition: (state, event, source) => {
                 return event.data?.isCombat === false && event.data?.sourceControllerId === source.controllerId;
             },
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CreatureOrPlaneswalker,
                 count: 1,
                 restrictions: [Restriction.OpponentControl]
-            },
+            }],
             effects: [{
                 type: EffectType.DealDamage,
                 amount: 'EVENT_AMOUNT',

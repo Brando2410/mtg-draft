@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
     export const SpiritcallEnthusiastScrollboost: CardDefinition = {
     name: "Spiritcall Enthusiast",
     manaCost: "{2}{W}",
@@ -14,7 +14,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefieldOther,
-            condition: 'OWN_TOKEN_ENTERS',
+            condition: ConditionType.OwnTokenEnters,
             effects: [
                 {
                     type: EffectType.Prepare,
@@ -34,11 +34,11 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
+                targetDefinitions: [{
                     type: TargetType.Creature,
                     count: 2,
                     minCount: 1
-                },
+                }],
                 effects: [
                     {
                         type: EffectType.ApplyContinuousEffect,

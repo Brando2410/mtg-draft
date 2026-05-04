@@ -15,7 +15,7 @@ export const TormodsCrypt: CardDefinition = {
                 { type: CostType.Tap },
                 { type: CostType.SacrificeSelf }
             ],
-            targetDefinition: { type: TargetType.Player, count: 1 },
+            targetDefinitions: [{ type: TargetType.Player, count: 1 }],
             effects: [{ type: EffectType.ExileAllCards, targetMapping: TargetMapping.Target1 }]
         }
     ]

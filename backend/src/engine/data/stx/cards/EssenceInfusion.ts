@@ -11,7 +11,7 @@ export const EssenceInfusion: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { count: 1, type: TargetType.Creature },
+            targetDefinitions: [{ count: 1, type: TargetType.Creature }],
             effects: [
                 { type: EffectType.AddCounters, counterType: 'P1P1', amount: 2, targetMapping: TargetMapping.Target1 },
                 { type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToAdd: ['Lifelink'] }

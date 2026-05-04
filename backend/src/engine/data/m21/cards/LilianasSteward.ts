@@ -19,7 +19,7 @@ export const LilianasSteward: CardDefinition = {
                 { type: CostType.Tap },
                 { type: CostType.SacrificeSelf }
             ],
-            targetDefinition: { type: TargetType.Opponent, count: 1 },
+            targetDefinitions: [{ type: TargetType.Opponent, count: 1 }],
             effects: [{ type: EffectType.DiscardCards, amount: 1, targetMapping: TargetMapping.Target1 }]
         }
     ]

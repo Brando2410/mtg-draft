@@ -16,11 +16,11 @@ export const BiblioplexAssistant: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.CardInGraveyard,
                 restrictions: [Restriction.YouControl, Restriction.InstantOrSorcery]
-            },
+            }],
             effects: [{
                 type: EffectType.Choice,
                 label: "Put card on top of library?",

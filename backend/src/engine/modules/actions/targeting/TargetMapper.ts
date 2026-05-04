@@ -2,74 +2,81 @@ import {
   GameObject, GameState,
   PlayerId, ResolutionContext,
   Restriction,
-  TargetingContext, TargetMapping, TargetType, Zone
+  TargetingContext, TargetDefinition, TargetMapping, TargetType, Zone
 } from "@shared/engine_types";
 import { RuleUtils } from "../../../utils/RuleUtils";
+import { getProcessors } from "../../ProcessorRegistry";
+import { LogCategory } from "../../../utils/EngineLogger";
 import { ManaProcessor } from "../../magic/ManaProcessor";
 import { TargetValidator } from "./TargetValidator";
-import { LogCategory } from "../../../utils/EngineLogger";
-import { getProcessors } from "../../ProcessorRegistry";
+
 
 export class TargetMapper {
+  public static getCountsForDefinition(d: TargetDefinition | null, xValue: number = 0): { maxCount: number; minCount: number; count: number } {
+    if (!d) return { maxCount: 0, minCount: 0, count: 0 };
+    
+    let count: number | string | { min: number; max: number } | undefined = d.count;
+    let dMin: number | string | undefined = d.minCount;
+    let dMax: number | string | undefined = d.maxCount;
+
+    if (typeof count === "object" && count !== null && "min" in count) {
+      dMin = count.min;
+      dMax = count.max;
+      count = dMax;
+    } else if (count === "ANY") {
+      dMin = 0;
+      dMax = 999;
+      count = 999;
+    }
+
+    const resolveVal = (val: number | string | { min: number; max: number } | undefined, def: number): number => {
+      if (val === "X") return xValue;
+      if (val === "ANY") return 999;
+      if (typeof val === "number") return val;
+      if (typeof val === "object" && val !== null && "max" in val) return val.max;
+      return def;
+    };
+
+    const resolvedCount = resolveVal(count, 1);
+    const resolvedMax = dMax !== undefined && dMax !== null ? resolveVal(dMax, resolvedCount) : resolvedCount;
+    const resolvedMin = dMin !== undefined && dMin !== null ? resolveVal(dMin, resolvedCount) : (d.optional ? 0 : resolvedCount);
+
+    return {
+      maxCount: resolvedMax,
+      minCount: resolvedMin,
+      count: resolvedCount
+    };
+  }
+
   public static calculateTotalCounts(
-    targetDef: any,
+    targetDefinitions: TargetDefinition[],
     xValue: number = 0,
   ): { maxCount: number; minCount: number; count: number } {
     let maxCount = 0;
     let minCount = 0;
     let targetCount = 0;
-    const defs = Array.isArray(targetDef) ? targetDef : [targetDef];
 
-    defs.forEach((d) => {
-      if (!d) return;
-      let count = d.count;
-      let dMin = d.minCount;
-      let dMax = d.maxCount;
-
-      // Handle structured count object: { min, max } or 'any'
-      if (typeof count === "object" && count !== null) {
-        dMin = count.min;
-        dMax = count.max;
-        count = dMax; // Base count is the specific upper bound
-      } else if (count === "any") {
-        dMin = 0;
-        dMax = 999;
-        count = 999;
-      }
-
-      if (count === "X") count = xValue;
-      count = count || 1;
-
-      if (dMax === undefined || dMax === null) dMax = count;
-      if (dMax === "X") dMax = xValue;
-
-      if (dMin === undefined || dMin === null)
-        dMin = d.optional ? 0 : count;
-      if (dMin === "X") dMin = xValue;
-
-      maxCount += Number(dMax);
-      minCount += Number(dMin);
-      targetCount += Number(count);
+    targetDefinitions.forEach((d) => {
+      const counts = this.getCountsForDefinition(d, xValue);
+      maxCount += counts.maxCount;
+      minCount += counts.minCount;
+      targetCount += counts.count;
     });
 
-    return {
-      maxCount: Number(maxCount),
-      minCount: Number(minCount),
-      count: Number(targetCount),
-    };
+    return { maxCount, minCount, count: targetCount };
   }
 
   public static generateTargetPrompt(
-    targetDef: any,
+    targetDefinitions: TargetDefinition[],
     selectedCount: number,
     xValue: number = 0,
     isSpellCasting: boolean = false,
   ): string {
-    const def = this.getDefinitionForIndex(targetDef, selectedCount);
+    const def = this.getDefinitionForIndex(targetDefinitions, selectedCount);
     if (!def) return "Select targets";
 
-    const currentCounts = this.calculateTotalCounts(def, xValue);
-    const globalCounts = this.calculateTotalCounts(targetDef, xValue);
+    const currentCounts = this.calculateTotalCounts([def], xValue);
+    const globalCounts = this.calculateTotalCounts(targetDefinitions, xValue);
 
     const isRulesOptional = def.optional || def.minCount === 0;
     const isSequenceOptional = globalCounts.minCount <= selectedCount;
@@ -88,7 +95,7 @@ export class TargetMapper {
       typeStr = "yourself";
     } else if (type === "player") {
       typeStr = "a player";
-    } else if (type === "anytarget" || type === "any_target") {
+    } else if (type === TargetType.AnyTarget.toLowerCase()) {
       typeStr = "any target";
     } else {
       // Complex object labeling based on type & restrictions
@@ -190,16 +197,14 @@ export class TargetMapper {
         }
 
         // 3. Ownership / Specific location
-        if (lr === Restriction.YouControl || lr === "yours" || lr === "youown") {
+        if (lr === Restriction.YouControl || lr === Restriction.YouOwn) {
           if (location.includes("graveyard")) location = "in your graveyard";
           else if (location.includes("hand")) location = "in your hand";
           else if (location.includes("exile")) location = "in your exile";
           else location = "you control";
         } else if (
           lr === Restriction.OpponentControl ||
-          lr === "opponents" ||
-          lr === "opponentcontrols" ||
-          lr === "opponentowns"
+          lr === Restriction.OpponentOwns
         ) {
           if (location.includes("graveyard"))
             location = "in an opponent's graveyard";
@@ -255,13 +260,14 @@ export class TargetMapper {
     }
 
     // Handle "Up to" phrasing
-    if (def.minCount === 0 && def.count > 0) {
-      const countStr = def.count === 1 ? "one" : def.count;
+    // Handle "Up to" phrasing
+    if (def.minCount === 0 && (typeof def.count === 'number' ? def.count > 0 : !!def.count)) {
+      const countStr = def.count === 1 ? "one" : String(def.count);
       let cleanType = typeStr;
       if (cleanType.startsWith("a ")) cleanType = cleanType.substring(2);
       if (cleanType.startsWith("an ")) cleanType = cleanType.substring(3);
       const finalType =
-        def.count > 1 || def.count === "X"
+        (typeof def.count === 'number' && def.count > 1) || def.count === "X"
           ? this.pluralize(cleanType)
           : cleanType;
       const prefix = isSequenceOptional
@@ -328,11 +334,15 @@ export class TargetMapper {
   ): string[] {
     const { sourceId, controllerId, stackObject, targets, parentContext } =
       context;
+    const { logger } = getProcessors(state);
+    logger.debug(state, LogCategory.TARGETING, `[TARGET-MAP] Mapping ${mapping} for source ${sourceId}. Context targets: ${targets?.join(', ')}`);
     const stackData = stackObject;
+    logger.debug(state, LogCategory.TARGETING, `[TARGET-MAP] stackData targets: ${(stackData as any)?.targets?.join(', ')}`);
     const targetingContext: TargetingContext = {
       sourceId,
       controllerId,
       stackObject,
+      xValue: context.xValue || stackObject?.xValue || 0,
     };
 
     const eventData =
@@ -404,7 +414,8 @@ export class TargetMapper {
         return [...new Set(owners)];
       }
       case TargetMapping.Target1Owner: {
-        const targetId = targets[0];
+        const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
+        const targetId = actualTargets[0];
         const obj = RuleUtils.findObject(state, targetId);
         return obj ? [obj.ownerId] : [];
       }
@@ -413,6 +424,7 @@ export class TargetMapper {
       case TargetMapping.Target1: {
         const offset = effect?.targetOffset || 0;
         const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
+        logger.debug(state, LogCategory.TARGETING, `[TARGET-MAP] Target1 resolving to ${actualTargets[offset]} (from ${actualTargets.length} candidates)`);
         return actualTargets[offset] ? [actualTargets[offset]] : [];
       }
       case TargetMapping.SelfAndTarget1: {
@@ -478,7 +490,7 @@ export class TargetMapper {
           .filter(
             (o) =>
               o.controllerId === controllerId &&
-              RuleUtils.isType(o, "planeswalker"),
+              RuleUtils.isPlaneswalker(o),
           )
           .map((o) => o.id);
       case TargetMapping.AllCreatures:
@@ -487,7 +499,7 @@ export class TargetMapper {
           .map((o) => o.id);
       case TargetMapping.AllPlaneswalkers:
         return state.battlefield
-          .filter((o) => RuleUtils.isType(o, "planeswalker"))
+          .filter((o) => RuleUtils.isPlaneswalker(o))
           .map((o) => o.id);
       case TargetMapping.MatchingPermanents:
       case TargetMapping.AllMatchingPermanents:
@@ -567,7 +579,8 @@ export class TargetMapper {
         return obj ? [RuleUtils.getController(obj)] : [];
       }
       case TargetMapping.Target1Controller: {
-        const targetId = targets[0];
+        const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
+        const targetId = actualTargets[0];
         // Check if we have persisted controller information first
         if (
           (stackData as any)?.targetsControllers &&
@@ -701,15 +714,7 @@ export class TargetMapper {
               RuleUtils.isCreature(o) || RuleUtils.isPlaneswalker(o),
           )
           .map((o) => o.id);
-      case "ALL_CREATURES":
-        return state.battlefield
-          .filter((o) => RuleUtils.isCreature(o))
-          .map((o) => o.id);
-      case "ALL_PLANESWALKERS":
-        return state.battlefield
-          .filter((o) => RuleUtils.isPlaneswalker(o))
-          .map((o) => o.id);
-      case "ALL_PLANESWALKERS_YOU_CONTROL":
+      case TargetMapping.AllPlaneswalkersYouControl:
         return state.battlefield
           .filter(
             (o) =>
@@ -735,13 +740,13 @@ export class TargetMapper {
         );
         if (candidates.length === 0) return [];
         const mvs = candidates.map((o) =>
-          ManaProcessor.getManaValue(o.definition.manaCost || ""),
+          ManaProcessor.getEffectiveManaValue(o),
         );
         const maxMV = Math.max(...mvs);
         return candidates
           .filter(
             (o) =>
-              ManaProcessor.getManaValue(o.definition.manaCost || "") === maxMV,
+              ManaProcessor.getEffectiveManaValue(o) === maxMV,
           )
           .map((o) => o.id);
       }
@@ -749,8 +754,7 @@ export class TargetMapper {
         // Return the ID of the object that was just exiled by this effect chain
         return parentContext?.exiledIds || [];
       }
-      case TargetMapping.AllMatchingCards:
-      case "MATCHING_CARDS": {
+      case TargetMapping.MatchingCards: {
         if (!effect?.restrictions) return [];
         const sourceZones = effect.sourceZones || [Zone.Battlefield, Zone.Graveyard, Zone.Hand, Zone.Exile, Zone.Library];
         const zones = Array.isArray(sourceZones) ? (sourceZones as any[]) : [sourceZones];
@@ -801,24 +805,19 @@ export class TargetMapper {
   }
 
   public static getDefinitionForIndex(
-    targetDef: any,
+    targetDefinitions: TargetDefinition[],
     targetIndex: number,
     xValue: number = 0
-  ): any {
-    if (!targetDef) return null;
-    const def = (() => {
-      if (!Array.isArray(targetDef)) return targetDef;
-      let cumulative = 0;
-      for (const d of targetDef) {
-        const counts = this.calculateTotalCounts(d, xValue);
-        const count = counts.maxCount;
-        if (targetIndex >= cumulative && targetIndex < cumulative + count) {
-          return d;
-        }
-        cumulative += count;
+  ): TargetDefinition | null {
+    let cumulative = 0;
+    for (const d of targetDefinitions) {
+      const counts = this.calculateTotalCounts([d], xValue);
+      const count = counts.maxCount;
+      if (targetIndex >= cumulative && targetIndex < cumulative + count) {
+        return d;
       }
-      return targetDef[targetDef.length - 1];
-    })();
-    return def;
+      cumulative += count;
+    }
+    return targetDefinitions[targetDefinitions.length - 1] || null;
   }
 }

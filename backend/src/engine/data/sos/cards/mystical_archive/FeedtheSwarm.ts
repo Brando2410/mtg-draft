@@ -15,11 +15,11 @@ export const FeedtheSwarm: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Permanent,
                 restrictions: [Restriction.OpponentControl, { type: Restriction.Any, restrictions: [Restriction.Creature, Restriction.Enchantment] }],
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Destroy

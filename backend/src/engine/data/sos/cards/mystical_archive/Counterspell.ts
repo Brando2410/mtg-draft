@@ -9,10 +9,10 @@ export const Counterspell: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Spell,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.CounterSpell,

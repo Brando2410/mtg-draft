@@ -77,6 +77,7 @@ export class EffectProcessor {
       lookingCards
     } = options;
     const { logger } = getProcessors(state);
+    logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Resolving ${effects.length} effect(s) from source ${sourceId}. Targets: ${targets.join(', ')}`);
 
     // CR 608.2b: Check target legality on resolution (Fizzle check)
     // MTG Rule: The check is made once as the spell or ability starts to resolve from the stack.
@@ -264,8 +265,14 @@ export class EffectProcessor {
         effect,
       ) as string[];
 
-      // If Choice effect has no explicit mapping, it should receive all parent targets to pass them down
-      if (effect.type === EffectType.Choice && (!m || m === "") && ids.length === 0) {
+      // System effects (Choice, Delayed Triggers, Continuous Effects) should inherit parent targets if no mapping is specified
+      const inheritsTargets = [
+        EffectType.Choice,
+        EffectType.CreateDelayedTrigger,
+        EffectType.ApplyContinuousEffect,
+      ].includes(effect.type as any);
+
+      if (inheritsTargets && (!m || m === "") && ids.length === 0) {
         return ids.length > 0 ? ids : [...targets];
       }
 
@@ -328,10 +335,10 @@ export class EffectProcessor {
       (effect.targetMapping &&
         validTargetIds.length === 0 &&
         !effect.targetId &&
-        !effect.targetDefinition) ||
+        !effect.targetDefinitions) ||
       (effect.target2Mapping &&
         validTarget2Ids.length === 0 &&
-        !effect.targetDefinition)
+        !effect.targetDefinitions)
     ) {
       if (effect.type === EffectType.Fight) return;
       return;
@@ -349,7 +356,7 @@ export class EffectProcessor {
 
     // Generic Interactive Selection support
     if (
-      effect.targetDefinition &&
+      effect.targetDefinitions &&
       validTargetIds.length === 0 &&
       !effect.targetMapping &&
       !([
@@ -419,10 +426,10 @@ export class EffectProcessor {
 
       if ([TargetMapping.SelectedCard, TargetMapping.EventTarget].includes(effect.targetMapping as any))
         return true;
-      const targetDef =
-        effect.targetDefinition ||
-        (stackObject || parentContext?.stackObject)?.data?.targetDefinition;
-      if (!targetDef) return true;
+      const targetDefinitions =
+        effect.targetDefinitions ||
+        (stackObject || parentContext?.stackObject)?.data?.targetDefinitions;
+      if (!targetDefinitions) return true;
 
       const { targeting: TP } = getProcessors(state);
       return TP.isLegalTarget(
@@ -431,7 +438,7 @@ export class EffectProcessor {
           sourceId,
           controllerId: context.controllerId,
           stackObject,
-          targetDef,
+          targetDefinitions,
           targetIndex: validationIndex !== undefined ? validationIndex : index,
         },
         tid,
@@ -501,32 +508,32 @@ export class EffectProcessor {
     parentContext?: ResolutionContext,
   ) {
     const { choiceGenerator: ChoiceGenerator, targeting: TP, logger } = getProcessors(state);
-    const targetDef = Array.isArray(effect.targetDefinition)
-      ? effect.targetDefinition[0]
-      : effect.targetDefinition!;
-    if (!targetDef) return;
+    const targetDefinitions = Array.isArray(effect.targetDefinitions)
+      ? effect.targetDefinitions[0]
+      : effect.targetDefinitions!;
+    if (!targetDefinitions) return;
 
     const player = state.players[controllerId];
     if (!player) return;
 
     let pool: GameObject[] = [];
     if (
-      targetDef.type === TargetType.CardInHand
+      targetDefinitions.type === TargetType.CardInHand
     ) {
       pool = player.hand;
     } else if (
-      targetDef.type === TargetType.CardInGraveyard
+      targetDefinitions.type === TargetType.CardInGraveyard
     ) {
       pool = Object.values(state.players).flatMap((p) => p.graveyard);
     } else if (
-      targetDef.type === TargetType.Permanent ||
-      (targetDef.type as string) === "PERMANENT" ||
-      (targetDef.type as string).toLowerCase().includes("permanent") ||
-      (targetDef.type as string).toLowerCase() === "nonland" ||
-      (targetDef.type as string).toLowerCase().includes("creature") ||
-      (targetDef.type as string).toLowerCase().includes("planeswalker") ||
-      (targetDef.type as string).toLowerCase().includes("artifact") ||
-      (targetDef.type as string).toLowerCase().includes("enchantment")
+      targetDefinitions.type === TargetType.Permanent ||
+      (targetDefinitions.type as string) === "PERMANENT" ||
+      (targetDefinitions.type as string).toLowerCase().includes("permanent") ||
+      (targetDefinitions.type as string).toLowerCase() === "nonland" ||
+      (targetDefinitions.type as string).toLowerCase().includes("creature") ||
+      (targetDefinitions.type as string).toLowerCase().includes("planeswalker") ||
+      (targetDefinitions.type as string).toLowerCase().includes("artifact") ||
+      (targetDefinitions.type as string).toLowerCase().includes("enchantment")
     ) {
       pool = state.battlefield;
     } else {
@@ -567,7 +574,7 @@ export class EffectProcessor {
 
     const searchRestrictions = [
       ...(effect.restrictions || []),
-      ...getRestrictions(targetDef),
+      ...getRestrictions(targetDefinitions),
     ];
     const validCandidates = pool.filter((c) =>
       TP.matchesRestrictions(
@@ -596,13 +603,13 @@ export class EffectProcessor {
     };
     const resolvedMax = this.resolveAmount(
       state,
-      targetDef.count as unknown as number || 1,
+      targetDefinitions.count as unknown as number || 1,
       resolvedContext,
     );
     const resolvedMin =
-      targetDef.minCount !== undefined
-        ? this.resolveAmount(state, targetDef.minCount, resolvedContext)
-        : targetDef.optional
+      targetDefinitions.minCount !== undefined
+        ? this.resolveAmount(state, targetDefinitions.minCount, resolvedContext)
+        : targetDefinitions.optional
           ? 0
           : resolvedMax;
 
@@ -616,7 +623,7 @@ export class EffectProcessor {
       TargetType.AnyTarget,
       TargetType.Player,
       TargetType.Opponent,
-    ].some(t => String(targetDef.type).toUpperCase().includes(String(t).toUpperCase()));
+    ].some(t => String(targetDefinitions.type).toUpperCase().includes(String(t).toUpperCase()));
 
     if (isBattlefieldTarget) {
       state.pendingAction = {
@@ -625,7 +632,7 @@ export class EffectProcessor {
         sourceId: sourceId,
         data: {
           label: effect.label || `Choose target for ${sourceId}`,
-          targetDefinition: targetDef,
+          targetDefinitions: targetDefinitions,
           targets: validCandidates.map(c => c.id),
           stackObj: stackObject,
           parentContext: pruneContext(parentContext),
@@ -644,11 +651,11 @@ export class EffectProcessor {
       sourceId: sourceId,
       restrictions: searchRestrictions,
       filterSelectable: true,
-      optional: targetDef.optional || effect.optional,
+      optional: targetDefinitions.optional || effect.optional,
       minChoices: resolvedMin,
       maxChoices: resolvedMax,
       actionType:
-        targetDef.optional || effect.optional
+        targetDefinitions.optional || effect.optional
           ? ActionType.OptionalAction
           : ActionType.ResolutionChoice,
       onSelected: (selected: GameObject | GameObject[]) => {
@@ -659,7 +666,7 @@ export class EffectProcessor {
         return [
           {
             ...effect,
-            targetDefinition: undefined, // Clear to avoid re-triggering interactive loop
+            targetDefinitions: undefined, // Clear to avoid re-triggering interactive loop
             targetMapping: undefined,
             targetIds: selectedIds,
           },

@@ -13,10 +13,10 @@ export const MindRoots: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Player,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.DiscardCards,
@@ -27,12 +27,12 @@ export const MindRoots: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Put a land card discarded this way onto the battlefield",
                     selectionPool: TargetMapping.LastDiscardedCards,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Card,
                         count: 1,
                         minCount: 0,
                         restrictions: [Restriction.Land, Restriction.Graveyard]
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.MoveToZone,

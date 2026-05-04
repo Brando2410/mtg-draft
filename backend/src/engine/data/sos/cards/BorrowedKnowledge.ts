@@ -22,7 +22,7 @@ export const BorrowedKnowledge: CardDefinition = {
             modes: [
                 {
                     label: "Discard hand, draw cards equal to opponent's hand size",
-                    targetDefinition: { type: TargetType.Opponent, count: 1 },
+                    targetDefinitions: [{ type: TargetType.Opponent, count: 1 }],
                     effects: [
                         { type: EffectType.DiscardCards, amount: 'ALL', targetMapping: TargetMapping.Controller },
                         { type: EffectType.DrawCards, amount: DynamicAmount.Target1HandSize, targetMapping: TargetMapping.Controller }

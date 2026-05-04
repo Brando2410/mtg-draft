@@ -24,13 +24,13 @@ export const FractalMascot: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [
                     "opponentcontrol"
                 ]
-            },
+            }],
             effects: [
                 {
                     type: CostType.Tap,

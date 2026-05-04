@@ -16,7 +16,7 @@ export const SilverquillCommand: CardDefinition = {
             choices: [
                 {
                     label: 'Creature gets +3/+3 and vigilance',
-                    targetDefinition: { count: 1, type: TargetType.Creature },
+                    targetDefinitions: [{ count: 1, type: TargetType.Creature }],
                     effects: [{
                         type: EffectType.ApplyContinuousEffect,
                         duration: { type: DurationType.UntilEndOfTurn },
@@ -28,11 +28,11 @@ export const SilverquillCommand: CardDefinition = {
                 },
                 {
                     label: 'Return creature (MV <= 2)',
-                    targetDefinition: {
+                    targetDefinitions: [{
                         count: 1,
                         type: TargetType.CardInGraveyard,
                         restrictions: [Restriction.Creature, Restriction.ManaValue2OrLess]
-                    },
+                    }],
                     effects: [{
                         type: EffectType.MoveToZone,
                         zone: Zone.Battlefield,
@@ -41,7 +41,7 @@ export const SilverquillCommand: CardDefinition = {
                 },
                 {
                     label: 'Player draws 1, loses 1',
-                    targetDefinition: { count: 1, type: TargetType.Player },
+                    targetDefinitions: [{ count: 1, type: TargetType.Player }],
                     effects: [{
                         type: EffectType.DrawCards,
                         amount: 1,
@@ -54,7 +54,7 @@ export const SilverquillCommand: CardDefinition = {
                 },
                 {
                     label: 'Opponent sacrifices a creature',
-                    targetDefinition: { count: 1, type: TargetType.Opponent },
+                    targetDefinitions: [{ count: 1, type: TargetType.Opponent }],
                     effects: [{
                         type: EffectType.Sacrifice,
                         targetMapping: TargetMapping.Target1,

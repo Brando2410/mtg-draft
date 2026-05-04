@@ -12,10 +12,10 @@ export const SolvetheEquation: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.InstantOrSorcery,
                         count: 1,
-                    },
+                    }],
                     zone: Zone.Hand,
                     reveal: true,
                     targetMapping: TargetMapping.Controller

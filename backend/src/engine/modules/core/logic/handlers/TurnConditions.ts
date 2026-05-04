@@ -1,4 +1,6 @@
 import { ConditionType, Phase } from "@shared/engine_types";
+import { RuleUtils } from "../../../../utils/RuleUtils";
+import { getProcessors } from "../../../ProcessorRegistry";
 import { IConditionHandler } from "../IConditionHandler";
 
 export const TurnConditions: Record<string, IConditionHandler> = {
@@ -12,7 +14,7 @@ export const TurnConditions: Record<string, IConditionHandler> = {
             return state.activePlayerId !== context.controllerId;
         }
     },
-    "IS_OPPONENT_UPKEEP": {
+    [ConditionType.IsOpponentUpkeep]: {
         matches(state, params, context) {
             return state.activePlayerId !== context.controllerId && state.currentStep === "Upkeep";
         }
@@ -75,7 +77,7 @@ export const TurnConditions: Record<string, IConditionHandler> = {
             return state.turnState.instantOrSorceryCastThisTurn[context.controllerId] || false;
         }
     },
-    "CAST_ANOTHER_SPELL_THIS_TURN": {
+    [ConditionType.CastAnotherSpellThisTurn]: {
         matches(state, params, context) {
             return (state.turnState.spellsCastThisTurn[context.controllerId] || 0) > 1;
         }
@@ -86,14 +88,27 @@ export const TurnConditions: Record<string, IConditionHandler> = {
             return (state.turnState.cardsDrawnThisTurn[context.controllerId] || 0) >= threshold;
         }
     },
-    "PUT_COUNTER_ON_SELF_THIS_TURN": {
+    [ConditionType.PutCounterOnSelfThisTurn]: {
         matches(state, params, context) {
             return state.turnState.countersAddedThisTurnIds?.includes(context.sourceId) || false;
         }
     },
-    [ConditionType.OurTurn]: {
+
+    [ConditionType.PermanentReturnedToHandThisTurn]: {
         matches(state, params, context) {
-            return state.activePlayerId === context.controllerId;
+            return state.turnState.permanentReturnedToHandThisTurn || false;
+        }
+    },
+    [ConditionType.ControlsBasriPlaneswalker]: {
+        matches(state, params, context) {
+            const { targeting: TargetingProcessor } = getProcessors(state);
+            const { controllerId, sourceId, stackObject } = context;
+            const targetingContext = { sourceId, controllerId, stackObject };
+            return state.battlefield.some(o => 
+                o.controllerId === controllerId && 
+                RuleUtils.isPlaneswalker(o) && 
+                o.definition.name.toLowerCase().includes("basri")
+            );
         }
     },
     [ConditionType.CastDuringMainPhase]: {

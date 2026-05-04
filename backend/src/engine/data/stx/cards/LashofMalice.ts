@@ -11,7 +11,7 @@ export const LashofMalice: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { count: 1, type: TargetType.Creature },
+            targetDefinitions: [{ count: 1, type: TargetType.Creature }],
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 targetMapping: TargetMapping.Target1,

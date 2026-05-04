@@ -10,11 +10,11 @@ export const BanishingLight: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.NonlandPermanent,
                 count: 1,
                 restrictions: [Restriction.OpponentControl]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Exile,

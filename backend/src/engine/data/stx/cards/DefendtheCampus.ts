@@ -20,7 +20,7 @@ export const DefendtheCampus: CardDefinition = {
                     },
                     {
                         label: "Destroy target creature with power 4 or greater",
-                        targetDefinition: { count: 1, type: TargetType.Creature, restrictions: [Restriction.Power4OrGreater] },
+                        targetDefinitions: [{ count: 1, type: TargetType.Creature, restrictions: [Restriction.Power4OrGreater] }],
                         effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
                     }
                 ]

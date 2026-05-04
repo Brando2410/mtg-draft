@@ -108,16 +108,27 @@ export class ChoiceProcessor {
             return this.handleXChoice(state, playerId, action, payload, engine);
         }
 
-        // Handle multi-choice (batch selection) separated by '|'
-        if (typeof choiceIndex === 'string' && choiceIndex.includes('|')) {
+        // Handle multi-choice (batch selection) separated by '|' OR empty selection via 'confirm'/'done'
+        const isMultiSelectAction = action.type === ActionType.Discard || action.data?.maxChoices > 1;
+        const isEmptyConfirm = (choiceIndex === 'confirm' || choiceIndex === 'done' || choiceIndex === 'none') && isMultiSelectAction;
+
+        if ((typeof choiceIndex === 'string' && choiceIndex.includes('|')) || isEmptyConfirm) {
             // If it's a cost choice, spell casting mode selection, OR a targeting modal, we go through handleModalSelection
             if (action.data?.isCostChoice || action.data?.isSpellCasting || action.data?.isTargetingModal) {
-                return this.handleModalSelection(state, playerId, action.sourceId as string, null, choiceIndex, action, engine);
+                return this.handleModalSelection(state, playerId, action.sourceId as string, null, choiceIndex as string, action, engine);
             }
-            const indices = choiceIndex.split('|').map(s => {
-                const raw = s.startsWith('CHOICE_') ? s.substring(7) : s;
-                return parseInt(raw);
-            });
+            const indices = (typeof choiceIndex === 'string' && choiceIndex.includes('|')) 
+                ? choiceIndex.split('|').map(s => {
+                    const raw = s.startsWith('CHOICE_') ? s.substring(7) : s;
+                    return parseInt(raw);
+                })
+                : [];
+            
+            // Validate min choices for empty confirm
+            if (isEmptyConfirm && (action.data?.minChoices || 0) > 0) {
+                logger.info(state, LogCategory.ACTION, `Cannot confirm: Minimum ${(action.data?.minChoices || 0)} choices required.`);
+                return false;
+            }
             const sourceId = action.sourceId;
             const allEffects: EffectDefinition[] = [];
             let finalChoice: ChoiceOption | null = null;
@@ -134,16 +145,16 @@ export class ChoiceProcessor {
                         allEffects.push(...choiceEffects);
                     }
 
-                    if (choice.targetDefinition) {
+                    if (choice.targetDefinitions) {
                         const { targeting: TP } = getProcessors(state);
-                        const counts = TP.calculateTotalCounts(choice.targetDefinition, action.data?.xValue || 0);
+                        const counts = TP.calculateTotalCounts(choice.targetDefinitions, action.data?.xValue || 0);
                         currentTargetOffset += counts.maxCount;
                     }
                     finalChoice = choice; // Use metadata from the last one if needed
                 }
             });
 
-            if (allEffects.length === 0 && !finalChoice) return false;
+            if (allEffects.length === 0 && !finalChoice && !isEmptyConfirm) return false;
 
             state.pendingAction = undefined; // Clear modal before resolving effects
 
@@ -164,6 +175,7 @@ export class ChoiceProcessor {
                     stackObject: action.data?.stackObj,
                     parentContext: action.data?.parentContext,
                 });
+                logger.info(state, LogCategory.ACTION, `[CHOICE-DEBUG] Batch resolution finished. lastDiscardedIds: ${state.turnState.lastDiscardedIds?.length || 0}`);
             }
 
             // After batch is done, check if we need to move to the next player (for DiscardCards)
@@ -477,8 +489,9 @@ export class ChoiceProcessor {
 
         if (!ability) return false;
 
-        if (ability.targetDefinition) {
-            const targetDef = Array.isArray(ability.targetDefinition) ? ability.targetDefinition[0] : ability.targetDefinition;
+        if (ability.targetDefinitions) {
+            const targetDefinitions = ability.targetDefinitions;
+            const firstDef = targetDefinitions[0];
             const pool = [
                 ...Object.keys(state.players),
                 ...state.battlefield.map(o => o.id),
@@ -486,11 +499,11 @@ export class ChoiceProcessor {
                 ...state.exile.map(o => o.id),
                 ...state.stack.map(o => o.id)
             ];
-            const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDef, obj.xValue || 0);
+            const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDefinitions, obj.xValue || 0);
             const legalTargetIds = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
                 sourceId: obj.id,
                 controllerId: obj.controllerId,
-                targetDef
+                targetDefinitions
             }, tid));
 
             if (legalTargetIds.length === 0 && minCount === 0) {
@@ -507,7 +520,7 @@ export class ChoiceProcessor {
             }
 
             if (legalTargetIds.length < minCount) {
-                if (targetDef.optional) {
+                if (firstDef?.optional) {
                     logger.info(state, LogCategory.ACTION, `No valid targets found, auto-skipping target selection for ${obj.definition.name}.`);
                     state.pendingAction = undefined;
                     state.priorityPlayerId = playerId;
@@ -524,7 +537,7 @@ export class ChoiceProcessor {
                 }
             }
 
-            const isGraveyardTargeting = targetDef.type === TargetType.CardInGraveyard;
+            const isGraveyardTargeting = firstDef?.type === TargetType.CardInGraveyard;
 
             if (isGraveyardTargeting && legalTargetIds.length > 0) {
                 const action = ChoiceGenerator.createCardChoice(
@@ -534,11 +547,11 @@ export class ChoiceProcessor {
                         label: "Select a card from graveyard",
                         playerId,
                         sourceId: obj.id,
-                        optional: targetDef.minCount === 0 || targetDef.optional,
+                        optional: firstDef?.minCount === 0 || firstDef?.optional,
                         actionType: ActionType.ModalSelection,
                         filterSelectable: true,
-                        minChoices: targetDef.minCount !== undefined ? targetDef.minCount : 0,
-                        maxChoices: targetDef.count as number || 1
+                        minChoices: (firstDef?.minCount === 'X' ? (obj.xValue || 0) : (typeof firstDef?.minCount === 'number' ? firstDef.minCount : 0)),
+                        maxChoices: (firstDef?.count === 'X' ? (obj.xValue || 0) : (typeof firstDef?.count === 'number' ? firstDef.count : 1))
                     }
                 );
 
@@ -560,11 +573,11 @@ export class ChoiceProcessor {
                     label: 'Select Target',
                     abilityIndex,
                     targets: legalTargetIds,
-                    optional: targetDef.optional,
-                    targetDefinition: targetDef,
-                    maxCount,
-                    minCount,
-                    count
+                    optional: firstDef?.optional,
+                    targetDefinitions: targetDefinitions,
+                    maxCount: (maxCount as any),
+                    minCount: (minCount as any),
+                    count: (count as any)
                 }
             };
             state.priorityPlayerId = playerId;
@@ -589,7 +602,10 @@ export class ChoiceProcessor {
         const costType = action.data?.costType as string;
         logger.info(state, LogCategory.ACTION, `[DEBUG] handleModalSelection: costType=${costType}, choiceIndex=${choiceIndex}, choiceValue=${choice?.value}`);
 
-        if (!choice && choiceIndex !== undefined) {
+        const isMultiSelect = action.type === ActionType.Discard || (action.data?.maxChoices && (action.data.maxChoices as number) > 1);
+        const isEmptyConfirm = (choiceIndex === 'confirm' || choiceIndex === 'done' || choiceIndex === 'none') && isMultiSelect;
+        
+        if (!choice && choiceIndex !== undefined && !isEmptyConfirm) {
             let idxStr = String(choiceIndex);
             if (idxStr.includes('|')) idxStr = idxStr.split('|')[0];
             const idx = parseInt(idxStr.startsWith('CHOICE_') ? idxStr.substring(7) : idxStr);
@@ -597,7 +613,13 @@ export class ChoiceProcessor {
             logger.debug(state, LogCategory.ACTION, `[DEBUG] handleModalSelection: resolved choice from idx ${idx}: ${choice?.label} (${choice?.value})`);
         }
 
-        if (!choice) return false;
+        if (!choice && !isEmptyConfirm) return false;
+
+        // Validate min choices for empty confirm
+        if (isEmptyConfirm && (action.data?.minChoices || 0) > 0) {
+            logger.info(state, LogCategory.ACTION, `Cannot confirm: Minimum ${(action.data?.minChoices || 0)} choices required.`);
+            return false;
+        }
 
         state.pendingAction = undefined;
 
@@ -649,12 +671,12 @@ export class ChoiceProcessor {
             state.interaction.lastChoiceIndex = choiceIndex as number;
         }
 
-        logger.info(state, LogCategory.ACTION, `Selected ${costType ? costType + ' item' : 'choice'}: ${choice.label}`);
+        logger.info(state, LogCategory.ACTION, `Selected ${costType ? costType + ' item' : 'choice'}: ${choice?.label || 'none'}`);
 
         if (action.data?.abilityIndex !== undefined) {
             let targets = savedTargets;
             if (action.data.isTargetingModal) {
-                targets = choice.value === 'none' ? [] : (Array.isArray(choice.value) ? choice.value : [choice.value as string]);
+                targets = (!choice || choice.value === 'none') ? [] : (Array.isArray(choice.value) ? choice.value : [choice.value as string]);
             }
 
             return SpellProcessor.activateAbility(

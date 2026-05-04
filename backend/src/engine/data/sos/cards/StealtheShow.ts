@@ -18,15 +18,16 @@ export const StealtheShow: CardDefinition = {
             maxChoices: 2,
             modes: [
                 {
-                    label: "Target player discards any number, then draws that many cards.",
-                    targetDefinition: {
+                    label: "Target player discards any number of cards, then draws that many.",
+                    targetDefinitions: [{
                         type: TargetType.Player,
                         count: 1
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.DiscardCards,
                             amount: 'ANY',
+                            label: "Discard cards",
                             targetMapping: TargetMapping.Target1
                         },
                         {
@@ -38,10 +39,10 @@ export const StealtheShow: CardDefinition = {
                 },
                 {
                     label: "Deal damage equal to instant/sorcery in your graveyard to target creature or planeswalker.",
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CreatureOrPlaneswalker,
                         count: 1
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.DealDamage,

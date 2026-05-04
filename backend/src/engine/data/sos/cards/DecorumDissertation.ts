@@ -17,7 +17,7 @@ export const DecorumDissertation: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Player, count: 1 },
+            targetDefinitions: [{ type: TargetType.Player, count: 1 }],
             effects: [
                 { type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Target1 },
                 {
@@ -27,11 +27,11 @@ export const DecorumDissertation: CardDefinition = {
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: {
+                            targetDefinitions: [{
                                 type: TargetType.CardInHand, count: 1, minCount: 0, restrictions: [
                                     "Land"
                                 ]
-                            },
+                            }],
                             effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.SelectedCards }]
                         },
                         { label: "No", effects: [] }

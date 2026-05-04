@@ -12,11 +12,11 @@ export const ContainmentBreach: CardDefinition = {
   abilities: [
     {
       type: AbilityType.Spell,
-      targetDefinition: {
+      targetDefinitions: [{
         count: 1,
         type: TargetType.ArtifactOrEnchantment,
         restrictions: [Restriction.ManaValue2OrLess]
-      },
+      }],
       effects: [
         { type: EffectType.Exile, targetMapping: TargetMapping.Target1 },
         {

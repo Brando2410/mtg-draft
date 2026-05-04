@@ -12,7 +12,7 @@ export const Meteorite: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: { type: TargetType.AnyTarget, count: 1 },
+            targetDefinitions: [{ type: TargetType.AnyTarget, count: 1 }],
             effects: [{
                 type: EffectType.DealDamage,
                 amount: 2,

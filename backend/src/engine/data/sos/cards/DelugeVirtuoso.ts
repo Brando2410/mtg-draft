@@ -17,11 +17,11 @@ export const DelugeVirtuoso: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [Restriction.OpponentControl]
-            },
+            }],
             effects: [
                 {
                     type: CostType.Tap,

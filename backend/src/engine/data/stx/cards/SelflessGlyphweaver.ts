@@ -33,7 +33,7 @@ export const SelflessGlyphweaver: CardDefinition = {
             oracleText: "Choose target creature or planeswalker. Destroy all other creatures and planeswalkers.",
             abilities: [{
                 type: AbilityType.Spell,
-                targetDefinition: { count: 1, type: TargetType.CreatureOrPlaneswalker },
+                targetDefinitions: [{ count: 1, type: TargetType.CreatureOrPlaneswalker }],
                 effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.AllOtherCreaturesAndPlaneswalkers, excludedTargetMapping: TargetMapping.Target1 }]
             }]
         }

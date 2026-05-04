@@ -11,7 +11,7 @@ export const Necromentia: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Opponent, count: 1 },
+            targetDefinitions: [{ type: TargetType.Opponent, count: 1 }],
             effects: [{
                 type: EffectType.Necromentia,
                 targetMapping: TargetMapping.Target1

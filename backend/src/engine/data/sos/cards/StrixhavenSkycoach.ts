@@ -20,11 +20,11 @@ export const StrixhavenSkycoach: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Land,
                         count: 1,
                         restrictions: [Restriction.Basic]
-                    },
+                    }],
                     optional: true,
                     reveal: true,
                     zone: Zone.Hand,

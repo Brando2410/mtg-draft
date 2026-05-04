@@ -26,6 +26,7 @@ export const SnoopingPage: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.DamageDealtToPlayer,
+            condition: ConditionType.SelfCombatDamagePlayer,
             effects: [
                 {
                     type: EffectType.DrawCards,

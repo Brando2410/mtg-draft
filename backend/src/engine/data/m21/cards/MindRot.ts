@@ -11,7 +11,7 @@ export const MindRot: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Player, count: 1 },
+            targetDefinitions: [{ type: TargetType.Player, count: 1 }],
             effects: [
                 {
                     type: EffectType.DiscardCards,

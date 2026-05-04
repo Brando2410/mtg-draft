@@ -15,7 +15,7 @@ export const BasriDevotedPaladin: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Loyalty, value: '+1' }],
-            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0, optional: true },
+            targetDefinitions: [{ type: TargetType.Creature, count: 1, minCount: 0, optional: true }],
             effects: [
                 { type: EffectType.AddCounters, amount: 1, counterType: 'P1P1', targetMapping: TargetMapping.Target1 },
                 {

@@ -19,7 +19,7 @@ export const HarmonizedTrioBrainstorm: CardDefinition = {
             costs: [
                 {
                     type: CostType.TapSelection,
-                    value: 2,
+                    amount: 2,
                     restrictions: [
                         Restriction.Creature,
                         Restriction.Untapped,
@@ -60,10 +60,10 @@ export const HarmonizedTrioBrainstorm: CardDefinition = {
                         zone: Zone.Library,
                         libraryPosition: 'top',
                         selectionType: SelectionType.Target,
-                        targetDefinition: {
+                        targetDefinitions: [{
                             type: TargetType.CardInHand,
                             count: 2
-                        },
+                        }],
                         targetMapping: TargetMapping.Controller
                     }
                 ]

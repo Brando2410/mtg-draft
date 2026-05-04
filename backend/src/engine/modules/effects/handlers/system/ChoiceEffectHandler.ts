@@ -237,13 +237,14 @@ export class ChoiceEffectHandler {
         targetPlayer!.hand.forEach((c: GameObject) => (c.isRevealed = true));
       }
 
-      const targetDef = (effect as any).targetDefinition;
+      const targetDefinitions = (effect as any).targetDefinitions;
+      const def = Array.isArray(targetDefinitions) ? targetDefinitions[0] : targetDefinitions;
       const restrictions =
         (effect as any).restrictions ||
-        (targetDef
+        (def
           ? [
-            ...(targetDef.restrictions || []),
-            ...(targetDef.type ? [targetDef.type] : []),
+            ...(def.restrictions || []),
+            ...(def.type ? [def.type] : []),
           ]
           : []);
 
@@ -290,8 +291,8 @@ export class ChoiceEffectHandler {
           sourceId: sourceId,
           restrictions: restrictions,
           filterSelectable: true,
-          minChoices: EP.resolveAmount(state, ((effect as any).minChoices || targetDef?.minCount || (targetDef?.optional ? 0 : targetDef?.count || 1)), context, sourceCards.map(c => c.id)),
-          maxChoices: EP.resolveAmount(state, ((effect as any).maxChoices || targetDef?.count || 1), context, sourceCards.map(c => c.id)),
+          minChoices: EP.resolveAmount(state, ((effect as any).minChoices || def?.minCount || (def?.optional ? 0 : def?.count || 1)), context, sourceCards.map(c => c.id)),
+          maxChoices: EP.resolveAmount(state, ((effect as any).maxChoices || def?.count || 1), context, sourceCards.map(c => c.id)),
           optional: (effect as any).optional !== false,
           actionType: (effect as any).optional
             ? ActionType.OptionalAction

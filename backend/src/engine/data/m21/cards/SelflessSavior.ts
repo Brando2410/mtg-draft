@@ -16,11 +16,11 @@ export const SelflessSavior: CardDefinition = {
             type: AbilityType.Activated,
             activeZone: Zone.Battlefield,
             costs: [{ type: CostType.Sacrifice, targetMapping: TargetMapping.Self }],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [Restriction.Other, Restriction.YouControl]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

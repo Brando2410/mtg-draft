@@ -29,7 +29,7 @@ export const LoreholdCharm: CardDefinition = {
                 },
                 {
                     label: "Return target artifact or creature with MV 2 or less from your graveyard",
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         count: 1,
                         restrictions: [
@@ -37,7 +37,7 @@ export const LoreholdCharm: CardDefinition = {
                             Restriction.ManaValue2OrLess,
                             Restriction.YouOwn
                         ]
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.PutOnBattlefield,

@@ -34,11 +34,11 @@ export const CauldronofEssence: CardDefinition = {
                 { type: CostType.Sacrifice, restrictions: [Restriction.Creature] }
             ],
             activatedOnlyAsSorcery: true,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 restrictions: [Restriction.Creature, Restriction.YouControl]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.PutOnBattlefield,

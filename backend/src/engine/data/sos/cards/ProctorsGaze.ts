@@ -13,11 +13,11 @@ export const ProctorsGaze: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.NonlandPermanent,
                 count: 1,
                 minCount: 0
-            },
+            }],
             effects: [
                 {
                     type: EffectType.ReturnToHand,
@@ -27,11 +27,11 @@ export const ProctorsGaze: CardDefinition = {
                 {
                     type: EffectType.SearchLibrary,
                     targetMapping: TargetMapping.Controller,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Land,
                         count: 1,
                         restrictions: [Restriction.Basic]
-                    },
+                    }],
                     zone: Zone.Battlefield,
                     tapped: true
                 }

@@ -15,10 +15,10 @@ export const EnvironmentalSciences: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         count: 1,
                         restrictions: [Restriction.Basic, Restriction.Land]
-                    },
+                    }],
                     zone: Zone.Hand,
                     reveal: true
                 },

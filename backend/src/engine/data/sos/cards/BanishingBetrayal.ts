@@ -17,10 +17,10 @@ export const BanishingBetrayal: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.NonlandPermanent,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.MoveToZone,

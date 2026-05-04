@@ -1,9 +1,10 @@
-import { AbilityCost, AbilityDefinition, ActionType, CostType, DiscardCost, ExileCost, GameObject, GameState, PlayerId, ResolutionContext, Restriction, SacrificeCost, TapSelectionCost, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { AbilityCost, AbilityDefinition, ActionType, CostType, DiscardCost, ExileCost, GameObject, GameState, PlayerId, ResolutionContext, Restriction, SacrificeCost, TapSelectionCost, TargetMapping, TargetType, Zone, TargetDefinition, TargetRestriction } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
 import { SpellProcessor } from './SpellProcessor';
+import { TargetingDispatcher } from '../targeting/TargetingDispatcher';
 
 /**
  * SpellInteractiveManager - Creates and injects pendingAction modals for player input.
@@ -61,7 +62,7 @@ export class SpellInteractiveManager {
         state: GameState,
         playerId: PlayerId,
         cardToPlay: GameObject,
-        targetDefinition: any,
+        targetDefinitions: TargetDefinition[],
         totalMana: string,
         cardInstanceId: string,
         engine: any,
@@ -81,170 +82,21 @@ export class SpellInteractiveManager {
             return false;
         }
 
-        const pool = [...new Set([
-            ...Object.keys(state.players),
-            ...state.battlefield.map(o => o.id),
-            ...state.exile.map(o => o.id),
-            ...state.stack.map(o => o.id),
-            ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
-        ])];
+        const result = TargetingDispatcher.dispatchTargetingStep({
+            state,
+            playerId,
+            sourceObj: cardToPlay,
+            targetDefinitions,
+            existingTargets,
+            xValue: cardToPlay.xValue || 0,
+            isSpellCasting: true,
+            isFreeCast,
+            exileOnResolution,
+            parentContext
+        });
 
-        const xValue = cardToPlay.xValue || 0;
-        const nextIndex = existingTargets.length;
-        const firstDef = TargetingProcessor.getDefinitionForIndex(targetDefinition, nextIndex, xValue);
-        const legalForFirst = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
-            sourceId: cardToPlay.id,
-            controllerId: cardToPlay.controllerId || playerId,
-            targetDef: targetDefinition,
-            targetIndex: nextIndex
-        }, tid));
-        logger.debug(state, LogCategory.ACTION, `[DEBUG] Found ${legalForFirst.length} legal targets for slot ${nextIndex} of ${cardToPlay.definition.name}: [${legalForFirst.join(', ')}]`);
-
-        const firstRestrictions = firstDef.restrictions || [];
-        const isOpponentTarget = firstDef.type === TargetType.Opponent || (firstDef.type === TargetType.Player && firstRestrictions.includes(Restriction.Opponent));
-
-        const isSingleOpponentTarget = isOpponentTarget && legalForFirst.length === 1;
-
-        if (isSingleOpponentTarget) {
-            const opponentId = legalForFirst[0];
-            logger.info(state, LogCategory.ACTION, `[AUTO-TARGET] Automatically targeting the only opponent for ${cardToPlay.definition.name}.`);
-
-            const totalCounts = TargetingProcessor.calculateTotalCounts(targetDefinition, cardToPlay.xValue || 0);
-
-            if (totalCounts.maxCount === 1) {
-                return [opponentId];
-            }
-
-            // More than 1 target total: auto-select the first and continue
-            const autoSelected = [opponentId];
-            const nextIndex = autoSelected.length;
-            const nextDef = TargetingProcessor.getDefinitionForIndex(targetDefinition, nextIndex, xValue);
-            const secondaryPool = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
-                sourceId: cardToPlay.id,
-                controllerId: cardToPlay.controllerId || playerId,
-                targetDef: targetDefinition,
-                targetIndex: nextIndex
-            }, tid));
-            logger.debug(state, LogCategory.ACTION, `[DEBUG] Found ${secondaryPool.length} legal secondary targets for ${cardToPlay.definition.name}: [${secondaryPool.join(', ')}]`);
-            const prompt = TargetingProcessor.generateTargetPrompt(targetDefinition, nextIndex, cardToPlay.xValue || 0, true);
-
-            state.pendingAction = {
-                type: ActionType.Targeting,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    targetDefinition,
-                    targets: secondaryPool,
-                    selectedTargets: [...existingTargets, ...autoSelected],
-                    label: nextDef?.label,
-                    isSpellCasting: true,
-                    xValue: cardToPlay.xValue,
-                    maxCount: totalCounts.maxCount,
-                    minCount: totalCounts.minCount,
-                    count: totalCounts.count,
-                    prompt,
-                    isOptional: totalCounts.minCount === 0,
-                    canSkip: totalCounts.minCount === 0 || [...existingTargets, ...autoSelected].length >= totalCounts.minCount,
-                    isFreeCast,
-                    exileOnResolution,
-                    parentContext
-                }
-            };
-            return true;
-        }
-
-        const precalculatedTargets = legalForFirst; // Default view for current selection step
-
-        if (precalculatedTargets.length === 0) {
-            if (targetDefinition.optional || firstDef.optional || firstDef.minCount === 0) {
-                logger.info(state, LogCategory.ACTION, `No legal targets found for first requirement, auto-skipping.`);
-                return [];
-            } else {
-                logger.info(state, LogCategory.ACTION, `Illegal Play: No valid targets available for ${cardToPlay.definition.name}.`);
-                return false;
-            }
-        }
-
-        const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDefinition, cardToPlay.xValue || 0);
-
-        // --- ENHANCEMENT: Consecutive Graveyard/Exile Targeting Modal ---
-        // If the first target is off-battlefield, group all consecutive off-battlefield targets into a modal.
-        const isFirstOffBattlefield = firstDef.type === TargetType.CardInGraveyard || firstDef.type === TargetType.CardInExile;
-
-        if (isFirstOffBattlefield && precalculatedTargets.length > 0) {
-            // Calculate how many consecutive targets from the start share an off-battlefield zone
-            let consecutiveCount = 0;
-            let consecutiveMin = 0;
-            for (let i = 0; i < maxCount; i++) {
-                const d = TargetingProcessor.getDefinitionForIndex(targetDefinition, i, xValue);
-                if (d.type === TargetType.CardInGraveyard || d.type === TargetType.CardInExile) {
-                    consecutiveCount++;
-                    if (!d.optional && (d.minCount === undefined || d.minCount > 0)) {
-                        consecutiveMin++;
-                    }
-                } else {
-                    break;
-                }
-            }
-
-            const choices = precalculatedTargets.map(id => {
-                const obj = RuleUtils.findObject(state, id);
-                return {
-                    label: obj?.definition?.name || id,
-                    value: id,
-                    cardData: obj,
-                    selectable: true
-                };
-            });
-
-            logger.info(state, LogCategory.ACTION, `[INITIAL-ZONE-SHIFT] Spell starts with Modal. Grouping ${consecutiveCount} consecutive ${firstDef.type} targets. (Min: ${consecutiveMin})`);
-            
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: cardToPlay.id,
-                data: {
-                    targetDefinition,
-                    isTargetingModal: true,
-                    choices,
-                    minChoices: Math.max(1, consecutiveMin),
-                    maxChoices: consecutiveCount,
-                    label: firstDef.label,
-                    isSpellCasting: true,
-                    xValue: cardToPlay.xValue,
-                    isFreeCast,
-                    exileOnResolution,
-                    parentContext
-                }
-            };
-            return true;
-        }
-        const prompt = TargetingProcessor.generateTargetPrompt(targetDefinition, nextIndex, cardToPlay.xValue || 0, true);
-
-        state.pendingAction = {
-            type: ActionType.Targeting,
-            playerId: playerId,
-            sourceId: cardToPlay.id,
-            data: {
-                targetDefinition,
-                targets: precalculatedTargets,
-                label: firstDef.label || `Select target for ${cardToPlay.definition.name}`,
-                selectedTargets: existingTargets,
-                isSpellCasting: true,
-                xValue: cardToPlay.xValue,
-                maxCount,
-                minCount,
-                count,
-                prompt,
-                isOptional: minCount === 0,
-                canSkip: minCount === 0 || existingTargets.length >= minCount,
-                isFreeCast,
-                exileOnResolution,
-                parentContext
-            }
-        };
-        logger.info(state, LogCategory.ACTION, `[TARGETING] ${state.players[playerId].name} is selecting targets for ${cardToPlay.definition.name}...`);
-        return true;
+        if (typeof result === 'boolean') return result;
+        return result; // It's a string[] of targets
     }
 
     /**
@@ -317,11 +169,13 @@ export class SpellInteractiveManager {
             const legalSacrificeIds = state.battlefield
                 .filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, (sacrificeCost as SacrificeCost).restrictions || [], {
                     sourceId: cardToPlay.id,
-                    controllerId: playerId
+                    controllerId: playerId,
+                    xValue: cardToPlay.xValue || 0
                 }))
                 .map(o => o.id);
 
-            const amount = (sacrificeCost as SacrificeCost).amount || 1;
+            const isAny = String((sacrificeCost as SacrificeCost).amount) === 'ANY';
+            const amount = isAny ? 0 : (Number((sacrificeCost as SacrificeCost).amount) || 1);
             if (legalSacrificeIds.length < amount) {
                 logger.info(state, LogCategory.ACTION, `Illegal Play: No valid objects to sacrifice for ${cardToPlay.definition.name}.`);
                 return null; // FAILURE
@@ -360,11 +214,13 @@ export class SpellInteractiveManager {
             const legalDiscardIds = player.hand
                 .filter(c => c.id !== cardInstanceId && TargetingProcessor.matchesRestrictions(state, c, (discardCost as DiscardCost).restrictions || [], {
                     sourceId: cardToPlay.id,
-                    controllerId: playerId
+                    controllerId: playerId,
+                    xValue: cardToPlay.xValue || 0
                 }))
                 .map(c => c.id);
 
-            const amount = discardCost.amount || 1;
+            const isAny = String(discardCost.amount) === 'ANY';
+            const amount = isAny ? 0 : (Number(discardCost.amount) || 1);
             if (legalDiscardIds.length < amount) {
                 logger.info(state, LogCategory.ACTION, `Illegal Play: No valid cards to discard for ${cardToPlay.definition.name}.`);
                 return null; // FAILURE
@@ -411,11 +267,13 @@ export class SpellInteractiveManager {
             const legalExileIds = pool
                 .filter((c: GameObject) => TargetingProcessor.matchesRestrictions(state, c, (exileCost as ExileCost).restrictions || [], {
                     sourceId: cardToPlay.id,
-                    controllerId: playerId
+                    controllerId: playerId,
+                    xValue: cardToPlay.xValue || 0
                 }))
                 .map((c: GameObject) => c.id);
 
-            const amount = (exileCost as ExileCost).amount || 1;
+            const isAny = String((exileCost as ExileCost).amount) === 'ANY';
+            const amount = isAny ? 0 : (Number((exileCost as ExileCost).amount) || 1);
             if (legalExileIds.length < amount) {
                 logger.info(state, LogCategory.ACTION, `Illegal Play: Not enough valid objects to exile for ${cardToPlay.definition.name}.`);
                 return null; // FAILURE
@@ -455,11 +313,12 @@ export class SpellInteractiveManager {
                 !o.isTapped &&
                 TargetingProcessor.matchesRestrictions(state, o, tapSelectionCost.restrictions || [], {
                     sourceId: cardToPlay.id,
-                    controllerId: playerId
+                    controllerId: playerId,
+                    xValue: cardToPlay.xValue || 0
                 })
             ).map(o => o.id);
 
-            const amount = Number((tapSelectionCost as TapSelectionCost).value || (tapSelectionCost as TapSelectionCost).amount || 1);
+            const amount = Number((tapSelectionCost as TapSelectionCost).amount || 1);
             if (legalTapIds.length < amount) {
                 logger.info(state, LogCategory.ACTION, `Illegal Play: Not enough valid permanents to tap for ${cardToPlay.definition.name}.`);
                 return null; // FAILURE
@@ -548,7 +407,8 @@ export class SpellInteractiveManager {
             const isSelfSac = (sacrificeCost as SacrificeCost).targetMapping === TargetMapping.Self || ((sacrificeCost as SacrificeCost).restrictions || []).some((r: any) => r === Restriction.Self);
             const legalSacrificeIds = state.battlefield.filter(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, (sacrificeCost as SacrificeCost).restrictions || [], {
                 sourceId: obj.id,
-                controllerId: playerId
+                controllerId: playerId,
+                xValue: obj.xValue || 0
             })).map(o => o.id);
 
             if (legalSacrificeIds.length === 0 && !isSelfSac) {
@@ -590,7 +450,8 @@ export class SpellInteractiveManager {
         if (discardCost && !hasChosenDiscard) {
             const legalDiscardIds = player.hand.filter(c => TargetingProcessor.matchesRestrictions(state, c, (discardCost as DiscardCost).restrictions || [], {
                 sourceId: obj.id,
-                controllerId: playerId
+                controllerId: playerId,
+                xValue: obj.xValue || 0
             })).map(c => c.id);
             if (legalDiscardIds.length === 0) {
                 logger.info(state, LogCategory.ACTION, `Illegal Activation: No valid cards to discard for ${obj.definition.name}.`);
@@ -625,9 +486,10 @@ export class SpellInteractiveManager {
         if (tapSelectionCost && !hasChosenTapSelection) {
             const legalTapIds = state.battlefield.filter(o => o.controllerId === playerId && !o.isTapped && TargetingProcessor.matchesRestrictions(state, o, (tapSelectionCost as TapSelectionCost).restrictions || [], {
                 sourceId: obj.id,
-                controllerId: playerId
+                controllerId: playerId,
+                xValue: obj.xValue || 0
             })).map(o => o.id);
-            const amount = Number((tapSelectionCost as TapSelectionCost).value || (tapSelectionCost as TapSelectionCost).amount || 1);
+            const amount = Number((tapSelectionCost as TapSelectionCost).amount || 1);
             if (legalTapIds.length < amount) {
                 logger.info(state, LogCategory.ACTION, `Illegal Activation: Not enough valid permanents to tap for ${obj.definition.name}.`);
                 return false;
@@ -670,7 +532,8 @@ export class SpellInteractiveManager {
             });
             const legalExileIds = pool.filter((o: GameObject) => TargetingProcessor.matchesRestrictions(state, o, (exileCost as ExileCost).restrictions || [], {
                 sourceId: obj.id,
-                controllerId: playerId
+                controllerId: playerId,
+                xValue: obj.xValue || 0
             })).map((o: GameObject) => o.id);
             if (legalExileIds.length === 0) {
                 logger.info(state, LogCategory.ACTION, `Illegal Activation: No valid cards to exile for ${obj.definition.name}.`);
@@ -713,158 +576,39 @@ export class SpellInteractiveManager {
      * @returns true if targeting was handled (either pendingAction or direct finalization).
      */
     public static handleAbilityTargeting(state: GameState, playerId: PlayerId, cardId: string, obj: GameObject, ability: AbilityDefinition, abilityIndex: number, engine: any, preSelectedChoice?: number, parentContext?: ResolutionContext, exileOnResolution?: boolean): boolean {
-        const { logger, targeting: TargetingProcessor } = getProcessors(state);
-        const pool = [
-            ...Object.keys(state.players),
-            ...state.battlefield.map(o => o.id),
-            ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id)),
-            ...state.exile.map(o => o.id),
-            ...state.stack.map(o => o.id)
-        ];
-        const xValue = obj.xValue || 0;
-        const firstDef = TargetingProcessor.getDefinitionForIndex(ability.targetDefinition, 0, xValue);
-        const legalForFirst = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
-            sourceId: obj.id,
-            controllerId: obj.controllerId || playerId,
-            targetDef: ability.targetDefinition,
-            targetIndex: 0
-        }, tid));
-        logger.debug(state, LogCategory.ACTION, `[DEBUG] Found ${legalForFirst.length} legal targets for ${obj.definition.name} ability: [${legalForFirst.join(', ')}]`);
+        const targetDefs = ability.targetDefinitions || [];
+        const existingTargets = parentContext?.targets || state.pendingAction?.data?.selectedTargets || [];
 
-        const firstRestrictions = firstDef.restrictions || [];
-        const isOpponentTarget = firstDef.type === TargetType.Opponent || (firstDef.type === TargetType.Player && firstRestrictions.includes(Restriction.Opponent));
+        const result = TargetingDispatcher.dispatchTargetingStep({
+            state,
+            playerId,
+            sourceObj: obj,
+            targetDefinitions: targetDefs,
+            existingTargets,
+            xValue: obj.xValue || 0,
+            isSpellCasting: false,
+            isFreeCast: false,
+            exileOnResolution,
+            parentContext,
+            abilityIndex,
+            preSelectedChoice
+        });
 
-        const isSingleOpponentTarget = isOpponentTarget &&
-            legalForFirst.length === 1;
-
-        const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(ability.targetDefinition, obj.xValue || 0);
-
-        if (isSingleOpponentTarget) {
-            const opponentId = legalForFirst[0];
-            logger.info(state, LogCategory.ACTION, `[AUTO-TARGET] Automatically targeting the only opponent for ${obj.definition.name}.`);
-
-            if (maxCount === 1) {
-                return SpellProcessor.finalizeAbilityActivation(state, engine, {
-                    playerId,
-                    obj,
-                    ability,
-                    abilityIndex,
-                    declaredTargets: [opponentId],
-                    preSelectedChoice
-                });
-            }
-
-            const autoSelected = [opponentId];
-            const nextIndex = autoSelected.length;
-            const nextDef = TargetingProcessor.getDefinitionForIndex(ability.targetDefinition, nextIndex, xValue);
-            const prompt = TargetingProcessor.generateTargetPrompt(ability.targetDefinition, nextIndex, obj.xValue || 0, false);
-
-            state.pendingAction = {
-                type: ActionType.Targeting,
-                playerId: playerId,
-                sourceId: obj.id,
-                data: {
-                    abilityIndex: abilityIndex,
-                    targetDefinition: ability.targetDefinition,
-                    targets: pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
-                        sourceId: obj.id,
-                        controllerId: obj.controllerId || playerId,
-                        targetDef: ability.targetDefinition,
-                        targetIndex: nextIndex
-                    }, tid)),
-                    selectedTargets: autoSelected,
-                    label: nextDef.label,
-                    xValue: obj.xValue,
-                    maxCount,
-                    minCount,
-                    count,
-                    prompt,
-                    preSelectedChoice,
-                    isOptional: minCount === 0,
-                    canSkip: minCount === 0 || autoSelected.length >= minCount,
-                    exileOnResolution
-                }
-            };
-            return true;
+        if (typeof result === 'boolean') {
+            return result;
         }
 
-        if (legalForFirst.length === 0) {
-            if (firstDef.optional || firstDef.minCount === 0) {
-                logger.info(state, LogCategory.ACTION, `No legal targets found, skipping.`);
-                return SpellProcessor.finalizeAbilityActivation(state, engine, {
-                    playerId,
-                    obj,
-                    ability,
-                    abilityIndex,
-                    declaredTargets: [],
-                    preSelectedChoice,
-                    exileOnResolution
-                });
-            } else {
-                logger.info(state, LogCategory.ACTION, `Illegal Play: No valid targets available for ${obj.definition.name}'s ability.`);
-                return false;
-            }
-        }
-
-        const prompt = TargetingProcessor.generateTargetPrompt(ability.targetDefinition, 0, obj.xValue || 0, false);
-
-        // --- ENHANCEMENT: Graveyard/Exile Targeting Modal ---
-        const isOffBattlefieldTargeting =
-            firstDef.type === TargetType.CardInGraveyard ||
-            firstDef.type === TargetType.CardInExile;
-
-        if (isOffBattlefieldTargeting) {
-            const choices = legalForFirst.map(id => {
-                const cObj = RuleUtils.findObject(state, id);
-                return {
-                    label: cObj?.definition?.name || id,
-                    value: id,
-                    cardData: cObj,
-                    selectable: true
-                };
-            });
-
-            state.pendingAction = {
-                type: ActionType.ModalSelection,
-                playerId: playerId,
-                sourceId: obj.id,
-                data: {
-                    abilityIndex: abilityIndex,
-                    label: firstDef.label || `Choose a card from your graveyard for ${obj.definition.name}`,
-                    hideUndo: false,
-                    isSpellCasting: true,
-                    isTargetingModal: true,
-                    xValue: obj.xValue,
-                    minChoices: minCount,
-                    maxChoices: maxCount,
-                    choices: choices,
-                    preSelectedChoice
-                }
-            };
-            logger.info(state, LogCategory.ACTION, `[GRAVEYARD_MODAL] Player is selecting graveyard targets for ${obj.definition.name}'s ability...`);
-            return true;
-        }
-
-        state.pendingAction = {
-            type: ActionType.Targeting,
-            playerId: playerId,
-            sourceId: obj.id,
-            data: {
-                abilityIndex: abilityIndex,
-                targetDefinition: ability.targetDefinition,
-                targets: legalForFirst,
-                label: firstDef.label || `Select target for ${obj.definition.name}`,
-                xValue: obj.xValue,
-                maxCount,
-                minCount,
-                count,
-                prompt,
-                isOptional: minCount === 0,
-                canSkip: minCount === 0,
-                parentContext
-            }
-        };
-        logger.info(state, LogCategory.ACTION, `[TARGETING] Player must choose targets for ${obj.definition.name}'s ability.`);
-        return true;
+        // result is string[] (completed targets)
+        return SpellProcessor.finalizeAbilityActivation(state, engine, {
+            playerId,
+            obj,
+            ability,
+            abilityIndex,
+            declaredTargets: result,
+            xValue: obj.xValue,
+            preSelectedChoice,
+            parentContext,
+            exileOnResolution
+        });
     }
 }

@@ -42,7 +42,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, R
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.BeginningOfCombatStep,
             condition: ConditionType.IsYourTurn,
-            targetDefinition: { type: TargetType.Creature, restrictions: [Restriction.YouControl] },
+            targetDefinitions: [{ type: TargetType.Creature, restrictions: [Restriction.YouControl] }],
             effects: [
                 { type: EffectType.AddCounters, amount: 1, counterType: '+1/+1', targetMapping: TargetMapping.Target1 },
                 {

@@ -16,11 +16,11 @@ export const DigSiteInventory: CardDefinition = {
         {
             type: AbilityType.Spell,
             flashbackCost: "{W}",
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature, count: 1, restrictions: [
                     Restriction.YouControl
                 ]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.AddCounters,

@@ -42,9 +42,9 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restr
     {
       type: AbilityType.Activated,
       costs: [{ type: CostType.Loyalty, value: '-3' }],
-      targetDefinition: {
+      targetDefinitions: [{
         type: TargetType.Creature,
-      },
+      }],
       effects: [
         {
           type: EffectType.Destroy,
@@ -66,11 +66,11 @@ import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restr
                 type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.LifeGain,
                 condition: ConditionType.PlayerIsController,
-                targetDefinition: {
+                targetDefinitions: [{
                   type: TargetType.Player,
                   restrictions: [Restriction.Opponent],
                   mapping: TargetMapping.Target1
-                },
+                }],
                 effects: [
                   {
                     type: EffectType.LoseLife,

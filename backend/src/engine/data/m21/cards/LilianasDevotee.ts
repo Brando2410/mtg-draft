@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const LilianasDevotee: CardDefinition = {
     name: "Liliana's Devotee",
@@ -26,7 +26,7 @@ export const LilianasDevotee: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: 'IS_YOUR_TURN && CREATURE_DIED_THIS_TURN',
+            condition: `${ConditionType.IsYourTurn} && ${ConditionType.CreatureDiedThisTurn}`,
             effects: [
                 {
                     type: EffectType.Choice,

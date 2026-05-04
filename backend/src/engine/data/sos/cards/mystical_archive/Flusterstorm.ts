@@ -16,11 +16,11 @@ export const Flusterstorm: CardDefinition = {
         /*  {
             type: AbilityType.Spell,
             storm: true,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Spell,
                 restrictions: [{ type: Restriction.Any, restrictions: [Restriction.Instant, Restriction.Sorcery] }],
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.CounterSpell,

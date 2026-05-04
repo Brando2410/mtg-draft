@@ -11,11 +11,11 @@ export const LegionsJudgment: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [Restriction.Power4OrGreater]
-            },
+            }],
             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
         }
     ]

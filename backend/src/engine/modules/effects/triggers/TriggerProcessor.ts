@@ -39,7 +39,7 @@ export class TriggerProcessor {
     Profiler.start('trigger.check');
     try {
       const { logger } = getProcessors(state);
-      if (event.type === TriggerEvent.ResolveSpell || event.type === TriggerEvent.PreCombatMainPhaseStart) {
+      if (event.type === TriggerEvent.ResolveSpell || event.type === TriggerEvent.PreCombatMainPhaseStart || event.type === TriggerEvent.EndStep) {
         logger.debug(state, LogCategory.TRIGGER, `Processing event: ${event.type}`);
       }
       // 1. Identify all triggered abilities that match this event (Rule 603.2)
@@ -53,7 +53,7 @@ export class TriggerProcessor {
       // --- DEDUPLICATION (Fix for Issue #2: prevents multiple triggers for the same ability instance) ---
       // We use a composite key of sourceId + ability name (or type) to ensure we don't fire the same thing twice for one card.
       const uniqueTriggersMap = new Map<string, any>();
-      matchingTriggers.forEach((t) => {
+      matchingTriggers.forEach((t: any) => {
         const key = `${t.id || t.sourceId + "_" + ((t as any).abilityIndex || 0)}`;
         if (!uniqueTriggersMap.has(key)) {
           uniqueTriggersMap.set(key, t);
@@ -127,6 +127,7 @@ export class TriggerProcessor {
           }
 
           const stackObj = this.createStackObject(state, trigger, event);
+          logger.debug(state, LogCategory.TRIGGER, `[TRIGGER-ON-EVENT] Queuing trigger ${stackObj.id} (Source: ${trigger.sourceId}) with targets: ${stackObj.targets?.join(', ')}`);
           state.pendingTriggers.push(stackObj);
 
           // --- TRIGGER INTERCEPTION (Strict Proctor / Ward / etc.) ---
@@ -142,7 +143,7 @@ export class TriggerProcessor {
         }
       }
       // 4. Cleanup single-shot delayed triggers (Rule 603.7)
-      matchingTriggers.forEach((t) => {
+      matchingTriggers.forEach((t: any) => {
         if ((t as any).isDelayed) {
           const startsWithUntil =
             (t as any).duration &&
@@ -212,6 +213,9 @@ export class TriggerProcessor {
           return true;
         }
 
+        playersTriggers.forEach(t => {
+          logger.debug(state, LogCategory.TRIGGER, `[ORDER-PENDING] Pending trigger ${t.id} has targets: ${t.targets?.join(', ')}`);
+        });
         state.pendingAction = {
           type: ActionType.OrderTriggers,
           playerId: pId,
@@ -245,13 +249,14 @@ export class TriggerProcessor {
       duration: effect.duration || DurationType.UntilEndOfTurn,
       condition: effect.condition,
       data: effect.data,
+      targets: effect.targets,
       isDelayed: true,
       oneShot: effect.oneShot,
       firesOnce: effect.firesOnce,
-      activeZone: Zone.Battlefield, // Virtual zone for registry
+      activeZone: Zone.Any, // Virtual zone for registry (Rule 603.7)
       type: AbilityType.Triggered,
     };
-
+    getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[DELAYED-REG] Registering trigger ${delayedTrigger.id} with targets: ${delayedTrigger.targets?.join(', ')}`);
     if (!state.ruleRegistry.triggeredAbilities)
       state.ruleRegistry.triggeredAbilities = [];
     state.ruleRegistry.triggeredAbilities.push(delayedTrigger);
@@ -307,12 +312,12 @@ export class TriggerProcessor {
     const contextPayload: any = {
       sourceId: trigger.sourceId,
       controllerId: trigger.controllerId,
-      targets: [],
+      targets: (trigger as any).targets || [],
       effects: (trigger as any).effects || [],
       event: event,
       eventData: event,
       eventAmount: (event as any).amount,
-      targetDefinition: (trigger as any).targetDefinition,
+      targetDefinitions: (trigger as any).targetDefinitions,
       sourceName: sourceName,
       startIndex: 0
     };
@@ -323,13 +328,14 @@ export class TriggerProcessor {
       sourceId: trigger.sourceId,
       type: AbilityType.Triggered,
       name: `${sourceName}'s Trigger`,
-      targets: [],
+      targets: (trigger as any).targets || [],
       definition: sourceObj?.definition || (trigger as any).data?.definition,
       image_url: sourceImage,
       abilityIndex: (trigger as any).abilityIndex,
       condition: (trigger as any).condition,
       data: contextPayload
     };
+    getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[STACK-OBJ-CREATE] Created stack object ${stackObj.id} with targets: ${stackObj.targets?.join(', ')}`);
     return stackObj;
   }
 
@@ -341,14 +347,14 @@ export class TriggerProcessor {
     state.stack.push(stackObj);
     state.consecutivePasses = 0;
 
-    const targetDef = stackObj.data.targetDefinition;
+    const targetDefinitions = stackObj.data.targetDefinitions;
     const sourceName = stackObj.data.sourceName;
 
-    if (targetDef) {
+    if (targetDefinitions) {
       this.initializeTriggerTargeting(
         state,
         stackObj.id,
-        targetDef,
+        targetDefinitions,
         sourceName,
         stackObj,
       );
@@ -360,7 +366,7 @@ export class TriggerProcessor {
   private static initializeTriggerTargeting(
     state: GameState,
     stackId: string,
-    targetDef: any,
+    targetDefinitions: any,
     sourceName: string,
     stackObj: any,
   ) {
@@ -378,12 +384,12 @@ export class TriggerProcessor {
         sourceId: stackObj.sourceId,
         controllerId: stackObj.controllerId,
         stackObject: stackObj,
-        targetDef: targetDef
+        targetDefinitions: targetDefinitions
       }, tid)
     );
 
     if (legalTargetIds.length === 0) {
-      if (targetDef.optional) {
+      if (targetDefinitions.optional) {
         logger.info(state, LogCategory.TARGETING, `[TRIGGER] ${sourceName}: No legal targets. Optional trigger skipped.`);
         const onStack = state.stack.find((s) => s.id === stackId);
         if (onStack) onStack.targets = [];
@@ -400,7 +406,7 @@ export class TriggerProcessor {
       sourceId: stackObj.sourceId,
       data: {
         label: "ChooseTargets",
-        targetDefinition: targetDef,
+        targetDefinitions: targetDefinitions,
         targets: legalTargetIds,
         stackId: stackObj.id,
         stackObj: stackObj,
@@ -420,7 +426,12 @@ export class TriggerProcessor {
       return true;
 
     const activeZone = trigger.activeZone || Zone.Battlefield;
-    if (activeZone === Zone.Any) return true;
+    if (activeZone === Zone.Any) {
+      if (eventType === TriggerEvent.EndStep) {
+        getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[ZONE-CHECK] Trigger ${trigger.id || 'unknown'} (Source: ${trigger.sourceId}) in Zone.Any - PASS`);
+      }
+      return true;
+    }
 
     const sourceId = trigger.sourceId;
 
@@ -548,6 +559,13 @@ export class TriggerProcessor {
 
     const cache = state._triggerCache;
     const candidates = cache.buckets.get(event.type) || [];
+    
+    if (event.type === TriggerEvent.EndStep || event.type === TriggerEvent.Exile) {
+      logger.debug(state, LogCategory.TRIGGER, `[TRIGGER-DEBUG] Event ${event.type}. Found ${candidates.length} candidates in bucket.`);
+      candidates.forEach((t: any) => {
+        logger.debug(state, LogCategory.TRIGGER, `  - Candidate: ${t.id} (Source: ${t.sourceId}) Targets: ${t.targets?.join(', ')}`);
+      });
+    }
 
     if (event.type === TriggerEvent.CastSpell) {
       logger.debug(state, LogCategory.TRIGGER, `[TRIGGER-DEBUG] Event ${event.type} for source ${event.payload?.sourceId}. Found ${candidates.length} candidate triggers in bucket.`);
@@ -604,6 +622,10 @@ export class TriggerProcessor {
         )
           return false;
       }
+      if (event.type === TriggerEvent.DamageDealtToPlayer) {
+        if (!t.isGlobal && event.sourceId !== t.sourceId) return false;
+      }
+
       if (
         event.type === TriggerEvent.Attack ||
         event.type === TriggerEvent.Block
@@ -1025,9 +1047,12 @@ export class TriggerProcessor {
   ) {
     if (event.type === TriggerEvent.CastInstantOrSorcery && event.playerId) {
       const processors = getProcessors(state);
-      const stackObj = processors.lki.getLki(state, event.sourceId || "", Zone.Stack);
-      const targets = stackObj?.data?.targets || [];
+      const castSourceId = event.sourceId || (event.payload as any)?.sourceId || (event.data as any)?.sourceId || "";
+      const stackObj = processors.lki.getLki(state, castSourceId, Zone.Stack) || state.stack.find(s => s.id === castSourceId);
+      const targets = stackObj?.targets || (event.payload as any)?.targets || (event.data as any)?.targets || [];
+      
       if (
+        targets.length > 0 &&
         targets.some((tid: string) => {
           const obj = RuleUtils.findObject(state, tid);
           return obj && obj.zone === Zone.Battlefield && RuleUtils.isCreature(obj);

@@ -28,11 +28,11 @@ export const ExtusOriqOverlord: CardDefinition = {
             abilities: [{
                 type: AbilityType.Triggered,
                 eventMatch: TriggerEvent.Magecraft,
-                targetDefinition: {
+                targetDefinitions: [{
                     count: 1,
                     type: TargetType.CardInGraveyard,
                     restrictions: [Restriction.Creature, Restriction.YouControl]
-                },
+                }],
                 effects: [{
                     type: EffectType.MoveToZone,
                     zone: Zone.Hand,

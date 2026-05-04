@@ -27,7 +27,7 @@ export const TerrorofthePeaks: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefieldOther,
-            targetDefinition: { type: TargetType.AnyTarget, count: 1 },
+            targetDefinitions: [{ type: TargetType.AnyTarget, count: 1 }],
             effects: [{ type: EffectType.DealDamage, amount: 'EVENT_OBJECT_POWER', targetMapping: TargetMapping.Target1 }]
         }
     ]

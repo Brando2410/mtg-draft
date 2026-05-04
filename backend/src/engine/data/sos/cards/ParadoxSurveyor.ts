@@ -25,11 +25,14 @@ import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Tr
             effects: [
                 {
                     type: EffectType.LookAtTopAndPick,
-                    amount: 5,
+                    fromTop: 5,
                     optional: true,
                     restrictions: [
-                        { types: [Restriction.Land] },
-                        { hasxinmanacost: true }
+                        { 
+                            type: Restriction.Any, 
+                            restrictions: [Restriction.Land, Restriction.HasXInManaCost] 
+                        }
+
                     ],
                     remainderPosition: 'bottom',
                     shuffleRemainder: true,

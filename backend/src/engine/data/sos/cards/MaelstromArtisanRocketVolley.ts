@@ -24,11 +24,11 @@ export const MaelstromArtisanRocketVolley: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
+                targetDefinitions: [{
                     type: TargetType.Land,
                     count: 1,
                     restrictions: [Restriction.NonBasic]
-                },
+                }],
                 effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
             }
         ]

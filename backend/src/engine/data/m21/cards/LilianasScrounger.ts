@@ -17,11 +17,11 @@ export const LilianasScrounger: CardDefinition = {
             eventMatch: TriggerEvent.EndStep,
             condition: 'CREATURE_DIED_THIS_TURN',
             optional: true,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Planeswalker,
                 count: 1,
                 restrictions: [Restriction.Liliana, Restriction.YouControl]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.AddCounters,

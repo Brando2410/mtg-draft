@@ -13,23 +13,18 @@ export const CostofBrilliance: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Player, count: 1 },
+            targetDefinitions: [
+                { type: TargetType.Player, count: 1 },
+                { type: TargetType.Creature, count: 1, minCount: 0 }
+            ],
             effects: [
                 { type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Target1 },
                 { type: EffectType.LoseLife, amount: 2, targetMapping: TargetMapping.Target1 },
-                {
-                    type: CostType.Choice,
-                    label: "Put a +1/+1 counter on up to one target creature?",
-                    choices: [
-                        {
-                            label: "Yes",
-                            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0 },
-                            effects: [
-                                { type: EffectType.AddCounters, amount: 1, startingCounters: { type: 'p1p1', amount: 1 }, targetMapping: TargetMapping.Target2 }
-                            ]
-                        },
-                        { label: "No", effects: [] }
-                    ]
+                { 
+                    type: EffectType.AddCounters, 
+                    counterType: 'P1P1', 
+                    amount: 1, 
+                    targetMapping: TargetMapping.Target2 
                 }
             ]
         }

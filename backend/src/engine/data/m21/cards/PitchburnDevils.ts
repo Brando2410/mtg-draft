@@ -15,7 +15,7 @@ export const PitchburnDevils: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Death,
-            targetDefinition: { type: TargetType.AnyTarget, count: 1 },
+            targetDefinitions: [{ type: TargetType.AnyTarget, count: 1 }],
             effects: [{
                 type: EffectType.DealDamage,
                 amount: 3,

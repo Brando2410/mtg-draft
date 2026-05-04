@@ -252,16 +252,16 @@ export class StateBasedActionsProcessor {
       }
 
       // Check if the target is still legal
-      const targetDef = attach.definition.auraRestriction || attach.definition.targetDefinition || {
-        type: "creature",
-      };
+      const targetDefinitions = attach.definition.auraRestrictions || attach.definition.targetDefinitions || [{
+        type: 'creature',
+      }];
       if (
         !TargetingProcessor.isLegalTarget(
           state,
           {
             sourceId: attach.id,
             controllerId: attach.controllerId,
-            targetDef,
+            targetDefinitions,
           },
           targetId,
         )

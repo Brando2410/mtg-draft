@@ -121,8 +121,8 @@ export class ControlEffectHandler {
                     });
 
                     if (effect.chooseNewTargets) {
-                        const targetDef = copy.data?.targetDefinition || copy.targetDefinition;
-                        if (targetDef) {
+                        const targetDefinitions = copy.data?.targetDefinitions || copy.targetDefinitions;
+                        if (targetDefinitions) {
                             const { targeting: TP } = getProcessors(state);
                             const pool = [
                                 ...Object.keys(state.players),
@@ -133,7 +133,7 @@ export class ControlEffectHandler {
                                 sourceId: copy.id,
                                 controllerId: copy.controllerId,
                                 stackObject: copy,
-                                targetDef: targetDef,
+                                targetDefinitions: targetDefinitions,
                                 targetIndex: 0
                             }, tid));
 
@@ -146,7 +146,7 @@ export class ControlEffectHandler {
                                         label: "ChooseNewTargets",
                                         isCopyTargeting: true,
                                         stackId: copy.id,
-                                        targetDefinition: targetDef,
+                                        targetDefinitions: targetDefinitions,
                                         targets: legalTargetIds,
                                         selectedTargets: [],
                                         declaredTargets: [], // Ensure this is also empty

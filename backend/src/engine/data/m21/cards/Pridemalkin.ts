@@ -15,11 +15,11 @@ export const Pridemalkin: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [Restriction.YouControl]
-            },
+            }],
             effects: [{
                 type: EffectType.AddCounters,
                 counterType: '+1/+1',

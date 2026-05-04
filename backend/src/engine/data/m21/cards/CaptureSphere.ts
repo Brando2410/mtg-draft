@@ -10,10 +10,10 @@ export const CaptureSphere: CardDefinition = {
     types: ["Enchantment"],
     subtypes: ["Aura"],
     keywords: ["Flash", "Enchant"],
-    auraRestriction: {
+    auraRestrictions: [{
         type: TargetType.Creature,
         count: 1,
-    },
+    }],
     abilities: [
         {
             type: AbilityType.Triggered,

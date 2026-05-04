@@ -11,11 +11,11 @@ export const FungalRebirth: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 restrictions: [Restriction.Permanent, Restriction.YouControl]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.ReturnToHand,

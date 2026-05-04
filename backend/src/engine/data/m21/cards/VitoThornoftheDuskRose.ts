@@ -17,7 +17,7 @@ export const VitoThornoftheDuskRose: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.LifeGain,
             condition: ConditionType.PlayerIsController,
-            targetDefinition: { type: TargetType.Opponent, count: 1 },
+            targetDefinitions: [{ type: TargetType.Opponent, count: 1 }],
             effects: [
                 {
                     type: EffectType.LoseLife,

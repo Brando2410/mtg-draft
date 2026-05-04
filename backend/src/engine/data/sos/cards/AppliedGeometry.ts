@@ -14,10 +14,10 @@ export const AppliedGeometry: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Permanent,
                 restrictions: [Restriction.YouControl, Restriction.NotAura]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.CreateTokenCopy,

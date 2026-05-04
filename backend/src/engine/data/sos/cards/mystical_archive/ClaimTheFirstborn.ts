@@ -9,11 +9,11 @@ export const ClaimTheFirstborn: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [Restriction.ManaValue3OrLess]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.GainControl,

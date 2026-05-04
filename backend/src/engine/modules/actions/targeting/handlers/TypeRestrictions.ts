@@ -1,125 +1,79 @@
-import { CardType, Restriction, Zone } from "@shared/engine_types";
+import { CardType, GameObject, Restriction, StackObject, Targetable, Zone } from "@shared/engine_types";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { IRestrictionHandler } from "../IRestrictionHandler";
+import { gameObjectRestriction, isGameObject, isPlayerState, isStackObject } from "./HandlerUtils";
 
 const PERMANENT_MASK = CardType.Artifact | CardType.Creature | CardType.Enchantment | CardType.Land | CardType.Planeswalker | CardType.Battle;
 const ANY_TARGET_MASK = CardType.Creature | CardType.Planeswalker | CardType.Player;
 
 export const TypeRestrictions: Record<string, IRestrictionHandler> = {
-    "TOKEN": {
-        matches(state, targetObj: any) {
-            return !!targetObj.isToken;
-        }
-    },
-    "NON_TOKEN": {
-        matches(state, targetObj: any) {
-            return !targetObj.isToken;
-        }
-    },
-    "LEGENDARY": {
-        matches(state, targetObj: any) {
-            return RuleUtils.hasSupertype(targetObj, "legendary");
-        }
-    },
-    "BASIC": {
-        matches(state, targetObj: any) {
-            return RuleUtils.hasSupertype(targetObj, "basic");
-        }
-    },
-    "NON_BASIC": {
-        matches(state, targetObj: any) {
-            return !RuleUtils.hasSupertype(targetObj, "basic");
-        }
-    },
-    "PERMANENT": {
-        matches(state, targetObj: any) {
-            const mask = targetObj.typeMask || 0;
-            return (mask & PERMANENT_MASK) !== 0;
-        }
-    },
+    "TOKEN": gameObjectRestriction((state, obj) => !!obj.isToken),
+    "NON_TOKEN": gameObjectRestriction((state, obj) => !obj.isToken),
+    "LEGENDARY": gameObjectRestriction((state, obj) => RuleUtils.hasSupertype(obj, "legendary")),
+    "BASIC": gameObjectRestriction((state, obj) => RuleUtils.hasSupertype(obj, "basic")),
+    "NON_BASIC": gameObjectRestriction((state, obj) => !RuleUtils.hasSupertype(obj, "basic")),
+    "PERMANENT": gameObjectRestriction((state, obj) => {
+        const mask = obj.typeMask || 0;
+        return (mask & PERMANENT_MASK) !== 0;
+    }),
     "SPELL": {
-        matches(state, targetObj: any) {
-            return targetObj.type === 'Spell' || targetObj.zone === Zone.Stack;
+        matches(state, targetObj: Targetable) {
+            // SPELL can be a GameObject (Card on Stack) or a StackObject (Copy)
+            if (isGameObject(targetObj) && targetObj.zone === Zone.Stack) return true;
+            if (isStackObject(targetObj)) return targetObj.type === 'Spell';
+            return false;
         }
     },
     "ABILITY": {
-        matches(state, targetObj: any) {
-            const type = (targetObj as any).type || '';
-            return type.includes('Ability');
+        matches(state, targetObj: Targetable) {
+            if (isStackObject(targetObj)) {
+                return targetObj.type.includes('Ability');
+            }
+            return false;
         }
     },
-    "ARTIFACT_OR_CREATURE": {
-        matches(state, targetObj: any) {
-            const mask = targetObj.typeMask || 0;
-            return (mask & (CardType.Artifact | CardType.Creature)) !== 0;
-        }
-    },
-    "INSTANT_OR_SORCERY": {
-        matches(state, targetObj: any) {
-            const mask = targetObj.typeMask || 0;
-            return (mask & (CardType.Instant | CardType.Sorcery)) !== 0;
-        }
-    },
-    "CREATURE_OR_PLANESWALKER": {
-        matches(state, targetObj: any) {
+    "ARTIFACT_OR_CREATURE": gameObjectRestriction((state, obj) => {
+        const mask = obj.typeMask || 0;
+        return (mask & (CardType.Artifact | CardType.Creature)) !== 0;
+    }),
+    "INSTANT_OR_SORCERY": gameObjectRestriction((state, obj) => {
+        const mask = obj.typeMask || 0;
+        return (mask & (CardType.Instant | CardType.Sorcery)) !== 0;
+    }),
+    "CREATURE_OR_PLANESWALKER": gameObjectRestriction((state, obj) => {
+        const mask = obj.typeMask || 0;
+        return (mask & (CardType.Creature | CardType.Planeswalker)) !== 0;
+    }),
+    "ANY_TARGET": {
+        matches(state, targetObj: Targetable, r, context) {
+            if (TypeRestrictions.PLAYER.matches(state, targetObj, r, context)) return true;
+            if (!isGameObject(targetObj)) return false;
             const mask = targetObj.typeMask || 0;
             return (mask & (CardType.Creature | CardType.Planeswalker)) !== 0;
         }
     },
-    "ANY_TARGET": {
-        matches(state, targetObj: any) {
-            const mask = targetObj.typeMask || 0;
-            return (mask & ANY_TARGET_MASK) !== 0;
-        }
-    },
-    "CREATURE_OR_LAND": {
-        matches(state, targetObj: any) {
-            const mask = targetObj.typeMask || 0;
-            return (mask & (CardType.Creature | CardType.Land)) !== 0;
-        }
-    },
-    "ARTIFACT_OR_ENCHANTMENT": {
-        matches(state, targetObj: any) {
-            const mask = targetObj.typeMask || 0;
-            return (mask & (CardType.Artifact | CardType.Enchantment)) !== 0;
-        }
-    },
-    "CARD_IN_GRAVEYARD": {
-        matches(state, targetObj: any) {
-            return targetObj.zone === Zone.Graveyard;
-        }
-    },
-    "GRAVEYARD": {
-        matches(state, targetObj: any) {
-            return targetObj.zone === Zone.Graveyard;
-        }
-    },
+    "CREATURE_OR_LAND": gameObjectRestriction((state, obj) => {
+        const mask = obj.typeMask || 0;
+        return (mask & (CardType.Creature | CardType.Land)) !== 0;
+    }),
+    "ARTIFACT_OR_ENCHANTMENT": gameObjectRestriction((state, obj) => {
+        const mask = obj.typeMask || 0;
+        return (mask & (CardType.Artifact | CardType.Enchantment)) !== 0;
+    }),
+    "CARD_IN_GRAVEYARD": gameObjectRestriction((state, obj) => obj.zone === Zone.Graveyard),
+    "GRAVEYARD": gameObjectRestriction((state, obj) => obj.zone === Zone.Graveyard),
     "CARD": {
-        matches(state, targetObj: any) {
+        matches(state, targetObj: Targetable) {
             return !!targetObj.id && !state.players[targetObj.id];
         }
     },
-    "CARD_IN_EXILE": {
-        matches(state, targetObj: any) {
-            return targetObj.zone === Zone.Exile;
-        }
-    },
-    "CARD_IN_HAND": {
-        matches(state, targetObj: any) {
-            return targetObj.zone === Zone.Hand;
-        }
-    },
-    "NON_LAND_PERMANENT": {
-        matches(state, targetObj: any) {
-            const mask = targetObj.typeMask || 0;
-            return !(mask & CardType.Land) && (mask & PERMANENT_MASK) !== 0;
-        }
-    },
-    "NON_AURA": {
-        matches(state, targetObj: any) {
-            return !RuleUtils.hasSubtype(targetObj, "aura");
-        }
-    }
+    "CARD_IN_EXILE": gameObjectRestriction((state, obj) => obj.zone === Zone.Exile),
+    "CARD_IN_HAND": gameObjectRestriction((state, obj) => obj.zone === Zone.Hand),
+    "NON_LAND_PERMANENT": gameObjectRestriction((state, obj) => {
+        const mask = obj.typeMask || 0;
+        return !(mask & CardType.Land) && (mask & PERMANENT_MASK) !== 0;
+    }),
+    "NON_AURA": gameObjectRestriction((state, obj) => !RuleUtils.hasSubtype(obj, "aura"))
 };
 
 // Common base types mapper
@@ -141,21 +95,27 @@ Object.entries(typeToMask).forEach(([type, bit]) => {
     
     // Positive check
     TypeRestrictions[upperType] = {
-        matches(state, targetObj: any) {
+        matches(state, targetObj: Targetable) {
             if (bit === CardType.Player) {
                 return !!state.players[targetObj.id];
             }
-            return (targetObj.typeMask & bit) !== 0;
+            if (isGameObject(targetObj)) {
+                return (targetObj.typeMask! & bit) !== 0;
+            }
+            return false;
         }
     };
 
     // Negative check
     TypeRestrictions[`NON_${upperType}`] = {
-        matches(state, targetObj: any) {
+        matches(state, targetObj: Targetable) {
             if (bit === CardType.Player) {
                 return !state.players[targetObj.id];
             }
-            return (targetObj.typeMask & bit) === 0;
+            if (isGameObject(targetObj)) {
+                return ((targetObj as GameObject).typeMask! & bit) === 0;
+            }
+            return false;
         }
     };
 });

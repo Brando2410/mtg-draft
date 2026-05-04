@@ -13,7 +13,7 @@ export const DissectionPractice: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: [
+            targetDefinitions: [
 
                 { type: TargetType.Creature, count: 1, minCount: 0 },
                 { type: TargetType.Creature, count: 1, minCount: 0 }
@@ -26,14 +26,14 @@ export const DissectionPractice: CardDefinition = {
                     duration: { type: DurationType.UntilEndOfTurn },
                     powerModifier: 1, toughnessModifier: 1,
                     targetMapping: TargetMapping.Target1,
-                    condition: 'TARGET_1_EXISTS'
+
                 },
                 {
                     type: EffectType.ApplyContinuousEffect,
                     duration: { type: DurationType.UntilEndOfTurn },
                     powerModifier: -1, toughnessModifier: -1,
                     targetMapping: TargetMapping.Target2,
-                    condition: 'TARGET_2_EXISTS'
+
                 }
             ]
         }

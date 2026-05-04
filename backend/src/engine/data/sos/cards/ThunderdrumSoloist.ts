@@ -18,14 +18,14 @@ export const ThunderdrumSoloist: CardDefinition = {
                 {
                     type: EffectType.DealDamage,
                     amount: 3,
-                    condition: 'SPENT_MANA_GE:5',
+                    condition: `${ConditionType.SpentManaGe}:5`,
                     targetMapping: TargetMapping.EachOpponent,
                     damageSourceMapping: TargetMapping.Self
                 },
                 {
                     type: EffectType.DealDamage,
                     amount: 1,
-                    condition: 'SPENT_MANA_LT:5',
+                    condition: `${ConditionType.SpentManaLt}:5`,
                     targetMapping: TargetMapping.EachOpponent,
                     damageSourceMapping: TargetMapping.Self
                 }

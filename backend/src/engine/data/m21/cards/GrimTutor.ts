@@ -14,7 +14,7 @@ export const GrimTutor: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: { type: TargetType.Card, count: 1 },
+                    targetDefinitions: [{ type: TargetType.Card, count: 1 }],
                     zone: Zone.Hand,
                     targetMapping: TargetMapping.Controller
                 },

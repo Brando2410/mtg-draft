@@ -13,7 +13,7 @@ export const EchocastingSymposium: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: [
+            targetDefinitions: [
                 { type: TargetType.Player, count: 1 },
                 { type: TargetType.Creature, count: 1, restrictions: [Restriction.YouControl] }
             ],

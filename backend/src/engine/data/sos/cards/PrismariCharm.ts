@@ -23,11 +23,11 @@ export const PrismariCharm: CardDefinition = {
         },
         {
           label: 'Deal 1 damage to each of one or two targets',
-          targetDefinition: {
+          targetDefinitions: [{
             count: 2,
             minCount: 1,
             type: TargetType.AnyTarget,
-          },
+          }],
           effects: [
             {
               type: EffectType.DealDamage,
@@ -38,10 +38,10 @@ export const PrismariCharm: CardDefinition = {
         },
         {
           label: 'Return target nonland permanent to its owner\'s hand',
-          targetDefinition: {
+          targetDefinitions: [{
             type: TargetType.NonlandPermanent,
             count: 1,
-          },
+          }],
           effects: [
             {
               type: EffectType.ReturnToHand,

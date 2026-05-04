@@ -26,7 +26,7 @@ export const AzizaMageTowerCaptain: CardDefinition = {
                             costs: [
                                 {
                                     type: CostType.TapSelection,
-                                    value: 3,
+                                    amount: 3,
                                     restrictions: [Restriction.Creature, Restriction.Untapped, Restriction.YouControl]
                                 }
                             ],

@@ -34,7 +34,7 @@ export const LilianaWakeroftheDead: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Loyalty, value: -3 }],
-            targetDefinition: { type: TargetType.Creature, count: 1 },
+            targetDefinitions: [{ type: TargetType.Creature, count: 1 }],
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 duration: { type: DurationType.UntilEndOfTurn },
@@ -58,11 +58,11 @@ export const LilianaWakeroftheDead: CardDefinition = {
                                 type: AbilityType.Triggered,
                                 eventMatch: TriggerEvent.StartOfCombat,
                                 condition: 'IS_YOUR_TURN',
-                                targetDefinition: {
+                                targetDefinitions: [{
                                     type: TargetType.CardInGraveyard,
                                     count: 1,
                                     restrictions: [Restriction.Creature]
-                                },
+                                }],
                                 effects: [
                                     { type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Target1 },
                                     {

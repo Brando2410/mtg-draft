@@ -15,35 +15,35 @@ export const SublimeEpiphany: CardDefinition = {
             modes: [
                 {
                     label: 'Counter target spell',
-                    targetDefinition: { type: TargetType.Spell, count: 1 },
+                    targetDefinitions: [{ type: TargetType.Spell, count: 1 }],
                     effects: [{ type: EffectType.CounterSpell, targetMapping: TargetMapping.Target1 }]
                 },
                 {
                     label: 'Counter target activated or triggered ability',
-                    targetDefinition: { 
+                    targetDefinitions: [{ 
                         type: TargetType.AnyTarget, 
                         count: 1, 
                         restrictions: [Restriction.Ability] 
-                    },
+                    }],
                     effects: [{ type: EffectType.CounterAbility, targetMapping: TargetMapping.Target1 }]
                 },
                 {
                     label: 'Return target nonland permanent to owner hand',
-                    targetDefinition: { type: TargetType.NonlandPermanent, count: 1 },
+                    targetDefinitions: [{ type: TargetType.NonlandPermanent, count: 1 }],
                     effects: [{ type: EffectType.ReturnToHand, targetMapping: TargetMapping.Target1 }]
                 },
                 {
                     label: 'Create token copy of target creature',
-                    targetDefinition: { 
+                    targetDefinitions: [{ 
                         type: TargetType.Creature, 
                         count: 1, 
                         restrictions: [Restriction.YouControl] 
-                    },
+                    }],
                     effects: [{ type: EffectType.CreateTokenCopy, targetMapping: TargetMapping.Target1 }]
                 },
                 {
                     label: 'Target player draws a card',
-                    targetDefinition: { type: TargetType.Player, count: 1 },
+                    targetDefinitions: [{ type: TargetType.Player, count: 1 }],
                     effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Target1 }]
                 }
             ]

@@ -15,10 +15,10 @@ export const ChandrasMagmutt: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Tap }],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.PlayerOrPlaneswalker,
                 count: 1
-            },
+            }],
             effects: [{
                 type: EffectType.DealDamage,
                 amount: 1,

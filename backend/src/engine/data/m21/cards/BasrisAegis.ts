@@ -11,20 +11,20 @@ export const BasrisAegis: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [Restriction.YouControl]
-            },
+            }],
             effects: [
                 { type: EffectType.AddCounters, counterType: '+1/+1', amount: 1, targetMapping: TargetMapping.Target1 },
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Card,
                         count: 1,
                         restrictions: [{ type: Restriction.Name, value: 'Basri, Devoted Paladin' }]
-                    },
+                    }],
                     fromZones: [Zone.Library, Zone.Graveyard],
                     zone: Zone.Hand,
                     reveal: true,

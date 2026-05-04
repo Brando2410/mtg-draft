@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, DurationType, EffectType, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const BasriKet: CardDefinition = {
     name: "Basri Ket",
@@ -15,7 +15,7 @@ export const BasriKet: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Loyalty, value: 1 }],
-            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0 },
+            targetDefinitions: [{ type: TargetType.Creature, count: 1, minCount: 0 }],
             effects: [
                 { type: EffectType.AddCounters, counterType: '+1/+1', amount: 1, targetMapping: TargetMapping.Target1 },
                 {
@@ -70,7 +70,7 @@ export const BasriKet: CardDefinition = {
                             {
                                 type: AbilityType.Triggered,
                                 eventMatch: TriggerEvent.BeginningOfCombatStep,
-                                condition: 'OUR_TURN',
+                                condition: ConditionType.IsYourTurn,
                                 effects: [
                                     {
                                         type: EffectType.CreateToken,

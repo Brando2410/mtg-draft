@@ -17,9 +17,9 @@ import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, Tar
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Creature, restrictions: [
+            targetDefinitions: [{ type: TargetType.Creature, restrictions: [
                 Restriction.YouControl
-            ], count: 1 },
+            ], count: 1 }],
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

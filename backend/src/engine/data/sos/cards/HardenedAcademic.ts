@@ -28,11 +28,11 @@ export const HardenedAcademic: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.LeaveGraveyard,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [Restriction.YouControl]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.AddCounters,

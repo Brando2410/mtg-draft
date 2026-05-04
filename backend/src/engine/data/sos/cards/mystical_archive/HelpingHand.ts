@@ -15,11 +15,11 @@ export const HelpingHand: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
                 restrictions: [Restriction.Creature, Restriction.ManaValue3OrLess, Restriction.YouOwn],
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.PutOnBattlefield,

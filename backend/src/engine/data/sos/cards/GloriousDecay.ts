@@ -20,10 +20,10 @@ export const GloriousDecay: CardDefinition = {
             modes: [
                 {
                     label: "Destroy target artifact",
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Artifact,
                         count: 1,
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.Destroy,
@@ -33,11 +33,11 @@ export const GloriousDecay: CardDefinition = {
                 },
                 {
                     label: "Deals 4 damage to target creature with flying",
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Creature,
                         count: 1,
                         restrictions: [Restriction.Flying]
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.DealDamage,
@@ -49,10 +49,10 @@ export const GloriousDecay: CardDefinition = {
                 {
                     label: "Exile target card from a graveyard. Draw a card",
                     type: EffectType.Choice,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         count: 1
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.Exile,

@@ -26,12 +26,12 @@ export const LoreholdCommand: CardDefinition = {
                     },
                     { 
                         label: 'Deal 3 damage, gain 3 life', 
-                        targetDefinition: { count: 1, type: TargetType.AnyTarget },
+                        targetDefinitions: [{ count: 1, type: TargetType.AnyTarget }],
                         effects: [{ type: EffectType.DealDamage, amount: 3, targetMapping: TargetMapping.Target1 }, { type: EffectType.GainLife, amount: 3, targetMapping: TargetMapping.Controller }] 
                     },
                     { 
                         label: 'Player sacrifices permanent, draws 2', 
-                        targetDefinition: { count: 1, type: TargetType.Player },
+                        targetDefinitions: [{ count: 1, type: TargetType.Player }],
                         effects: [
                             { type: EffectType.Sacrifice, targetMapping: TargetMapping.Target1, restrictions: [Restriction.Permanent] }, 
                             { type: EffectType.DrawCards, amount: 2, targetMapping: TargetMapping.Target1 }

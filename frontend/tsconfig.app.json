@@ -25,7 +25,8 @@
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["../shared/*"]
+      "@shared/*": ["../shared/*"],
+      "fast-json-patch": ["../node_modules/fast-json-patch"]
     }
   },
   "include": ["src", "../shared"]

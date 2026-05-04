@@ -12,11 +12,11 @@ export const EnthrallingHold: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [Restriction.Tapped]
-            }
+            }]
         },
         {
             type: AbilityType.Static,

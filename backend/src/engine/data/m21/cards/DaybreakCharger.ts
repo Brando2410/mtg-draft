@@ -15,7 +15,7 @@ export const DaybreakCharger: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: { type: TargetType.Creature, count: 1 },
+            targetDefinitions: [{ type: TargetType.Creature, count: 1 }],
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 duration: { type: DurationType.UntilEndOfTurn },

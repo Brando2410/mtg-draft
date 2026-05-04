@@ -16,12 +16,12 @@ export const MatterbendingMage: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 minCount: 0,
                 restrictions: [Restriction.Other]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.MoveToZone,

@@ -454,5 +454,19 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const eventObjId = event?.data?.object?.id || event?.sourceId || (event as any)?.payload?.object?.id;
             return String(sourceId) === String(eventObjId);
         }
-    }
+    },
+    "X_IS": {
+        matches(state, params, context) {
+            const expected = parseInt(params[0]);
+            const xValue = (context.event as any)?.payload?.xValue ?? (context.event as any)?.xValue ?? (context.stackObject as any)?.xValue;
+            return xValue === expected;
+        }
+    },
+    "X_IS_GE": {
+        matches(state, params, context) {
+            const threshold = parseInt(params[0]);
+            const xValue = (context.event as any)?.payload?.xValue ?? (context.event as any)?.xValue ?? (context.stackObject as any)?.xValue;
+            return xValue >= threshold;
+        }
+    },
 };

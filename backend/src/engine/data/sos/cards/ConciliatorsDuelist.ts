@@ -31,7 +31,7 @@ export const ConciliatorsDuelist: CardDefinition = {
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: { type: TargetType.Creature, count: 1, minCount: 0, optional: true },
+                            targetDefinitions: [{ type: TargetType.Creature, count: 1, minCount: 0, optional: true }],
                             effects: [
                                 {
                                     type: EffectType.Exile,

@@ -16,7 +16,7 @@ export const BasrisAcolyte: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 2,
                 minCount: 0,
@@ -25,7 +25,7 @@ export const BasrisAcolyte: CardDefinition = {
                     Restriction.Other,
                     Restriction.YouControl
                 ]
-            },
+            }],
             effects: [{
                 type: EffectType.AddCounters,
                 amount: 1,

@@ -11,10 +11,10 @@ export const SecuretheScene: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.NonlandPermanent,
                 count: 1
-            },
+            }],
             effects: [
                 { type: EffectType.Exile, targetMapping: TargetMapping.Target1 },
                 {

@@ -14,10 +14,10 @@ export const SuspendAggression: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.NonlandPermanent,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Exile,

@@ -29,7 +29,7 @@ export const TeferisTutelage: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Draw,
             condition: ConditionType.PlayerIsController,
-            targetDefinition: { type: TargetType.Opponent, count: 1 },
+            targetDefinitions: [{ type: TargetType.Opponent, count: 1 }],
             effects: [{
                 type: EffectType.Mill,
                 amount: 2,

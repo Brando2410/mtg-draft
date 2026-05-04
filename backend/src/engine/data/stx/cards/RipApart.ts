@@ -16,11 +16,11 @@ export const RipApart: CardDefinition = {
                     choices: [
                         {
                             label: 'Deal 3 Damage to target creature or planeswalker',
-                            targetDefinition: {
+                            targetDefinitions: [{
                                 type: TargetType.Permanent,
                                 count: 1,
                                 restrictions: [Restriction.CreatureOrPlaneswalker]
-                            },
+                            }],
                             effects: [
                                 {
                                     type: EffectType.DealDamage,
@@ -31,11 +31,11 @@ export const RipApart: CardDefinition = {
                         },
                         {
                             label: 'Destroy artifact or enchantment',
-                            targetDefinition: {
+                            targetDefinitions: [{
                                 type: TargetType.Permanent,
                                 count: 1,
                                 restrictions: [Restriction.ArtifactOrEnchantment]
-                            },
+                            }],
                             effects: [
                                 {
                                     type: EffectType.Destroy,

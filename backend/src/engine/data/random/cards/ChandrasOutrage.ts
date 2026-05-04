@@ -14,7 +14,7 @@ export const ChandrasOutrage: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Creature, count: 1 },
+            targetDefinitions: [{ type: TargetType.Creature, count: 1 }],
             effects: [
                 { type: EffectType.DealDamage, amount: 4, targetMapping: TargetMapping.Target1 },
                 { type: EffectType.DealDamage, amount: 2, targetMapping: TargetMapping.Target1Controller }

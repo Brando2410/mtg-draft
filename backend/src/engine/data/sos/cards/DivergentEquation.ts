@@ -13,15 +13,15 @@ export const DivergentEquation: CardDefinition = {
         {
             type: AbilityType.Spell,
 
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
-                count: 'X' as any,
+                count: 'X',
                 minCount: 0,
                 restrictions: [
                     Restriction.InstantOrSorcery,
                     Restriction.YouOwn
                 ]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.MoveToZone,

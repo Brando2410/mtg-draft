@@ -27,12 +27,12 @@ export const EmbracetheParadox: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.PutOnBattlefield,
-                                    targetDefinition: {
+                                    targetDefinitions: [{
                                         type: TargetType.Land,
                                         zone: Zone.Hand,
                                         count: 1,
                                         minCount: 0,
-                                    },
+                                    }],
                                     tapped: true
                                 }
                             ]

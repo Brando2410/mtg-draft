@@ -12,7 +12,7 @@ export const SilverquillCharm: CardDefinition = {
             modes: [
                 {
                     type: EffectType.Choice,
-                    targetDefinition: { type: TargetType.Creature, count: 1 },
+                    targetDefinitions: [{ type: TargetType.Creature, count: 1 }],
                     label: "Put two +1/+1 counters on target creature",
                     effects: [
                         {
@@ -28,11 +28,11 @@ export const SilverquillCharm: CardDefinition = {
                     effects: [
                         {
                             type: EffectType.Exile,
-                            targetDefinition: {
+                            targetDefinitions: [{
                                 type: TargetType.Creature,
                                 count: 1,
                                 restrictions: [Restriction.Power2OrLess]
-                            }
+                            }]
                         }
                     ]
                 },

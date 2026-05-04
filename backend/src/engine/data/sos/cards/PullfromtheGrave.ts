@@ -17,7 +17,7 @@ export const PullfromtheGrave: CardDefinition = {
                     zone: Zone.Hand,
                     selectionType: SelectionType.Search,
                     label: "Select up to two creature cards to return to your hand",
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         count: 2,
                         minCount: 0,
@@ -25,7 +25,7 @@ export const PullfromtheGrave: CardDefinition = {
                             Restriction.Creature,
                             Restriction.YouControl
                         ]
-                    }
+                    }]
                 },
                 {
                     type: EffectType.GainLife,

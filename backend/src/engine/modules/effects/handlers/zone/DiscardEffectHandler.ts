@@ -12,7 +12,7 @@ export class DiscardEffectHandler {
         const finalTargetIds = targetIds.length === 0 && !parentContext ? stackObject?.targets || [] : targetIds;
 
         const playerIds = finalTargetIds.filter(id => state.players[id as PlayerId]) as PlayerId[];
-        if (playerIds.length === 0 && !effect.targetDefinition && !effect.targetMapping) playerIds.push(controllerId);
+        if (playerIds.length === 0 && !effect.targetDefinitions && !effect.targetMapping) playerIds.push(controllerId);
 
         const amount = (typeof discardEff.amount === "number" || typeof discardEff.amount === "string") ? discardEff.amount : 1;
         

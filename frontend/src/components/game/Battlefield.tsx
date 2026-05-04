@@ -400,7 +400,7 @@ export const Battlefield = ({
                                         {pendingAction.type === ActionType.DeclareAttackers ? 'Declare Attackers' :
                                         pendingAction.type === ActionType.DeclareBlockers ? 'Declare Blockers' :
                                         pendingAction.type === ActionType.OrderAttackers ? 'Order Blockers' :
-                                        pendingAction.type === ActionType.Discard ? `Discard ${pendingAction.count || 1} card${(pendingAction.count || 1) > 1 ? 's' : ''}` :
+                                        pendingAction.type === ActionType.Discard ? (pendingAction.data?.label || `Discard ${pendingAction.count || 1} card${(pendingAction.count || 1) > 1 ? 's' : ''}`) :
                                         pendingAction.type === ActionType.Targeting ? (pendingAction.data?.prompt || 'Select targets') :
                                         (pendingAction.data?.label || 'Make a choice')}
                                     </h2>

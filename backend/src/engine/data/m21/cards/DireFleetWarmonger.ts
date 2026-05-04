@@ -27,14 +27,14 @@ export const DireFleetWarmonger: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.Sacrifice,
-                                    targetDefinition: {
+                                    targetDefinitions: [{
                                         type: TargetType.Creature,
                                         count: 1,
                                         restrictions: [
                                             Restriction.Other,
                                             Restriction.YouControl
                                         ]
-                                    }
+                                    }]
                                 },
                                 {
                                     type: EffectType.ApplyContinuousEffect,

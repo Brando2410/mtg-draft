@@ -15,11 +15,11 @@ export const Zombify: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
                 restrictions: [Restriction.Creature, Restriction.YouOwn, Restriction.YouOwn],
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.PutOnBattlefield

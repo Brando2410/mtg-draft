@@ -15,7 +15,7 @@ export const RenderSpeechless: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: [
+            targetDefinitions: [
                 {
                     type: TargetType.Opponent,
                 },

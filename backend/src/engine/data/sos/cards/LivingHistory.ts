@@ -35,11 +35,11 @@ export const LivingHistory: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.AttackersDeclared,
             condition: ConditionType.CardsLeftYourGraveyardThisTurn,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [Restriction.Attacking]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

@@ -11,7 +11,7 @@ export class ConditionProcessor {
    */
   public static matchesCondition(
     state: GameState,
-    condition: ConditionType | undefined,
+    condition: ConditionType | string | undefined,
     context: ConditionContext,
   ): boolean {
     if (!condition) return true;

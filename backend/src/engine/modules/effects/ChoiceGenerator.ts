@@ -174,6 +174,10 @@ export class ChoiceGenerator {
         
         logger.debug(state, LogCategory.ACTION, `[DISCARD-DEBUG] createDiscardChoice for ${currentPlayerId}. Next: ${JSON.stringify(nextPlayerIds)}`);
         
+        // Reset discard tracking state even if skipping
+        state.turnState.lastDiscardedCount = 0;
+        state.turnState.lastDiscardedIds = [];
+
         // Skip player if hand is empty
         if (!player || player.hand.length === 0) {
             const failureEffects = onFailureEffects || (stackObj?.data?.onFailureEffects);
@@ -201,15 +205,16 @@ export class ChoiceGenerator {
             effects: []
         }, [currentPlayerId]));
         
-        const isAny = resolvedAmount === 'ANY' || resolvedAmount === 'Any';
-        const isAll = resolvedAmount === 'ALL' || resolvedAmount === 'All';
-        const discardAmount = isAll ? player.hand.length : (typeof resolvedAmount === 'number' ? Math.min(player.hand.length, resolvedAmount) : (isAny ? player.hand.length : 1));
+        const isAny = resolvedAmount === 'ANY';
+        const isAll = resolvedAmount === 'ALL';
+        const discardAmount = isAll || isAny ? player.hand.length : (typeof resolvedAmount === 'number' ? Math.min(player.hand.length, resolvedAmount) : 1);
         const minChoices = isAny ? 0 : discardAmount;
         const maxChoices = (isAny || isAll) ? player.hand.length : discardAmount;
 
         // Initialize player's discard state for the unified UI
+        // pendingDiscardCount MUST be > 0 so frontend routes hand clicks to discard (not play).
         player.pendingDiscardCount = discardAmount;
-        state.turnState.lastDiscardedCount = discardAmount;
+        state.turnState.lastDiscardedCount = 0; // Reset for new selection phase
         state.turnState.lastDiscardedIds = [];
         
         const finalAction = this.createCardChoice(state, player.hand, {
@@ -217,15 +222,16 @@ export class ChoiceGenerator {
             playerId: currentPlayerId,
             sourceId,
             optional: isAny,
-            // If discarding from OWN hand, use DISCARD type for interactive UI.
-            // If Duress style (not implemented here but for future proofing), keep RESOLUTION_CHOICE.
             actionType: ActionType.Discard, 
+            minChoices: minChoices,
+            maxChoices: maxChoices,
             stackObj: {
                 ...stackObj,
                 data: {
                     ...(stackObj?.data || {}),
                     minChoices: minChoices,
                     maxChoices: maxChoices,
+                    isOptionalDiscard: isAny, // Flag so engine knows player can stop early
                     onFailureEffects: onFailureEffects // Preserve for next steps
                 }
             },
@@ -243,6 +249,7 @@ export class ChoiceGenerator {
                 finalAction.data.nextPlayerIds = nextPlayerIds;
                 finalAction.data.discardAmount = amount;
                 finalAction.data.onFailureEffects = onFailureEffects;
+                finalAction.data.isOptionalDiscard = isAny; // Allow early exit via pass
             }
         }
 

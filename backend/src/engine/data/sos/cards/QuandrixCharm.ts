@@ -13,7 +13,7 @@ export const QuandrixCharm: CardDefinition = {
             modes: [
                 {
                     label: 'Counter target spell unless its controller pays {2}',
-                    targetDefinition: { count: 1, type: TargetType.Spell },
+                    targetDefinitions: [{ count: 1, type: TargetType.Spell }],
                     effects: [
                         {
                             type: EffectType.Choice,
@@ -34,12 +34,12 @@ export const QuandrixCharm: CardDefinition = {
                 },
                 {
                     label: 'Destroy target enchantment',
-                    targetDefinition: { count: 1, type: TargetType.Enchantment },
+                    targetDefinitions: [{ count: 1, type: TargetType.Enchantment }],
                     effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
                 },
                 {
                     label: 'Target creature has base power and toughness 5/5 until end of turn',
-                    targetDefinition: { count: 1, type: TargetType.Creature },
+                    targetDefinitions: [{ count: 1, type: TargetType.Creature }],
                     effects: [{
                         type: EffectType.ApplyContinuousEffect,
                         powerSet: 5,

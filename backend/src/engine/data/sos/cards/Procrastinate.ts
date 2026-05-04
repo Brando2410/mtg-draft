@@ -13,9 +13,9 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     abilities: [
     {
       type: AbilityType.Spell,
-      targetDefinition: {
+      targetDefinitions: [{
         type: TargetType.Creature,
-      },
+      }],
       effects: [
         {
           type: CostType.Tap,

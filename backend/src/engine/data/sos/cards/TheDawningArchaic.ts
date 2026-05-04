@@ -31,13 +31,13 @@ export const TheDawningArchaic: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Choose target instant or sorcery card from your graveyard",
                     selectionPool: TargetMapping.ControllerGraveyard,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         restrictions: [Restriction.InstantOrSorcery, Restriction.YouOwn],
                         optional: true,
                         minCount: 0,
                         count: 1
-                    },
+                    }],
                     isSpellCasting: true,
                     isFreeCast: true,
 

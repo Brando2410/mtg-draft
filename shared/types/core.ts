@@ -28,7 +28,7 @@ export const CardType = {
 } as const;
 export type CardType = number;
 
-export const Keyword = {
+const _Keyword = {
   Haste: 'Haste',
   Flashback: 'Flashback',
   Flying: 'Flying',
@@ -46,9 +46,23 @@ export const Keyword = {
   DoubleStrike: 'DoubleStrike',
   Defender: 'Defender'
 } as const;
-export type Keyword = (typeof Keyword)[keyof typeof Keyword];
 
-export const CounterType = {
+/**
+ * Keyword - MTG Keywords.
+ * Dynamic: Supports arbitrary keywords like Keyword.Casualty1 or Keyword.Ward2.
+ */
+export const Keyword: Record<string, string> & typeof _Keyword = new Proxy(_Keyword as any, {
+  get(target, prop: string) {
+    if (prop in target) return target[prop];
+    // Return the property name as is (e.g. Ward2 -> Ward2) 
+    // or you could add normalization logic here.
+    return prop;
+  }
+});
+
+export type Keyword = string;
+
+const _CounterType = {
   P1P1: "+1/+1",
   M1M1: "-1/-1",
   Loyalty: "loyalty",
@@ -61,7 +75,19 @@ export const CounterType = {
   Suspect: "suspect",
   Blood: "blood"
 } as const;
-export type CounterType = (typeof CounterType)[keyof typeof CounterType];
+
+/**
+ * CounterType - MTG Counter types.
+ * Dynamic: Supports arbitrary counters like CounterType.Oil or CounterType.Filibuster.
+ */
+export const CounterType: Record<string, string> & typeof _CounterType = new Proxy(_CounterType as any, {
+  get(target, prop: string) {
+    if (prop in target) return target[prop];
+    return prop.toLowerCase();
+  }
+});
+
+export type CounterType = string;
 
 export const EnginePrefix = {
   VirtualPrepared: "virtual_prepared_",
@@ -73,9 +99,9 @@ export const SelectionType = {
   Target: "Target",
   Choice: "Choice",
   Random: "Random",
-  All: "All",
+  ALL: "ALL",
   TopN: "TopN",
-  AnyNumber: "AnyNumber",
+  ANY: "ANY",
   Look: "Look",
   Search: "Search",
 } as const;
@@ -91,7 +117,7 @@ export const Color = {
 } as const;
 export type Color = (typeof Color)[keyof typeof Color];
 
-export const TargetMapping = {
+const _TargetMapping = {
   Self: "SELF",
   Target1: "TARGET_1",
   Target2: "TARGET_2",
@@ -188,14 +214,38 @@ export const TargetMapping = {
   MatchingPermanents: "MATCHING_PERMANENTS",
   Opponents: "OPPONENTS",
   RemainderOfPool: "REMAINDER_OF_POOL",
-  RemainderOfLookingCards: "REMAINDER_OF_LOOKING_CARDS",
+  RemainderOfLookingCards: "REMAINING_LOOKING_CARDS",
   OtherCreaturesAndPlaneswalkers: "OTHER_CREATURES_AND_PLANESWALKERS",
   Opponent: "OPPONENT",
+  AllCreaturesOpponentsControl: "ALL_CREATURES_OPPONENTS_CONTROL",
+  AllPermanentsOpponentsControl: "ALL_PERMANENTS_OPPONENTS_CONTROL",
 } as const;
-export type TargetMapping = (typeof TargetMapping)[keyof typeof TargetMapping];
 
-export const DynamicAmount = {
+/**
+ * TargetMapping - MTG Target Resolution contracts.
+ * Dynamic: Automatically handles Target1, Target2, Target1Controller, Target1Owner, etc.
+ */
+export const TargetMapping: Record<string, string> & typeof _TargetMapping = new Proxy(_TargetMapping as any, {
+  get(target, prop: string) {
+    if (prop in target) return target[prop];
+
+    // Dynamic conversion: CamelCase -> SNAKE_CASE
+    // e.g. Target1Controller -> TARGET_1_CONTROLLER
+    // e.g. Target99Owner -> TARGET_99_OWNER
+    if (prop.startsWith('Target')) {
+      return prop.replace(/([A-Z0-9])/g, (match) => `_${match}`).toUpperCase().substring(1);
+    }
+
+    return prop.toUpperCase();
+  }
+});
+
+export type TargetMapping = string;
+
+const _DynamicAmount = {
   X: "X",
+  XPlus1: "X_PLUS_1",
+  XPowerOf2: "X_POWER_OF_2",
   SourcePower: "SOURCE_POWER",
   SourceToughness: "SOURCE_TOUGHNESS",
   SourceCountersP1P1: "SOURCE_COUNTERS_P1P1",
@@ -210,30 +260,54 @@ export const DynamicAmount = {
   CardsDrawnThisTurn: "CARDS_DRAWN_THIS_TURN",
   ConvergeAmount: "CONVERGE_AMOUNT",
   Target1Power: "TARGET_1_POWER",
+  CreaturesYouControl: "CREATURES_YOU_CONTROL",
+  CreatureCountYouControl: "CREATURE_COUNT_YOU_CONTROL",
+  LandsYouControl: "LANDS_YOU_CONTROL",
+  GraveyardSize: "GRAVEYARD_SIZE",
+  HandSize: "HAND_SIZE",
+  CardsInHandCount: "CARDS_IN_HAND_COUNT",
+  LifeGainedThisTurn: "LIFE_GAINED_THIS_TURN",
+  SpellsCastThisTurn: "SPELLS_CAST_THIS_TURN",
+  CreaturesDiedThisTurnCount: "CREATURES_DIED_THIS_TURN_COUNT",
+  InstantSorceryInGraveyardCount: "INSTANT_SORCERY_IN_GRAVEYARD_COUNT",
+  EventAmount: "EVENT_AMOUNT",
   Target1ManaValue: "TARGET_1_MANA_VALUE",
   Target1HandSize: "TARGET_1_HAND_SIZE",
   DiscardedCountPlus1: "DISCARDED_COUNT_PLUS_1",
   DifferentlyNamedLandsCount: "DIFFERENTLY_NAMED_LANDS_COUNT",
-  CreaturesYouControl: "CREATURES_YOU_CONTROL",
   MagecraftSpent: "MAGECRAFT_SPENT",
-  Target1GraveyardCreatureCountX2: "TARGET_1_GRAVEYARD_CREATURE_COUNT_X2",
-  GraveyardSize: "GRAVEYARD_SIZE",
   GraveyardSizeNegative: "GRAVEYARD_SIZE_NEGATIVE",
-  HandSize: "HAND_SIZE",
   OtherAttackingCreaturesCount: "OTHER_ATTACKING_CREATURES_COUNT",
-  HandCount: "HAND_SIZE",
-  ShrinesYouControlCount: "COUNT_Shrine",
   TriggerObjectPower: "TRIGGER_EVENT_SOURCE_POWER",
   EventObjectPower: "EVENT_OBJECT_POWER",
   GreatestPowerInYourGraveyard: "GREATEST_POWER_IN_GRAVEYARD",
-  CreaturesDiedThisTurnCount: "CREATURES_DIED_THIS_TURN_COUNT",
-  LandsYouControlCount: "COUNT_Land",
-  DogsYouControlCount: "COUNT_Dog",
-  CatsYouControlCount: "COUNT_Cat",
-  InstantsAndSorceriesInGraveyard: "INSTANTS_SORCERIES_IN_GRAVEYARD",
-  Count_Power4PlusCreaturesYouControl: "COUNT_POWER4PLUS_CREATURES_YOU_CONTROL"
 } as const;
-export type DynamicAmount = (typeof DynamicAmount)[keyof typeof DynamicAmount];
+
+/**
+ * DynamicAmount - MTG Numeric calculation contracts.
+ * Supports static keys and dynamic patterns like DynamicAmount.CountGoblins or DynamicAmount.AffinityArtifacts.
+ */
+export const DynamicAmount: Record<string, string> & typeof _DynamicAmount = new Proxy(_DynamicAmount as any, {
+  get(target, prop: string) {
+    if (prop in target) return target[prop];
+
+    // Handle Count[Type] -> COUNT_[TYPE]
+    if (prop.startsWith('Count')) {
+      const type = prop.substring(5);
+      return `COUNT_${type.toUpperCase()}`;
+    }
+
+    // Handle Affinity[Type] -> AFFINITY_[TYPE]
+    if (prop.startsWith('Affinity')) {
+      const type = prop.substring(8);
+      return `AFFINITY_${type.toUpperCase()}`;
+    }
+
+    return prop.toUpperCase();
+  }
+});
+
+export type DynamicAmount = string;
 
 export const Phase = {
   Beginning: "Beginning",
@@ -319,11 +393,11 @@ export type RestrictionType = (typeof RestrictionType)[keyof typeof RestrictionT
  * Supports conditional restrictions (e.g. "Cannot attack UNLESS...")
  */
 export interface RestrictionObject {
-    type: RestrictionType | string;
-    condition?: any; // ConditionDefinition reference
-    duration?: any;  // EffectDuration reference
-    value?: any;     // Extra metadata (e.g. specific IDs or colors)
-    sourceId?: string;
+  type: RestrictionType | string;
+  condition?: any; // ConditionDefinition reference
+  duration?: any;  // EffectDuration reference
+  value?: any;     // Extra metadata (e.g. specific IDs or colors)
+  sourceId?: string;
 }
 
 /**

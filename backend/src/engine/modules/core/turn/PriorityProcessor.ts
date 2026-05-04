@@ -1,4 +1,4 @@
-import { AbilityType, EffectType, GameState, Phase, PlayerId, Step, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, ActionType, EffectType, GameState, Phase, PlayerId, Step, TargetMapping, Zone } from '@shared/engine_types';
 import { oracle } from '../../../OracleLogicMap';
 import { SpellProcessor } from '../../actions/spells/SpellProcessor';
 import { TargetingProcessor } from '../../actions/targeting/TargetingProcessor';
@@ -51,31 +51,52 @@ export class PriorityProcessor {
     }
 
     // CR 117.1: A player must resolve pending mandatory actions before passing
-    if (EngineValidator.isSuspended(state) && EngineValidator.isPlayerRequiredToAct(state, playerId)) {
+    // Exception: Optional discards (e.g. "discard any number") can be completed by passing.
+    const pendingIsOptionalDiscard = state.pendingAction?.type === ActionType.Discard && (state.pendingAction?.data as any)?.isOptionalDiscard === true;
+    if (EngineValidator.isSuspended(state) && EngineValidator.isPlayerRequiredToAct(state, playerId) && !pendingIsOptionalDiscard) {
       console.log(`[PRIORITY-PROC] passPriority BLOCKED: ${playerId} has pending ${state.pendingAction?.type}.`);
       logger.info(state, 'PRIORITY' as any, `Invalid Action: Player must resolve pending ${state.pendingAction?.type} first.`);
       return;
     }
 
     const player = state.players[playerId];
-    if (player && player.pendingDiscardCount > 0) {
+    const isOptionalDiscard = state.pendingAction?.type === ActionType.Discard && (state.pendingAction?.data as any)?.isOptionalDiscard === true;
+
+    if (player && player.pendingDiscardCount > 0 && !isOptionalDiscard) {
       if (!isAuto) logger.info(state, 'PRIORITY' as any, `${engine.getPlayerName(playerId)} must finish discarding first.`);
       return;
     }
 
+    // --- OPTIONAL DISCARD RESUMPTION ---
+    // If we're passing priority while an optional discard is active, it means the player is "Done".
+    // Zero out the remaining count and resume the resolution chain.
+    if (isOptionalDiscard) {
+      const { choice: ChoiceProcessor } = getProcessors(state);
+      const actionData = state.pendingAction?.data as any;
+      const sourceId = state.pendingAction?.sourceId;
+      const stackObj = actionData?.stackObj;
+      const parentContext = actionData?.parentContext;
+
+      player.pendingDiscardCount = 0;
+      state.pendingAction = undefined;
+      logger.info(state, 'PRIORITY' as any, `${engine.getPlayerName(playerId)} finished optional discard. Discarded ${state.turnState.lastDiscardedIds?.length || 0} cards.`);
+      if (sourceId && stackObj && parentContext) {
+        ChoiceProcessor.resumeResolution(state, sourceId, stackObj, parentContext, engine);
+        return;
+      }
+    }
+
     // --- STOPPER LOGIC: Untoggle stop after it "did its work" ---
     if (!isAuto && player?.stops) {
-      const isOurTurn = state.activePlayerId === playerId;
+      const isYourTurn = state.activePlayerId === playerId;
       const currentStepId = state.currentStep.toLowerCase();
-      const stopKey = isOurTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
-      const beginKey = isOurTurn ? `my_beginning` : `opp_beginning`;
+      const stopKey = isYourTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
+      const beginKey = isYourTurn ? `my_beginning` : `opp_beginning`;
       const isBeginning = currentStepId === 'upkeep' || currentStepId === 'draw';
 
       if (player.stops[stopKey] || (isBeginning && player.stops[beginKey])) {
         if (player.stops[stopKey]) player.stops[stopKey] = false;
         if (isBeginning && player.stops[beginKey]) player.stops[beginKey] = false;
-
-        console.log(`[STOPPER] Untoggled stop for ${stopKey}/beginning after manual pass.`);
         logger.info(state, 'PRIORITY' as any, `Stop cleared for ${state.currentStep}.`);
       }
     }
@@ -149,9 +170,9 @@ export class PriorityProcessor {
     // --- COMBAT DECLARATION AUTO-CONFIRMS ---
     // These steps (Attackers/Blockers) often have null priority while selecting.
     if (isPending && !player.fullControl) {
-      const isOurTurn = state.activePlayerId === playerId;
+      const isYourTurn = state.activePlayerId === playerId;
       const currentStepId = state.currentStep.toLowerCase();
-      const stopKey = isOurTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
+      const stopKey = isYourTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
       const hasManualStop = player?.stops?.[stopKey];
 
       if (!hasManualStop) {
@@ -170,12 +191,12 @@ export class PriorityProcessor {
 
     const canAct = this.canPlayerTakeAnyAction(state, playerId);
 
-    const isOurTurn = state.activePlayerId === playerId;
+    const isYourTurn = state.activePlayerId === playerId;
     const currentStepId = state.currentStep.toLowerCase();
-    const stopKey = isOurTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
+    const stopKey = isYourTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
 
     // Support for consolidated "Beginning" stop (covers Upkeep and Draw)
-    const beginKey = isOurTurn ? `my_beginning` : `opp_beginning`;
+    const beginKey = isYourTurn ? `my_beginning` : `opp_beginning`;
     const isBeginning = currentStepId === 'upkeep' || currentStepId === 'draw';
 
     const hasManualStop = player?.stops?.[stopKey] || (isBeginning && player?.stops?.[beginKey]);
@@ -214,9 +235,9 @@ export class PriorityProcessor {
     }
     if (player.pendingDiscardCount > 0) return true;
 
-    const isOurTurn = state.activePlayerId === playerId;
+    const isYourTurn = state.activePlayerId === playerId;
     const currentStepId = state.currentStep.toLowerCase();
-    const stopKey = isOurTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
+    const stopKey = isYourTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
     const hasManualStop = player?.stops?.[stopKey];
 
     const stackEmpty = state.stack.length === 0;
@@ -253,7 +274,7 @@ export class PriorityProcessor {
         const isSorcery = RuleUtils.isType(face, 'sorcery');
 
         let timingOk = isInstant;
-        if (isSorcery && isOurTurn && stackEmpty && (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain)) {
+        if (isSorcery && isYourTurn && stackEmpty && (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain)) {
           timingOk = true;
         }
 
@@ -375,15 +396,15 @@ export class PriorityProcessor {
         // Modal check
         if (spellAbility?.modes) {
           const hasValidMode = spellAbility.modes.some((mode: any) => {
-            if (!mode.targetDefinition || mode.targetDefinition.optional) return true;
-            return TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, mode.targetDefinition, playerId);
+            if (!mode.targetDefinitions || mode.targetDefinitions.optional) return true;
+            return TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, mode.targetDefinitions, playerId);
           });
           if (!hasValidMode) canPlay = false;
         } else {
-          const targetDefinition = (logic as any)?.targetDefinition || spellAbility?.targetDefinition;
+          const targetDefinitions = (logic as any)?.targetDefinitions || spellAbility?.targetDefinitions;
 
-          if (targetDefinition && !targetDefinition.optional) {
-            if (!TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, targetDefinition, playerId)) {
+          if (targetDefinitions && !targetDefinitions.optional) {
+            if (!TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, targetDefinitions, playerId)) {
               canPlay = false;
             }
           }
@@ -528,10 +549,10 @@ export class PriorityProcessor {
     if (isPlaneswalker) {
       // Rule 606.3: loyalty abilities are sorcery speed by default
       if (timingOk) {
-        const isOurTurn = state.activePlayerId === playerId;
+        const isYourTurn = state.activePlayerId === playerId;
         const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
         const stackEmpty = state.stack.length === 0;
-        if (!isOurTurn || !isMain || !stackEmpty) timingOk = false;
+        if (!isYourTurn || !isMain || !stackEmpty) timingOk = false;
       }
 
       const canActivateAnyTime = (cardLogic.abilities || []).some((a: any) => a.type === 'Static' && String(a.id || "").includes('any_turn')) ||
@@ -560,12 +581,12 @@ export class PriorityProcessor {
     // Target Check
     if (ability.modes) {
       const hasValidMode = ability.modes.some((mode: any) => {
-        if (!mode.targetDefinition || mode.targetDefinition.optional) return true;
-        return TargetingProcessor.hasLegalTargets(state, obj.id, mode.targetDefinition, playerId);
+        if (!mode.targetDefinitions || mode.targetDefinitions.optional) return true;
+        return TargetingProcessor.hasLegalTargets(state, obj.id, mode.targetDefinitions, playerId);
       });
       if (!hasValidMode) return false;
-    } else if (ability.targetDefinition && !ability.targetDefinition.optional) {
-      if (!TargetingProcessor.hasLegalTargets(state, obj.id, ability.targetDefinition, playerId)) {
+    } else if (ability.targetDefinitions && !ability.targetDefinitions.optional) {
+      if (!TargetingProcessor.hasLegalTargets(state, obj.id, ability.targetDefinitions, playerId)) {
         return false;
       }
     }
@@ -584,11 +605,11 @@ export class PriorityProcessor {
     const onlyAsSorcery = objOrAbility.activatedOnlyAsSorcery || (!isInstantOrFlash && !isActivatedAbility) || (isActivatedAbility && objOrAbility.activatedOnlyAsSorcery);
 
     if (onlyAsSorcery || isLand) {
-      const isOurTurn = state.activePlayerId === playerId;
+      const isYourTurn = state.activePlayerId === playerId;
       const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
       const stackEmpty = state.stack.length === 0;
 
-      if (!isOurTurn || !isMain || !stackEmpty) {
+      if (!isYourTurn || !isMain || !stackEmpty) {
         return false;
       }
     }

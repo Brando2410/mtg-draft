@@ -9,10 +9,10 @@ export const ChaosWarp: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Permanent,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.ChaosWarp

@@ -16,7 +16,7 @@ export const HallMonitor: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Mana, value: '{1}{R}' }, { type: CostType.Tap }],
-            targetDefinition: { count: 1, type: TargetType.Creature },
+            targetDefinitions: [{ count: 1, type: TargetType.Creature }],
             effects: [{ type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.Target1, duration: { type: DurationType.UntilEndOfTurn }, cannotBlock: true }]
         }
     ]

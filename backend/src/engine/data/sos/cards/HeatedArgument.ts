@@ -16,10 +16,10 @@ export const HeatedArgument: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.DealDamage,

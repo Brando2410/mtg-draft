@@ -20,10 +20,10 @@ export const DestructiveTampering: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.Destroy,
-                                    targetDefinition: {
+                                    targetDefinitions: [{
                                         type: TargetType.Artifact,
                                         count: 1
-                                    }
+                                    }]
                                 }
                             ]
                         },

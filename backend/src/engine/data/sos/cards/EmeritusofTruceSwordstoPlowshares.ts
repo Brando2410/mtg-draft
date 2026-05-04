@@ -17,10 +17,10 @@ export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Player,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -59,10 +59,10 @@ export const EmeritusofTruceSwordstoPlowshares: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
+                targetDefinitions: [{
                     type: TargetType.Creature,
                     count: 1
-                },
+                }],
                 effects: [
                     {
                         type: EffectType.Exile,

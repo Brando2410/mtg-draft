@@ -15,14 +15,14 @@ export const SunderingArchaic: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.NonlandPermanent,
                 restrictions: [
                     "opponentcontrol",
                     "mv <= converge_amount"
                 ]
-            },
+            }],
             effects: [
                 {
                     type: CostType.Exile,
@@ -33,10 +33,10 @@ export const SunderingArchaic: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Mana, value: '{2}' }],
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.CardInGraveyard
-            },
+            }],
             effects: [
                 {
                     type: EffectType.MoveToZone,

@@ -71,13 +71,28 @@ export class ManaProcessor {
     return ManaParser.parseManaCost(costStr);
   }
 
-  /**
-   * Calculates the total Mana Value (MV) of a cost string (Rules 107.4, 202.3).
-   * @param xValue The value chosen for X (only relevant for objects on the stack).
-   */
-  public static getManaValue(costStr: string, xValue: number = 0): number {
-    return ManaParser.getManaValue(costStr, xValue);
-  }
+    /**
+     * Calculates the total Mana Value (MV) of a cost string (Rules 107.4, 202.3).
+     * @param xValue The value chosen for X (only relevant for objects on the stack).
+     */
+    public static getManaValue(costStr: string, xValue: number = 0): number {
+        return ManaParser.getManaValue(costStr, xValue);
+    }
+
+    /**
+     * Rule 202.3b: The mana value of a transformed permanent is the mana value of its front face.
+     * Rule 202.3e: X is 0 unless the object is on the stack.
+     */
+    public static getEffectiveManaValue(obj: any, xValueOverride?: number): number {
+        const xValue = xValueOverride !== undefined ? xValueOverride : (obj.xValue || 0);
+        
+        // If it's a transformed permanent (has originalDefinition), use the front face's cost
+        if (obj.originalDefinition) {
+            return ManaParser.getManaValue(obj.originalDefinition.manaCost || '', xValue);
+        }
+        
+        return ManaParser.getManaValue(obj.definition?.manaCost || '', xValue);
+    }
 
   /**
    * Orchestrates the automated tapping of lands and non-land sources to satisfy a cost.

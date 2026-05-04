@@ -13,7 +13,7 @@ export const LightofPromise: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Creature, count: 1 }
+            targetDefinitions: [{ type: TargetType.Creature, count: 1 }]
         },
         {
             type: AbilityType.Triggered,

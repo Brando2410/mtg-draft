@@ -11,10 +11,10 @@ export const Humiliate: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.Opponent
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Choice,
@@ -27,11 +27,11 @@ export const Humiliate: CardDefinition = {
                     type: EffectType.AddCounters,
                     counterType: 'P1P1',
                     amount: 1,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         count: 1,
                         type: TargetType.Creature,
                         restrictions: [Restriction.YouControl]
-                    },
+                    }],
                     targetMapping: TargetMapping.Target2
                 }
             ]

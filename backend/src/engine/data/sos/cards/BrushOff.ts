@@ -17,7 +17,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: AbilityType.Spell, count: 1 },
+            targetDefinitions: [{ type: AbilityType.Spell, count: 1 }],
             costReduction: {
                 type: EffectType.CostReduction,
                 manaReduction: '{1}{U}',

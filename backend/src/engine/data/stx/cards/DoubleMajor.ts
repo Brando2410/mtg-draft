@@ -11,11 +11,11 @@ export const DoubleMajor: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 restrictions: [Restriction.YouControl]
-            },
+            }],
             effects: [{
                 type: EffectType.CopySpellOnStack,
                 targetMapping: TargetMapping.Target1,

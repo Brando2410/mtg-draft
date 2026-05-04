@@ -82,7 +82,7 @@ export const RowanScholarofSparks: CardDefinition = {
                 {
                     type: AbilityType.Activated,
                     costs: [{ type: CostType.Loyalty, value: '+1' }],
-                    targetDefinition: { count: 1, type: TargetType.Creature, optional: true },
+                    targetDefinitions: [{ count: 1, type: TargetType.Creature, optional: true }],
                     effects: [{
                         type: EffectType.ApplyContinuousEffect,
                         duration: { type: DurationType.UntilEndOfTurn },
@@ -102,12 +102,12 @@ export const RowanScholarofSparks: CardDefinition = {
                 {
                     type: AbilityType.Activated,
                     costs: [{ type: CostType.Loyalty, value: '-7' }],
-                    targetDefinition: {
+                    targetDefinitions: [{
                         count: 5,
                         minCount: 0,
                         type: TargetType.CardInGraveyard,
                         restrictions: [Restriction.InstantOrSorcery]
-                    },
+                    }],
                     effects: [
                         { type: EffectType.Exile, targetMapping: TargetMapping.TargetAll },
                         {

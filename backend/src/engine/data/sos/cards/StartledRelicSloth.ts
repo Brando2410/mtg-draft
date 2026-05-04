@@ -28,13 +28,13 @@ export const StartledRelicSloth: CardDefinition = {
             effects: [
                 {
                     type: EffectType.Exile,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         count: 1,
                         minCount: 0,
                         optional: true,
                         label: "Select up to one card to exile"
-                    }
+                    }]
                 }
             ]
         }

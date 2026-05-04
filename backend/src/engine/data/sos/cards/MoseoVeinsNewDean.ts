@@ -48,23 +48,29 @@ export const MoseoVeinsNewDean: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: ConditionType.Infusion, // IsYourTurn is implied by Infusion (usually) but check implementation
-            targetDefinition: {
-                type: TargetType.CardInGraveyard,
-                count: 1,
-                minCount: 0,
-                optional: true,
-                restrictions: [
-                    Restriction.Creature,
-                    Restriction.ManaValueLeLifeGained,
-                    Restriction.YouOwn
-                ]
-            },
+            condition: `${ConditionType.IsYourTurn} && ${ConditionType.Infusion}`,
+
             effects: [
                 {
-                    type: EffectType.PutOnBattlefield,
-                    zone: Zone.Battlefield,
-                    targetMapping: TargetMapping.Target1
+                    type: EffectType.Choice,
+                    selectionPool: TargetMapping.ControllerGraveyard,
+                    targetDefinitions: [{
+                        type: TargetType.CardInGraveyard,
+                        count: 1,
+                        minCount: 0,
+                        restrictions: [
+                            Restriction.Creature,
+                            Restriction.ManaValueLeLifeGained,
+                            Restriction.YouOwn
+                        ]
+                    }],
+                    effects: [
+                        {
+                            type: EffectType.PutOnBattlefield,
+                            zone: Zone.Battlefield,
+                            targetMapping: TargetMapping.Target1
+                        }
+                    ]
                 }
             ]
         }

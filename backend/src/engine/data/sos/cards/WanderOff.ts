@@ -14,10 +14,10 @@ import { AbilityType, CardDefinition, CostType, TargetMapping, TargetType } from
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
-            },
+            }],
             effects: [
                 {
                     type: CostType.Exile,

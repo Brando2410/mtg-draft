@@ -19,11 +19,11 @@ export const GarruksWarsteed: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Card,
                         count: 1,
                         restrictions: [{ type: Restriction.Name, value: 'Garruk, Savage Herald' }]
-                    },
+                    }],
                     fromZones: [Zone.Library, Zone.Graveyard],
                     zone: Zone.Hand,
                     reveal: true,

@@ -24,10 +24,10 @@ export const InfirmaryHealerStreamofLife: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
+                targetDefinitions: [{
                     type: TargetType.Player,
                     count: 1
-                },
+                }],
                 effects: [
                     {
                         type: EffectType.GainLife,

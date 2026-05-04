@@ -11,11 +11,11 @@ export const BeamingDefiance: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.Creature,
                 restrictions: [Restriction.YouControl]
-            },
+            }],
             effects: [{
                 type: EffectType.ApplyContinuousEffect,
                 targetMapping: TargetMapping.Target1,

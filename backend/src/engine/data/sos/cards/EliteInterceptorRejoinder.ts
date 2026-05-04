@@ -24,7 +24,7 @@ export const EliteInterceptorRejoinder: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: { type: TargetType.Creature, count: 1, optional: true },
+                targetDefinitions: [{ type: TargetType.Creature, count: 1, optional: true }],
                 effects: [
                     {
                         type: EffectType.Choice,

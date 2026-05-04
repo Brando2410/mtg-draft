@@ -11,10 +11,10 @@ export const GoBlank: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
+                targetDefinitions: [{
                     type: TargetType.Player,
                     count: 1
-                },
+                }],
                 effects: [
                     { type: EffectType.DiscardCards, amount: 2, targetMapping: TargetMapping.Target1 },
                     { type: EffectType.Exile, targetMapping: TargetMapping.Target1, sourceZones: [Zone.Graveyard] }

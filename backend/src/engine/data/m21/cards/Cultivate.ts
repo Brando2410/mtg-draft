@@ -15,12 +15,12 @@ export const Cultivate: CardDefinition = {
                 {
                     type: EffectType.SearchLibrary,
                     label: "Put one basic land card onto the battlefield tapped",
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Land,
                         count: 1,
                         minCount: 0,
                         restrictions: [Restriction.Basic]
-                    },
+                    }],
                     zone: Zone.Battlefield,
                     tapped: true,
                     reveal: true,
@@ -29,12 +29,12 @@ export const Cultivate: CardDefinition = {
                 {
                     type: EffectType.SearchLibrary,
                     label: "Put the other basic land card into your hand",
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Land,
                         count: 1,
                         minCount: 0,
                         restrictions: [Restriction.Basic]
-                    },
+                    }],
                     zone: Zone.Hand,
                     reveal: true,
                     targetMapping: TargetMapping.Controller

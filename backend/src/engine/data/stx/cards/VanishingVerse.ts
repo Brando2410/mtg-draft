@@ -9,11 +9,11 @@ export const VanishingVerse: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
+                targetDefinitions: [{
                     type: TargetType.Permanent,
                     count: 1,
                     restrictions: [Restriction.Monocolored]
-                },
+                }],
                 effects: [
                     {
                         type: EffectType.Exile,

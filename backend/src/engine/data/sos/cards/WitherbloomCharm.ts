@@ -46,11 +46,11 @@ export const WitherbloomCharm: CardDefinition = {
                 },
                 {
                     label: "Destroy target nonland permanent with mana value 2 or less",
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.NonlandPermanent,
                         count: 1,
                         restrictions: [Restriction.ManaValue2OrLess]
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.Destroy,

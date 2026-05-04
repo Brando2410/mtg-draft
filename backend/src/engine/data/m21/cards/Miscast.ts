@@ -11,10 +11,10 @@ export const Miscast: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Spell,
                 restrictions: [Restriction.InstantOrSorcery]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Choice,

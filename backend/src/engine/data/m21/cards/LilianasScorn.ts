@@ -11,17 +11,17 @@ export const LilianasScorn: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Creature, count: 1 },
+            targetDefinitions: [{ type: TargetType.Creature, count: 1 }],
             effects: [
                 { type: EffectType.Destroy, targetMapping: TargetMapping.Target1 },
                 {
                     type: EffectType.SearchLibrary,
                     label: "Search your library and/or graveyard for a card named Liliana, Death Mage, reveal it, and put it into your hand.",
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Card,
                         count: 1,
                         restrictions: [{ type: Restriction.Name, value: 'Liliana, Death Mage' }]
-                    },
+                    }],
                     fromZones: [Zone.Library, Zone.Graveyard],
                     zone: Zone.Hand,
                     reveal: true,

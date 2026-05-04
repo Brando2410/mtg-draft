@@ -18,11 +18,11 @@ export const FabledPassage: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Land,
                         count: 1,
                         restrictions: [Restriction.Basic]
-                    },
+                    }],
                     zone: Zone.Battlefield,
                     tapped: true,
                     effects: [{

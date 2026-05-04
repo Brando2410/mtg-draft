@@ -27,11 +27,11 @@ export const ObsessiveStitcher: CardDefinition = {
                 { type: CostType.Tap },
                 { type: CostType.SacrificeSelf }
             ],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 restrictions: [Restriction.Creature]
-            },
+            }],
             effects: [{
                 type: EffectType.PutOnBattlefield,
                 targetMapping: TargetMapping.Target1

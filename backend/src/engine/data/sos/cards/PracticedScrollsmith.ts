@@ -21,7 +21,7 @@ export const PracticedScrollsmith: CardDefinition = {
                 {
                     type: EffectType.Choice,
                     selectionPool: TargetMapping.ControllerGraveyard,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         count: 1,
                         restrictions: [
@@ -29,7 +29,7 @@ export const PracticedScrollsmith: CardDefinition = {
                             Restriction.NonLand,
                             Restriction.YouOwn
                         ]
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.Exile,

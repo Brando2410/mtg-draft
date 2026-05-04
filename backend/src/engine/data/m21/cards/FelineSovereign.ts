@@ -28,11 +28,11 @@ export const FelineSovereign: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CombatDamagePlayer,
             condition: 'SOURCE_IS_CAT_YOU_CONTROL',
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.ArtifactOrEnchantment,
                 count: 1,
                 minCount: 0,
-            },
+            }],
             effects: [{ type: EffectType.Destroy, targetMapping: TargetMapping.Target1 }]
         }
     ]

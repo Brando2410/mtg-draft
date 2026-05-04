@@ -4,7 +4,8 @@
 import type { GameObjectId, PlayerId, RestrictionType } from './core';
 import { Zone } from './core';
 import type { EffectDuration } from './effects';
-import type { GameObject, PlayerState, StackObject } from './state';
+import type { GameObject, PlayerState, StackObject, GameState } from './state';
+import type { TargetingContext } from './effects';
 
 /**
  * Targetable - Union of all entities that can be targeted or affected by restrictions.
@@ -51,15 +52,15 @@ export interface TargetDefinition {
      * Target count logic. 
      * If number: Exact count required.
      * If { min, max }: Range of allowed targets.
-     * If 'any' or 'AnyNumber': Select any number of targets.
+     * If 'ANY': Select any number of targets.
      */
-    count?: number | { min: number; max: number } | 'any' | 'AnyNumber';
+    count?: number | { min: number; max: number } | 'ANY' | 'X';
 
     /** Equivalent to count: { min: N } */
-    minCount?: number;
+    minCount?: number | 'X' | 'ANY';
 
     /** Equivalent to count: { max: N } */
-    maxCount?: number;
+    maxCount?: number | 'X' | 'ANY';
 
     /** If true, the controller can choose 0 targets even if min/count is specified */
     optional?: boolean;
@@ -81,7 +82,7 @@ export interface TargetDefinition {
 
     /** UI Prompt to show the user */
     label?: string;
-    
+
     /** Extra metadata for complex filters (e.g. manaValue threshold) */
     data?: any;
 }
@@ -98,7 +99,7 @@ export interface AbilityRestriction {
     duration: EffectDuration;
 }
 
-export const Restriction = {
+const _Restriction = {
     Creature: 'creature',
     Artifact: 'artifact',
     Land: 'land',
@@ -240,10 +241,41 @@ export const Restriction = {
     Spell: 'spell',
 } as const;
 
-export type TargetRestriction = (typeof Restriction)[keyof typeof Restriction] | {
-    type?: string;
-    value?: any;
-    restrictions?: (TargetRestriction | string)[];
-    not?: any;
+/**
+ * Restriction - Standardized filter keys.
+ * This object is dynamic: you can access any key (e.g. Restriction.Power12OrGreater)
+ * and it will return a lowercased version of the key as a string.
+ */
+export const Restriction: Record<string, string> & typeof _Restriction = new Proxy(_Restriction as any, {
+    get(target, prop: string) {
+        if (prop in target) return target[prop];
+        return prop.toLowerCase();
+    }
+});
+
+
+export type StringRestriction = (typeof Restriction)[keyof typeof Restriction] | string;
+export type FunctionRestriction = (state: GameState, target: GameObject, context: TargetingContext) => boolean;
+
+export interface BaseObjectRestriction {
+    type: string;
     [key: string]: any;
-};
+}
+
+export interface ManaValueRestriction {
+    type: 'manavalue' | 'mv';
+    comparison?: 'LessOrEqual' | 'GreaterOrEqual' | 'Equal' | 'LessThan' | 'GreaterThan';
+    value: number | 'X';
+    [key: string]: any;
+}
+
+export interface LogicRestriction {
+    type: 'Any' | 'All' | 'Not' | 'any' | 'all' | 'not';
+    restrictions?: TargetRestriction[];
+    restriction?: TargetRestriction;
+    [key: string]: any;
+}
+
+export type ObjectRestriction = ManaValueRestriction | LogicRestriction | BaseObjectRestriction;
+
+export type TargetRestriction = StringRestriction | FunctionRestriction | ObjectRestriction;

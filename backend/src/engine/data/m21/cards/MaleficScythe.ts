@@ -35,10 +35,10 @@ export const MaleficScythe: CardDefinition = {
             type: AbilityType.Activated,
             activatedOnlyAsSorcery: true,
             costs: [{ type: CostType.Mana, value: '{1}' }],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 restrictions: [Restriction.YouControl]
-            },
+            }],
             effects: [{
                 type: EffectType.Attach,
                 targetMapping: TargetMapping.Target1

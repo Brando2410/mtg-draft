@@ -15,10 +15,10 @@ export const ScavengingOoze: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Mana, value: '{G}' }],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
                 count: 1,
-            },
+            }],
             effects: [
                 { type: EffectType.Exile, targetMapping: TargetMapping.Target1 },
                 {

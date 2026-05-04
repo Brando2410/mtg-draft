@@ -26,10 +26,10 @@ export const Abrade: CardDefinition = {
                             targetMapping: TargetMapping.Target1
                         }
                     ],
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Creature,
                         count: 1
-                    }
+                    }]
                 },
                 {
                     label: "Destroy target artifact",
@@ -39,10 +39,10 @@ export const Abrade: CardDefinition = {
                             targetMapping: TargetMapping.Target1
                         }
                     ],
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Artifact,
                         count: 1
-                    }
+                    }]
                 }
             ]
         }

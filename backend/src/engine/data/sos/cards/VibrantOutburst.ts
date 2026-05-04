@@ -15,7 +15,7 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: [
+            targetDefinitions: [
                 {
                     type: TargetType.AnyTarget,
                     count: 1,

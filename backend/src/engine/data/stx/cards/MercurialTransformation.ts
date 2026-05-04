@@ -12,7 +12,7 @@ export const MercurialTransformation: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { count: 1, type: TargetType.NonlandPermanent },
+            targetDefinitions: [{ count: 1, type: TargetType.NonlandPermanent }],
             effects: [
                 {
                     type: EffectType.Choice,

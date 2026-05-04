@@ -12,14 +12,14 @@ export const PrimalMight: CardDefinition = {
         {
             type: AbilityType.Spell,
             costs: [{ type: CostType.Mana, value: '{X}{G}' }],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Permanent,
                 count: 2,
                 perTargetRestrictions: [
                     [Restriction.Creature, Restriction.YouControl],
                     [Restriction.Creature, Restriction.OpponentControl]
                 ]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,

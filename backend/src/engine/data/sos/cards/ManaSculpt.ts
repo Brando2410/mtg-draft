@@ -17,7 +17,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: AbilityType.Spell, zone: Zone.Stack },
+            targetDefinitions: [{ type: AbilityType.Spell, zone: Zone.Stack }],
             effects: [
                 {
                     type: EffectType.CounterSpell,

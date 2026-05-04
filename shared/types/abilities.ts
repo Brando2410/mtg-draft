@@ -34,15 +34,13 @@ export const CostType = {
 } as const;
 export type CostType = (typeof CostType)[keyof typeof CostType];
 
-export const ConditionType = {
+const _ConditionType = {
     IsYourTurn: 'IS_YOUR_TURN',
-    OurTurn: 'OUR_TURN',
     IsOpponentTurn: 'IS_OPPONENT_TURN',
     HasCounters: 'HAS_COUNTERS',
     TriggerTargetIsSelf: 'TRIGGER_TARGET_IS_SELF',
     TriggerSourcePowOrToughLe1: 'TRIGGER_SOURCE_POW_OR_TOUGH_LE_1',
     TargetsTappedCreature: 'TARGETS_TAPPED_CREATURE',
-    HasCreaturePower4Plus: 'HAS_CREATURE_POWER_4_PLUS',
     PlayerIsController: 'PLAYER_IS_CONTROLLER',
     ObjectIsSelf: 'OBJECT_IS_SELF',
     CreatureDiedThisTurn: 'CREATURE_DIED_THIS_TURN',
@@ -70,13 +68,9 @@ export const ConditionType = {
     SpellTargetsSource: 'SPELL_TARGETS_SOURCE',
     LifeGained2OrMoreThisTurn: 'LIFE_GAINED_2_OR_MORE_THIS_TURN',
     LifeGained3OrMoreThisTurn: 'LIFE_GAINED_3_OR_MORE_THIS_TURN',
-    ControllerHasArtifact: 'CONTROLLER_HAS_ARTIFACT',
     EventPlayerIsYou: 'EVENT_PLAYER_IS_YOU',
-    HasPermanent: 'HAS_PERMANENT',
-    NotHasPermanent: 'NOT_HAS_PERMANENT',
     SpellTargetsCreature: 'SPELL_TARGETS_CREATURE',
     SpellIsCreature: 'SPELL_IS_CREATURE',
-    SelfDied: 'SELF_DIED',
     EventSourceIsSelf: 'EVENT_SOURCE_IS_SELF',
     NotCastFromHand: 'NOT_CAST_FROM_HAND',
     EventObjectIsTriggerSource: 'EVENT_OBJECT_IS_TRIGGER_SOURCE',
@@ -98,8 +92,45 @@ export const ConditionType = {
     LandCountGe: 'LAND_COUNT_GE',
     IsFlashbackCast: 'IS_FLASHBACK_CAST',
     CONTROLS_COMMANDER: 'CONTROLS_COMMANDER',
+    PutCounterOnSelfThisTurn: 'PUT_COUNTER_ON_SELF_THIS_TURN',
+    PermanentReturnedToHandThisTurn: 'PERMANENT_RETURNED_TO_HAND_THIS_TURN',
+    ControlsBasriPlaneswalker: 'CONTROL_BASRI_PLANESWALKER',
+    IsOpponentUpkeep: 'IS_OPPONENT_UPKEEP',
+    CastAnotherSpellThisTurn: 'CAST_ANOTHER_SPELL_THIS_TURN',
+    SpentManaGe: 'SPENT_MANA_GE',
+    SpentManaLt: 'SPENT_MANA_LT',
+    SpentManaLe: 'SPENT_MANA_LE',
+    OwnTokenEnters: 'OWN_TOKEN_ENTERS',
+    Target1Exists: 'TARGET_1_EXISTS',
+    Target2Exists: 'TARGET_2_EXISTS',
+    Target1IsController: 'TARGET_1_IS_CONTROLLER',
+    ConvergeGe: 'CONVERGE_GE',
+    SourceCounterGe: 'SOURCE_COUNTER_GE',
+    X_IS: 'X_IS',
+    X_IS_GE: 'X_IS_GE',
+    EventObjectHasX: 'EVENT_OBJECT_HAS_X',
+    LifeGainedGe: 'LIFE_GAINED_GE',
 } as const;
-export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType] | string;
+
+/**
+ * ConditionType - MTG Boolean logic contracts.
+ * Supports static keys and dynamic patterns like ConditionType.ControlGoblins or ConditionType.HasFlying.
+ */
+export const ConditionType: Record<string, string> & typeof _ConditionType = new Proxy(_ConditionType as any, {
+    get(target, prop: string) {
+        if (prop in target) return target[prop];
+
+        // Convert CamelCase to SNAKE_CASE
+        const snake = prop.replace(/([A-Z0-9])/g, (match) => `_${match}`).toUpperCase();
+        
+        // Handle Subjects (Target1, TriggerSource, etc.)
+        // Example: Target1HasFlying -> TARGET_1_HAS_FLYING
+        // Example: OpponentControlsArtifact -> OPPONENT_CONTROLS_ARTIFACT
+        return snake.startsWith('_') ? snake.substring(1) : snake;
+    }
+});
+
+export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType];
 
 /**
  * Base properties shared by all costs (Rule 601.2f)
@@ -122,23 +153,22 @@ export interface TapCost extends BaseAbilityCost {
 
 export interface SacrificeCost extends BaseAbilityCost {
     type: typeof CostType.Sacrifice | typeof CostType.SacrificeSelf;
-    amount?: number;
+    amount?: number | string;
     targetMapping?: 'SELF' | string;
-    targetDefinition?: TargetDefinition;
+    targetDefinitions?: TargetDefinition[];
     restrictions?: any[];
 }
 
 export interface DiscardCost extends BaseAbilityCost {
     type: typeof CostType.Discard;
-    amount?: number;
+    amount?: number | string;
     restrictions?: any[];
-    targetDefinition?: TargetDefinition;
+    targetDefinitions?: TargetDefinition[];
 }
 
 export interface LifeCost extends BaseAbilityCost {
     type: typeof CostType.PayLife;
     value: string; // Can be 'X' or numeric string
-    amount?: number;
 }
 
 export interface LoyaltyCost extends BaseAbilityCost {
@@ -148,7 +178,7 @@ export interface LoyaltyCost extends BaseAbilityCost {
 
 export interface ExileCost extends BaseAbilityCost {
     type: typeof CostType.Exile | typeof CostType.ExileSelf;
-    amount?: number;
+    amount?: number | string;
     sourceZones?: Zone[];
     restrictions?: any[];
     targetMapping?: 'SELF' | string;
@@ -156,14 +186,12 @@ export interface ExileCost extends BaseAbilityCost {
 
 export interface CrewCost extends BaseAbilityCost {
     type: typeof CostType.Crew;
-    value?: string | number;
-    amount?: number;
+    value: string | number;
 }
 
 export interface TapSelectionCost extends BaseAbilityCost {
     type: typeof CostType.TapSelection;
-    value?: string | number;
-    amount?: number;
+    amount: string | number;
     restrictions?: any[];
 }
 
@@ -171,12 +199,12 @@ export interface TapSelectionCost extends BaseAbilityCost {
  * Rules Engine Representation of an Ability activation cost (CR 602.1a).
  * Now a Union for type-safe parameter enforcement.
  */
-export type AbilityCost = 
-    | ManaCost 
-    | TapCost 
-    | SacrificeCost 
-    | DiscardCost 
-    | LifeCost 
+export type AbilityCost =
+    | ManaCost
+    | TapCost
+    | SacrificeCost
+    | DiscardCost
+    | LifeCost
     | LoyaltyCost
     | ExileCost
     | CrewCost
@@ -235,7 +263,7 @@ export interface TriggeredAbility {
     isDelayed?: boolean;
     oneShot?: boolean;
     firesOnce?: boolean;
-    targetDefinition?: TargetDefinition;
+    targetDefinitions?: TargetDefinition[];
     abilityIndex?: number;
     targetIds?: string[];
 }
@@ -244,10 +272,10 @@ export interface TriggeredAbility {
  * AbilityDefinition - Standardized contract for all card abilities.
  * Standardizes Rule 113 (Abilities), separating Spell, Activated, Triggered, and Static types.
  */
-export type AbilityDefinition = 
-    | SpellAbilityDefinition 
-    | ActivatedAbilityDefinition 
-    | TriggeredAbilityDefinition 
+export type AbilityDefinition =
+    | SpellAbilityDefinition
+    | ActivatedAbilityDefinition
+    | TriggeredAbilityDefinition
     | StaticAbilityDefinition;
 
 export interface BaseAbilityDefinition {
@@ -264,7 +292,7 @@ export interface BaseAbilityDefinition {
      * ACTIVATION-TIME TARGETS (CR 601.2c / 602.2b)
      * These must be chosen when the spell/ability is put on the stack.
      */
-    targetDefinition?: TargetDefinition | TargetDefinition[];
+    targetDefinitions?: TargetDefinition[];
     /** Manual override for card image/art */
     image_url?: string;
     /** Metadata for UI display */

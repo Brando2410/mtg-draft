@@ -37,10 +37,10 @@ export const JoinedResearchersSecretRendezvous: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
+                targetDefinitions: [{
                     type: TargetType.Opponent,
                     count: 1
-                },
+                }],
                 effects: [
                     {
                         type: EffectType.DrawCards,

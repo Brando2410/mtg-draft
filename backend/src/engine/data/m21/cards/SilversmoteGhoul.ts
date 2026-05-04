@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const SilversmoteGhoul: CardDefinition = {
     name: "Silversmote Ghoul",
@@ -16,7 +16,7 @@ export const SilversmoteGhoul: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
             activeZone: Zone.Graveyard,
-            condition: 'OUR_TURN_AND_LIFE_GAINED_3_OR_MORE_THIS_TURN',
+            condition: `${ConditionType.IsYourTurn} && ${ConditionType.LifeGained3OrMoreThisTurn}`,
             effects: [{ type: EffectType.PutOnBattlefield, targetMapping: TargetMapping.Self, tapped: true }]
         },
         {

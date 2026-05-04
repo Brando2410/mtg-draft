@@ -9,11 +9,11 @@ export const StudyBreak: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 2,
                 type: TargetType.Creature,
                 minCount: 0
-            },
+            }],
             effects: [
                 { type: EffectType.Tap, targetMapping: TargetMapping.TargetAll },
                 { type: EffectType.Learn }

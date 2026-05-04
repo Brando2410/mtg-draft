@@ -18,11 +18,11 @@ export const RestorationSeminar: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Choose a nonland permanent to return",
                     selectionPool: TargetMapping.ControllerGraveyard,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.CardInGraveyard,
                         count: 1,
                         restrictions: [Restriction.NonLandPermanent]
-                    },
+                    }],
                     effects: [
                         {
                             type: EffectType.PutOnBattlefield,

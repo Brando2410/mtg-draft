@@ -37,10 +37,10 @@ export const KirolHistoryBuffPackaPunch: CardDefinition = {
         abilities: [
             {
                 type: AbilityType.Spell,
-                targetDefinition: {
+                targetDefinitions: [{
                     type: TargetType.Creature,
                     count: 1,
-                },
+                }],
                 effects: [
                     { type: EffectType.Mill, amount: 1, targetMapping: TargetMapping.Controller },
                     { type: EffectType.AddCounters, counterType: '+1/+1', amount: 2, targetMapping: TargetMapping.Target1 },

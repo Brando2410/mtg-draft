@@ -17,12 +17,12 @@ export const NiambiEsteemedSpeaker: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 optional: true,
                 restrictions: [Restriction.YouControl, Restriction.Other]
-            },
+            }],
             effects: [
                 { type: EffectType.ReturnToHand, targetMapping: TargetMapping.Target1 },
                 {

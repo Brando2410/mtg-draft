@@ -14,11 +14,11 @@ export const PillardropRescuer: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.CardInGraveyard,
                 restrictions: [Restriction.Creature, Restriction.ManaValue3OrLess, Restriction.YouControl]
-            },
+            }],
             effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Target1 }]
         }
     ]

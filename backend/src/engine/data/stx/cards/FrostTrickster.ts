@@ -16,11 +16,11 @@ export const FrostTrickster: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 count: 1,
                 type: TargetType.Creature,
                 restrictions: [Restriction.OpponentControl]
-            },
+            }],
             effects: [
                 { type: EffectType.Tap, targetMapping: TargetMapping.Target1 },
                 { type: EffectType.ApplyContinuousEffect, effects: [{ type: 'Freeze' }], duration: { type: DurationType.UntilNextUntapStep }, targetMapping: TargetMapping.Target1 }

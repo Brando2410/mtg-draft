@@ -16,10 +16,10 @@ export const DinasGuidance: CardDefinition = {
             effects: [
                 {
                     type: EffectType.SearchLibrary,
-                    targetDefinition: {
+                    targetDefinitions: [{
                         type: TargetType.Creature,
                         count: 1
-                    },
+                    }],
                     reveal: true,
                     zone: Zone.None,
                     effects: [

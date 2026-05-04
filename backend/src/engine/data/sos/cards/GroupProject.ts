@@ -40,7 +40,7 @@ export const GroupProject: CardDefinition = {
                     condition: ConditionType.IsFlashbackCast,
                     targetMapping: TargetMapping.Self,
                     additionalCosts: [{
-                        type: CostType.TapSelection, value: 3, restrictions: [Restriction.Creature, Restriction.Untapped]
+                        type: CostType.TapSelection, amount: 3, restrictions: [Restriction.Creature, Restriction.Untapped]
                     }]
                 }
             ]

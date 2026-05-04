@@ -87,7 +87,8 @@ export class CostProcessor {
 
       case CostType.Sacrifice: {
         const sacCost = cost as SacrificeCost;
-        const neededSac = (sacCost.amount !== undefined) ? sacCost.amount : 1;
+        if (String(sacCost.amount) === 'ANY') return true;
+        const neededSac = String(sacCost.amount) === 'ALL' ? state.battlefield.filter(c => String(c.controllerId) === String(playerId)).length : (Number(sacCost.amount) || 1);
         const { targeting: TargetingProcessor } = getProcessors(state);
         const validSacrifices = state.battlefield.filter(c =>
           String(c.controllerId) === String(playerId) &&
@@ -101,7 +102,8 @@ export class CostProcessor {
 
       case CostType.Discard: {
         const discCost = cost as DiscardCost;
-        const neededDisc = discCost.amount || 1;
+        if (String(discCost.amount) === 'ANY') return true;
+        const neededDisc = String(discCost.amount) === 'ALL' ? player.hand.length : (Number(discCost.amount) || 1);
         const { targeting: TargetingProcessor } = getProcessors(state);
         const validDiscards = player.hand.filter(c =>
           (!discCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, discCost.restrictions, { controllerId: playerId, sourceId: source.id }))
@@ -122,6 +124,8 @@ export class CostProcessor {
         if (exileCost.targetMapping === 'SELF' || exileCost.type === CostType.ExileSelf) {
           return !!this.findObject(state, source.id);
         }
+        if (String(exileCost.amount) === 'ANY') return true;
+        
         const zones = exileCost.sourceZones || [Zone.Battlefield];
         const pool = zones.flatMap((z: Zone) => {
           if (z === Zone.Battlefield) return state.battlefield.filter(o => o.controllerId === playerId);
@@ -130,7 +134,7 @@ export class CostProcessor {
           if (z === Zone.Exile) return state.exile;
           return [];
         });
-        const neededExile = exileCost.amount || 1;
+        const neededExile = String(exileCost.amount) === 'ALL' ? pool.length : (Number(exileCost.amount) || 1);
         const { targeting: TargetingProcessor } = getProcessors(state);
         const validExiles = pool.filter((c: GameObject) =>
           (!exileCost.restrictions || TargetingProcessor.matchesRestrictions(state, c, exileCost.restrictions, { controllerId: playerId, sourceId: source.id }))
@@ -141,7 +145,7 @@ export class CostProcessor {
       case CostType.Crew: {
         const crewCost = cost as CrewCost;
         const xValue = source.xValue ?? 0;
-        const amountStr = String(crewCost.amount || crewCost.value || 0);
+        const amountStr = String(crewCost.value || 0);
         const amount = amountStr === 'X' ? xValue : Number(amountStr);
         const candidates = state.battlefield.filter(o =>
           o.controllerId === playerId &&
@@ -155,7 +159,7 @@ export class CostProcessor {
 
       case CostType.TapSelection: {
         const tapCost = cost as TapSelectionCost;
-        const amount = Number(tapCost.value || tapCost.amount || 1);
+        const amount = Number(tapCost.amount || 1);
         const candidates = state.battlefield.filter(o =>
           String(o.controllerId) === String(playerId) &&
           !o.isTapped &&
@@ -370,10 +374,10 @@ export class CostProcessor {
         costStr = String((cost as LoyaltyCost).value);
         break;
       case CostType.Crew:
-        costStr = String((cost as CrewCost).value || (cost as CrewCost).amount || "");
+        costStr = String((cost as CrewCost).value || "");
         break;
       case CostType.TapSelection:
-        costStr = String((cost as TapSelectionCost).value || (cost as TapSelectionCost).amount || "");
+        costStr = String((cost as TapSelectionCost).amount || "");
         break;
       default:
         return "";

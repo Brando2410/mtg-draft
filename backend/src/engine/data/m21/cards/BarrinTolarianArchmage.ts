@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const BarrinTolarianArchmage: CardDefinition = {
     name: "Barrin, Tolarian Archmage",
@@ -16,18 +16,18 @@ export const BarrinTolarianArchmage: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CreatureOrPlaneswalker,
                 count: 1,
                 minCount: 0,
                 restrictions: [Restriction.Other]
-            },
+            }],
             effects: [{ type: EffectType.ReturnToHand, targetMapping: TargetMapping.Target1 }]
         },
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: 'OUR_TURN_AND_PERMANENT_RETURNED_TO_HAND_THIS_TURN',
+            condition: `${ConditionType.IsYourTurn} && ${ConditionType.PermanentReturnedToHandThisTurn}`,
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }
     ]

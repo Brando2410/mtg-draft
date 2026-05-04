@@ -36,7 +36,7 @@ export const MindintoMatter: CardDefinition = {
                                 {
                                     type: EffectType.PutOnBattlefield,
                                     tapped: true,
-                                    targetDefinition: {
+                                    targetDefinitions: [{
                                         type: TargetType.CardInHand,
                                         count: 1,
                                         restrictions: [
@@ -44,7 +44,7 @@ export const MindintoMatter: CardDefinition = {
                                             Restriction.ManaValueLessOrEqualToX
 
                                         ]
-                                    },
+                                    }],
                                 }
                             ]
                         },

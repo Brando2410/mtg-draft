@@ -9,10 +9,10 @@ export const StandUpforYourself: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 restrictions: [Restriction.Power3OrGreater]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Destroy,

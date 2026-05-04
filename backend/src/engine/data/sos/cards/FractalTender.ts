@@ -1,5 +1,5 @@
-import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/engine_types';
-    export const FractalTender: CardDefinition = {
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+export const FractalTender: CardDefinition = {
     name: "Fractal Tender",
     manaCost: "{3}{G}{U}",
     scryfall_id: "ea7f5262-4ddb-410a-be72-4bac6af9b4ec",
@@ -22,7 +22,7 @@ import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/e
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EndStep,
-            condition: 'PUT_COUNTER_ON_SELF_THIS_TURN',
+            condition: ConditionType.PutCounterOnSelfThisTurn,
             effects: [
                 {
                     type: EffectType.CreateToken,
@@ -33,6 +33,7 @@ import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/e
                         colors: ['G', 'U'],
                         power: '0',
                         toughness: '0',
+                        image_url: 'https://cards.scryfall.io/normal/front/8/b/8b5f1fdb-04df-4224-acb4-7819c37565f5.jpg?1775828306',
                     },
                     amount: 1,
                     startingCounters: {
@@ -46,4 +47,4 @@ import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/e
     power: "3",
     toughness: "3"
 };
-    
+

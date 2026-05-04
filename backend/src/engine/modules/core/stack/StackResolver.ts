@@ -60,6 +60,7 @@ export class StackResolver {
     }
 
     // 2. Execute Effects (Rule 608.2c)
+    this.log(`[RESOLVE] ${this.getObjectName(stackObj)} resolving. Targets: ${stackObj.targets?.join(', ')}`);
     const completed = EffectProcessor.resolveEffects({
       state: this.state,
       effects,
@@ -87,7 +88,7 @@ export class StackResolver {
         sourceId: stackObj.sourceId,
         controllerId: stackObj.controllerId,
         stackObject: stackObj,
-        targetDef: stackObj.data?.targetDefinition,
+        targetDefinitions: stackObj.data?.targetDefinitions,
         targetIndex: index
       }, targetId);
     });

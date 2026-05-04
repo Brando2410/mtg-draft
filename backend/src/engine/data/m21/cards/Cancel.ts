@@ -11,7 +11,7 @@ export const Cancel: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Spell, count: 1 },
+            targetDefinitions: [{ type: TargetType.Spell, count: 1 }],
             effects: [{ type: EffectType.CounterSpell, targetMapping: TargetMapping.Target1 }]
         }
     ]

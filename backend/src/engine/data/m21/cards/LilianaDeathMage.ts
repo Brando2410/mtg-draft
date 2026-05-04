@@ -15,12 +15,12 @@ export const LilianaDeathMage: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Loyalty, value: 1 }],
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
                 count: 1,
                 optional: true,
                 restrictions: [Restriction.Creature, Restriction.YouControl]
-            },
+            }],
             effects: [{
                 type: EffectType.Choice,
                 label: "Return target creature card from your graveyard to your hand?",
@@ -39,7 +39,7 @@ export const LilianaDeathMage: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Loyalty, value: -3 }],
-            targetDefinition: { type: TargetType.Creature, count: 1 },
+            targetDefinitions: [{ type: TargetType.Creature, count: 1 }],
             effects: [
                 { type: EffectType.Destroy, targetMapping: TargetMapping.Target1 },
                 { type: EffectType.LoseLife, amount: 2, targetMapping: TargetMapping.Target1Controller }
@@ -48,7 +48,7 @@ export const LilianaDeathMage: CardDefinition = {
         {
             type: AbilityType.Activated,
             costs: [{ type: CostType.Loyalty, value: -7 }],
-            targetDefinition: { type: TargetType.Opponent, count: 1 },
+            targetDefinitions: [{ type: TargetType.Opponent, count: 1 }],
             effects: [{
                 type: EffectType.LoseLife,
                 amount: 'TARGET_1_GRAVEYARD_CREATURE_COUNT_X2',

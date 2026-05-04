@@ -25,12 +25,12 @@ export const BiblioplexTomekeeper: CardDefinition = {
                         {
                             label: 'Prepare a creature',
                             effects: [{ type: EffectType.Prepare, targetMapping: TargetMapping.Target1 }],
-                            targetDefinition: { type: TargetType.Creature }
+                            targetDefinitions: [{ type: TargetType.Creature }]
                         },
                         {
                             label: 'Unprepare a creature',
                             effects: [{ type: EffectType.Unprepare, targetMapping: TargetMapping.Target1 }],
-                            targetDefinition: { type: TargetType.Creature }
+                            targetDefinitions: [{ type: TargetType.Creature }]
                         }
                     ]
                 }

@@ -6,7 +6,7 @@ import { AbilityType } from './abilities';
 import type { GameObjectId, PlayerId, RestrictionObject } from './core';
 import { Phase, Step, Zone } from './core';
 import type { ContinuousEffect } from './effects';
-import type { AbilityRestriction } from './targeting';
+import type { AbilityRestriction, TargetDefinition } from './targeting';
 
 export interface CardDefinition {
     name: string;
@@ -37,8 +37,8 @@ export interface CardDefinition {
     exileOnResolution?: boolean;
     rarity?: 'common' | 'uncommon' | 'rare' | 'mythic' | 'basic';
     cannotBeCopied?: boolean;
-    targetDefinition?: import('./targeting').TargetDefinition;
-    auraRestriction?: import('./targeting').TargetDefinition;
+    targetDefinitions?: TargetDefinition[];
+    auraRestrictions?: TargetDefinition[];
 }
 
 export interface GameObject {

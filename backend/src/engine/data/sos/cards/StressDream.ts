@@ -10,11 +10,11 @@ export const StressDream: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 optional: true
-            },
+            }],
             effects: [
                 {
                     type: EffectType.DealDamage,

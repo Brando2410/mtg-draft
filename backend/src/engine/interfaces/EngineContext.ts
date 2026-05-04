@@ -38,14 +38,26 @@ export interface FinalizeCastOptions {
     additionalCosts: AbilityCost[];
     declaredTargets: string[];
     spellEffects: EffectDefinition[];
-    targetDefinition: TargetDefinition | TargetDefinition[] | null;
-    isFirstInstantOrSorcery: boolean;
-    isInstantOrSorcery: boolean;
+    targetDefinitions?: TargetDefinition[];
+    isFirstInstantOrSorcery?: boolean;
+    isInstantOrSorcery?: boolean;
     isFreeCast?: boolean;
     parentContext?: ResolutionContext;
 }
 
 export interface FinalizeAbilityOptions {
+    playerId: PlayerId;
+    obj: GameObject;
+    ability: AbilityDefinition;
+    abilityIndex: number;
+    declaredTargets: string[];
+    xValue?: number;
+    preSelectedChoice?: number;
+    parentContext?: ResolutionContext;
+    exileOnResolution?: boolean;
+}
+
+export interface InteractiveAbilityOptions {
     playerId: PlayerId;
     obj: GameObject;
     ability: AbilityDefinition;

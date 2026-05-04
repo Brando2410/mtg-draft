@@ -86,10 +86,10 @@ export class MoveEffectHandler {
 
     if (selectionType === SelectionType.Target && finalTargetIds.length > 0) return this.resolveMoveTargets(state, effect, finalTargetIds, context);
     if (selectionType === SelectionType.Search && (effect.sourceZones || []).includes(Zone.Library)) return SearchEffectHandler.handle(state, effect, context);
-    if (selectionType === SelectionType.All) return this.resolveMassMove(state, effect, finalTargetIds, context);
+    if (selectionType === SelectionType.ALL) return this.resolveMassMove(state, effect, finalTargetIds, context);
     if (effect.type === EffectType.ExileUntilManaValue) return this.resolveExileUntilManaValue(state, effect, controllerId, context);
 
-    if (effect.targetDefinition && finalTargetIds.length === 0 && !effect.targetMapping) {
+    if (effect.targetDefinitions && finalTargetIds.length === 0 && !effect.targetMapping) {
       return this.resolveInteractiveMovementSelection(state, effect, controllerId, context);
     }
 
@@ -104,19 +104,19 @@ export class MoveEffectHandler {
   ) {
     const { stackObject } = context;
     const parentContext = context;
-    const targetDef = Array.isArray(effect.targetDefinition)
-      ? effect.targetDefinition[0]
-      : effect.targetDefinition!;
-    if (!targetDef) return;
+    const targetDefinitions = Array.isArray(effect.targetDefinitions)
+      ? effect.targetDefinitions[0]
+      : effect.targetDefinitions!;
+    if (!targetDefinitions) return;
 
     const player = state.players[controllerId];
     if (!player) return;
 
     let pool: GameObject[] = [];
-    if (targetDef.type === TargetType.CardInHand) pool = player.hand;
-    else if (targetDef.type === TargetType.CardInGraveyard) {
+    if (targetDefinitions.type === TargetType.CardInHand) pool = player.hand;
+    else if (targetDefinitions.type === TargetType.CardInGraveyard) {
       pool = Object.values(state.players).flatMap((p: PlayerState) => p.graveyard);
-    } else if (targetDef.type === TargetType.Permanent)
+    } else if (targetDefinitions.type === TargetType.Permanent)
       pool = state.battlefield.filter((o: GameObject) => RuleUtils.getController(o) === controllerId);
     else return;
 
@@ -146,7 +146,7 @@ export class MoveEffectHandler {
       return res;
     };
 
-    const restrictions = getRestrictions(targetDef);
+    const restrictions = getRestrictions(targetDefinitions);
     const validCandidates = pool.filter((c) =>
       TargetingProcessor.matchesRestrictions(state, c, restrictions, {
         sourceId,
@@ -165,12 +165,12 @@ export class MoveEffectHandler {
     }
 
     const resolvedMin =
-      targetDef.minCount !== undefined
-        ? EffectProcessor.resolveAmount(state, targetDef.minCount as any, context)
-        : EffectProcessor.resolveAmount(state, targetDef.count || 1 as any, context);
+      targetDefinitions.minCount !== undefined
+        ? EffectProcessor.resolveAmount(state, targetDefinitions.minCount as any, context)
+        : EffectProcessor.resolveAmount(state, targetDefinitions.count || 1 as any, context);
     const resolvedMax = EffectProcessor.resolveAmount(
       state,
-      targetDef.count || 1,
+      targetDefinitions.count || 1,
       context,
     );
 
@@ -287,7 +287,7 @@ export class MoveEffectHandler {
     const processors = getProcessors(state);
     const amount = processors.effect.resolveAmount(
       state,
-      (moveEff.fromTop || 1) as any,
+      (moveEff.fromTop || (moveEff as any).amount || 1) as any,
       context,
       targets,
     );
@@ -454,9 +454,10 @@ export class MoveEffectHandler {
       effect.type === EffectType.DiscardCards || effect.isDiscard;
 
     targetIds.forEach((tid: string) => {
+      logger.debug(state, LogCategory.ACTION, `[MOVE-DEBUG] Resolving movement for target ${tid} to zone ${zone}`);
       if (state.players[tid as PlayerId]) {
         // If the target is a player and we have a selection definition, open the card picker
-        if (moveEff.targetDefinition) {
+        if (moveEff.targetDefinitions) {
           this.resolveInteractiveMovementSelection(
             state,
             effect,
@@ -584,13 +585,13 @@ export class MoveEffectHandler {
         sourceId: stackObject?.sourceId || "",
         restrictions: effect.restrictions,
         reveal: moveEff.reveal,
-        optional: effect.optional || effect.selectionType === SelectionType.AnyNumber,
+        optional: effect.optional || effect.selectionType === SelectionType.ANY,
         minChoices:
-          effect.selectionType === SelectionType.AnyNumber || (effect as any).amount === "ANY"
+          effect.selectionType === SelectionType.ANY || (effect as any).amount === "ANY"
             ? 0
             : 1,
         maxChoices: (() => {
-          if (effect.selectionType === SelectionType.AnyNumber || (effect as any).amount === "ANY") {
+          if (effect.selectionType === SelectionType.ANY || (effect as any).amount === "ANY") {
             return cards.length;
           }
           const processors = getProcessors(state);
@@ -598,7 +599,7 @@ export class MoveEffectHandler {
           return Math.min(cards.length, resolved);
         })(),
         actionType:
-          effect.optional || effect.selectionType === SelectionType.AnyNumber
+          effect.optional || effect.selectionType === SelectionType.ANY
             ? ActionType.OptionalAction
             : ActionType.ResolutionChoice,
         onSelected: (selectedCard: GameObject) => {
@@ -636,14 +637,14 @@ export class MoveEffectHandler {
             const remaining = cards.filter(c => c.id !== selectedCard.id);
             if (remaining.length > 0) {
               const remZone = (effect as any).remainderZone || Zone.Library;
-              remaining.forEach(c => {
-                subEffects.push({
-                  type: EffectType.MoveToZone,
-                  targetId: c.id,
-                  zone: remZone,
-                  targetPlayerId: controllerId
-                } as MoveEffect);
-              });
+              subEffects.push({
+                type: EffectType.MoveToZone,
+                targetIds: remaining.map(c => c.id),
+                zone: remZone,
+                targetPlayerId: controllerId,
+                libraryPosition: (effect as any).remainderPosition || moveEff.libraryPosition || 'bottom',
+                shuffle: true // "in a random order"
+              } as MoveEffect);
             }
           }
 
@@ -673,7 +674,7 @@ export class MoveEffectHandler {
       // This ensures it only runs once AFTER all choices are made.
       const remainderMove = {
         type: EffectType.MoveToZone,
-        selectionType: SelectionType.All,
+        selectionType: SelectionType.ALL,
         targetMapping: "REMAINDER_OF_POOL",
         zone: effect.remainderZone || Zone.Library,
         libraryPosition:

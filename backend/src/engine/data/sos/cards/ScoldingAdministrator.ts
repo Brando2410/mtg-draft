@@ -27,11 +27,11 @@ export const ScoldingAdministrator: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Death,
             condition: ConditionType.HasCounters,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
                 optional: true
-            },
+            }],
             effects: [
                 {
                     type: EffectType.MoveCounters,

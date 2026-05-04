@@ -9,10 +9,10 @@ export const BlueSunsZenith: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Player,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.DrawCards,

@@ -13,10 +13,10 @@ export const SilverquillApprentice: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Magecraft,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
-            },
+            }],
             effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 1, duration: { type: DurationType.UntilEndOfTurn }, targetMapping: TargetMapping.Target1 }]
         }
     ]

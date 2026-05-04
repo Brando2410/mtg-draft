@@ -129,8 +129,8 @@ export const CopySpellHandler: IEffectHandler = {
             });
 
             if (effect.chooseNewTargets) {
-                const targetDef = copy.data?.targetDefinition || copy.targetDefinition;
-                if (targetDef) {
+                const targetDefinitions = copy.data?.targetDefinitions || copy.targetDefinitions;
+                if (targetDefinitions) {
                     const { targeting: TP } = getProcessors(state);
                     const pool = [
                         ...Object.keys(state.players),
@@ -141,7 +141,7 @@ export const CopySpellHandler: IEffectHandler = {
                         sourceId: copy.id,
                         controllerId: copy.controllerId,
                         stackObject: copy,
-                        targetDef,
+                        targetDefinitions,
                         targetIndex: 0
                     }, tid));
 
@@ -154,7 +154,7 @@ export const CopySpellHandler: IEffectHandler = {
                                 label: "ChooseNewTargets",
                                 isCopyTargeting: true,
                                 stackId: copy.id,
-                                targetDefinition: targetDef,
+                                targetDefinitions: targetDefinitions,
                                 targets: legalTargetIds,
                                 selectedTargets: [],
                                 declaredTargets: [], // Force empty for UI
@@ -189,8 +189,8 @@ export const CopyAbilityHandler: IEffectHandler = {
             logger.info(state, LogCategory.ACTION, `[COPY] Copied ability for ${state.players[controllerId].name}.`);
 
             if (effect.chooseNewTargets && copy.targets && copy.targets.length > 0) {
-                const targetDef = copy.data?.targetDefinition || copy.targetDefinition;
-                if (targetDef) {
+                const targetDefinitions = copy.data?.targetDefinitions || copy.targetDefinitions;
+                if (targetDefinitions) {
                     const pool = [
                         ...Object.keys(state.players),
                         ...state.battlefield.map((o: any) => o.id)
@@ -199,7 +199,7 @@ export const CopyAbilityHandler: IEffectHandler = {
                         sourceId: copy.id,
                         controllerId: copy.controllerId,
                         stackObject: copy,
-                        targetDef
+                        targetDefinitions
                     }, tid));
 
                     if (legalTargetIds.length > 0) {
@@ -211,7 +211,7 @@ export const CopyAbilityHandler: IEffectHandler = {
                                 label: "ChooseNewTargets",
                                 isCopyTargeting: true,
                                 stackId: copy.id,
-                                targetDefinition: targetDef,
+                                targetDefinitions: targetDefinitions,
                                 targets: legalTargetIds,
                                 selectedTargets: [],
                                 optional: true,

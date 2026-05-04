@@ -15,11 +15,11 @@ export const SpellPierce: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Spell,
                 restrictions: [Restriction.NonCreature],
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.CounterSpell,

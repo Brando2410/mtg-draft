@@ -15,11 +15,11 @@ export const Daydream: CardDefinition = {
         {
             type: AbilityType.Spell,
             flashbackCost: "{2}{W}",
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature, count: 1, restrictions: [
                     Restriction.YouControl
                 ]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.Exile,

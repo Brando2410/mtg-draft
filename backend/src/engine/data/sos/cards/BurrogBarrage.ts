@@ -13,7 +13,7 @@ export const BurrogBarrage: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Spell,
-            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [Restriction.YouControl] },
+            targetDefinitions: [{ type: TargetType.Creature, count: 1, restrictions: [Restriction.YouControl] }],
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
@@ -29,7 +29,7 @@ export const BurrogBarrage: CardDefinition = {
                     choices: [
                         {
                             label: "Yes",
-                            targetDefinition: { type: TargetType.Creature, count: 1, restrictions: [Restriction.OpponentControl] },
+                            targetDefinitions: [{ type: TargetType.Creature, count: 1, restrictions: [Restriction.OpponentControl] }],
                             effects: [
                                 {
                                     type: EffectType.DealDamage,

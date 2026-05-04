@@ -19,11 +19,11 @@ export const GraduationDay: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastInstantOrSorcery,
             condition: ConditionType.ReparteeTrigger,
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.AnyTarget,
                 count: 1,
                 restrictions: [Restriction.Creature, Restriction.YouControl]
-            },
+            }],
             effects: [
                 {
                     type: EffectType.AddCounters,

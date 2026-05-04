@@ -19,10 +19,10 @@ export const SanctumofTranquilLight: CardDefinition = {
                 amount: DynamicAmount.ShrinesYouControlCount,
                 manaType: 'Generic'
             },
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
-            },
+            }],
             effects: [{ type: EffectType.Tap, targetMapping: TargetMapping.Target1 }]
         }
     ]

@@ -16,10 +16,10 @@ export const BurstLightning: CardDefinition = {
         {
             type: AbilityType.Spell,
             kicker: { type: CostType.Mana, value: "{4}" },
-            targetDefinition: {
+            targetDefinitions: [{
                 type: TargetType.Any,
                 count: 1
-            },
+            }],
             effects: [
                 {
                     type: EffectType.DealDamage,
