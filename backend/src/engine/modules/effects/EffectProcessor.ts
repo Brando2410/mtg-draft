@@ -128,6 +128,17 @@ export class EffectProcessor {
           return false;
         }
 
+        // If the pending action was created by a sub-effect for a DIFFERENT object
+        // (e.g. CastSpell created targeting for the sub-spell), don't overwrite it.
+        // Just save position on the stackObject so the parent can resume later.
+        if (state.pendingAction.sourceId && state.pendingAction.sourceId !== sourceId) {
+          if (stackObject) {
+            if (!stackObject.data) stackObject.data = {};
+            stackObject.data.nextEffectIndex = i + 1;
+          }
+          return false;
+        }
+
         if (stackObject) {
           if (!stackObject.data) stackObject.data = {};
           stackObject.data.nextEffectIndex = i + 1;
@@ -201,7 +212,7 @@ export class EffectProcessor {
     const targets = options.validTargetIds || [];
 
     const sourceObj =
-      this.findObject(state, sourceId, stackObject, parentContext) ||
+      this.findObject(state, sourceId, stackObject, parentContext, lookingCards) ||
       (stackObject?.card ? stackObject.card : stackObject);
     const controllerId =
       (controllerIdOverride || (sourceObj as GameObject)?.controllerId || state.activePlayerId) as PlayerId;
@@ -313,6 +324,7 @@ export class EffectProcessor {
       if (
         ([
           EffectType.CreateToken,
+          EffectType.CreateTokenCopy,
           EffectType.DrawCards,
           EffectType.Scry,
           EffectType.Surveil,
@@ -405,7 +417,7 @@ export class EffectProcessor {
     return ids.filter((tid, index) => {
       if (!tid) return false;
       if (state.players[tid as PlayerId]) return true;
-      const obj = this.findObject(state, tid, stackObject, parentContext);
+      const obj = this.findObject(state, tid, stackObject, context, context.lookingCards);
       if (!obj) return false;
       if (tid === sourceId) return true; // Source is always a legal part of its own mapping (Rule 608.2b)
 
@@ -481,6 +493,7 @@ export class EffectProcessor {
     id: string,
     stackObject?: StackObject,
     parentContext?: ResolutionContext,
+    lookingCards?: GameObject[]
   ): Targetable | undefined {
     // Priority 1: LKI Snapshot (Rule 608.2h)
     const processors = getProcessors(state);
@@ -489,6 +502,7 @@ export class EffectProcessor {
 
     return (
       RuleUtils.findObject(state, id) ||
+      (lookingCards as GameObject[])?.find((o) => o.id === id) ||
       ((state.pendingAction?.data as any)?.lookingCards as GameObject[])?.find(
         (o) => o.id === id,
       ) ||

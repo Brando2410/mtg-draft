@@ -692,7 +692,7 @@ export class SpellProcessor {
             targets: declaredTargets || [],
             card: cardToPlay,
             definition: cardToPlay.definition,
-            name: cardToPlay.definition.name + (cardToPlay.xValue !== undefined ? ` (X=${cardToPlay.xValue})` : ""),
+            name: cardToPlay.definition.name + (cardToPlay.xValue !== undefined && ((cardToPlay.definition.manaCost || "").includes("{X}") || cardToPlay.xValue > 0) ? ` (X=${cardToPlay.xValue})` : ""),
             cannotBeCopied: cardToPlay.definition.cannotBeCopied,
             xValue: cardToPlay.xValue,
             image_url: cardToPlay.definition.image_url,
@@ -706,8 +706,8 @@ export class SpellProcessor {
                 preSelectedChoice,
                 targetsControllers,
                 declaredXValue: cardToPlay.xValue,
-                summary: cardToPlay.xValue !== undefined ? `X = ${cardToPlay.xValue}` : undefined,
-                choices: cardToPlay.xValue !== undefined ? [{ label: "X", value: cardToPlay.xValue }] : []
+                summary: cardToPlay.xValue !== undefined && ((cardToPlay.definition.manaCost || "").includes("{X}") || cardToPlay.xValue > 0) ? `X = ${cardToPlay.xValue}` : undefined,
+                choices: cardToPlay.xValue !== undefined && ((cardToPlay.definition.manaCost || "").includes("{X}") || cardToPlay.xValue > 0) ? [{ label: "X", value: cardToPlay.xValue }] : []
             }
         };
 
@@ -750,9 +750,6 @@ export class SpellProcessor {
 
         logger.info(state, LogCategory.STACK, `[STACK] + ${state.players[playerId].name} cast ${cardToPlay.definition.name}${cardToPlay.xValue !== undefined ? ` (X=${cardToPlay.xValue})` : ''} for ${totalMana}${declaredTargets?.length ? ' targeting ' + declaredTargets.join(', ') : ''}`);
         if (!state.pendingAction) {
-            if (options.parentContext) {
-                return engine.resumeResolution(cardToPlay.id, stackObj, options.parentContext);
-            }
             engine.checkStateBasedActions();
             engine.resetPriorityToActivePlayer();
         }
@@ -777,7 +774,7 @@ export class SpellProcessor {
             controllerId: playerId,
             sourceId: obj.id,
             type: AbilityType.Activated,
-            name: `${obj.definition.name} Ability${obj.xValue !== undefined ? ` (X=${obj.xValue})` : ""}`,
+            name: `${obj.definition.name} Ability${obj.xValue !== undefined && (JSON.stringify(ability).includes('"X"') || obj.xValue > 0) ? ` (X=${obj.xValue})` : ""}`,
             image_url: obj.definition.image_url,
             targets: declaredTargets,
             abilityIndex: abilityIndex,
@@ -793,8 +790,8 @@ export class SpellProcessor {
                 targetDefinitions: (ability as any).targetDefinitions,
                 preSelectedChoice,
                 declaredXValue: xValue !== undefined ? xValue : obj.xValue,
-                summary: (xValue !== undefined ? xValue : obj.xValue) !== undefined ? `X = ${xValue !== undefined ? xValue : obj.xValue}` : undefined,
-                choices: (xValue !== undefined ? xValue : obj.xValue) !== undefined ? [{ label: "X", value: xValue !== undefined ? xValue : obj.xValue }] : []
+                summary: (xValue !== undefined ? xValue : obj.xValue) !== undefined && (JSON.stringify(ability).includes('"X"') || (xValue || obj.xValue || 0) > 0) ? `X = ${xValue !== undefined ? xValue : obj.xValue}` : undefined,
+                choices: (xValue !== undefined ? xValue : obj.xValue) !== undefined && (JSON.stringify(ability).includes('"X"') || (xValue || obj.xValue || 0) > 0) ? [{ label: "X", value: xValue !== undefined ? xValue : obj.xValue }] : []
             }
         };
 

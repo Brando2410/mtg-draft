@@ -606,14 +606,14 @@ export class TriggerProcessor {
         if (expectsOther && !expectsSelf && enteringId === t.sourceId) return false;
       }
       if (event.type === TriggerEvent.Death) {
-        const deadId = event.targetId;
+        const deadId = event.targetId || event.payload?.targetId || event.payload?.object?.id || event.sourceId;
         if (tEvents.includes(TriggerEvent.Death) && deadId !== t.sourceId)
           return false;
         if (tEvents.includes(TriggerEvent.DeathOther) && deadId === t.sourceId)
           return false;
       }
       if (event.type === TriggerEvent.CountersAdded) {
-        const targetId = event.targetId;
+        const targetId = event.targetId || event.payload?.targetId || event.payload?.object?.id || event.sourceId;
         if (tEvents.includes(TriggerEvent.CountersAdded) && targetId !== t.sourceId)
           return false;
         if (

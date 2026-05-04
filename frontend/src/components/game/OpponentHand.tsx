@@ -6,7 +6,7 @@ import { GameCard } from './GameCard';
 interface OpponentHandProps {
   hand: GameObject[];
   onHoverStart?: (obj: GameObject) => void;
-  onHoverEnd?: () => void;
+  onHoverEnd?: (id: string) => void;
   stateVersion?: number;
 }
 
@@ -74,7 +74,7 @@ export const OpponentHand = memo(({ hand, onHoverStart, onHoverEnd }: OpponentHa
                 }}
                 className="absolute w-20 h-28 origin-center pointer-events-auto cursor-help"
                 onMouseEnter={() => (isRevealed || true) && onHoverStart?.(cardWithFlags)}
-                onMouseLeave={() => (isRevealed || true) && onHoverEnd?.()}
+                onMouseLeave={() => (isRevealed || true) && onHoverEnd?.(card.id)}
               >
                 {isRevealed ? (
                     <div className="w-full h-full scale-[0.75] origin-center -translate-y-2 drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">

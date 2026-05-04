@@ -174,6 +174,7 @@ export class ChoiceProcessor {
                     startIndex: 0,
                     stackObject: action.data?.stackObj,
                     parentContext: action.data?.parentContext,
+                    lookingCards: action.data?.lookingCards as GameObject[],
                 });
                 logger.info(state, LogCategory.ACTION, `[CHOICE-DEBUG] Batch resolution finished. lastDiscardedIds: ${state.turnState.lastDiscardedIds?.length || 0}`);
             }

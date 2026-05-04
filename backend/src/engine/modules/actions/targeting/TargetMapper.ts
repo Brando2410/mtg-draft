@@ -351,7 +351,7 @@ export class TargetMapper {
       (stackData as any)?.event ||
       (stackData as any)?.trigger?.event;
 
-    switch (mapping) {
+    switch (mapping.toUpperCase()) {
       case TargetMapping.Self:
       case TargetMapping.SourceObject:
         return [sourceId];
@@ -754,18 +754,31 @@ export class TargetMapper {
         // Return the ID of the object that was just exiled by this effect chain
         return parentContext?.exiledIds || [];
       }
-      case TargetMapping.MatchingCards: {
-        if (!effect?.restrictions) return [];
+      case TargetMapping.AllMatchingCards:
+      case TargetMapping.MatchingCards:
+      case TargetMapping.MatchingPermanents:
+      case TargetMapping.AllMatchingPermanents:
+      case TargetMapping.MatchingPermanentsYouControl:
+      case TargetMapping.AllMatchingPermanentsYouControl: {
+        if (!effect?.restrictions && !mapping.includes('PERMANENT')) return [];
+        
         const sourceZones = effect.sourceZones || [Zone.Battlefield, Zone.Graveyard, Zone.Hand, Zone.Exile, Zone.Library];
         const zones = Array.isArray(sourceZones) ? (sourceZones as any[]) : [sourceZones];
 
+        // Normalize mapping to a set of restrictions
+        const finalRestrictions = [...(effect.restrictions || [])];
+        if (mapping.includes('PERMANENT')) finalRestrictions.push(Restriction.Permanent);
+        if (mapping.includes('YOU_CONTROL')) finalRestrictions.push(Restriction.YouControl);
+
         const pool: string[] = [];
         zones.forEach(z => {
+          // If we are looking for permanents only, we only care about the battlefield
+          if (mapping.includes('PERMANENT') && z !== Zone.Battlefield) return;
+
           if (z === Zone.Battlefield) pool.push(...state.battlefield.map(o => o.id));
           else if (z === Zone.Exile) pool.push(...state.exile.map(o => o.id));
           else if (z === Zone.Stack) pool.push(...state.stack.map(s => s.id));
           else {
-            // Hand, Graveyard, Library
             Object.values(state.players).forEach(p => {
               if (z === Zone.Hand) pool.push(...p.hand.map(c => c.id));
               else if (z === Zone.Graveyard) pool.push(...p.graveyard.map(c => c.id));
@@ -776,14 +789,11 @@ export class TargetMapper {
 
         return pool.filter((tid) => {
           const obj = RuleUtils.findObject(state, tid);
-          return (
-            obj &&
-            TargetValidator.matchesRestrictions(
-              state,
-              obj,
-              effect.restrictions,
-              targetingContext,
-            )
+          return obj && TargetValidator.matchesRestrictions(
+            state,
+            obj,
+            finalRestrictions,
+            targetingContext
           );
         });
       }

@@ -548,7 +548,8 @@ export class TargetingProcessor {
                 bypassPriority: true,
                 bypassTargeting: true,
                 parentContext: actionData?.parentContext,
-                isFreeCast: actionData?.isFreeCast
+                isFreeCast: actionData?.isFreeCast,
+                exileOnResolution: actionData?.exileOnResolution
             });
             engine.checkAutoPass(playerId);
             return success;

@@ -9,7 +9,7 @@ interface ZoneInspectorProps {
   onTapCard: (id: string) => void;
   targetableIds: Set<string>;
   onHoverStart?: (obj: GameObject) => void;
-  onHoverEnd?: () => void;
+  onHoverEnd?: (id: string) => void;
   onSwap?: () => void;
 }
 

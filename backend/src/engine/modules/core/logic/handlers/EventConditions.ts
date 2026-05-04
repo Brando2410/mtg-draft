@@ -174,7 +174,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, stackObject } = context;
             const threshold = parseInt(params[0]);
-            const spent = event?.amount || event?.payload?.card?.paidManaValue || event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.data?.paidManaValue || 0;
+            const spent = event?.amount || event?.payload?.card?.paidManaValue || event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.card?.paidManaValue || (stackObject as any)?.data?.paidManaValue || 0;
             return spent >= threshold;
         }
     },
@@ -182,7 +182,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, stackObject } = context;
             const threshold = parseInt(params[0]);
-            const spent = event?.amount || event?.payload?.card?.paidManaValue || event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.data?.paidManaValue || 0;
+            const spent = event?.amount || event?.payload?.card?.paidManaValue || event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.card?.paidManaValue || (stackObject as any)?.data?.paidManaValue || 0;
             return spent < threshold;
         }
     },
@@ -190,7 +190,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, stackObject } = context;
             const threshold = parseInt(params[0]);
-            const spent = event?.amount || event?.payload?.card?.paidManaValue || event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.data?.paidManaValue || 0;
+            const spent = event?.amount || event?.payload?.card?.paidManaValue || event?.payload?.card?.data?.paidManaValue || (event as any)?.data?.card?.paidManaValue || (event as any)?.eventData?.spent || (event as any)?.data?.spentMana || (stackObject as any)?.card?.paidManaValue || (stackObject as any)?.data?.paidManaValue || 0;
             return spent <= threshold;
         }
     },

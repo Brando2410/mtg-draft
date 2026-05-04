@@ -8,7 +8,7 @@ interface PlayerHandProps {
   virtualHand?: GameObject[];
   onPlayCard?: (cardId: string) => void;
   onHoverStart?: (obj: GameObject) => void;
-  onHoverEnd?: () => void;
+  onHoverEnd?: (id: string) => void;
   targetableIds?: Set<string>;
   stateVersion?: number;
 }

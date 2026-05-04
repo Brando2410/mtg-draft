@@ -1,7 +1,8 @@
-import { memo, useMemo, useState } from 'react';
+import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Phase, ActionType, Step } from '@shared/engine_types';
+import { ActionType, Step, Phase } from '@shared/engine_types';
 import { Sword, Shield, Zap, Diamond, Compass, ChevronsRight } from 'lucide-react';
+import { useActionButtonLogic } from '../../hooks/game/useActionButtonLogic';
 
 interface ActionButtonProps {
   hasPriority: boolean;
@@ -39,11 +40,7 @@ interface PhaseIndicatorProps {
 const PhaseIndicator = memo(({ id, icon: Icon, label, currentStep, isMyTurn, stops, onToggleStop }: PhaseIndicatorProps) => {
     const internalId = isMyTurn ? `my_${id.toLowerCase()}` : `opp_${id.toLowerCase()}`;
     const isStopped = stops[internalId];
-    
-    // Check if we are currently in this step
     const isCurrentStep = currentStep === id;
-    
-    // Determine active styling: Cyan for Current, Orange for Stopped
     const highlightColor = isCurrentStep ? 'text-cyan-400' : (isStopped ? 'text-orange-500' : 'text-slate-600');
 
     return (
@@ -53,7 +50,6 @@ const PhaseIndicator = memo(({ id, icon: Icon, label, currentStep, isMyTurn, sto
         className={`relative cursor-pointer transition-all flex flex-col items-center group px-1
             ${highlightColor} hover:scale-110 active:scale-90`}
         >
-            {/* Active Liquid Glow Backlight (Current Phase Only) */}
             {isCurrentStep && (
                 <motion.div 
                 layoutId="phase-glow"
@@ -71,7 +67,6 @@ const PhaseIndicator = memo(({ id, icon: Icon, label, currentStep, isMyTurn, sto
                 />
             </div>
             
-            {/* Arena-style Underline (Current Phase Indicator) */}
             {isCurrentStep && (
                 <motion.div 
                 layoutId="phase-indicator"
@@ -86,9 +81,6 @@ const PhaseIndicator = memo(({ id, icon: Icon, label, currentStep, isMyTurn, sto
     );
 });
 
-/**
- * Arena Action Button with Universal Phase Navigator.
- */
 export const ActionButton = memo(({ 
   hasPriority, 
   pendingAction, 
@@ -111,117 +103,27 @@ export const ActionButton = memo(({
   onClear,
   onUndo
 }: ActionButtonProps) => {
-  const isTargeting = (pendingAction?.playerId === effectivePlayerId) && (pendingAction?.type === ActionType.Targeting || (pendingAction?.type as any) === 'TARGETING');
+  const { 
+    buttonText, 
+    subLabel, 
+    isOrange, 
+    isDisabled, 
+    isCancel, 
+    setIsHovered 
+  } = useActionButtonLogic({
+    hasPriority,
+    pendingAction,
+    currentPhase,
+    currentStep,
+    stackLength,
+    isMyTurn,
+    effectivePlayerId,
+    attackerCount,
+    blockerCount
+  });
 
-  const [isHovered, setIsHovered] = useState(false);
-
-  const { buttonText, subLabel, isOrange, isDisabled, isCancel } = useMemo(() => {
-    let text = isMyTurn ? "Next" : "Pass";
-    let sub = "";
-    let orange = true;
-    let disabled = !hasPriority;
-    let cancel = false;
-
-    if (!isMyTurn && !hasPriority) {
-        return { buttonText: "Opponent's Turn", subLabel: "", isOrange: false, isDisabled: true, isCancel: false };
-    }
-
-    if (pendingAction) {
-        const isActionForMe = pendingAction.playerId === effectivePlayerId;
-        
-        if (!isActionForMe) {
-            return { 
-                buttonText: "Waiting", 
-                subLabel: "Opponent's Action", 
-                isOrange: false, 
-                isDisabled: true,
-                isCancel: false
-            };
-        }
-
-        if (pendingAction.type === ActionType.DeclareAttackers) {
-            text = attackerCount > 0 ? `${attackerCount} Attacker${attackerCount > 1 ? 's' : ''}` : "No Attacks";
-            sub = attackerCount > 0 ? "To Blockers" : (isHovered ? "To End of Combat" : "");
-            orange = true;
-        } else if (pendingAction.type === ActionType.DeclareBlockers) {
-            text = blockerCount > 0 ? `${blockerCount} Blocker${blockerCount > 1 ? 's' : ''}` : "No Blocks";
-            sub = "To Damage";
-            orange = true;
-        } else if (pendingAction.type === ActionType.Choice || pendingAction.type === ActionType.ModalSelection || pendingAction.type === ActionType.ResolutionChoice) {
-            const isContextual = pendingAction.data?.isContextual;
-            text = isContextual ? "Waiting" : "Confirm";
-            sub = isContextual ? "Choice required" : "Make a choice";
-            orange = !isContextual;
-            disabled = isContextual;
-        } else if (pendingAction.type === ActionType.Discard) {
-            const isOptional = pendingAction.data?.isOptionalDiscard;
-            if (isOptional) {
-                text = "Done Discarding";
-                sub = "Click to finish";
-                orange = true;
-                disabled = false;
-            } else {
-                text = "Pending Discard";
-                sub = "";
-                orange = false;
-                disabled = true;
-            }
-        } else if (pendingAction.type === ActionType.Targeting || (pendingAction.type as any) === 'TARGETING') {
-            const selected = pendingAction.data?.selectedTargets || [];
-            const targetDef = pendingAction.data?.targetDefinition;
-            const isOptional = targetDef?.optional || targetDef?.minCount === 0;
-            const minCount = pendingAction.data?.minCount ?? (targetDef?.minCount ?? (isOptional ? 0 : (targetDef?.count ?? 1)));
-            const totalCount = pendingAction.data?.count ?? (targetDef?.count ?? 1);
-            const isSpellCasting = pendingAction.data?.isSpellCasting;
-            const isAbility = pendingAction.data?.abilityIndex !== undefined;
-            const isInteractive = isSpellCasting || isAbility;
-            
-            const canConfirm = selected.length >= minCount;
-            
-            if (canConfirm) {
-                text = "Confirm";
-                orange = true;
-                disabled = false;
-            } else {
-                text = isInteractive ? "Cancel" : "Waiting";
-                orange = false;
-                disabled = !isInteractive;
-                if (isInteractive) {
-                    cancel = true;
-                }
-            }
-            
-            sub = `SELECT TARGETS: ${selected.length} / ${totalCount}`;
-        }
-    } else {
-        // We calculate sub regardless of priority to let the player know what's coming
-        switch(currentStep) {
-            case Step.Upkeep: sub = "To Draw"; break;
-            case Step.Draw: sub = "To Main 1"; break;
-            case Step.Main: sub = currentPhase === Phase.PreCombatMain ? "To Combat" : "End Turn"; break;
-            case Step.BeginningOfCombat: sub = "To Attackers"; break;
-            case Step.DeclareAttackers: sub = "To Blockers"; break;
-            case Step.DeclareBlockers: sub = "To Damage"; break;
-            case Step.FirstStrikeDamage: sub = "To Damage"; break;
-            case Step.CombatDamage: sub = "To End of Combat"; break;
-            case Step.EndOfCombat: sub = "To Main 2"; break;
-            case Step.End: sub = "End Turn"; break;
-        }
-
-        if (stackLength > 0 && hasPriority) {
-            text = "Resolve";
-            sub = "Next on stack";
-        } else if (!hasPriority) {
-            text = "Waiting";
-            orange = false;
-        } else if (currentStep === Step.End || (currentStep === Step.Main && currentPhase === Phase.PostCombatMain)) {
-            text = isMyTurn ? "End Turn" : "My Turn";
-            sub = isMyTurn ? "" : "End Turn";
-        }
-    }
-
-    return { buttonText: text, subLabel: sub, isOrange: orange, isDisabled: disabled, isCancel: cancel };
-  }, [hasPriority, pendingAction, currentStep, currentPhase, stackLength, isMyTurn, effectivePlayerId, attackerCount, blockerCount, isHovered, JSON.stringify(pendingAction?.data?.selectedTargets)]);
+  const isTargeting = (pendingAction?.playerId === effectivePlayerId) && 
+                     (pendingAction?.type === ActionType.Targeting || (pendingAction?.type as any) === 'TARGETING');
 
   const isCombat = currentPhase === Phase.Combat;
   const showCombatNavigator = isCombat || fullControl;
@@ -229,7 +131,6 @@ export const ActionButton = memo(({
   return (
     <div className="fixed bottom-12 right-12 flex flex-col items-center gap-4 z-[700]">
         
-        {/* COMBAT NAVIGATOR BAR (Only during Combat or Full Control) */}
         <AnimatePresence>
             {showCombatNavigator && (
                 <motion.div 
@@ -254,21 +155,14 @@ export const ActionButton = memo(({
                 animate={{ opacity: 1, scale: 1, x: 0 }}
                 className="flex flex-col gap-2 w-64"
             >
-                {/* SECONDARY TARGETING ACTIONS */}
-                {(() => {
-                    if (!isTargeting) return null;
+                {isTargeting && (() => {
                     const targetDef = pendingAction.data?.targetDefinition;
                     const minCount = pendingAction.data?.minCount ?? (targetDef?.minCount ?? (targetDef?.optional ? 0 : (targetDef?.count ?? 1)));
                     const totalCount = pendingAction.data?.count ?? (targetDef?.count ?? 1);
                     const isOptional = minCount === 0;
                     const isInteractive = pendingAction.data?.isSpellCasting || pendingAction.data?.abilityIndex !== undefined || pendingAction.data?.isCopyTargeting;
                     
-                    // Show secondary if:
-                    // 1. Multiple targets (need Clear Selection vs Confirm)
-                    // 2. Optional target (need Cancel Cast vs Confirm-without-targets)
-                    // 3. Interactive action (need Cancel Cast/Activation/Copy)
                     const showSecondary = totalCount > 1 || isOptional || isInteractive;
-                    
                     if (!showSecondary) return null;
 
                     return (
@@ -293,7 +187,6 @@ export const ActionButton = memo(({
                     );
                 })()}
 
-                {/* PRIMARY ACTION BUTTON */}
                 <button
                     onClick={onPass}
                     onMouseEnter={() => setIsHovered(true)}
@@ -316,7 +209,6 @@ export const ActionButton = memo(({
                     <span className="drop-shadow-md">{buttonText}</span>
                 </button>
 
-                {/* SKIP TURN BUTTON (Fast Forward) */}
                 <div className="absolute -bottom-2 -right-2 transform translate-x-1/2 translate-y-1/2">
                     <button
                         onClick={onTogglePassTurn}
@@ -333,7 +225,6 @@ export const ActionButton = memo(({
                     </button>
                 </div>
 
-                {/* SECONDARY COMBAT ACTION */}
                 {(pendingAction?.playerId === effectivePlayerId) && (pendingAction?.type === ActionType.DeclareAttackers || (pendingAction?.type === ActionType.DeclareBlockers && blockerCount > 0)) && (
                    <motion.button
                      initial={{ opacity: 0, y: -10 }}
@@ -351,7 +242,6 @@ export const ActionButton = memo(({
                    </motion.button>
                 )}
 
-                {/* SHARED SUB LABEL (Arena Style) - Fixed height to prevent layout jumping */}
                 <div className="flex justify-center w-full h-[14px] mt-1 items-center">
                     {subLabel && (
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 italic oblique leading-none text-center">

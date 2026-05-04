@@ -54,7 +54,7 @@ export const CastSpellHandler: IEffectHandler = {
       }
       const oldPriority = state.priorityPlayerId;
       state.priorityPlayerId = controllerId;
-      SP.playCard(
+      const res = SP.playCard(
         state,
         state.gameEngine || {
           tapForMana: () => { },
@@ -68,11 +68,13 @@ export const CastSpellHandler: IEffectHandler = {
           targets: [],
           bypassPriority: true,
           isFreeCast: isFree,
-          parentContext: parentContext
+          parentContext: parentContext,
+          exileOnResolution: (effect as any).exileOnResolution
         },
       );
       if (state.priorityPlayerId === controllerId)
         state.priorityPlayerId = oldPriority;
+      return res;
     }
     return;
   }

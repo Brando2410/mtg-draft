@@ -1,7 +1,10 @@
-import { memo, useState, useEffect, useRef } from 'react';
+import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type PlayerState, Step, Phase } from '@shared/engine_types';
 import { ManaPoolView } from './ManaPoolView';
+import { Stopper } from './avatar/Stopper';
+import { ScryBubble } from './avatar/ScryBubble';
+import { useAvatarLogic } from '../../hooks/game/useAvatarLogic';
 
 interface AvatarProps {
   player: PlayerState;
@@ -24,66 +27,6 @@ interface AvatarProps {
   };
 }
 
-interface StopperProps {
-  id: string;
-  label: string;
-  isOpponent: boolean;
-  stops: Record<string, boolean>;
-  onToggleStop?: (step: string) => void;
-  isActive: boolean;
-  currentStep?: Step;
-  currentPhase?: Phase;
-}
-
-const Stopper = memo(({ id, label, isOpponent, stops, onToggleStop, isActive, currentStep, currentPhase }: StopperProps) => {
-  const internalId = isOpponent ? `opp_${id.toLowerCase()}` : `my_${id.toLowerCase()}`;
-  const isSet = stops[internalId];
-
-  const isBeginningGroup = id === 'beginning' && (currentStep === Step.Upkeep || currentStep === Step.Draw);
-  const isMain1 = id === 'main1' && currentStep === Step.Main && currentPhase === Phase.PreCombatMain;
-  const isMain2 = id === 'main2' && currentStep === Step.Main && currentPhase === Phase.PostCombatMain;
-  const isEnd = id === 'end' && currentStep === Step.End;
-  
-  const isCurrent = isActive && (isBeginningGroup || isMain1 || isMain2 || isEnd);
-
-  const activeColor = isOpponent 
-      ? 'bg-blue-500 border-blue-200 shadow-[0_0_15px_rgba(59,130,246,1)]' 
-      : 'bg-orange-500 border-orange-200 shadow-[0_0_15px_rgba(249,115,22,1)]';
-
-  const glowId = isOpponent ? 'opp-phase-glow' : 'my-phase-glow';
-  const underlineId = isOpponent ? 'opp-phase-underline' : 'my-phase-underline';
-
-  return (
-    <div className="flex flex-col items-center gap-1.5 group relative">
-        <div 
-          onClick={(e) => { e.stopPropagation(); onToggleStop?.(internalId); }}
-          className={`w-[1.5vh] h-[1.5vh] rotate-45 border-2 transition-all cursor-pointer relative z-10
-            ${isSet ? activeColor : 'bg-slate-900/90 border-white/20 hover:border-white/50'}
-            ${isCurrent ? 'ring-2 ring-cyan-400/50 shadow-[0_0_10px_rgba(34,211,238,0.5)]' : ''}`}
-        />
-        
-        {isCurrent && (
-          <motion.div 
-            layoutId={glowId}
-            className="absolute inset-0 bg-cyan-400/20 rounded-full blur-md -z-0"
-          />
-        )}
-
-        {isCurrent && (
-          <motion.div 
-            layoutId={underlineId}
-            className="absolute -bottom-3 w-full h-0.5 bg-cyan-400 rounded-full shadow-[0_0_8px_rgba(34,211,238,0.8)]"
-          />
-        )}
-
-        <span className="text-[7px] font-black text-white uppercase tracking-[0.2em] italic oblique opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none absolute top-full mt-2 whitespace-nowrap z-50">
-            {label}
-        </span>
-    </div>
-  );
-});
-
-
 export const Avatar = memo(({ 
   player, 
   isOpponent = false, 
@@ -97,52 +40,8 @@ export const Avatar = memo(({
   currentPhase,
   scrySurveilResult
 }: AvatarProps) => {
-  
-  const [impacts, setImpacts] = useState<{ id: string, amount: number, rotation: number }[]>([]);
-  const [showPulse, setShowPulse] = useState<'gain' | 'loss' | null>(null);
-  const [scryNotice, setScryNotice] = useState<{ top: number, bottom: number, graveyard: number, type: string } | null>(null);
-  const prevLife = useRef(player.life);
-  const prevScryTime = useRef(0);
+  const { impacts, showPulse, scryNotice, isLosingLife } = useAvatarLogic(player, scrySurveilResult);
   const stops = viewerStops || player.stops || {};
-
-  useEffect(() => {
-    if (scrySurveilResult && scrySurveilResult.playerId === player.id && scrySurveilResult.timestamp > prevScryTime.current) {
-
-        setScryNotice({
-            top: scrySurveilResult.top,
-            bottom: scrySurveilResult.bottom,
-            graveyard: scrySurveilResult.graveyard,
-            type: scrySurveilResult.type
-        });
-        prevScryTime.current = scrySurveilResult.timestamp;
-
-        const timer = setTimeout(() => {
-            setScryNotice(null);
-        }, 5000);
-        return () => clearTimeout(timer);
-    }
-  }, [scrySurveilResult, player.id]);
-
-  useEffect(() => {
-    if (player.life !== prevLife.current) {
-        const diff = player.life - prevLife.current;
-        const newImpact = { 
-            id: Math.random().toString(), 
-            amount: diff,
-            rotation: (Math.random() - 0.5) * 20
-        };
-        
-        setImpacts(prev => [...prev.slice(-3), newImpact]);
-        setShowPulse(diff > 0 ? 'gain' : 'loss');
-        prevLife.current = player.life;
-
-        setTimeout(() => {
-            setImpacts(prev => prev.filter(i => i.id !== newImpact.id));
-        }, 1200);
-
-        setTimeout(() => setShowPulse(null), 600);
-    }
-  }, [player.life]);
 
   const commonProps = {
     isOpponent,
@@ -152,8 +51,6 @@ export const Avatar = memo(({
     currentStep,
     currentPhase
   };
-
-  const isLosingLife = impacts.some(i => i.amount < 0);
 
   return (
     <div className={`flex flex-col items-center gap-0 relative z-[200]`}>
@@ -214,7 +111,6 @@ export const Avatar = memo(({
                         `}
                     >
                         {impact.amount > 0 ? `+${impact.amount}` : impact.amount}
-                        {/* GLOW LAYER */}
                         <div className={`absolute inset-0 blur-lg opacity-50 -z-10 text-white`}>
                            {impact.amount > 0 ? `+${impact.amount}` : impact.amount}
                         </div>
@@ -273,7 +169,6 @@ export const Avatar = memo(({
                         alt={player.name}
                         className="w-full h-full object-cover scale-110"
                       />
-                      {/* CHROMATIC RED FLASH */}
                       <AnimatePresence>
                         {isLosingLife && (
                             <motion.div 
@@ -299,57 +194,7 @@ export const Avatar = memo(({
                   </motion.div>
               </motion.div>
 
-              {/* SCRY/SURVEIL SPEECH BUBBLE */}
-              <AnimatePresence>
-                {scryNotice && (
-                  <motion.div
-                    initial={{ opacity: 0, x: "-50%", y: isOpponent ? 20 : -20, scale: 0.8 }}
-                    animate={{ opacity: 1, x: "-50%", y: isOpponent ? 80 : -80, scale: 1 }}
-                    exit={{ opacity: 0, x: "-50%", scale: 0.8, transition: { duration: 0.2 } }}
-                    className={`absolute left-1/2 z-[600] pointer-events-none
-                        bg-slate-950/95 border border-indigo-500/40 backdrop-blur-xl px-4 py-2.5 rounded-2xl
-                        shadow-[0_15px_40px_rgba(0,0,0,0.7),0_0_30px_rgba(99,102,241,0.2)]
-                        flex flex-col items-center gap-1.5 min-w-fit whitespace-nowrap`}
-                  >
-                    {/* Speech bubble arrow */}
-                    <div className={`absolute left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-950 rotate-45 border-r border-b border-indigo-500/40
-                        ${isOpponent ? '-top-1.5 border-r-0 border-b-0 border-l border-t' : '-bottom-1.5'}`} 
-                    />
-
-                    <span className="text-[11px] font-black uppercase tracking-[0.25em] text-indigo-400 italic leading-none">
-                        {scryNotice.type}
-                    </span>
-
-                    <div className="h-px w-full bg-white/10 my-0.5" />
-
-                    <div className="flex items-center gap-4 text-white">
-                        {scryNotice.type.toLowerCase() === 'surveil' ? (
-                          <>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-[8px] font-bold text-slate-500 tracking-tighter">GRAVE:</span>
-                                <span className="text-[12px] font-black leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">{scryNotice.graveyard}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-[8px] font-bold text-slate-500 tracking-tighter">TOP:</span>
-                                <span className="text-[12px] font-black leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">{scryNotice.top}</span>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-[8px] font-bold text-slate-500 tracking-tighter">TOP:</span>
-                                <span className="text-[12px] font-black leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">{scryNotice.top}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-[8px] font-bold text-slate-500 tracking-tighter">BOTTOM:</span>
-                                <span className="text-[12px] font-black leading-none drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">{scryNotice.bottom}</span>
-                            </div>
-                          </>
-                        )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <ScryBubble scryNotice={scryNotice} isOpponent={isOpponent} />
           </div>
 
           <div className="flex gap-4 items-center">

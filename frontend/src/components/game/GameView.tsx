@@ -1,12 +1,11 @@
 import { type Room } from '@shared/types';
-import { Settings, RefreshCw, LogOut, Trash2, ShieldAlert, Play, ChevronRight, X } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { Settings, ShieldAlert } from 'lucide-react';
+import { useState } from 'react';
 import { Battlefield } from './Battlefield';
 import { PlayerHand } from './PlayerHand';
 import { OpponentHand } from './OpponentHand';
 import { DebugConsole } from './DebugConsole';
 import { ActionButton } from './ActionButton';
-import { socket } from '../../services/socket';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type GameObject, ActionType } from '@shared/engine_types';
 import { useDraftStore } from '../../store/useDraftStore';
@@ -14,6 +13,11 @@ import { GameCard } from './GameCard';
 import battlefieldBg from '../../assets/syd-roberts-portfolio-dsk-battlefield-lightsoff.jpg';
 import { ZoneInspector } from './modals/ZoneInspector';
 import { OrderingModal } from './modals/OrderingModal';
+import { EscMenu } from './modals/EscMenu';
+import { TurnTransitionOverlay } from './TurnTransitionOverlay';
+import { useCardZoom } from '../../hooks/game/useCardZoom';
+import { useGameActions } from '../../hooks/game/useGameActions';
+import { useKeyboardControls } from '../../hooks/game/useKeyboardControls';
 
 interface GameViewProps {
   room: Room;
@@ -25,74 +29,24 @@ interface GameViewProps {
 export const GameView = ({ room, playerId, onBack, customGameState }: GameViewProps) => {
   const [showDebug, setShowDebug] = useState(false);
   const [effectivePlayerId, setEffectivePlayerId] = useState(playerId);
-  const [hoveredCard, setHoveredCard] = useState<GameObject | null>(null);
-  const [zoomTimer, setZoomTimer] = useState<any>(null);
   const [showEscMenu, setShowEscMenu] = useState(false);
-  const [turnTransition, setTurnTransition] = useState<{ label: string; isMe: boolean } | null>(null);
-  const prevActivePlayerId = useRef<string | null>(null);
+  const [inspectingZone, setInspectingZone] = useState<{ cards: GameObject[], label: string, type: 'graveyard' | 'exile', isMe: boolean } | null>(null);
 
   const { resetMatch, backToLobby } = useDraftStore();
-  const [inspectingZone, setInspectingZone] = useState<{ cards: GameObject[], label: string, type: 'graveyard' | 'exile', isMe: boolean } | null>(null);
+  const { hoveredCard, setHoveredCard, startZoom, stopZoom } = useCardZoom();
+  const actions = useGameActions(room.id, effectivePlayerId);
   
+  useKeyboardControls({
+    onToggleFullControl: actions.toggleFullControl,
+    onToggleEscMenu: () => setShowEscMenu(prev => !prev),
+    onPassPriority: actions.passPriority,
+    isEscMenuOpen: showEscMenu
+  });
+
   const gameState = customGameState || room.gameState;
   const me = gameState?.players[effectivePlayerId];
   const opponentId = Object.keys(gameState?.players || {}).find(id => id !== effectivePlayerId);
   const opponent = opponentId ? gameState?.players[opponentId] : null;
-
-  const startZoom = (obj: GameObject) => {
-    if (zoomTimer) clearTimeout(zoomTimer);
-    const timer = setTimeout(() => {
-        setHoveredCard(obj);
-    }, 400); 
-    setZoomTimer(timer);
-  };
-
-  const stopZoom = () => {
-    if (zoomTimer) clearTimeout(zoomTimer);
-    setHoveredCard(null);
-  };
-  
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Control') {
-        socket.emit('toggle_full_control', { roomId: room.id, playerId: effectivePlayerId });
-      }
-      if (e.key === 'Escape') {
-        setShowEscMenu(prev => !prev);
-      }
-      if (e.key === ' ' && !showEscMenu) {
-         socket.emit('pass_priority', { roomId: room.id, playerId: effectivePlayerId });
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [room.id, effectivePlayerId, showEscMenu]);
-
-  // Turn Change Detection
-  useEffect(() => {
-    if (!gameState) return;
-    
-    // Initialize first turn
-    if (prevActivePlayerId.current === null) {
-        prevActivePlayerId.current = gameState.activePlayerId;
-        return;
-    }
-
-    if (gameState.activePlayerId !== prevActivePlayerId.current) {
-        const isMe = gameState.activePlayerId === effectivePlayerId;
-        setTurnTransition({
-            label: isMe ? "Your Turn" : "Opponent's Turn",
-            isMe
-        });
-        prevActivePlayerId.current = gameState.activePlayerId;
-        
-        const timer = setTimeout(() => {
-            setTurnTransition(null);
-        }, 800);
-        return () => clearTimeout(timer);
-    }
-  }, [gameState?.activePlayerId, effectivePlayerId]);
 
   if (!gameState) {
     return (
@@ -106,39 +60,13 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
 
   const handleOrderClick = (type: string, list?: string[]) => {
     if (type === 'CONFIRM' && list) {
-        socket.emit('resolve_combat_ordering', { roomId: room.id, playerId: effectivePlayerId, order: list });
+        actions.resolveCombatOrdering(list);
     }
-  };
-
-  const handleToggleStop = (step: string) => {
-    socket.emit('toggle_stop', { roomId: room.id, playerId: effectivePlayerId, step });
   };
 
   const handleAllAttack = () => {
     if (!gameState || !me) return;
-    const creatures = gameState.battlefield.filter((obj: any) => {
-      const isMyCreature = obj.controllerId === effectivePlayerId && 
-                          (obj.definition.types.includes('Creature') || (obj.definition.type_line || '').toLowerCase().includes('creature'));
-      const alreadyAttacking = gameState.combat?.attackers?.some((a: any) => a.attackerId === obj.id);
-      
-      // Rule 302.6: Haste bypasses summoning sickness. Power check is not strictly required but good for Arena feel.
-      const hasHaste = (obj.definition.keywords || []).includes('Haste') || (obj.effectiveStats?.keywords || []).includes('Haste');
-      const canAttack = !obj.isTapped && (!obj.summoningSickness || hasHaste);
-      
-      return isMyCreature && !alreadyAttacking && canAttack;
-    });
-
-    creatures.forEach((c: any) => {
-      socket.emit('tap_permanent', { roomId: room.id, playerId: effectivePlayerId, cardId: c.id });
-    });
-  };
-
-  const handleCancelAttacks = () => {
-    socket.emit('clear_attackers', { roomId: room.id, playerId: effectivePlayerId });
-  };
-
-  const handleCancelBlocks = () => {
-    socket.emit('clear_blockers', { roomId: room.id, playerId: effectivePlayerId });
+    actions.allAttack(gameState.battlefield, gameState.combat?.attackers);
   };
 
   const handleSwapZone = () => {
@@ -178,44 +106,7 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/20 via-transparent to-black/20" />
       </div>
 
-      {/* TURN TRANSITION OVERLAY */}
-      <AnimatePresence>
-          {turnTransition && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[5000] flex items-center justify-center pointer-events-none"
-              >
-                  <motion.div 
-                    initial={{ scale: 0.8, letterSpacing: '0.2em', opacity: 0, y: 10 }}
-                    animate={{ scale: 1, letterSpacing: '0.1em', opacity: 1, y: 0 }}
-                    exit={{ scale: 1.1, opacity: 0, filter: 'blur(10px)' }}
-                    transition={{ type: "spring", damping: 20, stiffness: 200 }}
-                    className="relative"
-                  >
-                      {/* Ambient Glow */}
-                      <div className={`absolute inset-0 blur-[80px] opacity-40 rounded-full
-                        ${turnTransition.isMe ? 'bg-cyan-400' : 'bg-orange-500'}`} 
-                      />
-                      
-                      <div className="relative flex flex-col items-center">
-                          <h1 className={`text-7xl font-black uppercase italic tracking-tight drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]
-                            ${turnTransition.isMe ? 'text-cyan-400' : 'text-slate-100'}`}
-                          >
-                            {turnTransition.label.split(' ')[0]}
-                            <span className={turnTransition.isMe ? 'text-white' : 'text-orange-500'}>
-                                {turnTransition.label.split(' ')[1] ? ` ${turnTransition.label.split(' ')[1]}` : ''}
-                            </span>
-                          </h1>
-                          <div className={`h-1 w-full mt-4 bg-gradient-to-r from-transparent via-current to-transparent opacity-50
-                            ${turnTransition.isMe ? 'text-cyan-400' : 'text-orange-500'}`} 
-                          />
-                      </div>
-                  </motion.div>
-              </motion.div>
-          )}
-      </AnimatePresence>
+      <TurnTransitionOverlay activePlayerId={gameState.activePlayerId} playerId={effectivePlayerId} />
 
       {/* GLOBAL UI CONTROLS (Top Left) */}
       <div className="fixed top-[3vh] left-[3vh] flex items-center gap-[1vw] z-[400]">
@@ -235,9 +126,6 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
           </button>
       </div>
 
-      {/* TOP: Opponent HUD & Hand */}
-
-
       <OpponentHand 
           hand={[...(opponent?.hand || []), ...(opponent?.virtualHand || [])]} 
           stateVersion={gameState.stateVersion}
@@ -247,8 +135,6 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
 
       {/* CENTRAL BATTLEFIELD */}
       <div className="flex-1 relative flex flex-col p-0 overflow-hidden gap-0">
-        
-
         <Battlefield 
           me={me} opponent={opponent} battlefield={gameState.battlefield}
           stack={gameState.stack || []} combat={gameState.combat} 
@@ -258,40 +144,36 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
           scrySurveilResult={gameState.turnState.lastScrySurveilResult}
           activePlayerId={gameState.activePlayerId}
           priorityPlayerId={gameState.priorityPlayerId}
-          onToggleStop={handleToggleStop}
+          onToggleStop={actions.toggleStop}
           onAvatarClick={(isOpponent) => {
              const targetId = isOpponent ? opponentId : effectivePlayerId;
-             if (gameState.pendingAction?.type === ActionType.Targeting && gameState.pendingAction.data?.targets?.includes(targetId)) {
-                  socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: targetId });
+             if (targetId && gameState.pendingAction?.type === ActionType.Targeting && gameState.pendingAction.data?.targets?.includes(targetId)) {
+                  actions.resolveTarget(targetId);
              }
           }}
           onTapCard={(id) => {
             if (id.startsWith('ORDER_')) {
-              const order = id.replace('ORDER_', '').split(',');
-              socket.emit('resolve_combat_ordering', { roomId: room.id, playerId: effectivePlayerId, order });
+              actions.resolveCombatOrdering(id.replace('ORDER_', '').split(','));
               return;
             }
             if (id.startsWith('CHOICE_')) {
               const choiceRaw = id.replace('CHOICE_', '');
               const choiceIndex = (choiceRaw === 'undo' || choiceRaw.includes('|') || choiceRaw.startsWith('{')) ? choiceRaw : parseInt(choiceRaw);
-              socket.emit('resolve_choice', { roomId: room.id, playerId: effectivePlayerId, choiceIndex });
+              actions.resolveChoice(choiceIndex);
               return;
             }
             const pType = gameState.pendingAction?.type as any;
             if (pType === 'TARGETING' || pType === ActionType.Targeting) {
-              socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: id });
+              actions.resolveTarget(id);
               return;
             }
             if ((pType === 'DECLARE_BLOCKERS' || pType === ActionType.DeclareBlockers) && gameState.pendingAction?.sourceId === id) {
-                // If clicking the current selection again, send UNDO
-                socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: 'undo' });
+                actions.resolveTarget('undo');
                 return;
             }
-            socket.emit('tap_permanent', { roomId: room.id, playerId: effectivePlayerId, cardId: id });
+            actions.tapPermanent(id);
           }}
-          onChoiceResolve={(payload) => {
-            socket.emit('resolve_choice', { roomId: room.id, playerId: effectivePlayerId, choiceIndex: payload });
-          }}
+          onChoiceResolve={actions.resolveChoice}
           hoveredCardId={hoveredCard?.id}
           onHoverStart={startZoom}
           onHoverEnd={stopZoom}
@@ -308,29 +190,20 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
             const pendingType = currentPending?.type as any;
             const isTargeting = pendingType === 'TARGETING' || pendingType === ActionType.Targeting;
             
-            console.log(`[ACTION-BUTTON] onPass called. pendingType: ${pendingType}, isTargeting: ${isTargeting}`);
-            
             if (isTargeting) {
               const selected = currentPending?.data?.selectedTargets || [];
               const targetDef = currentPending?.data?.targetDefinition;
               const isOptional = targetDef?.optional || targetDef?.minCount === 0;
               const min = currentPending?.data?.minCount ?? (targetDef?.minCount ?? (isOptional ? 0 : (targetDef?.count ?? 1)));
               const canConfirm = selected.length >= min;
-              
-              console.log(`[ACTION-BUTTON] Targeting confirmed: ${canConfirm}. Selected: ${selected.length}, Min: ${min}`);
-
-              socket.emit('resolve_target', { 
-                roomId: room.id, 
-                playerId: effectivePlayerId, 
-                targetId: canConfirm ? 'skip' : 'undo' 
-              });
+              actions.resolveTarget(canConfirm ? 'skip' : 'undo');
             } else {
-              socket.emit('pass_priority', { roomId: room.id, playerId: effectivePlayerId });
+              actions.passPriority();
             }
           }}
-          onClear={() => socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: 'clear' })}
-          onUndo={() => socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: 'undo' })}
-          onToggleStop={handleToggleStop}
+          onClear={() => actions.resolveTarget('clear')}
+          onUndo={() => actions.resolveTarget('undo')}
+          onToggleStop={actions.toggleStop}
           stackLength={gameState.stack?.length || 0}
           isMyTurn={gameState.activePlayerId === effectivePlayerId}
           stops={me?.stops}
@@ -338,17 +211,13 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
           attackerCount={gameState.combat?.attackers?.length || 0}
           blockerCount={gameState.combat?.blockers?.filter((b: any) => gameState.battlefield.find((o: any) => o.id === b.blockerId)?.controllerId === effectivePlayerId).length || 0}
           onAllAttack={handleAllAttack}
-          onCancelAttacks={handleCancelAttacks}
-          onCancelBlocks={handleCancelBlocks}
+          onCancelAttacks={actions.clearAttackers}
+          onCancelBlocks={actions.clearBlockers}
           passUntilEndOfTurn={me?.passUntilEndOfTurn}
-          onTogglePassTurn={() => socket.emit('toggle_pass_turn', { roomId: room.id, playerId: effectivePlayerId })}
+          onTogglePassTurn={actions.togglePassTurn}
           fullControl={me?.fullControl}
         />
       </div>
-
-
-
-      {/* BOTTOM: Player HUD & Hand */}
 
       <PlayerHand 
           hand={me?.hand || []} 
@@ -356,9 +225,9 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
           stateVersion={gameState.stateVersion}
           onPlayCard={(cardId) => {
             if (me?.pendingDiscardCount && me.pendingDiscardCount > 0) {
-              socket.emit('discard_card', { roomId: room.id, playerId: effectivePlayerId, cardId });
+              actions.discardCard(cardId);
             } else {
-              socket.emit('play_card', { roomId: room.id, playerId: effectivePlayerId, cardInstanceId: cardId });
+              actions.playCard(cardId);
             }
           }} 
           onHoverStart={startZoom}
@@ -379,7 +248,6 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
           )}
       </AnimatePresence>
 
-      {/* DEBUG CONSOLE Overlay */}
       <AnimatePresence>
           {showDebug && (
             <div className="fixed inset-0 z-[1000] flex justify-start pointer-events-none">
@@ -393,107 +261,15 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
           )}
       </AnimatePresence>
 
-      {/* PREMIUM ESC MENU Overlay */}
-      <AnimatePresence>
-        {showEscMenu && (
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[2000] bg-slate-950/60 backdrop-blur-xl flex items-center justify-center p-6"
-            onClick={() => setShowEscMenu(false)}
-          >
-            <motion.div 
-              initial={{ scale: 0.95, y: 30, opacity: 0 }} 
-              animate={{ scale: 1, y: 0, opacity: 1 }} 
-              exit={{ scale: 0.95, y: 30, opacity: 0 }}
-              className="w-full max-w-md bg-[#0a0f1e]/90 border border-white/10 rounded-[3rem] p-10 shadow-[0_30px_100px_rgba(0,0,0,0.8)] relative overflow-hidden group"
-              onClick={e => e.stopPropagation()}
-            >
-              {/* Decorative Accent Glow */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50" />
-              <div className="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/10 blur-[60px] rounded-full" />
-              
-              <div className="flex flex-col items-center text-center gap-2 mb-10 relative">
-                  <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center border border-white/10 mb-2 shadow-inner">
-                      <Settings className="w-8 h-8 text-indigo-400 animate-[spin_10s_linear_infinite]" />
-                  </div>
-                  <h2 className="text-4xl font-black uppercase italic tracking-tighter text-white">
-                      Game <span className="text-indigo-500">Menu</span>
-                  </h2>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-1">Options & Session Management</p>
-              </div>
-
-              <div className="flex flex-col gap-3 relative">
-                {/* PRIMARY ACTION: RESUME */}
-                <button 
-                    onClick={() => setShowEscMenu(false)} 
-                    className="flex justify-between items-center bg-emerald-500 group/btn hover:bg-emerald-400 p-5 rounded-3xl transition-all shadow-[0_10px_20px_rgba(16,185,129,0.2)] active:scale-95"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
-                            <Play className="w-5 h-5 text-white fill-current" />
-                        </div>
-                        <span className="text-lg font-black uppercase italic tracking-tight text-white">Resume Game</span>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-white/50 group-hover/btn:translate-x-1 transition-transform" />
-                </button>
-
-                <div className="grid grid-cols-2 gap-3 mt-2">
-                    {/* RESTART MATCH */}
-                    <button 
-                        onClick={() => { resetMatch(); setShowEscMenu(false); }} 
-                        className="flex flex-col items-center gap-3 p-6 bg-white/5 hover:bg-indigo-500/10 border border-white/5 hover:border-indigo-500/30 rounded-3xl transition-all group/sub active:scale-95"
-                    >
-                        <RefreshCw className="w-6 h-6 text-slate-500 group-hover/sub:text-indigo-400 group-hover/sub:rotate-180 transition-all duration-700" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover/sub:text-white">Restart Match</span>
-                    </button>
-
-                    {/* LOBBY EXIT */}
-                    <button 
-                        onClick={() => backToLobby()} 
-                        className="flex flex-col items-center gap-3 p-6 bg-white/5 hover:bg-amber-500/10 border border-white/5 hover:border-amber-500/30 rounded-3xl transition-all group/sub active:scale-95"
-                    >
-                        <LogOut className="w-6 h-6 text-slate-500 group-hover/sub:text-amber-400 group-hover/sub:translate-x-1 transition-all" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover/sub:text-white">Exit to Lobby</span>
-                    </button>
-                </div>
-
-                {/* DANGER ZONE: LEAVE GAME */}
-                <div className="flex flex-col gap-2 mt-4">
-                    <button 
-                        onClick={() => {
-                            socket.emit('toggle_auto_order', { roomId: room.id, playerId: effectivePlayerId });
-                        }} 
-                        className={`flex items-center justify-between p-5 rounded-2xl transition-all border ${me?.autoOrderTriggers ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' : 'bg-white/5 border-white/5 text-slate-400'}`}
-                    >
-                        <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Auto-order Triggers</span>
-                        </div>
-                        <div className={`w-10 h-5 rounded-full relative transition-all ${me?.autoOrderTriggers ? 'bg-indigo-500' : 'bg-slate-700'}`}>
-                            <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${me?.autoOrderTriggers ? 'left-6' : 'left-1'}`} />
-                        </div>
-                    </button>
-
-                    <button 
-                        onClick={() => onBack()} 
-                        className="flex items-center justify-center gap-3 p-5 group/danger hover:bg-red-500/10 rounded-2xl transition-all border border-transparent hover:border-red-500/20 active:scale-95"
-                    >
-                        <Trash2 className="w-4 h-4 text-red-500/40 group-hover/danger:text-red-500 transition-colors" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500/50 group-hover/danger:text-red-500">Concede & Leave Game</span>
-                    </button>
-                </div>
-              </div>
-
-              {/* CLOSE ICON (Top Right) */}
-              <button 
-                onClick={() => setShowEscMenu(false)}
-                className="absolute top-6 right-6 p-2 text-slate-700 hover:text-white hover:bg-white/5 rounded-full transition-all"
-              >
-                 <X className="w-5 h-5" />
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <EscMenu 
+        isOpen={showEscMenu}
+        onClose={() => setShowEscMenu(false)}
+        onResetMatch={resetMatch}
+        onBackToLobby={backToLobby}
+        onBack={onBack}
+        onToggleAutoOrder={actions.toggleAutoOrder}
+        autoOrderTriggers={me?.autoOrderTriggers}
+      />
 
       <AnimatePresence>
         {inspectingZone && (
@@ -502,7 +278,7 @@ export const GameView = ({ room, playerId, onBack, customGameState }: GameViewPr
             onClose={() => setInspectingZone(null)}
             onTapCard={(id) => {
               if (gameState.pendingAction?.type === ActionType.Targeting) {
-                  socket.emit('resolve_target', { roomId: room.id, playerId: effectivePlayerId, targetId: id });
+                  actions.resolveTarget(id);
               }
             }}
             targetableIds={new Set(gameState.pendingAction?.data?.targets || [])}

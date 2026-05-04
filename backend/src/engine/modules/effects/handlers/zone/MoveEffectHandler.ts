@@ -482,22 +482,25 @@ export class MoveEffectHandler {
         }
         if (zone === Zone.Exile) {
           state.turnState.lastExiledIds = [tid];
+        }
 
-          if (stackObject) {
-            if (!stackObject.data) stackObject.data = {};
-            if (!stackObject.data.exiledIds) stackObject.data.exiledIds = [];
-            if (!stackObject.data.exiledIds.includes(tid)) {
-              stackObject.data.exiledIds.push(tid);
-              logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: Added ${tid} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
-            }
+        if (stackObject) {
+          if (!stackObject.data) stackObject.data = {};
+          if (!stackObject.data.exiledIds) stackObject.data.exiledIds = [];
+          if (!stackObject.data.exiledIds.includes(tid)) {
+            stackObject.data.exiledIds.push(tid);
+            logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: Added ${tid} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
           }
+        }
 
-          if (parentContext) {
-            if (!parentContext.exiledIds) parentContext.exiledIds = [];
-            if (!parentContext.exiledIds.includes(tid)) {
-              parentContext.exiledIds.push(tid);
-            }
+        if (parentContext) {
+          if (!parentContext.exiledIds) parentContext.exiledIds = [];
+          if (!parentContext.exiledIds.includes(tid)) {
+            parentContext.exiledIds.push(tid);
           }
+        }
+
+        if (zone === Zone.Exile) {
           TriggerProcessor.onEvent(
             state,
             {
@@ -630,22 +633,6 @@ export class MoveEffectHandler {
 
           if ((effect as any).additionalEffectPerCard) {
             subEffects.push((effect as any).additionalEffectPerCard);
-          }
-
-          // Handle remainder for LookAtTopAndPick
-          if (effect.type === EffectType.LookAtTopAndPick) {
-            const remaining = cards.filter(c => c.id !== selectedCard.id);
-            if (remaining.length > 0) {
-              const remZone = (effect as any).remainderZone || Zone.Library;
-              subEffects.push({
-                type: EffectType.MoveToZone,
-                targetIds: remaining.map(c => c.id),
-                zone: remZone,
-                targetPlayerId: controllerId,
-                libraryPosition: (effect as any).remainderPosition || moveEff.libraryPosition || 'bottom',
-                shuffle: true // "in a random order"
-              } as MoveEffect);
-            }
           }
 
           return subEffects;
@@ -790,9 +777,13 @@ export class MoveEffectHandler {
     // 1. Collect all cards to move
     let cardsToMove: GameObject[] = [];
 
-    // Mode A: Direct card IDs (e.g. from AllMatchingCards)
+    // Mode A: Direct card IDs or Special Mapping
     const directCardIds = targetIds.filter(id => !state.players[id as PlayerId]);
-    if (directCardIds.length > 0) {
+    
+    if (moveEff.targetMapping === "REMAINDER_OF_POOL") {
+      cardsToMove = (context.lookingCards || []).filter(c => c.zone === Zone.Library);
+      logger.debug(state, LogCategory.ACTION, `[MOVE-DEBUG] REMAINDER_OF_POOL: Found ${cardsToMove.length} cards remaining in library pool.`);
+    } else if (directCardIds.length > 0) {
       directCardIds.forEach(id => {
         const obj = this.findObject(state, id, context);
         if (obj) cardsToMove.push(obj);
@@ -827,7 +818,12 @@ export class MoveEffectHandler {
       );
     }
 
-    // 3. Move the cards
+    // 3. Shuffle if requested
+    if (moveEff.shuffle) {
+      ActionProcessor.shuffle(cardsToMove);
+    }
+
+    // 4. Move the cards
     cardsToMove.forEach((c) => {
       const from = c.zone;
       ActionProcessor.moveCard(state, c, zone as Zone, c.ownerId, "top", false, isDiscard);

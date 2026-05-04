@@ -14,11 +14,10 @@ export const TheDawningArchaic: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Static,
-            activeZone: Zone.Hand,
             effects: [
                 {
                     type: EffectType.CostReduction,
-                    amount: DynamicAmount.InstantsAndSorceriesInGraveyard,
+                    amount: DynamicAmount.InstantSorceryInGraveyardCount,
                     targetMapping: TargetMapping.Self
                 }
             ]
