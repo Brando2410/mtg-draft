@@ -4,10 +4,13 @@ import {
     AbilityType,
     ActionType,
     BaseEntity,
+    ContinuousEffect,
+    EffectDefinition,
     EffectType,
     GameObject,
     GameState,
     StackObject,
+    TargetMapping,
     TriggerEvent,
     Zone
 } from '@shared/engine_types';
@@ -19,6 +22,7 @@ import {
     FinalizeCastOptions,
     PlayCardOptions
 } from '../../../interfaces/EngineContext';
+import { RegistryUtils } from '../../../utils/RegistryUtils';
 import { oracle } from '../../../OracleLogicMap';
 import { CombatProcessor } from "../../combat/CombatProcessor";
 import { RuleUtils } from "../../../utils/RuleUtils";
@@ -88,14 +92,14 @@ export class SpellProcessor {
         if (isFreeCast) {
             cardToPlay.isFreeCast = true;
         } else {
-            delete (cardToPlay as any).isFreeCast;
+            delete cardToPlay.isFreeCast;
         }
 
         if (exileOnResolution) {
             console.log(`[PLAY-DEBUG] Setting exileOnResolution=true for ${cardToPlay.definition.name}`);
-            (cardToPlay as any).exileOnResolution = true;
+            cardToPlay.exileOnResolution = true;
         } else {
-            delete (cardToPlay as any).exileOnResolution;
+            delete cardToPlay.exileOnResolution;
         }
 
         // --- ACTIVATED ABILITY REDIRECTION (Graveyard) ---
@@ -175,64 +179,13 @@ export class SpellProcessor {
         }
 
         // 4. Extract logic and effects
-        const logic = oracle.getCard(currentDefinition.name);
-        if (!logic && !isLand) {
-            logger.info(state, LogCategory.ACTION, `[WARNING] No logic definition found for ${currentDefinition.name}.`);
-        }
-
-        // Priority: Oracle -> Current Definition on Object (for virtual spells/MDFCs)
-        const modalAbility = logic?.abilities?.find((a) => a.modes) || currentDefinition.abilities?.find((a) => typeof a !== 'string' && (a as any).modes) as AbilityDefinition | undefined;
+        const logic = RegistryUtils.getEffectiveLogic(state, cardToPlay);
+        const { effects: spellEffects, targetDefinitions } = RegistryUtils.getEffectivePayload(state, cardToPlay);
+        const modalAbility = RegistryUtils.getModalAbility(logic, currentDefinition);
+        
         const hasPreSelectedChoice = state.interaction?.lastChoiceIndex !== undefined;
         const lastChosenModeIndex = state.interaction?.lastChosenModeIndex;
         const hasPreSelectedMode = lastChosenModeIndex !== undefined;
-
-        // --- EXTRACT EFFECTIVE TARGETS/EFFECTS (Modally Aware) ---
-        let targetDefinitions = logic?.targetDefinitions ||
-            logic?.abilities?.find((a: any) => a.type === AbilityType.Spell)?.targetDefinitions ||
-            currentDefinition.targetDefinitions ||
-            currentDefinition.auraRestrictions ||
-            (currentDefinition.abilities?.find((a: any) => typeof a !== 'string' && a.type === AbilityType.Spell) as AbilityDefinition | undefined)?.targetDefinitions;
-
-        let spellEffects = logic?.effects ||
-            logic?.abilities?.find((a) => a.type === AbilityType.Spell)?.effects ||
-            (currentDefinition as any).effects ||
-            (currentDefinition.abilities?.find((a: any) => typeof a !== 'string' && (a as any).type === AbilityType.Spell) as AbilityDefinition | undefined)?.effects || [];
-
-        if (hasPreSelectedMode && modalAbility?.modes) {
-            const indices = [...(Array.isArray(lastChosenModeIndex) ? lastChosenModeIndex : [lastChosenModeIndex])].sort((a, b) => (a as number) - (b as number));
-            logger.debug(state, LogCategory.ACTION, `[MODAL] Applying chosen modes: ${indices.join(', ')}`);
-
-            const combinedTargets: AbilityDefinition['targetDefinitions'][] = [];
-            const combinedEffects: AbilityDefinition['effects'] = [];
-
-            let currentTargetOffset = 0;
-            indices.forEach(idx => {
-                const mode = modalAbility.modes![idx];
-                if (!mode) return;
-
-                if (mode.targetDefinitions) {
-                    if (Array.isArray(mode.targetDefinitions)) combinedTargets.push(...mode.targetDefinitions);
-                    else combinedTargets.push(mode.targetDefinitions);
-                }
-
-                if (mode.effects) {
-                    // Deep clone and inject targetOffset
-                    const modeEffects = JSON.parse(JSON.stringify(mode.effects)).map((e: any) => ({
-                        ...e,
-                        targetOffset: currentTargetOffset
-                    }));
-                    combinedEffects.push(...modeEffects);
-                }
-
-                if (mode.targetDefinitions) {
-                    const counts = TargetingProcessor.calculateTotalCounts(mode.targetDefinitions, cardToPlay.xValue || 0);
-                    currentTargetOffset += counts.maxCount;
-                }
-            });
-
-            if (combinedTargets.length > 0) targetDefinitions = combinedTargets as unknown as AbilityDefinition['targetDefinitions'];
-            if (combinedEffects.length > 0) spellEffects = combinedEffects as AbilityDefinition['effects'];
-        }
 
         const choiceEffectIndex = spellEffects.findIndex((e: any, idx: number) =>
             e.type === EffectType.Choice &&
@@ -257,8 +210,8 @@ export class SpellProcessor {
 
         // X-Value Selection
         const needsX = costStr.includes('{X}') ||
-            logic?.abilities?.some((a: any) => (a.costs || a.additionalCosts)?.some((c: any) => c.value === 'X')) ||
-            currentDefinition.abilities?.some((a: any) => typeof a !== 'string' && (a.costs || a.additionalCosts)?.some((c: any) => c.value === 'X')) ||
+            logic?.abilities?.some((a) => typeof a !== 'string' && (a.costs || a.additionalCosts)?.some((c: any) => c.value === 'X')) ||
+            currentDefinition.abilities?.some((a) => typeof a !== 'string' && (a.costs || a.additionalCosts)?.some((c: any) => (c as any).value === 'X')) ||
             logic?.effects?.some((e: any) => JSON.stringify(e).includes('"X"')) ||
             modeHasX;
 
@@ -414,7 +367,12 @@ export class SpellProcessor {
         }
 
         const cardLogic = oracle.getCard(obj.definition.name);
-        let abilities: AbilityDefinition[] = [...(cardLogic?.abilities || [])];
+        let abilities: AbilityDefinition[] = [];
+        if (cardLogic?.abilities) {
+            cardLogic.abilities.forEach(a => {
+                if (typeof a !== 'string') abilities.push(a);
+            });
+        }
         if (obj.definition.abilities) {
             obj.definition.abilities.forEach((a: AbilityDefinition | string) => {
                 if (typeof a === 'string') return;
@@ -670,9 +628,17 @@ export class SpellProcessor {
         const cardName = cardToPlay.definition.name;
         state.gameStats.castCounts[playerId][cardName] = (state.gameStats.castCounts[playerId][cardName] || 0) + 1;
 
-        const exileOnResolution = (state.ruleRegistry.continuousEffects.some(e =>
+        const exileOnResolution = (state.ruleRegistry.continuousEffects.some((e: ContinuousEffect) =>
             e.exileOnMoveToGraveyard && (e.targetIds?.includes(cardToPlay.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === playerId))
-        )) || cardToPlay.isFlashbackCast || cardToPlay.definition?.exileOnResolution || cardToPlay.exileOnResolution;
+        )) || 
+        cardToPlay.isFlashbackCast || 
+        cardToPlay.definition?.exileOnResolution || 
+        cardToPlay.exileOnResolution ||
+        (spellEffects && spellEffects.some((e: EffectDefinition) => 
+            (e.type === EffectType.Exile || e.type === EffectType.ExileAllCards || e.type === EffectType.MoveToZone) && 
+            (e.targetMapping === TargetMapping.Self || e.targetId === cardToPlay.id) &&
+            (!e.zone || e.zone === Zone.Exile)
+        ));
 
         logger.debug(state, LogCategory.ACTION, `[FINALIZE-DEBUG] ${cardToPlay.definition.name}: cardToPlay.exileOnRes=${cardToPlay.exileOnResolution}, final=${exileOnResolution}`);
 
@@ -693,6 +659,8 @@ export class SpellProcessor {
             targets: declaredTargets || [],
             sourceObject: cardToPlay,
             definition: cardToPlay.definition,
+            targetDefinitions,
+            effects: spellEffects,
             name: cardToPlay.definition.name + (cardToPlay.xValue !== undefined && ((cardToPlay.definition.manaCost || "").includes("{X}") || cardToPlay.xValue > 0) ? ` (X=${cardToPlay.xValue})` : ""),
             cannotBeCopied: cardToPlay.definition.cannotBeCopied,
             xValue: cardToPlay.xValue,
@@ -702,8 +670,6 @@ export class SpellProcessor {
             isPreparedCopy: cardToPlay.isPreparedCopy,
             isFlashbackCast: cardToPlay.isFlashbackCast,
             data: {
-                effects: spellEffects,
-                targetDefinitions,
                 preSelectedChoice,
                 targetsControllers,
                 declaredXValue: cardToPlay.xValue,
@@ -776,6 +742,12 @@ export class SpellProcessor {
         // ARCHITECTURAL NOTE: Choice Propagation (Egress)
         // If the auto-tap engine pre-calculated a choice (e.g. which color a dual land produced),
         // it is passed here so ChoiceEffectHandler can skip the UI modal.
+        const effectiveExileOnResolution = exileOnResolution || (ability.effects && ability.effects.some((e: EffectDefinition) => 
+            (e.type === EffectType.Exile || e.type === EffectType.ExileAllCards || e.type === EffectType.MoveToZone) && 
+            (e.targetMapping === TargetMapping.Self || e.targetId === obj.id) &&
+            (!e.zone || e.zone === Zone.Exile)
+        ));
+
         const stackObj = {
             id: stackId,
             controllerId: playerId,
@@ -787,7 +759,7 @@ export class SpellProcessor {
             image_url: obj.definition.image_url,
             targets: declaredTargets,
             abilityIndex: abilityIndex,
-            exileOnResolution: exileOnResolution,
+            exileOnResolution: effectiveExileOnResolution,
             isCopy: obj.isCopy,
             isPreparedCopy: obj.isPreparedCopy,
             xValue: xValue !== undefined ? xValue : obj.xValue,

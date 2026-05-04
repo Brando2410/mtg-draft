@@ -289,7 +289,8 @@ export class PriorityProcessor {
       const logic = oracle.getCard(obj.definition.name);
       if (!logic || !logic.abilities) return false;
 
-      return logic.abilities.some((ability: any, index: number) => {
+      return (logic.abilities || []).some((ability, index) => {
+        if (typeof ability === 'string') return false;
         const canAct = this.canAbilityBeActivated(state, playerId, obj.id, index, false);
         return canAct;
       });
@@ -391,7 +392,7 @@ export class PriorityProcessor {
         const logic = oracle.getCard(cardToPlay.definition.name);
         // Fallback to definition abilities for spells without dedicated logic (like virtual spells)
         const spellAbility = (logic?.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell) ||
-          cardToPlay.definition.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell)) as AbilityDefinition | undefined;
+          (cardToPlay.definition.abilities as any[])?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell)) as AbilityDefinition | undefined;
 
         // Modal check
         if (spellAbility && (spellAbility as any).modes) {
@@ -442,7 +443,10 @@ export class PriorityProcessor {
       const logic = oracle.getCard(objOnField.definition.name);
       if (!logic || (!logic.abilities && !state.ruleRegistry.continuousEffects.some(e => e.type === EffectType.AddTriggeredAbility))) return false;
 
-      return (logic.abilities || []).some((ability: any, index: number) => this.canAbilityBeActivated(state, playerId, objId, index, checkPriority));
+      return (logic.abilities || []).some((ability, index) => {
+        if (typeof ability === 'string') return false;
+        return this.canAbilityBeActivated(state, playerId, objId, index, checkPriority);
+      });
     }
 
     return false;
@@ -465,12 +469,13 @@ export class PriorityProcessor {
 
     // --- SUPPORT FOR IN-LINE ABILITIES (Tokens, Virtual Spells) ---
     if (obj.definition.abilities) {
-      obj.definition.abilities.forEach((a: any) => {
+      obj.definition.abilities.forEach((a: AbilityDefinition | string) => {
         const isDuplicate = abilities.some(existing => {
-          if (a.id !== undefined && existing.id !== undefined) return a.id === existing.id;
-          return a.type === existing.type &&
-            JSON.stringify(a.effects) === JSON.stringify(existing.effects) &&
-            JSON.stringify(a.costs) === JSON.stringify(existing.costs);
+          if (typeof a === 'string' || typeof existing === 'string') return a === existing;
+          if (a.id !== undefined && (existing as AbilityDefinition).id !== undefined) return a.id === (existing as AbilityDefinition).id;
+          return a.type === (existing as AbilityDefinition).type &&
+            JSON.stringify(a.effects) === JSON.stringify((existing as AbilityDefinition).effects) &&
+            JSON.stringify(a.costs) === JSON.stringify((existing as AbilityDefinition).costs);
         });
         if (!isDuplicate) {
           abilities.push(a);
@@ -507,6 +512,7 @@ export class PriorityProcessor {
 
     if (!abilities[abilityIndex]) return false;
     const ability = abilities[abilityIndex];
+    if (typeof ability === 'string') return false;
     const logic = oracle.getCard(obj.definition.name);
 
     if (ability.type !== AbilityType.Activated) return false;

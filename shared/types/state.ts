@@ -1,26 +1,21 @@
 // state.ts
 // Game state and player state structures
 
-import type { AbilityDefinition } from './abilities';
+import type { AbilityDefinition, ActivatedAbility, TriggeredAbility, ReplacementEffect, PreventionEffect } from './abilities';
 import { AbilityType } from './abilities';
-import type { GameObjectId, PlayerId, RestrictionObject } from './core';
+import type { CounterType, GameObjectId, PlayerId, RestrictionObject } from './core';
 import { Phase, Step, Zone } from './core';
-import type { ContinuousEffect } from './effects';
+import type { ContinuousEffect, EffectDefinition } from './effects';
 import type { AbilityRestriction, TargetDefinition } from './targeting';
 
-export type CounterType = 'loyalty' | 'p1p1' | 'm1m1' | 'charge' | 'energy' | 'poison' | 'experience' | 'lore' | 'time' | 'suspend' | 'oil' | 'shield' | 'stun' | 'doom' | 'corrupt' | 'slime' | '+1/+1' | '-1/-1';
-
-export interface CardLogic {
-    name?: string;
-    abilities?: AbilityDefinition[];
+export interface CardLogic extends Partial<CardDefinition> {
     effects?: any[];
-    targetDefinitions?: TargetDefinition[];
     condition?: any;
     restrictions?: any[];
-    exileOnResolution?: boolean;
 }
 
 export interface CardDefinition {
+
     name: string;
     manaCost: string;
     manaValue?: number;
@@ -72,6 +67,7 @@ export interface BaseEntity {
     isPreparedCopy?: boolean;
     isFlashbackCast?: boolean;
     paidManaValue?: number;
+    targets?: (GameObjectId | PlayerId)[]; // Added to unify target access for GameObject | StackObject
 }
 
 export interface GameObject extends BaseEntity {
@@ -131,6 +127,11 @@ export interface StackObject extends BaseEntity {
     data?: any;
     cannotBeCopied?: boolean;
     originalControllerId?: PlayerId;
+    targetDefinitions?: TargetDefinition[];
+    effects?: EffectDefinition[];
+    targetsControllers?: PlayerId[];
+    lookingCards?: GameObject[];
+    event?: import('./events').GameEvent;
     condition?: any;
 }
 
@@ -383,16 +384,16 @@ export interface GameState {
     _triggerCache?: any;
     isResolvingDrawReplacement?: boolean;
     lki: Record<string, Partial<Record<Zone, GameObject | StackObject>>>;
-    gameEngine?: import('../../backend/src/engine/interfaces/EngineContext').EngineContext;
+    gameEngine?: any;
 }
 
 export interface RuleRegistry {
     continuousEffects: ContinuousEffect[];
-    activatedAbilities: any[];
-    triggeredAbilities: any[];
+    activatedAbilities: ActivatedAbility[];
+    triggeredAbilities: TriggeredAbility[];
     restrictions: AbilityRestriction[];
-    replacementEffects?: any[];
-    preventionEffects?: any[];
+    replacementEffects: ReplacementEffect[];
+    preventionEffects: PreventionEffect[];
 }
 
 export interface EmblemDefinition {

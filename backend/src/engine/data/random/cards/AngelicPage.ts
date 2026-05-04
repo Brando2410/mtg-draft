@@ -25,12 +25,10 @@ export const AngelicPage: CardDefinition = {
                 duration: { type: DurationType.UntilEndOfTurn },
                 powerModifier: 1,
                 toughnessModifier: 1,
-                ayer: 7,
+                layer: 7,
                 targetMapping: TargetMapping.Target1
             }]
         }
     ]
 
 };
-
-

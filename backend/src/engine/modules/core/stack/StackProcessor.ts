@@ -1,7 +1,7 @@
 import { AbilityType, EffectDefinition, GameState, StackObject, Zone } from '@shared/engine_types';
 import { LogCategory } from '../../../utils/EngineLogger';
 import { RuleUtils } from '../../../utils/RuleUtils';
-import { oracle } from '../../../OracleLogicMap';
+import { RegistryUtils } from '../../../utils/RegistryUtils';
 import { getProcessors } from '../../ProcessorRegistry';
 import { EngineValidator } from '../logic/EngineValidator';
 
@@ -14,31 +14,13 @@ export class StackProcessor {
    * Retrieves the effects that should be executed when a stack object resolves.
    */
   public static getEffectsForResolution(state: GameState, objectToResolve: StackObject): EffectDefinition[] {
-    // Priority 1: Effects already stored in stack object data during casting/activation
-    let effects: EffectDefinition[] = objectToResolve.data?.effects || [];
-    if (effects.length === 0) {
-      const logic = oracle.getCard(objectToResolve.definition?.name || objectToResolve.sourceObject?.definition?.name || "");
-
-      if (objectToResolve.type === AbilityType.Spell) {
-        // Priority: Oracle Logic -> Definition Abilities -> Definition Effects
-        const spellAbility = logic?.abilities?.find((a: any) => a.type === AbilityType.Spell) ||
-          objectToResolve.definition?.abilities?.find((a: any) => a.type === AbilityType.Spell);
-        effects = logic?.effects || (spellAbility as any)?.effects || [];
-      }
-      else if (objectToResolve.type === AbilityType.Activated) {
-        const sourceObj = RuleUtils.findObject(state, objectToResolve.sourceId);
-
-        if (sourceObj) {
-          const cardLogic = oracle.getCard(sourceObj.definition.name);
-          const ability = cardLogic?.abilities?.[objectToResolve.abilityIndex ?? -1] ||
-            sourceObj.definition.abilities?.[objectToResolve.abilityIndex ?? -1];
-          if (ability) {
-            effects = ability.effects || [];
-          }
-        }
-      }
+    // Priority 1: Effects already stored on the stack object (calculated during casting/activation)
+    if (objectToResolve.effects && objectToResolve.effects.length > 0) {
+      return objectToResolve.effects;
     }
 
+    // Priority 2: Fallback to extraction (for copies or legacy stack objects)
+    const { effects } = RegistryUtils.getEffectivePayload(state, objectToResolve);
     return effects;
   }
 

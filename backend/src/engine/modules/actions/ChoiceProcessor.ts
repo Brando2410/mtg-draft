@@ -136,9 +136,9 @@ export class ChoiceProcessor {
             const allEffects: EffectDefinition[] = [];
             let finalChoice: ChoiceOption | null = null;
             let currentTargetOffset = 0;
-            
+
             const indices = selections.filter(s => typeof s === 'number') as number[];
-            
+
             indices.forEach(idx => {
                 const choice = action.data?.choices?.[idx];
                 if (choice) {
@@ -244,8 +244,8 @@ export class ChoiceProcessor {
             return this.handleModalSelection(state, playerId, sourceId, choice, firstSelection, action, engine, payload);
         }
 
-        // 4. Handle Resolution-Phase Choices (Effects, Search, Scry, May)
-        return this.handleResolutionChoice(state, sourceId, choice, action, engine);
+        // 4. Handle Resolution-Phase Choices (Effects, Search, Scry,)
+        return this.handleResolutionChoice(state, sourceId, choice, action, engine, payload);
     }
 
     private static handleScrySurveil(
@@ -617,7 +617,7 @@ export class ChoiceProcessor {
 
         const selections = payload?.selections || [choiceIndex];
         const firstSelection = selections[0];
-        
+
         const isMultiSelect = action.type === ActionType.Discard || (action.data?.maxChoices && (action.data.maxChoices as number) > 1);
         const isEmptyConfirm = (firstSelection === 'confirm' || firstSelection === 'done' || firstSelection === 'none') && isMultiSelect;
 
@@ -662,16 +662,16 @@ export class ChoiceProcessor {
                 state.interaction.lastSelections[costType] = val ? [val] : [];
             }
         } else if (payload?.params?.faceIndex !== undefined || (choice && String(choice.value).startsWith('FACE_SELECTION_'))) {
-            const faceIdx = payload?.params?.faceIndex !== undefined ? payload.params.faceIndex : parseInt(String(choice?.value).substring(15));
+            const faceIdx = (payload?.params?.faceIndex !== undefined) ? payload.params.faceIndex : parseInt(String(choice?.value).substring(15));
             const card = RuleUtils.findObject(state, sourceId);
             if (card && 'selectedFaceDefinition' in card && card.definition.faces) {
                 card.selectedFaceDefinition = card.definition.faces[faceIdx];
             }
-        } else if (payload?.params?.costChoiceId || (choice && String(choice.value).startsWith('COST_CHOICE_'))) {
-            const choiceIdx = payload?.params?.costChoiceId ? parseInt(payload.params.costChoiceId) : parseInt(String(choice?.value).substring(12));
+        } else if ((payload?.params && payload.params.costChoiceId) || (choice && String(choice.value).startsWith('COST_CHOICE_'))) {
+            const choiceIdx = (payload?.params && payload.params.costChoiceId) ? parseInt(payload.params.costChoiceId) : parseInt(String(choice?.value).substring(12));
             state.interaction.lastChoiceIndex = choiceIdx;
-        } else if (payload?.params?.modeIndices || (choice && String(choice.value).startsWith('MODE_SELECTION_'))) {
-            const modeIndices = payload?.params?.modeIndices || selections.map(s => {
+        } else if ((payload?.params && payload.params.modeIndices) || (choice && String(choice.value).startsWith('MODE_SELECTION_'))) {
+            const modeIndices = (payload?.params && payload.params.modeIndices) || selections.map(s => {
                 const str = s.toString();
                 const i = parseInt(str.startsWith('CHOICE_') ? str.substring(7) : str);
                 const val = action.data?.choices?.[i]?.value;
@@ -688,7 +688,13 @@ export class ChoiceProcessor {
         if (action.data?.abilityIndex !== undefined) {
             let targets = savedTargets;
             if (action.data.isTargetingModal) {
-                targets = (!choice || choice.value === 'none') ? [] : (Array.isArray(choice.value) ? choice.value : [choice.value as string]);
+                const newTargets: string[] = [];
+                selections.forEach((sel: any) => {
+                    const i = typeof sel === 'number' ? sel : parseInt(String(sel).startsWith('CHOICE_') ? String(sel).substring(7) : String(sel));
+                    const val = !isNaN(i) ? action.data?.choices?.[i]?.value as string : (typeof sel === 'string' ? sel : undefined);
+                    if (val && val.length > 20) newTargets.push(val);
+                });
+                targets = newTargets;
             }
 
             return SpellProcessor.activateAbility(
@@ -769,14 +775,22 @@ export class ChoiceProcessor {
         let finalTargets = savedTargets;
         if (action.data?.isTargetingModal) {
             let newTargets: string[] = [];
-            if (typeof choiceIndex === 'string' && choiceIndex.includes('|')) {
-                newTargets = choiceIndex.split('|').map(s => {
-                    const i = parseInt(s.startsWith('CHOICE_') ? s.substring(7) : s);
-                    return action.data?.choices?.[i]?.value as string;
-                }).filter(v => v);
-            } else {
-                newTargets = choice?.value ? [choice.value as string] : [];
-            }
+            
+            selections.forEach((sel: any) => {
+                if (typeof sel === 'string' && sel.includes('|')) {
+                     const ids = sel.split('|').map(s => {
+                        const i = parseInt(s.startsWith('CHOICE_') ? s.substring(7) : s);
+                        const val = action.data?.choices?.[i]?.value as string;
+                        return val && val.length > 20 ? val : undefined;
+                    }).filter(v => v) as string[];
+                    newTargets.push(...ids);
+                } else {
+                    const i = typeof sel === 'number' ? sel : parseInt(String(sel).startsWith('CHOICE_') ? String(sel).substring(7) : String(sel));
+                    const val = !isNaN(i) ? action.data?.choices?.[i]?.value as string : (typeof sel === 'string' ? sel : undefined);
+                    if (val && val.length > 20) newTargets.push(val);
+                }
+            });
+
             finalTargets = [...savedTargets, ...newTargets];
             logger.info(state, LogCategory.ACTION, `[MODAL-TARGET-APPEND] Appended ${newTargets.length} modal targets to ${savedTargets.length} previous ones. Total: ${finalTargets.length}`);
         }
@@ -809,14 +823,26 @@ export class ChoiceProcessor {
         );
     }
 
-    private static handleResolutionChoice(state: GameState, sourceId: string, choice: ChoiceOption, action: PendingAction, engine: EngineContext): boolean {
+    private static handleResolutionChoice(state: GameState, sourceId: string, choice: ChoiceOption, action: PendingAction, engine: EngineContext, payload: ChoicePayload): boolean {
         const { logger } = getProcessors(state);
         const savedActionData = action.data;
         const stackObj = savedActionData?.stackObj as StackObject;
         const parentTargets = (action.data?.targets || savedActionData?.targets || action.data?.parentContext?.targets || savedActionData?.parentContext?.targets || []) as string[];
+
         let targetsForResolution = parentTargets;
-        if (choice.value && typeof choice.value === 'string' && choice.value.length > 20) {
-            targetsForResolution = [choice.value, ...parentTargets];
+        const selections = payload.selections || [];
+
+        if (selections.length > 0) {
+            const newTargets = selections.map(sel => {
+                const i = typeof sel === 'number' ? sel : parseInt(String(sel).startsWith('CHOICE_') ? String(sel).substring(7) : String(sel));
+                const c = !isNaN(i) ? action.data?.choices?.[i] : undefined;
+                const val = c?.value ? String(c.value) : (typeof sel === 'string' ? sel : "");
+                return val;
+            }).filter(v => v.length > 20); // Filter for GUID-like IDs
+
+            if (newTargets.length > 0) {
+                targetsForResolution = [...newTargets, ...parentTargets];
+            }
         }
 
         if (choice.costs && choice.costs.length > 0) {
@@ -979,7 +1005,7 @@ export class ChoiceProcessor {
     private static handleXChoice(state: GameState, playerId: string, action: PendingAction, payload: ChoicePayload, engine: any): boolean {
         const { logger } = getProcessors(state);
         let x = payload.params?.xValue ?? 0;
-        
+
         if (payload.params?.xValue === undefined) {
             const firstSelection = payload.selections[0];
             if (typeof firstSelection === 'number') x = firstSelection;

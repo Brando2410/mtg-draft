@@ -8,7 +8,7 @@ import { CostProcessor } from './modules/magic/CostProcessor';
 import { Profiler } from './utils/Profiler';
 import { EngineLogger } from './utils/EngineLogger';
 import { LifeDamageHandler } from './modules/effects/handlers/life/LifeDamageHandler';
-import { MoveEffectHandler } from './modules/effects/handlers/zone/MoveEffectHandler';
+import { MovementHandler } from './modules/effects/handlers/zone/MoveEffectHandler';
 import { SpellValidator } from './modules/actions/spells/SpellValidator';
 import { SpellCostCalculator } from './modules/actions/spells/SpellCostCalculator';
 import { SpellInteractiveManager } from './modules/actions/spells/SpellInteractiveManager';
@@ -93,7 +93,10 @@ export class GameEngine implements EngineContext {
       executionTrace: [],
       mutationStack: [],
       choiceQueue: [],
-      interaction: {},
+      interaction: {
+        lastSelections: {},
+        flags: {}
+      },
       stateVersion: 1
     };
 
@@ -195,7 +198,7 @@ export class GameEngine implements EngineContext {
       player.hasLostDueToEmptyLibrary = true;
       return false;
     }
-    MoveEffectHandler.handle(
+    MovementHandler.handle(
       this.state,
       { type: EffectType.DrawCards, amount: 1 },
       {
@@ -383,6 +386,13 @@ export class GameEngine implements EngineContext {
           break;
         }
 
+        // CR 613: Refresh derived stats (P/T, Keywords) before checking SBAs.
+        // This ensures that objects created or modified during the last resolution 
+        // (like Fractal tokens with counters) are evaluated correctly.
+        Profiler.wrap('LayerProcessor.updateDerivedStats', () => {
+          LayerProcessor.updateDerivedStats(this.state, PriorityProcessor);
+        });
+
         // 1. Resolve SBAs until stable (Rule 704.3)
         sbaPerformed = Profiler.wrap('StateBasedActionsProcessor.resolveSBAs', () =>
           StateBasedActionsProcessor.resolveSBAs(this.state)
@@ -401,9 +411,6 @@ export class GameEngine implements EngineContext {
 
         // 4. Repeat if either step did work (Rule 117.5)
       } while (sbaPerformed || anyTriggersStacked);
-
-      // CR 613: Refresh playability for the player who is about to receive priority
-      LayerProcessor.updateDerivedStats(this.state, PriorityProcessor);
     });
   }
 

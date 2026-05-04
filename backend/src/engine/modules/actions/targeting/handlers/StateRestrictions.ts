@@ -80,7 +80,8 @@ export const StateRestrictions: Record<string, IRestrictionHandler> = {
         const parts = restriction.split('_');
         if (parts.length < 2) return false;
         const type = parts[1];
-        return !!(obj.counters && obj.counters[type] && obj.counters[type] > 0);
+        const counters = obj.counters as Record<string, number | undefined>;
+        return !!(counters && counters[type] && (counters[type] || 0) > 0);
     })
 };
 

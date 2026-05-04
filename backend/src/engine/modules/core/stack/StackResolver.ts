@@ -82,15 +82,21 @@ export class StackResolver {
   private areAllTargetsIllegal(stackObj: StackObject): boolean {
     if (!stackObj.targets || stackObj.targets.length === 0) return false;
 
-    // A spell/ability is countered if ALL its targets are illegal.
+    const definitions = stackObj.targetDefinitions || stackObj.data?.targetDefinitions;
+    
     return stackObj.targets.every((targetId, index) => {
-      return !TargetingProcessor.isLegalTarget(this.state, {
+      const isLegal = TargetingProcessor.isLegalTarget(this.state, {
         sourceId: stackObj.sourceId,
         controllerId: stackObj.controllerId,
         stackObject: stackObj,
-        targetDefinitions: stackObj.data?.targetDefinitions,
+        targetDefinitions: definitions,
         targetIndex: index
       }, targetId);
+      
+      if (!isLegal) {
+        getProcessors(this.state).logger.debug(this.state, LogCategory.ACTION, `[FIZZLE-DEBUG] Target ${targetId} at index ${index} is ILLEGAL. Definitions: ${JSON.stringify(definitions)}`);
+      }
+      return !isLegal;
     });
   }
 

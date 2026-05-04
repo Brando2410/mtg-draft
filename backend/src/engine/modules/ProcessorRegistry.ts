@@ -26,6 +26,8 @@ import type { LkiProcessor } from "./state/LkiProcessor";
 import type { StateBasedActionsProcessor } from "./state/StateBasedActionsProcessor";
 import { EngineLogger } from "../utils/EngineLogger";
 import type { oracle as oracleInstance } from "../OracleLogicMap";
+import type { EngineContext } from "../interfaces/EngineContext";
+import { NullEngineContext } from "../interfaces/NullEngineContext";
 
 /**
  * ProcessorRegistry: Standardized interface for accessing core engine modules
@@ -67,9 +69,9 @@ export interface ProcessorRegistry {
  * This resolves the "state as any" smell by encapsulating registry access.
  */
 export function getProcessors(state: GameState): ProcessorRegistry {
-    const engine = (state as any).gameEngine;
-    if (engine && engine.processors) {
-        return engine.processors as ProcessorRegistry;
+    const engine = getEngine(state);
+    if (engine.processors) {
+        return engine.processors;
     }
 
     /**
@@ -106,4 +108,12 @@ export function getProcessors(state: GameState): ProcessorRegistry {
         get logger() { return require("../utils/EngineLogger").EngineLogger; },
         get oracle() { return require("../OracleLogicMap").oracle; },
     } as unknown as ProcessorRegistry;
+}
+
+/**
+ * Service Locator for the Game Orchestrator.
+ * Returns the attached GameEngine or a safe NullEngineContext fallback.
+ */
+export function getEngine(state: GameState): EngineContext {
+    return (state as any).gameEngine || NullEngineContext.getInstance();
 }

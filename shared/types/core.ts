@@ -76,6 +76,8 @@ const _CounterType = {
   Blood: "blood"
 } as const;
 
+export type CounterType = 'loyalty' | 'p1p1' | 'm1m1' | 'charge' | 'energy' | 'poison' | 'experience' | 'lore' | 'time' | 'suspend' | 'oil' | 'shield' | 'stun' | 'doom' | 'corrupt' | 'slime' | '+1/+1' | '-1/-1' | 'suspect' | 'blood';
+
 /**
  * CounterType - MTG Counter types.
  * Dynamic: Supports arbitrary counters like CounterType.Oil or CounterType.Filibuster.
@@ -87,7 +89,7 @@ export const CounterType: Record<string, string> & typeof _CounterType = new Pro
   }
 });
 
-export type CounterType = string;
+
 
 export const EnginePrefix = {
   VirtualPrepared: "virtual_prepared_",

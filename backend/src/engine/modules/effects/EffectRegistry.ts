@@ -25,8 +25,12 @@ import { ControlEffectsHandler } from "./handlers/system/ControlEffects";
 import { ManaHandler } from "./handlers/system/ManaEffects";
 import { DisableDamagePreventionHandler, ExchangeHandAndGraveyardHandler, NecromentiaHandler, PendingActionHandler } from "./handlers/system/MiscEffects";
 import { CreateDelayedTriggerHandler } from "./handlers/system/TriggerEffects";
-import { MovementHandler } from "./handlers/zone/MovementEffects";
-import { DiscardHandler, DrawCardsEffectHandler, MillHandler, ScrySurveilEffectHandler, SearchHandler } from "./handlers/zone/ZoneEffects";
+import { MovementHandler } from "./handlers/zone/MoveEffectHandler";
+import { DrawCardsHandler } from "./handlers/zone/DrawCardsHandler";
+import { MillEffectHandler } from "./handlers/zone/MillEffectHandler";
+import { DiscardEffectHandler } from "./handlers/zone/DiscardEffectHandler";
+import { ScrySurveilHandler } from "./handlers/zone/ScrySurveilHandler";
+import { SearchEffectHandler } from "./handlers/zone/SearchEffectHandler";
 import { PermissionEffectHandler } from "./handlers/zone/PermissionEffectHandler";
 
 export const EffectRegistry: Partial<Record<EffectType | string, IEffectHandler>> = {
@@ -53,26 +57,26 @@ export const EffectRegistry: Partial<Record<EffectType | string, IEffectHandler>
     [EffectType.CreateEmblem]: CreateEmblemHandler,
 
     // Zone Movement
-    [EffectType.DrawCards]: DrawCardsEffectHandler,
+    [EffectType.DrawCards]: DrawCardsHandler,
     [EffectType.Exile]: MovementHandler,
     [EffectType.ExileTopCard]: MovementHandler,
     [EffectType.ExileAllCards]: MovementHandler,
     [EffectType.ExileUntilLeaves]: MovementHandler,
     [EffectType.ReturnToHand]: MovementHandler,
-    [EffectType.SearchLibrary]: SearchHandler,
-    [EffectType.Scry]: ScrySurveilEffectHandler,
-    [EffectType.Surveil]: ScrySurveilEffectHandler,
+    [EffectType.SearchLibrary]: SearchEffectHandler,
+    [EffectType.Scry]: ScrySurveilHandler,
+    [EffectType.Surveil]: ScrySurveilHandler,
     [EffectType.LookAtTopAndPick]: MovementHandler,
     [EffectType.MoveToZone]: MovementHandler,
     [EffectType.PutRemainderOnBottomRandom]: MovementHandler,
     [EffectType.PutOnBattlefield]: MovementHandler,
-    [EffectType.Mill]: MillHandler,
+    [EffectType.Mill]: MillEffectHandler,
     [EffectType.AllowPlayMilledCard]: PermissionEffectHandler,
     [EffectType.AllowPlayExiled]: PermissionEffectHandler,
     [EffectType.AllowPlayFromTop]: PermissionEffectHandler,
     [EffectType.AllowCastFromGraveyard]: PermissionEffectHandler,
     [EffectType.RevealUntilCondition]: MovementHandler,
-    [EffectType.DiscardCards]: DiscardHandler,
+    [EffectType.DiscardCards]: DiscardEffectHandler,
 
     // Choices
     [EffectType.Choice]: ChoiceHandler,

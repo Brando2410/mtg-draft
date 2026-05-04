@@ -1,14 +1,14 @@
-import { DrawEffect, EffectDefinition, EffectType, GameState, PlayerId, ResolutionContext } from '@shared/engine_types';
+import { DrawEffect, EffectType, PlayerId } from '@shared/engine_types';
 import { getProcessors } from '../../../ProcessorRegistry';
 import { ChoiceGenerator } from '../../ChoiceGenerator';
+import { IEffectHandler } from '../../IEffectHandler';
 
-export class ScrySurveilHandler {
-    public static handle(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+export const ScrySurveilHandler: IEffectHandler<DrawEffect> = {
+    handle(state, effect, context) {
         const { effect: EP } = getProcessors(state);
         const { targets, controllerId, stackObject, parentContext } = context;
-        const amountEff = effect as DrawEffect;
         
-        const amount = EP.resolveAmount(state, (amountEff.amount || 1), context, targets);
+        const amount = EP.resolveAmount(state, (effect.amount || 1), context, targets);
         const affectedPlayerId = (targets.find(tid => state.players[tid as PlayerId]) as PlayerId) || controllerId;
         const player = state.players[affectedPlayerId];
         if (!player) return;
@@ -28,8 +28,8 @@ export class ScrySurveilHandler {
                 sourceId: stackObject?.sourceId || "",
                 stackObj: stackObject,
                 parentContext: parentContext,
-                isSpellCasting: !!(effect as any).isSpellCasting,
-                isFreeCast: !!(effect as any).isFreeCast,
+                isSpellCasting: !!effect.isSpellCasting,
+                isFreeCast: !!effect.isFreeCast,
             });
         } else if (effect.type === EffectType.Surveil) {
             state.pendingAction = ChoiceGenerator.createSurveilChoice(state, cards, {
@@ -38,9 +38,9 @@ export class ScrySurveilHandler {
                 sourceId: stackObject?.sourceId || "",
                 stackObj: stackObject,
                 parentContext: parentContext,
-                isSpellCasting: !!(effect as any).isSpellCasting,
-                isFreeCast: !!(effect as any).isFreeCast,
+                isSpellCasting: !!effect.isSpellCasting,
+                isFreeCast: !!effect.isFreeCast,
             });
         }
     }
-}
+};

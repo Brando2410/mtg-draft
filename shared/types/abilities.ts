@@ -240,8 +240,14 @@ export interface ActivatedAbility {
     id: string;
     sourceId: GameObjectId;
     controllerId: PlayerId;
+    activeZone?: Zone;
     costs: AbilityCost[];
+    effects: EffectDefinition[];
+    targetDefinitions?: TargetDefinition[];
+    abilityIndex?: number;
     isManaAbility: boolean;
+    image_url?: string;
+    oracleText?: string;
 }
 
 export interface TriggeredAbility {
@@ -251,7 +257,7 @@ export interface TriggeredAbility {
     name?: string;
     eventMatch: string | string[];
     activeZone?: Zone;
-    condition?: string | ConditionType | ((state: any, event: any, ability: TriggeredAbility) => boolean);
+    condition?: string | any | ((state: any, event: any, ability: TriggeredAbility) => boolean);
     limitPerTurn?: number;
     duration?: EffectDuration;
     oracleText?: string;
@@ -266,6 +272,29 @@ export interface TriggeredAbility {
     targetDefinitions?: TargetDefinition[];
     abilityIndex?: number;
     targetIds?: string[];
+    image_url?: string;
+}
+
+export interface ReplacementEffect {
+    id: string;
+    sourceId: GameObjectId;
+    controllerId: PlayerId;
+    activeZone: Zone;
+    eventMatch?: string | string[];
+    replacesEvent?: string;
+    condition?: any;
+    effects?: EffectDefinition[];
+    data?: any;
+}
+
+export interface PreventionEffect {
+    id: string;
+    sourceId: GameObjectId;
+    controllerId: PlayerId;
+    damageType?: 'CombatDamage' | 'AllDamage';
+    targetMapping: string;
+    amount?: number;
+    duration?: EffectDuration | string;
 }
 
 /**

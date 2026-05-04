@@ -119,6 +119,7 @@ export const EffectType = {
     AdNauseam: 'AdNauseam',
     ChaosWarp: 'ChaosWarp',
     ApproachOfTheSecondSun: 'ApproachOfTheSecondSun',
+    RemoveCounters: 'RemoveCounters',
 } as const;
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
 
@@ -150,6 +151,14 @@ export interface ContinuousEffect {
     controllerId: PlayerId;
     layer: number;
     sublayer?: string;
+    subType?: string;
+    color?: string | string[];
+    isAttribute?: boolean;
+    attribute?: string;
+    isSpellTax?: boolean;
+    taxAmount?: number;
+    reductionAmount?: number;
+    exileOnMoveToGraveyard?: boolean;
     timestamp: number;
     activeZones: Zone[];
     duration: EffectDuration;
@@ -171,7 +180,6 @@ export interface ContinuousEffect {
     abilitiesToAdd?: (string | AbilityDefinition)[];
     abilitiesToRemove?: string[];
     removeAllAbilities?: boolean;
-    exileOnMoveToGraveyard?: boolean;
     condition?: string;
     copyFromId?: GameObjectId;
     canPlayExiled?: boolean;
@@ -209,6 +217,8 @@ export interface ResolutionContext {
     nextEffectIndex?: number;    // Pointer for resuming multi-step effects
     xValue?: number;             // Bound X value for this resolution chain
     isCopy?: boolean;            // Flag if this resolution is for a copied spell/ability
+    sourceObject?: GameObject;   // Resolved LKI or Battlefield source
+    controller?: any;            // Resolved controller player object
 }
 
 /**
@@ -236,6 +246,7 @@ export interface TargetingContext {
     targetIndex?: number;
     targets?: string[];
     xValue?: number;
+    isSpellCasting?: boolean;
 }
 
 /**
@@ -250,6 +261,7 @@ export interface AmountResolver {
     subtype?: string; // For COUNT_PLAYER_PERMANENTS
     resolver?: (state: any, context: ResolutionContext) => number;
 }
+export type NumericProperty = number | string | AmountResolver | ((state: any, context: any, targets?: any) => number);
 
 /**
  * Base properties shared by all effects (Rule 608)
@@ -260,65 +272,153 @@ export interface BaseEffect {
     duration?: EffectDuration | DurationType;
     layer?: number;
     condition?: string | any;
+    targetId?: string;
+    targetIds?: string[];
     targetMapping?: any | string;
+    target2Mapping?: string;
     targetControllerMapping?: TargetMapping | string;
     restrictions?: any[];
+    selectionType?: string;
     effects?: EffectDefinition[]; // Nested effects for chaining/conditionals
     onFailureEffects?: EffectDefinition[];
     isFreeCast?: boolean;
+    isSpellCasting?: boolean;
+    isParadigmCopy?: boolean;
+    isDiscard?: boolean;
     metadata?: Record<string, any>;
     targetOffset?: number;
-    [key: string]: any; // Transitional compatibility
+    optional?: boolean;
+    revealed?: boolean;
+    remainderZone?: Zone | string;
+    remainderPosition?: number | 'top' | 'bottom' | 'random';
+    shuffleRemainder?: boolean;
+    isDraw?: boolean;
+    targetDefinitions?: any;
+    fromTop?: NumericProperty;
+    libraryPosition?: number | 'top' | 'bottom' | 'random';
+    sourceZones?: Zone[];
+    tapped?: boolean;
+    registeredType?: EffectType;
+    sublayer?: number | string;
+    value?: any;
+    limitPerTurn?: number;
+    targetControllerId?: PlayerId;
+    copyFromIdMapping?: string;
+    chosenName?: string;
+    exileOnResolution?: boolean;
+    amount?: NumericProperty;
+    choices?: any[];
+    minChoices?: NumericProperty;
+    maxChoices?: NumericProperty;
+    counterType?: string;
+    selectionPool?: any;
+    zone?: Zone;
+    reveal?: boolean;
+    random?: boolean;
+    excludedTargetMapping?: string;
+    eventMatch?: string;
+    additionalCost?: any;
+    additionalCosts?: any;
+    entersTapped?: boolean;
+    abilitiesToAdd?: (AbilityDefinition | string)[];
+    onSelected?: (card: any) => EffectDefinition[];
+    mana?: string;
+    manaType?: string;
+    manaRestrictions?: any;
+    keyword?: string | string[];
+    keywordsToAdd?: string[];
+    damageType?: string;
+    manaReduction?: any;
+    deferredTrigger?: any;
+    manaRestriction?: any;
+    cannotBlock?: boolean;
+    allowFreeCastFromHand?: boolean;
+    allowCastFromZone?: Zone;
+    maxTriggers?: number;
+    maxCount?: NumericProperty;
+    playerIdMapping?: string;
+    secondTarget?: string;
+    attacking?: boolean;
+    powerOverride?: NumericProperty;
+    toughnessOverride?: NumericProperty;
+    position?: number | 'top' | 'bottom' | 'random';
+    restriction?: any;
+    tax?: NumericProperty;
+    power?: NumericProperty;
+    toughness?: NumericProperty;
+    tokenDefinition?: any;
+    pickAmount?: NumericProperty;
+    pickCount?: NumericProperty;
+    damageSource?: string;
+    sourceMapping?: string;
+    costs?: any[];
+    fromZones?: Zone[];
+    canPlayExiled?: boolean;
+    isUnblockable?: boolean;
+    typesSet?: string[];
+    typesToAdd?: string[];
+    subtypesToAdd?: string[];
+    startingCounters?: { type?: string, counterType?: string, countersType?: string, amount: NumericProperty };
+    image_url?: string;
+    activeZones?: Zone[];
+    flipCoins?: NumericProperty;
+    next?: EffectDefinition; // Chain to next effect (e.g. Cascade)
 }
 
 export interface DamageEffect extends BaseEffect {
     type: typeof EffectType.DealDamage;
-    amount: number | string | AmountResolver;
     damageSourceMapping?: string;
 }
 
 export interface LifeEffect extends BaseEffect {
     type: typeof EffectType.GainLife | typeof EffectType.LoseLife;
-    amount: number | string | AmountResolver;
 }
 
 export interface MoveEffect extends BaseEffect {
-    type: typeof EffectType.MoveToZone | typeof EffectType.PutOnBattlefield | typeof EffectType.ReturnToHand | typeof EffectType.Exile | typeof EffectType.ExileTopCard | typeof EffectType.ExileAllCards | typeof EffectType.ShuffleLibrary | typeof EffectType.DiscardCards;
-    zone?: Zone | string;
-    sourceZones?: Zone[] | string[];
-    libraryPosition?: number | 'top' | 'bottom';
-    shuffle?: boolean;
-    fromTop?: number | string | AmountResolver;
-    reveal?: boolean;
-    tapped?: boolean;
+    type: typeof EffectType.MoveToZone | typeof EffectType.PutOnBattlefield | typeof EffectType.ReturnToHand | typeof EffectType.Exile | typeof EffectType.ExileTopCard | typeof EffectType.ExileAllCards | typeof EffectType.ShuffleLibrary | typeof EffectType.DiscardCards | typeof EffectType.ExileUntilManaValue | typeof EffectType.PutRemainderOnBottomRandom;
     ownerControl?: boolean;
+    shuffle?: boolean;
+    ownerId?: PlayerId;
+    targetPlayerId?: PlayerId;
+    additionalEffectPerCard?: EffectDefinition;
 }
 
 export interface DrawEffect extends BaseEffect {
     type: typeof EffectType.DrawCards | typeof EffectType.DiscardCards | typeof EffectType.Mill | typeof EffectType.Scry | typeof EffectType.Surveil;
-    amount: number | string | AmountResolver;
-    fromTop?: number | string | AmountResolver; // For Scry/Surveil/LookAtTop
 }
 
 export interface SearchEffect extends BaseEffect {
     type: typeof EffectType.SearchLibrary;
-    sourceZones?: Zone[];
     shuffle?: boolean;
-    reveal?: boolean;
-    targetDefinitions?: any;
+    optional?: boolean;
+    selectionType?: string;
+    libraryPosition?: number | 'top' | 'bottom';
 }
 
 export interface CounterEffect extends BaseEffect {
-    type: typeof EffectType.AddCounters | typeof EffectType.Counter | typeof EffectType.DoubleCounters | typeof EffectType.MoveCounters;
-    counterType?: string;
-    amount?: number | string | AmountResolver;
+    type: typeof EffectType.AddCounters | typeof EffectType.RemoveCounters | typeof EffectType.Counter | typeof EffectType.DoubleCounters | typeof EffectType.MoveCounters;
 }
 
 export interface TokenEffect extends BaseEffect {
     type: typeof EffectType.CreateToken | typeof EffectType.CreateTokenCopy;
-    amount?: number | string | AmountResolver;
     definition?: any; // CardDefinition for token
-    abilitiesToAdd?: (string | AbilityDefinition)[];
+    tokenBlueprint?: any;
+    isAttacking?: boolean;
+    attackTargetId?: string;
+    sourceCardId?: string;
+    originalCardId?: string;
+    sourceMapping?: string;
+    storeLinkedId?: string;
+}
+
+export interface EmblemEffect extends BaseEffect {
+    type: typeof EffectType.CreateEmblem | typeof EffectType.GetEmblem;
+    emblemBlueprint: {
+        name?: string;
+        image_url?: string;
+        oracleText?: string;
+        abilities?: any[];
+    };
 }
 
 export interface ContinuousEffectDefinition extends BaseEffect {
@@ -331,6 +431,24 @@ export interface ContinuousEffectDefinition extends BaseEffect {
     powerSet?: number | string;
     toughnessSet?: number | string;
     removeAllAbilities?: boolean;
+    canPlayExiled?: boolean;
+    spendAnyMana?: boolean;
+    typesToAdd?: string[];
+    subtypesToAdd?: string[];
+    subtypesSet?: string[];
+    colorsToAdd?: string[];
+    colorSet?: string[];
+    flashbackCostOverride?: any;
+    exileOnMoveToGraveyard?: boolean;
+    playerModifier?: any;
+}
+
+export interface RevealUntilConditionEffect extends BaseEffect {
+    type: typeof EffectType.RevealUntilCondition;
+    zone?: Zone;
+    remainderZone?: Zone;
+    remainderPosition?: 'top' | 'bottom' | 'random';
+    shuffleRemainder?: boolean;
 }
 
 export interface RestrictionDefinition {
@@ -341,10 +459,11 @@ export interface RestrictionDefinition {
 
 export interface ModalEffect extends BaseEffect {
     type: typeof EffectType.Choice;
-    selectionPool?: TargetMapping | string;
-    minChoices?: number;
-    maxChoices?: number;
+    minChoices?: number | string | AmountResolver;
+    maxChoices?: number | string | AmountResolver;
     allowDuplicates?: boolean;
+    optional?: boolean;
+    isSpellCasting?: boolean;
     choices: {
         label: string;
         effects?: EffectDefinition[];
@@ -353,6 +472,44 @@ export interface ModalEffect extends BaseEffect {
         value?: string | number;
         condition?: string;
     }[];
+}
+
+export interface CastSpellEffect extends BaseEffect {
+    type: typeof EffectType.CastSpell;
+    value?: string;
+    isFreeCast?: boolean;
+    targetId?: string;
+    exileOnResolution?: boolean;
+}
+
+export interface AddManaEffect extends BaseEffect {
+    type: typeof EffectType.AddMana;
+    amount?: NumericProperty;
+}
+
+export interface NeutralizeEffect extends BaseEffect {
+    type: typeof EffectType.Destroy | typeof EffectType.CounterSpell | typeof EffectType.CounterAbility | typeof EffectType.CounterSpellOrAbility;
+    sourceZones?: Zone[];
+}
+
+export interface ExtraTurnsEffect extends BaseEffect {
+    type: typeof EffectType.ExtraTurns;
+    amount: number | string | AmountResolver;
+}
+
+export interface CopyEffect extends BaseEffect {
+    type: typeof EffectType.CopyObject | typeof EffectType.CopySpellOnStack | typeof EffectType.CopyAbility;
+    targetMapping?: string;
+    isToken?: boolean;
+    isLegendary?: boolean;
+    abilitiesToAdd?: (string | AbilityDefinition)[];
+    keywordsToAdd?: string[];
+    chooseNewTargets?: boolean;
+}
+
+export interface SpecializedEffect extends BaseEffect {
+    type: typeof EffectType.AdNauseam | typeof EffectType.ChaosWarp | typeof EffectType.ApproachOfTheSecondSun | typeof EffectType.Learn;
+    value?: any;
 }
 
 /**
@@ -369,4 +526,12 @@ export type EffectDefinition =
     | TokenEffect
     | ContinuousEffectDefinition
     | ModalEffect
+    | CastSpellEffect
+    | AddManaEffect
+    | NeutralizeEffect
+    | ExtraTurnsEffect
+    | CopyEffect
+    | SpecializedEffect
+    | EmblemEffect
+    | RevealUntilConditionEffect
     | BaseEffect;

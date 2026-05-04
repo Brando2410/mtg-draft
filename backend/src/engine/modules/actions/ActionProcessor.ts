@@ -545,7 +545,7 @@ export class ActionProcessor {
 
           if (amount > 0) {
             const counterKey = type === "P1P1" ? "+1/+1" : type;
-            card.counters[counterKey] = (card.counters[counterKey] || 0) + amount;
+            card.counters[counterKey as CounterType] = (card.counters[counterKey as CounterType] || 0) + amount;
             logger.info(state, LogCategory.ACTION, `[ETB-COUNTERS] ${card.definition.name} enters with ${amount} ${counterKey} counters.`);
           }
         }

@@ -137,7 +137,7 @@ SpecializedRestrictions["BLOCKING"] = gameObjectRestriction((state, obj) => {
     return !!obj.isBlocking;
 });
 SpecializedRestrictions["HASCOUNTER_P1P1"] = gameObjectRestriction((state, obj) => {
-    return (obj.counters?.['P1P1'] || 0) > 0;
+    return (obj.counters?.['+1/+1'] || 0) > 0;
 });
 SpecializedRestrictions["WASDEALTDAMAGETHISTURN"] = gameObjectRestriction((state, obj) => {
     return (obj as any).dealtDamageThisTurn;

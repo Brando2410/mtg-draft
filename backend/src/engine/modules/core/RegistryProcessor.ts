@@ -43,10 +43,10 @@ export class RegistryProcessor {
 
             switch (ability.type) {
                 case 'TriggeredAbility':
-                    this.registerTriggeredAbility(state, card, ability, id, activeZone);
+                    this.registerTriggeredAbility(state, card, ability, id, activeZone, index);
                     break;
                 case 'ActivatedAbility':
-                    this.registerActivatedAbility(state, card, ability, id, activeZone);
+                    this.registerActivatedAbility(state, card, ability, id, activeZone, index);
                     break;
                 case 'Static':
                     this.registerStaticAbility(state, card, ability, id, activeZone);
@@ -89,7 +89,7 @@ export class RegistryProcessor {
         }
     }
 
-    private static registerTriggeredAbility(state: GameState, card: GameObject, ability: any, id: string, activeZone: Zone) {
+    private static registerTriggeredAbility(state: GameState, card: GameObject, ability: any, id: string, activeZone: Zone, index: number) {
         state.ruleRegistry.triggeredAbilities.push({
             id,
             sourceId: card.id,
@@ -99,22 +99,32 @@ export class RegistryProcessor {
             activeZone,
             image_url: card.image_url || card.definition.image_url,
             oracleText: ability.oracleText || card.definition.oracleText || 'Triggered ability',
-            ...ability
-        } as TriggeredAbility);
+            effects: ability.effects,
+            targetDefinitions: ability.targetDefinitions,
+            abilityIndex: ability.abilityIndex !== undefined ? ability.abilityIndex : index,
+            isGlobal: ability.isGlobal,
+            isDelayed: ability.isDelayed,
+            oneShot: ability.oneShot,
+            firesOnce: ability.firesOnce,
+            data: ability.data,
+            payload: ability.payload
+        });
     }
 
-    private static registerActivatedAbility(state: GameState, card: GameObject, ability: any, id: string, activeZone: Zone) {
+    private static registerActivatedAbility(state: GameState, card: GameObject, ability: any, id: string, activeZone: Zone, index: number) {
         state.ruleRegistry.activatedAbilities.push({
             id,
             sourceId: card.id,
             controllerId: card.controllerId,
             activeZone,
             image_url: card.image_url || card.definition.image_url,
-            costs: ability.costs,
-            effects: ability.effects,
+            costs: ability.costs || [],
+            effects: ability.effects || [],
+            targetDefinitions: ability.targetDefinitions,
+            abilityIndex: ability.abilityIndex !== undefined ? ability.abilityIndex : index,
             isManaAbility: ability.isManaAbility || false,
-            ...ability
-        } as ActivatedAbility);
+            oracleText: ability.oracleText || card.definition.oracleText
+        });
     }
 
     private static registerStaticAbility(state: GameState, card: GameObject, ability: any, id: string, activeZone: Zone) {
@@ -160,15 +170,32 @@ export class RegistryProcessor {
                     targetMapping: eff.targetMapping,
                     targetIds: eff.targetMapping === 'SELF' ? [card.id] : undefined,
                     restrictions: restrictions.length > 0 ? restrictions : (eff.restrictions || []),
-                    ...eff
-                } as ContinuousEffect);
+                    type: eff.type,
+                    value: eff.value,
+                    subType: eff.subType,
+                    color: eff.color,
+                    isAttribute: eff.isAttribute,
+                    attribute: eff.attribute,
+                    isSpellTax: eff.isSpellTax,
+                    taxAmount: eff.taxAmount,
+                    reductionAmount: eff.reductionAmount,
+                    exileOnMoveToGraveyard: eff.exileOnMoveToGraveyard
+                });
             }
         });
     }
 
     private static registerReplacementAbility(state: GameState, card: GameObject, ability: any, id: string, activeZone: Zone) {
         if (!state.ruleRegistry.replacementEffects) state.ruleRegistry.replacementEffects = [];
-        state.ruleRegistry.replacementEffects.push({ id, sourceId: card.id, activeZone, ...ability } as any);
+        state.ruleRegistry.replacementEffects.push({
+            id,
+            sourceId: card.id,
+            controllerId: card.controllerId,
+            activeZone,
+            eventMatch: ability.eventMatch,
+            condition: ability.condition,
+            data: ability.data
+        });
     }
 }
 

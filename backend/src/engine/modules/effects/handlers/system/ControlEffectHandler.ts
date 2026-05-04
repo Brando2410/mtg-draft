@@ -42,7 +42,7 @@ export class ControlEffectHandler {
                     // LKI: If spell is gone, use LKI
                     if (!stackObj) {
                         const processors = getProcessors(state);
-                        stackObj = processors.lki.getLki(state, tid, Zone.Stack);
+                        stackObj = processors.lki.getLki(state, tid, Zone.Stack) as any;
                         if (stackObj) logger.info(state, LogCategory.ACTION, `[COPY] Original spell ${tid} not found on stack, using Last Known Information.`);
                     }
 

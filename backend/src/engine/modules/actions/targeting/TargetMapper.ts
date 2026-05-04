@@ -1,8 +1,10 @@
 import {
+  ActivatedAbility,
+  EffectDefinition,
   GameObject, GameState,
-  PlayerId, ResolutionContext,
+  PlayerId, PreventionEffect, ReplacementEffect, ResolutionContext,
   Restriction,
-  TargetingContext, TargetDefinition, TargetMapping, TargetType, Zone
+  TargetingContext, TargetDefinition, TargetMapping, TargetType, TriggeredAbility, Zone
 } from "@shared/engine_types";
 import { RuleUtils } from "../../../utils/RuleUtils";
 import { getProcessors } from "../../ProcessorRegistry";
@@ -321,7 +323,7 @@ export class TargetMapper {
     state: GameState,
     mapping: string,
     context: ResolutionContext,
-    effect?: any,
+    effect?: Partial<EffectDefinition> | ActivatedAbility | TriggeredAbility | ReplacementEffect | PreventionEffect,
   ): string[] {
     return this.doResolveTargetMapping(state, mapping, context, effect);
   }
@@ -330,14 +332,20 @@ export class TargetMapper {
     state: GameState,
     mapping: string,
     context: ResolutionContext,
-    effect?: any,
+    effect?: Partial<EffectDefinition> | ActivatedAbility | TriggeredAbility | ReplacementEffect | PreventionEffect,
   ): string[] {
     const { sourceId, controllerId, stackObject, targets, parentContext } =
       context;
     const { logger } = getProcessors(state);
+    
+    // Extract common mapping properties from the effect payload to avoid repetitive casting
+    const payload = effect as any;
+    const targetOffset = payload?.targetOffset || 0;
+    const linkKey = payload?.linkKey || "linkedCardId";
+    const restrictions = payload?.restrictions || [];
+    const sourceZones = payload?.sourceZones;
+
     logger.debug(state, LogCategory.TARGETING, `[TARGET-MAP] Mapping ${mapping} for source ${sourceId}. Context targets: ${targets?.join(', ')}`);
-    const stackData = stackObject;
-    logger.debug(state, LogCategory.TARGETING, `[TARGET-MAP] stackData targets: ${(stackData as any)?.targets?.join(', ')}`);
     const targetingContext: TargetingContext = {
       sourceId,
       controllerId,
@@ -347,14 +355,14 @@ export class TargetMapper {
 
     // Centralized target resolution: Prioritize context targets (current resolution) 
     // over stack object targets (original declaration).
-    const resolvedTargets = (targets && targets.length > 0) ? targets : ((stackObject as any)?.targets || []);
+    const resolvedTargets = (targets && targets.length > 0) 
+      ? targets 
+      : (stackObject?.targets || []);
 
     const eventData =
       context.event ||
       parentContext?.event ||
-      stackObject?.data?.event ||
-      (stackObject as any)?.event ||
-      (stackObject as any)?.trigger?.event;
+      stackObject?.event;
 
     switch (mapping.toUpperCase()) {
       case TargetMapping.Self:
@@ -385,7 +393,6 @@ export class TargetMapper {
         return state.exile.map(o => o.id);
       }
       case TargetMapping.LinkedObject:
-        const linkKey = effect.linkKey || "linkedCardId";
         const lSource =
           state.battlefield.find((o: any) => o.id === sourceId) ||
           (Object.values(state.players) as any[])
@@ -426,40 +433,40 @@ export class TargetMapper {
       case TargetMapping.LastMilledIds:
         return state.turnState.lastMilledIds || [];
       case TargetMapping.Target1: {
-        const offset = effect?.targetOffset || 0;
+        const offset = targetOffset;
         logger.debug(state, LogCategory.TARGETING, `[TARGET-MAP] Target1 resolving to ${resolvedTargets[offset]} (from ${resolvedTargets.length} candidates)`);
         return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
       }
       case TargetMapping.SelfAndTarget1: {
-        const offset = effect?.targetOffset || 0;
+        const offset = targetOffset;
         return resolvedTargets[offset] ? [sourceId, resolvedTargets[offset]] : [sourceId];
       }
       case TargetMapping.Target2: {
-        const offset = (effect?.targetOffset || 0) + 1;
+        const offset = targetOffset + 1;
         return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
       }
       case TargetMapping.Target3: {
-        const offset = (effect?.targetOffset || 0) + 2;
+        const offset = targetOffset + 2;
         return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
       }
       case TargetMapping.Target4: {
-        const offset = (effect?.targetOffset || 0) + 3;
+        const offset = targetOffset + 3;
         return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
       }
       case TargetMapping.Target5: {
-        const offset = (effect?.targetOffset || 0) + 4;
+        const offset = targetOffset + 4;
         return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
       }
       case TargetMapping.Target6: {
-        const offset = (effect?.targetOffset || 0) + 5;
+        const offset = targetOffset + 5;
         return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
       }
       case TargetMapping.Target7: {
-        const offset = (effect?.targetOffset || 0) + 6;
+        const offset = targetOffset + 6;
         return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
       }
       case TargetMapping.Target8: {
-        const offset = (effect?.targetOffset || 0) + 7;
+        const offset = targetOffset + 7;
         return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
       }
       case TargetMapping.TargetAll:
@@ -475,7 +482,7 @@ export class TargetMapper {
         const obj = RuleUtils.getEventObject(eData, state);
         if (obj) return [obj.id];
 
-        return stackData?.sourceId ? [stackData.sourceId] : [];
+        return stackObject?.sourceId ? [stackObject.sourceId] : [];
       }
       case TargetMapping.TriggerTarget: {
         const eData = eventData;
@@ -489,9 +496,8 @@ export class TargetMapper {
       }
       case TargetMapping.EventPlayer: {
         const eData = eventData;
-        return eData?.payload?.playerId || eData?.playerId
-          ? [eData?.payload?.playerId || eData?.playerId]
-          : [];
+        const pId = eData?.payload?.playerId || eData?.playerId;
+        return pId ? [pId as string] : [];
       }
       case TargetMapping.EventObjectController: {
         const eData = eventData;
@@ -502,10 +508,10 @@ export class TargetMapper {
         const targetId = resolvedTargets[0];
         // Check if we have persisted controller information first
         if (
-          (stackData as any)?.targetsControllers &&
-          (stackData as any).targetsControllers[0]
+          stackObject?.targetsControllers &&
+          stackObject.targetsControllers[0]
         ) {
-          return [(stackData as any).targetsControllers[0]];
+          return [stackObject.targetsControllers[0]];
         }
         if (state.players[targetId as PlayerId]) return [targetId];
         const obj = RuleUtils.findObject(state, targetId);
@@ -561,7 +567,7 @@ export class TargetMapper {
       case TargetMapping.AllMatchingPermanents:
       case TargetMapping.MatchingPermanentsYouControl:
       case TargetMapping.AllMatchingPermanentsYouControl: {
-        const finalRestrictions = [...(effect.restrictions || [])];
+        const finalRestrictions = [...restrictions];
 
         // 1. Determine Implicit Restrictions from Mapping String
         if (mapping.includes('CREATURE_AND_PLANESWALKER')) finalRestrictions.push('creature_or_planeswalker');
@@ -576,7 +582,7 @@ export class TargetMapper {
         // 2. Handle Control
         let controllerIdToMatch = controllerId;
         if (mapping.includes('CONTROLLED_BY_TARGET1')) {
-          const actualTargets = (stackData as any)?.targets?.length ? (stackData as any).targets : targets;
+          const actualTargets = stackObject?.targets?.length ? stackObject.targets : targets;
           controllerIdToMatch = actualTargets[0] as PlayerId;
         }
 
@@ -588,10 +594,10 @@ export class TargetMapper {
 
         // 3. Determine Source Zones
         const isMatchingType = mapping.includes('MATCHING');
-        const sourceZones = effect.sourceZones || (isMatchingType
+        const effectiveSourceZones = sourceZones || (isMatchingType
           ? [Zone.Battlefield, Zone.Graveyard, Zone.Hand, Zone.Exile, Zone.Library]
           : [Zone.Battlefield]);
-        const zones = Array.isArray(sourceZones) ? (sourceZones as any[]) : [sourceZones];
+        const zones = Array.isArray(effectiveSourceZones) ? (effectiveSourceZones as any[]) : [effectiveSourceZones];
 
         const pool: string[] = [];
         zones.forEach(z => {
@@ -618,7 +624,7 @@ export class TargetMapper {
       case TargetMapping.RemainderOfPool:
       case TargetMapping.RemainderOfLookingCards: {
         const pool = (parentContext?.lookingCards ||
-          (stackData as any)?.lookingCards ||
+          stackObject?.lookingCards ||
           state.pendingAction?.data?.lookingCards ||
           []) as GameObject[];
         // A card is part of the 'remainder' if it is still in the library (or exile if that's where we look from)

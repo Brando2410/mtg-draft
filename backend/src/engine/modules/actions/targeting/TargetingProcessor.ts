@@ -10,7 +10,12 @@ import {
     ActionType,
     TargetRestriction,
     TargetDefinition,
-    Targetable
+    Targetable,
+    EffectDefinition,
+    ActivatedAbility,
+    TriggeredAbility,
+    ReplacementEffect,
+    PreventionEffect
 } from '@shared/engine_types';
 import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
@@ -38,9 +43,9 @@ export class TargetingProcessor {
     public static sourceHasQualities(source: GameObject, qualities: string[], state?: GameState): boolean { return TargetValidator.sourceHasQualities(source, qualities, state); }
     public static getColors(obj: GameObject, state?: GameState): string[] { return TargetValidator.getColors(obj, state); }
     public static getLegalTargetPool(state: GameState, sourceId: string, targetDefinitions: TargetDefinition[], controllerId: string, targetIndex: number = 0, xValue: number = 0): string[] { return TargetValidator.getLegalTargetPool(state, sourceId, targetDefinitions, controllerId, targetIndex, xValue); }
-    public static resolveTargetMapping(state: GameState, mapping: string, context: ResolutionContext, effect?: any): string[] { return TargetMapper.resolveTargetMapping(state, mapping, context, effect); }
+    public static resolveTargetMapping(state: GameState, mapping: string, context: ResolutionContext, effect?: Partial<EffectDefinition> | ActivatedAbility | TriggeredAbility | ReplacementEffect | PreventionEffect): string[] { return TargetMapper.resolveTargetMapping(state, mapping, context, effect); }
     public static getDefinitionForIndex(targetDefinitions: TargetDefinition[], targetIndex: number, xValue: number = 0): TargetDefinition | null { return TargetMapper.getDefinitionForIndex(targetDefinitions, targetIndex, xValue); }
-    public static shouldFizzle(state: GameState, context: TargetingContext, targets: string[], effects: any[]): boolean { return TargetValidator.shouldFizzle(state, context, targets, effects); }
+    public static shouldFizzle(state: GameState, context: TargetingContext, targets: string[], effects: EffectDefinition[]): boolean { return TargetValidator.shouldFizzle(state, context, targets, effects); }
 
     /**
      * Checks if there are any optional targeting slots remaining that haven't been filled.
@@ -63,10 +68,7 @@ export class TargetingProcessor {
         state: GameState,
         playerId: PlayerId,
         targetId: string,
-        engine: {
-            resetPriorityToActivePlayer: () => void;
-            finaliseTargeting: (p: PlayerId, targets: string[]) => boolean;
-        }
+        engine: EngineContext
     ): boolean {
         if (state.pendingAction?.type !== 'TARGETING' || state.pendingAction.playerId !== playerId || !state.pendingAction.data) return false;
 
@@ -160,11 +162,13 @@ export class TargetingProcessor {
                         sourceOnField.abilitiesUsedThisTurn--;
                         const logic = oracle.getCard(sourceOnField.definition.name);
                         const ability = logic?.abilities?.[abilityIndex];
-                        const lCost = ability?.costs?.find((c) => c.type === CostType.Loyalty)?.value;
-                        if (lCost !== undefined) {
-                            const val = parseInt(String(lCost));
-                            sourceOnField.counters.loyalty = (sourceOnField.counters.loyalty || 0) - val;
-                            logger.info(state, LogCategory.ACTION, `Refunding loyalty for ${sourceOnField.definition.name}: ${val > 0 ? '+' : ''}${val}`);
+                        if (ability && typeof ability !== 'string' && ability.costs) {
+                            const lCost = (ability.costs as any[]).find((c: any) => c.type === CostType.Loyalty)?.value;
+                            if (lCost !== undefined) {
+                                const val = parseInt(String(lCost));
+                                sourceOnField.counters.loyalty = (sourceOnField.counters.loyalty || 0) - val;
+                                logger.info(state, LogCategory.ACTION, `Refunding loyalty for ${sourceOnField.definition.name}: ${val > 0 ? '+' : ''}${val}`);
+                            }
                         }
                     }
                 }

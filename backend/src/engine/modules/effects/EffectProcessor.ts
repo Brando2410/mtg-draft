@@ -103,7 +103,7 @@ export class EffectProcessor {
 
     for (let i = startIndex; i < effects.length; i++) {
       const effect = effects[i];
-      logger.debug(state, LogCategory.ACTION, `[DEBUG] EffectProcessor: Executing effect ${i}/${effects.length}: ${effect.type}. Targets: ${JSON.stringify(targets)}. Index: ${i}, StartIndex: ${startIndex}`);
+      logger.info(state, LogCategory.ACTION, `[RESOLVE-LOOP] ${i}/${effects.length}: Type=${effect.type} Source=${sourceId}`);
 
       this.executeEffect({
         state,
@@ -233,19 +233,11 @@ export class EffectProcessor {
       lookingCards: (lookingCards || stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
       nextEffectIndex: stackObject?.data?.nextEffectIndex,
       xValue: stackObject?.xValue || parentContext?.xValue,
-      isCopy: stackObject?.data?.isCopy || parentContext?.isCopy
+      isCopy: stackObject?.data?.isCopy || parentContext?.isCopy,
+      sourceObject: (sourceObj as GameObject),
+      controller: state.players[controllerId]
     };
-
-    if (!state.executionTrace) state.executionTrace = [];
-    state.executionTrace.push({
-      type: effect.type,
-      sourceId,
-      controllerId,
-      targets,
-      timestamp: Date.now(),
-      xValue: context.xValue,
-      nextEffectIndex: context.nextEffectIndex
-    });
+    logger.info(state, LogCategory.ACTION, `[EXECUTE-EFFECT] Type=${effect.type} Source=${sourceId} Controller=${controllerId} Targets=${targets.join(', ')}`);
 
 
     // Rule 608.2: Evaluate conditions
@@ -393,10 +385,13 @@ export class EffectProcessor {
     // Registry Dispatcher
     const handler = EffectRegistry[effect.type];
     if (handler) {
+      logger.debug(state, LogCategory.ACTION, `[HANDLER-FOUND] Executing handler for ${effect.type}`);
       return handler.handle(state, effect, {
         ...context,
         targets: validTargetIds,
       });
+    } else {
+      logger.error(state, LogCategory.ACTION, `[HANDLER-MISSING] No handler registered for effect type: ${effect.type}`);
     }
 
     // Strategy Dispatcher (Legacy) - DEPRECATED: All effects now use the Registry
@@ -437,7 +432,7 @@ export class EffectProcessor {
       )
         return true;
 
-      if ([TargetMapping.SelectedCard, TargetMapping.EventTarget].includes(effect.targetMapping as any))
+      if ([TargetMapping.SelectedCard as string, TargetMapping.EventTarget as string].includes(effect.targetMapping as string))
         return true;
       const targetDefinitions =
         effect.targetDefinitions ||

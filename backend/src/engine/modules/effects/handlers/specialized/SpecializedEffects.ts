@@ -1,17 +1,27 @@
-import { DurationType, EffectType, GameObject, Zone } from "@shared/engine_types";
+import { 
+  CastSpellEffect, 
+  DurationType, 
+  EffectType, 
+  GameObject, 
+  MoveEffect,
+  Zone,
+  ModalEffect,
+  EffectDefinition,
+  BaseEffect
+} from "@shared/engine_types";
 import { LogCategory } from "../../../../utils/EngineLogger";
-import { getProcessors } from "../../../ProcessorRegistry";
+import { getProcessors, getEngine } from "../../../ProcessorRegistry";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { IEffectHandler } from "../../IEffectHandler";
 
-export const CastSpellHandler: IEffectHandler = {
+export const CastSpellHandler: IEffectHandler<CastSpellEffect> = {
   handle(state, effect, context) {
     const { logger, spell: SP, effect: EP } = getProcessors(state);
     const { controllerId, sourceId, stackObject, parentContext, targets } = context;
 
-    const spellName = (effect as any).value;
-    const isFree = (effect as any).isFreeCast;
-    let targetId = (effect as any).targetId || targets[0];
+    const spellName = effect.value;
+    const isFree = effect.isFreeCast;
+    let targetId = effect.targetId || targets[0];
 
     logger.debug(state, LogCategory.ACTION, `[DEBUG] SpecializedEffects: CastSpell for ${targetId} (Free: ${isFree})`);
 
@@ -34,7 +44,7 @@ export const CastSpellHandler: IEffectHandler = {
         isCopy: true,
         isFreeCast: isFree,
         counters: {},
-      } as any;
+      } as unknown as GameObject;
 
       if (!state.paradigmCopies)
         state.paradigmCopies = {};
@@ -46,22 +56,17 @@ export const CastSpellHandler: IEffectHandler = {
       const castObj = EP.findObject(state, targetId, stackObject, parentContext) as GameObject;
       if (castObj) {
         if (isFree) {
-          (castObj as any).isFreeCast = true;
+          castObj.isFreeCast = true;
         }
-        if ((effect as any).exileOnResolution) {
-          (castObj as any).exileOnResolution = true;
+        if (effect.exileOnResolution) {
+          castObj.exileOnResolution = true;
         }
       }
       const oldPriority = state.priorityPlayerId;
       state.priorityPlayerId = controllerId;
       const res = SP.playCard(
         state,
-        state.gameEngine || {
-          tapForMana: () => { },
-          passPriority: () => { },
-          checkAutoPass: () => { },
-          checkStateBasedActions: () => { },
-        },
+        getEngine(state),
         {
           playerId: controllerId,
           cardId: targetId,
@@ -69,7 +74,7 @@ export const CastSpellHandler: IEffectHandler = {
           bypassPriority: true,
           isFreeCast: isFree,
           parentContext: parentContext,
-          exileOnResolution: (effect as any).exileOnResolution
+          exileOnResolution: effect.exileOnResolution
         },
       );
       if (state.priorityPlayerId === controllerId)
@@ -80,7 +85,7 @@ export const CastSpellHandler: IEffectHandler = {
   }
 };
 
-export const ExileTopCardsExcessDamageHandler: IEffectHandler = {
+export const ExileTopCardsExcessDamageHandler: IEffectHandler<BaseEffect> = {
   handle(state, effect, context) {
     const { logger, effect: EP } = getProcessors(state);
     const { targets } = context;
@@ -88,14 +93,14 @@ export const ExileTopCardsExcessDamageHandler: IEffectHandler = {
     const excessAmt = state.turnState.lastExcessDamageAmount;
     logger.info(state, LogCategory.ACTION, `[EXILE-EXCESS] Exiling top ${excessAmt} cards due to excess damage.`);
 
-    const MEH = EP.getEffectHandler("Exile") as any;
+    const MEH = EP.getEffectHandler("Exile")!;
     MEH.handle(state, {
       ...effect,
-      type: "Exile",
+      type: EffectType.Exile,
       amount: excessAmt,
       fromTop: excessAmt,
       sourceZones: [Zone.Library],
-    } as any, {
+    } as MoveEffect, {
       ...context,
     });
 
@@ -103,15 +108,15 @@ export const ExileTopCardsExcessDamageHandler: IEffectHandler = {
     if (excessAmt > 0) {
       const exiledIds = state.turnState.lastExiledIds || [];
       if (exiledIds.length > 0) {
-        const CEH = EP.getEffectHandler(EffectType.ApplyContinuousEffect);
-        (CEH as any).handle(state, {
+        const CEH = EP.getEffectHandler(EffectType.ApplyContinuousEffect)!;
+        CEH.handle(state, {
           type: EffectType.ApplyContinuousEffect,
           canPlayExiled: true,
           targetIds: exiledIds,
           duration: effect.duration || {
             type: DurationType.UntilEndOfTurn,
           },
-        } as any, {
+        } as unknown as EffectDefinition, {
           ...context,
           targets: exiledIds
         });
@@ -121,11 +126,11 @@ export const ExileTopCardsExcessDamageHandler: IEffectHandler = {
   }
 };
 
-export const ConditionalEffectHandler: IEffectHandler = {
+export const ConditionalEffectHandler: IEffectHandler<BaseEffect> = {
   handle(state, effect, context) {
     const { effect: EP } = getProcessors(state);
     const { sourceId, targets } = context;
-    const effects = (effect as any).effects || [];
+    const effects = effect.effects || [];
     return EP.resolveEffects({
       state,
       effects,
@@ -138,7 +143,7 @@ export const ConditionalEffectHandler: IEffectHandler = {
   }
 };
 
-export const AdNauseamHandler: IEffectHandler = {
+export const AdNauseamHandler: IEffectHandler<EffectDefinition> = {
   handle(state, effect, context) {
     const { logger, action: AP, mana: MP, choiceGenerator: ChoiceGenerator } = getProcessors(state);
     const { controllerId } = context;
@@ -180,7 +185,7 @@ export const AdNauseamHandler: IEffectHandler = {
   }
 };
 
-export const ChaosWarpHandler: IEffectHandler = {
+export const ChaosWarpHandler: IEffectHandler<EffectDefinition> = {
   handle(state, effect, context) {
     const { logger, action: AP } = getProcessors(state);
     const { targets } = context;
@@ -212,7 +217,7 @@ export const ChaosWarpHandler: IEffectHandler = {
   }
 };
 
-export const ApproachOfTheSecondSunHandler: IEffectHandler = {
+export const ApproachOfTheSecondSunHandler: IEffectHandler<EffectDefinition> = {
   handle(state, effect, context) {
     const { logger, action: AP } = getProcessors(state);
     const { controllerId, sourceId } = context;
@@ -220,7 +225,7 @@ export const ApproachOfTheSecondSunHandler: IEffectHandler = {
     if (!player) return;
 
     const castFromHand = context.stackObject?.sourceObject?.lastNonStackZone === Zone.Hand;
-    const castCount = state.gameStats?.castCounts[controllerId]["Approach of the Second Sun"] || 0;
+    const castCount = state.gameStats?.castCounts?.[controllerId]?.["Approach of the Second Sun"] || 0;
 
     if (castFromHand && castCount >= 2) {
       logger.info(state, LogCategory.ACTION, `${player.name} wins the game with Approach of the Second Sun!`);

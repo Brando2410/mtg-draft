@@ -3,7 +3,7 @@ import { GameObject, GameState, PlayerId } from '@shared/engine_types';
 import { EngineContext } from '../../../interfaces/EngineContext';
 import { ManaParser } from './ManaParser';
 import { ManaPoolManager } from './ManaPoolManager';
-import { ManaColor, ManaPoolRecord } from './ManaTypes';
+import { ManaColor, ManaPoolRecord, ManaProductionYield, ManaSourceCandidate } from './ManaTypes';
 import { oracle } from './../../../OracleLogicMap';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { LogCategory, EngineLogger } from '../../../utils/EngineLogger';
@@ -57,8 +57,8 @@ export class AutoTapEngine {
             (!e.targetIds || !payingFor || e.targetIds.includes(payingFor.id))
         );
 
-        const findBestSource = (requiredColors?: string[] | null): any | null => {
-            const candidates: any[] = [];
+        const findBestSource = (requiredColors?: string[] | null): ManaSourceCandidate | null => {
+            const candidates: ManaSourceCandidate[] = [];
             const effectiveReqs = canSpendAsAnyColor ? null : requiredColors;
 
             availableSources.forEach(src => {
@@ -69,7 +69,7 @@ export class AutoTapEngine {
                 let bestCIdx: number | undefined = undefined;
 
                 // Check each mana ability
-                src.abilities.forEach((a: any, aIdx: number) => {
+                src.abilities.forEach((a, aIdx) => {
                     const abilityColors = this.getProduceableColors(a);
                     
                     // CHECK RESTRICTIONS
@@ -93,18 +93,19 @@ export class AutoTapEngine {
                     if (satisfies) {
                         // Calculate potential yield for "Least Waste" heuristic
                         let yieldValue = 0;
-                        if (a.effects) {
-                          a.effects.forEach((e: any) => {
+                        const anyAbility = a as any;
+                        if (anyAbility.effects) {
+                          anyAbility.effects.forEach((e: any) => {
                              const v = e.value || e.manaType || e.mana || '{C}';
                              yieldValue = Math.max(yieldValue, ManaParser.getManaValue(String(v)) * (e.amount || 1));
                           });
                         }
 
-                        if (!canProduce || yieldValue < (bestAIdx === -1 ? Infinity : (src as any).currentYield || Infinity)) { 
+                        if (!canProduce || yieldValue < (src.currentYield || Infinity)) { 
 
                              canProduce = true;
                              bestAIdx = aIdx;
-                             (src as any).currentYield = yieldValue;
+                             src.currentYield = yieldValue;
 
                             // Handle choices (e.g. "Add one mana of any color")
                             if (abilityColors.hasChoice) {
@@ -115,8 +116,9 @@ export class AutoTapEngine {
                                     // For generic mana, pick the least demanded color
                                     let bestDemand = Infinity;
                                     abilityColors.choiceColors.forEach((cc, idx) => {
-                                        if (demandMap[cc] < bestDemand) {
-                                            bestDemand = demandMap[cc];
+                                        const demand = demandMap[cc] || 0;
+                                        if (demand < bestDemand) {
+                                            bestDemand = demand;
                                             bestCIdx = idx;
                                         }
                                     });
@@ -130,7 +132,7 @@ export class AutoTapEngine {
                     if (canProduce) {
                         // Calculate demand score: how many playables need colors this source can produce
                         let demandScore = 0;
-                        src.allPossibleColors.forEach((c: ManaColor) => { demandScore += demandMap[c]; });
+                        src.allPossibleColors.forEach((c: ManaColor) => { demandScore += demandMap[c] || 0; });
 
                         candidates.push({
                             ...src,
@@ -138,7 +140,7 @@ export class AutoTapEngine {
                             cIdx: bestCIdx,
                             versatility: src.allPossibleColors.size,
                             demandScore,
-                            yieldScore: (src as any).currentYield || 1
+                            yieldScore: src.currentYield || 1
                         });
                     }
             });
@@ -150,16 +152,18 @@ export class AutoTapEngine {
             // 2. Sources NOT needed by hand first (Demand Score)
             // 3. Lands vs Non-lands (Prefer Lands to keep creatures for utility/combat)
             candidates.sort((a, b) => {
-                // 0. Least Waste (Yield Score)
-                if (a.yieldScore !== b.yieldScore) return a.yieldScore - b.yieldScore;
+                const yieldA = a.yieldScore || 1;
+                const yieldB = b.yieldScore || 1;
+                if (yieldA !== yieldB) return yieldA - yieldB;
 
-                // 1. Simpler sources first (Versatility: 1 -> 2 -> 3)
-                if (a.versatility !== b.versatility) return a.versatility - b.versatility;
+                const versA = a.versatility || 1;
+                const versB = b.versatility || 1;
+                if (versA !== versB) return versA - versB;
                 
-                // 2. Sources NOT needed by hand first (Demand Score)
-                if (a.demandScore !== b.demandScore) return a.demandScore - b.demandScore;
+                const demandA = a.demandScore || 0;
+                const demandB = b.demandScore || 0;
+                if (demandA !== demandB) return demandA - demandB;
 
-                // 3. Lands vs Non-lands (Prefer Lands to keep artifacts/creatures for utility)
                 const aIsLand = RuleUtils.isLand(a.obj);
                 const bIsLand = RuleUtils.isLand(b.obj);
                 if (aIsLand !== bIsLand) return aIsLand ? -1 : 1;
@@ -171,9 +175,9 @@ export class AutoTapEngine {
         };
 
         // Helper to track and pool newly produced mana
-        const trackProduction = (ability: any, source: any, aIdx: number) => {
+        const trackProduction = (ability: any, source: ManaSourceCandidate, aIdx: number) => {
             const abilityColors = this.getProduceableColors(ability);
-            const manaEffect = ability.effects?.find((e: any) => e.type === 'AddMana' || e.mana || e.manaType);
+            const manaEffect = (ability.effects as any[])?.find((e: any) => e.type === 'AddMana' || e.mana || e.manaType);
             let producedAmount = 0;
 
             if (manaEffect) {
@@ -182,35 +186,36 @@ export class AutoTapEngine {
                 const produce = ManaParser.parseManaCost(val);
 
                 if (source.cIdx !== undefined) {
-                    const chosen = abilityColors.choiceColors[source.cIdx];
+                    const chosen = abilityColors.choiceColors[source.cIdx] as keyof ManaPoolRecord;
                     if (chosen) {
-                        (producedMana as any)[chosen] += amount;
-                        (localPool as any)[chosen] += amount;
+                        producedMana[chosen] += amount;
+                        localPool[chosen] += amount;
                     }
                     producedAmount = amount;
                 } else {
                     Object.entries(produce.colored).forEach(([c, amt]) => {
-                        (producedMana as any)[c] += (amt as number) * amount;
-                        (localPool as any)[c] += (amt as number) * amount;
+                        const color = c as keyof ManaPoolRecord;
+                        producedMana[color] += (amt as number) * amount;
+                        localPool[color] += (amt as number) * amount;
                     });
                     producedMana.C += produce.generic * amount;
                     localPool.C += produce.generic * amount;
                     producedAmount = ManaParser.getManaValue(val) * amount;
                 }
             } else if (source.cIdx !== undefined) {
-                const chosen = abilityColors.choiceColors[source.cIdx];
+                const chosen = abilityColors.choiceColors[source.cIdx] as keyof ManaPoolRecord;
                 if (chosen) {
-                    (producedMana as any)[chosen]++;
-                    (localPool as any)[chosen]++;
+                    producedMana[chosen]++;
+                    localPool[chosen]++;
                 }
                 producedAmount = 1;
             } else {
                 // Fallback for basics or simple top-level mana abilities
                 const colors = Array.from(abilityColors.colors);
                 if (colors.length > 0) {
-                    const color = colors[0];
-                    (producedMana as any)[color]++;
-                    (localPool as any)[color]++;
+                    const color = colors[0] as keyof ManaPoolRecord;
+                    producedMana[color]++;
+                    localPool[color]++;
                 } else {
                     producedMana.C++;
                     localPool.C++;
@@ -233,8 +238,9 @@ export class AutoTapEngine {
             const options = req.includes('/') ? req.split('/') : [req];
             for (const opt of options) {
                 if (opt === 'P') continue;
-                if ((localPool as any)[opt] > 0) {
-                    (localPool as any)[opt]--;
+                const poolKey = opt as keyof ManaPoolRecord;
+                if (localPool[poolKey] > 0) {
+                    localPool[poolKey]--;
                     satisfiedFromPool = true;
                     break;
                 }
@@ -246,31 +252,28 @@ export class AutoTapEngine {
             if (source) {
                 let actualCIdx = source.cIdx;
                 if (actualCIdx === undefined) {
-                    const abilityColors = this.getProduceableColors(source.abilities[source.aIdx]);
+                    const abilityColors = this.getProduceableColors(source.abilities[source.aIdx || 0]);
                     if (abilityColors.hasChoice) actualCIdx = 0;
                 }
 
                 // We pass the calculated cIdx (Choice Index) into the engine.
                 // This informs the land exactly which color to produce, bypassing the manual modal.
-                engine.tapForMana(playerId, source.obj.id, source.aIdx, actualCIdx);
+                engine.tapForMana(playerId, source.obj.id, source.aIdx || 0, actualCIdx);
                 
                 // ARCHITECTURAL NOTE: Stealth Pending Action Clearance
-                // Some mana abilities (like dual lands or forum/paradox) erroneously trigger standard 
-                // choice effects during automation. Since we have already pre-selected the choice (cIdx),
-                // we must "stealthily" remove the resulting pendingAction to allow the engine to proceed
-                // to the next requirement or the final spell activation without stuttering.
                 if (state.pendingAction && (state.pendingAction.sourceId === source.obj.id || state.pendingAction.type === 'RESOLUTION_CHOICE' || state.pendingAction.type === 'OPTIONAL_ACTION')) {
                     state.pendingAction = undefined;
                 }
 
                 tappedIds.push(source.obj.id);
-                trackProduction(source.abilities[source.aIdx], { ...source, cIdx: actualCIdx }, source.aIdx);
+                trackProduction(source.abilities[source.aIdx || 0], { ...source, cIdx: actualCIdx }, source.aIdx || 0);
 
                 // CONSUME IMMEDIATELY: The mana we just produced must satisfy the current colored requirement
                 for (const opt of options) {
                     if (opt === 'P') continue;
-                    if ((localPool as any)[opt] > 0) {
-                        (localPool as any)[opt]--;
+                    const poolKey = opt as keyof ManaPoolRecord;
+                    if (localPool[poolKey] > 0) {
+                        localPool[poolKey]--;
                         break;
                     }
                 }
@@ -282,9 +285,9 @@ export class AutoTapEngine {
         const poolOrder: ManaColor[] = ["C", "W", "U", "B", "R", "G"];
         for (const c of poolOrder) {
             if (genericNeeded <= 0) break;
-            const take = Math.min(genericNeeded, (localPool as any)[c]);
+            const take = Math.min(genericNeeded, localPool[c]);
             if (take > 0) {
-                (localPool as any)[c] -= take;
+                localPool[c] -= take;
                 genericNeeded -= take;
             }
         }
@@ -298,12 +301,12 @@ export class AutoTapEngine {
 
             let actualCIdx = source.cIdx;
             if (actualCIdx === undefined) {
-                const abilityColors = this.getProduceableColors(source.abilities[source.aIdx]);
+                const abilityColors = this.getProduceableColors(source.abilities[source.aIdx || 0]);
                 if (abilityColors.hasChoice) actualCIdx = 0;
             }
 
             // See ARCHITECTURAL NOTE on Choice Propagation above.
-            engine.tapForMana(playerId, source.obj.id, source.aIdx, actualCIdx);
+            engine.tapForMana(playerId, source.obj.id, source.aIdx || 0, actualCIdx);
             
             // See ARCHITECTURAL NOTE on Stealth Pending Action Clearance above.
             if (state.pendingAction && (state.pendingAction.sourceId === source.obj.id || state.pendingAction.type === 'RESOLUTION_CHOICE')) {
@@ -312,14 +315,14 @@ export class AutoTapEngine {
 
             tappedIds.push(source.obj.id);
 
-            const producedAmount = trackProduction(source.abilities[source.aIdx], { ...source, cIdx: actualCIdx }, source.aIdx);
+            trackProduction(source.abilities[source.aIdx || 0], { ...source, cIdx: actualCIdx }, source.aIdx || 0);
 
             // Re-apply pool to generic needed in case the source produced more than 1 or different colors
             for (const c of poolOrder) {
                 if (genericNeeded <= 0) break;
-                const take = Math.min(genericNeeded, (localPool as any)[c]);
+                const take = Math.min(genericNeeded, localPool[c]);
                 if (take > 0) {
-                    (localPool as any)[c] -= take;
+                    localPool[c] -= take;
                     genericNeeded -= take;
                 }
             }
@@ -328,8 +331,8 @@ export class AutoTapEngine {
         return { tappedIds, producedMana };
     }
 
-    private static getAvailableManaSources(state: GameState, playerId: string, alreadyTapped: string[]) {
-        const sources: any[] = [];
+    private static getAvailableManaSources(state: GameState, playerId: string, alreadyTapped: string[]): ManaSourceCandidate[] {
+        const sources: ManaSourceCandidate[] = [];
 
         state.battlefield.forEach((obj: GameObject) => {
             if (obj.controllerId !== playerId || obj.isTapped || alreadyTapped.includes(obj.id)) return;
@@ -359,7 +362,7 @@ export class AutoTapEngine {
         return sources;
     }
 
-    private static getProduceableColors(ability: any): { colors: Set<ManaColor>, hasChoice: boolean, choiceColors: string[], restrictions: string[] } {
+    private static getProduceableColors(ability: any): ManaProductionYield {
         const colors = new Set<ManaColor>();
         let hasChoice = false;
         const choiceColors: string[] = [];
@@ -369,8 +372,8 @@ export class AutoTapEngine {
             if (!effects) return;
             effects.forEach((e: any) => {
                 if (e.type === 'AddMana' || e.mana || e.manaType) {
-                    const val = e.value || e.manaType || e.mana || '{C}';
-                    const reqs = ManaParser.parseManaCost(val.toString());
+                    const val = (e.value || e.manaType || e.mana || '{C}').toString();
+                    const reqs = ManaParser.parseManaCost(val);
                     Object.keys(reqs.colored).forEach((c: string) => {
                         c.split('/').forEach((part: string) => {
                             if (['W', 'U', 'B', 'R', 'G', 'C'].includes(part)) colors.add(part as ManaColor);
@@ -389,8 +392,8 @@ export class AutoTapEngine {
                     e.choices.forEach((choice: any) => {
                         (choice.effects || []).forEach((se: any) => {
                             if (se.type === 'AddMana' || se.mana || se.manaType) {
-                                const val = se.value || se.manaType || se.mana || '{C}';
-                                const reqs = ManaParser.parseManaCost(val.toString());
+                                const val = (se.value || se.manaType || se.mana || '{C}').toString();
+                                const reqs = ManaParser.parseManaCost(val);
                                 Object.keys(reqs.colored).forEach(c => {
                                     c.split('/').forEach(part => {
                                         if (['W', 'U', 'B', 'R', 'G', 'C'].includes(part)) choiceColors.push(part);

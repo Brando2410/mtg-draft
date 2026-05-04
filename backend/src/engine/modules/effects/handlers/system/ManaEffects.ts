@@ -1,4 +1,4 @@
-import { PlayerId } from "@shared/engine_types";
+import { AddManaEffect, EffectType, PlayerId } from "@shared/engine_types";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
 import { IEffectHandler } from "../../IEffectHandler";
@@ -11,8 +11,9 @@ export const ManaHandler: IEffectHandler = {
     const player = state.players[controllerId as PlayerId];
     if (!player) return;
 
-    if (effect.type === "AddMana") {
-      const amount = (effect as any).value || (effect as any).manaType || "";
+    if (effect.type === EffectType.AddMana || effect.type === EffectType.AddManaChoice) {
+      const manaEffect = effect as AddManaEffect;
+      const amount = manaEffect.value || manaEffect.manaType || "";
       if (amount.toUpperCase().includes('ANY')) {
         state.pendingAction = ChoiceGenerator.createModalChoice(
           state,
@@ -23,11 +24,11 @@ export const ManaHandler: IEffectHandler = {
             stackObj: context.stackObject
           },
           [
-            { label: "{W}", value: "W", effects: [{ type: "AddMana", manaType: "{W}" }] },
-            { label: "{U}", value: "U", effects: [{ type: "AddMana", manaType: "{U}" }] },
-            { label: "{B}", value: "B", effects: [{ type: "AddMana", manaType: "{B}" }] },
-            { label: "{R}", value: "R", effects: [{ type: "AddMana", manaType: "{R}" }] },
-            { label: "{G}", value: "G", effects: [{ type: "AddMana", manaType: "{G}" }] }
+            { label: "{W}", value: "W", effects: [{ type: EffectType.AddMana, value: "{W}" } as AddManaEffect] },
+            { label: "{U}", value: "U", effects: [{ type: EffectType.AddMana, value: "{U}" } as AddManaEffect] },
+            { label: "{B}", value: "B", effects: [{ type: EffectType.AddMana, value: "{B}" } as AddManaEffect] },
+            { label: "{R}", value: "R", effects: [{ type: EffectType.AddMana, value: "{R}" } as AddManaEffect] },
+            { label: "{G}", value: "G", effects: [{ type: EffectType.AddMana, value: "{G}" } as AddManaEffect] }
           ]
         );
         return;

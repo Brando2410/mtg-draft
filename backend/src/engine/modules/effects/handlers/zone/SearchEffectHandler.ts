@@ -1,17 +1,22 @@
-import { ActionType, EffectDefinition, EffectType, GameObject, GameState, MoveEffect, ResolutionContext, SearchEffect, SelectionType, TargetMapping, TargetType, Zone } from '@shared/engine_types';
+import { ActionType, EffectDefinition, EffectType, GameObject, GameState, MoveEffect, PlayerId, ResolutionContext, SearchEffect, SelectionType, TargetDefinition, TargetMapping, TargetType, Zone } from '@shared/engine_types';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { getProcessors } from '../../../ProcessorRegistry';
 import { ChoiceGenerator } from '../../ChoiceGenerator';
+import { IEffectHandler } from '../../IEffectHandler';
 
-export class SearchEffectHandler {
-    public static handle(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+export const SearchEffectHandler: IEffectHandler<SearchEffect> = {
+    handle(state, effect, context) {
         const { logger, targeting: TP } = getProcessors(state);
         const { controllerId, stackObject, targets = [] } = context;
-        const player = state.players[controllerId];
+        
+        // CR 701.19: The player who is searching is the one who makes the choices.
+        // We resolve the affected player from targets (e.g. "Target opponent searches") 
+        // or fall back to the effect controller.
+        const affectedPlayerId = (targets.find(tid => state.players[tid as PlayerId]) as PlayerId) || controllerId;
+        const player = state.players[affectedPlayerId];
         if (!player) return;
 
-        const searchEff = effect as SearchEffect;
-        const sourceZones = searchEff.sourceZones || [Zone.Library];
+        const sourceZones = effect.sourceZones || [Zone.Library];
         const pool: GameObject[] = [];
 
         sourceZones.forEach((z: Zone) => {
@@ -32,9 +37,9 @@ export class SearchEffectHandler {
             return res;
         };
 
-        const targetRestrictions = Array.isArray(searchEff.targetDefinitions)
-            ? (searchEff.targetDefinitions as any[]).flatMap(getRestrictions)
-            : getRestrictions(searchEff.targetDefinitions);
+        const targetRestrictions = Array.isArray(effect.targetDefinitions)
+            ? (effect.targetDefinitions as TargetDefinition[]).flatMap(getRestrictions)
+            : getRestrictions(effect.targetDefinitions);
 
         const searchRestrictions = [
             ...(effect.restrictions || []),
@@ -47,42 +52,42 @@ export class SearchEffectHandler {
 
         if (validCandidates.length === 0) {
             logger.info(state, LogCategory.ACTION, `[INFO] SearchEffectHandler: No valid objects found. Auto-skipping search.`);
-            if (searchEff.shuffle && context.effects) {
+            if (effect.shuffle && context.effects) {
                 context.effects.splice((context.nextEffectIndex || 0) + 1, 0, {
                     type: EffectType.Shuffle,
                     targetMapping: TargetMapping.Controller,
-                } as any);
+                } as EffectDefinition);
             }
             return;
         }
 
         state.pendingAction = ChoiceGenerator.createCardChoice(state, pool, {
             label: `${effect.label || "Search your library"}`,
-            playerId: controllerId,
+            playerId: affectedPlayerId,
             sourceId: sourceId,
             restrictions: searchRestrictions,
-            reveal: searchEff.reveal,
+            reveal: effect.reveal,
             optional: effect.optional || effect.selectionType === SelectionType.ANY,
             filterSelectable: true,
-            minChoices: effect.selectionType === SelectionType.ANY || (effect as any).amount === "ANY" || sourceZones.includes(Zone.Library) ? 0 : 1,
-            maxChoices: effect.selectionType === SelectionType.ANY || (effect as any).amount === "ANY"
+            minChoices: effect.selectionType === SelectionType.ANY || effect.amount === "ANY" || sourceZones.includes(Zone.Library) ? 0 : 1,
+            maxChoices: effect.selectionType === SelectionType.ANY || effect.amount === "ANY"
                 ? pool.length
-                : (effect as any).amount || TP.calculateTotalCounts(searchEff.targetDefinitions, 0).maxCount || 1,
+                : (effect.amount as number) || TP.calculateTotalCounts(effect.targetDefinitions, 0).maxCount || 1,
             actionType: effect.optional || effect.selectionType === SelectionType.ANY
                 ? ActionType.OptionalAction
                 : ActionType.ResolutionChoice,
             onSelected: (c: GameObject) => {
                 const subEffects: EffectDefinition[] = [];
-                const zone = (searchEff as any).zone || Zone.Hand;
+                const zone = effect.zone || Zone.Hand;
                 subEffects.push({
                     type: EffectType.MoveToZone,
                     targetId: c.id,
                     targetPlayerId: controllerId,
                     zone: zone,
-                    tapped: (searchEff as any).tapped,
-                    libraryPosition: (searchEff as any).libraryPosition,
-                    reveal: (searchEff as any).reveal,
-                    effects: searchEff.effects,
+                    tapped: effect.tapped,
+                    libraryPosition: effect.libraryPosition,
+                    reveal: effect.reveal,
+                    effects: effect.effects,
                 } as MoveEffect);
                 return subEffects;
             },
@@ -92,11 +97,11 @@ export class SearchEffectHandler {
             targets: targets,
         });
 
-        if (searchEff.shuffle && context.effects) {
+        if (effect.shuffle && context.effects) {
             context.effects.splice((context.nextEffectIndex || 0) + 1, 0, {
                 type: EffectType.Shuffle,
                 targetMapping: TargetMapping.Controller,
-            } as any);
+            } as EffectDefinition);
         }
     }
-}
+};

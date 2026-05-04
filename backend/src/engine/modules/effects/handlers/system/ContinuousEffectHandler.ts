@@ -60,8 +60,8 @@ export class ContinuousEffectHandler {
         if (layer === undefined) {
             if (ceDef.abilitiesToAdd || ceDef.abilitiesToRemove || ceDef.removeAllAbilities) {
                 layer = 6;
-            } else if ((effect as any).typesToAdd || (effect as any).subtypesToAdd || (effect as any).colorSet || (effect as any).colorsToAdd) {
-                layer = ((effect as any).typesToAdd || (effect as any).subtypesToAdd) ? 4 : 5;
+            } else if (ceDef.typesToAdd || ceDef.subtypesToAdd || ceDef.colorSet || ceDef.colorsToAdd) {
+                layer = (ceDef.typesToAdd || ceDef.subtypesToAdd) ? 4 : 5;
             } else if (ceDef.powerModifier !== undefined || ceDef.toughnessModifier !== undefined || ceDef.powerSet !== undefined || ceDef.toughnessSet !== undefined) {
                 layer = 7;
             } else {
@@ -69,7 +69,7 @@ export class ContinuousEffectHandler {
             }
         }
 
-        let targetControllerIds = [(effect as any).targetControllerId || controllerId];
+        let targetControllerIds = [effect.targetControllerId || controllerId];
         if (effect.targetControllerMapping) {
             const resolvedIds = TP_FROM_REG.resolveTargetMapping(state, effect.targetControllerMapping, context, effect);
             if (resolvedIds.length > 0) {
@@ -114,21 +114,21 @@ export class ContinuousEffectHandler {
                 toughnessModifier: ceDef.toughnessModifier !== undefined ? EffectProcessor.resolveAmount(state, ceDef.toughnessModifier, context) : undefined,
                 powerSet: ceDef.powerSet !== undefined ? EffectProcessor.resolveAmount(state, ceDef.powerSet, context) : undefined,
                 toughnessSet: ceDef.toughnessSet !== undefined ? EffectProcessor.resolveAmount(state, ceDef.toughnessSet, context) : undefined,
-                canPlayExiled: (effect as any).canPlayExiled,
-                isFreeCast: (effect as any).isFreeCast,
-                limitPerTurn: (effect as any).limitPerTurn,
-                value: effect.value,
-                condition: effect.condition,
-                typesToAdd: (effect as any).typesToAdd,
-                subtypesToAdd: (effect as any).subtypesToAdd,
-                subtypesSet: (effect as any).subtypesSet,
-                colorsToAdd: (effect as any).colorsToAdd,
-                colorSet: (effect as any).colorSet,
+                canPlayExiled: ceDef.canPlayExiled,
+                isFreeCast: ceDef.isFreeCast,
+                limitPerTurn: ceDef.limitPerTurn,
+                value: ceDef.value,
+                condition: ceDef.condition,
+                typesToAdd: ceDef.typesToAdd,
+                subtypesToAdd: ceDef.subtypesToAdd,
+                subtypesSet: ceDef.subtypesSet,
+                colorsToAdd: ceDef.colorsToAdd,
+                colorSet: ceDef.colorSet,
                 removeAllAbilities: ceDef.removeAllAbilities,
-                flashbackCostOverride: (effect as any).flashbackCostOverride,
-                spendAnyMana: (effect as any).spendAnyMana,
-                exileOnMoveToGraveyard: (effect as any).exileOnMoveToGraveyard || (effect as any).redirectConditions?.onLeaveZone === Zone.Graveyard,
-                playerModifier: (effect as any).playerModifier,
+                flashbackCostOverride: ceDef.flashbackCostOverride,
+                spendAnyMana: ceDef.spendAnyMana,
+                exileOnMoveToGraveyard: ceDef.exileOnMoveToGraveyard,
+                playerModifier: ceDef.playerModifier,
                 targetControllerId: targetCID,
                 restrictions: ceDef.restrictionsToAdd ? ceDef.restrictionsToAdd.map((r: any) => ({
                     id: `rest_${effId}`,
@@ -153,7 +153,7 @@ export class ContinuousEffectHandler {
             }
 
             // Names (Rule 201)
-            const chosenName = (effect as any).chosenName || stackObject?.data?.chosenName;
+            const chosenName = effect.chosenName || stackObject?.data?.chosenName;
             if (chosenName) {
                 if (!state.turnState.namedCards) state.turnState.namedCards = {};
                 state.turnState.namedCards[sourceId] = chosenName;

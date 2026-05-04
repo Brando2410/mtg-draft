@@ -30,3 +30,26 @@ export interface ManaSourceInfo {
     isLand: boolean;
     producesAny?: boolean;
 }
+
+export interface ManaProductionYield {
+    colors: Set<ManaColor>;
+    hasChoice: boolean;
+    choiceColors: string[];
+    restrictions: string[];
+}
+
+export interface ManaSourceCandidate {
+    obj: import('@shared/engine_types').GameObject;
+    abilities: import('@shared/engine_types').AbilityDefinition[];
+    allPossibleColors: Set<ManaColor>;
+    allPossibleColorsArray: ManaColor[];
+    choiceColors: string[];
+    
+    // Scored properties for candidate selection
+    aIdx?: number;
+    cIdx?: number;
+    versatility?: number;
+    demandScore?: number;
+    yieldScore?: number;
+    currentYield?: number;
+}

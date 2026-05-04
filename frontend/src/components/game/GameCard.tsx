@@ -284,7 +284,7 @@ export const GameCard = memo(({
   const nC = nObj.counters || {};
   const cKeys = new Set([...Object.keys(pC), ...Object.keys(nC)]);
   for (let k of cKeys) {
-      if (pC[k] !== nC[k]) return false;
+      if (pC[k as keyof typeof pC] !== nC[k as keyof typeof nC]) return false;
   }
 
   return true;

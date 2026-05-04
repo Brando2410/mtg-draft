@@ -591,17 +591,6 @@ export class PlayerActionProcessor {
    */
   public static resolveTargeting(state: GameState, playerId: PlayerId, targetId: string, engine: EngineContext): boolean {
     const { targeting: TP } = getProcessors(state);
-    return TP.resolveInteractiveTargeting(
-      state,
-      playerId,
-      targetId,
-      {
-        ...engine,
-        resetPriorityToActivePlayer: () => engine.resetPriorityToActivePlayer(),
-        finaliseTargeting: (p: PlayerId, t: string[]) => {
-          return TP.finaliseTargeting(state, p, t, engine);
-        }
-      }
-    );
+    return TP.resolveInteractiveTargeting(state, playerId, targetId, engine);
   }
 }

@@ -1,5 +1,6 @@
 import {
   ActionType,
+  CounterType,
   DrawEffect,
   EffectDefinition,
   EffectType,
@@ -9,12 +10,17 @@ import {
   PlayerId,
   PlayerState,
   ResolutionContext,
+  SearchEffect,
   SelectionType,
   TargetMapping,
   TargetType,
   TriggerEvent,
-  Zone
+  Zone,
+  BatchActionData,
+  ModalEffect,
+  TargetDefinition
 } from "@shared/engine_types";
+import { IEffectHandler } from "../../IEffectHandler";
 import { LogCategory } from "../../../../utils/EngineLogger";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { ActionProcessor } from "../../../actions/ActionProcessor";
@@ -29,12 +35,12 @@ import { DrawCardsHandler } from "./DrawCardsHandler";
 /**
  * Strategy for CR 701: Keyword Actions (Zone Movement)
  */
-export class MoveEffectHandler {
-  public static handle(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
+  public handle(state: GameState, effect: EffectDefinition, context: ResolutionContext): void | boolean {
     const { logger } = getProcessors(state);
     const { targets = [], controllerId, stackObject, parentContext } = context || {};
-    const moveEff = effect as MoveEffect;
-    const drawEff = effect as DrawEffect;
+    const affectedPlayerId = (targets.find(tid => state.players[tid as PlayerId]) as PlayerId) || controllerId;
+
 
     const targetIds = effect.targetId
       ? [effect.targetId]
@@ -52,27 +58,27 @@ export class MoveEffectHandler {
       (effect.targetMapping === TargetMapping.AllMatchingCards ? "All" : "Target");
 
     // Rule: Resolve default zone for specific movement keywords
-    if (!moveEff.zone) {
+    if (!effect.zone) {
       if (effect.type === EffectType.Exile || effect.type === EffectType.ExileTopCard || effect.type === EffectType.ExileAllCards) {
-        moveEff.zone = Zone.Exile;
+        effect.zone = Zone.Exile;
       } else if (effect.type === EffectType.DrawCards || effect.type === EffectType.ReturnToHand || effect.type === EffectType.MoveToZone) {
-        moveEff.zone = Zone.Hand;
+        effect.zone = Zone.Hand;
       } else if (effect.type === EffectType.DiscardCards || effect.type === EffectType.Mill || effect.type === EffectType.PutInGraveyard) {
-        moveEff.zone = Zone.Graveyard;
+        effect.zone = Zone.Graveyard;
       } else if (effect.type === EffectType.PutOnBattlefield) {
-        moveEff.zone = Zone.Battlefield;
+        effect.zone = Zone.Battlefield;
       }
     }
 
-    logger.info(state, LogCategory.ACTION, 
-      `[MOVE-ZONE] Type: ${effect.type}, Selection: ${selectionType}, Zone: ${moveEff.zone}`,
+    logger.info(state, LogCategory.ACTION,
+      `[MOVE-ZONE] Type: ${effect.type}, Selection: ${selectionType}, Zone: ${effect.zone}`,
     );
 
     // Map legacy effect types to selection modes if needed
-    if (effect.type === EffectType.DrawCards) return DrawCardsHandler.handle(state, effect, context);
+    if (effect.type === EffectType.DrawCards) return DrawCardsHandler.handle(state, effect as DrawEffect, context);
     if (effect.type === EffectType.LookAtTopAndPick) return this.resolveLookAtTopAndPick(state, effect, context, finalTargetIds);
     if (effect.type === EffectType.RevealUntilCondition) return this.resolveRevealUntilCondition(state, effect, context);
-    if (effect.type === EffectType.ExchangeHandAndGraveyard) return this.resolveExchangeHandAndGraveyard(state, effect, targets, controllerId);
+    if (effect.type === EffectType.ExchangeHandAndGraveyard) return this.resolveExchangeHandAndGraveyard(state, effect, targets, affectedPlayerId);
 
     if (effect.type === EffectType.PutRemainderOnBottomRandom && finalTargetIds.length > 1) ActionProcessor.shuffle(finalTargetIds);
 
@@ -85,18 +91,18 @@ export class MoveEffectHandler {
     }
 
     if (selectionType === SelectionType.Target && finalTargetIds.length > 0) return this.resolveMoveTargets(state, effect, finalTargetIds, context);
-    if (selectionType === SelectionType.Search && (effect.sourceZones || []).includes(Zone.Library)) return SearchEffectHandler.handle(state, effect, context);
+    if (selectionType === SelectionType.Search && (effect.sourceZones || []).includes(Zone.Library)) return SearchEffectHandler.handle(state, effect as unknown as SearchEffect, context);
     if (selectionType === SelectionType.ALL) return this.resolveMassMove(state, effect, finalTargetIds, context);
-    if (effect.type === EffectType.ExileUntilManaValue) return this.resolveExileUntilManaValue(state, effect, controllerId, context);
+    if (effect.type === EffectType.ExileUntilManaValue) return this.resolveExileUntilManaValue(state, effect, affectedPlayerId, context);
 
     if (effect.targetDefinitions && finalTargetIds.length === 0 && !effect.targetMapping) {
-      return this.resolveInteractiveMovementSelection(state, effect, controllerId, context);
+      return this.resolveInteractiveMovementSelection(state, effect, affectedPlayerId, context);
     }
 
     return this.resolveSingleTargetMove(state, effect, finalTargetIds, context);
   }
 
-  private static resolveInteractiveMovementSelection(
+  private resolveInteractiveMovementSelection(
     state: GameState,
     effect: EffectDefinition,
     controllerId: PlayerId,
@@ -122,7 +128,7 @@ export class MoveEffectHandler {
 
     const sourceId = stackObject?.sourceId || "";
 
-    const getRestrictions = (td: any) => {
+    const getRestrictions = (td: TargetDefinition) => {
       if (!td) return [];
       const res = [...(td.restrictions || [])];
       const typeStr = td.type as string;
@@ -158,7 +164,7 @@ export class MoveEffectHandler {
     const { logger, effect: EffectProcessor } = getProcessors(state);
 
     if (validCandidates.length === 0) {
-      logger.info(state, LogCategory.ACTION, 
+      logger.info(state, LogCategory.ACTION,
         `[INFO] MoveEffectHandler: No valid objects found for "${effect.label || "Choice"}". Auto-skipping.`,
       );
       return;
@@ -166,8 +172,8 @@ export class MoveEffectHandler {
 
     const resolvedMin =
       targetDefinitions.minCount !== undefined
-        ? EffectProcessor.resolveAmount(state, targetDefinitions.minCount as any, context)
-        : EffectProcessor.resolveAmount(state, targetDefinitions.count || 1 as any, context);
+        ? EffectProcessor.resolveAmount(state, targetDefinitions.minCount, context)
+        : EffectProcessor.resolveAmount(state, targetDefinitions.count || 1, context);
     const resolvedMax = EffectProcessor.resolveAmount(
       state,
       targetDefinitions.count || 1,
@@ -190,14 +196,15 @@ export class MoveEffectHandler {
         : ActionType.ResolutionChoice,
       onSelected: (c: GameObject) => {
         const subEffects: EffectDefinition[] = [];
-        const zone = (effect as MoveEffect).zone || Zone.Hand;
+        const moveEff = effect as MoveEffect;
+        const zone = moveEff.zone || Zone.Hand;
         subEffects.push({
           type: EffectType.MoveToZone,
           targetId: c.id,
           targetPlayerId: controllerId,
           zone: zone,
-          tapped: (effect as MoveEffect).tapped,
-          reveal: (effect as MoveEffect).reveal,
+          tapped: moveEff.tapped,
+          reveal: moveEff.reveal,
           effects: effect.effects,
         } as MoveEffect);
         return subEffects;
@@ -207,7 +214,7 @@ export class MoveEffectHandler {
     });
   }
 
-  private static resolveExileUntilManaValue(
+  private resolveExileUntilManaValue(
     state: GameState,
     effect: EffectDefinition,
     controllerId: PlayerId,
@@ -244,7 +251,7 @@ export class MoveEffectHandler {
     }
 
     if (cards.length > 0) {
-      logger.info(state, LogCategory.ACTION, 
+      logger.info(state, LogCategory.ACTION,
         `[EXILE-UNTIL] Exiled ${cards.length} cards with total MV ${totalMV} (Threshold: ${threshold}).`,
       );
 
@@ -278,7 +285,7 @@ export class MoveEffectHandler {
 
 
 
-  private static resolveLookAtTopAndPick(
+  private resolveLookAtTopAndPick(
     state: GameState,
     effect: EffectDefinition,
     context: ResolutionContext,
@@ -289,7 +296,7 @@ export class MoveEffectHandler {
     const processors = getProcessors(state);
     const amount = processors.effect.resolveAmount(
       state,
-      (moveEff.fromTop || (moveEff as any).amount || 1) as any,
+      (moveEff.fromTop || moveEff.amount || 1),
       context,
       targets,
     );
@@ -304,13 +311,13 @@ export class MoveEffectHandler {
         selectionType: "TopN",
         sourceZones: [Zone.Library],
         fromTop: amount,
-      } as any,
+      } as EffectDefinition,
       affectedPlayerId,
       context,
     );
   }
 
-  private static resolveRevealUntilCondition(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
+  private resolveRevealUntilCondition(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
     const { logger } = getProcessors(state);
     const { controllerId, stackObject } = context;
     const player = state.players[controllerId];
@@ -341,7 +348,7 @@ export class MoveEffectHandler {
 
     const found = !!targetCard;
     if (revealed.length > 0)
-      logger.info(state, LogCategory.ACTION, 
+      logger.info(state, LogCategory.ACTION,
         `[REVEAL-UNTIL] Exiled ${revealed.length} cards from library. Found match: ${found}`,
       );
 
@@ -360,7 +367,7 @@ export class MoveEffectHandler {
         ActionProcessor.moveCard(
           state,
           c,
-          remainderZone,
+          remainderZone as Zone,
           c.ownerId,
           remainderPos as number | "top" | "bottom",
         );
@@ -376,10 +383,10 @@ export class MoveEffectHandler {
         // We set state.pendingAction to suspend the resolution loop until the player makes a choice.
         if (
           nextEffect.type === EffectType.Choice &&
-          ((nextEffect as any).choices || (nextEffect as any).choice)
+          ((nextEffect as ModalEffect).choices || (nextEffect as any).choice)
         ) {
           const choicesArr =
-            (nextEffect as any).choices || (nextEffect as any).choice?.choices || [];
+            (nextEffect as ModalEffect).choices || (nextEffect as any).choice?.choices || [];
 
           state.pendingAction = ChoiceGenerator.createCardChoice(
             state,
@@ -426,7 +433,7 @@ export class MoveEffectHandler {
     }
   }
 
-  private static resolveExchangeHandAndGraveyard(state: GameState, effect: EffectDefinition, targets: string[], controllerId: PlayerId) {
+  private resolveExchangeHandAndGraveyard(state: GameState, effect: EffectDefinition, targets: string[], controllerId: PlayerId) {
     const { logger } = getProcessors(state);
     const playerIds =
       targets.length > 0 ? targets.map((t) => t as PlayerId) : [controllerId];
@@ -446,7 +453,7 @@ export class MoveEffectHandler {
     });
   }
 
-  private static resolveMoveTargets(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext) {
+  private resolveMoveTargets(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext) {
     const { logger } = getProcessors(state);
     const { controllerId, stackObject } = context;
     const parentContext = context;
@@ -516,8 +523,8 @@ export class MoveEffectHandler {
         }
 
         // Handle starting counters (Rule 614.1c replacement-style entry)
-        if ((effect as any).startingCounters && zone === Zone.Battlefield) {
-          const sc = (effect as any).startingCounters;
+        if (moveEff.startingCounters && zone === Zone.Battlefield) {
+          const sc = moveEff.startingCounters;
           const cType = sc.type || sc.counterType || sc.countersType || "p1p1";
           const finalType =
             cType.toLowerCase() === "p1p1" || cType === "+1/+1"
@@ -526,7 +533,7 @@ export class MoveEffectHandler {
           const processors = getProcessors(state);
           const resolvedAmount = processors.effect.resolveAmount(
             state,
-            sc.amount as any,
+            sc.amount,
             context,
             [tid],
           );
@@ -535,8 +542,9 @@ export class MoveEffectHandler {
             const obj = state.battlefield.find((o) => o.id === tid);
             if (obj) {
               if (!obj.counters) obj.counters = {};
-              obj.counters[finalType] = (obj.counters[finalType] || 0) + resolvedAmount;
-              logger.info(state, LogCategory.ACTION, 
+              const counterKey = finalType as CounterType;
+              obj.counters[counterKey] = (obj.counters[counterKey] || 0) + resolvedAmount;
+              logger.info(state, LogCategory.ACTION,
                 `[COUNTERS] ${obj.definition.name} enters with ${resolvedAmount} ${finalType} counter(s).`,
               );
             }
@@ -560,7 +568,7 @@ export class MoveEffectHandler {
     });
   }
 
-  private static resolveLibraryTopMoves(state: GameState, effect: EffectDefinition, controllerId: PlayerId, context: ResolutionContext) {
+  private resolveLibraryTopMoves(state: GameState, effect: EffectDefinition, controllerId: PlayerId, context: ResolutionContext) {
     const { logger } = getProcessors(state);
     const { stackObject } = context;
     const parentContext = context;
@@ -594,15 +602,15 @@ export class MoveEffectHandler {
         reveal: moveEff.reveal,
         optional: effect.optional || effect.selectionType === SelectionType.ANY,
         minChoices:
-          effect.selectionType === SelectionType.ANY || (effect as any).amount === "ANY"
+          effect.selectionType === SelectionType.ANY || (moveEff.amount === "ANY")
             ? 0
             : 1,
         maxChoices: (() => {
-          if (effect.selectionType === SelectionType.ANY || (effect as any).amount === "ANY") {
+          if (effect.selectionType === SelectionType.ANY || moveEff.amount === "ANY") {
             return cards.length;
           }
           const processors = getProcessors(state);
-          const resolved = processors.effect.resolveAmount(state, (effect as any).amount || 1 as any, context, cards.map(c => c.id));
+          const resolved = processors.effect.resolveAmount(state, moveEff.amount || 1, context, cards.map(c => c.id));
           return Math.min(cards.length, resolved);
         })(),
         actionType:
@@ -613,8 +621,8 @@ export class MoveEffectHandler {
           // Per-card movement response
           const subEffects: EffectDefinition[] = [];
 
-          if (typeof (effect as any).onSelected === "function") {
-            const custom = (effect as any).onSelected(selectedCard);
+          if (typeof (moveEff as any).onSelected === "function") {
+            const custom = (moveEff as any).onSelected(selectedCard);
             if (Array.isArray(custom)) subEffects.push(...custom);
           } else {
             subEffects.push({
@@ -635,8 +643,8 @@ export class MoveEffectHandler {
             });
           }
 
-          if ((effect as any).additionalEffectPerCard) {
-            subEffects.push((effect as any).additionalEffectPerCard);
+          if (moveEff.additionalEffectPerCard) {
+            subEffects.push(moveEff.additionalEffectPerCard);
           }
 
           return subEffects;
@@ -656,8 +664,8 @@ export class MoveEffectHandler {
         },
         stackObj: stackObject,
         parentContext: parentContext,
-        isSpellCasting: !!(effect as any).isSpellCasting,
-        isFreeCast: !!(effect as any).isFreeCast,
+        isSpellCasting: !!effect.isSpellCasting,
+        isFreeCast: !!effect.isFreeCast,
       });
 
       // --- BATCH REMAINDER FIX ---
@@ -683,7 +691,7 @@ export class MoveEffectHandler {
       context.effects.splice(
         (context.nextEffectIndex || 0) + 1,
         0,
-        remainderMove as any,
+        remainderMove as EffectDefinition,
       );
 
       return;
@@ -696,8 +704,8 @@ export class MoveEffectHandler {
         sourceId: stackObject?.sourceId || "",
         stackObj: stackObject,
         parentContext: parentContext,
-        isSpellCasting: !!(effect as any).isSpellCasting,
-        isFreeCast: !!(effect as any).isFreeCast,
+        isSpellCasting: !!effect.isSpellCasting,
+        isFreeCast: !!effect.isFreeCast,
       });
       return;
     }
@@ -709,8 +717,8 @@ export class MoveEffectHandler {
         sourceId: stackObject?.sourceId || "",
         stackObj: stackObject,
         parentContext: parentContext,
-        isSpellCasting: !!(effect as any).isSpellCasting,
-        isFreeCast: !!(effect as any).isFreeCast,
+        isSpellCasting: !!effect.isSpellCasting,
+        isFreeCast: !!effect.isFreeCast,
       });
       return;
     }
@@ -773,7 +781,7 @@ export class MoveEffectHandler {
   }
 
 
-  private static resolveMassMove(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext) {
+  private resolveMassMove(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext) {
     const { logger } = getProcessors(state);
     const { controllerId, stackObject } = context;
     const moveEff = effect as MoveEffect;
@@ -785,7 +793,7 @@ export class MoveEffectHandler {
 
     // Mode A: Direct card IDs or Special Mapping
     const directCardIds = targetIds.filter(id => !state.players[id as PlayerId]);
-    
+
     if (moveEff.targetMapping === "REMAINDER_OF_POOL") {
       cardsToMove = (context.lookingCards || []).filter(c => c.zone === Zone.Library);
       logger.debug(state, LogCategory.ACTION, `[MOVE-DEBUG] REMAINDER_OF_POOL: Found ${cardsToMove.length} cards remaining in library pool.`);
@@ -853,7 +861,7 @@ export class MoveEffectHandler {
     }
   }
 
-  private static resolveSingleTargetMove(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext) {
+  private resolveSingleTargetMove(state: GameState, effect: EffectDefinition, targetIds: string[], context: ResolutionContext) {
     const { logger } = getProcessors(state);
     const { controllerId, stackObject } = context;
     const parentContext = context;
@@ -916,7 +924,7 @@ export class MoveEffectHandler {
         EP_LOCAL.resolveEffects({
           state,
           effects: subEffects,
-          sourceId: stackObject?.sourceId || (context as any).sourceId || "",
+          sourceId: stackObject?.sourceId || context.sourceId || "",
           targets: targetIds,
           stackObject,
           parentContext: context,
@@ -925,15 +933,19 @@ export class MoveEffectHandler {
     });
   }
 
-  private static findObject(state: GameState, id: string, context: ResolutionContext): GameObject | undefined {
-    const { stackObject } = context;
+  private findObject(state: GameState, id: string, context: ResolutionContext): GameObject | undefined {
+    const { stackObject, sourceObject } = context;
+    
+    // Priority 1: Direct match with sourceObject (handles LKI correctly)
+    if (sourceObject && sourceObject.id === id) return sourceObject;
+
     if (stackObject && stackObject.id === id) {
       if (stackObject.sourceObject) return stackObject.sourceObject;
-      if (stackObject.definition) return stackObject as any;
+      if (stackObject.definition) return stackObject as unknown as GameObject;
     }
 
     // Search looking pools (important for library-top interactive choices)
-    const looking = (state.pendingAction?.data as any)?.lookingCards ||
+    const looking = (state.pendingAction?.data as BatchActionData)?.lookingCards ||
       context?.lookingCards ||
       stackObject?.data?.lookingCards ||
       [];
@@ -943,3 +955,4 @@ export class MoveEffectHandler {
     return RuleUtils.findObject(state, id) as GameObject || undefined;
   }
 }
+export const MovementHandler = new MovementHandlerClass();

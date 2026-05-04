@@ -1,4 +1,4 @@
-import { ActionType, GameObject, GameState, Zone } from "@shared/engine_types";
+import { ActionType, CounterType, GameObject, GameState, Zone } from "@shared/engine_types";
 import { LogCategory } from "../../utils/EngineLogger";
 import { getProcessors } from "../ProcessorRegistry";
 import { ActionProcessor } from "../actions/ActionProcessor";
@@ -191,12 +191,12 @@ export class StateBasedActionsProcessor {
 
     // 5. Rule 704.5r: Counter Cancellation (+1/+1 and -1/-1)
     for (const obj of state.battlefield) {
-      const plus = obj.counters["+1/+1"] || 0;
-      const minus = obj.counters["-1/-1"] || 0;
+      const plus = obj.counters[CounterType.P1P1 as CounterType] || 0;
+      const minus = obj.counters[CounterType.M1M1 as CounterType] || 0;
       if (plus > 0 && minus > 0) {
         const amount = Math.min(plus, minus);
-        obj.counters["+1/+1"] -= amount;
-        obj.counters["-1/-1"] -= amount;
+        obj.counters[CounterType.P1P1 as CounterType] = plus - amount;
+        obj.counters[CounterType.M1M1 as CounterType] = minus - amount;
         logger.info(state, LogCategory.ACTION, 
           `[SBA] ${obj.definition.name}: ${amount} +1/+1 and -1/-1 counters cancelled each other out.`,
         );

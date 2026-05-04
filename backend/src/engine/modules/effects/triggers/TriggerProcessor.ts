@@ -4,6 +4,7 @@ import {
   ConditionType,
   CostType,
   DurationType,
+  EffectDefinition,
   EffectType,
   GameEvent,
   GameObjectId,
@@ -317,10 +318,17 @@ export class TriggerProcessor {
       effects: trigger.effects || (trigger as any).effects || [],
       event: event,
       eventAmount: event.payload?.amount,
-      targetDefinitions: (trigger as any).targetDefinitions,
+      targetDefinitions: trigger.targetDefinitions,
       sourceName: sourceName,
       startIndex: 0
     };
+
+    const effects = trigger.effects || (trigger as any).effects || [];
+    const exileOnResolution = (trigger as any).exileOnResolution || sourceObj?.definition?.exileOnResolution || effects.some((e: EffectDefinition) =>
+      (e.type === EffectType.Exile || e.type === EffectType.ExileAllCards || e.type === EffectType.MoveToZone) &&
+      (e.targetMapping === TargetMapping.Self || e.targetId === trigger.sourceId) &&
+      (!e.zone || e.zone === Zone.Exile)
+    );
 
     const stackObj: StackObject = {
       id: stackId,
@@ -330,12 +338,16 @@ export class TriggerProcessor {
       type: AbilityType.Triggered,
       counters: {},
       name: `${sourceName}'s Trigger`,
-      targets: trigger.targetIds || (trigger as any).targets || [],
+      targets: trigger.targetIds || (trigger as any).targets || event.payload?.targetIds || [],
+      effects: effects,
       definition: sourceObj?.definition || (trigger.payload as any)?.definition || (trigger as any).definition || { name: sourceName, types: [], colors: [], oracleText: "" },
       image_url: sourceImage,
       abilityIndex: (trigger as any).abilityIndex,
       condition: (trigger as any).condition,
       sourceObject: sourceObj || emblemSource as any,
+      targetDefinitions: trigger.targetDefinitions || (trigger as any).targetDefinitions || [],
+      event: event,
+      exileOnResolution: exileOnResolution,
       data: contextPayload
     };
     getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[STACK-OBJ-CREATE] Created stack object ${stackObj.id} with targets: ${stackObj.targets?.join(', ')}`);
@@ -348,6 +360,7 @@ export class TriggerProcessor {
   ) {
     const { logger } = getProcessors(state);
     state.stack.push(stackObj);
+    logger.info(state, LogCategory.TRIGGER, `[STACK-PUSH] Trigger ${stackObj.id} (Source: ${stackObj.sourceId}) pushed to stack.`);
     getProcessors(state).action.updateEntityCache(state, stackObj);
     state.consecutivePasses = 0;
 
@@ -563,7 +576,7 @@ export class TriggerProcessor {
 
     const cache = state._triggerCache;
     const candidates = cache.buckets.get(event.type) || [];
-    
+
     if (event.type === TriggerEvent.EndStep || event.type === TriggerEvent.Exile) {
       logger.debug(state, LogCategory.TRIGGER, `[TRIGGER-DEBUG] Event ${event.type}. Found ${candidates.length} candidates in bucket.`);
       candidates.forEach((t: any) => {
@@ -1038,7 +1051,7 @@ export class TriggerProcessor {
           data: { definition: card.definition },
         });
         const { logger } = getProcessors(state);
-        logger.info(state, LogCategory.TRIGGER, 
+        logger.info(state, LogCategory.TRIGGER,
           `[PARADIGM] Registered recurring recast trigger for ${spellName}.`,
         );
       }
@@ -1056,7 +1069,7 @@ export class TriggerProcessor {
       if (!castSourceId) return;
       const stackObj = processors.lki.getLki(state, castSourceId, Zone.Stack) || state.stack.find(s => s.id === castSourceId);
       const targets = RuleUtils.isStackObject(stackObj) ? stackObj.targets : (event.payload?.targetIds || []);
-      
+
       if (
         targets.length > 0 &&
         targets.some((tid: string) => {
@@ -1080,6 +1093,8 @@ export class TriggerProcessor {
                 id: `repartee_gen_${obj.id}_${Date.now()}`,
                 sourceId: obj.id,
                 controllerId: obj.controllerId,
+                targetIds: targets,
+                abilityIndex: (oracle.getCard(obj.definition.name)?.abilities || []).findIndex(a => a === reparteeAbility)
               });
             }
           }
@@ -1129,17 +1144,20 @@ export class TriggerProcessor {
             .find((a: any): a is TriggeredAbilityDefinition => a.eventMatch === TriggerEvent.Opus || a.name === "Opus");
           if (opusAbility) {
             // Avoid adding duplicate trigger if collectMatchingTriggers already found it
+
             const alreadyAdded = matchingTriggers.some(
               (t) =>
                 t.sourceId === p.id &&
                 (t.name === "Opus" || t.oracleText?.includes("Opus")),
             );
-            if (!alreadyAdded) {
+            if (opusAbility && !alreadyAdded) {
               matchingTriggers.push({
                 ...opusAbility,
-                id: `opus_sys_${p.id}_${Date.now()}`,
+                id: `opus_gen_${p.id}_${Date.now()}`,
                 sourceId: p.id,
                 controllerId: p.controllerId,
+                targetIds: event.payload?.targetIds || [],
+                abilityIndex: (oracle.getCard(p.definition.name)?.abilities || []).findIndex(a => a === opusAbility),
                 payload: {
                   spent: event.payload?.spent || 0,
                 },

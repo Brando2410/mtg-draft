@@ -40,7 +40,7 @@ export class ChoiceEffectHandler {
       const { condition: ConditionProcessor } = getProcessors(state);
       dynamicChoices = dynamicChoices.filter((c) => {
         if (!c.condition) return true;
-        return ConditionProcessor.matchesCondition(state, c.condition as any, {
+        return ConditionProcessor.matchesCondition(state, c.condition, {
           sourceId,
           controllerId,
           stackObject,
@@ -56,7 +56,7 @@ export class ChoiceEffectHandler {
     const preSelectedIdx =
       stackObject?.data?.preSelectedChoice !== undefined
         ? stackObject.data.preSelectedChoice
-        : (stackObject as any)?.preSelectedChoice;
+        : (stackObject as any).preSelectedChoice;
 
     if (preSelectedIdx !== undefined && dynamicChoices) {
       const rawIndices = String(preSelectedIdx)
@@ -208,7 +208,7 @@ export class ChoiceEffectHandler {
             label: "Name a non-land card",
             playerId: workingMappingPlayerId as PlayerId,
             sourceId: sourceId,
-            restrictions: (effect as any).restrictions || [Restriction.NonLand],
+            restrictions: effect.restrictions || [Restriction.NonLand],
             filterSelectable: true,
             optional: false,
             actionType: ActionType.ResolutionChoice,
@@ -220,15 +220,15 @@ export class ChoiceEffectHandler {
               return effect.effects || [];
             },
             hideUndo: true,
-            isSpellCasting: !!(effect as any).isSpellCasting,
-            isFreeCast: !!(effect as any).isFreeCast || (effect.effects || []).some((e: any) => e.isFreeCast),
-            exileOnResolution: !!(effect as any).exileOnResolution || (effect.effects || []).some((e: any) => e.exileOnResolution),
+            isSpellCasting: !!effect.isSpellCasting,
+            isFreeCast: !!effect.isFreeCast || (effect.effects || []).some((e) => e.isFreeCast),
+            exileOnResolution: !!effect.exileOnResolution || (effect.effects || []).some((e) => e.exileOnResolution),
             stackObj: stackObject,
             parentContext: context,
             targets: originalTargets,
           },
         );
-        const data = state.pendingAction?.data as any;
+        const data = state.pendingAction?.data as { isFreeCast?: boolean, exileOnResolution?: boolean };
         logger.debug(state, LogCategory.ACTION, `[CHOICE-HANDLER-DEBUG] Created choice for ${effect.label}. isFreeCast=${data?.isFreeCast}, exileOnResolution=${data?.exileOnResolution}`);
         return;
       }
@@ -237,10 +237,10 @@ export class ChoiceEffectHandler {
         targetPlayer!.hand.forEach((c: GameObject) => (c.isRevealed = true));
       }
 
-      const targetDefinitions = (effect as any).targetDefinitions;
+      const targetDefinitions = effect.targetDefinitions;
       const def = Array.isArray(targetDefinitions) ? targetDefinitions[0] : targetDefinitions;
       const restrictions =
-        (effect as any).restrictions ||
+        effect.restrictions ||
         (def
           ? [
             ...(def.restrictions || []),
@@ -291,21 +291,21 @@ export class ChoiceEffectHandler {
           sourceId: sourceId,
           restrictions: restrictions,
           filterSelectable: true,
-          minChoices: EP.resolveAmount(state, ((effect as any).minChoices || def?.minCount || (def?.optional ? 0 : def?.count || 1)), context, sourceCards.map(c => c.id)),
-          maxChoices: EP.resolveAmount(state, ((effect as any).maxChoices || def?.count || 1), context, sourceCards.map(c => c.id)),
-          optional: (effect as any).optional !== false,
-          actionType: (effect as any).optional
+          minChoices: EP.resolveAmount(state, (effect.minChoices || def?.minCount || (def?.optional ? 0 : def?.count || 1)), context, sourceCards.map(c => c.id)),
+          maxChoices: EP.resolveAmount(state, (effect.maxChoices || def?.count || 1), context, sourceCards.map(c => c.id)),
+          optional: effect.optional !== false,
+          actionType: effect.optional
             ? ActionType.OptionalAction
             : ActionType.ResolutionChoice,
           onSelected: (c: GameObject) =>
-            (effect.effects || []).map((sub: any) => ({
+            (effect.effects || []).map((sub) => ({
               ...sub,
               targetId: c.id,
             })),
           hideUndo: true,
-          isSpellCasting: !!(effect as any).isSpellCasting,
-          isFreeCast: !!(effect as any).isFreeCast || (effect.effects || []).some((e: any) => e.isFreeCast),
-          exileOnResolution: !!(effect as any).exileOnResolution || (effect.effects || []).some((e: any) => e.exileOnResolution),
+          isSpellCasting: !!effect.isSpellCasting,
+          isFreeCast: !!effect.isFreeCast || (effect.effects || []).some((e) => e.isFreeCast),
+          exileOnResolution: !!effect.exileOnResolution || (effect.effects || []).some((e) => e.exileOnResolution),
           stackObj: stackObject,
           parentContext: context,
           targets: originalTargets,
@@ -367,14 +367,14 @@ export class ChoiceEffectHandler {
         label: effect.label || "Choose an option",
         playerId: firstPlayerId,
         sourceId: sourceId,
-        actionType: (effect as any).optional
+        actionType: effect.optional
           ? ActionType.OptionalAction
           : ActionType.ResolutionChoice,
         hideUndo: true,
         lookingCards,
-        minChoices: EP.resolveAmount(state, ((effect as any).minChoices || 1), context, targets),
-        maxChoices: EP.resolveAmount(state, ((effect as any).maxChoices || 1), context, targets),
-        exileOnResolution: !!(effect as any).exileOnResolution || (effect.effects || []).some((e: any) => e.exileOnResolution),
+        minChoices: EP.resolveAmount(state, (effect.minChoices || 1), context, targets),
+        maxChoices: EP.resolveAmount(state, (effect.maxChoices || 1), context, targets),
+        exileOnResolution: !!effect.exileOnResolution || (effect.effects || []).some((e) => e.exileOnResolution),
         allowDuplicates: effect.allowDuplicates,
         stackObj: stackObject,
         parentContext: context,

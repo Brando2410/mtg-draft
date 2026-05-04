@@ -210,7 +210,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const threshold = parseInt(params[1]);
             const obj = RuleUtils.findObject(state, sourceId);
             if (!obj) return false;
-            const count = obj.counters?.[countType] || 0;
+            const count = obj.counters?.[countType as CounterType] || 0;
             return count >= threshold;
         }
     },

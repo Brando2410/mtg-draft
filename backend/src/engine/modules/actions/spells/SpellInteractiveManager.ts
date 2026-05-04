@@ -358,9 +358,9 @@ export class SpellInteractiveManager {
      * @returns true if a ChooseX pendingAction was injected, false if X is not needed or already set.
      */
     public static handleAbilityXChoice(state: GameState, playerId: PlayerId, obj: GameObject, abilityIndex: number, declaredTargets: string[] | undefined, parentContext?: ResolutionContext): boolean {
-        const ability = (obj.definition.abilities as AbilityDefinition[])?.[abilityIndex];
-        if (!ability) return false;
-        const needsX = (ability.effects || []).some((e: any) => e.value === 'X' || e.amount === 'X' || (e.costs && e.costs.some((c: any) => c.value === 'X')));
+        const ability = obj.definition.abilities?.[abilityIndex];
+        if (!ability || typeof ability === 'string') return false;
+        const needsX = (ability.effects || []).some((e: any) => e.value === 'X' || e.amount === 'X' || (e.costs && (e.costs as any[]).some((c: any) => c.value === 'X')));
         const xValue = state.interaction?.lastChoiceX;
 
         if (needsX && xValue === undefined) {

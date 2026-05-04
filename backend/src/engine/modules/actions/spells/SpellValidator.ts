@@ -1,4 +1,5 @@
-import { AbilityType, EffectType, EnginePrefix, GameObject, GameState, Keyword, Phase, PlayerId, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityDefinition, AbilityType, ActivatedAbilityDefinition, CardLogic, EffectType, EnginePrefix, GameObject, GameState, Keyword, Phase, PlayerId, TargetMapping, Zone } from '@shared/engine_types';
+import { EngineContext } from '../../../interfaces/EngineContext';
 import { LogCategory, EngineLogger } from '../../../utils/EngineLogger';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { RestrictionValidator } from '../../core/RestrictionValidator';
@@ -13,7 +14,7 @@ export class SpellValidator {
         const player = state.players[playerId];
 
         // 1. Search in Hand
-        const cardInHand = player.hand.find((c: any) => c.id === cardInstanceId);
+        const cardInHand = player.hand.find(c => c.id === cardInstanceId);
         if (cardInHand) return cardInHand;
 
         // 2. Search in Non-hand zones with Permission Check
@@ -29,15 +30,16 @@ export class SpellValidator {
             const hasFlashback = obj.zone === Zone.Graveyard && (stats.keywords?.includes(Keyword.Flashback) || obj.definition.keywords?.includes(Keyword.Flashback));
 
             if (hasFlashback) {
-                (obj as any).isFlashbackCast = true;
+                obj.isFlashbackCast = true;
                 EngineLogger.info(state, LogCategory.ACTION, `[FLASHBACK] Casting ${obj.definition.name} via flashback.`);
                 return obj as GameObject;
             }
 
-            const hasGraveAbility = obj.zone === Zone.Graveyard && obj.definition.abilities?.some((a: any) =>
-                a.type === AbilityType.Activated &&
-                (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
-            );
+            const hasGraveAbility = obj.zone === Zone.Graveyard && (obj.definition.abilities || []).some((a: string | AbilityDefinition) => {
+                if (typeof a === 'string') return false;
+                return a.type === AbilityType.Activated &&
+                    ((a as ActivatedAbilityDefinition).activeZone === Zone.Graveyard);
+            });
 
             if (hasGraveAbility) return obj as GameObject;
 
@@ -77,14 +79,14 @@ export class SpellValidator {
                     return state.dynamicCopies[copyId];
                 }
 
-                const copy = {
+                const copy: GameObject = {
                     ...preparedObj,
                     id: copyId,
                     definition: face,
                     zone: Zone.Exile,
                     isPreparedCopy: true,
                     sourceCreatureId: preparedObj.id
-                } as any;
+                };
 
                 if (!state.dynamicCopies) state.dynamicCopies = {};
                 state.dynamicCopies[copyId] = copy;
@@ -122,7 +124,7 @@ export class SpellValidator {
         return true;
     }
 
-    public static handleLandPlay(state: GameState, playerId: PlayerId, cardToPlay: GameObject, engine: any): boolean {
+    public static handleLandPlay(state: GameState, playerId: PlayerId, cardToPlay: GameObject, engine: EngineContext): boolean {
         const { logger, action: ActionProcessor, trigger: TriggerProcessor } = getProcessors(state);
         const player = state.players[playerId];
         const activeId = String(state.activePlayerId).trim();
@@ -146,10 +148,10 @@ export class SpellValidator {
     }
 
 
-    public static validateAbilityActivation(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, abilityIndex: number): boolean {
+    public static validateAbilityActivation(state: GameState, playerId: PlayerId, obj: GameObject, ability: AbilityDefinition, abilityIndex: number): boolean {
         const { logger } = getProcessors(state);
         const activeZone = ability.activeZone || Zone.Battlefield;
-        if (activeZone !== Zone.Any && activeZone !== (obj.zone as any)) {
+        if (activeZone !== Zone.Any && activeZone !== obj.zone) {
             logger.info(state, LogCategory.ACTION, `Illegal Activation: ${obj.definition.name}'s ability cannot be activated from ${obj.zone}.`);
             return false;
         }
@@ -164,33 +166,44 @@ export class SpellValidator {
             return false;
         }
 
-        if (ability.triggerCondition && !ability.triggerCondition(state, null, { sourceId: obj.id, controllerId: playerId })) {
+        if (ability.triggerCondition && !ability.triggerCondition(state, { type: 'NONE' } as any, { sourceId: obj.id, controllerId: playerId })) {
             logger.info(state, LogCategory.ACTION, `Illegal Activation: Activation requirements for ${obj.definition.name} are not met.`);
             return false;
         }
 
-        if (ability.limitPerTurn) {
-            const usedCount = state.turnState.triggeredAbilitiesUsedThisTurn[`ability_${obj.id}_${abilityIndex}`] || 0;
-            if (usedCount >= ability.limitPerTurn) {
-                logger.info(state, LogCategory.ACTION, `Illegal Activation: This ability has already been used ${usedCount} times this turn.`);
-                return false;
+        if (ability.type === AbilityType.Activated) {
+            const activatedAbility = ability as ActivatedAbilityDefinition;
+            if (activatedAbility.limitPerTurn) {
+                const usedCount = state.turnState.triggeredAbilitiesUsedThisTurn[`ability_${obj.id}_${abilityIndex}`] || 0;
+                if (usedCount >= activatedAbility.limitPerTurn) {
+                    logger.info(state, LogCategory.ACTION, `Illegal Activation: This ability has already been used ${usedCount} times this turn.`);
+                    return false;
+                }
             }
         }
         return true;
     }
 
 
-    public static validateAbilitySpeed(state: GameState, playerId: PlayerId, obj: GameObject, ability: any, cardLogic: any): boolean {
+    public static validateAbilitySpeed(state: GameState, playerId: PlayerId, obj: GameObject, ability: AbilityDefinition, cardLogic: CardLogic | undefined): boolean {
         const { logger } = getProcessors(state);
         const isPlaneswalker = RuleUtils.isPlaneswalker(obj);
-        const isSorceryOnly = ability.activatedOnlyAsSorcery || (ability as any).isSorcerySpeed;
+        
+        let isSorceryOnly = false;
+        if (ability.type === AbilityType.Activated) {
+            const activated = ability as ActivatedAbilityDefinition;
+            isSorceryOnly = !!activated.activatedOnlyAsSorcery || (activated as any).isSorcerySpeed;
+        }
 
         if (isPlaneswalker || isSorceryOnly) {
             const activeId = String(state.activePlayerId).trim();
             const isMainPhase = (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain);
             const stackEmpty = state.stack.length === 0;
             const isSorcerySpeed = String(playerId) === activeId && isMainPhase && stackEmpty;
-            const canActivateAnyTime = (cardLogic?.abilities || []).some((a: any) => a.type === 'Static' && String(a.id).includes('any_turn')) ||
+            const canActivateAnyTime = (cardLogic?.abilities || []).some((a: string | AbilityDefinition) => {
+                if (typeof a === 'string') return false;
+                return a.type === AbilityType.Static && String(a.id).includes('any_turn');
+            }) ||
                 state.ruleRegistry.continuousEffects.some(e =>
                     e.type === EffectType.AllowOutOfTurnActivation &&
                     (e.targetIds?.includes(obj.id) || (e.targetMapping === TargetMapping.Self && e.sourceId === obj.id))
