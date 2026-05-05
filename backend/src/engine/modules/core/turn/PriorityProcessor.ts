@@ -1,4 +1,4 @@
-import { AbilityDefinition, AbilityType, ActionType, EffectType, GameObject, GameState, Phase, PlayerId, Step, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityCost, AbilityDefinition, AbilityType, ActionType, CardDefinition, ContinuousEffect, EffectType, GameObject, GameState, Phase, PlayerId, Step, TargetMapping, TriggerEvent, Zone, GameEvent } from '@shared/engine_types';
 import { oracle } from '../../../OracleLogicMap';
 import { SpellProcessor } from '../../actions/spells/SpellProcessor';
 import { TargetingProcessor } from '../../actions/targeting/TargetingProcessor';
@@ -11,6 +11,7 @@ import { ConditionProcessor } from '../logic/ConditionProcessor';
 import { EngineValidator } from '../logic/EngineValidator';
 import { TurnProcessor } from './TurnProcessor';
 import { getProcessors } from '../../ProcessorRegistry';
+import { LogCategory } from '../../../utils/EngineLogger';
 
 
 
@@ -52,34 +53,34 @@ export class PriorityProcessor {
 
     // CR 117.1: A player must resolve pending mandatory actions before passing
     // Exception: Optional discards (e.g. "discard any number") can be completed by passing.
-    const pendingIsOptionalDiscard = state.pendingAction?.type === ActionType.Discard && (state.pendingAction?.data as any)?.isOptionalDiscard === true;
-    if (EngineValidator.isSuspended(state) && EngineValidator.isPlayerRequiredToAct(state, playerId) && !pendingIsOptionalDiscard) {
+    const pendingAction = state.pendingAction;
+    const isOptionalDiscardAction = (pendingAction?.type === ActionType.Discard && (pendingAction.data as Record<string, any>)?.isOptionalDiscard === true);
+
+    if (EngineValidator.isSuspended(state) && EngineValidator.isPlayerRequiredToAct(state, playerId) && !isOptionalDiscardAction) {
       console.log(`[PRIORITY-PROC] passPriority BLOCKED: ${playerId} has pending ${state.pendingAction?.type}.`);
-      logger.info(state, 'PRIORITY' as any, `Invalid Action: Player must resolve pending ${state.pendingAction?.type} first.`);
+      logger.info(state, LogCategory.PRIORITY, `Invalid Action: Player must resolve pending ${state.pendingAction?.type} first.`);
       return;
     }
 
     const player = state.players[playerId];
-    const isOptionalDiscard = state.pendingAction?.type === ActionType.Discard && (state.pendingAction?.data as any)?.isOptionalDiscard === true;
-
-    if (player && player.pendingDiscardCount > 0 && !isOptionalDiscard) {
-      if (!isAuto) logger.info(state, 'PRIORITY' as any, `${engine.getPlayerName(playerId)} must finish discarding first.`);
+    if (player && player.pendingDiscardCount > 0 && !isOptionalDiscardAction) {
+      if (!isAuto) logger.info(state, LogCategory.PRIORITY, `${engine.getPlayerName(playerId)} must finish discarding first.`);
       return;
     }
 
     // --- OPTIONAL DISCARD RESUMPTION ---
     // If we're passing priority while an optional discard is active, it means the player is "Done".
     // Zero out the remaining count and resume the resolution chain.
-    if (isOptionalDiscard) {
+    if (isOptionalDiscardAction) {
       const { choice: ChoiceProcessor } = getProcessors(state);
-      const actionData = state.pendingAction?.data as any;
+      const actionData = state.pendingAction?.data as Record<string, any>;
       const sourceId = state.pendingAction?.sourceId;
       const stackObj = actionData?.stackObj;
       const parentContext = actionData?.parentContext;
 
       player.pendingDiscardCount = 0;
       state.pendingAction = undefined;
-      logger.info(state, 'PRIORITY' as any, `${engine.getPlayerName(playerId)} finished optional discard. Discarded ${state.turnState.lastDiscardedIds?.length || 0} cards.`);
+      logger.info(state, LogCategory.PRIORITY, `${engine.getPlayerName(playerId)} finished optional discard. Discarded ${state.turnState.lastDiscardedIds?.length || 0} cards.`);
       if (sourceId && stackObj && parentContext) {
         ChoiceProcessor.resumeResolution(state, sourceId, stackObj, parentContext, engine);
         return;
@@ -97,14 +98,14 @@ export class PriorityProcessor {
       if (player.stops[stopKey] || (isBeginning && player.stops[beginKey])) {
         if (player.stops[stopKey]) player.stops[stopKey] = false;
         if (isBeginning && player.stops[beginKey]) player.stops[beginKey] = false;
-        logger.info(state, 'PRIORITY' as any, `Stop cleared for ${state.currentStep}.`);
+        logger.info(state, LogCategory.PRIORITY, `Stop cleared for ${state.currentStep}.`);
       }
     }
 
     state.consecutivePasses++;
 
     const prefix = isAuto ? '[Auto-Pass] ' : '[Manual-Pass] ';
-    logger.info(state, 'PRIORITY' as any, `${prefix}${engine.getPlayerName(playerId)} passed. (${state.consecutivePasses}/${state.playerOrder.length} passes)`);
+    logger.info(state, LogCategory.PRIORITY, `${prefix}${engine.getPlayerName(playerId)} passed. (${state.consecutivePasses}/${state.playerOrder.length} passes)`);
 
     if (state.consecutivePasses >= state.playerOrder.length) {
       engine.resolveTopOrAdvanceStep();
@@ -270,8 +271,8 @@ export class PriorityProcessor {
       // SOS: Prepare check
       if (obj.isPrepared && (obj.definition.preparedFace || obj.definition.faces?.[1])) {
         const face = obj.definition.preparedFace || obj.definition.faces![1];
-        const isInstant = RuleUtils.isType(face, 'instant');
-        const isSorcery = RuleUtils.isType(face, 'sorcery');
+        const isInstant = RuleUtils.isDefinitionType(face, 'instant');
+        const isSorcery = RuleUtils.isDefinitionType(face, 'sorcery');
 
         let timingOk = isInstant;
         if (isSorcery && isYourTurn && stackEmpty && (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain)) {
@@ -362,7 +363,7 @@ export class PriorityProcessor {
       // Optimization: Use cached stats if available
       const stats = preComputedStats || cardToPlay.effectiveStats || LayerProcessor.getEffectiveStats(cardToPlay, state);
       const effectiveCost = preComputedCost || stats.manaCost || SpellProcessor.getEffectiveCosts(state, cardToPlay).totalMana;
-      const additionalCosts = (cardToPlay.definition as any).additionalCosts || [];
+      const additionalCosts = (cardToPlay.definition as CardDefinition & { additionalCosts?: any[] }).additionalCosts || [];
 
       // Modular Timing Check
       const timingOk = this.validateTiming(state, playerId, cardToPlay);
@@ -379,7 +380,7 @@ export class PriorityProcessor {
 
       // --- CHECK ADDITIONAL COSTS ---
       if (canPlay && additionalCosts && additionalCosts.length > 0) {
-        const canPayAllExtras = (additionalCosts as any[]).every(cost => {
+        const canPayAllExtras = (additionalCosts as import('@shared/engine_types').AbilityCost[]).every(cost => {
           if (cost.type === 'Sacrifice') {
             const candidates = state.battlefield.filter(o =>
               o.controllerId === playerId &&
@@ -396,20 +397,20 @@ export class PriorityProcessor {
       if (canPlay) {
         const logic = oracle.getCard(cardToPlay.definition.name);
         // Fallback to definition abilities for spells without dedicated logic (like virtual spells)
-        const spellAbility = (logic?.abilities?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell) ||
-          (cardToPlay.definition.abilities as any[])?.find((a: any) => a.type === 'Spell' || a.type === AbilityType.Spell)) as AbilityDefinition | undefined;
+        const spellAbility = (logic?.abilities?.find((a): a is AbilityDefinition => typeof a !== 'string' && (a.type === (AbilityType.Spell as AbilityType))) ||
+          (cardToPlay.definition.abilities || []).find((a): a is AbilityDefinition => typeof a !== 'string' && (a.type === (AbilityType.Spell as AbilityType)))) as AbilityDefinition | undefined;
 
         // Modal check
-        if (spellAbility && (spellAbility as any).modes) {
-          const hasValidMode = (spellAbility as any).modes.some((mode: any) => {
+        if (spellAbility && spellAbility.modes) {
+          const hasValidMode = spellAbility.modes.some((mode) => {
             if (!mode.targetDefinitions || mode.targetDefinitions.optional) return true;
             return TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, mode.targetDefinitions, playerId);
           });
           if (!hasValidMode) canPlay = false;
         } else {
-          const targetDefinitions = (logic as any)?.targetDefinitions || (spellAbility as any)?.targetDefinitions;
+          const targetDefinitions = (logic as Record<string, any>)?.targetDefinitions || spellAbility?.targetDefinitions;
 
-          if (targetDefinitions && !(targetDefinitions as any).optional) {
+          if (targetDefinitions && targetDefinitions.length > 0 && !targetDefinitions[0].optional) {
             if (!TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, targetDefinitions, playerId)) {
               canPlay = false;
             }
@@ -430,8 +431,8 @@ export class PriorityProcessor {
       // --- SOS: Prepared Casting Check ---
       if (objOnField.isPrepared && (objOnField.definition.preparedFace || objOnField.definition.faces?.[1])) {
         const face = objOnField.definition.preparedFace || objOnField.definition.faces![1];
-        const isInstant = RuleUtils.isType(face, 'instant');
-        const isSorcery = RuleUtils.isType(face, 'sorcery');
+        const isInstant = RuleUtils.isDefinitionType(face, 'instant');
+        const isSorcery = RuleUtils.isDefinitionType(face, 'sorcery');
         const stackEmpty = state.stack.length === 0;
         const isYourTurn = state.activePlayerId === playerId;
         const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
@@ -508,9 +509,9 @@ export class PriorityProcessor {
             abilities = [...abilities, ...granted];
           }
         }
-      } else if (e.type === EffectType.AddTriggeredAbility && (e as any).value) {
+      } else if (e.type === EffectType.AddTriggeredAbility && e.value) {
         // value contains the granted ability (which could be Activated despite the effect name)
-        abilities = [...abilities, (e as any).value];
+        abilities = [...abilities, e.value];
       }
 
     }
@@ -524,12 +525,12 @@ export class PriorityProcessor {
 
     // Zone check (CR 113.6)
     const activeZone = ability.activeZone || Zone.Battlefield;
-    if (activeZone !== (Zone.Any as any) && (!RuleUtils.isEntity(obj) || activeZone !== (obj.zone as any))) {
+    if (activeZone !== (Zone.Any as Zone) && (!RuleUtils.isEntity(obj) || activeZone !== (obj.zone as Zone))) {
       return false;
     }
 
     // Requirement Check (Rule 602.5b/Activation conditions)
-    const dummyEvent = { type: 'NONE', playerId: playerId } as any;
+    const dummyEvent: GameEvent = { type: 'NONE', playerId: playerId };
     if (ability.triggerCondition && RuleUtils.isEntity(obj) && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId })) {
       console.log(`Illegal Activation: Activation requirements for ${obj.definition.name} are not met.`);
       return false;
@@ -537,7 +538,7 @@ export class PriorityProcessor {
 
     // Explicit Condition check
     if (ability.condition) {
-      if (!ConditionProcessor.matchesCondition(state, ability.condition as any, { sourceId: obj.id, controllerId: playerId })) {
+      if (!ConditionProcessor.matchesCondition(state, ability.condition, { sourceId: obj.id, controllerId: playerId })) {
         return false;
       }
     }
@@ -593,12 +594,12 @@ export class PriorityProcessor {
 
     // Target Check
     if (ability.modes) {
-      const hasValidMode = ability.modes.some((mode: any) => {
+      const hasValidMode = ability.modes.some((mode) => {
         if (!mode.targetDefinitions || mode.targetDefinitions.optional) return true;
         return TargetingProcessor.hasLegalTargets(state, obj.id, mode.targetDefinitions, playerId);
       });
       if (!hasValidMode) return false;
-    } else if (ability.targetDefinitions && !(ability.targetDefinitions as any).optional) {
+    } else if (ability.targetDefinitions && ability.targetDefinitions.length > 0 && !ability.targetDefinitions[0].optional) {
       if (!TargetingProcessor.hasLegalTargets(state, obj.id, ability.targetDefinitions, playerId)) {
         return false;
       }
@@ -633,14 +634,14 @@ export class PriorityProcessor {
   /**
    * Helper to find an active permission effect in the registry.
    */
-  public static findPermissionEffect(state: GameState, playerId: string, effectType: string, targetId: string): any {
+  public static findPermissionEffect(state: GameState, playerId: string, effectType: string, targetId: string): ContinuousEffect | undefined {
 
     const found = state.ruleRegistry.continuousEffects.find(e => {
       // 1. Basic Type/Owner check
       const eType = e.type as string;
-      const effectiveControllerId = (e as any).targetControllerId || e.controllerId;
+      const effectiveControllerId = e.targetControllerId || e.controllerId;
 
-      const matchesType = eType === effectType || (effectType === EffectType.AllowPlayExiled && (e as any).canPlayExiled);
+      const matchesType = eType === effectType || (effectType === EffectType.AllowPlayExiled && e.canPlayExiled);
 
       if (!matchesType) return false;
       if (effectiveControllerId !== playerId) return false;
@@ -679,7 +680,7 @@ export class PriorityProcessor {
 
     player.passUntilEndOfTurn = !player.passUntilEndOfTurn;
     const { logger } = getProcessors(state);
-    logger.info(state, 'PRIORITY' as any, `[PASS-TURN] ${player.name} ${player.passUntilEndOfTurn ? 'enabled' : 'disabled'} Pass Turn.`);
+    logger.info(state, LogCategory.PRIORITY, `[PASS-TURN] ${player.name} ${player.passUntilEndOfTurn ? 'enabled' : 'disabled'} Pass Turn.`);
 
     // Immediately check if we should auto-pass now that it's toggled
     if (player.passUntilEndOfTurn && state.priorityPlayerId === playerId) {

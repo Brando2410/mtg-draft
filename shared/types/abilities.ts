@@ -139,6 +139,7 @@ export interface BaseAbilityCost {
     type: CostType;
     label?: string;
     optional?: boolean;
+    value?: string | number; // Added to unify access to cost value (X, numbers, mana)
 }
 
 export interface ManaCost extends BaseAbilityCost {
@@ -337,9 +338,10 @@ export interface BaseAbilityDefinition {
     /** Primary costs to pay for activation or casting */
     costs?: AbilityCost[];
     /** Effects executed when this ability resolves */
-    effects?: any[];
+    effects?: EffectDefinition[];
     /** Choices for modal abilities */
-    modes?: any[];
+    modes?: any[]; // Keep any for now as modes are complex
+    chooseBothCondition?: any; // Added for modal logic like Commander condition
     allowDuplicates?: boolean;
     /** Shortcut mana cost for display or complex resolution hooks */
     manaCost?: string;

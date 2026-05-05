@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
-    export const WiltintheHeat: CardDefinition = {
+export const WiltintheHeat: CardDefinition = {
     name: "Wilt in the Heat",
     manaCost: "{2}{R}{W}",
     colors: [
@@ -19,7 +19,7 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
                 type: EffectType.CostReduction,
                 manaReduction: '{2}',
                 condition: ConditionType.CardsLeftYourGraveyardThisTurn
-            } as any,
+            },
             targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,
@@ -40,4 +40,4 @@ import { AbilityType, CardDefinition, ConditionType, DurationType, EffectType, T
         }
     ]
 };
-    
+

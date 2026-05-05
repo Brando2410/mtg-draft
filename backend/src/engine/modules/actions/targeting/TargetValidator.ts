@@ -77,7 +77,7 @@ export class TargetValidator {
             targetDefinitions?.type === TargetType.Opponent ||
             targetDefinitions?.type === TargetType.AnyTarget ||
             targetDefinitions?.type === TargetType.PlayerOrPlaneswalker ||
-            restrictions.some((r) => [Restriction.Player, Restriction.AnyTarget, Restriction.Opponent, Restriction.You].includes(r as any));
+            restrictions.some((r) => [Restriction.Player as string, Restriction.AnyTarget as string, Restriction.Opponent as string, Restriction.You as string].includes(typeof r === 'string' ? r : (r as any).value));
 
         if (!isPlayerAllowed) return false;
 
@@ -219,7 +219,7 @@ export class TargetValidator {
             }
 
             // 4. Name / Quality Fallback
-            const targetName = (definition.name || (targetObj as any).name || "").toLowerCase();
+            const targetName = (definition.name || (targetObj as BaseEntity).name || (targetObj as any).name || "").toLowerCase();
             if (targetName !== lr && !RuleUtils.matchesQuality(targetObj, lr, state)) return false;
         }
 
@@ -281,7 +281,7 @@ export class TargetValidator {
     public static sourceHasQualities(source: Targetable, qualities: string[], state?: GameState): boolean {
         const s = source as BaseEntity;
         const definition = (s as GameObject).definition || s;
-        const sourceColors = this.getColors(s as any, state);
+        const sourceColors = this.getColors(s as GameObject, state);
         const sourceTypes = (definition.types || []).map((t: string) => t.toLowerCase());
         const sourceSubtypes = (definition.subtypes || []).map((t: string) => t.toLowerCase());
 
@@ -310,7 +310,8 @@ export class TargetValidator {
 
             const pool = this.getLegalTargetPool(state, sourceId, targetDefinitions, controllerId, currentIndex, xValue);
             currentIndex += count;
-            return pool.length >= (minCount as any);
+            const effectiveMin = typeof minCount === 'number' ? minCount : (minCount === 'X' ? xValue : 0);
+            return pool.length >= effectiveMin;
         });
     }
 

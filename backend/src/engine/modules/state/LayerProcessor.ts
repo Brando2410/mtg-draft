@@ -5,7 +5,9 @@ import {
   GameObject, GameState,
   RestrictionObject, RestrictionType,
   TargetMapping,
-  Zone
+  Zone,
+  EffectiveStats,
+  StackObject
 } from "@shared/engine_types";
 import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
@@ -42,10 +44,10 @@ export class LayerProcessor {
     providedActiveEffects?: ContinuousEffect[],
   ) {
     // FAST PATH: Check the state-level stats cache
-    const cache = state._statsCache as any;
-    if (cache && (cache instanceof Map) && (cache as any).version === state.stateVersion && cache.has(obj.id)) {
+    const cache = state._statsCache;
+    if (cache && cache.version === state.stateVersion && cache.has(obj.id)) {
       Profiler.increment('cache.layer.hit');
-      return cache.get(obj.id);
+      return cache.get(obj.id)!;
     }
 
     Profiler.increment('cache.layer.miss');
@@ -57,7 +59,7 @@ export class LayerProcessor {
         toughness: Number(obj.definition.toughness || 0),
         keywords: obj.definition.keywords || [],
         colors: obj.definition.colors || [],
-        types: obj.definition.types,
+        types: obj.definition.types || [],
         subtypes: obj.definition.subtypes || [],
         isPlayable: false,
         supertypes: obj.definition.supertypes || [],
@@ -171,9 +173,9 @@ export class LayerProcessor {
         if (e.removeAllAbilities) {
           keywords.clear();
         }
-        e.abilitiesToAdd?.forEach((k: any) => {
+        e.abilitiesToAdd?.forEach((k) => {
           const keyword =
-            typeof k === "string" ? k : k.name || "Unknown";
+            typeof k === "string" ? k : (k as any).name || "Unknown";
           keywords.add(keyword);
         });
         e.abilitiesToRemove?.forEach((k) => keywords.delete(k));
@@ -283,11 +285,10 @@ export class LayerProcessor {
       };
 
       // CACHE RESULT
-      if (!state._statsCache || !(state._statsCache instanceof Map) || (state._statsCache as any).version !== state.stateVersion) {
-        state._statsCache = new Map();
-        (state._statsCache as any).version = state.stateVersion;
+      if (!state._statsCache || state._statsCache.version !== state.stateVersion) {
+        state._statsCache = Object.assign(new Map<string, EffectiveStats>(), { version: state.stateVersion });
       }
-      (state._statsCache as Map<any, any>).set(obj.id, stats);
+      state._statsCache.set(obj.id, stats);
 
       return stats;
     } finally {
@@ -518,7 +519,7 @@ export class LayerProcessor {
    * Rebuilds a Map of all objects in all zones for O(1) lookup during processing.
    */
   public static rebuildObjectCache(state: GameState) {
-    const cache = new Map<string, GameObject>();
+    const cacheMap = new Map<string, GameObject | StackObject>();
 
     const allObjects = [
       ...state.battlefield,
@@ -537,15 +538,15 @@ export class LayerProcessor {
       if (!o.typeMask) {
         o.typeMask = this.calculateTypeMask(o.definition.types);
       }
-      cache.set(o.id, o);
+      cacheMap.set(o.id, o);
     });
 
     state.stack.forEach(s => {
-      cache.set(s.id, s as any); // Also index by stack ID
+      cacheMap.set(s.id, s); // Also index by stack ID
     });
 
-    (cache as any).version = state.stateVersion;
-    state._objectCache = cache as any;
+    const cache = Object.assign(cacheMap, { version: state.stateVersion });
+    state._objectCache = cache;
     return cache;
   }
 
@@ -569,11 +570,11 @@ export class LayerProcessor {
     const canReuseCache = state._statsCache && (state._statsCache instanceof Map) && state._lastLayerHash === layerHash;
 
     if (!canReuseCache) {
-      state._statsCache = new Map();
+      state._statsCache = Object.assign(new Map<string, EffectiveStats>(), { version: state.stateVersion });
       state._lastLayerHash = layerHash;
     }
     // Always update version to current state version to allow hits in getEffectiveStats
-    (state._statsCache as any).version = state.stateVersion;
+    if (state._statsCache) state._statsCache.version = state.stateVersion;
 
     const effects = state.ruleRegistry.continuousEffects || [];
     const activeEffects = effects.filter((e) => {
@@ -583,7 +584,7 @@ export class LayerProcessor {
       const source = (cache && cache.version === state.stateVersion)
         ? cache.get(e.sourceId)
         : state.battlefield.find((o) => o.id === e.sourceId);
-      if (!source || !e.activeZones.includes(source.zone)) return false;
+      if (!source || !('zone' in source) || !e.activeZones.includes(source.zone as Zone)) return false;
       return true;
     });
 

@@ -6,6 +6,7 @@ import {
   CounterType,
   DurationType,
   EffectType,
+  EntersWithCountersEffect,
   GameObject,
   GameState,
   Keyword,
@@ -369,8 +370,8 @@ export class ActionProcessor {
             {
               sourceId: card.id,
               controllerId: targetPlayerId,
-              event: { xValue: card.xValue } as any,
-              stackObject: card as unknown as StackObject,
+              event: { type: TriggerEvent.EnterBattlefield, playerId: targetPlayerId, payload: { xValue: card.xValue, object: card } },
+              sourceObject: card,
             },
           )
         ) {
@@ -534,16 +535,17 @@ export class ActionProcessor {
         if (
           e.type === EffectType.EntersWithCounters
         ) {
-          const type = e.counterType || "P1P1";
+          const etbEffect = e as EntersWithCountersEffect;
+          const type = etbEffect.counterType || "P1P1";
           let amount = 0;
-          if (e.amount === "CONVERGE_AMOUNT") {
+          if (etbEffect.amount === "CONVERGE_AMOUNT") {
             amount = card.convergeAmount || 0;
-          } else if (e.amount === "THREE_MINUS_X") {
+          } else if (etbEffect.amount === "THREE_MINUS_X") {
             amount = Math.max(0, 3 - (card.xValue || 0));
-          } else if (e.amount === "X") {
+          } else if (etbEffect.amount === "X") {
             amount = card.xValue || 0;
           } else {
-            amount = typeof e.amount === "number" ? e.amount : 0;
+            amount = typeof etbEffect.amount === "number" ? etbEffect.amount : 0;
           }
 
           if (amount > 0) {

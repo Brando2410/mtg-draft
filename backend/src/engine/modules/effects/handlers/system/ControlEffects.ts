@@ -4,24 +4,24 @@ import { ChoiceEffectHandler } from "../system/ChoiceEffectHandler";
 import { ControlEffectHandler as LegacyHandler } from "./ControlEffectHandler";
 
 export const ControlEffectsHandler: IEffectHandler = {
-    handle(state, effect, context) {
-        const { targets, controllerId } = context;
-        
-        if ((effect as any).choices) {
-          const searchingPlayerId =
-            ((targets || []).find(
-              (tid: string) => state.players[tid as PlayerId],
-            ) as PlayerId) || controllerId;
-            
-          return ChoiceEffectHandler.handleChoice(
-            state,
-            effect as any,
-            { ...context, targets: targets, controllerId: searchingPlayerId }
-          );
-        }
-        
-        return LegacyHandler.handle(state, effect, context);
+  handle(state, effect, context) {
+    const { targets, controllerId } = context;
+
+    if (effect.choices) {
+      const searchingPlayerId =
+        ((targets || []).find(
+          (tid: string) => state.players[tid as PlayerId],
+        ) as PlayerId) || controllerId;
+
+      return ChoiceEffectHandler.handleChoice(
+        state,
+        effect as any,
+        { ...context, targets: targets, controllerId: searchingPlayerId }
+      );
     }
+
+    return LegacyHandler.handle(state, effect, context);
+  }
 };
 
 

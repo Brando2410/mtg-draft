@@ -14,6 +14,7 @@ import {
     TriggerEvent,
     Zone
 } from '@shared/engine_types';
+import { ModalEffect } from '@shared/types/effects';
 import { LogCategory } from '../../../utils/EngineLogger';
 import {
     ActivateAbilityOptions,
@@ -184,12 +185,12 @@ export class SpellProcessor {
         const lastChosenModeIndex = state.interaction?.lastChosenModeIndex;
         const hasPreSelectedMode = lastChosenModeIndex !== undefined;
 
-        const choiceEffectIndex = spellEffects.findIndex((e: any, idx: number) =>
+        const choiceEffectIndex = spellEffects.findIndex((e: EffectDefinition, idx: number) =>
             e.type === EffectType.Choice &&
-            e.choices &&
+            (e as ModalEffect).choices &&
             !e.targetMapping &&
             idx === 0 &&
-            (!e.choices.some((c: any) => c.costs && c.costs.length > 0))
+            (!(e as ModalEffect).choices?.some((c: any) => c.costs && c.costs.length > 0))
         );
 
         // Step 0.5: Check for X in cost or inherent logic
@@ -207,8 +208,8 @@ export class SpellProcessor {
 
         // X-Value Selection
         const needsX = costStr.includes('{X}') ||
-            logic?.abilities?.some((a) => typeof a !== 'string' && (a.costs || a.additionalCosts)?.some((c: any) => c.value === 'X')) ||
-            currentDefinition.abilities?.some((a) => typeof a !== 'string' && (a.costs || a.additionalCosts)?.some((c: any) => (c as any).value === 'X')) ||
+            logic?.abilities?.some((a) => typeof a !== 'string' && (a.costs || a.additionalCosts)?.some((c) => c.value === 'X')) ||
+            currentDefinition.abilities?.some((a) => typeof a !== 'string' && (a.costs || a.additionalCosts)?.some((c) => c.value === 'X')) ||
             logic?.effects?.some((e: any) => JSON.stringify(e).includes('"X"')) ||
             modeHasX;
 
@@ -249,12 +250,12 @@ export class SpellProcessor {
             let minChoices = modalAbility.minChoices || 1;
             let maxChoices = modalAbility.maxChoices || 1;
 
-            if ((modalAbility as any).chooseBothCondition) {
+            if (modalAbility.chooseBothCondition) {
                 const { condition: ConditionProcessor } = getProcessors(state);
-                const met = ConditionProcessor.matchesCondition(state, (modalAbility as any).chooseBothCondition, {
+                const met = ConditionProcessor.matchesCondition(state, (modalAbility as AbilityDefinition).chooseBothCondition, {
                     sourceId: cardToPlay.id,
                     controllerId: playerId,
-                    stackObject: { id: cardToPlay.id, card: cardToPlay, controllerId: playerId } as any
+                    stackObject: { id: cardToPlay.id, card: cardToPlay, controllerId: playerId } as any as StackObject
                 });
                 if (met) {
                     maxChoices = modalAbility.modes!.length;
@@ -264,7 +265,7 @@ export class SpellProcessor {
 
             const choices = modalAbility.modes!.map((mode: any, idx: number) => {
                 const isSelectable = !mode.targetDefinitions ||
-                    (mode.targetDefinitions as any).optional ||
+                    mode.targetDefinitions.optional ||
                     TargetingProcessor.hasLegalTargets(state, cardToPlay.id, mode.targetDefinitions, playerId);
 
                 return {
@@ -451,9 +452,9 @@ export class SpellProcessor {
         // Modal Choice check (modes like "Choose one")
         const choiceEffectIndex = spellEffects.findIndex((e, idx) =>
             e.type === EffectType.Choice &&
-            e.choices &&
+            (e as ModalEffect).choices &&
             !e.targetMapping &&
-            (!e.choices.some((c: any) => c.costs && c.costs.length > 0))
+            (!(e as ModalEffect).choices?.some((c: any) => c.costs && c.costs.length > 0))
         );
         const hasPreSelectedChoice = state.interaction?.lastChoiceIndex !== undefined;
 

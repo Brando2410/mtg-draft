@@ -79,10 +79,8 @@ const _PermanentConditions: Record<string, IConditionHandler> = {
     [ConditionType.HasCounters]: {
         matches(state, params, context) {
             const { sourceId, event } = context;
-            const obj = state.battlefield.find(o => o.id === sourceId) || 
-                       (event as any)?.payload?.object || 
-                       (event as any)?.data?.object;
-            return obj ? Object.values(obj.counters || {}).some(v => (v as number) > 0) : false;
+            const obj = state.battlefield.find(o => o.id === sourceId) || event?.payload?.object;
+            return RuleUtils.isEntity(obj) ? Object.values(obj.counters || {}).some(v => (v as number) > 0) : false;
         }
     },
     [ConditionType.TotalToughnessGe]: {
@@ -128,17 +126,17 @@ export const PermanentConditions: Record<string, IConditionHandler> = new Proxy(
                 // Identify Subject (e.g. TARGET_1, OPPONENT, TRIGGER_SOURCE)
                 if (prop.startsWith('TARGET_')) {
                     const idx = parseInt(parts[1]) - 1;
-                    const targets = (stackObject as any)?.targets || (stackObject?.data as any)?.selectedTargets || (event as any)?.payload?.targets || [];
+                    const targets = stackObject?.targets || stackObject?.data?.selectedTargets || event?.payload?.targetIds || [];
                     subjectId = targets[idx];
                     actionIndex = 2;
                 } else if (prop.startsWith('OPPONENT_')) {
                     subjectControllerId = RuleUtils.getOpponentId(state, controllerId);
                     actionIndex = 1;
                 } else if (prop.startsWith('TRIGGER_SOURCE_')) {
-                    subjectId = (event as any)?.payload?.sourceId || (event as any)?.sourceId;
+                    subjectId = RuleUtils.getSource(event);
                     actionIndex = 2;
                 } else if (prop.startsWith('EVENT_OBJECT_')) {
-                    subjectId = (event as any)?.payload?.object?.id || (event as any)?.data?.object?.id;
+                    subjectId = RuleUtils.getEventObject(event, state)?.id;
                     actionIndex = 2;
                 } else if (prop.startsWith('HAS_')) {
                     actionIndex = 0;
@@ -155,11 +153,11 @@ export const PermanentConditions: Record<string, IConditionHandler> = new Proxy(
                 // 2. Execute Action (CONTROLS, HAS, or EXISTS)
                 if (action === 'CONTROLS' || action === 'CONTROL') {
                     const singular = filterToken.endsWith('S') ? filterToken.slice(0, -1) : filterToken;
-                    return state.battlefield.some(obj => 
+                    return state.battlefield.some(obj =>
                         String(obj.controllerId) === String(subjectControllerId || obj.controllerId) &&
-                        (RuleUtils.isType(obj, filterToken) || RuleUtils.isType(obj, singular) || 
-                         RuleUtils.hasSubtype(obj, filterToken) || RuleUtils.hasSubtype(obj, singular) ||
-                         TargetingProcessor.matchesRestrictions(state, obj, restrictions, targetingContext))
+                        (RuleUtils.isType(obj, filterToken) || RuleUtils.isType(obj, singular) ||
+                            RuleUtils.hasSubtype(obj, filterToken) || RuleUtils.hasSubtype(obj, singular) ||
+                            TargetingProcessor.matchesRestrictions(state, obj, restrictions, targetingContext))
                     );
                 }
 
@@ -170,7 +168,7 @@ export const PermanentConditions: Record<string, IConditionHandler> = new Proxy(
                 }
 
                 if (action === 'EXISTS') {
-                    return !!subjectId && (!!RuleUtils.findObject(state, subjectId) || !!state.players[subjectId as any]);
+                    return !!subjectId && (!!RuleUtils.findObject(state, subjectId) || !!state.players[subjectId]);
                 }
 
                 return false;

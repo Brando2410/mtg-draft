@@ -1,4 +1,4 @@
-import { AbilityCost, AbilityType, ActivatedAbilityDefinition, ChoiceCost, CostType, GameObject, GameState, ManaCost, Zone } from '@shared/engine_types';
+import { AbilityCost, AbilityType, ActivatedAbilityDefinition, ChoiceCost, CostModifierEffect, CostType, EffectDefinition, EffectType, GameObject, GameState, ManaCost, TriggerEvent, Zone } from '@shared/engine_types';
 import { ManaProcessor } from '../../magic/ManaProcessor';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { getProcessors } from '../../ProcessorRegistry';
@@ -40,7 +40,7 @@ export class SpellCostCalculator {
      * @param overrideStats - Pre-computed LayerProcessor stats to avoid re-calculation.
      * @returns Object containing totalMana string, list of additionalCosts, and optional usedAlternativeCostId.
      */
-    public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: any, forceFlashback?: boolean, overrideStats?: any): { totalMana: string, additionalCosts: AbilityCost[], usedAlternativeCostId?: string, isFlashback?: boolean } {
+    public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: import('@shared/engine_types').CardDefinition, forceFlashback?: boolean, overrideStats?: any): { totalMana: string, additionalCosts: AbilityCost[], usedAlternativeCostId?: string, isFlashback?: boolean } {
         const currentDef = overrideDefinition || card.definition;
         let baseCost = currentDef.manaCost;
 
@@ -50,7 +50,7 @@ export class SpellCostCalculator {
         const stats = overrideStats || LayerProcessor.getEffectiveStats(card, state);
 
         const hasFlashbackKeyword = stats.keywords?.some((k: string) => k.toLowerCase() === 'flashback') ||
-            card.definition.keywords?.some((k: string) => k.toLowerCase() === 'flashback');
+            card.definition.keywords?.some((k) => k.toLowerCase() === 'flashback');
 
         const isFlashback = forceFlashback ||
             card.isFlashbackCast ||
@@ -60,10 +60,11 @@ export class SpellCostCalculator {
             let override = stats.flashbackCostOverride;
             if (override === 'SOURCE_MANA_COST') override = currentDef.manaCost;
             baseCost = currentDef.flashbackCost || override || baseCost;
-        } else if (card.zone === Zone.Graveyard || (Object.values(state.players) as any[]).some(p => p.virtualHand.some((v: any) => v.id === card.id))) {
-            const graveyardAbility = currentDef.abilities?.find((a: any) =>
+        } else if (card.zone === Zone.Graveyard || Object.values(state.players).some(p => p.virtualHand?.some((v) => v.id === card.id))) {
+            const graveyardAbility = currentDef.abilities?.find((a) =>
+                typeof a !== 'string' &&
                 a.type === AbilityType.Activated &&
-                (a.zone === Zone.Graveyard || a.activeZone === Zone.Graveyard)
+                (a.activeZone === Zone.Graveyard || (Array.isArray(a.activeZone) && a.activeZone.includes(Zone.Graveyard)))
             ) as ActivatedAbilityDefinition;
             if (graveyardAbility) {
                 baseCost = graveyardAbility.manaCost || (graveyardAbility.costs?.find((c) => c.type === CostType.Mana) as ManaCost | undefined)?.value || baseCost;
@@ -120,7 +121,7 @@ export class SpellCostCalculator {
         // 1. Gather global modifiers
         const { targeting: TargetingProcessor } = getProcessors(state);
         const modifiers = state.ruleRegistry.continuousEffects.filter(e => {
-            if (!['SpellTax', 'CostReduction', 'AdditionalCost', 'AllowCastFromGraveyard', 'AllowPlayFromTop', 'AllowPlayExiled'].includes((e as any).type)) return false;
+            if (!['SpellTax', 'CostReduction', 'AdditionalCost', 'AllowCastFromGraveyard', 'AllowPlayFromTop', 'AllowPlayExiled'].includes(e.type as string)) return false;
 
             const source = RuleUtils.findObject(state, e.sourceId);
             if (RuleUtils.isEntity(source) && e.activeZones && source.zone && !e.activeZones.includes(source.zone)) return false;
@@ -141,7 +142,7 @@ export class SpellCostCalculator {
             // Case A: Static abilities that apply costs to the card itself
             if (a.type === AbilityType.Static) {
                 // Rule 113.6c: Cost-modifying abilities function in any zone from which the card can be played.
-                const isCostModifying = a.additionalCosts || a.effects?.some((e: any) => ['CostReduction', 'AdditionalCost', 'SpellTax'].includes(e.type));
+                const isCostModifying = a.additionalCosts || a.effects?.some((e: EffectDefinition) => e.type === EffectType.CostReduction || e.type === EffectType.AdditionalCost || e.type === EffectType.SpellTax);
                 const activeZone = a.activeZone || (isCostModifying ? card.zone : Zone.Battlefield);
 
                 if (activeZone !== 'Any' && activeZone !== card.zone) return;
@@ -149,19 +150,20 @@ export class SpellCostCalculator {
                 if (a.additionalCosts) {
                     additionalCosts = [...additionalCosts, ...a.additionalCosts];
                 }
-                a.effects?.forEach((e: any) => {
-                    if (e.type === 'AdditionalCost' && e.targetMapping === 'SELF') {
+                a.effects?.forEach((e: EffectDefinition) => {
+                    if (e.type === EffectType.AdditionalCost && e.targetMapping === 'SELF') {
+                        const costEffect = e as CostModifierEffect;
                         const { condition: ConditionProcessor } = getProcessors(state);
-                        const conditionMatches = !e.condition || ConditionProcessor.matchesCondition(state, e.condition, {
+                        const conditionMatches = !costEffect.condition || ConditionProcessor.matchesCondition(state, costEffect.condition, {
                             sourceId: card.id,
                             controllerId: card.controllerId,
-                            event: { payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } } as any
+                            event: { type: TriggerEvent.ResolveSpell, playerId: card.controllerId, payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } } as any
                         });
-                        if (conditionMatches && e.additionalCosts) {
-                            additionalCosts = [...additionalCosts, ...e.additionalCosts];
+                        if (conditionMatches && costEffect.additionalCosts) {
+                            additionalCosts = [...additionalCosts, ...costEffect.additionalCosts];
                         }
                     }
-                    if (e.type === 'CostReduction' && e.targetMapping === 'SELF') {
+                    if (e.type === EffectType.CostReduction && e.targetMapping === 'SELF') {
                         modifiers.push({ ...e, sourceId: card.id, controllerId: card.controllerId } as any);
                     }
                 });

@@ -56,7 +56,7 @@ export class ChoiceEffectHandler {
     const preSelectedIdx =
       stackObject?.data?.preSelectedChoice !== undefined
         ? stackObject.data.preSelectedChoice
-        : (stackObject as any)?.preSelectedChoice;
+        : stackObject?.preSelectedChoice;
 
     if (preSelectedIdx !== undefined && dynamicChoices) {
       const rawIndices = String(preSelectedIdx)

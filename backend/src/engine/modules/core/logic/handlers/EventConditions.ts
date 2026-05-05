@@ -154,20 +154,20 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { event } = context;
             const tId = RuleUtils.getTargets(event)[0];
             const obj = RuleUtils.findObject(state, tId);
-            return (RuleUtils.isEntity(obj) && (obj.counters as any)?.["+1/+1"] || 0) >= parseInt(params[0]);
+            return (RuleUtils.isEntity(obj) && obj.counters?.["+1/+1"] || 0) >= parseInt(params[0]);
         }
     },
     "X_LE": {
         matches(state, params, context) {
             const { event, stackObject } = context;
-            const xValue = (event as any)?.xValue || stackObject?.xValue || 0;
+            const xValue = event?.payload?.xValue ?? stackObject?.xValue ?? 0;
             return xValue <= parseInt(params[0]);
         }
     },
     "X_LT": {
         matches(state, params, context) {
             const { event, stackObject } = context;
-            const xValue = (event as any)?.xValue || stackObject?.xValue || 0;
+            const xValue = event?.payload?.xValue ?? stackObject?.xValue ?? 0;
             return xValue < parseInt(params[0]);
         }
     },
@@ -214,7 +214,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const threshold = parseInt(params[1]);
             const obj = RuleUtils.findObject(state, sourceId);
             if (!RuleUtils.isEntity(obj)) return false;
-            const count = (obj.counters as any)?.[countType] || 0;
+            const count = obj.counters?.[countType as CounterType] || 0;
             return count >= threshold;
         }
     },
@@ -464,14 +464,14 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "X_IS": {
         matches(state, params, context) {
             const expected = parseInt(params[0]);
-            const xValue = (context.event as any)?.payload?.xValue ?? (context.event as any)?.xValue ?? (context.stackObject as any)?.xValue;
+            const xValue = context.event?.payload?.xValue ?? context.stackObject?.xValue ?? 0;
             return xValue === expected;
         }
     },
     "X_IS_GE": {
         matches(state, params, context) {
             const threshold = parseInt(params[0]);
-            const xValue = (context.event as any)?.payload?.xValue ?? (context.event as any)?.xValue ?? (context.stackObject as any)?.xValue;
+            const xValue = context.event?.payload?.xValue ?? context.stackObject?.xValue ?? 0;
             return xValue >= threshold;
         }
     },

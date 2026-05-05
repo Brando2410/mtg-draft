@@ -1,4 +1,4 @@
-import { ActionType, DurationType, EffectType, GameObject, GameState, PlayerId, PlayerState, ResolutionContext, StackObject, Zone } from '@shared/engine_types';
+import { AbilityType, ActionType, AddManaEffect, CopyEffect, DurationType, EffectDefinition, EffectType, ExtraTurnsEffect, GameObject, GameState, LogEffect, PhasedOutEffect, PlayerId, PlayerState, PreventionEffectDefinition, ResolutionContext, SkipTurnsEffect, StackObject, TriggerAbilityEffect, Zone } from '@shared/engine_types';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { RuleUtils } from '../../../../utils/RuleUtils';
 import { getProcessors } from '../../../ProcessorRegistry';
@@ -11,13 +11,13 @@ export class ControlEffectHandler {
 
     public static handle(
         state: GameState,
-        effect: any,
+        effect: EffectDefinition,
         context: ResolutionContext
     ) {
         const { logger, action: AP, trigger: TrP, effect: EP } = getProcessors(state);
         const { sourceId, controllerId, targets, stackObject, parentContext } = context;
         switch (effect.type) {
-            case 'EndTurn':
+            case EffectType.EndTurn:
                 logger.info(state, LogCategory.ACTION, `[END-TURN] Ending the turn. Exiling stack...`);
                 state.stack = [];
                 state.pendingAction = undefined;
@@ -32,7 +32,7 @@ export class ControlEffectHandler {
                 break;
 
             case EffectType.Log:
-                logger.info(state, LogCategory.ACTION, effect.message || "");
+                logger.info(state, LogCategory.ACTION, (effect as LogEffect).message || "");
                 break;
 
             case EffectType.CopySpellOnStack:
@@ -49,7 +49,7 @@ export class ControlEffectHandler {
                     if (!stackObj) return;
                     const copy = JSON.parse(JSON.stringify(stackObj));
                     copy.id = `copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-                    (copy as any).isCopy = true;
+                    copy.isCopy = true;
                     copy.controllerId = controllerId;
 
                     // Ensure the card instance itself gets a unique ID to avoid collision during zone movements
@@ -58,7 +58,7 @@ export class ControlEffectHandler {
                         copy.sourceId = copy.sourceObject.id;
 
                         // Allow overriding legend status (Double Major)
-                        if (effect.isLegendary === false) {
+                        if ((effect as CopyEffect).isLegendary === false) {
                             copy.sourceObject.definition = {
                                 ...copy.sourceObject.definition,
                                 supertypes: (copy.sourceObject.definition.supertypes || []).filter((s: string) => s.toLowerCase() !== 'legendary'),
@@ -68,22 +68,23 @@ export class ControlEffectHandler {
                         }
                     }
 
-                    if (effect.abilitiesToAdd && copy.sourceObject) {
+                    const copyEffect = effect as CopyEffect;
+                    if (copyEffect.abilitiesToAdd && copy.sourceObject) {
                         copy.sourceObject.definition = {
                             ...copy.sourceObject.definition,
-                            abilities: [...(copy.sourceObject.definition.abilities || []), ...effect.abilitiesToAdd]
+                            abilities: [...(copy.sourceObject.definition.abilities || []), ...copyEffect.abilitiesToAdd]
                         };
                     }
-                    if (effect.keywordsToAdd && copy.sourceObject) {
+                    if (copyEffect.keywordsToAdd && copy.sourceObject) {
                         copy.sourceObject.definition = {
                             ...copy.sourceObject.definition,
-                            keywords: [...(copy.sourceObject.definition.keywords || []), ...effect.keywordsToAdd]
+                            keywords: [...(copy.sourceObject.definition.keywords || []), ...copyEffect.keywordsToAdd]
                         };
                     }
 
                     // PRE-CLEAR TARGETS if choosing new ones (prevents UI arrows during re-selection)
                     let backupTargets: string[] = [];
-                    if (effect.chooseNewTargets && copy.targets) {
+                    if ((effect as CopyEffect).chooseNewTargets && copy.targets) {
                         backupTargets = [...copy.targets];
                         copy.targets = [];
 
@@ -120,7 +121,7 @@ export class ControlEffectHandler {
                         }
                     });
 
-                    if (effect.chooseNewTargets) {
+                    if ((effect as CopyEffect).chooseNewTargets) {
                         const targetDefinitions = copy.data?.targetDefinitions || copy.targetDefinitions;
                         if (targetDefinitions) {
                             const { targeting: TP } = getProcessors(state);
@@ -161,56 +162,68 @@ export class ControlEffectHandler {
                 });
                 break;
 
-            case 'AddTriggeredAbility':
+            case EffectType.AddTriggeredAbility: {
+                const trigEffect = effect as TriggerAbilityEffect;
+                const { duration: trigDuration, ...rest } = trigEffect;
                 state.ruleRegistry.triggeredAbilities.push({
                     id: `delayed_${Date.now()}`,
                     sourceId: sourceId,
                     controllerId: controllerId,
-                    eventMatch: effect.eventMatch || effect.on,
-                    activeZone: 'Any',
+                    eventMatch: rest.eventMatch || rest.on || "",
+                    activeZone: Zone.Any,
                     targetIds: targets, // Store targets for condition matching
-                    duration: { type: (effect.duration || DurationType.UntilEndOfTurn) as any },
-                    ...effect
+                    duration: typeof trigDuration === 'string' 
+                        ? { type: trigDuration as DurationType } 
+                        : (trigDuration || { type: DurationType.UntilEndOfTurn }),
+                    ...rest,
+                    type: AbilityType.Triggered
                 });
                 break;
+            }
 
-            case 'AddPreventionEffect':
+            case EffectType.AddPreventionEffect: {
+                const prevEffect = effect as PreventionEffectDefinition;
+                const { duration: prevDuration, ...rest } = prevEffect;
                 if (!state.ruleRegistry.preventionEffects) state.ruleRegistry.preventionEffects = [];
                 state.ruleRegistry.preventionEffects.push({
                     id: `prevention_${Date.now()}`,
                     sourceId,
                     controllerId,
-                    damageType: effect.damageType || 'CombatDamage',
-                    targetMapping: effect.targetMapping,
-                    duration: effect.duration || DurationType.UntilEndOfTurn
+                    damageType: (rest.damageType === 'AllDamage' ? 'AllDamage' : 'CombatDamage') as 'CombatDamage' | 'AllDamage',
+                    targetMapping: rest.targetMapping || "",
+                    duration: typeof prevDuration === 'string'
+                        ? { type: prevDuration as DurationType }
+                        : (prevDuration || { type: DurationType.UntilEndOfTurn })
                 });
                 break;
+            }
 
-            case 'ExtraTurns':
+            case EffectType.ExtraTurns:
                 targets.forEach((tid: string) => {
                     const p = state.players[tid as PlayerId];
                     if (p) {
-                        const amount = effect.amount || 1;
+                        const amount = RuleUtils.resolveAmount(state, (effect as ExtraTurnsEffect).amount, context);
                         p.extraTurns += amount;
                         logger.info(state, LogCategory.ACTION, `[TURN] ${p.name} gained ${amount} extra turn(s).`);
                     }
                 });
                 break;
 
-            case 'SkipTurns':
+            case EffectType.SkipTurns:
                 targets.forEach((tid: string) => {
                     const p = state.players[tid as PlayerId];
                     if (p) {
-                        let amount = effect.amount || 1;
+                        const skipEffect = effect as SkipTurnsEffect;
+                        let amount = RuleUtils.resolveAmount(state, skipEffect.amount, context) || 1;
 
                         // Ral Zarek support: Flip coins
-                        if (effect.flipCoins) {
+                        if (skipEffect.flipCoins) {
                             let heads = 0;
-                            for (let i = 0; i < effect.flipCoins; i++) {
+                            for (let i = 0; i < skipEffect.flipCoins; i++) {
                                 if (Math.random() < 0.5) heads++;
                             }
                             amount = heads;
-                            logger.info(state, LogCategory.ACTION, `[COIN-FLIP] Flipping ${effect.flipCoins} coins... ${heads} heads!`);
+                            logger.info(state, LogCategory.ACTION, `[COIN-FLIP] Flipping ${skipEffect.flipCoins} coins... ${heads} heads!`);
                         }
 
                         if (amount > 0) {
@@ -223,22 +236,23 @@ export class ControlEffectHandler {
                 });
                 break;
 
-            case 'PhasedOut':
+            case EffectType.PhasedOut:
                 targets.forEach((tid: string) => {
                     const obj = EP.findObject(state, tid, stackObject, parentContext);
                     if (obj && 'zone' in obj) {
-                        obj.isPhasedOut = effect.value !== false;
+                        obj.isPhasedOut = (effect as PhasedOutEffect).value !== false;
                         logger.info(state, LogCategory.ACTION, `${obj.definition.name} phased ${obj.isPhasedOut ? 'out' : 'in'}.`);
                     }
                 });
                 break;
 
-            case 'AddMana': {
+            case EffectType.AddMana: {
                 const { mana: MP, choiceGenerator: CG } = getProcessors(state);
                 const effectiveTargets = (targets && targets.length > 0) ? targets : [controllerId];
 
                 // Prioritize manaType/mana over amount/value for symbol resolution
-                let manaStr = effect.manaType || effect.mana || effect.value || (effect.amount && !isNaN(parseInt(effect.amount)) ? effect.amount.toString() : null) || 'C';
+                const manaEffect = effect as AddManaEffect;
+                let manaStr = manaEffect.manaType || manaEffect.mana || manaEffect.value || (manaEffect.amount && !isNaN(parseInt(String(manaEffect.amount))) ? String(manaEffect.amount) : null) || 'C';
                 const isFlexible = String(manaStr).toUpperCase() === 'ANY' || String(manaStr).toUpperCase() === '{ANY}';
 
                 if (isFlexible) {
@@ -272,12 +286,12 @@ export class ControlEffectHandler {
                 effectiveTargets.forEach((tid: string) => {
                     const p = state.players[tid as PlayerId];
                     if (p) {
-                        const amount = effect.amount || 1;
+                        const amount = RuleUtils.resolveAmount(state, manaEffect.amount, context) || 1;
                         // Ensure braces if missing
                         const formattedMana = String(manaStr).startsWith('{') ? String(manaStr) : `{${manaStr}}`;
                         const res = MP.parseManaCost(formattedMana);
 
-                        const rawRestrictions = effect.manaRestrictions || effect.restriction || effect.restrictions;
+                        const rawRestrictions = manaEffect.manaRestrictions || manaEffect.restriction || manaEffect.restrictions;
                         const restrictionList = rawRestrictions ? (Array.isArray(rawRestrictions) ? rawRestrictions : [rawRestrictions]) : null;
 
                         if (restrictionList) {

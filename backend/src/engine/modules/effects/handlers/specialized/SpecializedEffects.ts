@@ -85,7 +85,7 @@ export const CastSpellHandler: IEffectHandler<CastSpellEffect> = {
   }
 };
 
-export const ExileTopCardsExcessDamageHandler: IEffectHandler<BaseEffect> = {
+export const ExileTopCardsExcessDamageHandler: IEffectHandler<EffectDefinition> = {
   handle(state, effect, context) {
     const { logger, effect: EP } = getProcessors(state);
     const { targets } = context;
@@ -126,7 +126,7 @@ export const ExileTopCardsExcessDamageHandler: IEffectHandler<BaseEffect> = {
   }
 };
 
-export const ConditionalEffectHandler: IEffectHandler<BaseEffect> = {
+export const ConditionalEffectHandler: IEffectHandler<EffectDefinition> = {
   handle(state, effect, context) {
     const { effect: EP } = getProcessors(state);
     const { sourceId, targets } = context;

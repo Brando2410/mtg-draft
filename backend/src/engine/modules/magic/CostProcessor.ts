@@ -346,7 +346,7 @@ export class CostProcessor {
           let reduction = 0;
           for (const mod of manaCost.costModifiers) {
             if (mod.type === 'REDUCE_GENERIC_PER_COUNTER') {
-              reduction += ((source.counters as any)[mod.counterType] || 0) * (mod.amount || 1);
+              reduction += (source.counters[mod.counterType as CounterType] || 0) * (mod.amount || 1);
             }
           }
 

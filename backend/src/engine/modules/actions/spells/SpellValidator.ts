@@ -26,7 +26,7 @@ export class SpellValidator {
             else if (obj.zone === Zone.Library) permissionType = EffectType.AllowPlayFromTop;
 
             const { layer: LayerProcessor } = getProcessors(state);
-            const stats = ('isTapped' in obj) ? LayerProcessor.getEffectiveStats(obj as GameObject, state) : { keywords: [] };
+            const stats = ('isTapped' in obj) ? LayerProcessor.getEffectiveStats(obj as GameObject, state) : { keywords: [] as string[] };
             const hasFlashback = obj.zone === Zone.Graveyard && (stats.keywords?.includes(Keyword.Flashback) || obj.definition.keywords?.includes(Keyword.Flashback));
 
             if (hasFlashback) {

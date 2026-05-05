@@ -84,11 +84,14 @@ export class TriggerProcessor {
         }
 
         for (const eventName of triggerEvents) {
-          const tEvent = {
+          const tEvent: GameEvent = {
             type: eventName,
-            sourceId: trigger.sourceId,
             playerId: trigger.controllerId,
-            data: { trigger, object: sourceObj }
+            payload: {
+              sourceId: trigger.sourceId,
+              object: sourceObj,
+              stackSnapshot: { trigger, object: sourceObj }
+            }
           };
 
           const replacements = (state.ruleRegistry.replacementEffects || [])
@@ -96,7 +99,7 @@ export class TriggerProcessor {
 
           for (const r of replacements) {
             const conditionMet = typeof r.condition === 'function' ? r.condition(state, tEvent, r) : true;
-            if (conditionMet && r.effects?.some((e: any) => e.type === EffectType.AddAdditionalTrigger)) {
+            if (conditionMet && r.effects?.some((e: EffectDefinition) => e.type === EffectType.AddAdditionalTrigger)) {
               triggerCount++;
               logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${RuleUtils.isEntity(sourceObj) ? sourceObj.definition.name : 'Ability'} triggers an additional time via replacement effect (${eventName}).`);
             }
@@ -236,29 +239,29 @@ export class TriggerProcessor {
    */
   public static createDelayedTrigger(
     state: GameState,
-    effect: any,
+    effect: EffectDefinition,
     sourceId: GameObjectId,
     controllerId: PlayerId,
   ) {
     const { logger } = getProcessors(state);
     const triggerId = `delayed_${sourceId}_${Date.now()}`;
-    const delayedTrigger: any = {
+    const delayedTrigger: TriggeredAbility = {
       id: triggerId,
       sourceId,
       controllerId,
-      eventMatch: effect.eventMatch,
-      effects: effect.effects,
-      duration: effect.duration || DurationType.UntilEndOfTurn,
+      eventMatch: (effect as any).eventMatch, // eventMatch is dynamic for delayed triggers
+      effects: effect.effects || [],
+      duration: (effect.duration as import('@shared/engine_types').EffectDuration) || { type: DurationType.UntilEndOfTurn },
       condition: effect.condition,
       data: effect.data,
-      targets: effect.targets,
+      targetIds: effect.targetIds,
       isDelayed: true,
-      oneShot: effect.oneShot,
-      firesOnce: effect.firesOnce,
+      oneShot: (effect as any).oneShot,
+      firesOnce: (effect as any).firesOnce,
       activeZone: Zone.Any, // Virtual zone for registry (Rule 603.7)
       type: AbilityType.Triggered,
     };
-    getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[DELAYED-REG] Registering trigger ${delayedTrigger.id} with targets: ${delayedTrigger.targets?.join(', ')}`);
+    getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[DELAYED-REG] Registering trigger ${delayedTrigger.id} with targets: ${delayedTrigger.targetIds?.join(', ')}`);
     if (!state.ruleRegistry.triggeredAbilities)
       state.ruleRegistry.triggeredAbilities = [];
     state.ruleRegistry.triggeredAbilities.push(delayedTrigger);
@@ -278,7 +281,7 @@ export class TriggerProcessor {
     state.ruleRegistry.triggeredAbilities =
       state.ruleRegistry.triggeredAbilities.filter(
         (t) =>
-          !(t as any).isDelayed || (t as any).duration !== DurationType.UntilEndOfTurn,
+          !t.isDelayed || t.duration?.type !== DurationType.UntilEndOfTurn,
       );
     const removedCount =
       initialCount - state.ruleRegistry.triggeredAbilities.length;
@@ -311,7 +314,7 @@ export class TriggerProcessor {
     const stackId = `trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
 
     // CR 603.3: Store event snapshot for ResolutionContext (LKI)
-    const contextPayload: any = {
+    const contextPayload: any = { // Keep any for contextPayload as it's a dynamic bucket
       sourceId: trigger.sourceId,
       controllerId: trigger.controllerId,
       targets: trigger.targetIds || [],

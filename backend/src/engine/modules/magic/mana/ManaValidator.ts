@@ -82,33 +82,35 @@ export class ManaValidator {
           const colors = new Set<string>();
           const restrictions: TargetRestriction[] = [];
 
-          const extract = (effects: any[]) => {
+          const extract = (effects: import('@shared/engine_types').EffectDefinition[]) => {
             if (!effects) return;
-            effects.forEach((e: any) => {
-              if (e.type === 'AddMana' || e.mana || e.manaType) {
-                const val = e.value || e.manaType || e.mana || '{C}';
+            effects.forEach((e) => {
+              if (e.type === 'AddMana' || (e as any).mana || (e as any).manaType) {
+                const addMana = e as any; // Cast once to access legacy/optional fields
+                const val = addMana.value || addMana.manaType || addMana.mana || '{C}';
                 const res = ManaParser.parseManaCost(val.toString());
                 Object.keys(res.colored).forEach(c => colors.add(c));
                 if (res.generic > 0) colors.add('C');
                 
-                const rawR = e.manaRestrictions || e.restriction || e.restrictions;
+                const rawR = addMana.manaRestrictions || addMana.restriction || addMana.restrictions;
                 if (rawR) {
                   if (Array.isArray(rawR)) restrictions.push(...rawR);
                   else restrictions.push(rawR);
                 }
               }
-              if (e.choices) e.choices.forEach((c: any) => extract(c.effects));
-              if (e.effects) extract(e.effects);
+              if ((e as any).choices) (e as any).choices.forEach((c: any) => extract(c.effects));
+              if ((e as any).effects) extract((e as any).effects);
             });
           };
           extract(a.effects || []);
-          
+
           if (isLegalForSource(restrictions)) {
             let val = 0;
             if (a.effects) {
-              a.effects.forEach((e: any) => {
-                const v = e.value || e.manaType || e.mana || '{C}';
-                val = Math.max(val, ManaParser.getManaValue(String(v)) * (e.amount || 1));
+              a.effects.forEach((e) => {
+                const addMana = e as any;
+                const v = addMana.value || addMana.manaType || addMana.mana || '{C}';
+                val = Math.max(val, ManaParser.getManaValue(String(v)) * (addMana.amount || 1));
               });
             }
             sourceAbilities.push({ colors: Array.from(colors), value: val });
@@ -133,10 +135,10 @@ export class ManaValidator {
         // a. Try pool first
         if (req.includes('/')) {
             const options = req.split('/');
-            const found = options.find(opt => (pool as any)[opt] > 0);
-            if (found) { (pool as any)[found]--; continue; }
-        } else if ((pool as any)[req] > 0) {
-            (pool as any)[req]--;
+            const found = options.find(opt => (pool as Record<string, number>)[opt] > 0);
+            if (found) { (pool as Record<string, number>)[found]--; continue; }
+        } else if ((pool as Record<string, number>)[req] > 0) {
+            (pool as Record<string, number>)[req]--;
             continue;
         }
 

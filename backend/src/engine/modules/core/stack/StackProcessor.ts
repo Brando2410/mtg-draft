@@ -52,14 +52,14 @@ export class StackProcessor {
         processors.lki.saveSnapshot(state, objectToResolve, Zone.Stack);
         state.consecutivePasses = 0; // CR 117.4: Resolution or stack changes reset pass count
         if (state.stack.length > 0) {
-          logger.debug(state, LogCategory.STACK, `STACK CONTENTS: ${state.stack.map(s => (s as any).name || s.sourceObject?.definition.name).join(', ')}`);
+          logger.debug(state, LogCategory.STACK, `STACK CONTENTS: ${state.stack.map(s => s.name || s.sourceObject?.definition.name).join(', ')}`);
         }
 
-        const objectName = (objectToResolve as any).name || objectToResolve.sourceObject?.definition.name || 'Effect';
+        const objectName = objectToResolve.name || objectToResolve.sourceObject?.definition.name || 'Effect';
         logger.info(state, LogCategory.STACK, `[RESOLVING] >>> ${objectName} is resolving <<<`);
 
         const effects = StackProcessor.getEffectsForResolution(state, objectToResolve);
-        const startIndex = (objectToResolve as any).data?.nextEffectIndex || 0;
+        const startIndex = objectToResolve.data?.nextEffectIndex || 0;
         const completed = resolver.resolveObject(objectToResolve, effects, startIndex);
 
         if (!completed) {

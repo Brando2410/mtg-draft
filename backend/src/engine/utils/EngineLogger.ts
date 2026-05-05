@@ -11,6 +11,7 @@ export enum LogCategory {
   ACTION = 'ACTION',
   EFFECT = 'EFFECT',
   STATE = 'STATE',
+  PRIORITY = 'PRIORITY',
   DEBUG = 'DEBUG'
 }
 

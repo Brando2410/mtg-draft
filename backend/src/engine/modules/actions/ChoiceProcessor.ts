@@ -141,7 +141,7 @@ export class ChoiceProcessor {
                 if (choice) {
                     if (choice.effects) {
                         // Deep clone and inject targetOffset
-                        const choiceEffects = JSON.parse(JSON.stringify(choice.effects)).map((e: any) => ({
+                        const choiceEffects = JSON.parse(JSON.stringify(choice.effects)).map((e: EffectDefinition) => ({
                             ...e,
                             targetOffset: currentTargetOffset
                         }));
@@ -336,7 +336,7 @@ export class ChoiceProcessor {
             });
 
             if (stackObj && !completed && (state as GameState).pendingAction) {
-                (stackObj as any).data = { ...(stackObj as any).data, nextEffectIndex: (state as GameState).pendingAction?.data?.nextEffectIndex };
+                stackObj.data = { ...stackObj.data, nextEffectIndex: (state as GameState).pendingAction?.data?.nextEffectIndex };
             }
         }
 
@@ -350,12 +350,12 @@ export class ChoiceProcessor {
 
                         if (card.zone === Zone.Stack) {
                             const freshDef = oracle.getCard(card.definition.name);
-                            const shouldExile = fullStackObj.exileOnResolution || (fullStackObj as any).isCopy || (card as any).isPreparedCopy || freshDef?.exileOnResolution;
+                            const shouldExile = fullStackObj.exileOnResolution || fullStackObj.isCopy || (card as any).isPreparedCopy || freshDef?.exileOnResolution;
 
                             if (shouldExile) {
                                 logger.info(state, LogCategory.ACTION, `[RULE 701.5] ${card.definition.name} was exiled instead of being put into graveyard.`);
                                 getProcessors(state).action.removeFromCurrentZone(state, card);
-                                if (!(fullStackObj as any).isCopy) {
+                                if (!fullStackObj.isCopy) {
                                     getProcessors(state).action.moveCard(state, card, Zone.Exile, card.ownerId);
                                 }
                             } else if (isPermanent) {
@@ -767,7 +767,7 @@ export class ChoiceProcessor {
                 });
 
                 if (stackObj && !completed && (state as GameState).pendingAction) {
-                    (stackObj as any).data = { ...(stackObj as any).data, nextEffectIndex: (state as GameState).pendingAction?.data?.nextEffectIndex };
+                    stackObj.data = { ...stackObj.data, nextEffectIndex: (state as GameState).pendingAction?.data?.nextEffectIndex };
                 }
             }
 

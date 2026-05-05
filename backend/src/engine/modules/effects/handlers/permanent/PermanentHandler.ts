@@ -1,16 +1,16 @@
-import { 
-    ActionType, 
-    CounterEffect, 
-    CounterType, 
-    EffectDefinition, 
-    EmblemDefinition, 
-    EmblemEffect, 
-    GameObject, 
-    GameState, 
-    PlayerId, 
-    ResolutionContext, 
-    TokenEffect, 
-    Zone 
+import {
+    ActionType,
+    CounterEffect,
+    CounterType,
+    EffectDefinition,
+    EmblemDefinition,
+    EmblemEffect,
+    GameObject,
+    GameState,
+    PlayerId,
+    ResolutionContext,
+    TokenEffect,
+    Zone
 } from '@shared/engine_types';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { RuleUtils } from '../../../../utils/RuleUtils';
@@ -36,8 +36,7 @@ export class PermanentHandler {
                     return;
                 }
                 logger.info(state, LogCategory.ACTION, `${obj.definition.name} was successfully destroyed.`);
-                const turnState = state.turnState as any;
-                turnState.lastDestroyedCount = (turnState.lastDestroyedCount || 0) + 1;
+                state.turnState.lastDestroyedCount = (state.turnState.lastDestroyedCount || 0) + 1;
                 ActionProcessor.moveCard(state, obj as GameObject, Zone.Graveyard, (obj as GameObject).ownerId);
             }
         });
@@ -51,7 +50,7 @@ export class PermanentHandler {
         const player = state.players[tid as PlayerId];
         if (player) {
             const { targeting: TP, effect: EP } = getProcessors(state);
-            const resList = effect?.restrictions || ((effect as any).restriction ? [(effect as any).restriction] : ['Creature']);
+            const resList = effect.restrictions || (effect.restriction ? [effect.restriction] : ['Creature']);
             let candidates = state.battlefield.filter((o: GameObject) => o.controllerId === tid && TP.matchesRestrictions(state, o, resList, {
                 sourceId,
                 controllerId: tid,
@@ -229,7 +228,7 @@ export class PermanentHandler {
         const { logger, effect: EP } = getProcessors(state);
         const { targets, sourceId } = context;
         const counterEff = effect as CounterEffect;
-        
+
         let rawObj = RuleUtils.findObject(state, sourceId);
         // CR 603.10: If the source is not in a public zone or has no counters (because it died), check LKI
         if (!RuleUtils.isEntity(rawObj) || !rawObj.counters || Object.keys(rawObj.counters).length === 0) {
@@ -248,7 +247,7 @@ export class PermanentHandler {
         const counterTypes = inputType ? [inputType] : Object.keys(sourceObj.counters);
 
         counterTypes.forEach((ctype: string) => {
-            const counterKey = ctype as CounterType;
+            const counterKey = ctype as import('@shared/engine_types').CounterType;
             const available = sourceObj.counters[counterKey] || 0;
             if (available <= 0) return;
 
@@ -267,7 +266,7 @@ export class PermanentHandler {
                     TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', payload: { targetIds: [targetObj.id], amount, counterType: ctype, object: targetObj } });
                 }
             });
-            
+
             sourceObj.counters[counterKey] = (sourceObj.counters[counterKey] || 0) - amount;
         });
     }
@@ -314,7 +313,7 @@ export class PermanentHandler {
         const { targets } = context;
         const tokenEff = effect as TokenEffect;
         const { targeting: TP_LOCAL } = getProcessors(state);
- 
+
         const sourceCardId = tokenEff.sourceCardId ||
             tokenEff.originalCardId ||
             (tokenEff.sourceMapping ? TP_LOCAL.resolveTargetMapping(state, tokenEff.sourceMapping, context, effect)[0] : undefined);
@@ -347,8 +346,11 @@ export class PermanentHandler {
                 keywords: [...(sourceObj.definition.keywords || []), ...(tokenEff.keywordsToAdd || [])],
                 image_url: sourceObj.definition.image_url
             };
-            const token = this.createToken(state, blueprint, pid as PlayerId, tokenEff.powerOverride, tokenEff.toughnessOverride, effect);
- 
+            const { effect: EP_LOCAL } = getProcessors(state);
+            const pOverride = tokenEff.powerOverride !== undefined ? EP_LOCAL.resolveAmount(state, tokenEff.powerOverride, context) : undefined;
+            const tOverride = tokenEff.toughnessOverride !== undefined ? EP_LOCAL.resolveAmount(state, tokenEff.toughnessOverride, context) : undefined;
+            const token = this.createToken(state, blueprint, pid as PlayerId, pOverride, tOverride, effect);
+
             if (tokenEff.storeLinkedId) {
                 if (!token.data) token.data = {};
                 token.data[tokenEff.storeLinkedId] = sourceCardId;
@@ -377,7 +379,7 @@ export class PermanentHandler {
         });
     }
 
-    private static createToken(state: GameState, blueprint: any, controllerId: PlayerId, pOverride?: any, tOverride?: any, effect?: any): GameObject {
+    private static createToken(state: GameState, blueprint: import('@shared/engine_types').CardDefinition, controllerId: PlayerId, pOverride?: number | string, tOverride?: number | string, effect?: EffectDefinition): GameObject {
         const { mana: MP, registry: RP } = getProcessors(state);
         const token: GameObject = {
             id: `token_${Math.random().toString(36).substr(2, 9)}`,
@@ -403,19 +405,19 @@ export class PermanentHandler {
                 image_url: blueprint.image_url || "",
                 preparedFace: blueprint.preparedFace,
                 faces: blueprint.faces,
-                cannotBeCopied: (blueprint as any).cannotBeCopied
+                cannotBeCopied: blueprint.cannotBeCopied
             },
             zone: Zone.Battlefield,
             isTapped: false,
             damageMarked: 0,
             deathtouchMarked: false,
-            summoningSickness: !(blueprint.keywords || []).some((k: any) => String(k).toLowerCase() === 'haste'),
+            summoningSickness: !(blueprint.keywords || []).some((k) => String(k).toLowerCase() === 'haste'),
             abilitiesUsedThisTurn: 0,
             faceDown: false,
             isPrepared: blueprint.entersPrepared || false,
             keywords: [],
-            counters: (blueprint.types || []).some((t: any) => String(t).toLowerCase() === 'planeswalker') && blueprint.loyalty
-                ? { loyalty: parseInt(blueprint.loyalty, 10) }
+            counters: (blueprint.types || []).some((t) => String(t).toLowerCase() === 'planeswalker') && blueprint.loyalty
+                ? { loyalty: typeof blueprint.loyalty === 'number' ? blueprint.loyalty : parseInt(String(blueprint.loyalty), 10) }
                 : {}
         };
         token.isToken = true;
@@ -446,8 +448,8 @@ export class PermanentHandler {
         };
         if (!state.emblems) state.emblems = [];
         state.emblems.push(emblem);
-        blueprint.abilities?.forEach((ability: any, idx: number) => {
-            state.ruleRegistry.triggeredAbilities.push({ ...ability, id: `${emblemId}_${idx}`, sourceId: emblemId, controllerId, activeZone: 'Command' });
+        blueprint.abilities?.forEach((ability, idx: number) => {
+            state.ruleRegistry.triggeredAbilities.push({ ...ability, id: `${emblemId}_${idx}`, sourceId: emblemId, controllerId, activeZone: Zone.Any });
         });
         logger.info(state, LogCategory.ACTION, `[EMBLEM] Created ${emblem.name} for ${state.players[controllerId]?.name}.`);
     }

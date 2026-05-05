@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
-    export const ManaSculpt: CardDefinition = {
+export const ManaSculpt: CardDefinition = {
     name: "Mana Sculpt",
     manaCost: "{1}{U}{U}",
     scryfall_id: "200c8e3d-c53b-40c7-a29a-fccc1281bfc6",
@@ -29,7 +29,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
                     effects: [
                         {
                             type: EffectType.CreateDelayedTrigger,
-                    eventMatch: TriggerEvent.PreCombatMainPhaseStart, // Or ON_BEGIN_PHASE_PRECOMBAT_MAIN
+                            eventMatch: TriggerEvent.PreCombatMainPhaseStart, // Or ON_BEGIN_PHASE_PRECOMBAT_MAIN
                             condition: ConditionType.IsYourTurn,
                             captureTargetMV: true,
                             effects: [
@@ -40,11 +40,11 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, 
                                     targetMapping: TargetMapping.Controller
                                 }
                             ]
-                        } as any
+                        }
                     ]
                 }
             ]
         }
     ]
 };
-    
+

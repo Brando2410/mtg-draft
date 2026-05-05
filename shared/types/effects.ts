@@ -236,6 +236,7 @@ export interface ConditionContext {
     stackObject?: StackObject;
     targets?: string[];
     cardToPlay?: GameObject;
+    sourceObject?: import('./state').GameObject | import('./state').StackObject | import('./state').PlayerState;
 }
 
 /**
@@ -288,7 +289,13 @@ export interface BaseEffect {
     isSpellCasting?: boolean;
     isParadigmCopy?: boolean;
     isDiscard?: boolean;
+    fromZone?: Zone | string;
+    storeMV?: string;
+    storeLinkedId?: string;
+    linkKey?: string;
+    alternateCost?: string;
     metadata?: Record<string, any>;
+    data?: any;
     targetOffset?: number;
     optional?: boolean;
     revealed?: boolean;
@@ -319,7 +326,7 @@ export interface BaseEffect {
     reveal?: boolean;
     random?: boolean;
     excludedTargetMapping?: string;
-    eventMatch?: string;
+    eventMatch?: string | string[];
     additionalCost?: any;
     additionalCosts?: any;
     entersTapped?: boolean;
@@ -366,6 +373,7 @@ export interface BaseEffect {
     activeZones?: Zone[];
     flipCoins?: NumericProperty;
     next?: EffectDefinition; // Chain to next effect (e.g. Cascade)
+    captureTargetMV?: boolean;
 }
 
 export interface DamageEffect extends BaseEffect {
@@ -378,12 +386,16 @@ export interface LifeEffect extends BaseEffect {
 }
 
 export interface MoveEffect extends BaseEffect {
-    type: typeof EffectType.MoveToZone | typeof EffectType.PutOnBattlefield | typeof EffectType.ReturnToHand | typeof EffectType.Exile | typeof EffectType.ExileTopCard | typeof EffectType.ExileAllCards | typeof EffectType.ShuffleLibrary | typeof EffectType.DiscardCards | typeof EffectType.ExileUntilManaValue | typeof EffectType.PutRemainderOnBottomRandom;
+    type: typeof EffectType.MoveToZone | typeof EffectType.PutOnBattlefield | typeof EffectType.ReturnToHand | typeof EffectType.Exile | typeof EffectType.ExileTopCard | typeof EffectType.ExileAllCards | typeof EffectType.ShuffleLibrary | typeof EffectType.DiscardCards | typeof EffectType.ExileUntilManaValue | typeof EffectType.PutRemainderOnBottomRandom | typeof EffectType.LookAtTopAndPick | typeof EffectType.PutInGraveyard | typeof EffectType.ExileTopCardsExcessDamage;
     ownerControl?: boolean;
     shuffle?: boolean;
     ownerId?: PlayerId;
     targetPlayerId?: PlayerId;
     additionalEffectPerCard?: EffectDefinition;
+    fromTop?: NumericProperty;
+    remainderZone?: Zone;
+    remainderPosition?: number | 'top' | 'bottom' | 'random';
+    shuffleRemainder?: boolean;
 }
 
 export interface DrawEffect extends BaseEffect {
@@ -441,6 +453,8 @@ export interface ContinuousEffectDefinition extends BaseEffect {
     subtypesSet?: string[];
     colorsToAdd?: string[];
     colorSet?: string[];
+    colorsSet?: string[]; // Alias
+    typesSet?: string[]; // Alias
     flashbackCostOverride?: any;
     exileOnMoveToGraveyard?: boolean;
     playerModifier?: any;
@@ -467,13 +481,13 @@ export interface ModalEffect extends BaseEffect {
     allowDuplicates?: boolean;
     optional?: boolean;
     isSpellCasting?: boolean;
-    choices: {
+    choices?: {
         label: string;
         effects?: EffectDefinition[];
         costs?: any[];
         targetDefinitions?: any;
         value?: string | number;
-        condition?: string;
+        condition?: string | any;
     }[];
 }
 
@@ -486,7 +500,7 @@ export interface CastSpellEffect extends BaseEffect {
 }
 
 export interface AddManaEffect extends BaseEffect {
-    type: typeof EffectType.AddMana;
+    type: typeof EffectType.AddMana | typeof EffectType.AddManaChoice;
     amount?: NumericProperty;
 }
 
@@ -511,9 +525,84 @@ export interface CopyEffect extends BaseEffect {
 }
 
 export interface SpecializedEffect extends BaseEffect {
-    type: typeof EffectType.AdNauseam | typeof EffectType.ChaosWarp | typeof EffectType.ApproachOfTheSecondSun | typeof EffectType.Learn;
+    type: typeof EffectType.AdNauseam | typeof EffectType.ChaosWarp | typeof EffectType.ApproachOfTheSecondSun | typeof EffectType.Learn | typeof EffectType.ExchangeHandAndGraveyard | typeof EffectType.Necromentia | typeof EffectType.Cascade | typeof EffectType.Dig | typeof EffectType.Prepare | typeof EffectType.Unprepare | typeof EffectType.GainAbilitiesOfTopCard | typeof EffectType.AllowCastFromGraveyard | typeof EffectType.AllowCastFromExile | typeof EffectType.AllowLookAtTop | typeof EffectType.AllowPlayFromTop | typeof EffectType.AllowPlayMilledCard;
     value?: any;
 }
+
+export interface SystemActionEffect extends BaseEffect {
+    type: typeof EffectType.Sacrifice | typeof EffectType.Tap | typeof EffectType.Untap | typeof EffectType.Tapped | typeof EffectType.GainControl | typeof EffectType.LoseGame | typeof EffectType.ChangeTarget | typeof EffectType.EntersTapped | typeof EffectType.Attach | typeof EffectType.Freeze | typeof EffectType.CREW | typeof EffectType.AddActivatedAbility | typeof EffectType.AllowOutOfTurnActivation | typeof EffectType.DoublePowerXTimes | typeof EffectType.GainKeyword | typeof EffectType.AllowCastWithoutPaying | typeof EffectType.CantAttackUnless | typeof EffectType.PreventDamage | typeof EffectType.PayMana | typeof EffectType.DisableDamagePrevention | typeof EffectType.AdditionalLandPlays | typeof EffectType.ApplyDelayedTrigger | typeof EffectType.MustBeBlocked | typeof EffectType.AllowPlayExiled | typeof EffectType.AllowSpendManaAsAnyColor | typeof EffectType.ModifyCountersAmount | typeof EffectType.PlayWithTopCardRevealed | typeof EffectType.LoseMana | typeof EffectType.PhaseOut | typeof EffectType.MustBlockThisTurn | typeof EffectType.ExileUntilLeaves;
+}
+
+
+
+
+
+export interface LogEffect extends BaseEffect {
+    type: typeof EffectType.Log;
+    message?: string;
+}
+
+export interface TriggerAbilityEffect extends BaseEffect {
+    type: typeof EffectType.AddTriggeredAbility | typeof EffectType.CreateDelayedTrigger;
+    eventMatch?: string | string[];
+    on?: string; // Legacy alias for eventMatch
+}
+
+export interface PreventionEffectDefinition extends BaseEffect {
+    type: typeof EffectType.AddPreventionEffect;
+    damageType?: 'CombatDamage' | 'AllDamage' | string;
+}
+
+export interface EndTurnEffect extends BaseEffect {
+    type: typeof EffectType.EndTurn;
+}
+
+export interface ShuffleEffect extends BaseEffect {
+    type: typeof EffectType.Shuffle | typeof EffectType.ShuffleLibrary;
+}
+
+export interface SkipTurnsEffect extends BaseEffect {
+    type: typeof EffectType.SkipTurns;
+    amount?: NumericProperty;
+    flipCoins?: number;
+}
+
+export interface PhasedOutEffect extends BaseEffect {
+    type: typeof EffectType.PhasedOut | typeof EffectType.PhaseOut;
+    value?: any;
+}
+
+export interface ConditionalEffect extends BaseEffect {
+    type: typeof EffectType.ConditionalEffect;
+    condition?: any;
+    trueEffects?: EffectDefinition[];
+    falseEffects?: EffectDefinition[];
+    effects?: EffectDefinition[]; // Legacy alias for trueEffects
+}
+
+
+export interface FightEffect extends BaseEffect {
+    type: typeof EffectType.Fight;
+}
+
+export interface CostModifierEffect extends BaseEffect {
+    type: typeof EffectType.CostReduction | typeof EffectType.AdditionalCost | typeof EffectType.SpellTax;
+    manaReduction?: any;
+    additionalCosts?: any[];
+}
+
+export interface EntersWithCountersEffect extends BaseEffect {
+    type: typeof EffectType.EntersWithCounters;
+    counterType?: string;
+    amount?: NumericProperty;
+}
+
+export interface AddAdditionalTriggerEffect extends BaseEffect {
+    type: typeof EffectType.AddAdditionalTrigger;
+}
+
+
+
 
 /**
  * Rules Engine Representation of an Effect execution (CR 608/609).
@@ -537,4 +626,17 @@ export type EffectDefinition =
     | SpecializedEffect
     | EmblemEffect
     | RevealUntilConditionEffect
-    | BaseEffect;
+    | LogEffect
+    | TriggerAbilityEffect
+    | PreventionEffectDefinition
+    | EndTurnEffect
+    | ShuffleEffect
+    | SkipTurnsEffect
+    | PhasedOutEffect
+    | ConditionalEffect
+    | FightEffect
+    | CostModifierEffect
+    | EntersWithCountersEffect
+    | AddAdditionalTriggerEffect
+    | RevealUntilConditionEffect
+    | SystemActionEffect;

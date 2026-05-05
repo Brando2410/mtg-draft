@@ -3,7 +3,7 @@
 
 import type { AbilityDefinition, ActivatedAbility, TriggeredAbility, ReplacementEffect, PreventionEffect } from './abilities';
 import { AbilityType } from './abilities';
-import type { CounterType, GameObjectId, PlayerId, RestrictionObject } from './core';
+import type { CounterType, GameObjectId, PlayerId } from './core';
 import { Phase, Step, Zone } from './core';
 import type { ContinuousEffect, EffectDefinition } from './effects';
 import type { AbilityRestriction, TargetDefinition } from './targeting';
@@ -70,6 +70,24 @@ export interface BaseEntity {
     targets?: (GameObjectId | PlayerId)[]; // Added to unify target access for GameObject | StackObject
     exiledBy?: string;
     dealtDamageThisTurn?: boolean;
+    data?: any;
+}
+
+export interface EffectiveStats {
+    power: number;
+    toughness: number;
+    keywords: string[];
+    restrictions?: import('./core').RestrictionObject[];
+    isPlayable?: boolean;
+    manaCost?: string;
+    isFlashback?: boolean;
+    isActivation?: boolean;
+    isVirtual?: boolean;
+    colors?: string[];
+    types?: string[];
+    subtypes?: string[];
+    supertypes?: string[];
+    flashbackCostOverride?: string;
 }
 
 export interface GameObject extends BaseEntity {
@@ -95,22 +113,7 @@ export interface GameObject extends BaseEntity {
     selectedFaceDefinition?: CardDefinition;
     attachedTo?: GameObjectId;
     data?: any;
-    effectiveStats?: {
-        power: number;
-        toughness: number;
-        keywords: string[];
-        restrictions?: RestrictionObject[];
-        isPlayable?: boolean;
-        manaCost?: string;
-        isFlashback?: boolean;
-        isActivation?: boolean;
-        isVirtual?: boolean;
-        colors?: string[];
-        types?: string[];
-        subtypes?: string[];
-        supertypes?: string[];
-        flashbackCostOverride?: string;
-    };
+    effectiveStats?: EffectiveStats;
     isAttacking?: boolean;
     isBlocking?: boolean;
     isGoaded?: boolean;
@@ -380,12 +383,12 @@ export interface GameState {
 
     // Performance & Engine Extensions
     _entityMap?: Record<string, BaseEntity>;
-    _objectCache?: Map<string, any> & {
+    _objectCache?: Map<string, GameObject | StackObject> & {
         version: number;
     };
     dynamicCopies?: Record<string, GameObject>;
     paradigmCopies?: Record<string, GameObject>;
-    _statsCache?: Map<string, any> & { version?: number };
+    _statsCache?: Map<string, EffectiveStats> & { version?: number };
     _lastLayerHash?: string;
     _triggerCache?: any;
     isResolvingDrawReplacement?: boolean;

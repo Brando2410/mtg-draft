@@ -1,4 +1,4 @@
-import { BaseEntity, DynamicAmount, EnginePrefix, GameObject, GameState, GameEvent, ResolutionContext, Zone, PlayerId, StackObject, Targetable, PlayerState } from "@shared/engine_types";
+import { BaseEntity, DynamicAmount, EnginePrefix, GameObject, GameState, GameEvent, ResolutionContext, Zone, PlayerId, StackObject, Targetable, PlayerState, CardDefinition } from "@shared/engine_types";
 import { getProcessors } from "../modules/ProcessorRegistry";
 import { LogCategory } from "./EngineLogger";
 /**
@@ -39,21 +39,25 @@ export class RuleUtils {
      * Objects on the Battlefield or Stack have a controller.
      * Objects in other zones are controlled by their owner.
      */
-    public static getController(obj: GameObject | StackObject | any): PlayerId {
+    public static getController(obj: Targetable | undefined): PlayerId {
         if (!obj) return "";
 
-        // StackObjects (spells/abilities) are always controlled by their controllerId
-        if (!obj.zone && obj.sourceId) {
+        if (this.isStackObject(obj)) {
             return obj.controllerId;
         }
 
-        // GameObjects on the battlefield or stack have a controllerId
-        if (obj.zone === Zone.Battlefield || obj.zone === Zone.Stack) {
-            return obj.controllerId;
+        if (this.isGameObject(obj)) {
+            if (obj.zone === Zone.Battlefield || obj.zone === Zone.Stack) {
+                return obj.controllerId;
+            }
+            return obj.ownerId || obj.controllerId || "";
         }
 
-        // Rule 108.4: Objects in other zones are controlled by their owner
-        return obj.ownerId || obj.controllerId || "";
+        if (this.isPlayer(obj)) {
+            return obj.id;
+        }
+
+        return (obj as any).controllerId || "";
     }
 
     /**
@@ -80,7 +84,7 @@ export class RuleUtils {
     /**
      * Internal helper to extract definition from various sources.
      */
-    private static getDef(obj: any): any {
+    private static getDef(obj: Targetable | undefined): CardDefinition | null {
         if (!obj) return null;
         // Players don't have definitions, but cards and stack objects do
         return (obj as GameObject).definition || (obj as StackObject).definition || null;
@@ -89,7 +93,7 @@ export class RuleUtils {
     /**
      * Checks if an object has a specific type (e.g., Creature, Artifact).
      */
-    public static isType(obj: any, type: string): boolean {
+    public static isType(obj: Targetable | undefined, type: string): boolean {
         const def = this.getDef(obj);
         if (!def) return false;
         const search = type.toLowerCase().trim();
@@ -98,15 +102,24 @@ export class RuleUtils {
         if ((def.types || []).some((t: any) => String(t).toLowerCase().trim() === search)) return true;
 
         // 2. Check dynamic effective types (CR 613 Layer 4)
-        if (obj.effectiveStats && (obj.effectiveStats.types || []).some((t: any) => String(t).toLowerCase().trim() === search)) return true;
+        if (this.isGameObject(obj) && obj.effectiveStats && (obj.effectiveStats.types || []).some((t) => String(t).toLowerCase().trim() === search)) return true;
 
         return false;
     }
 
     /**
+     * Checks if a card definition has a specific type.
+     */
+    public static isDefinitionType(def: CardDefinition | undefined, type: string): boolean {
+        if (!def) return false;
+        const search = type.toLowerCase().trim();
+        return (def.types || []).some((t) => String(t).toLowerCase().trim() === search);
+    }
+
+    /**
      * Checks if an object has a specific subtype (e.g., Elf, Equipment).
      */
-    public static hasSubtype(obj: any, subtype: string): boolean {
+    public static hasSubtype(obj: Targetable | undefined, subtype: string): boolean {
         const def = this.getDef(obj);
         if (!def) return false;
         const search = subtype.toLowerCase();
@@ -116,7 +129,7 @@ export class RuleUtils {
     /**
      * Checks if an object has a specific supertype (e.g., Legendary, Basic).
      */
-    public static hasSupertype(obj: any, supertype: string): boolean {
+    public static hasSupertype(obj: Targetable | undefined, supertype: string): boolean {
         const def = this.getDef(obj);
         if (!def) return false;
         const search = supertype.toLowerCase();
@@ -126,42 +139,42 @@ export class RuleUtils {
     /**
      * CR 302: Creatures
      */
-    public static isCreature(obj: any): boolean {
+    public static isCreature(obj: Targetable | undefined): boolean {
         return this.isType(obj, 'creature');
     }
 
     /**
      * CR 306: Planeswalkers
      */
-    public static isPlaneswalker(obj: any): boolean {
+    public static isPlaneswalker(obj: Targetable | undefined): boolean {
         return this.isType(obj, 'planeswalker');
     }
 
     /**
      * CR 305: Lands
      */
-    public static isLand(obj: any): boolean {
+    public static isLand(obj: Targetable | undefined): boolean {
         return this.isType(obj, 'land');
     }
 
     /**
      * CR 304: Artifacts
      */
-    public static isArtifact(obj: any): boolean {
+    public static isArtifact(obj: Targetable | undefined): boolean {
         return this.isType(obj, 'artifact');
     }
 
     /**
      * CR 303: Enchantments
      */
-    public static isEnchantment(obj: any): boolean {
+    public static isEnchantment(obj: Targetable | undefined): boolean {
         return this.isType(obj, 'enchantment');
     }
 
     /**
      * CR 110.1: Permanents are cards or tokens on the battlefield.
      */
-    public static isPermanent(obj: any): boolean {
+    public static isPermanent(obj: Targetable | undefined): boolean {
         if (!obj) return false;
         return this.isCreature(obj) ||
             this.isLand(obj) ||
@@ -174,12 +187,12 @@ export class RuleUtils {
      * Checks if an object has a specific keyword, accounting for both
      * printed keywords and those granted by continuous effects.
      */
-    public static hasKeyword(obj: any, keyword: string): boolean {
+    public static hasKeyword(obj: Targetable | undefined, keyword: string): boolean {
         const def = this.getDef(obj);
         if (!def) return false;
         const search = keyword.toLowerCase();
-        const printed = (def.keywords || []).some((k: any) => k.toLowerCase() === search);
-        const effective = (obj.effectiveStats?.keywords || []).some((k: any) => k.toLowerCase() === search);
+        const printed = (def.keywords || []).some((k) => k.toLowerCase() === search);
+        const effective = (this.isGameObject(obj) && obj.effectiveStats?.keywords || []).some((k) => k.toLowerCase() === search);
 
         if (printed || effective) return true;
 
@@ -210,7 +223,7 @@ export class RuleUtils {
     /**
      * Rule 105: Colors.
      */
-    public static getColors(obj: any, state?: GameState): string[] {
+    public static getColors(obj: Targetable | undefined, state?: GameState): string[] {
         const def = this.getDef(obj);
         return def?.colors || [];
     }
@@ -218,7 +231,7 @@ export class RuleUtils {
     /**
      * Checks if an object matches a specific quality (color, type, supertype, subtype, etc.).
      */
-    public static matchesQuality(obj: any, quality: string, state?: GameState): boolean {
+    public static matchesQuality(obj: Targetable | undefined, quality: string, state?: GameState): boolean {
         const q = quality.toLowerCase();
         
         // Color check
@@ -258,7 +271,7 @@ export class RuleUtils {
      * Centralized numeric resolution for engine effects.
      * Rule 107: Numbers and Symbols.
      */
-    public static resolveAmount(state: GameState, amount: any, context: ResolutionContext): number {
+    public static resolveAmount(state: GameState, amount: import('@shared/engine_types').NumericProperty | any, context: ResolutionContext): number {
         if (typeof amount === 'number') return amount;
         if (!amount) return 0;
 
@@ -433,6 +446,11 @@ export class RuleUtils {
      */
     public static getEventObject(event: GameEvent | undefined, state: GameState): GameObject | StackObject | undefined {
         if (!event || !event.payload) return undefined;
+
+        // Priority 1: Explicit object in payload
+        if (this.isEntity(event.payload.object)) return event.payload.object;
+
+        // Priority 2: sourceId or first targetId
         const id = event.payload.sourceId || event.payload.targetIds?.[0];
         if (!id) return undefined;
         
@@ -460,9 +478,9 @@ export class RuleUtils {
     /**
      * Standardized token identification.
      */
-    public static isToken(obj: any): boolean {
+    public static isToken(obj: Targetable | undefined): boolean {
         if (!obj) return false;
-        return obj.isToken === true || (typeof obj.id === 'string' && obj.id.startsWith(EnginePrefix.Token));
+        return (this.isGameObject(obj) && obj.isToken === true) || (typeof obj.id === 'string' && obj.id.startsWith(EnginePrefix.Token));
     }
     /**
      * Rule 603.10: Creates a robust snapshot of an object's state at a specific moment.

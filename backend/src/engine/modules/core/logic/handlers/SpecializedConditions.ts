@@ -55,7 +55,7 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, sourceId } = context;
             const eventObj = event?.payload?.object;
-            const spent = (RuleUtils.isEntity(eventObj) ? eventObj.paidManaValue : undefined) ?? (event as any)?.amount ?? 0;
+            const spent = (RuleUtils.isEntity(eventObj) ? eventObj.paidManaValue : undefined) ?? event?.payload?.amount ?? 0;
             const obj = state.battlefield.find((o) => o.id === sourceId);
             if (!obj) return false;
             const { layer: LayerProcessor } = getProcessors(state);

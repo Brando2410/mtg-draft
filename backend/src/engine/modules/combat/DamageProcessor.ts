@@ -1,4 +1,5 @@
 import {
+  EffectiveStats,
   GameObject,
   GameObjectId,
   GameState,
@@ -61,7 +62,8 @@ export class DamageProcessor {
     }
 
     const { layer: LP } = getProcessors(state);
-    const sourceObj = RuleUtils.findObject(state, sourceId);
+    const sourceObjRaw = RuleUtils.findObject(state, sourceId);
+    const sourceObj = RuleUtils.isPlayer(sourceObjRaw) ? undefined : sourceObjRaw;
     const sourceStats = (sourceObj && 'isTapped' in sourceObj)
       ? LP.getEffectiveStats(sourceObj as GameObject, state)
       : null;
@@ -133,16 +135,16 @@ export class DamageProcessor {
 
   private static applyDamageToPermanent(
     state: GameState,
-    sourceObj: any,
-    sourceStats: any,
+    sourceObj: GameObject | import("@shared/engine_types").StackObject | undefined,
+    sourceStats: EffectiveStats | null,
     target: GameObject,
     amount: number,
     isCombat: boolean
   ) {
     if (RuleUtils.isPlaneswalker(target)) {
       // Rule 120.3c: Damage to planeswalker removes loyalty
-      const currentLoyalty = (target.counters as any)["loyalty"] || 0;
-      (target.counters as any)["loyalty"] = Math.max(0, currentLoyalty - amount);
+      const currentLoyalty = target.counters?.["loyalty"] || 0;
+      target.counters["loyalty"] = Math.max(0, currentLoyalty - amount);
       EngineLogger.info(state, LogCategory.ACTION, `[DAMAGE] ${target.definition.name} loses ${amount} loyalty.`);
     } else {
       // Rule 120.3: Damage to creature marks damage
@@ -188,8 +190,8 @@ export class DamageProcessor {
 
   private static applyDamageToPlayer(
     state: GameState,
-    sourceObj: any,
-    player: any,
+    sourceObj: GameObject | import("@shared/engine_types").StackObject | undefined,
+    player: import("@shared/engine_types").PlayerState,
     amount: number,
     isCombat: boolean
   ) {
