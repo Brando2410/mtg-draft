@@ -123,7 +123,7 @@ export class SpellCostCalculator {
             if (!['SpellTax', 'CostReduction', 'AdditionalCost', 'AllowCastFromGraveyard', 'AllowPlayFromTop', 'AllowPlayExiled'].includes((e as any).type)) return false;
 
             const source = RuleUtils.findObject(state, e.sourceId);
-            if (source && e.activeZones && source.zone && !e.activeZones.includes(source.zone)) return false;
+            if (RuleUtils.isEntity(source) && e.activeZones && source.zone && !e.activeZones.includes(source.zone)) return false;
             
             // SKIP SELF: We scan the card's own abilities manually below to ensure 
             // consistency and avoid double-counting with the rule registry.

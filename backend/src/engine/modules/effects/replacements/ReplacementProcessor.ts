@@ -133,7 +133,7 @@ export class ReplacementProcessor {
         fromZone: Zone,
     ): Zone | null {
         const { logger } = getProcessors(state);
-        const isToken = (card as any).isToken || card.id.startsWith("token_");
+        const isToken = card.isToken || card.id.startsWith("token_");
 
         for (const replacement of state.ruleRegistry.replacementEffects || []) {
             const source = state.battlefield.find((o) => o.id === replacement.sourceId);

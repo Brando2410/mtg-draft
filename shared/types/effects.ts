@@ -217,7 +217,10 @@ export interface ResolutionContext {
     nextEffectIndex?: number;    // Pointer for resuming multi-step effects
     xValue?: number;             // Bound X value for this resolution chain
     isCopy?: boolean;            // Flag if this resolution is for a copied spell/ability
+    lastMilledIds?: string[];    // Snapshot of cards milled during this resolution
+    lastDiscardedIds?: string[]; // Snapshot of cards discarded during this resolution
     sourceObject?: GameObject;   // Resolved LKI or Battlefield source
+    eventAmount?: number;        // Explicit snapshot of event amount (damage, life, etc)
     controller?: any;            // Resolved controller player object
 }
 

@@ -100,7 +100,11 @@ Object.entries(typeToMask).forEach(([type, bit]) => {
                 return !!state.players[targetObj.id];
             }
             if (isGameObject(targetObj)) {
-                return (targetObj.typeMask! & bit) !== 0;
+                if (targetObj.typeMask !== undefined) {
+                    return (targetObj.typeMask & bit) !== 0;
+                }
+                // Fallback for tests/uninitialized objects
+                return RuleUtils.isType(targetObj, type);
             }
             return false;
         }
@@ -113,7 +117,11 @@ Object.entries(typeToMask).forEach(([type, bit]) => {
                 return !state.players[targetObj.id];
             }
             if (isGameObject(targetObj)) {
-                return ((targetObj as GameObject).typeMask! & bit) === 0;
+                if (targetObj.typeMask !== undefined) {
+                    return (targetObj.typeMask & bit) === 0;
+                }
+                // Fallback for tests/uninitialized objects
+                return !RuleUtils.isType(targetObj, type);
             }
             return false;
         }

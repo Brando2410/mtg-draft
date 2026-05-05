@@ -115,5 +115,5 @@ export function getProcessors(state: GameState): ProcessorRegistry {
  * Returns the attached GameEngine or a safe NullEngineContext fallback.
  */
 export function getEngine(state: GameState): EngineContext {
-    return (state as any).gameEngine || NullEngineContext.getInstance();
+    return (state as { gameEngine?: EngineContext }).gameEngine || NullEngineContext.getInstance();
 }

@@ -116,7 +116,7 @@ export class LayerProcessor {
           const sourceObj =
             state.battlefield.find((o) => o.id === effect.copyFromId) ||
             RuleUtils.findObject(state, effect.copyFromId);
-          if (sourceObj) {
+          if (sourceObj && RuleUtils.isEntity(sourceObj)) {
             currentDefinition = { ...sourceObj.definition };
             supertypes.clear();
             (currentDefinition.supertypes || []).forEach((s) =>

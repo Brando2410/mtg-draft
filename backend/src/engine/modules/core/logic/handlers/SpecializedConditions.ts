@@ -42,7 +42,8 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
     "INCREMENT_CHECK": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            const spent = event?.payload?.object?.paidManaValue ?? 0;
+            const eventObj = event?.payload?.object;
+            const spent = (RuleUtils.isEntity(eventObj) ? eventObj.paidManaValue : 0) ?? 0;
             const obj = state.battlefield.find((o) => o.id === sourceId);
             if (!obj) return false;
             const { layer: LayerProcessor } = getProcessors(state);
@@ -53,7 +54,8 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
     "SPENT_MANA_GT_POWER_OR_TOUGHNESS": {
         matches(state, params, context) {
             const { event, sourceId } = context;
-            const spent = (event?.payload?.object?.paidManaValue) ?? (event as any)?.amount ?? 0;
+            const eventObj = event?.payload?.object;
+            const spent = (RuleUtils.isEntity(eventObj) ? eventObj.paidManaValue : undefined) ?? (event as any)?.amount ?? 0;
             const obj = state.battlefield.find((o) => o.id === sourceId);
             if (!obj) return false;
             const { layer: LayerProcessor } = getProcessors(state);

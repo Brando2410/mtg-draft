@@ -172,7 +172,7 @@ export class TargetingDispatcher {
             const choices = legalPool.map(id => {
                 const obj = RuleUtils.findObject(state, id);
                 return {
-                    label: obj?.definition?.name || id,
+                    label: (RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : id)),
                     value: id,
                     cardData: obj,
                     selectable: true

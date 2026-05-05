@@ -19,7 +19,7 @@ export class SpellValidator {
 
         // 2. Search in Non-hand zones with Permission Check
         const obj = RuleUtils.findObject(state, cardInstanceId);
-        if (obj && obj.controllerId === playerId) {
+        if (RuleUtils.isEntity(obj) && obj.controllerId === playerId) {
             let permissionType: string | undefined;
             if (obj.zone === Zone.Graveyard) permissionType = EffectType.AllowCastFromGraveyard;
             else if (obj.zone === Zone.Exile) permissionType = EffectType.AllowPlayExiled;
@@ -54,8 +54,10 @@ export class SpellValidator {
             } else {
                 EngineLogger.debug(state, LogCategory.ACTION, `[RESOLVE-DEBUG] Found ${obj.definition.name} in ${obj.zone} but no permission type defined.`);
             }
+        } else if (obj && obj.controllerId !== playerId) {
+            EngineLogger.debug(state, LogCategory.ACTION, `[RESOLVE-DEBUG] Object ${cardInstanceId} found but wrong controller (controllerMatch=false).`);
         } else {
-            EngineLogger.debug(state, LogCategory.ACTION, `[RESOLVE-DEBUG] Object ${cardInstanceId} not found or wrong controller (objFound=${!!obj}, controllerMatch=${obj?.controllerId === playerId}).`);
+            EngineLogger.debug(state, LogCategory.ACTION, `[RESOLVE-DEBUG] Object ${cardInstanceId} not found.`);
         }
 
         // 3. Search for Prepared Creatures on Battlefield

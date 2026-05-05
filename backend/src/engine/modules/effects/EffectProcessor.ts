@@ -18,7 +18,6 @@ import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from "../ProcessorRegistry";
 import { EffectRegistry } from "./EffectRegistry";
 
-// Static imports for performance - DEPRECATED: use getProcessors(state)
 
 /**
  * Prunes a context to avoid infinite depth serialization issues in Socket.io
@@ -57,6 +56,9 @@ export interface ResolveEffectsOptions {
   parentContext?: ResolutionContext;
   controllerIdOverride?: PlayerId;
   lookingCards?: GameObject[];
+  lastMilledIds?: string[];
+  lastDiscardedIds?: string[];
+  skipFizzleCheck?: boolean;
 }
 
 export class EffectProcessor {
@@ -74,7 +76,10 @@ export class EffectProcessor {
       stackObject,
       parentContext,
       controllerIdOverride,
-      lookingCards
+      lookingCards,
+      lastMilledIds,
+      lastDiscardedIds,
+      skipFizzleCheck
     } = options;
     const { logger } = getProcessors(state);
     logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Resolving ${effects.length} effect(s) from source ${sourceId}. Targets: ${targets.join(', ')}`);
@@ -83,7 +88,7 @@ export class EffectProcessor {
     // MTG Rule: The check is made once as the spell or ability starts to resolve from the stack.
     // If all its targets are now illegal, the spell or ability is countered.
     // We only run this on the ROOT resolution (parentContext === null) to avoid nested sub-effects triggering it.
-    if (startIndex === 0 && !parentContext && targets.length > 0 && effects.some(e => {
+    if (startIndex === 0 && !parentContext && !skipFizzleCheck && targets.length > 0 && effects.some(e => {
       const tm = (e.targetMapping || "").toString();
       return tm.startsWith('TARGET_') || tm === TargetMapping.TargetOpponent || tm === TargetMapping.TargetPlayer;
     })) {
@@ -114,6 +119,8 @@ export class EffectProcessor {
         parentContext,
         controllerIdOverride,
         lookingCards,
+        lastMilledIds,
+        lastDiscardedIds,
       });
 
       if (state.pendingAction) {
@@ -207,6 +214,8 @@ export class EffectProcessor {
       parentContext,
       controllerIdOverride,
       lookingCards,
+      lastMilledIds,
+      lastDiscardedIds,
     } = options;
     const { logger } = getProcessors(state);
     const targets = options.validTargetIds || [];
@@ -233,7 +242,9 @@ export class EffectProcessor {
       lookingCards: (lookingCards || stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
       nextEffectIndex: stackObject?.data?.nextEffectIndex,
       xValue: stackObject?.xValue || parentContext?.xValue,
-      isCopy: stackObject?.data?.isCopy || parentContext?.isCopy,
+      isCopy: (stackObject?.data as { isCopy?: boolean })?.isCopy || parentContext?.isCopy,
+      lastMilledIds: lastMilledIds || stackObject?.data?.lastMilledIds || parentContext?.lastMilledIds,
+      lastDiscardedIds: lastDiscardedIds || stackObject?.data?.lastDiscardedIds || parentContext?.lastDiscardedIds,
       sourceObject: (sourceObj as GameObject),
       controller: state.players[controllerId]
     };
@@ -270,11 +281,13 @@ export class EffectProcessor {
       ) as string[];
 
       // System effects (Choice, Delayed Triggers, Continuous Effects) should inherit parent targets if no mapping is specified
-      const inheritsTargets = [
-        EffectType.Choice,
-        EffectType.CreateDelayedTrigger,
-        EffectType.ApplyContinuousEffect,
-      ].includes(effect.type as any);
+      const inheritsTargets = (
+        [
+          EffectType.Choice,
+          EffectType.CreateDelayedTrigger,
+          EffectType.ApplyContinuousEffect,
+        ] as string[]
+      ).includes(effect.type);
 
       if (inheritsTargets && (!m || m === "") && ids.length === 0) {
         return ids.length > 0 ? ids : [...targets];
@@ -463,12 +476,12 @@ export class EffectProcessor {
     const { sourceId, controllerId, targets, stackObject } = context;
 
     // We wrap the stackObject/parent state into a clean ConditionContext
-    const event = (context.event || { ...(stackObject || {}), targets }) as any;
+    const event = (context.event || { ...(stackObject || {}), targets });
 
     return CP.matchesCondition(state, condition, {
       sourceId,
       controllerId,
-      event: event as any,
+      event: event as import('@shared/engine_types').GameEvent,
       stackObject,
       targets,
       effectSourceId: sourceId,
@@ -499,7 +512,7 @@ export class EffectProcessor {
     return (
       RuleUtils.findObject(state, id) ||
       (lookingCards as GameObject[])?.find((o) => o.id === id) ||
-      ((state.pendingAction?.data as any)?.lookingCards as GameObject[])?.find(
+      ((state.pendingAction?.data as { lookingCards?: GameObject[] })?.lookingCards)?.find(
         (o) => o.id === id,
       ) ||
       (parentContext?.lookingCards as GameObject[])?.find((o) => o.id === id) ||

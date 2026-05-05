@@ -55,9 +55,9 @@ export class TriggerProcessor {
 
       // --- DEDUPLICATION (Fix for Issue #2: prevents multiple triggers for the same ability instance) ---
       // We use a composite key of sourceId + ability name (or type) to ensure we don't fire the same thing twice for one card.
-      const uniqueTriggersMap = new Map<string, any>();
-      matchingTriggers.forEach((t: any) => {
-        const key = `${t.id || t.sourceId + "_" + ((t as any).abilityIndex || 0)}`;
+      const uniqueTriggersMap = new Map<string, TriggeredAbility>();
+      matchingTriggers.forEach((t: TriggeredAbility) => {
+        const key = `${t.id || t.sourceId + "_" + (t.abilityIndex || 0)}`;
         if (!uniqueTriggersMap.has(key)) {
           uniqueTriggersMap.set(key, t);
         }
@@ -98,7 +98,7 @@ export class TriggerProcessor {
             const conditionMet = typeof r.condition === 'function' ? r.condition(state, tEvent, r) : true;
             if (conditionMet && r.effects?.some((e: any) => e.type === EffectType.AddAdditionalTrigger)) {
               triggerCount++;
-              logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${sourceObj?.definition.name || 'Ability'} triggers an additional time via replacement effect (${eventName}).`);
+              logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${RuleUtils.isEntity(sourceObj) ? sourceObj.definition.name : 'Ability'} triggers an additional time via replacement effect (${eventName}).`);
             }
           }
         }
@@ -119,7 +119,7 @@ export class TriggerProcessor {
           }
 
           triggerCount++;
-          logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${sourceObj?.definition.name || 'Ability'} triggers an additional time via continuous effect.`);
+          logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${RuleUtils.isEntity(sourceObj) ? sourceObj.definition.name : 'Ability'} triggers an additional time via continuous effect.`);
         }
 
         for (let i = 0; i < triggerCount; i++) {
@@ -139,18 +139,18 @@ export class TriggerProcessor {
             this.onEvent(state, {
               type: 'ON_TRIGGER_QUEUED',
               playerId: trigger.controllerId,
-              payload: { sourceId: stackObj.id, targetIds: [stackObj.id], object: stackObj as any, stackSnapshot: { trigger, originalEvent: event } }
+              payload: { sourceId: stackObj.id, targetIds: [stackObj.id], object: stackObj, stackSnapshot: { trigger, originalEvent: event } }
             });
           }
         }
       }
       // 4. Cleanup single-shot delayed triggers (Rule 603.7)
-      matchingTriggers.forEach((t: any) => {
-        if ((t as any).isDelayed) {
+      matchingTriggers.forEach((t: TriggeredAbility) => {
+        if (t.isDelayed) {
           const startsWithUntil =
-            (t as any).duration &&
-            String((t as any).duration).toUpperCase().startsWith("UNTIL");
-          const isOneShot = (t as any).oneShot || (t as any).firesOnce;
+            t.duration &&
+            String(t.duration).toUpperCase().startsWith("UNTIL");
+          const isOneShot = t.oneShot || t.firesOnce;
 
           if (isOneShot || !startsWithUntil) {
             state.ruleRegistry.triggeredAbilities =
@@ -304,9 +304,9 @@ export class TriggerProcessor {
       ? state.emblems?.find((e) => e.id === trigger.sourceId)
       : undefined;
     const sourceName =
-      sourceObj?.definition.name || emblemSource?.name || "Unknown Source";
+      (RuleUtils.isEntity(sourceObj) ? sourceObj.definition.name : null) || emblemSource?.name || "Unknown Source";
     const sourceImage =
-      sourceObj?.definition.image_url || emblemSource?.image_url || trigger.payload?.image_url || (trigger as any).image_url;
+      (RuleUtils.isEntity(sourceObj) ? sourceObj.definition.image_url : null) || emblemSource?.image_url || trigger.image_url;
 
     const stackId = `trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
 
@@ -314,8 +314,8 @@ export class TriggerProcessor {
     const contextPayload: any = {
       sourceId: trigger.sourceId,
       controllerId: trigger.controllerId,
-      targets: trigger.targetIds || (trigger as any).targets || [],
-      effects: trigger.effects || (trigger as any).effects || [],
+      targets: trigger.targetIds || [],
+      effects: trigger.effects || [],
       event: event,
       eventAmount: event.payload?.amount,
       targetDefinitions: trigger.targetDefinitions,
@@ -323,8 +323,8 @@ export class TriggerProcessor {
       startIndex: 0
     };
 
-    const effects = trigger.effects || (trigger as any).effects || [];
-    const exileOnResolution = (trigger as any).exileOnResolution || sourceObj?.definition?.exileOnResolution || effects.some((e: EffectDefinition) =>
+    const effects = trigger.effects || [];
+    const exileOnResolution = trigger.exileOnResolution || (RuleUtils.isEntity(sourceObj) ? sourceObj.definition.exileOnResolution : false) || effects.some((e: EffectDefinition) =>
       (e.type === EffectType.Exile || e.type === EffectType.ExileAllCards || e.type === EffectType.MoveToZone) &&
       (e.targetMapping === TargetMapping.Self || e.targetId === trigger.sourceId) &&
       (!e.zone || e.zone === Zone.Exile)
@@ -338,14 +338,14 @@ export class TriggerProcessor {
       type: AbilityType.Triggered,
       counters: {},
       name: `${sourceName}'s Trigger`,
-      targets: trigger.targetIds || (trigger as any).targets || event.payload?.targetIds || [],
+      targets: trigger.targetIds || event.payload?.targetIds || [],
       effects: effects,
-      definition: sourceObj?.definition || (trigger.payload as any)?.definition || (trigger as any).definition || { name: sourceName, types: [], colors: [], oracleText: "" },
+      definition: (RuleUtils.isEntity(sourceObj) ? sourceObj.definition : (trigger.payload?.definition || { name: sourceName, types: [], colors: [], oracleText: "" })),
       image_url: sourceImage,
-      abilityIndex: (trigger as any).abilityIndex,
-      condition: (trigger as any).condition,
-      sourceObject: sourceObj || emblemSource as any,
-      targetDefinitions: trigger.targetDefinitions || (trigger as any).targetDefinitions || [],
+      abilityIndex: trigger.abilityIndex,
+      condition: trigger.condition,
+      sourceObject: sourceObj || (emblemSource as any),
+      targetDefinitions: trigger.targetDefinitions || [],
       event: event,
       exileOnResolution: exileOnResolution,
       data: contextPayload
@@ -389,12 +389,12 @@ export class TriggerProcessor {
   ) {
     const { logger, targeting: TargetingProcessor } = getProcessors(state);
     const legalTargetIds = [
-      ...state.battlefield.map((o: any) => o.id),
-      ...(Object.values(state.players) as any[]).flatMap((p) =>
-        p.graveyard.map((c: any) => c.id),
+      ...state.battlefield.map(o => o.id),
+      ...Object.values(state.players).flatMap((p) =>
+        p.graveyard.map(c => c.id),
       ),
-      ...state.exile.map((o: any) => o.id),
-      ...state.stack.map((o: any) => o.id),
+      ...state.exile.map(o => o.id),
+      ...state.stack.map(o => o.id),
       ...Object.keys(state.players),
     ].filter((tid) =>
       TargetingProcessor.isLegalTarget(state, {
@@ -473,7 +473,7 @@ export class TriggerProcessor {
     );
     if (activeZone === Zone.Hand) return isInHand;
 
-    const isInStack = state.stack.some((o) => o.id === sourceId || (o as any).sourceId === sourceId);
+    const isInStack = state.stack.some((o) => o.id === sourceId || o.sourceId === sourceId);
     if (activeZone === Zone.Stack) return isInStack;
 
     const isInExile = state.exile.some((o) => o.id === sourceId);
@@ -538,12 +538,12 @@ export class TriggerProcessor {
 
       // Gather Continuous Effect (Granted) Triggers
       state.ruleRegistry.continuousEffects.forEach((effect) => {
-        if (effect.type === EffectType.AddTriggeredAbility && (effect as any).value) {
+        if (effect.type === EffectType.AddTriggeredAbility && effect.value) {
           const targetIds = effect.targetIds || [];
           targetIds.forEach((tid) => {
             const obj = RuleUtils.findObject(state, tid);
             allTriggers.push({
-              ...(effect as any).value,
+              ...effect.value,
               id: `granted_trigger_${effect.id}_${tid}`,
               sourceId: tid,
               controllerId: obj ? RuleUtils.getController(obj) : effect.controllerId,
@@ -894,6 +894,7 @@ export class TriggerProcessor {
     const { logger } = getProcessors(state);
     const card = event.payload?.object;
     if (event.type === TriggerEvent.CastSpell && card) {
+      if (!RuleUtils.isGameObject(card)) return;
       const stats = LayerProcessor.getEffectiveStats(card, state);
       const { keywords } = stats;
 
@@ -991,12 +992,13 @@ export class TriggerProcessor {
       return;
     }
 
+    if (!RuleUtils.isGameObject(card)) return;
     const stats = LayerProcessor.getEffectiveStats(card, state);
     const { keywords } = stats;
     const hasParadigm = keywords.some((k: string) => k.toLowerCase() === "paradigm");
 
     if (event.type === TriggerEvent.ResolveSpell || event.type === TriggerEvent.CastSpell) {
-      logger.debug(state, LogCategory.TRIGGER, `[PARADIGM-DEBUG] Checking ${card.definition.name} for Paradigm. hasParadigm=${hasParadigm}`);
+      logger.debug(state, LogCategory.TRIGGER, `[PARADIGM-DEBUG] Checking ${RuleUtils.isEntity(card) ? card.definition.name : 'Unknown'} for Paradigm. hasParadigm=${hasParadigm}`);
     }
 
     if (!hasParadigm) return;
@@ -1006,7 +1008,7 @@ export class TriggerProcessor {
       const stackObj = state.stack.find((s) => s.sourceId === card.id);
       if (stackObj) {
         stackObj.exileOnResolution = true;
-        logger.info(state, LogCategory.TRIGGER, `[PARADIGM] Marked ${card.definition.name} to exile on resolution.`);
+        logger.info(state, LogCategory.TRIGGER, `[PARADIGM] Marked ${RuleUtils.isEntity(card) ? card.definition.name : 'Unknown'} to exile on resolution.`);
       }
     } else if (event.type === TriggerEvent.ResolveSpell) {
       // 2. Register recurring trigger if it's the first time
@@ -1074,7 +1076,7 @@ export class TriggerProcessor {
         targets.length > 0 &&
         targets.some((tid: string) => {
           const obj = RuleUtils.findObject(state, tid);
-          return obj && obj.zone === Zone.Battlefield && RuleUtils.isCreature(obj);
+          return obj && RuleUtils.isEntity(obj) && obj.zone === Zone.Battlefield && RuleUtils.isCreature(obj);
         })
       ) {
         state.battlefield.forEach((obj) => {

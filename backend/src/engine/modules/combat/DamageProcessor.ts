@@ -68,7 +68,7 @@ export class DamageProcessor {
 
     // 1. Resolve Damage to Permanents (Battlefield)
     const battlefieldObj = RuleUtils.findObject(state, targetId);
-    if (battlefieldObj && battlefieldObj.zone === Zone.Battlefield) {
+    if (RuleUtils.isEntity(battlefieldObj) && battlefieldObj.zone === Zone.Battlefield) {
       this.applyDamageToPermanent(
         state,
         sourceObj,
@@ -141,8 +141,8 @@ export class DamageProcessor {
   ) {
     if (RuleUtils.isPlaneswalker(target)) {
       // Rule 120.3c: Damage to planeswalker removes loyalty
-      const currentLoyalty = target.counters["loyalty"] || 0;
-      target.counters["loyalty"] = Math.max(0, currentLoyalty - amount);
+      const currentLoyalty = (target.counters as any)["loyalty"] || 0;
+      (target.counters as any)["loyalty"] = Math.max(0, currentLoyalty - amount);
       EngineLogger.info(state, LogCategory.ACTION, `[DAMAGE] ${target.definition.name} loses ${amount} loyalty.`);
     } else {
       // Rule 120.3: Damage to creature marks damage
@@ -253,7 +253,7 @@ export class DamageProcessor {
 
     // We only care if target is a creature for Dog prevention
     const targetObj = RuleUtils.findObject(state, targetId);
-    if (!targetObj || targetObj.zone !== Zone.Battlefield) return false;
+    if (!RuleUtils.isEntity(targetObj) || targetObj.zone !== Zone.Battlefield) return false;
 
     const { targeting: TP } = getProcessors(state);
 
@@ -285,7 +285,7 @@ export class DamageProcessor {
     targetId: string,
   ): boolean {
     const targetObj = RuleUtils.findObject(state, targetId);
-    if (!targetObj || targetObj.zone !== Zone.Battlefield) return false;
+    if (!RuleUtils.isEntity(targetObj) || targetObj.zone !== Zone.Battlefield) return false;
 
     const source = RuleUtils.findObject(state, sourceId);
     if (!source) return false;

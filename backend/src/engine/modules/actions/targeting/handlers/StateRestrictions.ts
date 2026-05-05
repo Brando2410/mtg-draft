@@ -18,7 +18,7 @@ const YOUOWN: IRestrictionHandler = {
     matches(state, targetObj, r, context) {
         const controllerId = context.controllerId;
         if (!controllerId || !targetObj) return false;
-        const ownerId = (targetObj as any).ownerId || RuleUtils.getController(targetObj);
+        const ownerId = targetObj.ownerId || RuleUtils.getController(targetObj);
         return String(ownerId) === String(controllerId);
     }
 };
@@ -27,7 +27,7 @@ const OPPONENTOWNS: IRestrictionHandler = {
     matches(state, targetObj, r, context) {
         const controllerId = context.controllerId;
         if (!controllerId || !targetObj) return true;
-        const ownerId = (targetObj as any).ownerId || RuleUtils.getController(targetObj);
+        const ownerId = targetObj.ownerId || RuleUtils.getController(targetObj);
         return String(ownerId) !== String(controllerId);
     }
 };

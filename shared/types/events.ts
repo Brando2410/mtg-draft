@@ -4,6 +4,7 @@
 import type { GameObjectId, PlayerId } from "./core";
 import { Zone } from "./core";
 import type { GameObject } from "./state";
+import type { Targetable } from "./targeting";
 
 export const TriggerEvent = {
   ActivateLoyalty: "ON_ACTIVATE_LOYALTY",
@@ -72,11 +73,11 @@ export type TriggerEvent = (typeof TriggerEvent)[keyof typeof TriggerEvent];
  * Eliminates ambiguous 'data', 'object', 'gameObject' properties.
  */
 export interface EventPayload {
-  object?: GameObject; // Primary object involved (e.g. thing entering, dying, tapped)
+  object?: Targetable; // Primary object involved (e.g. thing entering, dying, tapped)
   targetIds?: string[]; // Standardized list of affected IDs
   sourceId?: GameObjectId; // Standardized source ID
-  sourceObject?: GameObject; // Full object reference for the source
-  targetObject?: GameObject; // Full object reference for the target
+  sourceObject?: Targetable; // Full object reference for the source
+  targetObject?: Targetable; // Full object reference for the target
   amount?: number; // Numeric data (damage, life gain, counters)
   counterType?: string; // Type of counter added/removed
   fromZone?: Zone; // Previous zone for move events
@@ -99,6 +100,8 @@ export interface EventPayload {
 
   // Effect Metadata
   sourceZone?: Zone;
+  xValue?: number;
+  convergeAmount?: number;
 
 }
 

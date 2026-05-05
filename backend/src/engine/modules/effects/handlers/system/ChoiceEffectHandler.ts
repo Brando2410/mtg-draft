@@ -56,7 +56,7 @@ export class ChoiceEffectHandler {
     const preSelectedIdx =
       stackObject?.data?.preSelectedChoice !== undefined
         ? stackObject.data.preSelectedChoice
-        : (stackObject as any).preSelectedChoice;
+        : (stackObject as any)?.preSelectedChoice;
 
     if (preSelectedIdx !== undefined && dynamicChoices) {
       const rawIndices = String(preSelectedIdx)
@@ -335,7 +335,7 @@ export class ChoiceEffectHandler {
         });
       } else if (state.pendingAction && nextTargets.length > 0) {
         if (!state.pendingAction.data) {
-          (state.pendingAction as any).data = { label: "Resolution" };
+          state.pendingAction.data = { label: "Resolution" };
         }
         const data = state.pendingAction.data!;
         data.nextPlayerIds = nextTargets;

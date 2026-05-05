@@ -50,7 +50,7 @@ const StaticNumericRestrictions: Record<string, IRestrictionHandler> = {
             }
         } else if (valPart === 'converge_amount') {
             const source = state.battlefield.find(o => o.id === sourceId) || state.exile.find(o => o.id === sourceId);
-            val = (source as any)?.convergeAmount || 0;
+            val = source?.convergeAmount || 0;
         }
 
         return evaluateNumeric(state, obj, field as any, op, val);

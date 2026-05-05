@@ -1,27 +1,25 @@
-import { AbilityType, BaseEntity, EffectDefinition, GameObject, GameState, Restriction, StackObject, Targetable, TargetingContext, TargetDefinition, TargetRestriction, ObjectRestriction, ManaValueRestriction, LogicRestriction, TargetType, Zone } from '@shared/engine_types';
-import { LayerProcessor } from '../../state/LayerProcessor';
+import { AbilityType, BaseEntity, EffectDefinition, GameObject, GameState, Restriction, StackObject, Targetable, TargetingContext, TargetDefinition, TargetRestriction, ObjectRestriction, ManaValueRestriction, LogicRestriction, TargetType, Zone, PlayerId } from '@shared/engine_types';
 import { TargetMapper } from './TargetMapper';
 import { getProcessors } from '../../ProcessorRegistry';
-import { LogCategory } from 'src/engine/utils/EngineLogger';
+import { LogCategory } from '../../../utils/EngineLogger';
 import { RuleUtils } from '../../../utils/RuleUtils';
 import { RestrictionRegistry, isNumericRestriction } from './RestrictionRegistry';
 
 export class TargetValidator {
+
     public static isLegalTarget(state: GameState, context: TargetingContext, targetId: string): boolean {
-        const { controllerId, targetDefinitions, targetIndex, sourceId } = context;
-        const targetDefForIndex = TargetMapper.getDefinitionForIndex(targetDefinitions || [], targetIndex || 0);
+        const { targetDefinitions, targetIndex } = context;
+        const targetDefForIndex = TargetMapper.getDefinitionForIndex(targetDefinitions || [], targetIndex || 0, context.xValue);
 
-        // 1. PLAYER CHECK
-        if (state.players[targetId]) {
-            return this.isPlayerTargetLegal(state, context, targetId, targetDefForIndex);
-        }
-
-        // 2. OBJECT CHECK
+        // 1. UNIFIED OBJECT LOOKUP
         const targetObj = RuleUtils.findObject(state, targetId);
-        if (!targetObj || targetObj.isPhasedOut) return false;
+        if (!targetObj) return false;
+        
+        // Phased out check (Rule 702.26)
+        if (RuleUtils.isEntity(targetObj) && targetObj.isPhasedOut) return false;
 
         // 3. ZONE CHECK
-        if ('ownerId' in targetObj) {
+        if (RuleUtils.isEntity(targetObj)) {
             const expectedZone = this.getExpectedZone(targetObj as GameObject, targetDefForIndex);
             if (expectedZone !== 'Any' && targetObj.zone !== expectedZone) return false;
         }
@@ -31,6 +29,11 @@ export class TargetValidator {
         // 4. PROTECTION / HEXPROOF / SHROUD (Rule 702)
         if (!this.checkKeywords(state, context, targetObj as GameObject)) return false;
 
+        // Handle Player objects returned by findObject
+        if (state.players[targetId as PlayerId]) {
+            return this.isPlayerTargetLegal(state, context, targetId, targetDefForIndex);
+        }
+        
         // 5. RESTRICTION REGISTRY CHECK
         const restrictions = this.normalizeRestrictions(targetDefForIndex);
         return !!this.matchesRestrictions(state, targetObj, restrictions, context);
@@ -44,7 +47,8 @@ export class TargetValidator {
         if (targets.length === 0) return false;
 
         const { sourceId, controllerId, stackObject } = context;
-        const targetDefinitions = stackObject?.targetDefinitions || effects.find(e => (e as any).targetDefinitions)?.targetDefinitions || [];
+        const targetDefinitions = stackObject?.targetDefinitions ||
+            effects.find(e => (e as { targetDefinitions?: TargetDefinition[] }).targetDefinitions)?.targetDefinitions || [];
 
         // If at least one target is legal for the definition associated with its index, the spell does NOT fizzle.
         const hasAnyLegalTarget = targets.some((tid, index) => {
@@ -111,6 +115,7 @@ export class TargetValidator {
     }
 
     private static checkKeywords(state: GameState, context: TargetingContext, targetObj: GameObject): boolean {
+        const { layer: LayerProcessor } = getProcessors(state);
         const stats = LayerProcessor.getEffectiveStats(targetObj, state);
         const keywords = stats.keywords;
         if (RuleUtils.hasShroud(targetObj)) return false;
@@ -153,24 +158,35 @@ export class TargetValidator {
         return restrictions;
     }
 
-    public static matchesRestrictions(state: GameState, targetObj: Targetable, restrictions: (TargetRestriction | string)[], context: TargetingContext): boolean {
-        if (!targetObj) return false;
-        const definition = (targetObj as BaseEntity).definition;
+    public static matchesRestrictions(state: GameState, target: Targetable | string, restrictions: (TargetRestriction | string)[], context: TargetingContext): boolean {
+        if (!target) return false;
 
-        // Player / StackObject Fast Paths
+        // 1. Unify the input into ID and Object (if available)
+        const targetId = typeof target === 'string' ? target : target.id;
+        const targetObj = typeof target === 'string' ? RuleUtils.findObject(state, target) : target;
+
+        // 2. Player Fast Path (Handles both PlayerState object or PlayerId string)
+        const isPlayer = state.players[targetId as PlayerId] !== undefined;
+        if (isPlayer) {
+            return !!(restrictions.includes(Restriction.Player) || 
+                     restrictions.includes(Restriction.AnyTarget) || 
+                     restrictions.includes(Restriction.Opponent) ||
+                     restrictions.includes(Restriction.You));
+        }
+
+        // 3. Object-based validation (Cards, Spells, Abilities)
+        if (!targetObj) return false;
+
+        const definition = (targetObj as BaseEntity).definition;
         if (!definition) {
-            if (state.players[(targetObj as any).id || targetObj]) {
-                return !!(restrictions.includes(Restriction.Player) || restrictions.includes(Restriction.AnyTarget));
-            }
+            // StackObjects that might lack a definition but have a type (Abilities)
             const targetAsStack = targetObj as StackObject;
             if (targetAsStack.type && (targetAsStack.type.includes('Ability') || targetAsStack.type === AbilityType.Spell)) {
                 return !!restrictions.some(r => {
-                    const resObj = r as any;
+                    const resObj = r as { value?: string };
                     const rv = (typeof r === 'string' ? r : (resObj.value || '')).toLowerCase();
-                    if (targetAsStack) {
-                        return (rv === Restriction.Ability && targetAsStack.type.includes('Ability')) || (rv === Restriction.Spell && targetAsStack.type === AbilityType.Spell);
-                    }
-                    return false;
+                    return (rv === Restriction.Ability && targetAsStack.type.includes('Ability')) || 
+                           (rv === Restriction.Spell && targetAsStack.type === AbilityType.Spell);
                 });
             }
             return false;
@@ -202,9 +218,9 @@ export class TargetValidator {
                 continue; // Handled in alternatives pass
             }
 
-            // 4. Name / Subtype Fallback
+            // 4. Name / Quality Fallback
             const targetName = (definition.name || (targetObj as any).name || "").toLowerCase();
-            if (targetName !== lr && !RuleUtils.hasSubtype(targetObj, lr) && !RuleUtils.isType(targetObj, lr)) return false;
+            if (targetName !== lr && !RuleUtils.matchesQuality(targetObj, lr, state)) return false;
         }
 
         // Alternatives pass (Logic OR / Complex types)
@@ -248,7 +264,7 @@ export class TargetValidator {
             const mvRes = resObj as ManaValueRestriction;
             const definition = (targetObj as GameObject).definition;
             const { mana: MP } = getProcessors(state);
-            const mv = MP.getManaValue(definition?.manaCost || '', (targetObj as any).xValue || 0);
+            const mv = MP.getManaValue(definition?.manaCost || '', (targetObj as { xValue?: number }).xValue || 0);
             let val = mvRes.value === 'X' ? (context.stackObject?.xValue || 0) : parseInt(String(mvRes.value));
             const comp = mvRes.comparison || 'Equal';
 
@@ -265,7 +281,7 @@ export class TargetValidator {
     public static sourceHasQualities(source: Targetable, qualities: string[], state?: GameState): boolean {
         const s = source as BaseEntity;
         const definition = (s as GameObject).definition || s;
-        const sourceColors = this.getColors(s, state);
+        const sourceColors = this.getColors(s as any, state);
         const sourceTypes = (definition.types || []).map((t: string) => t.toLowerCase());
         const sourceSubtypes = (definition.subtypes || []).map((t: string) => t.toLowerCase());
 
@@ -274,14 +290,14 @@ export class TargetValidator {
             if (lowerQ === 'and' || lowerQ === 'from') return false;
             if (lowerQ === 'multicolored') return sourceColors.length > 1;
             if (lowerQ === 'colorless') return sourceColors.length === 0;
-            return RuleUtils.isType(s, lowerQ) || RuleUtils.hasSubtype(s, lowerQ) || sourceColors.includes(lowerQ);
+            return RuleUtils.isType(s as any, lowerQ) || RuleUtils.hasSubtype(s as any, lowerQ) || sourceColors.includes(lowerQ);
         });
     }
 
-    public static getColors(obj: any, state?: GameState): string[] {
-        const stats = state ? LayerProcessor.getEffectiveStats(obj, state) : null;
-        const colors = stats?.colors || obj.definition?.colors || [];
-        const map: any = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
+    public static getColors(obj: Targetable, state?: GameState): string[] {
+        const stats = state ? getProcessors(state).layer.getEffectiveStats(obj as GameObject, state) : null;
+        const colors = stats?.colors || (obj as GameObject).definition?.colors || [];
+        const map: Record<string, string> = { 'W': 'white', 'U': 'blue', 'B': 'black', 'R': 'red', 'G': 'green' };
         return colors.map((c: string) => map[c.toUpperCase()] || c.toLowerCase());
     }
 

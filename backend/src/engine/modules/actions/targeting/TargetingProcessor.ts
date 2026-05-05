@@ -15,7 +15,8 @@ import {
     ActivatedAbility,
     TriggeredAbility,
     ReplacementEffect,
-    PreventionEffect
+    PreventionEffect,
+    AbilityType
 } from '@shared/engine_types';
 import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
@@ -39,9 +40,9 @@ export class TargetingProcessor {
     public static generateTargetPrompt(targetDefinitions: TargetDefinition[], selectedCount: number, xValue: number = 0, isSpellCasting: boolean = false) { return TargetMapper.generateTargetPrompt(targetDefinitions, selectedCount, xValue, isSpellCasting); }
     public static isLegalTarget(state: GameState, context: TargetingContext, targetId: string): boolean { return TargetValidator.isLegalTarget(state, context, targetId); }
     public static hasLegalTargets(state: GameState, sourceId: string, targetDefinitions: TargetDefinition[] | undefined, controllerId: string, xValue: number = 0): boolean { return TargetValidator.hasLegalTargets(state, sourceId, targetDefinitions || [], controllerId, xValue); }
-    public static matchesRestrictions(state: GameState, targetObj: Targetable, restrictions: (TargetRestriction | string)[], context: TargetingContext): boolean { return TargetValidator.matchesRestrictions(state, targetObj, restrictions, context); }
-    public static sourceHasQualities(source: GameObject, qualities: string[], state?: GameState): boolean { return TargetValidator.sourceHasQualities(source, qualities, state); }
-    public static getColors(obj: GameObject, state?: GameState): string[] { return TargetValidator.getColors(obj, state); }
+    public static matchesRestrictions(state: GameState, target: Targetable | string, restrictions: (TargetRestriction | string)[], context: TargetingContext): boolean { return TargetValidator.matchesRestrictions(state, target, restrictions, context); }
+    public static sourceHasQualities(source: Targetable, qualities: string[], state?: GameState): boolean { return TargetValidator.sourceHasQualities(source, qualities, state); }
+    public static getColors(obj: Targetable, state?: GameState): string[] { return TargetValidator.getColors(obj, state); }
     public static getLegalTargetPool(state: GameState, sourceId: string, targetDefinitions: TargetDefinition[], controllerId: string, targetIndex: number = 0, xValue: number = 0): string[] { return TargetValidator.getLegalTargetPool(state, sourceId, targetDefinitions, controllerId, targetIndex, xValue); }
     public static resolveTargetMapping(state: GameState, mapping: string, context: ResolutionContext, effect?: Partial<EffectDefinition> | ActivatedAbility | TriggeredAbility | ReplacementEffect | PreventionEffect): string[] { return TargetMapper.resolveTargetMapping(state, mapping, context, effect); }
     public static getDefinitionForIndex(targetDefinitions: TargetDefinition[], targetIndex: number, xValue: number = 0): TargetDefinition | null { return TargetMapper.getDefinitionForIndex(targetDefinitions, targetIndex, xValue); }
@@ -113,10 +114,10 @@ export class TargetingProcessor {
                 }
                 const pool = [
                     ...Object.keys(state.players),
-                    ...state.battlefield.map((o: any) => o.id),
-                    ...state.exile.map((o: any) => o.id),
-                    ...state.stack.map((o: any) => o.id),
-                    ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
+                    ...state.battlefield.map(o => o.id),
+                    ...state.exile.map(o => o.id),
+                    ...state.stack.map(o => o.id),
+                    ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
                 ];
                 actionData.targets = pool.filter(tid => this.isLegalTarget(state, {
                     sourceId: action.sourceId || "",
@@ -147,8 +148,8 @@ export class TargetingProcessor {
                 } else if (sourceId) {
                     // Fallback for spells that haven't entered the stack yet (targeting phase)
                     const card = RuleUtils.findObject(state, sourceId);
-                    if (card && card.zone === Zone.Hand) {
-                        card.xValue = undefined; // Reset state
+                    if (card && 'zone' in card && card.zone === Zone.Hand) {
+                        if ('xValue' in card) card.xValue = undefined; // Reset state
                     }
                 }
                 state.stack = state.stack.filter(s => s.id !== stackId);
@@ -162,8 +163,8 @@ export class TargetingProcessor {
                         sourceOnField.abilitiesUsedThisTurn--;
                         const logic = oracle.getCard(sourceOnField.definition.name);
                         const ability = logic?.abilities?.[abilityIndex];
-                        if (ability && typeof ability !== 'string' && ability.costs) {
-                            const lCost = (ability.costs as any[]).find((c: any) => c.type === CostType.Loyalty)?.value;
+                        if (ability && typeof ability !== 'string' && ability.type === AbilityType.Activated) {
+                            const lCost = ability.costs?.find(c => c.type === CostType.Loyalty)?.value;
                             if (lCost !== undefined) {
                                 const val = parseInt(String(lCost));
                                 sourceOnField.counters.loyalty = (sourceOnField.counters.loyalty || 0) - val;
@@ -244,10 +245,10 @@ export class TargetingProcessor {
                     // Refresh targets for the new index
                     const pool = [
                         ...Object.keys(state.players),
-                        ...state.battlefield.map((o: any) => o.id),
-                        ...state.exile.map((o: any) => o.id),
-                        ...state.stack.map((o: any) => o.id),
-                        ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
+                        ...state.battlefield.map(o => o.id),
+                        ...state.exile.map(o => o.id),
+                        ...state.stack.map(o => o.id),
+                        ...Object.values(state.players).flatMap(p => p.graveyard.map(c => c.id))
                     ];
                     actionData.targets = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
                         sourceId: action.sourceId || "",
@@ -367,10 +368,11 @@ export class TargetingProcessor {
 
                 const choices = legalTargets.map(tid => {
                     const obj = RuleUtils.findObject(state, tid);
+                    const label = RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : tid);
                     return {
-                        label: obj?.definition?.name || tid,
+                        label,
                         value: tid,
-                        cardData: obj,
+                        cardData: (obj && 'zone' in obj) ? (obj as GameObject) : undefined,
                         selectable: true
                     };
                 });
@@ -487,7 +489,7 @@ export class TargetingProcessor {
             logger.info(state, LogCategory.STACK, `[STACK] + ${engine.getPlayerName(stackObj.controllerId)} cast/activated ${stackObj.sourceObject?.definition.name || stackObj.type}`);
             const targetNames = resolvedTargets.map(tid => {
                 const obj = RuleUtils.findObject(state, tid);
-                return obj?.definition?.name || (state.players[tid as any] ? state.players[tid as any].name : tid);
+                return RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : tid);
             });
             logger.info(state, LogCategory.STACK, `[STACK] Target(s): ${targetNames.join(', ')}`);
             logger.info(state, LogCategory.STACK, `--------------------------------------------------`);

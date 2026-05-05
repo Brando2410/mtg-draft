@@ -503,9 +503,9 @@ export class ActionProcessor {
     }
 
     // Rule 400.7: Objects leaving the battlefield/stack lose their identity
-    if (to !== Zone.Battlefield && to !== Zone.Stack) {
-      delete (card as any).isFreeCast;
-      delete (card as any).isSpellCasting;
+    if (card.zone === Zone.Battlefield) {
+      delete card.isFreeCast;
+      delete card.isSpellCasting;
     }
 
     // 3. Wipe calculated stats (they will be recalculated for the new zone)
@@ -573,9 +573,7 @@ export class ActionProcessor {
 
     // Rule 306.5b: Planeswalkers enter with loyalty counters
     if (RuleUtils.isPlaneswalker(card)) {
-      const def = card.definition;
-      let loyaltyValue = def.loyalty;
-
+      let loyaltyValue = card.definition.loyalty;
       // Fallback to Oracle if missing
       if (loyaltyValue === undefined || loyaltyValue === null) {
         const logic = oracle.getCard(card.definition.name);
@@ -584,7 +582,7 @@ export class ActionProcessor {
         }
       }
 
-      if (!loyaltyValue && (card.definition.types as any).includes('Planeswalker')) {
+      if (!loyaltyValue && card.definition.types.includes('Planeswalker')) {
         loyaltyValue = 0;
       }
       const startingLoyalty = parseInt(String(loyaltyValue || "0"), 10);
@@ -686,18 +684,24 @@ export class ActionProcessor {
   }
 
   public static gainLife(state: GameState, playerId: PlayerId, amount: number) {
-    LifeDamageHandler.handleGainLife(
+    const { effect: EffectProcessor } = getProcessors(state);
+    EffectProcessor.executeEffect({
       state,
-      { type: EffectType.GainLife, amount } as any,
-      { targets: [playerId], sourceId: "system", controllerId: playerId, effects: [] } as any
-    );
+      effect: { type: EffectType.GainLife, amount },
+      sourceId: "system",
+      validTargetIds: [playerId],
+      controllerIdOverride: playerId,
+    });
   }
 
   public static loseLife(state: GameState, playerId: PlayerId, amount: number) {
-    LifeDamageHandler.handleLoseLife(
+    const { effect: EffectProcessor } = getProcessors(state);
+    EffectProcessor.executeEffect({
       state,
-      { type: EffectType.LoseLife, amount } as any,
-      { targets: [playerId], sourceId: "system", controllerId: playerId, effects: [] } as any
-    );
+      effect: { type: EffectType.LoseLife, amount },
+      sourceId: "system",
+      validTargetIds: [playerId],
+      controllerIdOverride: playerId,
+    });
   }
 }

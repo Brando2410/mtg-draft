@@ -1,4 +1,4 @@
-import { BaseEntity, DynamicAmount, EnginePrefix, GameObject, GameState, GameEvent, ResolutionContext, Zone, PlayerId, StackObject } from "@shared/engine_types";
+import { BaseEntity, DynamicAmount, EnginePrefix, GameObject, GameState, GameEvent, ResolutionContext, Zone, PlayerId, StackObject, Targetable, PlayerState } from "@shared/engine_types";
 import { getProcessors } from "../modules/ProcessorRegistry";
 import { LogCategory } from "./EngineLogger";
 /**
@@ -6,6 +6,34 @@ import { LogCategory } from "./EngineLogger";
  * Ensures consistent behavior for type-line parsing and keyword detection.
  */
 export class RuleUtils {
+    /**
+     * Type guard to check if a Targetable is a physical entity (GameObject or StackObject).
+     * These objects have a definition and can have xValue, counters, etc.
+     */
+    public static isEntity(obj: Targetable | undefined): obj is GameObject | StackObject {
+        return !!obj && 'definition' in obj;
+    }
+
+    /**
+     * Type guard to check if a Targetable is a Player.
+     */
+    public static isPlayer(obj: Targetable | undefined): obj is PlayerState {
+        return !!obj && 'hand' in obj;
+    }
+
+    /**
+     * Type guard to check if a Targetable is a GameObject specifically.
+     */
+    public static isGameObject(obj: Targetable | undefined): obj is GameObject {
+        return !!obj && 'definition' in obj && !('sourceId' in obj);
+    }
+
+    /**
+     * Type guard to check if a Targetable is a StackObject specifically.
+     */
+    public static isStackObject(obj: Targetable | undefined): obj is StackObject {
+        return !!obj && 'sourceId' in obj && 'type' in obj;
+    }
     /**
      * CR 108.4: Determines the controller of an object.
      * Objects on the Battlefield or Stack have a controller.
@@ -54,7 +82,8 @@ export class RuleUtils {
      */
     private static getDef(obj: any): any {
         if (!obj) return null;
-        return (obj as GameObject).definition || obj;
+        // Players don't have definitions, but cards and stack objects do
+        return (obj as GameObject).definition || (obj as StackObject).definition || null;
     }
 
     /**
@@ -106,13 +135,6 @@ export class RuleUtils {
      */
     public static isPlaneswalker(obj: any): boolean {
         return this.isType(obj, 'planeswalker');
-    }
-
-    /**
-     * Type Guard for StackObjects.
-     */
-    public static isStackObject(obj: any): obj is StackObject {
-        return obj && typeof obj === 'object' && 'sourceId' in obj && 'targets' in obj;
     }
 
     /**
@@ -249,11 +271,10 @@ export class RuleUtils {
         switch (amount) {
             case DynamicAmount.X:
                 return stackObject?.xValue ??
-                    (stackObject?.data as any)?.xValue ??
-                    (context.event as any)?.payload?.xValue ??
-                    (context.event as any)?.xValue ??
-                    (stackObject?.data as any)?.event?.payload?.object?.xValue ??
-                    (parentContext?.event as any)?.payload?.object?.xValue ??
+                    stackObject?.data?.xValue ??
+                    context.event?.payload?.xValue ??
+                    stackObject?.data?.event?.payload?.xValue ??
+                    parentContext?.event?.payload?.xValue ??
                     0;
             case DynamicAmount.XPlus1: return (this.resolveAmount(state, DynamicAmount.X, context) || 0) + 1;
             case DynamicAmount.XPowerOf2:
@@ -300,14 +321,16 @@ export class RuleUtils {
                 return this.getInstantSorceryInGraveyardCount(state, controllerId);
 
             case DynamicAmount.EventAmount:
-                return (stackObject?.data as any)?.eventAmount ??
-                    (stackObject?.data as any)?.event?.payload?.amount ??
-                    (stackObject?.data as any)?.event?.payload?.spent ??
-                    state.turnState.lastDamageAmount ?? 0;
+                return context.eventAmount ??
+                    stackObject?.data?.eventAmount ??
+                    stackObject?.data?.event?.payload?.amount ??
+                    stackObject?.data?.event?.payload?.spent ??
+                    context.event?.payload?.amount ??
+                    state.turnState.lastDamageAmount ??
+                    0;
 
             case DynamicAmount.ConvergeAmount:
-                return stackObject?.convergeAmount ?? 
-                    (stackObject?.sourceObject as any)?.convergeAmount ?? 0;
+                return stackObject?.sourceObject?.convergeAmount ?? 0;
 
             default:
                 if (typeof amount === 'string') {
@@ -343,15 +366,20 @@ export class RuleUtils {
      * Standardized object lookup across all zones.
      * Searches Battlefield, then Stack, then Hands, Graveyards, and Exile.
      */
-    public static findObject(state: GameState, id: string): GameObject | StackObject | undefined {
+    public static findObject(state: GameState, id: string): Targetable | undefined {
         if (!id) return undefined;
 
         // 1. O(1) Cache Lookup (Maintained by ActionProcessor)
         if (state._entityMap && state._entityMap[id]) {
-            return state._entityMap[id] as GameObject | StackObject;
+            return state._entityMap[id] as Targetable;
         }
 
-        // 2. Fallback Scan (if cache is missing or desynced)
+        // 2. Check Players (Rule 102.1)
+        if (state.players[id as PlayerId]) {
+            return state.players[id as PlayerId];
+        }
+
+        // 3. Fallback Scan (if cache is missing or desynced)
         // Check Battlefield
         const bf = state.battlefield.find(o => o.id === id);
         if (bf) return bf;
@@ -406,7 +434,14 @@ export class RuleUtils {
     public static getEventObject(event: GameEvent | undefined, state: GameState): GameObject | StackObject | undefined {
         if (!event || !event.payload) return undefined;
         const id = event.payload.sourceId || event.payload.targetIds?.[0];
-        return id ? this.findObject(state, id) : undefined;
+        if (!id) return undefined;
+        
+        const obj = this.findObject(state, id);
+        // Ensure we only return physical game objects or stack objects, not players
+        if (obj && !state.players[id as PlayerId]) {
+            return obj as GameObject | StackObject;
+        }
+        return undefined;
     }
 
     /**

@@ -1,4 +1,4 @@
-import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, EffectType, GameState, PlayerId, RemoveCounterCost, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, EffectType, GameState, PlayerId, RemoveCounterCost, TriggerEvent, Zone, TriggeredAbility } from '@shared/engine_types';
 import { LogCategory } from '../../utils/EngineLogger';
 import { EngineContext } from '../../interfaces/EngineContext';
 import { oracle } from '../../OracleLogicMap';
@@ -392,8 +392,12 @@ export class PlayerActionProcessor {
 
     if (!state.combat) state.combat = { attackers: [], blockers: [] };
 
-    const attacker = RuleUtils.findObject(state, cardId) as any;
-    const blocker = RuleUtils.findObject(state, blockerId) as any;
+    const attacker = RuleUtils.findObject(state, cardId);
+    const blocker = RuleUtils.findObject(state, blockerId);
+    
+    if (!attacker || !blocker || !RuleUtils.isEntity(attacker) || !RuleUtils.isEntity(blocker)) {
+        return false;
+    }
 
     const oldIdx = state.combat.blockers.findIndex(b => b.blockerId === blockerId);
     if (oldIdx >= 0) state.combat.blockers.splice(oldIdx, 1);
@@ -425,7 +429,8 @@ export class PlayerActionProcessor {
       return { finished: false, success: false };
     }
 
-    const isOptionalDiscard = state.pendingAction?.type === ActionType.Discard && (state.pendingAction.data as any)?.minChoices === 0;
+    const isOptionalDiscard = 
+      state.pendingAction?.type === ActionType.Discard && state.pendingAction.data?.minChoices === 0;
 
     if (player.pendingDiscardCount <= 0 && !isOptionalDiscard) {
       return { finished: false, success: false };
@@ -441,8 +446,6 @@ export class PlayerActionProcessor {
     const { action: ActionProcessor } = getProcessors(state);
     ActionProcessor.moveCard(state, card, Zone.Graveyard, playerId, "top", false, true);
 
-    const sourceId = state.pendingAction?.sourceId;
-
     if (player.pendingDiscardCount > 0) {
       player.pendingDiscardCount--;
 
@@ -451,8 +454,8 @@ export class PlayerActionProcessor {
         state.pendingAction.count--;
       }
       // Also update data.count for legacy effects if it exists
-      if (state.pendingAction && (state.pendingAction.data as any)?.count !== undefined) {
-        (state.pendingAction.data as any).count--;
+      if (state.pendingAction && state.pendingAction.data?.count !== undefined) {
+        state.pendingAction.data.count--;
       }
 
       logger.info(state, LogCategory.ACTION, `${player.name} discarded ${card.definition.name} (${player.pendingDiscardCount} more to go).`);
@@ -461,16 +464,23 @@ export class PlayerActionProcessor {
         logger.info(state, LogCategory.ACTION, `${player.name} finished discarding.`);
 
         // Handle sequential discards (Next players)
-        const nextPlayerIds = (state.pendingAction.data as any)?.nextPlayerIds || [];
-        if (nextPlayerIds.length > 0) {
-          const discardAmount = (state.pendingAction.data as any)?.discardAmount || 1;
-          const label = (state.pendingAction.data as any)?.label || "Discard";
-          const stackObj = state.pendingAction.data?.stackObj;
-          const parentContext = state.pendingAction.data?.parentContext;
-          const onFailureEffects = (state.pendingAction.data as any)?.onFailureEffects;
-
-          const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
-          state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, label, stackObj, parentContext, onFailureEffects);
+        const nextPlayerIds = state.pendingAction.data?.nextPlayerIds || [];
+        if (nextPlayerIds.length > 0 && (!state.pendingAction.data?.count || state.pendingAction.data.count <= 0)) {
+          const discardAmount = state.pendingAction.data?.discardAmount || 1;
+          const label = state.pendingAction.data?.label || "Discard";
+          const currentPlayerId = nextPlayerIds.shift()!;
+          const onFailureEffects = state.pendingAction.data?.onFailureEffects;
+          
+          state.pendingAction = getProcessors(state).choiceGenerator.createDiscardChoice(
+            state,
+            [currentPlayerId, ...nextPlayerIds],
+            state.pendingAction.sourceId || "",
+            discardAmount,
+            label,
+            state.pendingAction.data?.stackObj,
+            state.pendingAction.data?.parentContext,
+            onFailureEffects
+          );
           return { finished: false, success: true };
         }
 
@@ -479,7 +489,7 @@ export class PlayerActionProcessor {
         if (stackObj) {
           const realStackObj = state.stack.find(s => s.id === stackObj.id);
           if (realStackObj && realStackObj.data) {
-            const currentIndex = (state.pendingAction.data as any)?.nextEffectIndex;
+            const currentIndex = state.pendingAction.data?.nextEffectIndex;
             if (currentIndex !== undefined) {
               realStackObj.data.nextEffectIndex = currentIndex;
               logger.debug(state, LogCategory.ACTION, `[DISCARD-RESOLUTION] Restored nextEffectIndex to ${realStackObj.data.nextEffectIndex} for ${realStackObj.id}`);
@@ -527,12 +537,12 @@ export class PlayerActionProcessor {
     const { logger, trigger: TrP } = getProcessors(state);
     if (!state.pendingAction || state.pendingAction.type !== ActionType.OrderTriggers || state.pendingAction.playerId !== playerId) return false;
 
-    const triggers = state.pendingAction.data?.triggers as any[];
+    const triggers = (state.pendingAction.data?.triggers || []) as TriggeredAbility[];
 
     // The player sends us the IDs in "Stacking Order" (MTGA UI)
     // index 0 -> Last to resolve (Bottom of stack)
     // index N-1 -> First to resolve (Top of stack)
-    let orderedTriggers = orderedIds.map(id => triggers.find((t: any) => t.id === id)).filter(Boolean);
+    let orderedTriggers = orderedIds.map(id => triggers.find(t => t.id === id)).filter((t): t is TriggeredAbility => !!t);
 
     // FALLBACK: If no triggers were found by ID, check if the payload contained indices
     if (orderedTriggers.length === 0 && orderedIds.length > 0) {
@@ -541,7 +551,7 @@ export class PlayerActionProcessor {
           const idx = parseInt(id);
           return !isNaN(idx) ? triggers[idx] : null;
         })
-        .filter(Boolean);
+        .filter((t): t is TriggeredAbility => !!t);
     }
 
     // If we still have no triggers to stack, something is wrong
@@ -552,7 +562,7 @@ export class PlayerActionProcessor {
     }
 
     orderedTriggers.forEach(t => {
-      logger.debug(state, LogCategory.TRIGGER, `[ORDER-RESOLVED] Ordered trigger ${t.id} has targets: ${t.targets?.join(', ')}`);
+      logger.debug(state, LogCategory.TRIGGER, `[ORDER-RESOLVED] Ordered trigger ${t.id} has targets: ${t.targetIds?.join(', ')}`);
     });
 
     // Get the IDs of the triggers we are actually stacking to clean up pendingTriggers
@@ -574,9 +584,9 @@ export class PlayerActionProcessor {
       // we must save the REMAINING triggers to be stacked after targeting is done.
       if (pendingAfter && i < orderedTriggers.length - 1) {
         const remaining = orderedTriggers.slice(i + 1);
-        if (pendingAfter.data) {
-          pendingAfter.data.nextTriggersToStack = remaining;
-        }
+        const data: any = pendingAfter.data || {};
+        data.nextTriggersToStack = remaining;
+        pendingAfter.data = data;
         logger.info(state, LogCategory.TRIGGER, `[TRIGGER] Pausing trigger stacking for ${t.id} target selection. ${remaining.length} triggers remaining in queue.`);
         return true;
       }

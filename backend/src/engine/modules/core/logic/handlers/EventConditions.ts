@@ -18,7 +18,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const threshold = parseInt(params[0]);
             const { event } = context;
             const obj = RuleUtils.getEventObject(event, state);
-            if (!obj) return false;
+            if (!RuleUtils.isEntity(obj)) return false;
             const { mana: ManaProcessor } = getProcessors(state);
             return ManaProcessor.getManaValue(obj.definition.manaCost) >= threshold;
         }
@@ -27,8 +27,9 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, cardToPlay } = context;
             const obj = cardToPlay || RuleUtils.getEventObject(event, state);
-            if (obj) return (obj as any)?.isFlashbackCast === true;
-            return event?.payload?.object?.isFlashbackCast === true;
+            if (RuleUtils.isEntity(obj)) return obj.isFlashbackCast === true;
+            const eventObj = event?.payload?.object;
+            return (RuleUtils.isEntity(eventObj) && eventObj.isFlashbackCast === true);
         }
     },
     "EVENT_OBJECT_OWNER_NOT_YOU": {
@@ -118,7 +119,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event } = context;
             const obj = RuleUtils.getEventObject(event, state);
-            if (!obj) return false;
+            if (!RuleUtils.isEntity(obj)) return false;
             return (obj.definition.manaCost || "").includes("X");
         }
     },
@@ -153,7 +154,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { event } = context;
             const tId = RuleUtils.getTargets(event)[0];
             const obj = RuleUtils.findObject(state, tId);
-            return (obj?.counters?.["+1/+1"] || 0) >= parseInt(params[0]);
+            return (RuleUtils.isEntity(obj) && (obj.counters as any)?.["+1/+1"] || 0) >= parseInt(params[0]);
         }
     },
     "X_LE": {
@@ -174,7 +175,8 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, stackObject } = context;
             const threshold = parseInt(params[0]);
-            const spent = event?.payload?.amount || event?.payload?.object?.paidManaValue || event?.payload?.spent || 0;
+            const obj = event?.payload?.object;
+            const spent = event?.payload?.amount || (RuleUtils.isEntity(obj) ? obj.paidManaValue : 0) || event?.payload?.spent || 0;
             return spent >= threshold;
         }
     },
@@ -182,7 +184,8 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, stackObject } = context;
             const threshold = parseInt(params[0]);
-            const spent = event?.payload?.amount || event?.payload?.object?.paidManaValue || event?.payload?.spent || 0;
+            const obj = event?.payload?.object;
+            const spent = event?.payload?.amount || (RuleUtils.isEntity(obj) ? obj.paidManaValue : 0) || event?.payload?.spent || 0;
             return spent < threshold;
         }
     },
@@ -190,7 +193,8 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, stackObject } = context;
             const threshold = parseInt(params[0]);
-            const spent = event?.payload?.amount || event?.payload?.object?.paidManaValue || event?.payload?.spent || 0;
+            const obj = event?.payload?.object;
+            const spent = event?.payload?.amount || (RuleUtils.isEntity(obj) ? obj.paidManaValue : 0) || event?.payload?.spent || 0;
             return spent <= threshold;
         }
     },
@@ -199,7 +203,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { event, sourceId } = context;
             const threshold = parseInt(params[0]);
             const obj = RuleUtils.findObject(state, sourceId) || RuleUtils.getEventObject(event, state);
-            const converge = obj?.convergeAmount || (event as any)?.convergeAmount || (event as any)?.data?.convergeAmount || 0;
+            const converge = (RuleUtils.isEntity(obj) ? (obj.convergeAmount || 0) : 0) || event?.payload?.convergeAmount || 0;
             return converge >= threshold;
         }
     },
@@ -209,8 +213,8 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const countType = params[0];
             const threshold = parseInt(params[1]);
             const obj = RuleUtils.findObject(state, sourceId);
-            if (!obj) return false;
-            const count = obj.counters?.[countType as CounterType] || 0;
+            if (!RuleUtils.isEntity(obj)) return false;
+            const count = (obj.counters as any)?.[countType] || 0;
             return count >= threshold;
         }
     },
@@ -218,7 +222,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event } = context;
             const card = RuleUtils.getEventObject(event, state);
-            if (!card) return false;
+            if (!RuleUtils.isEntity(card)) return false;
             return (card.definition.colors || []).length > 1;
         }
     },
@@ -236,7 +240,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             if (targets.length === 0) return false;
             return targets.some((tid: string) => {
                 const obj = RuleUtils.findObject(state, tid);
-                return obj && obj.zone === Zone.Battlefield && RuleUtils.isPermanent(obj);
+                return RuleUtils.isEntity(obj) && obj.zone === Zone.Battlefield && RuleUtils.isPermanent(obj);
             });
         }
     },
@@ -252,7 +256,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             if (targets.length === 0) return false;
             return targets.some((tid: string) => {
                 const obj = RuleUtils.findObject(state, tid);
-                return obj && obj.zone === Zone.Battlefield && RuleUtils.isCreature(obj);
+                return RuleUtils.isEntity(obj) && obj.zone === Zone.Battlefield && RuleUtils.isCreature(obj);
             });
         }
     },
@@ -274,7 +278,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { targeting: TargetingProcessor } = getProcessors(state);
             return targets.some((tid: string) => {
                 const obj = RuleUtils.findObject(state, tid);
-                if (!obj) return false;
+                if (!RuleUtils.isEntity(obj)) return false;
                 // CR 109.2: "Creature" in rules text refers to a creature permanent on the battlefield.
                 return obj.zone === Zone.Battlefield && RuleUtils.isCreature(obj);
             });
@@ -285,7 +289,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { event } = context;
             const targetId = RuleUtils.getTargets(event)[0];
             const targetObj = RuleUtils.findObject(state, targetId);
-            return targetObj?.isPrepared || false;
+            return (RuleUtils.isEntity(targetObj) && targetObj.isPrepared) || false;
         }
     },
     "SPELL_IS_CREATURE": {

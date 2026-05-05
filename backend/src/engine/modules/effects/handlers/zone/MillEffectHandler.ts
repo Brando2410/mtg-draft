@@ -31,6 +31,7 @@ function millCards(state: GameState, playerId: PlayerId, amount: number, context
     }
 
     state.turnState.lastMilledIds = milledIds;
+    context.lastMilledIds = milledIds;
 
     // --- NESTED EFFECTS SUPPORT ---
     if (originalEffect.effects && originalEffect.effects.length > 0) {

@@ -30,7 +30,7 @@ export class PermanentHandler {
         const { targets } = context;
         targets.forEach((tid: string) => {
             const obj = RuleUtils.findObject(state, tid);
-            if (obj && obj.zone === Zone.Battlefield) {
+            if (RuleUtils.isEntity(obj) && obj.zone === Zone.Battlefield) {
                 if (RuleUtils.hasKeyword(obj, 'Indestructible')) {
                     logger.info(state, LogCategory.ACTION, `${obj.definition.name} is indestructible.`);
                     return;
@@ -98,7 +98,7 @@ export class PermanentHandler {
             }
         } else {
             const obj = RuleUtils.findObject(state, tid);
-            if (obj && obj.zone === Zone.Battlefield) ActionProcessor.moveCard(state, obj as GameObject, Zone.Graveyard, (obj as GameObject).controllerId);
+            if (RuleUtils.isEntity(obj) && obj.zone === Zone.Battlefield) ActionProcessor.moveCard(state, obj as GameObject, Zone.Graveyard, (obj as GameObject).controllerId);
             this.handleSacrifice(state, effect, { ...context, targets: nextTargets });
         }
     }
@@ -134,7 +134,7 @@ export class PermanentHandler {
         const { targets } = context;
         targets.forEach((tid: string) => {
             const obj = RuleUtils.findObject(state, tid);
-            if (obj && obj.zone === Zone.Battlefield) {
+            if (RuleUtils.isEntity(obj) && obj.zone === Zone.Battlefield) {
                 obj.isPrepared = false;
                 logger.info(state, LogCategory.ACTION, `${obj.definition.name} is now unprepared.`);
             }
@@ -160,11 +160,14 @@ export class PermanentHandler {
         if (targets.length < 2) return;
         const c1 = RuleUtils.findObject(state, targets[0]);
         const c2 = RuleUtils.findObject(state, targets[1]);
-        if (!c1 || !c2 || c1.zone !== Zone.Battlefield || c2.zone !== Zone.Battlefield) return;
+        if (!RuleUtils.isEntity(c1) || !RuleUtils.isEntity(c2)) return;
+        if (c1.zone !== Zone.Battlefield || c2.zone !== Zone.Battlefield) return;
 
         const p1 = LayerProcessor.getEffectiveStats(c1 as GameObject, state).power;
         const p2 = LayerProcessor.getEffectiveStats(c2 as GameObject, state).power;
-        logger.info(state, LogCategory.ACTION, `[FIGHT] ${c1.definition.name} fights ${c2.definition.name}.`);
+        if (RuleUtils.isEntity(c1) && RuleUtils.isEntity(c2)) {
+            logger.info(state, LogCategory.ACTION, `[FIGHT] ${c1.definition.name} fights ${c2.definition.name}.`);
+        }
 
         DP.dealDamage(state, c1.id, c2.id, p1, false);
         DP.dealDamage(state, c2.id, c1.id, p2, false);
@@ -177,8 +180,8 @@ export class PermanentHandler {
         const type = counterEff.counterType || counterEff.value || effect.type || 'p1p1';
 
         targets.forEach((tid: string) => {
-            const obj = RuleUtils.findObject(state, tid) as GameObject | undefined;
-            if (obj && obj.zone === Zone.Battlefield) {
+            const obj = RuleUtils.findObject(state, tid);
+            if (RuleUtils.isEntity(obj) && obj.zone === Zone.Battlefield) {
                 const finalType = (type.toLowerCase() === 'p1p1' || type === '+1/+1') ? '+1/+1' : type;
                 const amountStr = counterEff.amount !== undefined ? counterEff.amount : counterEff.value;
                 const amount = typeof amountStr === 'number' ? amountStr : (EP.resolveAmount(state, amountStr, context, [tid]));
@@ -205,8 +208,8 @@ export class PermanentHandler {
         const finalType = (type.toLowerCase() === 'p1p1' || type === '+1/+1') ? '+1/+1' : type;
 
         targets.forEach((tid: string) => {
-            const obj = RuleUtils.findObject(state, tid) as GameObject | undefined;
-            if (obj && obj.zone === Zone.Battlefield) {
+            const obj = RuleUtils.findObject(state, tid);
+            if (RuleUtils.isEntity(obj) && obj.zone === Zone.Battlefield) {
                 const counterKey = finalType as CounterType;
                 const amount = obj.counters[counterKey] || 0;
                 if (amount > 0) {
@@ -224,20 +227,21 @@ export class PermanentHandler {
 
     public static handleMoveCounters(state: GameState, effect: EffectDefinition, context: ResolutionContext) {
         const { logger, effect: EP } = getProcessors(state);
-        const { targets, sourceId, stackObject } = context;
+        const { targets, sourceId } = context;
         const counterEff = effect as CounterEffect;
-        let sourceObj = RuleUtils.findObject(state, sourceId);
-
+        
+        let rawObj = RuleUtils.findObject(state, sourceId);
         // CR 603.10: If the source is not in a public zone or has no counters (because it died), check LKI
-        if (!sourceObj || !sourceObj.counters || Object.keys(sourceObj.counters).length === 0) {
+        if (!RuleUtils.isEntity(rawObj) || !rawObj.counters || Object.keys(rawObj.counters).length === 0) {
             const processors = getProcessors(state);
             const snapshot = processors.lki.getLki(state, sourceId, Zone.Battlefield);
-            if (snapshot && snapshot.counters && Object.keys(snapshot.counters).length > 0) {
-                sourceObj = snapshot;
+            if (snapshot && RuleUtils.isEntity(snapshot)) {
+                rawObj = snapshot;
             }
         }
 
-        if (!sourceObj || !sourceObj.counters) return;
+        if (!RuleUtils.isEntity(rawObj) || !rawObj.counters) return;
+        const sourceObj = rawObj; // Narrowed to Entity
 
         let inputType = counterEff.counterType;
         if (inputType && (inputType.toLowerCase() === 'p1p1' || inputType === '+1/+1')) inputType = '+1/+1';
@@ -245,7 +249,7 @@ export class PermanentHandler {
 
         counterTypes.forEach((ctype: string) => {
             const counterKey = ctype as CounterType;
-            const available = sourceObj!.counters[counterKey] || 0;
+            const available = sourceObj.counters[counterKey] || 0;
             if (available <= 0) return;
 
             const requestedAmount = counterEff.amount !== undefined
@@ -256,17 +260,15 @@ export class PermanentHandler {
             if (amount <= 0) return;
 
             targets.forEach((tid: string) => {
-                const targetObj = RuleUtils.findObject(state, tid) as GameObject | undefined;
-                if (targetObj && targetObj.zone === Zone.Battlefield) {
+                const targetObj = RuleUtils.findObject(state, tid);
+                if (RuleUtils.isEntity(targetObj) && targetObj.zone === Zone.Battlefield) {
                     targetObj.counters[counterKey] = (targetObj.counters[counterKey] || 0) + amount;
-                    logger.info(state, LogCategory.ACTION, `[MOVE-COUNTERS] Moved ${amount} ${ctype} counters from ${sourceObj!.definition.name} to ${targetObj.definition.name}.`);
+                    logger.info(state, LogCategory.ACTION, `[MOVE-COUNTERS] Moved ${amount} ${ctype} counters from ${sourceObj.definition.name} to ${targetObj.definition.name}.`);
                     TriggerProcessor.onEvent(state, { type: 'ON_COUNTERS_ADDED', payload: { targetIds: [targetObj.id], amount, counterType: ctype, object: targetObj } });
                 }
             });
-            const counters = sourceObj!.counters;
-            if (counters) {
-                counters[counterKey] = (counters[counterKey] || 0) - amount;
-            }
+            
+            sourceObj.counters[counterKey] = (sourceObj.counters[counterKey] || 0) - amount;
         });
     }
 
@@ -325,14 +327,14 @@ export class PermanentHandler {
         const sourceObj = RuleUtils.findObject(state, sourceCardId);
 
         console.log(`[DEBUG-TOKEN] sourceCardId: ${sourceCardId}`);
-        if (sourceObj) {
+        if (RuleUtils.isEntity(sourceObj)) {
             console.log(`[DEBUG-TOKEN] Found source object: ${sourceObj.definition?.name} in zone: ${sourceObj.zone || 'Stack'}`);
         } else {
             console.log(`[DEBUG-TOKEN] Could not find source object for ID: ${sourceCardId}`);
         }
 
-        if (!sourceObj || !sourceObj.definition) {
-            if (sourceObj && !sourceObj.definition) console.log(`[DEBUG-TOKEN] Source object found but has no definition!`);
+        if (!RuleUtils.isEntity(sourceObj) || !sourceObj.definition) {
+            if (RuleUtils.isEntity(sourceObj) && !sourceObj.definition) console.log(`[DEBUG-TOKEN] Source object found but has no definition!`);
             return;
         }
 
@@ -352,7 +354,9 @@ export class PermanentHandler {
                 token.data[tokenEff.storeLinkedId] = sourceCardId;
             }
 
-            logger.info(state, LogCategory.ACTION, `Created token copy of ${sourceObj.definition.name} for ${pid}.`);
+            if (RuleUtils.isEntity(sourceObj)) {
+                logger.info(state, LogCategory.ACTION, `Created token copy of ${sourceObj.definition.name} for ${pid}.`);
+            }
         });
     }
 

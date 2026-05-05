@@ -24,10 +24,7 @@ import {
 } from '../../../interfaces/EngineContext';
 import { RegistryUtils } from '../../../utils/RegistryUtils';
 import { oracle } from '../../../OracleLogicMap';
-import { CombatProcessor } from "../../combat/CombatProcessor";
 import { RuleUtils } from "../../../utils/RuleUtils";
-import { CostProcessor } from '../../magic/CostProcessor';
-import { ManaProcessor } from '../../magic/ManaProcessor';
 import { SpellCostCalculator } from './SpellCostCalculator';
 import { SpellInteractiveManager } from './SpellInteractiveManager';
 import { SpellValidator } from './SpellValidator';
@@ -227,7 +224,7 @@ export class SpellProcessor {
         // CR 601.2f: Determine total cost
         const { totalMana, additionalCosts, usedAlternativeCostId, isFlashback } = SpellCostCalculator.getEffectiveCosts(state, cardToPlay, declaredTargets, currentDefinition);
         cardToPlay.usedAlternativeCostId = usedAlternativeCostId;
-        if (isFlashback) (cardToPlay as any).isFlashbackCast = true;
+        if (isFlashback) cardToPlay.isFlashbackCast = true;
 
         // --- SETUP SEQUENCE: TARGETING -> CHOICE -> FINALIZATION ---
 
@@ -345,7 +342,7 @@ export class SpellProcessor {
         if (!obj) return false;
 
         // Apply incoming xValue if provided
-        if (xValue !== undefined) {
+        if (xValue !== undefined && RuleUtils.isEntity(obj)) {
             obj.xValue = xValue;
         }
 
@@ -366,15 +363,18 @@ export class SpellProcessor {
             return false;
         }
 
-        const cardLogic = oracle.getCard(obj.definition.name);
+        if (!RuleUtils.isEntity(obj)) return false;
+        const definition = obj.definition;
+
+        const cardLogic = oracle.getCard(definition.name);
         let abilities: AbilityDefinition[] = [];
         if (cardLogic?.abilities) {
             cardLogic.abilities.forEach(a => {
                 if (typeof a !== 'string') abilities.push(a);
             });
         }
-        if (obj.definition.abilities) {
-            obj.definition.abilities.forEach((a: AbilityDefinition | string) => {
+        if (definition.abilities) {
+            definition.abilities.forEach((a: AbilityDefinition | string) => {
                 if (typeof a === 'string') return;
                 const isDuplicate = abilities.some(existing => {
                     if (existing.id !== undefined && a.id !== undefined) return existing.id === a.id;
@@ -390,13 +390,13 @@ export class SpellProcessor {
         }
 
         if (!abilities[abilityIndex]) {
-            logger.info(state, LogCategory.ACTION, `[ERROR] Ability index ${abilityIndex} not found for ${obj.definition.name}`);
+            logger.info(state, LogCategory.ACTION, `[ERROR] Ability index ${abilityIndex} not found for ${definition.name}`);
             return false;
         }
 
         const ability = abilities[abilityIndex];
         if (ability.type !== AbilityType.Activated) {
-            logger.info(state, LogCategory.ACTION, `[ERROR] Ability index ${abilityIndex} for ${obj.definition.name} is not an activated ability (found ${ability.type})`);
+            logger.info(state, LogCategory.ACTION, `[ERROR] Ability index ${abilityIndex} for ${definition.name} is not an activated ability (found ${ability.type})`);
             return false;
         }
 
@@ -485,6 +485,7 @@ export class SpellProcessor {
         const hasConfirmedAutoTap = state.interaction?.flags.confirmedAutoTap;
         if (state.interaction) delete state.interaction.flags.confirmedAutoTap;
 
+        const { mana: ManaProcessor } = getProcessors(state);
         if (isFreeCast) {
             logger.debug(state, LogCategory.ACTION, `[DEBUG] Finalizing free cast for ${cardToPlay.definition.name}. Bypassing mana check.`);
         } else if (!ManaProcessor.canPayManaCost(player, totalMana, state, cardToPlay)) {
@@ -530,7 +531,7 @@ export class SpellProcessor {
         logger.debug(state, LogCategory.ACTION, `[FINAL-DEBUG] Proceeding with finalization for ${cardToPlay.definition.name}.`);
 
         logger.debug(state, LogCategory.ACTION, isFreeCast ? `Casting ${cardToPlay.definition.name} for free...` : `Paying ${totalMana} for ${cardToPlay.definition.name}...`);
-        const colorsSpent = isFreeCast ? [] : ManaProcessor.deductManaCost(player, totalMana, state, cardToPlay);
+        const colorsSpent = isFreeCast ? [] : getProcessors(state).mana.deductManaCost(player, totalMana, state, cardToPlay);
         cardToPlay.colorsSpent = colorsSpent;
         cardToPlay.convergeAmount = colorsSpent.length;
 
@@ -564,7 +565,8 @@ export class SpellProcessor {
                     const obj = RuleUtils.findObject(state, cid);
                     if (obj) {
                         ActionProcessor.moveCard(state, obj as GameObject, Zone.Exile, playerId);
-                        logger.debug(state, LogCategory.ACTION, `Paid additional cost: Exiled ${obj.definition?.name || cid}.`);
+                        const cardName = RuleUtils.isEntity(obj) ? obj.definition.name : cid;
+                        logger.debug(state, LogCategory.ACTION, `Paid additional cost: Exiled ${cardName}.`);
                     }
                 });
             } else if (cost.type === 'TapSelection') {
@@ -748,36 +750,36 @@ export class SpellProcessor {
             (!e.zone || e.zone === Zone.Exile)
         ));
 
-        const stackObj = {
+        const stackObj: StackObject = {
             id: stackId,
             controllerId: playerId,
             ownerId: obj.ownerId,
             sourceId: obj.id,
-            type: AbilityType.Activated,
-            counters: {},
-            name: `${obj.definition.name} Ability${obj.xValue !== undefined && (JSON.stringify(ability).includes('"X"') || obj.xValue > 0) ? ` (X=${obj.xValue})` : ""}`,
-            image_url: obj.definition.image_url,
             targets: declaredTargets,
-            abilityIndex: abilityIndex,
-            exileOnResolution: effectiveExileOnResolution,
+            type: ability.type,
             isCopy: obj.isCopy,
             isPreparedCopy: obj.isPreparedCopy,
             xValue: xValue !== undefined ? xValue : obj.xValue,
-            card: obj,
             sourceObject: obj,
             definition: obj.definition,
-            preSelectedChoice: preSelectedChoice,
+            exileOnResolution: effectiveExileOnResolution,
+            name: `${obj.definition.name} Ability${obj.xValue !== undefined && (JSON.stringify(ability).includes('"X"') || obj.xValue > 0) ? ` (X=${obj.xValue})` : ""}`,
+            image_url: obj.definition.image_url,
+            abilityIndex: abilityIndex,
+            counters: {},
             data: {
-                effects: (ability as any).effects || [],
-                targetDefinitions: (ability as any).targetDefinitions,
                 preSelectedChoice,
                 declaredXValue: xValue !== undefined ? xValue : obj.xValue,
                 summary: (xValue !== undefined ? xValue : obj.xValue) !== undefined && (JSON.stringify(ability).includes('"X"') || (xValue || obj.xValue || 0) > 0) ? `X = ${xValue !== undefined ? xValue : obj.xValue}` : undefined,
+                targetsControllers: [],
+                effects: (ability.type === AbilityType.Activated || ability.type === AbilityType.Triggered) ? ability.effects : [],
+                targetDefinitions: (ability.type === AbilityType.Activated || ability.type === AbilityType.Triggered) ? ability.targetDefinitions : undefined,
                 choices: (xValue !== undefined ? xValue : obj.xValue) !== undefined && (JSON.stringify(ability).includes('"X"') || (xValue || obj.xValue || 0) > 0) ? [{ label: "X", value: xValue !== undefined ? xValue : obj.xValue }] : []
             }
         };
 
         // Mana Payment
+        const { cost: CostProcessor, mana: ManaProcessor } = getProcessors(state);
         const manaCost = (ability.costs || []).find((cost) => cost.type === 'Mana');
         if (manaCost) {
             const effectiveMana = CostProcessor.getEffectiveManaCost(state, manaCost, obj, stackObj);
@@ -797,7 +799,7 @@ export class SpellProcessor {
         }
 
         obj.abilitiesUsedThisTurn++;
-        if ((ability as any).limitPerTurn) {
+        if (ability.type === AbilityType.Activated && ability.limitPerTurn) {
             const usageKey = `ability_${obj.id}_${abilityIndex}`;
             state.turnState.triggeredAbilitiesUsedThisTurn[usageKey] = (state.turnState.triggeredAbilitiesUsedThisTurn[usageKey] || 0) + 1;
         }
@@ -818,7 +820,7 @@ export class SpellProcessor {
         }
 
         const manaCostRef = (ability.costs || []).find((cost) => cost.type === 'Mana');
-        const effectiveMana = manaCostRef ? CostProcessor.getEffectiveManaCost(state, manaCostRef, obj, stackObj) : "";
+        const effectiveMana = manaCostRef ? getProcessors(state).cost.getEffectiveManaCost(state, manaCostRef, obj, stackObj) : "";
         const costLabel = effectiveMana ? ` for ${effectiveMana}` : "";
 
         state.stack.push(stackObj);

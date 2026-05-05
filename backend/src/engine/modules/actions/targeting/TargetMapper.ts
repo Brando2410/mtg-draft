@@ -8,6 +8,7 @@ import {
 } from "@shared/engine_types";
 import { RuleUtils } from "../../../utils/RuleUtils";
 import { getProcessors } from "../../ProcessorRegistry";
+import { TargetMappingRegistry } from "./TargetMappingRegistry";
 import { LogCategory } from "../../../utils/EngineLogger";
 import { ManaProcessor } from "../../magic/ManaProcessor";
 import { TargetValidator } from "./TargetValidator";
@@ -364,34 +365,20 @@ export class TargetMapper {
       parentContext?.event ||
       stackObject?.event;
 
+    // 1. Check TargetMappingRegistry (New modular system)
+    const handler = TargetMappingRegistry[mapping.toUpperCase()];
+    if (handler) {
+      return handler.resolve({
+        state,
+        mapping,
+        context: { ...context, targets: resolvedTargets },
+        effect,
+        targetOffset
+      });
+    }
+
+    // 2. Legacy Switch (Fallback for remaining mappings)
     switch (mapping.toUpperCase()) {
-      case TargetMapping.Self:
-      case TargetMapping.SourceObject:
-        return [sourceId];
-      case TargetMapping.Controller:
-        return [controllerId];
-      case TargetMapping.ControllerHand:
-        return state.players[controllerId]?.hand.map((o) => o.id) || [];
-      case TargetMapping.ControllerGraveyard:
-        return state.players[controllerId]?.graveyard.map((o) => o.id) || [];
-      case TargetMapping.ControllerSideboard:
-        return (state.players[controllerId] as any)?.sideboard?.map((o: any) => o.id) || [];
-      case TargetMapping.ControllerLibrary:
-        return state.players[controllerId]?.library.map((o) => o.id) || [];
-      case TargetMapping.OpponentHand: {
-        const opponentId = Object.keys(state.players).find((pid) => pid !== controllerId);
-        return opponentId ? state.players[opponentId].hand.map((o) => o.id) : [];
-      }
-      case TargetMapping.OpponentGraveyard: {
-        const opponentId = Object.keys(state.players).find((pid) => pid !== controllerId);
-        return opponentId ? state.players[opponentId].graveyard.map((o) => o.id) : [];
-      }
-      case TargetMapping.AnyGraveyard: {
-        return Object.values(state.players).flatMap(p => p.graveyard.map(o => o.id));
-      }
-      case TargetMapping.AnyExile: {
-        return state.exile.map(o => o.id);
-      }
       case TargetMapping.LinkedObject:
         const lSource =
           state.battlefield.find((o: any) => o.id === sourceId) ||
@@ -430,44 +417,9 @@ export class TargetMapper {
         const obj = RuleUtils.findObject(state, targetId);
         return obj ? [obj.ownerId] : [];
       }
-      case TargetMapping.LastMilledIds:
-        return state.turnState.lastMilledIds || [];
-      case TargetMapping.Target1: {
-        const offset = targetOffset;
-        logger.debug(state, LogCategory.TARGETING, `[TARGET-MAP] Target1 resolving to ${resolvedTargets[offset]} (from ${resolvedTargets.length} candidates)`);
-        return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
-      }
       case TargetMapping.SelfAndTarget1: {
         const offset = targetOffset;
         return resolvedTargets[offset] ? [sourceId, resolvedTargets[offset]] : [sourceId];
-      }
-      case TargetMapping.Target2: {
-        const offset = targetOffset + 1;
-        return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
-      }
-      case TargetMapping.Target3: {
-        const offset = targetOffset + 2;
-        return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
-      }
-      case TargetMapping.Target4: {
-        const offset = targetOffset + 3;
-        return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
-      }
-      case TargetMapping.Target5: {
-        const offset = targetOffset + 4;
-        return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
-      }
-      case TargetMapping.Target6: {
-        const offset = targetOffset + 5;
-        return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
-      }
-      case TargetMapping.Target7: {
-        const offset = targetOffset + 6;
-        return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
-      }
-      case TargetMapping.Target8: {
-        const offset = targetOffset + 7;
-        return resolvedTargets[offset] ? [resolvedTargets[offset]] : [];
       }
       case TargetMapping.TargetAll:
         return resolvedTargets.filter(Boolean);

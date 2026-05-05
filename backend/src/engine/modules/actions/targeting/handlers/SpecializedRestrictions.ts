@@ -27,9 +27,9 @@ export const SpecializedRestrictions: Record<string, IRestrictionHandler> = {
     "SHARES_COLOR_WITH_SOURCE": gameObjectRestriction((state, obj, r, context) => {
         const { sourceId } = context;
         const source = RuleUtils.findObject(state, sourceId);
-        if (source) {
-            const sourceColors = source.definition.colors || [];
-            const targetColors = obj.definition.colors || [];
+        if (source && isGameObject(source)) {
+            const sourceColors = RuleUtils.getColors(source, state);
+            const targetColors = RuleUtils.getColors(obj, state);
             return !!sourceColors.some((c: string) => targetColors.includes(c));
         }
         return false;
@@ -55,7 +55,7 @@ export const SpecializedRestrictions: Record<string, IRestrictionHandler> = {
     "SAMENAMEASSOURCE": gameObjectRestriction((state, obj, r, context) => {
         const { sourceId } = context;
         const source = RuleUtils.findObject(state, sourceId);
-        if (source) {
+        if (source && isGameObject(source)) {
             const sourceName = source.definition.name;
             const targetName = obj.definition.name;
             return sourceName === targetName;
@@ -127,7 +127,7 @@ SpecializedRestrictions["POWER_LE_2"] = gameObjectRestriction((state, obj) => {
 
 SpecializedRestrictions["EXILEDWITHSOURCE"] = gameObjectRestriction((state, obj, r, context) => {
     const { sourceId } = context;
-    return (obj as any).exiledBy === sourceId;
+    return obj.exiledBy === sourceId;
 });
 
 SpecializedRestrictions["ATTACKING"] = gameObjectRestriction((state, obj) => {
@@ -140,7 +140,7 @@ SpecializedRestrictions["HASCOUNTER_P1P1"] = gameObjectRestriction((state, obj) 
     return (obj.counters?.['+1/+1'] || 0) > 0;
 });
 SpecializedRestrictions["WASDEALTDAMAGETHISTURN"] = gameObjectRestriction((state, obj) => {
-    return (obj as any).dealtDamageThisTurn;
+    return !!obj.dealtDamageThisTurn;
 });
 SpecializedRestrictions["GREATESTPOWER"] = gameObjectRestriction((state, obj, r, context) => {
     const { targeting: TP } = getProcessors(state);

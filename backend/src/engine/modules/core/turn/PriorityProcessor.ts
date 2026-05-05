@@ -469,11 +469,11 @@ export class PriorityProcessor {
 
     if (checkPriority && state.priorityPlayerId !== playerId) return false;
 
-    const cardLogic = oracle.getCard(obj.definition.name);
+    const cardLogic = (RuleUtils.isEntity(obj)) ? oracle.getCard(obj.definition.name) : null;
     let abilities = [...(cardLogic?.abilities || [])];
 
     // --- SUPPORT FOR IN-LINE ABILITIES (Tokens, Virtual Spells) ---
-    if (obj.definition.abilities) {
+    if (RuleUtils.isEntity(obj) && obj.definition.abilities) {
       obj.definition.abilities.forEach((a: AbilityDefinition | string) => {
         const isDuplicate = abilities.some(existing => {
           if (typeof a === 'string' || typeof existing === 'string') return a === existing;
@@ -518,19 +518,19 @@ export class PriorityProcessor {
     if (!abilities[abilityIndex]) return false;
     const ability = abilities[abilityIndex];
     if (typeof ability === 'string') return false;
-    const logic = oracle.getCard(obj.definition.name);
+    const logic = (RuleUtils.isEntity(obj)) ? oracle.getCard(obj.definition.name) : null;
 
     if (ability.type !== AbilityType.Activated) return false;
 
     // Zone check (CR 113.6)
     const activeZone = ability.activeZone || Zone.Battlefield;
-    if (activeZone !== (Zone.Any as any) && activeZone !== (obj.zone as any)) {
+    if (activeZone !== (Zone.Any as any) && (!RuleUtils.isEntity(obj) || activeZone !== (obj.zone as any))) {
       return false;
     }
 
     // Requirement Check (Rule 602.5b/Activation conditions)
     const dummyEvent = { type: 'NONE', playerId: playerId } as any;
-    if (ability.triggerCondition && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId })) {
+    if (ability.triggerCondition && RuleUtils.isEntity(obj) && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId })) {
       console.log(`Illegal Activation: Activation requirements for ${obj.definition.name} are not met.`);
       return false;
     }
@@ -649,7 +649,7 @@ export class PriorityProcessor {
       const isStatic = (e.duration?.type || "").toString().toUpperCase() === 'STATIC';
       if (isStatic) {
         const source = RuleUtils.findObject(state, e.sourceId);
-        if (!source || (e.activeZones && source.zone && !e.activeZones.includes(source.zone))) return false;
+        if (!RuleUtils.isEntity(source) || (e.activeZones && source.zone && !e.activeZones.includes(source.zone))) return false;
       }
 
       // 3. Condition check

@@ -2,15 +2,10 @@ import { AbilityCost, AbilityDefinition, AbilityType, ActionType, ChoiceOption, 
 import { LogCategory } from '../../utils/EngineLogger';
 import { EngineContext } from '../../interfaces/EngineContext';
 import { oracle } from '../../OracleLogicMap';
-import { ChoiceGenerator } from '../effects/ChoiceGenerator';
-import { EffectProcessor } from '../effects/EffectProcessor';
-import { CostProcessor } from '../magic/CostProcessor';
-import { ActionProcessor } from './ActionProcessor';
-import { PlayerActionProcessor } from './PlayerActionProcessor';
-import { SpellProcessor } from './spells/SpellProcessor';
-import { TargetingProcessor } from './targeting/TargetingProcessor';
 import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from '../ProcessorRegistry';
+import { PlayerActionProcessor } from './PlayerActionProcessor';
+import { ChoiceGenerator } from '../effects/ChoiceGenerator';
 
 /**
  * Handles interactive player choices (Targeting, Modal Choices)
@@ -19,7 +14,8 @@ export class ChoiceProcessor {
 
     public static normalizePayload(input: number | string | ChoicePayload): ChoicePayload {
         if (typeof input === 'object' && input !== null && ('selections' in input || 'top' in input || 'graveyard' in input)) {
-            return Object.assign({ selections: [] }, input) as any;
+            const base = { selections: [] };
+            return Object.assign(base, input);
         }
 
         // Handle legacy/raw string payloads
@@ -36,7 +32,7 @@ export class ChoiceProcessor {
                 try {
                     const parsed = JSON.parse(input);
                     if (parsed.selections) return parsed;
-                    if (parsed.top || parsed.bottom || parsed.graveyard) return Object.assign({ selections: [] }, parsed) as any;
+                    if (parsed.top || parsed.bottom || parsed.graveyard) return { selections: [], ...parsed } as ChoicePayload;
                     // Backward compatibility for old JSON shapes
                     if (parsed.index !== undefined) return { ...parsed, selections: [parsed.index] };
                     if (parsed.value !== undefined) return { ...parsed, selections: [parsed.value] };
@@ -173,7 +169,7 @@ export class ChoiceProcessor {
                     state.turnState.lastDiscardedIds = [];
                     logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Reset lastDiscardedIds for new batch of ${discardEffects.length} discards.`);
                 }
-                EffectProcessor.resolveEffects({
+                getProcessors(state).effect.resolveEffects({
                     state,
                     effects: allEffects,
                     sourceId: sourceId as string,
@@ -220,7 +216,7 @@ export class ChoiceProcessor {
             discardIds.forEach((id) => {
                 const obj = state.battlefield.find(o => o.id === id);
                 if (obj) {
-                    ActionProcessor.moveCard(state, obj, Zone.Graveyard, obj.ownerId);
+                    getProcessors(state).action.moveCard(state, obj, Zone.Graveyard, obj.ownerId);
                 }
             });
 
@@ -276,14 +272,14 @@ export class ChoiceProcessor {
         bottom.forEach((id) => {
             const card = cards.find((c) => c.id === id);
             if (card) {
-                ActionProcessor.moveCard(state, card, Zone.Library, playerId, 'bottom');
+                getProcessors(state).action.moveCard(state, card, Zone.Library, playerId, 'bottom');
             }
         });
 
         graveyard.forEach((id) => {
             const card = cards.find((c) => c.id === id);
             if (card) {
-                ActionProcessor.moveCard(state, card, Zone.Graveyard, playerId);
+                getProcessors(state).action.moveCard(state, card, Zone.Graveyard, playerId);
             }
         });
 
@@ -291,7 +287,7 @@ export class ChoiceProcessor {
         [...top].reverse().forEach((id) => {
             const card = cards.find((c) => c.id === id);
             if (card) {
-                ActionProcessor.moveCard(state, card, Zone.Library, playerId, 'top');
+                getProcessors(state).action.moveCard(state, card, Zone.Library, playerId, 'top');
             }
         });
 
@@ -316,14 +312,16 @@ export class ChoiceProcessor {
         // Then resume parent contexts
         while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex !== undefined && currentCtx.nextEffectIndex < currentCtx.effects.length) {
             logger.info(state, LogCategory.ACTION, `[RESOLVING] Resuming parent resolution context for ${sourceId}...`);
-            const nextIdx = currentCtx.nextEffectIndex;
-            const effs = currentCtx.effects;
-            const parentTargets = currentCtx.targets || [];
-            const lookingCards = currentCtx.lookingCards;
-            const nextParentCtx: ResolutionContext | undefined = currentCtx.parentContext;
+            
+            const resumingCtx: ResolutionContext = currentCtx; // Capture current context before moving to parent
+            const nextIdx = resumingCtx.nextEffectIndex!;
+            const effs = resumingCtx.effects;
+            const parentTargets = resumingCtx.targets || [];
+            const lookingCards = resumingCtx.lookingCards;
+            const nextParentCtx: ResolutionContext | undefined = resumingCtx.parentContext;
 
             currentCtx = nextParentCtx;
-            const completed = EffectProcessor.resolveEffects({
+            const completed = getProcessors(state).effect.resolveEffects({
                 state,
                 effects: effs,
                 sourceId,
@@ -332,6 +330,9 @@ export class ChoiceProcessor {
                 stackObject: stackObj,
                 parentContext: nextParentCtx,
                 lookingCards: lookingCards,
+                lastMilledIds: resumingCtx.lastMilledIds,
+                lastDiscardedIds: resumingCtx.lastDiscardedIds,
+                skipFizzleCheck: true,
             });
 
             if (stackObj && !completed && (state as GameState).pendingAction) {
@@ -353,19 +354,19 @@ export class ChoiceProcessor {
 
                             if (shouldExile) {
                                 logger.info(state, LogCategory.ACTION, `[RULE 701.5] ${card.definition.name} was exiled instead of being put into graveyard.`);
-                                ActionProcessor.removeFromCurrentZone(state, card);
+                                getProcessors(state).action.removeFromCurrentZone(state, card);
                                 if (!(fullStackObj as any).isCopy) {
-                                    ActionProcessor.moveCard(state, card, Zone.Exile, card.ownerId);
+                                    getProcessors(state).action.moveCard(state, card, Zone.Exile, card.ownerId);
                                 }
                             } else if (isPermanent) {
-                                ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId);
+                                getProcessors(state).action.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId);
                             } else {
-                                ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId);
+                                getProcessors(state).action.moveCard(state, card, Zone.Graveyard, card.ownerId);
                             }
                         }
                     } else {
                         // Clean up ability/trigger
-                        ActionProcessor.removeFromCurrentZone(state, { id: fullStackObj.id, zone: Zone.Stack } as GameObject);
+                        getProcessors(state).action.removeFromCurrentZone(state, { id: fullStackObj.id, zone: Zone.Stack } as GameObject);
                     }
                     logger.info(state, LogCategory.ACTION, `[STACK] Completed resolution of ${stackObj.type} for ${sourceId}.`);
 
@@ -424,7 +425,7 @@ export class ChoiceProcessor {
             if (player) {
                 const refundCost = card.definition.manaCost;
                 card.xValue = undefined; // Explicitly clear
-                ActionProcessor.moveCard(state, card, Zone.Hand, card.ownerId);
+                getProcessors(state).action.moveCard(state, card, Zone.Hand, card.ownerId);
 
                 const { mana: ManaProcessor } = getProcessors(state);
                 ManaProcessor.refundManaCost(player, refundCost);
@@ -505,6 +506,7 @@ export class ChoiceProcessor {
                 ...state.exile.map(o => o.id),
                 ...state.stack.map(o => o.id)
             ];
+            const { targeting: TargetingProcessor } = getProcessors(state);
             const { maxCount, minCount, count } = TargetingProcessor.calculateTotalCounts(targetDefinitions, obj.xValue || 0);
             const legalTargetIds = pool.filter(tid => TargetingProcessor.isLegalTarget(state, {
                 sourceId: obj.id,
@@ -698,7 +700,7 @@ export class ChoiceProcessor {
                 targets = newTargets;
             }
 
-            return SpellProcessor.activateAbility(
+            return getProcessors(state).spell.activateAbility(
                 state,
                 engine,
                 {
@@ -719,14 +721,14 @@ export class ChoiceProcessor {
             logger.info(state, LogCategory.ACTION, `[RESOLVING] Resuming resolution after interactive cost ${costType}...`);
 
             const costToPay = { type: action.data.costType, amount: action.data.maxChoices, value: action.data.maxChoices } as AbilityCost;
-            CostProcessor.pay(state, [costToPay], sourceId, playerId);
+            getProcessors(state).cost.pay(state, [costToPay], sourceId, playerId);
 
             if (action.data.remainingCosts && (action.data.remainingCosts as AbilityCost[]).length > 0) {
-                CostProcessor.pay(state, action.data.remainingCosts as AbilityCost[], sourceId, playerId);
+                getProcessors(state).cost.pay(state, action.data.remainingCosts as AbilityCost[], sourceId, playerId);
             }
 
             if (action.data.choiceEffects && (action.data.choiceEffects as EffectDefinition[]).length > 0) {
-                EffectProcessor.resolveEffects({
+                getProcessors(state).effect.resolveEffects({
                     state,
                     effects: action.data.choiceEffects as EffectDefinition[],
                     sourceId,
@@ -736,6 +738,7 @@ export class ChoiceProcessor {
                     parentContext: action.data.parentContext as ResolutionContext,
                     controllerIdOverride: playerId,
                     lookingCards: action.data.lookingCards as GameObject[],
+                    skipFizzleCheck: true,
                 });
             }
 
@@ -749,7 +752,7 @@ export class ChoiceProcessor {
                 const parentCtx = currentCtx.parentContext;
 
                 currentCtx = parentCtx;
-                const completed = EffectProcessor.resolveEffects({
+                const completed = getProcessors(state).effect.resolveEffects({
                     state,
                     effects: effs,
                     sourceId,
@@ -758,6 +761,9 @@ export class ChoiceProcessor {
                     stackObject: stackObj,
                     parentContext: parentCtx,
                     lookingCards: action.data.lookingCards as GameObject[],
+                    lastMilledIds: parentCtx?.lastMilledIds,
+                    lastDiscardedIds: parentCtx?.lastDiscardedIds,
+                    skipFizzleCheck: true,
                 });
 
                 if (stackObj && !completed && (state as GameState).pendingAction) {
@@ -807,7 +813,7 @@ export class ChoiceProcessor {
         const cardToPlayId = (isSpellCasting && !isTargeting && !isSystemValue && choice?.value && typeof choice.value === 'string' && choice.value.length > 20) ? choice.value : sourceId;
 
         // ARCHITECTURAL NOTE: Metadata Propagation
-        return SpellProcessor.playCard(
+        return getProcessors(state).spell.playCard(
             state,
             engine,
             {
@@ -850,7 +856,7 @@ export class ChoiceProcessor {
             const costs = choice.costs as AbilityCost[];
             const sourceObj = RuleUtils.findObject(state, sourceId);
 
-            if (!CostProcessor.canPay(state, costs, sourceId, action.playerId, stackObj)) {
+            if (!getProcessors(state).cost.canPay(state, costs, sourceId, action.playerId, stackObj)) {
                 logger.info(state, LogCategory.ACTION, `Insufficient resources to select: ${choice.label}`);
                 return false;
             }
@@ -868,14 +874,15 @@ export class ChoiceProcessor {
                 // Clear any stale interaction data for this cost type before prompting
                 delete state.interaction.lastSelections[interactiveCost.type];
 
-                state.pendingAction = ChoiceGenerator.createCostInteractionChoice(state, interactiveCost, sourceId, action.playerId, choice, action.data);
+                state.pendingAction = getProcessors(state).choiceGenerator.createCostInteractionChoice(state, interactiveCost, sourceId, action.playerId, choice, action.data);
                 return true;
             }
 
             const alreadyChosen = action.data?.xValueConfirmed === true;
             const needsX = costs.some((c: AbilityCost) => {
-                const isManaCost = String(c.type).toLowerCase() === 'mana';
-                const hasX = String((c as any).manaCost || "").includes('{X}') || String((c as any).value || "").includes('{X}');
+                const isManaCost = c.type === 'Mana';
+                // Check if the mana string or the numeric value contains X
+                const hasX = String((c as any).value || "").includes('{X}') || String((c as any).value || "").includes('X');
 
                 return isManaCost && hasX && !alreadyChosen;
             });
@@ -883,11 +890,11 @@ export class ChoiceProcessor {
 
             if (needsX && !alreadyChosen) {
                 logger.info(state, LogCategory.ACTION, `[CHOOSE_X] Prompting for X value for resolution cost...`);
-                state.pendingAction = ChoiceGenerator.createXChoice(state, sourceId, action.playerId, choice, action.data);
+                state.pendingAction = getProcessors(state).choiceGenerator.createXChoice(state, sourceId, action.playerId, choice, action.data);
                 return true;
             }
 
-            CostProcessor.pay(state, costs, sourceId, action.playerId);
+            getProcessors(state).cost.pay(state, costs, sourceId, action.playerId);
 
             state.interaction = {
                 lastSelections: {},
@@ -902,7 +909,7 @@ export class ChoiceProcessor {
         state.pendingAction = undefined;
 
         if (choice.effects && choice.effects.length > 0) {
-            EffectProcessor.resolveEffects({
+            getProcessors(state).effect.resolveEffects({
                 state,
                 effects: choice.effects,
                 sourceId,
@@ -912,6 +919,9 @@ export class ChoiceProcessor {
                 parentContext: savedActionData?.parentContext as ResolutionContext,
                 controllerIdOverride: action.playerId,
                 lookingCards: savedActionData?.lookingCards as GameObject[],
+                lastMilledIds: savedActionData?.parentContext?.lastMilledIds,
+                lastDiscardedIds: savedActionData?.parentContext?.lastDiscardedIds,
+                skipFizzleCheck: true,
             });
         }
 
@@ -923,19 +933,16 @@ export class ChoiceProcessor {
         if (!state.pendingAction && state.choiceQueue && state.choiceQueue.length > 0) {
             const nextItem = state.choiceQueue.shift()!;
             if (nextItem.type === 'RESOLUTION_CHOICE' && nextItem.data?.choices && !nextItem.data.lookingCards) {
-                state.pendingAction = ChoiceGenerator.createModalChoice(
-                    state,
-                    {
-                        label: nextItem.data.label,
-                        playerId: nextItem.playerId,
-                        sourceId: nextItem.sourceId,
-                        actionType: nextItem.type as ActionType,
-                        hideUndo: nextItem.data.hideUndo,
-                        stackObj: nextItem.data.stackObj,
-                        parentContext: nextItem.data.parentContext
-                    },
-                    (nextItem.data.choices as any[]).map((c: any) => ({ label: c.label, value: c.value, costs: c.costs, effects: c.effects }))
-                );
+                const choices = (nextItem.data.choices as ChoiceOption[]).map((c: ChoiceOption) => ({ label: c.label, value: c.value, costs: c.costs, effects: c.effects }));
+                state.pendingAction = getProcessors(state).action.prepareAction(state, {
+                    type: nextItem.type,
+                    playerId: nextItem.playerId,
+                    sourceId: nextItem.sourceId,
+                    data: {
+                        ...nextItem.data,
+                        choices
+                    }
+                });
                 if (state.pendingAction && state.pendingAction.data) {
                     state.pendingAction.data.nextPlayerIds = nextItem.data.nextPlayerIds;
                 }
@@ -961,7 +968,7 @@ export class ChoiceProcessor {
                     parentContext: nextItem.data.parentContext
                 });
             } else {
-                state.pendingAction = ChoiceGenerator.createDiscardChoice(
+                state.pendingAction = getProcessors(state).choiceGenerator.createDiscardChoice(
                     state,
                     [nextItem.playerId, ...nextItem.data.nextPlayerIds],
                     nextItem.sourceId,
@@ -981,7 +988,7 @@ export class ChoiceProcessor {
             if (nextPlayerIds.length > 0) {
                 const discardAmount = action.data?.discardAmount || action.data?.stackObj?.data?.discardAmount || 1;
                 const failureEffects = action.data?.onFailureEffects || action.data?.stackObj?.data?.onFailureEffects;
-                state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, action.data?.label || "Discard", action.data?.stackObj, action.data?.parentContext, failureEffects);
+                state.pendingAction = getProcessors(state).choiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, action.data?.label || "Discard", action.data?.stackObj, action.data?.parentContext, failureEffects);
                 return true;
             }
         }
@@ -1000,7 +1007,7 @@ export class ChoiceProcessor {
         targetId: string,
         engine: EngineContext
     ): boolean {
-        return TargetingProcessor.resolveInteractiveTargeting(state, playerId, targetId, engine);
+        return getProcessors(state).targeting.resolveInteractiveTargeting(state, playerId, targetId, engine);
     }
 
     private static handleXChoice(state: GameState, playerId: string, action: PendingAction, payload: ChoicePayload, engine: any): boolean {
@@ -1020,10 +1027,13 @@ export class ChoiceProcessor {
             return false;
         }
 
-        card.xValue = x;
+        if (RuleUtils.isEntity(card)) {
+            card.xValue = x;
+        }
         state.pendingAction = undefined;
 
-        logger.info(state, LogCategory.ACTION, `${state.players[playerId].name} chose X = ${x} for ${card.definition.name}.`);
+        const cardName = RuleUtils.isEntity(card) ? card.definition.name : "Source";
+        logger.info(state, LogCategory.ACTION, `${state.players[playerId].name} chose X = ${x} for ${cardName}.`);
 
         if (action.data?.isResolutionX) {
             // Mark as confirmed in the original action data so we don't re-prompt
@@ -1035,12 +1045,13 @@ export class ChoiceProcessor {
             }
 
             // Resume resolution choice with the chosen X
-            return (this as any).handleResolutionChoice(
+            return ChoiceProcessor.handleResolutionChoice(
                 state,
                 action.sourceId!,
                 action.data.selectedChoice,
                 { ...action, data: action.data.originalActionData },
-                engine
+                engine,
+                payload
             );
         }
 
@@ -1048,7 +1059,7 @@ export class ChoiceProcessor {
         let success = false;
 
         if (abilityIndex !== undefined) {
-            success = SpellProcessor.activateAbility(
+            success = getProcessors(state).spell.activateAbility(
                 state,
                 engine,
                 {
@@ -1065,7 +1076,7 @@ export class ChoiceProcessor {
                 }
             );
         } else {
-            success = SpellProcessor.playCard(
+            success = getProcessors(state).spell.playCard(
                 state,
                 engine,
                 {
@@ -1083,10 +1094,12 @@ export class ChoiceProcessor {
         }
 
         if (success === false) {
-            card.xValue = undefined;
+            const card = RuleUtils.findObject(state, sourceId);
+            if (RuleUtils.isEntity(card)) card.xValue = undefined;
         }
         return success;
     }
+
 
     private static isSelfSac(cost: AbilityCost, sourceId: string): boolean {
         if (cost.type !== 'Sacrifice') return false;

@@ -14,6 +14,8 @@ export class GameSetupProcessor {
     for (const id of playerIds) {
       state.players[id] = {
         id,
+        controllerId: id,
+        ownerId: id,
         name: names[id] || `Player ${id.slice(0, 4)}`,
         avatar: avatars[id],
         life: 20,

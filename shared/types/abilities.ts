@@ -273,6 +273,7 @@ export interface TriggeredAbility {
     abilityIndex?: number;
     targetIds?: string[];
     image_url?: string;
+    exileOnResolution?: boolean;
 }
 
 export interface ReplacementEffect {

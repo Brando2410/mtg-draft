@@ -11,20 +11,18 @@ export class ConditionProcessor {
    */
   public static matchesCondition(
     state: GameState,
-    condition: ConditionType | string | undefined,
+    condition: ConditionType | string | Function | { matches: Function } | undefined,
     context: ConditionContext,
   ): boolean {
     if (!condition) return true;
 
-    // 1. Support for function-based conditions
     if (typeof condition === "function") {
-      return (condition as any)(state, context.event, context);
+      return condition(state, context.event, context);
     }
 
-    // 2. Support for object-based condition handlers
     if (typeof condition === "object" && condition !== null) {
-      if ('matches' in condition && typeof (condition as any).matches === 'function') {
-        return (condition as any).matches(state, [], context);
+      if ('matches' in condition && typeof condition.matches === 'function') {
+        return condition.matches(state, [], context);
       }
     }
 

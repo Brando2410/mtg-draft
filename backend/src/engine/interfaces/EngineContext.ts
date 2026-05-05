@@ -77,6 +77,8 @@ export interface EffectExecutionOptions {
     parentContext?: ResolutionContext;
     controllerIdOverride?: PlayerId;
     lookingCards?: GameObject[];
+    lastMilledIds?: string[];
+    lastDiscardedIds?: string[];
 }
 
 export interface ResolveEffectsOptions {

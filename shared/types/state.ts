@@ -68,6 +68,8 @@ export interface BaseEntity {
     isFlashbackCast?: boolean;
     paidManaValue?: number;
     targets?: (GameObjectId | PlayerId)[]; // Added to unify target access for GameObject | StackObject
+    exiledBy?: string;
+    dealtDamageThisTurn?: boolean;
 }
 
 export interface GameObject extends BaseEntity {
@@ -84,6 +86,7 @@ export interface GameObject extends BaseEntity {
     lastNonStackZone?: Zone;
     isRevealed?: boolean;
     isFreeCast?: boolean;
+    isSpellCasting?: boolean;
     usedAlternativeCostId?: string;
     paidCost?: string;
     sourceCreatureId?: string;
@@ -133,10 +136,13 @@ export interface StackObject extends BaseEntity {
     lookingCards?: GameObject[];
     event?: import('./events').GameEvent;
     condition?: any;
+    preSelectedChoice?: number | string;
 }
 
 export interface PlayerState {
     id: PlayerId;
+    controllerId: PlayerId; // Harmonized for Targetable union
+    ownerId: PlayerId;      // Harmonized for Targetable union
     name: string;
     avatar?: string;
     life: number;
