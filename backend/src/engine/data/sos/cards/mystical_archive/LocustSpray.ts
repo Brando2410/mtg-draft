@@ -22,8 +22,8 @@ export const LocustSpray: CardDefinition = {
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    power: -1,
-                    toughness: -1,
+                    powerModifier: -1,
+                    toughnessModifier: -1,
                     duration: { type: DurationType.UntilEndOfTurn }
                 }
             ]

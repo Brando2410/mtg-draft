@@ -21,7 +21,7 @@ export const CastSpellHandler: IEffectHandler<CastSpellEffect> = {
 
     const spellName = effect.value;
     const isFree = effect.isFreeCast;
-    let targetId = effect.targetId || targets[0];
+    let targetId = (effect.targetIds && effect.targetIds.length > 0) ? effect.targetIds[0] : targets[0];
 
     logger.debug(state, LogCategory.ACTION, `[DEBUG] SpecializedEffects: CastSpell for ${targetId} (Free: ${isFree})`);
 

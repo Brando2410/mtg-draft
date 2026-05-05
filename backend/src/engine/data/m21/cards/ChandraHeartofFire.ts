@@ -51,14 +51,14 @@ export const ChandraHeartofFire: CardDefinition = {
                         { type: EffectType.Exile, targetMapping: TargetMapping.SelectedCard },
                         {
                             type: EffectType.ApplyContinuousEffect,
-                            value: 'MAY_CAST_WITHOUT_PAYING',
+                            isFreeCast: true,
                             duration: { type: DurationType.UntilEndOfTurn },
                             targetMapping: TargetMapping.SelectedCard
                         }
                     ]
                 },
                 { type: EffectType.Shuffle, targetMapping: TargetMapping.Controller },
-                { type: EffectType.AddMana, value: "{R}{R}{R}{R}{R}{R}", targetMapping: TargetMapping.Controller }
+                { type: EffectType.AddMana, manaType: "{R}{R}{R}{R}{R}{R}", targetMapping: TargetMapping.Controller }
             ]
         }
     ]

@@ -25,7 +25,7 @@ export const CullingtheWeak: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddMana,
-                    value: "{B}{B}{B}{B}"
+                    manaType: "{B}{B}{B}{B}"
                 }
             ]
         }

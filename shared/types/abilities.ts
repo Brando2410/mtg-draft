@@ -158,6 +158,7 @@ export interface SacrificeCost extends BaseAbilityCost {
     targetMapping?: 'SELF' | string;
     targetDefinitions?: TargetDefinition[];
     restrictions?: any[];
+    isCasualty?: boolean;
 }
 
 export interface DiscardCost extends BaseAbilityCost {

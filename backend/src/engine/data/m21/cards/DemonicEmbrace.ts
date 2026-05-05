@@ -44,7 +44,7 @@ export const DemonicEmbrace: CardDefinition = {
             effects: [{
                 type: EffectType.AllowCastFromGraveyard,
                 additionalCosts: [
-                    { type: CostType.PayLife, value: 3 },
+                    { type: CostType.PayLife, value: '3' },
                     { type: CostType.Discard, amount: 1 }
                 ],
                 targetMapping: TargetMapping.Controller

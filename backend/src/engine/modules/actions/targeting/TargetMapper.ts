@@ -4,7 +4,7 @@ import {
   GameObject, GameState,
   PlayerId, PreventionEffect, ReplacementEffect, ResolutionContext,
   Restriction,
-  TargetingContext, TargetDefinition, TargetMapping, TargetType, TriggeredAbility, Zone
+  TargetingContext, TargetDefinition, TargetMapping, TargetRestriction, TargetType, TriggeredAbility, Zone
 } from "@shared/engine_types";
 import { RuleUtils } from "../../../utils/RuleUtils";
 import { getProcessors } from "../../ProcessorRegistry";
@@ -86,7 +86,7 @@ export class TargetMapper {
 
     const type = (def.type || "target").toString().toLowerCase();
     const rawRestrictions = def.restrictions || [];
-    const restrictions = rawRestrictions.map((r: any) =>
+    const restrictions = rawRestrictions.map((r: TargetRestriction) =>
       typeof r === "string" ? r.toLowerCase() : r,
     );
 
@@ -338,9 +338,9 @@ export class TargetMapper {
     const { sourceId, controllerId, stackObject, targets, parentContext } =
       context;
     const { logger } = getProcessors(state);
-    
+
     // Extract common mapping properties from the effect payload to avoid repetitive casting
-    const payload = effect as any;
+    const payload = effect as (Partial<EffectDefinition> & { targetOffset?: number; linkKey?: string; restrictions?: TargetRestriction[]; sourceZones?: Zone[] });
     const targetOffset = payload?.targetOffset || 0;
     const linkKey = payload?.linkKey || "linkedCardId";
     const restrictions = payload?.restrictions || [];
@@ -356,8 +356,8 @@ export class TargetMapper {
 
     // Centralized target resolution: Prioritize context targets (current resolution) 
     // over stack object targets (original declaration).
-    const resolvedTargets = (targets && targets.length > 0) 
-      ? targets 
+    const resolvedTargets = (targets && targets.length > 0)
+      ? targets
       : (stackObject?.targets || []);
 
     const eventData =
@@ -379,18 +379,20 @@ export class TargetMapper {
 
     // 2. Legacy Switch (Fallback for remaining mappings)
     switch (mapping.toUpperCase()) {
-      case TargetMapping.LinkedObject:
-        const lSource =
-          state.battlefield.find((o: any) => o.id === sourceId) ||
-          (Object.values(state.players) as any[])
-            .flatMap((p) => p.graveyard)
-            .find((o: any) => o.id === sourceId) ||
-          state.exile.find((o: any) => o.id === sourceId);
-        return lSource?.data?.[linkKey] ? [lSource.data[linkKey]] : [];
+      case TargetMapping.LinkedObject: {
+        const lSource = RuleUtils.findObject(state, sourceId);
+        if (RuleUtils.isEntity(lSource)) {
+          return lSource.data?.[linkKey] ? [lSource.data[linkKey]] : [];
+        }
+        return [];
+      }
       case TargetMapping.EnchantedCreature:
       case TargetMapping.EnchantedPermanent: {
-        const aura = state.battlefield.find((o) => o.id === sourceId);
-        return aura?.attachedTo ? [aura.attachedTo] : [];
+        const aura = RuleUtils.findObject(state, sourceId);
+        if (RuleUtils.isGameObject(aura)) {
+          return aura.attachedTo ? [aura.attachedTo] : [];
+        }
+        return [];
       }
       case TargetMapping.LastCreatedToken:
         return state.turnState.lastCreatedTokenId
@@ -409,7 +411,7 @@ export class TargetMapper {
             (id: string) =>
               RuleUtils.findObject(state, id)?.ownerId,
           )
-          .filter(Boolean) as string[];
+          .filter((id): id is string => !!id);
         return [...new Set(owners)];
       }
       case TargetMapping.Target1Owner: {
@@ -430,7 +432,7 @@ export class TargetMapper {
         const eData = eventData;
         const sourceIdFromPayload = RuleUtils.getSource(eData);
         if (sourceIdFromPayload) return [sourceIdFromPayload];
-        
+
         const obj = RuleUtils.getEventObject(eData, state);
         if (obj) return [obj.id];
 
@@ -549,7 +551,7 @@ export class TargetMapper {
         const effectiveSourceZones = sourceZones || (isMatchingType
           ? [Zone.Battlefield, Zone.Graveyard, Zone.Hand, Zone.Exile, Zone.Library]
           : [Zone.Battlefield]);
-        const zones = Array.isArray(effectiveSourceZones) ? (effectiveSourceZones as any[]) : [effectiveSourceZones];
+        const zones = effectiveSourceZones;
 
         const pool: string[] = [];
         zones.forEach(z => {

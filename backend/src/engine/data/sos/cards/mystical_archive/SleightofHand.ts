@@ -19,7 +19,7 @@ export const SleightofHand: CardDefinition = {
                 {
                     type: EffectType.LookAtTopAndPick,
                     amount: 2,
-                    pickAmount: 1,
+                    pickCount: 1,
                     zone: Zone.Hand,
                     remainderZone: Zone.Library,
                     remainderPosition: 'bottom'

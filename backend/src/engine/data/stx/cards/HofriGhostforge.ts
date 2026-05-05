@@ -35,8 +35,8 @@ export const HofriGhostforge: CardDefinition = {
         },
         {
             type: AbilityType.Triggered,
-            eventMatch: TriggerEvent.Death,
-            condition: "AnotherNontokenCreatureYouControlDies",
+            eventMatch: TriggerEvent.DeathOther,
+            condition: 'EVENT_OBJECT_MATCHES:NON_TOKEN,YOU_CONTROL',
             effects: [{
                 type: EffectType.Choice,
                 label: "Hofri: Exile and create Spirit token?",
@@ -47,13 +47,13 @@ export const HofriGhostforge: CardDefinition = {
                         { type: EffectType.Exile, targetMapping: TargetMapping.TriggerEventSource },
                         {
                             type: EffectType.CreateTokenCopy,
-                            targetMapping: TargetMapping.TriggerEventSource,
+                            sourceMapping: TargetMapping.TriggerEventSource,
                             subtypesToAdd: ["Spirit"],
                             storeLinkedId: 'HOFRI_EXILE',
                             abilitiesToAdd: [{
                                 type: AbilityType.Triggered,
                                 eventMatch: TriggerEvent.LeaveBattlefield,
-                                effects: [{ type: EffectType.MoveToZone, zone: Zone.Graveyard, targetMapping: 'LINKED_OBJECT', linkKey: 'HOFRI_EXILE' }]
+                                effects: [{ type: EffectType.MoveToZone, zone: Zone.Graveyard, targetMapping: TargetMapping.LinkedObject, linkKey: 'HOFRI_EXILE' }]
                             }]
                         }
                     ]

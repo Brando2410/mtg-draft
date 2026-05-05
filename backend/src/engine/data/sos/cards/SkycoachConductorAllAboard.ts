@@ -27,7 +27,7 @@ export const SkycoachConductorAllAboard: CardDefinition = {
                     count: 1,
                     restrictions: [
                         Restriction.YouControl,
-                        { type: 'Not', restriction: 'Pilot' }
+                        { type: 'Not', restrictions: ['Pilot'] }
                     ]
                 }],
                 effects: [

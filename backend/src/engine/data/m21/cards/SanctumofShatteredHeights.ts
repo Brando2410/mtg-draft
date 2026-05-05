@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, DynamicAmount, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 
 export const SanctumofShatteredHeights: CardDefinition = {
     name: "Sanctum of Shattered Heights",
@@ -26,13 +26,15 @@ export const SanctumofShatteredHeights: CardDefinition = {
                     choices: [
                         {
                             label: "Yes",
-                            effects: [
-                                { type: EffectType.PayMana, value: "{1}" },
+                            costs: [
+                                { type: CostType.Mana, value: "{1}" },
                                 {
-                                    type: EffectType.DiscardCards,
+                                    type: CostType.Discard,
                                     amount: 1,
                                     restrictions: [Restriction.LandOrShrine]
-                                },
+                                }
+                            ],
+                            effects: [
                                 {
                                     type: EffectType.DealDamage,
                                     amount: DynamicAmount.ShrinesYouControlCount,

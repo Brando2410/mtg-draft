@@ -29,7 +29,7 @@ import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, Tr
             effects: [
                 {
                     type: EffectType.AddMana,
-                    value: '{U}{R}',
+                    manaType: '{U}{R}',
                     manaRestrictions: [Restriction.InstantOrSorcery]
                 }
             ]

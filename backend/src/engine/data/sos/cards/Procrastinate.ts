@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
     export const Procrastinate: CardDefinition = {
     name: 'Procrastinate',
     manaCost: '{X}{U}',
@@ -18,12 +18,12 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
       }],
       effects: [
         {
-          type: CostType.Tap,
+          type: EffectType.Tap,
           targetMapping: TargetMapping.Target1
         },
         {
           type: EffectType.AddCounters,
-          value: 'stun',
+          counterType: 'stun',
           amount: (state: any, source: any) => (source.xValue || 0) * 2,
           targetMapping: TargetMapping.Target1
         }
@@ -31,4 +31,3 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, Targe
     }
   ]
 };
-    

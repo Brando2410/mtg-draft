@@ -117,7 +117,6 @@ export class ContinuousEffectHandler {
                 canPlayExiled: ceDef.canPlayExiled,
                 isFreeCast: ceDef.isFreeCast,
                 limitPerTurn: ceDef.limitPerTurn,
-                value: ceDef.value,
                 condition: ceDef.condition,
                 typesToAdd: ceDef.typesToAdd,
                 subtypesToAdd: ceDef.subtypesToAdd,
@@ -145,15 +144,15 @@ export class ContinuousEffectHandler {
                 })) : [])
             };
 
-            if (effect.copyFromIdMapping) {
-                const ids = TP_FROM_REG.resolveTargetMapping(state, effect.copyFromIdMapping, { ...context, targets: playerSpecificTargetIds }, effect);
+            if (ceDef.copyFromIdMapping) {
+                const ids = TP_FROM_REG.resolveTargetMapping(state, ceDef.copyFromIdMapping, { ...context, targets: playerSpecificTargetIds }, effect);
                 if (ids.length > 0) {
                     continuousEff.copyFromId = ids[0];
                 }
             }
 
             // Names (Rule 201)
-            const chosenName = effect.chosenName || stackObject?.data?.chosenName;
+            const chosenName = ceDef.chosenName || stackObject?.data?.chosenName;
             if (chosenName) {
                 if (!state.turnState.namedCards) state.turnState.namedCards = {};
                 state.turnState.namedCards[sourceId] = chosenName;

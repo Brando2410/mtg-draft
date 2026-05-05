@@ -10,8 +10,8 @@ export const CreateDelayedTriggerHandler: IEffectHandler = {
     getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[DELAYED-HANDLER] context targets: ${targets?.join(', ')}`);
 
     // Support for capturing data from the current resolution (like MV of countered spell)
-    const data = effect.data || {};
-    if (effect.captureTargetMV) {
+    const data = (effect as any).data || {};
+    if ((effect as any).captureTargetMV) {
       const targetId = targets[0];
       const targetObj = RuleUtils.findObject(state, targetId);
       if (targetObj && 'paidManaValue' in targetObj && targetObj.paidManaValue !== undefined) {

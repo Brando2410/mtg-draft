@@ -50,7 +50,7 @@ export class PermanentHandler {
         const player = state.players[tid as PlayerId];
         if (player) {
             const { targeting: TP, effect: EP } = getProcessors(state);
-            const resList = effect.restrictions || (effect.restriction ? [effect.restriction] : ['Creature']);
+            const resList = effect.restrictions || ['Creature'];
             let candidates = state.battlefield.filter((o: GameObject) => o.controllerId === tid && TP.matchesRestrictions(state, o, resList, {
                 sourceId,
                 controllerId: tid,
@@ -176,14 +176,14 @@ export class PermanentHandler {
         const { logger, effect: EP } = getProcessors(state);
         const { targets } = context;
         const counterEff = effect as CounterEffect;
-        const type = counterEff.counterType || counterEff.value || effect.type || 'p1p1';
+        const type = counterEff.counterType || 'p1p1';
 
         targets.forEach((tid: string) => {
             const obj = RuleUtils.findObject(state, tid);
             if (RuleUtils.isEntity(obj) && obj.zone === Zone.Battlefield) {
                 const finalType = (type.toLowerCase() === 'p1p1' || type === '+1/+1') ? '+1/+1' : type;
-                const amountStr = counterEff.amount !== undefined ? counterEff.amount : counterEff.value;
-                const amount = typeof amountStr === 'number' ? amountStr : (EP.resolveAmount(state, amountStr, context, [tid]));
+                const amountStr = counterEff.amount;
+                const amount = (amountStr === undefined) ? 1 : (typeof amountStr === 'number' ? amountStr : (EP.resolveAmount(state, amountStr, context, [tid])));
 
                 const counterKey = finalType as CounterType;
                 obj.counters[counterKey] = (obj.counters[counterKey] || 0) + amount;
@@ -275,7 +275,7 @@ export class PermanentHandler {
         const { logger, effect: EP } = getProcessors(state);
         const { targets } = context;
         const tokenEff = effect as TokenEffect;
-        const blueprint = tokenEff.tokenBlueprint || tokenEff.definition;
+        const blueprint = tokenEff.tokenBlueprint;
         if (!blueprint) return;
 
         targets.forEach((tid: string) => {
@@ -314,9 +314,7 @@ export class PermanentHandler {
         const tokenEff = effect as TokenEffect;
         const { targeting: TP_LOCAL } = getProcessors(state);
 
-        const sourceCardId = tokenEff.sourceCardId ||
-            tokenEff.originalCardId ||
-            (tokenEff.sourceMapping ? TP_LOCAL.resolveTargetMapping(state, tokenEff.sourceMapping, context, effect)[0] : undefined);
+        const sourceCardId = tokenEff.sourceCardId || (tokenEff.sourceMapping ? TP_LOCAL.resolveTargetMapping(state, tokenEff.sourceMapping, context, effect)[0] : undefined);
 
         if (!sourceCardId) {
             logger.warn(state, LogCategory.ACTION, `[WARNING] handleCreateTokenCopy: No source card ID resolved.`);

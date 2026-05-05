@@ -313,12 +313,6 @@ export class EffectProcessor {
     };
 
     let validTargetIds = resolveMapping(effect.targetMapping, 0);
-    if (
-      effect.targetId &&
-      !validTargetIds.includes(effect.targetId)
-    ) {
-      validTargetIds.push(effect.targetId);
-    }
     if (effect.targetIds && Array.isArray(effect.targetIds)) {
       effect.targetIds.forEach((tid: string) => {
         if (!validTargetIds.includes(tid)) validTargetIds.push(tid);
@@ -352,7 +346,7 @@ export class EffectProcessor {
     if (
       (effect.targetMapping &&
         validTargetIds.length === 0 &&
-        !effect.targetId &&
+        !effect.targetIds?.length &&
         !effect.targetDefinitions) ||
       (effect.target2Mapping &&
         validTarget2Ids.length === 0 &&

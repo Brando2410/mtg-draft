@@ -1,4 +1,4 @@
-import { AbilityType, ActionType, AddManaEffect, CopyEffect, DurationType, EffectDefinition, EffectType, ExtraTurnsEffect, GameObject, GameState, LogEffect, PhasedOutEffect, PlayerId, PlayerState, PreventionEffectDefinition, ResolutionContext, SkipTurnsEffect, StackObject, TriggerAbilityEffect, Zone } from '@shared/engine_types';
+import { AbilityType, ActionType, CopyEffect, DurationType, EffectDefinition, EffectType, ExtraTurnsEffect, GameObject, GameState, LogEffect, PhasedOutEffect, PlayerId, PlayerState, PreventionEffectDefinition, ResolutionContext, SkipTurnsEffect, StackObject, TriggerAbilityEffect, Zone } from '@shared/engine_types';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { RuleUtils } from '../../../../utils/RuleUtils';
 import { getProcessors } from '../../../ProcessorRegistry';
@@ -169,11 +169,11 @@ export class ControlEffectHandler {
                     id: `delayed_${Date.now()}`,
                     sourceId: sourceId,
                     controllerId: controllerId,
-                    eventMatch: rest.eventMatch || rest.on || "",
+                    eventMatch: rest.eventMatch || "",
                     activeZone: Zone.Any,
                     targetIds: targets, // Store targets for condition matching
-                    duration: typeof trigDuration === 'string' 
-                        ? { type: trigDuration as DurationType } 
+                    duration: typeof trigDuration === 'string'
+                        ? { type: trigDuration as DurationType }
                         : (trigDuration || { type: DurationType.UntilEndOfTurn }),
                     ...rest,
                     type: AbilityType.Triggered
@@ -240,96 +240,11 @@ export class ControlEffectHandler {
                 targets.forEach((tid: string) => {
                     const obj = EP.findObject(state, tid, stackObject, parentContext);
                     if (obj && 'zone' in obj) {
-                        obj.isPhasedOut = (effect as PhasedOutEffect).value !== false;
+                        obj.isPhasedOut = (effect as PhasedOutEffect).isPhasedOut !== false;
                         logger.info(state, LogCategory.ACTION, `${obj.definition.name} phased ${obj.isPhasedOut ? 'out' : 'in'}.`);
                     }
                 });
                 break;
-
-            case EffectType.AddMana: {
-                const { mana: MP, choiceGenerator: CG } = getProcessors(state);
-                const effectiveTargets = (targets && targets.length > 0) ? targets : [controllerId];
-
-                // Prioritize manaType/mana over amount/value for symbol resolution
-                const manaEffect = effect as AddManaEffect;
-                let manaStr = manaEffect.manaType || manaEffect.mana || manaEffect.value || (manaEffect.amount && !isNaN(parseInt(String(manaEffect.amount))) ? String(manaEffect.amount) : null) || 'C';
-                const isFlexible = String(manaStr).toUpperCase() === 'ANY' || String(manaStr).toUpperCase() === '{ANY}';
-
-                if (isFlexible) {
-                    const tid = effectiveTargets[0];
-                    const p = state.players[tid as PlayerId];
-                    if (p) {
-                        const colors = ['W', 'U', 'B', 'R', 'G'];
-                        const choices = colors.map(c => ({
-                            label: `{${c}}`,
-                            value: c,
-                            effects: [{
-                                ...effect,
-                                manaType: c,
-                                value: c,
-                                mana: c,
-                                amount: effect.amount || 1
-                            }]
-                        }));
-
-                        state.pendingAction = CG.createModalChoice(state, {
-                            label: "Choose a color of mana to add",
-                            playerId: tid,
-                            sourceId: sourceId,
-                            stackObj: stackObject,
-                            parentContext: parentContext
-                        }, choices);
-                    }
-                    return;
-                }
-
-                effectiveTargets.forEach((tid: string) => {
-                    const p = state.players[tid as PlayerId];
-                    if (p) {
-                        const amount = RuleUtils.resolveAmount(state, manaEffect.amount, context) || 1;
-                        // Ensure braces if missing
-                        const formattedMana = String(manaStr).startsWith('{') ? String(manaStr) : `{${manaStr}}`;
-                        const res = MP.parseManaCost(formattedMana);
-
-                        const rawRestrictions = manaEffect.manaRestrictions || manaEffect.restriction || manaEffect.restrictions;
-                        const restrictionList = rawRestrictions ? (Array.isArray(rawRestrictions) ? rawRestrictions : [rawRestrictions]) : null;
-
-                        if (restrictionList) {
-                            const newRestricted = [...(p.restrictedMana || [])];
-                            Object.entries(res.colored).forEach(([s, a]) => {
-                                const total = (a as number) * amount;
-                                if (total > 0) {
-                                    newRestricted.push({ color: s as any, amount: total, restrictions: restrictionList });
-                                    logger.info(state, LogCategory.ACTION, `[MANA] Produced {${s}} x ${total} (Restricted: ${restrictionList.join(', ')})`);
-                                }
-                            });
-                            if (res.generic > 0) {
-                                const total = res.generic * amount;
-                                newRestricted.push({ color: 'C', amount: total, restrictions: restrictionList });
-                                logger.info(state, LogCategory.ACTION, `[MANA] Produced {C} x ${total} (Restricted: ${restrictionList.join(', ')})`);
-                            }
-                            p.restrictedMana = newRestricted;
-                        } else {
-                            // Update manaPool with a new object reference to ensure UI/Socket change detection
-                            const newPool = { ...p.manaPool };
-                            Object.entries(res.colored).forEach(([s, a]) => {
-                                const total = (a as number) * amount;
-                                if (total > 0) {
-                                    (newPool as any)[s] += total;
-                                    logger.info(state, LogCategory.ACTION, `[MANA] Produced {${s}} x ${total}`);
-                                }
-                            });
-                            const genericTotal = res.generic * amount;
-                            if (genericTotal > 0) {
-                                newPool.C += genericTotal;
-                                logger.info(state, LogCategory.ACTION, `[MANA] Produced {C} x ${genericTotal}`);
-                            }
-                            p.manaPool = newPool;
-                        }
-                    }
-                });
-                break;
-            }
         }
     }
 }

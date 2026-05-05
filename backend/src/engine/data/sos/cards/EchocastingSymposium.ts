@@ -21,7 +21,7 @@ export const EchocastingSymposium: CardDefinition = {
                 {
                     type: EffectType.CreateTokenCopy,
                     targetMapping: TargetMapping.Target1, // Player
-                    target2Mapping: TargetMapping.Target2 // Creature to copy
+                    sourceMapping: TargetMapping.Target2 // Creature to copy
                 }
             ]
         }

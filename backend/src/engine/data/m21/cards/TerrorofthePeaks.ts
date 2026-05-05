@@ -20,7 +20,7 @@ export const TerrorofthePeaks: CardDefinition = {
                     type: EffectType.AdditionalCost,
                     targetMapping: TargetMapping.EachOpponent,
                     condition: 'SPELL_TARGETS_SOURCE',
-                    additionalCosts: [{ type: CostType.PayLife, value: 3 }]
+                    additionalCosts: [{ type: CostType.PayLife, value: '3' }]
                 }
             ]
         },

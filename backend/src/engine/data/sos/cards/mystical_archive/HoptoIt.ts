@@ -19,7 +19,7 @@ export const HoptoIt: CardDefinition = {
                 {
                     type: EffectType.CreateToken,
                     amount: 3,
-                    tokenDefinition: {
+                    tokenBlueprint: {
                         name: "Rabbit",
                         colors: ["W"],
                         types: ["Creature"],

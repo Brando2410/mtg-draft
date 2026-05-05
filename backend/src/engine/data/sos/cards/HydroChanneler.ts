@@ -20,7 +20,7 @@ export const HydroChanneler: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddMana,
-                    value: '{U}',
+                    manaType: '{U}',
                     manaRestrictions: [Restriction.InstantOrSorcery],
                     targetMapping: TargetMapping.Controller
                 }
@@ -34,11 +34,11 @@ export const HydroChanneler: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Choose a color of mana to add",
                     choices: [
-                        { label: "White", value: "{W}", effects: [{ type: EffectType.AddMana, value: '{W}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
-                        { label: "Blue", value: "{U}", effects: [{ type: EffectType.AddMana, value: '{U}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
-                        { label: "Black", value: "{B}", effects: [{ type: EffectType.AddMana, value: '{B}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
-                        { label: "Red", value: "{R}", effects: [{ type: EffectType.AddMana, value: '{R}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
-                        { label: "Green", value: "{G}", effects: [{ type: EffectType.AddMana, value: '{G}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] }
+                        { label: "White", value: "{W}", effects: [{ type: EffectType.AddMana, manaType: '{W}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
+                        { label: "Blue", value: "{U}", effects: [{ type: EffectType.AddMana, manaType: '{U}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
+                        { label: "Black", value: "{B}", effects: [{ type: EffectType.AddMana, manaType: '{B}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
+                        { label: "Red", value: "{R}", effects: [{ type: EffectType.AddMana, manaType: '{R}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
+                        { label: "Green", value: "{G}", effects: [{ type: EffectType.AddMana, manaType: '{G}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] }
                     ],
                     targetMapping: TargetMapping.Controller
                 }

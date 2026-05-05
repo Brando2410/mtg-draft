@@ -18,8 +18,8 @@ export const TriumphoftheHordes: CardDefinition = {
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    power: 1,
-                    toughness: 1,
+                    powerModifier: 1,
+                    toughnessModifier: 1,
                     abilitiesToAdd: ["Trample", "Infect"],
                     duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.AllCreaturesYouControl

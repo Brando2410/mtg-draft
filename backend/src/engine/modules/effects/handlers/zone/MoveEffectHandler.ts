@@ -42,8 +42,8 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     const affectedPlayerId = (targets.find(tid => state.players[tid as PlayerId]) as PlayerId) || controllerId;
 
 
-    const targetIds = effect.targetId
-      ? [effect.targetId]
+    const targetIds = (effect.targetIds && effect.targetIds.length > 0)
+      ? effect.targetIds
       : targets.length > 0
         ? targets
         : [];
@@ -54,7 +54,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         ? stackObject?.targets || []
         : targetIds;
 
-    const selectionType = effect.selectionType ||
+    const selectionType = (effect as any).selectionType ||
       (effect.targetMapping === TargetMapping.AllMatchingCards ? "All" : "Target");
 
     // Rule: Resolve default zone for specific movement keywords
@@ -279,7 +279,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           if (!RuleUtils.isLand(c)) {
             subEffects.push({
               type: EffectType.CastSpell,
-              targetId: c.id,
+              targetIds: [c.id],
               isFreeCast: true,
             });
           }
@@ -616,13 +616,15 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
             ? 0
             : 1,
         maxChoices: (() => {
-          if (effect.selectionType === SelectionType.ANY || moveEff.amount === "ANY") {
+          const count = moveEff.pickCount || (moveEff as any).pickAmount || moveEff.amount || 1;
+          if (effect.selectionType === SelectionType.ANY || count === "ANY") {
             return cards.length;
           }
           const processors = getProcessors(state);
-          const resolved = processors.effect.resolveAmount(state, moveEff.amount || 1, context, cards.map(c => c.id));
+          const resolved = processors.effect.resolveAmount(state, count, context, cards.map(c => c.id));
           return Math.min(cards.length, resolved);
         })(),
+
         actionType:
           effect.optional || effect.selectionType === SelectionType.ANY
             ? ActionType.OptionalAction
@@ -637,7 +639,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           } else {
             subEffects.push({
               type: EffectType.MoveToZone,
-              targetId: selectedCard.id,
+              targetIds: [selectedCard.id],
               zone: zone,
               tapped: moveEff.tapped,
               reveal: moveEff.reveal,
@@ -648,7 +650,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           if (effect.isFreeCast) {
             subEffects.push({
               type: EffectType.CastSpell,
-              targetId: selectedCard.id,
+              targetIds: [selectedCard.id],
               isFreeCast: true,
             });
           }
@@ -876,8 +878,8 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     const { controllerId, stackObject } = context;
     const parentContext = context;
     const moveEff = effect as MoveEffect;
-    const idsToMove = effect.targetId
-      ? [effect.targetId]
+    const idsToMove = (effect.targetIds && effect.targetIds.length > 0)
+      ? effect.targetIds
       : targetIds;
     let zone = moveEff.zone;
     if (!zone) {

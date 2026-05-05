@@ -21,7 +21,7 @@ export const ArchfiendsVessel: CardDefinition = {
                 { type: EffectType.Exile, targetMapping: TargetMapping.Self },
                 {
                     type: EffectType.CreateToken,
-                    definition: {
+                    tokenBlueprint: {
                         name: 'Demon',
                         power: "5",
                         toughness: "5",

@@ -21,8 +21,14 @@ export const GhostlyPilferer: CardDefinition = {
                     type: EffectType.Choice,
                     label: "You may pay {2} to draw a card",
                     optional: true,
-                    costs: [{ type: CostType.Mana, amount: 2 }],
-                    effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
+                    choices: [
+                        {
+                            label: "Pay {2}",
+                            costs: [{ type: CostType.Mana, value: '{2}' }],
+                            effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
+                        }
+                    ],
+                    targetMapping: TargetMapping.Controller
                 }
             ]
         },
@@ -39,7 +45,7 @@ export const GhostlyPilferer: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     duration: { type: DurationType.UntilEndOfTurn },
-                    isUnblockable: true,
+                    abilitiesToAdd: ['CannotBeBlocked'],
                     targetMapping: TargetMapping.Self
                 }
             ]

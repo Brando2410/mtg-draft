@@ -27,7 +27,7 @@ export const ResonatingLute: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.AddMana,
-                                    value: '{ANY}{ANY}',
+                                    manaType: '{ANY}{ANY}',
                                     manaRestrictions: [Restriction.InstantOrSorcery]
                                 }
                             ]
@@ -51,5 +51,3 @@ export const ResonatingLute: CardDefinition = {
         }
     ]
 };
-
-

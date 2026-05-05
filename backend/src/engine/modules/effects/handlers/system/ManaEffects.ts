@@ -3,49 +3,92 @@ import { getProcessors } from "../../../ProcessorRegistry";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
 import { IEffectHandler } from "../../IEffectHandler";
 import { LogCategory } from "../../../../utils/EngineLogger";
+import { RuleUtils } from "../../../../utils/RuleUtils";
 
 export const ManaHandler: IEffectHandler = {
   handle(state, effect, context) {
     const { logger, mana: MP } = getProcessors(state);
-    const { controllerId } = context;
-    const player = state.players[controllerId as PlayerId];
-    if (!player) return;
-
+    const { controllerId, targets, sourceId, stackObject, parentContext } = context;
+    
     if (effect.type === EffectType.AddMana || effect.type === EffectType.AddManaChoice) {
       const manaEffect = effect as AddManaEffect;
-      const amount = manaEffect.value || manaEffect.manaType || "";
-      if (amount.toUpperCase().includes('ANY')) {
-        state.pendingAction = ChoiceGenerator.createModalChoice(
-          state,
-          {
-            label: "Choose a color to add",
-            playerId: controllerId as PlayerId,
-            sourceId: context.sourceId || "",
-            stackObj: context.stackObject
-          },
-          [
-            { label: "{W}", value: "W", effects: [{ type: EffectType.AddMana, value: "{W}" } as AddManaEffect] },
-            { label: "{U}", value: "U", effects: [{ type: EffectType.AddMana, value: "{U}" } as AddManaEffect] },
-            { label: "{B}", value: "B", effects: [{ type: EffectType.AddMana, value: "{B}" } as AddManaEffect] },
-            { label: "{R}", value: "R", effects: [{ type: EffectType.AddMana, value: "{R}" } as AddManaEffect] },
-            { label: "{G}", value: "G", effects: [{ type: EffectType.AddMana, value: "{G}" } as AddManaEffect] }
-          ]
-        );
+      const effectiveTargets = (targets && targets.length > 0) ? targets : [controllerId];
+
+      // Prioritize manaType over legacy value
+      let manaStr = manaEffect.manaType || (manaEffect as any).value || 'C';
+      const isFlexible = String(manaStr).toUpperCase() === 'ANY' || String(manaStr).toUpperCase() === '{ANY}';
+
+      if (isFlexible) {
+        const tid = effectiveTargets[0];
+        const p = state.players[tid as PlayerId];
+        if (p) {
+          const colors = ['W', 'U', 'B', 'R', 'G'];
+          const choices = colors.map(c => ({
+            label: `{${c}}`,
+            value: c,
+            effects: [{
+              ...effect,
+              manaType: c,
+              amount: effect.amount || 1
+            } as AddManaEffect]
+          }));
+
+          state.pendingAction = ChoiceGenerator.createModalChoice(state, {
+            label: "Choose a color of mana to add",
+            playerId: tid as PlayerId,
+            sourceId: sourceId || "",
+            stackObj: stackObject,
+            parentContext: parentContext
+          }, choices);
+        }
         return;
       }
-      const added = MP.parseManaCost(amount.startsWith("{") ? amount : `{${amount}}`);
-      player.manaPool.W += added.colored.W || 0;
-      player.manaPool.U += added.colored.U || 0;
-      player.manaPool.B += added.colored.B || 0;
-      player.manaPool.R += added.colored.R || 0;
-      player.manaPool.G += added.colored.G || 0;
-      player.manaPool.C += added.colored.C || 0;
-      logger.info(state, LogCategory.ACTION, `[MANA] ${player.name} added ${amount}.`);
+
+      effectiveTargets.forEach((tid: string) => {
+        const p = state.players[tid as PlayerId];
+        if (p) {
+          const amount = RuleUtils.resolveAmount(state, manaEffect.amount, context) || 1;
+          // Ensure braces if missing
+          const formattedMana = String(manaStr).startsWith('{') ? String(manaStr) : `{${manaStr}}`;
+          const res = MP.parseManaCost(formattedMana);
+
+          const restrictionList = manaEffect.manaRestrictions || null;
+
+          if (restrictionList) {
+            const newRestricted = [...(p.restrictedMana || [])];
+            Object.entries(res.colored).forEach(([s, a]) => {
+              const total = (a as number) * amount;
+              if (total > 0) {
+                newRestricted.push({ color: s as any, amount: total, restrictions: restrictionList });
+                logger.info(state, LogCategory.ACTION, `[MANA] Produced {${s}} x ${total} (Restricted: ${restrictionList.join(', ')})`);
+              }
+            });
+            if (res.generic > 0) {
+              const total = res.generic * amount;
+              newRestricted.push({ color: 'C', amount: total, restrictions: restrictionList });
+              logger.info(state, LogCategory.ACTION, `[MANA] Produced {C} x ${total} (Restricted: ${restrictionList.join(', ')})`);
+            }
+            p.restrictedMana = newRestricted;
+          } else {
+            // Update manaPool with a new object reference to ensure UI/Socket change detection
+            const newPool = { ...p.manaPool };
+            Object.entries(res.colored).forEach(([s, a]) => {
+              const total = (a as number) * amount;
+              if (total > 0) {
+                (newPool as any)[s] += total;
+                logger.info(state, LogCategory.ACTION, `[MANA] Produced {${s}} x ${total}`);
+              }
+            });
+            const genericTotal = res.generic * amount;
+            if (genericTotal > 0) {
+              newPool.C += genericTotal;
+              logger.info(state, LogCategory.ACTION, `[MANA] Produced {C} x ${genericTotal}`);
+            }
+            p.manaPool = newPool;
+          }
+        }
+      });
       return;
     }
-
-    const value = (effect as any).value || "{0}";
-    MP.deductManaCost(player, value.startsWith("{") ? value : `{${value}}`, state);
-    logger.info(state, LogCategory.ACTION, `[PAID] ${player.name} paid ${value}.`);
   }
 };

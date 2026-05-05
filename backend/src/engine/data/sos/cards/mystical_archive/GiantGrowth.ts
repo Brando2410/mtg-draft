@@ -22,8 +22,8 @@ export const GiantGrowth: CardDefinition = {
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    power: 3,
-                    toughness: 3,
+                    powerModifier: 3,
+                    toughnessModifier: 3,
                     duration: { type: DurationType.UntilEndOfTurn }
                 }
             ]

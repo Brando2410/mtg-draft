@@ -27,7 +27,7 @@ export const Pongify: CardDefinition = {
                     type: EffectType.CreateToken,
                     targetMapping: TargetMapping.Controller,
                     amount: 1,
-                    tokenDefinition: {
+                    tokenBlueprint: {
                         name: "Ape",
                         colors: ["G"],
                         types: ["Creature"],

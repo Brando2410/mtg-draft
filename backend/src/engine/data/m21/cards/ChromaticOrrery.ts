@@ -27,7 +27,7 @@ export const ChromaticOrrery: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddMana,
-                    value: '{C}{C}{C}{C}{C}',
+                    manaType: '{C}{C}{C}{C}{C}',
                     targetMapping: TargetMapping.Controller
                 }
             ]

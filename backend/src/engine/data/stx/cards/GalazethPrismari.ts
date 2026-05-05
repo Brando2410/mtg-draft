@@ -17,7 +17,28 @@ export const GalazethPrismari: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.EnterBattlefield,
-            effects: [{ type: EffectType.CreateToken, tokenBlueprint: { name: 'Treasure', types: ['Artifact', 'Token'], subtypes: ['Treasure'], oracleText: '{T}, Sacrifice this artifact: Add one mana of any color.' } }]
+            effects: [
+                {
+                    type: EffectType.CreateToken,
+                    tokenBlueprint: {
+                        name: 'Treasure',
+                        types: ['Artifact', 'Token'],
+                        subtypes: ['Treasure'],
+                        oracleText: '{T}, Sacrifice this artifact: Add one mana of any color.',
+                        abilities: [
+                            {
+                                type: AbilityType.Activated,
+                                costs: [{ type: CostType.SacrificeSelf }],
+                                effects: [{
+                                    type: EffectType.AddMana,
+                                    amount: 1,
+                                    manaType: 'ANY',
+                                }]
+                            }
+                        ]
+                    }
+                }
+            ]
         },
         {
             type: AbilityType.Static,
@@ -26,13 +47,14 @@ export const GalazethPrismari: CardDefinition = {
                 targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
                 restrictions: [Restriction.Artifact],
                 abilitiesToAdd: [{
+                    id: "{T}: Add one mana of any color. Spend this mana only to cast an instant or sorcery spell.",
                     type: AbilityType.Activated,
                     costs: [{ type: CostType.Tap }],
                     effects: [{
                         type: EffectType.AddMana,
                         amount: 1,
                         manaType: 'ANY',
-                        manaRestriction: { types: ['Instant', 'Sorcery'] }
+                        manaRestrictions: [{ types: ['Instant', 'Sorcery'] }]
                     }]
                 }]
             }]

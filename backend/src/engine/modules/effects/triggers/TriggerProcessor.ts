@@ -17,6 +17,7 @@ import {
   TriggeredAbilityDefinition,
   AbilityDefinition,
   TriggerEvent,
+  TriggerAbilityEffect,
   Zone
 } from "@shared/engine_types";
 import { LogCategory } from "../../../utils/EngineLogger";
@@ -249,7 +250,7 @@ export class TriggerProcessor {
       id: triggerId,
       sourceId,
       controllerId,
-      eventMatch: (effect as any).eventMatch, // eventMatch is dynamic for delayed triggers
+      eventMatch: (effect as TriggerAbilityEffect).eventMatch || '', // eventMatch is dynamic for delayed triggers
       effects: effect.effects || [],
       duration: (effect.duration as import('@shared/engine_types').EffectDuration) || { type: DurationType.UntilEndOfTurn },
       condition: effect.condition,
@@ -269,7 +270,7 @@ export class TriggerProcessor {
     // Invalidate trigger cache
     if (state._triggerCache) state._triggerCache.version = -1;
 
-    logger.info(state, LogCategory.TRIGGER, `[DELAYED TRIGGER] Registered: triggered on ${effect.eventMatch}.`);
+    logger.info(state, LogCategory.TRIGGER, `[DELAYED TRIGGER] Registered: triggered on ${(effect as TriggerAbilityEffect).eventMatch}.`);
   }
 
   public static cleanupDelayedTriggers(
@@ -329,7 +330,7 @@ export class TriggerProcessor {
     const effects = trigger.effects || [];
     const exileOnResolution = trigger.exileOnResolution || (RuleUtils.isEntity(sourceObj) ? sourceObj.definition.exileOnResolution : false) || effects.some((e: EffectDefinition) =>
       (e.type === EffectType.Exile || e.type === EffectType.ExileAllCards || e.type === EffectType.MoveToZone) &&
-      (e.targetMapping === TargetMapping.Self || e.targetId === trigger.sourceId) &&
+      (e.targetMapping === TargetMapping.Self || e.targetIds?.includes(trigger.sourceId)) &&
       (!e.zone || e.zone === Zone.Exile)
     );
 

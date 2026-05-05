@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, TargetMapping, CounterType, TriggerEvent, DurationType, ConditionType } from '@shared/engine_types';
 
 export const FirstDayofClass: CardDefinition = {
     name: 'First Day of Class',
@@ -13,21 +13,17 @@ export const FirstDayofClass: CardDefinition = {
             type: AbilityType.Spell,
             effects: [
                 {
-                    type: EffectType.ApplyContinuousEffect,
-                    duration: 'UNTIL_END_OF_TURN',
-                    deferredTrigger: {
+                    type: EffectType.CreateDelayedTrigger,
+                    duration: { type: DurationType.UntilEndOfTurn },
                     eventMatch: TriggerEvent.EnterBattlefield,
-                        condition: 'YouControlEnteredObject',
-                        effects: [
-                            { type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.TriggerEventSource },
-                            { type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.TriggerEventSource, duration: 'UNTIL_END_OF_TURN', abilitiesToAdd: ['Haste'] }
-                        ]
-                    }
+                    condition: ConditionType.YouControlEnteredObject,
+                    effects: [
+                        { type: EffectType.AddCounters, counterType: CounterType.P1P1, amount: 1, targetMapping: TargetMapping.TriggerEventSource },
+                        { type: EffectType.ApplyContinuousEffect, targetMapping: TargetMapping.TriggerEventSource, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToAdd: ['Haste'] }
+                    ]
                 },
                 { type: EffectType.Learn }
             ]
         }
     ]
-  };
-
-
+};

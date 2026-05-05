@@ -35,7 +35,7 @@ export const ManaSculpt: CardDefinition = {
                             effects: [
                                 {
                                     type: EffectType.AddMana,
-                                    value: '{C}',
+                                    manaType: '{C}',
                                     amount: 'CAPTURED_AMOUNT',
                                     targetMapping: TargetMapping.Controller
                                 }

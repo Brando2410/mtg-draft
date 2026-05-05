@@ -8,7 +8,7 @@ export const DiscardEffectHandler: IEffectHandler<EffectDefinition> = {
         const { effect: EP } = getProcessors(state);
         const { targets, controllerId, stackObject, parentContext } = context;
         
-        const targetIds = effect.targetId ? [effect.targetId] : targets;
+        const targetIds = (effect.targetIds && effect.targetIds.length > 0) ? effect.targetIds : targets;
         const finalTargetIds = targetIds.length === 0 && !parentContext ? stackObject?.targets || [] : targetIds;
 
         const playerIds = finalTargetIds.filter(id => state.players[id as PlayerId]) as PlayerId[];

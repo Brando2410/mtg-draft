@@ -1,4 +1,4 @@
-import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, EffectType, GameState, PlayerId, RemoveCounterCost, TriggerEvent, Zone, TriggeredAbility } from '@shared/engine_types';
+import { AbilityDefinition, AbilityType, ActionType, AddCounterCost, AddManaEffect, EffectType, GameState, PlayerId, RemoveCounterCost, TriggerEvent, Zone, TriggeredAbility } from '@shared/engine_types';
 import { LogCategory } from '../../utils/EngineLogger';
 import { EngineContext } from '../../interfaces/EngineContext';
 import { oracle } from '../../OracleLogicMap';
@@ -154,7 +154,7 @@ export class PlayerActionProcessor {
 
         if (ability.isManaAbility) {
           // Determine if this mana ability requires choices (like Add {B} or {G})
-          const hasChoices = ability.effects?.some((e) => e.type === EffectType.AddMana && e.choices);
+          const hasChoices = ability.effects?.some((e) => e.type === EffectType.AddMana && (e as AddManaEffect).choices);
 
           // If it has no choices and only costs Tap, we just fire it immediate
           // Rules 605.3a: Mana abilities don't use the stack and are resolved immediately.
@@ -269,7 +269,7 @@ export class PlayerActionProcessor {
 
     const player = state.players[playerId];
 
-    const manaStr = addManaEffect.value || '{C}';
+    const manaStr = (addManaEffect as AddManaEffect).manaType || '{C}';
     const requirements = ManaProcessor.parseManaCost(manaStr.startsWith('{') ? manaStr : `{${manaStr}}`);
 
     // Extract the primary color symbol
@@ -394,9 +394,9 @@ export class PlayerActionProcessor {
 
     const attacker = RuleUtils.findObject(state, cardId);
     const blocker = RuleUtils.findObject(state, blockerId);
-    
+
     if (!attacker || !blocker || !RuleUtils.isEntity(attacker) || !RuleUtils.isEntity(blocker)) {
-        return false;
+      return false;
     }
 
     const oldIdx = state.combat.blockers.findIndex(b => b.blockerId === blockerId);
@@ -405,10 +405,10 @@ export class PlayerActionProcessor {
     state.combat.blockers.push({ blockerId, attackerId: cardId });
     logger.info(state, LogCategory.COMBAT, `${state.battlefield.find(c => c.id === blockerId)?.definition.name} blocking ${card.definition.name}`);
 
-    TrP.onEvent(state, { 
-      type: 'ON_BLOCK', 
-      playerId: playerId, 
-      payload: { sourceId: blockerId, targetIds: [blockerId], object: blockerObj, attackerId: cardId } 
+    TrP.onEvent(state, {
+      type: 'ON_BLOCK',
+      playerId: playerId,
+      payload: { sourceId: blockerId, targetIds: [blockerId], object: blockerObj, attackerId: cardId }
     });
 
     state.pendingAction!.sourceId = undefined;
@@ -429,7 +429,7 @@ export class PlayerActionProcessor {
       return { finished: false, success: false };
     }
 
-    const isOptionalDiscard = 
+    const isOptionalDiscard =
       state.pendingAction?.type === ActionType.Discard && state.pendingAction.data?.minChoices === 0;
 
     if (player.pendingDiscardCount <= 0 && !isOptionalDiscard) {
@@ -441,7 +441,7 @@ export class PlayerActionProcessor {
 
     const card = player.hand[cardIndex];
     if (!card) return { finished: false, success: false };
-    
+
     // CR 701.8: To discard a card, move it from hand to graveyard.
     const { action: ActionProcessor } = getProcessors(state);
     ActionProcessor.moveCard(state, card, Zone.Graveyard, playerId, "top", false, true);
@@ -470,7 +470,7 @@ export class PlayerActionProcessor {
           const label = state.pendingAction.data?.label || "Discard";
           const currentPlayerId = nextPlayerIds.shift()!;
           const onFailureEffects = state.pendingAction.data?.onFailureEffects;
-          
+
           state.pendingAction = getProcessors(state).choiceGenerator.createDiscardChoice(
             state,
             [currentPlayerId, ...nextPlayerIds],

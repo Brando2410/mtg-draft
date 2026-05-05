@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/engine_types';
-    export const RapturousMoment: CardDefinition = {
+export const RapturousMoment: CardDefinition = {
     name: "Rapturous Moment",
     manaCost: "{4}{U}{R}",
     colors: [
@@ -28,10 +28,9 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
                 },
                 {
                     type: EffectType.AddMana,
-                    value: "{U}{U}{R}{R}{R}"
+                    manaType: "{U}{U}{R}{R}{R}"
                 }
             ]
         }
     ]
 };
-    

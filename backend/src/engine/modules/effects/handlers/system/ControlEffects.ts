@@ -7,7 +7,7 @@ export const ControlEffectsHandler: IEffectHandler = {
   handle(state, effect, context) {
     const { targets, controllerId } = context;
 
-    if (effect.choices) {
+    if ((effect as any).choices) {
       const searchingPlayerId =
         ((targets || []).find(
           (tid: string) => state.players[tid as PlayerId],

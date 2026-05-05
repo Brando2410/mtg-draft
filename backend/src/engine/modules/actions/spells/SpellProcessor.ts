@@ -180,7 +180,7 @@ export class SpellProcessor {
         const logic = RegistryUtils.getEffectiveLogic(state, cardToPlay);
         const { effects: spellEffects, targetDefinitions } = RegistryUtils.getEffectivePayload(state, cardToPlay);
         const modalAbility = RegistryUtils.getModalAbility(logic, currentDefinition);
-        
+
         const hasPreSelectedChoice = state.interaction?.lastChoiceIndex !== undefined;
         const lastChosenModeIndex = state.interaction?.lastChosenModeIndex;
         const hasPreSelectedMode = lastChosenModeIndex !== undefined;
@@ -190,7 +190,7 @@ export class SpellProcessor {
             (e as ModalEffect).choices &&
             !e.targetMapping &&
             idx === 0 &&
-            (!(e as ModalEffect).choices?.some((c: any) => c.costs && c.costs.length > 0))
+            (!(e as ModalEffect).choices?.some((c) => c.costs && c.costs.length > 0))
         );
 
         // Step 0.5: Check for X in cost or inherent logic
@@ -199,7 +199,7 @@ export class SpellProcessor {
         // Safely check for X in pre-selected modal modes
         let modeHasX = false;
         if (hasPreSelectedMode && modalAbility?.modes) {
-            const index = (Array.isArray(lastChosenModeIndex) ? lastChosenModeIndex[0] : lastChosenModeIndex) as number;
+            const index = (Array.isArray(lastChosenModeIndex) ? lastChosenModeIndex[0] : lastChosenModeIndex);
             const chosenMode = modalAbility.modes[index];
             if (chosenMode) {
                 modeHasX = JSON.stringify(chosenMode).includes('"X"');
@@ -210,7 +210,7 @@ export class SpellProcessor {
         const needsX = costStr.includes('{X}') ||
             logic?.abilities?.some((a) => typeof a !== 'string' && (a.costs || a.additionalCosts)?.some((c) => c.value === 'X')) ||
             currentDefinition.abilities?.some((a) => typeof a !== 'string' && (a.costs || a.additionalCosts)?.some((c) => c.value === 'X')) ||
-            logic?.effects?.some((e: any) => JSON.stringify(e).includes('"X"')) ||
+            logic?.effects?.some((e) => JSON.stringify(e).includes('"X"')) ||
             modeHasX;
 
         if (needsX && cardToPlay.xValue === undefined) {
@@ -298,7 +298,7 @@ export class SpellProcessor {
         // Step 2: Check Modal Choice
         if (choiceEffectIndex !== -1 && !hasPreSelectedChoice) {
             // Trigger choice phase (targets are already in declaredTargets if we are here)
-            const choiceEffect = spellEffects[choiceEffectIndex];
+            const choiceEffect = spellEffects[choiceEffectIndex] as ModalEffect;
             state.pendingAction = {
                 type: ActionType.ModalSelection,
                 playerId: playerId,
@@ -454,12 +454,12 @@ export class SpellProcessor {
             e.type === EffectType.Choice &&
             (e as ModalEffect).choices &&
             !e.targetMapping &&
-            (!(e as ModalEffect).choices?.some((c: any) => c.costs && c.costs.length > 0))
+            (!(e as ModalEffect).choices?.some((c) => c.costs && c.costs.length > 0))
         );
         const hasPreSelectedChoice = state.interaction?.lastChoiceIndex !== undefined;
 
         if (choiceEffectIndex !== -1 && !hasPreSelectedChoice) {
-            const choiceEffect = spellEffects[choiceEffectIndex];
+            const choiceEffect = spellEffects[choiceEffectIndex] as ModalEffect;
             state.pendingAction = {
                 type: ActionType.ModalSelection,
                 playerId: playerId,
@@ -545,7 +545,7 @@ export class SpellProcessor {
                     TriggerProcessor.onEvent(state, { type: TriggerEvent.Sacrifice, playerId, payload: { sourceId: obj.id, targetIds: [obj.id], object: obj } });
                     ActionProcessor.moveCard(state, obj, Zone.Graveyard, playerId);
                     logger.debug(state, LogCategory.ACTION, `Paid additional cost: Sacrificed ${obj.definition.name}.`);
-                    if ((cost as any).isCasualty && state.interaction) state.interaction.flags.paidCasualtyFor = cardToPlay.id;
+                    if (cost.isCasualty && state.interaction) state.interaction.flags.paidCasualtyFor = cardToPlay.id;
                 }
             } else if (cost.type === 'Discard') {
                 const chosenId = state.interaction?.lastSelections['Discard']?.[0];
@@ -556,7 +556,7 @@ export class SpellProcessor {
                     logger.debug(state, LogCategory.ACTION, `Paid additional cost: Discarded ${obj.definition.name}.`);
                 }
             } else if (cost.type === 'PayLife') {
-                const lifeVal = cost.value === 'X' ? (cardToPlay.xValue || 0) : (parseInt(cost.value as string) || 0);
+                const lifeVal = cost.value === 'X' ? (cardToPlay.xValue || 0) : (parseInt(cost.value || '0'));
                 player.life -= lifeVal;
                 TriggerProcessor.onEvent(state, { type: TriggerEvent.LifeLoss, playerId, payload: { amount: lifeVal, targetIds: [playerId] } });
                 logger.debug(state, LogCategory.ACTION, `Paid additional cost: ${lifeVal} life.`);
@@ -633,15 +633,15 @@ export class SpellProcessor {
 
         const exileOnResolution = (state.ruleRegistry.continuousEffects.some((e: ContinuousEffect) =>
             e.exileOnMoveToGraveyard && (e.targetIds?.includes(cardToPlay.id) || (e.targetMapping === 'CONTROLLER' && e.controllerId === playerId))
-        )) || 
-        cardToPlay.isFlashbackCast || 
-        cardToPlay.definition?.exileOnResolution || 
-        cardToPlay.exileOnResolution ||
-        (spellEffects && spellEffects.some((e: EffectDefinition) => 
-            (e.type === EffectType.Exile || e.type === EffectType.ExileAllCards || e.type === EffectType.MoveToZone) && 
-            (e.targetMapping === TargetMapping.Self || e.targetId === cardToPlay.id) &&
-            (!e.zone || e.zone === Zone.Exile)
-        ));
+        )) ||
+            cardToPlay.isFlashbackCast ||
+            cardToPlay.definition?.exileOnResolution ||
+            cardToPlay.exileOnResolution ||
+            (spellEffects && spellEffects.some((e: EffectDefinition) =>
+                (e.type === EffectType.Exile || e.type === EffectType.ExileAllCards || e.type === EffectType.MoveToZone) &&
+                (e.targetMapping === TargetMapping.Self || e.targetIds?.includes(cardToPlay.id)) &&
+                (!e.zone || e.zone === Zone.Exile)
+            ));
 
         logger.debug(state, LogCategory.ACTION, `[FINALIZE-DEBUG] ${cardToPlay.definition.name}: cardToPlay.exileOnRes=${cardToPlay.exileOnResolution}, final=${exileOnResolution}`);
 
@@ -657,7 +657,7 @@ export class SpellProcessor {
             controllerId: playerId,
             ownerId: cardToPlay.ownerId,
             sourceId: cardToPlay.id,
-            type: 'Spell' as const,
+            type: AbilityType.Spell,
             counters: {},
             targets: declaredTargets || [],
             sourceObject: cardToPlay,
@@ -685,7 +685,6 @@ export class SpellProcessor {
         getProcessors(state).action.updateEntityCache(state, stackObj);
         logger.info(state, LogCategory.STACK, `--------------------------------------------------`);
         logger.info(state, LogCategory.STACK, `[STACK] + ${player.name} cast ${cardToPlay.definition.name}${cardToPlay.xValue !== undefined ? ` (X=${cardToPlay.xValue})` : ''} for ${totalMana}`);
-        logger.info(state, LogCategory.STACK, `--------------------------------------------------`);
 
         // Casualty
         if (state.interaction?.flags.paidCasualtyFor === cardToPlay.id) {
@@ -745,9 +744,9 @@ export class SpellProcessor {
         // ARCHITECTURAL NOTE: Choice Propagation (Egress)
         // If the auto-tap engine pre-calculated a choice (e.g. which color a dual land produced),
         // it is passed here so ChoiceEffectHandler can skip the UI modal.
-        const effectiveExileOnResolution = exileOnResolution || (ability.effects && ability.effects.some((e: EffectDefinition) => 
-            (e.type === EffectType.Exile || e.type === EffectType.ExileAllCards || e.type === EffectType.MoveToZone) && 
-            (e.targetMapping === TargetMapping.Self || e.targetId === obj.id) &&
+        const effectiveExileOnResolution = exileOnResolution || (ability.effects && ability.effects.some((e: EffectDefinition) =>
+            (e.type === EffectType.Exile || e.type === EffectType.ExileAllCards || e.type === EffectType.MoveToZone) &&
+            (e.targetMapping === TargetMapping.Self || e.targetIds?.includes(obj.id)) &&
             (!e.zone || e.zone === Zone.Exile)
         ));
 

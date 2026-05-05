@@ -21,7 +21,7 @@ export const AppliedGeometry: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CreateTokenCopy,
-                    targetMapping: TargetMapping.Target1,
+                    sourceMapping: TargetMapping.Target1,
                     typesToAdd: ['Creature'],
                     subtypesToAdd: ['Fractal'],
                     powerOverride: "0",

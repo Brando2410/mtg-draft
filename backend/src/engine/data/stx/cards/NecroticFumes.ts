@@ -17,10 +17,10 @@ export const NecroticFumes: CardDefinition = {
                 {
                     type: EffectType.AdditionalCost,
                     targetMapping: TargetMapping.Controller,
-                    additionalCost: {
+                    additionalCosts: [{
                         type: CostType.Exile,
                         restrictions: [Restriction.Creature, Restriction.YouControl]
-                    }
+                    }]
                 }
             ]
         },

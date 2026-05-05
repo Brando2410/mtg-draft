@@ -29,7 +29,7 @@ export const BigScore: CardDefinition = {
                 {
                     type: EffectType.CreateToken,
                     amount: 2,
-                    tokenDefinition: {
+                    tokenBlueprint: {
                         name: "Treasure",
                         types: ["Artifact"],
                         subtypes: ["Treasure"],
@@ -37,7 +37,7 @@ export const BigScore: CardDefinition = {
                             {
                                 type: AbilityType.Activated,
                                 costs: [{ type: CostType.Tap }, { type: CostType.SacrificeSelf }],
-                                effects: [{ type: EffectType.AddMana, value: "{ANY}" }]
+                                effects: [{ type: EffectType.AddMana, manaType: "{ANY}" }]
                             }
                         ]
                     }

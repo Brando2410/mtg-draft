@@ -39,7 +39,7 @@ export const SublimeEpiphany: CardDefinition = {
                         count: 1, 
                         restrictions: [Restriction.YouControl] 
                     }],
-                    effects: [{ type: EffectType.CreateTokenCopy, targetMapping: TargetMapping.Target1 }]
+                    effects: [{ type: EffectType.CreateTokenCopy, sourceMapping: TargetMapping.Target1 }]
                 },
                 {
                     label: 'Target player draws a card',

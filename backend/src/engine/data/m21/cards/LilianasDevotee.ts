@@ -32,20 +32,25 @@ export const LilianasDevotee: CardDefinition = {
                     type: EffectType.Choice,
                     label: "Pay {1}{B} to create a Zombie?",
                     optional: true,
-                    effects: [
+                    choices: [
                         {
-                            type: EffectType.CreateToken,
+                            label: "Pay {1}{B}",
                             costs: [{ type: CostType.Mana, value: '{1}{B}' }],
-                            definition: {
-                                name: 'Zombie',
-                                power: 2,
-                                toughness: 2,
-                                colors: ['B'],
-                                types: ['Creature'],
-                                subtypes: ['Zombie'],
-                                image_url: 'https://cards.scryfall.io/large/front/4/5/453051e4-f3c5-4089-9fc0-ac064436798b.jpg?1594733596'
-                            },
-                            targetMapping: TargetMapping.Controller
+                            effects: [
+                                {
+                                    type: EffectType.CreateToken,
+                                    tokenBlueprint: {
+                                        name: 'Zombie',
+                                        power: 2,
+                                        toughness: 2,
+                                        colors: ['B'],
+                                        types: ['Creature'],
+                                        subtypes: ['Zombie'],
+                                        image_url: 'https://cards.scryfall.io/large/front/4/5/453051e4-f3c5-4089-9fc0-ac064436798b.jpg?1594733596'
+                                    },
+                                    targetMapping: TargetMapping.Controller
+                                }
+                            ]
                         }
                     ],
                     targetMapping: TargetMapping.Controller
