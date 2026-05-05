@@ -24,7 +24,8 @@ function millCards(state: GameState, playerId: PlayerId, amount: number, context
 
     const milledIds: string[] = [];
     for (let i = 0; i < amount && player.library.length > 0; i++) {
-        const card = player.library.pop()!;
+        const card = player.library[player.library.length - 1];
+        ActionProcessor.removeFromCurrentZone(state, card);
         milledIds.push(card.id);
         ActionProcessor.moveCard(state, card, Zone.Graveyard, playerId, 'top', false);
     }

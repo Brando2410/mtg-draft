@@ -16,7 +16,10 @@ export const ScrySurveilHandler: IEffectHandler<DrawEffect> = {
         // Pop from library to temporary 'Looking' pool
         const cards = [];
         for (let i = 0; i < amount && player.library.length > 0; i++) {
-            cards.push(player.library.pop()!);
+            const card = player.library[player.library.length - 1];
+            const { action: ActionProcessor } = getProcessors(state);
+            ActionProcessor.removeFromCurrentZone(state, card);
+            cards.push(card);
         }
 
         if (cards.length === 0) return;

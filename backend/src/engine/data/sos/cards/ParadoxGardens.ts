@@ -17,6 +17,7 @@ export const ParadoxGardens: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
+            id: "{T}: Add {G} or {U}",
             costs: [{ type: CostType.Tap }],
             effects: [
                 {
@@ -32,6 +33,7 @@ export const ParadoxGardens: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
+            id: "{2}{G}{U}, {T}: Surveil 1",
             costs: [
                 { type: CostType.Mana, value: '{2}{G}{U}' },
                 { type: CostType.Tap }

@@ -18,8 +18,8 @@ import { getProcessors } from '../ProcessorRegistry';
 export class ChoiceProcessor {
 
     public static normalizePayload(input: number | string | ChoicePayload): ChoicePayload {
-        if (typeof input === 'object' && input !== null && 'selections' in input) {
-            return input;
+        if (typeof input === 'object' && input !== null && ('selections' in input || 'top' in input || 'graveyard' in input)) {
+            return Object.assign({ selections: [] }, input) as any;
         }
 
         // Handle legacy/raw string payloads
@@ -36,6 +36,7 @@ export class ChoiceProcessor {
                 try {
                     const parsed = JSON.parse(input);
                     if (parsed.selections) return parsed;
+                    if (parsed.top || parsed.bottom || parsed.graveyard) return Object.assign({ selections: [] }, parsed) as any;
                     // Backward compatibility for old JSON shapes
                     if (parsed.index !== undefined) return { ...parsed, selections: [parsed.index] };
                     if (parsed.value !== undefined) return { ...parsed, selections: [parsed.value] };
@@ -257,7 +258,7 @@ export class ChoiceProcessor {
     ): boolean {
         const { logger } = getProcessors(state);
         const { top = [], bottom = [], graveyard = [] } = payload;
-
+        
         // Track result for UI
         state.turnState.lastScrySurveilResult = {
             playerId,

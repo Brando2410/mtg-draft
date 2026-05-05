@@ -37,7 +37,8 @@ function drawCards(state: GameState, playerId: PlayerId, amount: number, context
             logger.info(state, LogCategory.ACTION, `${player.name} attempted to draw from an empty library.`);
             break;
         }
-        const card = player.library.pop()!;
+        const card = player.library[player.library.length - 1];
+        ActionProcessor.removeFromCurrentZone(state, card);
         ActionProcessor.moveCard(state, card, Zone.Hand, playerId, 'top', true);
     }
 

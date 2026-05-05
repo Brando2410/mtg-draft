@@ -101,6 +101,7 @@ export class ActionProcessor {
     isDraw: boolean = false,
     isDiscard: boolean = false,
   ): ActionResult {
+    console.log(`[MOVE-DEBUG] moveCard: ${card.definition.name} (${card.id}) from ${card.zone} to ${to}. Target: ${targetPlayerId}`);
     const { logger, lki: LkiProcessor, trigger: TrP } = getProcessors(state);
     const fromZone = card.zone;
 
@@ -194,7 +195,7 @@ export class ActionProcessor {
       state,
       card,
       to,
-      effectiveTargetId,
+      destinationPlayerId,
       isToken,
       fromZone,
       libraryPosition,
