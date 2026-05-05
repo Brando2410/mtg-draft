@@ -179,7 +179,28 @@ export class RegistryProcessor {
                     isSpellTax: eff.isSpellTax,
                     taxAmount: eff.taxAmount,
                     reductionAmount: eff.reductionAmount,
-                    exileOnMoveToGraveyard: eff.exileOnMoveToGraveyard
+                    exileOnMoveToGraveyard: eff.exileOnMoveToGraveyard,
+                    // Missing properties fixed below
+                    abilitiesToAdd: eff.abilitiesToAdd,
+                    abilitiesToRemove: eff.abilitiesToRemove,
+                    removeAllAbilities: eff.removeAllAbilities,
+                    powerModifier: eff.powerModifier,
+                    toughnessModifier: eff.toughnessModifier,
+                    powerSet: eff.powerSet,
+                    toughnessSet: eff.toughnessSet,
+                    typesToAdd: eff.typesToAdd,
+                    typesSet: eff.typesSet,
+                    subtypesToAdd: eff.subtypesToAdd,
+                    subtypesSet: eff.subtypesSet,
+                    colorsToAdd: eff.colorsToAdd,
+                    colorSet: eff.colorSet,
+                    flashbackCostOverride: eff.flashbackCostOverride,
+                    playerModifier: eff.playerModifier,
+                    multiplier: eff.multiplier,
+                    isNotLegendary: eff.isNotLegendary,
+                    canPlayExiled: eff.canPlayExiled,
+                    spendAnyMana: eff.spendAnyMana,
+                    isFreeCast: eff.isFreeCast
                 });
             }
         });

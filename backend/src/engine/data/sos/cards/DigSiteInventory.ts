@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CounterType, DurationType, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 export const DigSiteInventory: CardDefinition = {
     name: "Dig Site Inventory",
     manaCost: "{W}",
@@ -24,8 +24,8 @@ export const DigSiteInventory: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddCounters,
+                    counterType: CounterType.P1P1,
                     amount: 1,
-                    startingCounters: { type: 'p1p1', amount: 1 },
                     targetMapping: TargetMapping.Target1
                 },
                 {

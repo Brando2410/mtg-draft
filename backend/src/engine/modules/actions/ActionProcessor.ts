@@ -261,6 +261,7 @@ export class ActionProcessor {
     card: GameObject,
     to: Zone,
   ) {
+    const { logger } = getProcessors(state);
     const types = card.definition.types.map((t) => (t as string).toLowerCase());
 
     // CR 603.10: "Leaves-the-battlefield" events MUST look back in time.
@@ -270,6 +271,7 @@ export class ActionProcessor {
     // Rule 603.10a: "Dies" triggers (specifically for creatures moving to graveyard)
     if (to === Zone.Graveyard && RuleUtils.isCreature(card)) {
       state.turnState.creaturesDiedThisTurn.push(snapshot);
+      logger.info(state, LogCategory.ACTION, `[DEATH] ${card.definition.name} died. Total deaths this turn: ${state.turnState.creaturesDiedThisTurn.length}`);
       TriggerProcessor.onEvent(
         state,
         {

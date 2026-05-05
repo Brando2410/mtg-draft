@@ -64,7 +64,14 @@ export class RuleUtils {
         const def = this.getDef(obj);
         if (!def) return false;
         const search = type.toLowerCase().trim();
-        return (def.types || []).some((t: any) => String(t).toLowerCase().trim() === search);
+        
+        // 1. Check static definition types
+        if ((def.types || []).some((t: any) => String(t).toLowerCase().trim() === search)) return true;
+
+        // 2. Check dynamic effective types (CR 613 Layer 4)
+        if (obj.effectiveStats && (obj.effectiveStats.types || []).some((t: any) => String(t).toLowerCase().trim() === search)) return true;
+
+        return false;
     }
 
     /**

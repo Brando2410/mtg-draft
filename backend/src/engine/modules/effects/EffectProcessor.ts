@@ -7,7 +7,7 @@ import {
   ResolutionContext,
   StackObject,
   TargetDefinition,
-  TargetMapping, TargetType
+  TargetMapping, TargetType, Zone
 } from "@shared/engine_types";
 import { LogCategory } from "../../utils/EngineLogger";
 import { Targetable } from "@shared/types/targeting";
@@ -527,15 +527,16 @@ export class EffectProcessor {
     if (!player) return;
 
     let pool: GameObject[] = [];
-    if (
-      targetDefinitions.type === TargetType.CardInHand
-    ) {
+    const expectedZone = targetDefinitions.zone;
+
+    if (expectedZone === Zone.Hand || targetDefinitions.type === TargetType.CardInHand) {
       pool = player.hand;
-    } else if (
-      targetDefinitions.type === TargetType.CardInGraveyard
-    ) {
+    } else if (expectedZone === Zone.Graveyard || targetDefinitions.type === TargetType.CardInGraveyard) {
       pool = Object.values(state.players).flatMap((p) => p.graveyard);
+    } else if (expectedZone === Zone.Library || targetDefinitions.type === TargetType.CardInLibrary) {
+      pool = player.library;
     } else if (
+      expectedZone === Zone.Battlefield ||
       targetDefinitions.type === TargetType.Permanent ||
       (targetDefinitions.type as string) === "PERMANENT" ||
       (targetDefinitions.type as string).toLowerCase().includes("permanent") ||
@@ -547,7 +548,7 @@ export class EffectProcessor {
     ) {
       pool = state.battlefield;
     } else {
-      // Fallback for general cards or spells
+      // Fallback for general cards or spells across all visible zones
       pool = [
         ...Object.values(state.players).flatMap((p) => [
           ...p.hand,
@@ -586,16 +587,18 @@ export class EffectProcessor {
       ...(effect.restrictions || []),
       ...getRestrictions(targetDefinitions),
     ];
+
     const validCandidates = pool.filter((c) =>
-      TP.matchesRestrictions(
+      TP.isLegalTarget(
         state,
-        c,
-        searchRestrictions,
         {
           sourceId,
           controllerId,
-          stackObject
-        }
+          stackObject,
+          targetDefinitions: Array.isArray(effect.targetDefinitions) ? effect.targetDefinitions : [effect.targetDefinitions!],
+          targetIndex: 0
+        },
+        c.id
       ),
     );
 
@@ -623,7 +626,7 @@ export class EffectProcessor {
           ? 0
           : resolvedMax;
 
-    const isBattlefieldTarget = [
+    const isBattlefieldTarget = (expectedZone === undefined || expectedZone === Zone.Battlefield) && [
       TargetType.Permanent,
       TargetType.Creature,
       TargetType.Artifact,
@@ -642,7 +645,7 @@ export class EffectProcessor {
         sourceId: sourceId,
         data: {
           label: effect.label || `Choose target for ${sourceId}`,
-          targetDefinitions: targetDefinitions,
+          targetDefinitions: Array.isArray(effect.targetDefinitions) ? effect.targetDefinitions : [effect.targetDefinitions!],
           targets: validCandidates.map(c => c.id),
           stackObj: stackObject,
           parentContext: pruneContext(parentContext),
@@ -661,11 +664,11 @@ export class EffectProcessor {
       sourceId: sourceId,
       restrictions: searchRestrictions,
       filterSelectable: true,
-      optional: targetDefinitions.optional || effect.optional,
+      optional: targetDefinitions.optional || effect.optional || resolvedMin === 0,
       minChoices: resolvedMin,
       maxChoices: resolvedMax,
       actionType:
-        targetDefinitions.optional || effect.optional
+        targetDefinitions.optional || effect.optional || resolvedMin === 0
           ? ActionType.OptionalAction
           : ActionType.ResolutionChoice,
       onSelected: (selected: GameObject | GameObject[]) => {

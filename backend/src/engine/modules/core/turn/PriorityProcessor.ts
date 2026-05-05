@@ -324,6 +324,11 @@ export class PriorityProcessor {
       }
     }
 
+    // Check virtual hand (Flashback, Prepared, etc.)
+    if (!cardToPlay && player.virtualHand) {
+      cardToPlay = player.virtualHand.find(o => o.id === objId);
+    }
+
     // Check graveyard (Demonic Embrace, Flashback, etc.)
     if (!cardToPlay) {
       const graveCard = player.graveyard.find(c => c.id === objId);

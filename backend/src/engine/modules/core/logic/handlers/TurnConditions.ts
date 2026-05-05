@@ -2,6 +2,7 @@ import { ConditionType, Phase } from "@shared/engine_types";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { IConditionHandler } from "../IConditionHandler";
+import { LogCategory } from "../../../../utils/EngineLogger";
 
 export const TurnConditions: Record<string, IConditionHandler> = {
     [ConditionType.IsYourTurn]: {
@@ -69,7 +70,9 @@ export const TurnConditions: Record<string, IConditionHandler> = {
     [ConditionType.CreaturesDiedCountGe]: {
         matches(state, params, context) {
             const threshold = parseInt(params[0]);
-            return (state.turnState.creaturesDiedThisTurn.length || 0) >= threshold;
+            const count = state.turnState.creaturesDiedThisTurn?.length || 0;
+            const result = count >= threshold;
+            return result;
         }
     },
     [ConditionType.CastInstantSorceryThisTurn]: {

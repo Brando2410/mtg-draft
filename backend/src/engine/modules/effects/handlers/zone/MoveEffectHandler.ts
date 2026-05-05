@@ -119,10 +119,14 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     if (!player) return;
 
     let pool: GameObject[] = [];
-    if (targetDefinitions.type === TargetType.CardInHand) pool = player.hand;
-    else if (targetDefinitions.type === TargetType.CardInGraveyard) {
+    const expectedZone = targetDefinitions.zone;
+
+    if (expectedZone === Zone.Hand || targetDefinitions.type === TargetType.CardInHand) pool = player.hand;
+    else if (expectedZone === Zone.Graveyard || targetDefinitions.type === TargetType.CardInGraveyard) {
       pool = Object.values(state.players).flatMap((p: PlayerState) => p.graveyard);
-    } else if (targetDefinitions.type === TargetType.Permanent)
+    } else if (expectedZone === Zone.Library || targetDefinitions.type === TargetType.CardInLibrary) {
+      pool = player.library;
+    } else if (expectedZone === Zone.Battlefield || targetDefinitions.type === TargetType.Permanent)
       pool = state.battlefield.filter((o: GameObject) => RuleUtils.getController(o) === controllerId);
     else return;
 
@@ -154,11 +158,17 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
 
     const restrictions = getRestrictions(targetDefinitions);
     const validCandidates = pool.filter((c) =>
-      TargetingProcessor.matchesRestrictions(state, c, restrictions, {
-        sourceId,
-        controllerId,
-        stackObject,
-      }),
+      TargetingProcessor.isLegalTarget(
+        state,
+        {
+          sourceId,
+          controllerId,
+          stackObject,
+          targetDefinitions: Array.isArray(effect.targetDefinitions) ? effect.targetDefinitions : [effect.targetDefinitions!],
+          targetIndex: 0
+        },
+        c.id
+      ),
     );
 
     const { logger, effect: EffectProcessor } = getProcessors(state);
