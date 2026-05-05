@@ -58,7 +58,7 @@ export const HarmonizedTrioBrainstorm: CardDefinition = {
                         type: EffectType.MoveToZone,
                         label: "Put two cards from hand on top of library (2nd selected goes on top of 1st)",
                         zone: Zone.Library,
-                        libraryPosition: 'top',
+                        position: 'top',
                         selectionType: SelectionType.Target,
                         targetDefinitions: [{
                             type: TargetType.CardInHand,

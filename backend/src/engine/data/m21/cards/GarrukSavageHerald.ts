@@ -21,7 +21,7 @@ export const GarrukSavageHerald: CardDefinition = {
                 reveal: true,
                 restrictions: [Restriction.Creature],
                 remainderZone: Zone.Library,
-                libraryPosition: 'bottom',
+                position: 'bottom',
                 targetMapping: TargetMapping.Controller
             }]
         },
@@ -39,7 +39,7 @@ export const GarrukSavageHerald: CardDefinition = {
             effects: [{
                 type: EffectType.DealDamage,
                 amount: 'TARGET_1_POWER',
-                damageSourceMapping: TargetMapping.Target1,
+                sourceMapping: TargetMapping.Target1,
                 targetMapping: TargetMapping.Target2
             }]
         },

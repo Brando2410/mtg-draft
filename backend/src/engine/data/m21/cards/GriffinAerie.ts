@@ -16,7 +16,7 @@ export const GriffinAerie: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CreateToken,
-                    definition: {
+                    tokenBlueprint: {
                         name: 'Griffin',
                         power: "2",
                         toughness: "2",

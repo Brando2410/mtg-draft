@@ -98,7 +98,7 @@ export class ActionProcessor {
     card: GameObject,
     to: Zone,
     targetPlayerId: PlayerId,
-    libraryPosition: number | "top" | "bottom" = "top",
+    position: number | "top" | "bottom" = "top",
     isDraw: boolean = false,
     isDiscard: boolean = false,
   ): ActionResult {
@@ -199,7 +199,7 @@ export class ActionProcessor {
       destinationPlayerId,
       isToken,
       fromZone,
-      libraryPosition,
+      position,
     );
 
     // CR 121: Drawing a card
@@ -349,7 +349,7 @@ export class ActionProcessor {
     targetPlayerId: PlayerId,
     isToken: boolean,
     from: Zone,
-    libraryPosition: number | "top" | "bottom" = "top",
+    position: number | "top" | "bottom" = "top",
   ) {
     const { logger } = getProcessors(state);
     if (to === Zone.Battlefield) {
@@ -372,6 +372,7 @@ export class ActionProcessor {
               controllerId: targetPlayerId,
               event: { type: TriggerEvent.EnterBattlefield, playerId: targetPlayerId, payload: { xValue: card.xValue, object: card } },
               sourceObject: card,
+              targets: []
             },
           )
         ) {
@@ -404,10 +405,10 @@ export class ActionProcessor {
 
       if (to === Zone.Hand && !isToken) player.hand.push(card);
       else if (to === Zone.Library && !isToken) {
-        if (typeof libraryPosition === "number") {
+        if (typeof position === "number") {
           // Rule 400.1: Add at specific index from top (0-indexed)
-          player.library.splice(libraryPosition, 0, card);
-        } else if (libraryPosition === "bottom") {
+          player.library.splice(position, 0, card);
+        } else if (position === "bottom") {
           player.library.unshift(card);
         } else {
           player.library.push(card);

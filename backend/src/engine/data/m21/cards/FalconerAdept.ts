@@ -18,7 +18,7 @@ export const FalconerAdept: CardDefinition = {
             condition: ConditionType.EventObjectIsTriggerSource,
             effects: [{
                 type: EffectType.CreateToken,
-                definition: {
+                tokenBlueprint: {
                     name: 'Bird',
                     power: '1',
                     toughness: '1',

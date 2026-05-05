@@ -255,7 +255,8 @@ export class SpellProcessor {
                 const met = ConditionProcessor.matchesCondition(state, (modalAbility as AbilityDefinition).chooseBothCondition, {
                     sourceId: cardToPlay.id,
                     controllerId: playerId,
-                    stackObject: { id: cardToPlay.id, card: cardToPlay, controllerId: playerId } as any as StackObject
+                    stackObject: { id: cardToPlay.id, card: cardToPlay, controllerId: playerId } as any as StackObject,
+                    targets: []
                 });
                 if (met) {
                     maxChoices = modalAbility.modes!.length;

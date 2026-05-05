@@ -41,7 +41,8 @@ export class StackResolver {
         sourceId: stackObj.sourceId,
         controllerId: stackObj.controllerId,
         event: stackObj.data?.event,
-        stackObject: stackObj
+        stackObject: stackObj,
+        targets: stackObj.targets || []
       };
       
       if (!ConditionProcessor.matchesCondition(this.state, stackObj.condition, context)) {

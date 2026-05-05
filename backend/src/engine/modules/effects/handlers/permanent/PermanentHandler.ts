@@ -314,8 +314,7 @@ export class PermanentHandler {
         const tokenEff = effect as TokenEffect;
         const { targeting: TP_LOCAL } = getProcessors(state);
 
-        const sourceCardId = tokenEff.sourceCardId || (tokenEff.sourceMapping ? TP_LOCAL.resolveTargetMapping(state, tokenEff.sourceMapping, context, effect)[0] : undefined);
-
+        const sourceCardId = (tokenEff.sourceMapping ? TP_LOCAL.resolveTargetMapping(state, tokenEff.sourceMapping, context, effect)[0] : undefined);
         if (!sourceCardId) {
             logger.warn(state, LogCategory.ACTION, `[WARNING] handleCreateTokenCopy: No source card ID resolved.`);
             return;

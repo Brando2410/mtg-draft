@@ -39,8 +39,8 @@ export const GadraktheCrownScourge: CardDefinition = {
                         image_url: 'https://cards.scryfall.io/large/front/c/c/ccf89b94-0cfb-44ec-a6be-3518a38ae1ec.jpg?1594733767',
                         abilities: [{
                             type: AbilityType.Activated,
-                            costs: [{ type: CostType.Tap }, { type: CostType.Sacrifice, targetMapping: TargetMapping.Self }],
-                            effects: [{ type: EffectType.AddManaChoice }]
+                            costs: [{ type: CostType.Tap }, { type: CostType.SacrificeSelf }],
+                            effects: [{ type: EffectType.AddMana, manaType: 'ANY' }]
                         }]
                     },
                     amount: 'NONTOKEN_CREATURES_DIED_THIS_TURN_COUNT',

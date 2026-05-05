@@ -15,7 +15,7 @@ export const ExperimentalOverload: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CreateToken,
-                    definition: {
+                    tokenBlueprint: {
                         name: 'Weird',
                         colors: ['U', 'R'],
                         types: ['Creature'],

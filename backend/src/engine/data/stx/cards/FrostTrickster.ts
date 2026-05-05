@@ -23,7 +23,7 @@ export const FrostTrickster: CardDefinition = {
             }],
             effects: [
                 { type: EffectType.Tap, targetMapping: TargetMapping.Target1 },
-                { type: EffectType.ApplyContinuousEffect, effects: [{ type: 'Freeze' }], duration: { type: DurationType.UntilNextUntapStep }, targetMapping: TargetMapping.Target1 }
+                { type: EffectType.ApplyContinuousEffect, effects: [{ type: EffectType.Freeze }], duration: { type: DurationType.UntilNextUntapStep }, targetMapping: TargetMapping.Target1 }
             ]
         }
     ]

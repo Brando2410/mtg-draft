@@ -32,8 +32,8 @@ export const CodieVociferousCodex: CardDefinition = {
             ],
             effects: [
                 {
-                    type: EffectType.AddManaChoice,
-                    mana: "{W}{U}{B}{R}{G}"
+                    type: EffectType.AddMana,
+                    manaType: "{W}{U}{B}{R}{G}"
                 },
                 {
                     type: EffectType.CreateDelayedTrigger,

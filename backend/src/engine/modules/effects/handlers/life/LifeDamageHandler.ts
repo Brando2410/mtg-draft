@@ -13,8 +13,8 @@ export class LifeDamageHandler {
     const damageEff = effect as DamageEffect;
 
     targets.forEach(tid => {
-      const sourceMappingIds = damageEff.damageSourceMapping ? TP.resolveTargetMapping(state, damageEff.damageSourceMapping, context, effect) : [];
-      const usedSourceId = sourceMappingIds[0] || (damageEff as any).damageSourceId || sourceId;
+      const sourceMappingIds = damageEff.sourceMapping ? TP.resolveTargetMapping(state, damageEff.sourceMapping, context, effect) : [];
+      const usedSourceId = sourceMappingIds[0] || sourceId;
       const amt = EP.resolveAmount(state, damageEff.amount, context, [tid]);
       DP.dealDamage(state, usedSourceId, tid, amt, false);
     });

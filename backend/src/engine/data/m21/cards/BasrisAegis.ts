@@ -25,7 +25,7 @@ export const BasrisAegis: CardDefinition = {
                         count: 1,
                         restrictions: [{ type: Restriction.Name, value: 'Basri, Devoted Paladin' }]
                     }],
-                    fromZones: [Zone.Library, Zone.Graveyard],
+                    sourceZones: [Zone.Library, Zone.Graveyard],
                     zone: Zone.Hand,
                     reveal: true,
                     optional: true,

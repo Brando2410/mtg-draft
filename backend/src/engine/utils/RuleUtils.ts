@@ -281,6 +281,18 @@ export class RuleUtils {
 
         if (typeof amount === 'string' && !isNaN(Number(amount))) return Number(amount);
 
+        if (typeof amount === 'function') {
+            return amount(state, context, targetIds);
+        }
+
+        if (typeof amount === 'object' && amount !== null) {
+            const resolverObj = amount as import('@shared/engine_types').AmountResolver;
+            if (resolverObj.type === 'SCRIPT' && resolverObj.resolver) {
+                return resolverObj.resolver(state, context);
+            }
+            if (resolverObj.type === 'CONSTANT') return resolverObj.baseValue || 0;
+        }
+
         switch (amount) {
             case DynamicAmount.X:
                 return stackObject?.xValue ??

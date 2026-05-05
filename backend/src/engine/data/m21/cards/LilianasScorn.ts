@@ -22,7 +22,7 @@ export const LilianasScorn: CardDefinition = {
                         count: 1,
                         restrictions: [{ type: Restriction.Name, value: 'Liliana, Death Mage' }]
                     }],
-                    fromZones: [Zone.Library, Zone.Graveyard],
+                    sourceZones: [Zone.Library, Zone.Graveyard],
                     zone: Zone.Hand,
                     reveal: true,
                     optional: true,

@@ -27,7 +27,7 @@ export const BrashTaunter: CardDefinition = {
                 { type: CostType.Tap }
             ],
             targetDefinitions: [{ type: TargetType.Creature, count: 1, restrictions: [Restriction.Other] }],
-            effects: [{ type: EffectType.Fight, targetMapping: TargetMapping.Self, secondTarget: TargetMapping.Target1 }]
+            effects: [{ type: EffectType.Fight, targetMapping: TargetMapping.Self, target2Mapping: TargetMapping.Target1 }]
         }
     ]
 };

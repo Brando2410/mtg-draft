@@ -9,13 +9,12 @@ export const ManaHandler: IEffectHandler = {
   handle(state, effect, context) {
     const { logger, mana: MP } = getProcessors(state);
     const { controllerId, targets, sourceId, stackObject, parentContext } = context;
-    
-    if (effect.type === EffectType.AddMana || effect.type === EffectType.AddManaChoice) {
+
+    if (effect.type === EffectType.AddMana) {
       const manaEffect = effect as AddManaEffect;
       const effectiveTargets = (targets && targets.length > 0) ? targets : [controllerId];
 
-      // Prioritize manaType over legacy value
-      let manaStr = manaEffect.manaType || (manaEffect as any).value || 'C';
+      let manaStr = manaEffect.manaType || 'C';
       const isFlexible = String(manaStr).toUpperCase() === 'ANY' || String(manaStr).toUpperCase() === '{ANY}';
 
       if (isFlexible) {

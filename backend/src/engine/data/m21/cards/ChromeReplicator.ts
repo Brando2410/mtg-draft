@@ -18,7 +18,7 @@ export const ChromeReplicator: CardDefinition = {
             condition: 'CONTROL_TWO_OR_MORE_NONLAND_NONTOKEN_PERMANENTS_WITH_SAME_NAME',
             effects: [{
                 type: EffectType.CreateToken,
-                definition: {
+                tokenBlueprint: {
                     name: "Construct",
                     colors: [],
                     types: ["Artifact", "Creature"],

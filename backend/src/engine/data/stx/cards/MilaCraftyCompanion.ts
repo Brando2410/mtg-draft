@@ -124,7 +124,7 @@ export const MilaCraftyCompanion: CardDefinition = {
                                 effects: [{
                                     type: EffectType.DealDamage,
                                     amount: DynamicAmount.TriggerObjectPower,
-                                    damageSourceMapping: TargetMapping.TriggerEventSource
+                                    sourceMapping: TargetMapping.TriggerEventSource
                                 }]
                             }]
                         }

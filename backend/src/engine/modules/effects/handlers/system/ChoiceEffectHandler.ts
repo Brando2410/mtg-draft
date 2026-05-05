@@ -44,6 +44,7 @@ export class ChoiceEffectHandler {
           sourceId,
           controllerId,
           stackObject,
+          targets: []
         });
       });
     }

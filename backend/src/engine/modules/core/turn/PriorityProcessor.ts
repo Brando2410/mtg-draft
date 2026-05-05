@@ -495,7 +495,8 @@ export class PriorityProcessor {
       (e.targetIds?.includes(objId) || (e.targetMapping === 'SELF' && e.sourceId === objId) || LayerProcessor.isTarget(state, e, objId)) &&
       ConditionProcessor.matchesCondition(state, e.condition, {
         sourceId: e.sourceId,
-        controllerId: e.controllerId
+        controllerId: e.controllerId,
+        targets: []
       })
     );
 
@@ -538,7 +539,7 @@ export class PriorityProcessor {
 
     // Explicit Condition check
     if (ability.condition) {
-      if (!ConditionProcessor.matchesCondition(state, ability.condition, { sourceId: obj.id, controllerId: playerId })) {
+      if (!ConditionProcessor.matchesCondition(state, ability.condition, { sourceId: obj.id, controllerId: playerId, targets: [] })) {
         return false;
       }
     }
@@ -656,7 +657,8 @@ export class PriorityProcessor {
       // 3. Condition check
       if (e.condition && !ConditionProcessor.matchesCondition(state, e.condition, {
         sourceId: e.sourceId,
-        controllerId: e.controllerId
+        controllerId: e.controllerId,
+        targets: []
       })) return false;
 
       // 4. Target check (Is this card the target of the permission?)

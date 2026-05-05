@@ -35,7 +35,7 @@ export const RunBehind: CardDefinition = {
                                 {
                                     type: EffectType.MoveToZone,
                                     zone: Zone.Library,
-                                    libraryPosition: 'top',
+                                    position: 'top',
                                     targetMapping: TargetMapping.Target1
                                 }
                             ]
@@ -46,7 +46,7 @@ export const RunBehind: CardDefinition = {
                                 {
                                     type: EffectType.MoveToZone,
                                     zone: Zone.Library,
-                                    libraryPosition: 'bottom',
+                                    position: 'bottom',
                                     targetMapping: TargetMapping.Target1
                                 }
                             ]

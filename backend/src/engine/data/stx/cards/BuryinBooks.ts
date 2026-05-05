@@ -23,7 +23,7 @@ export const BuryinBooks: CardDefinition = {
                 count: 1,
                 type: TargetType.Creature
             }],
-            effects: [{ type: EffectType.MoveToZone, zone: Zone.Library, libraryPosition: 'top', fromTop: 1, targetMapping: TargetMapping.Target1 }]
+            effects: [{ type: EffectType.MoveToZone, zone: Zone.Library, position: 'top', fromTop: 1, targetMapping: TargetMapping.Target1 }]
         }
     ]
   };

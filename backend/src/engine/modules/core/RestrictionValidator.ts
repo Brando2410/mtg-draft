@@ -95,7 +95,8 @@ export class RestrictionValidator {
         // If condition is a string or object, use ConditionProcessor
         return ConditionProcessor.matchesCondition(state, restriction.condition, {
             sourceId: obj.id,
-            controllerId: obj.controllerId
+            controllerId: obj.controllerId,
+            targets: []
         });
     }
 
@@ -193,7 +194,8 @@ export class RestrictionValidator {
         if (!restriction.condition) return true;
         return ConditionProcessor.matchesCondition(state, restriction.condition, {
             sourceId: "global",
-            controllerId: playerId
+            controllerId: playerId,
+            targets: []
         });
     }
 }

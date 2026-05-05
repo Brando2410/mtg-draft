@@ -24,7 +24,7 @@ export const Brainstorm: CardDefinition = {
                     type: EffectType.MoveToZone,
                     label: "Put two cards from hand on top of library",
                     zone: Zone.Library,
-                    libraryPosition: 'top',
+                    position: 'top',
                     selectionType: SelectionType.Target,
                     targetDefinitions: [{
                         type: TargetType.CardInHand,

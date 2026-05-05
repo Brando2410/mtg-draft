@@ -366,10 +366,10 @@ export class LayerProcessor {
     if (effect.condition) {
       if (!ConditionProcessor.matchesCondition(state, effect.condition, {
         sourceId: objId,
-        targetId: objId,
         effectSourceId: effect.sourceId,
         controllerId: effect.controllerId,
-        stackObject: state.stack.find(s => s.id === effect.id) as any
+        stackObject: state.stack.find(s => s.id === effect.id) as any,
+        targets: [objId]
       })) {
         return false;
       }
@@ -602,6 +602,7 @@ export class LayerProcessor {
             ConditionProcessor.matchesCondition(state, e.condition, {
               sourceId: e.sourceId,
               controllerId: e.controllerId,
+              targets: []
             })),
       );
 

@@ -1,4 +1,5 @@
 import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+
 export const ThunderdrumSoloist: CardDefinition = {
     name: "Thunderdrum Soloist",
     manaCost: "{1}{R}",
@@ -20,14 +21,14 @@ export const ThunderdrumSoloist: CardDefinition = {
                     amount: 3,
                     condition: `${ConditionType.SpentManaGe}:5`,
                     targetMapping: TargetMapping.EachOpponent,
-                    damageSourceMapping: TargetMapping.Self
+                    sourceMapping: TargetMapping.Self
                 },
                 {
                     type: EffectType.DealDamage,
                     amount: 1,
                     condition: `${ConditionType.SpentManaLt}:5`,
                     targetMapping: TargetMapping.EachOpponent,
-                    damageSourceMapping: TargetMapping.Self
+                    sourceMapping: TargetMapping.Self
                 }
             ]
         }

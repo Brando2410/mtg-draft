@@ -85,7 +85,7 @@ export const SearchEffectHandler: IEffectHandler<SearchEffect> = {
                     targetPlayerId: controllerId,
                     zone: zone,
                     tapped: effect.tapped,
-                    libraryPosition: effect.libraryPosition,
+                    position: effect.position,
                     reveal: effect.reveal,
                     effects: effect.effects,
                 } as MoveEffect);

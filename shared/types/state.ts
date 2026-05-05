@@ -1,7 +1,7 @@
 // state.ts
 // Game state and player state structures
 
-import type { AbilityDefinition, ActivatedAbility, TriggeredAbility, ReplacementEffect, PreventionEffect } from './abilities';
+import type { AbilityDefinition, ActivatedAbility, TriggeredAbility, ReplacementEffect, PreventionEffect, AbilityCost } from './abilities';
 import { AbilityType } from './abilities';
 import type { CounterType, GameObjectId, PlayerId } from './core';
 import { Phase, Step, Zone } from './core';
@@ -240,10 +240,10 @@ export interface TurnState {
 
 export interface ChoiceOption {
     label: string;
-    value: any; // The key ID or index returned to the engine
+    value: string | number; // The key ID or index returned to the engine
     selectable?: boolean;
-    effects?: any[];
-    costs?: any[];
+    effects?: EffectDefinition[];
+    costs?: AbilityCost[];
     imageUrl?: string;
     cardData?: GameObject;
     type_line?: string;

@@ -228,6 +228,7 @@ const _Restriction = {
     ExiledWithSource: 'exiledwithsource',
     SharesColorWithSource: 'shares_color_with_source',
     ControlledByTarget1: 'controlled_by_target_1',
+    OwnedByTarget1: 'owned_by_target_1',
     ManaValueLessThanSource: 'mv_lt_source',
     Power2OrLess: 'power_le_2',
     Power1OrGreater: 'power1orgreater',

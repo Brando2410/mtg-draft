@@ -37,7 +37,7 @@ export const KnockoutManeuver: CardDefinition = {
                 {
                     type: EffectType.DealDamage,
                     amount: DynamicAmount.SourcePower,
-                    damageSource: TargetMapping.Target1,
+                    sourceMapping: TargetMapping.Target1,
                     targetMapping: TargetMapping.Target2
                 }
             ]

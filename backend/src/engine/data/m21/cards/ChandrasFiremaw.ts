@@ -24,7 +24,7 @@ export const ChandrasFiremaw: CardDefinition = {
                         count: 1,
                         restrictions: [{ type: Restriction.Name, value: "Chandra, Flame's Catalyst" }]
                     }],
-                    fromZones: [Zone.Library, Zone.Graveyard],
+                    sourceZones: [Zone.Library, Zone.Graveyard],
                     zone: Zone.Hand,
                     reveal: true,
                     optional: true,

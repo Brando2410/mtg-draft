@@ -162,6 +162,16 @@ SpecializedRestrictions["CONTROLLED_BY_TARGET_1"] = {
     }
 };
 
+SpecializedRestrictions["OWNED_BY_TARGET_1"] = {
+    matches(state, targetObj, r, context) {
+        const { targets } = context;
+        if (!targets || targets.length === 0) return false;
+        const ownerId = isGameObject(targetObj) ? targetObj.ownerId : (isStackObject(targetObj) ? ((targetObj as StackObject).ownerId || (targetObj as StackObject).controllerId) : null);
+        return String(ownerId) === String(targets[0]);
+    }
+};
+
+
 const subtypesToRegister = ['Liliana', 'Garruk', 'Basri', 'Teferi', 'Chandra', 'Zombie', 'Cat', 'Dog', 'Spirit', 'Shrine', 'Forest', 'Island', 'Mountain', 'Plains', 'Swamp', 'Lesson', 'Pest', 'Bat', 'Insect', 'Snake', 'Spider'];
 subtypesToRegister.forEach(st => {
     SpecializedRestrictions[st.toUpperCase()] = gameObjectRestriction((state, obj) => {

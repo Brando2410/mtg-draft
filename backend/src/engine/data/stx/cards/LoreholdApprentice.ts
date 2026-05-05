@@ -20,7 +20,7 @@ export const LoreholdApprentice: CardDefinition = {
                     type: EffectType.DealDamage,
                     amount: 1,
                     targetMapping: TargetMapping.EachOpponent,
-                    damageSourceMapping: TargetMapping.AllMatchingPermanentsYouControl,
+                    sourceMapping: TargetMapping.AllMatchingPermanentsYouControl,
                     restrictions: [Restriction.Spirit]
                 }
             ]

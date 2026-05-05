@@ -1,4 +1,4 @@
-import { AbilityType, ActionType, CopyEffect, DurationType, EffectDefinition, EffectType, ExtraTurnsEffect, GameObject, GameState, LogEffect, PhasedOutEffect, PlayerId, PlayerState, PreventionEffectDefinition, ResolutionContext, SkipTurnsEffect, StackObject, TriggerAbilityEffect, Zone } from '@shared/engine_types';
+import { AbilityType, ActionType, CopyEffect, DurationType, EffectDefinition, EffectType, ExtraTurnsEffect, GameObject, GameState, LogEffect, PhaseOutEffect, PlayerId, PlayerState, PreventionEffectDefinition, ResolutionContext, SkipTurnsEffect, StackObject, TriggerAbilityEffect, Zone } from '@shared/engine_types';
 import { LogCategory } from '../../../../utils/EngineLogger';
 import { RuleUtils } from '../../../../utils/RuleUtils';
 import { getProcessors } from '../../../ProcessorRegistry';
@@ -236,11 +236,11 @@ export class ControlEffectHandler {
                 });
                 break;
 
-            case EffectType.PhasedOut:
+            case EffectType.PhaseOut:
                 targets.forEach((tid: string) => {
                     const obj = EP.findObject(state, tid, stackObject, parentContext);
                     if (obj && 'zone' in obj) {
-                        obj.isPhasedOut = (effect as PhasedOutEffect).isPhasedOut !== false;
+                        obj.isPhasedOut = (effect as PhaseOutEffect).isPhasedOut !== false;
                         logger.info(state, LogCategory.ACTION, `${obj.definition.name} phased ${obj.isPhasedOut ? 'out' : 'in'}.`);
                     }
                 });

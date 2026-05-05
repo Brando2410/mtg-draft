@@ -694,6 +694,7 @@ export class TriggerProcessor {
             controllerId: t.controllerId,
             event,
             stackObject: t,
+            targets: []
           };
           if (!ConditionProcessor.matchesCondition(state, condition, matchesInfo)) {
             if (event.type === TriggerEvent.PreCombatMainPhaseStart) logger.debug(state, LogCategory.TRIGGER, `Trigger ${t.id} failed condition ${condition}.`);
@@ -788,6 +789,7 @@ export class TriggerProcessor {
                 sourceId: obj.id,
                 controllerId: RuleUtils.getController(obj),
                 event,
+                targets: []
               },
             )
           ) {
@@ -945,7 +947,7 @@ export class TriggerProcessor {
                       {
                         type: EffectType.MoveToZone,
                         zone: Zone.Library,
-                        libraryPosition: "bottom",
+                        position: "bottom",
                         targetMapping: TargetMapping.Target1,
                       },
                     ],

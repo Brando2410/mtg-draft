@@ -31,7 +31,7 @@ export const LearnHandler: IEffectHandler = {
             selectionPool: TargetMapping.ControllerSideboard,
             restrictions: ["Lesson"],
             effects: [
-              { type: EffectType.MoveToZone, zone: Zone.Hand, revealed: true },
+              { type: EffectType.MoveToZone, zone: Zone.Hand, reveal: true },
             ],
           },
         ],

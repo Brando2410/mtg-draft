@@ -15,7 +15,7 @@ export const GoblinWizardry: CardDefinition = {
                 type: EffectType.CreateToken,
                 amount: 2,
                 targetMapping: TargetMapping.Controller,
-                definition: {
+                tokenBlueprint: {
                     name: "Goblin Wizard",
                     power: "1",
                     toughness: "1",

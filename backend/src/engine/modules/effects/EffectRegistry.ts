@@ -107,7 +107,7 @@ export const EffectRegistry: Partial<Record<EffectType | string, IEffectHandler>
     [EffectType.Log]: ControlEffectsHandler,
     [EffectType.AddTriggeredAbility]: ControlEffectsHandler,
     [EffectType.AddPreventionEffect]: ControlEffectsHandler,
-    [EffectType.PhasedOut]: ControlEffectsHandler,
+    [EffectType.PhaseOut]: ControlEffectsHandler,
     [EffectType.AddMana]: ManaHandler,
     [EffectType.CreateDelayedTrigger]: CreateDelayedTriggerHandler,
     [EffectType.AddAdditionalTrigger]: ContinuousEffectHandler,

@@ -157,7 +157,8 @@ export class SpellCostCalculator {
                         const conditionMatches = !costEffect.condition || ConditionProcessor.matchesCondition(state, costEffect.condition, {
                             sourceId: card.id,
                             controllerId: card.controllerId,
-                            event: { type: TriggerEvent.ResolveSpell, playerId: card.controllerId, payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } } as any
+                            event: { type: TriggerEvent.ResolveSpell, playerId: card.controllerId, payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } } as any,
+                            targets: []
                         });
                         if (conditionMatches && costEffect.additionalCosts) {
                             additionalCosts = [...additionalCosts, ...costEffect.additionalCosts];
@@ -223,7 +224,8 @@ export class SpellCostCalculator {
                 sourceId: mod.sourceId,
                 controllerId: card.controllerId,
                 cardToPlay: { ...card, isFlashbackCast: isFlashback },
-                event: { payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } } as any
+                event: { payload: { object: { ...card, isFlashbackCast: isFlashback }, targetIds: targets } } as any,
+                targets: []
             });
 
             if (!matches || !conditionMatches) continue;

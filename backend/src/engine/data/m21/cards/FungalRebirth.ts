@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, Restriction, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const FungalRebirth: CardDefinition = {
     name: "Fungal Rebirth",
@@ -14,7 +14,7 @@ export const FungalRebirth: CardDefinition = {
             targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
                 count: 1,
-                restrictions: [Restriction.Permanent, Restriction.YouControl]
+                restrictions: [Restriction.Permanent, Restriction.YouOwn]
             }],
             effects: [
                 {
@@ -23,8 +23,8 @@ export const FungalRebirth: CardDefinition = {
                 },
                 {
                     type: EffectType.CreateToken,
-                    condition: 'CREATURE_DIED_THIS_TURN',
-                    definition: {
+                    condition: ConditionType.CreatureDiedThisTurn,
+                    tokenBlueprint: {
                         name: "Saproling",
                         colors: ["G"],
                         types: ["Creature"],

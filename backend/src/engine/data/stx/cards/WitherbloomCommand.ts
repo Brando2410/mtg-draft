@@ -25,7 +25,7 @@ export const WitherbloomCommand: CardDefinition = {
                         },
                         {
                             type: EffectType.LookAtTopAndPick,
-                            fromZone: Zone.Graveyard,
+                            sourceZones: [Zone.Graveyard],
                             restrictions: [Restriction.Land],
                             zone: Zone.Hand
                         }

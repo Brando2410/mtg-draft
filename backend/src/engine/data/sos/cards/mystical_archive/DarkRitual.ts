@@ -12,7 +12,7 @@ export const DarkRitual: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddMana,
-                    mana: "{B}{B}{B}"
+                    manaType: "{B}{B}{B}"
                 }
             ]
         }

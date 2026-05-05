@@ -4,6 +4,7 @@ import {
   ConditionType,
   EffectDefinition,
   EffectType, GameObject, GameState, PlayerId,
+  NumericProperty,
   ResolutionContext,
   StackObject,
   TargetDefinition,
@@ -340,6 +341,9 @@ export class EffectProcessor {
       ? resolveMapping(effect.target2Mapping, 1)
       : [];
 
+    // CR 608.2b: Merge all resolved targets for handlers that require multiple participants (e.g. Fight)
+    const allResolvedTargets = [...validTargetIds, ...validTarget2Ids];
+
     // CR 608.2b: Legality check moved to resolveEffects to prevent middle-of-resolution fizzling
     // (e.g. when an effect moves its own target, like Destroy)
 
@@ -395,7 +399,7 @@ export class EffectProcessor {
       logger.debug(state, LogCategory.ACTION, `[HANDLER-FOUND] Executing handler for ${effect.type}`);
       return handler.handle(state, effect, {
         ...context,
-        targets: validTargetIds,
+        targets: allResolvedTargets,
       });
     } else {
       logger.error(state, LogCategory.ACTION, `[HANDLER-MISSING] No handler registered for effect type: ${effect.type}`);
@@ -484,7 +488,7 @@ export class EffectProcessor {
 
   public static resolveAmount(
     state: GameState,
-    amount: number | string | AmountResolver | ((...args: any[]) => number) | undefined,
+    amount: NumericProperty,
     context: ResolutionContext,
     targetIds: string[] = [],
   ): number {

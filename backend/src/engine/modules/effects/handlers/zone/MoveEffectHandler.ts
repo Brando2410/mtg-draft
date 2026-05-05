@@ -492,7 +492,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       if (obj) {
         const from = obj.zone;
         const destPlayerId = moveEff.ownerControl ? obj.ownerId : controllerId;
-        ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId!, moveEff.libraryPosition as number | "top" | "bottom", false, isDiscard);
+        ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId!, moveEff.position as number | "top" | "bottom", false, isDiscard);
         if (zone === Zone.Hand || zone === Zone.Library) {
           obj.isRevealed = true;
         }
@@ -669,8 +669,8 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
               selectionType: SelectionType.Target,
               targetIds: cards.map((o) => o.id),
               zone: effect.remainderZone || Zone.Library,
-              libraryPosition:
-                effect.remainderPosition || moveEff.libraryPosition || "bottom",
+              position:
+                effect.remainderPosition || moveEff.position || "bottom",
             } as MoveEffect,
           ];
         },
@@ -688,8 +688,8 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         selectionType: SelectionType.ALL,
         targetMapping: "REMAINDER_OF_POOL",
         zone: effect.remainderZone || Zone.Library,
-        libraryPosition:
-          effect.remainderPosition || moveEff.libraryPosition || "bottom",
+        position:
+          effect.remainderPosition || moveEff.position || "bottom",
         shuffle: effect.shuffleRemainder,
       } as MoveEffect;
 
@@ -902,10 +902,10 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       const from = obj.zone;
       const destPlayerId = moveEff.ownerControl ? obj.ownerId : controllerId;
       logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: Moving ${obj.definition.name} from ${from} to ${zone} for player ${destPlayerId}`);
-      ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId, moveEff.libraryPosition as number | "top" | "bottom", false, isDiscard);
+      ActionProcessor.moveCard(state, obj, zone as Zone, destPlayerId, moveEff.position as number | "top" | "bottom", false, isDiscard);
 
       if (
-        (moveEff.reveal || effect.revealed) &&
+        (moveEff.reveal || effect.reveal) &&
         zone !== Zone.Battlefield
       ) {
         obj.isRevealed = true;

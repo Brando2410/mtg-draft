@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, EffectType, Restriction, TargetMapping, Zone, GameObject } from '@shared/engine_types';
 
 export const ZimonesExperiment: CardDefinition = {
     name: "Zimone's Experiment",
@@ -23,7 +23,7 @@ export const ZimonesExperiment: CardDefinition = {
                     remainderZone: Zone.Library,
                     remainderPosition: 'bottom',
                     shuffleRemainder: true,
-                    onSelected: (card: any) => {
+                    onSelected: (card: GameObject) => {
                         const types = card.definition.types.map((t: string) => t.toLowerCase());
                         if (types.includes('land')) {
                             return [{ type: EffectType.MoveToZone, targetIds: [card.id], zone: Zone.Battlefield, tapped: true }];

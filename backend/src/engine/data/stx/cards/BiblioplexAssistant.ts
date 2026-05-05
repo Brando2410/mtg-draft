@@ -31,7 +31,7 @@ export const BiblioplexAssistant: CardDefinition = {
                         type: EffectType.MoveToZone,
                         zone: Zone.Library,
                         targetMapping: TargetMapping.Target1,
-                        libraryPosition: 'top'
+                        position: 'top'
                     }]
                 }]
             }]

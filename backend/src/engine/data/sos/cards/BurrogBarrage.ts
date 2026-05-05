@@ -34,7 +34,7 @@ export const BurrogBarrage: CardDefinition = {
                                 {
                                     type: EffectType.DealDamage,
                                     amount: DynamicAmount.Target1Power,
-                                    damageSourceMapping: TargetMapping.Target1,
+                                    sourceMapping: TargetMapping.Target1,
                                     targetMapping: TargetMapping.Target2
                                 }
                             ]

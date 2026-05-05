@@ -41,11 +41,11 @@ export const QuandrixCommand: CardDefinition = {
                         count: 1,
                     },
                     {
-                        type: TargetType.Card,
+                        type: TargetType.CardInGraveyard,
                         count: 3,
                         minCount: 0,
                         optional: true,
-                        restrictions: [Restriction.Graveyard, Restriction.ControlledByTarget1],
+                        restrictions: [Restriction.OwnedByTarget1],
                         label: 'Choose up to three target cards from their graveyard'
                     }
                 ],
@@ -53,7 +53,7 @@ export const QuandrixCommand: CardDefinition = {
                     {
                         type: EffectType.MoveToZone,
                         zone: Zone.Library,
-                        libraryPosition: 'top',
+                        position: 'top',
                         targetMapping: TargetMapping.TargetAll
                     },
                     {
