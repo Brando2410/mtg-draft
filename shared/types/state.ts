@@ -88,6 +88,7 @@ export interface EffectiveStats {
     subtypes?: string[];
     supertypes?: string[];
     flashbackCostOverride?: string;
+    abilities?: (import('./abilities').AbilityDefinition | string)[];
 }
 
 export interface GameObject extends BaseEntity {
@@ -266,6 +267,7 @@ export interface InteractionState {
     lastChoiceValue?: string; // String selection (e.g. chosen color, type, or card name)
     lastChosenModeIndex?: number[]; // Mode indices for multi-mode spells
     lastChoiceX?: number; // Chosen X value
+    manaChoices?: Record<string, string>; // Map of hybrid symbol index -> chosen payment (e.g. { "0": "R" })
     flags: Record<string, any>; // Multi-purpose flags (e.g. confirmedAutoTap, paidCasualtyFor)
 }
 

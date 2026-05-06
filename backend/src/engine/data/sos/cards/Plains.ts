@@ -17,6 +17,7 @@ export const Plains: CardDefinition = {
         {
             type: AbilityType.Activated,
             isManaAbility: true,
+            id: "{T}: Add {W}.",
             costs: [{ type: CostType.Tap }],
             effects: [{ type: EffectType.AddMana, manaType: 'W' }]
         }

@@ -116,24 +116,35 @@ export class ManaPoolManager {
     }
 
     // Deduct colored/hybrid mana first
+    let extraGenericFromHybrids = 0;
     for (const [symbol, amount] of Object.entries(requirements.colored)) {
       if (symbol.includes('/')) {
         let left = amount;
         const options = symbol.split('/');
+        
+        // 1. Try to pay with colors first
         for (const opt of options) {
-          if (opt === 'P') continue;
+          if (opt === 'P' || !isNaN(parseInt(opt))) continue;
           const pool = this.getUsableMana(player, payingFor);
           const spendable = Math.min(left, pool[opt as keyof typeof pool] || 0);
           spend(opt, spendable);
           left -= spendable;
           if (left <= 0) break;
         }
+
+        // 2. Add remaining to generic debt if monocolored hybrid
+        if (left > 0) {
+          const numericOpt = options.find(opt => !isNaN(parseInt(opt)));
+          if (numericOpt) {
+            extraGenericFromHybrids += (left * parseInt(numericOpt));
+          }
+        }
       } else {
         spend(symbol, amount);
       }
     }
 
-    let genericLeft = requirements.generic;
+    let genericLeft = requirements.generic + extraGenericFromHybrids;
     const priority: (keyof typeof player.manaPool)[] = ['C', 'W', 'U', 'B', 'R', 'G'];
     for (const color of priority) {
       if (genericLeft <= 0) break;

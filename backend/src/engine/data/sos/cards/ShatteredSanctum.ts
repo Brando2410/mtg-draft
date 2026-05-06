@@ -12,6 +12,7 @@ export const ShatteredSanctum: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
+            id: "{T}: Add {W} or {B}.",
             costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [

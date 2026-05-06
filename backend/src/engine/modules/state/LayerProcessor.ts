@@ -168,15 +168,19 @@ export class LayerProcessor {
       });
 
       // 6. LAYER 6: Ability Adding/Removing (Rule 613.1f)
+      const addedAbilities: (import('@shared/engine_types').AbilityDefinition | string)[] = [];
       layerMap[6].forEach((e) => {
         if (!this.isTarget(state, e, obj.id)) return;
         if (e.removeAllAbilities) {
           keywords.clear();
+          addedAbilities.length = 0;
         }
         e.abilitiesToAdd?.forEach((k) => {
-          const keyword =
-            typeof k === "string" ? k : (k as any).name || "Unknown";
-          keywords.add(keyword);
+          if (typeof k === "string") {
+            keywords.add(k);
+          } else {
+            addedAbilities.push(k);
+          }
         });
         e.abilitiesToRemove?.forEach((k) => keywords.delete(k));
       });
@@ -282,6 +286,7 @@ export class LayerProcessor {
         )?.flashbackCostOverride,
         isPlayable: false,
         supertypes: Array.from(supertypes),
+        abilities: addedAbilities,
       };
 
       // CACHE RESULT
@@ -391,6 +396,11 @@ export class LayerProcessor {
           return (
             RuleUtils.getController(obj) === effect.controllerId &&
             RuleUtils.isCreature(obj)
+          );
+        case TargetMapping.AllLandsYouControl:
+          return (
+            RuleUtils.getController(obj) === effect.controllerId &&
+            RuleUtils.isLand(obj)
           );
         case TargetMapping.AllPermanentsYouControl:
           return RuleUtils.getController(obj) === effect.controllerId;

@@ -6,9 +6,7 @@ export const DreamrootCascade: CardDefinition = {
     rarity: "rare",
     image_url: "https://cards.scryfall.io/normal/front/e/f/ef662b92-5a7f-48c9-bcc1-14b55e091aef.jpg?1775938773",
     colors: [],
-    types: [
-        "Land"
-    ],
+    types: ["Land"],
     subtypes: [],
     keywords: [],
     oracleText: "This land enters tapped unless you control two or more other lands.\n{T}: Add {G} or {U}.",
@@ -16,6 +14,7 @@ export const DreamrootCascade: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
+            id: "{T}: Add {G} or {U}.",
             costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [

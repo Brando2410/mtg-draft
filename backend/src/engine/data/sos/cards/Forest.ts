@@ -16,6 +16,7 @@ export const Forest: CardDefinition = {
         {
             type: AbilityType.Activated,
             isManaAbility: true,
+            id: "{T}: Add {G}.",
             costs: [{ type: CostType.Tap }],
             effects: [{ type: EffectType.AddMana, manaType: 'G' }]
         }

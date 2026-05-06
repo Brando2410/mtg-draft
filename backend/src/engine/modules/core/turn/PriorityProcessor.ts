@@ -288,12 +288,23 @@ export class PriorityProcessor {
       }
 
       const logic = oracle.getCard(obj.definition.name);
-      if (!logic || !logic.abilities) return false;
+      const { layer: LayerProcessor } = getProcessors(state);
+      const stats = LayerProcessor.getEffectiveStats(obj, state);
+      const allAbilities = [...((logic?.abilities as any[]) || [])];
+      if (stats.abilities) {
+        stats.abilities.forEach((a: any) => {
+          if (typeof a === 'string') return;
+          const isDuplicate = allAbilities.some(existing => {
+            if (typeof existing === 'string') return false;
+            return (a.id !== undefined && existing.id !== undefined) ? a.id === existing.id : (a.type === existing.type && JSON.stringify(a.effects) === JSON.stringify(existing.effects));
+          });
+          if (!isDuplicate) allAbilities.push(a);
+        });
+      }
 
-      return (logic.abilities || []).some((ability, index) => {
+      return allAbilities.some((ability, index) => {
         if (typeof ability === 'string') return false;
-        const canAct = this.canAbilityBeActivated(state, playerId, obj.id, index, false);
-        return canAct;
+        return this.canAbilityBeActivated(state, playerId, obj.id, index, false);
       });
     });
 
@@ -449,7 +460,21 @@ export class PriorityProcessor {
       const logic = oracle.getCard(objOnField.definition.name);
       if (!logic || (!logic.abilities && !state.ruleRegistry.continuousEffects.some(e => e.type === EffectType.AddTriggeredAbility))) return false;
 
-      return (logic.abilities || []).some((ability, index) => {
+      const { layer: LayerProcessor } = getProcessors(state);
+      const stats = LayerProcessor.getEffectiveStats(objOnField, state);
+      const allAbilities = [...(logic.abilities || [])];
+      if (stats.abilities) {
+        stats.abilities.forEach((a: any) => {
+          if (typeof a === 'string') return;
+          const isDuplicate = allAbilities.some(existing => {
+            if (typeof existing === 'string') return false;
+            return (a.id !== undefined && existing.id !== undefined) ? a.id === existing.id : (a.type === existing.type && JSON.stringify(a.effects) === JSON.stringify(existing.effects));
+          });
+          if (!isDuplicate) allAbilities.push(a);
+        });
+      }
+
+      return allAbilities.some((ability, index) => {
         if (typeof ability === 'string') return false;
         return this.canAbilityBeActivated(state, playerId, objId, index, checkPriority);
       });
@@ -489,7 +514,25 @@ export class PriorityProcessor {
       });
     }
 
-    // --- SUPPORT FOR GRANTED ABILITIES (Conspicuous Snoop, Galazeth, etc.) ---
+    // --- SUPPORT FOR GRANTED ABILITIES (Conspicuous Snoop, Layer 6, etc.) ---
+    const { layer: LayerProcessor } = getProcessors(state);
+    const stats = LayerProcessor.getEffectiveStats(obj as GameObject, state);
+    if (stats.abilities) {
+      stats.abilities.forEach((a: any) => {
+        if (typeof a === 'string') return;
+        const isDuplicate = abilities.some(existing => {
+          if (typeof existing === 'string') return false;
+          if (a.id !== undefined && (existing as AbilityDefinition).id !== undefined) return a.id === (existing as AbilityDefinition).id;
+          return a.type === (existing as AbilityDefinition).type &&
+            JSON.stringify(a.effects) === JSON.stringify((existing as AbilityDefinition).effects) &&
+            JSON.stringify(a.costs) === JSON.stringify((existing as AbilityDefinition).costs);
+        });
+        if (!isDuplicate) {
+          abilities.push(a);
+        }
+      });
+    }
+
     const grantedAbilityEffects = state.ruleRegistry.continuousEffects.filter(e =>
       (e.type === EffectType.GainAbilitiesOfTopCard || e.type === EffectType.AddTriggeredAbility) &&
       (e.targetIds?.includes(objId) || (e.targetMapping === 'SELF' && e.sourceId === objId) || LayerProcessor.isTarget(state, e, objId)) &&

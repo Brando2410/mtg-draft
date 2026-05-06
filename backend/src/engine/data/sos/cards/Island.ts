@@ -16,6 +16,7 @@ export const Island: CardDefinition = {
         {
             type: AbilityType.Activated,
             isManaAbility: true,
+            id: "{T}: Add {U}.",
             costs: [{ type: CostType.Tap }],
             effects: [{ type: EffectType.AddMana, manaType: 'U' }]
         }

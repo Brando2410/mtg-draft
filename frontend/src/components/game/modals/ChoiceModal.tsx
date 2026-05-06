@@ -1,4 +1,4 @@
-import { useMemo, memo } from 'react';
+import { useMemo, memo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EyeOff } from 'lucide-react';
 import { type GameObject, type PlayerState, ActionType, type StackObject } from '@shared/engine_types';
@@ -9,6 +9,7 @@ import { ScrySurveilView } from './choice/ScrySurveilView';
 import { TriggerOrderView } from './choice/TriggerOrderView';
 import { CardChoiceGrid } from './choice/CardChoiceGrid';
 import { ButtonChoiceList } from './choice/ButtonChoiceList';
+import { ManaChoiceToggleView } from './choice/ManaChoiceToggleView';
 import { useChoiceModalLogic } from '../../../hooks/game/useChoiceModalLogic';
 
 interface ChoiceModalProps {
@@ -49,8 +50,22 @@ export const ChoiceModal = memo(({
       maxChoices
   } = useChoiceModalLogic(pendingAction, me, opponent, battlefield, stack, exile, onTapCard);
 
+  const [manaToggleState, setManaToggleState] = useState<Record<number, string>>({});
+
   const isOrderTriggers = pendingAction?.type === ActionType.OrderTriggers;
   const isScrySurveil = pendingAction?.type === ActionType.Scry || pendingAction?.type === ActionType.Surveil;
+  const isManaToggle = pendingAction?.data?.isManaChoiceToggle;
+
+  useEffect(() => {
+      if (isManaToggle && pendingAction?.data?.hybridGroups) {
+          const initial: Record<number, string> = {};
+          pendingAction.data.hybridGroups.forEach((g: any, i: number) => {
+              initial[i] = g.options[0];
+          });
+          setManaToggleState(initial);
+      }
+  }, [isManaToggle, pendingAction?.data?.hybridGroups]);
+
   const isChoiceAction = [
     ActionType.Choice,
     ActionType.ModalSelection,
@@ -105,6 +120,10 @@ export const ChoiceModal = memo(({
       onTapCard?.(`CHOICE_${payload}`);
   };
 
+  const confirmManaToggle = () => {
+      onTapCard?.(`CHOICE_${JSON.stringify(manaToggleState)}`);
+  };
+
   return (
     <>
       <AnimatePresence>
@@ -146,7 +165,8 @@ export const ChoiceModal = memo(({
                   <div className={`w-full custom-scrollbar overflow-x-auto overflow-y-auto max-h-[60vh] px-8 py-6 flex flex-col items-center ${hasCards || isOrderTriggers ? 'bg-black/30 rounded-[2.5rem] border border-white/5 shadow-inner mx-8' : ''}`}>
                       {isScrySurveil && <ScrySurveilView scryState={scryState} setScryState={setScryState} moveCard={moveCard} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} type={pendingAction.type} />}
                       {isOrderTriggers && <TriggerOrderView orderedTriggers={orderedTriggers} setOrderedTriggers={setOrderedTriggers} />}
-                      {!isOrderTriggers && !isScrySurveil && cardChoices.length > 0 && (
+                      {isManaToggle && <ManaChoiceToggleView hybridGroups={pendingAction.data.hybridGroups} toggleState={manaToggleState} setToggleState={setManaToggleState} />}
+                      {!isOrderTriggers && !isScrySurveil && !isManaToggle && cardChoices.length > 0 && (
                           <CardChoiceGrid 
                               cardChoices={cardChoices} filteredCardChoices={filteredCardChoices} choices={choices} 
                               selectedIndices={selectedIndices} maxChoices={maxChoices} 
@@ -156,14 +176,14 @@ export const ChoiceModal = memo(({
                               handleChoiceRightClick={handleChoiceRightClick} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} 
                           />
                       )}
-                      {!isOrderTriggers && !isScrySurveil && buttonChoices.length > 0 && (
+                      {!isOrderTriggers && !isScrySurveil && !isManaToggle && buttonChoices.length > 0 && (
                           <ButtonChoiceList 
                               buttonChoices={buttonChoices} choices={choices} selectedIndices={selectedIndices} 
                               allowDuplicates={pendingAction.data?.allowDuplicates} handleChoiceClick={handleChoiceClick} 
                               handleChoiceRightClick={handleChoiceRightClick} 
                           />
                       )}
-                      {!isOrderTriggers && !isScrySurveil && buttonChoices.length === 0 && !hasCards && (
+                      {!isOrderTriggers && !isScrySurveil && !isManaToggle && buttonChoices.length === 0 && !hasCards && (
                           <div className="p-10 border-2 border-dashed border-red-500/20 rounded-[2rem] text-red-500/40 font-black uppercase tracking-[0.2em] italic">
                               No choices available to select
                           </div>
@@ -171,18 +191,18 @@ export const ChoiceModal = memo(({
                   </div>
 
                   <div className="flex flex-row items-center justify-center gap-6 w-full max-w-xl mt-6 relative z-20">
-                    {(!isOrderTriggers && !isScrySurveil && pendingAction?.type !== ActionType.ResolutionChoice && !pendingAction?.data?.hideUndo) && (
+                    {(!isOrderTriggers && !isScrySurveil && !isManaToggle && pendingAction?.type !== ActionType.ResolutionChoice && !pendingAction?.data?.hideUndo) && (
                       <button onClick={() => onTapCard?.(`CHOICE_undo`)} className="flex-1 max-w-[140px] p-4 bg-red-500/5 hover:bg-red-500/10 rounded-2xl border border-red-500/10 text-[11px] font-black uppercase italic tracking-[0.2em] transition-all text-red-500/60 hover:text-red-500">
                         CANCEL
                       </button>
                     )}
-                    {noneChoice && !isOrderTriggers && (
+                    {noneChoice && !isOrderTriggers && !isManaToggle && (
                       <button onClick={() => onTapCard?.(`CHOICE_${noneChoiceIdx}`)} className="flex-1 max-w-[140px] p-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 text-[11px] font-black uppercase italic tracking-[0.2em] transition-all text-white/70 hover:text-white">
                         SKIP
                       </button>
                     )}
-                    <button disabled={!isOrderTriggers && !isScrySurveil && selectedIndices.length < minChoices} onClick={() => { if (isOrderTriggers) confirmTriggerOrder(); else if (isScrySurveil) confirmScryResult(); else confirmSelection(); }} className={`flex-1 max-w-[240px] p-5 rounded-2xl border-none text-base font-black uppercase italic tracking-[0.2em] transition-all shadow-2xl ${(isOrderTriggers || isScrySurveil || selectedIndices.length >= minChoices) ? 'bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 scale-105 shadow-[0_0_30px_rgba(250,204,21,0.4)]' : 'bg-slate-800 text-slate-600 cursor-not-allowed opacity-50'}`}>
-                      {isOrderTriggers ? "Stack All" : isScrySurveil ? "Done" : `Confirm ${selectedIndices.length > 0 ? `(${selectedIndices.length})` : ''}`}
+                    <button disabled={!isOrderTriggers && !isScrySurveil && !isManaToggle && selectedIndices.length < minChoices} onClick={() => { if (isOrderTriggers) confirmTriggerOrder(); else if (isScrySurveil) confirmScryResult(); else if (isManaToggle) confirmManaToggle(); else confirmSelection(); }} className={`flex-1 max-w-[240px] p-5 rounded-2xl border-none text-base font-black uppercase italic tracking-[0.2em] transition-all shadow-2xl ${(isOrderTriggers || isScrySurveil || isManaToggle || selectedIndices.length >= minChoices) ? 'bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 scale-105 shadow-[0_0_30px_rgba(250,204,21,0.4)]' : 'bg-slate-800 text-slate-600 cursor-not-allowed opacity-50'}`}>
+                      {isOrderTriggers ? "Stack All" : isScrySurveil ? "Done" : isManaToggle ? "Confirm Payment" : `Confirm ${selectedIndices.length > 0 ? `(${selectedIndices.length})` : ''}`}
                     </button>
                   </div>
               </div>

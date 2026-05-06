@@ -3,9 +3,7 @@ export const SundownPass: CardDefinition = {
     name: "Sundown Pass",
     manaCost: "",
     colors: [],
-    types: [
-        "Land"
-    ],
+    types: ["Land"],
     subtypes: [],
     keywords: [],
     oracleText: "This land enters tapped unless you control two or more other lands.\n{T}: Add {R} or {W}.",
@@ -13,6 +11,7 @@ export const SundownPass: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
+            id: "{T}: Add {R} or {W}.",
             costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [

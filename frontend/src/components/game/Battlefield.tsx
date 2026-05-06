@@ -69,7 +69,7 @@ export const Battlefield = memo(({
         <TargetingArrows stack={stack} battlefield={battlefield} pendingAction={pendingAction} hoveredCardId={hoveredCardId} />
         
         {/* OPPONENT SIDE */}
-        <div className="w-full h-1/2 flex flex-col relative overflow-hidden">
+        <div className="w-full h-1/2 flex flex-col relative">
            <div className="h-[30%] flex items-center justify-end px-[0.5vw] bg-black/40 border-b border-white/5 shrink-0 overflow-hidden">
                 <div className="flex gap-[2vh] h-[85%] items-center">
                     {(exile || []).filter(o => o.ownerId === opponent?.id).length > 0 && (
@@ -81,7 +81,7 @@ export const Battlefield = memo(({
            </div>
 
            <div className="h-[35%] grid grid-cols-[1fr,12vh,1fr] border-b border-white/5 bg-black/20 px-[0.5vw] relative shrink-0">
-                <div className="h-full border-r border-white/5 overflow-hidden">
+                <div className="h-full border-r border-white/5">
                     <SubZone cards={zones.opp.lands} allBattlefieldCards={battlefield} label="Lands" align="start" onTapCard={onTapCard} stackSameName={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={true} pendingAction={pendingAction} />
                 </div>
                 
@@ -96,7 +96,7 @@ export const Battlefield = memo(({
                     )}
                 </div>
 
-                <div className="h-full border-l border-white/5 overflow-hidden">
+                <div className="h-full border-l border-white/5">
                     <SubZone cards={zones.opp.nonCreatures} allBattlefieldCards={battlefield} label="Support" align="end" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={true} pendingAction={pendingAction} />
                 </div>
            </div>
@@ -112,13 +112,13 @@ export const Battlefield = memo(({
         </div>
 
         {/* PLAYER SIDE */}
-        <div className="w-full h-1/2 flex flex-col relative overflow-hidden">
+        <div className="w-full h-1/2 flex flex-col relative">
            <div className="h-[35%] border-b border-white/5 shrink-0 px-[0.5vw]">
                 <SubZone cards={zones.me.creatures} allBattlefieldCards={battlefield} label="Your Creatures" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={false} pendingAction={pendingAction} />
            </div>
 
            <div className="h-[35%] grid grid-cols-[1fr,12vh,1fr] bg-black/20 border-b border-white/5 px-[0.5vw] relative shrink-0">
-                <div className="h-full border-r border-white/5 overflow-hidden">
+                <div className="h-full border-r border-white/5">
                     <SubZone cards={zones.me.lands} allBattlefieldCards={battlefield} label="Your Lands" align="start" onTapCard={onTapCard} stackSameName={true} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={false} pendingAction={pendingAction} />
                 </div>
 
@@ -133,7 +133,7 @@ export const Battlefield = memo(({
                     )}
                 </div>
 
-                <div className="h-full border-l border-white/5 overflow-hidden">
+                <div className="h-full border-l border-white/5">
                     <SubZone cards={zones.me.nonCreatures} allBattlefieldCards={battlefield} label="Your Support" align="end" onTapCard={onTapCard} targetableIds={targetableIds} onHoverStart={onHoverStart} onHoverEnd={onHoverEnd} currentStep={currentStep} combat={combat} isOpponent={false} pendingAction={pendingAction} />
                 </div>
            </div>

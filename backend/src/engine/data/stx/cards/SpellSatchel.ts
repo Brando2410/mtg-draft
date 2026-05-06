@@ -16,12 +16,14 @@ export const SpellSatchel: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Tap }, { type: 'RemoveCounter', counterType: 'book', amount: 1 }],
+            id: "{T}, Remove a book counter from Spell Satchel: Add {C}.",
+            costs: [{ type: CostType.Tap }, { type: CostType.RemoveCounter, counterType: 'book', amount: 1 }],
             effects: [{ type: EffectType.AddMana, manaType: 'C' }]
         },
         {
             type: AbilityType.Activated,
-            costs: [{ type: CostType.Mana, value: '{3}' }, { type: CostType.Tap }, { type: 'RemoveCounter', counterType: 'book', amount: 3 }],
+            id: "{3}, {T}, Remove three book counters from Spell Satchel: Draw a card.",
+            costs: [{ type: CostType.Mana, value: '{3}' }, { type: CostType.Tap }, { type: CostType.RemoveCounter, counterType: 'book', amount: 3 }],
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }
     ]

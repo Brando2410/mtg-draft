@@ -76,7 +76,7 @@ export class SpellInteractiveManager {
         cardToPlay.controllerId = cardToPlay.controllerId || playerId;
         logger.debug(state, LogCategory.ACTION, `[INTERACTIVE-TARGETING-START] ${cardToPlay.definition.name} entry. Existing targets: ${existingTargets.length}`);
 
-        if (!ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana)) {
+        if (!ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, cardToPlay)) {
             logger.info(state, LogCategory.ACTION, `Illegal Play: Not enough mana available to even start casting ${cardToPlay.definition.name}.`);
             cardToPlay.xValue = undefined; // Cleanup for next attempt
             return false;

@@ -43,9 +43,6 @@ export class TriggerProcessor {
     Profiler.start('trigger.check');
     try {
       const { logger } = getProcessors(state);
-      if (event.type === TriggerEvent.ResolveSpell || event.type === TriggerEvent.PreCombatMainPhaseStart || event.type === TriggerEvent.EndStep) {
-        logger.debug(state, LogCategory.TRIGGER, `Processing event: ${event.type}`);
-      }
       // 1. Identify all triggered abilities that match this event (Rule 603.2)
       const matchingTriggers = this.collectMatchingTriggers(state, event);
 
@@ -342,7 +339,7 @@ export class TriggerProcessor {
       type: AbilityType.Triggered,
       counters: {},
       name: `${sourceName}'s Trigger`,
-      targets: trigger.targetIds || event.payload?.targetIds || [],
+      targets: trigger.targetIds || (trigger.targetDefinitions?.length ? event.payload?.targetIds || [] : []),
       effects: effects,
       definition: (RuleUtils.isEntity(sourceObj) ? sourceObj.definition : (trigger.payload?.definition || { name: sourceName, types: [], colors: [], oracleText: "" })),
       image_url: sourceImage,
@@ -1058,10 +1055,6 @@ export class TriggerProcessor {
           ],
           payload: { definition: card.definition },
         });
-        const { logger } = getProcessors(state);
-        logger.info(state, LogCategory.TRIGGER,
-          `[PARADIGM] Registered recurring recast trigger for ${spellName}.`,
-        );
       }
     }
   }

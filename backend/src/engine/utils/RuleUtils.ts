@@ -194,6 +194,7 @@ export class RuleUtils {
         const printed = (def.keywords || []).some((k) => k.toLowerCase() === search);
         const effective = (this.isGameObject(obj) && obj.effectiveStats?.keywords || []).some((k) => k.toLowerCase() === search);
 
+
         if (printed || effective) return true;
 
         // Fallback: Oracle Text check for keywords (CR 702)

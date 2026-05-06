@@ -2,6 +2,7 @@ import { TriggerEvent } from "@shared/engine_types";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { IConditionHandler } from "../IConditionHandler";
+import { LogCategory } from "../../../../utils/EngineLogger";
 
 export const SpecializedConditions: Record<string, IConditionHandler> = {
     "REPARTEE_TRIGGER": {
@@ -55,7 +56,7 @@ export const SpecializedConditions: Record<string, IConditionHandler> = {
         matches(state, params, context) {
             const { event, sourceId } = context;
             const eventObj = event?.payload?.object;
-            const spent = (RuleUtils.isEntity(eventObj) ? eventObj.paidManaValue : undefined) ?? event?.payload?.amount ?? 0;
+            const spent = (RuleUtils.isEntity(eventObj) ? (eventObj as any).paidManaValue : undefined) ?? event?.payload?.amount ?? 0;
             const obj = state.battlefield.find((o) => o.id === sourceId);
             if (!obj) return false;
             const { layer: LayerProcessor } = getProcessors(state);

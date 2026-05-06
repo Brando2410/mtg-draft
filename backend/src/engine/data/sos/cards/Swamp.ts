@@ -15,6 +15,7 @@ export const Swamp: CardDefinition = {
         {
             type: AbilityType.Activated,
             isManaAbility: true,
+            id: "{T}: Add {B}.",
             costs: [{ type: CostType.Tap }],
             effects: [{ type: EffectType.AddMana, manaType: 'B' }]
         }

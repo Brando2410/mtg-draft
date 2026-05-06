@@ -15,6 +15,7 @@ export const DeathcapGlade: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
+            id: "{T}: Add {B} or {G}.",
             costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [

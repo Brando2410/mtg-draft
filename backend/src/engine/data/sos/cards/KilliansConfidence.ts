@@ -5,13 +5,8 @@ export const KilliansConfidence: CardDefinition = {
     scryfall_id: "55ff776a-fc3b-4338-8864-d57a85b3f123",
     rarity: "uncommon",
     image_url: "https://cards.scryfall.io/normal/front/5/5/55ff776a-fc3b-4338-8864-d57a85b3f123.jpg?1775938369",
-    colors: [
-        "B",
-        "W"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["B", "W"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "Target creature gets +1/+1 until end of turn. Draw a card.\nWhenever one or more creatures you control deal combat damage to a player, you may pay {W/B}. If you do, return this card from your graveyard to your hand.",
@@ -41,10 +36,7 @@ export const KilliansConfidence: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CombatDamagePlayer,
             activeZone: Zone.Graveyard,
-            condition: (state: any, event: any, trigger: any) => {
-                const sources = event.data?.sources || [];
-                return sources.some((source: any) => source.controllerId === trigger.controllerId);
-            },
+            condition: "EVENT_SOURCES_CONTROLLED_BY_YOU",
             effects: [
                 {
                     type: EffectType.Choice,

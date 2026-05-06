@@ -16,6 +16,7 @@ export const Mountain: CardDefinition = {
         {
             type: AbilityType.Activated,
             isManaAbility: true,
+            id: "{T}: Add {R}.",
             costs: [{ type: CostType.Tap }],
             effects: [{ type: EffectType.AddMana, manaType: 'R' }]
         }

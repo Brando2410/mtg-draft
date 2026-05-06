@@ -24,23 +24,41 @@ export class ManaValidator {
     }
 
     const requirements = ManaParser.parseManaCost(costStr);
+    let extraGenericFromHybrids = 0;
     
     // Check colored mana first (including hybrids)
     for (const [symbol, amount] of Object.entries(requirements.colored)) {
       if (symbol.includes('/')) {
         const options = symbol.split('/');
-        const totalAvailable = options.reduce((sum: number, opt: string) => {
-          if (opt === 'P') return sum;
-          return sum + (pool[opt as keyof typeof pool] || 0);
-        }, 0);
-        if (totalAvailable < amount) return false;
+        let left = amount;
+        
+        // 1. Try to pay with colors first
+        for (const opt of options) {
+          if (opt === 'P' || !isNaN(parseInt(opt))) continue;
+          const available = pool[opt as keyof typeof pool] || 0;
+          const take = Math.min(left, available);
+          (pool as any)[opt] -= take;
+          left -= take;
+        }
+
+        // 2. If any left, and it's a monocolored hybrid (e.g., 2/R), it adds to generic requirement
+        if (left > 0) {
+          const numericOpt = options.find(opt => !isNaN(parseInt(opt)));
+          if (numericOpt) {
+            extraGenericFromHybrids += (left * parseInt(numericOpt));
+          } else {
+            // It's a standard hybrid (e.g., G/W) but we ran out of both options
+            return false;
+          }
+        }
       } else {
         if ((pool[symbol as keyof typeof pool] || 0) < amount) return false;
+        (pool as any)[symbol] -= amount;
       }
     }
 
     const totalFloating = Object.values(pool).reduce((a, b) => a + (b as number), 0);
-    const totalRequired = ManaParser.getManaValue(costStr);
+    const totalRequired = requirements.generic + extraGenericFromHybrids;
     
     return totalFloating >= totalRequired;
   }
@@ -135,8 +153,18 @@ export class ManaValidator {
         // a. Try pool first
         if (req.includes('/')) {
             const options = req.split('/');
-            const found = options.find(opt => (pool as Record<string, number>)[opt] > 0);
-            if (found) { (pool as Record<string, number>)[found]--; continue; }
+            const colorOpt = options.find(opt => isNaN(parseInt(opt)) && (pool as Record<string, number>)[opt] > 0);
+            if (colorOpt) {
+                (pool as Record<string, number>)[colorOpt]--;
+                continue;
+            }
+            
+            // If it's a monocolored hybrid and we can't pay color, it adds to generic requirements
+            const numericOpt = options.find(opt => !isNaN(parseInt(opt)));
+            if (numericOpt) {
+                requirements.generic += parseInt(numericOpt);
+                continue;
+            }
         } else if ((pool as Record<string, number>)[req] > 0) {
             (pool as Record<string, number>)[req]--;
             continue;
@@ -144,13 +172,19 @@ export class ManaValidator {
 
         // b. Try sources
         const options = req.includes('/') ? req.split('/') : [req];
+        const colorOptions = options.filter(opt => isNaN(parseInt(opt)));
+        const numericOpt = options.find(opt => !isNaN(parseInt(opt)));
+
         const possibleSources = untappedSources
-            .filter(l => !usedSources.has(l.id) && l.colors.some((c: string) => options.includes(c)))
+            .filter(l => !usedSources.has(l.id) && l.colors.some((c: string) => colorOptions.includes(c)))
             .sort((a, b) => a.colors.length - b.colors.length);
 
         if (possibleSources.length > 0) {
             const source = possibleSources[0];
             usedSources.set(source.id, 1); // Mark 1 mana used from this source
+        } else if (numericOpt) {
+            // Treat as generic debt
+            requirements.generic += parseInt(numericOpt);
         } else {
             return false;
         }

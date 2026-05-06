@@ -11,6 +11,7 @@ export const StormcarvedCoast: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Activated,
+            id: "{T}: Add {U} or {R}.",
             costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [

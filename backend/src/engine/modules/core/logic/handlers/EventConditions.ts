@@ -2,6 +2,7 @@ import { CounterType, TriggerEvent, Zone } from "@shared/engine_types";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { IConditionHandler } from "../IConditionHandler";
+import { LogCategory } from "../../../../utils/EngineLogger";
 
 export const EventConditions: Record<string, IConditionHandler> = {
     "EVENT_OBJECT_MATCHES": {
@@ -263,7 +264,7 @@ export const EventConditions: Record<string, IConditionHandler> = {
     "REPARTEE_TRIGGER": {
         matches(state, params, context) {
             const { event, controllerId } = context;
-            
+
             // Check if the player casting the spell is the controller of this trigger.
             const castingPlayerId = event?.playerId || event?.payload?.playerId;
             if (String(castingPlayerId) !== String(controllerId)) return false;
@@ -337,8 +338,8 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const { event, state: gameState } = { event: context.event, state };
             const tId = RuleUtils.getTargets(event)[0];
             if (!tId) return false;
-            const targetObj = state.stack.find((s) => s.id === tId) || 
-                              Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === tId);
+            const targetObj = state.stack.find((s) => s.id === tId) ||
+                Object.values(state.players).flatMap(p => p.graveyard).find(o => o.id === tId);
             if (!targetObj) return false;
             return RuleUtils.isType(targetObj, "instant") || RuleUtils.isType(targetObj, "sorcery");
         }
@@ -482,6 +483,19 @@ export const EventConditions: Record<string, IConditionHandler> = {
             const threshold = parseInt(params[0]);
             const xValue = context.event?.payload?.xValue ?? context.stackObject?.xValue ?? 0;
             return xValue >= threshold;
+        }
+    },
+    "EVENT_SOURCES_CONTROLLED_BY_YOU": {
+        matches(state, params, context) {
+            const { event, controllerId } = context;
+            const sources = event?.payload?.sources || [];
+            if (sources.length === 0) {
+                const sourceId = RuleUtils.getSource(event);
+                if (!sourceId) return false;
+                const obj = RuleUtils.findObject(state, sourceId);
+                return obj ? String(obj.controllerId) === String(controllerId) : false;
+            }
+            return sources.some((source: any) => String(source.controllerId) === String(controllerId));
         }
     },
 };

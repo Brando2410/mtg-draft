@@ -27,6 +27,7 @@ export const ArchwayCommons: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
+            id: "{T}: Add one mana of any color.",
             costs: [{ type: CostType.Tap }],
             effects: [{
                 type: EffectType.Choice,

@@ -12,9 +12,10 @@ import {
     StackObject,
     TargetMapping,
     TriggerEvent,
-    Zone
+    Zone,
+    PlayerId
 } from '@shared/engine_types';
-import { ModalEffect } from '@shared/types/effects';
+import { ModalEffect, ResolutionContext } from '@shared/types/effects';
 import { LogCategory } from '../../../utils/EngineLogger';
 import {
     ActivateAbilityOptions,
@@ -30,6 +31,7 @@ import { SpellCostCalculator } from './SpellCostCalculator';
 import { SpellInteractiveManager } from './SpellInteractiveManager';
 import { SpellValidator } from './SpellValidator';
 import { getProcessors } from '../../ProcessorRegistry';
+import { ManaProcessor } from '../../magic/ManaProcessor';
 
 /**
  * SpellProcessor - Orchestrator Facade for Casting Spells and Activating Abilities.
@@ -223,9 +225,31 @@ export class SpellProcessor {
         }
 
         // CR 601.2f: Determine total cost
-        const { totalMana, additionalCosts, usedAlternativeCostId, isFlashback } = SpellCostCalculator.getEffectiveCosts(state, cardToPlay, declaredTargets, currentDefinition);
+        let { totalMana, additionalCosts, usedAlternativeCostId, isFlashback } = SpellCostCalculator.getEffectiveCosts(state, cardToPlay, declaredTargets, currentDefinition);
         cardToPlay.usedAlternativeCostId = usedAlternativeCostId;
         if (isFlashback) cardToPlay.isFlashbackCast = true;
+
+        // Step 0.8: Hybrid Mana Choice
+        if (SpellProcessor.handleHybridManaChoices(state, playerId, cardToPlay, totalMana, declaredTargets, parentContext, isFreeCast, exileOnResolution)) {
+            return true;
+        }
+
+        // Apply hybrid mana choices to totalMana
+        if (state.interaction?.manaChoices && Object.keys(state.interaction.manaChoices).length > 0) {
+            const symbols = totalMana.match(/\{([^}]+)\}/g) || [];
+            let newManaStr = "";
+            let hasHybrids = false;
+            symbols.forEach((s, idx) => {
+                if (s.includes('/')) {
+                    hasHybrids = true;
+                    const chosen = state.interaction!.manaChoices![idx];
+                    newManaStr += chosen ? `{${chosen}}` : s;
+                } else {
+                    newManaStr += s;
+                }
+            });
+            if (hasHybrids) totalMana = newManaStr;
+        }
 
         // --- SETUP SEQUENCE: TARGETING -> CHOICE -> FINALIZATION ---
 
@@ -369,6 +393,9 @@ export class SpellProcessor {
         const definition = obj.definition;
 
         const cardLogic = oracle.getCard(definition.name);
+        const { layer: LayerProcessor } = getProcessors(state);
+        const stats = LayerProcessor.getEffectiveStats(obj as GameObject, state);
+
         let abilities: AbilityDefinition[] = [];
         if (cardLogic?.abilities) {
             cardLogic.abilities.forEach(a => {
@@ -381,6 +408,22 @@ export class SpellProcessor {
                 const isDuplicate = abilities.some(existing => {
                     if (existing.id !== undefined && a.id !== undefined) return existing.id === a.id;
                     // Fallback for abilities without IDs (check type and structural effects)
+                    return existing.type === a.type &&
+                        JSON.stringify(existing.effects) === JSON.stringify(a.effects) &&
+                        JSON.stringify(existing.costs) === JSON.stringify(a.costs);
+                });
+                if (!isDuplicate) {
+                    abilities.push(a);
+                }
+            });
+        }
+
+        // Include abilities from effectiveStats (Continuous Effects)
+        if (stats.abilities) {
+            stats.abilities.forEach((a: any) => {
+                if (typeof a === 'string') return;
+                const isDuplicate = abilities.some(existing => {
+                    if (existing.id !== undefined && a.id !== undefined) return existing.id === a.id;
                     return existing.type === a.type &&
                         JSON.stringify(existing.effects) === JSON.stringify(a.effects) &&
                         JSON.stringify(existing.costs) === JSON.stringify(a.costs);
@@ -589,6 +632,7 @@ export class SpellProcessor {
             state.interaction.lastSelections = {};
             state.interaction.lastChoiceIndex = undefined;
             state.interaction.lastChosenModeIndex = undefined;
+            state.interaction.manaChoices = undefined;
             state.interaction.flags = {};
         }
 
@@ -785,10 +829,10 @@ export class SpellProcessor {
         const manaCost = (ability.costs || []).find((cost) => cost.type === 'Mana');
         if (manaCost) {
             const effectiveMana = CostProcessor.getEffectiveManaCost(state, manaCost, obj, stackObj);
-            if (!ManaProcessor.canPayManaCost(playerObj, effectiveMana, state)) {
-                if (ManaProcessor.canPayWithTotal(playerObj, state.battlefield, effectiveMana)) {
+            if (!ManaProcessor.canPayManaCost(playerObj, effectiveMana, state, obj)) {
+                if (ManaProcessor.canPayWithTotal(playerObj, state.battlefield, effectiveMana, obj)) {
                     logger.info(state, LogCategory.MANA, `Auto-tapping lands to pay ability cost ${effectiveMana}...`);
-                    ManaProcessor.autoTapLandsForCost(state, playerId, effectiveMana, engine);
+                    ManaProcessor.autoTapLandsForCost(state, playerId, effectiveMana, engine, obj);
                 }
             }
         }
@@ -856,5 +900,67 @@ export class SpellProcessor {
      */
     public static getEffectiveCosts(state: GameState, card: GameObject, targets: string[] = [], overrideDefinition?: any, forceFlashback?: boolean, overrideStats?: any): { totalMana: string, additionalCosts: AbilityCost[], usedAlternativeCostId?: string } {
         return SpellCostCalculator.getEffectiveCosts(state, card, targets, overrideDefinition, forceFlashback, overrideStats);
+    }
+
+    /**
+     * Detects hybrid mana symbols in the cost and prompts the player for choices.
+     * @returns true if a choice modal was injected, false to continue.
+     */
+    public static handleHybridManaChoices(
+        state: GameState,
+        playerId: PlayerId,
+        cardToPlay: GameObject,
+        totalMana: string,
+        declaredTargets: string[],
+        parentContext?: ResolutionContext,
+        isFreeCast?: boolean,
+        exileOnResolution?: boolean
+    ): boolean {
+        if (isFreeCast) return false;
+
+        const symbols = totalMana.match(/\{([^}]+)\}/g) || [];
+        const hybridSymbols = symbols
+            .map((s, idx) => ({ s, idx }))
+            .filter(item => item.s.includes('/'));
+
+        if (hybridSymbols.length === 0) return false;
+
+        state.interaction.manaChoices = state.interaction.manaChoices || {};
+        
+        if (Object.keys(state.interaction.manaChoices).length > 0) {
+            return false; // Already chosen
+        }
+
+        const hybridGroups = hybridSymbols.map(({ s, idx }) => {
+            const clean = s.replace(/\{|\}/g, '');
+            return {
+                symbol: s,
+                idx,
+                options: clean.split('/')
+            };
+        });
+
+        state.pendingAction = {
+            type: ActionType.ModalSelection,
+            playerId: playerId,
+            sourceId: cardToPlay.id,
+            data: {
+                label: `Choose exact payment for ${cardToPlay.definition.name}`,
+                hideUndo: false,
+                isManaChoice: true,
+                isManaChoiceToggle: true,
+                isSpellCasting: true,
+                hybridGroups,
+                declaredTargets,
+                parentContext,
+                isFreeCast,
+                exileOnResolution,
+                choices: [] // Empty to prevent default button rendering
+            }
+        };
+
+        const { logger } = getProcessors(state);
+        logger.info(state, LogCategory.ACTION, `[MANA-CHOICE] ${state.players[playerId].name} must toggle hybrid payment.`);
+        return true;
     }
 }

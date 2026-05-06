@@ -117,9 +117,9 @@ export class ChoiceProcessor {
         const isMultiSelectAction = action.type === ActionType.Discard || action.data?.maxChoices > 1;
         const isEmptyConfirm = (firstSelection === 'confirm' || firstSelection === 'done' || firstSelection === 'none') && isMultiSelectAction;
 
-        if (selections.length > 1 || (selections.length === 1 && typeof firstSelection === 'string' && firstSelection.includes('|')) || isEmptyConfirm) {
+        if (selections.length > 1 || (selections.length === 1 && typeof firstSelection === 'string' && (firstSelection.includes('|') || firstSelection.startsWith('{'))) || isEmptyConfirm || action.data?.isManaChoiceToggle) {
             // If it's a cost choice, spell casting mode selection, OR a targeting modal, we go through handleModalSelection
-            if (action.data?.isCostChoice || action.data?.isSpellCasting || action.data?.isTargetingModal) {
+            if (action.data?.isCostChoice || action.data?.isSpellCasting || action.data?.isTargetingModal || action.data?.isManaChoiceToggle) {
                 // Pass the first selection if it's a legacy string, otherwise pass null as handleModalSelection will use the payload
                 return this.handleModalSelection(state, playerId, action.sourceId as string, null, firstSelection as string, action, engine, payload);
             }
@@ -475,6 +475,7 @@ export class ChoiceProcessor {
             lastChoiceValue: undefined,
             lastChosenModeIndex: undefined,
             lastChoiceX: undefined,
+            manaChoices: undefined,
             flags: {}
         };
 
@@ -492,8 +493,21 @@ export class ChoiceProcessor {
 
         const abilityIndex = typeof choice.value === 'number' ? choice.value : parseInt(choice.value as string);
         const logic = oracle.getCard(obj.definition.name);
-        const ability = (logic?.abilities as AbilityDefinition[])?.[abilityIndex];
+        const { layer: LayerProcessor } = getProcessors(state);
+        const stats = LayerProcessor.getEffectiveStats(obj, state);
+        const allAbilities = [...((logic?.abilities as any[]) || [])];
+        if (stats.abilities) {
+          stats.abilities.forEach((a: any) => {
+            if (typeof a === 'string') return;
+            const isDuplicate = allAbilities.some(existing => {
+              if (typeof existing === 'string') return false;
+              return (a.id !== undefined && existing.id !== undefined) ? a.id === existing.id : (a.type === existing.type && JSON.stringify(a.effects) === JSON.stringify(existing.effects));
+            });
+            if (!isDuplicate) allAbilities.push(a);
+          });
+        }
 
+        const ability = allAbilities[abilityIndex];
         if (!ability) return false;
 
         if (ability.targetDefinitions) {
@@ -630,7 +644,7 @@ export class ChoiceProcessor {
             choice = action.data?.choices?.[idx] || null;
         }
 
-        if (!choice && !isEmptyConfirm) return false;
+        if (!choice && !isEmptyConfirm && !action.data?.isManaChoiceToggle) return false;
 
         // Validate min choices for empty confirm
         if (isEmptyConfirm && (action.data?.minChoices || 0) > 0) {
@@ -681,6 +695,21 @@ export class ChoiceProcessor {
                 return typeof val === 'number' ? val : parseInt(String(val).substring(15));
             });
             state.interaction.lastChosenModeIndex = modeIndices;
+        } else if (action.data?.isManaChoiceToggle) {
+            let parsedSelections: string[] = [];
+            if (typeof firstSelection === 'string' && firstSelection.startsWith('{')) {
+                parsedSelections = Object.values(JSON.parse(firstSelection));
+            } else if (typeof firstSelection === 'string' && firstSelection.startsWith('[')) {
+                parsedSelections = JSON.parse(firstSelection);
+            } else if (payload?.selections) {
+                parsedSelections = payload.selections.map(s => String(s));
+            }
+            if (state.interaction) {
+                state.interaction.manaChoices = state.interaction.manaChoices || {};
+                action.data.hybridGroups.forEach((group: any, index: number) => {
+                    state.interaction!.manaChoices![group.idx] = parsedSelections[index];
+                });
+            }
         } else {
             if (typeof firstSelection === 'number') state.interaction.lastChoiceIndex = firstSelection;
             else state.interaction.lastChoiceValue = firstSelection as string;

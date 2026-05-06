@@ -23,11 +23,13 @@ export const ResonatingLute: CardDefinition = {
                         {
                             type: AbilityType.Activated,
                             isManaAbility: true,
+                            id: "{T}: Add two mana of any one color. Spend this mana only to cast instant and sorcery spells.",
                             costs: [{ type: CostType.Tap }],
                             effects: [
                                 {
                                     type: EffectType.AddMana,
-                                    manaType: '{ANY}{ANY}',
+                                    manaType: 'ANY',
+                                    amount: 2,
                                     manaRestrictions: [Restriction.InstantOrSorcery]
                                 }
                             ]

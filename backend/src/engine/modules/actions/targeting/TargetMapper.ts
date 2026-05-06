@@ -507,6 +507,7 @@ export class TargetMapper {
       case TargetMapping.OtherCreaturesYouControl:
       case TargetMapping.OtherSpiritsYouControl:
       case TargetMapping.AllPermanentsYouControl:
+      case TargetMapping.AllLandsYouControl:
       case TargetMapping.AllFractalsYouControl:
       case TargetMapping.OtherCreatures:
       case TargetMapping.AllOtherCreatures:
@@ -528,6 +529,7 @@ export class TargetMapper {
         else if (mapping.includes('CREATURE')) finalRestrictions.push(Restriction.Creature);
         else if (mapping.includes('PERMANENT')) finalRestrictions.push(Restriction.Permanent);
         else if (mapping.includes('PLANESWALKER')) finalRestrictions.push(Restriction.Planeswalker);
+        else if (mapping.includes('LAND')) finalRestrictions.push(Restriction.Land);
 
         if (mapping.includes('SPIRIT')) finalRestrictions.push('spirit');
         if (mapping.includes('FRACTAL')) finalRestrictions.push('fractal');

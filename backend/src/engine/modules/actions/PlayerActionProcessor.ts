@@ -119,6 +119,23 @@ export class PlayerActionProcessor {
 
     const allActivated = [...(logic?.abilities || [])];
 
+    const stats = LayerProcessor.getEffectiveStats(obj, state);
+    if (stats.abilities) {
+      stats.abilities.forEach((a: any) => {
+        if (typeof a === 'string') return;
+        const isDuplicate = allActivated.some(existing => {
+          const ex = existing as AbilityDefinition;
+          if (a.id !== undefined && ex.id !== undefined) return a.id === ex.id;
+          return a.type === ex.type &&
+            JSON.stringify(a.effects) === JSON.stringify(ex.effects) &&
+            JSON.stringify(a.costs) === JSON.stringify(ex.costs);
+        });
+        if (!isDuplicate) {
+          allActivated.push(a);
+        }
+      });
+    }
+
     // --- SUPPORT FOR IN-LINE ABILITIES (Tokens, Virtual Spells) ---
     if (obj.definition.abilities) {
       obj.definition.abilities.forEach((a) => {

@@ -18,21 +18,19 @@ export class TargetValidator {
         // Phased out check (Rule 702.26)
         if (RuleUtils.isEntity(targetObj) && targetObj.isPhasedOut) return false;
 
+        // Handle Player objects returned by findObject
+        if (state.players[targetId as PlayerId]) {
+            return this.isPlayerTargetLegal(state, context, targetId, targetDefForIndex);
+        }
+
         // 3. ZONE CHECK
         if (RuleUtils.isEntity(targetObj)) {
             const expectedZone = this.getExpectedZone(targetObj as GameObject, targetDefForIndex);
             if (expectedZone !== 'Any' && targetObj.zone !== expectedZone) return false;
         }
 
-        if (targetDefForIndex?.type === TargetType.Player) return false;
-
         // 4. PROTECTION / HEXPROOF / SHROUD (Rule 702)
         if (!this.checkKeywords(state, context, targetObj as GameObject)) return false;
-
-        // Handle Player objects returned by findObject
-        if (state.players[targetId as PlayerId]) {
-            return this.isPlayerTargetLegal(state, context, targetId, targetDefForIndex);
-        }
         
         // 5. RESTRICTION REGISTRY CHECK
         const restrictions = this.normalizeRestrictions(targetDefForIndex);
