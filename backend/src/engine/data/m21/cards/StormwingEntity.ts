@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, EffectType, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const StormwingEntity: CardDefinition = {
     name: "Stormwing Entity",
@@ -21,7 +21,7 @@ export const StormwingEntity: CardDefinition = {
                     type: EffectType.CostReduction,
                     targetMapping: TargetMapping.Self,
                     manaReduction: '{1}{U}',
-                    condition: 'CAST_INSTANT_SORCERY_THIS_TURN'
+                    condition: ConditionType.CastInstantSorceryThisTurn
                 }
             ]
         },

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DurationType, EffectType, RestrictionType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const PrismariApprentice: CardDefinition = {
     name: "Prismari Apprentice",
@@ -14,16 +14,20 @@ export const PrismariApprentice: CardDefinition = {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Magecraft,
             effects: [
-                { type: EffectType.ApplyContinuousEffect, abilitiesToAdd: ['CannotBeBlocked'], duration: { type: DurationType.UntilEndOfTurn }, targetMapping: TargetMapping.Self },
                 {
-                    type: EffectType.Choice,
-                    label: "Add +1/+1 counter if MV >= 5",
+                    type: EffectType.ApplyContinuousEffect,
+                    abilitiesToAdd: [RestrictionType.CannotBeBlocked],
+                    duration: { type: DurationType.UntilEndOfTurn },
+                    targetMapping: TargetMapping.Self
+                },
+                {
+                    type: EffectType.AddCounters,
                     condition: "EVENT_MANA_VALUE_GE:5",
-                    effects: [{ type: EffectType.AddCounters, counterType: '+1/+1', amount: 1, targetMapping: TargetMapping.Self }]
+                    counterType: '+1/+1',
+                    amount: 1,
+                    targetMapping: TargetMapping.Self
                 }
             ]
         }
     ]
 };
-
-

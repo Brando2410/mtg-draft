@@ -29,12 +29,12 @@ export const SanarUnfinishedGeniusWildIdea: CardDefinition = {
                         abilities: [
                             {
                                 type: AbilityType.Activated,
-                                id: 'Treasure_Mana_Ability',
+                                id: "{T}, Sacrifice this token: Add one mana of any color.",
                                 costs: [
-                                    { type: CostType.Tap, targetMapping: TargetMapping.Self },
-                                    { type: CostType.Sacrifice, targetMapping: TargetMapping.Self }
+                                    { type: CostType.Tap },
+                                    { type: CostType.SacrificeSelf }
                                 ],
-                                    effects: [
+                                effects: [
                                     {
                                         type: EffectType.AddMana,
                                         manaType: '{ANY}'

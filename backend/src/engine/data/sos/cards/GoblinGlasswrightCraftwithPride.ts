@@ -37,14 +37,16 @@ export const GoblinGlasswrightCraftwithPride: CardDefinition = {
                             abilities: [
                                 {
                                     type: AbilityType.Activated,
+                                    id: "{T}, Sacrifice this token: Add one mana of any color.",
                                     costs: [
-                                        { type: CostType.Tap, targetMapping: TargetMapping.Self },
-                                        { type: CostType.Sacrifice, targetMapping: TargetMapping.Self }
+                                        { type: CostType.Tap },
+                                        { type: CostType.SacrificeSelf }
                                     ],
                                     effects: [
                                         {
                                             type: EffectType.AddMana,
-                                            manaType: '{ANY}'
+                                            amount: 1,
+                                            manaType: 'ANY'
                                         }
                                     ],
                                     isManaAbility: true

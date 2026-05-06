@@ -13,7 +13,7 @@ export const TerramorphicExpanse: CardDefinition = {
             id: "{T}, Sacrifice this land: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
             costs: [
                 { type: CostType.Tap },
-                { type: CostType.Sacrifice, targetMapping: TargetMapping.Self }
+                { type: CostType.SacrificeSelf }
             ],
             effects: [
                 {

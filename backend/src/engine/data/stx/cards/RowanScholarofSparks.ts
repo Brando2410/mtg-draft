@@ -26,6 +26,7 @@ export const RowanScholarofSparks: CardDefinition = {
                 },
                 {
                     type: AbilityType.Activated,
+                    id: "Deals 1 damage to each opponent. If you've drawn three or more cards this turn, she deals 3 damage to each opponent instead.",
                     costs: [{ type: CostType.Loyalty, value: '+1' }],
                     effects: [{
                         type: EffectType.DealDamage,
@@ -35,12 +36,12 @@ export const RowanScholarofSparks: CardDefinition = {
                 },
                 {
                     type: AbilityType.Activated,
+                    id: "You get an emblem with \"Whenever you cast an instant or sorcery spell, you may pay {2}. If you do, copy that spell. You may choose new targets for the copy.\"",
                     costs: [{ type: CostType.Loyalty, value: '-4' }],
                     effects: [{
                         type: EffectType.CreateEmblem,
                         emblemBlueprint: {
                             name: "Rowan's Emblem",
-                            oracleText: "Whenever you cast an instant or sorcery spell, you may pay {2}. If you do, copy that spell. You may choose new targets for the copy.",
                             abilities: [{
                                 type: AbilityType.Triggered,
                                 eventMatch: TriggerEvent.CastInstantOrSorcery,
@@ -81,6 +82,7 @@ export const RowanScholarofSparks: CardDefinition = {
                 },
                 {
                     type: AbilityType.Activated,
+                    id: "Up to one target creature has base power and toughness 0/2 and loses all abilities until your next turn.",
                     costs: [{ type: CostType.Loyalty, value: '+1' }],
                     targetDefinitions: [{ count: 1, type: TargetType.Creature, optional: true }],
                     effects: [{
@@ -96,15 +98,18 @@ export const RowanScholarofSparks: CardDefinition = {
                 },
                 {
                     type: AbilityType.Activated,
+                    id: "Draw two cards.",
                     costs: [{ type: CostType.Loyalty, value: '-3' }],
                     effects: [{ type: EffectType.DrawCards, amount: 2 }]
                 },
                 {
                     type: AbilityType.Activated,
+                    id: "Exile up to five target instant or sorcery cards from any graveyard. You may cast them without paying their mana costs.",
                     costs: [{ type: CostType.Loyalty, value: '-7' }],
                     targetDefinitions: [{
                         count: 5,
                         minCount: 0,
+                        optional: true,
                         type: TargetType.CardInGraveyard,
                         restrictions: [Restriction.InstantOrSorcery]
                     }],

@@ -15,7 +15,7 @@ export const SelflessSavior: CardDefinition = {
         {
             type: AbilityType.Activated,
             activeZone: Zone.Battlefield,
-            costs: [{ type: CostType.Sacrifice, targetMapping: TargetMapping.Self }],
+            costs: [{ type: CostType.SacrificeSelf }],
             targetDefinitions: [{
                 type: TargetType.Creature,
                 count: 1,

@@ -20,25 +20,19 @@ export const ArchwayCommons: CardDefinition = {
                 type: EffectType.Choice,
                 label: "Pay {1} or sacrifice Archway Commons?",
                 choices: [
-                    { label: "Pay {1}", costs: [{ type: CostType.Mana, value: '{1}' }] },
-                    { label: "Sacrifice", effects: [{ type: CostType.Sacrifice, targetMapping: TargetMapping.Self }] }
+                    { label: "Pay {1}", costs: [{ type: CostType.Mana, value: '{1}' }], effects: [] },
+                    { label: "Sacrifice", effects: [{ type: EffectType.Sacrifice, targetMapping: TargetMapping.Self }] }
                 ]
             }]
         },
         {
             type: AbilityType.Activated,
             id: "{T}: Add one mana of any color.",
+            isManaAbility: true,
             costs: [{ type: CostType.Tap }],
             effects: [{
-                type: EffectType.Choice,
-                label: "Select color",
-                choices: [
-                    { label: "{W}", effects: [{ type: EffectType.AddMana, manaType: 'W' }] },
-                    { label: "{U}", effects: [{ type: EffectType.AddMana, manaType: 'U' }] },
-                    { label: "{B}", effects: [{ type: EffectType.AddMana, manaType: 'B' }] },
-                    { label: "{R}", effects: [{ type: EffectType.AddMana, manaType: 'R' }] },
-                    { label: "{G}", effects: [{ type: EffectType.AddMana, manaType: 'G' }] }
-                ]
+                type: EffectType.AddMana,
+                manaType: 'ANY',
             }]
         }
     ]

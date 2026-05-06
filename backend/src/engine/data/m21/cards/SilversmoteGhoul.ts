@@ -23,7 +23,7 @@ export const SilversmoteGhoul: CardDefinition = {
             type: AbilityType.Activated,
             costs: [
                 { type: CostType.Mana, value: '{1}{B}' },
-                { type: CostType.Sacrifice, targetMapping: TargetMapping.Self }
+                { type: CostType.SacrificeSelf }
             ],
             effects: [{ type: EffectType.DrawCards, amount: 1, targetMapping: TargetMapping.Controller }]
         }

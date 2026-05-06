@@ -16,7 +16,6 @@ export const StormKilnArtist: CardDefinition = {
                 {
                     type: EffectType.ApplyContinuousEffect,
                     targetMapping: TargetMapping.Self,
-                    // COUNT_MATCHING usually implies a DynamicAmount or custom string
                     powerModifier: 'COUNT_MATCHING:Artifact,YouControl',
                     layer: 7
                 }
@@ -36,8 +35,10 @@ export const StormKilnArtist: CardDefinition = {
                         abilities: [
                             {
                                 type: AbilityType.Activated,
-                                costs: [{ type: CostType.Tap }, { type: CostType.Sacrifice, targetMapping: TargetMapping.Self }],
-                                effects: [{ type: EffectType.AddMana, manaType: 'ANY', amount: 1 }]
+                                id: "{T}, Sacrifice this token: Add one mana of any color.",
+                                isManaAbility: true,
+                                costs: [{ type: CostType.Tap }, { type: CostType.SacrificeSelf }],
+                                effects: [{ type: EffectType.AddMana, manaType: 'ANY' }]
                             }
                         ]
                     }

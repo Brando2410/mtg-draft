@@ -2,12 +2,8 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
 export const SeizetheSpoils: CardDefinition = {
     name: "Seize the Spoils",
     manaCost: "{2}{R}",
-    colors: [
-        "R"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["R"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "As an additional cost to cast this spell, discard a card.\nDraw two cards and create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
@@ -40,7 +36,7 @@ export const SeizetheSpoils: CardDefinition = {
                         abilities: [
                             {
                                 type: AbilityType.Activated,
-                                id: 'Treasure_Mana_Ability',
+                                id: "{T}, Sacrifice this token: Add one mana of any color.",
                                 costs: [
                                     { type: CostType.Tap },
                                     { type: CostType.SacrificeSelf }

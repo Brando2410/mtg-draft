@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CounterType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
 
 export const QuandrixPledgemage: CardDefinition = {
     name: 'Quandrix Pledgemage',
@@ -13,7 +13,7 @@ export const QuandrixPledgemage: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Magecraft,
-            effects: [{ type: EffectType.AddCounters, counterType: 'P1P1', amount: 1, targetMapping: TargetMapping.Self }]
+            effects: [{ type: EffectType.AddCounters, counterType: CounterType.P1P1, amount: 1, targetMapping: TargetMapping.Self }]
         }
     ]
 };

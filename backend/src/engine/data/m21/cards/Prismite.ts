@@ -18,9 +18,8 @@ export const Prismite: CardDefinition = {
             isManaAbility: true,
             effects: [{
                 type: EffectType.AddMana,
-                manaType: 'Any',
-                amount: 1,
-                targetMapping: TargetMapping.Controller
+                manaType: 'ANY',
+                amount: 1
             }]
         }
     ]

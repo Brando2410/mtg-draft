@@ -12,13 +12,13 @@ export const WitherbloomApprentice: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.Magecraft,
+            eventMatch: TriggerEvent.Magecraft,
             effects: [
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.EachOpponent },
                 { type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }
             ]
         }
     ]
-  };
+};
 
 

@@ -25,8 +25,8 @@ export const Meteorite: CardDefinition = {
             isManaAbility: true,
             effects: [{
                 type: EffectType.AddMana,
-                manaType: 'Any',
-                targetMapping: TargetMapping.Controller
+                manaType: 'ANY',
+                amount: 1
             }]
         }
     ]

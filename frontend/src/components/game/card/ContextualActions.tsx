@@ -24,7 +24,7 @@ export const ContextualActions = memo(({ pendingAction, objId, onChoice }: Conte
           if (cancelIdx !== -1) onChoice(`CHOICE_${cancelIdx}`);
         }}
       />
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-[1vh] z-[300] flex flex-col gap-[0.5vh] w-[calc(var(--u)*18)] animate-in slide-in-from-bottom-2 fade-in duration-200">
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-[1.5vh] z-[350] flex flex-col gap-[0.8vh] min-w-[calc(var(--u)*18)] w-max max-w-[90vw] animate-in slide-in-from-bottom-2 fade-in duration-200">
         {pendingAction.data.choices.map((choice: any, idx: number) => {
           const isCancel = choice.value === 'none' ||
             choice.label.toLowerCase().includes('cancel') ||
@@ -39,7 +39,7 @@ export const ContextualActions = memo(({ pendingAction, objId, onChoice }: Conte
                 e.stopPropagation();
                 onChoice(`CHOICE_${idx}`);
               }}
-              className="w-full py-[1vh] px-[1.5vh] rounded-lg font-black text-[calc(var(--u)*1.1)] uppercase tracking-tighter shadow-2xl border-2 transition-all active:scale-95 bg-indigo-600/95 border-indigo-400 text-white hover:bg-indigo-500 hover:scale-105 shadow-indigo-500/20 shadow-lg"
+              className="w-full py-[1.2vh] px-[2vh] rounded-xl font-black text-[calc(var(--u)*1.2)] uppercase tracking-tighter shadow-2xl border-2 transition-all active:scale-95 bg-indigo-600/95 border-indigo-400 text-white hover:bg-indigo-500 hover:scale-105 shadow-indigo-500/40 shadow-xl backdrop-blur-sm"
             >
               {choice.label}
             </button>

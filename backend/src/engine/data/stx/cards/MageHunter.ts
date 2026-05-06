@@ -14,10 +14,10 @@ export const MageHunter: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.MagecraftOpponent,
+            eventMatch: TriggerEvent.MagecraftOpponent,
             effects: [{ type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.TriggerController }]
         }
     ]
-  };
+};
 
 

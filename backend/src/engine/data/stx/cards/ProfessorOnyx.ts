@@ -20,6 +20,7 @@ export const ProfessorOnyx: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
+            id: "You lose 1 life. Look at the top three cards of your library. Put one of them into your hand and the rest into your graveyard.",
             costs: [{ type: CostType.Loyalty, value: '1' }],
             effects: [
                 { type: EffectType.LoseLife, amount: 1, targetMapping: TargetMapping.Controller },
@@ -34,6 +35,7 @@ export const ProfessorOnyx: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
+            id: "Each opponent sacrifices a creature with the greatest power among creatures that player controls",
             costs: [{ type: CostType.Loyalty, value: '-3' }],
             effects: [{
                 type: EffectType.Sacrifice,
@@ -43,16 +45,24 @@ export const ProfessorOnyx: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
+            id: "Each opponent may discard a card. If they don't, they lose 3 life. Repeat this process six more times.",
             costs: [{ type: CostType.Loyalty, value: '-8' }],
-            effects: Array(7).fill({
+            effects: [...Array(7)].map(() => ({
                 type: EffectType.Choice,
-                label: "Each opponent: Discard or lose 3 life?",
+                label: "Discard a card or lose 3 life?",
                 targetMapping: TargetMapping.EachOpponent,
                 choices: [
-                    { label: "Discard", effects: [{ type: EffectType.DiscardCards, amount: 1, targetMapping: TargetMapping.SelectedTargets }] },
-                    { label: "Lose 3 Life", effects: [{ type: EffectType.LoseLife, amount: 3, targetMapping: TargetMapping.SelectedTargets }] }
+                    { 
+                        label: "Discard", 
+                        condition: "HAND_COUNT_GE:1",
+                        effects: [{ type: EffectType.DiscardCards, amount: 1, targetMapping: TargetMapping.Controller }] 
+                    },
+                    { 
+                        label: "Lose 3 Life", 
+                        effects: [{ type: EffectType.LoseLife, amount: 3, targetMapping: TargetMapping.Controller }] 
+                    }
                 ]
-            })
+            }))
         }
     ]
 };

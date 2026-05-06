@@ -31,16 +31,9 @@ export const HydroChanneler: CardDefinition = {
             costs: [{ type: CostType.Mana, value: '{1}' }, { type: CostType.Tap }],
             effects: [
                 {
-                    type: EffectType.Choice,
-                    label: "Choose a color of mana to add",
-                    choices: [
-                        { label: "White", value: "{W}", effects: [{ type: EffectType.AddMana, manaType: '{W}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
-                        { label: "Blue", value: "{U}", effects: [{ type: EffectType.AddMana, manaType: '{U}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
-                        { label: "Black", value: "{B}", effects: [{ type: EffectType.AddMana, manaType: '{B}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
-                        { label: "Red", value: "{R}", effects: [{ type: EffectType.AddMana, manaType: '{R}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] },
-                        { label: "Green", value: "{G}", effects: [{ type: EffectType.AddMana, manaType: '{G}', manaRestrictions: [Restriction.InstantOrSorcery], targetMapping: TargetMapping.Controller }] }
-                    ],
-                    targetMapping: TargetMapping.Controller
+                    type: EffectType.AddMana,
+                    manaType: 'ANY',
+                    manaRestrictions: [Restriction.InstantOrSorcery],
                 }
             ]
         }

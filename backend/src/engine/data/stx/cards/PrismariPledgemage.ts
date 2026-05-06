@@ -2,7 +2,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
 
 export const PrismariPledgemage: CardDefinition = {
     name: 'Prismari Pledgemage',
-    manaCost: '{U/R}{U/R}', // Scryfall: {U/R}{U/R}
+    manaCost: '{U/R}{U/R}',
     colors: ['U', 'R'],
     types: ['Creature'],
     subtypes: ['Orc', 'Shaman'],
@@ -14,7 +14,12 @@ export const PrismariPledgemage: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.Magecraft,
-            effects: [{ type: EffectType.ApplyContinuousEffect, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToRemove: ['Defender'], targetMapping: TargetMapping.Self }]
+            effects: [{
+                type: EffectType.ApplyContinuousEffect,
+                duration: { type: DurationType.UntilEndOfTurn },
+                abilitiesToRemove: ['Defender'],
+                targetMapping: TargetMapping.Self
+            }]
         }
     ]
 };

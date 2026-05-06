@@ -26,6 +26,7 @@ export const JadziOracleofArcavios: CardDefinition = {
             abilities: [
                 {
                     type: AbilityType.Activated,
+                    id: "{Discard}: Return Jadzi, Oracle of Arcavios to its owner's hand",
                     costs: [{ type: CostType.Discard, amount: 1 }],
                     effects: [{ type: EffectType.MoveToZone, zone: Zone.Hand, targetMapping: TargetMapping.Self }]
                 },
@@ -33,28 +34,32 @@ export const JadziOracleofArcavios: CardDefinition = {
                     type: AbilityType.Triggered,
                     eventMatch: TriggerEvent.Magecraft,
                     effects: [{
-                        type: EffectType.LookAtTopAndPick,
+                        type: EffectType.MoveToZone,
+                        zone: Zone.Exile,
                         fromTop: 1,
+                        reveal: true,
+                        sourceZones: [Zone.Library],
                         effects: [
                             {
                                 type: EffectType.ConditionalEffect,
-                                condition: 'NotLand',
+                                condition: 'TARGET_1_MATCHES:land',
                                 effects: [{
+                                    type: EffectType.MoveToZone,
+                                    zone: Zone.Battlefield,
+                                    targetMapping: TargetMapping.Target1
+                                }],
+                                onFailureEffects: [{
                                     type: EffectType.Choice,
                                     label: 'Cast for {1}?',
+                                    optional: true,
                                     choices: [{
                                         label: 'Cast',
                                         effects: [{
                                             type: EffectType.CastSpell,
-                                            targetMapping: TargetMapping.SelectedCard,
+                                            targetMapping: TargetMapping.Target1,
                                             alternateCost: '{1}'
                                         }]
                                     }]
-                                }],
-                                onFailureEffects: [{
-                                    type: EffectType.MoveToZone,
-                                    zone: Zone.Battlefield,
-                                    targetMapping: TargetMapping.SelectedCard
                                 }]
                             }
                         ]
@@ -78,7 +83,7 @@ export const JadziOracleofArcavios: CardDefinition = {
                         sourceZones: [Zone.Hand],
                         targetDefinitions: [{
                             type: TargetType.Card,
-                            count: 99, // "Any number"
+                            count: 'ANY',
                             minCount: 0,
                             restrictions: [Restriction.Land]
                         }],
@@ -87,7 +92,7 @@ export const JadziOracleofArcavios: CardDefinition = {
                     {
                         type: EffectType.Choice,
                         label: "Discard and return to hand?",
-                        condition: 'ControlEightOrMoreLands',
+                        condition: 'LAND_COUNT_GE:8',
                         optional: true,
                         choices: [{
                             label: "Discard & Return",

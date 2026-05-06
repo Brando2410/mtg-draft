@@ -40,7 +40,7 @@ export const GadraktheCrownScourge: CardDefinition = {
                         abilities: [{
                             type: AbilityType.Activated,
                             costs: [{ type: CostType.Tap }, { type: CostType.SacrificeSelf }],
-                            effects: [{ type: EffectType.AddMana, manaType: 'ANY' }]
+                            effects: [{ type: EffectType.AddMana, manaType: 'ANY', amount: 1 }]
                         }]
                     },
                     amount: 'NONTOKEN_CREATURES_DIED_THIS_TURN_COUNT',

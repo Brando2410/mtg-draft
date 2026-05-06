@@ -17,7 +17,12 @@ export const SilverquillApprentice: CardDefinition = {
                 type: TargetType.Creature,
                 count: 1,
             }],
-            effects: [{ type: EffectType.ApplyContinuousEffect, powerModifier: 1, duration: { type: DurationType.UntilEndOfTurn }, targetMapping: TargetMapping.Target1 }]
+            effects: [{
+                type: EffectType.ApplyContinuousEffect,
+                powerModifier: 1,
+                duration: { type: DurationType.UntilEndOfTurn },
+                targetMapping: TargetMapping.Target1
+            }]
         }
     ]
 };

@@ -24,18 +24,16 @@ export const GalazethPrismari: CardDefinition = {
                         name: 'Treasure',
                         types: ['Artifact', 'Token'],
                         subtypes: ['Treasure'],
-                        oracleText: '{T}, Sacrifice this artifact: Add one mana of any color.',
-                        abilities: [
-                            {
-                                type: AbilityType.Activated,
-                                costs: [{ type: CostType.SacrificeSelf }],
-                                effects: [{
-                                    type: EffectType.AddMana,
-                                    amount: 1,
-                                    manaType: 'ANY',
-                                }]
-                            }
-                        ]
+                        abilities: [{
+                            type: AbilityType.Activated,
+                            id: "{T}, Sacrifice this artifact: Add one mana of any color.",
+                            isManaAbility: true,
+                            costs: [{ type: CostType.Tap }, { type: CostType.SacrificeSelf }],
+                            effects: [{
+                                type: EffectType.AddMana,
+                                manaType: 'ANY',
+                            }]
+                        }]
                     }
                 }
             ]
@@ -49,12 +47,12 @@ export const GalazethPrismari: CardDefinition = {
                 abilitiesToAdd: [{
                     id: "{T}: Add one mana of any color. Spend this mana only to cast an instant or sorcery spell.",
                     type: AbilityType.Activated,
+                    isManaAbility: true,
                     costs: [{ type: CostType.Tap }],
                     effects: [{
                         type: EffectType.AddMana,
-                        amount: 1,
                         manaType: 'ANY',
-                        manaRestrictions: [{ types: ['Instant', 'Sorcery'] }]
+                        manaRestrictions: [Restriction.InstantOrSorcery]
                     }]
                 }]
             }]

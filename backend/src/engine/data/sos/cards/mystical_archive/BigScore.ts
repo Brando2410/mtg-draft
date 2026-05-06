@@ -36,6 +36,8 @@ export const BigScore: CardDefinition = {
                         abilities: [
                             {
                                 type: AbilityType.Activated,
+                                id: "{T}, Sacrifice this token: Add one mana of any color.",
+                                isManaAbility: true,
                                 costs: [{ type: CostType.Tap }, { type: CostType.SacrificeSelf }],
                                 effects: [{ type: EffectType.AddMana, manaType: "{ANY}" }]
                             }

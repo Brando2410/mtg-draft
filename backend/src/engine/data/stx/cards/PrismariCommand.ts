@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping, TargetType } from '@shared/engine_types';
 
 export const PrismariCommand: CardDefinition = {
     name: 'Prismari Command',
@@ -26,7 +26,22 @@ export const PrismariCommand: CardDefinition = {
                 },
                 {
                     label: 'Create a Treasure token',
-                    effects: [{ type: EffectType.CreateToken, tokenBlueprint: { name: 'Treasure', colors: [], types: ['Artifact', 'Token'], subtypes: ['Treasure'], oracleText: '{T}, Sacrifice this artifact: Add one mana of any color.' } }]
+                    effects: [{
+                        type: EffectType.CreateToken,
+                        tokenBlueprint: {
+                            name: 'Treasure',
+                            colors: [],
+                            types: ['Artifact'],
+                            subtypes: ['Treasure'],
+                            abilities: {
+                                type: AbilityType.Activated,
+                                id: '{T}, Sacrifice this artifact: Add one mana of any color.',
+                                isManaAbility: true,
+                                costs: [{ type: CostType.Tap }, { type: CostType.SacrificeSelf }],
+                                effects: [{ type: EffectType.AddMana, manaType: 'ANY' }]
+                            }
+                        }
+                    }]
                 },
                 {
                     label: 'Destroy target artifact',
