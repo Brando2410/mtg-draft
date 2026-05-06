@@ -15,7 +15,7 @@ export const SpectacleMage: CardDefinition = {
             type: AbilityType.Static,
             effects: [{
                 type: EffectType.CostReduction,
-                amount: '{1}',
+                reductionAmount: '{1}',
                 restrictions: [Restriction.ManaValue5OrGreater]
             }]
         }

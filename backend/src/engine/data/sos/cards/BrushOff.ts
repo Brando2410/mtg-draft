@@ -20,7 +20,7 @@ import { AbilityType, CardDefinition, EffectType, TargetMapping } from '@shared/
             targetDefinitions: [{ type: AbilityType.Spell, count: 1 }],
             costReduction: {
                 type: EffectType.CostReduction,
-                manaReduction: '{1}{U}',
+                reductionAmount: '{1}{U}',
                 condition: 'TARGET_IS_INSTANT_OR_SORCERY'
             },
             effects: [

@@ -125,7 +125,7 @@ export class SpellCostCalculator {
 
             const source = RuleUtils.findObject(state, e.sourceId);
             if (RuleUtils.isEntity(source) && e.activeZones && source.zone && !e.activeZones.includes(source.zone)) return false;
-            
+
             // SKIP SELF: We scan the card's own abilities manually below to ensure 
             // consistency and avoid double-counting with the rule registry.
             if (e.sourceId === card.id) return false;
@@ -178,7 +178,7 @@ export class SpellCostCalculator {
                     additionalCosts = [...additionalCosts, ...a.additionalCosts];
                 }
                 if (a.costReduction) {
-                    modifiers.push({ ...a.costReduction, sourceId: card.id, controllerId: card.controllerId } as any);
+                    modifiers.push({ ...a.costReduction, sourceId: card.id, controllerId: card.controllerId, targetMapping: 'SELF' } as any);
                 }
             }
         });
@@ -196,7 +196,7 @@ export class SpellCostCalculator {
 
                 modifiers.push({
                     type: 'CostReduction',
-                    amount: amount,
+                    reductionAmount: amount,
                     sourceId: card.id,
                     controllerId: card.controllerId || card.ownerId,
                     targetMapping: 'SELF'
@@ -205,7 +205,7 @@ export class SpellCostCalculator {
         });
 
         for (const mod of modifiers) {
-            const type = (mod as any).type;
+            const type = mod.type;
             const impacts = (mod.targetMapping === 'EACH_PLAYER') ||
                 (mod.targetMapping === 'EACH_OPPONENT' || mod.targetMapping === 'OPPONENT') && mod.controllerId !== card.controllerId ||
                 (mod.targetMapping === 'SELF' && mod.sourceId === card.id) ||
@@ -213,10 +213,10 @@ export class SpellCostCalculator {
 
             if (!impacts) continue;
 
-            const restrictions = (mod as any).restrictions || [];
+            const restrictions = mod.restrictions || [];
             const { condition: ConditionProcessor } = getProcessors(state);
 
-            const matches = TargetingProcessor.matchesRestrictions(state, card, (restrictions as any[] || []), {
+            const matches = TargetingProcessor.matchesRestrictions(state, card, (restrictions as any), {
                 sourceId: mod.sourceId,
                 controllerId: card.controllerId || card.ownerId
             });
@@ -230,29 +230,38 @@ export class SpellCostCalculator {
 
             if (!matches || !conditionMatches) continue;
 
-            if (type === 'SpellTax') extraGeneric += (mod as any).amount || 0;
-            if (type === 'AdditionalCost' && (mod as any).additionalCosts) {
-                additionalCosts = [...additionalCosts, ...(mod as any).additionalCosts];
+            if (type === EffectType.SpellTax) {
+                const tax = mod.taxAmount;
+                if (typeof tax === 'number') extraGeneric += tax;
+                else if (typeof tax === 'string' && !isNaN(Number(tax))) extraGeneric += Number(tax);
             }
-            if (type === 'CostReduction') {
-                const { effect: EffectProcessor } = getProcessors(state);
-                const redAmt = EffectProcessor.resolveAmount(state, (mod as any).amount, {
-                    sourceId: mod.sourceId,
-                    controllerId: card.controllerId || card.ownerId,
-                    targets: targets,
-                    effects: [mod] as any
-                } as any, targets);
-                extraGeneric -= redAmt || 0;
-                if ((mod as any).manaReduction) {
-                    const red = ManaProcessor.parseManaCost((mod as any).manaReduction);
-                    extraGeneric -= red.generic;
-                    for (const [s, c] of Object.entries(red.colored)) {
-                        parsed.colored[s] = Math.max(0, (parsed.colored[s] || 0) - (c as number));
+            if (type === EffectType.AdditionalCost && mod.data?.additionalCosts) {
+                additionalCosts = [...additionalCosts, ...mod.data.additionalCosts];
+            }
+            if (type === EffectType.CostReduction) {
+                const red = mod.reductionAmount;
+                if (red !== undefined) {
+                    if (typeof red === 'number') {
+                        extraGeneric -= red;
+                    } else if (typeof red === 'string' && red.includes('{')) {
+                        const parsedRed = ManaProcessor.parseManaCost(red);
+                        extraGeneric -= parsedRed.generic;
+                        for (const [s, c] of Object.entries(parsedRed.colored)) {
+                            parsed.colored[s] = Math.max(0, (parsed.colored[s] || 0) - (c as number));
+                        }
+                    } else if (typeof red === 'string' || (typeof red === 'object' && (red as any).type)) {
+                        const { effect: EP } = getProcessors(state);
+                        const resolved = EP.resolveAmount(state, red as any, {
+                            sourceId: mod.sourceId,
+                            controllerId: card.controllerId || card.ownerId,
+                            targets
+                        } as any, targets);
+                        extraGeneric -= resolved;
                     }
                 }
             }
-            if (type === 'AdditionalCost' || type === 'AllowCastFromGraveyard' || type === 'AllowPlayExiled') {
-                const extra = (mod as any).additionalCosts || (mod as any).costs || [];
+            if (type === EffectType.AdditionalCost || type === EffectType.AllowCastFromGraveyard || type === EffectType.AllowPlayExiled) {
+                const extra = mod.data?.additionalCosts || mod.data?.costs || [];
                 additionalCosts = [...additionalCosts, ...extra];
             }
         }

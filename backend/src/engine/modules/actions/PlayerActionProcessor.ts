@@ -21,12 +21,9 @@ export class PlayerActionProcessor {
     engine: EngineContext
   ): boolean {
     const { logger, choice } = getProcessors(state);
-    const obj = state.battlefield.find(c => c.id === cardId);
-    if (!obj) return false;
-
-    // 1. Intercept for special actions (Combat)
+    // 1. Intercept for special actions (Combat, Targeting)
     if (state.pendingAction?.playerId === playerId) {
-      if (state.pendingAction.type === ActionType.Targeting) {
+      if (state.pendingAction.type === ActionType.Targeting || state.pendingAction.type === 'TARGETING') {
         return engine.processors.choice.resolveTargeting(state, playerId, cardId, engine);
       }
       if (state.pendingAction.type === ActionType.DeclareAttackers) {
@@ -41,6 +38,11 @@ export class PlayerActionProcessor {
           return choice.resolveChoice(state, playerId, cardId, engine);
         }
       }
+    }
+
+    const obj = state.battlefield.find(c => c.id === cardId);
+    if (!obj) {
+        return false;
     }
 
     if (obj.controllerId !== playerId) return false;

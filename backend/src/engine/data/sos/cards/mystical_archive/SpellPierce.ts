@@ -23,7 +23,7 @@ export const SpellPierce: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CounterSpell,
-                    tax: "{2}"
+                    taxAmount: "{2}"
                 }
             ]
         }

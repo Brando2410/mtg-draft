@@ -366,6 +366,11 @@ export class TargetMapper {
       stackObject?.event;
 
     // 1. Check TargetMappingRegistry (New modular system)
+    const eData = eventData;
+    if (mapping.toUpperCase() === 'TRIGGER_EVENT_SOURCE') {
+        logger.debug(state, LogCategory.TARGETING, `[TRIGGER-MAP-DEBUG] TriggerEventSource Resolution: eventData present=${!!eData}, type=${eData?.type}, sourceId=${RuleUtils.getSource(eData)}`);
+    }
+
     const handler = TargetMappingRegistry[mapping.toUpperCase()];
     if (handler) {
       return handler.resolve({
@@ -431,11 +436,18 @@ export class TargetMapper {
       case TargetMapping.TriggerSource: {
         const eData = eventData;
         const sourceIdFromPayload = RuleUtils.getSource(eData);
-        if (sourceIdFromPayload) return [sourceIdFromPayload];
+        if (sourceIdFromPayload) {
+            logger.debug(state, LogCategory.TARGETING, `[TRIGGER-MAP-DEBUG] Found sourceId in payload: ${sourceIdFromPayload}`);
+            return [sourceIdFromPayload];
+        }
 
         const obj = RuleUtils.getEventObject(eData, state);
-        if (obj) return [obj.id];
+        if (obj) {
+            logger.debug(state, LogCategory.TARGETING, `[TRIGGER-MAP-DEBUG] Found event object: ${obj.id}`);
+            return [obj.id];
+        }
 
+        logger.debug(state, LogCategory.TARGETING, `[TRIGGER-MAP-DEBUG] Fallback to stackObject.sourceId: ${stackObject?.sourceId}`);
         return stackObject?.sourceId ? [stackObject.sourceId] : [];
       }
       case TargetMapping.TriggerTarget: {

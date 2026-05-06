@@ -238,7 +238,7 @@ export class EffectProcessor {
       stackObject,
       parentContext,
       startIndex: stackObject?.data?.startIndex || 0,
-      event: stackObject?.data?.event,
+      event: stackObject?.event || stackObject?.data?.event || parentContext?.event,
       exiledIds: stackObject?.data?.exiledIds,
       lookingCards: (lookingCards || stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
       currentIndex: options.currentIndex,

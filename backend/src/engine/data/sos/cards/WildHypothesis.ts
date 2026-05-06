@@ -1,13 +1,9 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CounterType, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
 export const WildHypothesis: CardDefinition = {
     name: "Wild Hypothesis",
     manaCost: "{X}{G}",
-    colors: [
-        "G"
-    ],
-    types: [
-        "Sorcery"
-    ],
+    colors: ["G"],
+    types: ["Sorcery"],
     subtypes: [],
     keywords: [],
     oracleText: "Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it.\nSurveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
@@ -27,7 +23,8 @@ export const WildHypothesis: CardDefinition = {
                         toughness: 0,
                         image_url: 'https://cards.scryfall.io/normal/front/d/e/de564776-9d88-4533-8717-842eecdd0594.jpg?1775828279'
                     },
-                    startingCounters: { type: 'p1p1', amount: DynamicAmount.X },
+                    startingCounters: { counterType: CounterType.P1P1, amount: DynamicAmount.X },
+
                     targetMapping: TargetMapping.Controller
                 },
                 {

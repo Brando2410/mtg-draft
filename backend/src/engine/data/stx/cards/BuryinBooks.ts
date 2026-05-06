@@ -13,7 +13,7 @@ export const BuryinBooks: CardDefinition = {
             type: AbilityType.Static,
             effects: [{
                 type: EffectType.CostReduction,
-                amount: '{2}',
+                reductionAmount: '{2}',
                 condition: 'TargetsManaValue4OrGreater'
             }]
         },

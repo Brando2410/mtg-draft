@@ -20,13 +20,13 @@ export const Meteorite: CardDefinition = {
             }]
         },
         {
+            id: "{T}: Add one mana of any color.",
             type: AbilityType.Activated,
             costs: [{ type: CostType.Tap }],
             isManaAbility: true,
             effects: [{
                 type: EffectType.AddMana,
-                manaType: 'ANY',
-                amount: 1
+                manaType: 'ANY'
             }]
         }
     ]

@@ -1,4 +1,4 @@
-import { AbilityCost, AbilityDefinition, AbilityType, ActionType, CardDefinition, ContinuousEffect, EffectType, GameObject, GameState, Phase, PlayerId, Step, TargetMapping, TriggerEvent, Zone, GameEvent } from '@shared/engine_types';
+import { AbilityCost, AbilityDefinition, AbilityType, ActionType, CardDefinition, ContinuousEffect, EffectType, GameObject, GameState, Phase, PlayerId, Step, TargetMapping, TriggerEvent, Zone, GameEvent, PlayerState, BaseEntity, TargetDefinition } from '@shared/engine_types';
 import { oracle } from '../../../OracleLogicMap';
 import { SpellProcessor } from '../../actions/spells/SpellProcessor';
 import { TargetingProcessor } from '../../actions/targeting/TargetingProcessor';
@@ -226,425 +226,278 @@ export class PriorityProcessor {
    * 2. They have an Instant/Flash card in hand (Instant speed)
    * 3. They have activated abilities or lands (Manual check for now)
    */
+  /**
+   * Refactored Action Availability Check
+   * Determines if the player has any legal actions they could take if granted priority.
+   * This is used by the auto-pass system.
+   */
   public static canPlayerTakeAnyAction(state: GameState, playerId: string): boolean {
     const player = state.players[playerId];
     if (!player) return false;
+    const { logger } = getProcessors(state);
 
-    // Rule 117.1: If player has a pending mandatory action, they MUST act.
-    if (EngineValidator.isPlayerRequiredToAct(state, playerId)) {
-      return true;
-    }
+    // 1. Mandatory Actions (CR 117.1)
+    if (EngineValidator.isPlayerRequiredToAct(state, playerId)) return true;
     if (player.pendingDiscardCount > 0) return true;
 
+    // 2. Manual Stops
     const isYourTurn = state.activePlayerId === playerId;
     const currentStepId = state.currentStep.toLowerCase();
     const stopKey = isYourTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
-    const hasManualStop = player?.stops?.[stopKey];
-
-    const stackEmpty = state.stack.length === 0;
-
-    // Auto-pass Upkeep, Draw, AND End steps if the stack is empty 
-    // UNLESS a manual stop is set for this phase.
-    const isBeginning = state.currentPhase === Phase.Beginning && (state.currentStep === Step.Upkeep || state.currentStep === Step.Draw);
-    const isCombatBeginningOrEnd = state.currentPhase === Phase.Combat && (state.currentStep === Step.BeginningOfCombat || state.currentStep === Step.EndOfCombat);
-    const isDamageStep = state.currentStep === Step.CombatDamage || state.currentStep === Step.FirstStrikeDamage;
-    const isEndStep = state.currentStep === Step.End;
-
-    if ((isBeginning || isCombatBeginningOrEnd || isDamageStep || isEndStep) && stackEmpty) {
-      if (hasManualStop) return true;
-      return false;
+    if (player?.stops?.[stopKey] && state.stack.length === 0) {
+      return true;
     }
 
-    // 1. Check hand and virtual hand (Graveyard/Exile permissions) for castable spells
-    // We leverage the pre-computed isPlayable flag from LayerProcessor to make this O(N)
-    const hasCastableSpell = [...player.hand, ...player.virtualHand].some(card => {
-      return card.effectiveStats?.isPlayable;
-    });
-    if (hasCastableSpell) return true;
+    // 3. Spells (Scan all zones where a player might have permission to cast)
+    const potentialSpells = [
+      ...player.hand,
+      ...player.virtualHand,
+      ...player.graveyard,
+      ...state.exile.filter(o => o.controllerId === playerId),
+      ...(player.library.length > 0 ? [player.library[player.library.length - 1]] : [])
+    ];
 
+    const hasPlayableSpell = potentialSpells.some(obj => this.canObjectBePlayed(state, playerId, obj.id, false));
+    if (hasPlayableSpell) return true;
 
+    // 4. Activated Abilities (Scan all zones for abilities that could be activated)
+    const potentialAbilitySources = [
+      ...state.battlefield.filter(o => o.controllerId === playerId),
+      ...player.hand,
+      ...player.graveyard,
+      ...state.exile.filter(o => o.controllerId === playerId)
+    ];
 
-    // 5. Chapter 3 Check: Battlefield Activated Abilities
-    const hasBattlefieldAction = state.battlefield.some(obj => {
-      if (obj.controllerId !== playerId) return false;
-
-      // SOS: Prepare check
-      if (obj.isPrepared && (obj.definition.preparedFace || obj.definition.faces?.[1])) {
-        const face = obj.definition.preparedFace || obj.definition.faces![1];
-        const isInstant = RuleUtils.isDefinitionType(face, 'instant');
-        const isSorcery = RuleUtils.isDefinitionType(face, 'sorcery');
-
-        let timingOk = isInstant;
-        if (isSorcery && isYourTurn && stackEmpty && (state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain)) {
-          timingOk = true;
-        }
-
-        if (timingOk) {
-          const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], face);
-          if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, obj)) {
-            return true;
-          }
-        }
-      }
-
-      const logic = oracle.getCard(obj.definition.name);
-      const { layer: LayerProcessor } = getProcessors(state);
-      const stats = LayerProcessor.getEffectiveStats(obj, state);
-      const allAbilities = [...((logic?.abilities as any[]) || [])];
-      if (stats.abilities) {
-        stats.abilities.forEach((a: any) => {
-          if (typeof a === 'string') return;
-          const isDuplicate = allAbilities.some(existing => {
-            if (typeof existing === 'string') return false;
-            return (a.id !== undefined && existing.id !== undefined) ? a.id === existing.id : (a.type === existing.type && JSON.stringify(a.effects) === JSON.stringify(existing.effects));
-          });
-          if (!isDuplicate) allAbilities.push(a);
-        });
-      }
-
-      return allAbilities.some((ability, index) => {
-        if (typeof ability === 'string') return false;
-        return this.canAbilityBeActivated(state, playerId, obj.id, index, false);
-      });
+    const hasActivatableAbility = potentialAbilitySources.some(obj => {
+      const abilities = this.getAbilitiesForObject(state, obj);
+      return abilities.some((_, idx) => this.canAbilityBeActivated(state, playerId, obj.id, idx, false));
     });
 
-    if (!hasBattlefieldAction) {
-      // console.log(`[DEBUG] canPlayerTakeAnyAction: FALSE for ${playerId}. Hand size: ${player.hand.length}, Grave size: ${player.graveyard.length}`);
-    }
-    return hasBattlefieldAction;
-  }
-
-  /**
-   * Helper to check if a specific object can be played/activated.
-   * Used for highlighting in the UI.
-   * @param checkPriority If true, returns false if player doesn't have priority. Use false for engine availability checks.
-   */
-  public static canObjectBePlayed(state: GameState, playerId: string, objId: string, checkPriority = true, preComputedStats?: any, preComputedCost?: string): boolean {
-    const player = state.players[playerId];
-    if (!player) return false;
-    const { targeting: TargetingProcessor } = getProcessors(state);
-
-    // Check hand
-    let cardToPlay = player.hand.find(o => o.id === objId);
-
-    // Check top of library (Radha, Snoop, etc.)
-    if (!cardToPlay && player.library.length > 0 && player.library[player.library.length - 1].id === objId) {
-      const topCard = player.library[player.library.length - 1];
-      const hasAllowEffect = this.findPermissionEffect(state, playerId, EffectType.AllowPlayFromTop, topCard.id);
-      if (hasAllowEffect) {
-        cardToPlay = topCard;
-      }
-    }
-
-    // Check virtual hand (Flashback, Prepared, etc.)
-    if (!cardToPlay && player.virtualHand) {
-      cardToPlay = player.virtualHand.find(o => o.id === objId);
-    }
-
-    // Check graveyard (Demonic Embrace, Flashback, etc.)
-    if (!cardToPlay) {
-      const graveCard = player.graveyard.find(c => c.id === objId);
-      if (graveCard) {
-        const hasAllowEffect = this.findPermissionEffect(state, playerId, EffectType.AllowCastFromGraveyard, graveCard.id);
-        const hasFlashback = LayerProcessor.getEffectiveKeywords(graveCard, state).some(k => k.toLowerCase() === 'flashback');
-        const hasGraveAbility = graveCard.definition.abilities?.some((a: any, idx: number) => this.canAbilityBeActivated(state, playerId, graveCard.id, idx, false));
-        if (hasAllowEffect || hasFlashback || hasGraveAbility) cardToPlay = graveCard;
-      }
-    }
-
-    // Check exile (Idol of Endurance, Ugin's +2, etc.)
-    if (!cardToPlay) {
-      const exileCard = state.exile.find(c => c.id === objId);
-      if (exileCard && exileCard.controllerId === playerId) {
-        const hasAllowEffect = this.findPermissionEffect(state, playerId, EffectType.AllowPlayExiled, exileCard.id);
-        if (hasAllowEffect) cardToPlay = exileCard;
-      }
-    }
-
-    if (cardToPlay) {
-      if (state.pendingAction) return false;
-
-      const hasPriority = state.priorityPlayerId === playerId;
-      if (checkPriority && !hasPriority) return false;
-
-      if (!RestrictionValidator.canCastSpells(state, playerId, cardToPlay)) {
-        return false;
-      }
-
-      // Optimization: Use cached stats if available
-      const stats = preComputedStats || cardToPlay.effectiveStats || LayerProcessor.getEffectiveStats(cardToPlay, state);
-      const effectiveCost = preComputedCost || stats.manaCost || SpellProcessor.getEffectiveCosts(state, cardToPlay).totalMana;
-      const additionalCosts = (cardToPlay.definition as CardDefinition & { additionalCosts?: any[] }).additionalCosts || [];
-
-      // Modular Timing Check
-      const timingOk = this.validateTiming(state, playerId, cardToPlay);
-      if (!timingOk) return false;
-
-      let canPlay = true;
-      const isLand = RuleUtils.isLand(cardToPlay);
-
-      if (isLand) {
-        canPlay = !player.hasPlayedLandThisTurn;
-      } else {
-        canPlay = ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost, cardToPlay);
-      }
-
-      // --- CHECK ADDITIONAL COSTS ---
-      if (canPlay && additionalCosts && additionalCosts.length > 0) {
-        const canPayAllExtras = (additionalCosts as import('@shared/engine_types').AbilityCost[]).every(cost => {
-          if (cost.type === 'Sacrifice') {
-            const candidates = state.battlefield.filter(o =>
-              o.controllerId === playerId &&
-              TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId })
-            );
-            return candidates.length > 0;
-          }
-          return true;
-        });
-        if (!canPayAllExtras) canPlay = false;
-      }
-
-      // --- CHECK TARGETS ---
-      if (canPlay) {
-        const logic = oracle.getCard(cardToPlay.definition.name);
-        // Fallback to definition abilities for spells without dedicated logic (like virtual spells)
-        const spellAbility = (logic?.abilities?.find((a): a is AbilityDefinition => typeof a !== 'string' && (a.type === (AbilityType.Spell as AbilityType))) ||
-          (cardToPlay.definition.abilities || []).find((a): a is AbilityDefinition => typeof a !== 'string' && (a.type === (AbilityType.Spell as AbilityType)))) as AbilityDefinition | undefined;
-
-        // Modal check
-        if (spellAbility && spellAbility.modes) {
-          const hasValidMode = spellAbility.modes.some((mode) => {
-            if (!mode.targetDefinitions || mode.targetDefinitions.optional) return true;
-            return TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, mode.targetDefinitions, playerId);
-          });
-          if (!hasValidMode) canPlay = false;
-        } else {
-          const targetDefinitions = (logic as Record<string, any>)?.targetDefinitions || spellAbility?.targetDefinitions;
-
-          if (targetDefinitions && targetDefinitions.length > 0 && !targetDefinitions[0].optional) {
-            if (!TargetingProcessor.hasLegalTargets(state, cardToPlay!.id, targetDefinitions, playerId)) {
-              canPlay = false;
-            }
-          }
-        }
-      }
-
-      return canPlay;
-    }
-
-    // Check battlefield (for activating abilities OR Casting Prepared face)
-    const objOnField = state.battlefield.find(o => o.id === objId);
-    if (objOnField && objOnField.controllerId === playerId) {
-      if (state.pendingAction) return false;
-      const hasPriority = state.priorityPlayerId === playerId;
-      if (checkPriority && !hasPriority) return false;
-
-      // --- SOS: Prepared Casting Check ---
-      if (objOnField.isPrepared && (objOnField.definition.preparedFace || objOnField.definition.faces?.[1])) {
-        const face = objOnField.definition.preparedFace || objOnField.definition.faces![1];
-        const isInstant = RuleUtils.isDefinitionType(face, 'instant');
-        const isSorcery = RuleUtils.isDefinitionType(face, 'sorcery');
-        const stackEmpty = state.stack.length === 0;
-        const isYourTurn = state.activePlayerId === playerId;
-        const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
-
-        let timingOk = isInstant;
-        if (isSorcery && isYourTurn && stackEmpty && isMain) timingOk = true;
-
-        if (timingOk) {
-          const { totalMana } = SpellProcessor.getEffectiveCosts(state, objOnField, [], face);
-          if (ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, objOnField)) return true;
-        }
-      }
-
-      const logic = oracle.getCard(objOnField.definition.name);
-      if (!logic || (!logic.abilities && !state.ruleRegistry.continuousEffects.some(e => e.type === EffectType.AddTriggeredAbility))) return false;
-
-      const { layer: LayerProcessor } = getProcessors(state);
-      const stats = LayerProcessor.getEffectiveStats(objOnField, state);
-      const allAbilities = [...(logic.abilities || [])];
-      if (stats.abilities) {
-        stats.abilities.forEach((a: any) => {
-          if (typeof a === 'string') return;
-          const isDuplicate = allAbilities.some(existing => {
-            if (typeof existing === 'string') return false;
-            return (a.id !== undefined && existing.id !== undefined) ? a.id === existing.id : (a.type === existing.type && JSON.stringify(a.effects) === JSON.stringify(existing.effects));
-          });
-          if (!isDuplicate) allAbilities.push(a);
-        });
-      }
-
-      return allAbilities.some((ability, index) => {
-        if (typeof ability === 'string') return false;
-        return this.canAbilityBeActivated(state, playerId, objId, index, checkPriority);
-      });
-    }
+    if (hasActivatableAbility) return true;
 
     return false;
   }
 
   /**
-   * Centralized logic for ability activation checks.
+   * Refactored Playability Check (CR 300-307)
+   * Determines if a card or virtual object can be played/cast.
+   */
+  public static canObjectBePlayed(state: GameState, playerId: string, objId: string, checkPriority = true, preComputedStats?: any, preComputedCost?: string): boolean {
+    const player = state.players[playerId];
+    if (!player) return false;
+
+    // 1. Locate the object and identify its context (Permission check)
+    let cardToPlay: GameObject | undefined;
+    let isFlashback = false;
+
+    // Search visible zones
+    cardToPlay = player.hand.find(o => o.id === objId) || player.virtualHand.find(o => o.id === objId);
+
+    if (!cardToPlay) {
+      // Library top (e.g. Snoop, Radha)
+      if (player.library.length > 0 && player.library[player.library.length - 1].id === objId) {
+        if (this.findPermissionEffect(state, playerId, EffectType.AllowPlayFromTop, objId)) {
+          cardToPlay = player.library[player.library.length - 1];
+        }
+      }
+
+      // Graveyard (Flashback, Escape, Permissions)
+      if (!cardToPlay) {
+        const graveCard = player.graveyard.find(c => c.id === objId);
+        if (graveCard) {
+          const hasPermission = this.findPermissionEffect(state, playerId, EffectType.AllowCastFromGraveyard, objId);
+          const { layer: LayerProcessor } = getProcessors(state);
+          const stats = LayerProcessor.getEffectiveStats(graveCard, state);
+          const flashback = (stats.keywords || []).some(k => k.toLowerCase() === 'flashback');
+          if (hasPermission || flashback) {
+            cardToPlay = graveCard;
+            isFlashback = flashback;
+          }
+        }
+      }
+
+      // Exile (Adventure, Foretell, Permissions)
+      if (!cardToPlay) {
+        const exileCard = state.exile.find(c => c.id === objId);
+        if (exileCard && exileCard.controllerId === playerId) {
+          if (this.findPermissionEffect(state, playerId, EffectType.AllowPlayExiled, objId)) {
+            cardToPlay = exileCard;
+          }
+        }
+      }
+    }
+
+    if (!cardToPlay) {
+      // Special Case: Battlefield (Prepared face casting)
+      const fieldObj = state.battlefield.find(o => o.id === objId);
+      if (fieldObj && fieldObj.controllerId === playerId && fieldObj.isPrepared) {
+        return this.canCastPreparedFace(state, player, fieldObj, checkPriority);
+      }
+      return false;
+    }
+
+    // 2. Structural & Timing Checks
+    if (state.pendingAction && state.pendingAction.playerId === playerId) return false;
+
+    if (!this.validateTiming(state, playerId, cardToPlay, false, checkPriority)) return false;
+
+    // 3. Casting Restrictions (Rule 613.11)
+    if (!RestrictionValidator.canCastSpells(state, playerId, cardToPlay)) return false;
+
+    // 4. Affordability (Mana and Additional Costs)
+    const { layer: LayerProc } = getProcessors(state);
+    const stats = preComputedStats || cardToPlay.effectiveStats || LayerProc.getEffectiveStats(cardToPlay, state);
+    const effectiveCost = preComputedCost || stats.manaCost || SpellProcessor.getEffectiveCosts(state, cardToPlay, [], undefined, isFlashback, stats).totalMana;
+    
+    const isLand = RuleUtils.isLand(cardToPlay);
+    if (isLand) {
+      if (player.hasPlayedLandThisTurn || state.stack.length > 0) return false;
+    } else if (!player.manaCheat) {
+      if (!ManaProcessor.canPayWithTotal(player, state.battlefield, effectiveCost, cardToPlay)) return false;
+      
+      // Check for mandatory additional costs (e.g. Sacrifice a creature)
+      const additionalCosts = (cardToPlay.definition as any).additionalCosts || [];
+      if (additionalCosts.length > 0) {
+        const { targeting: TargetingProcessor } = getProcessors(state);
+        const canPayExtras = (additionalCosts as any[]).every(cost => {
+          if (cost.type === 'Sacrifice') {
+            return state.battlefield.some(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId }));
+          }
+          return true; 
+        });
+        if (!canPayExtras) return false;
+      }
+    }
+
+    // 5. Targeting (Rule 601.2c)
+    const { targeting: TargetingProc } = getProcessors(state);
+    const logic = oracle.getCard(cardToPlay.definition.name);
+    const spellAbility = (logic?.abilities?.find((a: any) => a.type === AbilityType.Spell) || 
+                          cardToPlay.definition.abilities?.find((a: any) => a.type === AbilityType.Spell)) as AbilityDefinition;
+
+    if (spellAbility) {
+      if (spellAbility.modes) {
+        const hasValidMode = spellAbility.modes.some(mode => {
+          if (!mode.targetDefinitions || mode.targetDefinitions.length === 0 || mode.targetDefinitions.every((td: TargetDefinition) => td.optional)) return true;
+          return TargetingProc.hasLegalTargets(state, cardToPlay!.id, mode.targetDefinitions, playerId);
+        });
+        if (!hasValidMode) return false;
+      } else if (spellAbility.targetDefinitions && spellAbility.targetDefinitions.length > 0) {
+        if (!spellAbility.targetDefinitions.every((td: TargetDefinition) => td.optional) && !TargetingProc.hasLegalTargets(state, cardToPlay!.id, spellAbility.targetDefinitions, playerId)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Dedicated helper for SOS Prepared face casting.
+   */
+  private static canCastPreparedFace(state: GameState, player: PlayerState, obj: GameObject, checkPriority: boolean): boolean {
+    const face = obj.definition.preparedFace || obj.definition.faces?.[1];
+    if (!face) return false;
+
+    // Prepared faces are treated as spells (usually instant or sorcery)
+    if (!this.validateTiming(state, player.id, face, false, checkPriority)) return false;
+
+    const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], face);
+    if (player.manaCheat || ManaProcessor.canPayWithTotal(player, state.battlefield, totalMana, obj)) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Centralized helper to collect all abilities for an object (logic, definition, and granted).
+   */
+  private static getAbilitiesForObject(state: GameState, obj: BaseEntity): (AbilityDefinition | string)[] {
+    const logic = oracle.getCard(obj.definition.name);
+    const abilities: (AbilityDefinition | string)[] = [...(logic?.abilities || [])];
+
+    // Definition abilities (Inline/Token/Virtual)
+    if (obj.definition.abilities) {
+      obj.definition.abilities.forEach((a: string | AbilityDefinition) => {
+        const isDuplicate = abilities.some(existing => {
+          if (typeof a === 'string' || typeof existing === 'string') return a === existing;
+          return (a.id !== undefined && existing.id !== undefined) ? a.id === existing.id : (a.type === existing.type && JSON.stringify(a.effects) === JSON.stringify(existing.effects));
+        });
+        if (!isDuplicate) abilities.push(a);
+      });
+    }
+
+    // Granted abilities (Continuous Effects)
+    const { layer: LayerProcessor } = getProcessors(state);
+    const stats = LayerProcessor.getEffectiveStats(obj as GameObject, state);
+    if (stats.abilities) {
+      stats.abilities.forEach((a: string | AbilityDefinition) => {
+        const isDuplicate = abilities.some(existing => {
+          if (typeof a === 'string' || typeof existing === 'string') return a === existing;
+          return (a.id !== undefined && existing.id !== undefined) ? a.id === existing.id : (a.type === existing.type && JSON.stringify(a.effects) === JSON.stringify(existing.effects));
+        });
+        if (!isDuplicate) abilities.push(a);
+      });
+    }
+
+    return abilities;
+  }
+
+  /**
+   * Refactored Ability Activation Check (CR 602)
+   * Validates if an activated ability can be put onto the stack.
    */
   public static canAbilityBeActivated(state: GameState, playerId: string, objId: string, abilityIndex: number, checkPriority = true): boolean {
     const player = state.players[playerId];
     const obj = RuleUtils.findObject(state, objId);
-    if (!player || !obj) return false;
+    if (!player || !obj || !RuleUtils.isEntity(obj)) return false;
 
-    if (state.pendingAction) return false;
+    // Optimization: Skip checking if a pending action is waiting for this player
+    if (state.pendingAction && state.pendingAction.playerId === playerId) return false;
 
-    if (checkPriority && state.priorityPlayerId !== playerId) return false;
-
-    const cardLogic = (RuleUtils.isEntity(obj)) ? oracle.getCard(obj.definition.name) : null;
-    let abilities = [...(cardLogic?.abilities || [])];
-
-    // --- SUPPORT FOR IN-LINE ABILITIES (Tokens, Virtual Spells) ---
-    if (RuleUtils.isEntity(obj) && obj.definition.abilities) {
-      obj.definition.abilities.forEach((a: AbilityDefinition | string) => {
-        const isDuplicate = abilities.some(existing => {
-          if (typeof a === 'string' || typeof existing === 'string') return a === existing;
-          if (a.id !== undefined && (existing as AbilityDefinition).id !== undefined) return a.id === (existing as AbilityDefinition).id;
-          return a.type === (existing as AbilityDefinition).type &&
-            JSON.stringify(a.effects) === JSON.stringify((existing as AbilityDefinition).effects) &&
-            JSON.stringify(a.costs) === JSON.stringify((existing as AbilityDefinition).costs);
-        });
-        if (!isDuplicate) {
-          abilities.push(a);
-        }
-      });
-    }
-
-    // --- SUPPORT FOR GRANTED ABILITIES (Conspicuous Snoop, Layer 6, etc.) ---
-    const { layer: LayerProcessor } = getProcessors(state);
-    const stats = LayerProcessor.getEffectiveStats(obj as GameObject, state);
-    if (stats.abilities) {
-      stats.abilities.forEach((a: any) => {
-        if (typeof a === 'string') return;
-        const isDuplicate = abilities.some(existing => {
-          if (typeof existing === 'string') return false;
-          if (a.id !== undefined && (existing as AbilityDefinition).id !== undefined) return a.id === (existing as AbilityDefinition).id;
-          return a.type === (existing as AbilityDefinition).type &&
-            JSON.stringify(a.effects) === JSON.stringify((existing as AbilityDefinition).effects) &&
-            JSON.stringify(a.costs) === JSON.stringify((existing as AbilityDefinition).costs);
-        });
-        if (!isDuplicate) {
-          abilities.push(a);
-        }
-      });
-    }
-
-    const grantedAbilityEffects = state.ruleRegistry.continuousEffects.filter(e =>
-      (e.type === EffectType.GainAbilitiesOfTopCard || e.type === EffectType.AddTriggeredAbility) &&
-      (e.targetIds?.includes(objId) || (e.targetMapping === 'SELF' && e.sourceId === objId) || LayerProcessor.isTarget(state, e, objId)) &&
-      ConditionProcessor.matchesCondition(state, e.condition, {
-        sourceId: e.sourceId,
-        controllerId: e.controllerId,
-        targets: []
-      })
-    );
-
-    for (const e of grantedAbilityEffects) {
-      if (e.type === EffectType.GainAbilitiesOfTopCard) {
-        const topCard = player.library[player.library.length - 1];
-        if (topCard) {
-          const topLogic = oracle.getCard(topCard.definition.name);
-          if (topLogic?.abilities) {
-            const granted = topLogic.abilities.filter((a: any) => a.type === AbilityType.Activated);
-            abilities = [...abilities, ...granted];
-          }
-        }
-      } else if (e.type === EffectType.AddTriggeredAbility && e.value) {
-        // value contains the granted ability (which could be Activated despite the effect name)
-        abilities = [...abilities, e.value];
-      }
-
-    }
-
-    if (!abilities[abilityIndex]) return false;
+    // 1. Find and validate the ability
+    const abilities = this.getAbilitiesForObject(state, obj);
     const ability = abilities[abilityIndex];
-    if (typeof ability === 'string') return false;
-    const logic = (RuleUtils.isEntity(obj)) ? oracle.getCard(obj.definition.name) : null;
+    if (!ability || typeof ability === 'string' || ability.type !== AbilityType.Activated) return false;
 
-    if (ability.type !== AbilityType.Activated) return false;
+    // 2. Timing & Priority (includes Loyalty CR 606.3 via validateTiming)
+    if (!this.validateTiming(state, playerId, ability, true, checkPriority)) return false;
 
-    // Zone check (CR 113.6)
+    // 3. Zone Check (CR 113.6)
     const activeZone = ability.activeZone || Zone.Battlefield;
-    if (activeZone !== (Zone.Any as Zone) && (!RuleUtils.isEntity(obj) || activeZone !== (obj.zone as Zone))) {
-      return false;
-    }
+    if (activeZone !== (Zone.Any as Zone) && obj.zone !== activeZone) return false;
 
-    // Requirement Check (Rule 602.5b/Activation conditions)
-    const dummyEvent: GameEvent = { type: 'NONE', playerId: playerId };
-    if (ability.triggerCondition && RuleUtils.isEntity(obj) && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId })) {
-      console.log(`Illegal Activation: Activation requirements for ${obj.definition.name} are not met.`);
-      return false;
-    }
+    // 4. Restrictions (Silence, Limits, Conditions)
+    const dummyEvent: GameEvent = { type: 'NONE', playerId };
+    if (ability.triggerCondition && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId })) return false;
+    
+    if (ability.condition && !ConditionProcessor.matchesCondition(state, ability.condition, { sourceId: obj.id, controllerId: playerId, targets: [] })) return false;
 
-    // Explicit Condition check
-    if (ability.condition) {
-      if (!ConditionProcessor.matchesCondition(state, ability.condition, { sourceId: obj.id, controllerId: playerId, targets: [] })) {
-        return false;
-      }
-    }
-
-    // Limit Check
     if (ability.limitPerTurn) {
       const usedCount = state.turnState.triggeredAbilitiesUsedThisTurn[`ability_${obj.id}_${abilityIndex}`] || 0;
       if (usedCount >= ability.limitPerTurn) return false;
     }
 
-    // Skip purely mana-producing abilities for auto-pass
+    if (RuleUtils.isPlaneswalker(obj) && ('abilitiesUsedThisTurn' in obj) && (obj as any).abilitiesUsedThisTurn > 0) return false;
+
+    if (RuleUtils.isGameObject(obj) && !RestrictionValidator.canActivateAbility(state, playerId, ability, obj)) return false;
+
+    // Skip mana abilities for auto-pass scan (Optimization)
     if (!checkPriority && ability.isManaAbility) return false;
 
-    // Restriction Check
-    if ('isTapped' in obj && !RestrictionValidator.canActivateAbility(state, playerId, ability, obj as GameObject)) {
-      return false;
-    }
-    // Timing Check (Rule 602.1 / 606.3)
-    const isPlaneswalker = RuleUtils.isPlaneswalker(obj);
-    let timingOk = this.validateTiming(state, playerId, ability, true);
+    // 5. Cost Check
+    if (!player.manaCheat && !CostProcessor.canPay(state, ability.costs || [], obj.id, playerId)) return false;
 
-    if (isPlaneswalker) {
-      // Rule 606.3: loyalty abilities are sorcery speed by default
-      if (timingOk) {
-        const isYourTurn = state.activePlayerId === playerId;
-        const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
-        const stackEmpty = state.stack.length === 0;
-        if (!isYourTurn || !isMain || !stackEmpty) timingOk = false;
-      }
-
-      const canActivateAnyTime = (logic?.abilities || []).some((a: any) => a.type === 'Static' && String(a.id || "").includes('any_turn')) ||
-        state.ruleRegistry.continuousEffects.some(e =>
-          e.type === EffectType.AllowOutOfTurnActivation &&
-          (e.targetIds?.includes(obj.id) || (e.targetMapping === TargetMapping.Self && e.sourceId === obj.id))
-        );
-
-      if (!canActivateAnyTime && !timingOk) return false;
-      if ('abilitiesUsedThisTurn' in obj && (obj as GameObject).abilitiesUsedThisTurn > 0) return false;
-    } else if (!timingOk) {
-      return false;
-    }
-
-    // Requirement Check (Rule 602.5b)
-    if (ability.triggerCondition && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId })) {
-      return false;
-    }
-
-    // Cost Check
-    if (!CostProcessor.canPay(state, ability.costs || [], obj.id, playerId)) return false;
-
-    // Requirement Check (Rule 602.5b) - Double check after costs? (Historical logic)
-    if (ability.triggerCondition && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId })) return false;
-
-    // Target Check
+    // 6. Target Check
+    const { targeting: TargetingProcessor } = getProcessors(state);
     if (ability.modes) {
-      const hasValidMode = ability.modes.some((mode) => {
-        if (!mode.targetDefinitions || mode.targetDefinitions.optional) return true;
+      const hasValidMode = ability.modes.some(mode => {
+        if (!mode.targetDefinitions || mode.targetDefinitions.length === 0 || mode.targetDefinitions.every((td: TargetDefinition) => td.optional)) return true;
         return TargetingProcessor.hasLegalTargets(state, obj.id, mode.targetDefinitions, playerId);
       });
       if (!hasValidMode) return false;
-    } else if (ability.targetDefinitions && ability.targetDefinitions.length > 0 && !ability.targetDefinitions[0].optional) {
-      if (!TargetingProcessor.hasLegalTargets(state, obj.id, ability.targetDefinitions, playerId)) {
+    } else if (ability.targetDefinitions && ability.targetDefinitions.length > 0) {
+      if (!ability.targetDefinitions.every((td: TargetDefinition) => td.optional) && !TargetingProcessor.hasLegalTargets(state, obj.id, ability.targetDefinitions, playerId)) {
         return false;
       }
     }
@@ -652,22 +505,48 @@ export class PriorityProcessor {
     return true;
   }
 
-  public static validateTiming(state: GameState, playerId: string, objOrAbility: any, isActivatedAbility = false): boolean {
+  /**
+   * Refactored Timing Validation (CR 300-307, 602.1, 606.3)
+   * Determines if the current game state allows the action based on its speed and the player's priority.
+   */
+  public static validateTiming(state: GameState, playerId: string, objOrAbility: any, isActivatedAbility = false, checkPriority = true): boolean {
+    const player = state.players[playerId];
+    if (!player) return false;
+
+    // 1. Priority Check (Rule 117.1)
+    // If checkPriority is false, we are doing a "potential action" scan for auto-pass.
+    if (checkPriority && state.priorityPlayerId !== playerId) return false;
+
+    // 2. Identify Timing Speed
     const def = objOrAbility?.definition || objOrAbility;
-    // For dual-faced or prepared cards, we only consider the first face's types for timing unless it's a virtual spell
-    const isInstantOrFlash = RuleUtils.isType(def, 'instant') || RuleUtils.hasFlash(objOrAbility);
-
+    const isInstantOrFlash = RuleUtils.isType(objOrAbility, 'instant') || RuleUtils.hasFlash(objOrAbility);
     const isLand = RuleUtils.isLand(def);
+    
+    // Loyalty abilities (Planeswalkers) have unique sorcery-speed restrictions (CR 606.3)
+    const isLoyalty = (objOrAbility.type === AbilityType.Activated && (objOrAbility.loyalty !== undefined || objOrAbility.isLoyaltyAbility)) || RuleUtils.isPlaneswalker(objOrAbility);
+    
+    // Sorcery speed applies to:
+    // - Lands
+    // - Loyalty abilities
+    // - Abilities explicitly marked "Activate only as a sorcery"
+    // - Non-instant/flash spells
+    // - Non-instant activated abilities (default is instant-speed, but we check the flag)
+    const onlyAsSorcery = objOrAbility.activatedOnlyAsSorcery || objOrAbility.sorcerySpeed;
+    const isSorcerySpeed = isLand || isLoyalty || onlyAsSorcery || (!isInstantOrFlash && !isActivatedAbility);
 
-    // Rule 602.1: Sorcery-speed abilities
-    const onlyAsSorcery = objOrAbility.activatedOnlyAsSorcery || (!isInstantOrFlash && !isActivatedAbility) || (isActivatedAbility && objOrAbility.activatedOnlyAsSorcery);
-
-    if (onlyAsSorcery || isLand) {
+    // 3. Evaluate Speed Requirements
+    if (isSorcerySpeed) {
       const isYourTurn = state.activePlayerId === playerId;
       const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
       const stackEmpty = state.stack.length === 0;
 
-      if (!isYourTurn || !isMain || !stackEmpty) {
+      // Check for out-of-turn permission effects (e.g. Teferi, Leyline of Anticipation)
+      const hasPermission = state.ruleRegistry.continuousEffects.some(e => 
+        (e.type === EffectType.AllowOutOfTurnActivation) && 
+        (e.targetIds?.includes(objOrAbility.id) || e.sourceId === objOrAbility.id || (RuleUtils.isEntity(objOrAbility) && e.targetIds?.includes(objOrAbility.id)))
+      ) || false;
+
+      if (!hasPermission && (!isYourTurn || !isMain || !stackEmpty)) {
         return false;
       }
     }

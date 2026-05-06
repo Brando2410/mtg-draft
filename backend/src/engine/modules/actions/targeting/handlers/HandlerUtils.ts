@@ -7,7 +7,7 @@ import { IRestrictionHandler } from "../IRestrictionHandler";
  * Type Guard for GameObject.
  */
 export function isGameObject(obj: Targetable): obj is GameObject {
-    return obj !== null && typeof obj === 'object' && 'zone' in obj && 'definition' in obj;
+    return obj !== null && typeof obj === 'object' && 'zone' in obj && 'definition' in obj && !('sourceId' in obj);
 }
 
 /**
@@ -21,7 +21,7 @@ export function isPlayerState(obj: Targetable): obj is PlayerState {
  * Type Guard for StackObject.
  */
 export function isStackObject(obj: Targetable): obj is StackObject {
-    return obj !== null && typeof obj === 'object' && 'type' in obj && 'sourceId' in obj && !('zone' in obj);
+    return obj !== null && typeof obj === 'object' && 'type' in obj && 'sourceId' in obj;
 }
 
 /**

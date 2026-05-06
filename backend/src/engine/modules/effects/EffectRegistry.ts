@@ -68,7 +68,6 @@ export const EffectRegistry: Partial<Record<EffectType | string, IEffectHandler>
     [EffectType.Surveil]: ScrySurveilHandler,
     [EffectType.LookAtTopAndPick]: MovementHandler,
     [EffectType.MoveToZone]: MovementHandler,
-    [EffectType.PutRemainderOnBottomRandom]: MovementHandler,
     [EffectType.PutOnBattlefield]: MovementHandler,
     [EffectType.Mill]: MillEffectHandler,
     [EffectType.AllowPlayMilledCard]: PermissionEffectHandler,

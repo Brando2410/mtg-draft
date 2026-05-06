@@ -16,7 +16,9 @@ export const ClaimTheFirstborn: CardDefinition = {
             }],
             effects: [
                 {
-                    type: EffectType.GainControl,
+                    type: EffectType.ApplyContinuousEffect,
+                    layer: 2,
+                    targetControllerMapping: TargetMapping.Controller,
                     duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Target1
                 },

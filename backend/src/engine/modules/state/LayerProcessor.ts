@@ -795,38 +795,35 @@ export class LayerProcessor {
 
       let isPlayable = false;
       let displayCost = obj.definition.manaCost;
+      if (isFlashback) {
+        displayCost =
+          obj.definition.flashbackCost ||
+          (obj.definition as any).flashback_cost ||
+          obj.definition.manaCost;
+      } else if (isActivation && graveyardAbility) {
+        displayCost =
+          graveyardAbility.manaCost ||
+          graveyardAbility.costs?.find((c: any) => c.type === "Mana")?.value ||
+          obj.definition.manaCost;
+      }
+
+      try {
+        if (SpellProcessor) {
+          const { totalMana } = SpellProcessor.getEffectiveCosts(
+            state,
+            obj,
+            [],
+            undefined,
+            isFlashback,
+            stats,
+          );
+          displayCost = totalMana;
+        }
+      } catch (e) {
+      }
 
       // FAST PATH: isPlayable requires expensive restriction matching, only do it if the object is owned by the active player
       if (state.priorityPlayerId === RuleUtils.getController(obj)) {
-        let currentDisplayCost = obj.definition.manaCost;
-        if (isFlashback) {
-          currentDisplayCost =
-            obj.definition.flashbackCost ||
-            (obj.definition as any).flashback_cost ||
-            obj.definition.manaCost;
-        } else if (isActivation && graveyardAbility) {
-          currentDisplayCost =
-            graveyardAbility.manaCost ||
-            graveyardAbility.costs?.find((c: any) => c.type === "Mana")?.value ||
-            obj.definition.manaCost;
-        }
-
-        try {
-          if (SpellProcessor) {
-            const { totalMana } = SpellProcessor.getEffectiveCosts(
-              state,
-              obj,
-              [],
-              undefined,
-              isFlashback,
-              stats,
-            );
-            currentDisplayCost = totalMana;
-          }
-        } catch (e) {
-        }
-
-        displayCost = currentDisplayCost;
         isPlayable = PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id, true, stats, displayCost);
       }
 

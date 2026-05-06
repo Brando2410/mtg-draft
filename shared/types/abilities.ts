@@ -282,7 +282,6 @@ export interface TriggeredAbility {
     payload?: TriggerPayload;
     isDelayed?: boolean;
     oneShot?: boolean;
-    firesOnce?: boolean;
     targetDefinitions?: TargetDefinition[];
     abilityIndex?: number;
     targetIds?: string[];

@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CounterType, CostType, DynamicAmount, EffectType, TargetMapping } from '@shared/engine_types';
 export const EmilVastlandsRoamer: CardDefinition = {
     name: "Emil, Vastlands Roamer",
     manaCost: "{2}{G}",
@@ -42,7 +42,7 @@ export const EmilVastlandsRoamer: CardDefinition = {
                         image_url: 'https://cards.scryfall.io/png/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.png?1682693894'
                     },
                     startingCounters: {
-                        type: '+1/+1',
+                        counterType: CounterType.P1P1,
                         amount: DynamicAmount.DifferentlyNamedLandsCount
                     }
                 }

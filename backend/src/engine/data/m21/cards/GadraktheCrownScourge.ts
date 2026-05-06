@@ -18,8 +18,8 @@ export const GadraktheCrownScourge: CardDefinition = {
             type: AbilityType.Static,
             effects: [
                 {
-                    type: EffectType.CantAttackUnless,
-                    condition: 'HAS_ARTIFACTS_4_OR_MORE_YOU_CONTROL',
+                    type: EffectType.ApplyContinuousEffect,
+                    restrictionsToAdd: [{ type: 'CannotAttack', condition: '!HAS_ARTIFACTS_4_OR_MORE_YOU_CONTROL' }],
                     targetMapping: TargetMapping.Self
                 }
             ]
@@ -40,7 +40,7 @@ export const GadraktheCrownScourge: CardDefinition = {
                         abilities: [{
                             type: AbilityType.Activated,
                             costs: [{ type: CostType.Tap }, { type: CostType.SacrificeSelf }],
-                            effects: [{ type: EffectType.AddMana, manaType: 'ANY', amount: 1 }]
+                            effects: [{ type: EffectType.AddMana, manaType: 'ANY' }]
                         }]
                     },
                     amount: 'NONTOKEN_CREATURES_DIED_THIS_TURN_COUNT',

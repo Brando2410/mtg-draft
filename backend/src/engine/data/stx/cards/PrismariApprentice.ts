@@ -16,7 +16,7 @@ export const PrismariApprentice: CardDefinition = {
             effects: [
                 {
                     type: EffectType.ApplyContinuousEffect,
-                    abilitiesToAdd: [RestrictionType.CannotBeBlocked],
+                    restrictionsToAdd: [RestrictionType.CannotBeBlocked],
                     duration: { type: DurationType.UntilEndOfTurn },
                     targetMapping: TargetMapping.Self
                 },

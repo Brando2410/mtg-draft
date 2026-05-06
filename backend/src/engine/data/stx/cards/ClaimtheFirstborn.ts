@@ -15,9 +15,9 @@ export const ClaimtheFirstborn: CardDefinition = {
         restrictions: [Restriction.ManaValue3OrLess]
       }],
       effects: [
-        { type: EffectType.ApplyContinuousEffect, duration: { type: DurationType.UntilEndOfTurn }, effects: [{ type: EffectType.GainControl }], targetMapping: TargetMapping.Target1 },
+        { type: EffectType.ApplyContinuousEffect, layer: 2, targetControllerMapping: TargetMapping.Controller, duration: { type: DurationType.UntilEndOfTurn }, targetMapping: TargetMapping.Target1 },
         { type: EffectType.Untap, targetMapping: TargetMapping.Target1 },
-        { type: EffectType.ApplyContinuousEffect, duration: { type: DurationType.UntilEndOfTurn }, effects: [{ type: EffectType.GainKeyword, keyword: 'Haste' }], targetMapping: TargetMapping.Target1 }
+        { type: EffectType.ApplyContinuousEffect, duration: { type: DurationType.UntilEndOfTurn }, abilitiesToAdd: ['Haste'], targetMapping: TargetMapping.Target1 }
       ]
     }
   ]

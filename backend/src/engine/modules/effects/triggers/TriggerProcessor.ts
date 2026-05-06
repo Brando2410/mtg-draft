@@ -69,13 +69,42 @@ export class TriggerProcessor {
       // 2. Queue all triggers in pending state
       if (!state.pendingTriggers) state.pendingTriggers = [];
 
+      // 4. Cleanup one-shot delayed triggers (Rule 603.7)
+      // Must happen BEFORE execution to prevent recursive loops
+      matchingTriggers.forEach((t: TriggeredAbility) => {
+        if (t.isDelayed) {
+          const startsWithUntil =
+            t.duration &&
+            (typeof (t.duration as any) === 'string'
+              ? (t.duration as any).toUpperCase().startsWith("UNTIL")
+              : (t.duration.type && String(t.duration.type).toUpperCase().startsWith("UNTIL")));
+
+          if (t.oneShot || !startsWithUntil) {
+            const index = state.ruleRegistry.triggeredAbilities.findIndex(orig => orig.id === t.id);
+            if (index !== -1) {
+              logger.info(state, LogCategory.TRIGGER, `[CLEANUP] Removing one-shot delayed trigger (In-place): ${t.id}`);
+              state.ruleRegistry.triggeredAbilities.splice(index, 1);
+              state.stateVersion++;
+              if (state._triggerCache) state._triggerCache.version = -1;
+            } else {
+              logger.warn(state, LogCategory.TRIGGER, `[CLEANUP-FAILED] Trigger ${t.id} not found in registry for removal!`);
+            }
+          }
+        }
+      });
+
+      // 5. Process each unique trigger
       for (const trigger of uniqueTriggers) {
-        let triggerCount = 1;
-        const sourceObj = RuleUtils.findObject(state, trigger.sourceId);
+        if (trigger.type === AbilityType.Activated) continue;
+
+        const sourceId = trigger.sourceId;
+        const controllerId = trigger.controllerId;
+        const sourceObj = RuleUtils.findObject(state, sourceId);
 
         // --- TRIGGER DOUBLING (CR 603.2c / 614.16) ---
-        // 1. Check Replacement Effects (Standardized for specific event buckets)
-        // Standard events: 'ON_TRIGGER', 'ON_SHRINE_TRIGGER' (legacy/specific)
+        let triggerCount = 1;
+
+        // 5a. Replacement Effects (e.g. Shrine doubling)
         const triggerEvents: string[] = [TriggerEvent.OnTrigger];
         if (sourceObj && RuleUtils.hasSubtype(sourceObj, Restriction.Shrine)) {
           triggerEvents.push(TriggerEvent.OnShrineTrigger);
@@ -85,84 +114,59 @@ export class TriggerProcessor {
           const tEvent: GameEvent = {
             type: eventName,
             playerId: trigger.controllerId,
-            payload: {
-              sourceId: trigger.sourceId,
-              object: sourceObj,
-              stackSnapshot: { trigger, object: sourceObj }
-            }
+            payload: { sourceId: trigger.sourceId, object: sourceObj, stackSnapshot: { trigger, object: sourceObj } }
           };
-
-          const replacements = (state.ruleRegistry.replacementEffects || [])
-            .filter(r => r.replacesEvent === eventName);
-
+          const replacements = (state.ruleRegistry.replacementEffects || []).filter(r => r.replacesEvent === eventName);
           for (const r of replacements) {
             const conditionMet = typeof r.condition === 'function' ? r.condition(state, tEvent, r) : true;
             if (conditionMet && r.effects?.some((e: EffectDefinition) => e.type === EffectType.AddAdditionalTrigger)) {
               triggerCount++;
-              logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${RuleUtils.isEntity(sourceObj) ? sourceObj.definition.name : 'Ability'} triggers an additional time via replacement effect (${eventName}).`);
+              logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${RuleUtils.isEntity(sourceObj) ? sourceObj.definition.name : 'Ability'} triggers via replacement.`);
             }
           }
         }
 
-        // 2. Check Continuous Effects (Generic 'triggers an additional time' modifiers)
+        // 5b. Continuous Effects (e.g. Teysa Karlov)
         const doublingEffects = state.ruleRegistry.continuousEffects.filter(e => e.type === EffectType.AddAdditionalTrigger);
         for (const eff of doublingEffects) {
           if (eff.controllerId !== trigger.controllerId) continue;
-
-          // Check restrictions (e.g. "Whenever an artifact... triggers twice")
           if (eff.restrictions && sourceObj) {
             const { targeting: TargetingProcessor } = getProcessors(state);
-            const matches = TargetingProcessor.matchesRestrictions(state, sourceObj, eff.restrictions, {
-              sourceId: eff.sourceId,
-              controllerId: eff.controllerId
-            });
+            const matches = TargetingProcessor.matchesRestrictions(state, sourceObj, eff.restrictions, { sourceId: eff.sourceId, controllerId: eff.controllerId });
             if (!matches) continue;
           }
-
           triggerCount++;
-          logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${RuleUtils.isEntity(sourceObj) ? sourceObj.definition.name : 'Ability'} triggers an additional time via continuous effect.`);
+          logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${RuleUtils.isEntity(sourceObj) ? sourceObj.definition.name : 'Ability'} triggers via continuous.`);
         }
 
+        // 6. Execute triggers
         for (let i = 0; i < triggerCount; i++) {
-          // Increment usage (only for the first instance of a multi-trigger event)
           if (trigger.limitPerTurn && i === 0) {
             state.turnState.triggeredAbilitiesUsedThisTurn[trigger.id] =
               (state.turnState.triggeredAbilitiesUsedThisTurn[trigger.id] || 0) + 1;
           }
 
-          const stackObj = this.createStackObject(state, trigger, event);
-          logger.debug(state, LogCategory.TRIGGER, `[TRIGGER-ON-EVENT] Queuing trigger ${stackObj.id} (Source: ${trigger.sourceId}) with targets: ${stackObj.targets?.join(', ')}`);
-          state.pendingTriggers.push(stackObj);
+          if (trigger.isGlobal || trigger.isDelayed || this.isAbilityActive(state, trigger)) {
+            const stackObj = this.createStackObject(state, trigger, event);
+            if (stackObj) {
+              state.stack.push(stackObj);
+              logger.info(state, LogCategory.TRIGGER, `[TRIGGER] ${trigger.oracleText || 'Ability'} triggered.`);
 
-          // --- TRIGGER INTERCEPTION (Strict Proctor / Ward / etc.) ---
-          // Emit ON_TRIGGER_QUEUED to allow other abilities to respond to this trigger entering the stack.
-          if (event.type !== 'ON_TRIGGER_QUEUED') {
-            this.onEvent(state, {
-              type: 'ON_TRIGGER_QUEUED',
-              playerId: trigger.controllerId,
-              payload: { sourceId: stackObj.id, targetIds: [stackObj.id], object: stackObj, stackSnapshot: { trigger, originalEvent: event } }
-            });
+              if (event.type !== 'ON_TRIGGER_QUEUED') {
+                this.onEvent(state, {
+                  type: 'ON_TRIGGER_QUEUED',
+                  playerId: trigger.controllerId,
+                  payload: { sourceId: stackObj.id, object: stackObj, stackSnapshot: { trigger, originalEvent: event } }
+                });
+              }
+            }
           }
         }
       }
-      // 4. Cleanup single-shot delayed triggers (Rule 603.7)
-      matchingTriggers.forEach((t: TriggeredAbility) => {
-        if (t.isDelayed) {
-          const startsWithUntil =
-            t.duration &&
-            String(t.duration).toUpperCase().startsWith("UNTIL");
-          const isOneShot = t.oneShot || t.firesOnce;
-
-          if (isOneShot || !startsWithUntil) {
-            state.ruleRegistry.triggeredAbilities =
-              state.ruleRegistry.triggeredAbilities.filter(
-                (orig) => orig.id !== t.id,
-              );
-          }
-        }
-      });
+    } catch (e) {
+      getProcessors(state).logger.error(state, LogCategory.TRIGGER, `[TRIGGER-ERROR] Error in onEvent: ${e}`);
     } finally {
-      Profiler.endWithThreshold('trigger.check', 10.0); // 10ms threshold for heavy trigger storms
+      Profiler.endWithThreshold('trigger.check', 10.0);
     }
   }
 
@@ -254,12 +258,11 @@ export class TriggerProcessor {
       payload: { metadata: effect.data },
       targetIds: effect.targetIds,
       isDelayed: true,
-      oneShot: (effect as any).oneShot,
-      firesOnce: (effect as any).firesOnce,
+      oneShot: (effect as TriggerAbilityEffect).oneShot ?? true, // Default to one-shot for delayed triggers unless specified
       activeZone: Zone.Any, // Virtual zone for registry (Rule 603.7)
       type: AbilityType.Triggered,
     };
-    getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[DELAYED-REG] Registering trigger ${delayedTrigger.id} with targets: ${delayedTrigger.targetIds?.join(', ')}`);
+    getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[DELAYED-REG] Registering trigger ${delayedTrigger.id} (oneShot: ${delayedTrigger.oneShot}) with targets: ${delayedTrigger.targetIds?.join(', ')}`);
     if (!state.ruleRegistry.triggeredAbilities)
       state.ruleRegistry.triggeredAbilities = [];
     state.ruleRegistry.triggeredAbilities.push(delayedTrigger);
@@ -349,7 +352,8 @@ export class TriggerProcessor {
       targetDefinitions: trigger.targetDefinitions || [],
       event: event,
       exileOnResolution: exileOnResolution,
-      data: contextPayload
+      data: contextPayload,
+      zone: Zone.Stack
     };
     getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[STACK-OBJ-CREATE] Created stack object ${stackObj.id} with targets: ${stackObj.targets?.join(', ')}`);
     return stackObj;
@@ -555,6 +559,7 @@ export class TriggerProcessor {
 
       // Gather Registry Triggers
       if (state.ruleRegistry.triggeredAbilities) {
+        logger.debug(state, LogCategory.TRIGGER, `[TRIGGER-CACHE] Registry has ${state.ruleRegistry.triggeredAbilities.length} triggers.`);
         state.ruleRegistry.triggeredAbilities.forEach((t) => allTriggers.push(t));
       }
 
@@ -578,10 +583,10 @@ export class TriggerProcessor {
     const cache = state._triggerCache;
     const candidates = cache.buckets.get(event.type) || [];
 
-    if (event.type === TriggerEvent.EndStep || event.type === TriggerEvent.Exile) {
+    if (event.type === TriggerEvent.EndStep || event.type === TriggerEvent.Exile || event.type === TriggerEvent.CastInstantOrSorcery) {
       logger.debug(state, LogCategory.TRIGGER, `[TRIGGER-DEBUG] Event ${event.type}. Found ${candidates.length} candidates in bucket.`);
       candidates.forEach((t: any) => {
-        logger.debug(state, LogCategory.TRIGGER, `  - Candidate: ${t.id} (Source: ${t.sourceId}) Targets: ${t.targets?.join(', ')}`);
+        logger.debug(state, LogCategory.TRIGGER, `  - Candidate: ${t.id} (Source: ${t.sourceId}) controllerId: ${t.controllerId} activeZone: ${t.activeZone} isDelayed: ${t.isDelayed} oneShot: ${t.oneShot}`);
       });
     }
 
@@ -988,21 +993,12 @@ export class TriggerProcessor {
     event: GameEvent,
     matchingTriggers: TriggeredAbility[],
   ) {
-    const { logger } = getProcessors(state);
     const card = event.payload?.object;
-    if (!card) {
-      if (event.type === TriggerEvent.ResolveSpell) logger.debug(state, LogCategory.TRIGGER, `[PARADIGM-DEBUG] No card found in event ${event.type}`);
-      return;
-    }
 
     if (!RuleUtils.isGameObject(card)) return;
     const stats = LayerProcessor.getEffectiveStats(card, state);
     const { keywords } = stats;
     const hasParadigm = keywords.some((k: string) => k.toLowerCase() === "paradigm");
-
-    if (event.type === TriggerEvent.ResolveSpell || event.type === TriggerEvent.CastSpell) {
-      logger.debug(state, LogCategory.TRIGGER, `[PARADIGM-DEBUG] Checking ${RuleUtils.isEntity(card) ? card.definition.name : 'Unknown'} for Paradigm. hasParadigm=${hasParadigm}`);
-    }
 
     if (!hasParadigm) return;
 
@@ -1011,7 +1007,6 @@ export class TriggerProcessor {
       const stackObj = state.stack.find((s) => s.sourceId === card.id);
       if (stackObj) {
         stackObj.exileOnResolution = true;
-        logger.info(state, LogCategory.TRIGGER, `[PARADIGM] Marked ${RuleUtils.isEntity(card) ? card.definition.name : 'Unknown'} to exile on resolution.`);
       }
     } else if (event.type === TriggerEvent.ResolveSpell) {
       // 2. Register recurring trigger if it's the first time
@@ -1022,8 +1017,6 @@ export class TriggerProcessor {
       const alreadyRegistered = state.ruleRegistry.triggeredAbilities.some(
         (t) => t.id === existingTriggerId,
       );
-      logger.debug(state, LogCategory.TRIGGER, `[PARADIGM-DEBUG] Resolution event for ${spellName}. alreadyRegistered=${alreadyRegistered}`);
-
       if (!alreadyRegistered) {
         state.ruleRegistry.triggeredAbilities.push({
           type: AbilityType.Triggered,
@@ -1192,5 +1185,18 @@ export class TriggerProcessor {
         return 1;
       return 0; // Same player - in a real engine, the player would choose
     });
+  }
+
+  /**
+   * CR 603.2: Check if a triggered ability is active in its current zone.
+   */
+  private static isAbilityActive(state: GameState, ability: TriggeredAbility): boolean {
+    if (ability.isDelayed || ability.isGlobal) return true;
+    const source = RuleUtils.findObject(state, ability.sourceId);
+    if (!source) return false;
+
+    const activeZone = ability.activeZone || (RuleUtils.isType(source, 'instant') || RuleUtils.isType(source, 'sorcery') ? Zone.Stack : Zone.Battlefield);
+    const currentZone = RuleUtils.isEntity(source) ? (source as any).zone : undefined;
+    return currentZone === activeZone || activeZone === Zone.Any;
   }
 }

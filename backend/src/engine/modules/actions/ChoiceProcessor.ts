@@ -80,7 +80,7 @@ export class ChoiceProcessor {
         if (!action) return false;
 
         if (action.playerId !== playerId) {
-            logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] resolveChoice failed: Player ID mismatch. Expected ${action.playerId}, got ${playerId}.`);
+            logger.debug(state, LogCategory.ACTION, `[CHOICE-ERROR] resolveChoice failed: Player ID mismatch. Expected ${action.playerId}, got ${playerId}.`);
             return false;
         }
 
@@ -96,8 +96,14 @@ export class ChoiceProcessor {
         const isScry = action.type === ActionType.Scry || action.type === ActionType.Surveil;
         const isChoosingX = action.type === ActionType.ChooseX;
         const isOrderTriggers = action.type === ActionType.OrderTriggers;
+        const isTargeting = action.type === ActionType.Targeting;
 
-        if (!isModal && !isResolution && !isScry && !isChoosingX && !isOrderTriggers) return false;
+        if (!isModal && !isResolution && !isScry && !isChoosingX && !isOrderTriggers && !isTargeting) return false;
+
+        if (isTargeting) {
+            logger.debug(state, LogCategory.ACTION, `[CHOICE-DELEGATE] Delegating targeting choice to TargetingProcessor: ${firstSelection}`);
+            return this.resolveTargeting(state, playerId, firstSelection as string, engine);
+        }
 
         if (isOrderTriggers) {
             const order = selections.map(s => s.toString());
@@ -179,7 +185,6 @@ export class ChoiceProcessor {
                     parentContext: action.data?.parentContext,
                     lookingCards: action.data?.lookingCards as GameObject[],
                 });
-                logger.info(state, LogCategory.ACTION, `[CHOICE-DEBUG] Batch resolution finished. lastDiscardedIds: ${state.turnState.lastDiscardedIds?.length || 0}`);
             }
 
             // After batch is done, check if we need to move to the next player (for DiscardCards)
@@ -210,8 +215,6 @@ export class ChoiceProcessor {
             const keepId = choice?.value as string;
             const involvedIds = (action.data?.involvedIds as string[]) || [];
             const discardIds = involvedIds.filter((id) => id !== keepId);
-
-            logger.info(state, LogCategory.ACTION, `[LEGEND-RULE] Player chose index ${choiceIdx} or ID ${firstSelection} (Keep: ${keepId}). Involved: ${involvedIds.join(', ')}`);
 
             discardIds.forEach((id) => {
                 const obj = state.battlefield.find(o => o.id === id);
@@ -297,7 +300,6 @@ export class ChoiceProcessor {
 
         // 6. Resume resolution if needed
         if (stackObj) {
-            logger.info(state, LogCategory.ACTION, `[RESOLVING] Resuming resolution after ${action.type}...`);
             return this.resumeResolution(state, action.sourceId!, stackObj, action.data?.parentContext as ResolutionContext, engine);
         }
 
@@ -306,12 +308,10 @@ export class ChoiceProcessor {
     }
 
     public static resumeResolution(state: GameState, sourceId: string, stackObj: StackObject, parentContext: ResolutionContext, engine: EngineContext): boolean {
-        const { logger } = getProcessors(state);
         let currentCtx: ResolutionContext | undefined = { ...parentContext, stackObject: stackObj }; // Wrap to start resuming
 
         // Then resume parent contexts
         while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex !== undefined && currentCtx.nextEffectIndex < currentCtx.effects.length) {
-            logger.info(state, LogCategory.ACTION, `[RESOLVING] Resuming parent resolution context for ${sourceId}...`);
             
             const resumingCtx: ResolutionContext = currentCtx; // Capture current context before moving to parent
             const nextIdx = resumingCtx.nextEffectIndex!;
@@ -353,7 +353,6 @@ export class ChoiceProcessor {
                             const shouldExile = fullStackObj.exileOnResolution || fullStackObj.isCopy || (card as any).isPreparedCopy || freshDef?.exileOnResolution;
 
                             if (shouldExile) {
-                                logger.info(state, LogCategory.ACTION, `[RULE 701.5] ${card.definition.name} was exiled instead of being put into graveyard.`);
                                 getProcessors(state).action.removeFromCurrentZone(state, card);
                                 if (!fullStackObj.isCopy) {
                                     getProcessors(state).action.moveCard(state, card, Zone.Exile, card.ownerId);
@@ -366,14 +365,31 @@ export class ChoiceProcessor {
                         }
                     } else {
                         // Clean up ability/trigger
-                        getProcessors(state).action.removeFromCurrentZone(state, { id: fullStackObj.id, zone: Zone.Stack } as GameObject);
+                        // Use both instance ID and source ID to be absolutely sure we find it
+                        const stackIdx = state.stack.findIndex(s => s.id === fullStackObj.id || (s.id === stackObj.id && s.type === fullStackObj.type));
+                        if (stackIdx !== -1) {
+                            state.stack.splice(stackIdx, 1);
+                        } else {
+                            // Deep search fallback
+                            const altIdx = state.stack.findIndex(s => s.sourceId === fullStackObj.sourceId && s.type === fullStackObj.type);
+                            if (altIdx !== -1) {
+                                state.stack.splice(altIdx, 1);
+                            }
+                        }
                     }
-                    logger.info(state, LogCategory.ACTION, `[STACK] Completed resolution of ${stackObj.type} for ${sourceId}.`);
+
+                    // ROOT TRIGGER CLEANUP: If this was resumed from a parent context (like a trigger), clean up the parent too
+                    if (parentContext && parentContext.stackObject && parentContext.stackObject.id !== stackObj.id) {
+                        const parentStackObj = parentContext.stackObject;
+                        const pIdx = state.stack.findIndex(s => s.id === parentStackObj.id);
+                        if (pIdx !== -1) {
+                            state.stack.splice(pIdx, 1);
+                        }
+                    }
 
                     // --- KEYWORD HOOK: ON RESOLUTION ---
                     if (fullStackObj.type === AbilityType.Spell) {
                         const { trigger: TriggerProcessor } = getProcessors(state);
-                        logger.info(state, LogCategory.ACTION, `[CHOICE-DEBUG] Firing ON_RESOLVE_SPELL for ${fullStackObj.sourceObject?.definition.name}`);
                         TriggerProcessor.onEvent(state, {
                             type: 'ON_RESOLVE_SPELL',
                             playerId: fullStackObj.controllerId,
@@ -392,7 +408,6 @@ export class ChoiceProcessor {
     private static handleUndo(state: GameState, playerId: PlayerId, action: PendingAction): boolean {
         const { logger } = getProcessors(state);
         if (action.data?.hideUndo || action.type === ActionType.ResolutionChoice) {
-            logger.info(state, LogCategory.ACTION, `Undo not available for this mandatory action.`);
             return false;
         }
 
@@ -412,7 +427,6 @@ export class ChoiceProcessor {
                 const lCost = ability?.costs?.find((c: AbilityCost) => c.type === 'Loyalty')?.value as number;
                 if (lCost !== undefined) {
                     objOnBattlefield.counters['loyalty'] = (objOnBattlefield.counters['loyalty'] || 0) - lCost;
-                    logger.info(state, LogCategory.ACTION, `Refunded loyalty for ${objOnBattlefield.definition.name}: ${lCost > 0 ? '+' : ''}${lCost}`);
                 }
             }
         }
@@ -429,7 +443,6 @@ export class ChoiceProcessor {
 
                 const { mana: ManaProcessor } = getProcessors(state);
                 ManaProcessor.refundManaCost(player, refundCost);
-                logger.info(state, LogCategory.ACTION, `Undo Choice: ${card.definition.name} returned to hand.`);
             }
         }
 
@@ -449,7 +462,6 @@ export class ChoiceProcessor {
             if (player && savedActionData.manaSnapshot) {
                 player.manaPool = savedActionData.manaSnapshot;
                 player.restrictedMana = savedActionData.restrictedSnapshot || [];
-                logger.info(state, LogCategory.ACTION, `Undo: Untapped ${savedActionData.tappedLandIds.length} lands and restored mana pool.`);
             } else if (player && savedActionData.producedMana) {
                 const pm = savedActionData.producedMana as Record<string, number>;
                 Object.entries(pm).forEach(([color, amount]) => {

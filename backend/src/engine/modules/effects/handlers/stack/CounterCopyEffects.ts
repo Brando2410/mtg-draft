@@ -38,6 +38,7 @@ export const CopySpellHandler: IEffectHandler = {
         const copyEffect = effect as CopyEffect;
 
         targets.forEach((tid: string) => {
+            logger.debug(state, LogCategory.ACTION, `[COPY-DEBUG] Attempting to copy target ID: ${tid}`);
             let stackObj = state.stack.find((s: StackObject) => s.id === tid || s.sourceId === tid);
 
             // LKI: If spell is gone, use LKI
@@ -47,7 +48,10 @@ export const CopySpellHandler: IEffectHandler = {
                 if (stackObj) logger.info(state, LogCategory.ACTION, `[COPY] Original spell ${tid} not found on stack, using Last Known Information.`);
             }
 
-            if (!stackObj) return;
+            if (!stackObj) {
+                logger.warn(state, LogCategory.ACTION, `[COPY-DEBUG] FAILED: Could not find stack object for target ${tid}. Stack size: ${state.stack.length}`);
+                return;
+            }
 
             const definition = stackObj.definition || stackObj.sourceObject?.definition;
             const cannotCopy = stackObj.cannotBeCopied || definition?.cannotBeCopied;
@@ -161,7 +165,8 @@ export const CopySpellHandler: IEffectHandler = {
                                 declaredTargets: [], // Force empty for UI
                                 optional: true,
                                 _backupTargets: backupTargets, // Use internal field
-                                stackObj: copy
+                                stackObj: copy,
+                                parentContext: context
                             }
                         };
                     }
@@ -217,7 +222,9 @@ export const CopyAbilityHandler: IEffectHandler = {
                                 targets: legalTargetIds,
                                 selectedTargets: [],
                                 optional: true,
-                                originalTargets: [...copy.targets]
+                                originalTargets: [...copy.targets],
+                                stackObj: copy,
+                                parentContext: context
                             }
                         };
                     }

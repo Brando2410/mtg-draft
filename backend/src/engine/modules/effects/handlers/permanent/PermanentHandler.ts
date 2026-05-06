@@ -289,12 +289,11 @@ export class PermanentHandler {
 
                 // Manage starting counters (e.g. Fractal tokens)
                 if (tokenEff.startingCounters) {
-                    const { type, countersType, amount: cAmount } = tokenEff.startingCounters;
-                    const finalType = type || countersType;
+                    const { counterType, amount: cAmount } = tokenEff.startingCounters;
                     const resolvedAmount = EP.resolveAmount(state, cAmount, context, [pid]);
 
-                    if (resolvedAmount > 0 && finalType) {
-                        const counterKey = ((finalType.toLowerCase() === 'p1p1' || finalType === '+1/+1') ? '+1/+1' : finalType) as CounterType;
+                    if (resolvedAmount > 0 && counterType) {
+                        const counterKey = ((counterType.toLowerCase() === 'p1p1' || counterType === '+1/+1') ? '+1/+1' : counterType) as CounterType;
                         token.counters[counterKey] = (token.counters[counterKey] || 0) + resolvedAmount;
                         logger.info(state, LogCategory.ACTION, `[TOKEN] ${token.definition.name} enters with ${resolvedAmount} ${counterKey} counters.`);
                     }

@@ -17,7 +17,7 @@ export const WiltintheHeat: CardDefinition = {
             type: AbilityType.Spell,
             costReduction: {
                 type: EffectType.CostReduction,
-                manaReduction: '{2}',
+                reductionAmount: '{2}',
                 condition: ConditionType.CardsLeftYourGraveyardThisTurn
             },
             targetDefinitions: [{

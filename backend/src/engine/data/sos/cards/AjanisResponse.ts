@@ -17,7 +17,7 @@ export const AjanisResponse: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CostReduction,
-                    amount: 3,
+                    reductionAmount: 3,
                     targetMapping: TargetMapping.Self,
                     condition: ConditionType.TargetsTappedCreature
                 }

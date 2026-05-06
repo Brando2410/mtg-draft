@@ -22,7 +22,7 @@ export const RowanScholarofSparks: CardDefinition = {
             abilities: [
                 {
                     type: AbilityType.Static,
-                    effects: [{ type: EffectType.CostReduction, amount: '{1}', restrictions: [Restriction.InstantOrSorcery] }]
+                    effects: [{ type: EffectType.CostReduction, reductionAmount: '{1}', restrictions: [Restriction.InstantOrSorcery] }]
                 },
                 {
                     type: AbilityType.Activated,
@@ -78,7 +78,7 @@ export const RowanScholarofSparks: CardDefinition = {
             abilities: [
                 {
                     type: AbilityType.Static,
-                    effects: [{ type: EffectType.CostReduction, amount: '{1}', restrictions: [Restriction.InstantOrSorcery] }]
+                    effects: [{ type: EffectType.CostReduction, reductionAmount: '{1}', restrictions: [Restriction.InstantOrSorcery] }]
                 },
                 {
                     type: AbilityType.Activated,

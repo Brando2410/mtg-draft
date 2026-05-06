@@ -107,6 +107,10 @@ Object.entries(typeToMask).forEach(([type, bit]) => {
                 // Fallback for tests/uninitialized objects
                 return RuleUtils.isType(targetObj, type);
             }
+            if (isStackObject(targetObj)) {
+                // Allows targeting spells on the stack by their card type (e.g. Creature Spell)
+                return RuleUtils.isType(targetObj, type);
+            }
             return false;
         }
     };
@@ -122,6 +126,10 @@ Object.entries(typeToMask).forEach(([type, bit]) => {
                     return (targetObj.typeMask & bit) === 0;
                 }
                 // Fallback for tests/uninitialized objects
+                return !RuleUtils.isType(targetObj, type);
+            }
+            if (isStackObject(targetObj)) {
+                // Correctly handle non-matching types for spells on the stack
                 return !RuleUtils.isType(targetObj, type);
             }
             return false;

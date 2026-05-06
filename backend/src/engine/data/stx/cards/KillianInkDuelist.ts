@@ -19,7 +19,7 @@ export const KillianInkDuelist: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CostReduction,
-                    amount: '{2}',
+                    reductionAmount: '{2}',
                     condition: 'TARGETS_PERMANENT'
                 }
             ]

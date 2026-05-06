@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DynamicAmount, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, CounterType, DynamicAmount, EffectType, Restriction, TargetMapping, Zone } from '@shared/engine_types';
 
 export const KasminaEnigmaSage: CardDefinition = {
     name: "Kasmina, Enigma Sage",
@@ -19,13 +19,13 @@ export const KasminaEnigmaSage: CardDefinition = {
                 targetMapping: TargetMapping.OtherPlaneswalkersYouControl,
                 abilitiesToAdd: [
                     {
-                        id: 'kasmina_granted_1',
+                        id: '+2: Scry 1.',
                         type: AbilityType.Activated,
                         costs: [{ type: CostType.Loyalty, value: '+2' }],
                         effects: [{ type: EffectType.Scry, amount: 1 }]
                     },
                     {
-                        id: 'kasmina_granted_2',
+                        id: '-X: Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it.',
                         type: AbilityType.Activated,
                         costs: [{ type: CostType.Loyalty, value: '-X' }],
                         effects: [{
@@ -39,11 +39,11 @@ export const KasminaEnigmaSage: CardDefinition = {
                                 types: ['Creature'],
                                 subtypes: ['Fractal']
                             },
-                            startingCounters: { type: 'P1P1', amount: DynamicAmount.X }
+                            startingCounters: { counterType: CounterType.P1P1, amount: DynamicAmount.X }
                         }]
                     },
                     {
-                        id: 'kasmina_granted_3',
+                        id: '-8: Search your library for an instant or sorcery card that shares a color with this planeswalker, exile that card, then shuffle. You may cast that card without paying its mana cost.',
                         type: AbilityType.Activated,
                         costs: [{ type: CostType.Loyalty, value: '-8' }],
                         effects: [{
@@ -67,7 +67,8 @@ export const KasminaEnigmaSage: CardDefinition = {
             effects: [{
                 type: EffectType.CreateToken,
                 tokenBlueprint: { name: 'Fractal', power: "0", toughness: "0", colors: ['G', 'U'], types: ['Creature'], subtypes: ['Fractal'] },
-                startingCounters: { type: 'P1P1', amount: DynamicAmount.X }
+                startingCounters: { counterType: CounterType.P1P1, amount: DynamicAmount.X }
+
             }]
         },
         {

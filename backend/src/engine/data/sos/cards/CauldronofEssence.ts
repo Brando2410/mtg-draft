@@ -1,12 +1,4 @@
 import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
-
-/**
- * Cauldron of Essence
- * {1}{B}{G}
- * Artifact
- * Whenever a creature you control dies, each opponent loses 1 life and you gain 1 life.
- * {1}{B}{G}, {T}, Sacrifice a creature: Return target creature card from your graveyard to the battlefield. Activate only as a sorcery.
- */
 export const CauldronofEssence: CardDefinition = {
     name: "Cauldron of Essence",
     manaCost: "{1}{B}{G}",
@@ -37,7 +29,7 @@ export const CauldronofEssence: CardDefinition = {
             targetDefinitions: [{
                 type: TargetType.CardInGraveyard,
                 count: 1,
-                restrictions: [Restriction.Creature, Restriction.YouControl]
+                restrictions: [Restriction.Creature, Restriction.YouOwn]
             }],
             effects: [
                 {

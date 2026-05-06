@@ -724,7 +724,8 @@ export class SpellProcessor {
                 castFromZone: lastZone,
                 summary: cardToPlay.xValue !== undefined && ((cardToPlay.definition.manaCost || "").includes("{X}") || cardToPlay.xValue > 0) ? `X = ${cardToPlay.xValue}` : undefined,
                 choices: cardToPlay.xValue !== undefined && ((cardToPlay.definition.manaCost || "").includes("{X}") || cardToPlay.xValue > 0) ? [{ label: "X", value: cardToPlay.xValue }] : []
-            }
+            },
+            zone: Zone.Stack
         };
 
         state.stack.push(stackObj);
@@ -821,7 +822,8 @@ export class SpellProcessor {
                 effects: (ability.type === AbilityType.Activated || ability.type === AbilityType.Triggered) ? ability.effects : [],
                 targetDefinitions: (ability.type === AbilityType.Activated || ability.type === AbilityType.Triggered) ? ability.targetDefinitions : undefined,
                 choices: (xValue !== undefined ? xValue : obj.xValue) !== undefined && (JSON.stringify(ability).includes('"X"') || (xValue || obj.xValue || 0) > 0) ? [{ label: "X", value: xValue !== undefined ? xValue : obj.xValue }] : []
-            }
+            },
+            zone: Zone.Stack
         };
 
         // Mana Payment

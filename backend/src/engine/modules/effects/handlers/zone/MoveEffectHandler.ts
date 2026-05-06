@@ -58,7 +58,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         ? stackObject?.targets || []
         : targetIds;
 
-    let selectionType = (effect as any).selectionType;
+    let selectionType = effect.selectionType;
     if (!selectionType) {
       if (effect.type === EffectType.SearchLibrary) selectionType = SelectionType.Search;
       else selectionType = (effect.targetMapping === TargetMapping.AllMatchingCards ? SelectionType.ALL : SelectionType.Target);
@@ -90,7 +90,6 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     if (effect.type === EffectType.RevealUntilCondition) return this.resolveRevealUntilCondition(state, effectiveEffect, context);
     if (effect.type === EffectType.ExchangeHandAndGraveyard) return this.resolveExchangeHandAndGraveyard(state, effectiveEffect, targets, affectedPlayerId);
 
-    if (effect.type === EffectType.PutRemainderOnBottomRandom && finalTargetIds.length > 1) ActionProcessor.shuffle(finalTargetIds);
 
     const fromTopResolved = processors.effect.resolveAmount(state, effect.fromTop || 0, context, finalTargetIds);
 
@@ -375,8 +374,8 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     const remaining = revealed.filter((c) => c !== targetCard);
     if (remaining.length > 0) {
       const remainderZone = effect.remainderZone || Zone.Library;
-      const remainderPos = effect.remainderPosition || "bottom";
-      const shuffle = effect.shuffleRemainder;
+      const shuffle = effect.shuffleRemainder || effect.remainderPosition === 'random';
+      const remainderPos = effect.remainderPosition === 'random' ? 'bottom' : (effect.remainderPosition || "bottom");
 
       if (shuffle) {
         ActionProcessor.shuffle(remaining);
@@ -544,7 +543,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         // Handle starting counters (Rule 614.1c replacement-style entry)
         if (moveEff.startingCounters && zone === Zone.Battlefield) {
           const sc = moveEff.startingCounters;
-          const cType = sc.type || sc.counterType || sc.countersType || "p1p1";
+          const cType = sc.counterType || "p1p1";
           const finalType =
             cType.toLowerCase() === "p1p1" || cType === "+1/+1"
               ? "+1/+1"

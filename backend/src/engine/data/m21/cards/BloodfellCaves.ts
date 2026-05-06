@@ -16,6 +16,7 @@ export const BloodfellCaves: CardDefinition = {
             effects: [{ type: EffectType.GainLife, amount: 1, targetMapping: TargetMapping.Controller }]
         },
         {
+            id: "{T}: Add {B} or {R}",
             type: AbilityType.Activated,
             costs: [{ type: CostType.Tap }],
             isManaAbility: true,

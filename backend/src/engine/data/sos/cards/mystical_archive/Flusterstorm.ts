@@ -24,7 +24,7 @@ export const Flusterstorm: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CounterSpell,
-                    tax: "{1}"
+                    taxAmount: "{1}"
                 }
             ]
           }*/

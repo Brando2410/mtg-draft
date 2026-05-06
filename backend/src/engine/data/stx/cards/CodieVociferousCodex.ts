@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, TriggerEvent, Zone } from '@shared/engine_types';
 
 export const CodieVociferousCodex: CardDefinition = {
     name: "Codie, Vociferous Codex",
@@ -26,6 +26,7 @@ export const CodieVociferousCodex: CardDefinition = {
         },
         {
             type: AbilityType.Activated,
+            id: "{4}, {T}: Add {W}{U}{B}{R}{G}. When you cast your next spell this turn, exile cards from the top of your library until you exile an instant or sorcery card with mana value less than that spell's mana value. You may cast it without paying its mana cost. Put the rest on the bottom of your library in a random order.",
             costs: [
                 { type: CostType.Mana, value: "{4}" },
                 { type: CostType.Tap }
@@ -42,21 +43,31 @@ export const CodieVociferousCodex: CardDefinition = {
                     condition: ConditionType.NextSpellThisTurn,
                     effects: [
                         {
-                            type: EffectType.ExileUntilManaValue,
+                            type: EffectType.RevealUntilCondition,
                             restrictions: [Restriction.InstantOrSorcery, Restriction.ManaValueLessThanSource],
-                            targetMapping: TargetMapping.Controller,
-                            effects: [
-                                {
-                                    type: EffectType.AllowCastWithoutPaying,
-                                    targetMapping: TargetMapping.SelectedCard
-                                }
-                            ],
-                            onFailureEffects: [
-                                {
-                                    type: EffectType.PutRemainderOnBottomRandom,
-                                    targetMapping: TargetMapping.Controller
-                                }
-                            ]
+                            remainderZone: Zone.Library,
+                            remainderPosition: 'bottom',
+                            shuffleRemainder: true,
+                            next: {
+                                type: EffectType.Choice,
+                                label: "Cast revealed card?",
+                                choices: [
+                                    {
+                                        label: "Yes",
+                                        value: "yes",
+                                        effects: [{
+                                            type: EffectType.CastSpell,
+                                            targetMapping: TargetMapping.Target1,
+                                            isFreeCast: true
+                                        }]
+                                    },
+                                    {
+                                        label: "No",
+                                        value: "no",
+                                        effects: []
+                                    }
+                                ]
+                            }
                         }
                     ]
                 }

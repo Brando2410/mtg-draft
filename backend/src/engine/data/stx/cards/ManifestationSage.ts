@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, EffectType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CounterType, EffectType, TriggerEvent } from '@shared/engine_types';
 
 export const ManifestationSage: CardDefinition = {
     name: 'Manifestation Sage',
@@ -14,7 +14,7 @@ export const ManifestationSage: CardDefinition = {
     abilities: [
         {
             type: AbilityType.Triggered,
-                    eventMatch: TriggerEvent.EnterBattlefield,
+            eventMatch: TriggerEvent.EnterBattlefield,
             effects: [{
                 type: EffectType.CreateToken,
                 tokenBlueprint: {
@@ -26,10 +26,11 @@ export const ManifestationSage: CardDefinition = {
                     subtypes: ['Fractal']
                 },
                 amount: 1,
-                startingCounters: { type: 'P1P1', amount: 'CARDS_IN_HAND_COUNT' }
+                startingCounters: { counterType: CounterType.P1P1, amount: 'CARDS_IN_HAND_COUNT' }
+
             }]
         }
     ]
-  };
+};
 
 

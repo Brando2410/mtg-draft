@@ -71,7 +71,10 @@ export class TargetingProcessor {
         targetId: string,
         engine: EngineContext
     ): boolean {
-        if (state.pendingAction?.type !== 'TARGETING' || state.pendingAction.playerId !== playerId || !state.pendingAction.data) return false;
+        const { logger } = getProcessors(state);
+        if (state.pendingAction?.type !== ActionType.Targeting || state.pendingAction.playerId !== playerId || !state.pendingAction.data) {
+            return false;
+        }
 
         const action = state.pendingAction;
         const actionData = action.data!;
@@ -101,7 +104,6 @@ export class TargetingProcessor {
         };
         updatePrompt();
 
-        const { logger } = getProcessors(state);
         if (isUndoing) {
             if (actionData.selectedTargets.length > 0) {
                 const removed = actionData.selectedTargets.pop();
@@ -272,14 +274,18 @@ export class TargetingProcessor {
         }
 
         const validTargets = actionData.targets || [];
-        if (actionData.isCopyTargeting || action.sourceId?.includes('copy')) {
-            console.log(`[TARGETING-DEBUG] User clicked ${targetId}. Valid targets count: ${validTargets.length}. Included? ${validTargets.includes(targetId)}`);
-            if (validTargets.length < 10) console.log(`[TARGETING-DEBUG] Valid IDs:`, JSON.stringify(validTargets));
-        }
+        logger.info(state, LogCategory.ACTION, `[TARGET-DEBUG] Player ${playerId} selecting target ${targetId}. Valid targets: ${JSON.stringify(validTargets)}`);
 
         if (!validTargets.includes(targetId)) {
-            logger.info(state, LogCategory.ACTION, `Invalid target selected.`);
-            return false;
+            // CR 115.1: If the user clicked the card representing the spell, resolve it to the spell's stack ID
+            const stackAlias = state.stack.find(s => s.sourceObject?.id === targetId && validTargets.includes(s.id))?.id;
+            if (stackAlias) {
+                logger.info(state, LogCategory.ACTION, `[TARGET-ALIAS] Mapping card ID ${targetId} to stack ID ${stackAlias}`);
+                targetId = stackAlias;
+            } else {
+                logger.info(state, LogCategory.ACTION, `Invalid target selected: ${targetId}. Valid targets are: ${validTargets.join(', ')}`);
+                return false;
+            }
         }
 
         // Duplicate check (Rule 115.3: Allow same target if chosen for DIFFERENT instances of the word 'target')
@@ -320,8 +326,6 @@ export class TargetingProcessor {
 
         actionData.selectedTargets = [...actionData.selectedTargets, targetId];
         updatePrompt();
-        logger.info(state, LogCategory.ACTION, `Target ${actionData.selectedTargets.length}/${maxCount} selected: ${targetId}`);
-
         // Update legal targets for the next index if there are more targets to select
         if (actionData.selectedTargets.length < maxCount) {
             const nextIndex = actionData.selectedTargets.length;
@@ -336,8 +340,8 @@ export class TargetingProcessor {
                 ...state.stack.map((o: any) => o.id),
                 ...(Object.values(state.players) as any[]).flatMap(p => p.graveyard.map((c: any) => c.id))
             ];
-            
-            const legalTargets = pool.filter(tid => this.isLegalTarget(state, {
+
+            actionData.targets = pool.filter(tid => this.isLegalTarget(state, {
                 sourceId: action.sourceId || "",
                 controllerId: playerId,
                 stackObject: actionData.stackObj,
@@ -349,8 +353,8 @@ export class TargetingProcessor {
             // ENHANCEMENT: Consecutive Zone Shift
             // If the current target is off-battlefield, group all consecutive off-battlefield targets into one modal.
             const isOffBattlefield = currentDef?.type === TargetType.CardInGraveyard || currentDef?.type === TargetType.CardInExile;
-            
-            if (isOffBattlefield && legalTargets.length > 0) {
+
+            if (isOffBattlefield && actionData.targets.length > 0) {
                 // Calculate how many consecutive targets from this point share an off-battlefield zone
                 let consecutiveCount = 0;
                 let consecutiveMin = 0;
@@ -366,7 +370,7 @@ export class TargetingProcessor {
                     }
                 }
 
-                const choices = legalTargets.map(tid => {
+                const choices = actionData.targets.map((tid: string) => {
                     const obj = RuleUtils.findObject(state, tid);
                     const label = RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : tid);
                     return {
@@ -377,22 +381,18 @@ export class TargetingProcessor {
                     };
                 });
 
-                logger.info(state, LogCategory.ACTION, `[ZONE-SHIFT] Target ${nextIndex + 1} shifted to Modal. Grouping ${consecutiveCount} consecutive ${currentDef?.type} targets. (Min: ${consecutiveMin})`);
-                
                 state.pendingAction.type = ActionType.ModalSelection;
                 actionData.isTargetingModal = true;
                 actionData.choices = choices;
-                
+
                 // The modal only handles THIS block of targets
                 actionData.minChoices = Math.max(1, consecutiveMin);
                 actionData.maxChoices = consecutiveCount;
-                
+
                 // Ensure we keep existing targets for ChoiceProcessor to append to
                 actionData.declaredTargets = actionData.selectedTargets;
                 return true;
             }
-
-            actionData.targets = legalTargets;
         }
 
         return true;

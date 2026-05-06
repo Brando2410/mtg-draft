@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
-    export const PigmentWranglerStrikingPalette: CardDefinition = {
+export const PigmentWranglerStrikingPalette: CardDefinition = {
     name: "Pigment Wrangler // Striking Palette",
     manaCost: "{4}{R}",
     scryfall_id: "c2faf4cf-c4b6-4721-ac06-0e045dd9704a",
@@ -12,7 +12,6 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
     oracleText: "Flying\nThis creature enters prepared.",
     power: "4",
     toughness: "4",
-
     entersPrepared: true,
     preparedFace: {
         name: "Striking Palette",
@@ -29,6 +28,7 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
                         type: EffectType.CreateDelayedTrigger,
                         eventMatch: TriggerEvent.CastInstantOrSorcery,
                         duration: { type: DurationType.UntilEndOfTurn },
+                        oneShot: true,
                         effects: [
                             {
                                 type: EffectType.CopySpellOnStack,
@@ -42,4 +42,4 @@ import { AbilityType, CardDefinition, DurationType, EffectType, TargetMapping, T
         ]
     }
 };
-    
+

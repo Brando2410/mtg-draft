@@ -129,6 +129,9 @@ export class ContinuousEffectHandler {
                 exileOnMoveToGraveyard: ceDef.exileOnMoveToGraveyard,
                 playerModifier: ceDef.playerModifier,
                 targetControllerId: targetCID,
+                multiplier: ceDef.multiplier !== undefined ? EffectProcessor.resolveAmount(state, ceDef.multiplier, context) : undefined,
+                reductionAmount: ceDef.reductionAmount !== undefined ? EffectProcessor.resolveAmount(state, ceDef.reductionAmount, context) : undefined,
+                taxAmount: ceDef.taxAmount !== undefined ? EffectProcessor.resolveAmount(state, ceDef.taxAmount, context) : undefined,
                 restrictions: ceDef.restrictionsToAdd ? ceDef.restrictionsToAdd.map((r: any) => ({
                     id: `rest_${effId}`,
                     sourceId,

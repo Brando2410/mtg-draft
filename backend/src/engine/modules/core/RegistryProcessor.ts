@@ -65,7 +65,7 @@ export class RegistryProcessor {
     public static unregisterAbilities(state: GameState, cardId: string) {
         state._triggerCache = undefined; // Invalidate trigger cache
         state._statsCache = undefined;   // Invalidate stats cache
-        state.ruleRegistry.triggeredAbilities = state.ruleRegistry.triggeredAbilities.filter(t => t.sourceId !== cardId);
+        state.ruleRegistry.triggeredAbilities = state.ruleRegistry.triggeredAbilities.filter(t => t.sourceId !== cardId || t.isDelayed);
         state.ruleRegistry.activatedAbilities = state.ruleRegistry.activatedAbilities.filter(a => a.sourceId !== cardId);
         state.ruleRegistry.continuousEffects = state.ruleRegistry.continuousEffects.filter(c => {
             if (c.sourceId !== cardId) return true;
@@ -105,7 +105,6 @@ export class RegistryProcessor {
             isGlobal: ability.isGlobal,
             isDelayed: ability.isDelayed,
             oneShot: ability.oneShot,
-            firesOnce: ability.firesOnce,
             payload: {
                 ...(ability.payload || {})
             }
@@ -181,7 +180,6 @@ export class RegistryProcessor {
                     taxAmount: eff.taxAmount,
                     reductionAmount: eff.reductionAmount,
                     exileOnMoveToGraveyard: eff.exileOnMoveToGraveyard,
-                    // Missing properties fixed below
                     abilitiesToAdd: eff.abilitiesToAdd,
                     abilitiesToRemove: eff.abilitiesToRemove,
                     removeAllAbilities: eff.removeAllAbilities,

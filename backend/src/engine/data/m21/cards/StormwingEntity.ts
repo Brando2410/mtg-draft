@@ -20,7 +20,7 @@ export const StormwingEntity: CardDefinition = {
                 {
                     type: EffectType.CostReduction,
                     targetMapping: TargetMapping.Self,
-                    manaReduction: '{1}{U}',
+                    reductionAmount: '{1}{U}',
                     condition: ConditionType.CastInstantSorceryThisTurn
                 }
             ]

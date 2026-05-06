@@ -17,7 +17,7 @@ export const TheDawningArchaic: CardDefinition = {
             effects: [
                 {
                     type: EffectType.CostReduction,
-                    amount: DynamicAmount.InstantSorceryInGraveyardCount,
+                    reductionAmount: DynamicAmount.InstantSorceryInGraveyardCount,
                     targetMapping: TargetMapping.Self
                 }
             ]
