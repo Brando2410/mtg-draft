@@ -301,7 +301,7 @@ export class ChoiceEffectHandler {
           onSelected: (c: GameObject) =>
             (effect.effects || []).map((sub) => ({
               ...sub,
-              targetId: c.id,
+              targetIds: [c.id],
             })),
           hideUndo: true,
           isSpellCasting: !!effect.isSpellCasting,

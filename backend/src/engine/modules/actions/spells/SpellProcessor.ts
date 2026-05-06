@@ -677,6 +677,7 @@ export class SpellProcessor {
                 preSelectedChoice,
                 targetsControllers,
                 declaredXValue: cardToPlay.xValue,
+                castFromZone: lastZone,
                 summary: cardToPlay.xValue !== undefined && ((cardToPlay.definition.manaCost || "").includes("{X}") || cardToPlay.xValue > 0) ? `X = ${cardToPlay.xValue}` : undefined,
                 choices: cardToPlay.xValue !== undefined && ((cardToPlay.definition.manaCost || "").includes("{X}") || cardToPlay.xValue > 0) ? [{ label: "X", value: cardToPlay.xValue }] : []
             }

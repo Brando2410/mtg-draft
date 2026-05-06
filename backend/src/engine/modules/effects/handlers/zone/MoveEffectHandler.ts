@@ -42,11 +42,15 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     const affectedPlayerId = (targets.find(tid => state.players[tid as PlayerId]) as PlayerId) || controllerId;
 
 
-    const targetIds = (effect.targetIds && effect.targetIds.length > 0)
-      ? effect.targetIds
-      : targets.length > 0
-        ? targets
-        : [];
+    const targetMapping = effect.targetMapping || ((effect.targetDefinitions || effect.targetIds) ? undefined : TargetMapping.TargetAll);
+    const processors = getProcessors(state);
+    
+    let targetIds: string[] = effect.targetIds || [];
+    if (targetMapping) {
+      targetIds = processors.targeting.resolveTargetMapping(state, targetMapping, context, effect);
+    } else if (targetIds.length === 0 && targets.length > 0 && !parentContext) {
+      targetIds = targets;
+    }
 
     // Fallback to stack targets ONLY if this is a top-level effect resolution and no targets were provided
     const finalTargetIds =
@@ -54,52 +58,57 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         ? stackObject?.targets || []
         : targetIds;
 
-    const selectionType = (effect as any).selectionType ||
-      (effect.targetMapping === TargetMapping.AllMatchingCards ? "All" : "Target");
+    let selectionType = (effect as any).selectionType;
+    if (!selectionType) {
+      if (effect.type === EffectType.SearchLibrary) selectionType = SelectionType.Search;
+      else selectionType = (effect.targetMapping === TargetMapping.AllMatchingCards ? SelectionType.ALL : SelectionType.Target);
+    }
 
     // Rule: Resolve default zone for specific movement keywords
-    if (!effect.zone) {
+    let targetZone = effect.zone;
+    if (!targetZone) {
       if (effect.type === EffectType.Exile || effect.type === EffectType.ExileTopCard || effect.type === EffectType.ExileAllCards) {
-        effect.zone = Zone.Exile;
+        targetZone = Zone.Exile;
       } else if (effect.type === EffectType.DrawCards || effect.type === EffectType.ReturnToHand || effect.type === EffectType.MoveToZone) {
-        effect.zone = Zone.Hand;
+        targetZone = Zone.Hand;
       } else if (effect.type === EffectType.DiscardCards || effect.type === EffectType.Mill || effect.type === EffectType.PutInGraveyard) {
-        effect.zone = Zone.Graveyard;
+        targetZone = Zone.Graveyard;
       } else if (effect.type === EffectType.PutOnBattlefield) {
-        effect.zone = Zone.Battlefield;
+        targetZone = Zone.Battlefield;
       }
     }
 
     logger.info(state, LogCategory.ACTION,
-      `[MOVE-ZONE] Type: ${effect.type}, Selection: ${selectionType}, Zone: ${effect.zone}`,
+      `[MOVE-ZONE] Type: ${effect.type}, Selection: ${selectionType}, Zone: ${targetZone}`,
     );
 
+    const effectiveEffect = { ...effect, zone: targetZone };
+
     // Map legacy effect types to selection modes if needed
-    if (effect.type === EffectType.DrawCards) return DrawCardsHandler.handle(state, effect as DrawEffect, context);
-    if (effect.type === EffectType.LookAtTopAndPick) return this.resolveLookAtTopAndPick(state, effect, context, finalTargetIds);
-    if (effect.type === EffectType.RevealUntilCondition) return this.resolveRevealUntilCondition(state, effect, context);
-    if (effect.type === EffectType.ExchangeHandAndGraveyard) return this.resolveExchangeHandAndGraveyard(state, effect, targets, affectedPlayerId);
+    if (effect.type === EffectType.DrawCards) return DrawCardsHandler.handle(state, effectiveEffect as DrawEffect, context);
+    if (effect.type === EffectType.LookAtTopAndPick) return this.resolveLookAtTopAndPick(state, effectiveEffect, context, finalTargetIds);
+    if (effect.type === EffectType.RevealUntilCondition) return this.resolveRevealUntilCondition(state, effectiveEffect, context);
+    if (effect.type === EffectType.ExchangeHandAndGraveyard) return this.resolveExchangeHandAndGraveyard(state, effectiveEffect, targets, affectedPlayerId);
 
     if (effect.type === EffectType.PutRemainderOnBottomRandom && finalTargetIds.length > 1) ActionProcessor.shuffle(finalTargetIds);
 
-    const processors = getProcessors(state);
     const fromTopResolved = processors.effect.resolveAmount(state, effect.fromTop || 0, context, finalTargetIds);
 
     if (fromTopResolved > 0 && (effect.sourceZones || []).includes(Zone.Library)) {
       const affectedPlayerId = (finalTargetIds.find((tid: string) => state.players[tid as PlayerId]) as PlayerId) || controllerId;
-      return this.resolveLibraryTopMoves(state, { ...effect, fromTop: fromTopResolved }, affectedPlayerId, context);
+      return this.resolveLibraryTopMoves(state, { ...effectiveEffect, fromTop: fromTopResolved }, affectedPlayerId, context);
     }
 
-    if (selectionType === SelectionType.Target && finalTargetIds.length > 0) return this.resolveMoveTargets(state, effect, finalTargetIds, context);
-    if (selectionType === SelectionType.Search && (effect.sourceZones || []).includes(Zone.Library)) return SearchEffectHandler.handle(state, effect as unknown as SearchEffect, context);
-    if (selectionType === SelectionType.ALL) return this.resolveMassMove(state, effect, finalTargetIds, context);
-    if (effect.type === EffectType.ExileUntilManaValue) return this.resolveExileUntilManaValue(state, effect, affectedPlayerId, context);
+    if (selectionType === SelectionType.Target && finalTargetIds.length > 0) return this.resolveMoveTargets(state, effectiveEffect, finalTargetIds, context);
+    if (selectionType === SelectionType.Search && (effect.sourceZones || []).includes(Zone.Library)) return SearchEffectHandler.handle(state, effectiveEffect as unknown as SearchEffect, context);
+    if (selectionType === SelectionType.ALL) return this.resolveMassMove(state, effectiveEffect, finalTargetIds, context);
+    if (effect.type === EffectType.ExileUntilManaValue) return this.resolveExileUntilManaValue(state, effectiveEffect, affectedPlayerId, context);
 
     if (effect.targetDefinitions && finalTargetIds.length === 0 && !effect.targetMapping) {
-      return this.resolveInteractiveMovementSelection(state, effect, affectedPlayerId, context);
+      return this.resolveInteractiveMovementSelection(state, effectiveEffect, affectedPlayerId, context);
     }
 
-    return this.resolveSingleTargetMove(state, effect, finalTargetIds, context);
+    return this.resolveSingleTargetMove(state, effectiveEffect, finalTargetIds, context);
   }
 
   private resolveInteractiveMovementSelection(
@@ -210,7 +219,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         const zone = moveEff.zone || Zone.Hand;
         subEffects.push({
           type: EffectType.MoveToZone,
-          targetId: c.id,
+          targetIds: [c.id],
           targetPlayerId: controllerId,
           zone: zone,
           tapped: moveEff.tapped,
@@ -697,11 +706,11 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       // we must ensure we have one in the context so ChoiceProcessor/EffectProcessor can pick it up.
       if (!context.effects) {
         context.effects = [effect];
-        context.nextEffectIndex = 0;
+        context.currentIndex = 0;
       }
 
       context.effects.splice(
-        (context.nextEffectIndex || 0) + 1,
+        (context.currentIndex ?? context.nextEffectIndex ?? 0) + 1,
         0,
         remainderMove as EffectDefinition,
       );

@@ -16,7 +16,6 @@ export class PersistenceService {
     ];
     const found = possiblePaths.find(p => existsSync(p));
     const finalPath = found || path.resolve(process.cwd(), 'data');
-    console.log(`[PERSISTENCE] Data root resolved to: ${finalPath} (Found: ${!!found})`);
     return finalPath;
   })();
 
@@ -30,13 +29,13 @@ export class PersistenceService {
     if (!existsSync(this.CUBES_DIR)) mkdirSync(this.CUBES_DIR, { recursive: true });
     if (!existsSync(this.DECKS_DIR)) mkdirSync(this.DECKS_DIR, { recursive: true });
     if (!existsSync(this.LOGS_DIR)) mkdirSync(this.LOGS_DIR, { recursive: true });
-    
+
     // Create empty perf log if it doesn't exist
     if (!existsSync(this.PERF_LOG_FILE)) {
       writeFileSync(this.PERF_LOG_FILE, '', 'utf8');
     }
     LoggerService.setPerfLogPath(this.PERF_LOG_FILE);
-    
+
     const cubeCount = existsSync(this.CUBES_DIR) ? readdirSync(this.CUBES_DIR).length : 0;
     const deckCount = existsSync(this.DECKS_DIR) ? readdirSync(this.DECKS_DIR).length : 0;
     console.log(`[PERSISTENCE] Initialized: ${cubeCount} cubes, ${deckCount} decks found in ${PersistenceService.DATA_ROOT}`);
@@ -156,7 +155,7 @@ export class PersistenceService {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const fileName = `draft_${room.id}_${timestamp}.json`;
       const filePath = path.join(this.LOGS_DIR, fileName);
-      
+
       const logData = {
         roomId: room.id,
         timestamp: new Date().toISOString(),
@@ -170,7 +169,7 @@ export class PersistenceService {
           pool: p.pool.map(c => ({ name: c.name, scryfall_id: c.scryfall_id, cmc: c.cmc, color: c.card_colors || c.color }))
         }))
       };
-      
+
       await fs.writeFile(filePath, JSON.stringify(logData, null, 2), 'utf8');
       LoggerService.info('PERSISTENCE', `Draft result logged: ${fileName}`, { roomId: room.id, fileName });
     } catch (e: any) {

@@ -252,6 +252,19 @@ export interface ActivatedAbility {
     oracleText?: string;
 }
 
+/**
+ * TriggerPayload - Standardized contract for metadata carried by triggered abilities.
+ * Eliminates ambiguous 'data' and 'payload' conflicts.
+ */
+export interface TriggerPayload {
+    /** Fallback definition for virtual triggers (Emblems, Delayed Triggers) */
+    definition?: any; 
+    /** Additional metadata for specific trigger logic (e.g. storage for LKI or effect params) */
+    metadata?: Record<string, any>;
+    /** Catch-all for specialized card-logic properties */
+    [key: string]: any;
+}
+
 export interface TriggeredAbility {
     id: string;
     sourceId: GameObjectId;
@@ -266,8 +279,7 @@ export interface TriggeredAbility {
     effects?: EffectDefinition[];
     isGlobal?: boolean;
     type?: AbilityType;
-    payload?: any;
-    data?: any;
+    payload?: TriggerPayload;
     isDelayed?: boolean;
     oneShot?: boolean;
     firesOnce?: boolean;

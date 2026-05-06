@@ -87,7 +87,15 @@ export class SpellValidator {
                     definition: face,
                     zone: Zone.Exile,
                     isPreparedCopy: true,
-                    sourceCreatureId: preparedObj.id
+                    sourceCreatureId: preparedObj.id,
+                    effectiveStats: undefined,
+                    counters: {},
+                    isTapped: false,
+                    damageMarked: 0,
+                    summoningSickness: false,
+                    faceDown: false,
+                    abilitiesUsedThisTurn: 0,
+                    attachedTo: undefined
                 };
 
                 if (!state.dynamicCopies) state.dynamicCopies = {};

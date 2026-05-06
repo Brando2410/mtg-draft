@@ -201,6 +201,7 @@ export interface ContinuousEffect {
 export interface ResolutionContext {
     controllerId: PlayerId;
     controller?: PlayerState;
+    currentIndex?: number;
     effects: EffectDefinition[];
     eventAmount?: number;
     event?: GameEvent;

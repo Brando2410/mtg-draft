@@ -5,12 +5,8 @@ export const AjanisResponse: CardDefinition = {
     scryfall_id: "9cd1417a-badc-4abd-a8ca-5b31f85c1072",
     rarity: "common",
     image_url: "https://cards.scryfall.io/normal/front/9/c/9cd1417a-badc-4abd-a8ca-5b31f85c1072.jpg?1776047920",
-    colors: [
-        "W"
-    ],
-    types: [
-        "Instant"
-    ],
+    colors: ["W"],
+    types: ["Instant"],
     subtypes: [],
     keywords: [],
     oracleText: "This spell costs {3} less to cast if it targets a tapped creature.\nDestroy target creature.",

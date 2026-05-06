@@ -14,7 +14,8 @@ export const TypeRestrictions: Record<string, IRestrictionHandler> = {
     "NON_BASIC": gameObjectRestriction((state, obj) => !RuleUtils.hasSupertype(obj, "basic")),
     "PERMANENT": gameObjectRestriction((state, obj) => {
         const mask = obj.typeMask || 0;
-        return (mask & PERMANENT_MASK) !== 0;
+        if (mask !== 0) return (mask & PERMANENT_MASK) !== 0;
+        return RuleUtils.isPermanent(obj);
     }),
     "SPELL": {
         matches(state, targetObj: Targetable) {

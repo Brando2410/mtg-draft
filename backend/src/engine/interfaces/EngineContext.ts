@@ -79,6 +79,8 @@ export interface EffectExecutionOptions {
     lookingCards?: GameObject[];
     lastMilledIds?: string[];
     lastDiscardedIds?: string[];
+    currentIndex?: number;
+    nextEffectIndex?: number;
 }
 
 export interface ResolveEffectsOptions {

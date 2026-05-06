@@ -106,8 +106,9 @@ export class RegistryProcessor {
             isDelayed: ability.isDelayed,
             oneShot: ability.oneShot,
             firesOnce: ability.firesOnce,
-            data: ability.data,
-            payload: ability.payload
+            payload: {
+                ...(ability.payload || {})
+            }
         });
     }
 

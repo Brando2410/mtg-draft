@@ -111,17 +111,26 @@ export class EffectProcessor {
       const effect = effects[i];
       logger.info(state, LogCategory.ACTION, `[RESOLVE-LOOP] ${i}/${effects.length}: Type=${effect.type} Source=${sourceId}`);
 
+      // CR 608.2: Advance index BEFORE execution so that any choices or sub-effects
+      // capture the correct resumption point in their parentContext.
+      if (stackObject) {
+        if (!stackObject.data) stackObject.data = {};
+        stackObject.data.nextEffectIndex = i + 1;
+      }
+
       this.executeEffect({
         state,
         effect,
         sourceId,
-        validTargetIds: targets, // Note: targets here is the initial set, executeEffect resolves mappings
+        validTargetIds: targets,
         stackObject,
         parentContext,
         controllerIdOverride,
         lookingCards,
         lastMilledIds,
         lastDiscardedIds,
+        currentIndex: i,
+        nextEffectIndex: i + 1,
       });
 
       if (state.pendingAction) {
@@ -140,16 +149,7 @@ export class EffectProcessor {
         // (e.g. CastSpell created targeting for the sub-spell), don't overwrite it.
         // Just save position on the stackObject so the parent can resume later.
         if (state.pendingAction.sourceId && state.pendingAction.sourceId !== sourceId) {
-          if (stackObject) {
-            if (!stackObject.data) stackObject.data = {};
-            stackObject.data.nextEffectIndex = i + 1;
-          }
           return false;
-        }
-
-        if (stackObject) {
-          if (!stackObject.data) stackObject.data = {};
-          stackObject.data.nextEffectIndex = i + 1;
         }
 
         state.pendingAction.data = {
@@ -241,7 +241,8 @@ export class EffectProcessor {
       event: stackObject?.data?.event,
       exiledIds: stackObject?.data?.exiledIds,
       lookingCards: (lookingCards || stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
-      nextEffectIndex: stackObject?.data?.nextEffectIndex,
+      currentIndex: options.currentIndex,
+      nextEffectIndex: options.nextEffectIndex ?? stackObject?.data?.nextEffectIndex,
       xValue: stackObject?.xValue || parentContext?.xValue,
       isCopy: (stackObject?.data as { isCopy?: boolean })?.isCopy || parentContext?.isCopy,
       lastMilledIds: lastMilledIds || stackObject?.data?.lastMilledIds || parentContext?.lastMilledIds,

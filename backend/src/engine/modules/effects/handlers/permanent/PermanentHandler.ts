@@ -85,7 +85,7 @@ export class PermanentHandler {
                 minChoices: amount,
                 maxChoices: amount,
                 actionType: ActionType.ResolutionChoice,
-                onSelected: (c: GameObject) => [{ type: 'Sacrifice', targetId: c.id }],
+                onSelected: (c: GameObject) => [{ type: 'Sacrifice', targetIds: [c.id] }],
                 stackObj: stackObject,
                 parentContext: context
             });
@@ -417,6 +417,8 @@ export class PermanentHandler {
                 ? { loyalty: typeof blueprint.loyalty === 'number' ? blueprint.loyalty : parseInt(String(blueprint.loyalty), 10) }
                 : {}
         };
+        const { layer: LayerProcessor } = getProcessors(state);
+        token.typeMask = LayerProcessor.calculateTypeMask(token.definition.types);
         token.isToken = true;
         state.turnState.lastCreatedTokenId = token.id;
         state.battlefield.push(token);

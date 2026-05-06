@@ -238,7 +238,7 @@ export class ChoiceGenerator {
             parentContext: pruneContext(parentContext),
             targets: [currentPlayerId],
             onSelected: (card: GameObject) => {
-                return [{ type: 'MoveToZone', targetId: card.id, zone: Zone.Graveyard, isDiscard: true }];
+                return [{ type: 'MoveToZone', targetIds: [card.id], zone: Zone.Graveyard, isDiscard: true }];
             }
         });
 

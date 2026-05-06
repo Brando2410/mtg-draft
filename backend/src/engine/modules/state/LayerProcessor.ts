@@ -722,6 +722,14 @@ export class LayerProcessor {
             zone: Zone.Hand,
             isVirtual: true,
             isRevealed: true,
+            isPrepared: false,
+            isPreparedCopy: true,
+            sourceCreatureId: o.id,
+            counters: {},
+            isTapped: false,
+            damageMarked: 0,
+            summoningSickness: false,
+            attachedTo: undefined,
           };
           player.virtualHand.push(virtualSpell);
         }

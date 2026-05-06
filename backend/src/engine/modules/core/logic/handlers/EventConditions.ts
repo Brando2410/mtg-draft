@@ -378,8 +378,11 @@ export const EventConditions: Record<string, IConditionHandler> = {
     },
     "NOT_CAST_FROM_HAND": {
         matches(state, params, context) {
-            const { event } = context;
-            const objId = event?.payload?.object?.id || RuleUtils.getSource(event);
+            const { event, sourceId, stackObject } = context;
+            const castFromZone = stackObject?.data?.castFromZone || event?.payload?.fromZone;
+            if (castFromZone) return castFromZone !== Zone.Hand;
+
+            const objId = event?.payload?.object?.id || RuleUtils.getSource(event) || sourceId || (event as any)?.id;
             if (!objId) return true;
             const processors = getProcessors(state);
             const fromHand = processors.lki.getLki(state, objId, Zone.Hand);
@@ -388,8 +391,11 @@ export const EventConditions: Record<string, IConditionHandler> = {
     },
     "CAST_FROM_GRAVEYARD_OR_EXILE": {
         matches(state, params, context) {
-            const { event } = context;
-            const objId = event?.payload?.object?.id || RuleUtils.getSource(event);
+            const { event, sourceId, stackObject } = context;
+            const castFromZone = stackObject?.data?.castFromZone || event?.payload?.fromZone;
+            if (castFromZone) return castFromZone === Zone.Graveyard || castFromZone === Zone.Exile;
+
+            const objId = event?.payload?.object?.id || RuleUtils.getSource(event) || sourceId || (event as any)?.id;
             if (!objId) return false;
             const processors = getProcessors(state);
             const fromGY = processors.lki.getLki(state, objId, Zone.Graveyard);
@@ -399,8 +405,11 @@ export const EventConditions: Record<string, IConditionHandler> = {
     },
     "CAST_FROM_HAND": {
         matches(state, params, context) {
-            const { event } = context;
-            const objId = event?.payload?.object?.id || RuleUtils.getSource(event);
+            const { event, sourceId, stackObject } = context;
+            const castFromZone = stackObject?.data?.castFromZone || event?.payload?.fromZone;
+            if (castFromZone) return castFromZone === Zone.Hand;
+
+            const objId = event?.payload?.object?.id || RuleUtils.getSource(event) || sourceId || (event as any)?.id;
             if (!objId) return false;
             const processors = getProcessors(state);
             const fromHand = processors.lki.getLki(state, objId, Zone.Hand);

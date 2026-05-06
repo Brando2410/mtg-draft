@@ -1,5 +1,5 @@
 import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from '@shared/engine_types';
-    export const GoblinGlasswrightCraftwithPride: CardDefinition = {
+export const GoblinGlasswrightCraftwithPride: CardDefinition = {
     name: "Goblin Glasswright",
     manaCost: "{1}{R}",
     scryfall_id: "c85c5f06-dd31-4e2c-97be-2f64d65069ea",
@@ -37,7 +37,6 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
                             abilities: [
                                 {
                                     type: AbilityType.Activated,
-                                    id: 'Treasure_Mana_Ability',
                                     costs: [
                                         { type: CostType.Tap, targetMapping: TargetMapping.Self },
                                         { type: CostType.Sacrifice, targetMapping: TargetMapping.Self }
@@ -60,4 +59,4 @@ import { AbilityType, CardDefinition, CostType, EffectType, TargetMapping } from
         ]
     }
 };
-    
+

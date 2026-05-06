@@ -254,7 +254,7 @@ export class TriggerProcessor {
       effects: effect.effects || [],
       duration: (effect.duration as import('@shared/engine_types').EffectDuration) || { type: DurationType.UntilEndOfTurn },
       condition: effect.condition,
-      data: effect.data,
+      payload: { metadata: effect.data },
       targetIds: effect.targetIds,
       isDelayed: true,
       oneShot: (effect as any).oneShot,
@@ -1056,7 +1056,7 @@ export class TriggerProcessor {
               ],
             },
           ],
-          data: { definition: card.definition },
+          payload: { definition: card.definition },
         });
         const { logger } = getProcessors(state);
         logger.info(state, LogCategory.TRIGGER,

@@ -337,6 +337,9 @@ export class ActionProcessor {
         state.turnState.cardLeftGraveyardThisTurn[pid as PlayerId] = true;
       }
       p.library = p.library.filter((c) => c.id !== cid);
+      if (p.virtualHand) {
+        p.virtualHand = p.virtualHand.filter((c) => c.id !== cid && (c as any).sourceCreatureId !== cid);
+      }
     }
     if (!state.limbo) state.limbo = [];
     state.limbo = state.limbo.filter((c) => c.id !== cid);
@@ -479,6 +482,7 @@ export class ActionProcessor {
     card.isBlocking = false;
     card.summoningSickness = false;
     card.isPhasedOut = false;
+    card.isPrepared = false;
     card.isRevealed = false; // Rule 400.7: Clear revealed status on zone change
     card.isGoaded = false;
     card.counters = {};
