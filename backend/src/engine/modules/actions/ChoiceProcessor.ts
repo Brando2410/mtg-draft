@@ -195,8 +195,8 @@ export class ChoiceProcessor {
                 state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, action.data?.label || "Discard", action.data?.stackObj, action.data?.parentContext, failureEffects);
             }
 
-            // Resume whatever was happening
-            return this.resumeResolution(state, sourceId as string, action.data?.stackObj as StackObject, action.data?.parentContext as ResolutionContext, engine);
+            // Resume whatever was happening at the current level first
+            return this.resumeResolution(state, sourceId as string, action.data?.stackObj as StackObject, action.data as any, engine);
         }
 
         // 3. Handle Scry/Surveil Reordering early as payload is not an index
@@ -727,6 +727,30 @@ export class ChoiceProcessor {
             else state.interaction.lastChoiceValue = firstSelection as string;
         }
 
+        // --- HAND ACTION SELECTION REDIRECTION ---
+        if (choice && String(choice.value) === 'PLAY_ACTION_SPELL') {
+            logger.info(state, LogCategory.ACTION, `[HAND-CHOICE] User selected: Cast Spell.`);
+            return getProcessors(state).spell.playCard(state, engine, {
+                playerId,
+                cardId: sourceId,
+                targets: savedTargets,
+                bypassPriority: true,
+                isAbilitySelectionBypassed: true // Avoid infinite loop
+            });
+        }
+
+        if (choice && String(choice.value).startsWith('PLAY_ACTION_ABILITY_')) {
+            const abilityIdx = parseInt(String(choice.value).substring(20));
+            logger.info(state, LogCategory.ACTION, `[HAND-CHOICE] User selected: Activate Ability ${abilityIdx}.`);
+            return getProcessors(state).spell.activateAbility(state, engine, {
+                playerId,
+                cardId: sourceId,
+                abilityIndex: abilityIdx,
+                targets: savedTargets,
+                bypassPriority: true
+            });
+        }
+
         logger.info(state, LogCategory.ACTION, `Selected ${costType ? costType + ' item' : 'choice'}: ${choice?.label || 'none'}`);
 
         if (action.data?.abilityIndex !== undefined) {
@@ -784,13 +808,13 @@ export class ChoiceProcessor {
             }
 
             const stackObj = action.data.stackObj as StackObject;
-            let currentCtx: ResolutionContext | undefined = action.data.parentContext;
+            let currentCtx: ResolutionContext | undefined = this.getSuspendedContext(action);
             while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex !== undefined && currentCtx.nextEffectIndex < currentCtx.effects.length) {
                 logger.info(state, LogCategory.ACTION, `[RESOLVING] Resuming parent resolution context for ${sourceId}...`);
                 const nextIdx = currentCtx.nextEffectIndex;
                 const effs = currentCtx.effects;
                 const parentTargets = currentCtx.targets || currentCtx.parentContext?.targets || [];
-                const parentCtx = currentCtx.parentContext;
+                const parentCtx: ResolutionContext | undefined = currentCtx.parentContext;
 
                 currentCtx = parentCtx;
                 const completed = getProcessors(state).effect.resolveEffects({
@@ -1036,7 +1060,7 @@ export class ChoiceProcessor {
 
         // 3. Resume/Finalize Resolution
         if (!state.pendingAction) {
-            return this.resumeResolution(state, sourceId, stackObj, action.data?.parentContext, engine);
+            return this.resumeResolution(state, sourceId, stackObj, this.getSuspendedContext(action), engine);
         }
 
         return true;
@@ -1142,9 +1166,26 @@ export class ChoiceProcessor {
     }
 
 
-    private static isSelfSac(cost: AbilityCost, sourceId: string): boolean {
+    private static isSelfSac(cost: any, sourceId: string): boolean {
         if (cost.type !== 'Sacrifice') return false;
         if (cost.restrictions && cost.restrictions.some((r: any) => r.type === 'Self' || (r.type === 'ObjectId' && r.value === sourceId))) return true;
         return false;
+    }
+
+    private static getSuspendedContext(action: PendingAction): ResolutionContext {
+        // Reconstruct a valid ResolutionContext from the pending action data
+        const data = (action.data || {}) as any;
+        return {
+            effects: (data.effects as EffectDefinition[]) || [],
+            nextEffectIndex: data.nextEffectIndex as number,
+            parentContext: data.parentContext as ResolutionContext,
+            targets: (data.targets as string[]) || [],
+            lookingCards: (data.lookingCards as GameObject[]) || [],
+            sourceId: action.sourceId || "",
+            controllerId: action.playerId,
+            stackObject: data.stackObj as StackObject,
+            lastMilledIds: data.lastMilledIds as string[],
+            lastDiscardedIds: data.lastDiscardedIds as string[],
+        } as ResolutionContext;
     }
 }

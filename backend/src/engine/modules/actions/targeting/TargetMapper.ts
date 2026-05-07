@@ -335,7 +335,7 @@ export class TargetMapper {
     context: ResolutionContext,
     effect?: Partial<EffectDefinition> | ActivatedAbility | TriggeredAbility | ReplacementEffect | PreventionEffect,
   ): string[] {
-    const { sourceId, controllerId, stackObject, targets, parentContext } =
+    const { sourceId, controllerId, stackObject, targets, parentContext, lookingCards } =
       context;
     const { logger } = getProcessors(state);
 
@@ -591,7 +591,8 @@ export class TargetMapper {
       }
       case TargetMapping.RemainderOfPool:
       case TargetMapping.RemainderOfLookingCards: {
-        const pool = (parentContext?.lookingCards ||
+        const pool = (lookingCards ||
+          parentContext?.lookingCards ||
           stackObject?.lookingCards ||
           state.pendingAction?.data?.lookingCards ||
           []) as GameObject[];

@@ -125,7 +125,7 @@ export class CostProcessor {
           return !!this.findObject(state, source.id);
         }
         if (String(exileCost.amount) === 'ANY') return true;
-        
+
         const zones = exileCost.sourceZones || [Zone.Battlefield];
         const pool = zones.flatMap((z: Zone) => {
           if (z === Zone.Battlefield) return state.battlefield.filter(o => o.controllerId === playerId);

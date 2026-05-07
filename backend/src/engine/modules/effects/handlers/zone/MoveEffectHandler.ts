@@ -30,6 +30,7 @@ import { getProcessors } from "../../../ProcessorRegistry";
 import { ChoiceGenerator } from "../../ChoiceGenerator";
 import { TriggerProcessor } from "../../triggers/TriggerProcessor";
 import { SearchEffectHandler } from "./SearchEffectHandler";
+import { EffectProcessor } from "../../EffectProcessor";
 import { DrawCardsHandler } from "./DrawCardsHandler";
 
 /**
@@ -611,6 +612,12 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
 
     if (cards.length === 0) return;
 
+    // Preserve the pool for remainder effects (REMAINDER_OF_POOL)
+    context.lookingCards = cards;
+    if (stackObject) {
+      stackObject.lookingCards = cards;
+    }
+
     if (effect.type === EffectType.LookAtTopAndPick) {
       state.pendingAction = ChoiceGenerator.createCardChoice(state, cards, {
         label: effect.label || `Choose a card from the top ${cards.length}`,
@@ -701,19 +708,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         shuffle: effect.shuffleRemainder,
       } as MoveEffect;
 
-      // If we don't have a parent effects array to splice into (e.g. top-level trigger),
-      // we must ensure we have one in the context so ChoiceProcessor/EffectProcessor can pick it up.
-      if (!context.effects) {
-        context.effects = [effect];
-        context.currentIndex = 0;
-      }
-
-      context.effects.splice(
-        (context.currentIndex ?? context.nextEffectIndex ?? 0) + 1,
-        0,
-        remainderMove as EffectDefinition,
-      );
-
+      EffectProcessor.injectPostEffect(context, remainderMove as EffectDefinition);
       return;
     }
 
@@ -814,9 +809,10 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     // Mode A: Direct card IDs or Special Mapping
     const directCardIds = targetIds.filter(id => !state.players[id as PlayerId]);
 
-    if (moveEff.targetMapping === "REMAINDER_OF_POOL") {
-      cardsToMove = (context.lookingCards || []).filter(c => c.zone === Zone.Library);
-      logger.debug(state, LogCategory.ACTION, `[MOVE-DEBUG] REMAINDER_OF_POOL: Found ${cardsToMove.length} cards remaining in library pool.`);
+    if (moveEff.targetMapping === "REMAINDER_OF_POOL" || moveEff.targetMapping === "REMAINDER_OF_LOOKING_CARDS" || moveEff.targetMapping === TargetMapping.RemainderOfPool || moveEff.targetMapping === TargetMapping.RemainderOfLookingCards) {
+      // Use the pre-resolved target IDs to find the actual objects in the pool
+      cardsToMove = targetIds.map(id => this.findObject(state, id, context)).filter((o): o is GameObject => !!o);
+      logger.debug(state, LogCategory.ACTION, `[MOVE-DEBUG] Remainder Mapping resolved to ${cardsToMove.length} cards.`);
     } else if (directCardIds.length > 0) {
       directCardIds.forEach(id => {
         const obj = this.findObject(state, id, context);

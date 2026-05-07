@@ -15,6 +15,7 @@ export interface PlayCardOptions {
     isFreeCast?: boolean;
     exileOnResolution?: boolean;
     parentContext?: ResolutionContext;
+    isAbilitySelectionBypassed?: boolean;
 }
 
 export interface ActivateAbilityOptions {

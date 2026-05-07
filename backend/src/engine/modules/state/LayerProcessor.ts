@@ -512,7 +512,7 @@ export class LayerProcessor {
   public static calculateTypeMask(types: string[]): number {
     let mask = 0;
     if (!types) return 0;
-    const lowerTypes = types.map(t => t.toLowerCase());
+    const lowerTypes = types.map(t => String(t).toLowerCase());
     if (lowerTypes.includes('creature')) mask |= CardType.Creature;
     if (lowerTypes.includes('land')) mask |= CardType.Land;
     if (lowerTypes.includes('artifact')) mask |= CardType.Artifact;

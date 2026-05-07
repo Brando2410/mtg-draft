@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, ConditionType, CostType, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 export const AzizaMageTowerCaptain: CardDefinition = {
     name: "Aziza, Mage Tower Captain",
     manaCost: "{R}{W}",
@@ -16,6 +16,7 @@ export const AzizaMageTowerCaptain: CardDefinition = {
         {
             type: AbilityType.Triggered,
             eventMatch: TriggerEvent.CastInstantOrSorcery,
+            condition: ConditionType.EventPlayerIsYou,
             effects: [
                 {
                     type: EffectType.Choice,

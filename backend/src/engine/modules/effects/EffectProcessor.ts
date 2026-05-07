@@ -63,6 +63,19 @@ export interface ResolveEffectsOptions {
 }
 
 export class EffectProcessor {
+
+  public static injectPostEffect(context: ResolutionContext, effect: EffectDefinition) {
+    if (!context.effects) {
+      context.effects = [];
+      context.currentIndex = -1;
+    }
+    const insertAt = (context.currentIndex ?? context.nextEffectIndex ?? 0) + 1;
+    context.effects.splice(insertAt, 0, effect);
+  }
+
+  /**
+   * Main entry point for resolving a list of effects.
+   */
   public static getEffectHandler(type: EffectType | string) {
     return EffectRegistry[type];
   }
@@ -132,6 +145,11 @@ export class EffectProcessor {
         currentIndex: i,
         nextEffectIndex: i + 1,
       });
+
+      // Update lookingCards if it was modified during execution (for remainder effects)
+      if (state.pendingAction?.data?.lookingCards) {
+        options.lookingCards = state.pendingAction.data.lookingCards;
+      }
 
       if (state.pendingAction) {
         // Rule 603.3: Prune the stored objects to avoid recursion depth and circular references in sockets.
@@ -234,13 +252,13 @@ export class EffectProcessor {
       sourceId,
       controllerId,
       targets,
-      effects: stackObject?.data?.effects || [effect],
+      effects: stackObject?.effects || stackObject?.data?.effects || [effect],
       stackObject,
       parentContext,
       startIndex: stackObject?.data?.startIndex || 0,
       event: stackObject?.event || stackObject?.data?.event || parentContext?.event,
       exiledIds: stackObject?.data?.exiledIds,
-      lookingCards: (lookingCards || stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
+      lookingCards: (lookingCards || stackObject?.lookingCards || stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
       currentIndex: options.currentIndex,
       nextEffectIndex: options.nextEffectIndex ?? stackObject?.data?.nextEffectIndex,
       xValue: stackObject?.xValue || parentContext?.xValue,

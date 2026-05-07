@@ -149,6 +149,65 @@ export class SpellProcessor {
 
         const currentDefinition = cardToPlay.selectedFaceDefinition || cardToPlay.definition;
 
+        // --- HAND ACTION SELECTION (e.g. Visionary's Dance, Channel, Cycling) ---
+        // If the card is in hand and has multiple playable actions (1 spell + 1+ activated abilities in hand),
+        // we must prompt the user to choose.
+        if (cardToPlay.zone === Zone.Hand && !bypassPriority && !options.isAbilitySelectionBypassed) {
+            const { priority: PriorityProcessor } = getProcessors(state);
+            
+            // 1. Find all activated abilities that can be played from hand
+            const activatableAbilities = (cardToPlay.definition.abilities || []).map((a, idx) => ({ a, idx })).filter(({ a }) => 
+                typeof a !== 'string' && a.type === AbilityType.Activated && (a.activeZone === Zone.Hand || (Array.isArray(a.activeZone) && a.activeZone.includes(Zone.Hand)))
+            );
+
+            // Filter for actually activatable ones (mana check, etc)
+            const validAbilities = activatableAbilities.filter(({ idx }) => 
+                PriorityProcessor.canAbilityBeActivated(state, playerId, cardToPlay.id, idx, bypassPriority)
+            );
+
+            const isSpellPlayable = PriorityProcessor.canObjectBePlayed(state, playerId, cardToPlay.id, bypassPriority);
+
+            // CASE A: Multiple valid abilities OR (1+ abilities AND spell is playable) -> Show Modal
+            if (validAbilities.length > 1 || (validAbilities.length > 0 && isSpellPlayable)) {
+                const { choiceGenerator: ChoiceGenerator, action: ActionProcessor } = getProcessors(state);
+                const choices: any[] = [];
+                
+                if (isSpellPlayable) {
+                    choices.push({ label: `Cast ${cardToPlay.definition.name} (${currentDefinition.manaCost || '0'})`, value: 'PLAY_ACTION_SPELL' });
+                }
+
+                choices.push(...validAbilities.map(({ a, idx }) => {
+                    const ability = a as import('@shared/engine_types').AbilityDefinition;
+                    return {
+                        label: `Activate Ability: ${ability.label || (ability as any).manaCost || 'Alternative Mode'}`,
+                        value: `PLAY_ACTION_ABILITY_${idx}`
+                    };
+                }));
+
+                state.pendingAction = ActionProcessor.prepareAction(state, ChoiceGenerator.createModalChoice(state, {
+                    label: `Choose mode for ${cardToPlay.definition.name}`,
+                    playerId: playerId,
+                    sourceId: cardToPlay.id,
+                    actionType: ActionType.ModalSelection
+                }, choices));
+                state.priorityPlayerId = null;
+                return true;
+            }
+
+            // CASE B: Exactly one valid ability and spell is NOT playable -> Auto-redirect
+            if (validAbilities.length === 1 && !isSpellPlayable) {
+                const { idx } = validAbilities[0];
+                logger.info(state, LogCategory.ACTION, `[HAND-AUTO] Auto-redirecting to activated ability for ${cardToPlay.definition.name} (Spell not playable).`);
+                return getProcessors(state).spell.activateAbility(state, engine, {
+                    playerId,
+                    cardId: cardToPlay.id,
+                    abilityIndex: idx,
+                    targets: declaredTargets,
+                    bypassPriority: true
+                });
+            }
+        }
+
         // Persist face choice into the object definition for Zones (Stack/Battlefield)
         if (cardToPlay.selectedFaceDefinition) {
             cardToPlay.definition = cardToPlay.selectedFaceDefinition;
