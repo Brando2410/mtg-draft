@@ -130,6 +130,7 @@ export interface StackObject extends BaseEntity {
     castFromZone?: Zone;
     chosenName?: string;
     condition?: ConditionDefinition;
+    /** @deprecated Use typed root properties or `resolution.transient` instead. Will be removed. */
     data?: Record<string, any>;
     discardAmount?: number | string;
     effects?: EffectDefinition[];
@@ -146,6 +147,9 @@ export interface StackObject extends BaseEntity {
     onFailureEffects?: EffectDefinition[];
     originalControllerId?: PlayerId;
     preSelectedChoice?: number | string;
+    /** Saved resolution progress. Written when an effect suspends, read when resuming. */
+    resolution?: import('./effects').ResolutionState;
+    exileOnResolution?: boolean;
     sourceId: GameObjectId;
     sourceName?: string;
     sourceObject?: GameObject; // The canonical hydrated object (Card, Token, or Ability Source)
@@ -154,6 +158,7 @@ export interface StackObject extends BaseEntity {
     targets: GameObjectId[] | PlayerId[];
     targetsControllers?: PlayerId[];
     type: AbilityType;
+    xValue?: number;
 }
 
 export interface PlayerState {

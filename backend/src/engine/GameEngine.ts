@@ -469,9 +469,6 @@ export class GameEngine implements EngineContext {
     this.resolver = new StackResolver(this.state);
   }
 
-  public resumeResolution(sourceId: string, stackObj: any, parentContext: any): boolean {
-    return ChoiceProcessor.resumeResolution(this.state, sourceId, stackObj, parentContext, this);
-  }
 
   /**
    * CR 601.2c: Target selection

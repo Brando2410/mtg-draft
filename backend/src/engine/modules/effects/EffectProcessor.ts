@@ -126,7 +126,9 @@ export class EffectProcessor {
 
       // CR 608.2: Advance index BEFORE execution so that any choices or sub-effects
       // capture the correct resumption point in their parentContext.
-      if (stackObject) {
+      // BUG FIX: Only update the stackObject's primary index if we are resolving its own effects list.
+      // This prevents nested resolution calls (like inside a Choice) from overwriting the parent's index.
+      if (stackObject && stackObject.effects === effects) {
         stackObject.nextEffectIndex = i + 1;
         if (!stackObject.data) stackObject.data = {};
         stackObject.data.nextEffectIndex = i + 1; // Sync for legacy
@@ -153,6 +155,25 @@ export class EffectProcessor {
       }
 
       if (state.pendingAction) {
+        logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Suspension detected at index ${i}. PendingAction: ${state.pendingAction.type} for ${state.pendingAction.sourceId}. Expected SourceId: ${sourceId}`);
+        // Phase 2: Save state to stackObject.resolution
+        if (stackObject) {
+          stackObject.resolution = {
+            effectIndex: i + 1,
+            transient: {
+              lookingCards: options.lookingCards,
+              lastMilledIds: options.lastMilledIds,
+              lastDiscardedIds: options.lastDiscardedIds,
+            },
+            parentFrameId: parentContext?.stackObject?.id
+          };
+
+          // Sync legacy properties for now
+          stackObject.nextEffectIndex = i + 1;
+          if (!stackObject.data) stackObject.data = {};
+          stackObject.data.nextEffectIndex = i + 1;
+        }
+
         // Rule 603.3: Prune the stored objects to avoid recursion depth and circular references in sockets.
         const slimStackObj = this.slimStackObj(state, stackObject);
 
@@ -166,19 +187,23 @@ export class EffectProcessor {
 
         // If the pending action was created by a sub-effect for a DIFFERENT object
         // (e.g. CastSpell created targeting for the sub-spell), don't overwrite it.
-        // Just save position on the stackObject so the parent can resume later.
-        if (state.pendingAction.sourceId && state.pendingAction.sourceId !== sourceId) {
+        // EXCEPT for spell copies, where the mismatch is intentional for re-targeting.
+        if (state.pendingAction.sourceId && state.pendingAction.sourceId !== sourceId && !state.pendingAction.data?.isCopyTargeting) {
+          logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] SourceId mismatch, skipping injection. PendingSource: ${state.pendingAction.sourceId}, ResolvedSource: ${sourceId}`);
           return false;
         }
 
+        logger.info(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Injecting ${effects.length - (i + 1)} remaining effects into ${state.pendingAction.type} for ${sourceId}. Next Index: ${i + 1}`);
+
+        const existingData = (state.pendingAction.data || {}) as any;
         state.pendingAction.data = {
           label: "Resolution",
-          ...(state.pendingAction.data || {}),
-          effects: effects.map((e) => ({ ...e })),
-          nextEffectIndex: i + 1,
-          targets: state.pendingAction.data?.targets || targets,
-          stackObj: slimStackObj || undefined,
-          parentContext: pruneContext(parentContext),
+          nextEffectIndex: existingData.nextEffectIndex ?? (i + 1),
+          effects: existingData.effects || effects.map((e) => ({ ...e })),
+          targets: existingData.targets || targets,
+          stackObj: existingData.stackObj || (slimStackObj || undefined),
+          parentContext: existingData.parentContext || pruneContext(parentContext),
+          ...existingData,
         };
         state.priorityPlayerId = state.pendingAction.playerId;
         return false;
@@ -222,6 +247,7 @@ export class EffectProcessor {
         controllerId: stackObject.controllerId,
         definition: source?.definition, // Pass the definition for clean rendering
         targets: stackObject.targets || [],
+        resolution: stackObject.resolution,
         data: stackObject.data,
       } as unknown as StackObject;
     }
@@ -251,34 +277,37 @@ export class EffectProcessor {
       (controllerIdOverride || (sourceObj as GameObject)?.controllerId || state.activePlayerId) as PlayerId;
     const { targeting: TP } = getProcessors(state);
 
+    const res = stackObject?.resolution;
+    const transient = res?.transient || {};
+
     // Create a ResolutionContext for handlers that expect it
     const context: ResolutionContext = {
-      castFromZone: stackObject?.castFromZone || stackObject?.data?.castFromZone || parentContext?.castFromZone,
+      castFromZone: transient.castFromZone || stackObject?.castFromZone || stackObject?.data?.castFromZone || parentContext?.castFromZone,
       controller: state.players[controllerId],
       controllerId,
       currentIndex: options.currentIndex,
-      discardAmount: stackObject?.discardAmount || stackObject?.data?.discardAmount || parentContext?.discardAmount,
+      discardAmount: transient.discardAmount || stackObject?.discardAmount || stackObject?.data?.discardAmount || parentContext?.discardAmount,
       effects: stackObject?.effects || stackObject?.data?.effects || [effect],
       event: stackObject?.event || stackObject?.data?.event || parentContext?.event,
-      eventAmount: stackObject?.eventAmount || stackObject?.data?.eventAmount || parentContext?.eventAmount,
-      exiledIds: stackObject?.exiledIds || stackObject?.data?.exiledIds,
-      isCopy: stackObject?.isCopy || (stackObject?.data as { isCopy?: boolean })?.isCopy || parentContext?.isCopy,
-      lastDiscardedIds: lastDiscardedIds || stackObject?.lastDiscardedIds || stackObject?.data?.lastDiscardedIds || parentContext?.lastDiscardedIds,
-      lastMilledIds: lastMilledIds || stackObject?.lastMilledIds || stackObject?.data?.lastMilledIds || parentContext?.lastMilledIds,
-      lookingCards: (lookingCards || stackObject?.lookingCards || stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
-      maxChoices: stackObject?.maxChoices ?? stackObject?.data?.maxChoices ?? parentContext?.maxChoices,
-      minChoices: stackObject?.minChoices ?? stackObject?.data?.minChoices ?? parentContext?.minChoices,
-      nextEffectIndex: options.nextEffectIndex ?? stackObject?.nextEffectIndex ?? stackObject?.data?.nextEffectIndex,
-      nextPlayerIds: stackObject?.nextPlayerIds || stackObject?.data?.nextPlayerIds || parentContext?.nextPlayerIds,
-      onFailureEffects: stackObject?.onFailureEffects || stackObject?.data?.onFailureEffects || parentContext?.onFailureEffects,
+      eventAmount: transient.eventAmount || stackObject?.eventAmount || stackObject?.data?.eventAmount || parentContext?.eventAmount,
+      exiledIds: transient.exiledIds || stackObject?.exiledIds || stackObject?.data?.exiledIds,
+      isCopy: transient.isCopy || stackObject?.isCopy || (stackObject?.data as { isCopy?: boolean })?.isCopy || parentContext?.isCopy,
+      lastDiscardedIds: lastDiscardedIds || transient.lastDiscardedIds || stackObject?.lastDiscardedIds || stackObject?.data?.lastDiscardedIds || parentContext?.lastDiscardedIds,
+      lastMilledIds: lastMilledIds || transient.lastMilledIds || stackObject?.lastMilledIds || stackObject?.data?.lastMilledIds || parentContext?.lastMilledIds,
+      lookingCards: (lookingCards || transient.lookingCards || stackObject?.lookingCards || stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
+      maxChoices: transient.maxChoices ?? stackObject?.maxChoices ?? stackObject?.data?.maxChoices ?? parentContext?.maxChoices,
+      minChoices: transient.minChoices ?? stackObject?.minChoices ?? stackObject?.data?.minChoices ?? parentContext?.minChoices,
+      nextEffectIndex: options.nextEffectIndex ?? res?.effectIndex ?? stackObject?.nextEffectIndex ?? stackObject?.data?.nextEffectIndex,
+      nextPlayerIds: transient.nextPlayerIds || stackObject?.nextPlayerIds || stackObject?.data?.nextPlayerIds || parentContext?.nextPlayerIds,
+      onFailureEffects: transient.onFailureEffects || stackObject?.onFailureEffects || stackObject?.data?.onFailureEffects || parentContext?.onFailureEffects,
       parentContext,
       sourceId,
-      sourceName: stackObject?.sourceName || stackObject?.data?.sourceName || parentContext?.sourceName,
+      sourceName: transient.sourceName || stackObject?.sourceName || stackObject?.data?.sourceName || parentContext?.sourceName,
       sourceObject: (sourceObj as GameObject),
       stackObject,
       startIndex: stackObject?.startIndex ?? stackObject?.data?.startIndex ?? 0,
       targets,
-      xValue: stackObject?.xValue ?? stackObject?.data?.xValue ?? parentContext?.xValue,
+      xValue: transient.xValue ?? stackObject?.xValue ?? stackObject?.data?.xValue ?? parentContext?.xValue,
     };
     logger.info(state, LogCategory.ACTION, `[EXECUTE-EFFECT] Type=${effect.type} Source=${sourceId} Controller=${controllerId} Targets=${targets.join(', ')}`);
 

@@ -139,7 +139,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       pool = state.battlefield.filter((o: GameObject) => RuleUtils.getController(o) === controllerId);
     else return;
 
-    const sourceId = stackObject?.sourceId || "";
+    const sourceId = context.sourceId || stackObject?.id || "";
 
     const getRestrictions = (td: TargetDefinition) => {
       if (!td) return [];
@@ -263,7 +263,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           type: TriggerEvent.Exile,
           payload: {
             targetIds: [card.id],
-            sourceId: stackObject?.sourceId || "",
+            sourceId: context.sourceId || stackObject?.id || "",
             sourceZone: Zone.Library,
           }
         });
@@ -278,7 +278,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       state.pendingAction = ChoiceGenerator.createCardChoice(state, cards, {
         label: `Cast any number of exiled spells?`,
         playerId: controllerId,
-        sourceId: stackObject?.sourceId || "",
+        sourceId: context.sourceId || stackObject?.id || "",
         optional: true,
         minChoices: 0,
         maxChoices: cards.length,
@@ -357,7 +357,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           state,
           card,
           effect.restrictions || [],
-          { sourceId: stackObject?.sourceId || "", controllerId },
+          { sourceId: context.sourceId || stackObject?.id || "", controllerId },
         )
       ) {
         targetCard = card;
@@ -537,7 +537,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
               type: TriggerEvent.Exile,
               payload: {
                 targetIds: [tid],
-                sourceId: stackObject?.sourceId || "",
+                sourceId: context.sourceId || stackObject?.id || "",
                 sourceZone: from,
               }
             });
@@ -578,7 +578,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           EP_LOCAL.resolveEffects({
             state,
             effects: effect.effects,
-            sourceId: stackObject?.sourceId || tid,
+            sourceId: context.sourceId || stackObject?.id || tid,
             targets: [tid],
             startIndex: 0,
             stackObject,
@@ -624,7 +624,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       state.pendingAction = ChoiceGenerator.createCardChoice(state, cards, {
         label: effect.label || `Choose a card from the top ${cards.length}`,
         playerId: controllerId,
-        sourceId: stackObject?.sourceId || "",
+        sourceId: context.sourceId || stackObject?.id || "",
         restrictions: effect.restrictions,
         reveal: moveEff.reveal,
         optional: effect.optional || effect.selectionType === SelectionType.ANY,
@@ -718,7 +718,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       state.pendingAction = ChoiceGenerator.createScryChoice(state, cards, {
         label: `Scry ${cards.length}`,
         playerId: controllerId,
-        sourceId: stackObject?.sourceId || "",
+        sourceId: context.sourceId || stackObject?.id || "",
         stackObj: stackObject,
         parentContext: parentContext,
         isSpellCasting: !!effect.isSpellCasting,
@@ -731,7 +731,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       state.pendingAction = ChoiceGenerator.createSurveilChoice(state, cards, {
         label: `Surveil ${cards.length}`,
         playerId: controllerId,
-        sourceId: stackObject?.sourceId || "",
+        sourceId: context.sourceId || stackObject?.id || "",
         stackObj: stackObject,
         parentContext: parentContext,
         isSpellCasting: !!effect.isSpellCasting,
@@ -777,7 +777,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
             type: TriggerEvent.Exile,
             payload: {
               targetIds: [c.id],
-              sourceId: stackObject?.sourceId || "",
+              sourceId: context.sourceId || stackObject?.id || "",
               sourceZone: from,
             },
           });
@@ -846,7 +846,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     if (effect.restrictions) {
       cardsToMove = cardsToMove.filter((o) =>
         TargetingProcessor.matchesRestrictions(state, o, effect.restrictions!, {
-          sourceId: stackObject?.sourceId || "",
+          sourceId: context.sourceId || stackObject?.id || "",
           controllerId,
         })
       );

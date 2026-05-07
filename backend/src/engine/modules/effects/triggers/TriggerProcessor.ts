@@ -139,7 +139,7 @@ export class TriggerProcessor {
           logger.info(state, LogCategory.TRIGGER, `[DOUBLED] ${RuleUtils.isEntity(sourceObj) ? sourceObj.definition.name : 'Ability'} triggers via continuous.`);
         }
 
-        // 6. Execute triggers
+        // 6. Create stack objects and queue them
         for (let i = 0; i < triggerCount; i++) {
           if (trigger.limitPerTurn && i === 0) {
             state.turnState.triggeredAbilitiesUsedThisTurn[trigger.id] =
@@ -149,8 +149,10 @@ export class TriggerProcessor {
           if (trigger.isGlobal || trigger.isDelayed || this.isAbilityActive(state, trigger)) {
             const stackObj = this.createStackObject(state, trigger, event);
             if (stackObj) {
-              state.stack.push(stackObj);
-              logger.info(state, LogCategory.TRIGGER, `[TRIGGER] ${trigger.oracleText || 'Ability'} triggered.`);
+              // Rule 603.3: Queue triggers in pending state. 
+              // They will be moved to the stack in APNAP order by processPendingTriggers.
+              state.pendingTriggers.push(stackObj);
+              logger.debug(state, LogCategory.TRIGGER, `[TRIGGER-QUEUE] ${trigger.oracleText || 'Ability'} queued (ID: ${stackObj.id}).`);
 
               if (event.type !== 'ON_TRIGGER_QUEUED') {
                 this.onEvent(state, {
@@ -192,17 +194,17 @@ export class TriggerProcessor {
     const apnapOrder = [...order.slice(apIndex), ...order.slice(0, apIndex)];
 
     for (const pId of apnapOrder) {
-      const playersTriggers = state.pendingTriggers.filter(
+      const playersTriggers = (state.pendingTriggers as any[]).filter(
         (t) => t.controllerId === pId,
       );
       if (playersTriggers.length === 0) continue;
 
       if (playersTriggers.length === 1) {
-        const trigger = playersTriggers[0];
+        const stackObj = playersTriggers[0];
         state.pendingTriggers = state.pendingTriggers.filter(
-          (t) => t.id !== trigger.id,
+          (t) => (t as any).id !== stackObj.id,
         );
-        this.stackTrigger(state, trigger);
+        this.stackTrigger(state, stackObj);
         // Recurse to handle remaining players/triggers
         this.processPendingTriggers(state);
         return true;
@@ -210,19 +212,17 @@ export class TriggerProcessor {
         const player = state.players[pId];
         if (player?.autoOrderTriggers) {
           // Auto-order: Just stack them in the order they arrived (arbitrary but consistent)
-          for (const t of playersTriggers) {
+          for (const stackObj of playersTriggers) {
             state.pendingTriggers = state.pendingTriggers.filter(
-              (q) => q.id !== t.id,
+              (q) => (q as any).id !== stackObj.id,
             );
-            this.stackTrigger(state, t);
+            this.stackTrigger(state, stackObj);
           }
           this.processPendingTriggers(state);
           return true;
         }
 
-        playersTriggers.forEach(t => {
-          logger.debug(state, LogCategory.TRIGGER, `[ORDER-PENDING] Pending trigger ${t.id} has targets: ${t.targets?.join(', ')}`);
-        });
+        logger.info(state, LogCategory.TRIGGER, `[TRIGGER-QUEUE] Player ${pId} must order ${playersTriggers.length} triggers.`);
         state.pendingAction = {
           type: ActionType.OrderTriggers,
           playerId: pId,
@@ -314,19 +314,6 @@ export class TriggerProcessor {
 
     const stackId = `trigger_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
 
-    // CR 603.3: Store event snapshot for ResolutionContext (LKI)
-    const contextPayload: any = { // Keep any for contextPayload as it's a dynamic bucket
-      sourceId: trigger.sourceId,
-      controllerId: trigger.controllerId,
-      targets: trigger.targetIds || [],
-      effects: trigger.effects || [],
-      event: event,
-      eventAmount: event.payload?.amount,
-      targetDefinitions: trigger.targetDefinitions,
-      sourceName: sourceName,
-      startIndex: 0
-    };
-
     const effects = trigger.effects || [];
     const exileOnResolution = trigger.exileOnResolution || (RuleUtils.isEntity(sourceObj) ? sourceObj.definition.exileOnResolution : false) || effects.some((e: EffectDefinition) =>
       (e.type === EffectType.Exile || e.type === EffectType.ExileAllCards || e.type === EffectType.MoveToZone) &&
@@ -355,7 +342,8 @@ export class TriggerProcessor {
       sourceName: sourceName,
       startIndex: 0,
       exileOnResolution: exileOnResolution,
-      data: contextPayload,
+      // Phase 4: Data is now just a backup/snapshot of the event
+      data: { event },
       zone: Zone.Stack
     };
     getProcessors(state).logger.debug(state, LogCategory.TRIGGER, `[STACK-OBJ-CREATE] Created stack object ${stackObj.id} with targets: ${stackObj.targets?.join(', ')}`);
@@ -372,10 +360,10 @@ export class TriggerProcessor {
     getProcessors(state).action.updateEntityCache(state, stackObj);
     state.consecutivePasses = 0;
 
-    const targetDefinitions = stackObj.data.targetDefinitions;
-    const sourceName = stackObj.data.sourceName;
+    const targetDefinitions = stackObj.data.targetDefinitions || stackObj.targetDefinitions;
+    const sourceName = stackObj.data.sourceName || stackObj.sourceName;
 
-    if (targetDefinitions) {
+    if (targetDefinitions && targetDefinitions.length > 0) {
       this.initializeTriggerTargeting(
         state,
         stackObj.id,
@@ -919,6 +907,7 @@ export class TriggerProcessor {
           sourceId: card.id,
           controllerId: event.playerId!,
           eventMatch: TriggerEvent.CastSpell,
+          activeZone: Zone.Stack,
           effects: [
             {
               type: EffectType.RevealUntilCondition,
@@ -977,6 +966,7 @@ export class TriggerProcessor {
               sourceId: card.id,
               controllerId: event.playerId!,
               eventMatch: TriggerEvent.CastSpell,
+              activeZone: Zone.Stack,
               effects: [
                 {
                   type: EffectType.CopySpellOnStack,

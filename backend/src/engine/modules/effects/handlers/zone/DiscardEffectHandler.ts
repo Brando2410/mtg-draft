@@ -20,7 +20,7 @@ export const DiscardEffectHandler: IEffectHandler<EffectDefinition> = {
             state.pendingAction = ChoiceGenerator.createDiscardChoice(
                 state,
                 playerIds,
-                stackObject?.sourceId || "",
+                context.sourceId || stackObject?.id || "",
                 amount,
                 effect.label || "Choose a card to discard",
                 stackObject,

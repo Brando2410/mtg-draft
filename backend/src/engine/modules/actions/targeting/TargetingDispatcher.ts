@@ -17,6 +17,7 @@ export interface TargetingDispatchOptions {
     parentContext?: ResolutionContext;
     abilityIndex?: number;
     preSelectedChoice?: number;
+    isCopyTargeting?: boolean;
 }
 
 export class TargetingDispatcher {
@@ -30,7 +31,7 @@ export class TargetingDispatcher {
      * - `string[]` of targets if targeting is automatically completed or skipped
      */
     public static dispatchTargetingStep(options: TargetingDispatchOptions): boolean | string[] {
-        const { state, playerId, sourceObj, targetDefinitions, existingTargets, xValue, isSpellCasting, isFreeCast, exileOnResolution, parentContext, abilityIndex, preSelectedChoice } = options;
+        const { state, playerId, sourceObj, targetDefinitions, existingTargets, xValue, isSpellCasting, isFreeCast, exileOnResolution, parentContext, abilityIndex, preSelectedChoice, isCopyTargeting } = options;
         const { logger } = getProcessors(state);
 
         const totalCounts = TargetingProcessor.calculateTotalCounts(targetDefinitions, xValue);
@@ -98,7 +99,9 @@ export class TargetingDispatcher {
                     exileOnResolution,
                     parentContext,
                     abilityIndex,
-                    preSelectedChoice
+                    preSelectedChoice,
+                    isCopyTargeting,
+                    spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
                 }
             };
             return true;
@@ -196,7 +199,9 @@ export class TargetingDispatcher {
                     exileOnResolution,
                     parentContext,
                     abilityIndex,
-                    preSelectedChoice
+                    preSelectedChoice,
+                    isCopyTargeting,
+                    spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
                 }
             };
             logger.info(state, LogCategory.ACTION, `[ZONE-SHIFT-MODAL] Grouping ${consecutiveCount} consecutive ${currentDef.type} targets into modal.`);
@@ -226,7 +231,9 @@ export class TargetingDispatcher {
                 exileOnResolution,
                 parentContext,
                 abilityIndex,
-                preSelectedChoice
+                preSelectedChoice,
+                isCopyTargeting,
+                spellCopyRef: (isCopyTargeting || parentContext) ? (sourceObj as any) : undefined // Only link to stack if it's already there
             }
         };
         logger.info(state, LogCategory.ACTION, `[TARGETING] ${state.players[playerId].name} is selecting targets for ${sourceObj.definition.name}...`);

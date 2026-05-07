@@ -48,7 +48,7 @@ function drawCards(state: GameState, playerId: PlayerId, amount: number, context
         EP.resolveEffects({
             state,
             effects: originalEffect.effects,
-            sourceId: context.stackObject?.sourceId || playerId,
+            sourceId: context.sourceId || context.stackObject?.id || playerId,
             targets: [playerId], // For draw, usually the player is the target of follow-up effects
             startIndex: 0,
             stackObject: context.stackObject,

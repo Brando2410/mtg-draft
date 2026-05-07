@@ -3,6 +3,7 @@ import { LogCategory } from "../../../../utils/EngineLogger";
 import { RuleUtils } from "../../../../utils/RuleUtils";
 import { getProcessors } from "../../../ProcessorRegistry";
 import { IEffectHandler } from "../../IEffectHandler";
+import { TargetingDispatcher } from "../../../actions/targeting/TargetingDispatcher";
 
 export const CounterSpellHandler: IEffectHandler = {
     handle(state, effect, context) {
@@ -38,7 +39,7 @@ export const CopySpellHandler: IEffectHandler = {
         const copyEffect = effect as CopyEffect;
 
         targets.forEach((tid: string) => {
-            logger.debug(state, LogCategory.ACTION, `[COPY-DEBUG] Attempting to copy target ID: ${tid}`);
+            logger.info(state, LogCategory.ACTION, `[COPY-DEBUG] Attempting to copy target ID: ${tid}. Controller: ${controllerId}`);
             let stackObj = state.stack.find((s: StackObject) => s.id === tid || s.sourceId === tid);
 
             // LKI: If spell is gone, use LKI
@@ -125,7 +126,7 @@ export const CopySpellHandler: IEffectHandler = {
 
             if (copyEffect.chooseNewTargets) {
                 const targetDefinitions = copy.data?.targetDefinitions || copy.targetDefinitions;
-                if (targetDefinitions) {
+                if (targetDefinitions && targetDefinitions.length > 0) {
                     const { targeting: TP } = getProcessors(state);
                     const pool = [
                         ...Object.keys(state.players),
@@ -153,24 +154,26 @@ export const CopySpellHandler: IEffectHandler = {
                             copy.data.targetsControllers = [];
                         }
 
-                        state.pendingAction = {
-                            type: ActionType.Targeting,
+                        // Use centralized dispatcher to handle modal shifting, auto-targeting, etc.
+                        const targetingResult = TargetingDispatcher.dispatchTargetingStep({
+                            state,
                             playerId: controllerId,
-                            sourceId: copy.id,
-                            data: {
-                                label: "ChooseNewTargets",
-                                isCopyTargeting: true,
-                                stackId: copy.id,
-                                targetDefinitions: targetDefinitions,
-                                targets: legalTargetIds,
-                                selectedTargets: [],
-                                declaredTargets: [], // Force empty for UI
-                                optional: true,
-                                _backupTargets: backupTargets, // Use internal field
-                                stackObj: copy,
-                                parentContext: context
-                            }
-                        };
+                            sourceObj: copy as any,
+                            targetDefinitions,
+                            existingTargets: [],
+                            xValue: copy.xValue || 0,
+                            isSpellCasting: true,
+                            isCopyTargeting: true,
+                            parentContext: context
+                        });
+
+                        // If it's a string[], it means it was auto-selected/skipped
+                        if (Array.isArray(targetingResult)) {
+                            copy.targets = targetingResult;
+                        } else if (state.pendingAction && state.pendingAction.data) {
+                            // Ensure the engine knows this targeting is for a copy to avoid ID mismatch blocks
+                            state.pendingAction.data.isCopyTargeting = true;
+                        }
                     }
                 }
             }

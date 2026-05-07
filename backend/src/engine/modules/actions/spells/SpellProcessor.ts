@@ -32,6 +32,7 @@ import { SpellInteractiveManager } from './SpellInteractiveManager';
 import { SpellValidator } from './SpellValidator';
 import { getProcessors } from '../../ProcessorRegistry';
 import { ManaProcessor } from '../../magic/ManaProcessor';
+import { ResolutionManager } from '../../core/stack/ResolutionManager';
 
 /**
  * SpellProcessor - Orchestrator Facade for Casting Spells and Activating Abilities.
@@ -557,6 +558,7 @@ export class SpellProcessor {
             e.type === EffectType.Choice &&
             (e as ModalEffect).choices &&
             !e.targetMapping &&
+            idx === 0 &&
             (!(e as ModalEffect).choices?.some((c) => c.costs && c.costs.length > 0))
         );
         const hasPreSelectedChoice = state.interaction?.lastChoiceIndex !== undefined;
@@ -770,15 +772,12 @@ export class SpellProcessor {
             effects: spellEffects,
             name: cardToPlay.definition.name + (cardToPlay.xValue !== undefined && ((cardToPlay.definition.manaCost || "").includes("{X}") || cardToPlay.xValue > 0) ? ` (X=${cardToPlay.xValue})` : ""),
             cannotBeCopied: cardToPlay.definition.cannotBeCopied,
-            xValue: cardToPlay.xValue,
             image_url: cardToPlay.definition.image_url,
-            exileOnResolution: exileOnResolution,
+            exileOnResolution: cardToPlay.exileOnResolution || parentContext?.exileOnResolution,
+            xValue: cardToPlay.xValue,
             isCopy: cardToPlay.isCopy,
             isPreparedCopy: cardToPlay.isPreparedCopy,
             isFlashbackCast: cardToPlay.isFlashbackCast,
-            castFromZone: lastZone,
-            targetsControllers,
-            preSelectedChoice,
             data: {
                 preSelectedChoice,
                 targetsControllers,
@@ -952,7 +951,7 @@ export class SpellProcessor {
         state.consecutivePasses = 0;
         // --- RESUME RESOLUTION ---
         if (!state.pendingAction && options.parentContext) {
-            return engine.resumeResolution(obj.id, stackObj, options.parentContext);
+            return ResolutionManager.resume(state, engine, stackObj, obj.id, options.parentContext);
         }
 
         if (!state.pendingAction) {

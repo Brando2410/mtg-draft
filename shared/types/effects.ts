@@ -191,16 +191,62 @@ export interface ContinuousEffect {
 }
 
 /**
- * ResolutionContext (CR 608): Standardized contract for passing state through
- * the effect resolution chain. Replaces loosely typed 'any' parameters.
+ * ResolutionTransient: Typed container for mid-resolution data that effects produce
+ * for consumption by subsequent effects. Replaces the untyped StackObject.data bucket.
+ * This data is transient — it exists only during a single resolution sequence.
  */
-export interface ResolutionContext {
+export interface ResolutionTransient {
     castFromZone?: Zone;
-    controller?: PlayerState;
-    controllerId: PlayerId;
-    currentIndex?: number;
+    chosenName?: string;
     discardAmount?: number | string;
+    eventAmount?: number;
+    exiledIds?: string[];
+    isCopy?: boolean;
+    lastDiscardedIds?: string[];
+    lastMilledIds?: string[];
+    lookingCards?: GameObject[];
+    maxChoices?: number;
+    minChoices?: number;
+    nextPlayerIds?: PlayerId[];
+    onFailureEffects?: EffectDefinition[];
+    sourceName?: string;
+    xValue?: number;
+}
+
+/**
+ * ResolutionState: Saved resolution progress for a StackObject.
+ * When an effect suspends (waiting for user input), this state is saved on
+ * the StackObject so it survives serialization and can be resumed.
+ */
+export interface ResolutionState {
+    /** Index of the next effect to execute */
+    effectIndex: number;
+    /** Transient data produced during resolution */
+    transient: ResolutionTransient;
+    /** ID of the parent StackObject whose resolution spawned this interaction */
+    parentFrameId?: string;
+}
+
+/**
+ * EngineFrame (CR 608): Unified context for ALL engine operations.
+ * Used by effect handlers, condition checks, and targeting validation.
+ * Replaces the separate ResolutionContext, ConditionContext contracts.
+ */
+export interface EngineFrame {
+    // === Identity ===
+    controllerId: PlayerId;
+    sourceId: GameObjectId;
+
+    // === Resolution State ===
+    currentIndex?: number;
     effects: EffectDefinition[];
+    nextEffectIndex?: number;
+    startIndex?: number;
+    targets: string[];
+
+    // === Transient Data ===
+    castFromZone?: Zone;
+    discardAmount?: number | string;
     event?: GameEvent;
     eventAmount?: number;
     exiledIds?: string[];
@@ -210,17 +256,28 @@ export interface ResolutionContext {
     lookingCards?: GameObject[];
     maxChoices?: number;
     minChoices?: number;
-    nextEffectIndex?: number;
     nextPlayerIds?: PlayerId[];
     onFailureEffects?: EffectDefinition[];
-    parentContext?: ResolutionContext;
-    sourceId: GameObjectId;
     sourceName?: string;
+    xValue?: number;
+    exileOnResolution?: boolean;
+
+    // === References ===
     sourceObject?: GameObject;
     stackObject?: StackObject;
-    startIndex?: number;
-    targets: string[];
-    xValue?: number;
+
+    // === Hierarchy (legacy bridge, will be replaced by ResolutionState.parentFrameId) ===
+    parentContext?: ResolutionContext;
+}
+
+/**
+ * ResolutionContext (CR 608): Standardized contract for passing state through
+ * the effect resolution chain.
+ * @deprecated Use EngineFrame for new code. This is kept as a superset for backward compatibility.
+ */
+export interface ResolutionContext extends EngineFrame {
+    /** @deprecated Use state.players[controllerId] instead */
+    controller?: PlayerState;
 }
 
 /**

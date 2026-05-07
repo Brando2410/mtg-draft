@@ -6,6 +6,7 @@ import { RuleUtils } from "../../utils/RuleUtils";
 import { getProcessors } from '../ProcessorRegistry';
 import { PlayerActionProcessor } from './PlayerActionProcessor';
 import { ChoiceGenerator } from '../effects/ChoiceGenerator';
+import { ResolutionManager } from '../core/stack/ResolutionManager';
 
 /**
  * Handles interactive player choices (Targeting, Modal Choices)
@@ -123,7 +124,8 @@ export class ChoiceProcessor {
         const isMultiSelectAction = action.type === ActionType.Discard || action.data?.maxChoices > 1;
         const isEmptyConfirm = (firstSelection === 'confirm' || firstSelection === 'done' || firstSelection === 'none') && isMultiSelectAction;
 
-        if (selections.length > 1 || (selections.length === 1 && typeof firstSelection === 'string' && (firstSelection.includes('|') || firstSelection.startsWith('{'))) || isEmptyConfirm || action.data?.isManaChoiceToggle) {
+        const isConfirm = firstSelection === 'confirm' || firstSelection === 'done';
+        if (selections.length > 1 || (selections.length === 1 && typeof firstSelection === 'string' && (firstSelection.includes('|') || firstSelection.startsWith('{'))) || isEmptyConfirm || isConfirm || action.data?.isManaChoiceToggle) {
             // If it's a cost choice, spell casting mode selection, OR a targeting modal, we go through handleModalSelection
             if (action.data?.isCostChoice || action.data?.isSpellCasting || action.data?.isTargetingModal || action.data?.isManaChoiceToggle) {
                 // Pass the first selection if it's a legacy string, otherwise pass null as handleModalSelection will use the payload
@@ -141,6 +143,13 @@ export class ChoiceProcessor {
             let currentTargetOffset = 0;
 
             const indices = selections.filter(s => typeof s === 'number') as number[];
+            logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Processing indices: ${indices.join(', ')}. isConfirm: ${isConfirm}, lastChoiceIndex: ${state.interaction.lastChoiceIndex}`);
+            
+            // RECOVERY: If confirming after a cost interaction, use the previously stored selection index
+            if (indices.length === 0 && (firstSelection === 'confirm' || firstSelection === 'done') && state.interaction.lastChoiceIndex !== undefined) {
+                indices.push(state.interaction.lastChoiceIndex);
+                logger.debug(state, LogCategory.ACTION, `[CHOICE-RECOVERY] Recovered selection index ${state.interaction.lastChoiceIndex} from interaction state.`);
+            }
 
             indices.forEach(idx => {
                 const choice = action.data?.choices?.[idx];
@@ -169,13 +178,20 @@ export class ChoiceProcessor {
 
             // Resolve all effects in the batch
             if (allEffects.length > 0) {
+                // IMPORTANT: Pay any costs associated with the choice(s) before resolving effects
+                const choiceToPay = finalChoice as ChoiceOption | null;
+                if (choiceToPay && choiceToPay.costs && choiceToPay.costs.length > 0) {
+                    logger.info(state, LogCategory.ACTION, `[CHOICE-PAY] Paying costs for selection: ${choiceToPay.label}`);
+                    getProcessors(state).cost.pay(state, choiceToPay.costs, sourceId!, playerId);
+                }
+
                 const discardEffects = allEffects.filter(e => e.type === EffectType.MoveToZone && e.isDiscard);
                 if (discardEffects.length > 0) {
                     state.turnState.lastDiscardedCount = discardEffects.length;
                     state.turnState.lastDiscardedIds = [];
                     logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Reset lastDiscardedIds for new batch of ${discardEffects.length} discards.`);
                 }
-                getProcessors(state).effect.resolveEffects({
+                const completed = getProcessors(state).effect.resolveEffects({
                     state,
                     effects: allEffects,
                     sourceId: sourceId as string,
@@ -185,6 +201,11 @@ export class ChoiceProcessor {
                     parentContext: action.data?.parentContext,
                     lookingCards: action.data?.lookingCards as GameObject[],
                 });
+
+                if (!completed && (!action.data?.isSpellCasting || action.data?.isCopyTargeting)) {
+                    logger.info(state, LogCategory.ACTION, `[CHOICE-SUSPEND] Resolution suspended for further interaction.`);
+                    return true;
+                }
             }
 
             // After batch is done, check if we need to move to the next player (for DiscardCards)
@@ -196,7 +217,7 @@ export class ChoiceProcessor {
             }
 
             // Resume whatever was happening at the current level first
-            return this.resumeResolution(state, sourceId as string, action.data?.stackObj as StackObject, action.data as any, engine);
+            return ResolutionManager.resume(state, engine);
         }
 
         // 3. Handle Scry/Surveil Reordering early as payload is not an index
@@ -205,6 +226,10 @@ export class ChoiceProcessor {
         }
 
         const choiceIdx = typeof firstSelection === 'number' ? firstSelection : parseInt(String(firstSelection).replace('CHOICE_', ''));
+        if (!isNaN(choiceIdx) && isResolution) {
+            state.interaction.lastChoiceIndex = choiceIdx;
+            logger.debug(state, LogCategory.ACTION, `[CHOICE-PERSIST] Stored lastChoiceIndex: ${choiceIdx}`);
+        }
 
         // Handle Legend Rule Choice
         if (action.type === ActionType.LegendRule) {
@@ -257,7 +282,7 @@ export class ChoiceProcessor {
     ): boolean {
         const { logger } = getProcessors(state);
         const { top = [], bottom = [], graveyard = [] } = payload;
-        
+
         // Track result for UI
         state.turnState.lastScrySurveilResult = {
             playerId,
@@ -300,112 +325,13 @@ export class ChoiceProcessor {
 
         // 6. Resume resolution if needed
         if (stackObj) {
-            return this.resumeResolution(state, action.sourceId!, stackObj, action.data?.parentContext as ResolutionContext, engine);
+            return ResolutionManager.resume(state, engine);
         }
 
         engine.resetPriorityToActivePlayer();
         return true;
     }
 
-    public static resumeResolution(state: GameState, sourceId: string, stackObj: StackObject, parentContext: ResolutionContext, engine: EngineContext): boolean {
-        let currentCtx: ResolutionContext | undefined = { ...parentContext, stackObject: stackObj }; // Wrap to start resuming
-
-        // Then resume parent contexts
-        while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex !== undefined && currentCtx.nextEffectIndex < currentCtx.effects.length) {
-            
-            const resumingCtx: ResolutionContext = currentCtx; // Capture current context before moving to parent
-            const nextIdx = resumingCtx.nextEffectIndex!;
-            const effs = resumingCtx.effects;
-            const parentTargets = resumingCtx.targets || [];
-            const lookingCards = resumingCtx.lookingCards;
-            const nextParentCtx: ResolutionContext | undefined = resumingCtx.parentContext;
-
-            currentCtx = nextParentCtx;
-            const completed = getProcessors(state).effect.resolveEffects({
-                state,
-                effects: effs,
-                sourceId,
-                targets: parentTargets,
-                startIndex: nextIdx,
-                stackObject: stackObj,
-                parentContext: nextParentCtx,
-                lookingCards: lookingCards,
-                lastMilledIds: resumingCtx.lastMilledIds,
-                lastDiscardedIds: resumingCtx.lastDiscardedIds,
-                skipFizzleCheck: true,
-            });
-
-            if (stackObj && !completed && (state as GameState).pendingAction) {
-                stackObj.nextEffectIndex = (state as GameState).pendingAction?.data?.nextEffectIndex;
-                if (!stackObj.data) stackObj.data = {};
-                stackObj.data.nextEffectIndex = stackObj.nextEffectIndex; // Legacy sync
-            }
-        }
-
-        if (!state.pendingAction) {
-            if (stackObj) {
-                const fullStackObj = state.stack.find(s => s.id === stackObj.id);
-                if (fullStackObj) {
-                    if (fullStackObj.type === 'Spell' && fullStackObj.sourceObject) {
-                        const card = fullStackObj.sourceObject;
-                        const isPermanent = RuleUtils.isPermanent(card);
-
-                        if (card.zone === Zone.Stack) {
-                            const freshDef = oracle.getCard(card.definition.name);
-                            const shouldExile = fullStackObj.exileOnResolution || fullStackObj.isCopy || (card as any).isPreparedCopy || freshDef?.exileOnResolution;
-
-                            if (shouldExile) {
-                                getProcessors(state).action.removeFromCurrentZone(state, card);
-                                if (!fullStackObj.isCopy) {
-                                    getProcessors(state).action.moveCard(state, card, Zone.Exile, card.ownerId);
-                                }
-                            } else if (isPermanent) {
-                                getProcessors(state).action.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId);
-                            } else {
-                                getProcessors(state).action.moveCard(state, card, Zone.Graveyard, card.ownerId);
-                            }
-                        }
-                    } else {
-                        // Clean up ability/trigger
-                        // Use both instance ID and source ID to be absolutely sure we find it
-                        const stackIdx = state.stack.findIndex(s => s.id === fullStackObj.id || (s.id === stackObj.id && s.type === fullStackObj.type));
-                        if (stackIdx !== -1) {
-                            state.stack.splice(stackIdx, 1);
-                        } else {
-                            // Deep search fallback
-                            const altIdx = state.stack.findIndex(s => s.sourceId === fullStackObj.sourceId && s.type === fullStackObj.type);
-                            if (altIdx !== -1) {
-                                state.stack.splice(altIdx, 1);
-                            }
-                        }
-                    }
-
-                    // ROOT TRIGGER CLEANUP: If this was resumed from a parent context (like a trigger), clean up the parent too
-                    if (parentContext && parentContext.stackObject && parentContext.stackObject.id !== stackObj.id) {
-                        const parentStackObj = parentContext.stackObject;
-                        const pIdx = state.stack.findIndex(s => s.id === parentStackObj.id);
-                        if (pIdx !== -1) {
-                            state.stack.splice(pIdx, 1);
-                        }
-                    }
-
-                    // --- KEYWORD HOOK: ON RESOLUTION ---
-                    if (fullStackObj.type === AbilityType.Spell) {
-                        const { trigger: TriggerProcessor } = getProcessors(state);
-                        TriggerProcessor.onEvent(state, {
-                            type: 'ON_RESOLVE_SPELL',
-                            playerId: fullStackObj.controllerId,
-                            payload: { object: fullStackObj.sourceObject, sourceId: fullStackObj.sourceId, targetIds: [fullStackObj.id] }
-                        });
-                    }
-                }
-            }
-            engine.resetPriorityToActivePlayer();
-        } else {
-            state.priorityPlayerId = state.pendingAction.playerId || null;
-        }
-        return true;
-    }
 
     private static handleUndo(state: GameState, playerId: PlayerId, action: PendingAction): boolean {
         const { logger } = getProcessors(state);
@@ -511,14 +437,14 @@ export class ChoiceProcessor {
         const stats = LayerProcessor.getEffectiveStats(obj, state);
         const allAbilities = [...((logic?.abilities as any[]) || [])];
         if (stats.abilities) {
-          stats.abilities.forEach((a: any) => {
-            if (typeof a === 'string') return;
-            const isDuplicate = allAbilities.some(existing => {
-              if (typeof existing === 'string') return false;
-              return (a.id !== undefined && existing.id !== undefined) ? a.id === existing.id : (a.type === existing.type && JSON.stringify(a.effects) === JSON.stringify(existing.effects));
+            stats.abilities.forEach((a: any) => {
+                if (typeof a === 'string') return;
+                const isDuplicate = allAbilities.some(existing => {
+                    if (typeof existing === 'string') return false;
+                    return (a.id !== undefined && existing.id !== undefined) ? a.id === existing.id : (a.type === existing.type && JSON.stringify(a.effects) === JSON.stringify(existing.effects));
+                });
+                if (!isDuplicate) allAbilities.push(a);
             });
-            if (!isDuplicate) allAbilities.push(a);
-          });
         }
 
         const ability = allAbilities[abilityIndex];
@@ -810,33 +736,8 @@ export class ChoiceProcessor {
             }
 
             const stackObj = action.data.stackObj as StackObject;
-            let currentCtx: ResolutionContext | undefined = this.getSuspendedContext(action);
-            while (!state.pendingAction && currentCtx && currentCtx.effects && currentCtx.nextEffectIndex !== undefined && currentCtx.nextEffectIndex < currentCtx.effects.length) {
-                logger.info(state, LogCategory.ACTION, `[RESOLVING] Resuming parent resolution context for ${sourceId}...`);
-                const nextIdx = currentCtx.nextEffectIndex;
-                const effs = currentCtx.effects;
-                const parentTargets = currentCtx.targets || currentCtx.parentContext?.targets || [];
-                const parentCtx: ResolutionContext | undefined = currentCtx.parentContext;
-
-                currentCtx = parentCtx;
-                const completed = getProcessors(state).effect.resolveEffects({
-                    state,
-                    effects: effs,
-                    sourceId,
-                    targets: parentTargets,
-                    startIndex: nextIdx,
-                    stackObject: stackObj,
-                    parentContext: parentCtx,
-                    lookingCards: action.data.lookingCards as GameObject[],
-                    lastMilledIds: parentCtx?.lastMilledIds,
-                    lastDiscardedIds: parentCtx?.lastDiscardedIds,
-                    skipFizzleCheck: true,
-                });
-
-                if (stackObj && !completed && (state as GameState).pendingAction) {
-                    stackObj.data = { ...stackObj.data, nextEffectIndex: (state as GameState).pendingAction?.data?.nextEffectIndex };
-                }
-            }
+            ResolutionManager.resume(state, engine);
+            return true;
 
             this.finalizeResolution(state, sourceId, stackObj, action, engine);
             return true;
@@ -849,10 +750,10 @@ export class ChoiceProcessor {
         let finalTargets = savedTargets;
         if (action.data?.isTargetingModal) {
             let newTargets: string[] = [];
-            
+
             selections.forEach((sel: any) => {
                 if (typeof sel === 'string' && sel.includes('|')) {
-                     const ids = sel.split('|').map(s => {
+                    const ids = sel.split('|').map(s => {
                         const i = parseInt(s.startsWith('CHOICE_') ? s.substring(7) : s);
                         const val = action.data?.choices?.[i]?.value as string;
                         return val && val.length > 20 ? val : undefined;
@@ -878,6 +779,37 @@ export class ChoiceProcessor {
         const choiceValStr = choice?.value ? String(choice.value) : "";
         const isSystemValue = choiceValStr.startsWith('MODE_SELECTION_') || choiceValStr.startsWith('COST_CHOICE_') || choiceValStr.startsWith('FACE_SELECTION_');
         const cardToPlayId = (isSpellCasting && !isTargeting && !isSystemValue && choice?.value && typeof choice.value === 'string' && choice.value.length > 20) ? choice.value : sourceId;
+
+        // If this is a copy being re-targeted at resolution time, we do NOT call playCard.
+        // We just update the copy's targets and resume the parent resolution (the trigger).
+        if (action.data?.isCopyTargeting) {
+            const stackObj = (action.data.spellCopyRef || action.data.stackObj) as StackObject;
+            if (stackObj) {
+                stackObj.targets = finalTargets;
+                
+                // UI METADATA REFRESH: Update controllers and summary for frontend arrows/labels
+                if (!stackObj.data) stackObj.data = {};
+                stackObj.data.targetsControllers = finalTargets.map((tid: string) => {
+                    const obj = RuleUtils.findObject(state, tid);
+                    return RuleUtils.isPlayer(obj) ? obj.id : (RuleUtils.isEntity(obj) ? obj.controllerId : null);
+                });
+                
+                // Build a human-readable summary for the stack UI
+                const targetNames = finalTargets.map((tid: string) => {
+                    const obj = RuleUtils.findObject(state, tid);
+                    return RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : tid);
+                });
+                if (targetNames.length > 0) {
+                    stackObj.data.summary = `targeting ${targetNames.join(', ')}`;
+                }
+
+                logger.info(state, LogCategory.ACTION, `[COPY-TARGETS] Updated targets for copy ${stackObj.id}: ${finalTargets.join(', ')}`);
+            }
+            if (action.data.parentContext) {
+                return ResolutionManager.resume(state, engine, action.data.parentContext.stackObject, action.data.parentContext.sourceId, action.data.parentContext);
+            }
+            return ResolutionManager.resume(state, engine);
+        }
 
         // ARCHITECTURAL NOTE: Metadata Propagation
         return getProcessors(state).spell.playCard(
@@ -931,13 +863,14 @@ export class ChoiceProcessor {
             state.pendingAction = undefined;
 
             const interactiveCost = costs.find((c: AbilityCost) =>
-                (c.type === 'TapSelection' && !state.interaction.lastSelections['TapSelection']) ||
-                (c.type === 'Discard' && !state.interaction.lastSelections['Discard']) ||
-                (c.type === 'Sacrifice' && !state.interaction.lastSelections['Sacrifice'] && !ChoiceProcessor.isSelfSac(c, sourceId)) ||
-                (c.type === 'Exile' && !state.interaction.lastSelections['Exile'])
+                (c.type === 'TapSelection' && (!state.interaction.lastSelections['TapSelection'] || state.interaction.lastSelections['TapSelection'].length === 0)) ||
+                (c.type === 'Discard' && (!state.interaction.lastSelections['Discard'] || state.interaction.lastSelections['Discard'].length === 0)) ||
+                (c.type === 'Sacrifice' && (!state.interaction.lastSelections['Sacrifice'] || state.interaction.lastSelections['Sacrifice'].length === 0) && !ChoiceProcessor.isSelfSac(c, sourceId)) ||
+                (c.type === 'Exile' && (!state.interaction.lastSelections['Exile'] || state.interaction.lastSelections['Exile'].length === 0))
             );
 
             if (interactiveCost) {
+                logger.info(state, LogCategory.ACTION, `[CHOICE-COST] Prompting for interactive cost: ${interactiveCost.type}`);
                 // Clear any stale interaction data for this cost type before prompting
                 delete state.interaction.lastSelections[interactiveCost.type];
 
@@ -976,6 +909,7 @@ export class ChoiceProcessor {
         state.pendingAction = undefined;
 
         if (choice.effects && choice.effects.length > 0) {
+            logger.info(state, LogCategory.ACTION, `[CHOICE-DEBUG] Resolving ${choice.effects.length} effects for selection: ${choice.label}. SourceId: ${sourceId}`);
             getProcessors(state).effect.resolveEffects({
                 state,
                 effects: choice.effects,
@@ -996,6 +930,7 @@ export class ChoiceProcessor {
     }
 
     private static finalizeResolution(state: GameState, sourceId: string, stackObj: any, action: PendingAction, engine: EngineContext): boolean {
+        const { logger } = getProcessors(state);
         // 1. Process Choice Queue (highest priority)
         if (!state.pendingAction && state.choiceQueue && state.choiceQueue.length > 0) {
             const nextItem = state.choiceQueue.shift()!;
@@ -1062,7 +997,8 @@ export class ChoiceProcessor {
 
         // 3. Resume/Finalize Resolution
         if (!state.pendingAction) {
-            return this.resumeResolution(state, sourceId, stackObj, this.getSuspendedContext(action), engine);
+            logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] No pending action after choice. Resuming via ResolutionManager.`);
+            return ResolutionManager.resume(state, engine, stackObj, sourceId, undefined, action);
         }
 
         return true;
@@ -1173,21 +1109,5 @@ export class ChoiceProcessor {
         if (cost.restrictions && cost.restrictions.some((r: any) => r.type === 'Self' || (r.type === 'ObjectId' && r.value === sourceId))) return true;
         return false;
     }
-
-    private static getSuspendedContext(action: PendingAction): ResolutionContext {
-        // Reconstruct a valid ResolutionContext from the pending action data
-        const data = (action.data || {}) as any;
-        return {
-            effects: (data.effects as EffectDefinition[]) || [],
-            nextEffectIndex: data.nextEffectIndex as number,
-            parentContext: data.parentContext as ResolutionContext,
-            targets: (data.targets as string[]) || [],
-            lookingCards: (data.lookingCards as GameObject[]) || [],
-            sourceId: action.sourceId || "",
-            controllerId: action.playerId,
-            stackObject: data.stackObj as StackObject,
-            lastMilledIds: data.lastMilledIds as string[],
-            lastDiscardedIds: data.lastDiscardedIds as string[],
-        } as ResolutionContext;
-    }
 }
+

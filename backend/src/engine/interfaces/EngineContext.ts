@@ -128,5 +128,4 @@ export interface EngineContext {
     // Processors (Service Registry to avoid circular dependencies)
     processors: ProcessorRegistry;
 
-    resumeResolution(sourceId: string, stackObj: StackObject, parentContext: ResolutionContext): boolean;
 }

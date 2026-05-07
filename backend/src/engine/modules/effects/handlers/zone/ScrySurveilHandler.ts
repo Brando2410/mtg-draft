@@ -28,7 +28,7 @@ export const ScrySurveilHandler: IEffectHandler<DrawEffect> = {
             state.pendingAction = ChoiceGenerator.createScryChoice(state, cards, {
                 label: `Scry ${cards.length}`,
                 playerId: affectedPlayerId,
-                sourceId: stackObject?.sourceId || "",
+                sourceId: context.sourceId || stackObject?.id || "",
                 stackObj: stackObject,
                 parentContext: parentContext,
                 isSpellCasting: !!effect.isSpellCasting,
@@ -38,7 +38,7 @@ export const ScrySurveilHandler: IEffectHandler<DrawEffect> = {
             state.pendingAction = ChoiceGenerator.createSurveilChoice(state, cards, {
                 label: `Surveil ${cards.length}`,
                 playerId: affectedPlayerId,
-                sourceId: stackObject?.sourceId || "",
+                sourceId: context.sourceId || stackObject?.id || "",
                 stackObj: stackObject,
                 parentContext: parentContext,
                 isSpellCasting: !!effect.isSpellCasting,

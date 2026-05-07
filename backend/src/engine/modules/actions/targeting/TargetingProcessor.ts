@@ -16,7 +16,8 @@ import {
     TriggeredAbility,
     ReplacementEffect,
     PreventionEffect,
-    AbilityType
+    AbilityType,
+    StackObject
 } from '@shared/engine_types';
 import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
@@ -27,6 +28,7 @@ import { ActionProcessor } from '../ActionProcessor';
 import { TargetMapper } from './TargetMapper';
 import { TargetValidator } from './TargetValidator';
 import { oracle } from '../../../OracleLogicMap';
+import { ResolutionManager } from '../../core/stack/ResolutionManager';
 
 /**
  * Rules Engine Module: Targeting (Rule 115)
@@ -402,13 +404,30 @@ export class TargetingProcessor {
      * CR 603: Finalize a targeting sequence and resume the effect chain.
      */
     public static finaliseTargeting(state: GameState, playerId: PlayerId, resolvedTargets: string[], engine: EngineContext): boolean {
-        const actionData = state.pendingAction?.data as any;
-        const sourceId = state.pendingAction?.sourceId;
-        const abilityIndex = actionData?.abilityIndex;
-        const stackObj = actionData?.stackObj;
+        const action = state.pendingAction;
+        if (!action || !action.data) return false;
+        const actionData = action.data;
+        const sourceId = action.sourceId;
+        const abilityIndex = actionData.abilityIndex;
+        const stackObj = (actionData.spellCopyRef || actionData.stackObj) as StackObject;
 
         const { logger, effect: EffectProcessor, trigger: TriggerProcessor } = getProcessors(state);
         console.log(`[TARGET-FINAL] Finalizing for ${sourceId}. isFreeCast=${actionData?.isFreeCast}, hasParent=${!!actionData?.parentContext}, hasStackObj=${!!actionData?.stackObj}`);
+
+        if (actionData?.isCostChoice) {
+            state.interaction.lastSelections[actionData.costType] = resolvedTargets;
+            
+            // Reconstruct the original choice action to resume resolution
+            state.pendingAction = {
+                type: ActionType.ResolutionChoice,
+                playerId: playerId,
+                sourceId: sourceId!,
+                data: actionData.originalActionData || actionData
+            };
+            
+            logger.info(state, LogCategory.ACTION, `[COST-FINAL] Cost paid. Resuming original choice resolution for ${sourceId}.`);
+            return getProcessors(state).choice.resolveChoice(state, playerId, 'confirm', engine);
+        }
 
         if (actionData?.isCostTargeting) {
             if (actionData.costType === 'Sacrifice') {
@@ -429,53 +448,96 @@ export class TargetingProcessor {
         if (actionData?.nextEffectIndex !== undefined) {
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
-            const finalTargets = (actionData.isCopyTargeting && resolvedTargets.length === 0)
-                ? (actionData.originalTargets || [])
+            
+            const finalTargets = (actionData.isCopyTargeting && (resolvedTargets === null || resolvedTargets.length === 0))
+                ? (actionData._backupTargets || [])
                 : resolvedTargets;
 
             const savedTargets = [...(actionData.targets || []), ...finalTargets];
             const savedEffects = actionData.effects || [];
-            const useSourceId = actionData.sourceId || sourceId!;
+            
+            // If this is a copy, we update the spell copy on the stack
+            if (stackObj && actionData.isCopyTargeting) {
+                stackObj.targets = finalTargets;
+                
+                // UI METADATA REFRESH
+                if (!stackObj.data) stackObj.data = {};
+                stackObj.data.targetsControllers = finalTargets.map((tid: string) => {
+                    const obj = RuleUtils.findObject(state, tid);
+                    return RuleUtils.isPlayer(obj) ? obj.id : (RuleUtils.isEntity(obj) ? obj.controllerId : null);
+                });
+                const targetNames = finalTargets.map((tid: string) => {
+                    const obj = RuleUtils.findObject(state, tid);
+                    return RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : tid);
+                });
+                if (targetNames.length > 0) {
+                    stackObj.data.summary = `targeting ${targetNames.join(', ')}`;
+                }
+                logger.info(state, LogCategory.TARGETING, `[COPY-TARGETING] Updated targets for copy ${stackObj.id}: ${finalTargets.join(', ')}`);
+            }
 
+            // Legacy stackId handling
             if (actionData.stackId) {
                 const existingObject = state.stack.find(s => s.id === actionData.stackId);
                 if (existingObject) {
                     existingObject.targets = finalTargets;
-                    // Persist target controller IDs
                     if (!existingObject.data) existingObject.data = {};
                     existingObject.data.targetsControllers = finalTargets.map((tid: string) => {
                         const obj = RuleUtils.findObject(state, tid);
                         return obj ? obj.controllerId : null;
                     });
-                    logger.info(state, LogCategory.TARGETING, `[TARGETING] Targets confirmed for ${existingObject.type === 'TriggeredAbility' ? 'Trigger' : 'Spell'}: ${finalTargets.join(', ')}`);
                 }
             }
+
+            // Resume the parent resolution (e.g. Aziza's trigger)
+            const resumeSourceId = actionData.isCopyTargeting ? (actionData.parentContext?.sourceId || sourceId!) : (actionData.sourceId || sourceId!);
+            const resumeStackObj = actionData.isCopyTargeting ? (actionData.parentContext?.stackObject || stackObj) : stackObj;
 
             EffectProcessor.resolveEffects({
                 state,
                 effects: savedEffects,
-                sourceId: useSourceId,
+                sourceId: resumeSourceId,
                 targets: savedTargets,
                 startIndex: actionData.nextEffectIndex,
-                stackObject: stackObj,
+                stackObject: resumeStackObj,
                 parentContext: actionData.parentContext,
             });
 
             if (!state.pendingAction) {
                 if (actionData.parentContext) {
-                    return engine.resumeResolution(useSourceId, stackObj, actionData.parentContext);
+                    return ResolutionManager.resume(state, engine);
                 }
                 engine.resetPriorityToActivePlayer();
             }
             return true;
         }
 
-        if (stackObj) {
+        // If we have a stackObj (usually for copies or resolution-time targeting), 
+        // update its targets and potentially finalize it.
+        // IMPORTANT: Standard spell casts from hand (isSpellCasting=true) should NOT 
+        // use this shortcut; they must fall through to engine.playCard for full sequence.
+        if (stackObj && (!actionData.isSpellCasting || actionData.isCopyTargeting)) {
             const finalTargets = (actionData.isCopyTargeting && (resolvedTargets === null || resolvedTargets.length === 0))
                 ? (actionData._backupTargets || [])
                 : resolvedTargets;
 
             stackObj.targets = finalTargets;
+
+            // UI METADATA REFRESH: Update controllers and summary for frontend arrows/labels
+            if (!stackObj.data) stackObj.data = {};
+            stackObj.data.targetsControllers = finalTargets.map((tid: string) => {
+                const obj = RuleUtils.findObject(state, tid);
+                return RuleUtils.isPlayer(obj) ? obj.id : (RuleUtils.isEntity(obj) ? obj.controllerId : null);
+            });
+            
+            // Build a human-readable summary for the stack UI
+            const targetNames = finalTargets.map((tid: string) => {
+                const obj = RuleUtils.findObject(state, tid);
+                return RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : tid);
+            });
+            if (targetNames.length > 0) {
+                stackObj.data.summary = `targeting ${targetNames.join(', ')}`;
+            }
 
             // BUG FIX: Prevent double-pushing triggers that were already added to the stack by TriggerProcessor
             const isAlreadyOnStack = state.stack.some(s => s === stackObj || s.id === stackObj.id);
@@ -487,31 +549,15 @@ export class TargetingProcessor {
 
             logger.info(state, LogCategory.STACK, `--------------------------------------------------`);
             logger.info(state, LogCategory.STACK, `[STACK] + ${engine.getPlayerName(stackObj.controllerId)} cast/activated ${stackObj.sourceObject?.definition.name || stackObj.type}`);
-            const targetNames = resolvedTargets.map(tid => {
-                const obj = RuleUtils.findObject(state, tid);
-                return RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : tid);
-            });
             logger.info(state, LogCategory.STACK, `[STACK] Target(s): ${targetNames.join(', ')}`);
             logger.info(state, LogCategory.STACK, `--------------------------------------------------`);
 
             state.pendingAction = undefined;
 
-            // Handle queued triggers from a multi-trigger ordering session
+            // Brand New: Handle queued triggers via ResolutionManager
             if (actionData.nextTriggersToStack && Array.isArray(actionData.nextTriggersToStack)) {
-                const nextTriggers = actionData.nextTriggersToStack;
-                for (let i = 0; i < nextTriggers.length; i++) {
-                    const t = nextTriggers[i];
-                    TriggerProcessor.stackTrigger(state, t);
-
-                    const pendingAfter = state.pendingAction as any;
-                    if (pendingAfter && i < nextTriggers.length - 1) {
-                        const remaining = nextTriggers.slice(i + 1);
-                        if (pendingAfter.data) {
-                            pendingAfter.data.nextTriggersToStack = remaining;
-                        }
-                        return true;
-                    }
-                }
+                ResolutionManager.stackTriggers(state, actionData.nextTriggersToStack);
+                if (state.pendingAction) return true; // Still more interactions needed
             }
 
             if (actionData.parentContext) {
@@ -520,10 +566,10 @@ export class TargetingProcessor {
                 // The copy should remain on the stack to be resolved later.
                 const isCopy = !!actionData.isCopyTargeting;
                 const resumeObj = isCopy ? actionData.parentContext.stackObject : stackObj;
-                const resumeSourceId = isCopy ? (actionData.parentContext.stackObject?.id || sourceId) : (sourceId || stackObj.sourceId);
+                const resumeSourceId = isCopy ? (actionData.parentContext.stackObject?.id || sourceId!) : (sourceId || stackObj.sourceId);
 
                 if (resumeObj) {
-                    return engine.resumeResolution(resumeSourceId, resumeObj as any, actionData.parentContext);
+                    return ResolutionManager.resume(state, engine, resumeObj as any, resumeSourceId, actionData.parentContext);
                 }
             }
 

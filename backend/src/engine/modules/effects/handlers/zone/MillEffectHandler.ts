@@ -39,7 +39,7 @@ function millCards(state: GameState, playerId: PlayerId, amount: number, context
         EP.resolveEffects({
             state,
             effects: originalEffect.effects,
-            sourceId: context.stackObject?.sourceId || playerId,
+            sourceId: context.sourceId || context.stackObject?.id || playerId,
             targets: milledIds,
             startIndex: 0,
             stackObject: context.stackObject,

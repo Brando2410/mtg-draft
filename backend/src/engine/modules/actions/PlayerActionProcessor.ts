@@ -5,9 +5,10 @@ import { oracle } from '../../OracleLogicMap';
 import { CombatProcessor } from '../combat/CombatProcessor';
 import { RuleUtils } from "../../utils/RuleUtils";
 import { PriorityProcessor } from '../core/turn/PriorityProcessor';
-import { getProcessors } from '../ProcessorRegistry';
+import { getProcessors, getEngine } from '../ProcessorRegistry';
 import { LayerProcessor } from '../state/LayerProcessor';
 import { m21 as m21Data } from '../../data/m21/index';
+import { ResolutionManager } from '../core/stack/ResolutionManager';
 
 // Need to safely interact with Rule registries without causing circular dependencies.
 export class PlayerActionProcessor {
@@ -503,21 +504,8 @@ export class PlayerActionProcessor {
           return { finished: false, success: true };
         }
 
-        // Restore effect index on stack object to ensure we resume at the correct point
-        const stackObj = state.pendingAction.data?.stackObj;
-        if (stackObj) {
-          const realStackObj = state.stack.find(s => s.id === stackObj.id);
-          if (realStackObj && realStackObj.data) {
-            const currentIndex = state.pendingAction.data?.nextEffectIndex;
-            if (currentIndex !== undefined) {
-              realStackObj.nextEffectIndex = currentIndex;
-              if (realStackObj.data) realStackObj.data.nextEffectIndex = currentIndex; // Legacy sync
-              logger.debug(state, LogCategory.ACTION, `[DISCARD-RESOLUTION] Restored nextEffectIndex to ${realStackObj.nextEffectIndex} for ${realStackObj.id}`);
-            }
-          }
-        }
-
-        state.pendingAction = undefined;
+        // Brand New Resolution System: Hand off to ResolutionManager to automate extraction and resumption.
+        ResolutionManager.resume(state, getEngine(state));
         return { finished: true, success: true };
       }
     } else {
@@ -595,22 +583,8 @@ export class PlayerActionProcessor {
 
     state.pendingAction = undefined;
 
-    for (let i = 0; i < orderedTriggers.length; i++) {
-      const t = orderedTriggers[i];
-      TrP.stackTrigger(state, t);
-
-      const pendingAfter = state.pendingAction as any;
-      // If stacking this trigger caused a targeting prompt,
-      // we must save the REMAINING triggers to be stacked after targeting is done.
-      if (pendingAfter && i < orderedTriggers.length - 1) {
-        const remaining = orderedTriggers.slice(i + 1);
-        const data: any = pendingAfter.data || {};
-        data.nextTriggersToStack = remaining;
-        pendingAfter.data = data;
-        logger.info(state, LogCategory.TRIGGER, `[TRIGGER] Pausing trigger stacking for ${t.id} target selection. ${remaining.length} triggers remaining in queue.`);
-        return true;
-      }
-    }
+    // Use ResolutionManager to handle the stacking queue and any subsequent suspensions
+    ResolutionManager.stackTriggers(state, orderedTriggers);
     // Process remaining if anyone else has triggers
     TrP.processPendingTriggers(state);
     return true;

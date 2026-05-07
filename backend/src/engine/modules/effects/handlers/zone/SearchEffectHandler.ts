@@ -25,7 +25,7 @@ export const SearchEffectHandler: IEffectHandler<SearchEffect> = {
             if (z === Zone.Hand) pool.push(...player.hand);
         });
 
-        const sourceId = stackObject?.sourceId || "";
+        const sourceId = context.sourceId || stackObject?.id || "";
 
         const getRestrictions = (td: any) => {
             if (!td) return [];

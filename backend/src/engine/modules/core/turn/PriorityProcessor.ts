@@ -12,6 +12,7 @@ import { EngineValidator } from '../logic/EngineValidator';
 import { TurnProcessor } from './TurnProcessor';
 import { getProcessors } from '../../ProcessorRegistry';
 import { LogCategory } from '../../../utils/EngineLogger';
+import { ResolutionManager } from '../stack/ResolutionManager';
 
 
 
@@ -82,7 +83,7 @@ export class PriorityProcessor {
       state.pendingAction = undefined;
       logger.info(state, LogCategory.PRIORITY, `${engine.getPlayerName(playerId)} finished optional discard. Discarded ${state.turnState.lastDiscardedIds?.length || 0} cards.`);
       if (sourceId && stackObj && parentContext) {
-        ChoiceProcessor.resumeResolution(state, sourceId, stackObj, parentContext, engine);
+        ResolutionManager.resume(state, engine, stackObj, sourceId, parentContext);
         return;
       }
     }
@@ -124,10 +125,15 @@ export class PriorityProcessor {
 
     engine.checkStateBasedActions();
 
+    // CR 117.5: Process pending triggers before giving priority
+    const { trigger: TrP, layer: LayerProcessor } = getProcessors(state);
+    TrP.processPendingTriggers(state);
+
+    if (state.pendingAction) return;
+
     state.priorityPlayerId = state.playerOrder[nextIndex];
 
     // CR 613: Refresh playability NOW that priority is shifted.
-    const { layer: LayerProcessor } = getProcessors(state);
     LayerProcessor.updateDerivedStats(state, PriorityProcessor);
 
     this.checkAutoPass(state, state.priorityPlayerId, engine);
@@ -139,6 +145,10 @@ export class PriorityProcessor {
   ) {
     state.consecutivePasses = 0;
     engine.checkStateBasedActions();
+
+    // CR 117.5: Process pending triggers before giving priority
+    const { trigger: TrP } = getProcessors(state);
+    TrP.processPendingTriggers(state);
 
     // Only set priority to active player if an SBA or trigger didn't just set up a mandatory action.
     if (!state.pendingAction) {

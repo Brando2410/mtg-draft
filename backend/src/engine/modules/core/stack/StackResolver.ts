@@ -40,7 +40,7 @@ export class StackResolver {
       const context = {
         sourceId: stackObj.sourceId,
         controllerId: stackObj.controllerId,
-        event: stackObj.data?.event,
+        event: stackObj.event || stackObj.data?.event,
         stackObject: stackObj,
         targets: stackObj.targets || []
       };

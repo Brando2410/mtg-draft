@@ -96,9 +96,9 @@ export class ChoiceGenerator {
             isCostChoice: config.isCostChoice,
             costType: config.costType,
             isFreeCast: config.isFreeCast,
-            exileOnResolution: config.exileOnResolution,
-            minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.data?.minChoices || 1),
-            maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.data?.maxChoices || 1),
+            exileOnResolution: config.exileOnResolution || config.stackObj?.exileOnResolution,
+            minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.minChoices ?? config.stackObj?.data?.minChoices ?? 1),
+            maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.maxChoices ?? config.stackObj?.data?.maxChoices ?? 1),
         }, config.actionType);
     }
 
@@ -127,9 +127,9 @@ export class ChoiceGenerator {
             isCostChoice: config.isCostChoice,
             costType: config.costType,
             isFreeCast: config.isFreeCast,
-            exileOnResolution: config.exileOnResolution,
-            minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.data?.minChoices || 1),
-            maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.data?.maxChoices || 1),
+            exileOnResolution: config.exileOnResolution || config.stackObj?.exileOnResolution,
+            minChoices: config.minChoices !== undefined ? config.minChoices : (config.stackObj?.minChoices ?? config.stackObj?.data?.minChoices ?? 1),
+            maxChoices: config.maxChoices !== undefined ? config.maxChoices : (config.stackObj?.maxChoices ?? config.stackObj?.data?.maxChoices ?? 1),
         }, config.actionType);
     }
 
@@ -300,35 +300,34 @@ export class ChoiceGenerator {
         }
 
         const amount = Number(cost.value || cost.amount || 1);
-        
         const { action: ActionProcessor } = getProcessors(state);
-        return ActionProcessor.prepareAction(state, {
-            type: ActionType.ModalSelection,
-            playerId,
-            sourceId,
-            data: {
-                label,
-                isCostChoice: true,
-                costType: cost.type,
-                minChoices: amount,
-                maxChoices: amount,
-                stackObj: data.stackObj,
-                parentContext: pruneContext(data.parentContext),
-                nextEffectIndex: data.nextEffectIndex,
-                // Save the choice data so we can resume resolution after the cost is paid
-                choiceEffects: choice.effects,
-                remainingCosts: choice.costs.filter((c: any) => c !== cost),
-                lookingCards: candidates, // Required for UI to render card grid
-                choices: candidates.map((c: any) => ({
-                    label: c.definition.name,
-                    value: c.id,
-                    imageUrl: c.definition.image_url || `https://api.scryfall.com/cards/${c.definition.scryfall_id}?format=image&version=normal`,
-                    type_line: c.definition.type_line,
-                    cardData: c,
-                    selectable: true
-                }))
-            }
-        });
+
+        if (cost.type === 'TapSelection' || cost.type === 'Sacrifice') {
+            return ActionProcessor.prepareAction(state, {
+                type: ActionType.Targeting,
+                playerId,
+                sourceId,
+                data: {
+                    label,
+                    isCostChoice: true,
+                    costType: cost.type,
+                    minChoices: amount,
+                    maxChoices: amount,
+                    targetDefinitions: [{
+                        type: cost.type === 'TapSelection' ? 'Creature' : 'Permanent',
+                        count: amount,
+                        restrictions: cost.restrictions || []
+                    }],
+                    targets: candidates.map(c => c.id),
+                    stackObj: data.stackObj,
+                    parentContext: data.parentContext,
+                    choiceEffects: choice.effects,
+                    remainingCosts: choice.costs.filter((c: any) => c !== cost),
+                    selectedChoice: choice,
+                    originalActionData: data
+                }
+            });
+        }
     }
 
     /**
