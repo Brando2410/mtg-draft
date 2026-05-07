@@ -173,6 +173,13 @@ export class ActionProcessor {
     // Clear reveal status on ANY zone change (Rule 400.7)
     card.isRevealed = false;
 
+    // CR 400.7: Objects moving to a new zone become new objects.
+    // Clear all transient casting/targeting metadata.
+    delete card.isFreeCast;
+    delete card.isSpellCasting;
+    delete (card as any).isCopyTargeting;
+    delete (card as any).bypassTargeting;
+
     // Rule 400.7: Objects leaving the battlefield lose memory of their state
     if (to !== Zone.Battlefield) {
       this.resetObjectState(state, card, fromZone, to);
@@ -508,11 +515,8 @@ export class ActionProcessor {
       card.xValue = undefined;
     }
 
-    // Rule 400.7: Objects leaving the battlefield/stack lose their identity
-    if (card.zone === Zone.Battlefield) {
-      delete card.isFreeCast;
-      delete card.isSpellCasting;
-    }
+    // Rule 400.7: Objects leaving the battlefield/stack lose their identity.
+    // (Handled in moveCard for all transitions)
 
     // 3. Wipe calculated stats (they will be recalculated for the new zone)
     card.effectiveStats = undefined;

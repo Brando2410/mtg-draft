@@ -97,7 +97,7 @@ export class RuleUtils {
         const def = this.getDef(obj);
         if (!def) return false;
         const search = type.toLowerCase().trim();
-        
+
         // 1. Check static definition types
         if ((def.types || []).some((t: any) => String(t).toLowerCase().trim() === search)) return true;
 
@@ -234,7 +234,7 @@ export class RuleUtils {
      */
     public static matchesQuality(obj: Targetable | undefined, quality: string, state?: GameState): boolean {
         const q = quality.toLowerCase();
-        
+
         // Color check
         const colors = this.getColors(obj, state).map(c => c.toLowerCase());
         if (colors.includes(q)) return true;
@@ -263,7 +263,7 @@ export class RuleUtils {
     public static getInstantSorceryInGraveyardCount(state: GameState, playerId: PlayerId): number {
         const player = state.players[playerId];
         if (!player) return 0;
-        return player.graveyard.filter(c => 
+        return player.graveyard.filter(c =>
             this.isType(c, 'instant') || this.isType(c, 'sorcery')
         ).length;
     }
@@ -364,14 +364,14 @@ export class RuleUtils {
                         const { targeting: TargetingProcessor } = getProcessors(state);
                         const prefix = amount.startsWith("COUNT_") ? "COUNT_" : "AFFINITY_";
                         const filterToken = amount.substring(prefix.length).toUpperCase();
-                        
+
                         // We support both "COUNT_DOGS" (simple type) and complex restriction tokens
                         return state.battlefield.filter(o => {
                             if (o.controllerId !== controllerId) return false;
-                            
+
                             // 1. Check if it's a simple type/subtype (legacy fallback)
                             const singular = filterToken.endsWith("S") ? filterToken.slice(0, -1) : filterToken;
-                            if (this.isType(o, filterToken) || this.isType(o, singular) || 
+                            if (this.isType(o, filterToken) || this.isType(o, singular) ||
                                 this.hasSubtype(o, filterToken) || this.hasSubtype(o, singular) ||
                                 this.hasSupertype(o, filterToken) || this.hasSupertype(o, singular)) {
                                 return true;
@@ -382,6 +382,10 @@ export class RuleUtils {
                             const restrictions = filterToken.split('_');
                             return TargetingProcessor.matchesRestrictions(state, o, restrictions, targetingContext);
                         }).length;
+                    }
+
+                    if (amount === DynamicAmount.PaidManaSpent) {
+                        return stackObject?.sourceObject?.paidManaValue ?? context.event?.payload?.amount ?? 0;
                     }
                 }
                 return 0;
@@ -466,7 +470,7 @@ export class RuleUtils {
         // Priority 2: sourceId or first targetId
         const id = event.payload.sourceId || event.payload.targetIds?.[0];
         if (!id) return undefined;
-        
+
         const obj = this.findObject(state, id);
         // Ensure we only return physical game objects or stack objects, not players
         if (obj && !state.players[id as PlayerId]) {

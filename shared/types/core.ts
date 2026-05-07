@@ -283,6 +283,7 @@ const _DynamicAmount = {
   TriggerObjectPower: "TRIGGER_EVENT_SOURCE_POWER",
   EventObjectPower: "EVENT_OBJECT_POWER",
   GreatestPowerInYourGraveyard: "GREATEST_POWER_IN_GRAVEYARD",
+  PaidManaSpent: "PAID_MANA_SPENT",
 } as const;
 
 /**

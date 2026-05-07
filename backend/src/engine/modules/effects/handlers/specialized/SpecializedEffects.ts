@@ -54,14 +54,6 @@ export const CastSpellHandler: IEffectHandler<CastSpellEffect> = {
 
     if (targetId) {
       const castObj = EP.findObject(state, targetId, stackObject, parentContext) as GameObject;
-      if (castObj) {
-        if (isFree) {
-          castObj.isFreeCast = true;
-        }
-        if (effect.exileOnResolution) {
-          castObj.exileOnResolution = true;
-        }
-      }
       const oldPriority = state.priorityPlayerId;
       state.priorityPlayerId = controllerId;
       const res = SP.playCard(
@@ -233,7 +225,7 @@ export const ApproachOfTheSecondSunHandler: IEffectHandler<EffectDefinition> = {
     } else {
       AP.gainLife(state, controllerId, 7);
 
-      const stackObj = state.stack.find(s => s.id === sourceId);
+      const stackObj = context.stackObject;
       const card = stackObj?.sourceObject;
       if (card) {
         const pos = Math.max(0, player.library.length - 6);

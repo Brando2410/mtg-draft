@@ -445,6 +445,64 @@ export class TargetingProcessor {
             });
         }
 
+        // --- CASE 1: Standard Spell/Ability Cast (isSpellCasting) ---
+        // We MUST go through playCard/activateAbility to ensure the object reaches the stack 
+        // and all ETB/Cast triggers fire correctly.
+        if (actionData.isSpellCasting && !actionData.isCopyTargeting) {
+            state.pendingAction = undefined;
+            state.priorityPlayerId = playerId;
+            
+            let success = false;
+            if (abilityIndex !== undefined) {
+                success = engine.activateAbility({
+                    playerId,
+                    cardId: sourceId!,
+                    abilityIndex,
+                    targets: resolvedTargets,
+                    xValue: actionData?.xValue,
+                    bypassPriority: true,
+                    bypassTargeting: true,
+                    parentContext: actionData?.parentContext
+                });
+            } else {
+                success = engine.playCard({
+                    playerId,
+                    cardId: sourceId!,
+                    targets: resolvedTargets,
+                    xValue: actionData?.xValue,
+                    bypassPriority: true,
+                    bypassTargeting: true,
+                    parentContext: actionData?.parentContext,
+                    isFreeCast: actionData?.isFreeCast,
+                    exileOnResolution: actionData?.exileOnResolution
+                });
+            }
+
+            // If the cast was successful and didn't trigger a new suspension, 
+            // and we have a parent resolution waiting, resume it now.
+            if (success && !state.pendingAction && actionData.parentContext && actionData.nextEffectIndex !== undefined) {
+                logger.info(state, LogCategory.ACTION, `[TARGET-FINAL] Spell cast finished, resuming parent resolution for ${actionData.parentContext.sourceId}`);
+                EffectProcessor.resolveEffects({
+                    state,
+                    effects: actionData.effects || [],
+                    sourceId: actionData.parentContext.sourceId,
+                    targets: actionData.targets || [],
+                    startIndex: actionData.nextEffectIndex,
+                    stackObject: actionData.parentContext.stackObject,
+                    parentContext: actionData.parentContext.parentContext,
+                });
+                
+                if (!state.pendingAction) {
+                    return ResolutionManager.resume(state, engine);
+                }
+            } else if (!state.pendingAction) {
+                engine.checkAutoPass(playerId);
+            }
+            return success;
+        }
+
+        // --- CASE 2: Resolution-Time Effects (e.g. "Exile target, then draw") ---
+        // These resume the current effect chain directly.
         if (actionData?.nextEffectIndex !== undefined) {
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
@@ -489,7 +547,7 @@ export class TargetingProcessor {
                 }
             }
 
-            // Resume the parent resolution (e.g. Aziza's trigger)
+            // Resume the current resolution
             const resumeSourceId = actionData.isCopyTargeting ? (actionData.parentContext?.sourceId || sourceId!) : (actionData.sourceId || sourceId!);
             const resumeStackObj = actionData.isCopyTargeting ? (actionData.parentContext?.stackObject || stackObj) : stackObj;
 
@@ -512,11 +570,8 @@ export class TargetingProcessor {
             return true;
         }
 
-        // If we have a stackObj (usually for copies or resolution-time targeting), 
-        // update its targets and potentially finalize it.
-        // IMPORTANT: Standard spell casts from hand (isSpellCasting=true) should NOT 
-        // use this shortcut; they must fall through to engine.playCard for full sequence.
-        if (stackObj && (!actionData.isSpellCasting || actionData.isCopyTargeting)) {
+        // --- CASE 3: Specialized Stack Object Updates (e.g. Copying/Retargeting Spells) ---
+        if (stackObj) {
             const finalTargets = (actionData.isCopyTargeting && (resolvedTargets === null || resolvedTargets.length === 0))
                 ? (actionData._backupTargets || [])
                 : resolvedTargets;
@@ -530,7 +585,6 @@ export class TargetingProcessor {
                 return RuleUtils.isPlayer(obj) ? obj.id : (RuleUtils.isEntity(obj) ? obj.controllerId : null);
             });
             
-            // Build a human-readable summary for the stack UI
             const targetNames = finalTargets.map((tid: string) => {
                 const obj = RuleUtils.findObject(state, tid);
                 return RuleUtils.isEntity(obj) ? obj.definition.name : (RuleUtils.isPlayer(obj) ? obj.name : tid);
@@ -539,7 +593,6 @@ export class TargetingProcessor {
                 stackObj.data.summary = `targeting ${targetNames.join(', ')}`;
             }
 
-            // BUG FIX: Prevent double-pushing triggers that were already added to the stack by TriggerProcessor
             const isAlreadyOnStack = state.stack.some(s => s === stackObj || s.id === stackObj.id);
             if (!isAlreadyOnStack) {
                 state.stack.push(stackObj);
