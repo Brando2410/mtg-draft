@@ -513,12 +513,14 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
         }
 
         if (stackObject) {
-          if (!stackObject.data) stackObject.data = {};
-          if (!stackObject.data.exiledIds) stackObject.data.exiledIds = [];
-          if (!stackObject.data.exiledIds.includes(tid)) {
-            stackObject.data.exiledIds.push(tid);
-            logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: Added ${tid} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
+          if (!stackObject.exiledIds) stackObject.exiledIds = [];
+          if (!stackObject.exiledIds.includes(tid)) {
+            stackObject.exiledIds.push(tid);
+            logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: Added ${tid} to stackObject.exiledIds. Current: ${stackObject.exiledIds.join(', ')}`);
           }
+          // Legacy sync
+          if (!stackObject.data) stackObject.data = {};
+          stackObject.data.exiledIds = stackObject.exiledIds;
         }
 
         if (parentContext) {
@@ -753,12 +755,14 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       }
       if (zone === Zone.Exile) {
         if (stackObject) {
-          if (!stackObject.data) stackObject.data = {};
-          if (!stackObject.data.exiledIds) stackObject.data.exiledIds = [];
-          if (!stackObject.data.exiledIds.includes(c.id)) {
-            stackObject.data.exiledIds.push(c.id);
-            logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: Added library card ${c.id} to stackObject.data.exiledIds. Current: ${stackObject.data.exiledIds.join(', ')}`);
+          if (!stackObject.exiledIds) stackObject.exiledIds = [];
+          if (!stackObject.exiledIds.includes(c.id)) {
+            stackObject.exiledIds.push(c.id);
+            logger.debug(state, LogCategory.ACTION, `[DEBUG] MoveEffectHandler: Added library card ${c.id} to stackObject.exiledIds. Current: ${stackObject.exiledIds.join(', ')}`);
           }
+          // Legacy sync
+          if (!stackObject.data) stackObject.data = {};
+          stackObject.data.exiledIds = stackObject.exiledIds;
         }
 
         if (parentContext) {

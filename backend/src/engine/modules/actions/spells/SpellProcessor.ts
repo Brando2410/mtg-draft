@@ -751,7 +751,7 @@ export class SpellProcessor {
 
         const targetsControllers = (declaredTargets || []).map((tid) => {
             const obj = RuleUtils.findObject(state, tid);
-            return obj ? obj.controllerId : null;
+            return RuleUtils.getController(obj);
         });
 
         logger.debug(state, LogCategory.ACTION, `[FINAL-PLAY-LOG] Finalizing ${cardToPlay.definition.name} with ${declaredTargets.length} targets: [${declaredTargets.join(', ')}]`);
@@ -776,6 +776,9 @@ export class SpellProcessor {
             isCopy: cardToPlay.isCopy,
             isPreparedCopy: cardToPlay.isPreparedCopy,
             isFlashbackCast: cardToPlay.isFlashbackCast,
+            castFromZone: lastZone,
+            targetsControllers,
+            preSelectedChoice,
             data: {
                 preSelectedChoice,
                 targetsControllers,
@@ -872,12 +875,16 @@ export class SpellProcessor {
             name: `${obj.definition.name} Ability${obj.xValue !== undefined && (JSON.stringify(ability).includes('"X"') || obj.xValue > 0) ? ` (X=${obj.xValue})` : ""}`,
             image_url: obj.definition.image_url,
             abilityIndex: abilityIndex,
+            effects: (ability.type === AbilityType.Activated || ability.type === AbilityType.Triggered) ? ability.effects : [],
+            targetDefinitions: (ability.type === AbilityType.Activated || ability.type === AbilityType.Triggered) ? ability.targetDefinitions : undefined,
+            preSelectedChoice,
+            targetsControllers: (declaredTargets || []).map(tid => RuleUtils.getController(RuleUtils.findObject(state, tid))),
             counters: {},
             data: {
                 preSelectedChoice,
                 declaredXValue: xValue !== undefined ? xValue : obj.xValue,
                 summary: (xValue !== undefined ? xValue : obj.xValue) !== undefined && (JSON.stringify(ability).includes('"X"') || (xValue || obj.xValue || 0) > 0) ? `X = ${xValue !== undefined ? xValue : obj.xValue}` : undefined,
-                targetsControllers: [],
+                targetsControllers: (declaredTargets || []).map(tid => RuleUtils.getController(RuleUtils.findObject(state, tid))),
                 effects: (ability.type === AbilityType.Activated || ability.type === AbilityType.Triggered) ? ability.effects : [],
                 targetDefinitions: (ability.type === AbilityType.Activated || ability.type === AbilityType.Triggered) ? ability.targetDefinitions : undefined,
                 choices: (xValue !== undefined ? xValue : obj.xValue) !== undefined && (JSON.stringify(ability).includes('"X"') || (xValue || obj.xValue || 0) > 0) ? [{ label: "X", value: xValue !== undefined ? xValue : obj.xValue }] : []

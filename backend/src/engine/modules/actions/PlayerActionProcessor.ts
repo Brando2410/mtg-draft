@@ -510,8 +510,9 @@ export class PlayerActionProcessor {
           if (realStackObj && realStackObj.data) {
             const currentIndex = state.pendingAction.data?.nextEffectIndex;
             if (currentIndex !== undefined) {
-              realStackObj.data.nextEffectIndex = currentIndex;
-              logger.debug(state, LogCategory.ACTION, `[DISCARD-RESOLUTION] Restored nextEffectIndex to ${realStackObj.data.nextEffectIndex} for ${realStackObj.id}`);
+              realStackObj.nextEffectIndex = currentIndex;
+              if (realStackObj.data) realStackObj.data.nextEffectIndex = currentIndex; // Legacy sync
+              logger.debug(state, LogCategory.ACTION, `[DISCARD-RESOLUTION] Restored nextEffectIndex to ${realStackObj.nextEffectIndex} for ${realStackObj.id}`);
             }
           }
         }

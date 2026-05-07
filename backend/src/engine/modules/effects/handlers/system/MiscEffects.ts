@@ -51,8 +51,9 @@ export const NecromentiaHandler: IEffectHandler = {
         if (!targetOpponent) return;
 
         const { logger, action: AP, trigger: TrP } = getProcessors(state);
+        const chosenName = stackObject?.chosenName || stackObject?.data?.chosenName;
 
-        if (!stackObject?.data?.chosenName) {
+        if (!chosenName) {
             state.pendingAction = ChoiceGenerator.createCardChoice(
                 state,
                 state.players[controllerId].library,
@@ -64,8 +65,10 @@ export const NecromentiaHandler: IEffectHandler = {
                     optional: false,
                     actionType: ActionType.ResolutionChoice,
                     onSelected: (c: any) => {
-                        if (stackObject?.data)
-                            stackObject.data.chosenName = c.definition.name;
+                        if (stackObject) {
+                            stackObject.chosenName = c.definition.name;
+                            if (stackObject.data) stackObject.data.chosenName = c.definition.name;
+                        }
                         return [{ type: "Necromentia", targetMapping: "TARGET_1" }];
                     },
                     stackObj: stackObject,
@@ -75,7 +78,6 @@ export const NecromentiaHandler: IEffectHandler = {
             return;
         }
 
-        const chosenName = stackObject?.data?.chosenName;
         if (!chosenName) return;
         
         const zones = [Zone.Graveyard, Zone.Hand, Zone.Library];

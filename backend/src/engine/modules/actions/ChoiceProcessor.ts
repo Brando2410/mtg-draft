@@ -336,7 +336,9 @@ export class ChoiceProcessor {
             });
 
             if (stackObj && !completed && (state as GameState).pendingAction) {
-                stackObj.data = { ...stackObj.data, nextEffectIndex: (state as GameState).pendingAction?.data?.nextEffectIndex };
+                stackObj.nextEffectIndex = (state as GameState).pendingAction?.data?.nextEffectIndex;
+                if (!stackObj.data) stackObj.data = {};
+                stackObj.data.nextEffectIndex = stackObj.nextEffectIndex; // Legacy sync
             }
         }
 

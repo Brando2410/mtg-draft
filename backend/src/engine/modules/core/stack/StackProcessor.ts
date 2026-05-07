@@ -59,13 +59,14 @@ export class StackProcessor {
         logger.info(state, LogCategory.STACK, `[RESOLVING] >>> ${objectName} is resolving <<<`);
 
         const effects = StackProcessor.getEffectsForResolution(state, objectToResolve);
-        const startIndex = objectToResolve.data?.nextEffectIndex || 0;
+        const startIndex = objectToResolve.nextEffectIndex ?? objectToResolve.data?.nextEffectIndex ?? 0;
         const completed = resolver.resolveObject(objectToResolve, effects, startIndex);
 
         if (!completed) {
           // Suspended resolution. Push the object back to the stack.
+          objectToResolve.nextEffectIndex = state.pendingAction?.data?.nextEffectIndex || 0;
           if (!objectToResolve.data) objectToResolve.data = {};
-          objectToResolve.data.nextEffectIndex = state.pendingAction?.data?.nextEffectIndex || 0;
+          objectToResolve.data.nextEffectIndex = objectToResolve.nextEffectIndex; // Legacy sync
           state.stack.push(objectToResolve);
 
           // During suspended resolution, priority is given to the player who must act

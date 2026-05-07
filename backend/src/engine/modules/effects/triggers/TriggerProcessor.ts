@@ -351,6 +351,9 @@ export class TriggerProcessor {
       sourceObject: sourceObj || (emblemSource as any),
       targetDefinitions: trigger.targetDefinitions || [],
       event: event,
+      eventAmount: event.payload?.amount,
+      sourceName: sourceName,
+      startIndex: 0,
       exileOnResolution: exileOnResolution,
       data: contextPayload,
       zone: Zone.Stack

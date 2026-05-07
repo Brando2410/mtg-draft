@@ -66,6 +66,16 @@ export const CopySpellHandler: IEffectHandler = {
             copy.isCopy = true;
             copy.controllerId = controllerId;
 
+            // DEBUG LOGGING: Full state capture
+            logger.info(state, LogCategory.ACTION, `[COPY-DEBUG] Original Spell: ${stackObj.name} (ID: ${stackObj.id})`);
+            logger.debug(state, LogCategory.ACTION, `[COPY-DEBUG] Original Properties: ${JSON.stringify({
+                effects: stackObj.effects?.length,
+                targetDefinitions: !!stackObj.targetDefinitions,
+                targets: stackObj.targets,
+                xValue: stackObj.xValue,
+                data: Object.keys(stackObj.data || {})
+            })}`);
+
             // Ensure the card instance itself gets a unique ID to avoid collision during zone movements
             if (copy.sourceObject) {
                 copy.sourceObject.id = `card_copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
@@ -95,30 +105,10 @@ export const CopySpellHandler: IEffectHandler = {
                 };
             }
 
-            // PRE-CLEAR TARGETS if choosing new ones (prevents UI arrows during re-selection)
-            let backupTargets: string[] = [];
-            if (copyEffect.chooseNewTargets && copy.targets) {
-                backupTargets = [...copy.targets];
-                copy.targets = [];
-
-                // Aggressively clear all target-related metadata
-                if (copy.data) {
-                    copy.data.targets = [];
-                    copy.data.selectedTargets = [];
-                    copy.data.declaredTargets = [];
-                    copy.data.targetsControllers = [];
-                }
-                
-                // Clear nested card targets to be safe
-                if (copy.sourceObject && copy.sourceObject.data) {
-                    copy.sourceObject.data.targets = [];
-                    copy.sourceObject.data.selectedTargets = [];
-                }
-            }
-
             copy.name = `Copy of ${stackObj.name || stackObj.sourceObject?.definition.name || 'Spell'}`;
             state.stack.push(copy);
-            logger.info(state, LogCategory.ACTION, `[COPY] Created copy of ${stackObj.sourceObject?.definition.name || 'spell'}.`);
+            logger.info(state, LogCategory.ACTION, `[COPY] Created copy of ${stackObj.sourceObject?.definition.name || 'spell'}. (New ID: ${copy.id})`);
+            logger.debug(state, LogCategory.ACTION, `[COPY-DEBUG] Copy Root Effects: ${copy.effects?.length || 0}`);
 
             // Emit copy event for Magecraft
             TrP.onEvent(state, {
@@ -151,6 +141,18 @@ export const CopySpellHandler: IEffectHandler = {
                     }, tid));
 
                     if (legalTargetIds.length > 0) {
+                        const backupTargets = [...(copy.targets || [])];
+                        
+                        // CLEAR TARGETS for the re-selection phase
+                        copy.targets = [];
+                        copy.targetsControllers = [];
+                        if (copy.data) {
+                            copy.data.targets = [];
+                            copy.data.selectedTargets = [];
+                            copy.data.declaredTargets = [];
+                            copy.data.targetsControllers = [];
+                        }
+
                         state.pendingAction = {
                             type: ActionType.Targeting,
                             playerId: controllerId,

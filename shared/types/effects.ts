@@ -195,20 +195,27 @@ export interface ContinuousEffect {
  * the effect resolution chain. Replaces loosely typed 'any' parameters.
  */
 export interface ResolutionContext {
-    controllerId: PlayerId;
+    castFromZone?: Zone;
     controller?: PlayerState;
+    controllerId: PlayerId;
     currentIndex?: number;
+    discardAmount?: number | string;
     effects: EffectDefinition[];
-    eventAmount?: number;
     event?: GameEvent;
+    eventAmount?: number;
     exiledIds?: string[];
     isCopy?: boolean;
     lastDiscardedIds?: string[];
     lastMilledIds?: string[];
     lookingCards?: GameObject[];
+    maxChoices?: number;
+    minChoices?: number;
     nextEffectIndex?: number;
+    nextPlayerIds?: PlayerId[];
+    onFailureEffects?: EffectDefinition[];
     parentContext?: ResolutionContext;
     sourceId: GameObjectId;
+    sourceName?: string;
     sourceObject?: GameObject;
     stackObject?: StackObject;
     startIndex?: number;

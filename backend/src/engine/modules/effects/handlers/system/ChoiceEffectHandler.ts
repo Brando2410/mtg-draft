@@ -55,9 +55,9 @@ export class ChoiceEffectHandler {
     // If present, we consume it here and resolve the effects immediately,
     // bypassing the creation of a 'RESOLUTION_CHOICE' pending action/modal.
     const preSelectedIdx =
-      stackObject?.data?.preSelectedChoice !== undefined
-        ? stackObject.data.preSelectedChoice
-        : stackObject?.preSelectedChoice;
+      stackObject?.preSelectedChoice !== undefined
+        ? stackObject.preSelectedChoice
+        : stackObject?.data?.preSelectedChoice;
 
     if (preSelectedIdx !== undefined && dynamicChoices) {
       const rawIndices = String(preSelectedIdx)
@@ -215,8 +215,9 @@ export class ChoiceEffectHandler {
             actionType: ActionType.ResolutionChoice,
             onSelected: (c: GameObject) => {
               if (stackObject) {
+                stackObject.chosenName = c.definition.name;
                 if (!stackObject.data) stackObject.data = {};
-                stackObject.data.chosenName = c.definition.name;
+                stackObject.data.chosenName = c.definition.name; // Legacy sync
               }
               return effect.effects || [];
             },

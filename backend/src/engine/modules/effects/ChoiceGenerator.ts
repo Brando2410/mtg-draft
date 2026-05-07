@@ -227,6 +227,9 @@ export class ChoiceGenerator {
             maxChoices: maxChoices,
             stackObj: {
                 ...stackObj,
+                minChoices: minChoices,
+                maxChoices: maxChoices,
+                onFailureEffects: onFailureEffects,
                 data: {
                     ...(stackObj?.data || {}),
                     minChoices: minChoices,
@@ -234,7 +237,7 @@ export class ChoiceGenerator {
                     isOptionalDiscard: isAny, // Flag so engine knows player can stop early
                     onFailureEffects: onFailureEffects // Preserve for next steps
                 }
-            },
+            } as any,
             parentContext: pruneContext(parentContext),
             targets: [currentPlayerId],
             onSelected: (card: GameObject) => {

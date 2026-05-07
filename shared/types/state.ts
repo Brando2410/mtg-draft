@@ -5,156 +5,174 @@ import type { AbilityDefinition, ActivatedAbility, TriggeredAbility, Replacement
 import { AbilityType } from './abilities';
 import type { CounterType, GameObjectId, PlayerId } from './core';
 import { Phase, Step, Zone } from './core';
-import type { ContinuousEffect, EffectDefinition } from './effects';
-import type { AbilityRestriction, TargetDefinition } from './targeting';
+import type { ContinuousEffect, EffectDefinition, ConditionDefinition, ResolutionContext } from './effects';
+import type { AbilityRestriction, TargetDefinition, TargetRestriction } from './targeting';
 
 export interface CardLogic extends Partial<CardDefinition> {
-    effects?: any[];
-    condition?: any;
-    restrictions?: any[];
+    condition?: ConditionDefinition;
+    effects?: EffectDefinition[];
+    restrictions?: (TargetRestriction | string)[];
 }
 
 export interface CardDefinition {
-
-    name: string;
-    manaCost: string;
-    manaValue?: number;
+    abilities?: (AbilityDefinition | string)[];
+    auraRestrictions?: TargetDefinition[];
+    cannotBeCopied?: boolean;
     colors: string[];
-    supertypes?: string[];
-    types: string[];
-    subtypes?: string[];
-    typeMask?: number;
-    power?: string | number;
-    toughness?: string | number;
-    keywords?: string[];
-    loyalty?: string | number;
-    oracleText: string;
-    type_line?: string;
-    image_url?: string;
-    scryfall_id?: string;
-    set?: string;
+    entersPrepared?: boolean;
     entersTapped?: boolean;
     entersTappedCondition?: string;
     entersWithXCounters?: boolean;
-    entersPrepared?: boolean;
-    preparedFace?: CardDefinition;
+    exileOnResolution?: boolean;
     faces?: CardDefinition[];
     flashbackCost?: string;
-    abilities?: (AbilityDefinition | string)[];
-    exileOnResolution?: boolean;
-    rarity?: 'common' | 'uncommon' | 'rare' | 'mythic' | 'basic';
-    cannotBeCopied?: boolean;
+    image_url?: string;
+    keywords?: string[];
+    loyalty?: string | number;
+    manaCost: string;
+    manaValue?: number;
+    name: string;
+    oracleText: string;
+    power?: string | number;
+    preparedFace?: CardDefinition;
+    rarity?: 'common' | 'uncommon' | 'rare' | 'mythic';
+    scryfall_id?: string;
+    set?: string;
+    subtypes?: string[];
+    supertypes?: string[];
     targetDefinitions?: TargetDefinition[];
-    auraRestrictions?: TargetDefinition[];
+    toughness?: string | number;
+    typeMask?: number;
+    type_line?: string;
+    types: string[];
 }
 
 export interface BaseEntity {
-    id: string;
     controllerId: PlayerId;
-    ownerId: PlayerId;
-    definition: CardDefinition;
-    name?: string;
-    image_url?: string;
-    zone?: Zone;
-    xValue?: number;
+    convergeAmount?: number;
     counters: Partial<Record<CounterType, number>>;
+    data?: Record<string, any>;
+    dealtDamageThisTurn?: boolean;
+    definition: CardDefinition;
+    exileOnResolution?: boolean;
+    exiledBy?: string;
+    id: string;
+    image_url?: string;
+    isCopy?: boolean;
+    isFlashbackCast?: boolean;
     isPhasedOut?: boolean;
     isPrepared?: boolean;
-    convergeAmount?: number;
-    exileOnResolution?: boolean;
-    isToken?: boolean;
-    isCopy?: boolean;
     isPreparedCopy?: boolean;
-    isFlashbackCast?: boolean;
+    isToken?: boolean;
+    name?: string;
+    ownerId: PlayerId;
     paidManaValue?: number;
     targets?: (GameObjectId | PlayerId)[]; // Added to unify target access for GameObject | StackObject
-    exiledBy?: string;
-    dealtDamageThisTurn?: boolean;
-    data?: any;
+    xValue?: number;
+    zone?: Zone;
 }
 
 export interface EffectiveStats {
-    power: number;
-    toughness: number;
-    keywords: string[];
-    restrictions?: import('./core').RestrictionObject[];
-    isPlayable?: boolean;
-    manaCost?: string;
-    isFlashback?: boolean;
-    isActivation?: boolean;
-    isVirtual?: boolean;
+    abilities?: (AbilityDefinition | string)[];
     colors?: string[];
-    types?: string[];
+    flashbackCostOverride?: string;
+    isActivation?: boolean;
+    isFlashback?: boolean;
+    isPlayable?: boolean;
+    isVirtual?: boolean;
+    keywords: string[];
+    manaCost?: string;
+    power: number;
+    restrictions?: import('./core').RestrictionObject[];
     subtypes?: string[];
     supertypes?: string[];
-    flashbackCostOverride?: string;
-    abilities?: (import('./abilities').AbilityDefinition | string)[];
+    toughness: number;
+    types?: string[];
 }
 
 export interface GameObject extends BaseEntity {
-    zone: Zone;
-    version?: number;
-    typeMask?: number;
-    isTapped: boolean;
-    damageMarked: number;
-    summoningSickness: boolean;
     abilitiesUsedThisTurn: number;
-    faceDown: boolean;
-    keywords: string[];
-    deathtouchMarked: boolean;
-    lastNonStackZone?: Zone;
-    isRevealed?: boolean;
-    isFreeCast?: boolean;
-    isSpellCasting?: boolean;
-    usedAlternativeCostId?: string;
-    paidCost?: string;
-    sourceCreatureId?: string;
-    colorsSpent?: string[];
-    originalDefinition?: CardDefinition;
-    selectedFaceDefinition?: CardDefinition;
     attachedTo?: GameObjectId;
-    data?: any;
+    cannotUntapThisTurn?: boolean;
+    colorsSpent?: string[];
+    controllerHistory?: PlayerId[];
+    damageMarked: number;
+    data?: Record<string, any>;
+    deathtouchMarked: boolean;
     effectiveStats?: EffectiveStats;
+    faceDown: boolean;
     isAttacking?: boolean;
     isBlocking?: boolean;
+    isFreeCast?: boolean;
     isGoaded?: boolean;
-    cannotUntapThisTurn?: boolean;
-    modifierSnapshot?: any;
-    isVirtual?: boolean;
     isPTSwitched?: boolean;
-    controllerHistory?: PlayerId[];
+    isRevealed?: boolean;
+    isSpellCasting?: boolean;
+    isTapped: boolean;
+    isVirtual?: boolean;
+    keywords: string[];
+    lastNonStackZone?: Zone;
+    modifierSnapshot?: any;
+    originalDefinition?: CardDefinition;
+    paidCost?: string;
+    selectedFaceDefinition?: CardDefinition;
+    sourceCreatureId?: string;
+    summoningSickness: boolean;
+    typeMask?: number;
+    usedAlternativeCostId?: string;
+    version?: number;
+    zone: Zone;
 }
 
 export interface StackObject extends BaseEntity {
-    sourceId: GameObjectId;
-    type: AbilityType;
-    targets: GameObjectId[] | PlayerId[];
-    sourceObject?: GameObject; // The canonical hydrated object (Card, Token, or Ability Source)
     abilityIndex?: number;
-    data?: any;
     cannotBeCopied?: boolean;
-    originalControllerId?: PlayerId;
-    targetDefinitions?: TargetDefinition[];
+    castFromZone?: Zone;
+    chosenName?: string;
+    condition?: ConditionDefinition;
+    data?: Record<string, any>;
+    discardAmount?: number | string;
     effects?: EffectDefinition[];
-    targetsControllers?: PlayerId[];
-    lookingCards?: GameObject[];
     event?: import('./events').GameEvent;
-    condition?: any;
+    eventAmount?: number;
+    exiledIds?: string[];
+    lastDiscardedIds?: string[];
+    lastMilledIds?: string[];
+    lookingCards?: GameObject[];
+    maxChoices?: number;
+    minChoices?: number;
+    nextEffectIndex?: number;
+    nextPlayerIds?: PlayerId[];
+    onFailureEffects?: EffectDefinition[];
+    originalControllerId?: PlayerId;
     preSelectedChoice?: number | string;
+    sourceId: GameObjectId;
+    sourceName?: string;
+    sourceObject?: GameObject; // The canonical hydrated object (Card, Token, or Ability Source)
+    startIndex?: number;
+    targetDefinitions?: TargetDefinition[];
+    targets: GameObjectId[] | PlayerId[];
+    targetsControllers?: PlayerId[];
+    type: AbilityType;
 }
 
 export interface PlayerState {
-    id: PlayerId;
-    controllerId: PlayerId; // Harmonized for Targetable union
-    ownerId: PlayerId;      // Harmonized for Targetable union
-    name: string;
+    autoOrderTriggers: boolean;
     avatar?: string;
-    life: number;
-    poisonCounters: number;
-    library: GameObject[];
-    hand: GameObject[];
+    canActivateAbilities?: boolean;
+    controllerId: PlayerId; // Harmonized for Targetable union
+    extraTurns: number;
+    fullControl: boolean;
     graveyard: GameObject[];
-    sideboard: GameObject[];
+    hand: GameObject[];
+    hasLost?: boolean;
+    hasLostDueToEmptyLibrary?: boolean;
+    hasPlayedLandThisTurn: boolean;
+    hasWon?: boolean;
+    id: PlayerId;
+    library: GameObject[];
+    life: number;
+    manaCheat?: boolean;
     manaPool: {
         W: number;
         U: number;
@@ -163,119 +181,112 @@ export interface PlayerState {
         G: number;
         C: number;
     };
+    maxHandSize: number;
+    name: string;
+    ownerId: PlayerId;      // Harmonized for Targetable union
+    passUntilEndOfTurn: boolean;
+    pendingDiscardCount: number;
+    poisonCounters: number;
     restrictedMana?: {
         color: 'W' | 'U' | 'B' | 'R' | 'G' | 'C';
         amount: number;
         restrictions: string[];
     }[];
-    hasPlayedLandThisTurn: boolean;
-    fullControl: boolean;
-    maxHandSize: number;
-    pendingDiscardCount: number;
-    manaCheat?: boolean;
-    virtualHand: GameObject[];
-    hasLost?: boolean;
-    hasWon?: boolean;
-    hasLostDueToEmptyLibrary?: boolean;
+    sideboard: GameObject[];
     stops: Record<string, boolean>;
-    autoOrderTriggers: boolean;
-    passUntilEndOfTurn: boolean;
-    extraTurns: number;
     turnsToSkip: number;
-    canActivateAbilities?: boolean;
+    virtualHand: GameObject[];
 }
 
 export interface CombatState {
     attackers: {
         attackerId: GameObjectId;
-        targetId: PlayerId | GameObjectId;
         order?: GameObjectId[];
+        targetId: PlayerId | GameObjectId;
     }[];
     blockers: {
-        blockerId: GameObjectId;
         attackerId: GameObjectId;
+        blockerId: GameObjectId;
         order?: GameObjectId[];
     }[];
 }
 
 export interface TurnState {
-    permanentReturnedToHandThisTurn: boolean;
-    playersWithPermanentReturnedThisTurn: Record<PlayerId, boolean>;
-    noncombatDamageDealtToOpponents: Record<PlayerId, number>;
-    creaturesAttackedThisTurn: number;
-    creaturesDiedThisTurn: any[];
-    lastDamageAmount: number;
-    lastExcessDamageAmount: number;
-    lastSacrificedObjectPower?: number;
-    turnStartTime: number;
-    lastLifeGainedAmount: number;
-    lastCardsDrawnAmount: number;
-    cardsDrawnThisTurn: Record<PlayerId, number>;
-    lifeGainedThisTurn: Record<PlayerId, number>;
-    spellsCastThisTurn: Record<PlayerId, number>;
-    creaturesEnteredThisTurn: Record<PlayerId, number>;
-    instantOrSorceryCastThisTurn: Record<PlayerId, boolean>;
     cardLeftGraveyardThisTurn: Record<PlayerId, boolean>;
+    cardsDrawnThisTurn: Record<PlayerId, number>;
+    cardsExiledThisTurn: Record<PlayerId, boolean>;
+    countersAddedThisTurnIds: GameObjectId[];
+    creaturesAttackedThisTurn: number;
+    creaturesDiedThisTurn: GameObject[];
+    creaturesEnteredThisTurn: Record<PlayerId, number>;
+    damagePreventionDisabled?: boolean;
+    instantOrSorceryCastThisTurn: Record<PlayerId, boolean>;
     landsPlayedThisTurn: Record<PlayerId, number>;
-    triggeredAbilitiesUsedThisTurn: Record<string, number>;
+    lastCardsDrawnAmount: number;
+    lastCreatedTokenId?: string;
+    lastDamageAmount: number;
+    lastDestroyedCount?: number;
     lastDiscardedCount: number;
     lastDiscardedIds?: string[];
-    lastDestroyedCount?: number;
+    lastExcessDamageAmount: number;
+    lastExiledIds?: string[];
+    lastLifeGainedAmount: number;
+    lastMilledIds?: string[];
     lastSacrificedObject?: GameObject;
-    cardsExiledThisTurn: Record<PlayerId, boolean>;
-    namedCards?: Record<string, string>;
-    countersAddedThisTurnIds: GameObjectId[];
-    damagePreventionDisabled?: boolean;
+    lastSacrificedObjectPower?: number;
     lastScrySurveilResult?: {
-        playerId: PlayerId;
-        top: number;
         bottom: number;
         graveyard: number;
-        type: string;
+        playerId: PlayerId;
         timestamp: number;
+        top: number;
+        type: string;
     };
-    lastExiledIds?: string[];
-    lastMilledIds?: string[];
-    lastCreatedTokenId?: string;
+    lifeGainedThisTurn: Record<PlayerId, number>;
+    namedCards?: Record<string, string>;
+    noncombatDamageDealtToOpponents: Record<PlayerId, number>;
+    permanentReturnedToHandThisTurn: boolean;
+    playersWithPermanentReturnedThisTurn: Record<PlayerId, boolean>;
+    spellsCastThisTurn: Record<PlayerId, number>;
+    triggeredAbilitiesUsedThisTurn: Record<string, number>;
+    turnStartTime: number;
 }
 
 export interface ChoiceOption {
-    label: string;
-    value: string | number; // The key ID or index returned to the engine
-    selectable?: boolean;
-    effects?: EffectDefinition[];
-    costs?: AbilityCost[];
-    imageUrl?: string;
     cardData?: GameObject;
+    costs?: AbilityCost[];
+    effects?: EffectDefinition[];
+    imageUrl?: string;
+    label: string;
+    selectable?: boolean;
     type_line?: string;
+    value: string | number; // The key ID or index returned to the engine
 }
 
 export interface ChoicePayload {
-    selections: (string | number)[];
-    summary?: string;
-    // Multi-select specific reordering (Scry/Surveil)
-    top?: string[];
     bottom?: string[];
     graveyard?: string[];
-    // Specialized parameters for specific mechanics (faceIndex, costChoiceId, xValue, modeIndices)
     params?: Record<string, any>;
+    selections: (string | number)[];
+    summary?: string;
+    top?: string[];
 }
 
 export interface InteractionState {
-    lastSelections: Record<string, string[]>; // Map of type -> IDs (e.g. { 'Sacrifice': ['id1'], 'Exile': ['id2', 'id3'] })
+    flags: Record<string, any>; // Multi-purpose flags (e.g. confirmedAutoTap, paidCasualtyFor)
     lastChoiceIndex?: number; // Numeric selection (e.g. cost index, mode index)
     lastChoiceValue?: string; // String selection (e.g. chosen color, type, or card name)
-    lastChosenModeIndex?: number[]; // Mode indices for multi-mode spells
     lastChoiceX?: number; // Chosen X value
+    lastChosenModeIndex?: number[]; // Mode indices for multi-mode spells
+    lastSelections: Record<string, string[]>; // Map of type -> IDs (e.g. { 'Sacrifice': ['id1'], 'Exile': ['id2', 'id3'] })
     manaChoices?: Record<string, string>; // Map of hybrid symbol index -> chosen payment (e.g. { "0": "R" })
-    flags: Record<string, any>; // Multi-purpose flags (e.g. confirmedAutoTap, paidCasualtyFor)
 }
 
 export interface ChoiceQueueItem {
-    type: string;
+    data: any;
     playerId: PlayerId;
     sourceId: string;
-    data: any;
+    type: string;
 }
 
 /**
@@ -283,37 +294,37 @@ export interface ChoiceQueueItem {
  * Used to ensure flags like 'exileOnResolution' or 'isFreeCast' are not lost between choice creation and action resolution.
  */
 export interface InteractionMetadata {
-    isSpellCasting?: boolean;
-    isFreeCast?: boolean;
     exileOnResolution?: boolean;
-    sourceMV?: number;
+    isFreeCast?: boolean;
+    isSpellCasting?: boolean;
     parentContext?: any; // ResolutionContext from EffectProcessor
+    sourceMV?: number;
     stackObj?: StackObject;
     targets?: string[];
 }
 
 export interface BaseActionData {
-    label: string;
-    stackObj?: StackObject;
-    parentContext?: any;
-    mutationCheckpoint?: number;
+    abilityIndex?: number;
     hideUndo?: boolean;
     isContextual?: boolean;
-    abilityIndex?: number;
-    isSpellCasting?: boolean;
     isFreeCast?: boolean;
+    isSpellCasting?: boolean;
+    label: string;
+    metadata?: InteractionMetadata; // NEW: Standardized metadata container
+    mutationCheckpoint?: number;
+    parentContext?: ResolutionContext;
+    stackObj?: StackObject;
     summary?: string;
     xValue?: number;
-    metadata?: InteractionMetadata; // NEW: Standardized metadata container
     [key: string]: any;
 }
 
 export interface ModalActionData extends BaseActionData {
     choices: ChoiceOption[];
-    isCostChoice?: boolean;
     costType?: 'Sacrifice' | 'Discard' | 'TapSelection' | 'Exile';
-    minChoices?: number;
+    isCostChoice?: boolean;
     maxChoices?: number;
+    minChoices?: number;
 }
 
 export interface XChoiceActionData extends BaseActionData {
@@ -322,96 +333,94 @@ export interface XChoiceActionData extends BaseActionData {
 }
 
 export interface TargetingActionData extends BaseActionData {
-    isTargetingModal?: boolean;
     declaredTargets?: string[];
+    isTargetingModal?: boolean;
     targets?: string[];
 }
 
 export interface BatchActionData extends BaseActionData {
+    discardAmount?: number | string;
     lookingCards?: GameObject[];
     nextPlayerIds?: PlayerId[];
-    discardAmount?: number | string;
     onFailureEffects?: any[];
 }
 
 export type ActionData = ModalActionData | XChoiceActionData | TargetingActionData | BatchActionData | BaseActionData;
 
 export interface PendingAction {
-    type: string;
-    playerId: PlayerId;
     count?: number;
-    sourceId?: string;
     data?: ActionData;
+    playerId: PlayerId;
+    sourceId?: string;
+    type: string;
 }
 
 import type { Mutation } from './mutations';
 
 export interface GameState {
-    players: Record<PlayerId, PlayerState>;
-    activePlayerId: PlayerId;
-    priorityPlayerId: PlayerId | null;
-    currentPhase: Phase;
-    currentStep: Step;
-    turnNumber: number;
-    battlefield: GameObject[];
-    exile: GameObject[];
-    emblems: EmblemDefinition[];
-    stack: StackObject[];
-    combat?: CombatState;
-    pendingTriggers?: StackObject[];
-    pendingAction?: PendingAction;
-    ruleRegistry: RuleRegistry;
-    limbo: GameObject[];
-    consecutivePasses: number;
-    logs: string[];
-    executionTrace?: {
-        type: string;
-        sourceId: string;
-        controllerId: string;
-        targets: string[];
-        timestamp: number;
-        xValue?: number;
-        nextEffectIndex?: number;
-    }[];
-    mutationStack?: Mutation[];
-    choiceQueue?: ChoiceQueueItem[];
-    turnState: TurnState;
-    playerOrder: PlayerId[];
-    interaction: InteractionState;
-    stateVersion: number;
-    gameStats?: {
-        castCounts: Record<PlayerId, Record<string, number>>;
-    };
-
-    // Performance & Engine Extensions
     _entityMap?: Record<string, BaseEntity>;
+    _lastLayerHash?: string;
     _objectCache?: Map<string, GameObject | StackObject> & {
         version: number;
     };
-    dynamicCopies?: Record<string, GameObject>;
-    paradigmCopies?: Record<string, GameObject>;
     _statsCache?: Map<string, EffectiveStats> & { version?: number };
-    _lastLayerHash?: string;
     _triggerCache?: any;
-    isResolvingDrawReplacement?: boolean;
-    lki: Record<string, Partial<Record<Zone, GameObject | StackObject>>>;
+    activePlayerId: PlayerId;
+    battlefield: GameObject[];
+    choiceQueue?: ChoiceQueueItem[];
+    combat?: CombatState;
+    consecutivePasses: number;
+    currentPhase: Phase;
+    currentStep: Step;
+    dynamicCopies?: Record<string, GameObject>;
+    emblems: EmblemDefinition[];
+    executionTrace?: {
+        controllerId: string;
+        nextEffectIndex?: number;
+        sourceId: string;
+        targets: string[];
+        timestamp: number;
+        type: string;
+        xValue?: number;
+    }[];
+    exile: GameObject[];
     gameEngine?: any;
+    gameStats?: {
+        castCounts: Record<PlayerId, Record<string, number>>;
+    };
+    interaction: InteractionState;
+    isResolvingDrawReplacement?: boolean;
+    limbo: GameObject[];
+    lki: Record<string, Partial<Record<Zone, GameObject | StackObject>>>;
+    logs: string[];
+    mutationStack?: Mutation[];
+    paradigmCopies?: Record<string, GameObject>;
+    pendingAction?: PendingAction;
+    pendingTriggers?: StackObject[];
+    playerOrder: PlayerId[];
+    players: Record<PlayerId, PlayerState>;
+    priorityPlayerId: PlayerId | null;
+    ruleRegistry: RuleRegistry;
+    stack: StackObject[];
+    stateVersion: number;
+    turnNumber: number;
+    turnState: TurnState;
 }
 
 export interface RuleRegistry {
-    continuousEffects: ContinuousEffect[];
     activatedAbilities: ActivatedAbility[];
-    triggeredAbilities: TriggeredAbility[];
-    restrictions: AbilityRestriction[];
-    replacementEffects: ReplacementEffect[];
+    continuousEffects: ContinuousEffect[];
     preventionEffects: PreventionEffect[];
+    replacementEffects: ReplacementEffect[];
+    restrictions: AbilityRestriction[];
+    triggeredAbilities: TriggeredAbility[];
 }
 
 export interface EmblemDefinition {
-    id: string;
-    name: string;
+    abilities: (AbilityDefinition | string)[];
     controllerId: PlayerId;
-    oracleText: string;
+    id: string;
     image_url?: string;
-    abilities: any[];
+    name: string;
+    oracleText?: string;
 }

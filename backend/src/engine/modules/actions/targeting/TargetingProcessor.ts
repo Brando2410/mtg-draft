@@ -515,7 +515,16 @@ export class TargetingProcessor {
             }
 
             if (actionData.parentContext) {
-                return engine.resumeResolution(sourceId || stackObj.sourceId, stackObj, actionData.parentContext);
+                // BUG FIX: If this was targeting for a COPY (created by a trigger/spell), 
+                // we should resume the parent resolution (the trigger) rather than resolving the copy itself.
+                // The copy should remain on the stack to be resolved later.
+                const isCopy = !!actionData.isCopyTargeting;
+                const resumeObj = isCopy ? actionData.parentContext.stackObject : stackObj;
+                const resumeSourceId = isCopy ? (actionData.parentContext.stackObject?.id || sourceId) : (sourceId || stackObj.sourceId);
+
+                if (resumeObj) {
+                    return engine.resumeResolution(resumeSourceId, resumeObj as any, actionData.parentContext);
+                }
             }
 
             state.priorityPlayerId = playerId;

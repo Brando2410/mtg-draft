@@ -127,8 +127,9 @@ export class EffectProcessor {
       // CR 608.2: Advance index BEFORE execution so that any choices or sub-effects
       // capture the correct resumption point in their parentContext.
       if (stackObject) {
+        stackObject.nextEffectIndex = i + 1;
         if (!stackObject.data) stackObject.data = {};
-        stackObject.data.nextEffectIndex = i + 1;
+        stackObject.data.nextEffectIndex = i + 1; // Sync for legacy
       }
 
       this.executeEffect({
@@ -183,8 +184,10 @@ export class EffectProcessor {
         return false;
       }
     }
-    if (stackObject && stackObject.data)
-      stackObject.data.nextEffectIndex = effects.length;
+    if (stackObject) {
+      stackObject.nextEffectIndex = effects.length;
+      if (stackObject.data) stackObject.data.nextEffectIndex = effects.length;
+    }
 
     return true;
   }
@@ -210,6 +213,7 @@ export class EffectProcessor {
       }
 
       return {
+        ...stackObject,
         id: stackObject.id,
         name: name,
         image_url: imageUrl,
@@ -249,24 +253,32 @@ export class EffectProcessor {
 
     // Create a ResolutionContext for handlers that expect it
     const context: ResolutionContext = {
-      sourceId,
+      castFromZone: stackObject?.castFromZone || stackObject?.data?.castFromZone || parentContext?.castFromZone,
+      controller: state.players[controllerId],
       controllerId,
-      targets,
-      effects: stackObject?.effects || stackObject?.data?.effects || [effect],
-      stackObject,
-      parentContext,
-      startIndex: stackObject?.data?.startIndex || 0,
-      event: stackObject?.event || stackObject?.data?.event || parentContext?.event,
-      exiledIds: stackObject?.data?.exiledIds,
-      lookingCards: (lookingCards || stackObject?.lookingCards || stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
       currentIndex: options.currentIndex,
-      nextEffectIndex: options.nextEffectIndex ?? stackObject?.data?.nextEffectIndex,
-      xValue: stackObject?.xValue || parentContext?.xValue,
-      isCopy: (stackObject?.data as { isCopy?: boolean })?.isCopy || parentContext?.isCopy,
-      lastMilledIds: lastMilledIds || stackObject?.data?.lastMilledIds || parentContext?.lastMilledIds,
-      lastDiscardedIds: lastDiscardedIds || stackObject?.data?.lastDiscardedIds || parentContext?.lastDiscardedIds,
+      discardAmount: stackObject?.discardAmount || stackObject?.data?.discardAmount || parentContext?.discardAmount,
+      effects: stackObject?.effects || stackObject?.data?.effects || [effect],
+      event: stackObject?.event || stackObject?.data?.event || parentContext?.event,
+      eventAmount: stackObject?.eventAmount || stackObject?.data?.eventAmount || parentContext?.eventAmount,
+      exiledIds: stackObject?.exiledIds || stackObject?.data?.exiledIds,
+      isCopy: stackObject?.isCopy || (stackObject?.data as { isCopy?: boolean })?.isCopy || parentContext?.isCopy,
+      lastDiscardedIds: lastDiscardedIds || stackObject?.lastDiscardedIds || stackObject?.data?.lastDiscardedIds || parentContext?.lastDiscardedIds,
+      lastMilledIds: lastMilledIds || stackObject?.lastMilledIds || stackObject?.data?.lastMilledIds || parentContext?.lastMilledIds,
+      lookingCards: (lookingCards || stackObject?.lookingCards || stackObject?.data?.lookingCards || parentContext?.lookingCards) as GameObject[],
+      maxChoices: stackObject?.maxChoices ?? stackObject?.data?.maxChoices ?? parentContext?.maxChoices,
+      minChoices: stackObject?.minChoices ?? stackObject?.data?.minChoices ?? parentContext?.minChoices,
+      nextEffectIndex: options.nextEffectIndex ?? stackObject?.nextEffectIndex ?? stackObject?.data?.nextEffectIndex,
+      nextPlayerIds: stackObject?.nextPlayerIds || stackObject?.data?.nextPlayerIds || parentContext?.nextPlayerIds,
+      onFailureEffects: stackObject?.onFailureEffects || stackObject?.data?.onFailureEffects || parentContext?.onFailureEffects,
+      parentContext,
+      sourceId,
+      sourceName: stackObject?.sourceName || stackObject?.data?.sourceName || parentContext?.sourceName,
       sourceObject: (sourceObj as GameObject),
-      controller: state.players[controllerId]
+      stackObject,
+      startIndex: stackObject?.startIndex ?? stackObject?.data?.startIndex ?? 0,
+      targets,
+      xValue: stackObject?.xValue ?? stackObject?.data?.xValue ?? parentContext?.xValue,
     };
     logger.info(state, LogCategory.ACTION, `[EXECUTE-EFFECT] Type=${effect.type} Source=${sourceId} Controller=${controllerId} Targets=${targets.join(', ')}`);
 
@@ -533,6 +545,7 @@ export class EffectProcessor {
         (o) => o.id === id,
       ) ||
       (parentContext?.lookingCards as GameObject[])?.find((o) => o.id === id) ||
+      (stackObject?.lookingCards as GameObject[])?.find((o) => o.id === id) ||
       (stackObject?.data?.lookingCards as GameObject[])?.find(
         (o) => o.id === id,
       )
