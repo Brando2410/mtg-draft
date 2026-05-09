@@ -646,7 +646,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           effect.optional || effect.selectionType === SelectionType.ANY
             ? ActionType.OptionalAction
             : ActionType.ResolutionChoice,
-        hideUndo: true, // Revealing top cards is non-undoable in MTG
+        hideUndo: true,
         onSelected: (selectedCard: GameObject) => {
           // Per-card movement response
           const subEffects: EffectDefinition[] = [];
@@ -680,17 +680,8 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
           return subEffects;
         },
         onNone: () => {
-          // If skip, all return to library
-          return [
-            {
-              type: EffectType.MoveToZone,
-              selectionType: SelectionType.Target,
-              targetIds: cards.map((o) => o.id),
-              zone: effect.remainderZone || Zone.Library,
-              position:
-                effect.remainderPosition || moveEff.position || "bottom",
-            } as MoveEffect,
-          ];
+          // Allow the injected remainderMove to handle everything
+          return [];
         },
         stackObj: stackObject,
         parentContext: parentContext,
@@ -712,8 +703,8 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
       } as MoveEffect;
 
       // Ensure we only inject the remainder move once
-      const alreadyHasRemainder = context.effects?.some(e => 
-        e.type === EffectType.MoveToZone && 
+      const alreadyHasRemainder = context.effects?.some(e =>
+        e.type === EffectType.MoveToZone &&
         e.targetMapping === "REMAINDER_OF_POOL" &&
         (e as MoveEffect).zone === (effect.remainderZone || Zone.Library)
       );
@@ -873,7 +864,7 @@ export class MovementHandlerClass implements IEffectHandler<EffectDefinition> {
     // 4. Move the cards
     cardsToMove.forEach((c) => {
       const from = c.zone;
-      ActionProcessor.moveCard(state, c, zone as Zone, c.ownerId, "top", false, isDiscard);
+      ActionProcessor.moveCard(state, c, zone as Zone, c.ownerId, moveEff.position as number | "top" | "bottom", false, isDiscard);
       if (zone === Zone.Exile) {
         TriggerProcessor.onEvent(state, { type: TriggerEvent.Exile, payload: { targetIds: [c.id], sourceId: stackObject?.sourceId || "", sourceZone: from } });
       }

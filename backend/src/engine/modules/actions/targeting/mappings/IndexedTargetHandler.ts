@@ -1,33 +1,31 @@
-import { ITargetMappingHandler, TargetMappingContext } from "../TargetMappingRegistry";
+import { GameState, PlayerId, TargetMapping } from "@shared/engine_types";
 import { RuleUtils } from "../../../../utils/RuleUtils";
-import { PlayerId, TargetMapping } from "@shared/engine_types";
+import { ITargetMappingHandler, TargetMappingContext } from "../TargetMappingRegistry";
 
 /**
- * Handles Indexed Targets (TARGET_1 through TARGET_8)
+ * IndexedTargetHandler: Resolves mappings that depend on the specific index of
+ * a previously declared target (e.g. TARGET_1, TARGET_2, TARGET_1_CONTROLLER).
+ * 
+ * Standardizes the derivation of players and objects from the stackObject's 
+ * resolvedTargets array.
  */
 export class IndexedTargetHandler implements ITargetMappingHandler {
     resolve(ctx: TargetMappingContext): string[] {
-        const { state, mapping, context, targetOffset = 0 } = ctx;
+        const { state, mapping, context } = ctx;
         const resolvedTargets = context.targets || [];
-        
-        const mStr = mapping.toUpperCase();
-        if (mStr.startsWith("TARGET_")) {
-            const index = parseInt(mStr.substring(7)) - 1;
-            const finalIndex = index + targetOffset;
-            return resolvedTargets[finalIndex] ? [resolvedTargets[finalIndex]] : [];
-        }
 
-        switch (mStr) {
-            case TargetMapping.Target1Owner: {
-                const targetId = resolvedTargets[0];
-                const obj = RuleUtils.findObject(state, targetId);
-                return obj ? [obj.ownerId] : [];
-            }
+        switch (mapping) {
+            case TargetMapping.Target1:
+                return resolvedTargets.length > 0 ? [resolvedTargets[0]] : [];
 
-            case TargetMapping.SelfAndTarget1: {
-                const offset = targetOffset;
-                return resolvedTargets[offset] ? [context.sourceId, resolvedTargets[offset]] : [context.sourceId];
-            }
+            case TargetMapping.Target2:
+                return resolvedTargets.length > 1 ? [resolvedTargets[1]] : [];
+
+            case TargetMapping.Target3:
+                return resolvedTargets.length > 2 ? [resolvedTargets[2]] : [];
+
+            case TargetMapping.Target4:
+                return resolvedTargets.length > 3 ? [resolvedTargets[3]] : [];
 
             case TargetMapping.TargetAll:
                 return resolvedTargets.filter(Boolean);
@@ -35,8 +33,9 @@ export class IndexedTargetHandler implements ITargetMappingHandler {
             case TargetMapping.Target1Controller: {
                 const targetId = resolvedTargets[0];
                 const { stackObject } = context;
-                if (stackObject?.targetsControllers?.[0]) {
-                    return [stackObject.targetsControllers[0]];
+                const savedController = stackObject?.targetsControllers?.[0];
+                if (savedController) {
+                    return [savedController];
                 }
                 if (state.players[targetId as PlayerId]) return [targetId];
                 const obj = RuleUtils.findObject(state, targetId);

@@ -21,7 +21,7 @@ export interface ChoiceConfig {
     exileOnResolution?: boolean;
     allowDuplicates?: boolean;
     metadata?: any;
-    nextEffectIndex?: number;
+    effectIndex?: number;
 }
 
 export interface CardChoiceConfig extends ChoiceConfig {
@@ -224,7 +224,7 @@ export class ChoiceGenerator {
         state.turnState.lastDiscardedIds = [];
 
         const finalAction = this.createCardChoice(state, player.hand, {
-            label: isAny ? `${label} (Any number)` : `${label} (${discardAmount})`,
+            label: label,
             playerId: currentPlayerId,
             sourceId,
             optional: isAny,
@@ -248,6 +248,7 @@ export class ChoiceGenerator {
         if (finalAction) {
             finalAction.count = discardAmount;
             if (finalAction.data) {
+                finalAction.data.count = discardAmount; // Critical for UI synchronization
                 finalAction.data.nextPlayerIds = nextPlayerIds;
                 finalAction.data.discardAmount = amount;
                 finalAction.data.onFailureEffects = onFailureEffects;
@@ -329,10 +330,10 @@ export class ChoiceGenerator {
     public static createXChoice(state: GameState, sourceId: string, playerId: PlayerId, choice: any, data: any): any {
         const { action: ActionProcessor } = getProcessors(state);
         return ActionProcessor.prepareAction(state, ActionBuilder.chooseX(playerId, sourceId, choice.label || "Choose a value for X")
-            .withContext({ stackObj: data?.stackObj, parentContext: pruneContext(data?.parentContext), nextEffectIndex: data?.nextEffectIndex })
+            .withContext({ stackObj: data?.stackObj, parentContext: pruneContext(data?.parentContext), effectIndex: data?.effectIndex })
             .withData({
                 isResolutionX: true,
-                nextEffectIndex: data?.nextEffectIndex,
+                effectIndex: data?.effectIndex,
                 choiceEffects: choice.effects,
                 choiceCosts: choice.costs,
                 selectedChoice: choice,

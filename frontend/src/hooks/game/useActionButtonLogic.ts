@@ -75,7 +75,8 @@ export const useActionButtonLogic = ({
           disabled = false;
         } else {
           text = "Pending Discard";
-          sub = "";
+          const count = pendingAction.data?.count ?? pendingAction.count ?? 1;
+          sub = `${count} CARD${count > 1 ? 'S' : ''} LEFT`;
           orange = false;
           disabled = true;
         }

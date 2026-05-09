@@ -47,7 +47,7 @@ export class ControlEffectHandler {
                     }
 
                     if (!stackObj) return;
-                    const copy = JSON.parse(JSON.stringify(stackObj));
+                    const copy = JSON.parse(JSON.stringify(stackObj)) as StackObject;
                     copy.id = `copy_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
                     copy.isCopy = true;
                     copy.controllerId = controllerId;
@@ -87,20 +87,7 @@ export class ControlEffectHandler {
                     if ((effect as CopyEffect).chooseNewTargets && copy.targets) {
                         backupTargets = [...copy.targets];
                         copy.targets = [];
-
-                        // Aggressively clear any target-related metadata in copy.data
-                        if (copy.data) {
-                            copy.data.targets = [];
-                            copy.data.selectedTargets = [];
-                            copy.data.declaredTargets = [];
-                            copy.data.targetsControllers = [];
-                        }
-
-                        // Also clear card-level data if it exists
-                        if (copy.sourceObject && copy.sourceObject.data) {
-                            copy.sourceObject.data.targets = [];
-                            copy.sourceObject.data.selectedTargets = [];
-                        }
+                        copy.targetsControllers = [];
                     }
 
                     copy.name = `Copy of ${stackObj.name || stackObj.sourceObject?.definition.name || 'Spell'}`;

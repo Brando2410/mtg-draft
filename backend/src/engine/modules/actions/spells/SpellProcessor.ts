@@ -768,9 +768,9 @@ export class SpellProcessor {
             isCopy: cardToPlay.isCopy,
             isPreparedCopy: cardToPlay.isPreparedCopy,
             isFlashbackCast: cardToPlay.isFlashbackCast,
+            targetsControllers,
             data: {
                 preSelectedChoice,
-                targetsControllers,
                 declaredXValue: cardToPlay.xValue,
                 castFromZone: lastZone,
                 summary: cardToPlay.xValue !== undefined && ((cardToPlay.definition.manaCost || "").includes("{X}") || cardToPlay.xValue > 0) ? `X = ${cardToPlay.xValue}` : undefined,
@@ -874,13 +874,13 @@ export class SpellProcessor {
                 preSelectedChoice,
                 declaredXValue: xValue !== undefined ? xValue : obj.xValue,
                 summary: (xValue !== undefined ? xValue : obj.xValue) !== undefined && (JSON.stringify(ability).includes('"X"') || (xValue || obj.xValue || 0) > 0) ? `X = ${xValue !== undefined ? xValue : obj.xValue}` : undefined,
-                targetsControllers: (declaredTargets || []).map(tid => RuleUtils.getController(RuleUtils.findObject(state, tid))),
                 effects: (ability.type === AbilityType.Activated || ability.type === AbilityType.Triggered) ? ability.effects : [],
                 targetDefinitions: (ability.type === AbilityType.Activated || ability.type === AbilityType.Triggered) ? ability.targetDefinitions : undefined,
                 choices: (xValue !== undefined ? xValue : obj.xValue) !== undefined && (JSON.stringify(ability).includes('"X"') || (xValue || obj.xValue || 0) > 0) ? [{ label: "X", value: xValue !== undefined ? xValue : obj.xValue }] : []
             },
             zone: Zone.Stack
         };
+
 
         // Mana Payment
         const { cost: CostProcessor, mana: ManaProcessor } = getProcessors(state);

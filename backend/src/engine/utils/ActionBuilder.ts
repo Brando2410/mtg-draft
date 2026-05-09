@@ -104,7 +104,8 @@ export class ActionBuilder {
         stackObj?: any,
         abilityIndex?: number,
         isSpellCasting?: boolean,
-        nextEffectIndex?: number
+        effectIndex?: number,
+        controllerId?: PlayerId
     }): this {
         this.action.data!.metadata = {
             ...this.action.data!.metadata,

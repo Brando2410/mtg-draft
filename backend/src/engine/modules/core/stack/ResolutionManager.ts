@@ -10,7 +10,7 @@ import {
 } from '@shared/engine_types';
 import { LogCategory, EngineLogger } from '../../../utils/EngineLogger';
 import { RuleUtils } from '../../../utils/RuleUtils';
-import { getProcessors } from '../../ProcessorRegistry';
+import { getProcessors, getEngine } from '../../ProcessorRegistry';
 import { EngineContext } from '../../../interfaces/EngineContext';
 import { TargetingProcessor } from '../../actions/targeting/TargetingProcessor';
 import { EffectProcessor } from '../../effects/EffectProcessor';
@@ -30,13 +30,14 @@ export class ResolutionManager {
         stackObj: StackObject,
         effects: EffectDefinition[],
         engine: EngineContext,
-        startIndex: number = 0
+        effectIndex: number = 0
     ): boolean {
         const { condition: ConditionProcessor, effect: EffectProcessor } = getProcessors(state);
 
         const objectName = stackObj.name || stackObj.sourceObject?.definition.name || 'Effect';
+        const isResumption = effectIndex > 0;
 
-        if (startIndex === 0) {
+        if (effectIndex === 0) {
             EngineLogger.info(state, LogCategory.ACTION, `[Stack] Resolving: ${objectName}`);
 
             // Rule 603.4: Intervening "if" clause re-check
@@ -61,10 +62,10 @@ export class ResolutionManager {
                 return true;
             }
         } else {
-            EngineLogger.info(state, LogCategory.ACTION, `[Stack] Resuming: ${objectName}...`);
+            EngineLogger.info(state, LogCategory.ACTION, `[Stack] Resuming: ${objectName} at index ${effectIndex}...`);
         }
 
-        EngineLogger.info(state, LogCategory.ACTION, `[RESOLVE] ${objectName} resolving. Targets: ${stackObj.targets?.join(', ')}`);
+        EngineLogger.info(state, LogCategory.ACTION, `[RESOLVE] ${objectName} (ID: ${stackObj.id}) resolving. Targets: ${stackObj.targets?.join(', ') || 'none'}`);
 
         const completed = EffectProcessor.resolveEffects({
             state,
@@ -72,7 +73,8 @@ export class ResolutionManager {
                 effects,
                 sourceId: stackObj.sourceId,
                 targets: stackObj.targets || [],
-                startIndex,
+                effectIndex,
+                isResumption,
                 stackObject: stackObj
             })
         });
@@ -104,13 +106,13 @@ export class ResolutionManager {
         if (!currentCtx && action?.data) {
             currentCtx = {
                 effects: meta.effects || [],
-                startIndex: meta.nextEffectIndex ?? meta.startIndex ?? 0, // Ensure we resume where we left off
-                nextEffectIndex: meta.nextEffectIndex ?? 0,
+                effectIndex: meta.effectIndex ?? 0,
+                isResumption: true,
                 parentContext: meta.parentContext,
                 targets: meta.targets || [],
                 lookingCards: meta.lookingCards || [],
                 sourceId,
-                controllerId: action.playerId,
+                controllerId: meta.controllerId || stackObj?.controllerId || action.playerId,
                 stackObject: stackObj,
                 lastMilledIds: meta.lastMilledIds,
                 lastDiscardedIds: meta.lastDiscardedIds,
@@ -135,11 +137,11 @@ export class ResolutionManager {
             !state.pendingAction &&
             currentCtx &&
             currentCtx.effects &&
-            currentCtx.nextEffectIndex !== undefined &&
-            currentCtx.nextEffectIndex < currentCtx.effects.length
+            currentCtx.effectIndex !== undefined &&
+            currentCtx.effectIndex < currentCtx.effects.length
         ) {
             const resumingCtx = currentCtx;
-            const nextIdx = resumingCtx.nextEffectIndex!;
+            const nextIdx = resumingCtx.effectIndex!;
             const effs = resumingCtx.effects!;
             const parentTargets = resumingCtx.targets || [];
             const lookingCards = resumingCtx.lookingCards;
@@ -155,14 +157,17 @@ export class ResolutionManager {
                 skipFizzleCheck: true,
             });
 
-            if (stackObj && !completed && state.pendingAction) {
-                stackObj.nextEffectIndex = stackObj.resolution?.effectIndex;
-                if (!stackObj.data) stackObj.data = {};
-                stackObj.data.nextEffectIndex = stackObj.nextEffectIndex;
-            }
         }
 
         if (!state.pendingAction) {
+            // Check if there are triggers waiting to be stacked (from a previous suspension)
+            const nextTriggers = meta.nextTriggersToStack;
+            if (nextTriggers && nextTriggers.length > 0) {
+                logger.info(state, LogCategory.ACTION, `[RESOLUTION-MGR] Resuming trigger stacking for ${nextTriggers.length} remaining triggers.`);
+                this.stackTriggers(state, nextTriggers);
+                return true;
+            }
+
             logger.info(state, LogCategory.ACTION, `[RESOLUTION-MGR] Resolution complete for ${sourceId}. Starting cleanup.`);
             this.postResolutionCleanup(state, stackObj, rootContext, engine);
         } else if (state.pendingAction) {
@@ -180,82 +185,81 @@ export class ResolutionManager {
      */
     private static postResolutionCleanup(
         state: GameState,
-        stackObj: StackObject,
+        stackObj: StackObject | undefined,
         parentContext: EngineFrame | undefined,
         engine: EngineContext,
         fizzled: boolean = false
     ): void {
-        if (!stackObj) return;
+        if (stackObj) {
+            const { action: ActionProcessor, trigger: TriggerProcessor } = getProcessors(state);
 
-        const { action: ActionProcessor, trigger: TriggerProcessor } = getProcessors(state);
+            // 1. Resolve actual object from stack if necessary
+            const fullStackObj = state.stack.find(s => s.id === stackObj.id) || stackObj;
 
-        // 1. Resolve actual object from stack if necessary
-        const fullStackObj = state.stack.find(s => s.id === stackObj.id) || stackObj;
+            if (fullStackObj && fullStackObj.type === 'Spell' && fullStackObj.sourceObject) {
+                const card = fullStackObj.sourceObject;
+                const isPermanent = RuleUtils.isPermanent(card);
 
-        if (fullStackObj && fullStackObj.type === 'Spell' && fullStackObj.sourceObject) {
-            const card = fullStackObj.sourceObject;
-            const isPermanent = RuleUtils.isPermanent(card);
-
-            if (fizzled) {
-                const shouldExile = fullStackObj.exileOnResolution || fullStackObj.isCopy;
-                if (shouldExile) {
-                    EngineLogger.info(state, LogCategory.ACTION, `[RULE 701.5] ${card.definition.name} (fizzled) was exiled instead of being put into graveyard.`);
-                    ActionProcessor.removeFromCurrentZone(state, card);
-                    if (!fullStackObj.isCopy) {
-                        ActionProcessor.moveCard(state, card, Zone.Exile, card.ownerId);
-                    }
-                } else {
-                    ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId);
-                }
-            } else {
-                if (isPermanent) {
-                    const isAura = RuleUtils.hasSubtype(card, 'aura');
-                    if (isAura && fullStackObj.targets && fullStackObj.targets.length > 0) {
-                        card.attachedTo = fullStackObj.targets[0];
-                        EngineLogger.info(state, LogCategory.ACTION, `[Stack] ${card.definition.name} enters attached to target ${card.attachedTo}.`);
-                    }
-
-                    card.xValue = fullStackObj.xValue;
-                    ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId);
-                } else if (card.zone === Zone.Stack) {
-                    const shouldExile = fullStackObj.exileOnResolution || fullStackObj.isCopy || card.isPreparedCopy || card.definition.exileOnResolution;
-
+                if (fizzled) {
+                    const shouldExile = fullStackObj.exileOnResolution || fullStackObj.isCopy;
                     if (shouldExile) {
-                        const reason = card.isPreparedCopy ? 'Prepared spell' : (fullStackObj.isCopy ? 'Copy' : (card.definition.exileOnResolution ? 'Card Definition' : 'Effect'));
-                        EngineLogger.info(state, LogCategory.ACTION, `[RULE 701.5] ${card.definition.name} (${reason}) ceases to exist after resolution.`);
-
+                        EngineLogger.info(state, LogCategory.ACTION, `[RULE 701.5] ${card.definition.name} (fizzled) was exiled instead of being put into graveyard.`);
                         ActionProcessor.removeFromCurrentZone(state, card);
-                        if (!(fullStackObj.isCopy || card.isPreparedCopy)) {
+                        if (!fullStackObj.isCopy) {
                             ActionProcessor.moveCard(state, card, Zone.Exile, card.ownerId);
                         }
                     } else {
                         ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId);
                     }
+                } else {
+                    if (isPermanent) {
+                        const isAura = RuleUtils.hasSubtype(card, 'aura');
+                        if (isAura && fullStackObj.targets && fullStackObj.targets.length > 0) {
+                            card.attachedTo = fullStackObj.targets[0];
+                            EngineLogger.info(state, LogCategory.ACTION, `[Stack] ${card.definition.name} enters attached to target ${card.attachedTo}.`);
+                        }
+
+                        card.xValue = fullStackObj.xValue;
+                        ActionProcessor.moveCard(state, card, Zone.Battlefield, fullStackObj.controllerId);
+                    } else if (card.zone === Zone.Stack) {
+                        const shouldExile = fullStackObj.exileOnResolution || fullStackObj.isCopy || card.isPreparedCopy || card.definition.exileOnResolution;
+
+                        if (shouldExile) {
+                            const reason = card.isPreparedCopy ? 'Prepared spell' : (fullStackObj.isCopy ? 'Copy' : (card.definition.exileOnResolution ? 'Card Definition' : 'Effect'));
+                            EngineLogger.info(state, LogCategory.ACTION, `[RULE 701.5] ${card.definition.name} (${reason}) ceases to exist after resolution.`);
+
+                            ActionProcessor.removeFromCurrentZone(state, card);
+                            if (!(fullStackObj.isCopy || card.isPreparedCopy)) {
+                                ActionProcessor.moveCard(state, card, Zone.Exile, card.ownerId);
+                            }
+                        } else {
+                            ActionProcessor.moveCard(state, card, Zone.Graveyard, card.ownerId);
+                        }
+                    }
+                }
+
+                // Fire ON_RESOLVE_SPELL event
+                TriggerProcessor.onEvent(state, {
+                    type: 'ON_RESOLVE_SPELL',
+                    playerId: fullStackObj.controllerId,
+                    payload: { object: card, sourceId: fullStackObj.sourceId, targetIds: [fullStackObj.id] }
+                });
+
+            } else {
+                // Triggered abilities are already popped from the stack by StackProcessor.resolveTopOrAdvanceStep.
+                // We only need to remove by ID if it's still there for some reason (e.g. resumption from another path).
+                const stackIdx = state.stack.findIndex(s => s.id === fullStackObj.id);
+                if (stackIdx !== -1) {
+                    state.stack.splice(stackIdx, 1);
                 }
             }
 
-            // Fire ON_RESOLVE_SPELL event
-            TriggerProcessor.onEvent(state, {
-                type: 'ON_RESOLVE_SPELL',
-                playerId: fullStackObj.controllerId,
-                payload: { object: card, sourceId: fullStackObj.sourceId, targetIds: [fullStackObj.id] }
-            });
-
-        } else {
-            const stackIdx = state.stack.findIndex(s => s.id === fullStackObj.id);
-            if (stackIdx !== -1) {
-                state.stack.splice(stackIdx, 1);
-            } else {
-                const altIdx = state.stack.findIndex(s => s.sourceId === fullStackObj.sourceId && s.type === fullStackObj.type);
-                if (altIdx !== -1) state.stack.splice(altIdx, 1);
-            }
-        }
-
-        const parentStackObj = parentContext?.stackObject;
-        if (parentStackObj && parentStackObj.id !== stackObj.id) {
-            const pIdx = state.stack.findIndex(s => s.id === parentStackObj.id);
-            if (pIdx !== -1) {
-                state.stack.splice(pIdx, 1);
+            const parentStackObj = parentContext?.stackObject;
+            if (parentStackObj && parentStackObj.id !== stackObj.id) {
+                const pIdx = state.stack.findIndex(s => s.id === parentStackObj.id);
+                if (pIdx !== -1) {
+                    state.stack.splice(pIdx, 1);
+                }
             }
         }
 
@@ -302,6 +306,13 @@ export class ResolutionManager {
         }
 
         TrP.processPendingTriggers(state);
+        
+        // Rule 117.5: Each time a player would get priority, the game first performs applicable state-based actions, 
+        // then any abilities that have triggered are put on the stack.
+        // After triggers are stacked, the active player receives priority.
+        if (!state.pendingAction) {
+            getEngine(state).resetPriorityToActivePlayer();
+        }
     }
 }
 

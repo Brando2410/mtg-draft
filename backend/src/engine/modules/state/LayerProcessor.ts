@@ -645,9 +645,7 @@ export class LayerProcessor {
 
       obj.effectiveStats = {
         ...stats,
-        isPlayable:
-          state.priorityPlayerId === RuleUtils.getController(obj) &&
-          PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id),
+        isPlayable: PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id, false),
       };
     });
 
@@ -821,9 +819,10 @@ export class LayerProcessor {
       } catch (e) {
       }
 
-      // FAST PATH: isPlayable requires expensive restriction matching, only do it if the object is owned by the active player
-      if (state.priorityPlayerId === RuleUtils.getController(obj)) {
-        isPlayable = PriorityProcessor.canObjectBePlayed(state, obj.controllerId, obj.id, true, stats, displayCost);
+      // Evaluate playability for any object controlled by a player (ignore strict priority for UI glow)
+      const controllerId = RuleUtils.getController(obj);
+      if (controllerId) {
+        isPlayable = PriorityProcessor.canObjectBePlayed(state, controllerId, obj.id, false, stats, displayCost);
       }
 
       obj.effectiveStats = {

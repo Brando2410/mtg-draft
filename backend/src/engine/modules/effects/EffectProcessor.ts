@@ -55,9 +55,8 @@ export interface BaseResolveInputs {
   lookingCards?: GameObject[];
   lastMilledIds?: string[];
   lastDiscardedIds?: string[];
-  startIndex?: number;
-  currentIndex?: number;
-  nextEffectIndex?: number;
+  effectIndex?: number;
+  isResumption?: boolean;
   exileOnResolution?: boolean;
 }
 
@@ -66,9 +65,8 @@ export class EffectProcessor {
   public static injectPostEffect(context: EngineFrame, effect: EffectDefinition) {
     if (!context.effects) {
       context.effects = [];
-      context.currentIndex = -1;
     }
-    const insertAt = (context.currentIndex ?? context.nextEffectIndex ?? 0) + 1;
+    const insertAt = (context.effectIndex ?? 0) + 1;
     context.effects.splice(insertAt, 0, effect);
   }
 
@@ -87,8 +85,7 @@ export class EffectProcessor {
       lastDiscardedIds,
     } = options;
 
-    const res = stackObject?.resolution;
-    const transient = res?.transient || {};
+    const transient: any = stackObject || {};
 
     // Source Resolution: Find the object responsible for this frame
     const sourceObj =
@@ -104,7 +101,8 @@ export class EffectProcessor {
     return {
       castFromZone: transient.castFromZone || stackObject?.castFromZone || parentContext?.castFromZone,
       controllerId,
-      currentIndex: options.currentIndex,
+      effectIndex: options.effectIndex ?? (options.effects ? 0 : stackObject?.effectIndex ?? 0),
+      isResumption: options.isResumption ?? false,
       discardAmount: transient.discardAmount || stackObject?.discardAmount || parentContext?.discardAmount,
       effects: options.effects || stackObject?.effects || [],
       event: stackObject?.event || parentContext?.event,
@@ -119,9 +117,6 @@ export class EffectProcessor {
       lookingCards: (lookingCards || transient.lookingCards || stackObject?.lookingCards || parentContext?.lookingCards) as GameObject[],
       maxChoices: transient.maxChoices ?? stackObject?.maxChoices ?? parentContext?.maxChoices,
       minChoices: transient.minChoices ?? stackObject?.minChoices ?? parentContext?.minChoices,
-      nextEffectIndex: (options.effects === stackObject?.effects)
-        ? (options.nextEffectIndex ?? res?.effectIndex ?? stackObject?.nextEffectIndex)
-        : (options.nextEffectIndex ?? 0),
       nextPlayerIds: transient.nextPlayerIds || stackObject?.nextPlayerIds || parentContext?.nextPlayerIds,
       onFailureEffects: transient.onFailureEffects || stackObject?.onFailureEffects || parentContext?.onFailureEffects,
       parentContext,
@@ -129,9 +124,6 @@ export class EffectProcessor {
       sourceName: transient.sourceName || stackObject?.sourceName || parentContext?.sourceName,
       sourceObject: (sourceObj as GameObject),
       stackObject,
-      startIndex: (options.effects === stackObject?.effects)
-        ? (options.startIndex ?? options.nextEffectIndex ?? res?.effectIndex ?? stackObject?.startIndex ?? 0)
-        : (options.startIndex ?? 0),
       targets,
       xValue: transient.xValue ?? stackObject?.xValue ?? parentContext?.xValue,
     };
@@ -147,13 +139,15 @@ export class EffectProcessor {
   public static resolveEffects(options: ResolveEffectsOptions): boolean {
     const { state, context, skipFizzleCheck } = options;
     const { effects, sourceId, targets, stackObject, parentContext } = context;
-    const startIndex = context.startIndex ?? context.nextEffectIndex ?? 0;
     const { logger } = getProcessors(state);
 
-    logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Resolving ${effects.length} effect(s) from source ${sourceId}. StartIndex: ${startIndex}. Targets: ${targets.join(', ')}`);
+    const startIndex = context.effectIndex ?? 0;
+
+    logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Resolving ${effects.length} effect(s) from source ${sourceId}. StartIndex: ${startIndex}. isResumption: ${context.isResumption}. Targets: ${targets.join(', ')}`);
 
     // CR 608.2b: Check target legality on resolution (Fizzle check)
-    if (startIndex === 0 && !parentContext && !skipFizzleCheck && targets.length > 0 && effects.some(e => {
+    // Only check at the very beginning of the original resolution sequence
+    if (startIndex === 0 && !context.isResumption && !parentContext && !skipFizzleCheck && targets.length > 0 && effects.some(e => {
       const tm = (e.targetMapping || "").toString();
       return tm.startsWith('TARGET_') || tm === TargetMapping.TargetOpponent || tm === TargetMapping.TargetPlayer;
     })) {
@@ -171,16 +165,12 @@ export class EffectProcessor {
       const effect = effects[i];
       logger.info(state, LogCategory.ACTION, `[RESOLVE-LOOP] ${i}/${effects.length}: Type=${effect.type} Source=${sourceId}`);
 
-      // ARCHITECTURAL FIX: Update the context's currentIndex so that nested calls 
-      // (like injectPostEffect) know exactly where they are in the sequence.
-      context.currentIndex = i;
+      // CR 608.2: Update the effectIndex BEFORE execution so that any choices 
+      // capture the correct resumption point in their metadata.
+      context.effectIndex = i + 1;
 
-      // CR 608.2: Advance index BEFORE execution so that any choices or sub-effects
-      // capture the correct resumption point in their parentContext.
-      // BUG FIX: Only update the stackObject's primary index if we are resolving its own effects list.
-      // This prevents nested resolution calls (like inside a Choice) from overwriting the parent's index.
       if (stackObject && stackObject.effects === effects) {
-        stackObject.nextEffectIndex = i + 1;
+        stackObject.effectIndex = i + 1;
       }
 
       this.executeEffect({
@@ -196,23 +186,16 @@ export class EffectProcessor {
 
       if (state.pendingAction) {
         logger.debug(state, LogCategory.ACTION, `[RESOLVE-EFFECTS] Suspension detected at index ${i}. PendingAction: ${state.pendingAction.type} for ${state.pendingAction.sourceId}. Expected SourceId: ${sourceId}`);
-        // Phase 2: Save state to stackObject.resolution
-        if (stackObject) {
-          stackObject.resolution = {
-            effectIndex: i + 1,
-            transient: {
-              lookingCards: context.lookingCards,
-              lastMilledIds: context.lastMilledIds,
-              lastDiscardedIds: context.lastDiscardedIds,
-              discardAmount: context.discardAmount,
-              xValue: context.xValue,
-              exileOnResolution: context.exileOnResolution,
-            },
-            parentFrameId: parentContext?.stackObject?.id
-          };
 
-          // Sync typed root property for now
-          stackObject.nextEffectIndex = i + 1;
+        if (stackObject) {
+          stackObject.effectIndex = context.effectIndex;
+          stackObject.lookingCards = context.lookingCards;
+          stackObject.lastMilledIds = context.lastMilledIds;
+          stackObject.lastDiscardedIds = context.lastDiscardedIds;
+          stackObject.discardAmount = context.discardAmount;
+          stackObject.xValue = context.xValue;
+          stackObject.exileOnResolution = context.exileOnResolution;
+          stackObject.chosenName = context.chosenName;
         }
 
         // Rule 603.3: Prune the stored objects to avoid recursion depth and circular references in sockets.
@@ -244,8 +227,8 @@ export class EffectProcessor {
           ...(existingData.metadata || {}),
           ...context,
           effects: context.effects.map((e) => ({ ...e })),
-          startIndex: i + 1,
-          nextEffectIndex: i + 1,
+          effectIndex: context.effectIndex,
+          isResumption: true,
           parentContext: pruneContext(parentContext),
           stackObj: slimStackObj || undefined,
         };
@@ -260,7 +243,7 @@ export class EffectProcessor {
       }
     }
     if (stackObject) {
-      stackObject.nextEffectIndex = effects.length;
+      stackObject.effectIndex = effects.length;
     }
 
     return true;
@@ -298,7 +281,6 @@ export class EffectProcessor {
         targets: stackObject.targets || [],
         targetsControllers: stackObject.targetsControllers,
         summary: stackObject.summary,
-        resolution: stackObject.resolution,
         data: stackObject.data, // Preserve legacy data for UI components still using it
       } as unknown as StackObject;
     }
@@ -724,7 +706,7 @@ export class EffectProcessor {
           },
           targetDefinitions: effect.targetDefinitions || [],
           targets: validCandidates.map(c => c.id),
-          nextEffectIndex: parentContext?.nextEffectIndex,
+          effectIndex: parentContext?.effectIndex,
           effects: parentContext?.effects || [effect],
           stackObj: stackObject, // Legal in BaseActionData
         }

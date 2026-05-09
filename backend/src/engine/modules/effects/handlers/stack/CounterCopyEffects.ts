@@ -12,9 +12,9 @@ export const CounterSpellHandler: IEffectHandler = {
         const targetStackId = targets[0];
         const stackObj = state.stack.find((s: StackObject) => s.id === targetStackId);
         if (stackObj && stackObj.sourceObject) {
-          logger.info(state, LogCategory.ACTION, `[COUNTER] ${stackObj.sourceObject.definition.name} was countered.`);
-          AP.moveCard(state, stackObj.sourceObject, Zone.Graveyard, stackObj.sourceObject.ownerId);
-          state.stack = state.stack.filter((s: StackObject) => s.id !== targetStackId);
+            logger.info(state, LogCategory.ACTION, `[COUNTER] ${stackObj.sourceObject.definition.name} was countered.`);
+            AP.moveCard(state, stackObj.sourceObject, Zone.Graveyard, stackObj.sourceObject.ownerId);
+            state.stack = state.stack.filter((s: StackObject) => s.id !== targetStackId);
         }
     }
 };
@@ -26,8 +26,8 @@ export const CounterAbilityHandler: IEffectHandler = {
         const targetStackId = targets[0];
         const stackObj = state.stack.find((s: StackObject) => s.id === targetStackId);
         if (stackObj) {
-          logger.info(state, LogCategory.ACTION, `[COUNTER] Ability on stack was countered.`);
-          state.stack = state.stack.filter((s: StackObject) => s.id !== targetStackId);
+            logger.info(state, LogCategory.ACTION, `[COUNTER] Ability on stack was countered.`);
+            state.stack = state.stack.filter((s: StackObject) => s.id !== targetStackId);
         }
     }
 };
@@ -56,7 +56,7 @@ export const CopySpellHandler: IEffectHandler = {
 
             const definition = stackObj.definition || stackObj.sourceObject?.definition;
             const cannotCopy = stackObj.cannotBeCopied || definition?.cannotBeCopied;
-            
+
             if (cannotCopy) {
                 logger.info(state, LogCategory.ACTION, `[COPY] ${definition?.name || 'Spell'} cannot be copied.`);
                 return;
@@ -145,16 +145,10 @@ export const CopySpellHandler: IEffectHandler = {
 
                     if (legalTargetIds.length > 0) {
                         const backupTargets = [...(copy.targets || [])];
-                        
+
                         // CLEAR TARGETS for the re-selection phase
                         copy.targets = [];
                         copy.targetsControllers = [];
-                        if (copy.data) {
-                            copy.data.targets = [];
-                            copy.data.selectedTargets = [];
-                            copy.data.declaredTargets = [];
-                            copy.data.targetsControllers = [];
-                        }
 
                         // Use centralized dispatcher to handle modal shifting, auto-targeting, etc.
                         const targetingResult = TargetingDispatcher.dispatchTargetingStep({
@@ -251,18 +245,18 @@ export const CounterSpellOrAbilityHandler: IEffectHandler = {
         const { logger, action: AP } = getProcessors(state);
         const { targets } = context;
         targets.forEach((tid: string) => {
-          const stackObj = state.stack.find((s: StackObject) => s.id === tid);
-          if (stackObj) {
-            if (stackObj.sourceObject) {
-              logger.info(state, LogCategory.ACTION, `[COUNTER] Countering spell: ${stackObj.sourceObject.definition.name} (${tid}).`);
-              AP.moveCard(state, stackObj.sourceObject, Zone.Graveyard, stackObj.sourceObject.ownerId);
+            const stackObj = state.stack.find((s: StackObject) => s.id === tid);
+            if (stackObj) {
+                if (stackObj.sourceObject) {
+                    logger.info(state, LogCategory.ACTION, `[COUNTER] Countering spell: ${stackObj.sourceObject.definition.name} (${tid}).`);
+                    AP.moveCard(state, stackObj.sourceObject, Zone.Graveyard, stackObj.sourceObject.ownerId);
+                } else {
+                    logger.info(state, LogCategory.ACTION, `[COUNTER] Removing ability from stack: ${stackObj.name || tid}.`);
+                    state.stack = state.stack.filter((s: StackObject) => s.id !== stackObj.id);
+                }
             } else {
-              logger.info(state, LogCategory.ACTION, `[COUNTER] Removing ability from stack: ${stackObj.name || tid}.`);
-              state.stack = state.stack.filter((s: StackObject) => s.id !== stackObj.id);
+                logger.info(state, LogCategory.ACTION, `[WARNING] Counter: Could not find object ${tid} on stack.`);
             }
-          } else {
-            logger.info(state, LogCategory.ACTION, `[WARNING] Counter: Could not find object ${tid} on stack.`);
-          }
         });
     }
 };

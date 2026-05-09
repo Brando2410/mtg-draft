@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, CostType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, CostType, CounterType, DurationType, EffectType, Restriction, TargetMapping, TargetType, TriggerEvent } from '@shared/engine_types';
 export const HardenedAcademic: CardDefinition = {
     name: "Hardened Academic",
     manaCost: "{R}{W}",
@@ -36,7 +36,7 @@ export const HardenedAcademic: CardDefinition = {
             effects: [
                 {
                     type: EffectType.AddCounters,
-                    counterType: '+1/+1',
+                    counterType: CounterType.P1P1,
                     amount: 1,
                     targetMapping: TargetMapping.Target1
                 }

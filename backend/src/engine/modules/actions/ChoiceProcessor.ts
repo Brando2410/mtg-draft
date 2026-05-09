@@ -140,7 +140,7 @@ export class ChoiceProcessor {
         }
 
         // Handle multi-choice (batch selection) or empty selection via 'confirm'/'done'
-        const isMultiSelectAction = action.type === ActionType.Discard || (actionData.maxChoices || 0) > 1;
+        const isMultiSelectAction = action.type === ActionType.Discard || (meta.maxChoices || 0) > 1;
         const isEmptyConfirm = (firstSelection === 'confirm' || firstSelection === 'done' || firstSelection === 'none') && isMultiSelectAction;
 
         const isConfirm = firstSelection === 'confirm' || firstSelection === 'done';
@@ -152,7 +152,7 @@ export class ChoiceProcessor {
             }
 
             // Validate min choices for empty confirm
-            const minChoices = actionData.minChoices || 0;
+            const minChoices = meta.minChoices || 0;
             if (isEmptyConfirm && minChoices > 0) {
                 logger.info(state, LogCategory.ACTION, `Cannot confirm: Minimum ${minChoices} choices required.`);
                 return false;
@@ -222,6 +222,8 @@ export class ChoiceProcessor {
                         stackObject: meta.stackObj,
                         parentContext: meta.parentContext,
                         lookingCards: meta.lookingCards as GameObject[],
+                        effectIndex: 0,
+                        isResumption: false,
                         exileOnResolution: meta.exileOnResolution ?? meta.stackObj?.exileOnResolution ?? meta.parentContext?.exileOnResolution
                     })
                 });
@@ -233,10 +235,10 @@ export class ChoiceProcessor {
             }
 
             // After batch is done, check if we need to move to the next player (for DiscardCards)
-            const nextPlayerIds = actionData.nextPlayerIds || meta.nextPlayerIds || [];
+            const nextPlayerIds = meta.nextPlayerIds || [];
             if (!state.pendingAction && nextPlayerIds.length > 0) {
                 const discardAmount = meta.discardAmount || 1;
-                const failureEffects = actionData.onFailureEffects || meta.onFailureEffects;
+                const failureEffects = meta.onFailureEffects;
                 state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, actionData.label || "Discard", meta.stackObj, meta.parentContext, failureEffects);
             }
 
@@ -262,7 +264,7 @@ export class ChoiceProcessor {
                 choice = actionData.choices?.find((c: ChoiceOption) => c.value === firstSelection);
             }
             const keepId = choice?.value as string;
-            const involvedIds = (actionData.involvedIds as string[]) || [];
+            const involvedIds = (meta.involvedIds as string[]) || [];
             const discardIds = involvedIds.filter((id) => id !== keepId);
 
             discardIds.forEach((id) => {
@@ -304,9 +306,7 @@ export class ChoiceProcessor {
         payload: ChoicePayload,
         engine: EngineContext
     ): boolean {
-        const { logger } = getProcessors(state);
-        if (!action.data) return false;
-        const actionData = action.data;
+        const meta = getActionMeta(action);
         const { top = [], bottom = [], graveyard = [] } = payload;
 
         // Track result for UI
@@ -320,7 +320,7 @@ export class ChoiceProcessor {
         };
 
         // 1. Validate all cards are still in a valid state (optional but good)
-        const cards = (actionData.lookingCards || []) as GameObject[];
+        const cards = (meta.lookingCards || []) as GameObject[];
 
         // 3. Move cards to Bottom (Scry) or Graveyard (Surveil)
         bottom.forEach((id) => {
@@ -346,7 +346,7 @@ export class ChoiceProcessor {
         });
 
         // 5. Cleanup
-        const stackObj = actionData.stackObj as StackObject;
+        const stackObj = meta.stackObj as StackObject;
         state.pendingAction = undefined;
 
         // 6. Resume resolution if needed
@@ -601,13 +601,13 @@ export class ChoiceProcessor {
         const meta = getActionMeta(action);
 
         if (!actionData || !isModalData(actionData)) return false;
-        const savedTargets = (actionData.declaredTargets as string[]) || [];
+        const savedTargets = (meta.declaredTargets as string[]) || [];
         const costType = actionData.costType as string;
 
         const selections = payload?.selections || [choiceIndex];
         const firstSelection = selections[0];
 
-        const isMultiSelect = action.type === ActionType.Discard || (actionData.maxChoices && (actionData.maxChoices as number) > 1);
+        const isMultiSelect = action.type === ActionType.Discard || (meta.maxChoices && (meta.maxChoices as number) > 1);
         const isEmptyConfirm = (firstSelection === 'confirm' || firstSelection === 'done' || firstSelection === 'none') && isMultiSelect;
 
         if (!choice && firstSelection !== undefined && !isEmptyConfirm) {
@@ -644,7 +644,7 @@ export class ChoiceProcessor {
                     return str;
                 }).filter(v => v && v !== 'confirm' && v !== 'done' && v !== 'none');
 
-                logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Modal selection IDs for ${costType}: ${batchIds.join(', ')} (Max: ${actionData.maxChoices})`);
+                logger.debug(state, LogCategory.ACTION, `[CHOICE-DEBUG] Modal selection IDs for ${costType}: ${batchIds.join(', ')} (Max: ${meta.maxChoices})`);
                 state.interaction.lastSelections[costType] = batchIds;
             } else {
                 const val = choice?.value as string;
@@ -762,22 +762,22 @@ export class ChoiceProcessor {
             );
         }
 
-        if (actionData.isCostChoice && (actionData.stackObj || actionData.nextEffectIndex !== undefined)) {
+        if (actionData.isCostChoice && (meta.stackObj || meta.effectIndex !== undefined)) {
             logger.info(state, LogCategory.ACTION, `[RESOLVING] Resuming resolution after interactive cost ${costType}...`);
 
-            const costToPay = { type: actionData.costType, amount: actionData.maxChoices, value: actionData.maxChoices } as AbilityCost;
+            const costToPay = { type: actionData.costType, amount: meta.maxChoices, value: meta.maxChoices } as AbilityCost;
             getProcessors(state).cost.pay(state, [costToPay], sourceId, playerId);
 
             if (actionData.remainingCosts && (actionData.remainingCosts as AbilityCost[]).length > 0) {
                 getProcessors(state).cost.pay(state, actionData.remainingCosts as AbilityCost[], sourceId, playerId);
             }
 
-            if (actionData.choiceEffects && (actionData.choiceEffects as EffectDefinition[]).length > 0) {
+            if (meta.choiceEffects && (meta.choiceEffects as EffectDefinition[]).length > 0) {
                 getProcessors(state).effect.resolveEffects({
                     state,
                     context: getProcessors(state).effect.createEngineFrame(state, {
                         sourceId,
-                        effects: actionData.choiceEffects as EffectDefinition[],
+                        effects: meta.choiceEffects as EffectDefinition[],
                         targets: savedTargets,
                         stackObject: meta.stackObj as StackObject,
                         parentContext: meta.parentContext as EngineFrame,
@@ -840,8 +840,8 @@ export class ChoiceProcessor {
                 StackProcessor.refreshTargetMetadata(state, stackObj, finalTargets);
                 logger.info(state, LogCategory.ACTION, `[COPY-TARGETS] Updated targets for copy ${stackObj.id}: ${finalTargets.join(', ')}`);
             }
-            if (actionData.parentContext) {
-                return ResolutionManager.resume(state, engine, actionData.parentContext.stackObject, actionData.parentContext.sourceId, actionData.parentContext);
+            if (meta.parentContext) {
+                return ResolutionManager.resume(state, engine, meta.parentContext.stackObject, meta.parentContext.sourceId, meta.parentContext);
             }
             return ResolutionManager.resume(state, engine);
         }
@@ -959,8 +959,8 @@ export class ChoiceProcessor {
                     lookingCards: meta.lookingCards as GameObject[],
                     lastMilledIds: meta.parentContext?.lastMilledIds,
                     lastDiscardedIds: meta.parentContext?.lastDiscardedIds,
-                    startIndex: 0,
-                    nextEffectIndex: 0,
+                    effectIndex: 0,
+                    isResumption: false,
                 }),
                 skipFizzleCheck: true,
             });
@@ -998,7 +998,7 @@ export class ChoiceProcessor {
             } else if (nextItem.data?.isSacrificeSequence) {
                 const { effect: EP } = getProcessors(state);
                 const PermanentHandler = EP.getEffectHandler(EffectType.Sacrifice) as any;
-                const realEffect = nextItem.data.parentContext?.effects?.[nextItem.data.parentContext?.nextEffectIndex];
+                const realEffect = nextItem.data.parentContext?.effects?.[nextItem.data.parentContext?.effectIndex];
                 PermanentHandler.handleSacrifice(state, realEffect || { label: nextItem.data.label }, {
                     sourceId: nextItem.sourceId,
                     controllerId: nextItem.playerId,
@@ -1033,11 +1033,11 @@ export class ChoiceProcessor {
 
         // 2. ENQUEUE NEXT PLAYERS (Legacy path)
         if (!state.pendingAction) {
-            const nextPlayerIds = actionData.nextPlayerIds || meta.nextPlayerIds || [];
+            const nextPlayerIds = meta.nextPlayerIds || [];
             if (nextPlayerIds.length > 0) {
-                const discardAmount = actionData.discardAmount || meta.discardAmount || 1;
-                const failureEffects = actionData.onFailureEffects || meta.onFailureEffects;
-                state.pendingAction = getProcessors(state).choiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, actionData.label || "Discard", stackObj, meta.parentContext, failureEffects);
+                const discardAmount = meta.discardAmount || 1;
+                const failureEffects = meta.onFailureEffects;
+                state.pendingAction = ChoiceGenerator.createDiscardChoice(state, nextPlayerIds, sourceId as string, discardAmount, actionData.label || "Discard", meta.stackObj, meta.parentContext, failureEffects);
                 return true;
             }
         }
@@ -1126,7 +1126,7 @@ export class ChoiceProcessor {
                     playerId,
                     cardId: sourceId,
                     abilityIndex,
-                    targets: actionData.declaredTargets || [],
+                    targets: meta.declaredTargets || [],
                     xValue: x,
                     bypassPriority: true,
                     bypassTargeting: false,
@@ -1142,7 +1142,7 @@ export class ChoiceProcessor {
                 {
                     playerId,
                     cardId: sourceId,
-                    targets: actionData.declaredTargets || [],
+                    targets: meta.declaredTargets || [],
                     xValue: x,
                     bypassPriority: true,
                     bypassTargeting: false,

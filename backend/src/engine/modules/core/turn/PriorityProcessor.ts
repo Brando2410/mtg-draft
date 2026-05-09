@@ -172,6 +172,7 @@ export class PriorityProcessor {
   ) {
     const isPriority = state.priorityPlayerId && String(state.priorityPlayerId) === String(playerId);
     const isPending = state.pendingAction && String(state.pendingAction.playerId) === String(playerId);
+    const { logger } = getProcessors(state);
 
     if (!isPriority && !isPending) return;
 
@@ -206,26 +207,36 @@ export class PriorityProcessor {
     const currentStepId = state.currentStep.toLowerCase();
     const stopKey = isYourTurn ? `my_${currentStepId}` : `opp_${currentStepId}`;
 
-    // Support for consolidated "Beginning" stop (covers Upkeep and Draw)
+    // Support for consolidated "Beginning" and "Ending" stops (Arena-style auto-pass)
     const beginKey = isYourTurn ? `my_beginning` : `opp_beginning`;
-    const isBeginning = currentStepId === 'upkeep' || currentStepId === 'draw';
-
-    const hasManualStop = player?.stops?.[stopKey] || (isBeginning && player?.stops?.[beginKey]);
+    const isAutoSkipStep = currentStepId === 'upkeep' || currentStepId === 'draw' || currentStepId === 'end';
+    const hasManualStop = player?.stops?.[stopKey] || (isAutoSkipStep && player?.stops?.[beginKey]);
     const isSkipActive = player?.passUntilEndOfTurn;
 
-    // Skip if no possible actions OR if Pass Turn is active (and no manual stop is reached)
-    const shouldSkip = !canAct || (isSkipActive && !hasManualStop);
+    // Skip if:
+    // 1. No actions found (canAct = false)
+    // 2. "Pass Turn" is active and we haven't hit a manual stop
+    // 3. We are in an auto-skip step (Upkeep/Draw/End) and NO manual stop is set
+    const shouldSkip = !canAct || (isSkipActive && !hasManualStop) || (isAutoSkipStep && !hasManualStop);
 
     if (player && !player.fullControl && !hasManualStop && shouldSkip) {
-      // We still need to prompt for attackers/blockers if it's the right step
-      const isCombatSelection = state.pendingAction?.type === 'DECLARE_ATTACKERS' || state.pendingAction?.type === 'DECLARE_BLOCKERS';
-      if (isSkipActive && isCombatSelection) {
-        return; // Don't auto-pass combat declarations even if Skip is active
+      logger.info(state, LogCategory.ACTION, `[AUTO-PASS-DEBUG] Skipping priority for ${player.name}. canAct=${canAct}, isSkipActive=${isSkipActive}, hasManualStop=${hasManualStop}. StopKey=${stopKey}`);
+      logger.info(state, LogCategory.ACTION, `[AUTO-PASS] Skipping priority for ${player.name} (${canAct ? "Yield" : "No actions"}).`);
+
+      // Safety: If skip was triggered by "No actions", do a deeper scan log for debugging
+      if (!canAct) {
+        logger.debug(state, LogCategory.ACTION, `[AUTO-PASS-DEBUG] Deeper scan: HandSize=${player.hand.length}, BattlefieldSize=${state.battlefield.length}, StackSize=${state.stack.length}, PlayedLand=${player.hasPlayedLandThisTurn}`);
       }
 
-      //engine.log(`[Auto-Pass] ${engine.getPlayerName(playerId)} skipped${!canAct ? ': no legal actions found' : ' (Pass Turn active)'}.`);
       this.passPriority(state, playerId, engine, true);
-    } else if (player && (canAct || hasManualStop)) {
+    } else if (player) {
+      const reason = player.fullControl ? "Full Control" : (hasManualStop ? `Manual Stop (${stopKey})` : (canAct ? "Legal Actions available" : "Unknown"));
+      if (canAct || hasManualStop || player.fullControl) {
+        logger.info(state, LogCategory.ACTION, `[PRIORITY-PAUSE] Pausing for ${player.name}. Reason: ${reason}.`);
+        if (canAct) {
+          this.canPlayerTakeAnyAction(state, playerId, true);
+        }
+      }
     }
   }
 
@@ -241,12 +252,11 @@ export class PriorityProcessor {
    * Determines if the player has any legal actions they could take if granted priority.
    * This is used by the auto-pass system.
    */
-  public static canPlayerTakeAnyAction(state: GameState, playerId: string): boolean {
+  public static canPlayerTakeAnyAction(state: GameState, playerId: string, logActions = false): boolean {
     const player = state.players[playerId];
     if (!player) return false;
     const { logger } = getProcessors(state);
 
-    // 1. Mandatory Actions (CR 117.1)
     if (EngineValidator.isPlayerRequiredToAct(state, playerId)) return true;
     if (player.pendingDiscardCount > 0) return true;
 
@@ -258,7 +268,7 @@ export class PriorityProcessor {
       return true;
     }
 
-    // 3. Spells (Scan all zones where a player might have permission to cast)
+    // 3. Spells
     const potentialSpells = [
       ...player.hand,
       ...player.virtualHand,
@@ -267,10 +277,15 @@ export class PriorityProcessor {
       ...(player.library.length > 0 ? [player.library[player.library.length - 1]] : [])
     ];
 
-    const hasPlayableSpell = potentialSpells.some(obj => this.canObjectBePlayed(state, playerId, obj.id, false));
-    if (hasPlayableSpell) return true;
+    const playableSpells = potentialSpells.filter(obj => this.canObjectBePlayed(state, playerId, obj.id, false));
+    if (playableSpells.length > 0) {
+      if (logActions) {
+        logger.info(state, LogCategory.ACTION, `[PRIORITY-DETAIL] Playable spells: ${playableSpells.map(s => s.definition.name).join(', ')}`);
+      }
+      return true;
+    }
 
-    // 4. Activated Abilities (Scan all zones for abilities that could be activated)
+    // 4. Activated Abilities
     const potentialAbilitySources = [
       ...state.battlefield.filter(o => o.controllerId === playerId),
       ...player.hand,
@@ -278,12 +293,27 @@ export class PriorityProcessor {
       ...state.exile.filter(o => o.controllerId === playerId)
     ];
 
-    const hasActivatableAbility = potentialAbilitySources.some(obj => {
+    const activatableSources: { name: string, zone: string }[] = [];
+    potentialAbilitySources.forEach(obj => {
+      if (RuleUtils.isGameObject(obj) && obj.isPrepared) {
+        if (this.canCastPreparedFace(state, player, obj, false)) {
+          activatableSources.push({ name: `${obj.definition.name} (Prepared)`, zone: obj.zone || "Unknown" });
+        }
+      }
+
       const abilities = this.getAbilitiesForObject(state, obj);
-      return abilities.some((_, idx) => this.canAbilityBeActivated(state, playerId, obj.id, idx, false));
+      const hasAny = abilities.some((_, idx) => this.canAbilityBeActivated(state, playerId, obj.id, idx, false));
+      if (hasAny) {
+        activatableSources.push({ name: obj.name || obj.definition.name || "Unknown", zone: obj.zone || "Unknown" });
+      }
     });
 
-    if (hasActivatableAbility) return true;
+    if (activatableSources.length > 0) {
+      if (logActions) {
+        logger.info(state, LogCategory.ACTION, `[PRIORITY-DETAIL] Activatable abilities from: ${activatableSources.map(s => `${s.name} (Zone: ${s.zone})`).join(', ')}`);
+      }
+      return true;
+    }
 
     return false;
   }
@@ -295,6 +325,8 @@ export class PriorityProcessor {
   public static canObjectBePlayed(state: GameState, playerId: string, objId: string, checkPriority = true, preComputedStats?: any, preComputedCost?: string): boolean {
     const player = state.players[playerId];
     if (!player) return false;
+
+    const { logger } = getProcessors(state);
 
     // 1. Locate the object and identify its context (Permission check)
     let cardToPlay: GameObject | undefined;
@@ -337,46 +369,62 @@ export class PriorityProcessor {
       }
     }
 
-    if (!cardToPlay) {
-      // Special Case: Battlefield (Prepared face casting)
-      const fieldObj = state.battlefield.find(o => o.id === objId);
-      if (fieldObj && fieldObj.controllerId === playerId && fieldObj.isPrepared) {
-        return this.canCastPreparedFace(state, player, fieldObj, checkPriority);
+    // 2. Check for activated abilities on the object regardless of zone
+    const objForAbilities = cardToPlay || RuleUtils.findObject(state, objId);
+    if (objForAbilities && RuleUtils.isEntity(objForAbilities) && RuleUtils.getController(objForAbilities) === playerId) {
+      if (RuleUtils.isGameObject(objForAbilities) && objForAbilities.isPrepared) {
+        if (this.canCastPreparedFace(state, player, objForAbilities, checkPriority)) return true;
       }
+      const abilities = this.getAbilitiesForObject(state, objForAbilities);
+      if (abilities.some((_, idx) => this.canAbilityBeActivated(state, playerId, objId, idx, checkPriority))) {
+        return true;
+      }
+    }
+
+    if (!cardToPlay) return false;
+
+    if (state.pendingAction && state.pendingAction.playerId === playerId) {
       return false;
     }
 
-    // 2. Structural & Timing Checks
-    if (state.pendingAction && state.pendingAction.playerId === playerId) return false;
-
-    if (!this.validateTiming(state, playerId, cardToPlay, false, checkPriority)) return false;
+    if (!this.validateTiming(state, playerId, cardToPlay, false, checkPriority)) {
+      return false;
+    }
 
     // 3. Casting Restrictions (Rule 613.11)
-    if (!RestrictionValidator.canCastSpells(state, playerId, cardToPlay)) return false;
+    if (!RestrictionValidator.canCastSpells(state, playerId, cardToPlay)) {
+      return false;
+    }
 
     // 4. Affordability (Mana and Additional Costs)
     const { layer: LayerProc } = getProcessors(state);
-    const stats = preComputedStats || cardToPlay.effectiveStats || LayerProc.getEffectiveStats(cardToPlay, state);
-    const effectiveCost = preComputedCost || stats.manaCost || SpellProcessor.getEffectiveCosts(state, cardToPlay, [], undefined, isFlashback, stats).totalMana;
-    
-    const isLand = RuleUtils.isLand(cardToPlay);
+    const stats = preComputedStats || cardToPlay!.effectiveStats || LayerProc.getEffectiveStats(cardToPlay!, state);
+    const effectiveCost = preComputedCost || stats.manaCost || SpellProcessor.getEffectiveCosts(state, cardToPlay!, [], undefined, isFlashback, stats).totalMana;
+
+    const isLand = RuleUtils.isLand(cardToPlay!);
     if (isLand) {
-      if (player.hasPlayedLandThisTurn || state.stack.length > 0) return false;
+      if (player.hasPlayedLandThisTurn || state.stack.length > 0) {
+        return false;
+      }
     } else if (!player.manaCheat) {
-      if (!ManaProcessor.canPayWithTotal(state, player, state.battlefield, effectiveCost, cardToPlay)) return false;
-      
+      if (!ManaProcessor.canPayWithTotal(state, player, state.battlefield, effectiveCost, cardToPlay!)) {
+        return false;
+      }
+
       // Check for mandatory additional costs (e.g. Sacrifice a creature)
-      const spellAbility = cardToPlay.definition.abilities?.find((a: any) => a.type === AbilityType.Spell) as any;
+      const spellAbility = cardToPlay!.definition.abilities?.find((a: any) => a.type === AbilityType.Spell) as any;
       const additionalCosts = spellAbility?.additionalCosts || [];
       if (additionalCosts.length > 0) {
         const { targeting: TargetingProcessor } = getProcessors(state);
         const canPayExtras = (additionalCosts as any[]).every(cost => {
           if (cost.type === 'Sacrifice') {
-            return state.battlefield.some(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId , effects: [], targets: []}));
+            return state.battlefield.some(o => o.controllerId === playerId && TargetingProcessor.matchesRestrictions(state, o, cost.restrictions || [], { sourceId: cardToPlay!.id, controllerId: playerId, effects: [], targets: [] }));
           }
-          return true; 
+          return true;
         });
-        if (!canPayExtras) return false;
+        if (!canPayExtras) {
+          return false;
+        }
       }
     }
 
@@ -386,14 +434,14 @@ export class PriorityProcessor {
 
     if (spellAbility) {
       if (spellAbility.modes) {
-        const hasValidMode = spellAbility.modes.some(mode => {
+        const hasValidMode = spellAbility.modes!.some(mode => {
           const tDefs = (mode.targetDefinitions || []) as TargetDefinition[];
-          if (tDefs.length === 0 || tDefs.every((td: TargetDefinition) => td.optional)) return true;
+          if (!tDefs || tDefs.length === 0 || tDefs.every((td) => td.optional)) return true;
           return TargetingProc.hasLegalTargets(state, cardToPlay!.id, tDefs, playerId);
         });
         if (!hasValidMode) return false;
       } else if (spellAbility.targetDefinitions && spellAbility.targetDefinitions.length > 0) {
-        if (!spellAbility.targetDefinitions.every((td: TargetDefinition) => td.optional) && !TargetingProc.hasLegalTargets(state, cardToPlay!.id, spellAbility.targetDefinitions, playerId)) {
+        if (!spellAbility.targetDefinitions!.every((td) => td.optional) && !TargetingProc.hasLegalTargets(state, cardToPlay!.id, spellAbility.targetDefinitions!, playerId)) {
           return false;
         }
       }
@@ -409,13 +457,30 @@ export class PriorityProcessor {
     const face = obj.definition.preparedFace || obj.definition.faces?.[1];
     if (!face) return false;
 
-    // Prepared faces are treated as spells (usually instant or sorcery)
+    // 1. Timing Validation
+    // We treat the face as a virtual object for timing purposes.
+    // Since RuleUtils.getDef is now robust, this will correctly identify speed (Instant vs Sorcery).
     if (!this.validateTiming(state, player.id, face, false, checkPriority)) return false;
 
+    // 2. Cost Validation
     const { totalMana } = SpellProcessor.getEffectiveCosts(state, obj, [], face);
-    if (player.manaCheat || ManaProcessor.canPayWithTotal(state, player, state.battlefield, totalMana, obj)) {
+    const { mana: ManaProcessor, logger } = getProcessors(state);
+
+    const canPay = player.manaCheat || ManaProcessor.canPayWithTotal(state, player, state.battlefield, totalMana, obj);
+
+    if (canPay) {
+      // 3. Target Validation (Rule 601.2c)
+      const faceAbilities = (face as any).abilities || [];
+      const spellAbility = faceAbilities.find((a: any) => a.type === AbilityType.Spell);
+      if (spellAbility?.targetDefinitions) {
+        const { targeting: TargetingProcessor } = getProcessors(state);
+        if (!TargetingProcessor.hasLegalTargets(state, obj.id, spellAbility.targetDefinitions, player.id)) {
+          return false;
+        }
+      }
       return true;
     }
+
     return false;
   }
 
@@ -467,8 +532,8 @@ export class PriorityProcessor {
 
     // 4. Restrictions (Silence, Limits, Conditions)
     const dummyEvent: GameEvent = { type: 'NONE', playerId };
-    if (ability.triggerCondition && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId , effects: [], targets: []})) return false;
-    
+    if (ability.triggerCondition && !ability.triggerCondition(state, dummyEvent, { sourceId: obj.id, controllerId: playerId, effects: [], targets: [] })) return false;
+
     if (ability.condition && !ConditionProcessor.matchesCondition(state, ability.condition, { sourceId: obj.id, controllerId: playerId, effects: [], targets: [] })) return false;
 
     if (ability.limitPerTurn) {
@@ -511,6 +576,7 @@ export class PriorityProcessor {
   public static validateTiming(state: GameState, playerId: string, objOrAbility: any, isActivatedAbility = false, checkPriority = true): boolean {
     const player = state.players[playerId];
     if (!player) return false;
+    const { logger } = getProcessors(state);
 
     // 1. Priority Check (Rule 117.1)
     // If checkPriority is false, we are doing a "potential action" scan for auto-pass.
@@ -520,10 +586,10 @@ export class PriorityProcessor {
     const def = objOrAbility?.definition || objOrAbility;
     const isInstantOrFlash = RuleUtils.isType(objOrAbility, 'instant') || RuleUtils.hasFlash(objOrAbility);
     const isLand = RuleUtils.isLand(def);
-    
+
     // Loyalty abilities (Planeswalkers) have unique sorcery-speed restrictions (CR 606.3)
     const isLoyalty = (objOrAbility.type === AbilityType.Activated && (objOrAbility.loyalty !== undefined || objOrAbility.isLoyaltyAbility)) || RuleUtils.isPlaneswalker(objOrAbility);
-    
+
     // Sorcery speed applies to:
     // - Lands
     // - Loyalty abilities
@@ -536,12 +602,14 @@ export class PriorityProcessor {
     // 3. Evaluate Speed Requirements
     if (isSorcerySpeed) {
       const isYourTurn = state.activePlayerId === playerId;
-      const isMain = state.currentPhase === Phase.PreCombatMain || state.currentPhase === Phase.PostCombatMain;
+      const isPre = state.currentPhase === Phase.PreCombatMain;
+      const isPost = state.currentPhase === Phase.PostCombatMain;
+      const isMain = isPre || isPost;
       const stackEmpty = state.stack.length === 0;
 
       // Check for out-of-turn permission effects (e.g. Teferi, Leyline of Anticipation)
-      const hasPermission = state.ruleRegistry.continuousEffects.some(e => 
-        (e.type === EffectType.AllowOutOfTurnActivation) && 
+      const hasPermission = state.ruleRegistry.continuousEffects.some(e =>
+        (e.type === EffectType.AllowOutOfTurnActivation) &&
         (e.targetIds?.includes(objOrAbility.id) || e.sourceId === objOrAbility.id || (RuleUtils.isEntity(objOrAbility) && e.targetIds?.includes(objOrAbility.id)))
       ) || false;
 

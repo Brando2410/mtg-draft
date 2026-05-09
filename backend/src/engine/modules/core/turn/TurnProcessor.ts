@@ -137,6 +137,7 @@ export class TurnProcessor {
       playerId: state.activePlayerId,
       data: { phase: state.currentPhase, step: state.currentStep }
     };
+    logger.info(state, LogCategory.TURN, `[TURN-EVENT] Firing step event: ${stepEvent.type} for step ${state.currentStep}`);
     engine.processors.trigger.onEvent(state, stepEvent);
     this.cleanupExpiredEffectsByEvent(state, stepEvent.type, state.activePlayerId);
 
@@ -269,13 +270,17 @@ export class TurnProcessor {
     else if (state.currentStep === Step.Cleanup) {
       const player = state.players[activeId];
       if (player && player.hand.length > player.maxHandSize) {
-        player.pendingDiscardCount = player.hand.length - player.maxHandSize;
-        state.pendingAction = {
-          type: 'DISCARD',
-          playerId: activeId,
-          count: player.pendingDiscardCount
-        };
-        logger.info(state, LogCategory.TURN, `${player.name} must discard ${player.pendingDiscardCount} card(s) to reach hand size (${player.maxHandSize}).`);
+        const discardCount = player.hand.length - player.maxHandSize;
+        const { choiceGenerator: ChoiceGenerator } = getProcessors(state);
+
+        state.pendingAction = ChoiceGenerator.createDiscardChoice(
+          state,
+          [activeId],
+          "system",
+          discardCount,
+          "Discard cards"
+        );
+        logger.info(state, LogCategory.TURN, `${player.name} must discard ${discardCount} card(s) to reach hand size (${player.maxHandSize}).`);
       }
 
       state.battlefield.forEach(obj => obj.damageMarked = 0);

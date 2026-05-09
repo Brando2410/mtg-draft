@@ -148,18 +148,16 @@ export interface StackObject extends BaseEntity {
     lookingCards?: GameObject[];
     maxChoices?: number;
     minChoices?: number;
-    nextEffectIndex?: number;
+    effectIndex?: number;
+    isResumption?: boolean;
     nextPlayerIds?: PlayerId[];
     onFailureEffects?: EffectDefinition[];
     originalControllerId?: PlayerId;
     preSelectedChoice?: number | string;
-    /** Saved resolution progress. Written when an effect suspends, read when resuming. */
-    resolution?: import('./effects').ResolutionState;
     exileOnResolution?: boolean;
     sourceId: GameObjectId;
     sourceName?: string;
     sourceObject?: GameObject; // The canonical hydrated object (Card, Token, or Ability Source)
-    startIndex?: number;
     targetDefinitions?: TargetDefinition[];
     targets: GameObjectId[] | PlayerId[];
     targetsControllers?: PlayerId[];
@@ -309,14 +307,17 @@ export interface InteractionMetadata {
     lastDiscardedIds?: string[];
     lastMilledIds?: string[];
     lookingCards?: GameObject[];
-    nextEffectIndex?: number;
+    effectIndex?: number;
+    isResumption?: boolean;
+    controllerId?: PlayerId;
     paidManaValue?: number;
     parentContext?: import('./effects').EngineFrame | any;
     sourceMV?: number;
     stackObj?: StackObject;
-    startIndex?: number;
     targets?: string[];
     xValue?: number;
+    exiledIds?: string[];
+    chosenName?: string;
 
     // --- Phase 5 Migration Fields ---
     manaSnapshot?: ManaPool;
@@ -338,11 +339,17 @@ export interface InteractionMetadata {
     nextPlayerIds?: string[];
     onFailureEffects?: import('./effects').EffectDefinition[];
     isOptionalDiscard?: boolean;
+    maxChoices?: number;
+    minChoices?: number;
+    involvedIds?: string[];
+    declaredTargets?: string[];
+    choiceEffects?: import('./effects').EffectDefinition[];
+    nextTriggersToStack?: any[];
 }
 
 export interface CommonResolutionFields {
     effects?: import('./effects').EffectDefinition[];
-    nextEffectIndex?: number;
+    effectIndex?: number;
     parentContext?: import('./effects').EngineFrame;
     stackObj?: StackObject;
     targets?: string[];
@@ -406,6 +413,7 @@ export interface BaseActionData extends CommonResolutionFields, CommonChoiceFiel
     lastDiscardedIds?: string[];
     lastMilledIds?: string[];
     nextPlayerIds?: string[];
+    effectIndex?: number;
     triggers?: any[];
     isChoiceSequence?: boolean;
     isSacrificeSequence?: boolean;
@@ -482,7 +490,7 @@ export interface GameState {
     emblems: EmblemDefinition[];
     executionTrace?: {
         controllerId: string;
-        nextEffectIndex?: number;
+        effectIndex?: number;
         sourceId: string;
         targets: string[];
         timestamp: number;

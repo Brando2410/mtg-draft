@@ -262,9 +262,11 @@ export class TargetValidator {
 
         if ((restrictionType === 'any' || restrictionType === 'all' || restrictionType === 'not') && ('restrictions' in resObj || 'restriction' in resObj)) {
             const logicRes = resObj as LogicRestriction;
-            if (restrictionType === 'any' && logicRes.restrictions) return logicRes.restrictions.some(subR => this.matchesRestrictions(state, targetObj, [subR], context));
-            if (restrictionType === 'all' && logicRes.restrictions) return logicRes.restrictions.every(subR => this.matchesRestrictions(state, targetObj, [subR], context));
-            if (restrictionType === 'not' && logicRes.restriction) return !this.matchesRestrictions(state, targetObj, [logicRes.restriction], context);
+            const subs = logicRes.restrictions || (logicRes.restriction ? [logicRes.restriction] : []);
+            
+            if (restrictionType === 'any') return subs.some(subR => this.matchesRestrictions(state, targetObj, [subR], context));
+            if (restrictionType === 'all') return subs.every(subR => this.matchesRestrictions(state, targetObj, [subR], context));
+            if (restrictionType === 'not') return subs.length > 0 && !this.matchesRestrictions(state, targetObj, [subs[0]], context);
         }
 
         if (restrictionType === 'manavalue' || restrictionType === 'mv') {

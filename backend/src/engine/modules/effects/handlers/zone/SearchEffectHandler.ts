@@ -52,8 +52,8 @@ export const SearchEffectHandler: IEffectHandler<SearchEffect> = {
 
         if (validCandidates.length === 0) {
             logger.info(state, LogCategory.ACTION, `[INFO] SearchEffectHandler: No valid objects found. Auto-skipping search.`);
-            if (effect.shuffle && context.effects) {
-                context.effects.splice((context.currentIndex ?? context.nextEffectIndex ?? 0) + 1, 0, {
+            if (effect.shuffle) {
+                getProcessors(state).effect.injectPostEffect(context, {
                     type: EffectType.Shuffle,
                     targetMapping: TargetMapping.Controller,
                 } as EffectDefinition);
@@ -81,6 +81,7 @@ export const SearchEffectHandler: IEffectHandler<SearchEffect> = {
                 const zone = effect.zone || Zone.Hand;
                 subEffects.push({
                     type: EffectType.MoveToZone,
+                    effectIndex: context.effectIndex,
                     targetIds: [c.id],
                     targetPlayerId: controllerId,
                     zone: zone,
@@ -98,7 +99,7 @@ export const SearchEffectHandler: IEffectHandler<SearchEffect> = {
         });
 
         if (effect.shuffle && context.effects) {
-            context.effects.splice((context.currentIndex ?? context.nextEffectIndex ?? 0) + 1, 0, {
+            context.effects.splice((context.effectIndex ?? 0) + 1, 0, {
                 type: EffectType.Shuffle,
                 targetMapping: TargetMapping.Controller,
             } as EffectDefinition);

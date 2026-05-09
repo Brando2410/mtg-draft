@@ -234,9 +234,6 @@ export class GameEngine implements EngineContext {
 
   public discardCard(playerId: PlayerId, cardInstanceId: string): boolean {
     const res = PlayerActionProcessor.discardCard(this.state, playerId, cardInstanceId);
-    if (res.finished) {
-      this.resolveTopOrAdvanceStep();
-    }
     return res.success;
   }
 

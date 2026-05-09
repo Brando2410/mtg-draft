@@ -1,4 +1,4 @@
-import { AbilityType, CardDefinition, DynamicAmount, EffectType, TargetMapping, TriggerEvent } from '@shared/engine_types';
+import { AbilityType, CardDefinition, DynamicAmount, EffectType, Restriction, TargetMapping, TriggerEvent } from '@shared/engine_types';
 export const JadziStewardofFateOraclesGift: CardDefinition = {
     name: "Jadzi, Steward of Fate // Oracle's Gift",
     manaCost: "{2}{U}",
@@ -44,7 +44,7 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
                             subtypes: ["Fractal"],
                             power: "0",
                             toughness: "0",
-                            image_url: "https://cards.scryfall.io/png/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.png?1682693894"
+                            image_url: "https://cards.scryfall.io/normal/front/d/e/de564776-9d88-4533-8717-842eecdd0594.jpg?1775828279"
                         },
                         amount: DynamicAmount.X,
                         targetMapping: TargetMapping.Controller
@@ -55,7 +55,7 @@ export const JadziStewardofFateOraclesGift: CardDefinition = {
                         amount: DynamicAmount.X,
                         targetMapping: TargetMapping.AllMatchingPermanentsYouControl,
                         restrictions: [
-                            "Fractal"
+                            Restriction.Fractal
                         ]
                     }
                 ]

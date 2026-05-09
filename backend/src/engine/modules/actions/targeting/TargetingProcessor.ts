@@ -138,6 +138,8 @@ export class TargetingProcessor {
                     targetDefinitions: targetDefinitions,
                     targetIndex: nextIndex,
                     xValue: xValue,
+                    effectIndex: 0,
+                    isResumption: false,
                     effects: [],
                     targets: []
                 }, tid));
@@ -213,6 +215,8 @@ export class TargetingProcessor {
                 targetDefinitions: targetDefinitions,
                 targetIndex: firstIndex,
                 xValue: xValue,
+                effectIndex: 0,
+                isResumption: false,
                 effects: [],
                 targets: []
             }, tid));
@@ -272,6 +276,8 @@ export class TargetingProcessor {
                         targetDefinitions: targetDefinitions,
                         targetIndex: newNextIndex,
                         xValue: xValue,
+                        effectIndex: 0,
+                        isResumption: false,
                         effects: [],
                         targets: []
                     }, tid));
@@ -363,6 +369,8 @@ export class TargetingProcessor {
                 targetDefinitions: targetDefinitions,
                 targetIndex: nextIndex,
                 xValue: xValue,
+                effectIndex: 0,
+                isResumption: false,
                 effects: [],
                 targets: []
             }, tid));
@@ -496,15 +504,16 @@ export class TargetingProcessor {
 
             // If the cast was successful and didn't trigger a new suspension, 
             // and we have a parent resolution waiting, resume it now.
-            if (success && !state.pendingAction && meta.parentContext && actionData.nextEffectIndex !== undefined) {
+            if (success && !state.pendingAction && meta.parentContext && meta.effectIndex !== undefined) {
                 logger.info(state, LogCategory.ACTION, `[TARGET-FINAL] Spell cast finished, resuming parent resolution for ${meta.parentContext.sourceId}`);
                 EffectProcessor.resolveEffects({
                     state,
                     context: EffectProcessor.createEngineFrame(state, {
                         sourceId: meta.parentContext.sourceId,
-                        effects: actionData.effects || [],
-                        targets: actionData.targets || [],
-                        startIndex: actionData.nextEffectIndex,
+                        effects: meta.effects || [],
+                        targets: meta.targets || [],
+                        effectIndex: meta.effectIndex,
+                        isResumption: true,
                         stackObject: meta.parentContext.stackObject,
                         parentContext: meta.parentContext.parentContext,
                         exileOnResolution: meta.exileOnResolution
@@ -522,7 +531,7 @@ export class TargetingProcessor {
 
         // --- CASE 2: Resolution-Time Effects (e.g. "Exile target, then draw") ---
         // These resume the current effect chain directly.
-        if (actionData?.nextEffectIndex !== undefined) {
+        if (meta.effectIndex !== undefined) {
             state.pendingAction = undefined;
             state.priorityPlayerId = playerId;
 
@@ -530,8 +539,8 @@ export class TargetingProcessor {
                 ? (actionData._backupTargets || [])
                 : resolvedTargets;
 
-            const savedTargets = [...(actionData.targets || []), ...finalTargets];
-            const savedEffects = actionData.effects || [];
+            const savedTargets = [...(meta.targets || []), ...finalTargets];
+            const savedEffects = meta.effects || [];
 
             // If this is a copy, we update the spell copy on the stack
             if (stackObj && meta.isCopyTargeting) {
@@ -557,7 +566,8 @@ export class TargetingProcessor {
                     sourceId: resumeSourceId,
                     effects: savedEffects,
                     targets: savedTargets,
-                    startIndex: actionData.nextEffectIndex,
+                    effectIndex: meta.effectIndex,
+                    isResumption: true,
                     stackObject: resumeStackObj,
                     parentContext: meta.parentContext,
                     exileOnResolution: meta.exileOnResolution

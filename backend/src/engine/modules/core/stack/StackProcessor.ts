@@ -52,7 +52,8 @@ export class StackProcessor {
         processors.lki.saveSnapshot(state, objectToResolve, Zone.Stack);
         state.consecutivePasses = 0; // CR 117.4: Resolution or stack changes reset pass count
         if (state.stack.length > 0) {
-          logger.debug(state, LogCategory.STACK, `STACK CONTENTS: ${state.stack.map(s => s.name || s.sourceObject?.definition.name).join(', ')}`);
+          const stackNames = state.stack.map(s => s.name || s.sourceObject?.definition.name || 'Effect');
+          logger.debug(state, LogCategory.STACK, `STACK CONTENTS (Remaining): ${stackNames.join(', ')}`);
         }
 
         const objectName = objectToResolve.name || objectToResolve.sourceObject?.definition.name || 'Effect';
@@ -61,8 +62,8 @@ export class StackProcessor {
         const effects = StackProcessor.getEffectsForResolution(state, objectToResolve);
         if (!objectToResolve.effects) objectToResolve.effects = effects;
         
-        const startIndex = objectToResolve.resolution?.effectIndex ?? objectToResolve.nextEffectIndex ?? 0;
-        const completed = ResolutionManager.resolve(state, objectToResolve, effects, engine, startIndex);
+        const effectIndex = objectToResolve.effectIndex ?? 0;
+        const completed = ResolutionManager.resolve(state, objectToResolve, effects, engine, effectIndex);
 
         if (!completed) {
           // Suspended resolution. Push the object back to the stack.
@@ -79,7 +80,12 @@ export class StackProcessor {
         }
       }
     } else {
-      engine.advanceStep();
+      // CR 117.4: Only advance the step if ALL players have passed in succession.
+      if (state.consecutivePasses >= state.playerOrder.length) {
+        engine.advanceStep();
+      } else {
+        logger.debug(state, LogCategory.STACK, `resolveTopOrAdvanceStep: Stack is empty but only ${state.consecutivePasses} passes. Waiting for priority.`);
+      }
     }
   }
 

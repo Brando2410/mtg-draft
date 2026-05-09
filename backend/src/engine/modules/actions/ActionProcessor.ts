@@ -334,7 +334,9 @@ export class ActionProcessor {
     // Rule 113.7a: Abilities on the stack exist independently of their source.
     // We only remove the object from the stack if it IS the card (e.g. a Spell being countered/moved).
     state.stack = state.stack.filter((s) => {
-      if (s.id === cid || s.sourceObject?.id === cid) {
+      // ONLY remove if it's the exact same ID (the Spell object)
+      // DO NOT remove if it's an ability (Triggered/Activated) originating from this source.
+      if (s.id === cid) {
         this.updateEntityCache(state, s, true);
         return false;
       }

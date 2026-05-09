@@ -251,14 +251,12 @@ export class CostProcessor {
       case CostType.Discard: {
         const discCost = cost as DiscardCost;
         // CR 701.8: To discard a card, move it from hand to graveyard.
-        // If it's a cost, we typically expect a pre-selected cardId in state.lastChosenDiscardId
-        // or we need to trigger a choice if it's not present.
         const discardId = state.interaction.lastSelections[CostType.Discard]?.[0];
         const cardToDiscard = player.hand.find(c => c.id === discardId);
         if (cardToDiscard) {
-          const { trigger: TriggerProcessor, action: ActionProcessor } = getProcessors(state);
-          TriggerProcessor.onEvent(state, { type: 'ON_DISCARD', playerId, payload: { object: cardToDiscard, sourceId: source.id } });
-          ActionProcessor.moveCard(state, cardToDiscard, Zone.Graveyard, playerId);
+          const { action: ActionProcessor } = getProcessors(state);
+          // Pass isDiscard = true (7th param) to handle triggers and lastDiscardedIds automatically
+          ActionProcessor.moveCard(state, cardToDiscard, Zone.Graveyard, playerId, "top", false, true);
           logger.info(state, LogCategory.ACTION, `${player.name} discarded ${cardToDiscard.definition.name} as a cost.`);
         }
         delete state.interaction.lastSelections[CostType.Discard];

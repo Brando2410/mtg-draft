@@ -573,8 +573,11 @@ export class PlayerActionProcessor {
 
     // Use ResolutionManager to handle the stacking queue and any subsequent suspensions
     ResolutionManager.stackTriggers(state, orderedTriggers);
-    // Process remaining if anyone else has triggers
-    TrP.processPendingTriggers(state);
+    
+    // If no new pending action was created (e.g. more triggers to order), reset priority
+    if (!state.pendingAction) {
+      getEngine(state).resetPriorityToActivePlayer();
+    }
     return true;
   }
 

@@ -86,8 +86,9 @@ export class RuleUtils {
      */
     private static getDef(obj: Targetable | undefined): CardDefinition | null {
         if (!obj) return null;
-        // Players don't have definitions, but cards and stack objects do
-        return (obj as GameObject).definition || (obj as StackObject).definition || null;
+        if ((obj as any).definition) return (obj as any).definition;
+        if ((obj as any).types && (obj as any).name) return obj as any as CardDefinition;
+        return null;
     }
 
     /**

@@ -190,45 +190,7 @@ export interface ContinuousEffect {
     value?: any;
 }
 
-/**
- * ResolutionTransient: Typed container for mid-resolution data that effects produce
- * for consumption by subsequent effects. Replaces the untyped StackObject.data bucket.
- * This data is transient — it exists only during a single resolution sequence.
- */
-export interface ResolutionTransient {
-    castFromZone?: Zone;
-    chosenName?: string;
-    discardAmount?: number | string;
-    eventAmount?: number;
-    exiledIds?: string[];
-    isCopy?: boolean;
-    isFreeCast?: boolean;
-    lastDiscardedIds?: string[];
-    lastMilledIds?: string[];
-    lookingCards?: GameObject[];
-    maxChoices?: number;
-    minChoices?: number;
-    nextPlayerIds?: PlayerId[];
-    onFailureEffects?: EffectDefinition[];
-    paidManaValue?: number;
-    sourceName?: string;
-    xValue?: number;
-    exileOnResolution?: boolean;
-}
 
-/**
- * ResolutionState: Saved resolution progress for a StackObject.
- * When an effect suspends (waiting for user input), this state is saved on
- * the StackObject so it survives serialization and can be resumed.
- */
-export interface ResolutionState {
-    /** Index of the next effect to execute */
-    effectIndex: number;
-    /** Transient data produced during resolution */
-    transient: ResolutionTransient;
-    /** ID of the parent StackObject whose resolution spawned this interaction */
-    parentFrameId?: string;
-}
 
 /**
  * EngineFrame (CR 608): Unified context for ALL engine operations.
@@ -241,14 +203,14 @@ export interface EngineFrame {
     sourceId: GameObjectId;
 
     // === Resolution State ===
-    currentIndex?: number;
+    effectIndex?: number;
+    isResumption?: boolean;
     effects: EffectDefinition[];
-    nextEffectIndex?: number;
-    startIndex?: number;
     targets: string[];
 
     // === Transient Data ===
     castFromZone?: Zone;
+    chosenName?: string;
     discardAmount?: number | string;
     event?: GameEvent;
     eventAmount?: number;

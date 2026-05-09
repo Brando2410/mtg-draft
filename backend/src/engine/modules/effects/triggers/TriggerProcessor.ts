@@ -216,7 +216,7 @@ export class TriggerProcessor {
     // Invalidate trigger cache
     if (state._triggerCache) state._triggerCache.version = -1;
 
-    logger.info(state, LogCategory.TRIGGER, `[DELAYED TRIGGER] Registered: triggered on ${(effect as TriggerAbilityEffect).eventMatch}.`);
+    logger.info(state, LogCategory.TRIGGER, `[DELAYED-REG] Registered: triggered on ${delayedTrigger.eventMatch} (ID: ${delayedTrigger.id}). Registry size: ${state.ruleRegistry.triggeredAbilities.length}`);
   }
 
   public static cleanupDelayedTriggers(
@@ -286,7 +286,7 @@ export class TriggerProcessor {
       event: event,
       eventAmount: event.payload?.amount,
       sourceName: sourceName,
-      startIndex: 0,
+      effectIndex: 0,
       exileOnResolution: exileOnResolution,
       // Phase 4: Data is now just a backup/snapshot of the event
       data: { event },
@@ -431,6 +431,7 @@ export class TriggerProcessor {
       const buckets = new Map<string, any[]>();
       allTriggers.forEach(t => {
         const tBuckets = this.getEventBuckets(t.eventMatch);
+        logger.info(state, LogCategory.TRIGGER, `[CACHE-BUILD] Indexing trigger ${t.id || 'unknown'} for buckets: ${tBuckets.join(', ')} (Match: ${t.eventMatch})`);
         tBuckets.forEach(b => {
           if (!buckets.has(b)) buckets.set(b, []);
           buckets.get(b)!.push(t);
@@ -447,10 +448,10 @@ export class TriggerProcessor {
     const cache = state._triggerCache;
     const candidates = cache.buckets.get(event.type) || [];
 
-    if (event.type === TriggerEvent.EndStep || event.type === TriggerEvent.Exile || event.type === TriggerEvent.CastInstantOrSorcery) {
-      logger.debug(state, LogCategory.TRIGGER, `[TRIGGER-DEBUG] Event ${event.type}. Found ${candidates.length} candidates in bucket.`);
+    if (event.type === TriggerEvent.EndStep || event.type === TriggerEvent.Exile || event.type === TriggerEvent.CastInstantOrSorcery || event.type.includes('END')) {
+      logger.info(state, LogCategory.TRIGGER, `[TRIGGER-DEBUG] Event ${event.type}. Found ${candidates.length} candidates in bucket.`);
       candidates.forEach((t: any) => {
-        logger.debug(state, LogCategory.TRIGGER, `  - Candidate: ${t.id} (Source: ${t.sourceId}) controllerId: ${t.controllerId} activeZone: ${t.activeZone} isDelayed: ${t.isDelayed} oneShot: ${t.oneShot}`);
+        logger.info(state, LogCategory.TRIGGER, `  - Candidate: ${t.id} (Source: ${t.sourceId}) eventMatch: ${t.eventMatch} controllerId: ${t.controllerId} activeZone: ${t.activeZone} isDelayed: ${t.isDelayed} oneShot: ${t.oneShot}`);
       });
     }
 

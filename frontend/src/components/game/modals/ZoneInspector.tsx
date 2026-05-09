@@ -67,6 +67,7 @@ export const ZoneInspector = ({ inspectingZone, onClose, onTapCard, targetableId
                   variant="battlefield"
                   onClick={() => onTapCard(obj.id)} 
                   isTargetable={targetableIds.has(obj.id)}
+                  isPlayable={obj.effectiveStats?.isPlayable}
                   onHoverStart={onHoverStart}
                   onHoverEnd={onHoverEnd}
                 />
